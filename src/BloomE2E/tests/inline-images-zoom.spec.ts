@@ -39,6 +39,7 @@ import {
     getInlineImageRects,
     moveInlineImageDragTo,
     scrollBlockToTop,
+    scrollInlineImageToTop,
 } from "../helpers/inlineImages";
 import { getZoom, setZoom } from "../helpers/workspace";
 
@@ -80,6 +81,9 @@ const dragDownAndMeasure = async (
     page: Page,
     pointerTravelViewportPx: number,
 ): Promise<{ pictureMovedViewportPx: number; blockHeightPx: number }> => {
+    // So that both the press and the place the pointer travels to are on screen, however small
+    // the window and however large the zoom.
+    await scrollInlineImageToTop(page, BLOCK, LANG, imageId);
     const before = await getInlineImageRects(page, BLOCK, LANG, imageId);
     await beginInlineImageDrag(page, BLOCK, LANG, imageId);
     await moveInlineImageDragTo(page, {

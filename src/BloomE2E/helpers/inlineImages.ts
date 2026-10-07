@@ -55,6 +55,16 @@ const kChooseImageCommand = "EditTab.Image.ChooseImage";
  */
 const kSetImageInformationCommand = "EditTab.Image.EditMetadataOverlay";
 
+/** The localization ids of the Flip submenu on an inline image's menu, and of its two commands. */
+const kFlipSubmenu = "EditTab.Image.Flip";
+const kFlipCommand = {
+    horizontal: "EditTab.Image.FlipHorizontal",
+    vertical: "EditTab.Image.FlipVertical",
+};
+
+/** The localization id of Reset Image, which takes a flip away. */
+const kResetImageCommand = "EditTab.Image.Reset";
+
 // The markup, all of it confined to this file. A test never names any of these.
 const kWrapperClass = "bloom-inlineImage";
 const kIdAttribute = "data-bloom-inline-image-id";
@@ -87,6 +97,11 @@ export interface IInlineImageState {
     offsetPx: number;
     /** The picture's natural width/height, as the wrapper records it, e.g. "4 / 3". */
     aspectRatio: string;
+    /**
+     * The picture's own CSS transform, which is where Flip records a mirror: "scale(-1, 1)" for
+     * Flip horizontal, "scale(1, -1)" for Flip vertical, "" for a picture as it arrived.
+     */
+    pictureTransform: string;
     /** The file name in the picture's src; "placeHolder.png" while no picture has been chosen. */
     fileName: string;
     /**
@@ -201,6 +216,7 @@ export async function getInlineImages(
                             aspectRatio: wrapper.style
                                 .getPropertyValue(markup.aspectRatioProperty)
                                 .trim(),
+                            pictureTransform: picture?.style.transform ?? "",
                             // Without the query: Bloom appends "?transparent=yes" to an image
                             // on a page with a coloured background (getImageTransparencyMode),
                             // so a picture chosen on the front cover has one and the same
@@ -348,6 +364,72 @@ export async function deleteInlineImage(
             },
         )
         .toBe(0);
+}
+
+/**
+ * Mirror an inline image the way a person does: right-click the picture, rest the pointer on Flip,
+ * and choose Flip horizontal or Flip vertical. Returns once every language's copy of the picture
+ * carries the same new transform as the one clicked.
+ */
+export async function flipInlineImage(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+    axis: "horizontal" | "vertical",
+): Promise<void> {
+    const before = (await getInlineImage(page, groupSelector, languageTag, id))
+        .pictureTransform;
+    await openInlineImageMenu(page, groupSelector, languageTag, id);
+    await clickInlineImageSubmenuCommand(
+        page,
+        kFlipSubmenu,
+        kFlipCommand[axis],
+    );
+    await expect
+        .poll(
+            async () => {
+                const transforms = (
+                    await getInlineImageInEveryLanguage(page, groupSelector, id)
+                ).map((copy) => copy.pictureTransform);
+                return transforms.every(
+                    (one) => one === transforms[0] && one !== before,
+                );
+            },
+            {
+                timeout: 30000,
+                message:
+                    `Flip ${axis} did not leave every copy of inline image ${id} with one new ` +
+                    `transform.`,
+            },
+        )
+        .toBe(true);
+}
+
+/**
+ * Take a flip away the way a person does: right-click the picture and choose Reset Image. Returns
+ * once no copy of the picture carries a transform.
+ */
+export async function resetInlineImage(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+): Promise<void> {
+    await openInlineImageMenu(page, groupSelector, languageTag, id);
+    await clickInlineImageMenuCommand(page, kResetImageCommand);
+    await expect
+        .poll(
+            async () =>
+                (
+                    await getInlineImageInEveryLanguage(page, groupSelector, id)
+                ).every((copy) => copy.pictureTransform === ""),
+            {
+                timeout: 30000,
+                message: `Reset Image left a transform on a copy of inline image ${id}.`,
+            },
+        )
+        .toBe(true);
 }
 
 /**
@@ -527,6 +609,23 @@ export async function scrollBlockToTop(
         .evaluate((block) => {
             block.scrollTop = 0;
         });
+}
+
+/**
+ * Scroll the page so that one language's copy of an inline image is at the top of what the window
+ * shows, leaving the most room below it for a drag downward. In a small window (the nightly
+ * runner's), a zoomed page otherwise puts the picture, or the place a drag ends, out of sight,
+ * and a real pointer can only press on what the window shows.
+ */
+export async function scrollInlineImageToTop(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+): Promise<void> {
+    await inlineImagePicture(page, groupSelector, languageTag, id).evaluate(
+        (picture) => picture.scrollIntoView({ block: "start" }),
+    );
 }
 
 /**
@@ -1348,6 +1447,9 @@ async function clearTextPoint(
     languageTag: string,
 ): Promise<{ x: number; y: number }> {
     const block = inlineImageBlock(page, groupSelector, languageTag);
+    // elementFromPoint, below, finds nothing outside the window, and in a small window (the
+    // nightly runner's) the page can be scrolled so that the block is out of sight.
+    await block.scrollIntoViewIfNeeded();
     const onScreen = await blockRect(page, groupSelector, languageTag);
     const found = await block.evaluate(
         (element, markup) => {
@@ -1464,6 +1566,39 @@ async function clickInlineImageMenuCommand(
                 `${offered.join(", ") || "(nothing)"}.`,
         );
     }
+    await item.click();
+    await frame
+        .locator(kMenuSelector)
+        .first()
+        .waitFor({ state: "hidden", timeout: 30000 });
+}
+
+/**
+ * Choose one command from a submenu of the open menu, such as Flip, then Flip horizontal, and wait
+ * until the menu closes. Both rows are named by localization id. A submenu opens only while the
+ * pointer rests on its parent row, so this hovers the parent with the real pointer and goes
+ * straight to the command; a path across other rows would close the submenu first.
+ */
+async function clickInlineImageSubmenuCommand(
+    page: Page,
+    parentL10nId: string,
+    l10nId: string,
+): Promise<void> {
+    const frame = editablePageFrame(page);
+    const parent = frame
+        .locator(`${kMenuSelector} >> li[data-testid="${parentL10nId}"]`)
+        .first();
+    if ((await parent.count()) === 0)
+        throw new Error(`The open menu has no "${parentL10nId}" row.`);
+    await parent.hover();
+    const item = frame
+        .locator(`${kMenuSelector} >> li[data-testid="${l10nId}"]`)
+        .first();
+    await item.waitFor({ state: "visible", timeout: 15000 }).catch(() => {
+        throw new Error(
+            `Resting the pointer on "${parentL10nId}" did not show a "${l10nId}" command.`,
+        );
+    });
     await item.click();
     await frame
         .locator(kMenuSelector)
