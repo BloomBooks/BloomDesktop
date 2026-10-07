@@ -1,26 +1,29 @@
-// Inline (Word-style) images: an image that lives *inside* a bloom-editable, docked left,
-// right, as a full-width band, or at the bottom, with the text of that editable wrapping
-// around it. The design and its rationale are below; the layout rules are in
-// content/bookLayout/inlineImages.less and the edit-time affordances in
-// bookEdit/css/inlineImageEditing.less.
+// Inline (Word-style) images are pictures placed inside a bloom-editable, with the text of
+// that editable wrapping around them. A picture can be docked on the left, on the right, as a
+// full-width band across the middle, or at the bottom. The layout rules are in
+// content/bookLayout/inlineImages.less, and the handles and outlines shown while editing are
+// in bookEdit/css/inlineImageEditing.less.
 //
-// Two facts shape everything in this file:
+// Two things about the design explain most of the code in this file:
 //
-// 1. The markup has to be inside each bloom-editable, because a CSS float can only wrap
-//    the text of the block it is in. So every language's editable in a translation group
-//    carries its own copy of the wrapper, and they are kept identical by JS: the copy in
-//    the first visible language's editable is canonical, and normalizeInlineImages()
-//    stamps it onto the siblings at page load, while syncInlineImagesFromEditable() does
-//    so after every edit. (CSS then shows the image in only one visible editable, so the
-//    reader sees the picture once; see inlineImages.less.)
+// 1. The picture's markup has to be inside each bloom-editable, because a CSS float only
+//    wraps the text of the element it is in. So every language's editable in a translation
+//    group has its own copy of the wrapper, and this code keeps the copies identical. The
+//    copy in the editable chosen by getCanonicalInlineImageEditable is the one that counts:
+//    normalizeInlineImages() copies it onto the other editables when the page loads, and
+//    syncInlineImagesFromEditable() does the same after every edit. CSS then shows the
+//    picture in only one of the visible editables, so the reader sees it once (see
+//    inlineImages.less).
 //
-// 2. Position is geometry, never DOM anchoring. Sibling editables hold different text with
-//    different paragraph structure, so "after the second paragraph" cannot be carried
-//    across languages, but "docked right, 40% wide, 120px down" renders the same in all of
-//    them. So the wrapper never moves within the text: it is always the editable's first
-//    child, or its last child when docked at the bottom -- the one DOM move there is. All
-//    the rest of the state is a dock class plus the three custom properties below, which
-//    makes (class list + style attribute) the complete, copyable state of an inline image.
+// 2. Where a picture sits is stored as measurements: which side it is docked to, how wide
+//    it is, and how far down it is. A position in the text wouldn't work, because each
+//    language's editable has different text and different paragraphs, so "after the second
+//    paragraph" can't be carried from one language to another. "Docked right, 40% wide,
+//    120px down" looks the same in all of them. That is why the wrapper always stays at the
+//    start of the editable, or at the end when docked at the bottom; moving it between
+//    those two places is the only time it moves. Everything else about the picture is one
+//    of the dock classes plus the three custom properties defined below, so the wrapper's
+//    class list and style attribute together hold everything needed to copy it.
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { kBlockElementSelector } from "../bloomField/BloomField";
 import { createValidXhtmlUniqueId } from "./xhtmlIdUtils";
@@ -32,7 +35,7 @@ export const kInlineImageRightClass = "bloom-inlineImageRight";
 export const kInlineImageMiddleClass = "bloom-inlineImageMiddle";
 export const kInlineImageBottomClass = "bloom-inlineImageBottom";
 
-// The four docks. Exactly one is on a wrapper at any time.
+// The four dock classes. A wrapper always has exactly one of them.
 export const kInlineImageDockClasses = [
     kInlineImageLeftClass,
     kInlineImageRightClass,
@@ -46,76 +49,77 @@ export type InlineImageDock =
     | typeof kInlineImageMiddleClass
     | typeof kInlineImageBottomClass;
 
-// Edit-time only (a bloom-ui-ish marker; it is stripped from the copies we stamp onto
-// sibling editables, and from the canonical copy when it is serialized). The interaction
-// layer puts this on the wrapper the user has selected, and the undo gate reads it.
+// Marks the wrapper the user has selected. It is used only while editing: makeSerializedCopy
+// removes it, so it is never copied to the other languages or saved. The code that handles
+// clicking on inline images adds it, and inlineImageCanUndo reads it.
 export const kInlineImageSelectedClass = "bloom-inlineImage-selected";
 
-// Raised on the translation group (and bubbling) after an undo has replaced its wrappers, so
-// that whatever was attached to the old elements can be rebuilt. See inlineImageUndo.
+// Dispatched on the translation group, and bubbling, after an undo has replaced its wrappers,
+// so that anything attached to the old elements can be rebuilt. See inlineImageUndo.
 export const kInlineImagesRestoredEvent = "bloom-inlineImagesRestored";
 
-// Raised on the translation group (and bubbling) when a new picture has landed in an inline
-// image, with the wrapper as event.detail. The image chooser round trip goes out through C#
-// and comes back into changeImage, so this is the only point at which the code that started
-// the operation can learn it finished -- which matters because that code owns the selection,
-// and the undo of the change (or of the insert that preceded it) is only reachable while the
-// wrapper is selected. See handleInlineImageChanged.
+// Dispatched from the wrapper, and bubbling, when a new picture has been put in an inline
+// image; event.detail is the wrapper. Choosing a picture goes out to C# and comes back into
+// changeImage, so this event is the only way the code that opened the image chooser learns
+// that it finished. That code manages which wrapper is selected, and it needs to know,
+// because undoing the change (or the insert before it) only works while the wrapper is
+// selected. See handleInlineImageChanged.
 export const kInlineImageChangedEvent = "bloom-inlineImageChanged";
 
-// The identity of an inline image, shared by its copy in every language's editable. A text
-// block may hold any number of inline images, so "the wrapper in this editable" is not a
-// thing: sync, normalize and undo all match copies up by this value. It has to be an
-// attribute rather than an id, because TranslationGroupManager strips the id from an
-// editable it clones for a new language (TranslationGroupManager.cs:998) -- whereas nothing
-// in the C# sweeps touches an unknown data-*, and StripOutText only removes p/br/u/b/i
-// elements and text nodes, so the wrapper and this attribute survive into the new language
-// with the value intact, which is exactly what we need.
+// Identifies one inline image. Its copy in every language's editable has the same value. A
+// text block can hold any number of inline images, so there may be no single "wrapper in this
+// editable", and sync, normalize and undo all pair up the copies by this value. It has to be
+// a data attribute rather than an id, because TranslationGroupManager removes the id from an
+// editable it clones for a new language (TranslationGroupManager.cs:998). None of the C# code
+// that cleans up book markup touches a data attribute it does not know, and StripOutText only
+// removes p/br/u/b/i elements and text nodes, so the wrapper and this attribute reach the new
+// language with the value unchanged.
 export const kInlineImageIdAttr = "data-bloom-inline-image-id";
 
-// Custom properties carrying the geometry. See inlineImages.less for what each does.
+// Custom properties that hold the picture's size and position. See inlineImages.less for what
+// each one does.
 export const kInlineImageWidthVar = "--inline-image-width";
 export const kInlineImageOffsetVar = "--inline-image-offset";
 export const kInlineImageAspectRatioVar = "--inline-image-aspect-ratio";
 
 /**
- * The size of the block that --inline-image-offset was measured against, "width,height" in
- * layout pixels. The offset is the one piece of an inline image's geometry that is an absolute
- * distance -- the width is a percentage of the block and the aspect ratio is a ratio -- so it is
- * the one piece that means something different when the block changes size, which happens when
- * the book is drawn at another page size, when a different layout is chosen for the page, and
- * when a pane is dragged in Change Layout. Keeping the size it was measured against lets the
- * offset be re-measured for the new block (adjustInlineImageOffsetsIfBlockSizeChanged).
+ * The size of the block that --inline-image-offset was measured against, as "width,height" in
+ * layout pixels. The width is a percentage of the block and the aspect ratio is a ratio, but
+ * the offset is a distance in pixels, so it is the only value that has to change when the
+ * block changes size. The block changes size when the book is shown at another page size, when
+ * a different layout is chosen for the page, and when a pane is dragged in Change Layout.
+ * Storing the size the offset was measured against lets
+ * adjustInlineImageOffsetsIfBlockSizeChanged work out the offset for the new size.
  *
- * This is what bloom-canvas does for canvas elements, with data-imgsizebasedon; the name follows
+ * bloom-canvas does the same for canvas elements with data-imgsizebasedon. This name follows
  * that one, and like it the attribute must be all lowercase to be a valid data-* attribute.
  */
 export const kInlineImageOffsetBasedOnAttr = "data-inline-image-offset-basedon";
 
-// Classes owned by BloomField.ts, which already knows how to protect an embedded image:
-// keepFirstInField keeps the required <p> after the image, and preventRemoval undoes a
-// ctrl+a DEL that would otherwise take the image with it.
+// Classes that BloomField.ts uses to protect an embedded image. With bloom-keepFirstInField it
+// keeps the required <p> after the image, and with bloom-preventRemoval it undoes a ctrl+a DEL
+// that would otherwise delete the image too.
 export const kKeepFirstInFieldClass = "bloom-keepFirstInField";
 export const kPreventRemovalClass = "bloom-preventRemoval";
 
 export const kDefaultInlineImageWidth = "40%";
-// A new wrapper holds a placeholder, which never loads, so there is no natural size to
-// take a ratio from. Without one the wrapper would have no height at all, and the user
-// would have nothing to see or click. 4/3 is the usual photo shape and is replaced by the
-// real ratio as soon as a real image loads.
+// A new wrapper holds a placeholder, which never loads, so there is no natural size to take
+// a ratio from. Without a ratio the wrapper would have no height, and the user would have
+// nothing to see or click. 4/3 is a common photo shape, and the real ratio replaces it as
+// soon as a real image loads.
 export const kDefaultInlineImageAspectRatio = "4 / 3";
 
 const kEditableSelector = ".bloom-editable";
 const kInlineImageSelector = "." + kInlineImageClass;
 
-// The imgs whose load handler we have already installed. Kept out here rather than marked
-// on the element, so that nothing about it can end up in the saved HTML; weak so that it
-// doesn't hold onto the images of pages we have navigated away from.
+// The imgs that already have our load handler. We track them here instead of marking the
+// element, so that nothing about it can end up in the saved HTML. It is a WeakSet so that it
+// doesn't keep the images of pages we have left in memory.
 const imagesWithLoadHandler = new WeakSet<HTMLImageElement>();
 
 /**
- * The bloom-editable children of a translation group, in DOM order. (Only direct
- * children: a translation group nested in a canvas element still owns just its own.)
+ * The bloom-editable children of a translation group, in DOM order. Only direct children
+ * count, so a translation group inside a canvas element inside this one is not included.
  */
 export function getEditables(translationGroup: HTMLElement): HTMLElement[] {
     return Array.from(translationGroup.children).filter((child) =>
@@ -127,8 +131,8 @@ const isVisible = (editable: HTMLElement): boolean =>
     editable.classList.contains("bloom-visibility-code-on");
 
 /**
- * The inline images of one bloom-editable, in DOM order -- which is also the order the
- * reader sees them in, and the order sync replicates to the other languages.
+ * The inline images of one bloom-editable, in DOM order. That is also the order the reader
+ * sees them in, and the order syncInlineImagesFromEditable copies to the other languages.
  */
 export function getInlineImagesInEditable(
     editable: HTMLElement,
@@ -139,9 +143,9 @@ export function getInlineImagesInEditable(
 }
 
 /**
- * The FIRST inline image of one bloom-editable, or null. A block may hold any number of them,
- * so prefer getInlineImagesInEditable (or a lookup by id) unless you genuinely mean "the
- * first" or you already know there is only one.
+ * The FIRST inline image of one bloom-editable, or null. A block can hold any number of them,
+ * so use getInlineImagesInEditable (or getInlineImageById) unless you want the first one or
+ * already know there is only one.
  */
 export function getInlineImageInEditable(
     editable: HTMLElement,
@@ -150,10 +154,10 @@ export function getInlineImageInEditable(
 }
 
 /**
- * The FIRST inline image of the group's canonical editable (see
- * getCanonicalInlineImageEditable), or null if the group has none. As above: with several
- * images in a block this is "the first", not "the image", so reach for getInlineImages or
- * hasInlineImages when that is what you mean.
+ * The FIRST inline image in the editable that getCanonicalInlineImageEditable picks, or null
+ * if the group has none. When a block holds several images this returns only the first, so
+ * use getInlineImages or hasInlineImages when you want all of them or just need to know
+ * whether there are any.
  */
 export function getInlineImage(
     translationGroup: HTMLElement,
@@ -163,14 +167,8 @@ export function getInlineImage(
 }
 
 /**
- * The identity of one inline image. The same value appears on this image's copy in every
- * language's editable, which is what lets sync, normalize and undo tell "this image" from
- * "the other image in the same block". Undefined only for a wrapper built by hand (an old
- * book, or the test.pug page), which insertInlineImage never produces.
- */
-/**
  * Records the block size this image's offset was measured against. Call it wherever the offset
- * has just been settled, so that a later change of block size has something to re-measure from.
+ * has just been set, so that if the block later changes size the offset can be recalculated.
  */
 export function recordInlineImageOffsetBaseline(
     wrapper: HTMLElement,
@@ -184,8 +182,8 @@ export function recordInlineImageOffsetBaseline(
 
 /**
  * The block size this image's offset was measured against, or undefined for an image saved
- * before this was recorded (or by a Bloom that did not record it), which is not an error: the
- * caller records the current size and leaves the offset alone.
+ * by a Bloom that did not record it. That is not an error; the caller records the current
+ * size and leaves the offset alone.
  */
 export function getInlineImageOffsetBaseline(
     wrapper: HTMLElement,
@@ -200,6 +198,12 @@ export function getInlineImageOffsetBaseline(
     return { widthLayoutPx, heightLayoutPx };
 }
 
+/**
+ * The kInlineImageIdAttr value of one inline image. This image's copy in every language's
+ * editable has the same value, which is how sync, normalize and undo tell it apart from other
+ * images in the same block. It is undefined only for a wrapper written by hand (an old book,
+ * or the test.pug page); insertInlineImage always sets it.
+ */
 export function getInlineImageId(wrapper: HTMLElement): string | undefined {
     return wrapper.getAttribute(kInlineImageIdAttr) ?? undefined;
 }
@@ -222,8 +226,8 @@ export function hasInlineImages(translationGroup: HTMLElement): boolean {
 }
 
 /**
- * Every inline image wrapper anywhere in the container (all languages, so this includes
- * the copies that CSS is hiding). Useful for whole-page passes.
+ * Every inline image wrapper anywhere in the container, in all languages, including the
+ * copies that CSS hides. Use it for code that has to visit every inline image on a page.
  */
 export function getInlineImages(container: HTMLElement): HTMLElement[] {
     return Array.from(
@@ -234,11 +238,12 @@ export function getInlineImages(container: HTMLElement): HTMLElement[] {
 }
 
 /**
- * The editable whose set of inline images is canonical: the one the user is looking at, and
- * therefore the one whose images, geometry and order win when we sync. A visible editable is
- * always preferred over a hidden one; among equals the preference is bloom-contentFirst (which
- * the appearance system assigns when it is in charge of visibility), then bloom-content1, then
- * whichever editable has any -- matching both the CSS that decides where images show and
+ * The editable whose inline images the other editables should copy. It is the one the user is
+ * looking at, so when we sync, its images, their sizes and positions, and their order replace
+ * those in the other editables. A visible editable is always chosen over a hidden one. Among
+ * editables that are equally visible, the order of preference is bloom-contentFirst (which the
+ * appearance system adds when it controls visibility), then bloom-content1, then the first
+ * editable that has any images. This matches both the CSS that decides where images show and
  * bloomEditing.ts's SetupThingsSensitiveToStyleChanges.
  * Returns null if no editable in the group has an inline image.
  */
@@ -250,10 +255,10 @@ export function getCanonicalInlineImageEditable(
     );
     if (withImages.length === 0) return null;
     // Turning language 1 off on a page leaves its bloom-editable in the DOM, holding a copy
-    // nobody can see. That copy must not be the one that wins: normalizeInlineImages would
-    // stamp it over the language the person has been working in, undoing what they just did.
-    // A group whose only copies are in hidden editables still has to normalize, though (a
-    // template page, or one where every language is off), so hidden ones remain the fallback.
+    // nobody can see. That copy must not be chosen, or normalizeInlineImages would copy it over
+    // the language the person has been working in and undo what they just did. A group whose
+    // only copies are in hidden editables still has to be normalized (a template page, or a
+    // page where every language is off), so we fall back to the hidden ones.
     const visibleWithImages = withImages.filter(isVisible);
     const candidates =
         visibleWithImages.length > 0 ? visibleWithImages : withImages;
@@ -265,10 +270,11 @@ export function getCanonicalInlineImageEditable(
 }
 
 /**
- * The editable whose copy of the image the reader sees, using the same precedence as the
- * show-once CSS: a visible bloom-contentFirst, else a visible bloom-content1, else the
- * first visible editable. Undefined if the group has no visible editable at all (which
- * happens for the language-prototype-only groups on template pages).
+ * The editable whose copy of the image the reader sees. It uses the same order of preference
+ * as the CSS in inlineImages.less that shows the image in only one editable: a visible
+ * bloom-contentFirst, else a visible bloom-content1, else the first visible editable. Returns
+ * undefined if the group has no visible editable, which happens on template pages where the
+ * group holds only the lang="z" prototype.
  */
 export function getFirstVisibleEditable(
     translationGroup: HTMLElement,
@@ -282,12 +288,12 @@ export function getFirstVisibleEditable(
 }
 
 /**
- * Gives a wrapper an identity if it has not got one, and returns it. Every lookup that pairs a
- * wrapper with its copies in the other languages matches on kInlineImageIdAttr, so a wrapper
- * without one cannot be paired: syncInlineImagesFromEditable would keep it and append another
- * copy beside it on every page setup, and arrangeInlineImages would never place it.
- * makeInlineImageWrapper always mints one, so this is for markup that came from somewhere
- * else -- hand-edited HTML, or a paste from another program.
+ * Gives a wrapper a kInlineImageIdAttr if it has none, and returns the value. Every lookup that
+ * pairs a wrapper with its copies in the other languages matches on that attribute, so a
+ * wrapper without it can't be paired. syncInlineImagesFromEditable would keep it and add
+ * another copy beside it every time the page is set up, and arrangeInlineImages would never
+ * put it in place. makeInlineImageWrapper always creates an id, so this is for markup that
+ * came from somewhere else, such as hand-edited HTML or a paste from another program.
  */
 export function ensureInlineImageId(wrapper: HTMLElement): string {
     const existing = getInlineImageId(wrapper);
@@ -298,10 +304,10 @@ export function ensureInlineImageId(wrapper: HTMLElement): string {
 }
 
 /**
- * Builds a new inline image wrapper: a contenteditable=false island holding a placeholder
- * image, docked right at the default width. Not attached to anything; see insertInlineImage.
- * Pass the id when building the copies of one image for the sibling editables, so that all
- * of them share an identity; omit it to mint a new one.
+ * Builds a new inline image wrapper. It is a contenteditable=false div holding a placeholder
+ * image, docked right at the default width. It is not added to the document; see
+ * insertInlineImage. When building the copies of one image for the other editables, pass the
+ * same id for each so they all share it; leave it out to create a new one.
  */
 export function makeInlineImageWrapper(id?: string): HTMLElement {
     const wrapper = document.createElement("div");
@@ -312,9 +318,9 @@ export function makeInlineImageWrapper(id?: string): HTMLElement {
         kKeepFirstInFieldClass,
         kPreventRemovalClass,
     );
-    // The island is not text. CKEditor tolerates such islands inside the fields it
-    // manages -- the format cog is one (StyleEditor.ts) -- and the talking book tool skips
-    // them when adding audio markup (audioRecording.ts).
+    // The wrapper is not text. CKEditor accepts contenteditable=false elements inside the
+    // fields it manages (the format cog in StyleEditor.ts is one), and the talking book tool
+    // skips them when adding audio markup (audioRecording.ts).
     wrapper.setAttribute("contenteditable", "false");
     wrapper.style.setProperty(kInlineImageWidthVar, kDefaultInlineImageWidth);
     wrapper.style.setProperty(
@@ -331,23 +337,23 @@ export function makeInlineImageWrapper(id?: string): HTMLElement {
 }
 
 /**
- * Adds a new inline image to a translation group, putting a copy in *every* bloom-editable
- * child -- including the lang="z" prototype. That is deliberate: when Bloom later adds a
- * language to this group, MakeElementWithLanguageForOneGroup clones an existing editable
- * and StripOutText empties the text out of the clone, so a copy in the prototype means the
- * new language inherits the image with no C# involvement (TranslationGroupManagerTests
- * covers that cloning). Returns the copy in the editable the reader sees, which is the one
- * the caller will want to work with (e.g. to open the image chooser on it).
+ * Adds a new inline image to a translation group, putting a copy in every bloom-editable
+ * child, including the lang="z" prototype. When Bloom later adds a language to this group,
+ * MakeElementWithLanguageForOneGroup clones an existing editable and StripOutText removes the
+ * text from the clone, so a copy in the prototype gives the new language the image without
+ * any C# changes (TranslationGroupManagerTests covers that cloning). Returns the copy in the
+ * editable the reader sees, which is the one the caller will want to work with (for example,
+ * to open the image chooser on it).
  */
 export function insertInlineImage(translationGroup: HTMLElement): HTMLElement {
     recordInlineImageUndoPoint(translationGroup);
-    // One identity, shared by the copy we put in each language's editable.
+    // The copies we put in each language's editable all get this one id.
     const id = createValidXhtmlUniqueId();
     const editables = getEditables(translationGroup);
     editables.forEach((editable) => {
         ensureEditableHasAParagraph(editable);
-        // A new image joins the end of the floating cluster, so it appears after the images
-        // already there rather than jumping in front of them.
+        // A new image goes after the floating images already at the start of the editable,
+        // so it appears after them instead of in front of them.
         editable.insertBefore(
             makeInlineImageWrapper(id),
             getFloatingClusterEnd(editable),
@@ -358,13 +364,13 @@ export function insertInlineImage(translationGroup: HTMLElement): HTMLElement {
 }
 
 /**
- * Deletes ONE inline image -- the one this wrapper is a copy of -- from every bloom-editable
- * of its group, which is what "delete this image" means for a feature whose copies are
- * per-language. Other images in the same block are left alone.
+ * Deletes the inline image this wrapper is a copy of, removing its copy from every
+ * bloom-editable of its group. Other images in the same block are left alone.
  *
- * Takes the wrapper the user acted on, not the translation group: with several images in a
- * block, a group-level remove could only guess which one was meant. Throws if handed
- * something that is not an inline image, rather than silently deleting the wrong thing.
+ * It takes the wrapper the user acted on instead of the translation group, because when a
+ * block has several images, a function given only the group could only guess which one was
+ * meant. It throws if given something that is not an inline image, so that it can't quietly
+ * delete the wrong thing.
  */
 export function removeInlineImage(wrapper: HTMLElement): void {
     const id = getInlineImageId(wrapper);
@@ -376,21 +382,21 @@ export function removeInlineImage(wrapper: HTMLElement): void {
     }
     recordInlineImageUndoPoint(translationGroup);
     getEditables(translationGroup).forEach((editable) => {
-        // An id is missing only for hand-written markup, which by definition has no copies
-        // to match; then all we can do is remove the one we were given.
+        // Only hand-written markup lacks an id, and it has no copies to match, so in that case
+        // we remove just the wrapper we were given.
         if (id) getInlineImageById(editable, id)?.remove();
     });
     if (!id) wrapper.remove();
 }
 
 /**
- * Moves an inline image to a different dock. For the three floating docks this is purely a
- * class change unless the image is coming back from the bottom, which is what makes dragging
- * safe to replicate across languages; the bottom dock moves it to the trailing cluster. Also
- * keeps bloom-keepFirstInField consistent: BloomField uses that class to decide whether the
- * field's required <p> goes after the images (floating docks) or before them (bottom dock),
- * so a bottom-docked wrapper must not carry it.
- * The caller is responsible for the follow-up syncInlineImagesFromEditable().
+ * Moves an inline image to a different dock. Switching among left, right and middle only
+ * changes the class, unless the image is coming back from the bottom; that is why a drag can
+ * be copied safely to the other languages. Docking at the bottom moves the wrapper to the
+ * end of the editable, after the text. This also adds or removes bloom-keepFirstInField:
+ * BloomField uses that class to decide whether the field's required <p> goes after the images
+ * (left, right, middle) or before them (bottom), so a bottom-docked wrapper must not have it.
+ * The caller must call syncInlineImagesFromEditable() afterwards.
  */
 export function setInlineImageDock(
     wrapper: HTMLElement,
@@ -408,19 +414,21 @@ export function setInlineImageDock(
 }
 
 /**
- * Copies this editable's inline images onto its sibling editables, so that every language
- * shows the same images, the same way, in the same order. Call it after anything that
- * changes an image: choosing a different picture, dragging, resizing, changing the dock.
+ * Copies this editable's inline images onto the other editables in its translation group, so
+ * that every language shows the same images, placed the same way, in the same order. Call it
+ * after anything that changes an image, such as choosing a different picture, dragging,
+ * resizing, or changing the dock.
  *
- * This editable is the authority for the whole set. Copies are matched up by
- * kInlineImageIdAttr, so an image whose geometry changed is updated in place, one that is new
- * here is added there, and one that is gone from here is removed there. Sibling text is never
- * touched. It is idempotent, so callers may be generous with it, and it strips transient UI
- * (bloom-ui children, the selected-state class, temporary ids) so none of that is replicated
- * or saved.
+ * The other editables end up with exactly this editable's set of images. Copies are paired up
+ * by kInlineImageIdAttr, so an image whose size or position changed is replaced with the new
+ * version, an image that is new here is added to them, and an image that is gone from here is
+ * removed from them. Their text is left alone. Calling it twice does no harm, so callers can
+ * call it whenever in doubt. It removes bloom-ui children, the selected class and temporary
+ * ids from the copies, so none of those are copied or saved.
  *
- * Does nothing if this editable has no inline images, since that is indistinguishable from
- * "this editable is not the one being edited"; deletion goes through removeInlineImage.
+ * It does nothing if this editable has no inline images, because there is no way to tell
+ * that apart from "this is not the editable being edited". Deleting an image goes through
+ * removeInlineImage.
  */
 export function syncInlineImagesFromEditable(editable: HTMLElement): void {
     const sources = getInlineImagesInEditable(editable);
@@ -428,8 +436,8 @@ export function syncInlineImagesFromEditable(editable: HTMLElement): void {
     const translationGroup = getTranslationGroupOf(editable);
     if (!translationGroup) return;
 
-    // Everything below matches copies up by id, so anything that arrived without one gets one
-    // first. See ensureInlineImageId for what goes wrong otherwise.
+    // Everything below pairs copies up by id, so first give an id to any wrapper that lacks
+    // one. See ensureInlineImageId for what goes wrong otherwise.
     sources.forEach(ensureInlineImageId);
     const wantedIds = new Set(
         sources.map((source) => getInlineImageId(source)),
@@ -437,13 +445,14 @@ export function syncInlineImagesFromEditable(editable: HTMLElement): void {
     getEditables(translationGroup).forEach((sibling) => {
         if (sibling === editable) return;
         ensureEditableHasAParagraph(sibling);
-        // Anything here that the source no longer has is gone.
+        // Remove any image the source editable no longer has.
         getInlineImagesInEditable(sibling).forEach((existing) => {
             if (!wantedIds.has(getInlineImageId(existing))) existing.remove();
         });
-        // Stamp each source copy over its counterpart, or add it if there isn't one. Note
-        // that we rebuild rather than patch: the whole state of an inline image is its class
-        // list and style attribute, so a fresh copy is both simpler and exactly right.
+        // Replace each image's copy here with a fresh copy of the source, or add one if there
+        // isn't one. Everything about an inline image is in its class list and style
+        // attribute, so a fresh copy is simpler than updating the old one and gives the same
+        // result.
         sources.forEach((source) => {
             const clone = makeSerializedCopy(source);
             const id = getInlineImageId(source);
@@ -451,17 +460,18 @@ export function syncInlineImagesFromEditable(editable: HTMLElement): void {
             if (existing) existing.replaceWith(clone);
             else sibling.appendChild(clone);
         });
-        // ...and put them in the source's order, in the right cluster.
+        // Put them in the source's order, at the start or end of the editable as each dock
+        // requires.
         arrangeInlineImages(sibling, sources);
     });
 }
 
 /**
- * Makes every editable of the group agree about its inline image, by finding the canonical
- * copy (see getInlineImage) and stamping it onto the others. This is what fixes up a group
- * where the copies have diverged, or where some editable has no copy at all -- for
- * instance a language added by an older Bloom, or an editable a user managed to delete the
- * image out of. A no-op for a group with no inline image.
+ * Makes every editable of the group hold the same inline images, by copying the images of the
+ * editable that getCanonicalInlineImageEditable picks onto the others. This repairs a group
+ * where the copies differ, or where some editable has no copy at all, for instance a language
+ * added by an older Bloom, or an editable the user managed to delete the image from. It does
+ * nothing for a group with no inline image.
  */
 export function normalizeInlineImages(translationGroup: HTMLElement): void {
     const canonicalEditable = getCanonicalInlineImageEditable(translationGroup);
@@ -470,19 +480,19 @@ export function normalizeInlineImages(translationGroup: HTMLElement): void {
 }
 
 /**
- * Page-load setup for every translation group in the container that has an inline image:
- * normalize the copies, and arrange for the real image's dimensions to be recorded (and
- * the page's overflow re-checked) once it loads. Called from SetupElements.
+ * Sets up, when the page loads, every translation group in the container that has an inline
+ * image. It normalizes the copies, and arranges for each picture's real shape to be recorded
+ * and the page's overflow checked again once the picture loads. Called from SetupElements.
  */
 export function setupInlineImages(container: HTMLElement): void {
-    // Undo snapshots hold element references, so setup has to throw away the ones that can no
-    // longer be restored. Two things do that: a different page (the page-id check), and a
-    // rebuilt page frame, where the id is the same but every element is new (the isConnected
-    // check). What must NOT throw anything away is a setup of one PIECE of the page --
+    // Undo snapshots hold references to elements, so setup has to throw away the ones that can
+    // no longer be restored. That happens on a different page (the page id check), and when
+    // the page frame is rebuilt, where the page id is the same but every element is new (the
+    // isConnected check). Setting up only PART of the page must NOT throw anything away.
     // CanvasElementManager calls SetupElements with just the bloom-canvas it added, and the
-    // image description tool with just its container -- because the groups there keep their
-    // editables and a blanket clear would silently make the user's last picture move
-    // un-undoable.
+    // image description tool calls it with just its container. The groups there keep their
+    // editables, and clearing everything would mean the user could no longer undo their last
+    // picture move, without any sign of why.
     clearInlineImageUndoOnPageChange();
     dropInlineImageUndoStateForDetachedGroups();
     getTranslationGroupsWithInlineImages(container).forEach(
@@ -496,11 +506,11 @@ export function setupInlineImages(container: HTMLElement): void {
 }
 
 /**
- * Call when the image inside an inline image wrapper has been replaced (a different
- * picture chosen). The old natural dimensions no longer apply, so we drop the recorded
- * aspect ratio and let the new image's load supply a new one; meanwhile the new src has to
- * reach the other languages' copies. bloomEditing.ts's changeImageInfo calls this for any
- * img that turns out to be inside an inline image.
+ * Call this when the image inside an inline image wrapper has been replaced because the user
+ * chose a different picture. The old picture's shape no longer applies, so we remove the
+ * recorded aspect ratio and let the new picture set one when it loads. The new src also has
+ * to be copied to the other languages. bloomEditing.ts's changeImageInfo calls this for any
+ * img that is inside an inline image.
  */
 export function handleInlineImageChanged(img: HTMLElement): void {
     const wrapper = img.closest(kInlineImageSelector) as HTMLElement | null;
@@ -511,10 +521,10 @@ export function handleInlineImageChanged(img: HTMLElement): void {
     wireUpImage(wrapper);
     syncInlineImagesFromEditable(editable);
     OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
-    // Tell the interaction layer, which started this and owns the selection, that the
-    // picture has arrived. It needs to re-assert selection on the wrapper, because the
-    // chooser round trip can leave the focus in the text, and undo of this change (or of
-    // the insert that led to it) is only reachable while the wrapper is selected.
+    // Tell the code that opened the image chooser, which also manages the selection, that the
+    // picture has arrived. It needs to select the wrapper again, because the trip through the
+    // image chooser can leave the focus in the text, and undoing this change (or the insert
+    // before it) only works while the wrapper is selected.
     wrapper.dispatchEvent(
         new CustomEvent(kInlineImageChangedEvent, {
             bubbles: true,
@@ -525,20 +535,18 @@ export function handleInlineImageChanged(img: HTMLElement): void {
 
 // --- undo --------------------------------------------------------------------
 //
-// Inline-image operations need an undo layer of their own. CKEditor's stack cannot see
-// changes we make to the DOM programmatically, and the image-operation layer
-// (ImageUndoManager.ts) only knows how to put one img's src and crop back: it knows nothing
-// about a wrapper that exists once per language and has to be restored in all of them at
-// once. So this is a third small layer built on the same shape as ImageUndoManager --
-// snapshot stack, two-phase prepare/commit, cleared on page change, gated on the relevant
-// thing being active, and no redo.
+// Inline image operations need their own undo stack. CKEditor's undo can't see changes our
+// code makes to the DOM, and ImageUndoManager.ts only knows how to restore one img's src and
+// crop. It knows nothing about a wrapper that has a copy in every language, all of which
+// have to be restored together. So this is a third small undo stack, built the same way as
+// ImageUndoManager: a stack of snapshots, a prepare step and a commit step, cleared when the
+// page changes, offered only when the thing it applies to is active, and with no redo.
 //
-// A snapshot is the whole inline-image state of one translation group: for every one of its
-// editables, the serialized markup of all its inline images, in order. That is deliberately
-// coarse: a single operation may touch every editable (sync stamps all of them) and any number
-// of images in each, so restoring the group wholesale is both simpler and more robust than
-// trying to reverse individual mutations. The markup carries each image's identity, dock and
-// geometry, and the list order carries their order, so a snapshot needs nothing else.
+// A snapshot records, for every editable in one translation group, the markup of all its
+// inline images, in order. Restoring all of that is simpler and more reliable than reversing
+// individual changes, because one operation can change every editable (sync rewrites all of
+// them) and any number of images in each. The markup holds each image's id, dock, size and
+// position, and the list holds their order, so a snapshot needs nothing else.
 
 type InlineImageEditableSnapshot = {
     editable: HTMLElement;
@@ -550,26 +558,27 @@ type InlineImageEditableSnapshot = {
 type InlineImageUndoItem = {
     translationGroup: HTMLElement;
     editables: InlineImageEditableSnapshot[];
-    // The group's content at the moment of the snapshot, so we can tell whether the person has
-    // edited since. See inlineImageCanUndo, where that decides who ctrl+z belongs to.
+    // The group's content when the snapshot was taken, so we can tell whether the person has
+    // edited since. inlineImageCanUndo uses that to decide whether ctrl+z goes to this stack
+    // or to CKEditor.
     contentAtSnapshot: string;
     // Set when the page reports typing in this block (noteInlineImageBlockWasEdited). The
-    // content comparison above cannot see an edit that undid itself -- a word typed and deleted
-    // again -- and CKEditor holds undo points for both halves of it. It defers to those points
-    // rather than replacing them: see hasEditedSinceInlineImageSnapshot.
+    // comparison with contentAtSnapshot can't see an edit that left the content as it was,
+    // such as a word typed and then deleted, yet CKEditor holds undo points for both steps.
+    // This flag makes us let CKEditor undo those first; see hasEditedSinceInlineImageSnapshot.
     wasEditedSinceSnapshot: boolean;
-    // How deep CKEditor's undo stack was when the snapshot was taken, so that the typing it
-    // holds can be told apart from typing older than this operation. Undefined when there was
+    // Where CKEditor's undo stack stood when the snapshot was taken, so that typing done after
+    // this operation can be told apart from typing done before it. Undefined when there was
     // no CKEditor to ask.
     ckeditorUndoAtSnapshot?: CkeditorUndoPosition;
 };
 
 // Where CKEditor stands in its own stack of undo snapshots, and which editable's stack that is.
-// `index` is CKEditor's own name for the position, one snapshot per edit, going down as edits
-// are undone. Two positions are only comparable when they came from the same undoManager: every
-// editable has one of its own, and they count from zero independently.
-// `historyIsFull` says the stack has reached the limit it keeps (20 snapshots), which is where
-// the position stops being able to count any higher.
+// `index` is CKEditor's own name for the position. It goes up by one for each edit and down as
+// edits are undone. Two positions can only be compared when they came from the same
+// undoManager, because every editable has its own and each counts from zero.
+// `historyIsFull` says the stack holds as many snapshots as CKEditor keeps (20); from then on
+// the position stops going up.
 type CkeditorUndoPosition = {
     undoManager: unknown;
     index: number;
@@ -581,10 +590,10 @@ let pendingInlineImageUndo: InlineImageUndoItem | undefined;
 let pageIdForInlineImageUndo: string | undefined;
 
 /**
- * Captures the undo state for an operation that is about to happen but might not complete
- * (a drag the user may abandon, an image change that may fail). Pair it with
- * commitPendingInlineImageUndo once the change has actually landed, or
- * discardPendingInlineImageUndo if it didn't. Cheap enough to call at drag start.
+ * Takes a snapshot for an operation that is about to happen but might not complete, such as a
+ * drag the user may abandon or an image change that may fail. Follow it with
+ * commitPendingInlineImageUndo once the change has happened, or discardPendingInlineImageUndo
+ * if it didn't. It is fast enough to call when a drag starts.
  * Takes the translation group, or any element inside one.
  */
 export function prepareInlineImageUndo(element: HTMLElement): void {
@@ -596,15 +605,16 @@ export function prepareInlineImageUndo(element: HTMLElement): void {
 }
 
 /**
- * Pushes the state captured by prepareInlineImageUndo, now that the operation really
- * happened. Ignores a pending snapshot belonging to some other translation group, so a
- * mismatched or superseded operation cannot push a misleading undo point.
+ * Pushes the snapshot taken by prepareInlineImageUndo, now that the operation has happened.
+ * It ignores a pending snapshot that belongs to some other translation group, so that an
+ * operation that was replaced by another one, or that was for a different group, can't push
+ * a misleading undo point.
  *
- * A snapshot identical to where the group has ended up is dropped rather than pushed. A drag
- * arrives here whenever the pointer moved at all, and the fit-or-revert rule can put every
- * move of a gesture back where it started -- a drag into a full side, or past another image's
- * level, ends exactly where it began. Pushing that would give the person an Undo that visibly
- * does nothing, and would make the NEXT Undo take back a change they had stopped thinking about.
+ * If the group now looks exactly as the snapshot recorded it, the snapshot is dropped. A drag
+ * comes here whenever the pointer moved at all, but a move that doesn't fit is put back where
+ * it was, so a drag into a full side, or past the level of another image, ends exactly where it
+ * began. Pushing that snapshot would give the person an Undo that visibly does nothing, and
+ * the Undo after it would take back a change they had stopped thinking about.
  */
 export function commitPendingInlineImageUndo(element: HTMLElement): void {
     clearInlineImageUndoOnPageChange();
@@ -612,9 +622,9 @@ export function commitPendingInlineImageUndo(element: HTMLElement): void {
     if (
         pendingInlineImageUndo &&
         pendingInlineImageUndo.translationGroup === translationGroup &&
-        // Only meaningful on this path: here the change has already landed, so a snapshot that
-        // still matches the group means the operation ended where it began. The one-call
-        // recordInlineImageUndoPoint runs BEFORE its change, where the snapshot always matches.
+        // This check only makes sense here, where the change has already happened, so a
+        // snapshot that still matches the group means the operation ended where it began.
+        // recordInlineImageUndoPoint runs BEFORE its change, when the snapshot always matches.
         !isInlineImageSnapshotStillTrue(pendingInlineImageUndo)
     ) {
         inlineImageUndoStack.push(pendingInlineImageUndo);
@@ -623,9 +633,9 @@ export function commitPendingInlineImageUndo(element: HTMLElement): void {
 }
 
 /**
- * Whether the group looks exactly as this snapshot recorded it, image for image. The wrapper
- * markup carries identity, dock and geometry, so comparing it compares everything an undo
- * would restore.
+ * Whether every image in the group looks exactly as this snapshot recorded it. The wrapper
+ * markup holds each image's id, dock, size and position, so comparing the markup compares
+ * everything an undo would restore.
  */
 function isInlineImageSnapshotStillTrue(item: InlineImageUndoItem): boolean {
     const now = takeInlineImageSnapshot(item.translationGroup);
@@ -648,16 +658,17 @@ export function discardPendingInlineImageUndo(): void {
 }
 
 /**
- * Records an undo point for an operation that definitely changes something (insert, remove,
- * a completed dock change). Prepare and commit in one call; use the two-phase pair instead
- * when the operation might not complete. Takes the translation group, or any element in one.
+ * Records an undo point for an operation that will definitely change something (insert,
+ * remove, a completed dock change). It does the work of prepareInlineImageUndo and
+ * commitPendingInlineImageUndo in one call; use those two instead when the operation might
+ * not complete. Takes the translation group, or any element in one.
  */
 export function recordInlineImageUndoPoint(element: HTMLElement): void {
     prepareInlineImageUndo(element);
     const translationGroup = getTranslationGroupOf(element);
-    // Pushed straight, not through commitPendingInlineImageUndo: the change this records has
-    // not happened yet, so that function's "did anything actually change?" test would be
-    // asking about a change still in the future and would throw the snapshot away.
+    // This pushes the snapshot directly instead of calling commitPendingInlineImageUndo. The
+    // change has not happened yet, so that function's check for whether anything changed
+    // would find nothing and throw the snapshot away.
     if (
         pendingInlineImageUndo &&
         pendingInlineImageUndo.translationGroup === translationGroup
@@ -668,9 +679,9 @@ export function recordInlineImageUndoPoint(element: HTMLElement): void {
 }
 
 /**
- * Forgets all inline-image undo state. Called when something happens that we cannot undo,
- * so that undo can't reach back past it and restore a state that never followed from what
- * the user sees now.
+ * Forgets all inline image undo state. Call it when something happens that we cannot undo,
+ * so that undo can't go back past it and restore a state that does not fit with what the
+ * user sees now.
  */
 export function clearInlineImageUndoState(): void {
     inlineImageUndoStack.length = 0;
@@ -678,9 +689,10 @@ export function clearInlineImageUndoState(): void {
 }
 
 /**
- * Forgets the undo state whose translation group has left the document, which is what a
- * rebuilt page frame leaves behind: a snapshot restores into the very elements it recorded, so
- * one pointing at a detached group could only restore into elements nothing shows.
+ * Forgets the undo state for translation groups that are no longer in the document, which is
+ * what happens when the page frame is rebuilt. A snapshot restores into the same elements it
+ * recorded, so a snapshot of a detached group could only restore into elements that are not
+ * shown.
  */
 function dropInlineImageUndoStateForDetachedGroups(): void {
     for (let i = inlineImageUndoStack.length - 1; i >= 0; i--) {
@@ -694,55 +706,57 @@ function dropInlineImageUndoStateForDetachedGroups(): void {
 }
 
 /**
- * Whether the workspace undo command should route to this layer. Normally it takes two
- * things: something recorded, and an inline image in the *same* translation group being the
- * active thing. That gate matters, because this layer is tried ahead of CKEditor and without
- * it an old inline-image snapshot would shadow the text the user typed a moment ago. It
- * mirrors canUndoImageOperation's requirement that an image container be active, and adds
- * the same-group check, so we can never restore a block the user isn't working in.
+ * Whether the workspace undo command should go to this undo stack. Normally that needs a
+ * recorded snapshot, and an active inline image in the SAME translation group. The check
+ * matters because workspaceRoot.handleUndo tries this stack before CKEditor, and without the
+ * check an old inline image snapshot would be undone instead of the text the user typed a
+ * moment ago. It is like canUndoImageOperation's requirement that an image container be
+ * active, with the added requirement of the same group, so we never restore a block the user
+ * isn't working in.
  */
 export function inlineImageCanUndo(): boolean {
     clearInlineImageUndoOnPageChange();
     const top = inlineImageUndoStack[inlineImageUndoStack.length - 1];
     if (!top) return false;
-    // Whatever the person edited last is what ctrl+z belongs to, and an edit is always more
-    // recent than the snapshot it followed. Going first here would bring the picture back from
-    // before their edit, which is not the order anything happened in, and it is the one thing
-    // these independent stacks can get wrong (see the comment on the chain in
-    // workspaceRoot.handleUndo). A selected picture does not exempt them: selecting one leaves
-    // the caret in the text and the person free to type, and right-clicking the text gets into
-    // that state without their meaning to -- the menu selects nothing and leaves the picture
-    // as it was.
+    // ctrl+z should undo whatever the person edited last, and an edit made after the snapshot
+    // is newer than it. If we undid the snapshot first, the picture would go back to how it was
+    // before their edit, out of the order things happened in. That is the one mistake these
+    // separate undo stacks can make (see the comment on the if/else chain in
+    // workspaceRoot.handleUndo). This applies even when a picture is selected, because selecting
+    // one, by clicking or right-clicking it, leaves the caret in the text, so the person can
+    // still type. (Right-clicking the text deselects any picture; see
+    // getInlineImageMenuItemsForClick.)
     if (hasEditedSinceInlineImageSnapshot(top)) return false;
     const activeWrapper = getActiveInlineImage();
     if (activeWrapper) {
         return getTranslationGroupOf(activeWrapper) === top.translationGroup;
     }
-    // Insisting on an active inline image would be wrong whenever what the user did last left
-    // no picture selected, and two things do that. Deleting one: the image they were working on
-    // is gone, so saying no here would mean deleting an inline image could never be undone at
-    // all. And undo itself: it rebuilds the wrappers, and when the operation it took back was
-    // the insert that created the selected picture there is no copy left to hand the selection
-    // to -- which used to make the second ctrl+z in a row unreachable.
-    // What is required instead is that the caret is still in the block we would restore into.
+    // Requiring an active inline image would be wrong when the user's last action left no
+    // picture selected. Two actions do that. Deleting an image removes the one they were
+    // working on, so requiring a selection would mean a deleted inline image could never be
+    // undone. Undo itself rebuilds the wrappers, and when it has just undone the insert that
+    // created the selected picture, there is no copy left to select, so a second ctrl+z in a
+    // row would not reach this stack. In this case we require only that the caret is still in
+    // the block we would restore.
     const focused = getElementWithFocusOrSelection();
     return !!focused && top.translationGroup.contains(focused);
 }
 
 /**
- * Whether the person has editing of their own that is newer than this snapshot, and so has to
- * be undone before it. Two ways to tell, because neither sees everything.
+ * Whether the person has made edits that are newer than this snapshot and so have to be undone
+ * before it. We check two ways, because each one misses some edits.
  *
- * The content comparison catches an edit nobody reported, including one that changes only
- * markup (bolding a word), and it clears itself: undoing the edit puts the content back and
- * the snapshot matches again.
+ * Comparing the content with contentAtSnapshot catches an edit nobody reported, including one
+ * that changes only markup (bolding a word). Once the edit is undone the content matches
+ * again, so this check stops saying there is a newer edit.
  *
- * The reported flag catches an edit that left the content identical -- typed and deleted
- * again -- which nothing else can see. That flag never clears, so on its own it would say
- * "no" forever and leave the picture operation permanently unreachable, with ctrl+z doing
- * nothing at all once CKEditor ran out. So the flag only defers to typing CKEditor is still
- * holding, and the position it was holding when we snapshotted says which of that typing is
- * newer than us: see hasNewerTypingThanInlineImageSnapshot.
+ * wasEditedSinceSnapshot catches an edit that left the content the same, such as a word typed
+ * and deleted again, which the comparison can't see. That flag is never cleared, so if we
+ * used it alone the picture operation could never be undone, and once CKEditor had nothing
+ * left to undo, ctrl+z would do nothing at all. So the flag only makes us wait while CKEditor
+ * still holds typing, and comparing CKEditor's position now with its position when we took
+ * the snapshot tells us whether any of that typing is newer than the snapshot. See
+ * hasNewerTypingThanInlineImageSnapshot.
  */
 function hasEditedSinceInlineImageSnapshot(item: InlineImageUndoItem): boolean {
     if (
@@ -757,17 +771,17 @@ function hasEditedSinceInlineImageSnapshot(item: InlineImageUndoItem): boolean {
 }
 
 /**
- * Whether the typing CKEditor is holding includes any from after this snapshot.
+ * Whether the typing CKEditor holds includes any typed after this snapshot was taken.
  *
- * "Is there anything to undo" is the wrong question when the person typed on both sides of the
- * picture operation: undoing the newer typing leaves CKEditor still holding the older, and
- * answering that question would keep handing ctrl+z to CKEditor, which would then take back
- * text from before the picture operation while the picture change stood. So the answer is the
- * position, compared with the one recorded when the snapshot was taken.
+ * Asking only whether CKEditor has anything to undo gives the wrong answer when the person
+ * typed both before and after the picture operation. After the newer typing is undone,
+ * CKEditor still holds the older typing, so ctrl+z would keep going to CKEditor, which would
+ * undo text from before the picture operation while the picture change stayed. So we compare
+ * CKEditor's position with the one recorded when the snapshot was taken.
  *
- * Positions from two different editables count from zero independently, so when the person has
- * moved to another editable since -- or there was no CKEditor to ask at either end -- the most
- * that can be said is whether CKEditor holds anything at all.
+ * Positions from two different editables each count from zero, so they can't be compared.
+ * When the person has moved to another editable since the snapshot, or there was no CKEditor
+ * to ask at either time, all we can check is whether CKEditor holds anything at all.
  */
 function hasNewerTypingThanInlineImageSnapshot(
     item: InlineImageUndoItem,
@@ -775,12 +789,12 @@ function hasNewerTypingThanInlineImageSnapshot(
     const now = getCkeditorUndoPosition();
     const atSnapshot = item.ckeditorUndoAtSnapshot;
     if (now && atSnapshot && now.undoManager === atSnapshot.undoManager) {
-        // CKEditor keeps a limited number of snapshots (20), and once it has that many its
-        // position stops counting up: saving one drops the oldest and then appends, which
-        // leaves the newest where the previous newest was. So in a block with that much typing
-        // behind it, the same position no longer means nothing has been saved since ours, and
-        // typing has to be assumed. Undoing that typing takes the position below ours, which is
-        // how this still clears rather than latching.
+        // CKEditor keeps at most 20 snapshots, and once it has that many its position stops
+        // going up: saving a new one drops the oldest and then appends, so the newest ends up
+        // at the same position as the previous newest. In a block with that much typing, an
+        // unchanged position no longer means nothing was saved since our snapshot, so we have
+        // to assume there was typing. Undoing that typing moves the position below ours, so
+        // this does not keep returning true forever.
         if (now.index === atSnapshot.index) return now.historyIsFull;
         return now.index > atSnapshot.index;
     }
@@ -789,8 +803,9 @@ function hasNewerTypingThanInlineImageSnapshot(
 
 /**
  * Where the focused editable's CKEditor stands in its undo stack, or undefined if there is no
- * CKEditor or it does not say. Read off the global the page's CKEditor puts up, since there is
- * no api for it -- the same implementation secret editablePage.ts's ckeditorCanUndo relies on.
+ * CKEditor or it does not say. CKEditor has no public API for this, so we read it from the
+ * page's global CKEDITOR object, relying on the same undocumented internals as
+ * editablePage.ts's ckeditorCanUndo.
  */
 function getCkeditorUndoPosition(): CkeditorUndoPosition | undefined {
     const undoManager = getCkeditorUndoManager();
@@ -806,8 +821,8 @@ function getCkeditorUndoPosition(): CkeditorUndoPosition | undefined {
 }
 
 /**
- * Whether CKEditor has text editing it could undo, at all. Same fallback as
- * editablePage.ts's ckeditorCanUndo: no CKEditor means nothing to undo.
+ * Whether CKEditor has any text editing it could undo. Like editablePage.ts's ckeditorCanUndo,
+ * it returns false when there is no CKEditor.
  */
 function ckeditorHasSomethingToUndo(): boolean {
     return !!getCkeditorUndoManager()?.undoable?.();
@@ -821,8 +836,8 @@ function getCkeditorUndoManager(): CkeditorUndoManager | undefined {
     ).CKEDITOR?.currentInstance?.undoManager as CkeditorUndoManager | undefined;
 }
 
-// As much of CKEditor's undo manager as is read here: whether it has anything to undo, where it
-// stands, and the snapshots it keeps against the number it will keep.
+// The parts of CKEditor's undo manager that this file reads: whether it has anything to undo,
+// its position, the snapshots it holds, and the most it will hold.
 type CkeditorUndoManager = {
     undoable?: () => boolean;
     index?: number;
@@ -832,16 +847,16 @@ type CkeditorUndoManager = {
 
 /**
  * Reports that the person has just edited the text of a block, so that ctrl+z goes to
- * CKEditor rather than to an inline-image operation from before the edit. Call it for any
- * editing in a bloom-editable; it is only of interest when an inline-image undo point is
- * waiting in that same group. Takes the editable, or anything inside one.
+ * CKEditor instead of to an inline image operation from before the edit. Call it for any
+ * editing in a bloom-editable; it only has an effect when the same group has an inline image
+ * undo point waiting. Takes the editable, or anything inside one.
  */
 export function noteInlineImageBlockWasEdited(element: HTMLElement): void {
     const translationGroup = getTranslationGroupOf(element);
     if (!translationGroup) return;
-    // Every undo point for this block, not just the top of the stack: an operation in another
-    // block can be sitting on top of one in this block, and undoing that would then expose a
-    // picture from before this edit.
+    // Mark every undo point for this block, including ones below the top of the stack. An
+    // operation in another block can be on top of one in this block, and once it is undone,
+    // the one below would bring back a picture from before this edit.
     inlineImageUndoStack.forEach((item) => {
         if (item.translationGroup === translationGroup)
             item.wasEditedSinceSnapshot = true;
@@ -851,19 +866,20 @@ export function noteInlineImageBlockWasEdited(element: HTMLElement): void {
 }
 
 /**
- * Undoes the most recent inline-image operation by restoring its snapshot to every editable
- * of the translation group, and re-checks overflow since the image's size may have changed.
- * Returns false if there was nothing to undo. There is no redo, matching the
- * image-operation layer.
+ * Undoes the most recent inline image operation by restoring its snapshot to every editable
+ * of the translation group, and checks overflow again, since the image's size may have
+ * changed. Returns false if there was nothing to undo. Like ImageUndoManager, there is no
+ * redo.
  */
 export function inlineImageUndo(): boolean {
     clearInlineImageUndoOnPageChange();
     const undoItem = inlineImageUndoStack.pop();
     if (!undoItem) return false;
-    // Restoring replaces the wrapper elements, which would drop the selection and so make a
-    // second ctrl+z unreachable (the gate needs an active inline image). So carry the
-    // selection over to the restored copy of the same image -- by id, since the block may hold
-    // several and re-selecting the wrong one would be worse than re-selecting none.
+    // Restoring replaces the wrapper elements, which would lose the selection, and then a
+    // second ctrl+z might not reach this stack (inlineImageCanUndo looks for an active inline
+    // image). So we select the restored copy of the same image. We find it by id, because the
+    // block may hold several images, and selecting the wrong one would be worse than
+    // selecting none.
     const wasSelected = document.querySelector(
         kInlineImageSelector + "." + kInlineImageSelectedClass,
     ) as HTMLElement | null;
@@ -879,11 +895,12 @@ export function inlineImageUndo(): boolean {
             kInlineImageSelectedClass,
         );
     }
-    // Undo is the one operation that replaces the very wrapper the user is working on (sync
-    // and normalize only ever rewrite the siblings). So anything holding a reference to it,
-    // or anything it was hosting -- drag handles, the hover button cluster, all of which are
-    // bloom-ui and therefore not part of a snapshot -- is now stale. This event is how the
-    // interaction layer knows to re-derive from the DOM.
+    // Undo is the only operation that replaces the wrapper the user is working on; sync and
+    // normalize only replace the copies in the other editables. So anything that held a
+    // reference to the old wrapper is now out of date, and so is anything that was inside it,
+    // such as the drag handles and the buttons shown on hover, which are bloom-ui and so are
+    // not in the snapshot. This event tells the code that handles clicks and drags on inline
+    // images to look them up in the DOM again.
     undoItem.translationGroup.dispatchEvent(
         new CustomEvent(kInlineImagesRestoredEvent, { bubbles: true }),
     );
@@ -891,10 +908,10 @@ export function inlineImageUndo(): boolean {
 }
 
 /**
- * The "before" half of undo for a change of the image inside an inline image. Returns true
- * if this img is in fact in an inline image, in which case this layer has taken charge and
- * the caller must not also record an image-operation undo point: that layer would restore
- * one language's src and leave the other languages showing the new picture.
+ * Takes the undo snapshot before the picture inside an inline image is changed. Returns true
+ * if this img is inside an inline image. In that case this file handles the undo, and the
+ * caller must not also record an ImageUndoManager undo point, because that would restore
+ * only one language's src and leave the other languages showing the new picture.
  */
 export function prepareInlineImageUndoForImageChange(
     img: HTMLElement,
@@ -905,8 +922,8 @@ export function prepareInlineImageUndoForImageChange(
 }
 
 /**
- * The "after" half: pushes what prepareInlineImageUndoForImageChange captured, now that the
- * new image is really in place. Returns true if this img is in an inline image, as above.
+ * Pushes the snapshot prepareInlineImageUndoForImageChange took, now that the new picture is
+ * in place. Returns true if this img is inside an inline image, as above.
  */
 export function commitInlineImageUndoForImageChange(img: HTMLElement): boolean {
     if (!img.closest(kInlineImageSelector)) return false;
@@ -921,18 +938,17 @@ const getTranslationGroupOf = (element: HTMLElement): HTMLElement | undefined =>
     undefined;
 
 /**
- * The content of a translation group, ignoring the inline images themselves. Comparing this
- * with what it was when a snapshot was taken says whether the person has edited since, which
- * is what decides whether ctrl+z belongs to the picture or to the edit (see
- * inlineImageCanUndo).
+ * The markup of a translation group, leaving out the inline images. Comparing this with its
+ * value when a snapshot was taken tells us whether the person has edited since, and that
+ * decides whether ctrl+z undoes the picture change or the edit (see inlineImageCanUndo).
  *
- * It is the markup, not just the characters: bolding a word changes nothing about the text but
- * is an edit CKEditor has an undo point for, and if we did not see it we would go first and
- * bring the picture back while the bolding stood. Transient UI (.bloom-ui) is dropped so that
- * a toolbar or a format cog appearing does not read as an edit.
+ * It includes the markup as well as the characters, because bolding a word leaves the text the
+ * same but is an edit CKEditor has an undo point for. If we missed it, we would undo the
+ * picture first and leave the bolding in place. Elements with bloom-ui are removed so that a
+ * toolbar or a format cog appearing does not count as an edit.
  *
- * A wrapper's own content is left out on purpose: an operation that adds or removes a picture
- * also adds or removes whatever is inside it, and that must not read as an edit.
+ * The contents of the wrappers are left out too, because an operation that adds or removes a
+ * picture also adds or removes whatever is inside it, and that must not count as an edit.
  */
 function getInlineImageUndoContentFingerprint(
     translationGroup: HTMLElement,
@@ -972,8 +988,8 @@ function restoreInlineImageSnapshot(
 ): void {
     const editable = snapshot.editable;
     getInlineImagesInEditable(editable).forEach((wrapper) => wrapper.remove());
-    // Rebuild them all, then place them: appending first and arranging afterwards means the
-    // cluster anchors are computed against the finished set rather than a half-built one.
+    // Add all the wrappers first and put them in order afterwards, so that arrangeInlineImages
+    // works out where the text starts and ends with every wrapper present.
     const restored = snapshot.wrapperHtmls.map((html) => {
         const template = document.createElement("template");
         template.innerHTML = html;
@@ -987,14 +1003,15 @@ function restoreInlineImageSnapshot(
 }
 
 /**
- * Take the selection marking off every inline image in the given DOM.
+ * Removes bloom-inlineImage-selected from every inline image in the given DOM.
  *
- * bloom-inlineImage-selected is editing UI, but it is not a bloom-ui class (it sits on the
- * wrapper the book owns, and removing bloom-ui elements would take the picture with it), so
- * nothing strips it on the way to disk. Saving with a picture selected therefore writes the
- * class into the book's HTML, and from there into spreadsheet exports and published books.
- * removeEditingDebris is where the other marks of an editing session come off for the same
- * reason -- origami-layout-mode, the textBox-identifier labels -- so this belongs with them.
+ * bloom-inlineImage-selected is only for editing, but it can't be a bloom-ui class, because it
+ * is on the wrapper that is part of the book, and removing bloom-ui elements would remove the
+ * picture too. So nothing else removes it before saving. If the book were saved with a picture
+ * selected, the class would go into the book's HTML, and from there into spreadsheet exports
+ * and published books. removeEditingDebris removes the other things that only matter while
+ * editing, such as origami-layout-mode and the textBox-identifier labels, for the same
+ * reason, so removeEditingDebris is where this should be called.
  */
 export function clearInlineImageSelection(container: HTMLElement): void {
     container
@@ -1005,9 +1022,9 @@ export function clearInlineImageSelection(container: HTMLElement): void {
             wrapper.classList.remove(kInlineImageSelectedClass),
         );
 }
-// The inline image the user is working on, if any: the one the interaction layer has marked
-// as selected, else one that contains the focus or the caret (which is how an island the
-// user clicked into shows up before there is any selection UI).
+// The inline image the user is working on, if any. That is the one marked with
+// kInlineImageSelectedClass, or else one that contains the focus or the caret, which is how a
+// wrapper the user clicked into shows up before anything has marked it selected.
 function getActiveInlineImage(): HTMLElement | undefined {
     const selected = document.querySelector(
         kInlineImageSelector + "." + kInlineImageSelectedClass,
@@ -1031,9 +1048,8 @@ function getElementWithFocusOrSelection(): HTMLElement | undefined {
     return (anchorElement as HTMLElement | null) ?? undefined;
 }
 
-// Snapshots hold element references, so they are only meaningful for the page they were
-// taken on. Same approach (and same data-page-id check) as
-// ImageUndoManager.clearImageOperationUndoOnPageChange.
+// Snapshots hold references to elements, so they only work on the page they were taken on.
+// This uses the same data-page-id check as ImageUndoManager.clearImageOperationUndoOnPageChange.
 function clearInlineImageUndoOnPageChange(): void {
     const currentPageId =
         (
@@ -1062,9 +1078,10 @@ export function getTranslationGroupsWithInlineImages(
     return Array.from(groups);
 }
 
-// Records the image's real shape so that layout (and therefore the overflow checker) is
-// right, and re-checks overflow, because an image that just got taller can push the text
-// past the bottom of the block. A placeholder never loads, so it keeps the default ratio.
+// Records the image's real shape so that the layout, and so the overflow check, is right.
+// It also checks overflow again when the image loads, because an image that just got taller
+// can push the text past the bottom of the block. A placeholder never loads, so it keeps the
+// default ratio.
 function wireUpImage(wrapper: HTMLElement): void {
     const img = wrapper.querySelector("img") as HTMLImageElement | null;
     if (!img) return;
@@ -1084,13 +1101,13 @@ function wireUpImage(wrapper: HTMLElement): void {
  * Writes the picture's real shape onto the wrapper, and onto this picture's copies in the
  * group's other editables.
  *
- * Each copy has its own img and could in principle learn its own ratio, but only the copy in
- * the showing language reliably does: a copy's load can land before the src changed, or not
- * at the moment the sync stamps the markup across. A copy left with no ratio falls back to
- * kDefaultInlineImageAspectRatio and is the wrong shape -- and the one that mattered was the
- * lang="z" prototype, which is hidden, so nothing showed it, and which is what
- * TranslationGroupManager clones when a language is added to the collection later. Measured:
- * choosing a 274x300 picture left "en" at "274 / 300" and "z" at "".
+ * Each copy has its own img and could set its own ratio when it loads, but only the copy in
+ * the language being shown does so reliably. A copy's load can happen before the src changed,
+ * or not happen at the moment sync copies the markup across. A copy with no ratio uses
+ * kDefaultInlineImageAspectRatio and has the wrong shape. The copy where this matters is the
+ * lang="z" prototype: it is hidden, so nobody sees the wrong shape, and it is what
+ * TranslationGroupManager clones when a language is added to the collection later. Choosing a
+ * 274x300 picture without this code left "en" at "274 / 300" and "z" at "".
  */
 function setAspectRatioFromNaturalSize(
     wrapper: HTMLElement,
@@ -1111,12 +1128,13 @@ function setAspectRatioFromNaturalSize(
     });
 }
 
-// A copy of the wrapper as it should be persisted and replicated: no transient UI, no
-// selected state, and no ids (a change-image round trip puts a temporary id on the img,
-// and duplicating ids across the languages' copies would be worse than useless).
-// Note that this strips the `id` attribute only. kInlineImageIdAttr is a data-* attribute and
-// deliberately survives: it is what makes this copy recognizable as the same image in another
-// language, and every copy of one image is meant to share it.
+// A copy of the wrapper as it should be saved and copied to other languages. It has no
+// bloom-ui elements, no selected class, and no id attributes. Changing the image puts a
+// temporary id on the img, and the same id on every language's copy would make the ids
+// non-unique.
+// Only the `id` attribute is removed. kInlineImageIdAttr is a data-* attribute and stays,
+// because it is what identifies this copy as the same image in another language, and every
+// copy of one image must have the same value.
 function makeSerializedCopy(wrapper: HTMLElement): HTMLElement {
     const clone = wrapper.cloneNode(true) as HTMLElement;
     clone.classList.remove(kInlineImageSelectedClass);
@@ -1126,16 +1144,15 @@ function makeSerializedCopy(wrapper: HTMLElement): HTMLElement {
     return clone;
 }
 
-// SLOT MODEL
-// An editable's children run: the floating images (left/right/middle) in a leading cluster,
-// then the text, then the bottom-docked images in a trailing cluster, then any bloom-ui (the
-// format cog). Within a cluster, DOM order is the images' order, and sync replicates it. The
-// wrappers never move relative to the text beyond that, which is what keeps a position
-// meaningful across languages whose text is entirely different.
+// An editable's children come in this order: the images docked left, right or middle, then
+// the text, then the images docked at the bottom, then any bloom-ui elements (the format cog).
+// Within each group of images, DOM order is the order of the images, and sync copies it to
+// the other languages. The wrappers do not move within the text, which is why a position
+// means the same thing in languages whose text is completely different.
 
-// The node a new or returning floating image should be inserted before: the first child that
-// is neither a floating inline image nor bloom-ui, i.e. where the text starts. Null when the
-// editable has no content yet, in which case appending is right.
+// The node to insert a left, right or middle image before. It is the first child that is
+// neither such an image nor bloom-ui, which is where the text starts. Null when the editable
+// has no content yet, in which case appending is right.
 function getFloatingClusterEnd(editable: HTMLElement): Node | null {
     const firstContent = Array.from(editable.children).find(
         (child) =>
@@ -1148,9 +1165,10 @@ function getFloatingClusterEnd(editable: HTMLElement): Node | null {
     return firstContent ?? null;
 }
 
-// The node a bottom-docked image should be inserted before: the trailing bloom-ui run, so the
-// images stay after all the text but the format cog stays last. Null when there is no such
-// run, in which case appending puts it at the end.
+// The node to insert a bottom-docked image before. It is the first of the bloom-ui elements
+// at the end of the editable, so the images come after all the text and the format cog stays
+// last. Null when the editable does not end with bloom-ui elements, in which case appending
+// puts the image at the end.
 function getBottomClusterEnd(editable: HTMLElement): Node | null {
     const children = Array.from(editable.children);
     for (let i = children.length - 1; i >= 0; i--) {
@@ -1161,7 +1179,7 @@ function getBottomClusterEnd(editable: HTMLElement): Node | null {
     return editable.firstChild;
 }
 
-// Is this wrapper already ahead of all the text, i.e. in the leading cluster?
+// Whether this wrapper is already before all the text.
 const isInFloatingCluster = (wrapper: HTMLElement): boolean => {
     let sibling = wrapper.previousElementSibling;
     while (sibling) {
@@ -1176,7 +1194,7 @@ const isInFloatingCluster = (wrapper: HTMLElement): boolean => {
     return true;
 };
 
-// Is this wrapper already after all the text, i.e. in the trailing cluster?
+// Whether this wrapper is already after all the text.
 const isInBottomCluster = (wrapper: HTMLElement): boolean => {
     let sibling = wrapper.nextElementSibling;
     while (sibling) {
@@ -1191,9 +1209,9 @@ const isInBottomCluster = (wrapper: HTMLElement): boolean => {
     return true;
 };
 
-// Puts one wrapper in the cluster its dock calls for. A wrapper already in the right cluster
-// is left exactly where it is: switching between left, right and middle must not reshuffle an
-// image past its neighbors, since the order within a cluster is the images' order.
+// Moves one wrapper before or after the text, as its dock requires. A wrapper already on the
+// correct side of the text is left exactly where it is, because switching between left, right
+// and middle must not move an image past its neighbors; their DOM order is the images' order.
 function moveToDockCluster(editable: HTMLElement, wrapper: HTMLElement): void {
     if (wrapper.classList.contains(kInlineImageBottomClass)) {
         if (isInBottomCluster(wrapper)) return;
@@ -1204,10 +1222,10 @@ function moveToDockCluster(editable: HTMLElement, wrapper: HTMLElement): void {
     editable.insertBefore(wrapper, getFloatingClusterEnd(editable));
 }
 
-// Puts this editable's images into the same order and clusters as the source list, which is
-// the authority for both. Inserting each in turn before a fixed anchor reproduces the source
-// order; the floating cluster goes first so that the bottom cluster's anchor is computed once
-// the text boundary has settled.
+// Puts this editable's images in the same order as the sources list, each before or after the
+// text as its dock requires. Inserting each one in turn before the same node reproduces the
+// order of the list. The left, right and middle images are placed first, so that
+// getBottomClusterEnd runs after they have stopped moving.
 function arrangeInlineImages(
     editable: HTMLElement,
     sources: HTMLElement[],
@@ -1234,18 +1252,18 @@ function arrangeInlineImages(
     });
 }
 
-// An editable whose only content is the non-editable island would give the user nowhere to
-// type. BloomField.EnsureParagraphsPresent does this at page load; we do it here too
-// because we insert wrappers after that has run.
+// If an editable's only content were the contenteditable=false wrapper, the user would have
+// nowhere to type, so this adds a paragraph. BloomField.EnsureParagraphsPresent does the same
+// when the page loads; we do it here too because we insert wrappers after that has run.
 //
-// "Has somewhere to type" means any block element, not just a <p>: converted content can
-// legitimately hold a real heading and no paragraph, and appending an empty paragraph under
-// that heading would give the reader a blank line that then persists into the saved page.
-// We borrow BloomField's own selector so the two cannot disagree about what counts.
-// Note that for every dock except bottom the wrapper carries bloom-keepFirstInField, and
-// BloomField deliberately still insists on a real trailing <p> in that case (the paragraph
-// the text wraps around), so it will add one itself; this only decides whether we add one
-// first. The bottom dock is where it actually shows.
+// Any block element gives the user somewhere to type, so a <p> is not required. Converted
+// content can hold a heading and no paragraph, and adding an empty paragraph under that
+// heading would give the reader a blank line that stays in the saved page. We use
+// BloomField's own kBlockElementSelector so the two cannot disagree about what counts.
+// For every dock except bottom the wrapper has bloom-keepFirstInField, and in that case
+// BloomField still requires a <p> after it (the paragraph the text wraps around) and adds one
+// itself; this only decides whether we add one first. So this only makes a difference for
+// the bottom dock.
 function ensureEditableHasAParagraph(editable: HTMLElement): void {
     if (editable.querySelector(kBlockElementSelector)) return;
     editable.appendChild(document.createElement("p"));

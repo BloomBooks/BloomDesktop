@@ -40,10 +40,10 @@ namespace Bloom.Spreadsheet
         public const string PageTypeColumnLabel = "[page type]";
         public const string AttributeColumnLabel = "[attribute]";
 
-        // A hidden column holding a JSON object with whatever non-textual state a row's
-        // object needs to be reconstructed on import. Only [inline image] rows use it. Its
-        // presence anywhere in a spreadsheet marks that spreadsheet as the authority on the
-        // objects whose rows use it.
+        // A hidden column whose cell holds JSON describing whatever the import needs, beyond
+        // text and the image file, to rebuild the thing a row stands for. Only [inline image]
+        // rows use it. When a spreadsheet has this column at all, the importer trusts its
+        // [inline image] rows to say exactly which inline images each text block has.
         public const string DetailsColumnLabel = "[details]";
         public const string DetailsColumnFriendlyName = "Details";
         public const string ImageSourceColumnFriendlyName = "Image File Path";
@@ -56,10 +56,11 @@ namespace Bloom.Spreadsheet
         public const string ImageDescriptionRowLabel = "[image description]";
 
         // A row for one inline image (a .bloom-inlineImage wrapper in a text block; see
-        // inlineImages.ts). Such rows immediately follow the [page content] row of the
-        // translation group the image belongs to, in stacking order. The image file rides
-        // in the normal [image source] column (and so gets a thumbnail); the geometry
-        // needed to reconstruct the wrapper rides in [details] as JSON.
+        // inlineImages.ts). These rows come straight after the [page content] row of the
+        // translation group the image belongs to, in the order the wrappers appear in the
+        // editable. The image file goes in the ordinary [image source] column, so it gets a
+        // thumbnail like any other image. Where the picture sits and how big it is goes in
+        // [details] as JSON, which the import uses to rebuild the wrapper.
         public const string InlineImageRowLabel = "[inline image]";
 
         /// <summary>

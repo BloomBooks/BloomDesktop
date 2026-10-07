@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, afterAll, vi } from "vitest";
 
-// Whether AI image editing is turned on is asked of the api in three ways here:
-// setupInlineImageInteractions calls getFeatureStatusAsync, and the toolbar component the
-// tests below put up uses both hooks. There is no api in these tests, so every one of those
-// requests would fail on the network and the menu's contents would depend on when that failure
-// landed. They are answered here instead: off, which is what the menu tests expect ("Edit with
-// AI" absent). Every export the component might reach for has to be here -- a module mock
-// replaces the whole module, and a missing name throws inside React's render.
+// The code under test asks the api in three ways whether AI image editing is turned on:
+// setupInlineImageInteractions calls getFeatureStatusAsync, and the toolbar component that the
+// tests below show uses both hooks. There is no api in these tests, so each of those requests
+// would fail on the network, and what the menu contains would depend on when the failure
+// arrived. So the mock answers them here, with "off", which is what the menu tests expect (no
+// "Edit with AI"). The mock has to provide every export the component might use, because a
+// module mock replaces the whole module, and a missing name throws inside React's render.
 vi.mock("../../react_components/featureStatus", () => ({
     getFeatureStatusAsync: () => Promise.resolve(undefined),
     useGetFeatureStatus: () => undefined,
@@ -66,13 +66,14 @@ import {
     setupInlineImageInteractions,
 } from "./inlineImageInteractions";
 
-// jsdom reports every element's box as empty, so a real drag cannot be checked for where it
-// put the image; the arithmetic that decides that lives in the pure functions these tests
-// aim at. The DOM tests cover selection and which commands a right-click offers where.
+// jsdom reports every element's box as empty, so these tests cannot check where a drag put the
+// image. The calculations that decide that are in exported functions with no side effects,
+// and most of these tests are aimed at them. The tests that use the DOM cover selection and
+// which commands a right-click offers in which places.
 
-// jsdom implements none of the pointer-capture API. This stub records who holds what, which is
-// what the drag tests check; it does not route events by capture, which is the part jsdom could
-// not do anyway and the part only a real browser (the e2e suite) can exercise.
+// jsdom does not implement the pointer capture API. This stub records which element has
+// captured which pointer, which is what the drag tests check. It does not send events to the
+// capturing element. Only a real browser can do that, so only the e2e suite can test it.
 const capturedPointers = new Map<Element, number>();
 Element.prototype.setPointerCapture = function (pointerId: number) {
     capturedPointers.set(this, pointerId);
@@ -84,12 +85,12 @@ Element.prototype.hasPointerCapture = function (pointerId: number) {
     return capturedPointers.get(this) === pointerId;
 };
 
-// jsdom has no PointerEvent, but a listener registered for "pointerdown" fires for any event
-// of that type, and MouseEvent carries the button and the coordinates this module reads. It
-// does not carry a pointerId, and the capture the gesture takes needs one, so it is added
-// afterwards (MouseEvent would ignore it as an option).
+// jsdom has no PointerEvent, but a listener for "pointerdown" fires for any event of that
+// type, and MouseEvent has the button and the coordinates this module reads. A MouseEvent has
+// no pointerId, and capturing the pointer needs one, so it is added after the event is created.
+// MouseEvent would ignore it if it were passed as an option.
 const kTestPointerId = 7;
-// A second finger, for the test about one gesture's events reaching another's state.
+// A second finger, for the test that checks a second pointer's events do not affect the drag.
 const kOtherTestPointerId = 9;
 function pointerEvent(
     type: string,
@@ -108,17 +109,18 @@ function pointerEvent(
     return event;
 }
 
-// A block 300px wide and 200px tall at the origin, so that thirds land on round numbers
-// (100 and 200) and the bottom fifth starts at y=160.
+// A block 300px wide and 200px tall at the origin, so that its thirds fall on round numbers
+// (100 and 200).
 const kEditableBox = { left: 0, top: 0, width: 300, height: 200 };
-// The dock of a position depends on how tall the image is, because the bottom dock starts
-// where the band can no longer fit the image inside the block's content.
+// Which dock a position calls for depends on how tall the image is, because the bottom dock
+// starts where the middle band can no longer fit the image inside the block's content.
 const kImageHeightViewportPx = 40;
 
 let pageCounter = 0;
 
-// Builds a page with one translation group, one editable per entry. Same shape as
-// inlineImages.test.ts, since the undo layer keys on the page id.
+// Builds a page with one translation group, with one editable for each entry. This is the same
+// page as in inlineImages.test.ts, including the data-page-id that the inline image undo code
+// uses to tell pages apart.
 function makeTranslationGroup(
     editables: { lang: string; classes?: string; content?: string }[],
     options?: { insideCanvasElement?: boolean; groupClasses?: string },
@@ -183,7 +185,7 @@ describe("inlineImageInteractions", () => {
                 );
             expect(dockAt(1)).toBe(kInlineImageLeftClass);
             expect(dockAt(99)).toBe(kInlineImageLeftClass);
-            // Exactly on a boundary belongs to the band, not to the side it came from.
+            // A position exactly on a boundary belongs to the middle band.
             expect(dockAt(100)).toBe(kInlineImageMiddleClass);
             expect(dockAt(150)).toBe(kInlineImageMiddleClass);
             expect(dockAt(200)).toBe(kInlineImageMiddleClass);
@@ -209,13 +211,11 @@ describe("inlineImageInteractions", () => {
         });
 
         it("hands the middle third to the bottom dock exactly where the band can no longer fit the image", () => {
-            // The block's content ends at 200 and the image is 40 tall, so the band can hold
-            // it while its center is above 180 and not a pixel lower. Every position above
-            // that is the band's, which is the point: the band's position down the block is a
-            // distance, and a person moving the picture down expects to be able to stop
-            // anywhere (John: "it seems like I should be able to put it vertically anywhere I
-            // want"). This used to be the bottom FIFTH of the block, which in an overflowing
-            // block was several lines of unreachable positions.
+            // The block's content ends at 200 and the image is 40 tall, so the middle band can
+            // hold it while its center is above 180, and not a pixel lower. Every position
+            // above that belongs to the band, because a user moving the picture down expects to
+            // be able to stop anywhere. (John: "it seems like I should be able to put it
+            // vertically anywhere I want".)
             expect(
                 computeInlineImageDock(
                     { x: 150, y: 179 },
@@ -230,14 +230,13 @@ describe("inlineImageInteractions", () => {
                     kImageHeightViewportPx,
                 ),
             ).toBe(kInlineImageBottomClass);
-            // A taller image runs out of room higher up, since it is the image's BOTTOM that
-            // has to stay inside the content.
+            // A taller image runs out of room higher up, since the bottom of the image has to
+            // stay inside the content.
             expect(
                 computeInlineImageDock({ x: 150, y: 150 }, kEditableBox, 100),
             ).toBe(kInlineImageBottomClass);
-            // The side docks win all the way down, so an image can be parked in a lower
-            // corner (with clear:both zones stealing the whole strip, the corners were
-            // unreachable).
+            // In the left and right thirds the side docks apply all the way down, so an image
+            // can be placed in a lower corner.
             expect(
                 computeInlineImageDock(
                     { x: 20, y: 199 },
@@ -285,11 +284,11 @@ describe("inlineImageInteractions", () => {
         });
     });
 
-    // The numbers here were measured in a running Bloom, on the page that produced the
-    // report: an A4 page whose text nearly filled it, with an image parked near the bottom,
-    // changed to A6 portrait. The text no longer fits the smaller page, so the block
-    // scrolls: its rectangle is 532 screen pixels tall and holds 484 layout pixels (the page
-    // is drawn at 110%), while the text it contains is 841 layout pixels tall.
+    // These numbers were measured in a running Bloom, on the page from the bug report: an A4
+    // page nearly full of text, with an image near the bottom, changed to A6 portrait. The text
+    // no longer fits the smaller page, so the block scrolls. Its rectangle is 532 screen pixels
+    // tall and holds 484 layout pixels (the page is drawn at 110%), and the text in it is 841
+    // layout pixels tall.
     const kA6Report = {
         visibleBoxViewportPx: {
             left: 71,
@@ -299,10 +298,11 @@ describe("inlineImageInteractions", () => {
         },
         clientHeightLayoutPx: 484,
         scrollHeightLayoutPx: 841,
-        // The image had been given an offset of 661 layout pixels on the A4 page, which puts
-        // it below everything the smaller page can show at once.
+        // The image had an offset of 661 layout pixels on the A4 page, which puts it below
+        // everything the smaller page can show at once.
         imageCenterYViewportPxWhenScrolledToTop: 888,
-        // The ball picture was 40% of a 353-pixel block wide, and about this tall on screen.
+        // The picture of a ball was 40% as wide as the 353-pixel block, and about this tall on
+        // screen.
         imageHeightViewportPx: 163,
     };
 
@@ -444,7 +444,7 @@ describe("inlineImageInteractions", () => {
         });
     });
 
-    // The report: "I added an image to the bottom right-hand corner of an A4 portrait page
+    // The bug report: "I added an image to the bottom right-hand corner of an A4 portrait page
     // that was pretty full of text. I then changed the page layout to be A6 portrait, the
     // text now requires scrolling. I was not able to reposition that image anymore. It was
     // just stuck there."
@@ -458,10 +458,10 @@ describe("inlineImageInteractions", () => {
                 kA6Report.visibleBoxViewportPx,
                 kA6Report.imageHeightViewportPx,
             );
-            // What the block's rectangle says, and the whole of the reported bug: the image
-            // sits below the bottom of what the small page shows, so every drag of it asked
-            // for the bottom dock -- which does not fit in a block that is already too
-            // small, so every move was undone and the image never went anywhere.
+            // Measured against the block's rectangle, the image is below the bottom of what the
+            // small page shows, so every drag of it asked for the bottom dock. That caused the
+            // reported bug: the bottom dock does not fit in a block that is already too small,
+            // so every move was undone and the image never moved.
             expect(asShown).toBe(kInlineImageBottomClass);
 
             const contentBox = computeBlockContentBox(
@@ -491,8 +491,8 @@ describe("inlineImageInteractions", () => {
                 kA6Report.visibleBoxViewportPx.top +
                 kA6Report.visibleBoxViewportPx.height -
                 wrapperBottomViewportPx;
-            // Measured against the rectangle, the image is 281 pixels PAST the limit, so
-            // every drag clamped it back up to the fold.
+            // Measured against the rectangle, the image is 281 pixels past the limit, so every
+            // drag pulled it back up to the bottom of what is showing.
             expect(Math.round(roomByRectangle)).toBe(-281);
             expect(
                 clampInlineImageOffset(
@@ -531,7 +531,7 @@ describe("inlineImageInteractions", () => {
             expect(computeInlineImageClusterIndex(50, [100, 300])).toBe(0);
             expect(computeInlineImageClusterIndex(150, [100, 300])).toBe(1);
             expect(computeInlineImageClusterIndex(500, [100, 300])).toBe(2);
-            // A tie belongs after the neighbor already at that height.
+            // When two tops are equal, the image goes after the one already at that height.
             expect(computeInlineImageClusterIndex(100, [100, 300])).toBe(1);
         });
     });
@@ -565,7 +565,8 @@ describe("inlineImageInteractions", () => {
 
     describe("computeInlineImageOffsetForNewBlockHeight", () => {
         it("keeps the picture the same share of the way down a shorter block", () => {
-            // Two thirds of the way down a 900px block is two thirds of the way down a 300px one.
+            // Two thirds of the way down a 900px block becomes two thirds of the way down a
+            // 300px one.
             expect(
                 computeInlineImageOffsetForNewBlockHeight(600, 900, 300),
             ).toBe(200);
@@ -621,7 +622,7 @@ describe("inlineImageInteractions", () => {
         });
 
         it("turns a corner drag into a percentage of the block's width", () => {
-            // 120px of a 300px block is 40%; dragging an east corner 30px right adds 10%.
+            // 120px of a 300px block is 40%. Dragging an east corner 30px right adds 10%.
             expect(computeInlineImageWidthPercent(120, 30, 1, 300)).toBe(50);
             // The same movement on a west corner is inward, so it shrinks.
             expect(computeInlineImageWidthPercent(120, 30, -1, 300)).toBe(30);
@@ -666,7 +667,7 @@ describe("inlineImageInteractions", () => {
 
         it("offers nothing for a block inside a canvas element", () => {
             const group = makeSimpleGroup({ insideCanvasElement: true });
-            // Sanity check: the same block outside a canvas element would be eligible.
+            // A block inside a canvas element gets no inline image commands.
             expect(
                 getInlineImageActionTarget(
                     editableFor(group, "en").querySelector("p") as HTMLElement,
@@ -675,10 +676,9 @@ describe("inlineImageInteractions", () => {
         });
 
         it("offers nothing inside an image description", () => {
-            // An image description IS a translation group, and it lives inside the
-            // bloom-canvas but not inside a canvas element, so neither of the exclusions
-            // above reaches it. It is not a place for a picture: it is what a reader hears
-            // in place of one.
+            // An image description is a translation group, inside the bloom-canvas but not
+            // inside a canvas element, so the checks for those do not exclude it. It should
+            // not hold a picture, because it is what a reader hears in place of the picture.
             const group = makeSimpleGroup({
                 groupClasses: "bloom-imageDescription",
             });
@@ -720,13 +720,13 @@ describe("inlineImageInteractions", () => {
         it("still offers adding in the text of a block whose group already has an image", () => {
             const group = makeSimpleGroup();
             insertInlineImage(group);
-            // There is no limit on inline images per group; each add appends a new one.
+            // A group can hold any number of inline images, and each insert adds a new one.
             expect(
                 getInlineImageActionTarget(
                     editableFor(group, "en").querySelector("p") as HTMLElement,
                 ).kind,
             ).toBe("add");
-            // ...from a sibling language's block too.
+            // The same is true in another language's block.
             expect(
                 getInlineImageActionTarget(
                     editableFor(group, "fr").querySelector("p") as HTMLElement,
@@ -754,11 +754,11 @@ describe("inlineImageInteractions", () => {
             const items = buildInlineImageMenuItems(
                 getInlineImageActionTarget(wrapper),
             );
-            // The registry's "image" section, filtered by its normal availability rules:
-            // "Expand image to fill space" is for background images only, and Become
-            // Background / Use for book thumbnail are excluded for an image inside a text
-            // block. "Edit with AI" is behind a feature flag that is off here. Then a
-            // divider, the arrangement section without Rotate, a divider and Delete.
+            // The registry's "image" section, filtered by its usual availability rules.
+            // "Expand image to fill space" is only for background images, and Become
+            // Background and Use for book thumbnail are excluded for an image inside a text
+            // block. "Edit with AI" depends on a feature that is off here. Then come a divider,
+            // the arrangement section without Rotate, another divider, and Delete.
             expect(items.map((i) => i.l10nId)).toEqual([
                 "EditTab.Image.EditMetadataOverlay",
                 "EditTab.Image.ChooseImage",
@@ -771,15 +771,15 @@ describe("inlineImageInteractions", () => {
                 "-",
                 "Common.Delete",
             ]);
-            // A new inline image holds a placeholder: no credits to edit, nothing to copy,
-            // and no transparency of a real picture to control...
+            // A new inline image holds a placeholder, so there are no credits to edit, no
+            // picture to copy, and no picture to make transparent.
             const byId = (id: string) => items.find((i) => i.l10nId === id)!;
             expect(byId("EditTab.Image.EditMetadataOverlay").disabled).toBe(
                 true,
             );
             expect(byId("EditTab.Image.CopyImage").disabled).toBe(true);
             expect(byId("EditTab.Image.Transparency").disabled).toBe(true);
-            // ...but choosing a picture is exactly what a placeholder is waiting for.
+            // Choosing a picture is what the placeholder is there for, so that is enabled.
             expect(byId("EditTab.Image.ChooseImage").disabled).toBeFalsy();
             // Transparency is a submenu, as on the canvas element menu.
             expect(
@@ -819,9 +819,9 @@ describe("inlineImageInteractions", () => {
             const transparent = transparency.subMenu!.find(
                 (s) => s.l10nId === "EditTab.Image.Transparency.Transparent",
             )!;
-            // Sanity check: the command finds its image through the registry's own
-            // plumbing (getImage), which must cope with the inline wrapper's shape --
-            // an img that is a direct child, with no bloom-imageContainer.
+            // Sanity check. The command finds its image through the registry's getImage, which
+            // has to work with an inline image's markup, where the img is a direct child of the
+            // wrapper and there is no bloom-imageContainer.
             expect(
                 wrapper
                     .querySelector("img")!
@@ -830,9 +830,9 @@ describe("inlineImageInteractions", () => {
 
             (transparent.onClick as () => void)();
 
-            // It acted on the clicked copy... (the command is synchronous, but the sync that
-            // follows it awaits it first, so this is the state to wait for rather than a delay
-            // to sit through)
+            // The command changed the copy that was clicked. The command is synchronous, but
+            // the sync after it awaits it first, so the test waits for this state instead of
+            // waiting for a fixed time.
             await vi.waitFor(() =>
                 expect(
                     wrapper
@@ -840,7 +840,7 @@ describe("inlineImageInteractions", () => {
                         .classList.contains("bloom-transparent"),
                 ).toBe(true),
             );
-            // ...and the follow-up sync stamped the result onto the other language.
+            // The sync after the command copied the change to the other language.
             const frenchWrapper = getInlineImageInEditable(
                 editableFor(group, "fr"),
             )!;
@@ -856,7 +856,8 @@ describe("inlineImageInteractions", () => {
             const wrapper = insertInlineImage(group);
             (wrapper.querySelector("img") as HTMLImageElement).src =
                 "flower.jpg";
-            // Right-clicking is what selects it, and the undo layer's gate is the selection.
+            // Right-clicking selects the image, and inlineImageCanUndo looks for a selected
+            // image before it sends ctrl+z to the inline image undo code.
             const items = getInlineImageMenuItemsForClick(
                 wrapper.querySelector("img") as HTMLElement,
             );
@@ -877,10 +878,10 @@ describe("inlineImageInteractions", () => {
 
             inlineImageUndo();
 
-            // The undo has to take back the transparency, not the insert that put the picture
-            // there: the commands come from the canvas-element registry, which knows nothing
-            // about this undo layer, so without an undo point of their own the last thing
-            // recorded is the insert, and ctrl+z makes the picture disappear.
+            // The undo has to take back the transparency, and leave the insert that put the
+            // picture there. The commands come from the canvas element registry, which knows
+            // nothing about inline image undo. Without an undo point of their own, the last
+            // undo point would be the insert, and ctrl+z would make the picture disappear.
             const restored = getInlineImage(group);
             expect(
                 restored,
@@ -905,7 +906,7 @@ describe("inlineImageInteractions", () => {
                 buildInlineImageMenuItems(
                     getInlineImageActionTarget(wrapper),
                 ).find((i) => i.l10nId === id)!;
-            // Sanity check: nothing to reset on a picture that has not been flipped.
+            // Sanity check: a picture that has not been flipped has nothing to reset.
             expect(menuItem("EditTab.Image.Reset").disabled).toBe(true);
 
             const flipHorizontal = menuItem("EditTab.Image.Flip").subMenu!.find(
@@ -913,8 +914,8 @@ describe("inlineImageInteractions", () => {
             )!;
             (flipHorizontal.onClick as () => void)();
 
-            // The registry's Flip acts on the canvas element manager's active element, which
-            // an inline image never is, so this shows the command reached this picture.
+            // The registry's Flip acts on the canvas element manager's active element, and an
+            // inline image is never that, so this shows that the command reached this picture.
             await vi.waitFor(() =>
                 expect(wrapper.querySelector("img")!.style.transform).toBe(
                     "scale(-1, 1)",
@@ -936,7 +937,8 @@ describe("inlineImageInteractions", () => {
             const wrapper = insertInlineImage(group);
             (wrapper.querySelector("img") as HTMLImageElement).src =
                 "flower.jpg";
-            // Right-clicking is what selects it, and the undo layer's gate is the selection.
+            // Right-clicking selects the image, and inlineImageCanUndo looks for a selected
+            // image before it sends ctrl+z to the inline image undo code.
             const flipVertical = getInlineImageMenuItemsForClick(
                 wrapper.querySelector("img") as HTMLElement,
             )
@@ -974,9 +976,9 @@ describe("inlineImageInteractions", () => {
                 editableFor(group, "en").querySelector("p") as HTMLElement,
             );
 
-            // Leaving it selected says the commands the person is now looking at apply to the
-            // picture, which they do not -- and it keeps ctrl+z routed to the inline-image
-            // undo layer when what they meant was the text.
+            // If it stayed selected, it would look as if the commands on the menu applied to
+            // the picture, which they do not, and ctrl+z would go to the inline image undo code
+            // when the user meant to undo in the text.
             expect(wrapper.classList.contains(kInlineImageSelectedClass)).toBe(
                 false,
             );
@@ -995,7 +997,8 @@ describe("inlineImageInteractions", () => {
             );
 
             expect(items.length).toBeGreaterThan(0);
-            // The undo layer's gate is the selection, so this is not merely cosmetic.
+            // inlineImageCanUndo looks for a selected image, so this matters for more than
+            // appearance.
             expect(wrapper.classList.contains(kInlineImageSelectedClass)).toBe(
                 true,
             );
@@ -1018,7 +1021,7 @@ describe("inlineImageInteractions", () => {
             const second = insertInlineImage(group);
             const firstId = first.getAttribute(kInlineImageIdAttr);
             const secondId = second.getAttribute(kInlineImageIdAttr);
-            // Sanity: two distinct images, each present in both languages.
+            // Sanity check: two different images, each with a copy in both languages.
             expect(firstId).toBeTruthy();
             expect(secondId).toBeTruthy();
             expect(firstId).not.toBe(secondId);
@@ -1033,7 +1036,7 @@ describe("inlineImageInteractions", () => {
             );
             const remove = items.find((i) => i.l10nId === "Common.Delete");
             expect(remove, "expected a Delete item").toBeTruthy();
-            // Actually invoke the command (a gap a real runtime break slipped through once).
+            // Run the command itself, so that a failure when it runs is caught here.
             (remove!.onClick as () => void)();
 
             expect(
@@ -1049,14 +1052,15 @@ describe("inlineImageInteractions", () => {
             ).toBe(2);
         });
 
-        // The bar of buttons is rendered into a div on the body, not inside the wrapper, so
-        // deleting the picture does not take it with it: it stayed on screen offering
-        // commands ("Choose image", "Copy image"...) for a picture that was gone.
+        // The toolbar is rendered into a div on the body, outside the wrapper, so deleting the
+        // picture does not remove it. Without deselectAllInlineImages in the delete command,
+        // it stayed on screen offering commands such as "Choose image" and "Copy image" for a
+        // picture that was gone.
         it("Delete takes the bar of buttons down with the image", () => {
             const group = makeSimpleGroup();
             const wrapper = insertInlineImage(group);
             const items = getInlineImageMenuItemsForClick(wrapper);
-            // Sanity check: the right-click selected it, which is what puts the bar up.
+            // Sanity check: the right-click selected the image, which shows the toolbar.
             expect(wrapper.classList.contains(kInlineImageSelectedClass)).toBe(
                 true,
             );
@@ -1077,10 +1081,10 @@ describe("inlineImageInteractions", () => {
         });
     });
 
-    // jsdom measures every box as empty, so these stub the two measurements this function
-    // reads. That is enough for what is being checked: which changes it decides to act on.
+    // jsdom measures every box as empty, so these tests stub the two measurements this
+    // function reads. That is enough to check which size changes it acts on.
     describe("adjustInlineImageOffsetsIfBlockSizeChanged", () => {
-        // Give an editable a size jsdom will report.
+        // Gives an editable a size that jsdom will report.
         const setBlockSize = (
             editable: HTMLElement,
             widthLayoutPx: number,
@@ -1096,10 +1100,11 @@ describe("inlineImageInteractions", () => {
             });
         };
 
-        // A width change on its own used to be ignored -- and then the new width was recorded
-        // as the baseline, so it could never be noticed afterwards either. Splitting a text box
-        // in Change Layout does exactly this: same height, less width, so the same text wraps
-        // into more lines and what follows the picture can run off the end of the block.
+        // A change of width alone must be acted on. The new width is recorded as the baseline
+        // either way, so a change missed here would never be noticed later. Splitting a text
+        // box in Change Layout makes this kind of change: the same height and less width, so
+        // the same text wraps into more lines and the text after the picture can run off the
+        // end of the block.
         it("acts on a block that changed only in width", () => {
             const group = makeSimpleGroup();
             const english = editableFor(group, "en");
@@ -1107,12 +1112,12 @@ describe("inlineImageInteractions", () => {
             insertInlineImage(group);
             setBlockSize(english, 300, 200);
             adjustInlineImageOffsetsIfBlockSizeChanged(group);
-            // Sanity check: the baseline has been recorded, and both copies agree.
+            // Sanity check: the baseline has been recorded.
             const baselineAttr = kInlineImageOffsetBasedOnAttr;
             expect(
                 getInlineImageInEditable(english)!.getAttribute(baselineAttr),
             ).toBe("300,200");
-            // Make the sibling's copy differ, so that a sync is visible.
+            // Make the French copy different, so that the test can see whether a sync happens.
             getInlineImageInEditable(french)!.setAttribute(
                 baselineAttr,
                 "stale",
@@ -1124,7 +1129,7 @@ describe("inlineImageInteractions", () => {
             expect(
                 getInlineImageInEditable(english)!.getAttribute(baselineAttr),
             ).toBe("150,200");
-            // The sync at the end of the function only runs when it decided something changed.
+            // The sync at the end of the function runs only when it decided the size changed.
             expect(
                 getInlineImageInEditable(french)!.getAttribute(baselineAttr),
             ).toBe("150,200");
@@ -1151,29 +1156,30 @@ describe("inlineImageInteractions", () => {
         });
     });
 
-    // inlineImages.ts replaces wrappers behind our back in two cases, and tells us about each
-    // with an event, because in both the selection (which is the inline-image undo layer's
-    // gate) needs re-asserting and the handles live on an element that may be gone.
+    // inlineImages.ts replaces wrappers in two cases, and sends an event for each. In both, the
+    // image has to be selected again, because inlineImageCanUndo looks for a selected image,
+    // and the handles were on an element that may no longer be in the document.
     describe("reacting to inlineImages.ts", () => {
         it("puts the handles back on the wrapper an undo restored", () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
             const wrapper = insertInlineImage(group);
             selectInlineImage(wrapper);
-            // A dock change, recorded so that undo has something to put back.
+            // Change the dock after recording an undo point, so that undo has something to put
+            // back.
             recordInlineImageUndoPoint(group);
             setInlineImageDock(wrapper, kInlineImageBottomClass);
             syncInlineImagesFromEditable(editableFor(group, "en"));
 
             expect(inlineImageUndo()).toBe(true);
 
-            // Undo rebuilds the wrapper from serialized markup, so this is a new element...
+            // Undo rebuilds the wrapper from saved markup, so this is a new element.
             const restored = getInlineImageInEditable(editableFor(group, "en"));
             expect(restored, "expected a restored wrapper").not.toBeNull();
             expect(restored).not.toBe(wrapper);
             expect(getInlineImageDock(restored!)).toBe(kInlineImageRightClass);
-            // ...which inlineImages.ts marks as selected, and which therefore needs handles:
-            // serialized markup cannot carry them, since they are bloom-ui.
+            // inlineImages.ts marks it as selected, so it needs handles. The saved markup does
+            // not include them, since they are bloom-ui.
             expect(
                 restored!.classList.contains(kInlineImageSelectedClass),
             ).toBe(true);
@@ -1183,21 +1189,21 @@ describe("inlineImageInteractions", () => {
             ).not.toBeNull();
         });
 
-        // Nothing else tells the undo layer that the person has typed. Its own content
-        // comparison misses an edit that undid itself -- a word typed and deleted again --
-        // and CKEditor holds undo points for both halves of that, so ctrl+z would take back
-        // the picture while there was still text editing in front of it.
+        // Nothing else tells the inline image undo code that the user has typed. Its comparison
+        // of the content misses an edit that cancelled itself out, such as a word typed and then
+        // deleted, while CKEditor holds undo points for both the typing and the deleting. So
+        // ctrl+z would take back the picture while there was still text editing to undo first.
         it("tells the undo layer when the person types in the block", () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
             const wrapper = insertInlineImage(group);
             selectInlineImage(wrapper);
-            // Sanity check: the insert is undoable until the person edits.
+            // Sanity check: the insert can be undone until the user edits the text.
             expect(inlineImageCanUndo()).toBe(true);
 
-            // Stands in for the page's CKEditor taking an undo point for the typing: `index` is
-            // its own name for where it stands in its stack of them, and the report only defers
-            // to typing CKEditor is actually holding.
+            // This stands in for the page's CKEditor recording an undo point for the typing.
+            // `index` is CKEditor's name for its position in its undo stack. Reported typing
+            // only takes precedence when CKEditor is holding an undo point for it.
             const undoManager = { undoable: () => true, index: 0 };
             (globalThis as unknown as { CKEDITOR?: unknown }).CKEDITOR = {
                 currentInstance: { undoManager },
@@ -1211,9 +1217,9 @@ describe("inlineImageInteractions", () => {
             delete (globalThis as unknown as { CKEDITOR?: unknown }).CKEDITOR;
         });
 
-        // The toolbar is a div on the body, so it does not go anywhere when undo replaces the
-        // wrapper it was built for. Rebuilding it is what keeps its commands about a picture
-        // that is still in the document.
+        // The toolbar is a div on the body, so it stays when undo replaces the wrapper it was
+        // built for. It has to be rebuilt so that its commands act on a picture that is still
+        // in the document.
         it("rebuilds the toolbar for the wrapper an undo restored", () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
@@ -1225,7 +1231,7 @@ describe("inlineImageInteractions", () => {
             const barBuiltForTheOldWrapper = document.getElementById(
                 kInlineImageContextControlsId,
             );
-            // Sanity check: selecting the picture really did put a bar up.
+            // Sanity check: selecting the picture showed the toolbar.
             expect(barBuiltForTheOldWrapper).not.toBeNull();
 
             expect(inlineImageUndo()).toBe(true);
@@ -1235,13 +1241,13 @@ describe("inlineImageInteractions", () => {
             expect(bar).not.toBe(barBuiltForTheOldWrapper);
         });
 
-        // Undoing an insert takes the picture away, so there is nothing for the bar to be
-        // about and nowhere for it to be.
+        // Undoing an insert removes the picture, so the toolbar has nothing to act on and
+        // nowhere to be.
         it("takes the toolbar down when the undo left no picture", () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
             selectInlineImage(insertInlineImage(group));
-            // Sanity check: a picture, selected, with its bar up.
+            // Sanity check: the picture is selected and its toolbar is showing.
             expect(
                 document.getElementById(kInlineImageContextControlsId),
             ).not.toBeNull();
@@ -1260,13 +1266,14 @@ describe("inlineImageInteractions", () => {
             const wrapper = insertInlineImage(group);
             const img = wrapper.querySelector("img") as HTMLElement;
             img.setAttribute("src", "flower.jpg");
-            // The trip out to the image chooser can leave the focus back in the text, which
-            // is what dropping the selection looks like.
+            // Choosing a picture in the image chooser can leave the focus back in the text,
+            // which deselects the image. This does the same.
             deselectAllInlineImages(document);
 
             handleInlineImageChanged(img);
 
-            // Without this the change (and the insert that led to it) would not be undoable.
+            // If the image were not selected again, the change (and the insert before it) could
+            // not be undone.
             expect(wrapper.classList.contains(kInlineImageSelectedClass)).toBe(
                 true,
             );
@@ -1294,8 +1301,8 @@ describe("inlineImageInteractions", () => {
                 "." + kInlineImageHandleFrameClass,
             ) as HTMLElement;
             expect(frame, "expected a handle frame").not.toBeNull();
-            // Everything the interaction layer adds inside the wrapper has to be bloom-ui, or
-            // it would be saved and replicated to the other languages.
+            // Everything inlineImageInteractions.ts adds inside the wrapper has to be bloom-ui,
+            // or it would be saved and copied to the other languages.
             expect(frame.classList.contains("bloom-ui")).toBe(true);
             expect(
                 frame.querySelectorAll("." + kInlineImageHandleClass).length,
@@ -1370,7 +1377,7 @@ describe("inlineImageInteractions", () => {
                 bar,
                 "expected the toolbar under the picture",
             ).not.toBeNull();
-            // It lives on the body, above the page, so the page save never sees it.
+            // It is on the body, outside the page, so it is never saved with the page.
             expect(bar!.parentElement).toBe(document.body);
             expect(bar!.closest(".bloom-page")).toBeNull();
 
@@ -1389,7 +1396,8 @@ describe("inlineImageInteractions", () => {
 
             cleanupInlineImageInteractions();
 
-            // The class is on the wrapper, which IS saved, so this is the one that matters.
+            // This class is on the wrapper, which is saved, so this is the check that matters
+            // most.
             expect(wrapper.classList.contains(kInlineImageSelectedClass)).toBe(
                 false,
             );
@@ -1421,12 +1429,13 @@ describe("inlineImageInteractions", () => {
         });
     });
 
-    // A drag touches only the local wrapper while it is in progress and stamps the result onto
-    // the other languages once, at the end -- otherwise every mouse move would rewrite every
-    // language's copy. These drive the module's own listeners through a whole gesture. Where
-    // the drag ends up is not the point (with every box empty, jsdom's answer to "which third
-    // is this?" is always the band); how many times the other language's copy got rewritten
-    // is, and each sync replaces that copy wholesale, so the replacements can be counted.
+    // While a drag is in progress it changes only the wrapper being dragged, and it copies the
+    // result to the other languages once, at the end. Otherwise every mouse move would rewrite
+    // every language's copy. These tests send events to the module's own listeners through a
+    // whole drag. They do not check where the drag ends up, because with every box empty,
+    // jsdom always puts the image in the middle band. They check when the other language's
+    // copy was rewritten. Each sync replaces that copy entirely, so the replacements can be
+    // counted.
     describe("a whole drag gesture", () => {
         // Counts how many times the given editable's inline image has been replaced since the
         // last call. takeRecords is synchronous, so this needs no waiting.
@@ -1435,7 +1444,7 @@ describe("inlineImageInteractions", () => {
             stop: () => void;
         } {
             const observer = new MutationObserver(() => {
-                // Nothing to do on delivery; the records are collected by count() below.
+                // Nothing to do here; count() below collects the records.
             });
             observer.observe(editable, { childList: true });
             return {
@@ -1468,21 +1477,21 @@ describe("inlineImageInteractions", () => {
             );
             expect(french.count()).toBe(0);
 
-            // Well past the click threshold, and repeatedly.
+            // Several moves, each well past the distance that counts as a click.
             document.dispatchEvent(pointerEvent("pointermove", 160, 80));
             document.dispatchEvent(pointerEvent("pointermove", 120, 60));
             document.dispatchEvent(pointerEvent("pointermove", 100, 50));
-            // Sanity check: the drag really did move the image...
+            // Sanity check: the drag moved the image.
             expect(getInlineImageDock(wrapper)).toBe(kInlineImageMiddleClass);
-            // ...but only in the block being dragged in. A live preview is local.
+            // But it changed only the block the image is being dragged in.
             expect(french.count()).toBe(0);
 
             document.dispatchEvent(pointerEvent("pointerup", 100, 50));
 
-            // At least one: since the sync matches copies up by id and keeps the cluster in
-            // order, it may legitimately rewrite a sibling's wrapper more than once in a single
-            // pass, so the exact count is not a proxy for "how many syncs". What matters is
-            // that it happened here and not above.
+            // At least one. The sync matches copies by their id and keeps the floating wrappers
+            // in order, so a single sync may replace another language's wrapper more than once,
+            // and the exact count does not tell how many syncs ran. What matters is that the
+            // replacement happened here and not earlier.
             expect(french.count()).toBeGreaterThan(0);
             const frenchWrapper = getInlineImageInEditable(frenchEditable);
             expect(
@@ -1492,16 +1501,18 @@ describe("inlineImageInteractions", () => {
             expect(getInlineImageDock(frenchWrapper!)).toBe(
                 kInlineImageMiddleClass,
             );
-            // The copy the user dragged is still the canonical one.
+            // The copy the user dragged is still the one getInlineImage returns, which the
+            // other copies are made from.
             expect(getInlineImage(group)).toBe(wrapper);
             french.stop();
         });
 
         // The pointer listeners are on the page's document, so a release over the toolbox,
-        // over Bloom's own furniture, or outside the window never reaches onPointerEnd, and
-        // the gesture never ends. Capturing the pointer is what makes the browser deliver
-        // that pointerup here anyway; jsdom does not route by capture, so what a unit test
-        // can check is that the capture is taken, and given back at the end.
+        // over other parts of Bloom's window, or outside the window would never reach
+        // onPointerEnd, and the drag would never end. Capturing the pointer makes the browser
+        // deliver that pointerup here anyway. jsdom does not send events to the capturing
+        // element, so a unit test can only check that the capture is taken and released at the
+        // end.
         it("captures the pointer, so a release anywhere still ends the gesture", () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
@@ -1520,9 +1531,9 @@ describe("inlineImageInteractions", () => {
         });
 
         // The listeners are on the document, so they see every pointer, and the browser
-        // delivers a second one's events even while the first holds a capture. Acting on them
-        // ends the drag the person is in the middle of, at whatever position the other pointer
-        // reports -- a stray touch of a laptop's trackpad is enough.
+        // delivers a second pointer's events even while the first holds a capture. Acting on
+        // them would end the user's drag at whatever position the other pointer reports. A
+        // stray touch on a laptop's trackpad is enough to cause that.
         it("ignores a second pointer while a gesture is under way", () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
@@ -1532,7 +1543,7 @@ describe("inlineImageInteractions", () => {
             img.dispatchEvent(pointerEvent("pointerdown", 200, 100));
             document.dispatchEvent(pointerEvent("pointermove", 160, 80));
             document.dispatchEvent(pointerEvent("pointermove", 100, 50));
-            // Sanity check: the drag is under way and has moved the image.
+            // Sanity check: the drag has started and has moved the image.
             expect(getInlineImageDock(wrapper)).toBe(kInlineImageMiddleClass);
 
             document.dispatchEvent(
@@ -1542,11 +1553,11 @@ describe("inlineImageInteractions", () => {
                 pointerEvent("pointerup", 250, 190, kOtherTestPointerId),
             );
 
-            // Still the first pointer's gesture, still where it left the image.
+            // The first pointer still has the capture, and the image is where it left it.
             expect(capturedPointers.get(wrapper)).toBe(kTestPointerId);
             expect(getInlineImageDock(wrapper)).toBe(kInlineImageMiddleClass);
 
-            // ...and it is the first pointer's own release that ends it.
+            // The first pointer's own release ends the drag.
             document.dispatchEvent(pointerEvent("pointerup", 100, 50));
             expect(capturedPointers.has(wrapper)).toBe(false);
         });
@@ -1561,7 +1572,7 @@ describe("inlineImageInteractions", () => {
             );
 
             img.dispatchEvent(pointerEvent("pointerdown", 200, 100));
-            // A click wobbles by a pixel or two; that is not a drag.
+            // The pointer often moves a pixel or two during a click, and that is not a drag.
             document.dispatchEvent(pointerEvent("pointermove", 201, 101));
             document.dispatchEvent(pointerEvent("pointerup", 201, 101));
 

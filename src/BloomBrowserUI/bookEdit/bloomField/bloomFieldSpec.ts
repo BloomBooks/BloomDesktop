@@ -264,9 +264,10 @@ describe("BloomField", () => {
         expect($("div p").length).toBeGreaterThan(0);
     });
 
-    // Inline (Word-style) images use the same two protections that the old embedded-image
-    // templates did, so these tests pin down that BloomField still recognizes them by class
-    // when the class is on a .bloom-inlineImage wrapper. See inlineImages.ts.
+    // Inline (Word-style) images carry the same two classes that the old embedded-image
+    // templates used, bloom-keepFirstInField and bloom-preventRemoval. These tests check that
+    // BloomField still honors those classes when they are on a .bloom-inlineImage wrapper.
+    // See inlineImages.ts.
     describe("inline image protections", () => {
         const inlineImageHtml =
             '<div class="bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval" contenteditable="false"><img src="placeHolder.png" alt=""></div>';
@@ -281,8 +282,8 @@ describe("BloomField", () => {
             WireUp();
 
             expect(editable.querySelectorAll("p").length).toBe(1);
-            // The image must stay first (that is what the class means) with the paragraph
-            // after it, since the text has to come after the float to wrap around it.
+            // bloom-keepFirstInField means the image stays the first child. The paragraph goes
+            // after it, because text has to come after a float in order to wrap around it.
             expect(
                 editable.firstElementChild!.classList.contains(
                     "bloom-inlineImage",
@@ -300,9 +301,9 @@ describe("BloomField", () => {
             const execCommand = vi.fn();
             (document as any).execCommand = execCommand;
 
-            // Simulate the damage ctrl+a DEL does: the keydown, then the removal it caused,
-            // then the keyup. The guard compares the count across the keystroke, so the
-            // keydown is part of the gesture, not scaffolding.
+            // Simulate what ctrl+a DEL does: the keydown, then the removal it causes, then the
+            // keyup. BloomField compares the count from the keydown with the count at the
+            // keyup, so the test needs to send the keydown too.
             editable.dispatchEvent(
                 new KeyboardEvent("keydown", { bubbles: true }),
             );
@@ -314,9 +315,9 @@ describe("BloomField", () => {
             expect(execCommand).toHaveBeenCalledWith("undo");
         });
 
-        // A picture deleted from its own menu is a deliberate change, not keystroke damage. If
-        // the guard kept counting it, every keystroke after it would fire a browser undo and
-        // take back the person's typing, character by character.
+        // When the person deletes a picture from its own menu, they meant to. If BloomField kept
+        // the old count, every keystroke after that would fire a browser undo and take back
+        // their typing one character at a time.
         it("does not undo the typing that follows a deliberate deletion of the image", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
@@ -324,7 +325,7 @@ describe("BloomField", () => {
             const execCommand = vi.fn();
             (document as any).execCommand = execCommand;
 
-            // The menu's Delete: no keystroke involved.
+            // The menu's Delete, which involves no keystroke.
             editable.querySelector(".bloom-inlineImage")!.remove();
 
             // And now the person types.
@@ -340,9 +341,9 @@ describe("BloomField", () => {
             expect(execCommand).not.toHaveBeenCalled();
         });
 
-        // Holding Delete rather than pressing it: the browser's auto-repeat sends a run of
-        // keydowns and one keyup at the end. The repeats come after the deletion, so the guard
-        // must compare against the count from the first keydown of the run.
+        // When Delete is held down, the browser's auto-repeat sends a run of keydowns and one
+        // keyup at the end. The repeated keydowns come after the deletion, so BloomField has to
+        // compare against the count from the first keydown of the run.
         it("protects the image when delete is held down rather than pressed", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
@@ -372,9 +373,10 @@ describe("BloomField", () => {
             expect(execCommand).toHaveBeenCalledWith("undo");
         });
 
-        // The flag that makes the above work has to be cleared when the field loses the focus,
-        // or a key held down as the focus moves away would leave it set and the count stale,
-        // and a stale count makes every keystroke fire a browser undo.
+        // BloomField tracks whether a key is down so that the test above works. It has to clear
+        // that when the field loses the focus. Otherwise a key held down as the focus moves away
+        // would leave it set and the count out of date, and then every keystroke would fire a
+        // browser undo.
         it("recovers if the focus leaves while a key is held down", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
@@ -389,10 +391,10 @@ describe("BloomField", () => {
             editable.dispatchEvent(
                 new FocusEvent("focusout", { bubbles: true }),
             );
-            // The picture goes, from the menu this time: no keystroke to blame.
+            // The person deletes the picture from its menu, so no keystroke removed it.
             editable.querySelector(".bloom-inlineImage")!.remove();
 
-            // Now they type. The count must have been re-read, so this is just the new state.
+            // Now they type. BloomField should have re-read the count, so it sees nothing missing.
             editable.dispatchEvent(
                 new KeyboardEvent("keydown", { bubbles: true }),
             );
@@ -403,9 +405,9 @@ describe("BloomField", () => {
             expect(execCommand).not.toHaveBeenCalled();
         });
 
-        // Tab from another field delivers its keydown there and only its keyup here. That
-        // keyup did not delete anything, even if the picture went (from its menu) since the
-        // last keystroke in this field.
+        // When Tab is pressed in another field, its keydown goes there and only its keyup comes
+        // here. That keyup did not delete anything, even if the picture was deleted from its
+        // menu since the last keystroke in this field.
         it("does not undo on a keyup whose keydown went to another field", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
@@ -428,8 +430,8 @@ describe("BloomField", () => {
             expect(execCommand).not.toHaveBeenCalled();
         });
 
-        // An image inserted after page setup is protected too, so ctrl+a DEL cannot take it out
-        // with nothing to put it back.
+        // An image inserted after the page was set up is protected too, so if ctrl+a DEL
+        // removes it, BloomField puts it back.
         it("protects an inline image inserted after the field was wired up", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = "<p>Some text</p>";
