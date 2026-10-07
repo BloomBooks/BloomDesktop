@@ -75,14 +75,20 @@ there. Delete the downloaded artifacts when you are done; they have deep paths, 
 
 ## 5. Report
 
-Tell the developer what each run showed, and which entries you added, updated or removed. For
-each new or unexplained failure, recommend the next step: a card, a branch to investigate, or
-waiting to see whether it recurs. Then let them decide.
+Tell the developer what each run showed, and which entries you added, updated or removed. That
+high-level picture is the deliverable. For each new or unexplained failure, say plainly that its
+cause is still open. Whether and when to investigate it further is a separate decision, and it
+is the developer's.
+
+Never present waiting to see whether a failure recurs as an option. A test that failed without a
+code change to explain it is already flaky, and the no-flaky-tests rule in the root `AGENTS.md`
+applies from its first failure.
 
 ## Limits
 
 - Don't create cards, branches or fixes without asking.
 - Don't dispatch a CI run.
 - Commit and push only as the developer directs.
-- Never treat "it passed on a rerun" as an outcome. The no-flaky-tests rule in the root
-  `AGENTS.md` applies.
+- Never treat "it passed on a rerun", or "it passed the next night", as an outcome, and never
+  recommend waiting for a failure to recur. The no-flaky-tests rule in the root `AGENTS.md`
+  applies.
