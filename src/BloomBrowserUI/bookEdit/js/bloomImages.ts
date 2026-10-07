@@ -516,14 +516,53 @@ export function getOwningPageBackgroundColor(element: HTMLElement): string {
 }
 
 // Transparency mode for a single img, mirroring the C# ImageTransparencyMode enum.
-// "none"  = no transparent param (bloom-opaque, or white page)
+// "none"  = no transparent param (bloom-opaque, or white page and not an overlay on a background image)
 // "auto"  = transparent=yes (auto-detect line art)
 // "force" = transparent=force (bloom-transparent: always apply, skip line-art check)
 type TransparencyMode = "none" | "auto" | "force";
 
+// Returns true when `bloomCanvas` has a real (not placeholder) background image. Normally that
+// is the image in its background canvas element; in a legacy canvas that has not been converted
+// to have one, it is an img directly inside the bloom-canvas.
+// Mirrors the C# HtmlDom.BloomCanvasHasRealBackgroundImage.
+export function bloomCanvasHasRealBackgroundImage(
+    bloomCanvas: HTMLElement,
+): boolean {
+    const bgCanvasElement =
+        getBackgroundCanvasElementFromBloomCanvas(bloomCanvas);
+    const bgImg = bgCanvasElement
+        ? getImageFromCanvasElement(bgCanvasElement)
+        : Array.from(bloomCanvas.children).find(
+              (child) => child.tagName === "IMG",
+          );
+    const src = bgImg?.getAttribute("src");
+    return !!src && !isPlaceHolderImage(src);
+}
+
+// Returns true when `img` is in a canvas element layered over a real background image
+// (i.e., in any canvas element other than the background image, on a canvas whose background
+// image is not a placeholder). A white line-art background on such an overlay would hide the
+// picture beneath it, so it needs transparency even on a white page (BL-16993).
+// Mirrors the C# HtmlDom.IsInCanvasOverlayOnBackgroundImage.
+export function isOverlayOnBackgroundImage(img: HTMLElement): boolean {
+    const canvasElement = img.closest(kCanvasElementSelector);
+    if (
+        !canvasElement ||
+        canvasElement.classList.contains(kBackgroundImageClass)
+    ) {
+        return false;
+    }
+    const bloomCanvas = canvasElement.closest(
+        kBloomCanvasSelector,
+    ) as HTMLElement | null;
+    return !!bloomCanvas && bloomCanvasHasRealBackgroundImage(bloomCanvas);
+}
+
 // Returns the transparency mode for an img element given whether the owning page
 // has a colored background. bloom-transparent/bloom-opaque are explicit user overrides
-// that take precedence over the page-background gate.
+// that take precedence over the page-background gate. Images in canvas overlays on a real
+// background image get "auto" even on a white page, since they would otherwise hide the
+// picture beneath them (BL-16993).
 export function getImageTransparencyMode(
     img: HTMLElement,
     pageNeedsTransparent: boolean,
@@ -534,7 +573,8 @@ export function getImageTransparencyMode(
     // that don't look (at least to our algorithm) like line art.
     // This can also 'erase' very light-colored parts of an image, even on a white page.
     if (img.classList.contains("bloom-transparent")) return "force";
-    if (!pageNeedsTransparent) return "none";
+    if (!pageNeedsTransparent && !isOverlayOnBackgroundImage(img))
+        return "none";
     return "auto";
 }
 
@@ -586,6 +626,53 @@ export function setImgTransparentParam(
     if (!src) return;
     const newSrc = buildSrcWithTransparentParam(src, mode);
     if (newSrc !== src) img.setAttribute("src", newSrc);
+}
+
+// Recompute and apply the transparent param for a single img from its classes, its role
+// on the canvas (overlay or not), and its owning page's background color. Call after
+// changing any of those for one img. Like updateImageTransparencyForPage, it leaves
+// branding and QR code images alone.
+export function refreshImgTransparentParam(img: HTMLElement): void {
+    if (
+        img.classList.contains("branding") ||
+        img.classList.contains("bloom-qrcode")
+    )
+        return;
+    setImgTransparentParam(
+        img,
+        getImageTransparencyMode(
+            img,
+            pageBackgroundNeedsTransparency(getOwningPageBackgroundColor(img)),
+        ),
+    );
+}
+
+// Recompute the transparent param of every canvas element image on `bloomCanvas`. Call after
+// anything that can change whether the canvas has a real background image (choosing, pasting,
+// deleting or swapping it), since that decides whether its overlays get Auto transparency.
+export function refreshTransparentParamsInBloomCanvas(
+    bloomCanvas: HTMLElement,
+): void {
+    for (const img of Array.from(
+        bloomCanvas.querySelectorAll(`${kCanvasElementSelector} img`),
+    )) {
+        refreshImgTransparentParam(img as HTMLElement);
+    }
+}
+
+// If `img` is the background image of a canvas, recompute the transparent params on that
+// canvas, since its overlays depend on whether there is a real background image.
+export function refreshTransparencyIfBackgroundImage(img: HTMLElement): void {
+    const canvasElement = img.closest(kCanvasElementSelector);
+    if (!canvasElement?.classList.contains(kBackgroundImageClass)) {
+        return;
+    }
+    const bloomCanvas = canvasElement.closest(
+        kBloomCanvasSelector,
+    ) as HTMLElement | null;
+    if (bloomCanvas) {
+        refreshTransparentParamsInBloomCanvas(bloomCanvas);
+    }
 }
 
 // Update img src attributes on `page` to add or remove the transparent query

@@ -330,9 +330,11 @@ namespace Bloom.Publish.BloomPub
 
         /// <summary>
         /// Determine what transparency processing an image element needs, based on its CSS
-        /// classes and whether its page has a colored background.
+        /// classes, whether its page has a colored background, and whether it is a canvas overlay
+        /// on a real background image. This should stay consistent with
+        /// HtmlDom.GetImageTransparencyMode.
         /// </summary>
-        private static ImageTransparencyMode GetElementTransparencyMode(
+        internal static ImageTransparencyMode GetElementTransparencyMode(
             SafeXmlElement element,
             bool pageNeedsTransparent,
             bool fullScreenBlack
@@ -347,7 +349,8 @@ namespace Bloom.Publish.BloomPub
             // bloom-transparent: explicit user override "always force transparent".
             if (element.HasClass("bloom-transparent"))
                 return ImageTransparencyMode.Force;
-            if (!pageNeedsTransparent)
+            // Canvas overlays on a real background image would hide it, so they need Auto even on a white page.
+            if (!pageNeedsTransparent && !HtmlDom.IsInCanvasOverlayOnBackgroundImage(element))
                 return ImageTransparencyMode.None;
             return ImageTransparencyMode.Auto;
         }

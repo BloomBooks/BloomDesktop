@@ -2498,6 +2498,86 @@ namespace BloomTests.Publish.BloomPub
             );
         }
 
+        // BL-16993: after ConvertImagesToBackground, the converted image-container divs are what
+        // GetElementTransparencyMode sees. On a white page, only an overlay on a real (not
+        // placeholder) background image should get Auto transparency (unless overridden), and
+        // fullScreenBlack still wins.
+        [TestCase(
+            "overlay.png",
+            "",
+            "background.jpg",
+            false,
+            ExpectedResult = ImageTransparencyMode.Auto
+        )]
+        [TestCase(
+            "overlay.png",
+            "",
+            "placeHolder.png",
+            false,
+            ExpectedResult = ImageTransparencyMode.None
+        )]
+        [TestCase(
+            "overlay.png",
+            "bloom-opaque",
+            "background.jpg",
+            false,
+            ExpectedResult = ImageTransparencyMode.None
+        )]
+        [TestCase(
+            "overlay.png",
+            "bloom-transparent",
+            "background.jpg",
+            false,
+            ExpectedResult = ImageTransparencyMode.Force
+        )]
+        [TestCase(
+            "overlay.png",
+            "",
+            "background.jpg",
+            true,
+            ExpectedResult = ImageTransparencyMode.None
+        )]
+        [TestCase(
+            "background.jpg",
+            "",
+            "background.jpg",
+            false,
+            ExpectedResult = ImageTransparencyMode.None
+        )]
+        public ImageTransparencyMode GetElementTransparencyMode_WhitePageCanvas_OverlayOnBackgroundGetsAuto(
+            string imageFile,
+            string overlayImgClasses,
+            string backgroundFile,
+            bool fullScreenBlack
+        )
+        {
+            var dom = MakeDom(
+                "<div class='bloom-page'><div class='bloom-canvas bloom-has-canvas-element'>"
+                    + "<div class='bloom-canvas-element bloom-backgroundImage'>"
+                    + $"<div class='bloom-imageContainer'><img src='{backgroundFile}'/></div></div>"
+                    + "<div class='bloom-canvas-element'>"
+                    + $"<div class='bloom-imageContainer'><img class='{overlayImgClasses}' src='overlay.png'/></div></div>"
+                    + "</div></div>"
+            );
+            BloomPubMaker.ConvertImagesToBackground(dom);
+            Assert.That(
+                dom.SafeSelectNodes("//img").Length,
+                Is.EqualTo(0),
+                "test setup: imgs should be converted"
+            );
+            var div = dom.SafeSelectNodes(
+                    $"//div[contains(@class,'bloom-background-image-in-style-attr') and contains(@style,'{imageFile}')]"
+                )
+                .Cast<SafeXmlElement>()
+                .Single();
+
+            return BloomPubMaker.GetElementTransparencyMode(
+                div,
+                pageNeedsTransparent: false,
+                fullScreenBlack
+            );
+        }
+
         private class ZipHtmlObj
         {
             internal ZipHtmlObj(ZipFile zip, string html)
