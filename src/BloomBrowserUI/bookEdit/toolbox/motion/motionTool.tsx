@@ -598,6 +598,13 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private setupImageObserver(): void {
+        // Let go of any previous observer first. The toolbox mounts a tool's panel whenever
+        // it offers the tool, not only while the tool is running, so unticking Motion under
+        // "More..." and ticking it again mounts a fresh control and brings us back here --
+        // and detachFromPage(), which would otherwise clean up, only runs for the tool that
+        // is running. Without this, each round leaves another observer watching the same
+        // image and every change is handled several times.
+        this.observer?.disconnect();
         // Arrange to update things when the user chooses or deletes an image.
         this.observer = new MutationObserver(() =>
             this.updateMotionRectanglesState(),
