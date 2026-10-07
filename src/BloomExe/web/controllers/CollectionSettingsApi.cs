@@ -504,6 +504,7 @@ namespace Bloom.web.controllers
             {
                 Values = new CollectionSettingsValues(_collectionSettings),
                 RestartPaths = CollectionSettingsValues.GetRestartPaths(),
+                IsTeamCollection = CurrentCollectionIsTeamCollection,
             };
             request.ReplyWithJson(JsonConvert.SerializeObject(response, kCamelCaseSettings));
         }
