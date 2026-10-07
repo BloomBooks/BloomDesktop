@@ -18,17 +18,17 @@ using SIL.Windows.Forms.ClearShare;
 namespace BloomTests.Spreadsheet
 {
     /// <summary>
-    /// Tests that inline images (Word-style images inside text blocks; .bloom-inlineImage
-    /// wrappers replicated into every bloom-editable of a translation group) survive a
-    /// spreadsheet export → import round trip. Export gives each inline image its own
-    /// [inline image] row right after its group's row: the file in the normal [image source]
-    /// column, and the geometry (location, displacement, width) as JSON in the hidden
-    /// [details] column. The aspect ratio is not in the JSON: the importer measures the
-    /// image file itself. Import reconstructs the wrappers from those parameters, whether
-    /// importing over the same
-    /// book or into a book that has no inline images at all. A spreadsheet without the
-    /// [details] column (from an older Bloom) falls back to preserving whatever the target
-    /// book already has.
+    /// Tests that inline images survive exporting a book to a spreadsheet and importing it
+    /// again. Inline images are pictures inside a text block, as in Word; each one is a
+    /// .bloom-inlineImage wrapper, copied into every bloom-editable of its translation group.
+    /// The export gives each inline image its own [inline image] row right after its group's
+    /// row. The image file goes in the ordinary [image source] column, and the side it is
+    /// docked to, how far down it is pushed, and its width go as JSON in the hidden [details]
+    /// column. The JSON has no aspect ratio, because the importer measures the image file.
+    /// The import rebuilds the wrappers from those values, both when importing over the same
+    /// book and when importing into a book that has no inline images at all. When a
+    /// spreadsheet has no [details] column (because an older Bloom made it), the import keeps
+    /// whatever inline images the target book already has.
     /// </summary>
     public class SpreadsheetInlineImageTests
     {
@@ -39,9 +39,9 @@ namespace BloomTests.Spreadsheet
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         }
 
-        // A floating (right-docked) wrapper and a bottom-docked wrapper, exactly as
-        // makeInlineImageWrapper/insertInlineImage (inlineImages.ts) produce them, in every
-        // editable of the group including the lang="z" prototype.
+        // A right-docked wrapper and a bottom-docked wrapper, as makeInlineImageWrapper and
+        // insertInlineImage (inlineImages.ts) produce them. The test book puts both in every
+        // editable of the group, including the lang="z" prototype.
         private const string floatWrapper =
             @"<div data-bloom-inline-image-id=""ii-float"" data-inline-image-offset-basedon=""380,300"" class=""bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval"" contenteditable=""false"" style=""--inline-image-width: 40%; --inline-image-aspect-ratio: 800 / 600; --inline-image-offset: 24px;""><img class=""bloom-transparent"" src=""flower.jpg"" alt=""""></img></div>";
 
@@ -49,12 +49,13 @@ namespace BloomTests.Spreadsheet
             @"<div data-bloom-inline-image-id=""ii-bottom"" class=""bloom-inlineImage bloom-inlineImageBottom bloom-keepFirstInField bloom-preventRemoval"" contenteditable=""false"" style=""--inline-image-width: 60%; --inline-image-aspect-ratio: 4 / 3;""><img src=""fish.png"" alt=""""></img></div>";
 
         /// <summary>
-        /// The test book, parameterized so we can build it with the inline images (the book
-        /// that gets exported, and the same-book import target) or without them (the
-        /// "blank book" import target, proving the spreadsheet itself carries the images).
+        /// Builds the test book, either with the inline images or without them. The book with
+        /// them is the one we export, and also the target when we import over the same book.
+        /// The book without them is the "blankbook" import target, which shows that the
+        /// spreadsheet itself carries the images.
         /// </summary>
-        /// <param name="imageOnlyImg">the second group's picture; defaults to the first
-        /// group's floating one, since most callers want both groups to look the same.
+        /// <param name="imageOnlyImg">the second group's picture. It defaults to the first
+        /// group's right-docked picture, since most callers want both groups to look the same.
         /// Pass it separately to build a book (or a sheet) where only one group has a
         /// picture.</param>
         private static string MakeBook(
@@ -240,7 +241,8 @@ namespace BloomTests.Spreadsheet
             );
             Assert.That(group1Index, Is.GreaterThanOrEqualTo(0), "first group's row exists");
 
-            // First group: two inline images, in stacking order, directly after its row.
+            // The first group's two inline images come directly after its row, in the order
+            // they appear in the editable.
             Assert.That(
                 rows[group1Index + 1].MetadataKey,
                 Is.EqualTo(InternalSpreadsheet.InlineImageRowLabel)
@@ -272,7 +274,8 @@ namespace BloomTests.Spreadsheet
                 Is.EqualTo("{\"kind\":\"inline-image\",\"location\":\"bottom\",\"width\":\"60%\"}")
             );
 
-            // Second group (image-only): its row follows, then its one inline image.
+            // The second group, which has a picture and no text, comes next, followed by its
+            // one inline image.
             Assert.That(
                 rows[group1Index + 3].MetadataKey,
                 Is.EqualTo(InternalSpreadsheet.PageContentRowLabel)
@@ -292,8 +295,8 @@ namespace BloomTests.Spreadsheet
         [Test]
         public void DetailsColumnIsHidden()
         {
-            // Like [image source], [details] is machinery, not something a translator
-            // should be invited to edit.
+            // Like [image source], [details] is there for Bloom to read back, and a
+            // translator has no reason to edit it.
             var detailsColumn = _sheetFromExport.GetColumnForTag(
                 InternalSpreadsheet.DetailsColumnLabel
             );
@@ -329,10 +332,10 @@ namespace BloomTests.Spreadsheet
 
             var style = wrapper.GetAttribute("style");
             Assert.That(style, Does.Contain("--inline-image-width: 40%"), "width survives");
-            // The aspect ratio is measured from the image file on import. These imports run
-            // with null folders, so there is no file to measure and the property is omitted;
-            // the CSS then falls back to the image's natural ratio. See
-            // ImportMeasuresAspectRatioFromImageFile for the with-files case.
+            // The import measures the aspect ratio from the image file. These imports run
+            // with null folders, so there is no file to measure and the property is left off,
+            // and the CSS falls back to the image's natural ratio.
+            // ImportMeasuresAspectRatioFromImageFile tests an import that has the files.
             Assert.That(style, Does.Not.Contain("--inline-image-aspect-ratio"));
             Assert.That(
                 style,
@@ -348,7 +351,7 @@ namespace BloomTests.Spreadsheet
                 "src points at the book folder again after import"
             );
 
-            // The floating wrapper must be at the top of the editable, before the text.
+            // The right-docked wrapper must be the editable's first child, before the text.
             var elementChildren = editable.ChildNodes.OfType<SafeXmlElement>().ToList();
             Assert.That(
                 elementChildren.First().GetAttribute("class"),
@@ -373,9 +376,9 @@ namespace BloomTests.Spreadsheet
             );
             // BloomField reads bloom-keepFirstInField to decide whether the field's required
             // empty <p> goes after the pictures or before them. A bottom-docked picture is at
-            // the end of the block, so the <p> belongs before it; with the class on, field
-            // setup appended a blank paragraph after the picture (a blank line under the text).
-            // setInlineImageDock (inlineImages.ts) takes it off for the same reason.
+            // the end of the block, so the <p> belongs before it. With the class on, BloomField
+            // adds a blank paragraph after the picture, which shows as a blank line under the
+            // text. setInlineImageDock (inlineImages.ts) removes the class for the same reason.
             Assert.That(
                 wrapper.GetAttribute("class"),
                 Does.Not.Contain("bloom-keepFirstInField"),
@@ -422,9 +425,9 @@ namespace BloomTests.Spreadsheet
         [TestCase("blankbook")]
         public void ImageOnlyEditableIsNotDeleted(string target)
         {
-            // The es cell exports as the blank-content indicator (the image contributes no
-            // text), and the importer normally deletes an editable whose cell is blank. An
-            // editable whose group has an inline image must survive that.
+            // The es cell exports as [blank] because the picture has no text, and the importer
+            // normally deletes an editable whose cell is blank. It must keep an editable whose
+            // group has an inline image.
             var editable = GetEditable(GetDom(target), "imageOnlyGroup-es");
             GetFloatWrapper(editable);
         }
@@ -434,13 +437,13 @@ namespace BloomTests.Spreadsheet
         [TestCase("blankbook")]
         public void OffsetKeepsTheBlockSizeItWasMeasuredIn(string target)
         {
-            // The offset is an absolute distance, and the block it lands in is very often a
-            // different size (another page size, another layout, another book). Dropping the
-            // size it was measured against leaves the editor nothing to re-measure from
-            // (adjustInlineImageOffsetsIfBlockSizeChanged), so the picture keeps a displacement
-            // from the other layout and pushes the text after it off the end of the block.
+            // The offset is a fixed distance, and the block it is imported into is often a
+            // different size (another page size, another layout, another book). Without the
+            // size of the block it was measured in, adjustInlineImageOffsetsIfBlockSizeChanged
+            // cannot scale the offset, so the picture keeps an offset meant for the other
+            // layout and can push the text after it off the end of the block.
             var wrapper = GetFloatWrapper(GetEditable(GetDom(target), "groupWithTextAndImages-es"));
-            // Sanity check: the offset that baseline describes really did come through.
+            // Sanity check: the offset that this block size belongs to came through.
             Assert.That(wrapper.GetAttribute("style"), Does.Contain("--inline-image-offset: 24px"));
             Assert.That(
                 wrapper.GetAttribute("data-inline-image-offset-basedon"),
@@ -452,15 +455,15 @@ namespace BloomTests.Spreadsheet
         [TestCase("blankbook")]
         public void TransparencySurvivesTheRoundTrip(string target)
         {
-            // Whether a picture's white is transparent is a choice the person made from the
-            // image's own menu (the "image" section of canvasControlRegistry, shared with
-            // canvas elements), and it is held as a class on the img. Dropping it turns a
-            // picture that was drawn on the page's background into one sitting in a white box.
+            // The person chooses whether a picture's white is transparent from the image's menu
+            // (the "image" section of canvasControlRegistry, which canvas elements also use),
+            // and the choice is stored as a class on the img. If the import lost it, a picture
+            // that showed the page's background would sit in a white box.
             var editable = GetEditable(GetDom(target), "groupWithTextAndImages-es");
             var floatImg = GetFloatWrapper(editable).ChildNodes.OfType<SafeXmlElement>().First();
             Assert.That(floatImg.GetAttribute("class"), Does.Contain("bloom-transparent"));
-            // The bottom picture made no such choice, and must not acquire one: with neither
-            // class the page's background decides.
+            // Nobody made that choice for the bottom picture, and the import must not add one.
+            // With neither class the page's background decides.
             var bottomImg = GetWrappers(editable)
                 .Last()
                 .ChildNodes.OfType<SafeXmlElement>()
@@ -500,9 +503,9 @@ namespace BloomTests.Spreadsheet
         [Test]
         public async Task ImportMeasuresAspectRatioFromImageFile()
         {
-            // The [details] JSON carries no aspect ratio; we never stretch images, so the
-            // file itself is the authority and the importer measures it after copying it
-            // into the book.
+            // The [details] JSON has no aspect ratio. We never stretch images, so the image
+            // file determines it, and the importer measures the file after copying it into
+            // the book.
             using (var spreadsheetFolder = new TemporaryFolder("inlineImageSheetFolder"))
             using (var bookFolder = new TemporaryFolder("inlineImageBookFolder"))
             {
@@ -514,8 +517,8 @@ namespace BloomTests.Spreadsheet
                     bitmap.Save(Path.Combine(imagesFolder, "fish.png"), ImageFormat.Png);
 
                 var dom = new HtmlDom(MakeBook("", ""), true);
-                // Like the shared setup, go through a real .xlsx: only the written file has
-                // the language cells flattened to text the way a real import sees them.
+                // As in OneTimeSetUp, write a real .xlsx and read it back. Only then are the
+                // language cells reduced to plain text the way a real import sees them.
                 InternalSpreadsheet sheet;
                 using (var tempFile = TempFile.WithExtension("xlsx"))
                 {
@@ -545,12 +548,12 @@ namespace BloomTests.Spreadsheet
         [Test]
         public async Task ImportPutsTheImageFileMetadataOnTheImg()
         {
-            // Bloom mirrors an image file's copyright, creator and license onto the img element
+            // Bloom copies an image file's copyright, creator and license onto the img element
             // so that the credits and the UI can read them without opening every file, and the
             // ordinary [image] import fills them in as it copies the file
-            // (CopyImageFileToDestination). An inline image has to do the same: nothing else on
-            // this path would, and a command-line import is never followed by the pass that
-            // brings a book up to date in the editor.
+            // (CopyImageFileToDestination). The inline-image import has to do the same, because
+            // nothing else on this path does, and a command-line import is never followed by
+            // the pass that brings a book up to date in the editor.
             using (var spreadsheetFolder = new TemporaryFolder("inlineImageCreditsSheetFolder"))
             using (var bookFolder = new TemporaryFolder("inlineImageCreditsBookFolder"))
             {
@@ -603,11 +606,11 @@ namespace BloomTests.Spreadsheet
             }
         }
 
-        // A book with a picture inside an image description, alongside a text block that has
-        // one too (so the sheet gets its [details] column and IS the authority on inline
-        // images). Bloom no longer offers Insert Image inside an image description, so this is a
-        // book made before that or edited by hand -- and either way the picture is the
-        // person's and must not be thrown away by an import.
+        // A book with a picture inside an image description, and a text block that has one
+        // too, so the sheet gets a [details] column and the import builds inline images from
+        // its rows. Bloom no longer offers Insert Image inside an image description, so a book
+        // like this was made before that change or edited by hand. Either way the picture is
+        // the person's, and an import must not throw it away.
         private static string MakeBookWithPictureInImageDescription()
         {
             return @"
@@ -654,10 +657,9 @@ namespace BloomTests.Spreadsheet
         [Test]
         public async Task ImportKeepsAPictureInAnImageDescription()
         {
-            // An image description is exported as a cell on its image's row, not as a group
-            // row of its own, so no [inline image] rows can follow it and the sheet has
-            // nothing to say about pictures in it. That is not the same as saying it has
-            // none: the group has to keep what the book gave it.
+            // An image description is exported as a cell on its image's row instead of as a
+            // row of its own, so no [inline image] rows can follow it, and the sheet says
+            // nothing about pictures in it. The group has to keep the pictures the book gave it.
             var bookHtml = MakeBookWithPictureInImageDescription();
             var targetDom = new HtmlDom(bookHtml, true);
             var sheet = ExportBook(bookHtml);
@@ -669,8 +671,8 @@ namespace BloomTests.Spreadsheet
 
             await RoundTripThroughFileAndImportAsync(sheet, targetDom);
 
-            // Sanity check: the text block's own picture came through, so the import really
-            // did rebuild inline images on this page.
+            // Sanity check: the text block's own picture came through, so the import did
+            // rebuild inline images on this page.
             Assert.That(GetWrappers(GetEditable(targetDom, "textGroup-es")).Count, Is.EqualTo(1));
             var description = GetEditable(targetDom, "description-es");
             Assert.That(description.InnerText, Does.Contain("Un pez que salta."));
@@ -684,12 +686,12 @@ namespace BloomTests.Spreadsheet
         [Test]
         public async Task PictureMarkupCannotTravelInACell()
         {
-            // Why the [inline image] rows are the only carrier, and worth pinning because it is
-            // not obvious from the code: a cell holds MarkedUpText -- paragraphs, and bold,
-            // italic and underline runs (see SpreadsheetIO) -- so writing the file drops any
-            // other element and reading it cannot bring one back. Markup in a cell therefore
-            // cannot move a picture to another book, and an import from a file cannot write old
-            // wrappers into an editable either.
+            // This test shows why pictures can only travel in [inline image] rows, which is not
+            // obvious from the code. A cell holds MarkedUpText (paragraphs, and bold, italic
+            // and underline runs; see SpreadsheetIO), so writing the file drops any other
+            // element and reading it cannot bring one back. So markup in a cell cannot move a
+            // picture to another book, and an import from a file cannot write old wrappers into
+            // an editable either.
             var sheet = ExportBook(MakeBookWithPictureInImageDescription());
             var row = sheet.ContentRows.First(r =>
                 r.MetadataKey == InternalSpreadsheet.ImageDescriptionRowLabel
@@ -731,13 +733,13 @@ namespace BloomTests.Spreadsheet
         [Test]
         public void LanguageCellsCarryNoPictureMarkup()
         {
-            // The cell is the block's text. A picture in the block has a row of its own, so its
-            // markup has no business in the language cell as well. In a cell it is also a trap
-            // for anything that reads the sheet without going through a file, as the importer's
-            // own tests do: the cell would be written back verbatim, and StampInlineImages
-            // leaves alone an editable that already has pictures, so a change made through the
-            // picture rows would be ignored. Through a real file the markup never arrives at all
-            // -- see PictureMarkupCannotTravelInACell.
+            // The language cell holds the block's text. A picture in the block has a row of its
+            // own, so its markup should not appear in the language cell too. Markup in the cell
+            // would also cause trouble for code that reads the sheet without going through a
+            // file, as the importer's own tests do. That code would write the cell back into
+            // the editable as it is, and StampInlineImages skips an editable that already has
+            // pictures, so a change made in the [inline image] rows would be ignored. Through a
+            // real file the markup never arrives at all; see PictureMarkupCannotTravelInACell.
             var content = _sheetFromExport
                 .ContentRows.First(r =>
                     r.GetCell("[es]").Content.Contains("Un perro muy valiente.")
@@ -751,12 +753,12 @@ namespace BloomTests.Spreadsheet
         [Test]
         public async Task ImportRejectsGeometryItCannotUse()
         {
-            // A person can edit the [details] cell -- it is hidden, not locked -- and these two
-            // values go straight into the wrapper's style attribute. A value that is not a
-            // length would either be ignored by the browser (leaving a picture at some default
-            // that surprises them) or, with a semicolon in it, add declarations of its own to
-            // the wrapper's style. So an unusable value is refused, with a warning, and the
-            // picture gets the default.
+            // A person can edit the [details] cell (the column is hidden, but it is not
+            // locked), and the width and offset go straight into the wrapper's style attribute.
+            // The browser ignores a value that is not a length, which leaves the picture at
+            // some default that would surprise the person, and a value with a semicolon in it
+            // adds declarations of its own to the wrapper's style. So the import rejects a
+            // value it cannot use, warns about it, and gives the picture the default.
             var sheet = ExportBook(MakeBook(floatWrapper, bottomWrapper));
             var row = sheet.ContentRows.First(r =>
                 r.MetadataKey == InternalSpreadsheet.InlineImageRowLabel
@@ -780,9 +782,9 @@ namespace BloomTests.Spreadsheet
         [Test]
         public async Task SpreadsheetWithoutDetailsColumnPreservesBookImages()
         {
-            // A spreadsheet made from a book with no inline images (like any spreadsheet
-            // from an older Bloom) has no [details] column, so it is not an authority
-            // on inline images: importing it over a book that has them must not destroy them.
+            // A spreadsheet made from a book with no inline images has no [details] column,
+            // just like any spreadsheet from an older Bloom, so it says nothing about inline
+            // images. Importing it over a book that has them must keep them.
             var targetDom = new HtmlDom(MakeBook(floatWrapper, bottomWrapper), true);
             var sheet = ExportBook(MakeBook("", ""));
             Assert.That(
@@ -806,16 +808,16 @@ namespace BloomTests.Spreadsheet
         [Test]
         public async Task ASheetWithNoRowsForABlockClearsItsImages()
         {
-            // Removing a block's [inline image] rows is how a person deletes its pictures
-            // through the spreadsheet. The language editables are rewritten from their cells,
-            // so their copies go with the text; the lang="z" prototype is not, so its copy has
-            // to be removed explicitly. Left there, it would be invisible until a language was
-            // added to the collection and inherited it (TranslationGroupManager clones the
-            // prototype).
+            // A person deletes a block's pictures through the spreadsheet by removing the
+            // block's [inline image] rows. The import rewrites the language editables from
+            // their cells, so their copies go along with the old text. It does not rewrite the
+            // lang="z" prototype, so the prototype's copy has to be removed separately. If it
+            // stayed, nobody would see it until a language was added to the collection and
+            // got a copy of it (TranslationGroupManager clones the prototype).
             //
-            // The sheet here still carries the second group's picture, so it has a [details]
-            // column and IS the authority on inline images; it just says the first group has
-            // none.
+            // The sheet here still has the second group's picture, so it has a [details]
+            // column and the import builds inline images from its rows. Those rows say the
+            // first group has none.
             var targetDom = new HtmlDom(MakeBook(floatWrapper, bottomWrapper, floatWrapper), true);
             var sheet = ExportBook(MakeBook("", "", floatWrapper));
             Assert.That(
@@ -849,7 +851,7 @@ namespace BloomTests.Spreadsheet
                 Is.EqualTo(0),
                 "the prototype's copies go too, or the picture comes back with the next language"
             );
-            // ...and the group the sheet DOES have a picture for still has it.
+            // The group the sheet does have a picture for still has it.
             Assert.That(
                 GetWrappers(GetEditable(targetDom, "imageOnlyGroup-es")).Count,
                 Is.EqualTo(1)
@@ -859,10 +861,10 @@ namespace BloomTests.Spreadsheet
         [Test]
         public async Task ALanguageTheSheetLacksFollowsTheSheetsPictures()
         {
-            // The target book has a French block the sheet has no column for, so the import
-            // does not rewrite it. Its copy of the picture still has to follow the sheet, which
-            // here says the block has no pictures: a copy left in French would come back into
-            // view whenever French is shown, and its id would match nothing else in the block.
+            // The target book has a French editable the sheet has no column for, so the import
+            // does not rewrite it. Its pictures still have to match the sheet, which here says
+            // the block has none. A copy left in French would show up whenever French is shown,
+            // and its id would match nothing else in the block.
             var frenchEditable =
                 "<div class=\"bloom-editable normal-style\" id=\"groupWithTextAndImages-fr\" lang=\"fr\" contenteditable=\"true\">"
                 + floatWrapper
@@ -897,9 +899,9 @@ namespace BloomTests.Spreadsheet
         [Test]
         public async Task WarningsNameTheInlineImageRowTheyAreAbout()
         {
-            // An [inline image] row is handled while the import is still on its group's row, and
-            // a group can have several. The warning has to name the picture's own row, or the
-            // person cannot tell which one to fix.
+            // The import handles an [inline image] row while it is still on its group's row, and
+            // a group can have several picture rows. The warning has to give the picture's own
+            // row number, or the person cannot tell which one to fix.
             var sheet = ExportBook(MakeBook(floatWrapper, bottomWrapper));
             var rows = sheet.ContentRows.ToList();
             var imageRows = rows.Where(r =>
@@ -912,7 +914,8 @@ namespace BloomTests.Spreadsheet
                 Is.EqualTo(InternalSpreadsheet.PageContentRowLabel),
                 "sanity: the picture rows follow their group's row"
             );
-            // The block's second picture, so it is not the row right after the group's row.
+            // Use the block's second picture, whose row is not the one right after the group's
+            // row.
             var badRow = imageRows[1];
             badRow.SetCell(
                 InternalSpreadsheet.DetailsColumnLabel,
@@ -932,9 +935,9 @@ namespace BloomTests.Spreadsheet
         [Test]
         public async Task ImportDropsABlockSizeItCannotRead()
         {
-            // The editor rescales the offset by comparing offsetBasedOn with the block's size, so
-            // a hand-edited value it cannot parse is dropped, with a warning. The offset itself
-            // is still usable and stays.
+            // The editor scales the offset by comparing offsetBasedOn with the block's size, so
+            // the import drops a hand-edited value it cannot parse and warns about it. The
+            // offset itself is still usable and stays.
             var sheet = ExportBook(MakeBook(floatWrapper, bottomWrapper));
             var row = sheet.ContentRows.First(r =>
                 r.MetadataKey == InternalSpreadsheet.InlineImageRowLabel

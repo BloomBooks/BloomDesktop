@@ -397,16 +397,17 @@ namespace Bloom.Spreadsheet
         }
 
         /// <summary>
-        /// The editable's markup with its inline-image wrappers taken out. The cell is the
-        /// block's text, and each picture has an [inline image] row of its own, so the wrapper
-        /// markup does not belong here as well.
+        /// Returns the editable's markup with its inline-image wrappers removed. The language
+        /// cell holds the block's text, and each picture gets an [inline image] row of its own,
+        /// so the wrapper markup should not appear in the cell too.
         ///
-        /// A cell could not carry it anyway: a cell holds MarkedUpText (paragraphs, and bold,
+        /// A file could not keep it anyway. A cell holds MarkedUpText (paragraphs, and bold,
         /// italic and underline runs), so WriteToFile drops any other element and ReadFromFile
-        /// cannot bring it back. Taking the wrappers out here matters to a consumer that reads
-        /// the sheet without going through a file (the importer's own tests do): writing such a
-        /// cell back verbatim would bring its wrappers along, and StampInlineImages will not
-        /// stamp over pictures that are already there.
+        /// cannot bring it back. Removing the wrappers here matters to code that reads the
+        /// sheet without going through a file, as the importer's own tests do. Such code would
+        /// write the cell back into the editable with its wrappers, and StampInlineImages skips
+        /// an editable that already has pictures, so changes made in the [inline image] rows
+        /// would be ignored.
         /// </summary>
         private static string GetEditableXmlWithoutInlineImages(SafeXmlElement editable)
         {
@@ -875,14 +876,15 @@ namespace Bloom.Spreadsheet
         }
 
         /// <summary>
-        /// Inline images (.bloom-inlineImage wrappers; see inlineImages.ts) live inside the
-        /// text of a translation group but are language-neutral: the edit-time code keeps an
-        /// identical copy in every editable of the group. The language cells carry only that
-        /// language's text, so each inline image gets its own [inline image] row, immediately
-        /// after the group's row, in stacking order: the image file in the normal
-        /// [image source] column (copied to the spreadsheet's images folder, thumbnail and
-        /// all, like any other image) and the geometry needed to reconstruct the wrapper
-        /// (location, displacement, width) as JSON in the hidden [details] column.
+        /// Writes an [inline image] row for each inline image in this translation group.
+        /// Inline images (.bloom-inlineImage wrappers; see inlineImages.ts) sit inside the
+        /// group's text, but they are the same in every language: the editing code keeps an
+        /// identical copy in each editable of the group. The language cells hold only that
+        /// language's text, so each picture gets its own row, straight after the group's row
+        /// and in the order the wrappers appear. The image file goes in the ordinary
+        /// [image source] column and is copied to the spreadsheet's images folder, with a
+        /// thumbnail, like any other image. The side the picture is docked to, how far down
+        /// it is pushed, and its width go as JSON in the hidden [details] column.
         /// </summary>
         private void ExportInlineImageRows(
             SafeXmlElement translationGroup,
@@ -891,8 +893,8 @@ namespace Bloom.Spreadsheet
             string bookFolderPath
         )
         {
-            // Any one editable's copies are canonical, since edit-time sync keeps them
-            // identical; take the first editable that has any.
+            // The editing code keeps every editable's copies identical, so we can read them
+            // from the first editable that has any.
             var wrappers = translationGroup
                 .SafeSelectNodes("./*[contains(@class, 'bloom-editable')]")
                 .Cast<SafeXmlElement>()
@@ -901,9 +903,9 @@ namespace Bloom.Spreadsheet
             if (wrappers == null)
                 return;
 
-            // Make sure the details column exists even if every detail turns out to be a
-            // default; its presence is what tells the importer this spreadsheet is the
-            // authority on inline images.
+            // Add the [details] column even if every value turns out to be a default. The
+            // importer takes the column's presence to mean that the [inline image] rows list
+            // every inline image the book has.
             _spreadsheet.AddColumnForTag(
                 InternalSpreadsheet.DetailsColumnLabel,
                 InternalSpreadsheet.DetailsColumnFriendlyName
@@ -943,23 +945,28 @@ namespace Bloom.Spreadsheet
         }
 
         /// <summary>
-        /// Reads the geometry off an inline-image wrapper and renders it as the JSON the
-        /// [details] cell holds, e.g.
+        /// Reads where an inline-image wrapper is placed and how big it is, and returns that as
+        /// the JSON the [details] cell holds, e.g.
         /// {"kind":"inline-image","location":"right","offset":"24px","width":"40%"}.
-        /// The kind comes first so the JSON identifies itself even apart from its row.
-        /// The offset comes with the block size it was measured against ("offsetBasedOn", from
-        /// data-inline-image-offset-basedon), because the offset is an absolute distance and the
-        /// destination block is very often a different size: a different page size, a different
-        /// layout, another book. Without it adjustInlineImageOffsetsIfBlockSizeChanged
-        /// (inlineImageInteractions.ts) has nothing to re-measure from and leaves the old
-        /// displacement in place, which pushes the text after the picture off the end of the
-        /// block. The aspect ratio is deliberately NOT included:
-        /// we never stretch images, so the image file itself (in the same row's
-        /// [image source]) is the authority, and the importer measures it.
-        /// Whether the picture's white is transparent ("transparency") is a choice the person
-        /// made from the image's own menu, held as a class on the img; with neither class the
-        /// page's background decides, and nothing is written.
-        /// SpreadsheetImporter.BuildInlineImageWrapper is the inverse.
+        /// "kind" comes first so a reader can tell what the JSON describes without looking at
+        /// its row.
+        ///
+        /// The offset is a fixed distance, and the block the picture is imported into is often
+        /// a different size (another page size, another layout, another book). So the offset
+        /// goes with the size of the block it was measured in ("offsetBasedOn", from
+        /// data-inline-image-offset-basedon). Without that size,
+        /// adjustInlineImageOffsetsIfBlockSizeChanged (inlineImageInteractions.ts) cannot scale
+        /// the offset to the new block, and the old offset can push the text after the picture
+        /// off the end of the block.
+        ///
+        /// The aspect ratio is left out on purpose. We never stretch images, so the image file
+        /// in the same row's [image source] cell determines it, and the importer measures it.
+        ///
+        /// "transparency" records whether the person chose, from the image's menu, to make the
+        /// picture's white transparent or opaque. That choice is a class on the img. With
+        /// neither class the page's background decides, and nothing is written.
+        ///
+        /// SpreadsheetImporter.BuildInlineImageWrapper does the reverse.
         /// </summary>
         internal static string GetInlineImageDetails(SafeXmlElement wrapper)
         {
