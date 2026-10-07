@@ -1,5 +1,7 @@
-// Edit-time styling for inline (Word-style) images. Imported by editMode.less, which provides
-// @bloom-blue and @image-placeholder, so this file only compiles as part of it.
+// Edit-time styling for inline (Word-style) images, imported by editMode.less.
+// The build also compiles every .less file on its own, so this one imports what it uses.
+@import "../../bloomUI.less";
+@import "../../placeHolderImages.less";
 
 // Inline (Word-style) images: an image docked inside a bloom-editable that the text
 // wraps around. The layout rules live in content/bookLayout/inlineImages.less; these are
