@@ -347,7 +347,7 @@ namespace Bloom.Publish
                 "Preparing image: {0}",
                 "{0} is a placeholder for the image file name"
             );
-            var idx = msgFmt.IndexOf("{0}");
+            var idx = msgFmt.IndexOf("{0}", StringComparison.Ordinal);
             return idx >= 0 ? msgFmt.Substring(0, idx) : msgFmt; // translated string is missing the filename placeholder?
         }
 

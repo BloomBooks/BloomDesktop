@@ -236,7 +236,7 @@ namespace Bloom.FontProcessing
                 version = gtf.VersionStrings[english];
                 // Most fonts include the text "Version x" here, but our UI provides the
                 // (possibly localized) text, so we strip it out here.
-                if (version.StartsWith("Version "))
+                if (version.StartsWith("Version ", StringComparison.Ordinal))
                     version = version.Replace("Version ", "");
                 copyright = gtf.Copyrights[english];
                 var embeddingRights = gtf.EmbeddingRights;
@@ -298,7 +298,10 @@ namespace Bloom.FontProcessing
                     || license.Contains("OFL")
                     || /* Kmhmu OT has this typo */
                     license.Contains("SIL OpenFont License")
-                    || license.StartsWith("Licensed under the Apache License")
+                    || license.StartsWith(
+                        "Licensed under the Apache License",
+                        StringComparison.Ordinal
+                    )
                     || license.Contains("GNU GPL")
                     || license.Contains("GNU General Public License")
                     || license.Contains(" GPL ")
@@ -316,7 +319,12 @@ namespace Bloom.FontProcessing
                         license.Contains("SIL OpenFont License")
                     )
                         determinedSuitabilityNotes = "Open Font License";
-                    else if (license.StartsWith("Licensed under the Apache License"))
+                    else if (
+                        license.StartsWith(
+                            "Licensed under the Apache License",
+                            StringComparison.Ordinal
+                        )
+                    )
                         determinedSuitabilityNotes = "Apache License";
                     else if (
                         license.Contains("GNU LGPL")

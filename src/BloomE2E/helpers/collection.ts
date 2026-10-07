@@ -18,10 +18,26 @@ export async function waitForCollectionReady(
     timeoutMs = 60000,
 ): Promise<void> {
     await expect
-        .poll(async () => (await apiGet(page, "e2e/isCollectionReady")).body, {
-            timeout: timeoutMs,
-            message: "Bloom's editable collection never became ready.",
-        })
+        .poll(
+            async () => {
+                try {
+                    return (await apiGet(page, "e2e/isCollectionReady")).body;
+                } catch (error) {
+                    // The e2e endpoints are project-scoped, so they briefly answer 404 while
+                    // the project is reopening (e.g. after a UI language change); that just
+                    // means "not ready yet". Anything else - a closed page, a dead server -
+                    // is a real failure, and hiding it inside a generic timeout would only
+                    // obscure it.
+                    if (/returned 404/.test(String(error)))
+                        return "not ready yet";
+                    throw error;
+                }
+            },
+            {
+                timeout: timeoutMs,
+                message: "Bloom's editable collection never became ready.",
+            },
+        )
         .toBe("true");
 }
 

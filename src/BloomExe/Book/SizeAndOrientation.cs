@@ -60,8 +60,8 @@ namespace Bloom.Book
         {
             var nameLower = name.ToLowerInvariant();
             var startOfOrientationName = Math.Max(
-                nameLower.IndexOf("landscape"),
-                nameLower.IndexOf("portrait")
+                nameLower.IndexOf("landscape", StringComparison.Ordinal),
+                nameLower.IndexOf("portrait", StringComparison.Ordinal)
             );
             if (startOfOrientationName == -1)
             {
@@ -231,7 +231,10 @@ namespace Bloom.Book
                 fileName = fileName.Replace("file://", "").Replace("%5C", "/").Replace("%20", " ");
                 fileName = fileName.Replace("\\", "/");
                 var path = fileLocator.LocateFile(fileName);
-                if (string.IsNullOrEmpty(path) && fileName.StartsWith("../"))
+                if (
+                    string.IsNullOrEmpty(path)
+                    && fileName.StartsWith("../", StringComparison.Ordinal)
+                )
                     path = fileLocator.LocateFile(fileName.Substring(3));
                 if (string.IsNullOrEmpty(path))
                 {

@@ -358,6 +358,15 @@ test.describe("the Text Languages publish list", () => {
     //
     // A local failure here is usually something else: earlier steps time out on a loaded machine
     // and the run dies before reaching this assertion.
+    //
+    // It has also failed intermittently on a developer machine with a different symptom (once in
+    // six full runs on 2026-09-01, twice more on 2026-09-02 with full logs): the failing assertion
+    // is the expectTextLanguageRowsInAnyOrder below - French comes back disabled: true, i.e. after
+    // the restart Bloom treats French as shown by the book. That points at the previous test's
+    // closing setContentLanguages(page, ["en"]) not being persisted to disk before restart()'s
+    // hard kill, so the reopened book still shows English+French and French stays required. If
+    // that is right, the fix is for the previous test (or restart itself) to wait for the
+    // content-language change to reach the book file before Bloom dies.
     test("keeps a language that the collection no longer has, under its standard name [Test Case ID 169]", async ({
         bloomApp,
     }) => {

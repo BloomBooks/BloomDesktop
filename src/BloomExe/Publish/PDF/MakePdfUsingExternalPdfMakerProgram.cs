@@ -163,7 +163,10 @@ namespace Bloom.Publish.PDF
                 (msg) =>
                 {
                     var parts = msg.Split('|');
-                    if (parts.Length == 2 && parts[1].StartsWith("Percent: "))
+                    if (
+                        parts.Length == 2
+                        && parts[1].StartsWith("Percent: ", StringComparison.Ordinal)
+                    )
                     {
                         var percent = int.Parse(parts[1].Substring(@"Percent: ".Length));
                         socketProgress.SendPercent(

@@ -71,6 +71,7 @@ and whatever tab is showing. Most tests need nothing else.
 | `collectionDir` | The temp copy of the collection. Build book paths from this, never from `output/testing-inputs`. |
 | `userSettingsDir` | The folder this Bloom keeps its user settings in (its `user.config`), beside the collection in the temp folder. |
 | `restart`       | Stop Bloom, run an optional callback, start it again on the same collection, and return the new page. |
+| `reattachToShell` | Find the shell page again after Bloom rebuilt it in the same process (changing the UI language reopens the project), and return it. |
 
 Every Bloom the fixture launches keeps its user settings, the contents of `user.config` (UI
 language, page zoom, the Bloom Library login, and the rest of `Settings.Default`), in
@@ -90,6 +91,18 @@ is open, so the way to change a language is to stop Bloom, rewrite the `.bloomCo
 `makeCollectionXml`, and start again. Bloom is killed rather than asked to quit, so leave the
 page being edited before restarting or what was typed on it is lost. Use the page `restart`
 returns; the old one is closed.
+
+`reattachToShell()` is for the other way the shell page dies: Bloom replaces it without
+restarting, as it does when the UI language changes. Wait for the old page's `close` event first,
+or it can find the outgoing page. `helpers/uiLanguage.ts` does both for a language change.
+
+A test of the Choose Collection dialog sets `test.use({ startAtChooser: true, collectionSpec })`.
+Bloom then starts with no collection named and, with an empty settings folder, nothing to reopen,
+so it shows the dialog. The test uses the `chooserApp` fixture instead of `bloomApp`: its `page` is
+the dialog's document, `collectionToOpen` is the collection made from `collectionSpec` for the test
+to open from the dialog, and `reattachToChooser()` and `reattachToShell()` find the dialog again
+after it is rebuilt, or the workspace once a collection is open. Using the fixture that does not
+match the launch mode fails at once and says which one to use.
 
 Teardown kills the process tree, waits for the HTTP port to go dark, and deletes the temp copy.
 
@@ -135,7 +148,9 @@ real bug in the code under test; read the message and fix it rather than working
 - `helpers/screenshot.ts` — `captureCurrentBookPage`, `captureElement`, `readPngSize`. Captures an
   element taller than the window. `Page.captureScreenshot` with `captureBeyondViewport` hangs in
   WebView2, so this enlarges the window, clips, clears the override, and times out every CDP
-  request. Never open a CDP session in a test; add the capture here.
+  request. Never open a CDP session in a test; add the capture here. `saveScreenshotIfAsked` saves a
+  picture of some elements for a manual test card when `BLOOM_E2E_SCREENSHOT_DIR` names a folder,
+  and does nothing otherwise.
 - `helpers/collectionSettings.ts` — rewrite the collection's languages, xmatter pack or
   subscription code and restart Bloom on them; `setBranding`; `getFeatureStatus`, the same
   answer the front end asks for before it shows a tier-gated control; and
@@ -149,8 +164,18 @@ real bug in the code under test; read the message and fix it rather than working
   Language tool), which is the route a person takes.
 - `helpers/canvasElements.ts` — `openCanvasTool`, `dragPaletteItemOntoCanvas`,
   `selectCanvasElement`, the selected element's toolbar and "..." menu by localization id,
-  `duplicateCanvasElement`, `deleteCanvasElement`, `dragCanvasElementCorner`. The palette drag is
-  dispatched rather than pressed, for a reason the file and AUTOMATION-DEBT.md give.
+  `duplicateCanvasElement`, `deleteCanvasElement`, `dragCanvasElementCorner`; the menu's groups
+  and submenus (`getCanvasElementMenuGroups`, `canvasElementMenuPanels`,
+  `getOpenCanvasElementMenuCount`, `openCanvasElementSubmenu`, `clickCanvasElementSubmenuItem`);
+  the picture commands on the menu (`rotateSelectedImageRight90Degrees`,
+  `flipSelectedImage`, `resetSelectedImage`); and the rotation knob
+  and its results (`expectRotateHandleShown`, `dragRotateHandle`, `getCanvasElementRotation`,
+  `getCanvasElementPlacement`). The palette drag is dispatched rather than pressed, for a reason the
+  file and AUTOMATION-DEBT.md give.
+- `helpers/images.ts` — `chooseImageFile`, `cropImage`, `getImagePlacement`; `getPictureRotation`,
+  which says how a picture is rotated and mirrored on screen, box and picture together, with
+  `kUprightPicture` and `mirroredAboutOwnAxis` to build the expected answer; `getPictureInlineLayout`,
+  the inline styles that lay out a picture and its box.
 - `helpers/geometry.ts` — compare rectangles to one another (`expectInside`, `expectNoOverlap`,
   `expectSameRect`) so a test never asserts a pixel value the machine decided.
 - `helpers/videos.ts` — `chooseVideoFile` puts a video into a video box through the Sign Language
@@ -160,6 +185,11 @@ real bug in the code under test; read the message and fix it rather than working
   `sections`, `splitSection`, `getSectionTypesOffered`, `chooseSectionType`.
 - `helpers/pageSize.ts` — `getPageSize`, `getPageSizeChoices`, `setPageSize`: read and change
   the book's page size and orientation through the Edit tab's layout-choice API.
+- `helpers/uiLanguage.ts` — the UI language menu, in the top bar and in the Choose Collection
+  dialog: read what it offers (`getOfferedUiLanguages`, `getUiLanguageMenuEntries`,
+  `getCurrentUiLanguageTag`), change the language through it (`chooseUiLanguage`,
+  `chooseUiLanguageInChooser`), toggle unapproved translations (`setShowUnapprovedTranslations`),
+  and check one string per localization pathway (`expectUiStrings`, `expectChooserStrings`).
 
 Two things a test must never do: trigger a native OS dialog (file pickers, the WinForms Image
 Toolbox, video capture), because Playwright cannot dismiss one and the run hangs; and wait on a
@@ -245,8 +275,44 @@ right. See `AutomationWindowPlacement.GetBoundsOffEveryMonitor`.
 `--debug` clears a `headless` setting for you: stepping through a test whose window you cannot see
 is pointless. A setting that names a monitor is left alone, because that window is visible anyway.
 
-The variable applies only to a run under `--automation`, which is every e2e run and nothing else.
-A Bloom you start yourself is unaffected, however the variable is set.
+The variable applies only to a Bloom started with `--automation`, which every e2e run passes, and
+so does `./go.sh`. A Bloom you start any other way is unaffected, however the variable is set.
+
+### Running at the nightly's window size
+
+On a developer's monitor Bloom is big. On the nightly CI runner its page area is about 1008x681,
+so the lower part of an A5 page is below the fold and a long menu scrolls. A spec can pass every
+time locally and fail every night. `BLOOM_E2E_VIEWPORT` makes a run see what the nightly sees:
+
+```bash
+BLOOM_E2E_VIEWPORT=nightly pnpm exec playwright test tests/my-feature.spec.ts
+BLOOM_E2E_VIEWPORT=1024x586 pnpm test           # any other size, at least 400x300
+```
+
+The fixture emulates the size with a CDP device-metrics override (`fixtures/viewport.ts`), so the
+page lays out as it would in a window of that size. A value it cannot read fails the run. Preflight
+runs every spec a branch adds or changes this way once; see "Preflight checks" in the root
+`AGENTS.md`.
+
+### Whether the Bloom window takes the keyboard: `BLOOM_E2E_DONT_DISTURB`
+
+Where a window goes and whether it takes the foreground are separate. On a developer's machine
+the fixture also passes `--dont-disturb`, under which none of Bloom's own windows (the main
+window, the splash screen, the Choose Collection dialog, Collection Settings and the other Bloom
+dialogs) activates itself or comes to the front, so a run never takes your keyboard; the tests
+drive Bloom over CDP, which needs no focus. The exception is a native Windows dialog, a file
+picker or a raw message box, which Windows activates whatever Bloom asks; a test must never open
+one anyway (see "Writing a test"). On CI (when `CI` is set, as GitHub Actions sets it) the fixture leaves it off, so Bloom
+behaves as it does for a user and focus-dependent behavior stays covered. The visual-regression
+suite follows the same rule.
+
+| `BLOOM_E2E_DONT_DISTURB` | What happens |
+| --- | --- |
+| unset | `--dont-disturb` on a developer's machine, off on CI. |
+| `0` | Off: Bloom's windows take the foreground, exactly as on CI. |
+| `1` | On, even on CI. |
+
+The first launch of a run logs which it chose.
 
 The suite needs a built `Bloom.exe` under `output/{Debug,Release}/{x64,AnyCPU,}/` and the test
 inputs at `output/testing-inputs`, fetched by `node build/get-testing-inputs.mjs` at the commit
@@ -312,3 +378,19 @@ just made, and reports it as its own check run, "Nightly run: BloomE2E tests". A
 night uploads Playwright's HTML report and traces as the `e2e-report` artifact. A manual run of
 that workflow can tick this suite alone, which is the quick way to see how a test behaves on the
 runner rather than on your machine.
+
+**A test that fails in CI but passes on your machine: check focus first.** On a developer's
+machine the fixture launches Bloom with `--dont-disturb`, so its windows never take the foreground
+or the keyboard (see "Where the Bloom window goes" above). CI launches it without, because nobody
+is at that screen, so there Bloom's windows activate as they would for a user. Anything that
+depends on which window is active (a dialog's first keystroke, Enter or Escape right after it
+opens, `document.hasFocus()`, focus and blur handlers) can therefore behave differently in the two
+places. To run exactly as CI does, turn the suppression off and put the windows where CI puts
+them:
+
+```bash
+BLOOM_E2E_DONT_DISTURB=0 BLOOM_AUTOMATION_MONITOR=headless pnpm exec playwright test tests/<file>.spec.ts
+```
+
+Bloom's windows will then take your foreground while the run goes on. `BLOOM_E2E_DONT_DISTURB=1`
+does the opposite, for a CI run that should behave like a developer's.
