@@ -23,7 +23,7 @@ namespace Bloom.Book
 
         private class PageSizeLookupFile
         {
-            public Dictionary<string, PageSizeLookupItem> sizes { get; set; }
+            public Dictionary<string, PageSizeLookupItem> sizesInMillimeters { get; set; }
         }
 
         private class PageSizeLookupItem
@@ -178,10 +178,10 @@ namespace Bloom.Book
             );
             var json = RobustFile.ReadAllText(path);
             var parsed = JsonConvert.DeserializeObject<PageSizeLookupFile>(json);
-            if (parsed?.sizes == null)
+            if (parsed?.sizesInMillimeters == null)
                 throw new ApplicationException("Could not parse pageSizesLookup.json.");
 
-            foreach (var item in parsed.sizes)
+            foreach (var item in parsed.sizesInMillimeters)
             {
                 if (string.IsNullOrWhiteSpace(item.Key) || item.Value == null)
                     continue;

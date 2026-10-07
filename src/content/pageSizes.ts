@@ -18,7 +18,7 @@ interface PageSizeLookupEntry {
 }
 
 interface PageSizeLookupFile {
-    sizes: Record<string, PageSizeLookupEntry>;
+    sizesInMillimeters: Record<string, PageSizeLookupEntry>;
 }
 
 const sourcePath = "../../DistFiles/pageSizes.json";
@@ -58,15 +58,6 @@ function convertDimensionToMillimeters(value: string): number {
 }
 
 /**
- * Returns true when the layout is a printable paper layout (not a device/story preset).
- */
-function isPaperLayout(sizeName: string): boolean {
-    return (
-        !sizeName.startsWith("Device") && !sizeName.startsWith("PictureStory")
-    );
-}
-
-/**
  * Returns the base paper name for oriented sizes (e.g. A4Portrait -> A4).
  */
 function getBaseSizeName(sizeName: string): string | undefined {
@@ -102,10 +93,6 @@ function addConfiguredSizesToLookup(
     lookup: Record<string, PageSizeLookupEntry>,
 ): void {
     for (const item of configuredSizes) {
-        if (!isPaperLayout(item.size)) {
-            continue;
-        }
-
         const width = convertDimensionToMillimeters(item.width);
         const height = convertDimensionToMillimeters(item.height);
         lookup[item.size] = { width, height };
@@ -184,7 +171,7 @@ function buildLookupFile(configuredSizes: PageSize[]): PageSizeLookupFile {
     addConfiguredSizesToLookup(configuredSizes, lookup);
     addIsoSeriesSizes(lookup);
     addSquareAliases(lookup);
-    return { sizes: lookup };
+    return { sizesInMillimeters: lookup };
 }
 
 /**
