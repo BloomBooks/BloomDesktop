@@ -51,6 +51,8 @@ namespace BloomTests.Publish.PDF
         }
 
         [TestCase("Device16x9")]
+        [TestCase("Ebook2x3")]
+        [TestCase("Ebook7x5")]
         [TestCase("BogusSize")]
         [TestCase("")]
         [TestCase(null)]

@@ -195,14 +195,12 @@ namespace Bloom.Publish.PDF
                         lastEven = pdfDoc.PageCount - 1;
                     else if (pdfDoc.PageCount == 2 * specs.HtmlPageCount - 1)
                         lastEven = pdfDoc.PageCount - 2;
-                    if (lastEven == 0)
-                    {
-                        Debug.Assert(
-                            pdfDoc.PageCount == specs.HtmlPageCount,
-                            $"Unexpected PDF page count = {pdfDoc.PageCount}, html page count = {specs.HtmlPageCount}"
-                        );
-                        return; /* something is screwy */
-                    }
+                    // Any other count means something is screwy; leave the pages alone, but still
+                    // set the page boxes below, which dotImpose needs to find the trim size.
+                    Debug.Assert(
+                        lastEven != 0,
+                        $"Unexpected PDF page count = {pdfDoc.PageCount}, html page count = {specs.HtmlPageCount}"
+                    );
                     for (int i = lastEven; i > 0; i -= 2)
                         pdfDoc.Pages.RemoveAt(i);
                 }
@@ -464,7 +462,6 @@ namespace Bloom.Publish.PDF
                 );
             }
         }
-
     }
 
     internal class CancellableNullProgress : NullProgress
