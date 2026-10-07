@@ -758,13 +758,14 @@ describe("inlineImageInteractions", () => {
             // "Expand image to fill space" is for background images only, and Become
             // Background / Use for book thumbnail are excluded for an image inside a text
             // block. "Edit with AI" is behind a feature flag that is off here. Then a
-            // divider, the arrangement section without Rotate and Flip, a divider and Delete.
+            // divider, the arrangement section without Rotate, a divider and Delete.
             expect(items.map((i) => i.l10nId)).toEqual([
                 "EditTab.Image.EditMetadataOverlay",
                 "EditTab.Image.ChooseImage",
                 "EditTab.Image.CopyImage",
                 "EditTab.Image.PasteImage",
                 "-",
+                "EditTab.Image.Flip",
                 "EditTab.Image.Transparency",
                 "EditTab.Image.Reset",
                 "-",
@@ -890,6 +891,74 @@ describe("inlineImageInteractions", () => {
                     .querySelector("img")!
                     .classList.contains("bloom-transparent"),
             ).toBe(false);
+        });
+
+        it("Flip mirrors every language's copy, and Reset Image takes the mirror away", async () => {
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            wrapper.querySelector("img")!.setAttribute("src", "flower.jpg");
+            const frenchPicture = () =>
+                getInlineImageInEditable(
+                    editableFor(group, "fr"),
+                )!.querySelector("img")!;
+            const menuItem = (id: string) =>
+                buildInlineImageMenuItems(
+                    getInlineImageActionTarget(wrapper),
+                ).find((i) => i.l10nId === id)!;
+            // Sanity check: nothing to reset on a picture that has not been flipped.
+            expect(menuItem("EditTab.Image.Reset").disabled).toBe(true);
+
+            const flipHorizontal = menuItem("EditTab.Image.Flip").subMenu!.find(
+                (s) => s.l10nId === "EditTab.Image.FlipHorizontal",
+            )!;
+            (flipHorizontal.onClick as () => void)();
+
+            // The registry's Flip acts on the canvas element manager's active element, which
+            // an inline image never is, so this shows the command reached this picture.
+            await vi.waitFor(() =>
+                expect(wrapper.querySelector("img")!.style.transform).toBe(
+                    "scale(-1, 1)",
+                ),
+            );
+            expect(frenchPicture().style.transform).toBe("scale(-1, 1)");
+            expect(menuItem("EditTab.Image.Reset").disabled).toBe(false);
+
+            (menuItem("EditTab.Image.Reset").onClick as () => void)();
+
+            await vi.waitFor(() =>
+                expect(wrapper.querySelector("img")!.style.transform).toBe(""),
+            );
+            expect(frenchPicture().style.transform).toBe("");
+        });
+
+        it("undoes a flip", async () => {
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            (wrapper.querySelector("img") as HTMLImageElement).src =
+                "flower.jpg";
+            // Right-clicking is what selects it, and the undo layer's gate is the selection.
+            const flipVertical = getInlineImageMenuItemsForClick(
+                wrapper.querySelector("img") as HTMLElement,
+            )
+                .find((i) => i.l10nId === "EditTab.Image.Flip")!
+                .subMenu!.find(
+                    (s) => s.l10nId === "EditTab.Image.FlipVertical",
+                )!;
+            (flipVertical.onClick as () => void)();
+            await vi.waitFor(() =>
+                expect(wrapper.querySelector("img")!.style.transform).toBe(
+                    "scale(1, -1)",
+                ),
+            );
+
+            inlineImageUndo();
+
+            const restored = getInlineImage(group);
+            expect(
+                restored,
+                "expected the picture to still be there",
+            ).not.toBeNull();
+            expect(restored!.querySelector("img")!.style.transform).toBe("");
         });
 
         it("deselects the image when the right-click landed on the text instead", () => {
