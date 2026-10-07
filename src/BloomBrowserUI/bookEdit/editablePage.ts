@@ -173,8 +173,9 @@ export {
     applyAiImageEditorReplacements,
     getAiImageEditorPageMetrics,
 };
-// Inline (Word-style) images keep their own undo stack, for the same reason origami and the
-// image operations do: the workspace undo command has to be able to reach it. See inlineImages.ts.
+// Inline (Word-style) images keep their own undo stack. Like the origami and image operation
+// undo functions, these are exported so that the workspace undo command can call them. See
+// inlineImages.ts.
 import { inlineImageCanUndo, inlineImageUndo } from "./js/inlineImages";
 export { inlineImageCanUndo, inlineImageUndo };
 import { origamiCanUndo, origamiUndo } from "./js/origami";

@@ -24,17 +24,15 @@ import {
 // than in the component, so that the component can be re-rendered for a new paragraph
 // without carrying over stale state.
 //
-// It carries two kinds of command, because a right-click in a text box can mean two things.
-// One is a command on the paragraph clicked ("No Indent"). The other is a command on the
-// inline (Word-style) image of the text box: adding one, or -- when the click landed on the
-// image itself -- the standard image menu (the same commands a canvas element image offers).
-// Which of them apply to a given click is getTextContextMenuContent's decision, not this
-// component's.
+// The menu can hold two kinds of command. One acts on the paragraph that was clicked ("No
+// Indent"). The other acts on inline (Word-style) images in the text box: Insert Image, or,
+// when the click was on an image, the standard image menu with the same commands an image in a
+// canvas element offers. getTextContextMenuContent decides which of these a given click gets.
 
-// "No Indent" acts on one paragraph, so it is offered only when the right-click was in one
-// (a click on an inline image is not). Its own logic is paragraph-shaped -- there is nothing
-// for isNoIndentOn or canToggleNoIndent to answer without one -- so the item is left out
-// altogether in that case rather than shown disabled.
+// "No Indent" acts on one paragraph, so it is offered only when the right-click was inside a
+// paragraph. A click on an inline image is not. isNoIndentOn and canToggleNoIndent both need a
+// paragraph to answer, so without one the item is left out of the menu instead of being shown
+// disabled.
 const NoIndentMenuItem: React.FunctionComponent<{
     paragraph: HTMLElement;
     onDone: () => void;
@@ -80,10 +78,11 @@ const TextContextMenu: React.FunctionComponent<{
                     props.content.inlineImageItems.length > 0 && (
                         <Divider variant="middle" component="li" />
                     )}
-                {/* Each item closes the menu itself, through the closeMenu the content was
-                    built with (see setupTextContextMenu) -- the standard image commands
-                    decide for themselves when, because a dialog-launching command must
-                    close with dialog-aware focus handling before its dialog arrives. */}
+                {/* Each of these items closes the menu itself, by calling the closeMenu that
+                    the content was built with (see setupTextContextMenu). The standard image
+                    commands decide when to close it, because a command that opens a dialog has
+                    to close the menu with the focus handling that dialogs need before its
+                    dialog appears. */}
                 {renderContextMenuItems(
                     props.content.inlineImageItems,
                     props.open,
@@ -145,16 +144,16 @@ export function setupTextContextMenu(): void {
         // WebView2Browser.ContextMenuRequested.
         if (event.ctrlKey) return;
         const anchorPosition = { left: event.clientX, top: event.clientY };
-        // The menu items dismiss the menu through this. It has to exist before the content
-        // that captures it, and the content it re-renders is the content being built, hence
-        // the two-step wiring.
+        // The menu items close the menu by calling closeMenu. It has to exist before the
+        // content is built, because the content holds on to it, and it re-renders that same
+        // content. So content is declared first and assigned after closeMenu is defined.
         let content: ITextContextMenuContent | undefined;
         const closeMenu = () => {
             if (content)
                 renderTextContextMenu(document, content, false, anchorPosition);
         };
         content = getTextContextMenuContent(event.target, closeMenu);
-        // Nothing to offer: leave the event alone so WebView2's own menu still appears.
+        // When there is nothing to offer, leave the event alone so WebView2's own menu appears.
         if (!content) return;
         event.preventDefault();
         event.stopPropagation();

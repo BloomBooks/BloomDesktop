@@ -1,5 +1,6 @@
 # Entries containing a slash start with **/ because the pre-commit hook's pretty-quick matches
-# them against paths from the repo root (src/BloomBrowserUI/...), not from this folder.
+# them against paths that start at the repo root (src/BloomBrowserUI/...). A pattern written
+# relative to this folder would not match.
 lib
 typings
 Readium

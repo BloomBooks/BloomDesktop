@@ -13,25 +13,24 @@ import {
     IControlRuntime,
 } from "../../toolbox/canvas/canvasControlTypes";
 
-// The presentation layer shared by every menu that renders canvas-control registry rows:
-// CanvasElementContextControls (a canvas element's "..." menu and right-click menu) and
-// TextContextMenu (whose inline-image commands come from the same registry, BL-16649).
-// It owes its existence to that reuse: the registry speaks IControlMenuRow, the
-// LocalizableMenuItem components speak ILocalizableMenuItemProps, and everything here is
-// the translation between them -- plus the rendering details (dividers, nested submenus,
-// shortcut alignment, icon scaling) that should look the same wherever the rows appear.
+// This file renders the menu rows that controlRegistry provides. Two menus use it:
+// CanvasElementContextControls (a canvas element's "..." menu and its right-click menu) and
+// TextContextMenu, whose inline-image commands come from the same registry (BL-16649).
+// The registry describes each row as an IControlMenuRow, and the LocalizableMenuItem
+// components take ILocalizableMenuItemProps, so most of this code converts one to the other.
+// The rest draws the dividers, nested submenus, shortcut column and icon sizes, so that the
+// rows look the same in both menus.
 
 export interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
 }
 
-// One width for these menus everywhere, so a command's label wraps the same way whichever
-// surface it appears on.
+// Both menus use this maximum width, so a command's label wraps at the same place in each.
 export const kContextMenuMaxWidth = 338;
 
-// The styling the menu's ul needs wherever these rows are rendered; notably the filter that
-// turns the raster icons (reset image, fill space, AI edit) the same monochrome as the MUI
-// svg icons.
+// Styles for the ul of any menu that shows these rows. Among other things, the filter here
+// makes the raster icons (reset image, fill space, AI edit) the same grey as the MUI svg
+// icons.
 export const contextMenuCss = css`
     ul {
         max-width: ${kContextMenuMaxWidth}px;
@@ -203,8 +202,9 @@ export function joinMenuSectionsWithSingleDividers(
     return menuItems;
 }
 
-// Renders converted rows as the children of an MUI Menu: dividers, nested submenus, and
-// shortcut-column alignment included. menuOpen is whether the Menu holding these rows is open.
+// Renders the converted rows, including dividers and nested submenus, as the children of an
+// MUI Menu, and lines up the keyboard shortcuts in one column. menuOpen tells whether the
+// Menu that holds these rows is open.
 export function renderContextMenuItems(
     menuOptions: IMenuItemWithSubmenu[],
     menuOpen: boolean,
