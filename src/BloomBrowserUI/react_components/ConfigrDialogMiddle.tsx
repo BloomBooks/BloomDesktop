@@ -64,15 +64,6 @@ export const ConfigrDialogMiddle: React.FunctionComponent<{
                 color: ${kBloomBlue};
             }
 
-            // config-r's ConfigrSelect sets "padding: 3px !important", which removes the
-            // space MUI reserves for the down arrow, so a long (e.g. translated) choice runs
-            // under the arrow (BL-16958). The doubled class outranks config-r's rule.
-            // We plan to fix this in config-r itself, but didn't want to risk a config-r
-            // update in 6.4. Remove this once Bloom uses a config-r with the fix.
-            .MuiSelect-select.MuiSelect-select {
-                padding-right: 32px !important;
-            }
-
             // In a disabled config-r checkbox row, the label and checkbox colors are already
             // faded; MUI also fades the whole row (opacity 0.38), so it was applied twice and the
             // row was barely visible. Limited to checkbox rows because those are the ones known
