@@ -10,6 +10,7 @@ export type CanvasElementType =
     | "rectangle"
     | "speech"
     | "caption"
+    | "table"
     | "book-link-grid"
     | "navigation-image-button"
     | "navigation-image-with-label-button"
