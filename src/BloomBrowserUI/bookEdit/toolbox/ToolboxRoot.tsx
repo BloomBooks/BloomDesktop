@@ -13,31 +13,38 @@ import {
     kBloomPanelBackground,
     kBloomUnselectedTabBackground,
 } from "../../utils/colorUtils";
-import { getMasterToolList } from "./toolbox";
+import { getMasterToolList, ITool } from "./toolbox";
 import { kToolboxHeaderZIndex } from "./toolboxZIndexes";
 import { useMountEffect } from "../../utils/useMountEffect";
-import { setToolboxReactAdapter } from "./toolboxReactAdapter";
+import {
+    getToolboxUiState,
+    setActiveTool,
+    setToolboxUiMounted,
+    subscribeToToolboxUiState,
+} from "./toolboxState";
 import { SubscriptionBadgeWithTooltipAndDialog } from "../../react_components/requiresSubscription";
 import {
-    compareToolsByLabel,
     getToolLabelInfo,
-    kSettingsToolId,
     kTalkingBookToolId,
     toPersistedToolName,
 } from "./toolIds";
+import { useToolLifecycle } from "./useToolLifecycle";
 
-// React host for the toolbox sidebar. It holds the list of tools the toolbox is offering,
-// which one is open, and the DOM node that each tool renders itself into.
+// React host for the toolbox sidebar. It shows an accordion for each tool the toolbox is
+// offering, and opens the active one.
 //
-// It does not decide which tools to offer: toolbox.ts asks the server which tools the book
-// has enabled and tells us about each one through the adapter's addTool(), which is the
-// only way a tool is ever created.
+// It does not decide which tools to offer, nor own that fact: toolbox.ts asks the server
+// which tools the book has enabled and records them in the toolbox state store
+// (toolboxState.ts), which we subscribe to here.
 //
-// Every tool is a React component, but a tool hands us the already-rendered root DOM
-// element of its component (from its ITool.makeRootElement()) rather than an element type
-// we could render ourselves. So a small host component (ToolBodyHost) puts that element
-// into the React layout, which also means a tool keeps its state as the user opens and
-// closes tools.
+// Every tool is a React component, and we render each one as an ordinary child (from its
+// ITool.renderPanel()), so the whole toolbox is a single React tree: context such as the
+// MUI theme reaches the tools normally. A closed tool keeps its children mounted (MUI's
+// default), so a tool keeps its state as the user opens and closes tools.
+//
+// Rendering a tool is also what runs it: each one runs its tool's lifecycle
+// from an effect for as long as that tool is the current tool of a showing toolbox. See
+// useToolLifecycle.ts.
 
 // Everything the toolbox needs in order to show one tool. It all comes from the
 // tool itself (see ITool) or is derived from its id (see toolIds.ts).
@@ -51,8 +58,8 @@ type OfferedTool = {
     // Set only for tools that require a subscription, in which case the tool's header
     // gets a badge for this feature.
     featureName?: string;
-    // The element the tool renders itself into. Created once, when the tool is first offered.
-    toolBodyElement: HTMLDivElement;
+    // The tool itself, so that we can render its panel (ITool.renderPanel()) as our child.
+    tool: ITool;
 };
 
 const toolboxHeaderIconStyles = css`
@@ -65,27 +72,13 @@ const toolboxHeaderIconStyles = css`
     flex-shrink: 0;
 `;
 
-// Each tool's body, kept for the life of the toolbox and reused whenever the tool is offered
-// again. makeRootElement() mounts the tool's own React root inside the element it returns, and
-// withdrawing a tool only detaches that element: the root stays mounted, so its effects are
-// never cleaned up. Making a fresh one each time the user ticks the tool in More... would
-// therefore leave the old one running (the Canvas tool polls on a timer, for instance) and add
-// another alongside it. The legacy toolbox likewise built each tool's body only once.
-const toolBodyElements = new Map<string, HTMLDivElement>();
-
 // Gathers everything we need in order to show this tool. The tool must be one the
-// toolbox knows about: toolbox.ts only asks us for tools it found in the master list.
+// toolbox knows about: toolbox.ts only offers tools it found in the master list.
 const makeOfferedTool = (toolId: string): OfferedTool => {
     const tool = getMasterToolList().find(
         (candidate) => candidate.id() === toolId,
     )!;
     const labelInfo = getToolLabelInfo(toolId);
-    const toolBodyElement =
-        toolBodyElements.get(toolId) ?? tool.makeRootElement();
-    toolBodyElements.set(toolId, toolBodyElement);
-    // Some tool stylesheets still select their body by this attribute, using the
-    // historical "Tool"-suffixed name.
-    toolBodyElement.setAttribute("data-toolid", toPersistedToolName(toolId));
 
     return {
         id: toolId,
@@ -93,183 +86,243 @@ const makeOfferedTool = (toolId: string): OfferedTool => {
         l10nKey: labelInfo.l10nKey,
         iconPath: tool.iconPath(),
         featureName: tool.featureName,
-        toolBodyElement: toolBodyElement,
+        tool: tool,
     };
 };
 
-const sortToolsAlphabeticallyWithSettingsLast = (
-    offeredTools: OfferedTool[],
-): OfferedTool[] => {
-    const settingsTool = offeredTools.find(
-        (tool) => tool.id === kSettingsToolId,
+// One tool as the toolbox shows it: its header, its panel, and its lifecycle.
+//
+// The lifecycle hook lives here, in the component that *contains* the panel, rather than
+// beside it: React runs a child's effects before its parent's, so by the time we tell the
+// tool to show itself its panel has mounted, as it always had under the old imperative
+// order.
+const OfferedToolAccordion: React.FunctionComponent<{
+    offeredTool: OfferedTool;
+    // Is this the open tool? Purely how the accordion looks.
+    isOpen: boolean;
+    // Is this the tool that is running? Not the same thing as being open; see
+    // IToolboxUiState.currentToolId.
+    isRunning: boolean;
+    pageGeneration: number;
+}> = (props) => {
+    useToolLifecycle(
+        props.offeredTool.tool,
+        props.isRunning,
+        props.pageGeneration,
     );
-    const nonSettingsTools = offeredTools
-        .filter((tool) => tool.id !== kSettingsToolId)
-        .sort((a, b) => compareToolsByLabel(a.id, b.id));
-
-    if (!settingsTool) {
-        return nonSettingsTools;
-    }
-
-    return [...nonSettingsTools, settingsTool];
-};
-
-// Puts a tool's own DOM element (the one it renders itself into) into the React layout,
-// keeping the original element instance so the tool's state and event wiring stay intact.
-const ToolBodyHost: React.FunctionComponent<{ element: HTMLDivElement }> = (
-    props,
-) => {
-    const hostRef = React.useRef<HTMLDivElement | null>(null);
-
-    React.useEffect(() => {
-        const host = hostRef.current;
-        if (!host) {
-            return;
-        }
-
-        if (!host.contains(props.element)) {
-            host.appendChild(props.element);
-        }
-
-        return () => {
-            if (host.contains(props.element)) {
-                host.removeChild(props.element);
-            }
-        };
-    }, [props.element]);
 
     return (
-        <div
-            ref={hostRef}
+        <Accordion
             css={css`
-                width: 100%;
-                height: 100%;
-                flex: 1;
+                background-color: ${kBloomUnselectedTabBackground};
+                color: white;
+                margin: 0;
                 display: flex;
                 flex-direction: column;
-                align-items: stretch;
-                min-height: 0;
-                min-width: 0;
+                flex-shrink: 0;
 
-                // Tools expect their root element to fill the space the toolbox gives
-                // them; several of them then use height:100% internally to push a Help
-                // link to the bottom.
-                > * {
-                    width: 100%;
-                    height: 100%;
-                    min-width: 0;
+                &:before {
+                    display: none;
+                }
+
+                &.Mui-expanded {
+                    background-color: ${kBloomPanelBackground};
                     flex: 1 1 auto;
-                    display: block;
+                    min-height: 0;
+                }
+
+                &.Mui-expanded > .MuiCollapse-root {
+                    display: flex;
+                    flex-direction: column;
+                    flex: 1;
+                    min-height: 0;
+                    overflow: hidden;
+                }
+
+                &.Mui-expanded > .MuiCollapse-root > .MuiCollapse-wrapper,
+                &.Mui-expanded
+                    > .MuiCollapse-root
+                    > .MuiCollapse-wrapper
+                    > .MuiCollapse-wrapperInner,
+                &.Mui-expanded
+                    > .MuiCollapse-root
+                    > .MuiCollapse-wrapper
+                    > .MuiCollapse-wrapperInner
+                    > .MuiAccordion-region {
+                    display: flex;
+                    flex-direction: column;
+                    flex: 1;
+                    min-height: 0;
+                    overflow: hidden;
                 }
             `}
-        ></div>
+            disableGutters
+            expanded={props.isOpen}
+            onChange={(_event, expanded) => {
+                // Clicking the open tool's header does nothing, as in 6.5 and earlier
+                // (originally BL-16533). With the legacy sync gone the collapse would
+                // now work cleanly, but we decided (2026-09-11, on the BL-16608 review)
+                // to keep the established behavior: the toolbox always shows one open
+                // tool. The store itself still supports a state with no open tool — the
+                // withdraw paths produce it — this just offers no gesture for it.
+                if (expanded) {
+                    setActiveTool(props.offeredTool.id);
+                }
+            }}
+        >
+            <AccordionSummary
+                css={css`
+                    min-height: 32px;
+                    padding-left: 5px;
+                    padding-right: 12px;
+                    // Keep the headers above the Talking Book tool's disabling
+                    // overlay, so they neither look grayed out nor stop
+                    // responding in Show Playback Order mode (BL-16630); see
+                    // toolboxZIndexes.ts for where the number comes from.
+                    // Only works while no ancestor creates a stacking context
+                    // -- a transform, filter, opacity or z-index on the
+                    // Accordion, the Collapse or the tool-body host would
+                    // trap it.
+                    position: relative;
+                    z-index: ${kToolboxHeaderZIndex};
+                    // The header has to paint its own background for that to
+                    // help. A collapsed header would otherwise be transparent
+                    // and show the Accordion root's background, which stays
+                    // under the overlay and so keeps being dimmed. Same colour
+                    // the root uses, so nothing changes visually.
+                    background-color: ${kBloomUnselectedTabBackground};
+
+                    & .MuiAccordionSummary-content {
+                        margin: 8px 0;
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                    }
+
+                    &.Mui-expanded {
+                        min-height: 32px;
+                        background-color: ${kBloomBlue};
+                    }
+                `}
+            >
+                <span
+                    // The talking book icon is a tall, narrow microphone,
+                    // so it gets a narrower box than the others.
+                    css={
+                        props.offeredTool.id === kTalkingBookToolId
+                            ? [
+                                  toolboxHeaderIconStyles,
+                                  css`
+                                      width: 12px;
+                                      background-size: 12px 16px;
+                                  `,
+                              ]
+                            : toolboxHeaderIconStyles
+                    }
+                    data-toolid={props.offeredTool.id}
+                    data-testid="toolbox-header-icon"
+                    // The icon path is also exposed as data so tests can
+                    // check which icon a header shows without reading styles.
+                    data-icon-src={props.offeredTool.iconPath}
+                    style={
+                        props.offeredTool.iconPath
+                            ? {
+                                  backgroundImage: `url(${props.offeredTool.iconPath})`,
+                              }
+                            : undefined
+                    }
+                ></span>
+                <Typography
+                    css={css`
+                        flex-grow: 1;
+                        font-size: 11px;
+                    `}
+                >
+                    <LocalizedString l10nKey={props.offeredTool.l10nKey}>
+                        {props.offeredTool.englishLabel}
+                    </LocalizedString>
+                </Typography>
+                {props.offeredTool.featureName && (
+                    <span>
+                        <SubscriptionBadgeWithTooltipAndDialog
+                            featureName={props.offeredTool.featureName}
+                        />
+                    </span>
+                )}
+            </AccordionSummary>
+            <AccordionDetails
+                css={css`
+                    background-color: ${kBloomPanelBackground};
+                    padding: 0;
+                    flex: 1;
+                    display: flex;
+                    min-height: 0;
+                    overflow: auto;
+                `}
+            >
+                <div
+                    // Some tool stylesheets, and our automated tests,
+                    // still select a tool's body by this attribute, using
+                    // the historical "Tool"-suffixed name.
+                    data-toolid={toPersistedToolName(props.offeredTool.id)}
+                    css={css`
+                        width: 100%;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: stretch;
+                        min-height: 100%;
+                        overflow: visible;
+
+                        // The Decodable and Leveled reader tool bodies
+                        // were laid out to suit the small left padding
+                        // that the old jQuery-UI accordion content panels
+                        // gave them, so keep that.
+                        &[data-toolid="leveledReaderTool"],
+                        &[data-toolid="decodableReaderTool"] {
+                            padding-left: 3px;
+                            box-sizing: border-box;
+                        }
+
+                        // Tools expect their root element to fill the
+                        // space the toolbox gives them; several of them
+                        // then use height:100% internally to push a Help
+                        // link to the bottom.
+                        > * {
+                            width: 100%;
+                            height: 100%;
+                            min-width: 0;
+                            flex: 1 1 auto;
+                            display: block;
+                        }
+                    `}
+                >
+                    {props.offeredTool.tool.renderPanel()}
+                </div>
+            </AccordionDetails>
+        </Accordion>
     );
 };
 
 // This component is the root of the whole toolbox sidebar. It is rendered into a dedicated
 // host element created by the toolbox page pug.
 export const ToolboxRoot: React.FunctionComponent = () => {
-    const [offeredTools, setOfferedTools] = React.useState<OfferedTool[]>([]);
-    const [openToolId, setOpenToolId] = React.useState<string>();
-    const activeToolChangedCallbacks = React.useRef<
-        ((toolId: string) => void)[]
-    >([]);
-    // The authoritative copy of the tools being offered, so that the adapter methods toolbox.ts
-    // calls can read and update the list synchronously. (React state is updated from it,
-    // for rendering.)
-    const offeredToolsRef = React.useRef<OfferedTool[]>([]);
-    // Likewise the authoritative copy of which tool is open, so that removeTool()
-    // can tell synchronously whether it is removing the open one.
-    const openToolIdRef = React.useRef<string | undefined>(undefined);
-
-    const applyOfferedTools = React.useCallback((nextTools: OfferedTool[]) => {
-        offeredToolsRef.current = nextTools;
-        setOfferedTools(nextTools);
-    }, []);
-
-    const setOpenTool = React.useCallback((toolId: string | undefined) => {
-        openToolIdRef.current = toolId;
-        setOpenToolId(toolId);
-    }, []);
-
-    // Open this tool and tell toolbox.ts about it. toolbox.ts keeps its own
-    // idea of which tool is current and drives each tool's showTool()/hideTool() from it,
-    // so every path that changes which tool is open to a real tool has to come
-    // through here; one that quietly changed only our state left the two out of sync and
-    // the tool the user could see was never activated (BL-16602).
-    const makeToolActive = React.useCallback(
-        (toolId: string) => {
-            setOpenTool(toolId);
-            activeToolChangedCallbacks.current.forEach((callback) => {
-                callback(toolId);
-            });
-        },
-        [setOpenTool],
+    const toolboxUiState = React.useSyncExternalStore(
+        subscribeToToolboxUiState,
+        getToolboxUiState,
     );
+    // The store keeps the offered tools in the order we show them (alphabetical by label,
+    // with "More..." last), because withdrawing the active tool has to know which tool
+    // replaces it.
+    const offeredTools = toolboxUiState.offeredToolIds.map(makeOfferedTool);
+    const openToolId = toolboxUiState.activeToolId;
 
-    // Register the adapter that toolbox.ts uses to say which tools the toolbox offers,
-    // to make one of them active, and to observe which one is active.
-    // See toolboxReactAdapter.ts.
+    // Let the rest of the toolbox know whether there is a toolbox UI at all; see
+    // IToolboxUiState.uiMounted.
     useMountEffect(() => {
-        setToolboxReactAdapter({
-            setActiveToolByToolId: (toolId: string) => {
-                makeToolActive(toolId);
-            },
-            onActiveToolChanged: (callback: (toolId: string) => void) => {
-                activeToolChangedCallbacks.current.push(callback);
-            },
-            addTool: (toolId: string) => {
-                if (
-                    offeredToolsRef.current.some((tool) => tool.id === toolId)
-                ) {
-                    return;
-                }
-                applyOfferedTools(
-                    sortToolsAlphabeticallyWithSettingsLast([
-                        ...offeredToolsRef.current,
-                        makeOfferedTool(toolId),
-                    ]),
-                );
-            },
-            removeTool: (toolId: string) => {
-                const remainingTools = offeredToolsRef.current.filter(
-                    (tool) => tool.id !== toolId,
-                );
-                if (remainingTools.length === offeredToolsRef.current.length) {
-                    return;
-                }
-                applyOfferedTools(remainingTools);
-                if (openToolIdRef.current !== toolId) {
-                    // We removed a tool the user wasn't looking at, so which tool is
-                    // open doesn't change.
-                    return;
-                }
-                const replacementToolId = remainingTools[0]?.id;
-                if (!replacementToolId) {
-                    // Nothing left to open. Don't notify toolbox.ts: it has no way to
-                    // represent "no current tool", and opening a tool later will
-                    // tell it then.
-                    setOpenTool(undefined);
-                    return;
-                }
-                // Go through makeToolActive so toolbox.ts hears about the replacement.
-                // Leaving a game page removes the Game tool this way, and when this
-                // didn't notify, toolbox.ts went on believing Game was current and
-                // never called showTool() on the tool that replaced it, which killed
-                // Talking Book's highlighting and audio (BL-16602).
-                makeToolActive(replacementToolId);
-            },
-            hasTool: (toolId: string) => {
-                return offeredToolsRef.current.some(
-                    (tool) => tool.id === toolId,
-                );
-            },
-            getFirstToolId: () => {
-                return offeredToolsRef.current.find(
-                    (tool) => tool.id !== kSettingsToolId,
-                )?.id;
-            },
-        });
+        setToolboxUiMounted(true);
+        return () => {
+            setToolboxUiMounted(false);
+        };
     });
 
     return (
@@ -291,8 +344,9 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                         background-color: ${kBloomPanelBackground};
                         display: flex;
                         flex-direction: column;
-                        // Lets the darker panel background show through between the
-                        // closed tool headers, as it did in 6.3 and earlier (BL-16532).
+                        // Lets the toolbox's own darker background (kBloomPanelBackground,
+                        // a Bloom-wide colour -- not a tool's panel) show through between
+                        // the collapsed tool headers, as in 6.3 and earlier (BL-16532).
                         gap: 1px;
                         height: 100%;
                         min-height: 0;
@@ -306,183 +360,18 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                         }
                     `}
                 >
-                    {offeredTools.map((tool) => (
-                        <Accordion
-                            key={tool.id}
-                            css={css`
-                                background-color: ${kBloomUnselectedTabBackground};
-                                color: white;
-                                margin: 0;
-                                display: flex;
-                                flex-direction: column;
-                                flex-shrink: 0;
-
-                                &:before {
-                                    display: none;
-                                }
-
-                                &.Mui-expanded {
-                                    background-color: ${kBloomPanelBackground};
-                                    flex: 1 1 auto;
-                                    min-height: 0;
-                                }
-
-                                &.Mui-expanded > .MuiCollapse-root {
-                                    display: flex;
-                                    flex-direction: column;
-                                    flex: 1;
-                                    min-height: 0;
-                                    overflow: hidden;
-                                }
-
-                                &.Mui-expanded
-                                    > .MuiCollapse-root
-                                    > .MuiCollapse-wrapper,
-                                &.Mui-expanded
-                                    > .MuiCollapse-root
-                                    > .MuiCollapse-wrapper
-                                    > .MuiCollapse-wrapperInner,
-                                &.Mui-expanded
-                                    > .MuiCollapse-root
-                                    > .MuiCollapse-wrapper
-                                    > .MuiCollapse-wrapperInner
-                                    > .MuiAccordion-region {
-                                    display: flex;
-                                    flex-direction: column;
-                                    flex: 1;
-                                    min-height: 0;
-                                    overflow: hidden;
-                                }
-                            `}
-                            disableGutters
-                            expanded={openToolId === tool.id}
-                            onChange={(_event, expanded) => {
-                                // Clicking the open tool's header does nothing, as in 6.5 and earlier
-                                // (originally BL-16533). With the legacy sync gone the collapse would
-                                // now work cleanly, but we decided (2026-09-11, on the BL-16608 review)
-                                // to keep the established behavior: the toolbox always shows one open
-                                // tool.
-                                if (expanded) {
-                                    makeToolActive(tool.id);
-                                }
-                            }}
-                        >
-                            <AccordionSummary
-                                css={css`
-                                    min-height: 32px;
-                                    padding-left: 5px;
-                                    padding-right: 12px;
-                                    // Keep the headers above the Talking Book tool's disabling
-                                    // overlay, so they neither look grayed out nor stop
-                                    // responding in Show Playback Order mode (BL-16630); see
-                                    // toolboxZIndexes.ts for where the number comes from.
-                                    // Only works while no ancestor creates a stacking context
-                                    // -- a transform, filter, opacity or z-index on the
-                                    // Accordion, the Collapse or the tool-body host would
-                                    // trap it.
-                                    position: relative;
-                                    z-index: ${kToolboxHeaderZIndex};
-                                    // The header has to paint its own background for that to
-                                    // help. A collapsed header would otherwise be transparent
-                                    // and show the Accordion root's background, which stays
-                                    // under the overlay and so keeps being dimmed. Same colour
-                                    // the root uses, so nothing changes visually.
-                                    background-color: ${kBloomUnselectedTabBackground};
-
-                                    & .MuiAccordionSummary-content {
-                                        margin: 8px 0;
-                                        display: flex;
-                                        align-items: center;
-                                        gap: 12px;
-                                    }
-
-                                    &.Mui-expanded {
-                                        min-height: 32px;
-                                        background-color: ${kBloomBlue};
-                                    }
-                                `}
-                            >
-                                <span
-                                    // The talking book icon is a tall, narrow microphone,
-                                    // so it gets a narrower box than the others.
-                                    css={
-                                        tool.id === kTalkingBookToolId
-                                            ? [
-                                                  toolboxHeaderIconStyles,
-                                                  css`
-                                                      width: 12px;
-                                                      background-size: 12px 16px;
-                                                  `,
-                                              ]
-                                            : toolboxHeaderIconStyles
-                                    }
-                                    data-toolid={tool.id}
-                                    data-testid="toolbox-header-icon"
-                                    // The icon path is also exposed as data so tests can
-                                    // check which icon a header shows without reading styles.
-                                    data-icon-src={tool.iconPath}
-                                    style={
-                                        tool.iconPath
-                                            ? {
-                                                  backgroundImage: `url(${tool.iconPath})`,
-                                              }
-                                            : undefined
-                                    }
-                                ></span>
-                                <Typography
-                                    css={css`
-                                        flex-grow: 1;
-                                        font-size: 11px;
-                                    `}
-                                >
-                                    <LocalizedString l10nKey={tool.l10nKey}>
-                                        {tool.englishLabel}
-                                    </LocalizedString>
-                                </Typography>
-                                {tool.featureName && (
-                                    <span>
-                                        <SubscriptionBadgeWithTooltipAndDialog
-                                            featureName={tool.featureName}
-                                        />
-                                    </span>
-                                )}
-                            </AccordionSummary>
-                            <AccordionDetails
-                                css={css`
-                                    background-color: ${kBloomPanelBackground};
-                                    padding: 0;
-                                    flex: 1;
-                                    display: flex;
-                                    min-height: 0;
-                                    overflow: auto;
-                                `}
-                            >
-                                <div
-                                    css={css`
-                                        width: 100%;
-                                        display: flex;
-                                        flex-direction: column;
-                                        align-items: stretch;
-                                        min-height: 100%;
-                                        overflow: visible;
-
-                                        // The Decodable and Leveled reader tool bodies
-                                        // were laid out to suit the small left padding
-                                        // that the old jQuery-UI accordion content panels
-                                        // gave them, so keep that.
-                                        div[data-toolid="leveledReaderTool"],
-                                        div[data-toolid="decodableReaderTool"] {
-                                            padding-left: 3px;
-                                            box-sizing: border-box;
-                                        }
-                                    `}
-                                >
-                                    <ToolBodyHost
-                                        element={tool.toolBodyElement}
-                                    />
-                                </div>
-                            </AccordionDetails>
-                        </Accordion>
+                    {offeredTools.map((offeredTool) => (
+                        <OfferedToolAccordion
+                            key={offeredTool.id}
+                            offeredTool={offeredTool}
+                            isOpen={openToolId === offeredTool.id}
+                            isRunning={
+                                toolboxUiState.currentToolId ===
+                                    offeredTool.id &&
+                                toolboxUiState.toolboxVisible
+                            }
+                            pageGeneration={toolboxUiState.pageGeneration}
+                        />
                     ))}
                 </div>
             </ThemeProvider>
