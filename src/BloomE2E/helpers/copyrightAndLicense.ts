@@ -48,3 +48,42 @@ export async function setCopyrightHolder(
     await ok.click();
     await expect(dialog(page)).toHaveCount(0, { timeout: 30000 });
 }
+
+/** The open Copyright and License dialog, for pictures (saveScreenshotIfAsked). */
+export function copyrightAndLicenseDialog(page: Page): Locator {
+    return dialog(page);
+}
+
+/**
+ * In the open Copyright and License dialog of a derivative book, tick or untick "Not a translation
+ * or new version" (which makes the book use the original book's copyright and license as its own),
+ * and click OK. The dialog offers the check box only for a derivative; asking for it on another
+ * book fails here. Returns once the dialog has closed.
+ */
+export async function setNotATranslation(
+    page: Page,
+    notATranslation: boolean,
+): Promise<void> {
+    await waitForCopyrightDialog(page);
+    const checkbox = dialog(page).getByRole("checkbox", {
+        name: "Not a translation or new version",
+    });
+    try {
+        await checkbox.waitFor({ state: "visible", timeout: 15000 });
+    } catch {
+        throw new Error(
+            'The Copyright and License dialog has no "Not a translation or new version" check box, ' +
+                "which it offers only for a derivative book.",
+        );
+    }
+    await checkbox.setChecked(notATranslation);
+    await expect(checkbox).toBeChecked({
+        checked: notATranslation,
+        timeout: 15000,
+    });
+
+    const ok = dialog(page).getByRole("button", { name: "OK", exact: true });
+    await expect(ok).toBeEnabled({ timeout: 15000 });
+    await ok.click();
+    await expect(dialog(page)).toHaveCount(0, { timeout: 30000 });
+}
