@@ -717,6 +717,68 @@ namespace BloomTests.Publish
         }
 
         [Test]
+        public void RemoveUnwantedLanguageData_KeepsAnInlineImageThatOnlyExcludedLanguagesHold()
+        {
+            // Each editable in the translation group holds its own copy of an inline (Word-style)
+            // image, including the hidden lang="z" prototype (see inlineImages.ts,
+            // syncInlineImagesFromEditable). Publishing one language deletes every other language's
+            // editable, and the image file is kept only while something in the DOM still refers
+            // to it. CleanupUnusedImageFiles keeps what BookStorage.GetImagePathsRelativeToBook
+            // finds, which is ".//img", and that includes the wrapper's img. So if every div holding
+            // a copy were removed, the file would be deleted from the published book and the
+            // remaining language would show a broken picture.
+            //
+            // The file survives because RemoveUnwantedLanguageData adds "z" to contentLanguages, so
+            // the prototype's copy stays and still refers to the file. A change to that method that
+            // stops keeping "z" would break this, which is why this test checks it.
+            var html = """
+                <!DOCTYPE html>
+                <html>
+                <body>
+                	<div class='bloom-page numberedPage customPage' data-page='' data-page-number='2'>
+                		<div class='marginBox'>
+                			<div class='bloom-translationGroup' data-default-languages='auto'>
+                				<div class='bloom-editable normal-style bloom-content1' contenteditable='true' lang='tl'>
+                					<div class='bloom-inlineImage bloom-inlineImageLeft bloom-preventRemoval' contenteditable='false' data-bloom-inline-image-id='i1'><img src='bird.png'></img></div>
+                					<p>Ako si Robin</p>
+                				</div>
+                				<div class='bloom-editable normal-style' contenteditable='true' lang='z'>
+                					<div class='bloom-inlineImage bloom-inlineImageLeft bloom-preventRemoval' contenteditable='false' data-bloom-inline-image-id='i1'><img src='bird.png'></img></div>
+                					<p></p>
+                				</div>
+                			</div>
+                		</div>
+                	</div>
+                </body>
+                </html>
+                """;
+            var dom = new HtmlDom(html);
+            var assertThatDom = AssertThatXmlIn.Dom(dom.RawDom);
+            // Sanity check: both copies are there to start with, so the test can tell what the
+            // method took away.
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//img[@src='bird.png']", 2);
+
+            // SUT: publish a language that no editable on this page holds.
+            PublishModel.RemoveUnwantedLanguageData(
+                dom,
+                new[] { "en" },
+                false,
+                new HashSet<string>()
+            );
+
+            // The "tl" editable goes, as it should.
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[@lang='tl' and contains(@class, 'bloom-editable')]",
+                0
+            );
+            // But the picture is still referred to, so the file survives CleanupUnusedImageFiles.
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[@lang='z']//img[@src='bird.png']",
+                1
+            );
+        }
+
+        [Test]
         public void RemoveUnwantedLanguageData_BloomPage_PreservesPageLabel()
         {
             var html =
