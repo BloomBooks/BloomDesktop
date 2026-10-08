@@ -14,6 +14,19 @@ namespace Bloom.Collection
 {
     public class WritingSystem
     {
+        static WritingSystem()
+        {
+            // Every user should see the same name for a language. LibPalaso otherwise decides
+            // once per process whether to ask ICU, and the two answers differ -- with ICU it
+            // honours the requested language and names Spanish in French as "espagnol", without
+            // it the request is ignored and the autonym comes back -- so the name turned on
+            // whether some unrelated software had left an ICU library on the machine (BL-16806).
+            // Bloom ships no icuuc.dll, so this is also the answer most users already get.
+            // This is a static constructor so that it also covers the tests and the CLI, not
+            // just a normal Bloom startup.
+            IetfLanguageTag.UseICUForLanguageNames = false;
+        }
+
         private readonly Func<string> _tagOfDefaultLanguageForNaming;
         public static LanguageLookupModel LookupModel = new LanguageLookupModel();
         private string _langTag;
