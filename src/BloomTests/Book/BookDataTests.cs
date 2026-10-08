@@ -2506,7 +2506,8 @@ namespace BloomTests.Book
             // whether a native ICU library happened to be findable on the machine. Bloom now turns
             // ICU off for language names (see WritingSystem's static constructor), so for a given
             // UI language there is one answer, whatever the machine (BL-16806). These expectations
-            // are the answers under an English UI culture, which is what the test run uses.
+            // are the answers under an English UI. Note that TestCulture deliberately leaves
+            // CurrentUICulture alone, so that is the machine's UI language, not one the run pins.
             Assert.That(data.GetDisplayNameForLanguage("fr"), Is.EqualTo("français"));
             Assert.That(data.GetDisplayNameForLanguage("en"), Is.EqualTo("English"));
             Assert.That(data.GetDisplayNameForLanguage("es"), Is.EqualTo("español"));
