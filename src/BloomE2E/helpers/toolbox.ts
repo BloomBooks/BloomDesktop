@@ -316,3 +316,88 @@ export async function expectOpenTool(
         .poll(async () => getOpenTool(page), { timeout: 30000, message })
         .toBe(tool);
 }
+
+/** One piece of a tool's panel whose content is wider than the room it has. */
+interface IClippedElement {
+    /** Enough to find it in the DOM: tag, classes, and the start of its text. */
+    what: string;
+    /** How many pixels of it cannot be seen. */
+    hiddenPx: number;
+}
+
+/**
+ * Fails if anything in the open tool's panel is wider than the space it has and cannot be
+ * scrolled to -- i.e. content the user simply cannot see.
+ *
+ * Only elements whose overflow-x is `hidden` or `visible` count. Those are the ones where
+ * being too wide means the content is lost; a region with `auto` or `scroll` is wide on
+ * purpose and the user can reach the rest.
+ *
+ * Worth asserting because a tool's panel lives in a fixed-width sidebar that several things
+ * narrow in turn -- the panel's own padding, a scrollbar gutter, the scrollbar itself -- and
+ * each is set somewhere different. When they add up to more than the tool budgeted for, a
+ * column just disappears off the right-hand edge, and every other check still passes: the
+ * values are correct, the controls still work, nothing throws. That is how the Leveled
+ * Reader lost its "Actual" column in 6.6.1172 while these tests were green (BL-16608).
+ *
+ * Call it with the tool showing the content you care about -- an empty panel can never
+ * overflow, so checking a tool before it has anything to show proves nothing.
+ */
+export async function expectNothingClippedInOpenTool(
+    page: Page,
+    context: string,
+): Promise<void> {
+    const clipped: IClippedElement[] = await toolboxFrame(page).evaluate(() => {
+        const panel = document.querySelector(
+            ".MuiAccordion-root.Mui-expanded .MuiAccordionDetails-root",
+        );
+        if (!panel) {
+            return [];
+        }
+        const describe = (e: Element): string => {
+            const classes =
+                typeof e.className === "string" && e.className
+                    ? "." +
+                      e.className.trim().split(/\s+/).slice(0, 2).join(".")
+                    : "";
+            const text = (e as HTMLElement).innerText || "";
+            return (
+                e.tagName.toLowerCase() +
+                classes +
+                (text
+                    ? ` "${text.replace(/\s+/g, " ").trim().slice(0, 40)}"`
+                    : "")
+            );
+        };
+        return Array.from(panel.querySelectorAll("*"))
+            .filter((e) => {
+                const overflowX = getComputedStyle(e).overflowX;
+                if (overflowX !== "hidden" && overflowX !== "visible") {
+                    return false; // scrollable on purpose; the user can reach the rest
+                }
+                // Only text counts. Several MUI controls (a Switch, say) overflow their
+                // own box by design, with a ripple or a thumb that is meant to spill out,
+                // and reporting those would bury the real finding. Words that run off the
+                // edge are what a user actually loses. The cost is that a clipped icon on
+                // its own would slip through.
+                if (!(e as HTMLElement).innerText?.trim()) {
+                    return false;
+                }
+                // 1px of slack: sub-pixel layout rounds against us.
+                return e.scrollWidth > e.clientWidth + 1;
+            })
+            .map((e) => ({
+                what: describe(e),
+                hiddenPx: e.scrollWidth - e.clientWidth,
+            }));
+    });
+
+    expect(
+        clipped,
+        `${context}: content is cut off the right-hand edge of the tool's panel, where ` +
+            `the user cannot see or scroll to it:\n` +
+            clipped
+                .map((c) => `  - ${c.hiddenPx}px hidden: ${c.what}`)
+                .join("\n"),
+    ).toEqual([]);
+}

@@ -13,6 +13,7 @@
 // polled for rather than read once.
 
 import { test } from "../fixtures/bloomTest";
+import { expectNothingClippedInOpenTool } from "../helpers/toolbox";
 import { editBook, makeBookFromTemplate } from "../helpers/bookMaking";
 import {
     expectReaderToolToShow,
@@ -90,6 +91,7 @@ test("each book remembers its own level [Test Case ID 442]", async ({
         2,
         "The first book should come back on the level it was left on.",
     );
+    await expectNothingClippedInOpenTool(page, "Leveled Reader, restored book");
 
     await editBook(page, secondBook);
     await openReaderTool(page, "leveledReader");
