@@ -326,6 +326,158 @@ export async function setCollectionSettingsText(
     await expect(box).toHaveValue(text);
 }
 
+/** The drop-down list of the setting with this label on the showing page of the dialog. */
+function collectionSettingsList(page: Page, label: string): Locator {
+    // Config-R puts the label in an h4 in the setting's row, as for a text box; the list itself
+    // is an MUI Select, whose clickable part is the element that announces a listbox.
+    return collectionSettingsDialog(page)
+        .locator("li")
+        .filter({ has: page.locator("h4").getByText(label, { exact: true }) })
+        .locator('[aria-haspopup="listbox"]');
+}
+
+/** What a drop-down list setting in the Collection Settings dialog shows. */
+export interface ICollectionSettingsListState {
+    /** The text of the choice showing, e.g. "None". */
+    shown: string;
+    /** False when the user cannot open the list, e.g. because there is nothing to choose. */
+    enabled: boolean;
+}
+
+/**
+ * Read the drop-down list setting with this label, e.g. "Bookshelf", on the page of the
+ * Collection Settings dialog that is showing.
+ */
+export async function getCollectionSettingsList(
+    page: Page,
+    label: string,
+): Promise<ICollectionSettingsListState> {
+    const list = collectionSettingsList(page, label);
+    await expect(
+        list,
+        `the showing Collection Settings page has no list labelled "${label}"`,
+    ).toHaveCount(1);
+    return {
+        shown: ((await list.textContent()) ?? "").replace(/​/g, "").trim(),
+        enabled: (await list.getAttribute("aria-disabled")) !== "true",
+    };
+}
+
+/** The choices of an open drop-down list (MUI renders the menu outside the dialog). */
+function openListChoices(page: Page): Locator {
+    return page.getByRole("listbox").getByRole("option");
+}
+
+/**
+ * Wait until an open drop-down list has closed completely. MUI keeps the closing menu, and the
+ * invisible backdrop that catches clicks outside it, until its closing animation ends; a click in
+ * that time lands on the backdrop, so the next list clicked does not open. Other MUI menus stay
+ * mounted in Bloom's shell all the time, so this waits for the count to fall back to
+ * `menusBeforeOpening` (from countMenus, read before the list was opened) rather than to zero.
+ */
+async function waitForListToClose(
+    page: Page,
+    menusBeforeOpening: number,
+): Promise<void> {
+    await expect(page.locator(".MuiMenu-root")).toHaveCount(menusBeforeOpening);
+}
+
+/** How many MUI menus the page has mounted; see waitForListToClose. */
+function countMenus(page: Page): Promise<number> {
+    return page.locator(".MuiMenu-root").count();
+}
+
+/**
+ * The choices the drop-down list setting with this label offers, in order, as a person sees
+ * them by opening it. Opens the list, reads it and closes it again without choosing anything.
+ * The list must be enabled.
+ */
+export async function getCollectionSettingsListChoices(
+    page: Page,
+    label: string,
+): Promise<string[]> {
+    const menusBeforeOpening = await countMenus(page);
+    await realClick(collectionSettingsList(page, label));
+    const choices = openListChoices(page);
+    await expect(
+        choices.first(),
+        `the "${label}" list did not open`,
+    ).toBeVisible();
+    const texts = (await choices.allTextContents()).map((text) => text.trim());
+    await page.keyboard.press("Escape");
+    await waitForListToClose(page, menusBeforeOpening);
+    return texts;
+}
+
+/**
+ * Choose `choice` in the drop-down list setting with this label, as a person does by opening the
+ * list and clicking it, and return once the list shows it. Fails naming the choices the list
+ * offered when it has no such choice. Nothing is saved until OK.
+ */
+export async function chooseCollectionSettingsListChoice(
+    page: Page,
+    label: string,
+    choice: string,
+): Promise<void> {
+    const list = collectionSettingsList(page, label);
+    const menusBeforeOpening = await countMenus(page);
+    await realClick(list);
+    const choices = openListChoices(page);
+    await expect(
+        choices.first(),
+        `the "${label}" list did not open`,
+    ).toBeVisible();
+    const escaped = choice.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const wanted = choices.filter({
+        hasText: new RegExp(`^\\s*${escaped}\\s*$`),
+    });
+    if ((await wanted.count()) !== 1) {
+        const offered = (await choices.allTextContents()).map((t) => t.trim());
+        await page.keyboard.press("Escape");
+        throw new Error(
+            `The "${label}" list has no choice "${choice}"; it offers: ${offered.join(", ")}.`,
+        );
+    }
+    await realClick(wanted);
+    await waitForListToClose(page, menusBeforeOpening);
+    await expect
+        .poll(async () => (await getCollectionSettingsList(page, label)).shown)
+        .toBe(choice);
+}
+
+/**
+ * What the subscription badge on the showing page of the Collection Settings dialog says:
+ * "Available with your Bloom Subscription" when the collection's tier includes the feature, or
+ * "Feature Requires Higher Subscription Tier" when it does not. Until Bloom has answered about
+ * the tier, which happens after the page shows, it says the latter, so poll for "Available".
+ */
+export async function getCollectionSettingsSubscriptionBadge(
+    page: Page,
+): Promise<string> {
+    const badge = collectionSettingsDialog(page)
+        .locator('img[src*="bloom-enterprise-badge"]')
+        .locator("xpath=..");
+    await expect(
+        badge,
+        "the showing Collection Settings page has no subscription badge",
+    ).toHaveText(/Subscription/);
+    return (await badge.innerText()).trim();
+}
+
+/**
+ * The Bloom Library bookshelf the collection's settings file names, by url key, or undefined when
+ * it names none. Read from the .bloomCollection on disk, which is where a save puts it.
+ */
+export function readSavedBookshelf(collectionDir: string): string | undefined {
+    const settingsFile = fs
+        .readdirSync(collectionDir)
+        .find((name) => name.endsWith(".bloomCollection"));
+    if (!settingsFile)
+        throw new Error(`There is no .bloomCollection in ${collectionDir}.`);
+    const xml = fs.readFileSync(Path.join(collectionDir, settingsFile), "utf8");
+    return /<DefaultBookTags>[^<]*bookshelf:([^,<]+)/.exec(xml)?.[1];
+}
+
 /**
  * Click OK when it says "OK" (so no restart is coming): Bloom saves the settings and the dialog
  * closes. Returns once it has closed. For a change that needs a restart, use
