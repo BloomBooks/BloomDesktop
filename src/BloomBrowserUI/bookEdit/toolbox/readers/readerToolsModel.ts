@@ -93,6 +93,12 @@ export function isValidSampleTextFileType(path: string): boolean {
     );
 }
 
+/** A stage or level asked for before the Synphony settings were there to judge it. */
+interface IPhaseRequest {
+    value: number;
+    skipSave: boolean | undefined;
+}
+
 export class ReaderToolsModel {
     public stageNumber: number = 1;
     public levelNumber: number = 1;
@@ -100,6 +106,10 @@ export class ReaderToolsModel {
     // still sitting on the defaults above. restoreState() uses it to tell a model that
     // nobody has told anything from one that is already showing a real choice; see there.
     private hasBeenGivenAPhase = false;
+    // A stage or level someone asked for before the Synphony settings arrived, waiting
+    // for setSynphony() to apply it. See setStageNumber().
+    private stageAwaitingSynphony: IPhaseRequest | undefined;
+    private levelAwaitingSynphony: IPhaseRequest | undefined;
     public synphony: ReadersSynphonyWrapper | undefined; // to ensure detection of async issues, don't init until we load its settings
     public sort: string = SortType.alphabetic;
     public currentMarkupType: number = MarkupType.None;
@@ -156,6 +166,8 @@ export class ReaderToolsModel {
         this.stageNumber = 1;
         this.levelNumber = 1;
         this.synphony = undefined;
+        this.stageAwaitingSynphony = undefined;
+        this.levelAwaitingSynphony = undefined;
         this.sort = SortType.alphabetic;
         this.currentMarkupType = MarkupType.None;
         this.allWords = {};
@@ -195,7 +207,13 @@ export class ReaderToolsModel {
         skipSave?: boolean,
     ): Promise<void> {
         if (!this.synphony) {
-            return; // Synphony not loaded yet
+            // Don't throw the caller's choice away. Without the settings we cannot yet
+            // tell whether this is a valid stage, so remember it and let setSynphony()
+            // apply it when they arrive. Discarding it here is how a book's saved stage
+            // could spring back to 1 -- and, because the restore passes skipSave, never
+            // be recorded either -- whenever the settings load was slow or failed.
+            this.stageAwaitingSynphony = { value: stage, skipSave };
+            return;
         }
         // this much needs to be done immediately; otherwise, the result of
         // different routines calling setStageNumber is unpredictable, depending on
@@ -270,7 +288,9 @@ export class ReaderToolsModel {
 
     public setLevelNumber(val: number, skipSave?: boolean): void {
         if (!this.synphony) {
-            return; // Synphony not loaded yet
+            // Remember it for setSynphony(); see setStageNumber() for why.
+            this.levelAwaitingSynphony = { value: val, skipSave };
+            return;
         }
         const levels = this.synphony.getLevels();
         if (val < 1 || val > levels.length) {
@@ -1316,6 +1336,15 @@ export class ReaderToolsModel {
     /** Should be called early on, before other init. */
     public setSynphony(val: ReadersSynphonyWrapper): void {
         this.synphony = val;
+        // Now we can judge anything that asked for a stage or level while we had no
+        // settings to judge it by. Take them before applying, since the setters are
+        // what fill these in and we don't want to re-queue what we are replaying.
+        const stage = this.stageAwaitingSynphony;
+        const level = this.levelAwaitingSynphony;
+        this.stageAwaitingSynphony = undefined;
+        this.levelAwaitingSynphony = undefined;
+        if (stage) this.setStageNumber(stage.value, stage.skipSave);
+        if (level) this.setLevelNumber(level.value, level.skipSave);
     }
 
     //   getSynphony(): ReadersSynphonyWrapper {
