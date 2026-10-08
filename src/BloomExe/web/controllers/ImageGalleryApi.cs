@@ -168,33 +168,43 @@ namespace Bloom.web.controllers
             else if (!string.IsNullOrEmpty(imageUrl))
             {
                 var downloadPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-                using (var response = await s_httpClient.GetAsync(imageUrl))
+                try
                 {
-                    response.EnsureSuccessStatusCode();
-                    using var fileStream = RobustFile.Create(downloadPath);
-                    await response.Content.CopyToAsync(fileStream);
-                }
+                    using (var response = await s_httpClient.GetAsync(imageUrl))
+                    {
+                        response.EnsureSuccessStatusCode();
+                        using var fileStream = RobustFile.Create(downloadPath);
+                        await response.Content.CopyToAsync(fileStream);
+                    }
 
-                // Name the file for what it actually contains: the URL's extension may be wrong.
-                var extension = ImageUtils.GetExtensionForImageFileFormat(
-                    ImageUtils.GetImageFileFormat(downloadPath)
-                );
-                if (extension == null)
+                    // Name the file for what it actually contains: the URL's extension may be wrong.
+                    var extension = ImageUtils.GetExtensionForImageFileFormat(
+                        ImageUtils.GetImageFileFormat(downloadPath)
+                    );
+                    if (extension == null)
+                    {
+                        try
+                        {
+                            extension = Path.GetExtension(new Uri(imageUrl).LocalPath);
+                        }
+                        catch
+                        {
+                            extension = ".jpg";
+                        }
+                        if (string.IsNullOrEmpty(extension))
+                            extension = ".jpg";
+                    }
+
+                    sourceFilePath = downloadPath + extension;
+                    RobustFile.Move(downloadPath, sourceFilePath);
+                }
+                catch
                 {
-                    try
-                    {
-                        extension = Path.GetExtension(new Uri(imageUrl).LocalPath);
-                    }
-                    catch
-                    {
-                        extension = ".jpg";
-                    }
-                    if (string.IsNullOrEmpty(extension))
-                        extension = ".jpg";
+                    // Don't leave a partial download behind (the cleanup below doesn't cover it yet).
+                    if (RobustFile.Exists(downloadPath))
+                        RobustFile.Delete(downloadPath);
+                    throw;
                 }
-
-                sourceFilePath = downloadPath + extension;
-                RobustFile.Move(downloadPath, sourceFilePath);
                 downloadedFilePath = sourceFilePath;
             }
             else
