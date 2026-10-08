@@ -85,6 +85,11 @@
         <target xml:lang="fr" state="translated">Arrière-plan du canevas</target>
         <note>ID: AiImageEditor.SlotLabel.CanvasBackground</note>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.UnlockOriginalCopyrightAndLicenseTooltip" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Unlock to edit</source>
+        <target xml:lang="fr" state="needs-translation">Unlock to edit</target>
+        <note>ID: EditTab.FrontMatter.UnlockOriginalCopyrightAndLicenseTooltip</note>
+      </trans-unit>
       <trans-unit id="EditTab.TextContextMenu.NoIndent" approved="yes">
         <source xml:lang="en">Do Not Indent This Paragraph</source>
         <target xml:lang="fr" state="final">Ne pas indenter ce paragraphe</target>
