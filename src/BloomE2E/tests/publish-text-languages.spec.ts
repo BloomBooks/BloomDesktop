@@ -353,8 +353,8 @@ test.describe("the Text Languages publish list", () => {
     });
 
     // This assertion is what caught BL-16806: the name of a language the collection has stopped
-    // listing used to depend on the machine, not on the request. It asserts "Spanish" because the
-    // fallback in CollectionSettings.GetDisplayNameForLanguage now reads the subtag registry.
+    // listing used to depend on whether the machine happened to have a native ICU library. Bloom
+    // now turns ICU off for language names, so the answer no longer depends on the machine.
     //
     // A local failure here is usually something else: earlier steps time out on a loaded machine
     // and the run dies before reaching this assertion.

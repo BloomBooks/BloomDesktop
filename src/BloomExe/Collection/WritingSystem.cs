@@ -16,12 +16,18 @@ namespace Bloom.Collection
     {
         static WritingSystem()
         {
-            // Every user should see the same name for a language. LibPalaso otherwise decides
-            // once per process whether to ask ICU, and the two answers differ -- with ICU it
-            // honours the requested language and names Spanish in French as "espagnol", without
-            // it the request is ignored and the autonym comes back -- so the name turned on
-            // whether some unrelated software had left an ICU library on the machine (BL-16806).
-            // Bloom ships no icuuc.dll, so this is also the answer most users already get.
+            // LibPalaso otherwise decides once per process whether to ask ICU, and the two
+            // answers differ -- with ICU it names Spanish in French as "espagnol"; without it the
+            // name comes from CultureInfo.DisplayName, which on an English-speaking machine gives
+            // the autonym "espanol". So the name a user saw turned on whether some unrelated
+            // software had left an ICU library on the machine (BL-16806). Bloom ships no
+            // icuuc.dll, so the non-ICU answer is also the one most users already get.
+            //
+            // Note what this does and does not buy. It removes the dependence on ICU being
+            // installed. It does not make the name a pure function of the request: the remaining
+            // path renders in the process's CurrentUICulture, so a Bloom running in French can
+            // still name Spanish "espagnol". Same UI language, same name -- which is the
+            // guarantee this card needed.
             // This is a static constructor so that it also covers the tests and the CLI, not
             // just a normal Bloom startup.
             IetfLanguageTag.UseICUForLanguageNames = false;

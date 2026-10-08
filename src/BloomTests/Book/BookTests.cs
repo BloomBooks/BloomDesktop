@@ -876,8 +876,9 @@ namespace BloomTests.Book
             );
             // This used to have to accept "espagnol" as well, depending on whether a native ICU
             // library happened to be findable on the machine. Bloom now turns ICU off for language
-            // names (see WritingSystem's static constructor), so the autonym is the one right
-            // answer everywhere (BL-16806).
+            // names (see WritingSystem's static constructor), so for a given UI language there is
+            // one answer, whatever the machine. This is the answer under an English UI culture,
+            // which is what the test run uses (BL-16806).
             Assert.That(dataDivNode, Is.Not.Null, "should have a data-book languagesOfBook");
             Assert.That(dataDivNode.InnerText, Is.EqualTo("español, ไทย, français"));
             Assert.That(
