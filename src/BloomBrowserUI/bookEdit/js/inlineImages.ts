@@ -2,7 +2,7 @@
 // that editable wrapping around them. A picture can be docked on the left, on the right, as a
 // full-width band across the middle, or at the bottom. The layout rules are in
 // content/bookLayout/inlineImages.less, and the handles and outlines shown while editing are
-// in bookEdit/css/editMode.less.
+// in bookEdit/css/inlineImageEditing.less.
 //
 // Two things about the design explain most of the code in this file:
 //
@@ -722,10 +722,10 @@ export function inlineImageCanUndo(): boolean {
     // is newer than it. If we undid the snapshot first, the picture would go back to how it was
     // before their edit, out of the order things happened in. That is the one mistake these
     // separate undo stacks can make (see the comment on the if/else chain in
-    // workspaceRoot.handleUndo). This applies even when a picture is selected: selecting one
-    // leaves the caret in the text, so the person can still type, and right-clicking the text
-    // gets into that state without their meaning to, because the menu leaves the picture
-    // selected.
+    // workspaceRoot.handleUndo). This applies even when a picture is selected, because selecting
+    // one, by clicking or right-clicking it, leaves the caret in the text, so the person can
+    // still type. (Right-clicking the text deselects any picture; see
+    // getInlineImageMenuItemsForClick.)
     if (hasEditedSinceInlineImageSnapshot(top)) return false;
     const activeWrapper = getActiveInlineImage();
     if (activeWrapper) {
