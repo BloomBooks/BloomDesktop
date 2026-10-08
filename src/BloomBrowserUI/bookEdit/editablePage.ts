@@ -71,6 +71,8 @@ export interface IPageFrameExports {
     ckeditorUndo(): void;
     imageOperationCanUndo(): boolean;
     imageOperationUndo(): boolean;
+    inlineImageCanUndo(): boolean;
+    inlineImageUndo(): boolean;
 
     addRequestPageContentDelay(id: string): void;
     removeRequestPageContentDelay(id: string): void;
@@ -171,6 +173,11 @@ export {
     applyAiImageEditorReplacements,
     getAiImageEditorPageMetrics,
 };
+// Inline (Word-style) images keep their own undo stack. Like the origami and image operation
+// undo functions, these are exported so that the workspace undo command can call them. See
+// inlineImages.ts.
+import { inlineImageCanUndo, inlineImageUndo } from "./js/inlineImages";
+export { inlineImageCanUndo, inlineImageUndo };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
 import { postString } from "../utils/bloomApi";
 export { origamiCanUndo, origamiUndo };
@@ -423,6 +430,8 @@ interface EditablePageBundleApi {
     changeImageByElement: typeof changeImageByElement;
     imageOperationCanUndo: typeof imageOperationCanUndo;
     imageOperationUndo: typeof imageOperationUndo;
+    inlineImageCanUndo: typeof inlineImageCanUndo;
+    inlineImageUndo: typeof inlineImageUndo;
     origamiCanUndo: typeof origamiCanUndo;
     origamiUndo: typeof origamiUndo;
     getTheOneCanvasElementManager: typeof getTheOneCanvasElementManager;
@@ -504,6 +513,8 @@ window.editablePageBundle = {
     changeImageByElement,
     imageOperationCanUndo: imageOperationCanUndo,
     imageOperationUndo: imageOperationUndo,
+    inlineImageCanUndo,
+    inlineImageUndo,
     origamiCanUndo,
     origamiUndo,
     getTheOneCanvasElementManager,
