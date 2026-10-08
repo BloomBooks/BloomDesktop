@@ -274,6 +274,18 @@ describe("isOverlayOnBackgroundImage", () => {
         page.remove();
     });
 
+    it.each(["branding", "bloom-qrcode"])(
+        "is false for a %s image, even over a real background image",
+        (imgClass) => {
+            const page = makeTransparencyTestPage(imgClass);
+            const overlay = getTestImg(page, "overlay");
+            expect(overlay.classList.contains(imgClass)).toBe(true);
+
+            expect(isOverlayOnBackgroundImage(overlay)).toBe(false);
+            page.remove();
+        },
+    );
+
     it("is false when the background image is a placeholder", () => {
         const page = makeTransparencyTestPage("", "placeHolder.png");
 

@@ -2085,6 +2085,11 @@ namespace Bloom.Book
         /// </summary>
         internal static bool IsInCanvasOverlayOnBackgroundImage(SafeXmlElement element)
         {
+            // On a custom-layout cover the branding logo and QR code are canvas elements beside the
+            // cover picture. They are not pictures layered over it, and making a QR code
+            // transparent could make it harder to scan.
+            if (element.HasClass("branding") || element.HasClass("bloom-qrcode"))
+                return false;
             var canvasElement = element
                 .SafeSelectNodes("ancestor-or-self::div[contains(@class,'bloom-canvas-element')]")
                 .Cast<SafeXmlElement>()

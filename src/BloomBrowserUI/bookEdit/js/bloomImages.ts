@@ -545,6 +545,15 @@ export function bloomCanvasHasRealBackgroundImage(
 // picture beneath it, so it needs transparency even on a white page (BL-16993).
 // Mirrors the C# HtmlDom.IsInCanvasOverlayOnBackgroundImage.
 export function isOverlayOnBackgroundImage(img: HTMLElement): boolean {
+    // On a custom-layout cover the branding logo and QR code are canvas elements beside the
+    // cover picture. They are not pictures layered over it, and making a QR code transparent
+    // could make it harder to scan.
+    if (
+        img.classList.contains("branding") ||
+        img.classList.contains("bloom-qrcode")
+    ) {
+        return false;
+    }
     const canvasElement = img.closest(kCanvasElementSelector);
     if (
         !canvasElement ||

@@ -344,6 +344,17 @@ namespace BloomTests.Book
             );
         }
 
+        [TestCase("branding")]
+        [TestCase("bloom-qrcode")]
+        public void IsInCanvasOverlayOnBackgroundImage_BrandingOrQrCode_False(string imgClass)
+        {
+            var dom = MakeTransparencyTestDom(overlayImgClasses: imgClass);
+            var overlay = GetImgById(dom, "overlay");
+            Assert.That(overlay.HasClass(imgClass), Is.True, "test setup");
+
+            Assert.That(HtmlDom.IsInCanvasOverlayOnBackgroundImage(overlay), Is.False);
+        }
+
         [Test]
         public void IsInCanvasOverlayOnBackgroundImage_PlaceholderBackground_False()
         {
