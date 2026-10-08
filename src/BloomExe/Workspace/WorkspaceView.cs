@@ -1280,6 +1280,14 @@ window.showWorkspaceInitializationFailure = function(message) {
             // In the single-browser architecture, many UI surfaces don't fully refresh their
             // localized strings without a full workspace reload. Reopening the current project
             // gives us behavior similar to collection switching and guarantees consistency.
+            //
+            // Note that this reopens the project in the SAME process. Language names are one
+            // thing that does not come back fresh: LibPalaso caches them in a static dictionary
+            // keyed by language and metadata language but not by the UI culture, and the name it
+            // computes depends on the UI culture (CultureInfo.DisplayName is rendered in it). So
+            // a language name already looked up keeps the wording it had under the previous UI
+            // language. Anyone making the UI language change without reopening at all should
+            // expect more of this, not less.
             Application.Idle -= ReopenProjectAfterUiLanguageChange;
             Application.Idle += ReopenProjectAfterUiLanguageChange;
         }
@@ -1536,6 +1544,15 @@ window.showWorkspaceInitializationFailure = function(message) {
                     Invoke(ReopenCurrentProject);
                 }
             }
+        }
+
+        /// <summary>
+        /// Closes the collection and opens it again, as the Settings dialog does when a change
+        /// needs a restart.
+        /// </summary>
+        public void ReopenCollection()
+        {
+            Invoke(ReopenCurrentProject);
         }
 
         public void CheckForInvalidBranding()

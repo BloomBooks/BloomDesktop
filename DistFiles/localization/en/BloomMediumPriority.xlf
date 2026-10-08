@@ -40,6 +40,11 @@
         <note>This checkbox enables the experimental publish-to-apps workflow.</note>
         <note>Obsolete as of Bloom 6.5</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.Tables" translate="no">
+        <source xml:lang="en">Tables</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.Tables</note>
+        <note>Label of a checkbox in the Experimental Features list of the Advanced tab of Collection Settings. Turning it on lets the user add a table to a custom page.</note>
+      </trans-unit>
       <trans-unit id="Feature.AiImageEditing">
         <source xml:lang="en">Edit Images with AI</source>
         <note>ID: Feature.AiImageEditing</note>
@@ -591,6 +596,11 @@
         <note>ID: EditTab.Toolbox.CanvasTool.Navigation</note>
         <note>Label for an expandable section in the Canvas Tool that contains navigation-related objects (e.g. buttons and book grids) that can be dragged onto a page.</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Table" translate="no">
+        <source xml:lang="en">A table whose cells can hold text or pictures</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.Table</note>
+        <note>Tooltip on the table icon in the Canvas Tool. The user drags the icon onto a page to add a table.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true">
         <source xml:lang="en">Set Destination</source>
         <note>ID: EditTab.Toolbox.CanvasTool.SetDest</note>
@@ -918,6 +928,12 @@
       <trans-unit id="BookSettings.FullBleed.Description" sil:dynamic="true">
         <source xml:lang="en">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
         <note>BookSettings.FullBleed.Description</note>
+        <note>Obsolete as of Bloom 6.6</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.FullBleed.Description.EdgeToEdge" sil:dynamic="true">
+        <source xml:lang="en">Enable full bleed layout for printing. Use with the "Edge to Edge" theme. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
+        <note>ID: BookSettings.FullBleed.Description.EdgeToEdge</note>
+        <note>Help text under the "Use full bleed page layout" option in Book Settings. "Edge to Edge" is the name of a page theme (AppearanceTheme.edge-to-edge); translate it the same way here.</note>
       </trans-unit>
       <trans-unit id="BookSettings.ThemeAndLayoutGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Theme &amp; Layout</source>
@@ -1139,6 +1155,11 @@
       </trans-unit> -->
       <trans-unit id="AppearanceTheme.zero-margin-ebook" sil:dynamic="true">
         <source xml:lang="en">Zero Margin Ebook</source>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
+        <note>Obsolete as of Bloom 6.6</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.edge-to-edge" sil:dynamic="true">
+        <source xml:lang="en">Edge to Edge</source>
         <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
       <trans-unit id="AppearanceTheme.narrow-margin-ebook" sil:dynamic="true">
@@ -1435,6 +1456,11 @@
         <source xml:lang="en">Run Prepare before using this step.</source>
         <note>ID: PublishTab.Apps.PrepareRequiredTooltip</note>
         <note>Tooltip shown when a later step is disabled until Prepare has been run.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.RabUpdateNeeded" translate="no">
+        <source xml:lang="en">This version of Bloom needs Reading App Builder %0. Click Prepare to update.</source>
+        <note>ID: PublishTab.Apps.RabUpdateNeeded</note>
+        <note>Warning shown in the Prepare step when the installed Reading App Builder is older than the one this Bloom requires. %0 is the required version number, e.g. 14.0.1.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Prepare.DoneTooltip">
         <source xml:lang="en">The Reading App Builder project is already prepared for this collection.</source>

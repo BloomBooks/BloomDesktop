@@ -188,6 +188,15 @@ describe("canRotateCanvasElement", () => {
         expect(canRotateCanvasElement(element)).toBe(false);
     });
 
+    it("refuses a table", () => {
+        const element = makeCanvasElement();
+        const table = document.createElement("div");
+        table.classList.add("bloom-table");
+        element.appendChild(table);
+        expect(element.getAttribute("data-test-bubble-style")).toBeNull();
+        expect(canRotateCanvasElement(element)).toBe(false);
+    });
+
     it("allows an element whose bubble style is none", () => {
         const element = makeCanvasElement();
         element.setAttribute("data-test-bubble-style", "none");

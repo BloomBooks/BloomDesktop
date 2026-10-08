@@ -35,6 +35,34 @@ export function getBloomPageElement(): HTMLElement | null {
     ) as HTMLElement | null;
 }
 
+/**
+ * Is the page currently being edited part of the front or back matter?
+ * Some callers (e.g. deciding whether the canvas tool may be used) want to treat a custom
+ * page as not being xmatter, so we support an override for that. Could be just a boolean,
+ * but using an object with a named field makes it clearer what the argument is for where it
+ * is used.
+ * Returns false if there is no page yet, or (improbably) it has no classes.
+ * (The class attribute, unlike some others we put on the page, is never URL-encoded.)
+ */
+export function isXmatterPage(
+    args: { returnFalseForCustomPage: boolean } = {
+        returnFalseForCustomPage: false,
+    },
+): boolean {
+    const pageClasses = getBloomPageElement()?.getAttribute("class");
+    if (!pageClasses) return false;
+    if (
+        args.returnFalseForCustomPage &&
+        pageClasses.includes("bloom-customLayout")
+    ) {
+        return false;
+    }
+    return (
+        pageClasses.includes("bloom-frontMatter") ||
+        pageClasses.includes("bloom-backMatter")
+    );
+}
+
 // We saw one failure where the page iframe and its body already existed, but the editable
 // .bloom-page element had not been inserted yet when other React code tried to read it.
 // That is only a single observed case, so we do not know how often it happens, but the ordering

@@ -136,9 +136,13 @@ export const DialogOkButton: React.FunctionComponent<{
     onClick: () => void;
     enabled?: boolean;
     default?: boolean;
+    // A dialog whose OK sometimes does something more specific (e.g. Restart) can relabel it.
+    // Pass both: the English text and the l10n id for it.
+    l10nKey?: string;
+    englishText?: string;
 }> = (props) => (
     <BloomButton
-        l10nKey="Common.OK"
+        l10nKey={props.l10nKey ?? "Common.OK"}
         hasText={true}
         // A stable hook for the e2e suite: every dialog's OK button, whatever language
         // it is showing.
@@ -147,7 +151,7 @@ export const DialogOkButton: React.FunctionComponent<{
         variant={props.default === true ? "contained" : "outlined"}
         onClick={props.onClick}
     >
-        OK
+        {props.englishText ?? "OK"}
     </BloomButton>
 );
 

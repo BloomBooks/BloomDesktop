@@ -23,7 +23,13 @@ import { showToolbox, toolboxFrame } from "./toolbox";
  * is what the palette's test ids are built from. "none" is the plain Text Block: the type is
  * genuinely called that, because a text block is a canvas element with no special behaviour.
  */
-export type PaletteItem = "image" | "video" | "speech" | "sound" | "none";
+export type PaletteItem =
+    | "table"
+    | "image"
+    | "video"
+    | "speech"
+    | "sound"
+    | "none";
 
 /** The controls the Canvas tool shows once it is open. */
 const CANVAS_TOOL_CONTROLS = "#canvasToolControls";
@@ -207,9 +213,25 @@ async function dispatchPaletteDrag(
             // The drop point, in the page frame's own coordinates, which is what the product's
             // handlers work in (CanvasElementFactories.addCanvasElement calls
             // document.elementsFromPoint with them).
-            const targetRect = target.getBoundingClientRect();
+            // The drop point must be on screen: elementsFromPoint finds nothing at a point outside
+            // the viewport, so a drop there adds nothing and raises no error. On a short window
+            // (CI's is about 680 pixels) the lower part of a portrait page is below the fold, so
+            // scroll the page frame to bring the point into view, as a person would.
+            const pageWindow = pageDocument.defaultView;
+            if (!pageWindow) return "The page has no window.";
+            let targetRect = target.getBoundingClientRect();
+            const wantedY = targetRect.top + targetRect.height * what.yFraction;
+            if (wantedY < 0 || wantedY >= pageWindow.innerHeight) {
+                pageWindow.scrollBy(0, wantedY - pageWindow.innerHeight / 2);
+                targetRect = target.getBoundingClientRect();
+            }
             const x = targetRect.left + targetRect.width * what.xFraction;
             const y = targetRect.top + targetRect.height * what.yFraction;
+            if (y < 0 || y >= pageWindow.innerHeight)
+                return (
+                    `The drop point is off screen (y ${Math.round(y)} in a window ` +
+                    `${pageWindow.innerHeight} high) even after scrolling the page.`
+                );
             fire(target, "dragover", x, y);
             fire(target, "drop", x, y);
             fire(source, "dragend", x, y);
@@ -281,6 +303,35 @@ export async function dragPaletteItemOntoCanvas(
 }
 
 /**
+ * Which items the Canvas tool's palette is offering, by the canvas element type each one makes.
+ * Opens the Canvas tool first.
+ *
+ * An item whose feature is off, or whose subscription tier the collection has not got, is simply
+ * absent from the palette rather than dimmed, so this is how a test asks whether a feature is on
+ * offer. Below the canvas feature's own tier the whole tool sits behind a subscription notice (see
+ * subscriptionToolIds in ToolboxRoot.tsx) while its items stay in the document underneath it, so a
+ * test about a tier should say which of the two it means.
+ */
+export async function getPaletteItemsOffered(
+    page: Page,
+): Promise<PaletteItem[]> {
+    const toolbox = await openCanvasTool(page);
+    const anyItem = toolbox.locator("[data-testid^=palette-]:visible").first();
+    // Wait for one item rather than reading at once: the palette is drawn before it has heard
+    // back from features/status, and an item behind a feature appears only afterwards, so an
+    // immediate read can miss items that are on their way.
+    await anyItem.waitFor({ state: "visible", timeout: 20000 });
+    const ids = await toolbox
+        .locator("[data-testid^=palette-]:visible")
+        .evaluateAll((elements) =>
+            elements.map(
+                (element) => element.getAttribute("data-testid") ?? "",
+            ),
+        );
+    return ids.map((id) => id.replace(/^palette-/, "") as PaletteItem);
+}
+
+/**
  * Select a canvas element by clicking it, and wait until Bloom marks it active. Returns it.
  *
  * The click is a real mouse press, not Playwright's own: Bloom lays a drawing surface over the
@@ -303,6 +354,11 @@ export async function selectCanvasElement(
 /** Where on the page a locator is drawn. Throws naming it when it has no on-screen box. */
 export async function getRect(locator: Locator, what: string): Promise<IRect> {
     return requireBox(locator, what);
+}
+
+/** Where on the page the canvas of the page being edited is drawn. */
+export async function getCanvasRect(page: Page): Promise<IRect> {
+    return requireBox(canvas(page), "the canvas of the page being edited");
 }
 
 /** Where on the page the selected canvas element is drawn. */
@@ -427,7 +483,14 @@ export async function clickCanvasElementMenuItem(
                 `have; clicking it would open the Settings dialog. Launch the collection with ` +
                 `kEnterpriseSubscriptionCode if the test needs it.`,
         );
-    await item.click();
+    // Dispatch the click rather than press the mouse on the row. A row with a submenu (Flip, Choose
+    // Sound) opens it on hover and also on keyboard focus, which the menu can give it as it opens,
+    // and a submenu opened by focus stays open wherever the pointer goes. When the menu is taller
+    // than the window, such a submenu covers the rows below its parent, and a real click on one of
+    // them lands on the submenu instead, every time. The rows act on React's onClick, which a
+    // dispatched click reaches just as a real one does.
+    await item.scrollIntoViewIfNeeded();
+    await item.dispatchEvent("click");
     await frame
         .locator(MENU)
         .first()
@@ -460,12 +523,17 @@ export async function openCanvasElementSubmenu(
     }
     await parent.hover();
     // The submenu is a second menu list, drawn beside the first, and it exists only while open.
+    // Wait for exactly two: when the menu is taller than the window it scrolls to bring the row
+    // under the pointer, and the pointer can rest on a neighbouring row on the way, such as
+    // Transparency. That row's submenu stays in the document while it fades out.
     await expect
         .poll(async () => frame.locator(MENU).count(), {
             timeout: 15000,
-            message: `Resting the pointer on "${parentL10nId}" did not open its submenu.`,
+            message:
+                `Resting the pointer on "${parentL10nId}" did not leave the menu showing with ` +
+                `that one submenu beside it.`,
         })
-        .toBeGreaterThan(1);
+        .toBe(2);
 }
 
 /**
@@ -710,7 +778,9 @@ export async function dragRotateHandle(
 export async function closeCanvasElementMenu(page: Page): Promise<void> {
     const menu = editablePageFrame(page).locator(MENU).first();
     if (!(await menu.isVisible().catch(() => false))) return;
-    await page.keyboard.press("Escape");
+    // On the menu itself, not page.keyboard: the menu closes on an Escape it receives, and the
+    // focus may be elsewhere, e.g. on a picture in a table cell that was just pressed.
+    await menu.press("Escape");
     await expect
         .poll(async () => getOpenCanvasElementMenuCount(page), {
             timeout: 30000,
@@ -753,17 +823,24 @@ export async function duplicateCanvasElement(page: Page): Promise<number> {
 }
 
 /**
- * Delete the selected canvas element through its "..." menu, and wait until the page has one fewer.
+ * Delete the selected canvas element through its "..." menu, and wait until it and every canvas
+ * element inside it are gone. A table's picture and video cells each hold a canvas element of
+ * their own, so deleting a table can take several off the page.
  */
 export async function deleteCanvasElement(page: Page): Promise<void> {
     const countBefore = await getCanvasElementCount(page);
+    const countInside = await activeCanvasElement(page)
+        .locator(".bloom-canvas-element")
+        .count();
     await clickCanvasElementMenuItem(page, "Common.Delete");
     await expect
         .poll(async () => getCanvasElementCount(page), {
-            timeout: 30000,
-            message: `Delete did not remove a canvas element (there are still ${countBefore}).`,
+            timeout: 5000,
+            message:
+                `Delete did not remove the selected canvas element and the ${countInside} inside ` +
+                `it (there are still ${countBefore}).`,
         })
-        .toBe(countBefore - 1);
+        .toBe(countBefore - 1 - countInside);
 }
 
 /** The corners of a selected canvas element, by the names its resize handles use. */
@@ -786,6 +863,9 @@ export async function dragCanvasElementCorner(
         `#canvas-element-control-frame .bloom-ui-canvas-element-resize-handle-${corner}`,
     );
     await handle.waitFor({ state: "visible", timeout: 30000 });
+    // In a window shorter than the page, a handle low on the page can be below what is showing,
+    // where a press lands on nothing. A person would scroll to it first.
+    await handle.scrollIntoViewIfNeeded({ timeout: 30000 });
     const before = await getActiveCanvasElementRect(page);
     const box = await requireBox(handle, `the ${corner} resize handle`);
     const x = box.x + box.width / 2;
@@ -807,6 +887,65 @@ export async function dragCanvasElementCorner(
                 timeout: 30000,
                 message:
                     `Dragging the ${corner} handle by ${dx},${dy} did not change the canvas ` +
+                    `element's size.`,
+            },
+        )
+        .toBeGreaterThan(2);
+    return { before, after: await getActiveCanvasElementRect(page) };
+}
+
+/** Which side handle to drag, as the handles themselves are named. */
+export type Side = "n" | "e" | "s" | "w";
+
+/**
+ * Resize the selected canvas element by dragging one of its side handles, and wait until it has
+ * changed size. `distance` is how far the handle moves, in the page's own pixels: outwards for a
+ * positive number on the east or south side, and for a negative one on the west or north.
+ *
+ * A canvas element holding text gets the east and west handles, plus the south one when its
+ * height is not automatic, and no corners (`has-text` in `editMode.less`). A table gets these and
+ * the corners as well, so either helper works on one.
+ *
+ * Returns the element's rect before and after, so the caller can say what should have changed.
+ */
+export async function dragCanvasElementSide(
+    page: Page,
+    side: Side,
+    distance: number,
+): Promise<{ before: IRect; after: IRect }> {
+    const frame = editablePageFrame(page);
+    const handle = frame.locator(
+        `#canvas-element-control-frame .bloom-ui-canvas-element-side-handle-${side}`,
+    );
+    await handle.waitFor({ state: "visible", timeout: 30000 });
+    // As in dragCanvasElementCorner: scroll a handle that is below what is showing into view.
+    await handle.scrollIntoViewIfNeeded({ timeout: 30000 });
+    const before = await getActiveCanvasElementRect(page);
+    const box = await requireBox(handle, `the ${side} side handle`);
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    const horizontal = side === "e" || side === "w";
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(
+        horizontal ? x + distance : x,
+        horizontal ? y : y + distance,
+        { steps: 12 },
+    );
+    await page.mouse.up();
+    await expect
+        .poll(
+            async () => {
+                const now = await getActiveCanvasElementRect(page);
+                return (
+                    Math.abs(now.width - before.width) +
+                    Math.abs(now.height - before.height)
+                );
+            },
+            {
+                timeout: 30000,
+                message:
+                    `Dragging the ${side} handle by ${distance} did not change the canvas ` +
                     `element's size.`,
             },
         )
