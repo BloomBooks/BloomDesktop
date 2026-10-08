@@ -1,0 +1,236 @@
+// Inline (Word-style) images: an image that lives inside a bloom-editable so that the
+// text of that editable wraps around it. BloomBrowserUI/bookEdit/js/inlineImages.ts
+// describes the design and the edit-time behavior.
+//
+// basePage-sharedRules.less imports this file. That file feeds both basePage.css and the
+// ePUB stylesheet, so editing, PDF, bloom-player and ePUB all get these rules.
+// basePage-legacy-5-6.less imports it too, so books using the legacy theme also render
+// inline images. We leave it out of the compileLess "entries" list for bookLayout on
+// purpose, so no standalone inlineImages.css is produced and these rules only arrive
+// through those two imports.
+//
+// How an image's position and size are stored
+// The wrapper's dock class (bloom-inlineImageLeft and so on) and the custom properties in
+// its style attribute hold everything about where the image sits and how big it is.
+// Because of that, inlineImages.ts can copy the class list and the style attribute from
+// one language's wrapper onto the wrappers in the sibling editables, and the copies come
+// out right without anything being parsed or recalculated. The properties are:
+//     --inline-image-width         width of the visible image, as a % of the editable
+//     --inline-image-offset        how far down from the top of the editable the image
+//                                  sits (see the comment on the offset rule below)
+//     --inline-image-aspect-ratio  natural width/height of the image, so that layout
+//                                  (and therefore the overflow checker) is right even
+//                                  before the image has loaded
+//     --inline-image-contour       the shape the text wraps around when it follows the
+//                                  image's transparent silhouette instead of its
+//                                  rectangle; when unset the text wraps the rectangle
+//                                  (see the contour comment below)
+//     --inline-image-contour-margin  the space between that silhouette and the text
+// --inline-image-gap, set below, is not one of these per-image values. It is a constant,
+// written as a custom property so that the margin and the contour's spacing use the same
+// number and cannot get out of step.
+// The width is a custom property rather than a plain `width` because a middle-docked
+// image needs a full-width wrapper with a narrower image inside it. With the number in a
+// variable, one declaration serves both cases, and we need neither !important nor a
+// second width to keep in sync. For the same reason the aspect ratio goes on the img and
+// not on the wrapper, since a middle-docked wrapper is wider than its image.
+.bloom-editable .bloom-inlineImage {
+    box-sizing: border-box;
+
+    // How much space to leave between the picture and the text beside it. Both the margin
+    // and shape-margin need this number (the contour comment below explains why), so it
+    // is defined once here.
+    --inline-image-gap: 1em;
+
+    img {
+        display: block;
+        width: 100%;
+        aspect-ratio: var(--inline-image-aspect-ratio, auto);
+    }
+
+    // We implement the vertical offset as transparent padding at the top of the wrapper,
+    // and the wrap shape leaves that padding out. The text therefore runs through the
+    // padding at the editable's full width and only starts going around the image lower
+    // down. We found nothing else that does this. Line boxes avoid a float's whole margin
+    // box, so margin-top would give a narrow column of text beside an empty space.
+    // translateY moves where the image is painted but not where the text wraps. Anchor
+    // positioning takes the image out of the flow, and CSS Exclusions never shipped.
+    &.bloom-inlineImageLeft,
+    &.bloom-inlineImageRight,
+    &.bloom-inlineImageMiddle {
+        padding-top: var(--inline-image-offset, 0px);
+        shape-outside: inset(var(--inline-image-offset, 0px) 0 0 0);
+    }
+
+    // Contour wrap
+    // We have not yet built Word-style wrapping that follows the image's transparent
+    // silhouette instead of its rectangle, but we will need it. Nothing here turns it on.
+    // While --inline-image-contour is unset, these two declarations give the same
+    // rectangle as the rule above. They exist so that turning contours on later means
+    // setting one property, and they record the geometry that contours need. We measured
+    // that geometry in Chromium, and the tests in bookEdit/inline-images-e2e check each
+    // of the four measurements:
+    //
+    //  - The contour is a polygon() and must not be `url(<the image>)`. When the element
+    //    with shape-outside is not itself an image, Chromium draws an image shape at the
+    //    image's natural size, anchored at the top left and clipped to the box. A photo
+    //    1200px wide in a box 160px wide would then give only its top left corner as the
+    //    wrap shape. Chromium does scale the image to fit when the floated element is an
+    //    <img>, but here the floated element has to be the wrapper, because the wrapper
+    //    carries the offset padding, the dock class, and the full-width box of a
+    //    middle-docked image. Percentages in a polygon resolve against the reference box,
+    //    so one polygon stays correct at every width, zoom level and print resolution,
+    //    and it stretches with the box exactly as the picture inside it does.
+    //  - The polygon must name `content-box`. The default reference box is the margin
+    //    box, which here includes the offset padding and the gap margin, so the
+    //    silhouette would be stretched over both. The content box is exactly the picture.
+    //  - The gap has to be set twice, as the margin and as shape-margin. Once there is a
+    //    shape, the text wraps around the shape and ignores the margin box, so the margin
+    //    alone does nothing. But the shape, after shape-margin enlarges it, is clipped
+    //    back to the margin box, so shape-margin alone has no room to grow into. With
+    //    both set to --inline-image-gap, a contoured image and a rectangular one keep the
+    //    text the same distance away at the image's widest point.
+    //
+    // To finish the feature, code needs to work out the silhouette from the image's
+    // alpha channel whenever the image changes, and write
+    // `--inline-image-contour: polygon(...) content-box` and
+    // `--inline-image-contour-margin: var(--inline-image-gap)` onto the wrapper. Nothing
+    // in the markup or the rest of this file has to change.
+    //
+    // Only left- and right-docked images can have a contour. A middle-docked wrapper is
+    // wider than its image, so percentages of the wrapper would not line up with the
+    // picture, and since that wrapper spans the full width there is no text beside it to
+    // wrap anyway.
+    &.bloom-inlineImageLeft,
+    &.bloom-inlineImageRight {
+        shape-outside: var(
+            --inline-image-contour,
+            inset(var(--inline-image-offset, 0px) 0 0 0)
+        );
+        shape-margin: var(--inline-image-contour-margin, 0px);
+    }
+
+    // A text block may hold any number of inline images, so each side clears only its
+    // own side. A left image clears earlier left floats and a right image clears earlier
+    // right ones. Two images on the same side stack down that edge, each one's offset
+    // measured from where the previous one ended, while a left image and a right image
+    // can sit at the same height on opposite sides. Do not use clear:both here: it
+    // pushes every new image below all the existing ones, so when one image has been
+    // dragged low, a newly added image ends up below the text block itself. Stacking on
+    // one side cannot make images overlap, and it behaves the same in every renderer.
+    &.bloom-inlineImageLeft {
+        float: left;
+        clear: left;
+        width: var(--inline-image-width, 40%);
+        margin: 0 var(--inline-image-gap) 0.5em 0;
+    }
+
+    &.bloom-inlineImageRight {
+        float: right;
+        clear: right;
+        width: var(--inline-image-width, 40%);
+        margin: 0 0 0.5em var(--inline-image-gap);
+    }
+
+    // A middle-docked image has text above and below it. The wrapper spans the whole
+    // editable, so no line of text fits beside it, and the image is centered inside it at
+    // its own width. The wrapper still has to be a float, because only a float lets text
+    // run above it, through the offset padding that the shape leaves out. An ordinary
+    // block that is the first child would always sit at the very top of the editable.
+    // Since it spans the full width, it belongs below every earlier float on either side,
+    // so this one keeps clear:both.
+    &.bloom-inlineImageMiddle {
+        float: left;
+        clear: both;
+        width: 100%;
+
+        img {
+            width: var(--inline-image-width, 40%);
+            margin: 0 auto;
+        }
+    }
+
+    // A bottom-docked wrapper is the editable's last child, where every other dock is the
+    // first child, and it is not floated. It is just the last block of the field,
+    // centered. That is why inlineImages.ts leaves bloom-keepFirstInField off a
+    // bottom-docked wrapper.
+    &.bloom-inlineImageBottom {
+        float: none;
+        clear: both;
+        width: var(--inline-image-width, 40%);
+        margin: 0.5em auto 0 auto;
+    }
+}
+
+// Keeping the float inside the editable
+// An editable that holds an inline image has to contain its float. Otherwise the image
+// hangs out below the editable, over the next language's block or whatever follows on
+// the page. Two things get in the way:
+//   1. an ordinary block does not contain its floats, so we need flow-root;
+//   2. a visible editable is display:flex inside a vertically aligned text block (see
+//      langVisibility.less), and a child of a flex container cannot float, so the text
+//      would not wrap at all.
+// display:flow-root fixes both. In exchange, an editable showing an inline image can no
+// longer center or bottom-align its own text vertically. That only matters for a
+// monolingual bloom-vertical-align-* block, because in multilingual ones the alignment
+// goes on the translation group instead. We decided wrapping matters more.
+// The class is repeated to raise specificity above langVisibility.less's display:flex,
+// which would otherwise tie exactly and win because it is imported later.
+// Every renderer we control supports :has. An old ePUB reader that ignores it just gets
+// a float that hangs out of the editable, the same kind of fallback we already accept
+// there for shape-outside.
+.bloom-editable.bloom-editable.bloom-visibility-code-on:has(
+        > .bloom-inlineImage
+    ) {
+    display: flow-root;
+}
+
+// Showing the image once per translation group
+// Every language's editable carries its own copy of the image, because a float can only
+// wrap the text of the editable it is in. Showing the same picture once for each visible
+// language would look broken, so the image appears only in the visible language block
+// that comes first.
+//
+// "First" means first in precedence, which is not DOM order. The .bloom-content* classes
+// set the flex `order` property, so the DOM order of the editables does not tell us which
+// one the reader sees first. bloom-contentFirst (set by the appearance system) comes
+// first when the group has one, then bloom-content1, then content2, then content3. This
+// is the same preference bloomEditing.ts uses in SetupThingsSensitiveToStyleChanges.
+//
+// Each rule below hides the copy in a visible editable when some other visible editable
+// in the same group has higher precedence. So:
+//   - in a monolingual block nothing outranks the single visible editable, so it shows;
+//   - in a bilingual or trilingual block only the visible editable with the highest
+//     precedence shows it;
+//   - when L1 is not among the visible languages (there is no visible bloom-content1),
+//     the visible language with the highest precedence still shows it, so the image
+//     does not disappear.
+// These rules only affect display. Every language keeps its copy in the DOM, so nothing
+// here changes what is saved or published.
+.bloom-translationGroup {
+    // Outranked by a visible bloom-contentFirst.
+    &:has(> .bloom-editable.bloom-visibility-code-on.bloom-contentFirst)
+        > .bloom-editable.bloom-visibility-code-on:not(.bloom-contentFirst)
+        > .bloom-inlineImage,
+    // Outranked by a visible bloom-content1 (no visible contentFirst outranking it).
+    &:has(> .bloom-editable.bloom-visibility-code-on.bloom-content1)
+        > .bloom-editable.bloom-visibility-code-on:not(.bloom-contentFirst):not(
+            .bloom-content1
+        )
+        > .bloom-inlineImage,
+    // Outranked by a visible bloom-content2.
+    &:has(> .bloom-editable.bloom-visibility-code-on.bloom-content2)
+        > .bloom-editable.bloom-visibility-code-on:not(.bloom-contentFirst):not(
+            .bloom-content1
+        ):not(.bloom-content2)
+        > .bloom-inlineImage,
+    // Outranked by a visible bloom-content3. This only applies to a visible editable
+    // with no content class at all, which would be unusual.
+    &:has(> .bloom-editable.bloom-visibility-code-on.bloom-content3)
+        > .bloom-editable.bloom-visibility-code-on:not(.bloom-contentFirst):not(
+            .bloom-content1
+        ):not(.bloom-content2):not(.bloom-content3)
+        > .bloom-inlineImage {
+        display: none;
+    }
+}
