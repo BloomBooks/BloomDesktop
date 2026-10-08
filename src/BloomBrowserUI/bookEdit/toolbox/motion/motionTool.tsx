@@ -37,13 +37,13 @@ import {
 /// The motion tool lets you define two rectangles; Bloom Reader will pan & zoom from one to the other
 export class MotionTool extends ToolboxToolReactAdaptor {
     // The MotionControl the toolbox has mounted for us, or null before our panel has been
-    // rendered (and again if the tool's section is removed). Everything below that drives
+    // rendered (and again if the toolbox stops offering the tool). Everything below that drives
     // the control only runs while the tool is showing, i.e. while it is mounted, so the
     // null checks are just belt and braces.
     private rootControl: MotionControl | null = null;
     // The control instance we have already given its initial state and image observer.
-    // Kept so that we do that work once per mounted control, including if the tool's
-    // section is removed and added again (which mounts a new control).
+    // Kept so that we do that work once per mounted control, including if the tool is
+    // withdrawn and offered again (which mounts a new control).
     private initializedRootControl: MotionControl | null = null;
     private narrationPlayer: AudioRecording;
     private stopPreviewTimeout: number;

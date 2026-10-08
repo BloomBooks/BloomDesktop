@@ -12,7 +12,7 @@ import { IToolboxSettings } from "../../toolbox";
 // and restoring the current tool state
 export class LeveledReaderTool extends ToolboxToolReactAdaptor {
     // renders the leveled reader React tool, for the toolbox to display in this
-    // tool's accordion section
+    // tool's accordion
     public renderPanel(): JSX.Element {
         return (
             <div>
