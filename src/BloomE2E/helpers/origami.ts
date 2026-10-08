@@ -135,8 +135,8 @@ export async function getSectionTypesOffered(
 
 /**
  * The index of the first section that is offering its list of types, which is the first section
- * with nothing in it yet. Requires Change Layout mode. Fails with the number of sections when
- * every one of them already holds something.
+ * with nothing in it yet. Requires Change Layout mode. Throws when every section already holds
+ * something; the error says how many sections the page has.
  */
 export async function findEmptySection(page: Page): Promise<number> {
     const count = await sections(page).count();
