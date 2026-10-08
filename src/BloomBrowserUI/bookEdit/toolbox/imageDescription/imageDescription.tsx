@@ -4,7 +4,7 @@ import $ from "jquery";
 import * as React from "react";
 import { renderForInstance } from "../../../utils/reactRender";
 import { post } from "../../../utils/bloomApi";
-import { ToolBox } from "../toolbox";
+import { getPageIframeBody, isXmatterPage } from "../../../utils/shared";
 import { getEditablePageBundleExports } from "../../js/workspaceFrames";
 import "./imageDescription.less";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
@@ -185,12 +185,12 @@ export class ImageDescriptionToolControls extends React.Component<
         this.setState({
             enabled: true,
             descriptionNotNeeded: noDescriptionNeeded === "true",
-            isXmatterPage: ToolBox.isXmatterPage(),
+            isXmatterPage: isXmatterPage(),
         });
     }
 
     public setStateForNewPage(): void {
-        const page = ToolboxToolReactAdaptor.getPage();
+        const page = getPageIframeBody();
         if (!page) {
             this.setDisabledState();
             return;
@@ -252,6 +252,15 @@ export function setupImageDescriptions(
             // Preferable to only send a request for the info we need and not save and refresh the whole page.
             //   (Allows us to avoid the synchronous reload of the page, makes the UI experience much snappier)
             post("editView/requestTranslationGroupContent", (result) => {
+                // The Edit tab may have moved to another page while we waited. Then the page frame
+                // holds that page, which may not have its script yet, and it gets its own
+                // newPageReady() once it loads. The container belongs to a page that is going away.
+                if (
+                    container.ownerDocument !==
+                    getPageIframeBody()?.ownerDocument
+                ) {
+                    return;
+                }
                 // newPageReady() can be called twice, and both calls might occur before this async
                 // callback happens for either of them, so both may take this "no translation groups"
                 // branch and start to create them.  So check again before actually adding the new
@@ -358,7 +367,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
-        const page = ToolBox.getPage();
+        const page = getPageIframeBody();
         if (page) {
             hideImageDescriptions(page);
         }
@@ -366,6 +375,11 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
 
     public id(): string {
         return ImageDescriptionAdapter.kToolID;
+    }
+
+    /** The icon for this tool's header in the toolbox. */
+    public iconPath(): string {
+        return "/bloom/bookEdit/toolbox/imageDescription/ImageDescriptionToolIcon.svg";
     }
 
     // If we declare the function in this normal way and pass it to addEventListener,
@@ -389,7 +403,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         const imageDescControls = this.reactControls;
         if (imageDescControls) {
             imageDescControls.setStateForNewPage();
-            const page = ToolBox.getPage();
+            const page = getPageIframeBody();
             if (!page) {
                 return;
             }

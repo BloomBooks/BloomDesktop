@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml.Linq;
+using Bloom.ToPalaso;
 using SIL.Reporting;
 using SIL.Windows.Forms.WritingSystems;
 using SIL.WritingSystems;
@@ -13,6 +14,25 @@ namespace Bloom.Collection
 {
     public class WritingSystem
     {
+        static WritingSystem()
+        {
+            // LibPalaso otherwise decides once per process whether to ask ICU, and the two
+            // answers differ -- with ICU it names Spanish in French as "espagnol"; without it the
+            // name comes from CultureInfo.DisplayName, which on an English-speaking machine gives
+            // the autonym "espanol". So the name a user saw turned on whether some unrelated
+            // software had left an ICU library on the machine (BL-16806). Bloom ships no
+            // icuuc.dll, so the non-ICU answer is also the one most users already get.
+            //
+            // Note what this does and does not buy. It removes the dependence on ICU being
+            // installed. It does not make the name a pure function of the request: the remaining
+            // path renders in the process's CurrentUICulture, so a Bloom running in French can
+            // still name Spanish "espagnol". Same UI language, same name -- which is the
+            // guarantee this card needed.
+            // This is a static constructor so that it also covers the tests and the CLI, not
+            // just a normal Bloom startup.
+            IetfLanguageTag.UseICUForLanguageNames = false;
+        }
+
         private readonly Func<string> _tagOfDefaultLanguageForNaming;
         public static LanguageLookupModel LookupModel = new LanguageLookupModel();
         private string _langTag;
@@ -96,11 +116,11 @@ namespace Bloom.Collection
                 if (string.IsNullOrEmpty(Tag))
                     return string.Empty;
 
-                var name = IetfLanguageTag.GetLocalizedLanguageName(Tag, inLanguage);
+                var name = IetfLanguageTagExtra.GetLocalizedLanguageName(Tag, inLanguage);
                 if (name == Tag)
                 {
                     string match;
-                    if (!IetfLanguageTag.GetBestLanguageName(Tag, out match))
+                    if (!IetfLanguageTagExtra.GetBestLanguageName(Tag, out match))
                     {
                         return $"Unknown-{Tag}";
                     }
@@ -286,6 +306,12 @@ namespace Bloom.Collection
                 // of languages in the collection.  So we retry with the migrated name.
                 Name = ReadString(xml, "Language1Name", "");
             }
+            // Under a Thai regional format, Bloom computed and saved the invariant culture's name,
+            // "Invariant Language (Invariant Country)", for a language named from its tag, such as
+            // the default Language2 of a new collection (BL-16945). No real language has that
+            // exact name, so look it up again.
+            if (Name == CultureInfo.InvariantCulture.EnglishName)
+                Name = "";
             if (Name == "")
             {
                 Name = GetLanguageName_NoCache(

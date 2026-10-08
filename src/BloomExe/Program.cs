@@ -19,6 +19,7 @@ using Bloom.Collection.BloomPack;
 using Bloom.CollectionChoosing;
 using Bloom.ErrorReporter;
 using Bloom.FreezeDoctor;
+using Bloom.ImageProcessing;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Registration;
@@ -111,6 +112,16 @@ namespace Bloom
         internal static string StartupLabel { get; private set; }
         internal static bool StartupAutomation { get; private set; }
 
+        // --dont-disturb: something other than the person at the keyboard is driving this Bloom
+        // (an agent, or the e2e and visual-regression suites on a developer's machine), so no
+        // window it opens may take the foreground or the keyboard. Separate from --automation,
+        // which ./go.sh passes to every developer Bloom: a developer testing by hand wants the
+        // ordinary behavior, and so does a test run on CI, where nobody else is at the screen.
+        // Bloom's own windows honor it (Shell, SplashScreen, ReactDialog, the WinForms dialogs
+        // through ShowWithoutActivation, and Extensions.BringToFrontNow); native Windows dialogs,
+        // such as a file picker or a MessageBox, are activated by Windows regardless.
+        internal static bool StartupDontDisturb { get; private set; }
+
         // Experimental features an e2e run asked for, passed as
         // --experimental-features <comma-separated tokens>, or null when none were asked for.
         // Only accepted together with --e2e; see ExperimentalFeatures.TokensFromE2eCommandLine.
@@ -133,6 +144,7 @@ namespace Bloom
                 new[]
                 {
                     StartupAutomation ? "automation=true" : null,
+                    StartupDontDisturb ? "dontDisturb=true" : null,
                     StartupVitePort.HasValue ? $"vitePort={StartupVitePort.Value}" : null,
                     StartupLauncherPort.HasValue
                         ? $"launcherPort={StartupLauncherPort.Value}"
@@ -156,6 +168,7 @@ namespace Bloom
             // final call to CleanupTempFolder. Also prevents our temp files competing with
             // other programs for 64K available default temp file names.
             TempFile.NamePrefix = "bloom";
+            TagLibCultureFix.Register();
 
             // Parse our own startup arguments before anything reads Settings.Default:
             // --user-settings-folder decides where the settings live (the parser hands it to
@@ -388,14 +401,22 @@ namespace Bloom
                     if (args.Length > 0)
                         _supressRegistrationDialog = true;
 
-                    if (args.Length == 1 && args[0].ToLowerInvariant().EndsWith(".bloompack"))
+                    if (
+                        args.Length == 1
+                        && args[0]
+                            .ToLowerInvariant()
+                            .EndsWith(".bloompack", StringComparison.Ordinal)
+                    )
                     {
                         SetUpErrorHandling();
                         using (_applicationContainer = new ApplicationContainer())
                         {
                             var path = args[0];
                             // This allows local links to bloom packs.
-                            if (path.ToLowerInvariant().StartsWith("bloom://"))
+                            if (
+                                path.ToLowerInvariant()
+                                    .StartsWith("bloom://", StringComparison.Ordinal)
+                            )
                             {
                                 path = path.Substring("bloom://".Length);
                                 if (!RobustFile.Exists(path))
@@ -427,7 +448,7 @@ namespace Bloom
                         var missingTcPieces = FolderTeamCollection.MissingTcPieces(args[0]);
                         if (!string.IsNullOrEmpty(missingTcPieces))
                         {
-                            if (missingTcPieces.StartsWith("book folder"))
+                            if (missingTcPieces.StartsWith("book folder", StringComparison.Ordinal))
                             {
                                 ErrorReport.NotifyUserOfProblem(
                                     "You opened a file meant to help you join a Team Collection, but Bloom was not able to find a Team Collection folder for you to join. Please ask your colleague for help in getting a complete Team Collection folder synchronized *to your computer*. Then, inside that folder, open the \"joinCollection\" file."
@@ -637,13 +658,19 @@ namespace Bloom
                             // before looking for .bloomCollection.
                             var path = Utils.LongPathAware.GetLongPath(argPath);
 
-                            if (path.ToLowerInvariant().EndsWith(@".bloomproblembook"))
+                            if (
+                                path.ToLowerInvariant()
+                                    .EndsWith(@".bloomproblembook", StringComparison.Ordinal)
+                            )
                             {
                                 Settings.Default.MruProjects.AddNewPath(
                                     ProblemReportApi.UnpackProblemBook(path)
                                 );
                             }
-                            else if (path.ToLowerInvariant().EndsWith(@".bloomcollection"))
+                            else if (
+                                path.ToLowerInvariant()
+                                    .EndsWith(@".bloomcollection", StringComparison.Ordinal)
+                            )
                             {
                                 // See BL-10012. We'll die eventually, might as well nip this in the bud.
                                 if (Utils.LongPathAware.GetExceedsMaxPath(path))
@@ -761,6 +788,7 @@ namespace Bloom
             StartupVitePort = null;
             StartupLabel = null;
             StartupAutomation = false;
+            StartupDontDisturb = false;
             StartupLauncherPort = null;
             StartupUserSettingsFolder = null;
             BloomSettingsProvider.SetUserSettingsFolder(null);
@@ -807,6 +835,14 @@ namespace Bloom
                         "--automation",
                         () => StartupAutomation,
                         value => StartupAutomation = value,
+                        out errorMessage
+                    )
+                    || TryHandleStartupFlagArgument(
+                        args,
+                        ref i,
+                        "--dont-disturb",
+                        () => StartupDontDisturb,
+                        value => StartupDontDisturb = value,
                         out errorMessage
                     )
                     || TryHandleStartupFlagArgument(
@@ -1632,14 +1668,15 @@ namespace Bloom
 
         private static bool IsInstallerLaunch(string[] args)
         {
-            return args.Length > 0 && args[0].ToLowerInvariant().StartsWith("--veloapp-");
+            return args.Length > 0
+                && args[0].ToLowerInvariant().StartsWith("--veloapp-", StringComparison.Ordinal);
         }
 
         private static bool IsLocalizationHarvestingLaunch(string[] args)
         {
             return args.Length == 1
-                && args[0].StartsWith("--ha")
-                && "--harvest-for-localization".StartsWith(args[0]);
+                && args[0].StartsWith("--ha", StringComparison.Ordinal)
+                && "--harvest-for-localization".StartsWith(args[0], StringComparison.Ordinal);
         }
 
         // I think this does something like the Wix element
@@ -1840,8 +1877,12 @@ namespace Bloom
         private static bool IsBloomBookOrder(string[] args)
         {
             return args.Length == 1
-                && !args[0].ToLowerInvariant().EndsWith(".bloomcollection")
-                && !args[0].ToLowerInvariant().EndsWith(".bloomproblembook")
+                && !args[0]
+                    .ToLowerInvariant()
+                    .EndsWith(".bloomcollection", StringComparison.Ordinal)
+                && !args[0]
+                    .ToLowerInvariant()
+                    .EndsWith(".bloomproblembook", StringComparison.Ordinal)
                 && !IsInstallerLaunch(args);
         }
 
@@ -2031,7 +2072,7 @@ namespace Bloom
                 // Catch case where the last collection was so long that windows gave us a 8.3 version which will eventually
                 // fail. Just fail right now, don't bother to have a conversation with the user about it.
                 // This might be impossible in real life, I'm not sure. Part of BL-10012.
-                if (path.EndsWith(".BLO"))
+                if (path.EndsWith(".BLO", StringComparison.Ordinal))
                 {
                     Settings.Default.MruProjects.RemovePath(path);
                     path = null;
@@ -2375,11 +2416,31 @@ namespace Bloom
                     dlg.SetScaledSize(700, 500);
                     dlg.StartPosition = FormStartPosition.CenterScreen;
                     dlg.ShowInTaskbar = true;
+                    // An automation run puts this dialog where BLOOM_AUTOMATION_MONITOR says,
+                    // as it does the main window and the splash screen (see
+                    // AutomationWindowPlacement); CenterScreen would put it on whichever monitor
+                    // the mouse is on.
+                    var placement = AutomationWindowPlacement.GetChoice();
+                    if (placement == AutomationWindowPlacement.Choice.OffEveryMonitor)
+                    {
+                        dlg.StartPosition = FormStartPosition.Manual;
+                        var offScreenArea = AutomationWindowPlacement.GetBoundsOffEveryMonitor();
+                        dlg.Location = new System.Drawing.Point(
+                            offScreenArea.Left,
+                            offScreenArea.Top
+                        );
+                        dlg.ShowInTaskbar = false;
+                    }
+                    else if (placement == AutomationWindowPlacement.Choice.OnTheChosenMonitor)
+                    {
+                        dlg.CenterWithin(AutomationWindowPlacement.GetChosenMonitor().WorkingArea);
+                    }
                     // With no owner window to hand it the foreground, this opens behind
                     // whatever the user launched Bloom from (Windows Explorer, say) -- notably
                     // when the minimum-version gate's "Open a Different Collection" brings us
                     // here at startup -- and also when we reopen it programmatically after a
-                    // language change. See BL-16690.
+                    // language change. See BL-16690. (Under --dont-disturb it stays where it
+                    // opens; see BringToFrontNow.)
                     dlg.BringToFrontWhenShown();
                     dlg.ShowDialog();
                     closeSource = dlg.CloseSource;
@@ -2666,9 +2727,6 @@ namespace Bloom
                 {
                     LocalizationManager.FallbackLanguageIds = new[] { "es", "en" };
                 }
-
-                // It's now safe to read the localized strings.  See BL-13245.
-                HtmlErrorReporter.Instance.LocalizeDefaultReportLabel();
             }
             catch (Exception error)
             {
@@ -3173,7 +3231,9 @@ Anyone looking specifically at our issue tracking system can read what you sent 
         {
             try
             {
-                return process.ProcessName.ToLowerInvariant().StartsWith("mono");
+                return process
+                    .ProcessName.ToLowerInvariant()
+                    .StartsWith("mono", StringComparison.Ordinal);
             }
             catch (System.InvalidOperationException)
             {

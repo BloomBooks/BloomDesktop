@@ -74,6 +74,11 @@ Two consequences worth knowing:
   `Console.Error` for anything a developer must see.
 - Every temp path is longer by `BloomTests\<key>-p<pid>\`. Deeply-nested temp paths in tests are
   that much closer to `MAX_PATH`.
+- **L10NSharp's writable xlf files are the exception**: L10NSharp puts them under `%LOCALAPPDATA%`
+  whatever temp is, and Bloom's own `"SIL/Bloom"` there is shared with every running Bloom. A test
+  that creates a `LocalizationManager` must pass `TestTempDirectory.LocalizationSettingPath` as the
+  relative setting path, which is a folder of this run's own
+  (`%LOCALAPPDATA%\SIL\BloomTests\runs\<key>-p<pid>\`) and cleaned up the same way as the temp folder.
 
 ## The opt-in Reading App Builder real-build test
 
@@ -104,10 +109,10 @@ French for a reason that has nothing to do with the code under test. Either asse
 string really should be invariant, as log lines should be — fix the production code and leave the
 test asserting the period.
 
-The weekly `.github/workflows/culture-sweep.yml` already runs the whole suite under `fr-FR` and
-`tr-TR`, so **do not run under another culture as a matter of routine** — it costs a full build and
-a full run for nothing new. Do it only when your change parses or formats numbers, dates, or casing,
-or when reproducing a sweep failure locally. `src/BloomTests/TestCulture.cs` makes it one environment
+The weekly `.github/workflows/culture-sweep.yml` already runs the whole suite under `fr-FR`,
+`tr-TR`, `th-TH` and `ar-SA`, so **do not run under another culture as a matter of routine** — it costs a full
+build and a full run for nothing new. Do it only when your change parses or formats numbers, dates,
+casing, or string searches, or when reproducing a sweep failure locally. `src/BloomTests/TestCulture.cs` makes it one environment
 variable, and does nothing when it is unset:
 
 ```bash

@@ -375,9 +375,9 @@ namespace Bloom.Api
 
         private static bool IsTemplateBookKey(string key)
         {
-            return key.StartsWith("TemplateBooks.BookName")
-                || key.StartsWith("TemplateBooks.PageLabel")
-                || key.StartsWith("TemplateBooks.PageDescription");
+            return key.StartsWith("TemplateBooks.BookName", StringComparison.Ordinal)
+                || key.StartsWith("TemplateBooks.PageLabel", StringComparison.Ordinal)
+                || key.StartsWith("TemplateBooks.PageDescription", StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -479,7 +479,12 @@ namespace Bloom.Api
                 return;
             }
 
-            if (ApplicationUpdateSupport.ChannelName.StartsWith("Developer"))
+            if (
+                ApplicationUpdateSupport.ChannelName.StartsWith(
+                    "Developer",
+                    StringComparison.Ordinal
+                )
+            )
             {
                 //It would be a nice improvement to l10n to allow us to write directly to the source-code XLF file, so that the
                 //developer just has to check it in. But for now, we can write out a xliff element to the "local" XLF which the developer

@@ -64,7 +64,14 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const editable = props.canvasElement.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on",
     )[0] as HTMLElement | undefined;
-    const langName = editable?.getAttribute("data-languagetipcontent");
+    // A table is many text boxes, so naming the language of the first cell here would
+    // be misleading. Each cell shows its own language name, the way a text box on an
+    // ordinary page does; see the .bloom-table rules in editMode.less.
+    const holdsTable =
+        props.canvasElement.getElementsByClassName("bloom-table").length > 0;
+    const langName = holdsTable
+        ? undefined
+        : editable?.getAttribute("data-languagetipcontent");
     const setMenuOpen = (open: boolean, launchingDialog?: boolean) => {
         // Even though we've done our best to tell the MUI menu NOT to steal focus, it seems it still does...
         // or some other code somewhere is doing it when we choose a menu item. So we tell the CanvasElementManager
@@ -93,6 +100,11 @@ const CanvasElementContextControls: React.FunctionComponent<{
     // Its FeatureStatus.visible reflects whether the experimental feature is on;
     // we feed that into the control context so the menu item is hidden when off.
     const aiImageEditingStatus = useGetFeatureStatus("AiImageEditing");
+    // Both halves of the table feature's status matter, and they mean different
+    // things: a tier below Pro leaves it not enabled, and a feature Bloom is
+    // hiding is not visible. Either way no new table may be made,
+    // which is what Duplicate on a table element would do.
+    const tableStatus = useGetFeatureStatus("table");
     const languageNameValues = useApiObject<ILanguageNameValues>(
         "settings/languageNames",
         {
@@ -211,6 +223,30 @@ const CanvasElementContextControls: React.FunctionComponent<{
             isCurrent = false;
         };
     }, [props.canvasElement, props.menuOpen, hasText]);
+
+    // Close the menu on Escape. MUI closes a Menu on Escape only when the key goes to the menu
+    // itself, and this one never has the focus: it opens with disableAutoFocus so that the text
+    // box being edited keeps it. So listen on the page's document instead, in the capture phase,
+    // and stop the event there, so that nothing else acts on this Escape, including MUI's own
+    // handler on an open submenu, which would otherwise close something a second time.
+    // setMenuOpen is a new function on every render, so the listener reads the latest one
+    // through a ref rather than being registered again on every render.
+    const setMenuOpenRef = useRef(setMenuOpen);
+    setMenuOpenRef.current = setMenuOpen;
+    useEffect(() => {
+        if (!props.menuOpen) return;
+        const doc = props.canvasElement.ownerDocument;
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key !== "Escape") return;
+            event.preventDefault();
+            event.stopPropagation();
+            setMenuOpenRef.current(false);
+        };
+        doc.addEventListener("keydown", onKeyDown, { capture: true });
+        return () => {
+            doc.removeEventListener("keydown", onKeyDown, { capture: true });
+        };
+    }, [props.menuOpen, props.canvasElement]);
 
     if (!page) {
         // Probably right after deleting the canvas element. Wish we could return early sooner,
@@ -460,6 +496,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
         hasClipboardText,
         languageNameValues,
         aiImageEditingAvailable: aiImageEditingStatus?.visible ?? false,
+        tablesMayBeRestructured:
+            !!tableStatus?.enabled && !!tableStatus?.visible,
     };
 
     const definition =
@@ -633,6 +671,9 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                             {...option}
                                             key={option.l10nId}
                                             truncateMainLabel={true}
+                                            // The menu is keepMounted, so the row must hear
+                                            // that the menu shut, or its submenu stays drawn.
+                                            parentMenuOpen={props.menuOpen}
                                         >
                                             {option.subMenu.map(
                                                 (subOption, subIndex) => {

@@ -13,6 +13,8 @@
 		<Version>6.6.0.0</Version>
 		<BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
 		<TargetFramework>net8.0-windows</TargetFramework>
+		<!-- NU1701: transitive .NET Framework-only packages from BloomExe's keyboarding stack; see BloomExe.csproj. -->
+		<NoWarn>$(NoWarn);NU1701</NoWarn>
 		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
 		<LangVersion>11.0</LangVersion>
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
@@ -131,21 +133,17 @@
 		<PackageReference Include="NunitXml.TestLogger" Version="6.1.0" />
 		<PackageReference Include="RestSharp" Version="106.12.0" />
 		<PackageReference Include="SharpZipLib" Version="1.3.3" />
-		<PackageReference Include="SIL.Core" Version="18.0.0-beta0028" />
-		<PackageReference Include="SIL.Core.Desktop" Version="18.0.0-beta0028" />
-		<PackageReference Include="SIL.Media" Version="18.0.0-beta0028" />
-		<PackageReference Include="SIL.TestUtilities" Version="18.0.0-beta0028" />
-		<PackageReference Include="SIL.Windows.Forms" Version="18.0.0-beta0028" />
+		<PackageReference Include="SIL.Core" Version="18.0.0-beta0046" />
+		<PackageReference Include="SIL.Core.Desktop" Version="18.0.0-beta0046" />
+		<PackageReference Include="SIL.Media" Version="18.0.0-beta0046" />
+		<PackageReference Include="SIL.TestUtilities" Version="18.0.0-beta0046" />
+		<PackageReference Include="SIL.Windows.Forms" Version="18.0.0-beta0046" />
 		<PackageReference Include="System.Drawing.Common" Version="7.0.0" />
 		<PackageReference Include="PolySharp" Version="1.13.2">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
-	</ItemGroup>
-	<ItemGroup>
-		<Reference Include="System.Windows.Forms" />
-		<Reference Include="System.Web" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\BloomExe\BloomExe.csproj" />

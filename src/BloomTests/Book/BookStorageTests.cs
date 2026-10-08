@@ -100,6 +100,53 @@ namespace BloomTests.Book
             Assert.That(captionDiv.InnerXml, Is.EqualTo("A caption with no placeholder"));
         }
 
+        /// <summary>
+        /// When Windows refuses the write of the QR code image (antivirus, another process holding
+        /// the file), UpdateQrCode must report a NonFatalProblem rather than throw, because the
+        /// exception stops the user from selecting or opening the book (BL-16930).
+        /// </summary>
+        [Test]
+        public void UpdateQrCode_QrFileCannotBeWritten_ReportsProblemAndStillUpdatesHtml()
+        {
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-branding-wrapper'><a>"
+                    + "<img class='branding' src='badge.png'/>"
+                    + "</a></div></body></html>"
+            );
+            var qrPath = _folder.Combine("lang-qr-code.png");
+            RobustFile.WriteAllText(qrPath, "stand-in for an old QR code image");
+            Assert.That(
+                dom.SafeSelectNodes("//img[@class='bloom-qrcode']").Length,
+                Is.EqualTo(0),
+                "sanity check: the badge starts without a QR code image"
+            );
+
+            // An exclusive handle makes the write fail the same way a blocking antivirus does.
+            using (new FileStream(qrPath, FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                using (new NonFatalProblem.ExpectedByUnitTest())
+                {
+                    BookStorage.UpdateQrCode(
+                        dom,
+                        true,
+                        "en",
+                        "More books in {0}:",
+                        "English",
+                        _folder.Path
+                    );
+                }
+            }
+
+            var qrImages = dom.SafeSelectNodes("//img[@class='bloom-qrcode']");
+            Assert.That(qrImages.Length, Is.EqualTo(1));
+            Assert.That(qrImages[0].GetAttribute("src"), Is.EqualTo("lang-qr-code.png"));
+            Assert.That(
+                RobustFile.ReadAllText(qrPath),
+                Is.EqualTo("stand-in for an old QR code image"),
+                "the locked file should be left as it was"
+            );
+        }
+
         [Test]
         public void RepairEmptyPages_VariousEmptyPages_DoesIt()
         {
@@ -840,7 +887,10 @@ namespace BloomTests.Book
             );
             var result = storage.ValidateBook(storage.PathToExistingHtml);
             Assert.IsTrue(
-                result.StartsWith("Bloom-page element not found at root level: someOtherId"),
+                result.StartsWith(
+                    "Bloom-page element not found at root level: someOtherId",
+                    StringComparison.Ordinal
+                ),
                 "Bad Html should fail ValidateBook()."
             );
             Assert.IsTrue(storage.ErrorAllowsReporting, "ErrorAllowsReporting");
@@ -895,8 +945,13 @@ namespace BloomTests.Book
             );
             Assert.That(storage.ErrorAllowsReporting, Is.False, "ErrorAllowsReporting");
             Assert.That(
-                storage.ErrorMessagesHtml.IndexOf("Breaking Feature 1"),
-                Is.GreaterThan(storage.ErrorMessagesHtml.IndexOf("Breaking Feature 2")),
+                storage.ErrorMessagesHtml.IndexOf("Breaking Feature 1", StringComparison.Ordinal),
+                Is.GreaterThan(
+                    storage.ErrorMessagesHtml.IndexOf(
+                        "Breaking Feature 2",
+                        StringComparison.Ordinal
+                    )
+                ),
                 "sort order wrong"
             );
         }
@@ -932,7 +987,7 @@ namespace BloomTests.Book
             foreach (string extension in extensions)
             {
                 string filename;
-                if (extension.StartsWith("."))
+                if (extension.StartsWith(".", StringComparison.Ordinal))
                     filename = $"{filenameWithoutExtension}{extension}";
                 else
                     filename = $"{filenameWithoutExtension}.{extension}";
@@ -1324,7 +1379,7 @@ namespace BloomTests.Book
                 // Sanity check: we really are in the churn-prone situation (folder base is a truncated
                 // form of the ideal name, so the simple StartsWith work-around check would fail).
                 Assert.That(
-                    currentFolderName.StartsWith(longTitle),
+                    currentFolderName.StartsWith(longTitle, StringComparison.Ordinal),
                     Is.False,
                     "test setup: the truncated folder base should not start with the full ideal name"
                 );

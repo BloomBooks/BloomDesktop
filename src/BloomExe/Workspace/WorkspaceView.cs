@@ -1280,6 +1280,14 @@ window.showWorkspaceInitializationFailure = function(message) {
             // In the single-browser architecture, many UI surfaces don't fully refresh their
             // localized strings without a full workspace reload. Reopening the current project
             // gives us behavior similar to collection switching and guarantees consistency.
+            //
+            // Note that this reopens the project in the SAME process. Language names are one
+            // thing that does not come back fresh: LibPalaso caches them in a static dictionary
+            // keyed by language and metadata language but not by the UI culture, and the name it
+            // computes depends on the UI culture (CultureInfo.DisplayName is rendered in it). So
+            // a language name already looked up keeps the wording it had under the previous UI
+            // language. Anyone making the UI language change without reopening at all should
+            // expect more of this, not less.
             Application.Idle -= ReopenProjectAfterUiLanguageChange;
             Application.Idle += ReopenProjectAfterUiLanguageChange;
         }
@@ -1331,10 +1339,10 @@ window.showWorkspaceInitializationFailure = function(message) {
 
             // Get the language name in its own language if at all possible.
             // Add an English name suffix if it's not in a Latin script.
-            var menuText = IetfLanguageTag.GetNativeLanguageNameWithEnglishSubtitle(code);
+            var menuText = IetfLanguageTagExtra.GetNativeLanguageNameWithEnglishSubtitle(code);
             var englishName = IetfLanguageTag.GetManuallyOverriddenEnglishNameIfNeeded(
                 code,
-                () => IetfLanguageTag.GetLocalizedLanguageName(code, "en")
+                () => IetfLanguageTagExtra.GetLocalizedLanguageName(code, "en")
             );
             return new LanguageItem
             {
@@ -1376,16 +1384,20 @@ window.showWorkspaceInitializationFailure = function(message) {
             return (float)translatedCount / (float)totalCount;
         }
 
+        /// <summary>
+        /// Shorten a UI-language menu entry for the language button by dropping the part in
+        /// parentheses, e.g. "ไทย (Thai)" becomes "ไทย".
+        /// </summary>
         public static string GetShortenedLanguageName(string itemText)
         {
-            var idxChinese = itemText.IndexOf(" (Chinese");
+            var idxChinese = itemText.IndexOf(" (Chinese", StringComparison.Ordinal);
             if (idxChinese > 0)
             {
                 return itemText.Substring(0, idxChinese);
             }
             else
             {
-                var idxCountry = itemText.IndexOf(" (");
+                var idxCountry = itemText.IndexOf(" (", StringComparison.Ordinal);
                 if (idxCountry > 0)
                     return itemText.Substring(0, idxCountry);
                 else
@@ -1532,6 +1544,15 @@ window.showWorkspaceInitializationFailure = function(message) {
                     Invoke(ReopenCurrentProject);
                 }
             }
+        }
+
+        /// <summary>
+        /// Closes the collection and opens it again, as the Settings dialog does when a change
+        /// needs a restart.
+        /// </summary>
+        public void ReopenCollection()
+        {
+            Invoke(ReopenCurrentProject);
         }
 
         public void CheckForInvalidBranding()

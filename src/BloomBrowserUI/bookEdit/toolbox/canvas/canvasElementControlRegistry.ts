@@ -44,7 +44,14 @@ export const imageCanvasElementControls: ICanvasElementControlConfiguration = {
     // also as game pieces created from the Game tool.
     // `gameDraggable` is intentionally listed here so game pages can surface
     // draggable commands; availability rules/context keep it hidden on non-game pages.
-    menuSections: ["image", "audio", "gameDraggable", "wholeElement"],
+    menuSections: [
+        "image",
+        "imageArrangement",
+        "imageSettings",
+        "audio",
+        "gameDraggable",
+        "wholeElement",
+    ],
     toolbar: [
         "missingMetadata",
         "chooseImage",
@@ -149,6 +156,25 @@ export const captionCanvasElementControls: ICanvasElementControlConfiguration =
         ),
     };
 
+export const tableCanvasElementControls: ICanvasElementControlConfiguration = {
+    type: "table",
+    // A table carries its own in-page affordances for everything inside it:
+    // pills for the table, the row and the column, edge insert buttons, and
+    // right-click menus. So the canvas surfaces only what belongs to the
+    // element as a whole, such as Duplicate and Delete.
+    menuSections: ["wholeElement"],
+    toolbar: ["duplicate", "delete"],
+    toolPanel: [],
+    availabilityRules: mergeRules(wholeElementAvailabilityRules, {
+        // Duplicating a table is making one, so it goes where the rest of table
+        // creation goes when the feature is not available. Delete stays: the user
+        // must always be able to get rid of something they cannot edit.
+        duplicate: {
+            visible: (ctx) => ctx.tablesMayBeRestructured,
+        },
+    }),
+};
+
 export const bookLinkGridControls: ICanvasElementControlConfiguration = {
     type: "book-link-grid",
     menuSections: ["linkGrid", "wholeElement"],
@@ -162,7 +188,13 @@ export const bookLinkGridControls: ICanvasElementControlConfiguration = {
 export const navigationImageButtonControls: ICanvasElementControlConfiguration =
     {
         type: "navigation-image-button",
-        menuSections: ["url", "image", "wholeElement"],
+        menuSections: [
+            "url",
+            "image",
+            "imageArrangement",
+            "imageSettings",
+            "wholeElement",
+        ],
         toolbar: [
             "setDestination",
             "chooseImage",
@@ -209,7 +241,14 @@ export const navigationImageButtonControls: ICanvasElementControlConfiguration =
 export const navigationImageWithLabelButtonControls: ICanvasElementControlConfiguration =
     {
         type: "navigation-image-with-label-button",
-        menuSections: ["url", "image", "text", "wholeElement"],
+        menuSections: [
+            "url",
+            "image",
+            "imageArrangement",
+            "imageSettings",
+            "text",
+            "wholeElement",
+        ],
         toolbar: [
             "setDestination",
             "chooseImage",
@@ -291,6 +330,7 @@ export const canvasElementControlRegistry: Record<
     rectangle: rectangleBubbleCanvasElementControls,
     speech: speechCanvasElementControls,
     caption: captionCanvasElementControls,
+    table: tableCanvasElementControls,
     "book-link-grid": bookLinkGridControls,
     "navigation-image-button": navigationImageButtonControls,
     "navigation-image-with-label-button":

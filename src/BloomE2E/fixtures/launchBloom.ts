@@ -20,6 +20,11 @@
 //     user.config, so a run would start from whatever the developer's Bloom, or the previous run,
 //     saved last, and leave its own changes behind for them. This way it starts from defaults, or
 //     from whatever a test puts in the folder first, and its settings die with the temp folder.
+//  5. On a developer's machine every Bloom we launch gets --dont-disturb, so none of its windows
+//     takes the foreground or the keyboard from the developer while the run goes on. On CI it does
+//     not: nobody is at that screen, and a Bloom that activates its windows as it would for a user
+//     keeps focus-dependent behavior covered. BLOOM_E2E_DONT_DISTURB overrides the choice, so a
+//     developer can run exactly as CI does; see launchWithDontDisturb.
 //
 // Nothing here knows about Playwright; fixtures/bloomTest.ts adds the CDP attachment on top.
 
@@ -55,10 +60,27 @@ export interface ILaunchedBloom {
      *
      * The ports change, so the caller must re-attach. This object's httpPort, cdpPort and
      * bloomPid are updated in place; fixtures/bloomTest.ts reconnects over CDP.
+     *
+     * `changes` replaces launch options for this start and every later one, for the options a
+     * person changes in the collection Settings dialog and Bloom then reads only at startup.
      */
     restart: (
         betweenStopAndStart?: () => void | Promise<void>,
+        changes?: IRelaunchChanges,
     ) => Promise<void>;
+}
+
+/**
+ * What a restart may change about how Bloom is launched. Everything else stays as the first
+ * launch had it.
+ */
+export interface IRelaunchChanges {
+    /**
+     * The experimental features the restarted Bloom has on, replacing whatever the last launch
+     * had. An empty array means none, which is how a test asks what Bloom does with an
+     * experiment turned off.
+     */
+    experimentalFeatures?: string[];
 }
 
 /**
@@ -101,7 +123,7 @@ export interface ILaunchBloomOptions {
     collectionSpec?: ICollectionSpec;
     /**
      * Experimental features this Bloom should have on, by the tokens ExperimentalFeatures.cs uses:
-     * "team-collections", "experimental-source-books". A person turns these on in the Advanced tab
+     * "tables", "team-collections", "experimental-source-books". A person turns these on in the Advanced tab
      * of the collection Settings dialog, which is WinForms and so unreachable, and the saved
      * setting is shared with the developer's own Bloom, so the launch hands them to this instance
      * on its command line instead (--experimental-features, which Bloom accepts only beside
@@ -239,6 +261,9 @@ const FOLDERS_THAT_ARE_NOT_SOURCE = new Set([
     "component-tests",
     "canvas-e2e-tests",
     "test",
+    // Playwright's own output, written by every component-test run in src/BloomBrowserUI.
+    "test-results",
+    "playwright-report",
 ]);
 
 /**
@@ -383,12 +408,64 @@ function samePath(a: string, b: string): boolean {
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/** The variable that overrides whether the Blooms a run launches get --dont-disturb. */
+export const kDontDisturbVariable = "BLOOM_E2E_DONT_DISTURB";
+
+let dontDisturbChoiceLogged = false;
+
+/**
+ * Whether the Bloom we launch should get --dont-disturb (point 5 at the top): yes on a developer's
+ * machine, no on CI (which sets CI, as GitHub Actions does), unless BLOOM_E2E_DONT_DISTURB says
+ * otherwise. "0" is how a developer reproduces a CI run exactly, windows that take the foreground
+ * and all; "1" asks for the developer's default on CI. Any other value is refused rather than
+ * guessed at, since guessing wrong is invisible until a focus-dependent test behaves differently.
+ */
+export function launchWithDontDisturb(): boolean {
+    const asked = process.env[kDontDisturbVariable]?.trim();
+    let choice: boolean;
+    let reason: string;
+    if (asked === "1") {
+        choice = true;
+        reason = `${kDontDisturbVariable}=1`;
+    } else if (asked === "0") {
+        choice = false;
+        reason = `${kDontDisturbVariable}=0`;
+    } else if (asked) {
+        throw new Error(
+            `${kDontDisturbVariable} must be 1 or 0, not "${asked}". Unset, it means 1 on a ` +
+                `developer's machine and 0 on CI.`,
+        );
+    } else {
+        choice = !process.env.CI;
+        reason = process.env.CI ? "CI is set" : "not on CI";
+    }
+    if (!dontDisturbChoiceLogged) {
+        dontDisturbChoiceLogged = true;
+        console.log(
+            choice
+                ? `BloomE2E: launching with --dont-disturb (${reason}): Bloom's windows will not take ` +
+                      `the foreground. ${kDontDisturbVariable}=0 runs as CI does.`
+                : `BloomE2E: launching without --dont-disturb (${reason}): Bloom's windows take the ` +
+                      `foreground as they would for a user.` +
+                      (process.env.CI
+                          ? ` To reproduce this run on a developer machine, set ` +
+                            `${kDontDisturbVariable}=0 (and BLOOM_AUTOMATION_MONITOR=headless, as ` +
+                            `CI does); see "In CI" in src/BloomE2E/README.md.`
+                          : ""),
+        );
+    }
+    return choice;
+}
+
 /**
  * How long a launch waits for Bloom to serve its collection (or reach the chooser) before failing
- * with a description of what it saw. Bloom usually gets there in seconds, but on a machine busy
- * with a build, or scanning freshly built files, startup has taken well over a minute, so this is
- * generous: a slow Bloom is not what these tests are about. The launching fixture's own timeout
- * (bloomTest.ts) is longer, so a launch that does give up reports why.
+ * with a description of what it saw. Bloom usually gets there in seconds, but startup has taken
+ * well over a minute on a machine busy with a build or scanning freshly built files, and a little
+ * over two minutes when a second e2e Bloom was cold-starting at the same time (one developer
+ * running two suites, or two agents in two worktrees). So this is generous: a slow Bloom is not
+ * what these tests are about, and nothing waits this long in a healthy run, since the wait stops
+ * the moment Bloom answers. The launching fixture's own timeout (bloomTest.ts) is longer, so a
+ * launch that does give up reports why.
  */
 export const LAUNCH_DEADLINE_MS = 300000;
 
@@ -724,6 +801,8 @@ async function startBloomOn(
         "--e2e",
         "--automation",
     ];
+    // --dont-disturb: keep the foreground and the keyboard away from the developer (point 5).
+    if (launchWithDontDisturb()) args.push("--dont-disturb");
     // --vite-port: serve the React front end from a dev server, so the suite tests the working
     // tree rather than a stale output/browser (see getViteDevPort).
     const vitePort = getViteDevPort();
@@ -854,6 +933,31 @@ async function killAndWaitForPortToGoDark(
  * copy of a prepared fixture — and wait until it is serving it. The returned object carries the
  * discovered ports, a restart(), and a stop() that tears everything down.
  */
+/**
+ * Delete a run's temp folder, and never in place of the error that made us give up on the launch.
+ *
+ * A Bloom that failed part way through starting can still hold its collection file open, so
+ * removing the folder throws EBUSY. That used to be the only error the run reported, which said
+ * nothing about why Bloom had not started. The folder is left behind instead; a later run clears
+ * it.
+ */
+function removeTempRoot(tempRoot: string): void {
+    try {
+        // Retries, because Bloom can release its file handles a moment after it dies.
+        fs.rmSync(tempRoot, {
+            recursive: true,
+            force: true,
+            maxRetries: 20,
+            retryDelay: 500,
+        });
+    } catch (error) {
+        process.stderr.write(
+            `[e2e] could not delete ${tempRoot}: ${(error as Error).message}
+`,
+        );
+    }
+}
+
 export async function launchBloom(
     options: ILaunchBloomOptions,
 ): Promise<ILaunchedBloom> {
@@ -878,11 +982,15 @@ export async function launchBloom(
             : copyPreparedCollection(tempRoot, options.collectionName!);
         fs.mkdirSync(userSettingsDir);
     } catch (error) {
-        fs.rmSync(tempRoot, { recursive: true, force: true });
+        removeTempRoot(tempRoot);
         throw error;
     }
 
     const readyTimeoutMs = options.readyTimeoutMs ?? LAUNCH_DEADLINE_MS;
+
+    // The experimental features the Bloom running now was given. A restart may replace them
+    // (ILaunchedBloom.restart), so this is a variable rather than a read of the options.
+    let experimentalFeatures = options.experimentalFeatures;
 
     // The Bloom running right now. restart() replaces it, so everything that kills or reports on
     // Bloom reads this variable rather than capturing the first launch.
@@ -892,7 +1000,7 @@ export async function launchBloom(
     // reads `running`, so it still names the right pids after a restart.
     const cleanUpOnExit = () => {
         if (running) killProcessTree(running.pids);
-        fs.rmSync(tempRoot, { recursive: true, force: true });
+        removeTempRoot(tempRoot);
     };
     process.once("exit", cleanUpOnExit);
 
@@ -901,11 +1009,11 @@ export async function launchBloom(
             collectionDir,
             userSettingsDir,
             readyTimeoutMs,
-            options.experimentalFeatures,
+            experimentalFeatures,
         );
     } catch (error) {
         process.removeListener("exit", cleanUpOnExit);
-        fs.rmSync(tempRoot, { recursive: true, force: true });
+        removeTempRoot(tempRoot);
         throw error;
     }
 
@@ -916,17 +1024,19 @@ export async function launchBloom(
         collectionDir,
         userSettingsDir,
 
-        restart: async (betweenStopAndStart) => {
+        restart: async (betweenStopAndStart, changes) => {
             await killAndWaitForPortToGoDark(running!);
             // Bloom releases its file handles slightly after it dies, and the caller is usually
             // about to rewrite one of the files it had open.
             await delay(1000);
             if (betweenStopAndStart) await betweenStopAndStart();
+            if (changes?.experimentalFeatures)
+                experimentalFeatures = changes.experimentalFeatures;
             running = await startBloomOn(
                 collectionDir,
                 userSettingsDir,
                 readyTimeoutMs,
-                options.experimentalFeatures,
+                experimentalFeatures,
             );
             launched.httpPort = running.httpPort;
             launched.cdpPort = running.cdpPort;

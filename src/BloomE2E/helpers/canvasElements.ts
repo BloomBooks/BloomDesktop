@@ -23,7 +23,13 @@ import { showToolbox, toolboxFrame } from "./toolbox";
  * is what the palette's test ids are built from. "none" is the plain Text Block: the type is
  * genuinely called that, because a text block is a canvas element with no special behaviour.
  */
-export type PaletteItem = "image" | "video" | "speech" | "sound" | "none";
+export type PaletteItem =
+    | "table"
+    | "image"
+    | "video"
+    | "speech"
+    | "sound"
+    | "none";
 
 /** The controls the Canvas tool shows once it is open. */
 const CANVAS_TOOL_CONTROLS = "#canvasToolControls";
@@ -207,9 +213,25 @@ async function dispatchPaletteDrag(
             // The drop point, in the page frame's own coordinates, which is what the product's
             // handlers work in (CanvasElementFactories.addCanvasElement calls
             // document.elementsFromPoint with them).
-            const targetRect = target.getBoundingClientRect();
+            // The drop point must be on screen: elementsFromPoint finds nothing at a point outside
+            // the viewport, so a drop there adds nothing and raises no error. On a short window
+            // (CI's is about 680 pixels) the lower part of a portrait page is below the fold, so
+            // scroll the page frame to bring the point into view, as a person would.
+            const pageWindow = pageDocument.defaultView;
+            if (!pageWindow) return "The page has no window.";
+            let targetRect = target.getBoundingClientRect();
+            const wantedY = targetRect.top + targetRect.height * what.yFraction;
+            if (wantedY < 0 || wantedY >= pageWindow.innerHeight) {
+                pageWindow.scrollBy(0, wantedY - pageWindow.innerHeight / 2);
+                targetRect = target.getBoundingClientRect();
+            }
             const x = targetRect.left + targetRect.width * what.xFraction;
             const y = targetRect.top + targetRect.height * what.yFraction;
+            if (y < 0 || y >= pageWindow.innerHeight)
+                return (
+                    `The drop point is off screen (y ${Math.round(y)} in a window ` +
+                    `${pageWindow.innerHeight} high) even after scrolling the page.`
+                );
             fire(target, "dragover", x, y);
             fire(target, "drop", x, y);
             fire(source, "dragend", x, y);
@@ -281,6 +303,35 @@ export async function dragPaletteItemOntoCanvas(
 }
 
 /**
+ * Which items the Canvas tool's palette is offering, by the canvas element type each one makes.
+ * Opens the Canvas tool first.
+ *
+ * An item whose feature is off, or whose subscription tier the collection has not got, is simply
+ * absent from the palette rather than dimmed, so this is how a test asks whether a feature is on
+ * offer. Below the canvas feature's own tier the whole tool sits behind a subscription notice (see
+ * subscriptionToolIds in ToolboxRoot.tsx) while its items stay in the document underneath it, so a
+ * test about a tier should say which of the two it means.
+ */
+export async function getPaletteItemsOffered(
+    page: Page,
+): Promise<PaletteItem[]> {
+    const toolbox = await openCanvasTool(page);
+    const anyItem = toolbox.locator("[data-testid^=palette-]:visible").first();
+    // Wait for one item rather than reading at once: the palette is drawn before it has heard
+    // back from features/status, and an item behind a feature appears only afterwards, so an
+    // immediate read can miss items that are on their way.
+    await anyItem.waitFor({ state: "visible", timeout: 20000 });
+    const ids = await toolbox
+        .locator("[data-testid^=palette-]:visible")
+        .evaluateAll((elements) =>
+            elements.map(
+                (element) => element.getAttribute("data-testid") ?? "",
+            ),
+        );
+    return ids.map((id) => id.replace(/^palette-/, "") as PaletteItem);
+}
+
+/**
  * Select a canvas element by clicking it, and wait until Bloom marks it active. Returns it.
  *
  * The click is a real mouse press, not Playwright's own: Bloom lays a drawing surface over the
@@ -303,6 +354,11 @@ export async function selectCanvasElement(
 /** Where on the page a locator is drawn. Throws naming it when it has no on-screen box. */
 export async function getRect(locator: Locator, what: string): Promise<IRect> {
     return requireBox(locator, what);
+}
+
+/** Where on the page the canvas of the page being edited is drawn. */
+export async function getCanvasRect(page: Page): Promise<IRect> {
+    return requireBox(canvas(page), "the canvas of the page being edited");
 }
 
 /** Where on the page the selected canvas element is drawn. */
@@ -427,6 +483,99 @@ export async function clickCanvasElementMenuItem(
                 `have; clicking it would open the Settings dialog. Launch the collection with ` +
                 `kEnterpriseSubscriptionCode if the test needs it.`,
         );
+    // Dispatch the click rather than press the mouse on the row. A row with a submenu (Flip, Choose
+    // Sound) opens it on hover and also on keyboard focus, which the menu can give it as it opens,
+    // and a submenu opened by focus stays open wherever the pointer goes. When the menu is taller
+    // than the window, such a submenu covers the rows below its parent, and a real click on one of
+    // them lands on the submenu instead, every time. The rows act on React's onClick, which a
+    // dispatched click reaches just as a real one does.
+    await item.scrollIntoViewIfNeeded();
+    await item.dispatchEvent("click");
+    await frame
+        .locator(MENU)
+        .first()
+        .waitFor({ state: "hidden", timeout: 30000 });
+}
+
+/**
+ * Open the submenu of one row of the selected canvas element's "..." menu, such as Flip, by
+ * resting the real pointer on that row, and wait until the submenu is showing beside the menu. The
+ * row is named by localization id. Opens the menu first if it is shut. The submenu stays open only
+ * while the pointer stays on the row or on the submenu itself.
+ */
+export async function openCanvasElementSubmenu(
+    page: Page,
+    parentL10nId: string,
+): Promise<void> {
+    await openCanvasElementMenu(page);
+    const frame = editablePageFrame(page);
+    const parent = frame
+        .locator(`${MENU} li[data-testid="${parentL10nId}"]`)
+        .first();
+    if ((await parent.count()) === 0) {
+        const offered = (await getCanvasElementMenuItems(page)).map(
+            (i) => i.id,
+        );
+        throw new Error(
+            `The canvas element menu has no "${parentL10nId}" row. It offers: ` +
+                `${offered.join(", ") || "(nothing)"}.`,
+        );
+    }
+    await parent.hover();
+    // The submenu is a second menu list, drawn beside the first, and it exists only while open.
+    // Wait for exactly two: when the menu is taller than the window it scrolls to bring the row
+    // under the pointer, and the pointer can rest on a neighbouring row on the way, such as
+    // Transparency. That row's submenu stays in the document while it fades out.
+    await expect
+        .poll(async () => frame.locator(MENU).count(), {
+            timeout: 15000,
+            message:
+                `Resting the pointer on "${parentL10nId}" did not leave the menu showing with ` +
+                `that one submenu beside it.`,
+        })
+        .toBe(2);
+}
+
+/**
+ * The panels of the selected canvas element's "..." menu that are showing: the menu itself, and
+ * beside it the submenu of the row the pointer rests on, if one is open. For a picture of the menu.
+ */
+export function canvasElementMenuPanels(page: Page): Locator {
+    return editablePageFrame(page).locator(".MuiMenu-paper:visible");
+}
+
+/**
+ * Click one command on a submenu of the selected canvas element's "..." menu, such as Flip, then
+ * Flip horizontal. Both rows are named by localization id. Opens the menu first if it is shut, and
+ * waits until it has closed, so the command has been sent before this returns.
+ *
+ * A submenu opens only while the pointer is over its parent row (mui-nested-menu-item listens for
+ * mouseenter), so this hovers the parent with the real pointer, then jumps straight to the command.
+ * A path that crossed other rows on the way would close the submenu before the click arrived.
+ */
+export async function clickCanvasElementSubmenuItem(
+    page: Page,
+    parentL10nId: string,
+    l10nId: string,
+): Promise<void> {
+    await openCanvasElementSubmenu(page, parentL10nId);
+    const frame = editablePageFrame(page);
+    const item = frame.locator(`${MENU} li[data-testid="${l10nId}"]`).first();
+    const opened = await item
+        .waitFor({ state: "visible", timeout: 15000 })
+        .then(() => true)
+        .catch(() => false);
+    if (!opened) {
+        const offered = await frame
+            .locator(`${MENU} li[role="menuitem"]`)
+            .evaluateAll((items) =>
+                items.map((i) => i.getAttribute("data-testid") ?? ""),
+            );
+        throw new Error(
+            `Hovering "${parentL10nId}" did not show a "${l10nId}" command. The open menus offer: ` +
+                `${offered.join(", ") || "(nothing)"}.`,
+        );
+    }
     await item.click();
     await frame
         .locator(MENU)
@@ -434,12 +583,220 @@ export async function clickCanvasElementMenuItem(
         .waitFor({ state: "hidden", timeout: 30000 });
 }
 
-/** Close the canvas element menu without choosing anything, the way pressing Escape does. */
+/**
+ * The selected canvas element's "..." menu as the person sees it: its commands, by localization id,
+ * in groups, where each group is what lies between two of the menu's dividing lines. A row that
+ * opens a submenu (Flip, Transparency) is in the list under its own id; its submenu is not.
+ */
+export async function getCanvasElementMenuGroups(
+    page: Page,
+): Promise<string[][]> {
+    // Waits for every item to know its feature status, so the menu has finished drawing.
+    await getCanvasElementMenuItems(page);
+    return editablePageFrame(page)
+        .locator(`${MENU} li[role="menuitem"], ${MENU} .MuiDivider-root`)
+        .evaluateAll((rows) => {
+            const groups: string[][] = [[]];
+            for (const row of rows) {
+                if (row.classList.contains("MuiDivider-root")) groups.push([]);
+                else
+                    groups[groups.length - 1].push(
+                        row.getAttribute("data-testid") ?? "",
+                    );
+            }
+            return groups.filter((group) => group.length > 0);
+        });
+}
+
+/**
+ * Rotate the selected picture 90 degrees clockwise with the Rotate right command on its "..."
+ * menu. What rotates is Bloom's business: an overlay picture rotates as a whole box, while the page's
+ * background picture rotates inside its box and the box changes shape.
+ */
+export async function rotateSelectedImageRight90Degrees(
+    page: Page,
+): Promise<void> {
+    await clickCanvasElementMenuItem(page, "EditTab.Image.RotateRight");
+}
+
+/**
+ * Mirror the selected picture with the Flip submenu of its "..." menu. "horizontal" swaps the left
+ * and the right of the picture as it is seen on screen, "vertical" the top and the bottom, however
+ * the picture or its box is rotated.
+ */
+export async function flipSelectedImage(
+    page: Page,
+    axis: "horizontal" | "vertical",
+): Promise<void> {
+    await clickCanvasElementSubmenuItem(
+        page,
+        "EditTab.Image.Flip",
+        axis === "horizontal"
+            ? "EditTab.Image.FlipHorizontal"
+            : "EditTab.Image.FlipVertical",
+    );
+}
+
+/**
+ * Put the selected picture back the way it arrived with the Reset Image command on its "..." menu.
+ */
+export async function resetSelectedImage(page: Page): Promise<void> {
+    await clickCanvasElementMenuItem(page, "EditTab.Image.Reset");
+}
+
+/** The round knob above the selected canvas element that rotates it when dragged. */
+function rotateHandle(page: Page): Locator {
+    return editablePageFrame(page).locator(
+        "#canvas-element-control-frame .bloom-ui-canvas-element-rotate-handle",
+    );
+}
+
+/**
+ * Wait until the selected canvas element's rotation knob is showing, or until it is not, as
+ * `shown` says. Bloom offers the knob only for an element it can rotate; `what` names the element
+ * for the failure message.
+ */
+export async function expectRotateHandleShown(
+    page: Page,
+    shown: boolean,
+    what: string,
+): Promise<void> {
+    await editablePageFrame(page)
+        .locator("#canvas-element-control-frame")
+        .waitFor({ state: "visible", timeout: 30000 });
+    await expect
+        .poll(async () => rotateHandle(page).isVisible(), {
+            timeout: 15000,
+            message: shown
+                ? `The rotation knob never appeared for ${what}.`
+                : `The rotation knob is showing for ${what}, which Bloom should not offer to rotate.`,
+        })
+        .toBe(shown);
+}
+
+/**
+ * The angle a canvas element is rotated by, in degrees clockwise from 0 up to 360, read from the
+ * rotate() in its inline style, which is what Bloom saves in the book. 0 when it has none.
+ */
+export async function getCanvasElementRotation(
+    element: Locator,
+): Promise<number> {
+    return element.evaluate((el) => {
+        const match = /rotate\(\s*(-?[0-9]*\.?[0-9]+)deg\s*\)/.exec(
+            (el as HTMLElement).style.transform,
+        );
+        if (!match) return 0;
+        const degrees = parseFloat(match[1]) % 360;
+        return degrees < 0 ? degrees + 360 : degrees;
+    });
+}
+
+/**
+ * Where a canvas element sits on its canvas and how big it is, as the four numbers in its inline
+ * style, in CSS pixels. A rotation is about the element's centre, so these do not change when it rotates,
+ * and a rotated element that moved on its own shows here.
+ */
+export async function getCanvasElementPlacement(element: Locator): Promise<{
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+}> {
+    return element.evaluate((el) => {
+        const style = (el as HTMLElement).style;
+        return {
+            left: parseFloat(style.left),
+            top: parseFloat(style.top),
+            width: parseFloat(style.width),
+            height: parseFloat(style.height),
+        };
+    });
+}
+
+/**
+ * Rotate the selected canvas element by dragging its rotation knob `degrees` around the element's
+ * centre, clockwise when positive, the way a person does. With `withCtrl`, Ctrl is held for the
+ * drag, which stops the angle snapping to the nearest multiple of 45 degrees. Returns the angle the
+ * element ends at, once it has changed.
+ *
+ * The pointer travels round a circle through the knob, in small steps, so that the angle Bloom
+ * measures from the centre to the pointer never jumps. Bloom rotates the element by however far that
+ * angle moves, so where the knob starts (above the element, or below it once rotated past 135
+ * degrees) does not matter.
+ */
+export async function dragRotateHandle(
+    page: Page,
+    degrees: number,
+    options: { withCtrl?: boolean } = {},
+): Promise<number> {
+    const element = activeCanvasElement(page);
+    const before = await getCanvasElementRotation(element);
+    const knob = await requireBox(rotateHandle(page), "the rotation knob");
+    // Bloom rotates about the centre of the element's on-screen box, rotated or not.
+    const box = await getActiveCanvasElementRect(page);
+    const centreX = box.x + box.width / 2;
+    const centreY = box.y + box.height / 2;
+    const startX = knob.x + knob.width / 2;
+    const startY = knob.y + knob.height / 2;
+    const radius = Math.hypot(startX - centreX, startY - centreY);
+    const startAngle = Math.atan2(startY - centreY, startX - centreX);
+    const steps = Math.max(8, Math.ceil(Math.abs(degrees) / 5));
+
+    await page.mouse.move(startX, startY);
+    if (options.withCtrl) await page.keyboard.down("Control");
+    // Always let go of the button and of Ctrl, even when a move fails: the tests after this one
+    // drive the same Bloom, and a key held down would change every click they make.
+    try {
+        await page.mouse.down();
+        for (let i = 1; i <= steps; i++) {
+            const angle =
+                startAngle + ((degrees * Math.PI) / 180) * (i / steps);
+            await page.mouse.move(
+                centreX + radius * Math.cos(angle),
+                centreY + radius * Math.sin(angle),
+            );
+        }
+    } finally {
+        await page.mouse.up();
+        if (options.withCtrl) await page.keyboard.up("Control");
+    }
+
+    await expect
+        .poll(async () => getCanvasElementRotation(element), {
+            timeout: 15000,
+            message: `Dragging the rotation knob by ${degrees} degrees did not rotate the element.`,
+        })
+        .not.toBe(before);
+    return getCanvasElementRotation(element);
+}
+
+/**
+ * Close the canvas element menu without choosing anything by pressing Escape, the way a person
+ * does, into whatever has the focus: the menu does not take it when it opens. Waits until neither
+ * the menu nor a submenu open beside it is showing.
+ */
 export async function closeCanvasElementMenu(page: Page): Promise<void> {
     const menu = editablePageFrame(page).locator(MENU).first();
     if (!(await menu.isVisible().catch(() => false))) return;
-    await page.keyboard.press("Escape");
-    await menu.waitFor({ state: "hidden", timeout: 30000 });
+    // On the menu itself, not page.keyboard: the menu closes on an Escape it receives, and the
+    // focus may be elsewhere, e.g. on a picture in a table cell that was just pressed.
+    await menu.press("Escape");
+    await expect
+        .poll(async () => getOpenCanvasElementMenuCount(page), {
+            timeout: 30000,
+            message: "Pressing Escape did not close the canvas element menu.",
+        })
+        .toBe(0);
+}
+
+/**
+ * How many of the selected canvas element's menus are showing: 0 when the "..." menu is shut, 1
+ * when it is open, 2 when a submenu is open beside it.
+ */
+export async function getOpenCanvasElementMenuCount(
+    page: Page,
+): Promise<number> {
+    return editablePageFrame(page).locator(MENU).count();
 }
 
 /**
@@ -466,17 +823,24 @@ export async function duplicateCanvasElement(page: Page): Promise<number> {
 }
 
 /**
- * Delete the selected canvas element through its "..." menu, and wait until the page has one fewer.
+ * Delete the selected canvas element through its "..." menu, and wait until it and every canvas
+ * element inside it are gone. A table's picture and video cells each hold a canvas element of
+ * their own, so deleting a table can take several off the page.
  */
 export async function deleteCanvasElement(page: Page): Promise<void> {
     const countBefore = await getCanvasElementCount(page);
+    const countInside = await activeCanvasElement(page)
+        .locator(".bloom-canvas-element")
+        .count();
     await clickCanvasElementMenuItem(page, "Common.Delete");
     await expect
         .poll(async () => getCanvasElementCount(page), {
-            timeout: 30000,
-            message: `Delete did not remove a canvas element (there are still ${countBefore}).`,
+            timeout: 5000,
+            message:
+                `Delete did not remove the selected canvas element and the ${countInside} inside ` +
+                `it (there are still ${countBefore}).`,
         })
-        .toBe(countBefore - 1);
+        .toBe(countBefore - 1 - countInside);
 }
 
 /** The corners of a selected canvas element, by the names its resize handles use. */
@@ -499,6 +863,9 @@ export async function dragCanvasElementCorner(
         `#canvas-element-control-frame .bloom-ui-canvas-element-resize-handle-${corner}`,
     );
     await handle.waitFor({ state: "visible", timeout: 30000 });
+    // In a window shorter than the page, a handle low on the page can be below what is showing,
+    // where a press lands on nothing. A person would scroll to it first.
+    await handle.scrollIntoViewIfNeeded({ timeout: 30000 });
     const before = await getActiveCanvasElementRect(page);
     const box = await requireBox(handle, `the ${corner} resize handle`);
     const x = box.x + box.width / 2;
@@ -520,6 +887,65 @@ export async function dragCanvasElementCorner(
                 timeout: 30000,
                 message:
                     `Dragging the ${corner} handle by ${dx},${dy} did not change the canvas ` +
+                    `element's size.`,
+            },
+        )
+        .toBeGreaterThan(2);
+    return { before, after: await getActiveCanvasElementRect(page) };
+}
+
+/** Which side handle to drag, as the handles themselves are named. */
+export type Side = "n" | "e" | "s" | "w";
+
+/**
+ * Resize the selected canvas element by dragging one of its side handles, and wait until it has
+ * changed size. `distance` is how far the handle moves, in the page's own pixels: outwards for a
+ * positive number on the east or south side, and for a negative one on the west or north.
+ *
+ * A canvas element holding text gets the east and west handles, plus the south one when its
+ * height is not automatic, and no corners (`has-text` in `editMode.less`). A table gets these and
+ * the corners as well, so either helper works on one.
+ *
+ * Returns the element's rect before and after, so the caller can say what should have changed.
+ */
+export async function dragCanvasElementSide(
+    page: Page,
+    side: Side,
+    distance: number,
+): Promise<{ before: IRect; after: IRect }> {
+    const frame = editablePageFrame(page);
+    const handle = frame.locator(
+        `#canvas-element-control-frame .bloom-ui-canvas-element-side-handle-${side}`,
+    );
+    await handle.waitFor({ state: "visible", timeout: 30000 });
+    // As in dragCanvasElementCorner: scroll a handle that is below what is showing into view.
+    await handle.scrollIntoViewIfNeeded({ timeout: 30000 });
+    const before = await getActiveCanvasElementRect(page);
+    const box = await requireBox(handle, `the ${side} side handle`);
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    const horizontal = side === "e" || side === "w";
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(
+        horizontal ? x + distance : x,
+        horizontal ? y : y + distance,
+        { steps: 12 },
+    );
+    await page.mouse.up();
+    await expect
+        .poll(
+            async () => {
+                const now = await getActiveCanvasElementRect(page);
+                return (
+                    Math.abs(now.width - before.width) +
+                    Math.abs(now.height - before.height)
+                );
+            },
+            {
+                timeout: 30000,
+                message:
+                    `Dragging the ${side} handle by ${distance} did not change the canvas ` +
                     `element's size.`,
             },
         )

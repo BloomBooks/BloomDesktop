@@ -20,6 +20,7 @@ import { canvasElementControlRegistry } from "./canvasElementControlRegistry";
 import { CanvasElementType } from "./canvasElementTypes";
 import { IControlContext } from "./canvasControlTypes";
 import { isAiEditableImageSrc } from "../../aiImageEditor/aiImageEditorImageFormats";
+import { imageContentIsTransformed } from "../../js/imageContentTransform";
 
 const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
     if (!img) {
@@ -189,6 +190,7 @@ export const buildCanvasElementControlRegistryContext = (
         rectangleHasBackground:
             rectangle?.classList.contains("bloom-theme-background") ?? false,
         isCropped: !!img?.style?.width,
+        isImageContentTransformed: img ? imageContentIsTransformed(img) : false,
         isNavigationButton: elementType.startsWith("navigation-"),
         isButton,
         isBackgroundImage,
@@ -242,5 +244,9 @@ export const buildCanvasElementControlRegistryContext = (
         // status (which is async) when it assembles the context.
         aiImageEditingAvailable: false,
         imageIsAiEditableFormat: isAiEditableImageSrc(img?.getAttribute("src")),
+        // Default off, for the same reason as aiImageEditingAvailable above:
+        // CanvasElementContextControls overlays the real (async) feature status when
+        // it assembles the context.
+        tablesMayBeRestructured: false,
     };
 };

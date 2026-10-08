@@ -976,7 +976,7 @@ namespace Bloom.Publish
             foreach (SafeXmlElement elt in pageElt.SafeSelectNodes(kSelectThingsThatCanBeHidden))
             {
                 var id = elt.GetAttribute("id");
-                if (id != null && id.StartsWith(kTempIdMarker))
+                if (id != null && id.StartsWith(kTempIdMarker, StringComparison.Ordinal))
                     elt.RemoveAttribute("id");
             }
         }
