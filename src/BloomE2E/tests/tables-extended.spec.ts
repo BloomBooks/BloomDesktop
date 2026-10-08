@@ -22,6 +22,7 @@ import { expect, test } from "../fixtures/bloomTest";
 import { readBook, waitForBookWithPageCount } from "../helpers/bookHtml";
 import {
     addPage,
+    editablePageFrame,
     getContentPages,
     getPages,
     goToPage,
@@ -87,6 +88,7 @@ import {
     openTableMenu,
     rightClickCell,
     setCellContentType,
+    table,
     typeInCell,
     typeInCellKeyByKey,
     waitForNestedTableAttached,
@@ -443,6 +445,87 @@ test.describe("more ways to use a table", () => {
                 );
             },
         );
+    });
+
+    // In Change Layout a table is background, like a text box's faded text. The table stays
+    // attached to the table library the whole time, and the library notices the mouse by distance
+    // rather than by what is under it, so it is Bloom's stylesheet (tableEditing.less) that keeps
+    // its buttons out of sight, and tableCanUndo() that keeps the table's history out of Undo.
+    test("keeps a table inert in Change Layout", async ({ page, step }) => {
+        // The table half of the Undo decision, asked in the page's own frame, where it lives.
+        const tableCanUndo = () =>
+            editablePageFrame(page).evaluate(() =>
+                (
+                    window as unknown as {
+                        editablePageBundle: { tableCanUndo: () => boolean };
+                    }
+                ).editablePageBundle.tableCanUndo(),
+            );
+        const rowsAdded = await step(
+            "Add a row, so the table's history has something to undo",
+            async () => {
+                const rowsBefore = (await getTableShape(page)).rows;
+                await clickCell(page, 0, 0);
+                await openTableMenu(page, "row", 0);
+                await clickTableMenuCommand(page, "Add Row Below");
+                await expect
+                    .poll(async () => (await getTableShape(page)).rows, {
+                        message: "Add Row Below should have added a row.",
+                    })
+                    .toBe(rowsBefore + 1);
+                expect(
+                    await tableCanUndo(),
+                    "Sanity check: the table's history should hold the row just added.",
+                ).toBe(true);
+                return rowsBefore + 1;
+            },
+        );
+
+        await step(
+            "Move the mouse over the table in Change Layout mode",
+            async () => {
+                await setChangeLayoutMode(page, true);
+                const rect = (await measureTable(page)).rect;
+                await page.mouse.move(rect.x + 5, rect.y + 5);
+                await page.mouse.move(
+                    rect.x + rect.width / 2,
+                    rect.y + rect.height / 2,
+                    { steps: 5 },
+                );
+                // The library marks the table it finds the mouse near; once it has, it has
+                // decided what chrome to show.
+                await expect(
+                    table(page),
+                    "The table library should have noticed the mouse over the table.",
+                ).toHaveClass(/\bbloom-pointer-near\b/);
+                expect(
+                    (await measureChrome(page)).map((piece) => piece.name),
+                    "A table in Change Layout should show none of its buttons or menu pills.",
+                ).toEqual([]);
+            },
+        );
+
+        await step("Undo in Change Layout leaves the table alone", async () => {
+            expect(
+                await tableCanUndo(),
+                "In Change Layout the table's history should not offer an Undo.",
+            ).toBe(false);
+            // handleUndo is the code the toolbar button and Ctrl+Z run. A table undo happens
+            // before it returns, so the row count can be read straight after.
+            await page.evaluate(() =>
+                (
+                    window as unknown as {
+                        workspaceBundle: { handleUndo: () => void };
+                    }
+                ).workspaceBundle.handleUndo(),
+            );
+            expect(
+                (await getTableShape(page)).rows,
+                "Undo in Change Layout should not have taken away the row added before it.",
+            ).toBe(rowsAdded);
+            await setChangeLayoutMode(page, false);
+            await waitForTableAttached(page);
+        });
     });
 
     test("adds a table to a canvas page [Test Case ID 826]", async ({
