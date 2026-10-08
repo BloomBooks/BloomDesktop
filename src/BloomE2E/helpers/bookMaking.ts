@@ -578,7 +578,7 @@ export async function goToPage(page: Page, pageId: string): Promise<void> {
  * This is a workaround in the tests for a real Bloom defect, and it is deliberately not a fix for
  * it. Delete it when CKEditor goes (the `retireCkEditor` work).
  */
-async function waitForCkEditorToTakeTheBox(box: Locator): Promise<void> {
+export async function waitForCkEditorToTakeTheBox(box: Locator): Promise<void> {
     // Ask the page what is actually bound to this box, rather than trying to predict it. An
     // earlier version of this replicated bloomEditing.ts's three conditions for attaching an
     // editor (matches ckeditableSelector, no .bloom-canvas on the page, not read-only) and
