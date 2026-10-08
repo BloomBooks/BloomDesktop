@@ -19,6 +19,11 @@ House rules:
 
 ---
 
+## 2026-10-08 — `CI=true` to satisfy pnpm silently turns off `--dont-disturb`
+- **Cut:** pnpm refuses to run a script when a worktree's deps are stale (`Aborted removal of modules directory due to no TTY`) and the way past it is `CI=true`. The e2e fixture reads that same variable: it then launched Bloom *without* `--dont-disturb` ("Bloom's windows take the foreground as they would for a user"), so a preflight e2e run seized the developer's screen for two minutes. Two unrelated tools, one overloaded variable.
+- **Idea:** key the disturb decision off a `BLOOM_E2E_*` variable rather than bare `CI`, or keep `--dont-disturb` unless the run is really on a CI runner (`GITHUB_ACTIONS`/`TEAMCITY_VERSION` present). Failing that, name the trap in `src/BloomE2E/README.md` beside the existing `CI` note.
+- **Context:** BL-16806-turn-off-icu preflight, running `publish-text-languages.spec.ts` after a rebase left `src/content` deps stale.
+
 ## 2026-10-08 — A master merge can need a file only the full front-end build makes
 - **Cut:** Master's page-size work made C# read `output/browser/pageSizesLookup.json`, which only `pnpm build` writes. In a worktree whose `output/browser` predates that, 30 C# tests failed and every Bloom an agent started raised a "Could not locate the required file" Debug.Assert dialog on the developer's screen, and agents are told never to run `pnpm build`.
 - **Idea:** Have `go.sh`, `build/agent-dotnet.sh` and the e2e fixture run `pnpm --dir src/content run build:pageSizes` (instant) when the file is missing or older than `DistFiles/pageSizes.json`, or name that command in `src/BloomBrowserUI/AGENTS.md`.
