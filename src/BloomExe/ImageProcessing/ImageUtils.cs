@@ -34,6 +34,20 @@ using TempFile = SIL.IO.TempFile;
 namespace Bloom.ImageProcessing
 {
     /// <summary>
+    /// The image file formats we can recognize from a file's leading ("magic") bytes.
+    /// </summary>
+    public enum ImageFileFormat
+    {
+        Unknown,
+        Jpeg,
+        Png,
+        Gif,
+        Bmp,
+        Tiff,
+        WebP,
+    }
+
+    /// <summary>
     /// Controls whether (and how) a background-transparency pass is applied to an image.
     /// </summary>
     /// <notes> Should be kept in sync with the definition of TransparencyMode in bloomImages.ts. </notes>
@@ -650,21 +664,14 @@ namespace Bloom.ImageProcessing
             }
         }
 
+        /// <summary>
+        /// Check whether the file's content (not its name) is a JPEG image.
+        /// </summary>
         public static bool IsJpegFile(string path)
         {
             if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
                 return false;
-            byte[] bytes = new byte[10];
-            using (var file = RobustFile.OpenRead(path))
-            {
-                file.Read(bytes, 0, 10);
-            }
-            // see https://www.sparkhound.com/blog/detect-image-file-types-through-byte-arrays
-            var jpeg = new byte[] { 255, 216, 255, 224 }; // jpeg
-            var jpeg2 = new byte[] { 255, 216, 255, 225 }; // jpeg canon
-
-            return jpeg.SequenceEqual(bytes.Take(jpeg.Length))
-                || jpeg2.SequenceEqual(bytes.Take(jpeg2.Length));
+            return GetImageFileFormat(path) == ImageFileFormat.Jpeg;
         }
 
         public static bool HasJpegExtension(string filename)
@@ -699,19 +706,168 @@ namespace Bloom.ImageProcessing
             return false;
         }
 
+        /// <summary>
+        /// Check whether the file's content (not its name) is a PNG image.
+        /// </summary>
         public static bool IsPngFile(string path)
         {
             if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
                 return false;
-            byte[] bytes = new byte[10];
+            return GetImageFileFormat(path) == ImageFileFormat.Png;
+        }
+
+        /// <summary>
+        /// Identify an image file's format from its leading bytes, ignoring its name.
+        /// </summary>
+        public static ImageFileFormat GetImageFileFormat(string path)
+        {
+            var bytes = new byte[16];
+            int count;
             using (var file = RobustFile.OpenRead(path))
             {
-                file.Read(bytes, 0, 10);
+                count = file.Read(bytes, 0, bytes.Length);
             }
-            // see https://www.sparkhound.com/blog/detect-image-file-types-through-byte-arrays
-            var png = new byte[] { 137, 80, 78, 71 }; // PNG
+            return GetImageFileFormat(bytes.Take(count).ToArray());
+        }
 
-            return png.SequenceEqual(bytes.Take(png.Length));
+        /// <summary>
+        /// Identify an image's format from its leading bytes. Web servers don't always deliver
+        /// the format a URL's extension names (BL-16998: images.rawpixel.com serves WebP from
+        /// URLs ending in ".jpg"), so neither the URL nor the file name can be trusted.
+        /// See https://en.wikipedia.org/wiki/List_of_file_signatures.
+        /// </summary>
+        public static ImageFileFormat GetImageFileFormat(byte[] bytes)
+        {
+            bool HasSignatureAt(int offset, params byte[] signature) =>
+                bytes.Length >= offset + signature.Length
+                && signature.SequenceEqual(bytes.Skip(offset).Take(signature.Length));
+
+            if (HasSignatureAt(0, 0xFF, 0xD8, 0xFF))
+                return ImageFileFormat.Jpeg;
+            // "\x89PNG": the first half of the 8-byte signature is distinctive enough.
+            if (HasSignatureAt(0, 0x89, 0x50, 0x4E, 0x47))
+                return ImageFileFormat.Png;
+            if (HasSignatureAt(0, Encoding.ASCII.GetBytes("GIF8")))
+                return ImageFileFormat.Gif;
+            if (HasSignatureAt(0, Encoding.ASCII.GetBytes("BM")))
+                return ImageFileFormat.Bmp;
+            if (
+                HasSignatureAt(0, 0x49, 0x49, 0x2A, 0x00) // "II*\0", little-endian
+                || HasSignatureAt(0, 0x4D, 0x4D, 0x00, 0x2A) // "MM\0*", big-endian
+            )
+                return ImageFileFormat.Tiff;
+            if (
+                HasSignatureAt(0, Encoding.ASCII.GetBytes("RIFF"))
+                && HasSignatureAt(8, Encoding.ASCII.GetBytes("WEBP"))
+            )
+                return ImageFileFormat.WebP;
+            return ImageFileFormat.Unknown;
+        }
+
+        /// <summary>
+        /// The file extension (with its period) we use for an image of the given format, or null
+        /// if the format is unknown.
+        /// </summary>
+        public static string GetExtensionForImageFileFormat(ImageFileFormat format)
+        {
+            switch (format)
+            {
+                case ImageFileFormat.Jpeg:
+                    return ".jpg";
+                case ImageFileFormat.Png:
+                    return ".png";
+                case ImageFileFormat.Gif:
+                    return ".gif";
+                case ImageFileFormat.Bmp:
+                    return ".bmp";
+                case ImageFileFormat.Tiff:
+                    return ".tif";
+                case ImageFileFormat.WebP:
+                    return ".webp";
+                default:
+                    return null;
+            }
+        }
+
+        /// <summary>
+        /// Return true if the bytes are a WebP image that is lossy-compressed and has no
+        /// transparency or animation, i.e., the kind of picture (usually a photo) that is best
+        /// stored as a JPEG. Lossless, transparent, or animated WebP images are better stored as
+        /// PNG: line art in particular must be PNG for Bloom to make its background transparent.
+        /// See https://developers.google.com/speed/webp/docs/riff_container for the layout.
+        /// </summary>
+        internal static bool IsOpaqueLossyWebP(byte[] bytes)
+        {
+            // Walk the RIFF chunks that follow the 12-byte "RIFF<size>WEBP" header. Each chunk is
+            // a 4-character code, a little-endian unsigned 32-bit size, and the data padded to an
+            // even length. The bytes come from the internet, so a size may be garbage: offset is a
+            // long so that no size can make it overflow, wrap around, or stand still.
+            long offset = 12;
+            while (offset + 8 <= bytes.Length)
+            {
+                var chunkType = Encoding.ASCII.GetString(bytes, (int)offset, 4);
+                switch (chunkType)
+                {
+                    case "VP8 ": // lossy image data (with no ALPH chunk before it)
+                        return true;
+                    case "VP8L": // lossless image data
+                    case "ALPH": // alpha channel for lossy image data
+                    case "ANMF": // animation frame
+                        return false;
+                    case "VP8X": // extended format header; its first byte holds feature flags
+                        const byte alphaFlag = 0x10;
+                        const byte animationFlag = 0x02;
+                        if (offset + 8 >= bytes.Length) // truncated: no flags byte
+                            return false;
+                        if ((bytes[offset + 8] & (alphaFlag | animationFlag)) != 0)
+                            return false;
+                        break;
+                }
+                long chunkSize = BitConverter.ToUInt32(bytes, (int)offset + 4);
+                offset += 8 + chunkSize + (chunkSize & 1);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// System.Drawing (and therefore PalasoImage) cannot read some image formats that web
+        /// sites commonly serve, currently WebP. If the file at sourcePath is in one of these
+        /// formats (judging by its content, not its name), use GraphicsMagick to convert it to a
+        /// JPEG (for an opaque lossy image, typically a photo) or else a PNG. The new file goes
+        /// in destFolder with the same base name as the source. Returns the new file's path, or
+        /// null if the file needs no conversion. Throws if the conversion fails.
+        /// </summary>
+        public static string ConvertToJpegOrPngIfNeeded(string sourcePath, string destFolder)
+        {
+            // Sniff just the header first: this runs for every image the user chooses, and some
+            // (e.g. large scans) are far too big to read into memory for nothing.
+            if (GetImageFileFormat(sourcePath) != ImageFileFormat.WebP)
+                return null;
+            var extension = IsOpaqueLossyWebP(RobustFile.ReadAllBytes(sourcePath))
+                ? ".jpg"
+                : ".png";
+            var destPath = Path.Combine(
+                destFolder,
+                Path.GetFileNameWithoutExtension(sourcePath) + extension
+            );
+            var options = new GraphicsMagickOptions
+            {
+                Size = new Size(0, 0), // preserve current size (no scaling)
+                MakeOpaque = false,
+                // Set explicitly because a source named "*.jpg" would otherwise ask
+                // GraphicsMagick to preserve JPEG settings that a WebP file does not have.
+                JpegQuality = 90,
+                ProfilesToStrip = null,
+            };
+            var result = RunGraphicsMagick(sourcePath, destPath, options);
+            if (result.ExitCode != 0)
+            {
+                LogGraphicsMagickFailure(result);
+                throw new ApplicationException(
+                    $"Bloom could not convert the WebP image {Path.GetFileName(sourcePath)} to {extension}: {result.StandardError}"
+                );
+            }
+            return destPath;
         }
 
         public static void ReportImageMetadataProblem(string filePath, Exception ex)

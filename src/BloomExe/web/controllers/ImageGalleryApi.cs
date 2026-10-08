@@ -14,6 +14,7 @@ using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.MiscUI;
 using Bloom.Utils;
+using BloomTemp;
 using SIL.Core.ClearShare;
 using SIL.IO;
 using SIL.Reporting;
@@ -158,7 +159,7 @@ namespace Bloom.web.controllers
             // collection slug, or "local-disk"). Analytics only.
             data.TryGetValue("provider", out string provider);
             string sourceFilePath;
-            bool isTempFile = false;
+            string downloadedFilePath = null; // a temp file we must delete when done
 
             if (!string.IsNullOrEmpty(localPath))
             {
@@ -166,29 +167,45 @@ namespace Bloom.web.controllers
             }
             else if (!string.IsNullOrEmpty(imageUrl))
             {
-                string extension;
+                var downloadPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
                 try
                 {
-                    extension = Path.GetExtension(new Uri(imageUrl).LocalPath);
+                    using (var response = await s_httpClient.GetAsync(imageUrl))
+                    {
+                        response.EnsureSuccessStatusCode();
+                        using var fileStream = RobustFile.Create(downloadPath);
+                        await response.Content.CopyToAsync(fileStream);
+                    }
+
+                    // Name the file for what it actually contains: the URL's extension may be wrong.
+                    var extension = ImageUtils.GetExtensionForImageFileFormat(
+                        ImageUtils.GetImageFileFormat(downloadPath)
+                    );
+                    if (extension == null)
+                    {
+                        try
+                        {
+                            extension = Path.GetExtension(new Uri(imageUrl).LocalPath);
+                        }
+                        catch
+                        {
+                            extension = ".jpg";
+                        }
+                        if (string.IsNullOrEmpty(extension))
+                            extension = ".jpg";
+                    }
+
+                    sourceFilePath = downloadPath + extension;
+                    RobustFile.Move(downloadPath, sourceFilePath);
                 }
                 catch
                 {
-                    extension = ".jpg";
+                    // Don't leave a partial download behind (the cleanup below doesn't cover it yet).
+                    if (RobustFile.Exists(downloadPath))
+                        RobustFile.Delete(downloadPath);
+                    throw;
                 }
-                if (string.IsNullOrEmpty(extension))
-                    extension = ".jpg";
-
-                sourceFilePath = Path.Combine(
-                    Path.GetTempPath(),
-                    Guid.NewGuid().ToString() + extension
-                );
-                using (var response = await s_httpClient.GetAsync(imageUrl))
-                {
-                    response.EnsureSuccessStatusCode();
-                    using var fileStream = RobustFile.Create(sourceFilePath);
-                    await response.Content.CopyToAsync(fileStream);
-                }
-                isTempFile = true;
+                downloadedFilePath = sourceFilePath;
             }
             else
             {
@@ -199,8 +216,21 @@ namespace Bloom.web.controllers
                 return;
             }
 
+            TemporaryFolder conversionFolder = null;
             try
             {
+                // PalasoImage cannot read some formats that web sites serve (e.g. WebP), so
+                // convert those to JPEG or PNG first, keeping the original file's base name.
+                conversionFolder = new TemporaryFolder(
+                    "BloomImageGalleryConversion-" + Guid.NewGuid()
+                );
+                var convertedFilePath = ImageUtils.ConvertToJpegOrPngIfNeeded(
+                    sourceFilePath,
+                    conversionFolder.FolderPath
+                );
+                if (convertedFilePath != null)
+                    sourceFilePath = convertedFilePath;
+
                 // GIF files must be copied byte-for-byte to preserve animation.
                 // PalasoImage / ProcessAndSaveImageIntoFolder will strip the animation frames.
                 if (
@@ -303,8 +333,9 @@ namespace Bloom.web.controllers
             }
             finally
             {
-                if (isTempFile && RobustFile.Exists(sourceFilePath))
-                    RobustFile.Delete(sourceFilePath);
+                if (downloadedFilePath != null && RobustFile.Exists(downloadedFilePath))
+                    RobustFile.Delete(downloadedFilePath);
+                conversionFolder?.Dispose();
             }
         }
 
@@ -408,7 +439,8 @@ namespace Bloom.web.controllers
 
             var filter = gifOnly
                 ? "GIF images|*.gif"
-                : "Images|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.tif;*.tiff;*.svg";
+                // WebP can't be imported as-is, but HandleImageGalleryResult converts it.
+                : "Images|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.tif;*.tiff;*.svg;*.webp";
 
             string selectedPath = "";
             View.Invoke(
