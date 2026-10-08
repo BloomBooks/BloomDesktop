@@ -17,7 +17,10 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, type Locator, type Page } from "@playwright/test";
 import type { IBloomApp } from "../fixtures/bloomTest";
-import { makeCollectionXml } from "../fixtures/launchBloom";
+import {
+    makeCollectionXml,
+    type IRelaunchChanges,
+} from "../fixtures/launchBloom";
 import { apiGetJson, apiPost } from "./api";
 import { waitForCollectionReady } from "./collection";
 import { realClick } from "./realClick";
@@ -53,10 +56,15 @@ export interface ICollectionSettings {
  *
  * Bloom is killed rather than asked to quit, so leave the page being edited before calling this,
  * or what was typed on it is lost (see goToPage). Each call costs about six seconds.
+ *
+ * `changes` goes on to bloomApp.restart, so the same restart can also change what only a launch
+ * can change, such as which experimental features are on. A test whose subject is a feature gated
+ * both by a tier and by an experiment needs both in one step.
  */
 export async function restartWithCollectionSettings(
     bloomApp: IBloomApp,
     settings: ICollectionSettings,
+    changes?: IRelaunchChanges,
 ): Promise<Page> {
     // Read the file name rather than assuming it matches the folder name, so a collection whose
     // two names differ is rewritten instead of gaining a second .bloomCollection.
@@ -69,16 +77,18 @@ export async function restartWithCollectionSettings(
                 `${settingsFiles.length}: ${settingsFiles.join(", ")}.`,
         );
     const settingsPath = Path.join(bloomApp.collectionDir, settingsFiles[0]);
-    return bloomApp.restart(() =>
-        fs.writeFileSync(
-            settingsPath,
-            makeCollectionXml(
-                settings.languages,
-                settings.xmatterPack,
-                settings,
+    return bloomApp.restart(
+        () =>
+            fs.writeFileSync(
+                settingsPath,
+                makeCollectionXml(
+                    settings.languages,
+                    settings.xmatterPack,
+                    settings,
+                ),
+                "utf8",
             ),
-            "utf8",
-        ),
+        changes,
     );
 }
 

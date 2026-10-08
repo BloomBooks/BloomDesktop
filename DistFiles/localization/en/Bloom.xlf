@@ -1385,6 +1385,11 @@
         <source xml:lang="en">Video</source>
         <note>ID: EditTab.CustomPage.Video</note>
       </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Table" translate="no" sil:dynamic="true">
+        <source xml:lang="en">Table</source>
+        <note>ID: EditTab.CustomPage.Table</note>
+        <note>Shown as an option when a Custom Page section can contain a table, and as the label across a section that holds a table in Change Layout mode</note>
+      </trans-unit>
       <trans-unit id="EditTab.CustomPage.TextBox" sil:dynamic="true">
         <source xml:lang="en">Text Box</source>
         <note>ID: EditTab.CustomPage.TextBox</note>

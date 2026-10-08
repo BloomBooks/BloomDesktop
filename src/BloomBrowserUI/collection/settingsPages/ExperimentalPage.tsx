@@ -8,6 +8,8 @@ import { ICollectionSettingsResponse } from "../collectionSettingsTypes";
 
 // ExperimentalFeatures.kTeamCollections in C#: the key of the feature in values.experimental.
 const kTeamCollectionsFeatureToken = "team-collections";
+// ExperimentalFeatures.kTables in C#.
+const kTablesFeatureToken = "tables";
 
 // One row of the Experimental page: a checkbox that turns an experimental feature on or off, with
 // the badge for the subscription feature it needs.
@@ -62,6 +64,10 @@ export function useExperimentalPage(props: {
         "Team Collections",
         "TeamCollection.TeamCollections",
     );
+    const tablesLabel = useL10n(
+        "Tables",
+        "CollectionSettingsDialog.AdvancedTab.Experimental.Tables",
+    );
 
     // Asked when the dialog opens, not when Config-R mounts this page (it mounts only the page
     // showing), so the answer is in before anyone gets here. Until then the box stays disabled.
@@ -70,6 +76,9 @@ export function useExperimentalPage(props: {
     // this too).
     const teamCollectionStatus = useGetFeatureStatus(
         props.dialogOpen ? "TeamCollection" : undefined,
+    );
+    const tablesStatus = useGetFeatureStatus(
+        props.dialogOpen ? "Table" : undefined,
     );
 
     return (
@@ -88,6 +97,12 @@ export function useExperimentalPage(props: {
                                 kTeamCollectionsFeatureToken
                             ])
                     }
+                />
+                <ExperimentalFeatureSetting
+                    label={tablesLabel}
+                    featureToken={kTablesFeatureToken}
+                    subscriptionFeature="Table"
+                    disabled={tablesStatus?.enabled !== true}
                 />
             </ConfigrGroup>
         </ConfigrPage>

@@ -2,6 +2,13 @@
 ThemaData.json
 *.xlf
 csharpier.json
+# Crowdin edits this file itself ("Update Crowdin configuration file" commits), in its own
+# two-space layout; reformatting it makes every branch that touches it differ from master.
+crowdin.yml
+# Overflow test fixtures: whitespace inside the test boxes is what the overflow tests measure.
+# src/BloomBrowserUI/.prettierignore lists them too, but the pre-commit hook's pretty-quick
+# formatted them anyway.
+src/BloomBrowserUI/bookEdit/OverflowChecker/*Fixture.html
 
 # The files under the fetched test-input collections are Bloom-generated fixtures
 # (book HTML, meta.json, appearance.json, origami.css, etc.). Bloom writes them in its own

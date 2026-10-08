@@ -94,7 +94,8 @@ namespace BloomTests.web.controllers
                 Has.Member("frontBackMatter.xmatter")
                     .And.Member("languages.language3.fontName")
                     .And.Member("languages.signLanguage.tag")
-                    .And.Member("experimental." + ExperimentalFeatures.kTeamCollections),
+                    .And.Member("experimental." + ExperimentalFeatures.kTeamCollections)
+                    .And.Member("experimental." + ExperimentalFeatures.kTables),
                 "Sanity check: the paths should cover every group"
             );
 
