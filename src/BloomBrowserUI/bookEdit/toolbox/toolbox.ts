@@ -121,7 +121,7 @@ export interface ITool {
     // Renders this tool's panel. ToolboxRoot renders it inside the tool's accordion, in
     // the toolbox's single React tree, so context (e.g. the MUI theme) reaches it normally.
     // It should return the main content of the tool, which must be a single element
-    // (ToolboxRoot sizes that element to fill the panel).
+    // (ToolboxRoot sizes that element to fill the space below the header).
     // ToolboxRoot renders the tool's header (label, icon, subscription badge) around it;
     // this method is however responsible to localize the content of the panel.
     renderPanel(): React.ReactNode;
