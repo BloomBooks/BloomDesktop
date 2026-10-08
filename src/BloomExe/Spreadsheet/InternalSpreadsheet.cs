@@ -39,6 +39,13 @@ namespace Bloom.Spreadsheet
         public const string WidgetSourceColumnLabel = "[activities source]";
         public const string PageTypeColumnLabel = "[page type]";
         public const string AttributeColumnLabel = "[attribute]";
+
+        // A hidden column whose cell holds JSON describing whatever the import needs, beyond
+        // text and the image file, to rebuild the thing a row stands for. Only [inline image]
+        // rows use it. When a spreadsheet has this column at all, the importer trusts its
+        // [inline image] rows to say exactly which inline images each text block has.
+        public const string DetailsColumnLabel = "[details]";
+        public const string DetailsColumnFriendlyName = "Details";
         public const string ImageSourceColumnFriendlyName = "Image File Path";
 
         public const string BlankContentIndicator = "[blank]";
@@ -47,6 +54,14 @@ namespace Bloom.Spreadsheet
         public const string CoverImageRowLabel = "[cover image]";
         public const string PageContentRowLabel = "[page content]";
         public const string ImageDescriptionRowLabel = "[image description]";
+
+        // A row for one inline image (a .bloom-inlineImage wrapper in a text block; see
+        // inlineImages.ts). These rows come straight after the [page content] row of the
+        // translation group the image belongs to, in the order the wrappers appear in the
+        // editable. The image file goes in the ordinary [image source] column, so it gets a
+        // thumbnail like any other image. Where the picture sits and how big it is goes in
+        // [details] as JSON, which the import uses to rebuild the wrapper.
+        public const string InlineImageRowLabel = "[inline image]";
 
         /// <summary>
         /// Turns a spreadsheet row label such as "[cover image]" into the data-book label
@@ -369,7 +384,10 @@ namespace Bloom.Spreadsheet
             {
                 GetColumnForTag(PageNumberColumnLabel),
                 GetColumnForTag(ImageSourceColumnLabel),
-            };
+                GetColumnForTag(DetailsColumnLabel),
+            }
+                .Where(i => i >= 0) // optional columns may be absent
+                .ToList();
 
         public void SortHiddenContentRowsToTheBottom()
         {
