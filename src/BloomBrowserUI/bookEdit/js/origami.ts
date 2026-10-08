@@ -16,8 +16,7 @@ import { kCanvasToolId } from "../toolbox/toolIds";
 import { updateAbovePageControls } from "./AbovePageControls";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
-import { AttachNewTable, TeardownTableEditing } from "./tableEditing";
-import { removeTableEditingArtifacts } from "bloom-table";
+import { AttachNewTable } from "./tableEditing";
 
 $(() => {
     splitPane($("div.split-pane"));
@@ -150,12 +149,6 @@ function setupLayoutMode() {
     });
     // Text should not be editable in layout mode
     $(".bloom-editable[contentEditable=true]").removeAttr("contentEditable");
-    // Nor should tables respond: a table that still selects cells and offers its
-    // menus looks editable, and nothing typed into it goes anywhere. Leaving layout
-    // mode rebuilds the page, which attaches table editing again.
-    const marginBox = document.querySelector<HTMLElement>(".marginBox")!;
-    TeardownTableEditing(marginBox);
-    removeTableEditingArtifacts(document);
     // Images cannot be changed (other than growing/shrinking with their containing bloom-canvas) in layout mode
     // I'm not sure these handlers still do anything we wouldn't want in layout mode, but leaving the code just in case.
     $(".bloom-canvas").off("mouseenter").off("mouseleave");
@@ -678,13 +671,10 @@ function makeTableFieldClickHandler(e) {
     // AttachNewTable registers Bloom-specific content types and calls attachTable,
     // which creates the initial 2×2 structure. The page-level event listener
     // installed by SetupTableEditing on the body handles kTableCellContentChangedEvent.
+    // In layout mode the table does not respond; tableEditing.less and
+    // tableShouldHandleUndo() see to that while the marginBox has the
+    // origami-layout-mode class.
     AttachNewTable(tableContainer[0] as HTMLElement);
-    // The table is wanted for its rows and columns only: in layout mode it does
-    // not respond (see setupLayoutMode), and leaving the mode attaches it again.
-    TeardownTableEditing(container[0]);
-    // On a page that had no table, attaching this one built the library's edge
-    // buttons just now, after setupLayoutMode cleared them away.
-    removeTableEditingArtifacts(document);
     container.append(getTableIdentifier());
     $(this).closest(".selector-links").remove();
 }

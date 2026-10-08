@@ -19,6 +19,7 @@ import {
 // of editablePageBundle). The structural/read-time styles come from
 // bloom-table.css, which basePage.less inlines so they ship everywhere.
 import "bloom-table/bloom-table-edit.css";
+import "./tableEditing.less";
 import { SetupImagesInContainer } from "./bloomImages";
 import { SetupVideoEditing } from "./bloomVideo";
 import { post } from "../../utils/bloomApi";

@@ -371,9 +371,11 @@ export function ckeditorUndo(): boolean {
 // It is not enough that the library has an operation to undo: its history holds every structural
 // operation until that operation is undone, so after "add a row, then type in a cell" both it and
 // CKEditor have something, and the typing is what came last. See undoOrdering.ts.
+//
+// In Change Layout mode the answer is always no; see tableCanUndo().
 export function tableShouldHandleUndo(): boolean {
     return shouldUndoGoToTable({
-        tableCanUndo: tableHistoryManager.canUndo(),
+        tableCanUndo: tableCanUndo(),
         ckeditorCanUndo: ckeditorCanUndo(),
         tableChangeOrder: getTableChangeOrder(),
         ckeditorChangeOrder: getCkeditorChangeOrder(),
@@ -383,7 +385,12 @@ export function tableShouldHandleUndo(): boolean {
 // Whether the bloom-table library has an operation in its history that it could undo. This is
 // the plain question, with no reckoning of what CKEditor has done; tableShouldHandleUndo() above
 // is the one that decides whose Undo it is.
+//
+// In Change Layout mode the answer is always no. The tables stay attached there, so their history
+// still holds what was done before the mode was entered, and an Undo in the mode belongs to
+// origami: taking a row off a faded table the person cannot edit would be invisible and wrong.
 export function tableCanUndo(): boolean {
+    if (document.querySelector(".origami-layout-mode")) return false;
     return tableHistoryManager.canUndo();
 }
 
