@@ -1258,11 +1258,12 @@ Later, not Stage 0:
   the reader tools' undo, which "undid" the typing in the detached box, so the delete could never
   be undone. Two causes. (1) `readerToolsModel.canUndo` and `ckeditorCanUndo` would claim undo for
   a box no longer on the page; both now refuse (the undo would change nothing visible anyway).
-  (2) Pre-existing, not fixed: in a fresh collection the reader tools' `currentMarkupType` is not
-  None with no reader tool open (`restoreState` takes it from the saved DRT state), so
-  `shouldHandleUndo` is true and the reader tools claim the Undo button for any box they saw
-  focused. Worth a card; with (1) it no longer blocks the delete undo, but it still means the Undo
-  button undoes typing through the reader tools rather than CKEditor in that state.
+  (2) Pre-existing, not fixed: in the e2e runs on the dev build, opening the Canvas tool turned the
+  reader tools' markup mode on (Decodable) with no reader tool open, and it stayed on, so the Undo
+  button went to the reader tools' undo (whole box back to its state at focus) instead of
+  CKEditor's. Which call turns it on was not traced. John could not reproduce any visible effect
+  in 6.6 alpha in a new Basic Book (2026-10-08), so no card: if it is real it should surface, or
+  disappear, as the reader tools' undo moves onto the shared stack.
 - E2E: `undo-delete-canvas-element.spec.ts` (5 tests: restore with text and a working editor, two
   adjacent deletes, Ctrl+Y and Ctrl+Shift+Z, a family head) passes locally, as do `undo-routing`
   and `rotate-and-flip-images` (21) and the full vitest suite (1181).
