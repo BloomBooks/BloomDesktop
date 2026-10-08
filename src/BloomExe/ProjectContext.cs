@@ -251,6 +251,7 @@ namespace Bloom
                                 typeof(CopyrightAndLicenseApi),
                                 typeof(ExternalApi),
                                 typeof(BrandingPreviewApi),
+                                typeof(GameThemeEditorApi),
                                 typeof(PublishView),
                             }.Contains(t)
                         );
@@ -516,6 +517,7 @@ namespace Bloom
             _scope.Resolve<AudioSegmentationApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ProblemReportApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CopyrightAndLicenseApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<GameThemeEditorApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<FileIOApi>().RegisterWithApiHandler(server.ApiHandler);
             // ProgressDialogApi is registered once, application-wide, by ApplicationContainer: a
             // progress dialog has to be possible before any collection is open. Registering it
