@@ -346,7 +346,11 @@ export function ckeditorCanUndo(): boolean {
         CKEDITOR &&
         CKEDITOR.currentInstance &&
         (<any>CKEDITOR.currentInstance).undoManager &&
-        (<any>CKEDITOR.currentInstance).undoManager.undoable()
+        (<any>CKEDITOR.currentInstance).undoManager.undoable() &&
+        // Not an editor whose box has been deleted (with its canvas element, say): undoing there
+        // would change nothing anyone can see, and would stop the Undo button reaching the undo
+        // of the deletion itself.
+        (<any>CKEDITOR.currentInstance).element.$.isConnected
     ) {
         return true;
     }

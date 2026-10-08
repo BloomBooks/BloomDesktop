@@ -1,4 +1,5 @@
-// Ctrl+Y in the page frame reaches the one undo stack's Redo (BL-6681).
+// Ctrl+Y and Ctrl+Shift+Z in the page frame reach the one undo stack's Redo (BL-6681). Both are
+// Redo keys, as they are in CKEditor and the reader tools (PLAN.md 4.14 item 23).
 //
 // The binding, like the stack, is in the page frame: keyboard events inside the page iframe are
 // delivered to that iframe's document and never reach the parent. Both pre-existing Ctrl+Y handlers
@@ -27,15 +28,13 @@ export interface IRedoTarget {
     handleRedo(): void;
 }
 
-/** Whether this keydown is the Redo gesture: Ctrl+Y with no other modifier. */
+/** Whether this keydown is a Redo gesture: Ctrl+Y, or Ctrl+Shift+Z, with no other modifier. */
 export function isRedoKeystroke(e: KeyboardEvent): boolean {
-    return (
-        e.ctrlKey &&
-        !e.altKey &&
-        !e.metaKey &&
-        !e.shiftKey &&
-        (e.key === "y" || e.key === "Y")
-    );
+    if (!e.ctrlKey || e.altKey || e.metaKey) {
+        return false;
+    }
+    const key = e.key.toLowerCase();
+    return e.shiftKey ? key === "z" : key === "y";
 }
 
 /** Whether the page is in Change Layout mode, where origami owns Ctrl+Z and Ctrl+Y. */
@@ -44,7 +43,7 @@ export function isInChangeLayoutMode(doc: Document): boolean {
 }
 
 /**
- * Listen for Ctrl+Y on `doc` and redo through the page bundle when the stack has something to redo.
+ * Listen for the Redo keys on `doc` and redo through the page bundle when the stack has something to redo.
  *
  * `getTarget` is called per keystroke rather than once, because the page bundle is set up after
  * this binding may be installed. A null target means "do nothing", not an error.

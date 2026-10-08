@@ -40,11 +40,13 @@ function setUpTwoTopicCanvasElements(): HTMLElement[] {
         <div id="page-scaling-container">
             <div class="bloom-page">
                 <div class="bloom-canvas">
-                    <div class="bloom-canvas-element" id="ce1">
+                    <div class="bloom-canvas-element" id="ce1"
+                         data-bubble="{\`version\`:\`1.0\`,\`style\`:\`none\`,\`tails\`:[],\`level\`:1}">
                         <div class="coverBottomBookTopic" data-derived="topic"
                              data-hint="Choose topic">Fiction</div>
                     </div>
-                    <div class="bloom-canvas-element" id="ce2">
+                    <div class="bloom-canvas-element" id="ce2"
+                         data-bubble="{\`version\`:\`1.0\`,\`style\`:\`none\`,\`tails\`:[],\`level\`:2}">
                         <div class="coverBottomBookTopic" data-derived="topic"
                              data-hint="Choose topic">Fiction</div>
                     </div>

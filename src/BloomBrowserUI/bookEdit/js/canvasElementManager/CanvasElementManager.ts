@@ -106,6 +106,12 @@ import {
     removeDetachedTargets,
 } from "./CanvasElementDraggableIntegration";
 import { CanvasElementEditingSuspension } from "./CanvasElementEditingSuspension";
+import {
+    deleteCanvasElementUndoably,
+    kDeleteCanvasElementLabel,
+} from "./CanvasElementDeleteUndo";
+import { runUndoable } from "../../undo/runUndoable";
+import { theOneUndoStack } from "../../undo/UndoStack";
 import { adjustCanvasElementChildrenIfSizeChanged } from "./CanvasElementResizeAdjustments";
 import {
     adjustBackgroundImageSize as adjustCanvasBackgroundImageSize,
@@ -2922,7 +2928,27 @@ export class CanvasElementManager {
             }
             return;
         }
-        const containerElement = textOverPicDiv.parentElement;
+        // The background image's branch above is undone by the image undo it records; this one
+        // by an entry on the one undo stack (PLAN.md Stage 2b).
+        runUndoable(kDeleteCanvasElementLabel, () => {
+            theOneUndoStack.push(
+                deleteCanvasElementUndoably(textOverPicDiv, {
+                    removeCanvasElement: (element) =>
+                        this.removeCanvasElement(element),
+                    finishRestoringCanvasElement: (element, canvas) =>
+                        this.finishRestoringCanvasElement(element, canvas),
+                }),
+            );
+        });
+    }
+
+    // Take a canvas element off the page: the delete itself, and what its redo does again.
+    // (Not the background image, which deleteCanvasElement only reverts to a placeholder.)
+    private removeCanvasElement(textOverPicDiv: HTMLElement) {
+        const page = textOverPicDiv.closest(
+            ".bloom-page",
+        ) as HTMLElement | null;
+        const containerElement = textOverPicDiv.parentElement!;
         // Make sure comical is up-to-date.
         if (
             containerElement.getElementsByClassName(kComicalGeneratedClass)
@@ -2957,6 +2983,57 @@ export class CanvasElementManager {
         if (page) {
             normalizeCoverImageDesignation(page);
         }
+    }
+
+    // Finish undoing a delete. CanvasElementDeleteUndo has put the element back in its old place
+    // with consistent bubble data; this does what adding an element does around that. The ordering
+    // rules are enforced here rather than by the undo, so they hold whatever happened in between.
+    private finishRestoringCanvasElement(
+        canvasElement: HTMLElement,
+        bloomCanvas: HTMLElement,
+    ) {
+        if (
+            canvasElement.getElementsByClassName("bloom-rectangle").length >
+                0 &&
+            this.isAboveSomethingOtherThanRectangles(canvasElement)
+        ) {
+            this.factories.reorderRectangleCanvasElement(
+                canvasElement,
+                bloomCanvas,
+            );
+        }
+        this.adjustCanvasElementOrdering();
+        // It is the same element that was deleted, so its editables still have their focus
+        // handlers and their CKEditor instances; attaching again would make CKEditor throw.
+        // This also rebuilds the source and hint bubbles the delete destroyed: SetupElements
+        // prepares them for every translation group in the canvas.
+        this.refreshCanvasElementEditing(
+            bloomCanvas,
+            new Bubble(canvasElement),
+            false,
+            true,
+        );
+        const page = bloomCanvas.closest(".bloom-page") as HTMLElement | null;
+        if (page) {
+            normalizeCoverImageDesignation(page);
+        }
+    }
+
+    // Whether any canvas element below this one, other than the background image, is not a
+    // rectangle. Adding a rectangle puts it below all of those, so a restored one should be too.
+    private isAboveSomethingOtherThanRectangles(canvasElement: HTMLElement) {
+        let below = canvasElement.previousElementSibling;
+        while (below) {
+            if (
+                below.classList.contains(kCanvasElementClass) &&
+                !below.classList.contains(kBackgroundImageClass) &&
+                below.getElementsByClassName("bloom-rectangle").length === 0
+            ) {
+                return true;
+            }
+            below = below.previousElementSibling;
+        }
+        return false;
     }
 
     // We verify that 'textElement' is the active element before calling this method.

@@ -1114,36 +1114,68 @@ Exit criteria: one entry point; `pnpm test` green; no user-visible change.
 **2a — Undo delete page: dropped** (2026-10-06, §10 decision 7). Undo is scoped to the page as
 it is currently loaded (§4.2), and a page deletion would have to outlive its page.
 
-**2b — Undo delete canvas element.** Do *not* use a whole-page snapshot. Preferred: an
-inverse-op / narrow-subtree entry that re-inserts the element's `outerHTML` into its
-`.bloom-canvas` and calls the **existing, battle-tested** `refreshCanvasElementEditing` — the
-same path used when adding or duplicating a canvas element
-(`CanvasElementManager.ts:974-1010`; `GamePromptDialog.tsx:428-437` depends on it). The inverse
-of `deleteCanvasElement` (`CanvasElementManager.ts:2747-2799`) tells us what's needed:
-`Comical.update`, `removeDetachedTargets`, `normalizeCoverImageDesignation`.
+**2b — Undo delete canvas element.** Do *not* use a whole-page snapshot, and do not save and
+restore the other elements' bubble data either: unrelated operations rewrite it (`putBubbleBefore`
+renumbers every level when an element is added at the bottom; `adjustCanvasElementOrdering`
+renumbers the draggables), so a saved copy would block the undo after almost any later change and
+then put back values those changes set. Instead the entry **reverses the delete's own effects,
+applied to the canvas as it now is**. What the delete does (`deleteCanvasElement`,
+`CanvasElementManager.ts`): removes the element's source and hint bubbles, calls
+`Comical.deleteBubbleFromFamily` (which shifts the family's `order` numbers down by one, and when
+the head goes, copies its spec onto the next member, which becomes the head), refreshes the canvas
+editing, removes the drag-activity target of a deleted draggable (`removeDetachedTargets`), and
+re-normalizes the cover-image designation. The background-image branch is not a removal (it
+reverts to a placeholder) and already records an image undo, so it stays outside this entry
+(§4.13).
 
-Two things to verify before committing to the inverse-op, because they are the reason this
-isn't trivial: (i) `Comical.deleteBubbleFromFamily` removes the element from a bubble family —
-confirm the family can be re-linked from the restored `data-bubble` spec alone; (ii) a
-drag-activity **target** removed by `removeDetachedTargets` must come back too. If either
-proves messy, fall back to a **`.bloom-canvas`-subtree snapshot** restored through
-`refreshCanvasElementEditing` — still far narrower than a page snapshot.
+**Put back the same element, not a copy.** The entry holds the removed element object and
+re-inserts it; redo removes that same object again. This is what makes consecutive deletes undo
+correctly: with C, A, B, D bottom to top, deleting A then B and undoing both must find, when A
+comes back, the very B that B's undo re-inserted. A copy rebuilt from `outerHTML` would leave A's
+entry holding a B that is no longer on the page. Holding element references is the exception
+§4.1's preference rule allows: canvas elements carry no ids to find them by. Say so in a comment.
 
-Also honour §4.13: the background-image branch already records an image undo, so the wrapper
-must not double-record.
+**Where it goes in the stacking order.** Order among a `.bloom-canvas`'s children is the stacking
+order (there is no z-index): just below the element that was directly above it, if that is still
+on the canvas; otherwise just above the one that was directly below it; otherwise on top. An
+intervening create (not undoable) does no harm. Unless it rejoins a family (below), the element's
+**level** is not restored from the saved spec but given from where it lands: one above the canvas element below it, with every bubble
+at or above that level moved up one (the same bump `putBubbleBefore` does), so the relative order
+of everything else is unchanged and families keep sharing a level.
 
-**Where to put it back.** Order among a .bloom-canvas's children is the stacking order (no
-z-index), and Comical's bubble levels must agree with it (djustCanvasElementOrdering). New
-elements go last; rectangles and background images go first; draggables are kept at the end. So the
-entry records the deleted element's **neighbours**, not its index: put it back just below the
-element that was directly above it, or failing that just above the one below it. An intervening
-create (not undoable) then does no harm, which an index would not survive if anything reordered
-the siblings. Holding the neighbours as element references is the simple way, and acceptable
-under §4.1's preference rule: canvas elements carry no ids to find them by; say so in a comment.
-Comical.deleteBubbleFromFamily rewrites the *other* family members' bubble data, so the entry
-saves and restores theirs too. Per §4.1 it checks before undoing that the canvas still holds what
-the deletion left. That matters most for the subtree-snapshot fallback, which would otherwise
-silently delete any element created since.
+**Its comic family.** The entry also holds the deleted bubble's family members, in family order.
+- If the bubble *before* it in the family is still on the canvas and still in that family, it
+  rejoins: it takes the family's current level, its old `order`, and every member with that order
+  or more moves up one. This is exactly the inverse of `deleteBubbleFromFamily`, and it touches
+  only the fields that call touched.
+- If it was the head and the member that took over is still the head, the restored bubble becomes
+  head again: it takes the current head's whole spec, including its tails, which the delete moved
+  there and which are in effect the family's tail, so an edit made since is kept; the demoted
+  member gets back its own tails and `order` 2; the others move up one.
+- If no member of its family is left, it comes back as a bubble on its own, `order` cleared.
+
+**Game ordering rules are not the undo's business.** After re-inserting, run the same tidy-up that
+adding an element runs: `adjustCanvasElementOrdering` keeps draggables last, and a rectangle that
+ended up above anything but the background image and other rectangles goes back down through
+`reorderRectangleCanvasElement`. Then the rules hold whatever happened in between. A rule that no
+tidy-up enforces is already a risk for adding and duplicating, and gets fixed there, not here.
+
+**The rest of the restore.** Put back the drag-activity target if one was removed (also the same
+object, appended to the canvas as `makeTargetForDraggable` does). Rebuild the source and hint
+bubbles the way the toolbox does for a new element (`addSourceAndHintBubbles`). Refresh through
+`refreshCanvasElementEditing` with the element's bubble, the path add and duplicate use, and
+re-normalize the cover-image designation. Verify in a running Bloom that the element's editables
+still work, including CKEditor on its text, since the element was detached and not recreated.
+
+**When to refuse.** Per §4.1 the entry checks before undoing, in its narrowest form: it throws
+(discarding the stack) only if the restore cannot work at all, because the `.bloom-canvas` it came
+from is no longer in the page or the element is somehow on the page already. Anything else, it
+restores. The stack is linear, so a later change that is undoable is undone first; one that is
+not stays put either way, and restoring the element is exactly what the user asked Undo to do. An
+Undo that silently did nothing, or skipped past the delete, would be more confusing.
+
+**Redo** runs the delete's own work again on the same element, re-capturing its neighbours and
+family as it goes, without pushing a new entry.
 
 **Ctrl+Shift+Z.** Stage 2 is the first time the stack holds entries, so `redoKeyBinding.ts`'s
 `isRedoKeystroke` must accept Ctrl+Shift+Z as well as Ctrl+Y here (§4.14 item 23), with a test.
@@ -1151,8 +1183,10 @@ silently delete any element created since.
 **2c** *(deferred, documented not built)*: undo for style changes — a snapshot of
 `userModifiedStyles` would cover it, and the entry contract already allows it.
 
-Exit criteria: deleting a canvas element is undoable, restored at its old place in the stacking
-order and with its comic family intact; exactly one entry per gesture.
+Exit criteria: deleting a canvas element is undoable and redoable, the element restored at its old
+place in the stacking order (or on top, when neither neighbour is left) and back in its comic
+family if any of it is left; consecutive deletes undo in any number; game ordering rules hold
+after an undo; exactly one entry per gesture.
 
 ### Stage 3 — The new text editor, behind a flag, off by default
 
@@ -1436,9 +1470,10 @@ changing course.
   waits for Stage 3; conversions are optional Stage 4 cleanups. The draft's "convert the
   reader-tools undo" step was deleted outright: it is a text-typing undo, so converting it would
   need typing transactions first.
-- **Delete canvas element is an inverse operation on a narrow subtree, not a page snapshot**
-  (Stage 2b), reusing `refreshCanvasElementEditing`. Comical bubble-family re-linking and restoring
-  a drag-activity target are the two things to verify first.
+- **Delete canvas element is an inverse operation, not a snapshot** (Stage 2b): it re-inserts the
+  same element object between its old neighbours, rejoins its comic family by reversing
+  `deleteBubbleFromFamily` on the family as it now is, and leaves ordering rules to the existing
+  tidy-up code. Settled with John 2026-10-07, replacing a draft that saved the family's bubble data.
 - **Delete-page capture happens inside the `SaveThen` callback** (moot: decision 7 drops delete-page undo), and restore re-raises the
   page-list events and navigates rather than just renumbering (Stage 2a).
 - **`runUndoable` nests from day one** (§4.13; its rule is decision 6 above).
