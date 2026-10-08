@@ -2064,6 +2064,11 @@
         <target xml:lang="fr" state="final">Contributions apportées par les auteurs, illustrateurs, éditeurs, etc., en {lang}</target>
         <note>ID: EditTab.FrontMatter.OriginalContributorsPrompt</note>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.OriginalCopyrightAndLicenseHint" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Original copyright &amp; license</source>
+        <target xml:lang="fr" state="needs-translation">Original copyright &amp; license</target>
+        <note>ID: EditTab.FrontMatter.OriginalCopyrightAndLicenseHint</note>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence" approved="yes">
         <source xml:lang="en">This book is an adaptation of the original, {0}.</source>
         <target xml:lang="fr" state="final">Adapté de la version originale, {0}.</target>
