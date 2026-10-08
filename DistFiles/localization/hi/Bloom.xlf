@@ -2065,6 +2065,11 @@
         <target xml:lang="hi" state="final">लेखकों, चित्रकारों, संपादकों, इत्यादि द्वारा {lang} में किए गए योगदान</target>
         <note>ID: EditTab.FrontMatter.OriginalContributorsPrompt</note>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.OriginalCopyrightAndLicenseHint" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Original copyright &amp; license</source>
+        <target xml:lang="hi" state="needs-translation">Original copyright &amp; license</target>
+        <note>ID: EditTab.FrontMatter.OriginalCopyrightAndLicenseHint</note>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence" approved="yes">
         <source xml:lang="en">This book is an adaptation of the original, {0}.</source>
         <target xml:lang="hi" state="final">मूल से लिया गया, {0}।</target>
