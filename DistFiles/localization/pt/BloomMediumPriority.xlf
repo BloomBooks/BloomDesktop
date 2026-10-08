@@ -40,6 +40,11 @@
         <target xml:lang="pt-PT" state="needs-translation">App Builder</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.Tables" translate="no">
+        <source xml:lang="en">Tables</source>
+        <target xml:lang="pt-PT" state="needs-translation">Tables</target>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.Tables</note>
+      </trans-unit>
       <trans-unit id="Feature.AiImageEditing">
         <source xml:lang="en">Edit Images with AI</source>
         <target xml:lang="pt-PT" state="needs-translation">Edit Images with AI</target>
@@ -654,6 +659,11 @@
         <source xml:lang="en">Navigation</source>
         <target xml:lang="pt-PT" state="final">Navegação</target>
         <note>ID: EditTab.Toolbox.CanvasTool.Navigation</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Table" translate="no">
+        <source xml:lang="en">A table whose cells can hold text or pictures</source>
+        <target xml:lang="pt-PT" state="needs-translation">A table whose cells can hold text or pictures</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.Table</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Set Destination</source>
