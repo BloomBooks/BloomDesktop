@@ -2077,11 +2077,83 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// Returns true when <paramref name="element"/> is (or is inside) a canvas element layered
+        /// over a real background image: any bloom-canvas-element other than the background image,
+        /// on a bloom-canvas whose background image is not a placeholder. A white line-art background
+        /// on such an overlay would hide the picture beneath it, so it needs transparency even on a
+        /// white page (BL-16993). Mirrors isOverlayOnBackgroundImage() in bloomImages.ts.
+        /// </summary>
+        internal static bool IsInCanvasOverlayOnBackgroundImage(SafeXmlElement element)
+        {
+            // On a custom-layout cover the branding logo and QR code are canvas elements beside the
+            // cover picture. They are not pictures layered over it, and making a QR code
+            // transparent could make it harder to scan.
+            if (element.HasClass("branding") || element.HasClass("bloom-qrcode"))
+                return false;
+            var canvasElement = element
+                .SafeSelectNodes("ancestor-or-self::div[contains(@class,'bloom-canvas-element')]")
+                .Cast<SafeXmlElement>()
+                .LastOrDefault(); // last ancestor = nearest canvas element
+            if (canvasElement == null || canvasElement.HasClass("bloom-backgroundImage"))
+                return false;
+            // contains() would also match bloom-canvas-element, so check the exact class.
+            var bloomCanvas = canvasElement
+                .SafeSelectNodes("ancestor::div[contains(@class,'bloom-canvas')]")
+                .Cast<SafeXmlElement>()
+                .LastOrDefault(div => div.HasClass("bloom-canvas"));
+            return bloomCanvas != null && BloomCanvasHasRealBackgroundImage(bloomCanvas);
+        }
+
+        /// <summary>
+        /// Returns true when <paramref name="bloomCanvas"/> has a real (not placeholder) background
+        /// image. Normally that is the image in its background canvas element; in a legacy canvas
+        /// that has not been converted to have one, it is an img directly inside the bloom-canvas.
+        /// Either may already have been converted to a background-image style (as BloomPubMaker
+        /// does). Mirrors bloomCanvasHasRealBackgroundImage() in bloomImages.ts.
+        /// </summary>
+        internal static bool BloomCanvasHasRealBackgroundImage(SafeXmlElement bloomCanvas)
+        {
+            var bgCanvasElement = bloomCanvas
+                .SafeSelectNodes(".//div[contains(@class,'bloom-backgroundImage')]")
+                .Cast<SafeXmlElement>()
+                .FirstOrDefault(div => div.HasClass("bloom-backgroundImage"));
+            SafeXmlElement imageHolder;
+            if (bgCanvasElement != null)
+            {
+                imageHolder = bgCanvasElement
+                    .SafeSelectNodes(".//img[@src] | .//div[contains(@style,'background-image')]")
+                    .Cast<SafeXmlElement>()
+                    .FirstOrDefault();
+            }
+            else
+            {
+                imageHolder =
+                    bloomCanvas.SafeSelectNodes("img[@src]").Cast<SafeXmlElement>().FirstOrDefault()
+                    ?? (
+                        (bloomCanvas.GetAttribute("style") ?? "").Contains("background-image")
+                            ? bloomCanvas
+                            : null
+                    );
+            }
+            if (imageHolder == null)
+                return false;
+            var url = GetImageElementUrl(imageHolder).NotEncoded;
+            if (string.IsNullOrEmpty(url))
+                return false;
+            var queryIndex = url.IndexOf('?');
+            if (queryIndex >= 0)
+                url = url.Substring(0, queryIndex);
+            return !ImageUtils.IsPlaceholderImageFilename(url);
+        }
+
+        /// <summary>
         /// Returns the transparency mode for a specific image, given its class and whether the page
         /// needs transparent images (i.e., has a non-white background).
         /// bloom-opaque and bloom-transparent classes override the page background check, but in the
         /// absence of those, we use the page background to determine whether we will (later) apply
-        /// our algorithm to decide whether the image looks like line art.
+        /// our algorithm to decide whether the image looks like line art. Images in canvas overlays
+        /// on a real background image get that treatment even on a white page, since they would
+        /// otherwise hide the picture beneath them.
         /// </summary>
         internal static ImageTransparencyMode GetImageTransparencyMode(
             SafeXmlElement img,
@@ -2096,7 +2168,7 @@ namespace Bloom.Book
             // This can also 'erase' very light-colored parts of an image, even on a white page.
             if (img.HasClass("bloom-transparent"))
                 return ImageTransparencyMode.Force;
-            if (!pageNeedsTransparent)
+            if (!pageNeedsTransparent && !IsInCanvasOverlayOnBackgroundImage(img))
                 return ImageTransparencyMode.None;
             return ImageTransparencyMode.Auto;
         }
@@ -2106,9 +2178,11 @@ namespace Bloom.Book
         /// <c>transparent</c> query parameter to the img src:
         /// <c>transparent=yes</c> for auto-detect mode, <c>transparent=force</c> to
         /// bypass the line-art check (bloom-transparent class). Images with bloom-opaque
-        /// or on white pages (unless they have bloom-transparent) receive no parameter.
+        /// or on white pages (unless they have bloom-transparent or are in a canvas overlay
+        /// on a real background image) receive no parameter.
         /// When <paramref name="suppressBackgroundColors"/> is true every page is treated
-        /// as having a white background, so only bloom-transparent images get a parameter.
+        /// as having a white background, so only bloom-transparent images and canvas overlays
+        /// on a real background image get a parameter.
         /// Returns a list of modified (element, original-src) pairs so the caller can
         /// restore them with <see cref="RestoreImageSrcs"/>, typically after making
         /// HTML out of the temporarily modified DOM..

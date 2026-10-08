@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Bloom;
 using Bloom.Book;
+using Bloom.ImageProcessing;
 using Bloom.SafeXml;
 using NUnit.Framework;
 
@@ -287,6 +288,258 @@ namespace BloomTests.Book
             AssertThatXmlIn
                 .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath("//img[@alt='']", 1);
+        }
+
+        // A white (uncolored) page with a canvas holding a background image (with the given src) and
+        // one image overlay, plus a plain (non-canvas) image container. The overlay gets the given
+        // extra classes. Like a real converted canvas, the bloom-canvas also holds an obsolete
+        // placeholder img directly.
+        private static HtmlDom MakeTransparencyTestDom(
+            string overlayImgClasses = "",
+            string pageStyle = "",
+            string backgroundSrc = "background.jpg"
+        )
+        {
+            return new HtmlDom(
+                $@"<html><body>
+                    <div class='bloom-page' style='{pageStyle}'>
+                        <div class='bloom-imageContainer'><img id='plain' src='plain.png'/></div>
+                        <div class='bloom-canvas bloom-has-canvas-element'>
+                            <img id='obsolete' src='placeHolder.png'/>
+                            <div class='bloom-canvas-element bloom-backgroundImage'>
+                                <div class='bloom-imageContainer'><img id='background' src='{backgroundSrc}'/></div>
+                            </div>
+                            <div class='bloom-canvas-element'>
+                                <div class='bloom-imageContainer'><img id='overlay' class='{overlayImgClasses}' src='overlay.png'/></div>
+                            </div>
+                        </div>
+                    </div>
+                </body></html>"
+            );
+        }
+
+        private static SafeXmlElement GetImgById(HtmlDom dom, string id)
+        {
+            var img = dom.SelectSingleNode($"//img[@id='{id}']");
+            Assert.That(img, Is.Not.Null, $"test setup should have an img with id {id}");
+            return img;
+        }
+
+        [Test]
+        public void IsInCanvasOverlayOnBackgroundImage_RealBackground_TrueOnlyForOverlay()
+        {
+            var dom = MakeTransparencyTestDom();
+
+            Assert.That(
+                HtmlDom.IsInCanvasOverlayOnBackgroundImage(GetImgById(dom, "overlay")),
+                Is.True
+            );
+            Assert.That(
+                HtmlDom.IsInCanvasOverlayOnBackgroundImage(GetImgById(dom, "background")),
+                Is.False
+            );
+            Assert.That(
+                HtmlDom.IsInCanvasOverlayOnBackgroundImage(GetImgById(dom, "plain")),
+                Is.False
+            );
+        }
+
+        [TestCase("branding")]
+        [TestCase("bloom-qrcode")]
+        public void IsInCanvasOverlayOnBackgroundImage_BrandingOrQrCode_False(string imgClass)
+        {
+            var dom = MakeTransparencyTestDom(overlayImgClasses: imgClass);
+            var overlay = GetImgById(dom, "overlay");
+            Assert.That(overlay.HasClass(imgClass), Is.True, "test setup");
+
+            Assert.That(HtmlDom.IsInCanvasOverlayOnBackgroundImage(overlay), Is.False);
+        }
+
+        [Test]
+        public void IsInCanvasOverlayOnBackgroundImage_PlaceholderBackground_False()
+        {
+            var dom = MakeTransparencyTestDom(backgroundSrc: "placeHolder.png");
+
+            Assert.That(
+                HtmlDom.IsInCanvasOverlayOnBackgroundImage(GetImgById(dom, "overlay")),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void IsInCanvasOverlayOnBackgroundImage_NoBackgroundImage_False()
+        {
+            var dom = MakeTransparencyTestDom();
+            var bgCanvasElement = dom.SelectSingleNode(
+                "//div[contains(@class,'bloom-backgroundImage')]"
+            );
+            bgCanvasElement.ParentNode.RemoveChild(bgCanvasElement);
+            var obsolete = GetImgById(dom, "obsolete");
+            obsolete.ParentNode.RemoveChild(obsolete);
+            Assert.That(
+                dom.SelectSingleNode("//img[@id='background']"),
+                Is.Null,
+                "test setup: background should be gone"
+            );
+
+            Assert.That(
+                HtmlDom.IsInCanvasOverlayOnBackgroundImage(GetImgById(dom, "overlay")),
+                Is.False
+            );
+        }
+
+        // A legacy canvas, not yet converted to have a background canvas element, keeps its
+        // background image as an img directly in the bloom-canvas; BloomPubMaker may already have
+        // turned that into a background-image style on the bloom-canvas itself.
+        [TestCase("<img src='background.jpg'/>", "", ExpectedResult = true)]
+        [TestCase("<img src='placeHolder.png'/>", "", ExpectedResult = false)]
+        [TestCase("", "background-image:url('background.jpg')", ExpectedResult = true)]
+        [TestCase("", "background-image:url('placeHolder.png')", ExpectedResult = false)]
+        [TestCase("", "", ExpectedResult = false)]
+        public bool IsInCanvasOverlayOnBackgroundImage_LegacyCanvas(
+            string backgroundImg,
+            string bloomCanvasStyle
+        )
+        {
+            var dom = new HtmlDom(
+                $@"<html><body><div class='bloom-page'>
+                    <div class='bloom-canvas' style=""{bloomCanvasStyle}"">
+                        {backgroundImg}
+                        <div class='bloom-canvas-element'>
+                            <div class='bloom-imageContainer'><img id='overlay' src='overlay.png'/></div>
+                        </div>
+                    </div>
+                </div></body></html>"
+            );
+
+            return HtmlDom.IsInCanvasOverlayOnBackgroundImage(GetImgById(dom, "overlay"));
+        }
+
+        [Test]
+        public void IsInCanvasOverlayOnBackgroundImage_BloomPubConvertedBackground_ReadsStyle()
+        {
+            // After BloomPubMaker.ConvertImagesToBackground, imgs are gone and their image
+            // containers carry background-image styles instead.
+            var dom = new HtmlDom(
+                @"<html><body><div class='bloom-page'>
+                    <div class='bloom-canvas'>
+                        <div class='bloom-canvas-element bloom-backgroundImage'>
+                            <div class='bloom-imageContainer bloom-background-image-in-style-attr' style=""background-image:url('background.jpg')""></div>
+                        </div>
+                        <div class='bloom-canvas-element'>
+                            <div id='overlay' class='bloom-imageContainer bloom-background-image-in-style-attr' style=""background-image:url('overlay.png')""></div>
+                        </div>
+                    </div>
+                </div></body></html>"
+            );
+            var overlay = dom.SelectSingleNode("//div[@id='overlay']");
+
+            Assert.That(HtmlDom.IsInCanvasOverlayOnBackgroundImage(overlay), Is.True);
+        }
+
+        [TestCase("overlay", "", "background.jpg", ExpectedResult = ImageTransparencyMode.Auto)]
+        [TestCase("overlay", "", "placeHolder.png", ExpectedResult = ImageTransparencyMode.None)]
+        [TestCase(
+            "overlay",
+            "bloom-opaque",
+            "background.jpg",
+            ExpectedResult = ImageTransparencyMode.None
+        )]
+        [TestCase(
+            "overlay",
+            "bloom-transparent",
+            "placeHolder.png",
+            ExpectedResult = ImageTransparencyMode.Force
+        )]
+        [TestCase("background", "", "background.jpg", ExpectedResult = ImageTransparencyMode.None)]
+        [TestCase("plain", "", "background.jpg", ExpectedResult = ImageTransparencyMode.None)]
+        public ImageTransparencyMode GetImageTransparencyMode_WhitePage_OnlyOverlaysOnBackgroundGetAuto(
+            string imgId,
+            string overlayImgClasses,
+            string backgroundSrc
+        )
+        {
+            var dom = MakeTransparencyTestDom(overlayImgClasses, backgroundSrc: backgroundSrc);
+            var pageDiv = dom.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            Assert.That(
+                HtmlDom.PageNeedsTransparentImages(pageDiv),
+                Is.False,
+                "test setup: page should be white"
+            );
+
+            return HtmlDom.GetImageTransparencyMode(GetImgById(dom, imgId), false);
+        }
+
+        [TestCase("overlay")]
+        [TestCase("background")]
+        [TestCase("plain")]
+        public void GetImageTransparencyMode_ColoredPage_AllImagesGetAuto(string imgId)
+        {
+            var dom = MakeTransparencyTestDom();
+
+            Assert.That(
+                HtmlDom.GetImageTransparencyMode(GetImgById(dom, imgId), true),
+                Is.EqualTo(ImageTransparencyMode.Auto)
+            );
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void AddTransparencyParamToImages_WhitePage_MarksOnlyOverlay(
+            bool suppressBackgroundColors
+        )
+        {
+            var dom = MakeTransparencyTestDom();
+
+            var modified = HtmlDom.AddTransparencyParamToImages(dom, suppressBackgroundColors);
+
+            Assert.That(
+                GetImgById(dom, "overlay").GetAttribute("src"),
+                Is.EqualTo("overlay.png?transparent=yes")
+            );
+            Assert.That(
+                GetImgById(dom, "background").GetAttribute("src"),
+                Is.EqualTo("background.jpg")
+            );
+            Assert.That(GetImgById(dom, "plain").GetAttribute("src"), Is.EqualTo("plain.png"));
+            Assert.That(modified.Count, Is.EqualTo(1));
+            HtmlDom.RestoreImageSrcs(modified);
+            Assert.That(GetImgById(dom, "overlay").GetAttribute("src"), Is.EqualTo("overlay.png"));
+        }
+
+        [Test]
+        public void AddTransparencyParamToImages_WhitePagePlaceholderBackground_MarksNothing()
+        {
+            var dom = MakeTransparencyTestDom(backgroundSrc: "placeHolder.png");
+
+            var modified = HtmlDom.AddTransparencyParamToImages(dom);
+
+            Assert.That(GetImgById(dom, "overlay").GetAttribute("src"), Is.EqualTo("overlay.png"));
+            Assert.That(modified, Is.Empty);
+        }
+
+        [Test]
+        public void AddTransparencyParamToImages_ColoredPageButSuppressed_MarksOnlyOverlay()
+        {
+            var dom = MakeTransparencyTestDom(pageStyle: "--page-background-color: #EDE9FE");
+            var pageDiv = dom.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+            Assert.That(
+                HtmlDom.PageNeedsTransparentImages(pageDiv),
+                Is.True,
+                "test setup: page should be colored"
+            );
+
+            HtmlDom.AddTransparencyParamToImages(dom, suppressBackgroundColors: true);
+
+            Assert.That(
+                GetImgById(dom, "overlay").GetAttribute("src"),
+                Is.EqualTo("overlay.png?transparent=yes")
+            );
+            Assert.That(
+                GetImgById(dom, "background").GetAttribute("src"),
+                Is.EqualTo("background.jpg")
+            );
+            Assert.That(GetImgById(dom, "plain").GetAttribute("src"), Is.EqualTo("plain.png"));
         }
 
         [Test]

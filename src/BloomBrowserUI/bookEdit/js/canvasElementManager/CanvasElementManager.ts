@@ -35,6 +35,7 @@ import {
     UpdateImageTooltipVisibility,
     HandleImageError,
     isPlaceHolderImage,
+    refreshTransparencyIfBackgroundImage,
 } from "../bloomImages";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "../BloomHintBubbles";
@@ -2753,6 +2754,8 @@ export class CanvasElementManager {
                 img.classList.remove("bloom-imageLoadError");
                 img.onerror = HandleImageError;
                 img.src = "placeHolder.png";
+                // Overlays no longer sit on a real background image.
+                refreshTransparencyIfBackgroundImage(img);
                 if (page) {
                     normalizeCoverImageDesignation(page);
                 }
