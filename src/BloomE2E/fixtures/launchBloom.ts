@@ -243,7 +243,12 @@ const FOLDERS_THAT_ARE_NOT_SOURCE = new Set([
     "__tests__",
     "component-tests",
     "canvas-e2e-tests",
+    "inline-images-e2e",
     "test",
+    // Playwright writes .last-run.json into this folder whenever somebody runs one of the front
+    // end's own Playwright suites (pnpm e2e ...). The folder is inside the source tree, so without
+    // this entry the next e2e run would refuse to start and name a file nobody edited.
+    "test-results",
 ]);
 
 /**

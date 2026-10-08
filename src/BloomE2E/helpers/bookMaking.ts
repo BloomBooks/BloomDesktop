@@ -13,6 +13,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiGet, apiGetJson, apiPost } from "./api";
 import { selectBook, waitForCollectionReady } from "./collection";
+import { markEditablePage, waitForEditablePageReload } from "./pageThumbnails";
 import { switchTab } from "./workspace";
 
 /** One book as collections/books reports it. Only the fields used here. */
@@ -286,10 +287,14 @@ async function listEditableBooks(page: Page): Promise<IBookInfo[]> {
 
 /**
  * Set exactly which of the collection's languages the book shows, by the same route as the Edit
- * tab's One/Two/Three Languages dropdown. Language 1 is always shown and cannot be turned off.
+ * tab's Monolingual/Bilingual/Trilingual dropdown. Any language can be turned off, Language 1
+ * included, as long as one other stays on.
  *
- * Each change is confirmed before the next is sent. Sending two in quick succession has been seen
- * to lose one, and a state wait is both the honest fix and faster than a fixed pause.
+ * Each change makes Bloom save the page and then reload it, but only if Bloom is editing the page
+ * at that moment. If the change arrives while the page is still loading, or while an earlier save
+ * is still running, Bloom neither saves nor reloads (EditingModel.SaveThen), and the book records
+ * the new languages while the Edit tab goes on showing the old ones. So before each change this
+ * waits for the page to be ready for editing, and after it this waits for the reload to finish.
  */
 export async function setContentLanguages(
     page: Page,
@@ -302,6 +307,15 @@ export async function setContentLanguages(
     for (const language of usage.languages) {
         const wanted = tags.includes(language.id);
         if (language.isUsedForContent === wanted) continue;
+        await waitForEditablePage(page);
+        const pageId = await editablePageFrame(page)
+            .locator(".bloom-page")
+            .getAttribute("id");
+        if (!pageId)
+            throw new Error(
+                "The page in the Edit tab has no id, so its reload cannot be awaited.",
+            );
+        await markEditablePage(page);
         await apiPost(
             page,
             "editView/topBar/contentLanguageUsageChange",
@@ -327,6 +341,7 @@ export async function setContentLanguages(
                 },
             )
             .toBe(wanted);
+        await waitForEditablePageReload(page, pageId);
     }
     await waitForEditablePage(page);
 }
@@ -354,6 +369,18 @@ export function editablePageFrame(page: Page): Frame {
  * any command that begins with saving it (add a page, duplicate, delete, jump elsewhere). The page
  * can look ready in the DOM a moment before Bloom is, so this asks Bloom as well, through the e2e
  * hook that reports its editing state.
+ *
+ * It also waits for the iframe element itself to have a size in Bloom's window. The other checks
+ * look at the document inside the frame, and that document can be fully laid out while the iframe
+ * has no box yet, because switching back to the Edit tab rebuilds the view around it. Playwright
+ * cannot measure an element inside an iframe that has no box, even when the page's own script
+ * reports a perfectly good rectangle for it. Without this wait, a helper that measures an inline
+ * image would fail in a test that is about something else.
+ *
+ * Finally, Bloom reports that it is editing before the page's own script has decided which
+ * language boxes to show. Until it has, every box on the page is hidden, so an inline image inside
+ * one is in the DOM but has no box on the screen, and measuring it fails in the same misleading
+ * way. So when the page has text boxes, this waits until one of them is showing.
  */
 export async function waitForEditablePage(
     page: Page,
@@ -382,6 +409,47 @@ export async function waitForEditablePage(
                 "Bloom never finished loading the page in the Edit tab (its editing state never became Editing).",
         })
         .toBe("true");
+    await expect
+        .poll(
+            async () => {
+                const box = await page
+                    .locator("iframe#page")
+                    .boundingBox()
+                    .catch(() => null);
+                return box ? Math.min(box.width, box.height) : 0;
+            },
+            {
+                timeout: timeoutMs,
+                message:
+                    "The Edit tab's page frame never got a box of its own in Bloom's window, so " +
+                    "nothing inside it can be measured.",
+            },
+        )
+        .toBeGreaterThan(0);
+    // The page's script (updateLanguageVisibility) adds bloom-visibility-code-on to each box it
+    // decides to show, and the CSS hides every box that lacks it.
+    const groupCount = await editablePageFrame(page)
+        .locator(".bloom-page .bloom-translationGroup")
+        .count()
+        .catch(() => 0);
+    if (groupCount === 0) return;
+    await expect
+        .poll(
+            async () =>
+                await editablePageFrame(page)
+                    .locator(
+                        ".bloom-page .bloom-editable.bloom-visibility-code-on",
+                    )
+                    .count()
+                    .catch(() => 0),
+            {
+                timeout: timeoutMs,
+                message:
+                    "The page's script never decided which language boxes to show, so every box " +
+                    "on the page is still hidden.",
+            },
+        )
+        .toBeGreaterThan(0);
 }
 
 /** One page of the selected book, as e2e/pages reports it. */
