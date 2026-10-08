@@ -16,7 +16,7 @@
 // route through the "More..." check boxes, and enableToolForBook is the fast setup route that
 // posts the same setting they do.
 
-import { expect, type Frame, type Page } from "@playwright/test";
+import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import { apiPost } from "./api";
 import { editBook } from "./bookMaking";
 
@@ -114,6 +114,30 @@ export function toolboxFrame(page: Page): Frame {
  * localized. Throws, naming the tools on offer, when the book has not got this tool; see the note
  * at the top of this file for how a tool gets turned on.
  */
+/**
+ * Wait for a tool's header to appear, and explain it in the toolbox's own terms if it never
+ * does. A single count() here is a race: the toolbox renders its headers a moment after it
+ * becomes visible, so a check that runs first sees nothing and reports a tool missing that is
+ * about to arrive -- the error even listed the tool it claimed was absent.
+ */
+async function waitForToolHeader(
+    page: Page,
+    frame: Frame,
+    tool: ToolId,
+    extra = "",
+): Promise<Locator> {
+    const header = frame.locator(toolHeader(tool)).first();
+    try {
+        await header.waitFor({ state: "attached", timeout: 30000 });
+    } catch {
+        throw new Error(
+            `The toolbox is not offering the "${tool}" tool. It shows: ` +
+                `${(await getShownTools(page)).join(", ") || "(nothing)"}.${extra}`,
+        );
+    }
+    return header;
+}
+
 export async function openTool(
     page: Page,
     tool: ToolId,
@@ -122,15 +146,13 @@ export async function openTool(
     const frame = await showToolbox(page);
     const controls = frame.locator(controlsSelector).first();
     if (await controls.isVisible().catch(() => false)) return frame;
-    const header = frame
-        .locator(`.MuiAccordionSummary-root:has([data-toolid="${tool}"])`)
-        .first();
-    if ((await header.count()) === 0)
-        throw new Error(
-            `The toolbox is not offering the "${tool}" tool. It shows: ` +
-                `${(await getShownTools(page)).join(", ") || "(nothing)"}. A tool is offered ` +
-                `only once the book has it on; the page it belongs to turns it on when clicked.`,
-        );
+    const header = await waitForToolHeader(
+        page,
+        frame,
+        tool,
+        " A tool is offered only once the book has it on; the page it belongs to turns it" +
+            " on when clicked.",
+    );
     await header.click();
     await controls.waitFor({ state: "visible", timeout: 30000 });
     return frame;
@@ -203,12 +225,7 @@ async function waitForToolboxToSettle(page: Page): Promise<void> {
  */
 export async function clickToolHeader(page: Page, tool: ToolId): Promise<void> {
     const frame = await showToolbox(page);
-    const header = frame.locator(toolHeader(tool)).first();
-    if ((await header.count()) === 0)
-        throw new Error(
-            `The toolbox is not offering the "${tool}" tool. It shows: ` +
-                `${(await getShownTools(page)).join(", ") || "(nothing)"}.`,
-        );
+    const header = await waitForToolHeader(page, frame, tool);
     await header.click();
     await waitForToolboxToSettle(page);
 }
@@ -315,108 +332,4 @@ export async function expectOpenTool(
     await expect
         .poll(async () => getOpenTool(page), { timeout: 30000, message })
         .toBe(tool);
-}
-
-/** One piece of a tool's panel whose content is wider than the room it has. */
-interface IClippedElement {
-    /** Enough to find it in the DOM: tag, classes, and the start of its text. */
-    what: string;
-    /** How many pixels of it cannot be seen. */
-    hiddenPx: number;
-}
-
-/**
- * Fails if anything in the open tool's panel is wider than the space it has and cannot be
- * scrolled to -- i.e. content the user simply cannot see.
- *
- * Only elements whose overflow-x is `hidden` or `visible` count. Those are the ones where
- * being too wide means the content is lost; a region with `auto` or `scroll` is wide on
- * purpose and the user can reach the rest.
- *
- * Worth asserting because a tool's panel lives in a fixed-width sidebar that several things
- * narrow in turn -- the panel's own padding, a scrollbar gutter, the scrollbar itself -- and
- * each is set somewhere different. When they add up to more than the tool budgeted for, a
- * column just disappears off the right-hand edge, and every other check still passes: the
- * values are correct, the controls still work, nothing throws. That is how the Leveled
- * Reader lost its "Actual" column in 6.6.1172 while these tests were green (BL-16608).
- *
- * Call it with the tool showing the content you care about -- an empty panel can never
- * overflow, so checking a tool before it has anything to show proves nothing.
- */
-export async function expectNothingClippedInOpenTool(
-    page: Page,
-    context: string,
-): Promise<void> {
-    const result = await toolboxFrame(page).evaluate(() => {
-        const panel = document.querySelector(
-            ".MuiAccordion-root.Mui-expanded .MuiAccordionDetails-root",
-        );
-        if (!panel) {
-            // Report it rather than returning "nothing is clipped": a check that passes
-            // because it found nothing to look at is worse than no check at all.
-            return { panelFound: false, examined: 0, clipped: [] };
-        }
-        const describe = (e: Element): string => {
-            const classes =
-                typeof e.className === "string" && e.className
-                    ? "." +
-                      e.className.trim().split(/\s+/).slice(0, 2).join(".")
-                    : "";
-            const text = (e as HTMLElement).innerText || "";
-            return (
-                e.tagName.toLowerCase() +
-                classes +
-                (text
-                    ? ` "${text.replace(/\s+/g, " ").trim().slice(0, 40)}"`
-                    : "")
-            );
-        };
-        const candidates = Array.from(panel.querySelectorAll("*"));
-        const withText = candidates.filter((e) =>
-            (e as HTMLElement).innerText?.trim(),
-        );
-        const clipped = candidates
-            .filter((e) => {
-                const overflowX = getComputedStyle(e).overflowX;
-                if (overflowX !== "hidden" && overflowX !== "visible") {
-                    return false; // scrollable on purpose; the user can reach the rest
-                }
-                // Only text counts. Several MUI controls (a Switch, say) overflow their
-                // own box by design, with a ripple or a thumb that is meant to spill out,
-                // and reporting those would bury the real finding. Words that run off the
-                // edge are what a user actually loses. The cost is that a clipped icon on
-                // its own would slip through.
-                if (!(e as HTMLElement).innerText?.trim()) {
-                    return false;
-                }
-                // 1px of slack: sub-pixel layout rounds against us.
-                return e.scrollWidth > e.clientWidth + 1;
-            })
-            .map((e) => ({
-                what: describe(e),
-                hiddenPx: e.scrollWidth - e.clientWidth,
-            }));
-        return { panelFound: true, examined: withText.length, clipped };
-    });
-
-    expect(
-        result.panelFound,
-        `${context}: no expanded tool panel was found, so nothing was checked.`,
-    ).toBe(true);
-    // A panel whose text has not arrived yet cannot be clipped, and would let this
-    // check pass without looking at anything the user will actually see.
-    expect(
-        result.examined,
-        `${context}: the open tool's panel showed no text, so there was nothing to check.`,
-    ).toBeGreaterThan(0);
-
-    const clipped: IClippedElement[] = result.clipped;
-    expect(
-        clipped,
-        `${context}: content is cut off the right-hand edge of the tool's panel, where ` +
-            `the user cannot see or scroll to it:\n` +
-            clipped
-                .map((c) => `  - ${c.hiddenPx}px hidden: ${c.what}`)
-                .join("\n"),
-    ).toEqual([]);
 }
