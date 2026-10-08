@@ -405,6 +405,24 @@ test.describe("more ways to use a table", () => {
                             "table.",
                     })
                     .toBe(2);
+                // Change Layout takes typing away from every text box, and a cell of the new
+                // table is no exception: Tab must not reach one and let the person type into a
+                // table the mode shows as faded.
+                const cellText = editablePageFrame(page).locator(
+                    ".bloom-table .bloom-editable",
+                );
+                expect(
+                    await cellText.count(),
+                    "Sanity check: the tables' cells should hold text boxes.",
+                ).toBeGreaterThan(0);
+                expect(
+                    await editablePageFrame(page)
+                        .locator(
+                            ".bloom-table .bloom-editable[contenteditable]",
+                        )
+                        .count(),
+                    "No cell of any table should be typable in Change Layout mode.",
+                ).toBe(0);
                 return index;
             },
         );

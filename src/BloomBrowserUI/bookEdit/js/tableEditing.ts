@@ -168,6 +168,10 @@ function installHostHooks(): void {
  * ones that still need the treatment.
  */
 function wireBloomContentOfNewCells(root: HTMLElement): void {
+    // A table made in Change Layout mode is not editable there, like the
+    // mode's text boxes, which origami makes not contenteditable. Leaving the
+    // mode rebuilds the page, and the page-load pass wires these cells then.
+    if (root.closest(".origami-layout-mode")) return;
     // `root` is a cell or a table, so everything below it that is a
     // bloom-editable belongs to some cell of some table.
     root.querySelectorAll<HTMLElement>(
