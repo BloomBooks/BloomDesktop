@@ -8,10 +8,19 @@
 // GameHeader-style, so alternatives from the style dialog can override it. But a Game migrated
 // from 6.2 will not have the default pug definition of text-align, so this provides a default
 // that will have most migrated books looking as expected.
-.GameHeader-style {
+// The font-size is the same default for migrated books: without it, the header inherits the stale
+// inline font-size that edit mode copies onto its translation group, so pages drift apart (BL-16950).
+// QuizHeader-style is the pre-6.3 name, still found in books not yet migrated (e.g. a Sample Shell
+// or a downloaded book shown in the Collection tab preview), which should look the same.
+// Known and accepted: a 6.2 book with a header size in a .QuizHeader-style or .Prompt-style rule
+// (the 6.2 Choose Word template put 18pt there) loses that size to this default once migrated,
+// since the migration renames the class but not the rule. It can be set again in the Format dialog.
+.GameHeader-style,
+.QuizHeader-style {
     color: var(--game-header-color);
     background-color: var(--game-header-bg-color);
     text-align: center;
+    font-size: 16pt;
 }
 
 .bloom-page.simple-comprehension-quiz {

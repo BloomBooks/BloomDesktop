@@ -26,6 +26,7 @@ import {
 import { isLegacyThemeName } from "./appearanceThemeUtils";
 import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
 import { StyleAndFontTable } from "./StyleAndFontTable";
+import { splitAtLinkText } from "../../utils/textUtils";
 
 // Should stay in sync with AppearanceSettings.PageNumberPosition
 enum PageNumberPosition {
@@ -196,8 +197,8 @@ export const useBookSettingsAreaDefinition = (
         "BookSettings.FullBleed",
     );
     const fullBleedDescription = useL10n(
-        "Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.",
-        "BookSettings.FullBleed.Description",
+        'Enable full bleed layout for printing. Use with the "Edge to Edge" theme. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.',
+        "BookSettings.FullBleed.Description.EdgeToEdge",
     );
     const otherLanguagesLabel = useL10n(
         "Other Languages",
@@ -597,16 +598,15 @@ export const ThemeDisablesOptionsNoticeWithLink: React.FunctionComponent<{
         "BookSettings.ThemeDisablesOptionsNoticeWithLink",
     );
 
-    const linkStart = message.indexOf("[");
-    const linkEnd = message.indexOf("]", linkStart >= 0 ? linkStart + 1 : 0);
+    const parts = splitAtLinkText(message);
 
-    if (linkStart < 0 || linkEnd <= linkStart) {
+    if (!parts.found) {
         return <span>{message}</span>;
     }
 
     return (
         <span>
-            {message.substring(0, linkStart)}
+            {parts.beforeLink}
             <Link
                 component="button"
                 type="button"
@@ -616,9 +616,9 @@ export const ThemeDisablesOptionsNoticeWithLink: React.FunctionComponent<{
                     props.onGoToThemeAndLayout?.();
                 }}
             >
-                {message.substring(linkStart + 1, linkEnd)}
+                {parts.linkText}
             </Link>
-            {message.substring(linkEnd + 1)}
+            {parts.afterLink}
         </span>
     );
 };

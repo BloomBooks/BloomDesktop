@@ -47,6 +47,11 @@ export async function makeBookFromTemplate(
     page: Page,
     templateTitle: string,
 ): Promise<string> {
+    // A person makes a book from the Collections tab, and so does this. Selecting the template
+    // while the Edit tab is showing a book has been seen to leave the Edit tab showing the
+    // template, which has no page to edit, once the new book is made (every time the book being
+    // left had a reader tool turned on), so a test making its second book would hang here.
+    await switchTab(page, "collection");
     await waitForCollectionReady(page);
     const { collectionId, template } = await findFactoryTemplate(
         page,
@@ -142,7 +147,18 @@ async function makeBookFromSelectedBook(
     sourceName: string,
 ): Promise<string> {
     const before = await listEditableBooks(page);
-    await apiPost(page, "app/makeFromSelectedBook");
+    // Bloom answers this and then reloads the shell document into the Edit tab, and under load
+    // that reload can abort our fetch before the reply arrives. The request itself got through
+    // - the poll below is what confirms the book really appeared - and a retry would make a
+    // second book, so tolerate exactly the two lost-reply errors a reload produces.
+    await apiPost(page, "app/makeFromSelectedBook").catch((error) => {
+        if (
+            !/Failed to fetch|Execution context was destroyed/i.test(
+                String(error),
+            )
+        )
+            throw error;
+    });
 
     // Bloom makes the book, selects it, and switches to the Edit tab. Wait for the book to exist
     // rather than for the tab, so the folder we return is real.
@@ -611,7 +627,8 @@ async function ckEditorStateOn(
 /**
  * Click in one language's box of one translation group on the page being shown, so that it has the
  * focus, the way a person starts editing it. `groupSelector` picks the group, e.g. ".bookTitle" for
- * the cover title. Waits until the box has the focus, and returns it.
+ * the cover title; when the page has several groups that match, `groupIndex` says which one, in
+ * document order. Waits until the box has the focus, and returns it.
  *
  * Focusing a box is also what makes Bloom show the box's format gear (see helpers/formatDialog.ts).
  */
@@ -619,9 +636,12 @@ export async function clickInGroup(
     page: Page,
     groupSelector: string,
     languageTag: string,
+    groupIndex = 0,
 ): Promise<Locator> {
     const box = editablePageFrame(page)
-        .locator(`${groupSelector} .bloom-editable[lang="${languageTag}"]`)
+        .locator(groupSelector)
+        .nth(groupIndex)
+        .locator(`.bloom-editable[lang="${languageTag}"]`)
         .first();
     await box.waitFor({ state: "visible", timeout: 30000 });
     await waitForCkEditorToTakeTheBox(box);
@@ -635,9 +655,11 @@ export async function clickInGroup(
 
 /**
  * Type text into one language's box of one translation group on the page being shown, the way a
- * person does. `groupSelector` picks the group, e.g. ".bookTitle" for the cover title.
+ * person does. `groupSelector` picks the group, e.g. ".bookTitle" for the cover title; when the
+ * page has several groups that match, `groupIndex` says which one, in document order.
  *
- * Pass an empty string to clear the box; that is how a test makes a translation incomplete.
+ * Pass an empty string to clear the box; that is how a test makes a translation incomplete. A
+ * newline in `text` presses Enter, which starts a new paragraph, as it does for a person.
  * Nothing reaches the file until the book leaves this page — see goToPage.
  */
 export async function typeInGroup(
@@ -645,10 +667,16 @@ export async function typeInGroup(
     groupSelector: string,
     languageTag: string,
     text: string,
+    groupIndex = 0,
 ): Promise<void> {
     // Click in, select what is there, and type over it. A box here is a CKEditor surface, and
     // filling it directly leaves part of the old text behind.
-    const box = await clickInGroup(page, groupSelector, languageTag);
+    const box = await clickInGroup(
+        page,
+        groupSelector,
+        languageTag,
+        groupIndex,
+    );
     await box.press("Control+a");
     await box.press("Delete");
     // One insertion rather than a key press per character: the box has focus, and CKEditor and
@@ -662,8 +690,9 @@ export async function typeInGroup(
     // no key events".)
     if (text) await page.keyboard.insertText(text);
     // Bloom's editor reacts to typing; confirm the box holds what we meant before moving on, so a
-    // later failure cannot be blamed on text that never arrived.
-    await expect(box).toHaveText(text, { timeout: 15000 });
+    // later failure cannot be blamed on text that never arrived. innerText, rather than textContent,
+    // so that a paragraph break reads back as the newline that made it.
+    await expect(box).toHaveText(text, { timeout: 15000, useInnerText: true });
 }
 
 /**
@@ -741,4 +770,17 @@ export async function visitXmatterPages(
         });
     }
     return shown;
+}
+
+/**
+ * Show a book in the Edit tab, the way a person does by selecting it in the collection and going
+ * back to Edit, and wait until its page is ready to edit. Leaving the book that was being edited
+ * this way is also what makes Bloom save it, so this is how a test leaves one book for another and
+ * comes back to see what the first one remembered.
+ */
+export async function editBook(page: Page, bookFolder: string): Promise<void> {
+    await switchTab(page, "collection");
+    await selectBook(page, bookFolder);
+    await switchTab(page, "edit");
+    await waitForEditablePage(page);
 }

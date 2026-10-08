@@ -13,7 +13,7 @@ import { useEffect } from "react";
  * exhaustive-deps suppression in one place.
  *
  * Note that mount effects are still effects: before reaching for one, see
- * .github/skills/react-useeffect to confirm an effect is actually warranted
+ * .claude/skills/react-useeffect to confirm an effect is actually warranted
  * rather than (for example) deriving a value during render or handling
  * something in an event handler.
  */

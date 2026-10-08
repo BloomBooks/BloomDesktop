@@ -49,7 +49,15 @@ export const imageCanvasElementControls: ICanvasElementControlConfiguration = {
     // also as game pieces created from the Game tool.
     // `gameDraggable` is intentionally listed here so game pages can surface
     // draggable commands; availability rules/context keep it hidden on non-game pages.
-    menuSections: ["image", "audio", "gameDraggable", "layer", "wholeElement"],
+    menuSections: [
+        "image",
+        "imageArrangement",
+        "imageSettings",
+        "audio",
+        "gameDraggable",
+        "layer",
+        "wholeElement",
+    ],
     toolbar: [
         "missingMetadata",
         "chooseImage",
@@ -182,7 +190,14 @@ export const bookLinkGridControls: ICanvasElementControlConfiguration = {
 export const navigationImageButtonControls: ICanvasElementControlConfiguration =
     {
         type: "navigation-image-button",
-        menuSections: ["url", "image", "layer", "wholeElement"],
+        menuSections: [
+            "url",
+            "image",
+            "imageArrangement",
+            "imageSettings",
+            "layer",
+            "wholeElement",
+        ],
         toolbar: [
             "setDestination",
             "chooseImage",
@@ -230,7 +245,15 @@ export const navigationImageButtonControls: ICanvasElementControlConfiguration =
 export const navigationImageWithLabelButtonControls: ICanvasElementControlConfiguration =
     {
         type: "navigation-image-with-label-button",
-        menuSections: ["url", "image", "text", "layer", "wholeElement"],
+        menuSections: [
+            "url",
+            "image",
+            "imageArrangement",
+            "imageSettings",
+            "text",
+            "layer",
+            "wholeElement",
+        ],
         toolbar: [
             "setDestination",
             "chooseImage",

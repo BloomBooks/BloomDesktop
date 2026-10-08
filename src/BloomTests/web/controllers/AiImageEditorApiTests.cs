@@ -11,6 +11,7 @@ using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
 using Bloom.web.controllers;
+using BloomTests.ImageProcessing;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SIL.Code;
@@ -1338,10 +1339,12 @@ namespace BloomTests.web.controllers
 
         // ------------------------------------------------------------------
         // Bloom Games targets. A target holds a COPY of its draggable's content, image
-        // container and all, so the copy looks just like a slot of its own. It stays IN the
-        // slot list — the page frame counts it too, and the two numberings have to agree —
-        // but it is not offered to the AI image editor, and an off-page commit repoints it so
-        // it goes on showing its draggable's picture (BL-16793).
+        // container and all, so the copy looks just like a slot of its own. It is kept OUT of
+        // the slot list — the browser generates it, so counting it would make a page's
+        // numbering depend on whether the targets had been filled in yet, and the page frame
+        // leaves it out for the same reason. It is therefore never offered to the AI image
+        // editor, and an off-page commit repoints it so it goes on showing its draggable's
+        // picture (BL-16793).
         // ------------------------------------------------------------------
 
         // A draggable holding one picture, plus the target that copies it. Mirrors what
@@ -1364,26 +1367,56 @@ namespace BloomTests.web.controllers
                </div>";
 
         [Test]
-        public void SelectImageSlotsOnPage_StillCountsAGameTargetsCopy()
+        public void SelectImageSlotsOnPage_DoesNotCountAGameTargetsCopy()
         {
-            // The copy must keep its place in this list even though we decline to offer it:
-            // an ordinal is an index into the UNFILTERED list, and slotIndexOnPage in
-            // aiImageEditorPageCommands.ts counts the copy on the live page as well. Filtering
-            // the copy out here instead would silently shift every later slot on the page.
+            // The copy is generated, not authored: the browser writes it into the target when the
+            // draggable is selected or its picture changes, and an untouched target sits empty. So
+            // counting it would make the ordinal mean one slot in the live page and another in the
+            // saved HTML, which is how a replacement landed in a target (BL-16793). The raw
+            // selector still sees it; the page's numbering does not.
             var page = MakePageWithBody(GameDraggableAndTargetHtml("d1", "dog.png"));
+            Assert.That(
+                AiImageEditorApi.SelectImageContainersWithin(page).Length,
+                Is.EqualTo(2),
+                "sanity check: the page really does hold two image containers"
+            );
 
             var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
 
-            Assert.That(slots.Length, Is.EqualTo(2), "the target's copy must still hold an index");
+            Assert.That(slots.Length, Is.EqualTo(1), "only the draggable's own slot is numbered");
+            Assert.That(AiImageEditorApi.IsSlotInsideGameTarget(slots[0]), Is.False);
+        }
+
+        [Test]
+        public void SelectImageSlotsOnPage_EmptyTargetAndFilledTarget_NumberTheSame()
+        {
+            // The point of leaving the copies out: the same page numbers its slots identically
+            // whether or not the browser has filled the targets in (BL-16793).
+            var filled = MakePageWithBody(
+                @"<div class='bloom-imageContainer'><img src='first.png'/></div>"
+                    + GameDraggableAndTargetHtml("d1", "dog.png")
+            );
+            var empty = MakePageWithBody(
+                @"<div class='bloom-imageContainer'><img src='first.png'/></div>
+                  <div class='bloom-canvas-element' data-draggable-id='d1'>
+                      <div class='bloom-imageContainer'><img src='dog.png'/></div>
+                  </div>
+                  <div data-target-of='d1'></div>"
+            );
+
+            var slotsWhenFilled = AiImageEditorApi.SelectImageSlotsOnPage(filled);
+            var slotsWhenEmpty = AiImageEditorApi.SelectImageSlotsOnPage(empty);
+
+            Assert.That(slotsWhenFilled.Length, Is.EqualTo(2));
+            Assert.That(slotsWhenEmpty.Length, Is.EqualTo(2));
             Assert.That(
-                AiImageEditorApi.IsSlotInsideGameTarget(slots[0]),
-                Is.False,
-                "the draggable's own slot"
+                AiImageEditorApi.GetImageElementOfSlot(slotsWhenFilled[1]).GetAttribute("src"),
+                Is.EqualTo("dog.png"),
+                "the draggable's picture is slot 1 whether or not its target has a copy"
             );
             Assert.That(
-                AiImageEditorApi.IsSlotInsideGameTarget(slots[1]),
-                Is.True,
-                "the target's copy"
+                AiImageEditorApi.GetImageElementOfSlot(slotsWhenEmpty[1]).GetAttribute("src"),
+                Is.EqualTo("dog.png")
             );
         }
 
@@ -1394,10 +1427,10 @@ namespace BloomTests.web.controllers
             // marks a target, not its value.
             var page = MakePageWithBody(GameDraggableAndTargetHtml("d1", "dog.png", targetOf: ""));
 
-            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+            var containers = AiImageEditorApi.SelectImageContainersWithin(page);
 
-            Assert.That(slots.Length, Is.EqualTo(2));
-            Assert.That(AiImageEditorApi.IsSlotInsideGameTarget(slots[1]), Is.True);
+            Assert.That(containers.Length, Is.EqualTo(2));
+            Assert.That(AiImageEditorApi.IsSlotInsideGameTarget(containers[1]), Is.True);
         }
 
         [Test]
@@ -1460,7 +1493,11 @@ namespace BloomTests.web.controllers
                   </div>"
             );
             var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
-            Assert.That(slots.Length, Is.EqualTo(4), "two pictures and two copies of them");
+            Assert.That(
+                slots.Length,
+                Is.EqualTo(2),
+                "the draggable's two pictures; copies are not slots"
+            );
             Assert.That(
                 AiImageEditorApi.GetImageElementOfSlot(slots[1]).GetAttribute("src"),
                 Is.EqualTo("cat.png"),
@@ -1490,12 +1527,12 @@ namespace BloomTests.web.controllers
                     + GameDraggableAndTargetHtml("d2", "cat.png")
             );
             var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
-            Assert.That(slots.Length, Is.EqualTo(4), "two draggables and two copies");
-            var secondDraggablesSlot = slots[2];
+            Assert.That(slots.Length, Is.EqualTo(2), "two draggables; their copies are not slots");
+            var secondDraggablesSlot = slots[1];
             Assert.That(
                 AiImageEditorApi.GetImageElementOfSlot(secondDraggablesSlot).GetAttribute("src"),
                 Is.EqualTo("cat.png"),
-                "sanity check: slot 2 should be the second draggable's own"
+                "sanity check: slot 1 should be the second draggable's own"
             );
 
             var copies = AiImageEditorApi.GetGameTargetImageCopiesOfSlot(
@@ -1543,7 +1580,7 @@ namespace BloomTests.web.controllers
 
             var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
 
-            Assert.That(slots.Length, Is.EqualTo(1), "an empty target holds no slot");
+            Assert.That(slots.Length, Is.EqualTo(1), "the draggable's own slot, and no other");
             Assert.That(AiImageEditorApi.GetGameTargetImageCopiesOfSlot(page, slots[0]), Is.Empty);
         }
 
@@ -2706,10 +2743,7 @@ namespace BloomTests.web.controllers
         public void RefitSlotImageForNewPicture_RemovesOnlyTheCropProperties()
         {
             var element = MakeCroppedSlotImage();
-            element.SetAttribute(
-                "style",
-                element.GetAttribute("style") + " transform: rotate(3deg);"
-            );
+            element.SetAttribute("style", element.GetAttribute("style") + " opacity: 0.5;");
             // Sanity check, so the assertion below can't pass on markup that never had a crop.
             Assert.That(
                 element.GetAttribute("style"),
@@ -2725,9 +2759,122 @@ namespace BloomTests.web.controllers
             Assert.That(style, Does.Not.Contain("top"), "crop top should be gone");
             Assert.That(
                 style,
-                Does.Contain("rotate(3deg)"),
+                Does.Contain("opacity: 0.5"),
                 "styling that has nothing to do with cropping should survive"
             );
+        }
+
+        /// <summary>
+        /// A slot img showing the 40x20 quadrant image from ReallyCropImagesTransformTests,
+        /// written into the book folder as quadrants.png.
+        /// </summary>
+        private SafeXmlElement MakeQuadrantSlotImage(string imgStyle, string canvasElementStyle)
+        {
+            ReallyCropImagesTransformTests.MakeQuadrantImage(
+                Path.Combine(_bookFolder.Path, "quadrants.png")
+            );
+            var element = MakeSlotImage(imgStyle, canvasElementStyle);
+            element.SetAttribute("src", "quadrants.png");
+            return element;
+        }
+
+        /// <summary>
+        /// Read the file a TryMakeCroppedViewOfSlotImage result names.
+        /// </summary>
+        private byte[] ReadRendering(string relativePath)
+        {
+            Assert.That(relativePath, Is.Not.Null, "a rotated picture should get a rendering");
+            return RobustFile.ReadAllBytes(
+                Path.Combine(
+                    _bookFolder.Path,
+                    relativePath.Replace('/', Path.DirectorySeparatorChar)
+                )
+            );
+        }
+
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_RotatedCroppedImage_RendersUprightShownRectangle()
+        {
+            // The same crop as ReallyCropImages_Rotate90CroppedOffCentre_CropsShownRectangle:
+            // the element shows the lower 30 of the 40 rows of the rotated picture.
+            var element = MakeQuadrantSlotImage(
+                "width: 40px; left: -10px; top: 0px; transform: rotate(90deg);",
+                "width: 20px; height: 30px;"
+            );
+
+            var bytes = ReadRendering(
+                AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                    _bookFolder.Path,
+                    element,
+                    "page1",
+                    1
+                )
+            );
+
+            // Upright, as the page shows it, so the transform that committing a replacement
+            // removes is not applied a second time.
+            ReallyCropImagesTransformTests.AssertQuadrants(
+                bytes,
+                20,
+                30,
+                ReallyCropImagesTransformTests.kBottomLeft,
+                ReallyCropImagesTransformTests.kTopLeft,
+                ReallyCropImagesTransformTests.kBottomRight,
+                ReallyCropImagesTransformTests.kTopRight
+            );
+            Assert.That(
+                element.GetAttribute("style"),
+                Does.Contain("rotate(90deg)"),
+                "making the rendering must leave the book's own markup alone"
+            );
+        }
+
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_RotatedUncroppedImage_RendersUpright()
+        {
+            var element = MakeQuadrantSlotImage(
+                "transform: rotate(90deg);",
+                "width: 20px; height: 40px;"
+            );
+
+            var bytes = ReadRendering(
+                AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                    _bookFolder.Path,
+                    element,
+                    "page1",
+                    1
+                )
+            );
+
+            ReallyCropImagesTransformTests.AssertQuadrants(
+                bytes,
+                20,
+                40,
+                ReallyCropImagesTransformTests.kBottomLeft,
+                ReallyCropImagesTransformTests.kTopLeft,
+                ReallyCropImagesTransformTests.kBottomRight,
+                ReallyCropImagesTransformTests.kTopRight
+            );
+        }
+
+        [Test]
+        public void RefitSlotImageForNewPicture_RemovesPictureTransform()
+        {
+            var element = MakeCroppedSlotImage();
+            element.SetAttribute(
+                "style",
+                element.GetAttribute("style") + " transform: rotate(90deg) scale(-1, 1);"
+            );
+            Assert.That(
+                element.GetAttribute("style"),
+                Does.Contain("transform"),
+                "setup: the picture starts out rotated"
+            );
+
+            AiImageEditorApi.RefitSlotImageForNewPicture(element, () => new Size(100, 100));
+
+            // The editor was handed the picture upright, so its replacement needs no transform.
+            Assert.That(element.HasAttribute("style"), Is.False);
         }
 
         [Test]

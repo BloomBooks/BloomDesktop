@@ -30,7 +30,19 @@ export const imageAvailabilityRules: AvailabilityRulesMap = {
     },
     resetImage: {
         visible: (ctx) => ctx.hasImage,
-        enabled: (ctx) => ctx.isCropped,
+        // Reset Image puts the picture back the way it arrived, so it applies to a crop, to a
+        // rotation or a mirror. It does not straighten a rotated canvas element box; that
+        // rotation belongs to the box, like its size and its position.
+        enabled: (ctx) => ctx.isCropped || ctx.isImageContentTransformed,
+    },
+    rotateRight: {
+        // Navigation buttons are not rotated.
+        visible: (ctx) => ctx.hasImage && !ctx.isNavigationButton,
+        enabled: (ctx) => ctx.hasRealImage && ctx.canModifyImage,
+    },
+    flipImage: {
+        visible: (ctx) => ctx.hasImage,
+        enabled: (ctx) => ctx.hasRealImage && ctx.canModifyImage,
     },
     editWithAi: {
         // Only offered when the AI Image Editing experimental feature is turned on.

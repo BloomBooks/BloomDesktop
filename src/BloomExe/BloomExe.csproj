@@ -29,6 +29,11 @@
 		<!-- NETSDK1206 is expected here: SQLitePCLRaw.lib.e_sqlite3 carries non-Windows RID assets
 		     (e.g., alpine-*), but this project targets Windows only. -->
 		<NoWarn>$(NoWarn);NETSDK1206</NoWarn>
+		<!-- NU1701: Enchant.Net, ibusdotnet and KeymanLegacyBundle are transitive (via the
+		     SIL.Windows.Forms.Keyboarding stack) and only ship .NET Framework builds. Per-package
+		     NoWarn metadata on a PackageReference Update does not reach transitive packages, so
+		     the code has to be suppressed for the project. -->
+		<NoWarn>$(NoWarn);NU1701</NoWarn>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
@@ -247,7 +252,7 @@
 		<PackageReference Include="Fleck" Version="1.1.0" />
 		<PackageReference Include="Glob" Version="1.1.8" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.12.1" />
-		<PackageReference Include="L10NSharp" Version="10.0.0-beta0005" />
+		<PackageReference Include="L10NSharp" Version="11.0.1" />
 		<PackageReference Include="LargeAddressAware" Version="1.0.5" />
 		<PackageReference Include="Markdig.Signed" Version="0.37.0" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
@@ -295,15 +300,6 @@
 		 use the same version of the BloomBooks.Velopack and BloomBooks.Velopack.Cli  -->
 		<PackageReference Include="BloomBooks.Velopack" Version="$(VelopackVersion)" />
 	</ItemGroup>
-	<!-- These three are transitive (pulled in by the SIL.Windows.Forms.Keyboarding stack)
-	     and only ship .NET Framework builds, so they raise NU1701. They are not direct
-	     PackageReferences, so we silence NU1701 for just these packages via Update
-	     metadata rather than suppressing it for the whole project. -->
-	<ItemGroup>
-		<PackageReference Update="Enchant.Net" NoWarn="NU1701" />
-		<PackageReference Update="ibusdotnet" NoWarn="NU1701" />
-		<PackageReference Update="KeymanLegacyBundle" NoWarn="NU1701" />
-	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="PodcastUtilities.PortableDevices">
 			<HintPath>..\..\lib\dotnet\PodcastUtilities.PortableDevices.dll</HintPath>
@@ -313,7 +309,6 @@
 		<None Include="app.manifest">
 			<SubType>Designer</SubType>
 		</None>
-		<None Include="ClassDiagram1.cd" />
 		<None Include="Properties\Settings.settings">
 			<Generator>PublicSettingsSingleFileGenerator</Generator>
 			<LastGenOutput>Settings.Designer.cs</LastGenOutput>

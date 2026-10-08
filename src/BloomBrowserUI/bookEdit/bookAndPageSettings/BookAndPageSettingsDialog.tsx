@@ -1,13 +1,17 @@
 import { css } from "@emotion/react";
 import { ConfigrArea, ConfigrPane, ConfigrValues } from "@sillsdev/config-r";
 import * as React from "react";
-import { kBloomBlue } from "../../bloomMaterialUITheme";
 import {
     BloomDialog,
     DialogBottomButtons,
-    DialogMiddle,
     DialogTitle,
 } from "../../react_components/BloomDialog/BloomDialog";
+import {
+    ConfigrDialogMiddle,
+    kConfigrDialogSizeCss,
+    kConfigrPaneClassName,
+    kConfigrThemeOverrides,
+} from "../../react_components/ConfigrDialogMiddle";
 import { useSetupBloomDialog } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import {
     DialogCancelButton,
@@ -39,9 +43,6 @@ import { isLegacyThemeName } from "./appearanceThemeUtils";
 import { useBookSettingsAreaDefinition } from "./BookSettingsConfigrPages";
 
 let isOpenAlready = false;
-const kBookSettingsDialogWidthPx = 900;
-const kBookSettingsDialogHeightPx = 720;
-const kConfigrPaneClassName = "book-page-settings-configr-pane";
 
 type IPageStyle = { label: string; value: string };
 type IPageStyles = Array<IPageStyle>;
@@ -430,11 +431,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
             css={css`
                 height: 100%;
                 box-sizing: border-box;
-
-                .MuiDialog-paper {
-                    width: ${kBookSettingsDialogWidthPx}px;
-                    height: ${kBookSettingsDialogHeightPx}px;
-                }
+                ${kConfigrDialogSizeCss}
             `}
             ref={dialogRef}
             {...propsForBloomDialog}
@@ -444,49 +441,14 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
             maxWidth={false}
         >
             <DialogTitle title={bookSettingsTitle} />
-            <DialogMiddle
-                css={css`
-                    &:first-child {
-                        margin-top: 0; // override the default that sees a lack of a title and adds a margin
-                    }
-                    overflow-y: hidden;
-                    min-height: 0;
-
-                    .${kConfigrPaneClassName} {
-                        height: 100%;
-                        min-height: 0;
-                    }
-
-                    // Let config-r consume the available dialog height in both the page form and
-                    // the area-description states so the button row stays pinned to the bottom.
-                    form {
-                        overflow-y: auto;
-                        height: 100%;
-                        min-height: 0;
-                        width: 100%;
-                        box-sizing: border-box;
-                        #groups {
-                            margin-right: 10px; // make room for the scrollbar
-                        }
-                    }
-
-                    a {
-                        color: ${kBloomBlue};
-                    }
-                `}
-            >
+            <ConfigrDialogMiddle>
                 {configrInitialValues && (
                     <ConfigrPane
                         key={configrPaneKey}
                         className={kConfigrPaneClassName}
                         label={bookSettingsTitle}
                         initialValues={configrInitialValues}
-                        themeOverrides={{
-                            // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
-                            palette: {
-                                primary: { main: kBloomBlue },
-                            },
-                        }}
+                        themeOverrides={kConfigrThemeOverrides}
                         showAppBar={false}
                         showJson={false}
                         onChange={(s) => {
@@ -529,7 +491,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                         {configrAreas}
                     </ConfigrPane>
                 )}
-            </DialogMiddle>
+            </ConfigrDialogMiddle>
             <DialogBottomButtons>
                 <DialogOkButton
                     default={true}

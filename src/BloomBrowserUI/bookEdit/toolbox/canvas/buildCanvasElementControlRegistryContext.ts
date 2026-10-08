@@ -24,6 +24,7 @@ import {
     canBringCanvasElementForward,
     canSendCanvasElementBackward,
 } from "../../js/canvasElementManager/CanvasElementZOrder";
+import { imageContentIsTransformed } from "../../js/imageContentTransform";
 
 const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
     if (!img) {
@@ -193,6 +194,7 @@ export const buildCanvasElementControlRegistryContext = (
         rectangleHasBackground:
             rectangle?.classList.contains("bloom-theme-background") ?? false,
         isCropped: !!img?.style?.width,
+        isImageContentTransformed: img ? imageContentIsTransformed(img) : false,
         isNavigationButton: elementType.startsWith("navigation-"),
         isButton,
         isBackgroundImage,

@@ -7,10 +7,13 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
+using Bloom.TeamCollection;
 using Bloom.WebLibraryIntegration;
+using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using SIL.Code;
 using SIL.IO;
 using SIL.Progress;
@@ -29,23 +32,49 @@ namespace Bloom.web.controllers
         // we keep a reference to it here so pending settings can be updated there.
         public static CollectionSettingsDialog DialogBeingEdited;
 
+        /// <summary>
+        /// The TypeScript side expects the names in the collection/settings contract in camelCase,
+        /// while the C# classes spell them the way C# does.
+        /// </summary>
+        internal static readonly JsonSerializerSettings kCamelCaseSettings =
+            new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy(),
+                },
+            };
+
         private readonly CollectionSettings _collectionSettings;
         private readonly List<object> _numberingStyles = new List<object>();
         private readonly XMatterPackFinder _xmatterPackFinder;
         private readonly BookSelection _bookSelection;
+        private readonly TeamCollectionManager _tcManager;
+        private readonly QueueRenameOfCollection _queueRenameOfCollection;
 
         public static event EventHandler<LanguageChangeEventArgs> LanguageChange;
 
         public CollectionSettingsApi(
             CollectionSettings collectionSettings,
             XMatterPackFinder xmatterPackFinder,
-            BookSelection bookSelection
+            BookSelection bookSelection,
+            TeamCollectionManager tcManager,
+            QueueRenameOfCollection queueRenameOfCollection
         )
         {
             _collectionSettings = collectionSettings;
             _xmatterPackFinder = xmatterPackFinder;
             this._bookSelection = bookSelection;
+            _tcManager = tcManager;
+            _queueRenameOfCollection = queueRenameOfCollection;
         }
+
+        /// <summary>
+        /// Whether the collection we have open is a Team Collection, even if we cannot reach the
+        /// repository just now.
+        /// </summary>
+        private bool CurrentCollectionIsTeamCollection =>
+            _tcManager.CurrentCollectionEvenIfDisconnected != null;
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
@@ -54,14 +83,9 @@ namespace Bloom.web.controllers
                 request =>
                 {
                     if (request.HttpMethod == HttpMethods.Get)
-                    {
-                        // Just a placeholder for the skeleton dialog for now.
-                        request.ReplyWithJson("{}");
-                    }
-                    else if (request.HttpMethod == HttpMethods.Post)
-                    {
-                        request.PostSucceeded();
-                    }
+                        HandleGetCollectionSettings(request);
+                    else
+                        HandleSaveCollectionSettings(request);
                 },
                 true
             );
@@ -241,7 +265,7 @@ namespace Bloom.web.controllers
                             // Read and parse inside the try as well: a malformed body is exactly
                             // the sort of one-cell failure the catch below is meant to absorb.
                             var body = request.RequiredPostString();
-                            if (body.TrimStart().StartsWith("{"))
+                            if (body.TrimStart().StartsWith("{", StringComparison.Ordinal))
                             {
                                 var o = Newtonsoft.Json.Linq.JObject.Parse(body);
                                 branding = (string)o["branding"];
@@ -453,6 +477,59 @@ namespace Bloom.web.controllers
             }
         }
 
+        /// <summary>
+        /// Replies to GET collection/settings with the values the collection has now. A Team
+        /// Collection member who is not an administrator gets only the reason they may not edit.
+        /// </summary>
+        private void HandleGetCollectionSettings(ApiRequest request)
+        {
+            if (!_tcManager.OkToEditCollectionSettings)
+            {
+                request.ReplyWithJson(
+                    JsonConvert.SerializeObject(
+                        new CollectionSettingsResponse
+                        {
+                            // MustBeAdminMessage is HTML for BloomMessageBox; the dialog shows
+                            // plain text with its line breaks kept.
+                            NotAllowedMessage = WorkspaceView
+                                .MustBeAdminMessage(_collectionSettings)
+                                .Replace("<br>", "\n"),
+                        },
+                        kCamelCaseSettings
+                    )
+                );
+                return;
+            }
+            var response = new CollectionSettingsResponse
+            {
+                Values = new CollectionSettingsValues(_collectionSettings),
+                RestartPaths = CollectionSettingsValues.GetRestartPaths(),
+                IsTeamCollection = CurrentCollectionIsTeamCollection,
+            };
+            request.ReplyWithJson(JsonConvert.SerializeObject(response, kCamelCaseSettings));
+        }
+
+        /// <summary>
+        /// Handles POST collection/settings: the complete values as the user left them, and whether
+        /// the dialog found a change that needs a restart (it already knows, to label OK).
+        /// </summary>
+        private void HandleSaveCollectionSettings(ApiRequest request)
+        {
+            var saveRequest = JsonConvert.DeserializeObject<CollectionSettingsSaveRequest>(
+                request.RequiredPostJson()
+            );
+            CollectionSettingsUpdater.Apply(
+                saveRequest.Values,
+                _collectionSettings,
+                CurrentCollectionIsTeamCollection,
+                _xmatterPackFinder,
+                newName => _queueRenameOfCollection.Raise(newName)
+            );
+            request.PostSucceeded();
+            if (saveRequest.RestartRequired)
+                WorkspaceApi.ReopenCollectionWhenIdle();
+        }
+
         private void ResetBookshelf()
         {
             if (DialogBeingEdited != null)
@@ -497,8 +574,8 @@ namespace Bloom.web.controllers
         /// user text: it can perfectly well contain a double quote or a backslash (BL-16209), so
         /// it has to be serialized rather than pasted into a hand-built JSON string. Getting that
         /// wrong produced invalid JSON, which made the whole collection tab fail to render.
-        /// The callers of this endpoint treat languageName as a string (one of them asks it for
-        /// its .length), so keep coercing a null name to empty the way the old hand-built string
+        /// The callers of this endpoint treat languageName as a string (the books-on-Blorg
+        /// progress bar compares it with ""), so keep coercing a null name to empty the way the old hand-built string
         /// did rather than sending a JSON null.
         /// </summary>
         internal static string MakeLanguageDataJson(string languageName, string languageTag)

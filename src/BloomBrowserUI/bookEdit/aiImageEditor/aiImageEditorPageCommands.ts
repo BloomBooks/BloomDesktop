@@ -15,7 +15,11 @@
 
 import { postJson } from "../../utils/bloomApi";
 import { kImageContainerClass } from "../js/bloomImages";
-import { getOpenPageMetrics, IPageMetrics } from "../js/imageTargetResolution";
+import {
+    getOpenPageMetrics,
+    IPageMetrics,
+    kGameTargetSelector,
+} from "../js/imageTargetResolution";
 import { changeImageByElement } from "../js/bloomEditing";
 import { theOneCanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
 import {
@@ -44,15 +48,14 @@ export function launchAiImageEditor(
     });
 }
 
-// Numbers this page's image slots the way C# does (SelectImageSlotsOnPage in
-// AiImageEditorApi.cs): its image containers, in document order. An image container is
-// exactly what a user may replace, so the branding, license and QR-code images, which live
-// outside any container, are not slots at all.
+// Which of this page's image slots the user clicked, as its index in the list imageSlotsOnPage
+// builds. An image container is exactly what a user may replace, so the branding, license and
+// QR-code images, which live outside any container, are not slots at all.
 //
-// The index IS the slot's identity — it is the "{pageId}:{ordinal}" ordinal C# builds — so the
-// two lists have to hold the same containers. Bloom injects controls into the live page that
-// no saved book has, and the save strips them (Cleanup in bloomEditing.ts), so those are the
-// one thing to leave out here.
+// That index IS the slot's identity — it is the "{pageId}:{ordinal}" ordinal C# builds — so this
+// side and C# have to count the same containers. Each applies the rule for itself, against a
+// different DOM: imageSlotsOnPage below, and SelectImageSlotsOnPage in AiImageEditorApi.cs.
+// Neither can change what it counts without the other.
 function slotIndexOnPage(clicked: HTMLElement | undefined): number {
     if (!clicked) return 0;
     const pageRoot = clicked.closest(".bloom-page") ?? document;
@@ -67,18 +70,30 @@ function slotIndexOnPage(clicked: HTMLElement | undefined): number {
 // that builds the list, so every caller agrees with C# (SelectImageSlotsOnPage in
 // AiImageEditorApi.cs) about which container is slot 3.
 //
-// It has to stay the FULL list, including slots the AI image editor is never offered. The
-// ordinal in "{pageId}:{ordinal}" is an index into it, and C# indexes the same list: where C#
-// decides not to offer a slot — a Bloom Games target, which merely copies its draggable's
-// picture (IsSlotInsideGameTarget in EnumerateBookImages), or a file format the editor cannot
-// open — it skips that ordinal rather than renumbering. So C# alone decides what the editor
-// may edit; filtering here would shift every later slot's identity. The one thing left out is
-// the controls Bloom injects into the live page, which no saved book has and which the save
-// strips (Cleanup in bloomEditing.ts).
+// Two kinds of image container are left out, and BOTH sides leave out the same ones, because
+// the ordinal in "{pageId}:{ordinal}" is an index into this list and C# indexes its own copy
+// of it:
+//
+//  - A Bloom Games target's copy of a draggable's picture. The browser writes that copy in
+//    when the draggable is selected or its picture changes (copyContentToTarget), and a target
+//    that has not had that done sits empty — so the live page and the saved HTML can honestly
+//    disagree about how many image containers a game page has. Counting the copies made the
+//    ordinal mean one slot in the browser and a different one in C#, which is how a
+//    replacement ended up in a target, to be thrown away at the next rebuild (BL-16793).
+//  - The controls Bloom injects into the live page, which no saved book has and which the save
+//    strips (Cleanup in bloomEditing.ts). C# never sees these, so it needs no rule for them.
+//
+// Which of the remaining slots the editor is OFFERED is still C#'s business alone: where it
+// declines one (a file format the editor cannot open, say) it skips that ordinal rather than
+// renumbering, so filtering any further here would shift every later slot's identity.
 function imageSlotsOnPage(pageRoot: ParentNode): HTMLElement[] {
     return Array.from(
         pageRoot.querySelectorAll("." + kImageContainerClass),
-    ).filter((el) => !el.closest(".bloom-ui")) as HTMLElement[];
+    ).filter(
+        (el) =>
+            !el.closest(".bloom-ui") &&
+            !el.parentElement?.closest(kGameTargetSelector),
+    ) as HTMLElement[];
 }
 
 // How big the page the user is editing is, and whether it is one of the screen-sized layouts.

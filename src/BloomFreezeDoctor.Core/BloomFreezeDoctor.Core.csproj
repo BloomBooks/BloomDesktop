@@ -110,7 +110,7 @@
       match BloomExe, which asks for beta0005 where the transitive resolution alone would settle on
       beta0004.
     -->
-    <PackageReference Include="L10NSharp" Version="10.0.0-beta0005" />
+    <PackageReference Include="L10NSharp" Version="11.0.1" />
   </ItemGroup>
 
 </Project>
