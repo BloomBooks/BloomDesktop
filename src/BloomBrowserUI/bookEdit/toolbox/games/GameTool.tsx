@@ -1697,16 +1697,20 @@ export function getActiveGameTab(): number {
     return -1;
 }
 
-// What the Game tool's panel needs from the tool: which tab is active, and a counter the
-// tool bumps whenever it wants the panel to redo its page-dependent setup.
+// What the controls in the toolbox need in order to draw themselves: which of the Start /
+// Correct / Wrong / Play tabs is selected, and a counter that is bumped whenever they should
+// redo the setup that depends on the current page.
 interface IGamePanelState {
     tab: number;
     pageGeneration: number;
 }
 
-// The Game tool's panel. The tool itself is not part of the React tree (nothing can render
-// it), yet it needs to make the panel re-render when the active tab changes or a new page
-// arrives. So it acts as an external store and the panel subscribes to it.
+// What the user sees in the toolbox when a game page is showing: the Start / Correct /
+// Wrong / Play tabs and the controls belonging to the selected one.
+//
+// GameTool itself is the ITool the toolbox registers, not a React component -- nothing can
+// render it -- yet it is what learns that the tab changed or a new page arrived. So it
+// doubles as an external store, and these controls subscribe to it.
 const GamePanel: React.FunctionComponent<{ tool: GameTool }> = (props) => {
     const panelState = React.useSyncExternalStore(
         props.tool.subscribeToPanelState,

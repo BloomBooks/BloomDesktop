@@ -9,8 +9,8 @@
 // still the non-React code in toolbox.ts. Rather than have toolbox.ts push facts into
 // React, the facts live here and React subscribes: ToolboxRoot and SettingsToolControls
 // read this store with React.useSyncExternalStore(), and toolbox.ts calls the mutators and
-// queries below. (This is the same external-store pattern the Game tool uses for its panel;
-// see getPanelState/subscribeToPanelState in games/GameTool.tsx.)
+// queries below. (This is the same external-store pattern GameTool uses so that its tabs in
+// the toolbox redraw; see getPanelState/subscribeToPanelState in games/GameTool.tsx.)
 //
 // Each tool's lifecycle then follows from this state rather than being driven by hand: the
 // accordion ToolboxRoot renders for a tool runs beginRestoreSettings/showTool/newPageReady
