@@ -164,8 +164,10 @@ real bug in the code under test; read the message and fix it rather than working
   and does nothing otherwise.
 - `helpers/collectionSettings.ts` — rewrite the collection's languages, xmatter pack or
   subscription code and restart Bloom on them; `setBranding`; `getFeatureStatus`, the same
-  answer the front end asks for before it shows a tier-gated control; and
-  `kEnterpriseSubscriptionCode`.
+  answer the front end asks for before it shows a tier-gated control;
+  `kEnterpriseSubscriptionCode` and its `kTestBookshelves`; and the new (React) Settings dialog:
+  open it, show a page, read and change its checkboxes, text boxes and drop-down lists, read its
+  subscription badge, and save, cancel or restart.
 - `helpers/keys.ts` — `pressKey`, `pressKeyIn`, `typeWithKeys`: real key presses, for tests whose
   subject is the key. `typeInGroup` inserts text and raises no key events, so use it for
   everything else.
