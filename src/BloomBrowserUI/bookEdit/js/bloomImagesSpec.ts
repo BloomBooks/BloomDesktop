@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
     getDisplayNameFromImageUrl,
+    getImageTransparencyMode,
+    isOverlayOnBackgroundImage,
     normalizeCoverImageDesignation,
+    refreshImgTransparentParam,
+    refreshTransparencyIfBackgroundImage,
 } from "./bloomImages";
 
 // The markup here mirrors what a real custom cover has: every picture that belongs to the book
@@ -202,5 +206,211 @@ describe("getDisplayNameFromImageUrl", () => {
         expect(
             getDisplayNameFromImageUrl("%E0%B8%A0%E0%B8%B2%E0%B8%9E.jpg"),
         ).toBe("ภาพ.jpg");
+    });
+});
+
+// BL-16993: a white (uncolored) page whose canvas holds a background image (whose src is given)
+// and an overlay, plus a plain image container. An overlay gets Auto transparency even on a white
+// page when the canvas has a real background image, because it would otherwise hide that picture;
+// everything else only gets it on a colored page.
+function makeTransparencyTestPage(
+    overlayImgClasses = "",
+    backgroundSrc = "background.jpg",
+): HTMLElement {
+    const page = document.createElement("div");
+    page.className = "bloom-page";
+    page.innerHTML = `
+        <div class="bloom-imageContainer"><img id="plain" src="plain.png" /></div>
+        <div class="bloom-canvas bloom-has-canvas-element">
+            <img id="obsolete" src="placeHolder.png" />
+            <div class="bloom-canvas-element bloom-backgroundImage">
+                <div class="bloom-imageContainer"><img id="background" src="${backgroundSrc}" /></div>
+            </div>
+            <div class="bloom-canvas-element">
+                <div class="bloom-imageContainer"><img id="overlay" class="${overlayImgClasses}" src="overlay.png" /></div>
+            </div>
+        </div>`;
+    document.body.appendChild(page);
+    return page;
+}
+
+// A legacy canvas that has not been converted to have a background canvas element: the
+// background image is an img directly inside the bloom-canvas.
+function makeLegacyCanvasTestPage(backgroundSrc: string): HTMLElement {
+    const page = document.createElement("div");
+    page.className = "bloom-page";
+    page.innerHTML = `
+        <div class="bloom-canvas bloom-has-canvas-element">
+            <img id="background" src="${backgroundSrc}" />
+            <div class="bloom-canvas-element">
+                <div class="bloom-imageContainer"><img id="overlay" src="overlay.png" /></div>
+            </div>
+        </div>`;
+    document.body.appendChild(page);
+    return page;
+}
+
+function getTestImg(page: HTMLElement, id: string): HTMLElement {
+    const img = page.querySelector(`#${id}`) as HTMLElement | null;
+    if (!img) {
+        throw new Error(`test setup should have an img with id ${id}`);
+    }
+    return img;
+}
+
+describe("isOverlayOnBackgroundImage", () => {
+    it("is true only for an image in a non-background canvas element over a real background image", () => {
+        const page = makeTransparencyTestPage();
+
+        expect(isOverlayOnBackgroundImage(getTestImg(page, "overlay"))).toBe(
+            true,
+        );
+        expect(isOverlayOnBackgroundImage(getTestImg(page, "background"))).toBe(
+            false,
+        );
+        expect(isOverlayOnBackgroundImage(getTestImg(page, "plain"))).toBe(
+            false,
+        );
+        page.remove();
+    });
+
+    it.each(["branding", "bloom-qrcode"])(
+        "is false for a %s image, even over a real background image",
+        (imgClass) => {
+            const page = makeTransparencyTestPage(imgClass);
+            const overlay = getTestImg(page, "overlay");
+            expect(overlay.classList.contains(imgClass)).toBe(true);
+
+            expect(isOverlayOnBackgroundImage(overlay)).toBe(false);
+            page.remove();
+        },
+    );
+
+    it("is false when the background image is a placeholder", () => {
+        const page = makeTransparencyTestPage("", "placeHolder.png");
+
+        expect(isOverlayOnBackgroundImage(getTestImg(page, "overlay"))).toBe(
+            false,
+        );
+        page.remove();
+    });
+
+    it("is false when the canvas has no background image at all", () => {
+        const page = makeTransparencyTestPage();
+        page.querySelector(".bloom-backgroundImage")!.remove();
+        page.querySelector("#obsolete")!.remove();
+        expect(page.querySelector("#overlay")).not.toBeNull();
+
+        expect(isOverlayOnBackgroundImage(getTestImg(page, "overlay"))).toBe(
+            false,
+        );
+        page.remove();
+    });
+
+    it.each([
+        ["background.jpg", true],
+        ["placeHolder.png", false],
+    ])(
+        "in a legacy canvas whose background img is %s, gives %s",
+        (backgroundSrc, expected) => {
+            const page = makeLegacyCanvasTestPage(backgroundSrc);
+
+            expect(
+                isOverlayOnBackgroundImage(getTestImg(page, "overlay")),
+            ).toBe(expected);
+            page.remove();
+        },
+    );
+});
+
+describe("getImageTransparencyMode", () => {
+    it.each([
+        ["overlay", "", "background.jpg", "auto"],
+        ["overlay", "", "placeHolder.png", "none"],
+        ["overlay", "bloom-opaque", "background.jpg", "none"],
+        ["overlay", "bloom-transparent", "background.jpg", "force"],
+        ["overlay", "bloom-transparent", "placeHolder.png", "force"],
+        ["background", "", "background.jpg", "none"],
+        ["plain", "", "background.jpg", "none"],
+    ])(
+        "on a white page, %s with classes '%s' over %s gives %s",
+        (imgId, overlayImgClasses, backgroundSrc, expected) => {
+            const page = makeTransparencyTestPage(
+                overlayImgClasses,
+                backgroundSrc,
+            );
+
+            expect(
+                getImageTransparencyMode(getTestImg(page, imgId), false),
+            ).toBe(expected);
+            page.remove();
+        },
+    );
+
+    it.each(["overlay", "background", "plain"])(
+        "on a colored page, %s gives auto even over a placeholder background",
+        (imgId) => {
+            const page = makeTransparencyTestPage("", "placeHolder.png");
+
+            expect(
+                getImageTransparencyMode(getTestImg(page, imgId), true),
+            ).toBe("auto");
+            page.remove();
+        },
+    );
+});
+
+describe("refreshImgTransparentParam", () => {
+    it("adds the param to an overlay and removes a stale one from a background on a white page", () => {
+        const page = makeTransparencyTestPage();
+        const overlay = getTestImg(page, "overlay");
+        const background = getTestImg(page, "background");
+        // Simulate the srcs having been swapped by "Become Background".
+        background.setAttribute("src", "background.jpg?transparent=yes");
+        expect(overlay.getAttribute("src")).toBe("overlay.png");
+
+        refreshImgTransparentParam(overlay);
+        refreshImgTransparentParam(background);
+
+        expect(overlay.getAttribute("src")).toBe("overlay.png?transparent=yes");
+        expect(background.getAttribute("src")).toBe("background.jpg");
+        page.remove();
+    });
+});
+
+describe("refreshTransparencyIfBackgroundImage", () => {
+    it("updates the overlays when the background image changes between real and placeholder", () => {
+        const page = makeTransparencyTestPage("", "placeHolder.png");
+        const overlay = getTestImg(page, "overlay");
+        const background = getTestImg(page, "background");
+        expect(overlay.getAttribute("src")).toBe("overlay.png");
+
+        background.setAttribute("src", "background.jpg");
+        refreshTransparencyIfBackgroundImage(background);
+        expect(overlay.getAttribute("src")).toBe("overlay.png?transparent=yes");
+
+        background.setAttribute("src", "placeHolder.png");
+        refreshTransparencyIfBackgroundImage(background);
+        expect(overlay.getAttribute("src")).toBe("overlay.png");
+
+        // The obsolete placeholder img directly in the bloom-canvas is not a canvas element
+        // image, so it is left alone.
+        expect(getTestImg(page, "obsolete").getAttribute("src")).toBe(
+            "placeHolder.png",
+        );
+        page.remove();
+    });
+
+    it("does nothing when the changed image is an overlay", () => {
+        const page = makeTransparencyTestPage("", "placeHolder.png");
+        const overlay = getTestImg(page, "overlay");
+        const background = getTestImg(page, "background");
+        // Make the background real without refreshing, so a refresh would change the overlay.
+        background.setAttribute("src", "background.jpg");
+
+        refreshTransparencyIfBackgroundImage(overlay);
+
+        expect(overlay.getAttribute("src")).toBe("overlay.png");
+        page.remove();
     });
 });
