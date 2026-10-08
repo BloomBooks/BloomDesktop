@@ -204,6 +204,38 @@ function planTextBox(doc, editable, bloom) {
     return { paragraphs: plannedParagraphs, sentences, speech };
 }
 
+/**
+ * Reads the account's credit counter for the current billing period. Needs the key's user_read
+ * permission; without it this throws before any audio has been paid for.
+ */
+async function creditsUsed(options) {
+    const response = await fetch(
+        "https://api.elevenlabs.io/v1/user/subscription",
+        { headers: { "xi-api-key": options.apiKey } },
+    );
+    if (!response.ok) {
+        throw new Error(
+            `Could not read ElevenLabs credit usage (the key needs the user_read permission): ${response.status} ${await response.text()}`,
+        );
+    }
+    return (await response.json()).character_count;
+}
+
+/**
+ * Reports the credits this run used. ElevenLabs updates its counter a little after the calls, so
+ * wait until it moves (or a minute passes) before reading the final figure.
+ */
+async function reportCredits(options, before) {
+    let after = await creditsUsed(options);
+    for (let waited = 0; after === before && waited < 60; waited += 5) {
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        after = await creditsUsed(options);
+    }
+    console.log(
+        `ElevenLabs credits used: ${after - before} (counter ${before} -> ${after}; includes any other use of the account meanwhile)`,
+    );
+}
+
 /** Calls ElevenLabs text-to-speech with timestamps; returns the mp3 bytes and character alignment. */
 async function synthesize(options, text, previousText, nextText) {
     const url = `https://api.elevenlabs.io/v1/text-to-speech/${options.voice}/with-timestamps?output_format=mp3_44100_128`;
@@ -371,9 +403,11 @@ function formatSeconds(seconds) {
 /** Describes where a text box is, for progress messages. */
 function describe(page) {
     const number = page.getAttribute("data-page-number");
-    return number
-        ? `page ${number}`
-        : page.getAttribute("data-xmatter-page") || "cover";
+    if (number) return `page ${number}`;
+    if (page.classList.contains("frontCover")) return "front cover";
+    // Books from older Bloom versions have no page numbers in the file; count the pages instead.
+    const pages = [...page.ownerDocument.querySelectorAll("div.bloom-page")];
+    return `page ${pages.indexOf(page) + 1} of the file`;
 }
 
 async function main() {
@@ -421,6 +455,7 @@ async function main() {
     );
     if (options.dryRun) return;
 
+    const creditsBefore = await creditsUsed(options);
     fs.mkdirSync(audioFolder, { recursive: true });
     for (let i = 0; i < plans.length; i++) {
         const { page, editable, plan, skip } = plans[i];
@@ -464,6 +499,7 @@ async function main() {
     if (!hadDoctype) html = html.replace(/^<!DOCTYPE html>/i, "");
     fs.writeFileSync(htmPath, (hadBom ? "﻿" : "") + html, "utf8");
     console.log(`Saved ${htmPath}`);
+    if (characters > 0) await reportCredits(options, creditsBefore);
 }
 
 await main();

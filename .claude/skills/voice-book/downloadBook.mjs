@@ -14,9 +14,12 @@ import path from "node:path";
 const kParseAppId = "R6qNTeumQXjJCMutAJYAwPtip1qBulkFyLefkCE5";
 const kBucket = "BloomLibraryBooks";
 
-/** Gets the book id out of a URL such as https://bloomlibrary.org/language:swh/book/HRahJAASYF?lang=swh. */
+/**
+ * Gets the book id out of a book page or player URL, such as
+ * https://bloomlibrary.org/language:swh/book/HRahJAASYF?lang=swh or https://bloomlibrary.org/player/4UfwbuTXHE.
+ */
 function bookIdFrom(arg) {
-    const match = /\/book\/([A-Za-z0-9]+)/.exec(arg);
+    const match = /\/(?:book|player)\/([A-Za-z0-9]+)/.exec(arg);
     return match ? match[1] : arg;
 }
 
@@ -98,18 +101,72 @@ async function main() {
             throw new Error(`Download of ${key} failed: ${response.status}`);
         fs.writeFileSync(dest, Buffer.from(await response.arrayBuffer()));
     }
-    // The uploader saved the collection's settings with the book; they become the new collection's file.
+    // Since Bloom 5, the uploader saves the collection's settings with the book; they become the
+    // new collection's file. Older books lack them, so build them from the book itself.
     const collectionFiles = path.join(bookFolder, "collectionFiles");
+    const uploadedSettings = path.join(
+        collectionFiles,
+        "book.uploadCollectionSettings",
+    );
     const collectionFile = path.join(
         collectionFolder,
         collectionName + ".bloomCollection",
     );
-    fs.renameSync(
-        path.join(collectionFiles, "book.uploadCollectionSettings"),
-        collectionFile,
-    );
-    fs.rmSync(collectionFiles, { recursive: true });
+    if (fs.existsSync(uploadedSettings)) {
+        fs.renameSync(uploadedSettings, collectionFile);
+        fs.rmSync(collectionFiles, { recursive: true });
+    } else {
+        fs.writeFileSync(collectionFile, reconstructSettings(bookFolder));
+    }
     console.log(JSON.stringify({ collectionFile, bookFolder }, null, 2));
+}
+
+/**
+ * Builds a .bloomCollection for a book uploaded without its collection settings: the content
+ * languages from the book's data div, their names from meta.json, and the front/back matter pack
+ * from the book's *-XMatter.css. A cut-down CollectionSettingsReconstructor, which is what Bloom
+ * itself uses for such a book.
+ */
+function reconstructSettings(bookFolder) {
+    const files = fs.readdirSync(bookFolder);
+    const html = fs.readFileSync(
+        path.join(
+            bookFolder,
+            files.find((f) => f.endsWith(".htm")),
+        ),
+        "utf8",
+    );
+    const meta = JSON.parse(
+        fs.readFileSync(path.join(bookFolder, "meta.json"), "utf8"),
+    );
+    const names = meta["language-display-names"] ?? {};
+    const lang = (n) =>
+        new RegExp(`data-book="contentLanguage${n}"[^>]*>\\s*([^<\\s]*)`).exec(
+            html,
+        )?.[1] ?? "";
+    const [l1, l2, l3] = [lang(1), lang(2) || "en", lang(3)];
+    const xmatterCss = files
+        .filter((f) => f.endsWith("-XMatter.css"))
+        .sort()[0];
+    const xmatter = xmatterCss
+        ? xmatterCss.replace(/-XMatter\.css$/, "")
+        : "Device";
+    const element = (name, value) =>
+        `<${name}>${String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;")}</${name}>`;
+    return (
+        '<?xml version="1.0" encoding="utf-8"?><Collection>' +
+        element("Language1Iso639Code", l1) +
+        element("Language2Iso639Code", l2) +
+        element("Language3Iso639Code", l3) +
+        element("SignLanguageIso639Code", "") +
+        element("Language1Name", names[l1] ?? "") +
+        element("Language2Name", names[l2] ?? "") +
+        element("Language3Name", names[l3] ?? "") +
+        element("SignLanguageName", "") +
+        element("XMatterPack", xmatter) +
+        element("IsLanguage1Rtl", meta.isRtl ? "true" : "false") +
+        "</Collection>"
+    );
 }
 
 await main();

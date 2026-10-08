@@ -29,7 +29,9 @@ Done when you have a book folder holding the book's `.htm`.
 ## 2. Make sure Bloom is not holding the book
 
 Bloom re-saves the book it has selected from its in-memory copy and silently overwrites outside
-edits. Close that Bloom, or select a different book in it, before running the script.
+edits. Close that Bloom, or select a different book in it, before running the script. Opening a
+book can also rename its folder to match the title (an old Bloom Library book came back named
+after its Swahili title), so list the collection folder again after Bloom has had the book.
 
 ## 3. Choose the voice and model
 
@@ -42,7 +44,9 @@ $h=@{'xi-api-key'=[Environment]::GetEnvironmentVariable('ELEVENLABS_KEY','User')
 ```
 
 The key lives in the Windows User environment as `ELEVENLABS_KEY`; a shell started before it was
-set does not have it, so read the User scope as above. Premade voices work on every account;
+set does not have it, so read the User scope as above. The key needs the `user_read` permission,
+because the script reads the account's credit counter before and after voicing; without it the
+script stops before spending anything. Premade voices work on every account;
 library voices only on accounts that added them.
 
 The model defaults to `eleven_v4`, which covers 90+ languages (Swahili among them). Before voicing
@@ -69,7 +73,9 @@ already have a recording (an audio file named after the box or one of its senten
 `audio/<text box id>.mp3`, with `previous_text`/`next_text` sent so neighbouring pages keep a steady
 delivery.
 
-Done when the script prints `Saved <htm path>` with a duration line per text box.
+Done when the script prints `Saved <htm path>`, a duration line per text box, and
+`ElevenLabs credits used: N`. Report N to the user. It is the account counter's change over the
+run, so it also counts anything else that used the account meanwhile.
 
 ## 5. Check it in Bloom
 
