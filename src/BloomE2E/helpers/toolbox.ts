@@ -347,12 +347,14 @@ export async function expectNothingClippedInOpenTool(
     page: Page,
     context: string,
 ): Promise<void> {
-    const clipped: IClippedElement[] = await toolboxFrame(page).evaluate(() => {
+    const result = await toolboxFrame(page).evaluate(() => {
         const panel = document.querySelector(
             ".MuiAccordion-root.Mui-expanded .MuiAccordionDetails-root",
         );
         if (!panel) {
-            return [];
+            // Report it rather than returning "nothing is clipped": a check that passes
+            // because it found nothing to look at is worse than no check at all.
+            return { panelFound: false, examined: 0, clipped: [] };
         }
         const describe = (e: Element): string => {
             const classes =
@@ -369,7 +371,11 @@ export async function expectNothingClippedInOpenTool(
                     : "")
             );
         };
-        return Array.from(panel.querySelectorAll("*"))
+        const candidates = Array.from(panel.querySelectorAll("*"));
+        const withText = candidates.filter((e) =>
+            (e as HTMLElement).innerText?.trim(),
+        );
+        const clipped = candidates
             .filter((e) => {
                 const overflowX = getComputedStyle(e).overflowX;
                 if (overflowX !== "hidden" && overflowX !== "visible") {
@@ -390,8 +396,21 @@ export async function expectNothingClippedInOpenTool(
                 what: describe(e),
                 hiddenPx: e.scrollWidth - e.clientWidth,
             }));
+        return { panelFound: true, examined: withText.length, clipped };
     });
 
+    expect(
+        result.panelFound,
+        `${context}: no expanded tool panel was found, so nothing was checked.`,
+    ).toBe(true);
+    // A panel whose text has not arrived yet cannot be clipped, and would let this
+    // check pass without looking at anything the user will actually see.
+    expect(
+        result.examined,
+        `${context}: the open tool's panel showed no text, so there was nothing to check.`,
+    ).toBeGreaterThan(0);
+
+    const clipped: IClippedElement[] = result.clipped;
     expect(
         clipped,
         `${context}: content is cut off the right-hand edge of the tool's panel, where ` +
