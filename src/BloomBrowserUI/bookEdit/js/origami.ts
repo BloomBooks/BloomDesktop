@@ -559,8 +559,10 @@ function createTextBoxIdentifier() {
 // The label across a section that holds a table, in layout mode, where the table
 // itself is faded and does not respond.
 function createTableIdentifier() {
+    // The word is an element of its own so that it can have a backing of its own:
+    // centered on the table, it usually lies across a line between two rows.
     const tableId = $(
-        "<div class='table-identifier bloom-ui origami-ui' data-i18n='EditTab.CustomPage.Table'>Table</div>",
+        "<div class='table-identifier bloom-ui origami-ui'><span data-i18n='EditTab.CustomPage.Table'>Table</span></div>",
     );
     return $(
         "<div class='container-table-id bloom-ui origami-ui'></div>",
