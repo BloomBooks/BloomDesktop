@@ -2066,6 +2066,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Las contribuciones hechas por los escritores, ilustradores, editores, etc., en {lang}</target>
         <note>ID: EditTab.FrontMatter.OriginalContributorsPrompt</note>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.OriginalCopyrightAndLicenseHint" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Original copyright &amp; license</source>
+        <target xml:lang="es-ES" state="needs-translation">Original copyright &amp; license</target>
+        <note>ID: EditTab.FrontMatter.OriginalCopyrightAndLicenseHint</note>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence" approved="yes">
         <source xml:lang="en">This book is an adaptation of the original, {0}.</source>
         <target xml:lang="es-ES" state="final">Este libro es una adaptación del original, {0}.</target>
