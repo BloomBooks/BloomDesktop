@@ -64,6 +64,141 @@ namespace BloomTests.ImageProcessing
             Assert.IsFalse(File.Exists(jpegPath));
         }
 
+        [TestCase("man.jpg", ImageFileFormat.Jpeg)]
+        [TestCase("man.png", ImageFileFormat.Png)]
+        [TestCase("man-really-webp.jpg", ImageFileFormat.WebP)]
+        [TestCase("bird-lossless.webp", ImageFileFormat.WebP)]
+        [TestCase("BloomWithTaglineAgainstLight.svg", ImageFileFormat.Unknown)]
+        [TestCase("empty-file.jpg", ImageFileFormat.Unknown)]
+        public void GetImageFileFormat_File_GoesByContentNotName(
+            string fileName,
+            ImageFileFormat expected
+        )
+        {
+            var path = FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                fileName
+            );
+            Assert.That(ImageUtils.GetImageFileFormat(path), Is.EqualTo(expected));
+        }
+
+        [TestCase(new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 }, ImageFileFormat.Jpeg)]
+        // A JPEG that starts with a quantization table rather than an APP0/APP1 segment
+        [TestCase(new byte[] { 0xFF, 0xD8, 0xFF, 0xDB }, ImageFileFormat.Jpeg)]
+        [TestCase(new byte[] { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61 }, ImageFileFormat.Gif)]
+        [TestCase(new byte[] { 0x42, 0x4D, 0x00, 0x00 }, ImageFileFormat.Bmp)]
+        [TestCase(new byte[] { 0x49, 0x49, 0x2A, 0x00 }, ImageFileFormat.Tiff)]
+        [TestCase(new byte[] { 0x4D, 0x4D, 0x00, 0x2A }, ImageFileFormat.Tiff)]
+        // "RIFF" followed by something other than "WEBP" (e.g. a WAV file)
+        [TestCase(
+            new byte[] { 0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x41, 0x56, 0x45 },
+            ImageFileFormat.Unknown
+        )]
+        [TestCase(new byte[] { 0xFF }, ImageFileFormat.Unknown)]
+        public void GetImageFileFormat_Bytes_RecognizesSignatures(
+            byte[] bytes,
+            ImageFileFormat expected
+        )
+        {
+            Assert.That(ImageUtils.GetImageFileFormat(bytes), Is.EqualTo(expected));
+        }
+
+        // Downloaded bytes can be garbage. Each of these once hung the chunk walk or threw.
+        [TestCase(0xFFFFFFF8u, TestName = "IsOpaqueLossyWebP_SizeThatLooksNegative_ReturnsFalse")]
+        [TestCase(0x7FFFFFFFu, TestName = "IsOpaqueLossyWebP_SizeThatWouldOverflow_ReturnsFalse")]
+        public void IsOpaqueLossyWebP_GarbageChunkSize_ReturnsFalse(uint chunkSize)
+        {
+            var bytes = new List<byte>();
+            bytes.AddRange(System.Text.Encoding.ASCII.GetBytes("RIFF"));
+            bytes.AddRange(BitConverter.GetBytes(100u));
+            bytes.AddRange(System.Text.Encoding.ASCII.GetBytes("WEBPICCP"));
+            bytes.AddRange(BitConverter.GetBytes(chunkSize));
+            bytes.AddRange(new byte[16]);
+            Assert.That(
+                ImageUtils.GetImageFileFormat(bytes.ToArray()),
+                Is.EqualTo(ImageFileFormat.WebP),
+                "setup"
+            );
+
+            Assert.That(ImageUtils.IsOpaqueLossyWebP(bytes.ToArray()), Is.False);
+        }
+
+        [Test]
+        public void IsOpaqueLossyWebP_TruncatedVp8xChunk_ReturnsFalse()
+        {
+            var bytes = new List<byte>();
+            bytes.AddRange(System.Text.Encoding.ASCII.GetBytes("RIFF"));
+            bytes.AddRange(BitConverter.GetBytes(100u));
+            bytes.AddRange(System.Text.Encoding.ASCII.GetBytes("WEBPVP8X"));
+            bytes.AddRange(BitConverter.GetBytes(10u)); // but the file ends before the flags byte
+
+            Assert.That(ImageUtils.IsOpaqueLossyWebP(bytes.ToArray()), Is.False);
+        }
+
+        [TestCase("man-really-webp.jpg", ".jpg", ImageFileFormat.Jpeg)]
+        [TestCase("bird-lossless.webp", ".png", ImageFileFormat.Png)]
+        [TestCase("bird-lossy-transparent.webp", ".png", ImageFileFormat.Png)]
+        public void ConvertToJpegOrPngIfNeeded_WebP_ConvertsToReadableFormat(
+            string fileName,
+            string expectedExtension,
+            ImageFileFormat expectedFormat
+        )
+        {
+            var sourcePath = FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                fileName
+            );
+            Assert.That(
+                ImageUtils.GetImageFileFormat(sourcePath),
+                Is.EqualTo(ImageFileFormat.WebP),
+                "setup: the source should be a WebP file"
+            );
+            using (var destFolder = new TemporaryFolder("ConvertToJpegOrPngIfNeeded_WebP"))
+            {
+                var convertedPath = ImageUtils.ConvertToJpegOrPngIfNeeded(
+                    sourcePath,
+                    destFolder.Path
+                );
+
+                Assert.That(
+                    convertedPath,
+                    Is.EqualTo(
+                        Path.Combine(
+                            destFolder.Path,
+                            Path.GetFileNameWithoutExtension(fileName) + expectedExtension
+                        )
+                    )
+                );
+                Assert.That(
+                    ImageUtils.GetImageFileFormat(convertedPath),
+                    Is.EqualTo(expectedFormat)
+                );
+                // The point of converting is that System.Drawing can then read the image.
+                using (var image = PalasoImage.FromFileRobustly(convertedPath))
+                {
+                    Assert.That(image.Image.Width, Is.GreaterThan(0));
+                }
+            }
+        }
+
+        [TestCase("man.jpg")]
+        [TestCase("man.png")]
+        public void ConvertToJpegOrPngIfNeeded_JpegOrPng_ReturnsNull(string fileName)
+        {
+            var sourcePath = FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                fileName
+            );
+            using (var destFolder = new TemporaryFolder("ConvertToJpegOrPngIfNeeded_NoChange"))
+            {
+                Assert.That(
+                    ImageUtils.ConvertToJpegOrPngIfNeeded(sourcePath, destFolder.Path),
+                    Is.Null
+                );
+                Assert.That(Directory.GetFiles(destFolder.Path), Is.Empty);
+            }
+        }
+
         [Test]
         public void ProcessAndSaveImageIntoFolder_PhotoButPNGFile_SavesAsPng()
         {
