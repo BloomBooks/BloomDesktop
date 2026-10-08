@@ -345,6 +345,16 @@ namespace Bloom.web.controllers
             get => ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections);
             set => ExperimentalFeatures.SetValue(ExperimentalFeatures.kTeamCollections, value);
         }
+
+        // An open edit page fetched the table feature's status when it loaded and keeps that
+        // answer (tableFeature.ts), so only a restart makes it see the new value.
+        [JsonProperty(ExperimentalFeatures.kTables)]
+        [RequiresRestart]
+        public bool Tables
+        {
+            get => ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTables);
+            set => ExperimentalFeatures.SetValue(ExperimentalFeatures.kTables, value);
+        }
     }
 
     /// <summary>

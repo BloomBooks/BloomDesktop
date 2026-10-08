@@ -19,6 +19,20 @@ House rules:
 
 ---
 
+## 2026-10-08 — A master merge can need a file only the full front-end build makes
+- **Cut:** Master's page-size work made C# read `output/browser/pageSizesLookup.json`, which only `pnpm build` writes. In a worktree whose `output/browser` predates that, 30 C# tests failed and every Bloom an agent started raised a "Could not locate the required file" Debug.Assert dialog on the developer's screen, and agents are told never to run `pnpm build`.
+- **Idea:** Have `go.sh`, `build/agent-dotnet.sh` and the e2e fixture run `pnpm --dir src/content run build:pageSizes` (instant) when the file is missing or older than `DistFiles/pageSizes.json`, or name that command in `src/BloomBrowserUI/AGENTS.md`.
+- **Context:** BL-16818-tables preflight, after merging master.
+
+## 2026-10-07 — The pre-commit hook commits files that were left unstaged
+- **Cut:** Committing a merge with only the conflict files staged also committed four modified files that were never `git add`ed. The hook runs lint-staged with `--no-stash` and then a C# formatter; which step added them is not yet known. Nothing in the output says the commit grew.
+- **Idea:** Find the step and make it re-stage only the paths that were staged when the hook started, or document that a partial commit must be checked with `git show --stat HEAD` afterwards.
+- **Context:** BL-16818-tables, merging master; caught before pushing and the merge commit was rebuilt.
+
+## 2026-09-30 — `winformsUia.ps1 close` can pick a disabled window in a stack of dialogs
+- **Cut:** With about 40 "Bloom had a problem" dialogs stacked, `close -Window ReactDialog` reported "closed" for the first match, which was disabled (`enabled=False`) and ignored the close. Two-dialog stacks made later both came up enabled, so this was not reproduced.
+- **Idea:** When several windows match, have `close` prefer the enabled one, and report failure when the window is still there afterwards.
+
 ## 2026-09-25 — An install left a package folder empty, and `pnpm install` would not repair it
 - **Cut:** eslint (so `pnpm lint` and the pre-commit hook, which blocks every commit) died with `Cannot find module 'object-keys'`. The lockfile was fine: `node_modules/.pnpm/object-keys@1.1.1/node_modules/object-keys` existed but was empty, and `pnpm install --frozen-lockfile` answered "Already up to date" even after that folder was deleted. Copying the folder from another worktree fixed it.
 - **Idea:** Document the repair (delete the package's `.pnpm` folder and run `pnpm install --force`, or copy it from a healthy worktree), or have `init.sh` check for empty package folders after installing.
@@ -179,6 +193,40 @@ House rules:
   TimeoutError inside the retry loop.
 - **Context:** Seen once in three otherwise-identical local runs while verifying the
   bloom-testing-inputs rewire; not the BL-16612 hang (Bloom kept serving all later cases).
+
+## 2026-08-24 — The book folder's own basePage.css can be older than the one you just built
+
+- **Cut:** Bloom serves `basePage.css` for the edit page out of the *book* folder, and the copy
+  there (`<collection>/<book>/basePage.css`) was 71330 bytes with no bloom-table rules at all,
+  byte-for-byte the size of `D:/bloom/output/browser/bookLayout/basePage.css` from Aug 8, while
+  this worktree's freshly built copy was 74244 bytes and had them. The symptom does not look like
+  a CSS problem: the table loses `display: grid`, so every cell becomes a full-width block, cells
+  report a height of 1px, and Bloom's picture-fitting code writes nonsense geometry from those
+  sizes. Rebuilding the worktree's `basePage.css` changes nothing, because nothing re-copies it.
+- **Idea:** When a table (or anything else whose CSS lives in `basePage.css`) is not laid out as
+  expected, fetch the stylesheet the page actually loaded and grep it, rather than reading the
+  built file: `link[rel=stylesheet]` in the page iframe points at the book folder. Copying
+  `output/browser/bookLayout/basePage.css` over the book's copy fixes it immediately. Worth
+  finding out what decides not to re-copy it, and whether a book last opened by another checkout's
+  Bloom keeps that checkout's support files.
+- **Context:** `Add-Tables`, verifying table picture cells in the running Bloom. Cost about an
+  hour of chasing a layout bug that was a stale stylesheet.
+
+## 2026-08-24 — A changed bloom-table.css never reaches basePage.css
+
+- **Cut:** `basePage.less` pulls the library's structural styles in with
+  `@import (inline) ".../node_modules/bloom-table/dist/bloom-table.css"`, but `build:less-inner`
+  (watchLessManager.js) decides whether to recompile by comparing the mtimes of the imports LESS
+  reports, and that inline CSS is not among them. So after the library changes its CSS the built
+  `output/browser/bookLayout/basePage.css` stays stale and the running Bloom lays tables out by
+  the old rules, with nothing saying so.
+- **Idea:** Have the manager count an inline-imported file among an entry's dependencies (the
+  regex in `scanLessImports` already matches `@import (inline) "..."`; it is `resolveLessImport`
+  plus the post-compile `result.imports` list that drop it). Meanwhile: delete
+  `output/browser/bookLayout/basePage.css` and run `pnpm --dir src/content run build:less-inner`,
+  which rebuilds when the output is missing.
+- **Context:** `Add-Tables`, updating Bloom to the current bloom-table. The one stale property was
+  `overflow: hidden` where the library now needs `overflow: clip` for nested tables.
 
 ## 2026-08-28 — Moving a worktree between master and Version6.5 changes which settings file Bloom reads
 
