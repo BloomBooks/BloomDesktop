@@ -244,6 +244,15 @@ vi.mock("@sillsdev/config-r", () => ({
                     })
                 }
             />
+            <button
+                data-testid="choose-no-bookshelf"
+                onClick={() =>
+                    props.onChange({
+                        ...props.initialValues,
+                        bloomLibrary: { defaultBookshelf: "" },
+                    })
+                }
+            />
             {props.children}
         </div>
     ),
@@ -828,6 +837,25 @@ describe("CollectionSettingsDialog", () => {
             ).toBe(
                 "Bloom could not reach the server to get the list of bookshelves.",
             );
+        });
+
+        it("restarts when the user changes the bookshelf, and saves None as no bookshelf", async () => {
+            respondWithSavedBookshelf("saved-shelf");
+            await renderDialog();
+            expect(okButtonLabel()).toBe("OK");
+
+            click("choose-no-bookshelf");
+            await flushDeferredChange();
+            expect(okButtonLabel()).toBe("Restart");
+            click("dialog-ok");
+
+            expect(mockPostJson.mock.calls[0][1]).toEqual({
+                values: {
+                    ...initialValues,
+                    bloomLibrary: { defaultBookshelf: "" },
+                },
+                restartRequired: true,
+            });
         });
 
         it("saves an unchanged bookshelf as it was, without a restart", async () => {
