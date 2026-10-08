@@ -32,6 +32,7 @@ import {
     ICollectionSettingsValues,
 } from "./collectionSettingsTypes";
 import { useAdvancedPage } from "./settingsPages/AdvancedPage";
+import { useBloomLibraryPage } from "./settingsPages/BloomLibraryPage";
 import { useExperimentalPage } from "./settingsPages/ExperimentalPage";
 
 // Temporary content for every page. Each of the seven tab cards replaces its page's group with
@@ -156,10 +157,6 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         "Team Collection",
         "TeamCollection.TeamCollection",
     );
-    const bloomLibraryLabel = useL10n(
-        "Bloom Library",
-        "CollectionSettingsDialog.BloomLibraryPage",
-    );
     const restartMessage = useL10n(
         "Bloom will close and re-open this project with the new settings.",
         "CollectionSettingsDialog.RestartMessage",
@@ -173,8 +170,11 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         { pageKey: "frontBackMatter", label: frontBackMatterLabel },
         { pageKey: "subscription", label: subscriptionLabel },
         { pageKey: "teamCollection", label: teamCollectionLabel },
-        { pageKey: "bloomLibrary", label: bloomLibraryLabel },
     ];
+    const bloomLibraryPage = useBloomLibraryPage({
+        dialogOpen: propsForBloomDialog.open,
+        settings: loadedSettings,
+    });
     const advancedPage = useAdvancedPage({ settings: loadedSettings });
     const experimentalPage = useExperimentalPage({
         dialogOpen: propsForBloomDialog.open,
@@ -305,6 +305,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                                 </ConfigrGroup>
                             </ConfigrPage>
                         ))}
+                        {bloomLibraryPage}
                         {advancedPage}
                         {experimentalPage}
                     </ConfigrPane>

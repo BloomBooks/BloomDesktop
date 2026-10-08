@@ -340,6 +340,54 @@ namespace BloomTests.Collection
             Assert.That(settings.ExpiredBookshelf, Is.EqualTo("rememberedShelf"));
         }
 
+        /// <summary>
+        /// The file is checked rather than a reloaded collection, because loading keeps the
+        /// bookshelf only for an Enterprise subscription, which a test collection has not got.
+        /// </summary>
+        [Test]
+        public void Apply_ChangedBookshelf_SavedToTheFile()
+        {
+            var settings = CreateCollectionSettings("ApplySavesBookshelf");
+            var values = CurrentValuesJson(settings);
+            Assert.That(
+                (string)values["bloomLibrary"]["defaultBookshelf"],
+                Is.Empty,
+                "Sanity check: a new collection should have no bookshelf"
+            );
+            values["bloomLibrary"]["defaultBookshelf"] = "chosenShelf";
+
+            Apply(values, settings);
+
+            Assert.That(settings.DefaultBookshelf, Is.EqualTo("chosenShelf"));
+            Assert.That(
+                RobustFile.ReadAllText(settings.SettingsFilePath),
+                Does.Contain("bookshelf:chosenShelf")
+            );
+        }
+
+        [Test]
+        public void Apply_BookshelfSetToNone_RemovedFromTheFile()
+        {
+            var settings = CreateCollectionSettings("ApplyRemovesBookshelf");
+            settings.DefaultBookshelf = "oldShelf";
+            settings.Save();
+            Assert.That(
+                RobustFile.ReadAllText(settings.SettingsFilePath),
+                Does.Contain("bookshelf:oldShelf"),
+                "Sanity check: the file should start with a bookshelf"
+            );
+            var values = CurrentValuesJson(settings);
+            values["bloomLibrary"]["defaultBookshelf"] = "";
+
+            Apply(values, settings);
+
+            Assert.That(settings.DefaultBookshelf, Is.Empty);
+            Assert.That(
+                RobustFile.ReadAllText(settings.SettingsFilePath),
+                Does.Not.Contain("bookshelf:")
+            );
+        }
+
         [Test]
         public void ApplyAdministrators_OnlyInATeamCollection()
         {

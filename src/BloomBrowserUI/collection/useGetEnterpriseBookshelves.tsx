@@ -8,7 +8,12 @@ export interface IBookshelf {
     tooltip: string;
 }
 
-export function useGetEnterpriseBookshelves(): {
+/**
+ * The bookshelves the collection's subscription offers on Bloom Library, preceded by "none".
+ * @param enabled false to ask nothing (yet), for a caller that is mounted before it is needed;
+ * each time it becomes true the collection's subscription and bookshelf are read again.
+ */
+export function useGetEnterpriseBookshelves(enabled: boolean = true): {
     project: string;
     defaultBookshelfUrlKey: string;
     validBookshelves: IBookshelf[];
@@ -37,6 +42,7 @@ export function useGetEnterpriseBookshelves(): {
     const [project, setProject] = useState("");
     // First query: get the values of the two states above.
     useEffect(() => {
+        if (!enabled) return;
         get("settings/bookShelfData", (data) => {
             const descriptor = data.data.subscriptionDescriptor;
             setProject(descriptor === "Default" ? "" : descriptor);
@@ -44,7 +50,7 @@ export function useGetEnterpriseBookshelves(): {
                 data.data.defaultBookshelfUrlKey || "none",
             );
         });
-    }, []);
+    }, [enabled]);
 
     // Second query to get the contentful data
     const { loading, result, error } = useContentful(
