@@ -48,8 +48,8 @@ namespace Bloom.web.controllers
     /// are a live view of a CollectionSettings: serializing reads the collection's values, and
     /// populating from the posted JSON writes them straight back, so a simple setting is spelled
     /// out once here, as a property that reads and writes it. The languages are the exception;
-    /// see Languages. The subscription, the team collection administrators and the Bloom Library
-    /// bookshelf have endpoints of their own and so are not here.
+    /// see Languages. The subscription and the team collection administrators have endpoints of
+    /// their own and so are not here.
     /// </summary>
     public class CollectionSettingsValues
     {
@@ -64,6 +64,7 @@ namespace Bloom.web.controllers
         {
             _settings = settings;
             FrontBackMatter = new FrontBackMatterValues(settings);
+            BloomLibrary = new BloomLibraryValues(settings);
             Advanced = new AdvancedValues(settings, queueRenameOfCollection);
             Experimental = new ExperimentalValues();
         }
@@ -81,6 +82,7 @@ namespace Bloom.web.controllers
         }
 
         public FrontBackMatterValues FrontBackMatter { get; }
+        public BloomLibraryValues BloomLibrary { get; }
         public AdvancedValues Advanced { get; }
         public ExperimentalValues Experimental { get; }
 
@@ -286,6 +288,33 @@ namespace Bloom.web.controllers
         {
             get => _settings.District ?? "";
             set => _settings.District = value;
+        }
+    }
+
+    /// <summary>
+    /// The Bloom Library page's values.
+    /// </summary>
+    public class BloomLibraryValues
+    {
+        private readonly CollectionSettings _settings;
+
+        public BloomLibraryValues(CollectionSettings settings)
+        {
+            _settings = settings;
+        }
+
+        /// <summary>
+        /// The url key of the bookshelf that books uploaded from this collection go into, or ""
+        /// for none. While the subscription is expired this is "" and the collection remembers the
+        /// shelf in ExpiredBookshelf; CollectionSettingsUpdater.ApplySubscriptionAndBookshelf
+        /// keeps that shelf in the file when it is saved. Open books carry the bookshelf (in their
+        /// body attributes and branding), so a change needs a restart.
+        /// </summary>
+        [RequiresRestart]
+        public string DefaultBookshelf
+        {
+            get => _settings.DefaultBookshelf;
+            set => _settings.DefaultBookshelf = value;
         }
     }
 
