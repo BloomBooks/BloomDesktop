@@ -161,6 +161,11 @@ export interface IControlContext {
     // edit (see aiImageEditorImageFormats.ts). False for formats the editor can't open
     // (e.g. svg), which keeps "Edit with AI" disabled for them.
     imageIsAiEditableFormat: boolean;
+    // Deletes the object these controls belong to, when that object is not a canvas element.
+    // An inline image (a picture inside a text block) sets this, because deleting one means
+    // removing it from every language's text, and the canvas element manager does not know
+    // how to do that. When this is not set, Delete removes the page's active canvas element.
+    deleteThisObject?: () => void;
 }
 
 export interface IControlRuntime {

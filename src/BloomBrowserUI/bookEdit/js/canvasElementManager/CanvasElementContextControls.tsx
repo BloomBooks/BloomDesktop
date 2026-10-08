@@ -7,14 +7,7 @@ import { kBloomBlue, lightTheme } from "../../../bloomMaterialUITheme";
 import { SvgIconProps } from "@mui/material";
 import { default as MenuIcon } from "@mui/icons-material/MoreHorizSharp";
 import { ThemeProvider } from "@mui/material/styles";
-import {
-    divider,
-    ILocalizableMenuItemProps,
-    LocalizableMenuItem,
-    LocalizableNestedMenuItem,
-} from "../../../react_components/localizableMenuItem";
 import Menu from "@mui/material/Menu";
-import { Divider } from "@mui/material";
 import { getCanvasElementManager } from "../../toolbox/canvas/canvasElementPageBridge";
 import { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstants";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
@@ -27,6 +20,7 @@ import { getAudioSentencesOfVisibleEditables } from "bloom-player";
 import { canvasElementControlRegistry } from "../../toolbox/canvas/canvasElementControlRegistry";
 import { buildCanvasElementControlRegistryContext } from "../../toolbox/canvas/buildCanvasElementControlRegistryContext";
 import {
+    ICanvasElementControlConfiguration,
     IControlContext,
     ILanguageNameValues,
     IControlMenuRow,
@@ -36,17 +30,47 @@ import {
     getMenuSections,
     getToolbarItems,
 } from "../../toolbox/canvas/canvasControlResolution";
-
-interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
-    subMenu?: ILocalizableMenuItemProps[];
-}
+import {
+    contextMenuCss,
+    convertControlMenuRows,
+    IMenuItemWithSubmenu,
+    joinMenuSectionsWithSingleDividers,
+    renderContextMenuItems,
+    runControlCallback,
+    scaleIconNode,
+} from "./canvasControlMenuRendering";
 
 // This is the controls bar that appears beneath a canvas element when it is selected. It contains buttons
 // for the most common operations that apply to the canvas element in its current state, and a menu for less common
 // operations.
 
-const CanvasElementContextControls: React.FunctionComponent<{
+/**
+ * What a caller supplies to show this bar on something that is not a canvas element. An
+ * inline image (a picture inside a text block) passes this, so that the user gets the same
+ * toolbar for a picture whether it is in a text block or on the canvas (see
+ * inlineImageInteractions.ts).
+ */
+export interface IControlsForNonCanvasObject {
+    // Which controls the bar and the menu offer. The bar uses this instead of looking up the
+    // element's type in canvasElementControlRegistry.
+    configuration: ICanvasElementControlConfiguration;
+    // The items for the menu that the "..." button opens, ready to render.
+    menuItems: IMenuItemWithSubmenu[];
+    // These fields are merged over the IControlContext that the registry commands receive.
+    // An object uses this to say how to delete itself (IControlContext.deleteThisObject).
+    contextAdditions: Partial<IControlContext>;
+    // Called after the action of a toolbar button that this component builds itself. A control
+    // that supplies its own toolbar.render handles its own clicks, so this is not called for
+    // it. No control in the inline-image toolbar does that today; one that is added later
+    // must call this itself. An inline image uses this callback to copy the change the
+    // command made onto the same picture in the other languages' text.
+    afterToolbarCommand?: () => void;
+}
+
+export const CanvasElementContextControls: React.FunctionComponent<{
     canvasElement: HTMLElement;
+    // A canvas element leaves this out.
+    controlsForNonCanvasObject?: IControlsForNonCanvasObject;
     // These props support reusing the context controls menu for a right-click on the canvas element.
     // The first two make the open state of the menu a controlled property. Basically the
     // parent stores the state and passes it in, but to get the normal behavior of
@@ -249,11 +273,13 @@ const CanvasElementContextControls: React.FunctionComponent<{
         onClick: () => void;
         iconScale?: number;
         disabled?: boolean;
+        testId?: string;
     }): IToolbarItem => {
         return {
             key: props.key,
             node: (
                 <ButtonWithTooltip
+                    testId={props.testId}
                     tipL10nKey={props.tipL10nKey}
                     icon={props.icon}
                     iconScale={props.iconScale}
@@ -278,33 +304,6 @@ const CanvasElementContextControls: React.FunctionComponent<{
     };
     // editable and langName are computed earlier, but keep them here for the UI below.
 
-    const maxMenuWidth = 338;
-
-    // Control callbacks can be either sync or async by contract.
-    // We always call through this helper so sync exceptions and async
-    // rejections are handled consistently from UI event handlers.
-    const runControlCallback = (
-        callbackLabel: string,
-        callback: () => void | Promise<void>,
-    ): void => {
-        try {
-            const result = callback();
-            if (result) {
-                void result.catch((error) => {
-                    console.error(
-                        `Canvas control callback failed (${callbackLabel})`,
-                        error,
-                    );
-                });
-            }
-        } catch (error) {
-            console.error(
-                `Canvas control callback failed (${callbackLabel})`,
-                error,
-            );
-        }
-    };
-
     const getSpacerToolbarItem = (index: number): IToolbarItem => {
         return {
             key: `spacer-${index}`,
@@ -320,76 +319,6 @@ const CanvasElementContextControls: React.FunctionComponent<{
     };
 
     let toolbarItems: IToolbarItem[] = [];
-
-    const convertControlMenuRows = (
-        rows: IControlMenuRow[],
-        controlContext: IControlContext,
-        controlRuntime: IControlRuntime,
-    ): IMenuItemWithSubmenu[] => {
-        const convertedRows: IMenuItemWithSubmenu[] = [];
-
-        rows.forEach((row) => {
-            if (row.separatorAbove && convertedRows.length > 0) {
-                convertedRows.push(divider as IMenuItemWithSubmenu);
-            }
-
-            const convertedSubMenu = row.subMenuItems
-                ? convertControlMenuRows(
-                      row.subMenuItems,
-                      controlContext,
-                      controlRuntime,
-                  )
-                : undefined;
-
-            const convertedRow: IMenuItemWithSubmenu = {
-                l10nId: row.l10nId ?? null,
-                english: row.englishLabel ?? "",
-                subLabelL10nId: row.subLabelL10nId,
-                generatedSubLabel: row.subLabel,
-                shortcutDisplay: row.shortcut?.display,
-                icon: scaleIconNode(row.icon, row.iconScale),
-                disabled: row.disabled,
-                featureName: row.featureName,
-                subscriptionTooltipOverride: row.subscriptionTooltipOverride,
-                onClick: () => {
-                    // Ordinary leaf commands close centrally here. Registry
-                    // handlers only call runtime.closeMenu(...) for special
-                    // cases such as dialog launches or submenu-specific focus
-                    // behavior.
-                    if (!convertedSubMenu) {
-                        controlRuntime.closeMenu();
-                    }
-                    runControlCallback(
-                        `menu:${row.id ?? row.englishLabel ?? "unknown"}`,
-                        () => row.onSelect(controlContext, controlRuntime),
-                    );
-                },
-            };
-
-            if (convertedSubMenu) {
-                convertedRow.subMenu = convertedSubMenu;
-            }
-
-            convertedRows.push(convertedRow);
-
-            if (row.helpRowL10nId || row.helpRowEnglish) {
-                if (row.helpRowSeparatorAbove && convertedRows.length > 0) {
-                    convertedRows.push(divider as IMenuItemWithSubmenu);
-                }
-
-                convertedRows.push({
-                    l10nId: null,
-                    english: "",
-                    subLabelL10nId: row.helpRowL10nId,
-                    generatedSubLabel: row.helpRowEnglish,
-                    onClick: () => {},
-                    disabled: true,
-                });
-            }
-        });
-
-        return convertedRows;
-    };
 
     const getToolbarItemForResolvedControl = (
         item: ReturnType<typeof getToolbarItems>[number],
@@ -418,11 +347,12 @@ const CanvasElementContextControls: React.FunctionComponent<{
         const icon = control.toolbar?.icon ?? control.icon;
         const iconScale = control.toolbar?.iconScale ?? control.iconScale;
         const onClick = () => {
-            runControlCallback(`toolbar:${control.id}`, () =>
-                control.action(controlContext, {
+            runControlCallback(`toolbar:${control.id}`, async () => {
+                await control.action(controlContext, {
                     closeMenu: () => {},
-                }),
-            );
+                });
+                props.controlsForNonCanvasObject?.afterToolbarCommand?.();
+            });
         };
 
         if (typeof icon === "function") {
@@ -433,6 +363,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 onClick,
                 iconScale: iconScale ?? 1,
                 disabled: !item.enabled,
+                testId: `toolbar-${control.id}`,
             });
         }
 
@@ -456,6 +387,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     }}
                 >
                     <button
+                        data-testid={`toolbar-${control.id}`}
                         onClick={onClick}
                         css={getIconCss(
                             iconScale,
@@ -484,24 +416,28 @@ const CanvasElementContextControls: React.FunctionComponent<{
         hasClipboardText,
         languageNameValues,
         aiImageEditingAvailable: aiImageEditingStatus?.visible ?? false,
+        ...props.controlsForNonCanvasObject?.contextAdditions,
     };
 
     const definition =
+        props.controlsForNonCanvasObject?.configuration ??
         canvasElementControlRegistry[controlContext.elementType] ??
         canvasElementControlRegistry.none;
 
-    menuOptions = joinMenuSectionsWithSingleDividers(
-        getMenuSections(definition, controlContext, controlRuntime).map(
-            (section) =>
-                convertControlMenuRows(
-                    section
-                        .map((item) => item.menuRow)
-                        .filter((row): row is IControlMenuRow => !!row),
-                    controlContext,
-                    controlRuntime,
-                ),
-        ),
-    );
+    menuOptions =
+        props.controlsForNonCanvasObject?.menuItems ??
+        joinMenuSectionsWithSingleDividers(
+            getMenuSections(definition, controlContext, controlRuntime).map(
+                (section) =>
+                    convertControlMenuRows(
+                        section
+                            .map((item) => item.menuRow)
+                            .filter((row): row is IControlMenuRow => !!row),
+                        controlContext,
+                        controlRuntime,
+                    ),
+            ),
+        );
 
     toolbarItems = normalizeToolbarItems(
         getToolbarItems(definition, controlContext, controlRuntime)
@@ -579,43 +515,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                         // The other option would be to put a resize observer on the menu, and use an action prop and
                         // call updatePosition() whenever it resizes
                         keepMounted
-                        css={css`
-                            ul {
-                                max-width: ${maxMenuWidth}px;
-                                color: #4d4d4d;
-                                li {
-                                    display: flex;
-                                    align-items: flex-start;
-                                    color: #4d4d4d;
-                                    .MuiListItemIcon-root {
-                                        color: inherit !important;
-                                    }
-                                    svg {
-                                        color: inherit !important;
-                                    }
-                                    p,
-                                    span {
-                                        color: #4d4d4d;
-                                    }
-                                    img.canvas-context-menu-monochrome-icon {
-                                        display: block;
-                                        width: 24px;
-                                        height: 24px;
-                                        object-fit: contain;
-                                        filter: brightness(0) saturate(100%)
-                                            invert(31%) sepia(0%) saturate(0%)
-                                            hue-rotate(180deg) brightness(95%)
-                                            contrast(94%);
-                                    }
-                                    p {
-                                        white-space: initial;
-                                    }
-                                    &.MuiDivider-root {
-                                        margin-bottom: 12px;
-                                    }
-                                }
-                            }
-                        `}
+                        css={contextMenuCss}
                         open={
                             props.menuOpen &&
                             (!!props.menuAnchorPosition || !!menuEl.current)
@@ -633,87 +533,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                         disableAutoFocus={true}
                         disableEnforceFocus={true}
                     >
-                        {(() => {
-                            const menuHasShortcuts = menuOptions.some(
-                                (o) => !!o.shortcutDisplay,
-                            );
-                            return menuOptions.map((option, index) => {
-                                if (option.l10nId === "-") {
-                                    return (
-                                        <Divider
-                                            key={index}
-                                            variant="middle"
-                                            component="li"
-                                        />
-                                    );
-                                }
-                                if (option.subMenu) {
-                                    const subMenuHasShortcuts =
-                                        option.subMenu.some(
-                                            (o) => !!o.shortcutDisplay,
-                                        );
-                                    return (
-                                        <LocalizableNestedMenuItem
-                                            {...option}
-                                            key={option.l10nId}
-                                            truncateMainLabel={true}
-                                            // The menu is keepMounted, so the row must hear
-                                            // that the menu shut, or its submenu stays drawn.
-                                            parentMenuOpen={props.menuOpen}
-                                        >
-                                            {option.subMenu.map(
-                                                (subOption, subIndex) => {
-                                                    if (
-                                                        subOption.l10nId === "-"
-                                                    ) {
-                                                        return (
-                                                            <Divider
-                                                                key={subIndex}
-                                                                variant="middle"
-                                                                component="li"
-                                                            />
-                                                        );
-                                                    }
-                                                    return (
-                                                        <LocalizableMenuItem
-                                                            key={
-                                                                subOption.l10nId
-                                                            }
-                                                            {...subOption}
-                                                            onClick={
-                                                                subOption.onClick
-                                                            }
-                                                            leaveSpaceForShortcut={
-                                                                subMenuHasShortcuts
-                                                            }
-                                                            css={css`
-                                                                max-width: ${maxMenuWidth}px;
-                                                                white-space: wrap;
-                                                                // Styles for subLabels
-                                                                p {
-                                                                    // Determined empirically...
-                                                                    // Styling in NestedMenuItem is impossibly difficult.
-                                                                    left: -8px;
-                                                                }
-                                                            `}
-                                                        />
-                                                    );
-                                                },
-                                            )}
-                                        </LocalizableNestedMenuItem>
-                                    );
-                                }
-                                return (
-                                    <LocalizableMenuItem
-                                        key={option.l10nId}
-                                        {...option}
-                                        onClick={option.onClick}
-                                        variant="body1"
-                                        leaveSpaceForShortcut={menuHasShortcuts}
-                                    />
-                                );
-                            });
-                        })()}
+                        {renderContextMenuItems(menuOptions, props.menuOpen)}
                     </Menu>
                 </div>
                 {langName && (
@@ -741,6 +561,7 @@ const ButtonWithTooltip: React.FunctionComponent<{
     onClick: React.MouseEventHandler;
     iconScale?: number;
     disabled?: boolean;
+    testId?: string;
 }> = (props) => {
     return (
         <BloomTooltip
@@ -750,6 +571,7 @@ const ButtonWithTooltip: React.FunctionComponent<{
             }}
         >
             <button
+                data-testid={props.testId}
                 onClick={props.onClick}
                 css={getIconCss(
                     props.iconScale,
@@ -812,43 +634,4 @@ function getIconCss(iconScale?: number, extra = "") {
             font-size: ${fontSize}rem;
         }
     `;
-}
-
-const scaleIconNode = (
-    iconNode: React.ReactNode,
-    iconScale?: number,
-): React.ReactNode => {
-    if (!iconNode || iconScale === undefined || iconScale === 1) {
-        return iconNode;
-    }
-
-    return (
-        <span
-            css={css`
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                transform: scale(${iconScale});
-                transform-origin: center;
-            `}
-        >
-            {iconNode}
-        </span>
-    );
-};
-
-function joinMenuSectionsWithSingleDividers(
-    menuSections: IMenuItemWithSubmenu[][],
-): IMenuItemWithSubmenu[] {
-    const nonEmptySections = menuSections.filter(
-        (section) => section.length > 0,
-    );
-    const menuItems: IMenuItemWithSubmenu[] = [];
-    nonEmptySections.forEach((section, index) => {
-        if (index > 0) {
-            menuItems.push(divider as IMenuItemWithSubmenu);
-        }
-        menuItems.push(...section);
-    });
-    return menuItems;
 }
