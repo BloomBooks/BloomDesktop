@@ -839,10 +839,13 @@ namespace Bloom.ImageProcessing
         /// </summary>
         public static string ConvertToJpegOrPngIfNeeded(string sourcePath, string destFolder)
         {
-            var bytes = RobustFile.ReadAllBytes(sourcePath);
-            if (GetImageFileFormat(bytes) != ImageFileFormat.WebP)
+            // Sniff just the header first: this runs for every image the user chooses, and some
+            // (e.g. large scans) are far too big to read into memory for nothing.
+            if (GetImageFileFormat(sourcePath) != ImageFileFormat.WebP)
                 return null;
-            var extension = IsOpaqueLossyWebP(bytes) ? ".jpg" : ".png";
+            var extension = IsOpaqueLossyWebP(RobustFile.ReadAllBytes(sourcePath))
+                ? ".jpg"
+                : ".png";
             var destPath = Path.Combine(
                 destFolder,
                 Path.GetFileNameWithoutExtension(sourcePath) + extension

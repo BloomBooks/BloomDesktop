@@ -167,16 +167,17 @@ namespace Bloom.web.controllers
             }
             else if (!string.IsNullOrEmpty(imageUrl))
             {
-                byte[] imageBytes;
+                var downloadPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
                 using (var response = await s_httpClient.GetAsync(imageUrl))
                 {
                     response.EnsureSuccessStatusCode();
-                    imageBytes = await response.Content.ReadAsByteArrayAsync();
+                    using var fileStream = RobustFile.Create(downloadPath);
+                    await response.Content.CopyToAsync(fileStream);
                 }
 
                 // Name the file for what it actually contains: the URL's extension may be wrong.
                 var extension = ImageUtils.GetExtensionForImageFileFormat(
-                    ImageUtils.GetImageFileFormat(imageBytes)
+                    ImageUtils.GetImageFileFormat(downloadPath)
                 );
                 if (extension == null)
                 {
@@ -192,11 +193,8 @@ namespace Bloom.web.controllers
                         extension = ".jpg";
                 }
 
-                sourceFilePath = Path.Combine(
-                    Path.GetTempPath(),
-                    Guid.NewGuid().ToString() + extension
-                );
-                RobustFile.WriteAllBytes(sourceFilePath, imageBytes);
+                sourceFilePath = downloadPath + extension;
+                RobustFile.Move(downloadPath, sourceFilePath);
                 downloadedFilePath = sourceFilePath;
             }
             else
