@@ -56,6 +56,9 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
     public async beginRestoreSettings(
         settings: IToolboxSettings,
     ): Promise<void> {
+        // This restore supersedes any stage still waiting for the settings; see
+        // forgetStageAwaitingSynphony().
+        getTheOneReaderToolsModel().forgetStageAwaitingSynphony();
         await beginInitializeDecodableReaderTool();
         const model = getTheOneReaderToolsModel();
         // settings can be undefined/null at runtime for a book with no saved toolbox

@@ -85,6 +85,26 @@ describe("restoring a reader tool before the Synphony settings have arrived", ()
         expect(model.stageNumber).toBe(3);
     });
 
+    it("does not carry a pending level from one book into the next", async () => {
+        const model = getTheOneReaderToolsModel();
+
+        // Book A asks for level 3 while the settings are missing, so it is left pending.
+        await new LeveledReaderTool().beginRestoreSettings({
+            leveledReaderState: "3",
+        });
+        // Sanity check: nothing has been applied yet, so what follows really is the
+        // pending request being carried across rather than a value already in place.
+        expect(model.levelNumber).toBe(1);
+
+        // The user switches to book B, which has no saved level of its own. The model
+        // survives the switch: the toolbox frame is not reloaded for a book change.
+        await new LeveledReaderTool().beginRestoreSettings({});
+        model.setSynphony(makeSynphonyWithFourOfEach());
+
+        // Book A's 3 must not land in book B.
+        expect(model.levelNumber).toBe(1);
+    });
+
     it("does not resurrect a saved level that the collection no longer has", async () => {
         const model = getTheOneReaderToolsModel();
 

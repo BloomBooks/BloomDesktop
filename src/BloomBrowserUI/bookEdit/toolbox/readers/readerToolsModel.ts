@@ -166,6 +166,7 @@ export class ReaderToolsModel {
         this.stageNumber = 1;
         this.levelNumber = 1;
         this.synphony = undefined;
+        this.hasBeenGivenAPhase = false;
         this.stageAwaitingSynphony = undefined;
         this.levelAwaitingSynphony = undefined;
         this.sort = SortType.alphabetic;
@@ -1331,6 +1332,21 @@ export class ReaderToolsModel {
             w = w.replace(new RegExp(g, "g"), "\uEABC");
         }
         return w.length;
+    }
+
+    /**
+     * Discard a stage request that is still waiting for the Synphony settings. A restore
+     * beginning now supersedes it, and the waiting one may belong to a book we have since
+     * left: the model outlives a book change (the toolbox frame is not reloaded for one),
+     * so without this a value stashed for the previous book could be applied to this one.
+     */
+    public forgetStageAwaitingSynphony(): void {
+        this.stageAwaitingSynphony = undefined;
+    }
+
+    /** The level equivalent of forgetStageAwaitingSynphony(). */
+    public forgetLevelAwaitingSynphony(): void {
+        this.levelAwaitingSynphony = undefined;
     }
 
     /** Should be called early on, before other init. */

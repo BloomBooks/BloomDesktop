@@ -38,6 +38,9 @@ export class LeveledReaderTool extends ToolboxToolReactAdaptor {
     public async beginRestoreSettings(
         settings: IToolboxSettings,
     ): Promise<void> {
+        // This restore supersedes any level still waiting for the settings; see
+        // forgetLevelAwaitingSynphony().
+        getTheOneReaderToolsModel().forgetLevelAwaitingSynphony();
         await beginInitializeLeveledReaderTool();
         // Despite the type, settings can be undefined/null at runtime when the tool is
         // activated for a book that has no saved leveled-reader settings. Guard before
