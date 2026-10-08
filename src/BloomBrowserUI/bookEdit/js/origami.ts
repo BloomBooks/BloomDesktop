@@ -671,9 +671,9 @@ function makeTableFieldClickHandler(e) {
     // AttachNewTable registers Bloom-specific content types and calls attachTable,
     // which creates the initial 2×2 structure. The page-level event listener
     // installed by SetupTableEditing on the body handles kTableCellContentChangedEvent.
-    // In layout mode the table does not respond; tableEditing.less and
-    // tableShouldHandleUndo() see to that while the marginBox has the
-    // origami-layout-mode class.
+    // In layout mode the table does not respond; tableEditing.ts,
+    // tableEditing.less and tableCanUndo() see to that while the marginBox has
+    // the origami-layout-mode class.
     AttachNewTable(tableContainer[0] as HTMLElement);
     container.append(getTableIdentifier());
     $(this).closest(".selector-links").remove();
