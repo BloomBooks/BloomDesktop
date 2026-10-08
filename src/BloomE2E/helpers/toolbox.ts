@@ -106,15 +106,6 @@ export function toolboxFrame(page: Page): Frame {
 }
 
 /**
- * Open one of the tools the toolbox is showing, by clicking its accordion header the way a person
- * does, and wait until the tool's own controls are showing. Opens the toolbox drawer first if it is
- * shut. Does nothing but return the frame when the tool's controls are showing already.
- *
- * The tool is found by the `data-toolid` its header carries, not by its heading text, which is
- * localized. Throws, naming the tools on offer, when the book has not got this tool; see the note
- * at the top of this file for how a tool gets turned on.
- */
-/**
  * Wait for a tool's header to appear, and explain it in the toolbox's own terms if it never
  * does. A single count() here is a race: the toolbox renders its headers a moment after it
  * becomes visible, so a check that runs first sees nothing and reports a tool missing that is
@@ -138,6 +129,15 @@ async function waitForToolHeader(
     return header;
 }
 
+/**
+ * Open one of the tools the toolbox is showing, by clicking its accordion header the way a person
+ * does, and wait until the tool's own controls are showing. Opens the toolbox drawer first if it is
+ * shut. Does nothing but return the frame when the tool's controls are showing already.
+ *
+ * The tool is found by the `data-toolid` its header carries, not by its heading text, which is
+ * localized. Throws, naming the tools on offer, when the book has not got this tool; see the note
+ * at the top of this file for how a tool gets turned on.
+ */
 export async function openTool(
     page: Page,
     tool: ToolId,
