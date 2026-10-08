@@ -2066,6 +2066,11 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="final">Le jalajoj taq tob'anik b'anom kumal le tz'ib'anelab', wachib'anelab', kolomanelab', jule' chik, pa {lang}</target>
         <note>ID: EditTab.FrontMatter.OriginalContributorsPrompt</note>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.OriginalCopyrightAndLicenseHint" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Original copyright &amp; license</source>
+        <target xml:lang="quc" state="needs-translation">Original copyright &amp; license</target>
+        <note>ID: EditTab.FrontMatter.OriginalCopyrightAndLicenseHint</note>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence" approved="yes">
         <source xml:lang="en">This book is an adaptation of the original, {0}.</source>
         <target xml:lang="quc" state="final">K'amawam chech le qas uxe'al, {0}.</target>
