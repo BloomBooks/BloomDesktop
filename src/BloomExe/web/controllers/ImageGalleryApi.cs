@@ -439,7 +439,8 @@ namespace Bloom.web.controllers
 
             var filter = gifOnly
                 ? "GIF images|*.gif"
-                : "Images|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.tif;*.tiff;*.svg";
+                // WebP can't be imported as-is, but HandleImageGalleryResult converts it.
+                : "Images|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.tif;*.tiff;*.svg;*.webp";
 
             string selectedPath = "";
             View.Invoke(
