@@ -6,8 +6,8 @@
 // either the split or the typing.
 //
 // Covers part of "Change Layout Splits" (Test Case ID 366), which stays Planned for the rest: this
-// test makes one split, and does not try every section type or delete splits. It is a new card;
-// its Test Case ID goes in the title once the card exists.
+// test makes one split, and does not try every section type or delete splits. Automates "Change
+// Layout Keeps Typing" (Test Case ID 843).
 
 import { expect, test } from "../fixtures/bloomTest";
 import {
@@ -28,7 +28,7 @@ test.use({
     collectionSpec: { name: "change-layout-keeps-typing", languages: ["en"] },
 });
 
-test("splitting a section keeps the typing and saves the new layout", async ({
+test("splitting a section keeps the typing and saves the new layout [Test Case ID 843]", async ({
     page,
 }) => {
     test.setTimeout(300000);
@@ -58,7 +58,7 @@ test("splitting a section keeps the typing and saves the new layout", async ({
     expect(saved?.text).toContain("Typed first.");
 });
 
-test("typing straight before changing the layout is kept too", async ({
+test("typing straight before changing the layout is kept too [Test Case ID 843]", async ({
     page,
 }) => {
     // No wait between typing and the layout change: the save on leaving Change Layout mode sends

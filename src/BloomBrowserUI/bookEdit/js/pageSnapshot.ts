@@ -64,6 +64,9 @@ let unsubscribeFromDelayRegister: (() => void) | undefined;
 let pageWeReportedAFailureFor: string | undefined;
 // The tail of the queue of posts; see postInOrder.
 let postQueue: Promise<void> = Promise.resolve();
+// Posts queued or in flight, and gathers under way; see isSnapshotStreamIdle.
+let postsPending = 0;
+let gathersPending = 0;
 // Whether C# took the latest snapshot we queued; see sendSnapshotNow.
 let lastSnapshotTaken: Promise<boolean> = Promise.resolve(true);
 
@@ -98,6 +101,7 @@ function postInOrder(
     url: string,
     body: string,
 ): Promise<boolean> {
+    postsPending++;
     const taken = postQueue.then(async () => {
         let reply: unknown;
         try {
@@ -120,7 +124,9 @@ function postInOrder(
         }
         return (reply as { data?: unknown }).data !== false;
     });
-    postQueue = taken.then(() => undefined);
+    postQueue = taken.then(() => {
+        postsPending--;
+    });
     return taken;
 }
 
@@ -130,6 +136,7 @@ async function takeSnapshot(): Promise<boolean> {
     const gather = gatherPageContent;
     if (!pageId || !gather) return true;
     let content: string;
+    gathersPending++;
     try {
         // Waits for the delay register to empty (see pageContentDelays).
         content = await gather();
@@ -146,6 +153,8 @@ async function takeSnapshot(): Promise<boolean> {
             error instanceof Error ? error.stack : undefined,
         );
         return false;
+    } finally {
+        gathersPending--;
     }
 
     // The page may have been unloaded, or navigated, while we were waiting.
@@ -276,6 +285,15 @@ export function stopWatchingPageForSnapshots(): void {
     lastSnapshotTaken = Promise.resolve(true);
     unsubscribeFromDelayRegister?.();
     unsubscribeFromDelayRegister = undefined;
+}
+
+/**
+ * True when nothing about the page is waiting to reach Bloom: no change waiting out the quiet
+ * time, no gather under way, and no post queued or in flight. For the e2e suite, which waits on
+ * this rather than guessing how long a snapshot takes to arrive.
+ */
+export function isSnapshotStreamIdle(): boolean {
+    return timer === undefined && gathersPending === 0 && postsPending === 0;
 }
 
 /**

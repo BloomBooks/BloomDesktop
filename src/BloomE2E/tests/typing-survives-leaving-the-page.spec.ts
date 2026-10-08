@@ -6,8 +6,8 @@
 // moment of leaving. So each case waits until Bloom has the typing (waitForBloomToHaveTyping), as a
 // person's pause before moving on would, and then checks the saved file.
 //
-// The quit cases automate "Quit Without Losing Changes" (Test Case ID 659). The others are a new
-// card; its Test Case ID goes in their titles once the card exists.
+// The quit cases automate "Quit Without Losing Changes" (Test Case ID 659); the others automate
+// "Typing Survives Leaving the Page" (Test Case ID 841).
 //
 // The tests are serial because each one works on the book the first one builds.
 
@@ -77,7 +77,9 @@ test.describe("typing survives leaving the page", () => {
         expect(pages, "test setup: four content pages").toHaveLength(4);
     });
 
-    test("clicking another page's thumbnail", async ({ page }) => {
+    test("clicking another page's thumbnail [Test Case ID 841]", async ({
+        page,
+    }) => {
         await typeOnPage(page, pages[0].id, "typed before clicking away");
         await selectPage(page, pages[1].id);
         await expectSavedPageToContain(
@@ -87,7 +89,7 @@ test.describe("typing survives leaving the page", () => {
         );
     });
 
-    test("duplicating the page from its menu keeps the typing on the page and its copy", async ({
+    test("duplicating the page from its menu keeps the typing on the page and its copy [Test Case ID 841]", async ({
         page,
     }) => {
         await typeOnPage(page, pages[1].id, "typed before duplicating");
@@ -104,7 +106,7 @@ test.describe("typing survives leaving the page", () => {
         );
     });
 
-    test("moving another page", async ({ page }) => {
+    test("moving another page [Test Case ID 841]", async ({ page }) => {
         await typeOnPage(page, pages[2].id, "typed before a page moved");
         await movePageToSlotOf(page, pages[3].id, pages[0].id);
         await expectSavedPageToContain(
@@ -114,7 +116,7 @@ test.describe("typing survives leaving the page", () => {
         );
     });
 
-    test("leaving the Edit tab", async ({ page }) => {
+    test("leaving the Edit tab [Test Case ID 841]", async ({ page }) => {
         await typeOnPage(page, pages[3].id, "typed before leaving the tab");
         await switchTab(page, "collection");
         await expectSavedPageToContain(

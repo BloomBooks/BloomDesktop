@@ -19,6 +19,7 @@ import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants"
 import { renderDragActivityTabControl } from "./js/AbovePageControls";
 import {
     getPageLoadId,
+    isSnapshotStreamIdle,
     notePageContentMayHaveChanged,
     startWatchingPageForSnapshots,
 } from "./js/pageSnapshot";
@@ -65,12 +66,14 @@ document.addEventListener("DOMContentLoaded", () => {
 // but I think it is unwise. It is so easy for an extra file to get imported into another bundle,
 // and then it will bring this along, with disastrous results.
 export interface IPageFrameExports {
-    // The combined "body <SPLIT-DATA> userCss" string that a save needs, gathered without
+    // The combined "page <SPLIT-DATA> userCss" string that a save needs, gathered without
     // disturbing the live page.
     getPageContentForSaveWhenReady(): Promise<string>;
     pageUnloading(): void;
     // See pageSnapshot.ts.
     notePageContentMayHaveChanged(): void;
+    // See pageSnapshot.ts. For the e2e suite.
+    isSnapshotStreamIdle(): boolean;
     copySelection(): void;
     cutSelection(): void;
     pasteClipboard(): void;
@@ -171,6 +174,7 @@ export {
     captureContentForExternalProcessing,
     pageUnloading,
     notePageContentMayHaveChanged,
+    isSnapshotStreamIdle,
     topBarButtonClick,
     copySelection,
     cutSelection,
@@ -468,6 +472,7 @@ interface EditablePageBundleApi {
     e2eCanExpandActiveCanvasElementToFillSpace: typeof e2eCanExpandActiveCanvasElementToFillSpace;
     e2eOverrideCanExpandToFillSpace: typeof e2eOverrideCanExpandToFillSpace;
     e2eClearCanExpandToFillSpaceOverride: typeof e2eClearCanExpandToFillSpaceOverride;
+    isSnapshotStreamIdle: typeof isSnapshotStreamIdle;
     SayHello: typeof SayHello;
     renderDragActivityTabControl: typeof renderDragActivityTabControl;
     showGamePromptDialog: typeof showGamePromptDialog;
@@ -507,7 +512,7 @@ declare global {
         //
         // Step 1's flag: set in $(document).ready below; read in BookProcessor.ProcessOnePage.
         __bloomEditablePageReady?: boolean;
-        // Step 2/3's mailbox: the combined "body<SPLIT-DATA>userCss" string, or "ERROR: <message>".
+        // Step 2/3's mailbox: the combined "page<SPLIT-DATA>userCss" string, or "ERROR: <message>".
         __bloomExternalPageContent?: string;
     }
 }
@@ -548,6 +553,7 @@ window.editablePageBundle = {
     e2eCanExpandActiveCanvasElementToFillSpace,
     e2eOverrideCanExpandToFillSpace,
     e2eClearCanExpandToFillSpaceOverride,
+    isSnapshotStreamIdle,
     SayHello,
     renderDragActivityTabControl,
     showGamePromptDialog,

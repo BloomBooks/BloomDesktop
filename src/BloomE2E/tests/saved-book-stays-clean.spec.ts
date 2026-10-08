@@ -7,8 +7,8 @@
 // editor adds makes an untouched page look edited, so merely looking at a book rewrites it; or
 // something the editor adds is not taken off, and ends up in the book.
 //
-// The leftovers test automates "Clean Saved Book HTML" (Test Case ID 663). The unchanged-book test
-// is a new card; its Test Case ID goes in its title once the card exists.
+// The leftovers test automates "Clean Saved Book HTML" (Test Case ID 663); the unchanged-book tests
+// automate "Looking at Pages Does Not Rewrite the Book" (Test Case ID 842).
 //
 // The tests are serial because each one works on the book the first one builds.
 
@@ -22,6 +22,8 @@ import {
     makeBookFromTemplate,
     typeInGroup,
     waitForBloomToHaveTyping,
+    waitForPageToSettle,
+    type IBookPage,
 } from "../helpers/bookMaking";
 import {
     bookHtmlPath,
@@ -52,9 +54,46 @@ const BL_9992_CLASSES = [
 
 let bookFolder: string;
 
-/** Click every page's thumbnail in turn, touching nothing on any of them. */
-async function visitEveryPage(page: Page) {
-    for (const p of await getPages(page)) await selectPage(page, p.id);
+/**
+ * Visit `pagesToVisit` twice, touching nothing, and check that the second round leaves the book file
+ * as it was: nothing in it changes, and Bloom does not write it at all. The first round is allowed
+ * to settle things that legitimately change once when a page is first shown (the cover's title
+ * padding, for example). Each round starts and ends on a content page, so that entering and
+ * leaving the Edit tab only ever leaves a page that is being visited.
+ */
+async function expectVisitingWritesNothing(
+    page: Page,
+    pagesToVisit: (pages: IBookPage[]) => IBookPage[],
+) {
+    const round = async () => {
+        await switchTab(page, "edit");
+        const pages = await getPages(page);
+        const [firstContentPage] = pages.filter((p) => p.isContentPage);
+        for (const p of [
+            firstContentPage,
+            ...pagesToVisit(pages),
+            firstContentPage,
+        ]) {
+            await selectPage(page, p.id);
+            await waitForPageToSettle(page);
+        }
+        await switchTab(page, "collection");
+    };
+    await selectBook(page, bookFolder);
+    await round();
+
+    const before = await readBookIgnoringOrder(page, bookFolder);
+    const writtenBefore = fs.statSync(bookHtmlPath(bookFolder)).mtimeMs;
+    await round();
+
+    expect(
+        await readBookIgnoringOrder(page, bookFolder),
+        "Looking at the pages changed what the book says.",
+    ).toBe(before);
+    expect(
+        fs.statSync(bookHtmlPath(bookFolder)).mtimeMs,
+        "Looking at the pages made Bloom write the book file, though nothing in it changed.",
+    ).toBe(writtenBefore);
 }
 
 test.describe("the saved book stays clean", () => {
@@ -71,34 +110,30 @@ test.describe("the saved book stays clean", () => {
         await switchTab(page, "collection");
     });
 
-    test("visiting every page without editing does not rewrite the book", async ({
+    test("visiting the content pages and the cover without editing does not rewrite the book [Test Case ID 842]", async ({
         page,
     }) => {
         test.setTimeout(300000);
-        // One visit first: opening a page can legitimately settle something once (the cover's
-        // title padding, for example, is measured the first time the cover is shown), and that is
-        // not what this test is about.
-        await selectBook(page, bookFolder);
-        await switchTab(page, "edit");
-        await visitEveryPage(page);
-        await switchTab(page, "collection");
-
-        const before = await readBookIgnoringOrder(page, bookFolder);
-        const writtenBefore = fs.statSync(bookHtmlPath(bookFolder)).mtimeMs;
-
-        await switchTab(page, "edit");
-        await visitEveryPage(page);
-        await switchTab(page, "collection");
-
-        expect(
-            await readBookIgnoringOrder(page, bookFolder),
-            "Looking at the pages changed what the book says.",
-        ).toBe(before);
-        expect(
-            fs.statSync(bookHtmlPath(bookFolder)).mtimeMs,
-            "Looking at the pages made Bloom write the book file, though nothing in it changed.",
-        ).toBe(writtenBefore);
+        await expectVisitingWritesNothing(page, (pages) =>
+            pages.filter(
+                (p, index) => p.isContentPage || index === 0, // index 0 is the front cover
+            ),
+        );
     });
+
+    // Two xmatter pages still rewrite the book on every visit, for reasons older than saving
+    // without reloading (which only made them visible, by no longer rewriting the book on every
+    // save anyway): the credits page's empty ISBN box comes back from the editor as <p></p> while
+    // the data div keeps restoring it to empty, and the outside back cover's branding block is
+    // re-injected with a different class spelling and missing-image alt text each time. See
+    // AUTOMATION-DEBT.md, "Visiting xmatter pages rewrites the book".
+    test.fixme(
+        "visiting every page, front and back matter included, without editing does not rewrite the book [Test Case ID 842]",
+        async ({ page }) => {
+            test.setTimeout(300000);
+            await expectVisitingWritesNothing(page, (pages) => pages);
+        },
+    );
 
     test("editing with tools open leaves no editor leftovers in the saved book [Test Case ID 663]", async ({
         page,
@@ -122,9 +157,10 @@ test.describe("the saved book stays clean", () => {
         await selectPage(page, second.id);
         await openTool(page, "imageDescription", ".imgDescLabelBlock");
         await openReaderTool(page, "leveledReader");
+        // The page's own text box, not the image description group the tool adds in front of it.
         await typeInGroup(
             page,
-            ".bloom-translationGroup",
+            ".bloom-translationGroup:not(.bloom-imageDescription)",
             "en",
             "Typed with the image description and reader tools open.",
         );

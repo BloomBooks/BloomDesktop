@@ -2084,6 +2084,16 @@ namespace Bloom.Edit
             //OK, looks safe, time to save.
             var editedDom = new HtmlDom(docFromBrowser);
             LogCoverTitleArrivingFromBrowser(editedDom);
+            // The page as edited carries editing-only ?transparent= parameters on image srcs (see
+            // HtmlDom.AddTransparencyParamToImages). ProcessPageAfterEditing removes them from what
+            // is saved; remove them before comparing the page's book-wide data too, or a cover whose
+            // picture is book-wide data (coverImage) looks changed on every visit and forces a full
+            // save.
+            var editedPageDiv =
+                editedDom.RawDom.SelectSingleNode("//div[contains(@class,'bloom-page')]")
+                as SafeXmlElement;
+            if (editedPageDiv != null)
+                HtmlDom.RemoveTransparencyParamFromImages(editedPageDiv);
             var newPageData = GetPageData(editedDom.RawDom);
             // True when something OUTSIDE the page HTML we are about to hand over wants saving: a
             // data-derived value some dialog changed, altered feature requirements, or a caller

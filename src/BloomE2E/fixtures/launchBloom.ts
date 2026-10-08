@@ -708,11 +708,10 @@ function killProcessTree(pids: number[]): void {
 }
 
 /**
- * Ask Bloom to quit, the way closing its window does, and wait until it has exited. taskkill
- * without /F posts WM_CLOSE to the process's windows, which WinForms turns into closing the main
- * window (Shell.OnFormClosing), so Bloom saves and shuts down exactly as for a person's click on the
- * close box. Then kill whatever is left of the tree (WebView2 children can outlive Bloom briefly)
- * and confirm the port went dark.
+ * Ask Bloom to quit, the way closing its window does, and wait until it has exited. Closing the
+ * main window runs Shell.OnFormClosing, so Bloom saves and shuts down exactly as for a person's
+ * click on the close box. Then kill whatever is left of the tree (WebView2 children can outlive
+ * Bloom briefly) and confirm the port went dark.
  */
 async function quitAndWaitForExit(
     running: IRunningBloom,
@@ -720,15 +719,17 @@ async function quitAndWaitForExit(
 ): Promise<void> {
     if (process.platform !== "win32")
         throw new Error("quitAndRestart is implemented only on Windows.");
-    try {
-        execFileSync("taskkill", ["/pid", String(running.servingPid)], {
-            stdio: "ignore",
-        });
-    } catch {
+    // Post WM_CLOSE to Bloom's main window, exactly what its close box does. Neither of the
+    // obvious tools does that reliably for an automation Bloom: taskkill without /F sends it to
+    // whichever top-level windows it finds (Bloom has several, the WebView2 hosts among them), and
+    // .NET's CloseMainWindow() does not recognise the --dont-disturb window as the main one. So
+    // post it ourselves to the process's visible top-level windows.
+    const closed = postCloseToTopLevelWindows(running.servingPid);
+    if (closed === 0)
         throw new Error(
-            `Could not ask Bloom (pid ${running.servingPid}) to close: taskkill failed.`,
+            `Could not ask Bloom (pid ${running.servingPid}) to close: no visible top-level ` +
+                `window to send it to. Its visible windows: ${visibleWindowTitles(running.servingPid)}.`,
         );
-    }
     const isAlive = (pid: number) => {
         try {
             process.kill(pid, 0);
@@ -742,11 +743,86 @@ async function quitAndWaitForExit(
         if (Date.now() > deadline)
             throw new Error(
                 `Bloom (pid ${running.servingPid}) did not exit within ${timeoutMs}ms of being ` +
-                    "asked to close. It may be showing a dialog, or the exit save may have hung.",
+                    "asked to close. It may be showing a dialog, or the exit save may have hung. " +
+                    `Its visible windows: ${visibleWindowTitles(running.servingPid)}.`,
             );
         await delay(250);
     }
     await killAndWaitForPortToGoDark(running);
+}
+
+/**
+ * Post WM_CLOSE to every visible top-level window of `pid` and return how many there were. In
+ * --dont-disturb mode Bloom's main window has a hidden owner, so ownership cannot single it out;
+ * normally it is the only visible one.
+ */
+function postCloseToTopLevelWindows(pid: number): number {
+    const script = `
+Add-Type @"
+using System; using System.Runtime.InteropServices;
+public static class BloomE2eClose {
+  public delegate bool EnumProc(IntPtr h, IntPtr l);
+  [DllImport("user32.dll")] public static extern bool EnumWindows(EnumProc p, IntPtr l);
+  [DllImport("user32.dll")] public static extern int GetWindowThreadProcessId(IntPtr h, out int pid);
+  [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr h);
+  [DllImport("user32.dll")] public static extern bool PostMessage(IntPtr h, uint msg, IntPtr w, IntPtr l);
+  public static int Close(int target) {
+    int count = 0;
+    EnumWindows((h, l) => { int p; GetWindowThreadProcessId(h, out p);
+      if (p == target && IsWindowVisible(h)) { PostMessage(h, 0x0010, IntPtr.Zero, IntPtr.Zero); count++; }
+      return true; }, IntPtr.Zero);
+    return count;
+  }
+}
+"@
+[BloomE2eClose]::Close(${pid})`;
+    try {
+        return Number(
+            execFileSync(
+                "powershell",
+                ["-NoProfile", "-NonInteractive", "-Command", script],
+                { encoding: "utf8", timeout: 30000 },
+            ).trim(),
+        );
+    } catch {
+        return 0;
+    }
+}
+
+/**
+ * The titles of a process's visible top-level windows, for an error message: a dialog Bloom is
+ * showing (and waiting on) appears here by name. Best effort; says so if it cannot tell.
+ */
+function visibleWindowTitles(pid: number): string {
+    const script = `
+Add-Type @"
+using System; using System.Text; using System.Runtime.InteropServices; using System.Collections.Generic;
+public static class BloomE2eWindows {
+  public delegate bool EnumProc(IntPtr h, IntPtr l);
+  [DllImport("user32.dll")] public static extern bool EnumWindows(EnumProc p, IntPtr l);
+  [DllImport("user32.dll")] public static extern int GetWindowThreadProcessId(IntPtr h, out int pid);
+  [DllImport("user32.dll")] public static extern int GetWindowText(IntPtr h, StringBuilder s, int n);
+  [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr h);
+  public static string Titles(int target) {
+    var titles = new List<string>();
+    EnumWindows((h, l) => { int p; GetWindowThreadProcessId(h, out p);
+      if (p == target && IsWindowVisible(h)) { var sb = new StringBuilder(256); GetWindowText(h, sb, 256); titles.Add("'" + sb + "'"); }
+      return true; }, IntPtr.Zero);
+    return string.Join(", ", titles);
+  }
+}
+"@
+[BloomE2eWindows]::Titles(${pid})`;
+    try {
+        const titles = execFileSync(
+            "powershell",
+            ["-NoProfile", "-NonInteractive", "-Command", script],
+            { encoding: "utf8", timeout: 30000 },
+        ).trim();
+        return titles || "none";
+    } catch {
+        return "(could not list them)";
+    }
 }
 
 /** One running Bloom process: the ports it opened and every pid worth killing. */

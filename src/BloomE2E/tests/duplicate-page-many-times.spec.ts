@@ -3,8 +3,8 @@
 //
 // The dialog used to be a WinForms window CDP could not reach, which is why the Duplicate Page test
 // (Test Case ID 349) left this step to its manual portion (Test Case ID 810). It now opens inside
-// the Edit tab (duplicateManyDialog.tsx; BL-13502), so it can be driven. This is a new card split
-// from 810; its Test Case ID goes in the titles once the card exists.
+// the Edit tab (duplicateManyDialog.tsx; BL-13502), so it can be driven. Automates "Duplicate Page
+// Many Times" (Test Case ID 844), split from 810.
 //
 // The tests are serial because each one works on the book the first one builds.
 
@@ -39,7 +39,7 @@ test.describe("Duplicate Page Many Times", () => {
         [source] = await getContentPages(page);
     });
 
-    test("locks the workspace tabs while open, and Cancel adds nothing", async ({
+    test("locks the workspace tabs while open, and Cancel adds nothing [Test Case ID 844]", async ({
         page,
     }) => {
         const before = (await getPages(page)).length;
@@ -59,7 +59,7 @@ test.describe("Duplicate Page Many Times", () => {
         expect((await getPages(page)).length).toBe(before);
     });
 
-    test("OK adds the number of copies asked for, right after the page", async ({
+    test("OK adds the number of copies asked for, right after the page [Test Case ID 844]", async ({
         page,
     }) => {
         const dialog = await openDuplicatePageManyTimes(page, source.id);

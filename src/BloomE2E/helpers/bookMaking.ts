@@ -654,6 +654,40 @@ export async function clickInGroup(
 }
 
 /**
+ * Wait until the page being shown has finished what it does by itself after loading, and Bloom has
+ * received the page as it then stands. Use it where a test visits a page and moves on, and the
+ * page's saved form matters.
+ *
+ * One fixed wait, for a specific reason: OverflowChecker.AdjustSizeOrMarkOverflowSoon checks each
+ * text box exactly 1000 ms after the page loads (and may set its min-height), on a timer the delay
+ * register does not track. A person reading the page lets it run; so does this. After that, wait
+ * on state: the page's snapshot stream has nothing left to send (isSnapshotStreamIdle in
+ * pageSnapshot.ts).
+ */
+export async function waitForPageToSettle(page: Page): Promise<void> {
+    await page.waitForTimeout(1050);
+    await expect
+        .poll(
+            () =>
+                editablePageFrame(page).evaluate(() =>
+                    (
+                        window as unknown as {
+                            editablePageBundle: {
+                                isSnapshotStreamIdle: () => boolean;
+                            };
+                        }
+                    ).editablePageBundle.isSnapshotStreamIdle(),
+                ),
+            {
+                timeout: 15000,
+                message:
+                    "The page being edited never finished sending itself to Bloom.",
+            },
+        )
+        .toBe(true);
+}
+
+/**
  * Wait until Bloom has received the page being edited with `text` in it.
  *
  * Every save takes the page from the copy the browser sends Bloom a moment after typing settles
