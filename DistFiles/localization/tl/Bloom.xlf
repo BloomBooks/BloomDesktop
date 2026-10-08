@@ -1584,6 +1584,11 @@
         <target xml:lang="tl" state="needs-translation">Video</target>
         <note>ID: EditTab.CustomPage.Video</note>
       </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Table" translate="no" sil:dynamic="true">
+        <source xml:lang="en">Table</source>
+        <target xml:lang="tl" state="needs-translation">Table</target>
+        <note>ID: EditTab.CustomPage.Table</note>
+      </trans-unit>
       <trans-unit id="EditTab.CustomPage.TextBox" sil:dynamic="true">
         <source xml:lang="en">Text Box</source>
         <target xml:lang="tl" state="needs-translation">Text Box</target>
