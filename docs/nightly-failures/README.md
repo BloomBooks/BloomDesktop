@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-10-07 (nightlies through the 2026-10-07 run have been triaged)
+**Last updated:** 2026-10-09 (nightlies through the 2026-10-09 15:39 UTC dispatched run have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -60,7 +60,7 @@ use the `nightly-triage` skill.
 - **Status:** on master, seven tests are still `test.fixme` (`toolbox-tools.spec.ts`,
   `reader-tool-stage-and-level.spec.ts`).
   - The fix is in the last part of the toolbox rework,
-    [PR #8447](https://github.com/BloomBooks/BloomDesktop/pull/8447) (draft,
+    [PR #8447](https://github.com/BloomBooks/BloomDesktop/pull/8447) (in review,
     [BL-16608](https://issues.bloomlibrary.org/youtrack/issue/BL-16608)). Each late restore
     (the toolbox's own and `readerToolsModel.restoreState()`) now applies a saved setting only
     if it has not changed since it was read. That branch re-enables the seven tests.
