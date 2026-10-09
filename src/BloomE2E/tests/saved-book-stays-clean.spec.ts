@@ -121,19 +121,14 @@ test.describe("the saved book stays clean", () => {
         );
     });
 
-    // Two xmatter pages still rewrite the book on every visit, for reasons older than saving
-    // without reloading (which only made them visible, by no longer rewriting the book on every
-    // save anyway): the credits page's empty ISBN box comes back from the editor as <p></p> while
-    // the data div keeps restoring it to empty, and the outside back cover's branding block is
-    // re-injected with a different class spelling and missing-image alt text each time. See
-    // AUTOMATION-DEBT.md, "Visiting xmatter pages rewrites the book".
-    test.fixme(
-        "visiting every page, front and back matter included, without editing does not rewrite the book [Test Case ID 842]",
-        async ({ page }) => {
-            test.setTimeout(300000);
-            await expectVisitingWritesNothing(page, (pages) => pages);
-        },
-    );
+    // The test collection has no branding images, so the outside back cover's branding block is a
+    // missing optional image on every visit.
+    test("visiting every page, front and back matter included, without editing does not rewrite the book [Test Case ID 842]", async ({
+        page,
+    }) => {
+        test.setTimeout(300000);
+        await expectVisitingWritesNothing(page, (pages) => pages);
+    });
 
     test("editing with tools open leaves no editor leftovers in the saved book [Test Case ID 663]", async ({
         page,

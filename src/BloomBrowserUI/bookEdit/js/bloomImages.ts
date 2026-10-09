@@ -1302,9 +1302,22 @@ export function getDisplayNameFromImageUrl(rawImageUrl: string): string {
     }
 }
 
+// The same test as EpubMaker.IsBranding in C#: marked as branding itself, or inside a data-book
+// element that holds branding, such as "outside-back-cover-branding-bottom-html".
+export function isBrandingImage(img: HTMLElement): boolean {
+    return (
+        img.classList.contains("branding") ||
+        !!img.closest("[data-book*='branding']")
+    );
+}
+
 // Instead of "missing", we want to show it in the right ui language. We also want the text
 // to indicate that it might not be missing, just didn't load (this happens on slow machines)
 function SetAlternateTextOnImages(element) {
+    // Every branding image is optional, so one that is not there is not worth a message. Its alt
+    // comes from the branding and is book-wide data: changing it here would get saved, and make
+    // every visit to the page look like an edit to the whole book.
+    if (isBrandingImage(element)) return;
     const rawImageUrl = GetRawImageUrl(element);
     if (rawImageUrl.length > 0) {
         if (isPlaceHolderImage(rawImageUrl)) {

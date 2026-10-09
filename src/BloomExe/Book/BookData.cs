@@ -1799,7 +1799,9 @@ namespace Bloom.Book
                 }
                 if (attr.Name == "class")
                 {
-                    var classes = attr.Value.Split().ToList();
+                    var classes = attr
+                        .Value.Split((char[])null, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
                     classes.RemoveAll(x =>
                         _classesNotToCopy.Contains(x)
                         || x.EndsWith("-style", StringComparison.Ordinal)
@@ -2141,8 +2143,13 @@ namespace Bloom.Book
                     var classesToRemove = new HashSet<string>(_classesToRemoveIfAbsent);
                     // There's probably a HashSet union function we could use here a little more concisely.
                     // I prefer not to disturb the order of the classes more than we have to.
-                    var newClasses = tuple.Item2.Unencoded.Split();
-                    var classes = node.GetAttribute("class").Split().ToList();
+                    var newClasses = tuple.Item2.Unencoded.Split(
+                        (char[])null,
+                        StringSplitOptions.RemoveEmptyEntries
+                    );
+                    var classes = node.GetAttribute("class")
+                        .Split((char[])null, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
                     var currentSet = new HashSet<string>(classes);
                     foreach (var newClass in newClasses)
                     {

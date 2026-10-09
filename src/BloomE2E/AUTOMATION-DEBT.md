@@ -247,27 +247,6 @@ by their English labels, exactly as the top bar does. Same fix: a `data-testid` 
 taken from the `commandId` the menu already has.
 (Found 2026-09-01 while scaffolding src/BloomE2E.)
 
-## Visiting xmatter pages rewrites the book
-
-Bloom writes a page only when what the browser sends differs from what the book holds (BL-13502),
-so merely looking at a page should write nothing. Two front/back matter pages still differ on every
-visit, so `saved-book-stays-clean.spec.ts` checks only the content pages and the cover, and its
-all-pages test is `test.fixme` (Test Case ID 842):
-
-- the credits page's empty ISBN box (`data-book="ISBN"`, `lang="*"`) comes back from the editor as
-  `<p></p>`, while the data div keeps putting it back to empty when the page is loaded;
-- the outside back cover's branding block (`outside-back-cover-branding-bottom-html`) is
-  re-injected with `class="bloom-force-publish "` (trailing space) and with the missing-image alt
-  text on its images, and comes back from the editor with `class="bloom-force-publish"` and
-  `alt=""`, so the two alternate.
-
-Both are older than saving without reloading, which only made them visible by no longer
-rewriting the book on every save. Fix direction: settle each value to one form when the page is
-prepared for editing, so the browser hands back what the book already holds; then remove the
-`test.fixme`. (The cover had a third, a `?transparent=yes` image parameter that only the editing
-page carries, fixed on the same branch by stripping it before the book-wide data is compared.)
-(Found 2026-10-08 while writing `saved-book-stays-clean.spec.ts`.)
-
 ## One toolbox harness test asserts on classes that do not exist
 
 `react_components/ToolboxRootTestHarness`'s suite has one `test.fixme` because it asserts on
