@@ -219,6 +219,11 @@ export function setupControlFrame(
         },
         { className: "has-svg", enabled: hasSvg },
         { className: "has-text", enabled: hasText },
+        // Every cell of a table holds a text box, so a table counts as has-text and gets the side
+        // handles. It needs the corner handles as well, because its rows share out the height the
+        // way its columns share out the width, and only a corner changes both at once. This class
+        // is what keeps editMode.less from hiding them (see the has-text block there).
+        { className: "holds-table", enabled: holdsATable(eltToPutControlsOn) },
         {
             className: "can-rotate",
             enabled: canRotateCanvasElement(eltToPutControlsOn),
@@ -293,8 +298,11 @@ function setHandleCursorsForRotation(
 }
 
 // Align the control frame with the active canvas element.
+// updateHandleTitles false skips the handle tooltips, which cost a request to Bloom each time;
+// callers that only move or rescale the frame (a zoom change) cannot change them.
 export function alignControlFrameWithActiveElement(
     activeElement: HTMLElement | undefined,
+    updateHandleTitles: boolean = true,
 ): void {
     const controlFrame = document.getElementById(
         "canvas-element-control-frame",
@@ -375,33 +383,35 @@ export function alignControlFrameWithActiveElement(
     );
 
     const hasText = controlFrame.classList.contains("has-text");
-    // We don't need to await these, they are just async so the handle titles can be updated
-    // once the localization manager retrieves them.
-    void getHandleTitlesAsync(
-        controlFrame,
-        "bloom-ui-canvas-element-resize-handle",
-        "Resize",
-    );
-    void getHandleTitlesAsync(
-        controlFrame,
-        "bloom-ui-canvas-element-side-handle",
-        hasText ? "ChangeShape" : "Crop",
-        // We don't need to change it while we're moving the frame, only if we're switching
-        // between text and image. And there's another state we want
-        // when cropping a background image and snapped.
-        !controlFrame.classList.contains("moving"),
-        "data-title",
-    );
-    void getHandleTitlesAsync(
-        controlFrame,
-        "bloom-ui-canvas-element-move-crop-handle",
-        "Shift",
-    );
-    void getHandleTitlesAsync(
-        controlFrame,
-        "bloom-ui-canvas-element-rotate-handle",
-        "Rotate",
-    );
+    if (updateHandleTitles) {
+        // We don't need to await these, they are just async so the handle titles can be updated
+        // once the localization manager retrieves them.
+        void getHandleTitlesAsync(
+            controlFrame,
+            "bloom-ui-canvas-element-resize-handle",
+            "Resize",
+        );
+        void getHandleTitlesAsync(
+            controlFrame,
+            "bloom-ui-canvas-element-side-handle",
+            hasText ? "ChangeShape" : "Crop",
+            // We don't need to change it while we're moving the frame, only if we're switching
+            // between text and image. And there's another state we want
+            // when cropping a background image and snapped.
+            !controlFrame.classList.contains("moving"),
+            "data-title",
+        );
+        void getHandleTitlesAsync(
+            controlFrame,
+            "bloom-ui-canvas-element-move-crop-handle",
+            "Shift",
+        );
+        void getHandleTitlesAsync(
+            controlFrame,
+            "bloom-ui-canvas-element-rotate-handle",
+            "Rotate",
+        );
+    }
     // Text boxes get a little extra padding, making the control frame bigger than
     // the canvas element itself. The extra needed corresponds roughly to the (.less) @sideHandleRadius,
     // but one pixel less seems to be enough to prevent the side handles actually overlapping text,
@@ -498,6 +508,29 @@ export function adjustMoveCropHandleVisibility(
     CanvasElementHandleDragInteractions.updateCurrentlyCropped(activeElement);
 }
 
+/** Whether this canvas element's content is a table. */
+function holdsATable(element: HTMLElement): boolean {
+    return element.getElementsByClassName("bloom-table").length > 0;
+}
+
+// How far below its own bottom edge a table reaches with the controls bloom-table draws there:
+// the table pill and the "Add row at the bottom edge" button sit in a band 8px below the cells,
+// and both are 20px tall. The canvas element's toolbar goes below the whole band, or it lands on
+// top of those two and a press meant for either of them hits Duplicate or Delete instead.
+const kTableChromeBandHeight = 28;
+
+/**
+ * How much room the active canvas element's own contents claim below it, which the canvas
+ * element's toolbar has to clear. Only a table claims any.
+ */
+function getTableChromeBandHeight(
+    activeElement: HTMLElement | undefined,
+): number {
+    return activeElement && holdsATable(activeElement)
+        ? kTableChromeBandHeight
+        : 0;
+}
+
 export function adjustContextControlPosition(
     controlFrame: HTMLElement | null,
     controlsAbove: boolean,
@@ -565,6 +598,8 @@ export function adjustContextControlPosition(
         ) {
             top = bloomCanvasRect.bottom + 11;
         }
+        // A table puts its own controls in the same band, so the toolbar has to start below them.
+        top += getTableChromeBandHeight(activeElement);
     }
     if (
         controlFrameRect.top === 0 &&

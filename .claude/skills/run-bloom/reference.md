@@ -47,7 +47,19 @@ node .claude/skills/run-bloom/launcherControl.mjs --shutdown --json             
 - **The human closing Bloom tears the whole stack down**: launcher, dotnet watch and Vite exit so
   an idle stack stops holding memory. The launcher tells that apart from a dotnet-watch rebuild
   by the watcher's file-changed output, so C# edits do not kill the stack. Only `--quit-bloom`
-  leaves the launcher parked in `awaiting-restart`.
+  leaves the launcher parked in `awaiting-restart`. Bloom relaunching itself counts as closing:
+  renaming a collection in Settings starts a new `Bloom.exe --rename ...` and exits (`Program.cs`),
+  so the rename completes but the stack goes down; `--ensure-running` again afterwards.
+- **Which collection opens.** The launcher cannot name a collection; Bloom opens the first entry
+  of the `MruProjects` list in `%LOCALAPPDATA%\SIL\Bloom\<version>\user.config` (`6.6.0.0` on
+  master), which every dev build on the machine shares. Before a test that saves settings,
+  restarts or renames, copy a small collection to your scratchpad, back that `user.config` up,
+  put the copy's `.bloomCollection` path first in the list, and restore the backup after the
+  stack is down (Bloom rewrites the list when it exits). Editing that shared file needs the
+  developer's say-so.
+- **The workspace page's URL changes.** Each launch and each collection reopen serves the shell
+  from a new `Temp/bloomXXXX.htm`, so find the page by its title, `ReactControl (Vite
+  appBundle)`, not by a remembered URL.
 - `/status` reports `sourceChangedSinceReady`: whether dotnet watch has seen C# changes since the
   current Bloom became ready, so whether `--restart` would incorporate anything. Bloom polls the
   same field (when launched via `--launcher-port`, see `DevLauncher.cs`) for its dev-only restart
@@ -210,7 +222,26 @@ What to know:
   `--remote-debugging-port`. It can happen that while the Book Making tab is showing,
   the CDP endpoint listed *only* the dialog's page, and the shell page came back when the dialog
   closed. So the endpoint can flip between browser processes; re-list targets after a WinForms
-  dialog opens or closes rather than holding on to a page handle.
+  dialog opens or closes rather than holding on to a page handle. Equally, the dialog's page
+  may never show up: with the Settings dialog on its Bloom Subscription tab, repeated listings
+  showed only the shell page. When that happens, drive the dialog's page with the mouse (next
+  bullet); its Paste button next to the code field takes a value from the clipboard without any
+  keyboard input (save and restore the developer's clipboard around it).
+- **When `select` lands on the wrong tab, click instead, DPI-aware.** On a machine with display
+  scaling, `select -Control "Project Information"` in the Settings dialog reported success
+  while the dialog showed the Bloom Subscription page, so the Project Information text boxes
+  were not in the tree; a real mouse click on the same tab item worked every time. Windows
+  PowerShell 5.1 is DPI-unaware, so the `BoundingRectangle` it gets from UIA and the
+  coordinates `SetCursorPos`/`CopyFromScreen` take are scaled differently (a window capture
+  comes out shifted and cropped). Call `SetProcessDpiAwarenessContext(-4)` (per-monitor v2,
+  from `user32.dll` via `Add-Type`) before touching UIA; after that the rectangle, the cursor
+  and screen capture all agree in physical pixels, a click at the rectangle's center hits, and
+  capturing the rectangle gives a true picture of the dialog. Only click with the pointer when
+  the developer has allowed it, and put the cursor back where it was afterwards.
+- **A tab strip lists only the tabs scrolled into view.** When the Settings dialog's tab strip
+  is scrolled (its `Spin` control is present), UIA shows only the visible `TabItem`s, and
+  `select` on an off-screen one says "No control". Reopen the dialog, or scroll with
+  `invoke -Control Forward`/`Backward`.
 - **Under `--e2e`, opening the Settings dialog currently kills Bloom.** See "WinForms surfaces
   are invisible to CDP" in `src/BloomE2E/AUTOMATION-DEBT.md` for the cause (a WebView2 DPI
   awareness mismatch against the shared e2e environment) before writing a test that opens it.
@@ -275,6 +306,78 @@ From `src/BloomBrowserUI/react_components/component-tester`:
 switching plus console and network observation. The `playwright` Node library over
 `http://127.0.0.1:<cdpPort>` is the confirmed attach path; MCP browser wrappers that own their own
 browser cannot attach to an existing CDP endpoint.
+
+## Driving the editable page over CDP (DOM interaction)
+
+Verified driving the real Bloom.exe WebView2 with Playwright's `chromium.connectOverCDP`.
+
+- **The page frame reloads.** After a tab switch or page change, re-find the `page` frame and poll
+  until your target selector exists (e.g. `.bloom-page`) before acting.
+- **Click editables with `{force:true}`.** Bloom overlays a format gear (`#formatButton`,
+  `.bloom-ui`) on a focused editable, and it intercepts normal clicks ("subtree intercepts pointer
+  events"). Re-query the editables between cells; the DOM can re-render.
+- **Saving a page.** There is no save button; navigating away persists the page. Switching
+  workspace tabs (Collections → Edit) forces a save+reload, which suits a round-trip test. The
+  saved book HTML is the book folder's main `<BookName>.htm`; ignore the `*-memsim-*` and
+  `*Pagelist*` temp files. Find the book folder from a page-frame iframe `src` (e.g.
+  `…/Bloom/<collection>/Book-xxxx/`).
+- **Undo is a C# accelerator; synthetic Ctrl+Z over CDP does NOT reach it.** Call the entry points
+  C# uses, from the *top* frame: `window.workspaceBundle.handleUndo()` and
+  `window.workspaceBundle.canUndo()` (returns `"yes"`/`"fail"`). Page-frame functions are likewise
+  on `window.editablePageBundle.*` inside the page frame, handy for asserting state without
+  scraping the DOM.
+- **Toolbox tools.** Optional/experimental tools must first be enabled via the "More…" settings
+  checkbox (e.g. `#<toolname>Check`, which calls `toolboxBundle.showOrHideTool_click(this)`) before
+  their accordion section appears. Tool buttons expose `title`/`aria-label` (e.g.
+  `button[title="Insert Row Below"]`), not `alt`.
+- **Capture console errors** while exercising React UI:
+  `page.on('console', m => { if (m.type()==='error') errors.push(m.text()); })`, the cheapest
+  check for "multiple React"/hook/MUI problems.
+- **After changing a front-end dependency** (relinking it, or bumping a GitHub dependency's hash),
+  restart the whole stack rather than relying on hot reload; otherwise the page runs the stale
+  copy. `launcherControl.mjs --restart` is *not* enough: it restarts Bloom.exe, but the Vite dev
+  server keeps serving the module it transformed at startup
+  (`curl http://localhost:<vitePort>/@id/<dep>` and grep for your change to confirm). Do not kill
+  the Vite process on its own either, because that takes the launcher down with it. Use `--shutdown` then
+  `--ensure-running`; the new stack picks new Vite and control ports, so re-read the status.
+
+## Change Layout (adding a section to a custom page)
+
+The Change Layout toggle turns on origami layout mode, which is the only place the
+section chooser ("Image, Video, Table, or Text") appears. So to give yourself a
+table, an image or a video to work with: turn the toggle on, click the section you
+want, then turn the toggle off.
+
+The toggle is **inside the page iframe**, not the shell: `AbovePageControls.tsx`
+renders a visually hidden checkbox `#changeLayoutToggle` with a visible
+`<label class="onoffswitch-label" for="changeLayoutToggle">`. Click the label; the
+checkbox itself is not clickable.
+
+```js
+const f = appPage.frames().find((fr) => fr.name() === "page");
+const state = () =>
+    f.evaluate(() => ({
+        checked: document.getElementById("changeLayoutToggle")?.checked,
+        marginBox: document.querySelector(".marginBox")?.className,
+    }));
+await f.locator('label.onoffswitch-label[for="changeLayoutToggle"]').click();
+// Layout mode adds a class, so the marginBox reads
+// "marginBox origami-layout-mode" while the toggle is on.
+```
+
+Two gotchas:
+
+- Allow about two seconds after the click. The page rebuilds its controls, and
+  `state()` right after the click still reports the old value.
+- **The chooser links exist twice.** A hidden `.origami-template-container` holds a
+  prototype copy of every link, and a plain locator matches that one first. Ask for
+  the visible one:
+  `f.locator('a[data-i18n="EditTab.CustomPage.Table"]:visible').first().click()`.
+
+The link's `data-i18n` values are `EditTab.CustomPage.Image`, `.Video`, `.Table`
+and `.Text`. A link only appears when its feature is on, so a missing Table link
+usually means the feature is not visible (see its entry in FeatureRegistry.cs), not that the
+click failed.
 
 ## Field-verified gotchas (all hit in real agent runs)
 

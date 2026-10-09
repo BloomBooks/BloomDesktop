@@ -15,6 +15,8 @@ import { PublishTabPane } from "../publish/PublishTab/PublishTabPane";
 import { kPanelBackground } from "../bloomMaterialUITheme";
 import { EditTabPane } from "./EditTabPane";
 import { ToastHost } from "../toast/ToastHost";
+import { E2eStepCaption } from "./e2eCaption/E2eStepCaption";
+import { CollectionSettingsDialog } from "../collection/CollectionSettingsDialog";
 import {
     EmbeddedSimpleProgressDialog,
     kBloomBridgeProgressContext,
@@ -71,6 +73,8 @@ export const App: React.FunctionComponent = () => {
                 {renderActiveTab()}
             </div>
             <div id="modal-dialog-container" />
+            {/* Here rather than in a tab pane, so Settings can be opened from any tab. */}
+            <CollectionSettingsDialog />
             {/* Bringing a book up to date ("Update Book", and the automatic pass before the AI
                 image editor or after a page-size change) shows its progress here, at the top
                 level: it is started from more than one tab, and the Edit tab empties its own
@@ -84,6 +88,9 @@ export const App: React.FunctionComponent = () => {
                 socketContext={kBloomBridgeProgressContext}
             />
             <ToastHost />
+            {/* Says what an end-to-end test is doing. Renders nothing unless Bloom was
+                launched with --e2e. */}
+            <E2eStepCaption />
         </div>
     );
 };

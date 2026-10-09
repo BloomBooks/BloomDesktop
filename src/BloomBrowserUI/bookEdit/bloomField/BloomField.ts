@@ -514,16 +514,33 @@ export default class BloomField {
                 return eventData.dataValue; // no change
             }
             // Split the text on carriage returns and put it back together with each bit in a paragraph.
+            // Each bit is plain text, so it must be escaped before it goes into HTML: we return this
+            // after CKEditor's paste filter has run, so anything in the text that looks like a tag
+            // would otherwise be inserted as one (BL-16982).
             const reconstitutedTextWithParas = textWithReturns
                 .split("\n")
                 .reduce(
-                    (resultSoFar, part) => resultSoFar + "<p>" + part + "</p>",
+                    (resultSoFar, part) =>
+                        resultSoFar +
+                        "<p>" +
+                        BloomField.escapeTextForHtml(part) +
+                        "</p>",
                     "",
                 );
             // Reset dataValue
             return reconstitutedTextWithParas;
         }
         return eventData.dataValue; // no change
+    }
+
+    // Make plain text safe to put inside an HTML element: the characters that would otherwise
+    // start a tag or an entity become entities. Not for attribute values, which also need quotes
+    // escaped.
+    private static escapeTextForHtml(text: string): string {
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
     }
 
     // Not private so we can unit test it. It is too difficult to get the actual paste

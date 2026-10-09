@@ -4340,6 +4340,11 @@ namespace Bloom.Book
             if (needToDoFullSave)
                 _bookData.SuckInDataFromEditedDom(editedPageDom, BookInfo); //this will do an updatetitle
 
+            // The user's permission to edit the sentence about the original book was good for
+            // one look at the page, so the copy that goes back into the book holds their wording
+            // as text they cannot type in.
+            BookCopyrightAndLicense.LockOriginalCopyrightNotice(pageToSaveToDisk);
+
             // When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles".
             // Here we copy that over to the book DOM.
             var userModifiedStyles = HtmlDom.GetUserModifiedStyleElement(editedPageDom.Head);
@@ -5015,6 +5020,39 @@ namespace Bloom.Book
                 BookInfo.MetaData.UseOriginalCopyright
             );
             BookInfo.SetLicenseAndCopyrightMetadata(metadata);
+        }
+
+        /// <summary>
+        /// True for exactly one rendering of the credits page: the one right after the user
+        /// clicks the padlock. Editing the sentence about the original book is a momentary
+        /// permission, so leaving the page or refreshing it shows it locked again.
+        /// </summary>
+        public bool OriginalCopyrightNoticeIsUnlockedForOneRendering { get; set; }
+
+        /// <summary>
+        /// Hand the sentence about the original book's copyright and license over to the user.
+        /// The wording Bloom is showing right now goes into the data div, which makes Bloom stop
+        /// generating it, and the next rendering of the page shows it as an editable field.
+        /// </summary>
+        public void LetUserEditOriginalCopyrightNotice()
+        {
+            // Only the first time: after that the data div already holds the user's own wording.
+            if (
+                XmlString.IsNullOrEmpty(
+                    _bookData.GetVariableOrNull(
+                        BookCopyrightAndLicense.kUserOriginalCopyrightAndLicense,
+                        "*"
+                    )
+                )
+            )
+            {
+                BookCopyrightAndLicense.SeedUserEditableOriginalCopyrightNotice(
+                    OurHtmlDom,
+                    _bookData
+                );
+                SetMetadata(GetLicenseMetadata());
+            }
+            OriginalCopyrightNoticeIsUnlockedForOneRendering = true;
         }
 
         public void SetTitle(string name)
