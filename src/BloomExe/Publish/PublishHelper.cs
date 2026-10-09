@@ -48,6 +48,13 @@ namespace Bloom.Publish
             _latestInstance = null;
         }
 
+        /// <summary>
+        /// A static mirror of WorkspaceTabSelection.ActiveTab == WorkspaceTab.publish, which exists
+        /// only because the code that stages books (and so hits the guard in the constructor above)
+        /// is static and cannot get at the one WorkspaceTabSelection. Its setter is the sole writer:
+        /// do not set this from anywhere else, or the two can drift apart and turn an ordinary
+        /// publish into the exception above (BL-16174).
+        /// </summary>
         public static bool InPublishTab { get; set; }
 
         private OffScreenBrowser _pageChecksBrowser;
