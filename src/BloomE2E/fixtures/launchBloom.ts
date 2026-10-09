@@ -130,7 +130,7 @@ export interface ILaunchBloomOptions {
      * --e2e). See ExperimentalFeatures.TokensFromE2eCommandLine.
      */
     experimentalFeatures?: string[];
-    /** How long to wait for Bloom to start serving the collection. Default 240 seconds. */
+    /** How long to wait for Bloom to start serving the collection. Default LAUNCH_DEADLINE_MS. */
     readyTimeoutMs?: number;
 }
 
@@ -458,6 +458,25 @@ export function launchWithDontDisturb(): boolean {
 }
 
 /**
+ * How long a launch waits for Bloom to serve its collection (or reach the chooser) before failing
+ * with a description of what it saw. Bloom usually gets there in seconds, but startup has taken
+ * well over a minute on a machine busy with a build or scanning freshly built files, and a little
+ * over two minutes when a second e2e Bloom was cold-starting at the same time (one developer
+ * running two suites, or two agents in two worktrees). So this is generous: a slow Bloom is not
+ * what these tests are about, and nothing waits this long in a healthy run, since the wait stops
+ * the moment Bloom answers. The launching fixture's own timeout (bloomTest.ts) is longer, so a
+ * launch that does give up reports why.
+ */
+export const LAUNCH_DEADLINE_MS = 300000;
+
+/**
+ * How long one probe of a port's instanceInfo may take. A probe that times out is simply sent
+ * again on the next pass, so this never fails a launch by itself; it only keeps one unanswered
+ * request from holding up the whole wait.
+ */
+const PROBE_TIMEOUT_MS = 30000;
+
+/**
  * The environment the Bloom we launch runs in. One variable decides where its windows go,
  * BLOOM_AUTOMATION_MONITOR, and Bloom reads it itself (see AutomationWindowPlacement.cs):
  * "headless" puts every window off every monitor, a monitor number puts them on that monitor, and
@@ -528,13 +547,17 @@ async function readInstanceInfo(
     port: number,
 ): Promise<IInstanceInfo | undefined> {
     try {
+        // A request that reaches a Bloom still starting its server can go unanswered for good, and
+        // without a timeout that one request would hold up discovery until the launch deadline; a
+        // fresh request a moment later is answered at once.
         const response = await fetch(
             `http://localhost:${port}/bloom/api/common/instanceInfo`,
+            { signal: AbortSignal.timeout(PROBE_TIMEOUT_MS) },
         );
         if (!response.ok) return undefined;
         return (await response.json()) as IInstanceInfo;
     } catch {
-        // Nothing responding on that port.
+        // Nothing responding on that port, or not in time.
         return undefined;
     }
 }
@@ -963,12 +986,7 @@ export async function launchBloom(
         throw error;
     }
 
-    // Four minutes, not the two you would expect a start to need. A Bloom cold-starting while a
-    // second e2e Bloom is starting on the same machine -- one developer running two suites, or two
-    // agents in two worktrees -- has been seen to take a little over two minutes to serve its
-    // collection, so a two-minute limit failed runs whose only fault was the company they kept.
-    // Nothing waits this long in a healthy run: the loop stops the moment Bloom answers.
-    const readyTimeoutMs = options.readyTimeoutMs ?? 240000;
+    const readyTimeoutMs = options.readyTimeoutMs ?? LAUNCH_DEADLINE_MS;
 
     // The experimental features the Bloom running now was given. A restart may replace them
     // (ILaunchedBloom.restart), so this is a variable rather than a read of the options.
@@ -1102,7 +1120,11 @@ export async function launchBloomIntoChooser(
     process.once("exit", cleanUpOnExit);
 
     try {
-        running = await startBloomOn(undefined, userSettingsDir, 120000);
+        running = await startBloomOn(
+            undefined,
+            userSettingsDir,
+            LAUNCH_DEADLINE_MS,
+        );
     } catch (error) {
         process.removeListener("exit", cleanUpOnExit);
         fs.rmSync(tempRoot, { recursive: true, force: true });

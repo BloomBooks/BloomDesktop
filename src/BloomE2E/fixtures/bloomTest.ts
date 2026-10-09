@@ -20,6 +20,7 @@ import {
 import {
     launchBloom,
     launchBloomIntoChooser,
+    LAUNCH_DEADLINE_MS,
     type ILaunchedBloom,
     type ILaunchedChooserBloom,
     type ICollectionSpec,
@@ -517,7 +518,14 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                 await launched?.stop();
             }
         },
-        { scope: "worker" },
+        // Longer than every wait in the setup above put together: the launch's own deadline, then
+        // connecting over CDP and finding the shell or chooser page, each allowed
+        // SHELL_READY_TIMEOUT_MS, plus a minute for the rest. Whichever of those gives up first
+        // then says why, rather than being cut off by Playwright's timeout.
+        {
+            scope: "worker",
+            timeout: LAUNCH_DEADLINE_MS + 2 * SHELL_READY_TIMEOUT_MS + 60000,
+        },
     ],
 
     // The typed views of _launchedApp. Using the one that does not match the launch mode fails
