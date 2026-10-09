@@ -60,7 +60,6 @@ namespace BloomTests.SafeXml
         }
 
         [Test]
-        [Category("SkipOnTeamCity")] // This is flaky on TeamCity for some reason. We need to fix it up; for now, skip it.
         public void Xml_DoesNotProvide_ThreadSafety()
         {
             // The point of this test is that unsynchronised use of an XmlDocument from several
