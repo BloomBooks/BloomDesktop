@@ -16,47 +16,57 @@ namespace BloomTests.SafeXml
         [Category("SkipOnTeamCity")] // This is flaky on TeamCity for some reason. We need to fix it up; for now, skip it.
         public void Xml_DoesNotProvide_ThreadSafety()
         {
-            var tasks = new List<Task>();
+            // The point of this test is that unsynchronised use of an XmlDocument from several
+            // threads goes wrong, which is why SafeXml exists. Showing that takes a real collision,
+            // and a collision is a matter of timing. So rather than doing a fixed number of
+            // operations with pauses in between (where nearly all the time is spent asleep, and on
+            // an unlucky run no two operations overlap), the threads run with no pauses and stop
+            // as soon as any of them throws. (They need not start together: each keeps going until
+            // then, so they overlap whenever they start.) A collision then normally comes
+            // within milliseconds; the ten-second limit is only there so that an XmlDocument that
+            // really were thread-safe would fail the test rather than hang it.
             var doc = new XmlDocument();
             doc.LoadXml("<root i=\"0\"><child>0</child></root>");
-
-            Assert.Throws<AggregateException>(() =>
+            using (var stop = new CancellationTokenSource(TimeSpan.FromSeconds(10)))
             {
-                tasks.Add(
+                Task Hammer(Action<int> step) =>
                     Task.Run(() =>
                     {
-                        for (var i = 1; i <= 200; ++i)
+                        try
                         {
-                            doc.FirstChild.InnerXml = $"<child>{i}</child>";
-                            (doc.FirstChild as XmlElement).SetAttribute("i", i.ToString());
-                            Thread.Sleep(5);
+                            for (var i = 1; !stop.IsCancellationRequested; ++i)
+                                step(i);
                         }
-                    })
-                );
-                tasks.Add(
-                    Task.Run(() =>
+                        catch
+                        {
+                            stop.Cancel(); // one collision is enough; let the others finish
+                            throw;
+                        }
+                    });
+
+                var tasks = new[]
+                {
+                    Hammer(i =>
                     {
-                        for (var i = 1; i <= 200; ++i)
-                        {
-                            doc.FirstChild.InnerXml = $"<child>{i}</child>";
-                            (doc.FirstChild as XmlElement).SetAttribute("i", i.ToString());
-                            Thread.Sleep(4);
-                        }
-                    })
-                );
-                tasks.Add(
-                    Task.Run(() =>
+                        doc.FirstChild.InnerXml = $"<child>{i}</child>";
+                        (doc.FirstChild as XmlElement).SetAttribute("i", i.ToString());
+                    }),
+                    Hammer(i =>
                     {
-                        for (var i = 1; i <= 200; ++i)
-                        {
-                            var inner = doc.FirstChild.InnerXml;
-                            var attr = (doc.FirstChild as XmlElement).GetAttribute("i");
-                            Thread.Sleep(5);
-                        }
-                    })
+                        doc.FirstChild.InnerXml = $"<child>{-i}</child>";
+                        (doc.FirstChild as XmlElement).SetAttribute("i", (-i).ToString());
+                    }),
+                    Hammer(i =>
+                    {
+                        var inner = doc.FirstChild.InnerXml;
+                        var attr = (doc.FirstChild as XmlElement).GetAttribute("i");
+                    }),
+                };
+                Assert.Throws<AggregateException>(
+                    () => Task.WaitAll(tasks),
+                    "Ten seconds of concurrent use of one XmlDocument produced no error; it seems to be thread-safe after all."
                 );
-                Task.WaitAll(tasks.ToArray());
-            });
+            }
         }
 
         [Test]
