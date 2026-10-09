@@ -1620,11 +1620,6 @@
         <note>ID: Common.FileSize</note>
         <note>Label beside how large a file is (e.g. "1.2 MB"), as in the Image Chooser's image details panel.</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.SelectImagePrompt" translate="no">
-        <source xml:lang="en">Select an image to see its details and license.</source>
-        <note>ID: ImageLibrary.SelectImagePrompt</note>
-        <note>Shown in the Image Chooser's details panel when no image has been selected yet.</note>
-      </trans-unit>
       <trans-unit id="BookProcessor.HousekeepingMessage">
         <source xml:lang="en">Please wait while Bloom does some housekeeping on your book...</source>
         <note>ID: BookProcessor.HousekeepingMessage</note>
