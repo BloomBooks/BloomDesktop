@@ -12,6 +12,53 @@ namespace BloomTests.SafeXml
     [TestFixture]
     public class SafeXmlTests
     {
+        private static SafeXmlElement ParseElement(string xml)
+        {
+            var doc = SafeXmlDocument.Create();
+            doc.LoadXml(xml);
+            return doc.DocumentElement;
+        }
+
+        [Test]
+        public void GetXmlIgnoringAttributeOrder_SameAttributesInAnotherOrder_Equal()
+        {
+            var a = ParseElement(
+                "<div class='x' lang='en'><p data-a='1' data-b='2'>text &amp; more</p></div>"
+            );
+            var b = ParseElement(
+                "<div lang='en' class='x'><p data-b='2' data-a='1'>text &amp; more</p></div>"
+            );
+            Assert.That(a.OuterXml, Is.Not.EqualTo(b.OuterXml), "test setup: order differs");
+
+            Assert.That(
+                a.GetXmlIgnoringAttributeOrder(),
+                Is.EqualTo(b.GetXmlIgnoringAttributeOrder())
+            );
+        }
+
+        [Test]
+        public void GetXmlIgnoringAttributeOrder_DifferentValueTextOrAttribute_NotEqual()
+        {
+            var original = ParseElement("<div class='x'><p lang='en'>text</p></div>")
+                .GetXmlIgnoringAttributeOrder();
+            foreach (
+                var changed in new[]
+                {
+                    "<div class='y'><p lang='en'>text</p></div>", // a value
+                    "<div class='x'><p lang='en'>other</p></div>", // the text
+                    "<div class='x'><p lang='en' dir='rtl'>text</p></div>", // an extra attribute
+                    "<div class='x'><p lang='en'>text</p><p/></div>", // an extra element
+                }
+            )
+            {
+                Assert.That(
+                    ParseElement(changed).GetXmlIgnoringAttributeOrder(),
+                    Is.Not.EqualTo(original),
+                    changed
+                );
+            }
+        }
+
         [Test]
         [Category("SkipOnTeamCity")] // This is flaky on TeamCity for some reason. We need to fix it up; for now, skip it.
         public void Xml_DoesNotProvide_ThreadSafety()

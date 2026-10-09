@@ -4325,14 +4325,15 @@ namespace Bloom.Book
 
             // The page div itself, not just its content, because ProcessPageAfterEditing writes the
             // div’s own class, lang and style attributes too. Attribute order is ignored, because
-            // the browser does not preserve it (see HtmlDom.GetXmlIgnoringAttributeOrder).
-            var pageAsTheBookHadIt = HtmlDom.GetXmlIgnoringAttributeOrder(pageToSaveToDisk);
+            // it does not survive editing: the editing page sets data-languagetipcontent on text
+            // boxes, and the browser can hand an attribute back in a different place from where the
+            // book had it. Comparing OuterXml would report a change on every visit to such a page.
+            var pageAsTheBookHadIt = pageToSaveToDisk.GetXmlIgnoringAttributeOrder();
 
             HtmlDom.ProcessPageAfterEditing(pageToSaveToDisk, pageFromEditedDom);
             HtmlDom.SetImageAltAttrsFromDescriptions(pageToSaveToDisk, Language1Tag);
 
-            var pageChanged =
-                HtmlDom.GetXmlIgnoringAttributeOrder(pageToSaveToDisk) != pageAsTheBookHadIt;
+            var pageChanged = pageToSaveToDisk.GetXmlIgnoringAttributeOrder() != pageAsTheBookHadIt;
 
             // The main condition for being able to just write the page is that no shareable data on the
             // page changed during editing. If that's so we can skip this step.
