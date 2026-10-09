@@ -145,6 +145,41 @@ export async function movePageToSlotOf(
     const target = thumbnail(page, targetPageId);
     await source.waitFor({ state: "visible", timeout: 30000 });
     await target.waitFor({ state: "visible", timeout: 30000 });
+    // In a small window the page list scrolls, and a thumbnail Playwright calls visible may be
+    // only partly on screen. A person scrolls until both pages show, so we do too: the target
+    // first, then the source, which scrolls no further than it must. The drag presses and
+    // releases at the middle of each thumbnail, so that is what has to be on screen.
+    await target.scrollIntoViewIfNeeded();
+    await source.scrollIntoViewIfNeeded();
+    for (const [name, thumb] of [
+        ["dragged page", source],
+        ["target page", target],
+    ] as const) {
+        // Empty when the middle of the thumbnail is on screen; otherwise says what hides it.
+        const hiddenBy = await thumb.evaluate((element) => {
+            const box = element.getBoundingClientRect();
+            const middle = (box.top + box.bottom) / 2;
+            const span = `its middle is at ${Math.round(middle)}`;
+            for (
+                let ancestor = element.parentElement;
+                ancestor;
+                ancestor = ancestor.parentElement
+            ) {
+                const overflow = getComputedStyle(ancestor).overflowY;
+                if (overflow !== "auto" && overflow !== "scroll") continue;
+                const area = ancestor.getBoundingClientRect();
+                if (middle < area.top || middle > area.bottom)
+                    return `${span}, but its scrolling ancestor <${ancestor.tagName.toLowerCase()} id="${ancestor.id}" class="${ancestor.className}"> shows only ${Math.round(area.top)}-${Math.round(area.bottom)}`;
+            }
+            if (middle < 0 || middle > window.innerHeight)
+                return `${span}, but the page list is only ${window.innerHeight} high`;
+            return "";
+        });
+        if (hiddenBy)
+            throw new Error(
+                `The ${name} is not on screen in the page list even after scrolling, so it cannot be dragged as a person would (${hiddenBy}). Choose pages that are closer together.`,
+            );
+    }
     const from = (await source.boundingBox())!;
     const to = (await target.boundingBox())!;
     const startX = from.x + from.width / 2;
