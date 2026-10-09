@@ -40,6 +40,21 @@
         <note>This checkbox enables the experimental publish-to-apps workflow.</note>
         <note>Obsolete as of Bloom 6.5</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate.Description" translate="no">
+        <source xml:lang="en">When a new version of Bloom is available, Bloom will get it for you.</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate.Description</note>
+        <note>Shown under the "Automatically Update Bloom" checkbox on the Advanced page of the Collection Settings dialog. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Collection" translate="no">
+        <source xml:lang="en">Collection</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Collection</note>
+        <note>Heading of the group of settings about the collection itself (its name) on the Advanced page of the Collection Settings dialog. A collection is a folder of books that share settings.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.NoRenameTeamCollection" translate="no">
+        <source xml:lang="en">The collection name cannot be changed because this is a Team Collection. Contact the Bloom team for more information.</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.NoRenameTeamCollection</note>
+        <note>Shown under the disabled Collection Name box on the Advanced page of the Collection Settings dialog when the collection is shared as a Team Collection. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.Tables" translate="no">
         <source xml:lang="en">Tables</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.Tables</note>
@@ -85,6 +100,11 @@
         <note>ID: AiImageEditor.SlotLabel.CanvasBackground</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Names one picture of a page that has several, shown over the picture in the AI image editor's strip of the book's images. This is the picture behind the page, which other pictures sit on top of. The code puts the page name in front of it, giving e.g. "Page 3 - Canvas Background".</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.UnlockOriginalCopyrightAndLicenseTooltip" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Unlock to edit</source>
+        <note>ID: EditTab.FrontMatter.UnlockOriginalCopyrightAndLicenseTooltip</note>
+        <note>Tooltip on the padlock button in the hint bubble beside the sentence Bloom writes on the credits page about the original book's copyright and license. Clicking it lets the user reword that sentence.</note>
       </trans-unit>
       <trans-unit id="EditTab.TextContextMenu.NoIndent">
         <source xml:lang="en">Do Not Indent This Paragraph</source>

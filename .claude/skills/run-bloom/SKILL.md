@@ -57,6 +57,8 @@ For arbitrary DOM/console/network work, attach Playwright (loaded from
 `chromium.connectOverCDP`; the scripts above are templates. On the Edit tab the page content is
 inside the iframe named `page`. Drive the UI by clicking and typing; use Bloom's HTTP API only for
 scripted batch setup, from inside the page (`reference.md`, "Driving Bloom HTTP APIs over CDP").
+To build an Android app on Publish > Apps (Build stays disabled until Customize's required
+settings are filled in), follow `reference.md`, "Building an app (Publish > Apps)".
 Never send a request to a live Bloom just to see whether an endpoint exists: an unknown endpoint
 raises a modal error dialog on the developer's screen. Grep `src/BloomExe/web` instead.
 

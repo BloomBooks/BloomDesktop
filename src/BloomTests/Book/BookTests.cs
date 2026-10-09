@@ -867,19 +867,21 @@ namespace BloomTests.Book
 
             //note: our code currently only knows how to display Thai *in Thai*, French *in French*, and Spanish *in Spanish*.
             //It may be better to be writing "Thai" and "Spanish" in French.
-            //That's not part of this test, so we're currently allowing either.
+            //That's not part of this test.
             var dataDivNode =
                 book.RawDom.SelectSingleNode("//div[@data-book='languagesOfBook']")
                 as SafeXmlElement;
             var derivedNode = book.RawDom.SelectSingleNode(
                 "//div[@data-derived='languagesOfBook']"
             );
-            // We think the first one happens if there is an ICU DLL somewhere on the path, the second if not.
-            string[] expected = { "espagnol, ไทย, français", "español, ไทย, français" };
-            Assert.That(
-                dataDivNode != null && expected.Contains(dataDivNode.InnerText),
-                "languagesOfBook should be 'espagnol, ไทย, français' or 'español, ไทย, français'"
-            );
+            // This used to have to accept "espagnol" as well, depending on whether a native ICU
+            // library happened to be findable on the machine. Bloom now turns ICU off for language
+            // names (see WritingSystem's static constructor), so for a given UI language there is
+            // one answer, whatever the machine. This is the answer under an English UI; TestCulture
+            // deliberately leaves CurrentUICulture alone, so that is the machine's UI language
+            // rather than one the run pins (BL-16806).
+            Assert.That(dataDivNode, Is.Not.Null, "should have a data-book languagesOfBook");
+            Assert.That(dataDivNode.InnerText, Is.EqualTo("español, ไทย, français"));
             Assert.That(
                 derivedNode != null && derivedNode.InnerText == dataDivNode.InnerText,
                 "derived languagesOfBook should match data-book"

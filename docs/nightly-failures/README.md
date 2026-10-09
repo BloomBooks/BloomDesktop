@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-10-07 (nightlies through the 2026-10-07 run have been triaged)
+**Last updated:** 2026-10-09 (nightlies through the 2026-10-09 15:39 UTC dispatched run have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -73,10 +73,16 @@ use the `nightly-triage` skill.
   - Landed with the last part of the toolbox rework,
     [PR #8447](https://github.com/BloomBooks/BloomDesktop/pull/8447),
     [BL-16608](https://issues.bloomlibrary.org/youtrack/issue/BL-16608).
-  - Measured locally against the Vite dev server, five runs of every test in each spec file:
-    3 of 15 failed before the fix, 0 of 40 after, and both files pass at the nightly window
-    size. The dev server makes these tests fail more often than CI does, so **watch the first
-    nightlies** rather than treating this as proved -- including `decodable-reader-cancel`.
+  - A third cause turned up later and was the one behind the flakiest two tests: the reader
+    tools discarded a book's saved stage or level outright whenever the Synphony settings had
+    not loaded, so a slow or failed load left the tool on 1 and, because the restore passes
+    `skipSave`, recorded nothing either. It is now held until the settings arrive, and dropped
+    when a restore for another book begins so it cannot cross between books.
+  - That one is pinned by `readerToolRestore.spec.ts`, which reproduces it deterministically
+    and fails on the unfixed code with the flake's own signature. Both spec files pass at the
+    nightly window size, but a clean run of them never proved much at the rate the flake
+    appeared, so **watch the first nightlies** rather than treating this as proved --
+    including `decodable-reader-cancel`.
   - [PR #8409](https://github.com/BloomBooks/BloomDesktop/pull/8409) was closed unmerged: it
     re-read the settings after the wait, which is not reliable because every change is saved
     with a fire-and-forget post, so a later read may not see one that has just happened.

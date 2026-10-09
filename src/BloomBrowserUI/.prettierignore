@@ -2,8 +2,8 @@ lib
 typings
 Readium
 modified_libraries
-bookEdit/iconfont
-bookEdit/html/font-awesome
+**/bookEdit/iconfont
+**/bookEdit/html/font-awesome
 *.md
 ThemaData.json
 
@@ -12,4 +12,4 @@ pnpm-lock.yaml
 
 # Overflow test fixtures, generated from their .pug (see the note there). Prettier would add
 # whitespace inside the test boxes, which changes what the overflow tests measure.
-bookEdit/OverflowChecker/*Fixture.html
+**/bookEdit/OverflowChecker/*Fixture.html
