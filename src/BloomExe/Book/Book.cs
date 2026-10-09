@@ -4332,6 +4332,12 @@ namespace Bloom.Book
 
             HtmlDom.ProcessPageAfterEditing(pageToSaveToDisk, pageFromEditedDom);
             HtmlDom.SetImageAltAttrsFromDescriptions(pageToSaveToDisk, Language1Tag);
+            // The user's permission to edit the sentence about the original book was good for
+            // one look at the page, so the copy that goes back into the book holds their wording
+            // as text they cannot type in. Before the comparison, because the book's copy is
+            // always locked: compared unlocked, every save while it is unlocked would look like a
+            // change.
+            BookCopyrightAndLicense.LockOriginalCopyrightNotice(pageToSaveToDisk);
 
             var pageChanged = pageToSaveToDisk.GetXmlIgnoringAttributeOrder() != pageAsTheBookHadIt;
 
@@ -4339,11 +4345,6 @@ namespace Bloom.Book
             // page changed during editing. If that's so we can skip this step.
             if (needToDoFullSave)
                 _bookData.SuckInDataFromEditedDom(editedPageDom, BookInfo); //this will do an updatetitle
-
-            // The user's permission to edit the sentence about the original book was good for
-            // one look at the page, so the copy that goes back into the book holds their wording
-            // as text they cannot type in.
-            BookCopyrightAndLicense.LockOriginalCopyrightNotice(pageToSaveToDisk);
 
             // When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles".
             // Here we copy that over to the book DOM.

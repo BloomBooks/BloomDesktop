@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -1059,6 +1059,50 @@ namespace BloomTests.Book
             );
 
             book.UpdateDomFromEditedPage(dom, out _, needToDoFullSave: false, out var changed);
+
+            Assert.That(changed, Is.False);
+        }
+
+        [Test]
+        public void UpdateDomFromEditedPage_UnlockedOriginalCopyrightUnchanged_ReportsUnchanged()
+        {
+            // While the user is allowed to edit the sentence about the original book, the editor
+            // shows it as an editable field, but the book always keeps it locked. Merely saving
+            // the page in that state, with the wording unchanged, changes nothing in the book, so
+            // it must not count as a change: if it did, every save would rewrite the book.
+            var book = CreateBook();
+            var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+            var pageDiv =
+                dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-page')]")
+                as SafeXmlElement;
+            var spot = pageDiv.AppendChild(dom.RawDom.CreateElement("div")) as SafeXmlElement;
+            spot.SetAttribute("class", "copyright Credits-Page-style");
+            spot.SetAttribute("data-derived", "originalCopyrightAndLicense");
+            spot.SetAttribute("lang", "*");
+            spot.InnerXml = "<p>Some sentence about the original.</p>";
+            book.UpdateDomFromEditedPage(dom, out _, needToDoFullSave: false, out _);
+            HtmlDom SaveTheUnlockedPage(out bool pageChanged)
+            {
+                var unlocked = book.GetEditableHtmlDomForPage(book.GetPages().First());
+                BookCopyrightAndLicense.MakeOriginalCopyrightNoticeEditable(unlocked);
+                book.UpdateDomFromEditedPage(
+                    unlocked,
+                    out _,
+                    needToDoFullSave: false,
+                    out pageChanged
+                );
+                return unlocked;
+            }
+            // The first such save gives the book's sentence the locked form's hint and padlock,
+            // which this test's hand-made sentence lacks; a real book's already has them.
+            var firstSave = SaveTheUnlockedPage(out _);
+            Assert.That(
+                firstSave.SelectSingleNode("//div[@data-book='userOriginalCopyrightAndLicense']"),
+                Is.Not.Null,
+                "test setup: the sentence should have been an editable field"
+            );
+
+            SaveTheUnlockedPage(out var changed);
 
             Assert.That(changed, Is.False);
         }
