@@ -437,8 +437,56 @@ export function AttachNewTableThatFillsItsSpace(tableDiv: HTMLElement): void {
 }
 
 /**
+ * Take table editing's markup out of `clonedPage`, the detached copy of the page that is about to
+ * be saved, leaving the live tables as they are. A save happens whenever the page changes, so it
+ * must not end Paint Format or Border Brush mode, which bloom-table's removeTableEditingArtifacts
+ * does before stripping. This is what its markup-only part (stripEditTimeMarkup, which bloom-table
+ * does not export) removes, plus our own data-table-attached.
+ */
+export function removeTableEditingMarkupFromClone(
+    clonedPage: HTMLElement,
+): void {
+    const modeClasses = ["bloom-paint-format", "bloom-border-brush"];
+    clonedPage.classList.remove(...modeClasses);
+    clonedPage
+        .querySelectorAll("[data-table-overlay]")
+        .forEach((overlay) => overlay.remove());
+    clonedPage.querySelectorAll<HTMLElement>(".bloom-cell").forEach((cell) => {
+        [
+            "--hint-top-color",
+            "--hint-right-color",
+            "--hint-bottom-color",
+            "--hint-left-color",
+        ].forEach((property) => cell.style.removeProperty(property));
+        cell.classList.remove(
+            "cell--selected",
+            "bloom-pulse-fill",
+            "bloom-pulse-border",
+        );
+    });
+    clonedPage
+        .querySelectorAll<HTMLElement>("[data-btable-anchor-name]")
+        .forEach((element) => {
+            element.style.removeProperty("anchor-name");
+            delete element.dataset.btableAnchorName;
+        });
+    clonedPage
+        .querySelectorAll<HTMLElement>(".bloom-table")
+        .forEach((table) => {
+            table.classList.remove(
+                "table--selected",
+                "bloom-pointer-near",
+                "bloom-current-table",
+            );
+            table.removeAttribute("data-table-attached");
+        });
+}
+
+/**
  * Detach table editing from all bloom-table elements within `container`.
- * Called from removeEditingDebris in bloomEditing.ts before navigating away.
+ * The editor itself never needs this: a page is left by loading a new document, which takes the
+ * listeners with it, and a save works on a clone (removeTableEditingMarkupFromClone). Tests use it
+ * to start each test afresh.
  */
 export function TeardownTableEditing(container: HTMLElement): void {
     container.ownerDocument.removeEventListener(

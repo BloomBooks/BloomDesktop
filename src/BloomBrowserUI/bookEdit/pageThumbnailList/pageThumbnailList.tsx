@@ -7,6 +7,7 @@
 // so things it exports are accessible from outside the bundle using workspaceBundle.
 
 import $ from "jquery";
+import { getWorkspaceBundleExports } from "../js/workspaceFrames";
 import { css } from "@emotion/react";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ContentPasteIcon from "@mui/icons-material/ContentPaste";
@@ -702,10 +703,7 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
                 const pageElt = e.currentTarget.closest("[id]")!;
                 const pageId = pageElt.getAttribute("id");
                 const caption = pageElt.getAttribute("data-caption");
-                postJson("pageList/pageClicked", {
-                    pageId,
-                    detail: caption,
-                });
+                postPageClicked(pageId!, caption ?? "");
             }
         }
     };
@@ -817,6 +815,22 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
         closeContextMenuOnBlurCleanupRef.current = undefined;
 
         const pageId = contextMenuPoint.pageId;
+        // The two commands that ask the user something open their dialog here and talk to C# only
+        // when the user is done. Each tells C# which page it was opened for, and C# acts only if
+        // that is still the current page: a queued earlier click can change the page while the
+        // dialog is up.
+        if (commandId === "duplicatePageManyTimes") {
+            getWorkspaceBundleExports().showDuplicateManyDialog(pageId);
+            closeContextMenu();
+            return;
+        }
+        if (commandId === "chooseDifferentLayout") {
+            getWorkspaceBundleExports().showPageChooserDialog(true, pageId);
+            closeContextMenu();
+            return;
+        }
+        // The rest save the current page first, which C# does from the snapshot the page has
+        // already sent it (see pageSnapshot.ts).
         const postCommand = () =>
             postJson("pageList/contextMenuItemClicked", {
                 pageId,
@@ -1057,16 +1071,23 @@ function onDragStop(
         // the page clicked. (Note however that this seems to get fired on any click,
         // even just closing a popup menu, so it's possible that we might get more
         // click events than we really want.)
-        postJson("pageList/pageClicked", {
-            pageId: movedPageId,
-            detail: "unknown",
-        });
+        postPageClicked(movedPageId, "unknown");
         return;
     }
     // Needs more smarts if we ever do other than two columns.
     const newIndex = newItem.y * 2 + newItem.x;
 
     postJson("pageList/pageMoved", { movedPageId, newIndex });
+}
+
+// Tell C# the user picked a page. C# saves the page we are leaving from the snapshot it already
+// holds (see pageSnapshot.ts).
+function postPageClicked(
+    pageId: string,
+    detail: string,
+    onSuccess?: () => void,
+): void {
+    postJson("pageList/pageClicked", { pageId, detail }, onSuccess);
 }
 
 function ContinueAutomatedPageClicking(
@@ -1082,22 +1103,15 @@ function ContinueAutomatedPageClicking(
             "**  pageThumbnailList: user initiated Automated Page Clicking test function",
         );
     }
-    postJson(
-        "pageList/pageClicked",
-        {
-            pageId: pagesRemaining[0].key,
-            detail: pagesRemaining[0].caption,
-        },
-        () => {
-            const remaining = pagesRemaining.slice(1);
-            if (remaining.length > 0)
-                window.setTimeout(
-                    () => {
-                        ContinueAutomatedPageClicking(remaining, count + 1);
-                    },
-                    8 * 1000, // leave time for the browser to redraw
-                );
-            else window.alert("Done with automated page clicking");
-        },
-    );
+    postPageClicked(pagesRemaining[0].key, pagesRemaining[0].caption, () => {
+        const remaining = pagesRemaining.slice(1);
+        if (remaining.length > 0)
+            window.setTimeout(
+                () => {
+                    ContinueAutomatedPageClicking(remaining, count + 1);
+                },
+                8 * 1000, // leave time for the browser to redraw
+            );
+        else window.alert("Done with automated page clicking");
+    });
 }

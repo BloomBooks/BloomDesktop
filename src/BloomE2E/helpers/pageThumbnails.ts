@@ -28,6 +28,7 @@ export type PageMenuCommand =
     | "Copy Page"
     | "Paste Page"
     | "Duplicate Page"
+    | "Duplicate Page Many Times..."
     | "Choose Different Layout"
     | "Remove Page";
 
@@ -36,6 +37,7 @@ const COMMAND_ID: Record<PageMenuCommand, string> = {
     "Copy Page": "copyPage",
     "Paste Page": "pastePage",
     "Duplicate Page": "duplicatePage",
+    "Duplicate Page Many Times...": "duplicatePageManyTimes",
     "Choose Different Layout": "chooseDifferentLayout",
     "Remove Page": "removePage",
 };
@@ -202,11 +204,9 @@ export async function markEditablePage(page: Page): Promise<void> {
 }
 
 /**
- * Wait out the page reload that follows a command which saves the book, and for the reloaded
- * page to finish loading. Copy Page is one such command: it saves first, so that unsaved typing
- * is copied too, and Bloom then navigates back to the page. Until that navigation finishes the
- * editing model is in its Navigating state, in which Paste Page silently does nothing while the
- * menu still offers it.
+ * Wait out the page reload that follows a command which makes Bloom rebuild the page, and for
+ * the reloaded page to finish loading. An ordinary save does not reload the page, but a change
+ * Bloom has to show by rebuilding it does: changing the book's content languages, for one.
  *
  * Call markEditablePage() before the command.
  */
