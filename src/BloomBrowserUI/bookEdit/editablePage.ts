@@ -460,11 +460,11 @@ window["PasteImageCredits"] = () => {
 //UnlockOriginalCredits() is called from the hint bubble on the credits page's
 //generated original-copyright sentence. See BookCopyrightAndLicense.SetOriginalCopyrightNoticeHint().
 window["UnlockOriginalCredits"] = () => {
-    EditableDivUtils.unlockOriginalCredits();
+    void EditableDivUtils.unlockOriginalCredits();
 };
 
 window["RelockOriginalCredits"] = () => {
-    EditableDivUtils.relockOriginalCredits();
+    void EditableDivUtils.relockOriginalCredits();
 };
 
 $(document).ready(() => {

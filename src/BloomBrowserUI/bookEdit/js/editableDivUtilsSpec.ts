@@ -1,11 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import $ from "jquery";
 import { EditableDivUtils } from "./editableDivUtils";
-import { postThatMightNavigate } from "../../utils/bloomApi";
+import {
+    postAfterSendingSnapshot,
+    saveChangesAndRethinkPage,
+} from "./pageSnapshot";
 
-vi.mock("../../utils/bloomApi", async (importOriginal) => ({
+vi.mock("./pageSnapshot", async (importOriginal) => ({
     ...((await importOriginal()) as object),
-    postThatMightNavigate: vi.fn(),
+    postAfterSendingSnapshot: vi.fn(),
+    saveChangesAndRethinkPage: vi.fn(),
 }));
 
 describe("EditableDivUtils Tests", () => {
@@ -775,12 +779,12 @@ describe("EditableDivUtils.unlockOriginalCredits", () => {
     });
 
     // All the work happens on the server, which stores the current wording, stops generating
-    // the sentence, and reloads the page with an editable field in its place. All this side
-    // has to get right is the endpoint name.
-    it("asks the server to hand the notice over to the user", () => {
-        EditableDivUtils.unlockOriginalCredits();
+    // the sentence, and reloads the page with an editable field in its place. The server saves
+    // the page first, so it has to have the page as it is now.
+    it("asks the server to hand the notice over to the user, once it has the page", () => {
+        void EditableDivUtils.unlockOriginalCredits();
 
-        expect(postThatMightNavigate).toHaveBeenCalledWith(
+        expect(postAfterSendingSnapshot).toHaveBeenCalledWith(
             "copyrightAndLicense/unlockOriginalCopyrightNotice",
         );
     });
@@ -788,10 +792,8 @@ describe("EditableDivUtils.unlockOriginalCredits", () => {
     // The server saves the page, which stores what the user typed, and reloads it with the
     // sentence read-only again.
     it("relocking asks the server to save and reload the page", () => {
-        EditableDivUtils.relockOriginalCredits();
+        void EditableDivUtils.relockOriginalCredits();
 
-        expect(postThatMightNavigate).toHaveBeenCalledWith(
-            "common/saveChangesAndRethinkPageEvent",
-        );
+        expect(saveChangesAndRethinkPage).toHaveBeenCalled();
     });
 });

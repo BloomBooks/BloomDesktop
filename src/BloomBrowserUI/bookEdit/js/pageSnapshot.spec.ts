@@ -5,6 +5,7 @@ import {
     stopWatchingPageForSnapshots,
     quietMsForTests,
     sendSnapshotNow,
+    postAfterSendingSnapshot,
     getPageLoadId,
 } from "./pageSnapshot";
 import {
@@ -34,6 +35,10 @@ vi.mock("../../utils/bloomApi", () => ({
     postStringQuietly: (url: string, body: string) => {
         posted.push({ url, body });
         return postHook ? postHook() : Promise.resolve(postReply);
+    },
+    postThatMightNavigate: (url: string) => {
+        posted.push({ url, body: "" });
+        return Promise.resolve();
     },
 }));
 
@@ -517,6 +522,24 @@ describe("pageSnapshot", () => {
         releasePost();
         await sending;
         expect(done).toBe(true);
+    });
+
+    it("posts a request that reloads the page only once C# has the page as it is now", async () => {
+        contentToReport = "first";
+        startWatchingPageForSnapshots(gather);
+        await letTheLoadedPageBeSent();
+
+        contentToReport = "just typed";
+        await postAfterSendingSnapshot("some/reloadingRequest");
+        expect(posted.map((p) => p.body)).toEqual(["just typed", ""]);
+        expect(posted[1].url).toBe("some/reloadingRequest");
+
+        // If C# did not get the page, reloading would lose the change, so the request is not sent.
+        posted.length = 0;
+        postReply = { data: false };
+        contentToReport = "typed again";
+        await postAfterSendingSnapshot("some/reloadingRequest");
+        expect(posted.map((p) => p.url)).not.toContain("some/reloadingRequest");
     });
 
     it("says so when asked to send the page at once and the post fails", async () => {

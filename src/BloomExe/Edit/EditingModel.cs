@@ -1725,6 +1725,7 @@ namespace Bloom.Edit
         /// The user has asked to edit the sentence Bloom generates on the credits page about the
         /// original book's copyright and license. We save the page first, then hand the sentence
         /// over and reload, so the page comes back with an editable field in its place.
+        /// The browser has made sure we have its snapshot of the page before it asks.
         /// </summary>
         internal void UnlockOriginalCopyrightNotice()
         {
@@ -1733,14 +1734,11 @@ namespace Bloom.Edit
             // The sentence lives in the data div rather than in the page's own markup, so the
             // save has to be a full one to notice that it changed.
             _pageHasUnsavedDataDerivedChange = true;
-            SaveThen(
-                () =>
-                {
-                    CurrentBook.LetUserEditOriginalCopyrightNotice();
-                    return _pageSelection.CurrentSelection.Id;
-                },
-                () => { } // wrong state, do nothing
-            );
+            MergeCurrentPageThenSave(() =>
+            {
+                CurrentBook.LetUserEditOriginalCopyrightNotice();
+                return _pageSelection.CurrentSelection.Id;
+            });
         }
 
         //invoked from TopicChooserDialog.tsx via API

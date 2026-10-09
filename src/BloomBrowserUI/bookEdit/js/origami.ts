@@ -3,7 +3,7 @@ import { kBloomCanvasClass } from "../toolbox/canvas/canvasElementPageBridge";
 import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { post } from "../../utils/bloomApi";
-import { saveChangesAndRethinkPage } from "./bloomEditing";
+import { saveChangesAndRethinkPage } from "./pageSnapshot";
 import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
 import {
     FeatureStatus,

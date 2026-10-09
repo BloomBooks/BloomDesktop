@@ -1,4 +1,4 @@
-import { saveChangesAndRethinkPage } from "./bloomEditing";
+import { saveChangesAndRethinkPage } from "./pageSnapshot";
 
 // The code in this file supports operations on video panels in custom pages (and potentially elsewhere).
 // It sets things up for the button (plural eventually) to appear when hovering over the video.

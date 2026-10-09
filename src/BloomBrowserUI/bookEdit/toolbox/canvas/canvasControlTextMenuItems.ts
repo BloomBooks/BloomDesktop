@@ -6,7 +6,7 @@
 import * as React from "react";
 import { default as CheckIcon } from "@mui/icons-material/Check";
 import { get } from "../../../utils/bloomApi";
-import { saveChangesAndRethinkPage } from "../../js/bloomEditing";
+import { saveChangesAndRethinkPage } from "../../js/pageSnapshot";
 import { wrapWithRequestPageContentDelay } from "../../js/pageContentDelays";
 import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { IControlContext, IControlMenuCommandRow } from "./canvasControlTypes";

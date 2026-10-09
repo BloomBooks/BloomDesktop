@@ -70,12 +70,7 @@ import { showInvisibles, hideInvisibles } from "./showInvisibles";
 //import promise = require('es6-promise');
 //promise.Promise.polyfill();
 import axios from "axios";
-import {
-    post,
-    postBoolean,
-    postJson,
-    postThatMightNavigate,
-} from "../../utils/bloomApi";
+import { post, postBoolean, postJson } from "../../utils/bloomApi";
 import { showRequestStringDialog } from "../../react_components/RequestStringDialog";
 
 import { hookupLinkHandler } from "../../utils/linkHandler";
@@ -1413,21 +1408,6 @@ function getPageContentForSave(): string {
 export async function getPageContentForSaveWhenReady(): Promise<string> {
     await whenNoActiveDelays();
     return getPageContentForSave();
-}
-
-// Save the page and have C# rebuild it from the updated book DOM. Unlike an ordinary save, the
-// page IS reloaded: these callers have restructured the page in ways that have never been through
-// SetupElements (a new origami layout, an imported video, a translation group replaced by a
-// derived field).
-//
-// The caller has only just changed the page, so we send the snapshot now rather than after the
-// usual quiet time. If the page cannot be read, the user has been told, and we leave the page as
-// it is rather than reload it from a book without the change.
-//
-// The post itself might navigate this very frame out from under us, hence postThatMightNavigate.
-export async function saveChangesAndRethinkPage(): Promise<void> {
-    if (!(await sendSnapshotNow())) return;
-    await postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
 }
 
 // Produce the HTML of the .bloom-page element as it should be saved. All the cleanup is done on a

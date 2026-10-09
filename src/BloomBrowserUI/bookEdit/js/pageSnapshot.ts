@@ -1,4 +1,4 @@
-import { postStringQuietly } from "../../utils/bloomApi";
+import { postStringQuietly, postThatMightNavigate } from "../../utils/bloomApi";
 import { reportError } from "../../lib/errorHandler";
 import { onDelayRegisterChanged } from "./pageContentDelays";
 
@@ -300,3 +300,28 @@ export function isSnapshotStreamIdle(): boolean {
  * Exported for tests: the interval the page must be quiet before a snapshot is taken.
  */
 export const quietMsForTests = kQuietMs;
+
+// Save the page and have C# rebuild it from the updated book DOM. Unlike an ordinary save, the
+// page IS reloaded: these callers have restructured the page in ways that have never been through
+// SetupElements (a new origami layout, an imported video, a translation group replaced by a
+// derived field).
+//
+// The caller has only just changed the page, so we send the snapshot now rather than after the
+// usual quiet time. If the page cannot be read, the user has been told, and we leave the page as
+// it is rather than reload it from a book without the change.
+//
+// The post itself might navigate this very frame out from under us, hence postThatMightNavigate.
+export function saveChangesAndRethinkPage(): Promise<void> {
+    return postAfterSendingSnapshot("common/saveChangesAndRethinkPageEvent");
+}
+
+/**
+ * Post a request that makes C# save this page and reload it, once C# has the page as it is now
+ * (see saveChangesAndRethinkPage, the usual such request).
+ */
+export async function postAfterSendingSnapshot(
+    urlSuffix: string,
+): Promise<void> {
+    if (!(await sendSnapshotNow())) return;
+    await postThatMightNavigate(urlSuffix);
+}
