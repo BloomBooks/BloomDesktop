@@ -41,6 +41,7 @@ const initialValues: ICollectionSettingsValues = {
         province: "",
         district: "",
     },
+    bloomLibrary: { defaultBookshelf: "" },
     advanced: { autoUpdate: true, collectionName: "Test Collection" },
     experimental: { "team-collections": false, tables: false },
 };
@@ -59,6 +60,7 @@ const {
     dialogState,
     teamCollectionFeature,
     tableFeature,
+    enterpriseBookshelves,
 } = vi.hoisted(() => ({
     mockGet: vi.fn(),
     mockPostJson: vi.fn(),
@@ -70,6 +72,24 @@ const {
     teamCollectionFeature: { loaded: true, enabled: true },
     // The same, for Tables.
     tableFeature: { loaded: true, enabled: true },
+    // What useGetEnterpriseBookshelves reports: the subscription's shelves (after its "none"),
+    // and whether Bloom Library could not be reached.
+    enterpriseBookshelves: {
+        shelves: [] as { value: string; label: string; tooltip: string }[],
+        error: false,
+    },
+}));
+
+vi.mock("./useGetEnterpriseBookshelves", () => ({
+    useGetEnterpriseBookshelves: () => ({
+        project: "",
+        defaultBookshelfUrlKey: "",
+        validBookshelves: [
+            { value: "none", label: "None", tooltip: "" },
+            ...enterpriseBookshelves.shelves,
+        ],
+        error: enterpriseBookshelves.error,
+    }),
 }));
 
 vi.mock("../react_components/featureStatus", () => ({
@@ -224,6 +244,15 @@ vi.mock("@sillsdev/config-r", () => ({
                     })
                 }
             />
+            <button
+                data-testid="choose-no-bookshelf"
+                onClick={() =>
+                    props.onChange({
+                        ...props.initialValues,
+                        bloomLibrary: { defaultBookshelf: "" },
+                    })
+                }
+            />
             {props.children}
         </div>
     ),
@@ -256,6 +285,31 @@ vi.mock("@sillsdev/config-r", () => ({
             data-path={props.path}
             disabled={props.disabled}
         />
+    ),
+    ConfigrSelect: (props: {
+        path: string;
+        disabled?: boolean;
+        description?: string;
+        options: { value: string; label?: string }[];
+    }) => (
+        <div>
+            <select
+                data-testid="configr-select"
+                data-path={props.path}
+                disabled={props.disabled}
+            >
+                {props.options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                        {option.label}
+                    </option>
+                ))}
+            </select>
+            {props.description && (
+                <div data-testid="configr-select-description">
+                    {props.description}
+                </div>
+            )}
+        </div>
     ),
     ConfigrInput: (props: {
         path: string;
@@ -330,6 +384,8 @@ describe("CollectionSettingsDialog", () => {
         dialogState.open = true;
         teamCollectionFeature.loaded = true;
         teamCollectionFeature.enabled = true;
+        enterpriseBookshelves.shelves = [];
+        enterpriseBookshelves.error = false;
         tableFeature.loaded = true;
         tableFeature.enabled = true;
         mockGet.mockReset();
@@ -693,6 +749,129 @@ describe("CollectionSettingsDialog", () => {
             ).toBe(
                 "The collection name cannot be changed because this is a Team Collection. Contact the Bloom team for more information.",
             );
+        });
+    });
+
+    describe("Bloom Library page", () => {
+        const bloomLibraryPageElement = (selector: string) =>
+            container.querySelector(
+                `[data-testid="configr-page"][data-page-key="bloomLibrary"] ${selector}`,
+            );
+
+        const bookshelfSelect = () => {
+            const select = bloomLibraryPageElement(
+                '[data-path="bloomLibrary.defaultBookshelf"]',
+            ) as HTMLSelectElement | null;
+            if (!select) {
+                throw new Error("The Bloom Library page has no bookshelf list");
+            }
+            return select;
+        };
+
+        const bookshelfChoices = () =>
+            Array.from(bookshelfSelect().options).map((option) => [
+                option.value,
+                option.textContent,
+            ]);
+
+        const respondWithSavedBookshelf = (defaultBookshelf: string) => {
+            respondWith({
+                ...settingsResponse,
+                values: {
+                    ...initialValues,
+                    bloomLibrary: { defaultBookshelf },
+                },
+                restartPaths: [
+                    ...settingsResponse.restartPaths,
+                    "bloomLibrary.defaultBookshelf",
+                ],
+            });
+        };
+
+        it("offers None and the subscription's bookshelves, with the subscription badge", async () => {
+            enterpriseBookshelves.shelves = [
+                { value: "shelf-a", label: "shelf-a", tooltip: "Shelf A" },
+                { value: "shelf-b", label: "shelf-b", tooltip: "Shelf B" },
+            ];
+
+            await renderDialog();
+
+            // "None" stands for the "" the collection stores, not the hook's "none".
+            expect(bookshelfChoices()).toEqual([
+                ["", "None"],
+                ["shelf-a", "shelf-a"],
+                ["shelf-b", "shelf-b"],
+            ]);
+            expect(bookshelfSelect().disabled).toBe(false);
+            expect(
+                bloomLibraryPageElement(
+                    '[data-testid="subscription-badge"]',
+                )?.getAttribute("data-feature"),
+            ).toBe("Bookshelf");
+        });
+
+        it("disables the list when the subscription has no bookshelves", async () => {
+            expect(enterpriseBookshelves.shelves).toEqual([]);
+
+            await renderDialog();
+
+            expect(bookshelfChoices()).toEqual([["", "None"]]);
+            expect(bookshelfSelect().disabled).toBe(true);
+        });
+
+        it("keeps the saved bookshelf choosable when Bloom Library cannot be reached, and says so", async () => {
+            enterpriseBookshelves.error = true;
+            respondWithSavedBookshelf("saved-shelf");
+
+            await renderDialog();
+
+            expect(bookshelfChoices()).toEqual([
+                ["", "None"],
+                ["saved-shelf", "saved-shelf"],
+            ]);
+            expect(bookshelfSelect().disabled).toBe(false);
+            expect(
+                bloomLibraryPageElement(
+                    '[data-testid="configr-select-description"]',
+                )?.textContent,
+            ).toBe(
+                "Bloom could not reach the server to get the list of bookshelves.",
+            );
+        });
+
+        it("restarts when the user changes the bookshelf, and saves None as no bookshelf", async () => {
+            respondWithSavedBookshelf("saved-shelf");
+            await renderDialog();
+            expect(okButtonLabel()).toBe("OK");
+
+            click("choose-no-bookshelf");
+            await flushDeferredChange();
+            expect(okButtonLabel()).toBe("Restart");
+            click("dialog-ok");
+
+            expect(mockPostJson.mock.calls[0][1]).toEqual({
+                values: {
+                    ...initialValues,
+                    bloomLibrary: { defaultBookshelf: "" },
+                },
+                restartRequired: true,
+            });
+        });
+
+        it("saves an unchanged bookshelf as it was, without a restart", async () => {
+            respondWithSavedBookshelf("saved-shelf");
+            await renderDialog();
+            expect(okButtonLabel()).toBe("OK");
+
+            click("dialog-ok");
+
+            expect(mockPostJson.mock.calls[0][1]).toEqual({
+                values: {
+                    ...initialValues,
+                    bloomLibrary: { defaultBookshelf: "saved-shelf" },
+                },
+                restartRequired: false,
+            });
         });
     });
 

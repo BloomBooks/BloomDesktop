@@ -55,9 +55,10 @@ namespace Bloom.Collection
 
             Settings.Default.Save(); // AutoUpdate is a user-level setting
 
-            // The dialog does not post the administrators, the subscription or the bookshelf
-            // yet (their tab cards will), so these rules run with "unchanged". That still matters:
-            // it is what keeps an expired subscription's bookshelf in the file (BL-15056).
+            // The dialog does not post the administrators or the subscription yet (their tab cards
+            // will), so these rules run with "unchanged". The posted bookshelf is already in
+            // settings.DefaultBookshelf, which is what a null newBookshelf means. That still
+            // matters: it is what keeps an expired subscription's bookshelf in the file (BL-15056).
             ApplyAdministrators(null, settings, currentCollectionIsTeamCollection);
             var clearDefaultBookshelfAfterSaving = ApplySubscriptionAndBookshelf(
                 null,
