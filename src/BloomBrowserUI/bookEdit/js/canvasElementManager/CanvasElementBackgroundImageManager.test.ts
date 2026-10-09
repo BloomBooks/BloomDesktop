@@ -110,8 +110,11 @@ vi.mock("../../../utils/elementUtils", () => ({
 
 import {
     adjustBackgroundImageSize,
+    backgroundImageAlreadyFillsCanvas,
     BackgroundImageManagerState,
+    getBackgroundImageSizeWithBleed,
     handleResizeAdjustments,
+    kBackgroundImageBleedPx,
     repairInterruptedBackgroundConversion,
 } from "./CanvasElementBackgroundImageManager";
 
@@ -507,4 +510,144 @@ describe("adjustBackgroundImageSize on a background that fills the page", () => 
             );
         },
     );
+});
+
+describe("getBackgroundImageSizeWithBleed", () => {
+    test("an image that fills the width overhangs both sides by the bleed and keeps its shape", () => {
+        // A 2:1 image fitted to a 400 x 300 canvas: full width, letterboxed top and bottom.
+        const size = getBackgroundImageSizeWithBleed(400, 200, 400, 300);
+        expect(size.width).toBeCloseTo(400 + 2 * kBackgroundImageBleedPx, 6);
+        expect(size.width / size.height).toBeCloseTo(2, 6);
+        // still letterboxed, so no bleed is forced on the height
+        expect(size.height).toBeLessThan(300);
+    });
+
+    test("an image that misses filling the height by a sliver also overhangs top and bottom", () => {
+        // An origami split that leaves 0.46px of white beside an almost-square image.
+        const size = getBackgroundImageSizeWithBleed(
+            377.476,
+            379.75,
+            377.938,
+            379.75,
+        );
+        expect(size.width).toBeGreaterThanOrEqual(
+            377.938 + 2 * kBackgroundImageBleedPx - 1e-9,
+        );
+        expect(size.height).toBeGreaterThanOrEqual(
+            379.75 + 2 * kBackgroundImageBleedPx - 1e-9,
+        );
+        expect(size.width / size.height).toBeCloseTo(377.476 / 379.75, 6);
+    });
+
+    test("an image well inside the canvas in both dimensions is left alone", () => {
+        expect(getBackgroundImageSizeWithBleed(300, 200, 400, 300)).toEqual({
+            width: 300,
+            height: 200,
+        });
+    });
+});
+
+describe("backgroundImageAlreadyFillsCanvas", () => {
+    const savedSize = { ...bloomCanvasSize };
+    afterEach(() => {
+        Object.assign(bloomCanvasSize, savedSize);
+    });
+
+    // A background canvas element with the given style, holding an img of the given natural size.
+    function makeBackground(
+        elementStyle: string,
+        naturalWidth: number,
+        naturalHeight: number,
+        imgStyle = "",
+    ) {
+        document.body.innerHTML = `<div class="bloom-canvas"><div class="bloom-canvas-element bloom-backgroundImage" style="${elementStyle}"><div class="bloom-imageContainer"><img src="a.png" style="${imgStyle}"></div></div></div>`;
+        const img = document.querySelector("img") as HTMLImageElement;
+        Object.defineProperty(img, "naturalWidth", { value: naturalWidth });
+        Object.defineProperty(img, "naturalHeight", { value: naturalHeight });
+        return {
+            bloomCanvas: document.querySelector(".bloom-canvas") as HTMLElement,
+            bg: document.querySelector(".bloom-backgroundImage") as HTMLElement,
+            img,
+        };
+    }
+
+    test("a picture fitted with the bleed on a wide canvas counts as filling it", () => {
+        bloomCanvasSize.width = 600;
+        bloomCanvasSize.height = 200;
+        const size = getBackgroundImageSizeWithBleed(600, 200, 600, 200);
+        // sanity check: the bleed made the long side overhang by more than 1px each end
+        expect(size.width - 600).toBeGreaterThan(2 * kBackgroundImageBleedPx);
+        const { bloomCanvas, bg, img } = makeBackground(
+            `left: ${(600 - size.width) / 2}px; top: ${(200 - size.height) / 2}px; width: ${size.width}px; height: ${size.height}px;`,
+            1200,
+            400,
+        );
+        expect(backgroundImageAlreadyFillsCanvas(bloomCanvas, bg, img)).toBe(
+            true,
+        );
+    });
+
+    test("a picture that misses the canvas height by more than the fill tolerance does not", () => {
+        bloomCanvasSize.width = 400;
+        bloomCanvasSize.height = 300;
+        const size = getBackgroundImageSizeWithBleed(400, 297.5, 400, 300);
+        // sanity check: only the width got the bleed, so there is still a gap top and bottom
+        expect(size.height).toBeLessThan(300);
+        const { bloomCanvas, bg, img } = makeBackground(
+            `left: ${(400 - size.width) / 2}px; top: ${(300 - size.height) / 2}px; width: ${size.width}px; height: ${size.height}px;`,
+            400,
+            297.5,
+        );
+        expect(backgroundImageAlreadyFillsCanvas(bloomCanvas, bg, img)).toBe(
+            false,
+        );
+    });
+
+    test("a wide crop moved off-centre does not, so Fit Space can re-centre it", () => {
+        bloomCanvasSize.width = 400;
+        bloomCanvasSize.height = 300;
+        // A 4:1 picture filling the height of the overhanging element: 1208 x 302.
+        const element = "left: -1px; top: -1px; width: 402px; height: 302px;";
+        const centred = makeBackground(
+            element,
+            1200,
+            300,
+            "width: 1208px; left: -403px; top: 0px;",
+        );
+        // sanity check: the same picture centred does count as filling
+        expect(
+            backgroundImageAlreadyFillsCanvas(
+                centred.bloomCanvas,
+                centred.bg,
+                centred.img,
+            ),
+        ).toBe(true);
+        const moved = makeBackground(
+            element,
+            1200,
+            300,
+            "width: 1208px; left: -100px; top: 0px;",
+        );
+        expect(
+            backgroundImageAlreadyFillsCanvas(
+                moved.bloomCanvas,
+                moved.bg,
+                moved.img,
+            ),
+        ).toBe(false);
+    });
+
+    test("a picture the author cropped well into does not, so Fit Space can reset it", () => {
+        bloomCanvasSize.width = 400;
+        bloomCanvasSize.height = 300;
+        const { bloomCanvas, bg, img } = makeBackground(
+            "left: 0px; top: 0px; width: 400px; height: 300px;",
+            400,
+            300,
+            "width: 800px; left: -200px; top: -150px;",
+        );
+        expect(backgroundImageAlreadyFillsCanvas(bloomCanvas, bg, img)).toBe(
+            false,
+        );
+    });
 });

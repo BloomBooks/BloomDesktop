@@ -27,6 +27,46 @@ export interface BackgroundImageManagerState {
 
 const pageContentDelayRequestId = "adjustBackgroundImageSize";
 
+// How far (in px) a background image extends past each edge of its bloom-canvas that it reaches.
+// The bloom-canvas clips it (overflow: hidden), so the overhang is never seen. Without it, a picture
+// meant to fill the bloom-canvas shows a thin white line along its edges: Chrome snaps an img to
+// whole pixels in the page's own coordinates and then applies the editing zoom transform, so the
+// drawn picture can stop up to half a pixel short of its box and let the white page show through.
+export const kBackgroundImageBleedPx = 1;
+
+// A background picture that comes within this many px (in total, across both sides) of filling the
+// bloom-canvas in one dimension is treated as filling it, and gets the bleed on that dimension too.
+// Origami split positions are percentages, so a picture the author lined up with the edges of its
+// pane is rarely an exact fit, and the leftover sliver shows as a white line.
+const kBackgroundImageFillTolerancePx = 2;
+
+// Given the size a background image would have if fitted inside a bloom-canvas of size
+// canvasWidth x canvasHeight, return the size it should have so that, in each dimension where it
+// fills (or very nearly fills) the bloom-canvas, it extends kBackgroundImageBleedPx past both edges.
+// The image keeps its aspect ratio; where it overhangs more than the bleed in the other dimension,
+// the bloom-canvas crops it equally on both sides.
+export function getBackgroundImageSizeWithBleed(
+    fittedWidth: number,
+    fittedHeight: number,
+    canvasWidth: number,
+    canvasHeight: number,
+): { width: number; height: number } {
+    const fillsWidth =
+        canvasWidth - fittedWidth < kBackgroundImageFillTolerancePx;
+    const fillsHeight =
+        canvasHeight - fittedHeight < kBackgroundImageFillTolerancePx;
+    const scale = Math.max(
+        1,
+        fillsWidth
+            ? (canvasWidth + 2 * kBackgroundImageBleedPx) / fittedWidth
+            : 1,
+        fillsHeight
+            ? (canvasHeight + 2 * kBackgroundImageBleedPx) / fittedHeight
+            : 1,
+    );
+    return { width: fittedWidth * scale, height: fittedHeight * scale };
+}
+
 function clearImageLoadListener(
     state: BackgroundImageManagerState,
     img: HTMLImageElement,
@@ -264,6 +304,121 @@ function switchBackgroundToCanvasElement(
     );
 }
 
+// True if the background canvas element fills (or very nearly fills) its bloom-canvas in some
+// dimension but does not overhang both edges in that dimension by kBackgroundImageBleedPx, as
+// adjustBackgroundImageSizeToFit would now make it.
+function backgroundImageLacksBleed(
+    bloomCanvas: HTMLElement,
+    bgElement: HTMLElement,
+): boolean {
+    const style = bgElement.style;
+    if (
+        ![style.left, style.top, style.width, style.height].every((v) =>
+            v.endsWith("px"),
+        )
+    ) {
+        return false; // not a size Bloom wrote, so not one we know how to judge
+    }
+    const { width: canvasWidth, height: canvasHeight } =
+        getExactClientSize(bloomCanvas);
+    // Allow for the rounding in the values the browser gives back for what we wrote.
+    const kSlop = 0.01;
+    const lacksBleed = (start: number, length: number, canvasLength: number) =>
+        canvasLength - length < kBackgroundImageFillTolerancePx &&
+        (start > -kBackgroundImageBleedPx + kSlop ||
+            start + length < canvasLength + kBackgroundImageBleedPx - kSlop);
+    return (
+        lacksBleed(
+            pxToNumber(style.left),
+            pxToNumber(style.width),
+            canvasWidth,
+        ) ||
+        lacksBleed(
+            pxToNumber(style.top),
+            pxToNumber(style.height),
+            canvasHeight,
+        )
+    );
+}
+
+// True if the background picture already covers the whole bloom-canvas, enlarged no more than
+// adjustBackgroundImageSizeToFit's bleed explains. The Fit Space command uses this: such a
+// picture has nothing left to expand into, even though the bleed makes its size differ from the
+// bloom-canvas. A picture enlarged further than that (cropped in by the author) does not count,
+// so Fit Space can still reset it to just cover the bloom-canvas.
+export function backgroundImageAlreadyFillsCanvas(
+    bloomCanvas: HTMLElement,
+    bgElement: HTMLElement,
+    img: HTMLImageElement,
+): boolean {
+    if (!img.naturalWidth || !img.naturalHeight) {
+        return false;
+    }
+    const { width: canvasWidth, height: canvasHeight } =
+        getExactClientSize(bloomCanvas);
+    if (!canvasWidth || !canvasHeight) {
+        return false;
+    }
+    const elementLeft = pxToNumber(bgElement.style.left, bgElement.offsetLeft);
+    const elementTop = pxToNumber(bgElement.style.top, bgElement.offsetTop);
+    const elementWidth = pxToNumber(
+        bgElement.style.width,
+        bgElement.clientWidth,
+    );
+    const elementHeight = pxToNumber(
+        bgElement.style.height,
+        bgElement.clientHeight,
+    );
+    // The img box, in the canvas element's coordinates. A cropped picture has an explicit width
+    // and its height follows the picture's shape; an uncropped one is the canvas element's size.
+    const boxWidth = img.style.width
+        ? pxToNumber(img.style.width)
+        : elementWidth;
+    const boxHeight = img.style.width
+        ? (boxWidth * img.naturalHeight) / img.naturalWidth
+        : elementHeight;
+    const boxLeft = img.style.width ? pxToNumber(img.style.left) || 0 : 0;
+    const boxTop = img.style.width ? pxToNumber(img.style.top) || 0 : 0;
+    // The picture as drawn inside that box (object-fit: contain; a no-op for a cropped picture).
+    const containScale = Math.min(
+        boxWidth / img.naturalWidth,
+        boxHeight / img.naturalHeight,
+    );
+    let drawnWidth = containScale * img.naturalWidth;
+    let drawnHeight = containScale * img.naturalHeight;
+    // A picture rotated a quarter turn shows its two dimensions swapped about the box's centre.
+    if (getImageContentTransform(img).quarterRotations % 2 === 1) {
+        [drawnWidth, drawnHeight] = [drawnHeight, drawnWidth];
+    }
+    const centreX = elementLeft + boxLeft + boxWidth / 2;
+    const centreY = elementTop + boxTop + boxHeight / 2;
+    const kSlop = 0.01;
+    const covers =
+        centreX - drawnWidth / 2 <= kSlop &&
+        centreY - drawnHeight / 2 <= kSlop &&
+        centreX + drawnWidth / 2 >= canvasWidth - kSlop &&
+        centreY + drawnHeight / 2 >= canvasHeight - kSlop;
+    // Fit Space centres the picture (and so does the bleed), so an off-centre crop is something
+    // Fit Space would still change, even when the picture covers the bloom-canvas.
+    const centred =
+        Math.abs(centreX - canvasWidth / 2) < 1 &&
+        Math.abs(centreY - canvasHeight / 2) < 1;
+    if (!covers || !centred) {
+        return false;
+    }
+    // How much bigger than just covering the bloom-canvas the picture is drawn. The bleed and
+    // the near-fill tolerance account for a few px of that; anything more is the author's crop.
+    const enlargement = Math.min(
+        drawnWidth / canvasWidth,
+        drawnHeight / canvasHeight,
+    );
+    const allowedEnlargement =
+        1 +
+        (2 * kBackgroundImageBleedPx + kBackgroundImageFillTolerancePx + 0.5) /
+            Math.min(canvasWidth, canvasHeight);
+    return enlargement <= allowedEnlargement;
+}
+
 export function setupBackgroundImageAttributes(
     state: BackgroundImageManagerState,
     bloomCanvas: HTMLElement,
@@ -278,7 +433,19 @@ export function setupBackgroundImageAttributes(
         )[0] as HTMLElement;
     }
     if (bgElement?.getAttribute("data-bubble")) {
-        return Promise.resolve(); // setup has already been done (data-bubble is added by putBubbleBefore)
+        // setup has already been done (data-bubble is added by putBubbleBefore)
+        if (backgroundImageLacksBleed(bloomCanvas, bgElement)) {
+            // Fitted before we added the bleed; re-fit so its edges don't show a white line.
+            return adjustBackgroundImageSize(
+                state,
+                bloomCanvas,
+                bgElement,
+                false,
+                getActiveElement,
+                alignControlFrameWithActiveElement,
+            );
+        }
+        return Promise.resolve();
     }
     if (!bgElement) {
         return Promise.resolve();
@@ -528,6 +695,11 @@ function adjustBackgroundImageSizeToFit(
     const fitCoverMode = img?.classList.contains("bloom-imageObjectFit-cover");
     let matchWidthOfContainer = imgAspectRatio > containerAspectRatio;
     if (fitCoverMode) {
+        // A cover-mode picture always fills the bloom-canvas, so it always gets the bleed: the
+        // canvas element covers the bloom-canvas plus kBackgroundImageBleedPx on every side.
+        const coverWidth = bloomCanvasWidth + 2 * kBackgroundImageBleedPx;
+        const coverHeight = bloomCanvasHeight + 2 * kBackgroundImageBleedPx;
+        matchWidthOfContainer = imgAspectRatio > coverWidth / coverHeight;
         // In case it is NOT already cropped, its size will be 100%, so we must capture
         // this before we change the parent.
         const oldBoxWidth = pxToNumber(img.style.width) || img.clientWidth;
@@ -546,10 +718,10 @@ function adjustBackgroundImageSizeToFit(
         const oldImgLeft = oldBoxLeft + oldBoxWidth / 2 - oldImgWidth / 2;
         const oldImgTop = oldBoxTop + oldBoxHeight / 2 - oldImgHeight / 2;
         // make the canvas element fill the container
-        bgCanvasElement.style.width = bloomCanvasWidth + "px";
-        bgCanvasElement.style.height = bloomCanvasHeight + "px";
-        bgCanvasElement.style.left = "0px";
-        bgCanvasElement.style.top = "0px";
+        bgCanvasElement.style.width = coverWidth + "px";
+        bgCanvasElement.style.height = coverHeight + "px";
+        bgCanvasElement.style.left = -kBackgroundImageBleedPx + "px";
+        bgCanvasElement.style.top = -kBackgroundImageBleedPx + "px";
         //
         matchWidthOfContainer = !matchWidthOfContainer;
         let scale: number;
@@ -559,8 +731,8 @@ function adjustBackgroundImageSizeToFit(
         if (matchWidthOfContainer) {
             // image is taller than a perfect fit, so it will fill the width and be cropped
             // (more than before) in height.
-            const ceScale = bgCanvasElement.clientWidth / oldCeWidth;
-            const minScale = bgCanvasElement.clientWidth / oldImgWidth;
+            const ceScale = coverWidth / oldCeWidth;
+            const minScale = coverWidth / oldImgWidth;
             scale = Math.max(ceScale, minScale);
             newImgLeft = oldImgLeft * scale; //same fraction cropped in width
             const previouslyHiddenAtTop = -oldImgTop * scale;
@@ -570,16 +742,16 @@ function adjustBackgroundImageSizeToFit(
             // That is, possibly keeping the same top cropping would leave space at the bottom
             const excessHeight =
                 oldImgHeight * scale -
-                bloomCanvasHeight -
+                coverHeight -
                 previouslyHiddenAtTop -
                 previouslyHiddenAtBottom;
             newImgTop = Math.min(-previouslyHiddenAtTop - excessHeight / 2, 0);
         } else {
             // image is wider than a perfect fit, so it will fill the height and be cropped
             // (more than before) in width.
-            const ceScale = bgCanvasElement.clientHeight / oldCeHeight;
+            const ceScale = coverHeight / oldCeHeight;
             // we must scale it up enough to fill the height of the container.
-            const minScale = bgCanvasElement.clientHeight / oldImgHeight;
+            const minScale = coverHeight / oldImgHeight;
             scale = Math.max(ceScale, minScale);
             newImgTop = oldImgTop * scale; //same fraction cropped in height
             const previouslyHiddenAtLeft = -oldImgLeft * scale;
@@ -587,7 +759,7 @@ function adjustBackgroundImageSizeToFit(
                 (oldImgWidth + oldImgLeft - oldCeWidth) * scale;
             const excessWidth =
                 oldImgWidth * scale -
-                bloomCanvasWidth -
+                coverWidth -
                 previouslyHiddenAtLeft -
                 previouslyHiddenAtRight;
             newImgLeft = Math.min(-previouslyHiddenAtLeft - excessWidth / 2, 0);
@@ -601,23 +773,25 @@ function adjustBackgroundImageSizeToFit(
         img.style.top =
             newImgTop + (oldImgHeight * scale) / 2 - newBoxHeight / 2 + "px";
     } else {
-        if (matchWidthOfContainer) {
-            // size of image is width-limited: image is wider than a perfect fit,
-            // so it will fill the width of the container and have a smaller height.
-            bgCanvasElement.style.width = bloomCanvasWidth + "px";
-            bgCanvasElement.style.left = "0px";
-            const imgHeight = bloomCanvasWidth / imgAspectRatio;
-            bgCanvasElement.style.top =
-                (bloomCanvasHeight - imgHeight) / 2 + "px";
-            bgCanvasElement.style.height = imgHeight + "px";
-        } else {
-            const imgWidth = bloomCanvasHeight * imgAspectRatio;
-            bgCanvasElement.style.width = imgWidth + "px";
-            bgCanvasElement.style.top = "0px";
-            bgCanvasElement.style.left =
-                (bloomCanvasWidth - imgWidth) / 2 + "px";
-            bgCanvasElement.style.height = bloomCanvasHeight + "px";
-        }
+        // If matchWidthOfContainer, the size of the image is width-limited: the image is wider
+        // than a perfect fit, so it will fill the width of the container and have a smaller height.
+        const fittedWidth = matchWidthOfContainer
+            ? bloomCanvasWidth
+            : bloomCanvasHeight * imgAspectRatio;
+        const fittedHeight = matchWidthOfContainer
+            ? bloomCanvasWidth / imgAspectRatio
+            : bloomCanvasHeight;
+        const { width: imgWidth, height: imgHeight } =
+            getBackgroundImageSizeWithBleed(
+                fittedWidth,
+                fittedHeight,
+                bloomCanvasWidth,
+                bloomCanvasHeight,
+            );
+        bgCanvasElement.style.width = imgWidth + "px";
+        bgCanvasElement.style.height = imgHeight + "px";
+        bgCanvasElement.style.left = (bloomCanvasWidth - imgWidth) / 2 + "px";
+        bgCanvasElement.style.top = (bloomCanvasHeight - imgHeight) / 2 + "px";
         // If the image was cropped, we want to adjust the cropping to the new size.
         // If it wasn't cropped, we want to leave it alone (it will default to fitting
         // within the canvas element).
