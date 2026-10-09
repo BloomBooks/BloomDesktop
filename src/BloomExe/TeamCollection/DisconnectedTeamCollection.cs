@@ -29,6 +29,18 @@ namespace Bloom.TeamCollection
         public bool DisconnectedBecauseOfSubscriptionTier = false;
         public bool DisconnectedBecauseOfInitializationFailure = false;
 
+        /// <summary>
+        /// True if we are disconnected because the shared folder's settings say nothing may be
+        /// written to it (AllowSharedFolderChanges is false). See BL-16928.
+        /// </summary>
+        public bool DisconnectedBecauseSharedFolderChangesPaused = false;
+
+        /// <summary>
+        /// True if, besides that, the collection has moved to Bloom's cloud collections (its
+        /// settings have a CloudCollectionId). See BL-16928.
+        /// </summary>
+        public bool MovedToCloud = false;
+
         // For Moq
         // Alternatively,  you could make it implement an ITeamCollection interface instead.
         public DisconnectedTeamCollection()

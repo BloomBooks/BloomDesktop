@@ -1673,7 +1673,10 @@ namespace Bloom.TeamCollection
                 }
             }
 
-            return null;
+            // Last, because a real connection problem is the one to report first: it is something
+            // the user can fix, and until it is fixed what we read here may be stale anyway. (Either
+            // way we end up disconnected, so nothing can slip through.) See BL-16928.
+            return GetSharedFolderChangesPausedProblem();
         }
 
         private bool IsFolderOnLocalNetwork(string repoFolderPath)
