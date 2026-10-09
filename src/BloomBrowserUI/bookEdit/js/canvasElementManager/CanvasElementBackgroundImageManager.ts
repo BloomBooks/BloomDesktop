@@ -341,6 +341,79 @@ function backgroundImageLacksBleed(
     );
 }
 
+// True if the background picture already covers the whole bloom-canvas, enlarged no more than
+// adjustBackgroundImageSizeToFit's bleed explains. The Fit Space command uses this: such a
+// picture has nothing left to expand into, even though the bleed makes its size differ from the
+// bloom-canvas. A picture enlarged further than that (cropped in by the author) does not count,
+// so Fit Space can still reset it to just cover the bloom-canvas.
+export function backgroundImageAlreadyFillsCanvas(
+    bloomCanvas: HTMLElement,
+    bgElement: HTMLElement,
+    img: HTMLImageElement,
+): boolean {
+    if (!img.naturalWidth || !img.naturalHeight) {
+        return false;
+    }
+    const { width: canvasWidth, height: canvasHeight } =
+        getExactClientSize(bloomCanvas);
+    if (!canvasWidth || !canvasHeight) {
+        return false;
+    }
+    const elementLeft = pxToNumber(bgElement.style.left, bgElement.offsetLeft);
+    const elementTop = pxToNumber(bgElement.style.top, bgElement.offsetTop);
+    const elementWidth = pxToNumber(
+        bgElement.style.width,
+        bgElement.clientWidth,
+    );
+    const elementHeight = pxToNumber(
+        bgElement.style.height,
+        bgElement.clientHeight,
+    );
+    // The img box, in the canvas element's coordinates. A cropped picture has an explicit width
+    // and its height follows the picture's shape; an uncropped one is the canvas element's size.
+    const boxWidth = img.style.width
+        ? pxToNumber(img.style.width)
+        : elementWidth;
+    const boxHeight = img.style.width
+        ? (boxWidth * img.naturalHeight) / img.naturalWidth
+        : elementHeight;
+    const boxLeft = img.style.width ? pxToNumber(img.style.left) || 0 : 0;
+    const boxTop = img.style.width ? pxToNumber(img.style.top) || 0 : 0;
+    // The picture as drawn inside that box (object-fit: contain; a no-op for a cropped picture).
+    const containScale = Math.min(
+        boxWidth / img.naturalWidth,
+        boxHeight / img.naturalHeight,
+    );
+    let drawnWidth = containScale * img.naturalWidth;
+    let drawnHeight = containScale * img.naturalHeight;
+    // A picture rotated a quarter turn shows its two dimensions swapped about the box's centre.
+    if (getImageContentTransform(img).quarterRotations % 2 === 1) {
+        [drawnWidth, drawnHeight] = [drawnHeight, drawnWidth];
+    }
+    const centreX = elementLeft + boxLeft + boxWidth / 2;
+    const centreY = elementTop + boxTop + boxHeight / 2;
+    const kSlop = 0.01;
+    const covers =
+        centreX - drawnWidth / 2 <= kSlop &&
+        centreY - drawnHeight / 2 <= kSlop &&
+        centreX + drawnWidth / 2 >= canvasWidth - kSlop &&
+        centreY + drawnHeight / 2 >= canvasHeight - kSlop;
+    if (!covers) {
+        return false;
+    }
+    // How much bigger than just covering the bloom-canvas the picture is drawn. The bleed and
+    // the near-fill tolerance account for a few px of that; anything more is the author's crop.
+    const enlargement = Math.min(
+        drawnWidth / canvasWidth,
+        drawnHeight / canvasHeight,
+    );
+    const allowedEnlargement =
+        1 +
+        (2 * kBackgroundImageBleedPx + kBackgroundImageFillTolerancePx + 0.5) /
+            Math.min(canvasWidth, canvasHeight);
+    return enlargement <= allowedEnlargement;
+}
+
 export function setupBackgroundImageAttributes(
     state: BackgroundImageManagerState,
     bloomCanvas: HTMLElement,
