@@ -552,6 +552,10 @@ export function canvasElementMenuPanels(page: Page): Locator {
  * A submenu opens only while the pointer is over its parent row (mui-nested-menu-item listens for
  * mouseenter), so this hovers the parent with the real pointer, then jumps straight to the command.
  * A path that crossed other rows on the way would close the submenu before the click arrived.
+ *
+ * Choosing a command shuts the "..." menu, but the submenu stays on screen for as long as the
+ * pointer rests on it, still offering its commands. A person moves on and it goes, so this moves
+ * the pointer off it too, and waits until no menu is left.
  */
 export async function clickCanvasElementSubmenuItem(
     page: Page,
@@ -577,10 +581,56 @@ export async function clickCanvasElementSubmenuItem(
         );
     }
     await item.click();
-    await frame
+    await moveMouseOffMenus(page);
+    await expect
+        .poll(async () => getOpenCanvasElementMenuCount(page), {
+            timeout: 30000,
+            message: `Choosing "${l10nId}" left a menu on screen.`,
+        })
+        .toBe(0);
+}
+
+/**
+ * The open submenu of the selected canvas element's "..." menu: the visible menu list that does not
+ * hold the row that opened it. A submenu is a menu of its own, which MUI draws in a portal, so it is
+ * not inside the "..." menu's list.
+ */
+function canvasElementSubmenu(page: Page, submenuL10nId: string): Locator {
+    const frame = editablePageFrame(page);
+    return frame
         .locator(MENU)
-        .first()
-        .waitFor({ state: "hidden", timeout: 30000 });
+        .filter({
+            hasNot: frame.locator(`[data-testid="${submenuL10nId}"]`),
+        })
+        .first();
+}
+
+/**
+ * The localization ids of the commands in a submenu of the selected canvas element's "..." menu,
+ * in order, each paired with whether it is enabled. Opens the submenu first.
+ */
+export async function getCanvasElementSubmenuItems(
+    page: Page,
+    submenuL10nId: string,
+): Promise<{ id: string; enabled: boolean }[]> {
+    await openCanvasElementSubmenu(page, submenuL10nId);
+    return canvasElementSubmenu(page, submenuL10nId)
+        .locator('li[role="menuitem"]')
+        .evaluateAll((items) =>
+            items.map((item) => ({
+                id: item.getAttribute("data-testid") ?? "",
+                enabled: !item.classList.contains("Mui-disabled"),
+            })),
+        );
+}
+
+/**
+ * Move the mouse just inside the top-left corner of the canvas, where no menu is drawn, so that a
+ * submenu it was resting on closes. Moves only; it does not click.
+ */
+async function moveMouseOffMenus(page: Page): Promise<void> {
+    const box = await requireBox(canvas(page), "the canvas");
+    await page.mouse.move(box.x + 4, box.y + 4, { steps: 5 });
 }
 
 /**
@@ -774,10 +824,22 @@ export async function dragRotateHandle(
  * Close the canvas element menu without choosing anything by pressing Escape, the way a person
  * does, into whatever has the focus: the menu does not take it when it opens. Waits until neither
  * the menu nor a submenu open beside it is showing.
+ *
+ * A submenu open beside the menu is closed first, by moving the pointer off it: an MUI menu answers
+ * Escape only when it is the topmost one, and an open submenu is.
  */
 export async function closeCanvasElementMenu(page: Page): Promise<void> {
     const menu = editablePageFrame(page).locator(MENU).first();
     if (!(await menu.isVisible().catch(() => false))) return;
+    if ((await getOpenCanvasElementMenuCount(page)) > 1) {
+        await moveMouseOffMenus(page);
+        await expect
+            .poll(async () => getOpenCanvasElementMenuCount(page), {
+                timeout: 30000,
+                message: "Moving the pointer off the submenu did not close it.",
+            })
+            .toBe(1);
+    }
     // On the menu itself, not page.keyboard: the menu closes on an Escape it receives, and the
     // focus may be elsewhere, e.g. on a picture in a table cell that was just pressed.
     await menu.press("Escape");
@@ -820,6 +882,25 @@ export async function duplicateCanvasElement(page: Page): Promise<number> {
         })
         .toBeGreaterThan(countBefore);
     return countBefore;
+}
+
+/**
+ * Give the selected speech bubble a child bubble through its "..." menu (Add Child Bubble), and wait
+ * until the page has one more canvas element. A child bubble is drawn joined to its parent, and the
+ * two move as one family.
+ */
+export async function addChildBubble(page: Page): Promise<void> {
+    const countBefore = await getCanvasElementCount(page);
+    await clickCanvasElementMenuItem(
+        page,
+        "EditTab.Toolbox.ComicTool.Options.AddChildBubble",
+    );
+    await expect
+        .poll(async () => getCanvasElementCount(page), {
+            timeout: 30000,
+            message: `Add Child Bubble did not add a canvas element (there are still ${countBefore}).`,
+        })
+        .toBe(countBefore + 1);
 }
 
 /**

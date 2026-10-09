@@ -448,6 +448,7 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<
                 // As on LocalizableMenuItem, the localization id doubles as the test id, so a
                 // test can hover the row to open its submenu without matching on English.
                 data-testid={props.l10nId}
+                disabled={props.disabled}
                 label={
                     props.icon ? (
                         // This is a nuisance. We should just be able to pass on props.icon.

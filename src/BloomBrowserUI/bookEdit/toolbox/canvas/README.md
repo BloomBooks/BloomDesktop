@@ -76,7 +76,7 @@ See `joinMenuSectionsWithSingleDividers()`.
 
 ### The “section” model
 
-The registry and UI both use `CanvasElementMenuSection` (in `canvasElementControlRegistry.ts`). Current menu sections:
+The registry and UI both use `SectionId` (in `canvasControlTypes.ts`). Current menu sections:
 
 - `url`
 - `video`
@@ -84,9 +84,10 @@ The registry and UI both use `CanvasElementMenuSection` (in `canvasElementContro
 - `audio`
 - `bubble` (e.g. “Add Child Bubble”)
 - `text`
+- `layer` (the "Layer" submenu: Bring Forward / Bring to Front / Send Backwards / Send to Back)
 - `wholeElementCommands`
 
-The `orderedMenuSections` list in `CanvasElementContextControls.tsx` is the authoritative menu section order.
+Each element type's `menuSections` list in `canvasElementControlRegistry.ts` is the authoritative menu section order for that type.
 
 ### Mini-toolbar
 
@@ -140,10 +141,9 @@ The toolbar visibility is controlled in two layers:
 
 Add a new section only if it is truly a distinct group that should be separated by a divider/spacer.
 
-1. Add a new string literal to `CanvasElementMenuSection` in `canvasElementControlRegistry.ts`.
-2. Add the new section to `orderedMenuSections` in `CanvasElementContextControls.tsx`.
-3. Add the matching menu-item array and populate it.
-4. Update relevant `menuSections` lists for types that should show it.
+1. Add a new string literal to `SectionId` in `canvasControlTypes.ts`.
+2. Add the section to `controlSections` in `canvasControlRegistry.ts`, listing the controls it holds.
+3. Add the section to the `menuSections` list of each element type that should show it, in `canvasElementControlRegistry.ts`, at the position where it should appear.
 
 Because the menu joiner adds exactly one divider between non-empty sections, a “new section” is the right tool when you want a guaranteed HR between groups (e.g. separating “Add Child Bubble” from other text actions).
 
