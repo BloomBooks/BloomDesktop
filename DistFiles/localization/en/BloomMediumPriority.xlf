@@ -1610,15 +1610,15 @@
         <note>ID: ImageLibrary.ThisPage</note>
         <note>Short link text used in setup instructions (e.g., as in "go to this page"). Should be lowercase as it appears mid-sentence.</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.Dimensions" translate="no">
+      <trans-unit id="Common.Dimensions" translate="no">
         <source xml:lang="en">Dimensions</source>
-        <note>ID: ImageLibrary.Dimensions</note>
-        <note>Label in the Image Chooser's image details panel, beside the selected image's width and height in pixels (e.g. "576 x 1024").</note>
+        <note>ID: Common.Dimensions</note>
+        <note>Label beside an image's width and height in pixels (e.g. "576 x 1024"), as in the Image Chooser's image details panel.</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.FileSize" translate="no">
+      <trans-unit id="Common.FileSize" translate="no">
         <source xml:lang="en">File size</source>
-        <note>ID: ImageLibrary.FileSize</note>
-        <note>Label in the Image Chooser's image details panel, beside how large the selected image's file is (e.g. "1.2 MB").</note>
+        <note>ID: Common.FileSize</note>
+        <note>Label beside how large a file is (e.g. "1.2 MB"), as in the Image Chooser's image details panel.</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.SelectImagePrompt" translate="no">
         <source xml:lang="en">Select an image to see its details and license.</source>
