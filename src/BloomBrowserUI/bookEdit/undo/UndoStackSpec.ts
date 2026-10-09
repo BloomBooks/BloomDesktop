@@ -4,6 +4,7 @@
 // pins a decision the plan made rather than recording what some existing code happens to do.
 
 import { describe, it, expect, beforeEach } from "vitest";
+import { nextChangeOrder } from "./changeOrder";
 import { UndoStack } from "./UndoStack";
 import { ILegacyUndoProvider, IUndoEntry, kMaxUndoEntries } from "./undoTypes";
 
@@ -30,18 +31,25 @@ function makeEntry(
     return entry;
 }
 
-/** A legacy-mechanism adapter whose availability the test controls. */
+/**
+ * A legacy-mechanism adapter whose availability the test controls. `options.undoes` says whether
+ * its undo finds something (default yes); `options.lastChangeOrder` makes it report its changes on
+ * the shared sequence, as the CKEditor provider does.
+ */
 function makeProvider(
     name: string,
     log: string[],
     available: () => boolean,
+    options?: { undoes?: () => boolean; lastChangeOrder?: () => number },
 ): ILegacyUndoProvider {
     return {
         name,
         canUndo: available,
         undo: () => {
             log.push(`legacy ${name}`);
+            return options?.undoes ? options.undoes() : true;
         },
+        lastChangeOrder: options?.lastChangeOrder,
     };
 }
 
@@ -171,6 +179,30 @@ describe("UndoStack", () => {
         });
     });
 
+    describe("an entry that is not available just now", () => {
+        it("blocks undo and redo rather than being skipped", () => {
+            let available = false;
+            stack.push(makeEntry("first", log));
+            const second = makeEntry("second", log);
+            second.isAvailable = () => available;
+            stack.push(second);
+
+            expect(stack.canUndo()).toBe(false);
+            stack.undo();
+            expect(log).toEqual([]);
+
+            available = true;
+            expect(stack.canUndo()).toBe(true);
+            stack.undo();
+            expect(log).toEqual(["undo second"]);
+
+            available = false;
+            expect(stack.canRedo()).toBe(false);
+            stack.redo();
+            expect(log).toEqual(["undo second"]);
+        });
+    });
+
     describe("legacy providers", () => {
         it("consults them in registration order, before our own entries", () => {
             stack.registerLegacyProvider(
@@ -209,6 +241,51 @@ describe("UndoStack", () => {
             );
 
             expect(stack.canUndo()).toBe(true);
+        });
+
+        it("passes the turn on when a provider's undo finds nothing to undo", () => {
+            // CKEditor can claim an undo it cannot perform; the person's Undo must still land.
+            stack.registerLegacyProvider(
+                makeProvider("ckeditor", log, () => true, {
+                    undoes: () => false,
+                }),
+            );
+            stack.push(makeEntry("ours", log));
+
+            stack.undo();
+
+            expect(log).toEqual(["legacy ckeditor", "undo ours"]);
+        });
+
+        it("lets a provider that reports its changes answer only if it changed after our newest entry", () => {
+            let ckeditorChangedAt = 0;
+            stack.registerLegacyProvider(
+                makeProvider("ckeditor", log, () => true, {
+                    lastChangeOrder: () => ckeditorChangedAt,
+                }),
+            );
+            // Typing, then a table row: the row is newer, so the stack's entry answers.
+            ckeditorChangedAt = nextChangeOrder();
+            stack.push(makeEntry("add row", log));
+            stack.undo();
+            expect(log).toEqual(["undo add row"]);
+
+            // A row, then typing: the typing is newer, so CKEditor answers first.
+            stack.push(makeEntry("add another row", log));
+            ckeditorChangedAt = nextChangeOrder();
+            stack.undo();
+            expect(log).toEqual(["undo add row", "legacy ckeditor"]);
+        });
+
+        it("still lets a provider that does not report its changes answer first", () => {
+            stack.registerLegacyProvider(
+                makeProvider("toolbox", log, () => true),
+            );
+            stack.push(makeEntry("ours", log));
+
+            stack.undo();
+
+            expect(log).toEqual(["legacy toolbox"]);
         });
 
         it("takes no part in redo", () => {

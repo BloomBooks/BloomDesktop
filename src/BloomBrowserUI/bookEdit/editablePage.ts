@@ -24,6 +24,7 @@ import {
     handleUndo,
     setUpPageUndo,
 } from "./undo/pageUndo";
+import { tableCanUndo } from "./undo/tableUndo";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -75,7 +76,7 @@ export interface IPageFrameExports {
     getTheOneCanvasElementManager(): CanvasElementManager;
 
     ckeditorCanUndo(): boolean;
-    ckeditorUndo(): void;
+    ckeditorUndo(): boolean;
     imageOperationCanUndo(): boolean;
     imageOperationUndo(): boolean;
 
@@ -84,6 +85,7 @@ export interface IPageFrameExports {
     canUndo(): boolean;
     handleRedo(): void;
     canRedo(): boolean;
+    tableCanUndo(): boolean;
 
     addRequestPageContentDelay(id: string): void;
     removeRequestPageContentDelay(id: string): void;
@@ -353,10 +355,25 @@ export function ckeditorCanUndo(): boolean {
     return false;
 }
 
-export function ckeditorUndo() {
+/**
+ * Undo the most recent change ckeditor knows about, and say whether it undid anything.
+ *
+ * undo() answers false when it finds nothing to restore, which happens even after
+ * ckeditorCanUndo() said yes: ckeditor sets its hasUndo flag on the first keystroke of a
+ * group and clears it only when it next refreshes its state, so a manager whose snapshots
+ * have already been restored keeps claiming an undo it cannot perform. The caller needs to
+ * know, so that an Undo the person pressed is not swallowed here. (See the CKEditor provider in
+ * undo/legacyUndoProviders.ts.)
+ */
+export function ckeditorUndo(): boolean {
     // review: do we need to examine all instances?
-    (<any>CKEDITOR.currentInstance).undoManager.undo();
+    return (<any>CKEDITOR.currentInstance).undoManager.undo();
 }
+
+// The bloom-table library's undo is an entry on the one undo stack (undo/tableUndo.ts). This is
+// exported on the bundle only for the e2e tests, which check that a table's history stays out of
+// Undo in Change Layout mode.
+export { tableCanUndo };
 
 for (let j = 0; j < styleSheets.length; j++) {
     // This doesn't work any more because we are now loading this code as a module,
@@ -387,6 +404,16 @@ for (let j = 0; j < styleSheets.length; j++) {
 //PasteImageCredits() is called by a script tag on a <a> element in a tooltip
 window["PasteImageCredits"] = () => {
     EditableDivUtils.pasteImageCredits();
+};
+
+//UnlockOriginalCredits() is called from the hint bubble on the credits page's
+//generated original-copyright sentence. See BookCopyrightAndLicense.SetOriginalCopyrightNoticeHint().
+window["UnlockOriginalCredits"] = () => {
+    EditableDivUtils.unlockOriginalCredits();
+};
+
+window["RelockOriginalCredits"] = () => {
+    EditableDivUtils.relockOriginalCredits();
 };
 
 $(document).ready(() => {
@@ -449,6 +476,7 @@ interface EditablePageBundleApi {
     canUndo: typeof canUndo;
     handleRedo: typeof handleRedo;
     canRedo: typeof canRedo;
+    tableCanUndo: typeof tableCanUndo;
     addRequestPageContentDelay: typeof addRequestPageContentDelay;
     removeRequestPageContentDelay: typeof removeRequestPageContentDelay;
     e2eSetActiveCanvasElementByIndex: typeof e2eSetActiveCanvasElementByIndex;
@@ -534,6 +562,7 @@ window.editablePageBundle = {
     canUndo,
     handleRedo,
     canRedo,
+    tableCanUndo,
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
     e2eSetActiveCanvasElementByIndex,

@@ -5,6 +5,7 @@
 // Deliberately free of DOM and jQuery dependencies so it can be unit-tested directly; everything
 // frame-specific lives in legacyUndoProviders.ts, pageUndo.ts, or the factories that build entries.
 
+import { nextChangeOrder } from "./changeOrder";
 import { makeCompoundUndoEntry } from "./compoundUndoEntry";
 import { ILegacyUndoProvider, IUndoEntry, kMaxUndoEntries } from "./undoTypes";
 
@@ -18,6 +19,12 @@ import { ILegacyUndoProvider, IUndoEntry, kMaxUndoEntries } from "./undoTypes";
  */
 export class UndoStack {
     private entries: IUndoEntry[] = [];
+
+    /**
+     * When each entry in `entries` was recorded, on the sequence in changeOrder.ts, so that a legacy
+     * provider that reports its own changes on it can tell whether it or our newest entry came last.
+     */
+    private entryOrders: number[] = [];
 
     /**
      * Index of the entry that the *next* undo would apply; -1 when there is nothing to undo.
@@ -86,10 +93,13 @@ export class UndoStack {
     private record(entry: IUndoEntry): void {
         // Anything the user had undone is now unreachable: they have taken a different branch.
         this.entries.length = this.currentIndex + 1;
+        this.entryOrders.length = this.currentIndex + 1;
 
         this.entries.push(entry);
+        this.entryOrders.push(nextChangeOrder());
         if (this.entries.length > kMaxUndoEntries) {
             this.entries.shift();
+            this.entryOrders.shift();
         }
         this.currentIndex = this.entries.length - 1;
     }
@@ -101,14 +111,34 @@ export class UndoStack {
      * state (`WebView2Browser.UpdateEditButtonsAsync`), so it must not walk entries or touch
      * layout.
      *
-     * Legacy providers are consulted before our own entries, which reproduces today's behaviour
-     * exactly. See the note on {@link undo} about what that ordering does and does not guarantee.
+     * Legacy providers are consulted before our own entries; see the note on {@link undo} for the
+     * exceptions and what the ordering does and does not guarantee.
      */
     public canUndo(): boolean {
         return (
-            this.legacyProviders.some((p) => p.canUndo()) ||
-            this.currentIndex >= 0
+            this.legacyProviders.some((p) => this.providerHasTheNextUndo(p)) ||
+            this.ownEntryCanUndo()
         );
+    }
+
+    /**
+     * Whether a legacy provider should answer the next Undo: it has something to undo, and, if it
+     * reports when it last changed, that was not before our newest entry (see changeOrder.ts).
+     */
+    private providerHasTheNextUndo(provider: ILegacyUndoProvider): boolean {
+        if (!provider.canUndo()) {
+            return false;
+        }
+        if (!provider.lastChangeOrder || this.currentIndex < 0) {
+            return true;
+        }
+        return this.entryOrders[this.currentIndex] < provider.lastChangeOrder();
+    }
+
+    /** Whether our own newest entry can be undone just now. */
+    private ownEntryCanUndo(): boolean {
+        const entry = this.entries[this.currentIndex];
+        return !!entry && (entry.isAvailable?.() ?? true);
     }
 
     /**
@@ -123,33 +153,36 @@ export class UndoStack {
      */
     public canRedo(): boolean {
         const next = this.entries[this.currentIndex + 1];
-        return !!next?.redo;
+        return !!next?.redo && (next.isAvailable?.() ?? true);
     }
 
     /**
      * Undo one step.
      *
      * Order: each legacy provider that has something to undo, in registration order, then our own
-     * entries. That is exactly what the Undo button did before this class existed, so adopting the
-     * stack changes nothing while the stack is empty.
+     * entries, except that CKEditor, which reports when it last changed, stands aside while our
+     * newest entry is more recent (changeOrder.ts). A provider whose undo finds nothing to undo
+     * passes the turn on. An own entry that is not available just now (IUndoEntry.isAvailable)
+     * means nothing is undone.
      *
-     * What that ordering does *not* give us is true chronological order across the boundary: if a
-     * user does an operation recorded here and then one still handled by a legacy provider, the
-     * legacy one is undone first — which happens to be right — but in the other order it is wrong.
-     * That was already true between the old mechanisms (they were consulted in a fixed order too),
-     * and it stops being possible as each provider is converted. It is not worth inventing
-     * cross-mechanism sequencing for a state we are deleting.
+     * The other providers have no such ordering: if a user does an operation recorded here and
+     * then one still handled by one of them, that one is undone first, which happens to be right,
+     * but in the other order it is wrong. They are each confined to a context (Change Layout mode,
+     * an active reader tool, a selected picture), so it rarely arises, and it stops being possible
+     * as each is converted.
      */
     public undo(): void | Promise<void> {
         if (this.applying) {
             return;
         }
-        const provider = this.legacyProviders.find((p) => p.canUndo());
-        if (provider) {
-            provider.undo();
-            return;
+        for (const provider of this.legacyProviders) {
+            // A provider that turns out to have nothing to undo passes the turn on, so the
+            // person's Undo still reaches whatever is next.
+            if (this.providerHasTheNextUndo(provider) && provider.undo()) {
+                return;
+            }
         }
-        if (this.currentIndex < 0) {
+        if (!this.ownEntryCanUndo()) {
             return;
         }
         const entry = this.entries[this.currentIndex];
@@ -185,6 +218,7 @@ export class UndoStack {
      */
     public clear(): void {
         this.entries = [];
+        this.entryOrders = [];
         this.currentIndex = -1;
         this.heldPushes = [];
         this.resetGeneration++;

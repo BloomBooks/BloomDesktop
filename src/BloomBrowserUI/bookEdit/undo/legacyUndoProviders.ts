@@ -18,7 +18,8 @@
 // in-place snapshot restore — on a page full of live CKEditor instances.
 //
 // Each function here disappears when its mechanism is converted (Stages 3 and 4), and the last one
-// out takes this file with it.
+// out takes this file with it. Table undo, which arrived after the stack was written, never was a
+// legacy mechanism: it records entries on the stack itself (tableUndo.ts).
 //
 // The stack and these providers live in the page frame. The providers still reach the page frame's
 // functions through getEditablePageBundleExports(), which finds the page frame's own exports from
@@ -28,6 +29,7 @@ import {
     getEditablePageBundleExports,
     getToolboxBundleExports,
 } from "../js/workspaceFrames";
+import { getCkeditorChangeOrder } from "./changeOrder";
 import { theOneUndoStack, UndoStack } from "./UndoStack";
 import { ILegacyUndoProvider } from "./undoTypes";
 
@@ -42,7 +44,10 @@ import { ILegacyUndoProvider } from "./undoTypes";
 export const origamiUndoProvider: ILegacyUndoProvider = {
     name: "origami",
     canUndo: () => !!getEditablePageBundleExports()?.origamiCanUndo(),
-    undo: () => getEditablePageBundleExports()?.origamiUndo(),
+    undo: () => {
+        getEditablePageBundleExports()?.origamiUndo();
+        return true;
+    },
 };
 
 /**
@@ -70,7 +75,7 @@ export const toolboxUndoProvider: ILegacyUndoProvider = {
     undo: () => {
         const toolbox = getToolboxBundleExports();
         if (!toolbox) {
-            return;
+            return false;
         }
         toolbox.undo();
         // The reader tools' undo restores a saved innerHTML, which replaces the text nodes their
@@ -78,6 +83,7 @@ export const toolboxUndoProvider: ILegacyUndoProvider = {
         // Undo button produces no keystroke in the page, so the usual keyup markup update never
         // happens and the highlights would stay dead. (BL-16558)
         toolbox.updateMarkupAfterUndoOrRedo();
+        return true;
     },
 };
 
@@ -93,6 +99,7 @@ export const imageUndoProvider: ILegacyUndoProvider = {
     canUndo: () => !!getEditablePageBundleExports()?.imageOperationCanUndo(),
     undo: () => {
         getEditablePageBundleExports()?.imageOperationUndo();
+        return true;
     },
 };
 
@@ -107,14 +114,21 @@ export const imageUndoProvider: ILegacyUndoProvider = {
 export const ckeditorUndoProvider: ILegacyUndoProvider = {
     name: "ckeditor",
     canUndo: () => !!getEditablePageBundleExports()?.ckeditorCanUndo(),
+    // CKEditor's history and the stack's entries can both hold something (typing in a table cell
+    // after adding a row, say); whichever changed last answers the next Undo. See changeOrder.ts.
+    lastChangeOrder: getCkeditorChangeOrder,
     undo: () => {
-        getEditablePageBundleExports()?.ckeditorUndo();
+        // CKEditor can say it has something to undo when it has not (see
+        // editablePage.ckeditorUndo); answering false lets the stack's own entries have the turn,
+        // so that, for instance, a table row added before the typing is not out of reach.
+        const undidSomething = !!getEditablePageBundleExports()?.ckeditorUndo();
         // As for the toolbox provider: this undo replaces the content of an editable, and there
         // is no keystroke to trigger the markup update that repaints the tools' highlights over
         // the new text nodes. (ckeditorUndo calls the undoManager directly rather than the undo
         // command, so the afterCommandExec handler in attachToCkEditor does not see this one.)
         // (BL-16558)
         getToolboxBundleExports()?.updateMarkupAfterUndoOrRedo();
+        return undidSomething;
     },
 };
 

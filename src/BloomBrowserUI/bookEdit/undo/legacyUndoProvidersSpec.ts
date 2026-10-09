@@ -6,6 +6,11 @@
 // markup update, because it has just detached every highlight painted over that box.
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import {
+    nextChangeOrder,
+    noteCkeditorChange,
+    resetChangeOrderForTests,
+} from "./changeOrder";
 import { UndoStack } from "./UndoStack";
 
 // The providers reach the other frames through workspaceFrames; there are no frames in jsdom.
@@ -15,7 +20,7 @@ const page = {
     imageOperationCanUndo: vi.fn(() => false),
     imageOperationUndo: vi.fn(() => true),
     ckeditorCanUndo: vi.fn(() => false),
-    ckeditorUndo: vi.fn(),
+    ckeditorUndo: vi.fn(() => true),
 };
 const toolbox = {
     canUndo: vi.fn(() => false) as (() => boolean) | undefined,
@@ -74,6 +79,23 @@ describe("legacyUndoProviders", () => {
         page.imageOperationCanUndo.mockReturnValue(false);
         stack.undo();
         expect(page.ckeditorUndo).toHaveBeenCalledTimes(1);
+    });
+
+    describe("the CKEditor provider", () => {
+        it("says whether CKEditor's undo found anything, so the stack can pass the turn on", () => {
+            page.ckeditorUndo.mockReturnValue(false);
+            expect(ckeditorUndoProvider.undo()).toBe(false);
+            page.ckeditorUndo.mockReturnValue(true);
+            expect(ckeditorUndoProvider.undo()).toBe(true);
+        });
+
+        it("reports when CKEditor last changed, on the shared sequence", () => {
+            resetChangeOrderForTests();
+            expect(ckeditorUndoProvider.lastChangeOrder!()).toBe(0);
+            nextChangeOrder();
+            noteCkeditorChange();
+            expect(ckeditorUndoProvider.lastChangeOrder!()).toBe(2);
+        });
     });
 
     describe("the markup update after an undo that rewrites an editable (BL-16558)", () => {

@@ -400,6 +400,9 @@ export function setZoom(zoom: number): void {
         // But if you read it back it will be something like calc(125% - 6.25px)
         // (which is actually equivalent).
         container.style.width = newWidth;
+        getEditablePageBundleExports()
+            ?.getTheOneCanvasElementManager()
+            ?.onPageZoomChanged();
     } else {
         console.warn("setZoom called before page loaded");
     }

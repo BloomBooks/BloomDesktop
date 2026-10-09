@@ -54,6 +54,15 @@ export interface IUndoEntry {
     redo?(): void | Promise<void>;
 
     /**
+     * Whether this entry can be undone or redone just now. Optional; an entry without it always
+     * can. When the entry the next Undo (or Redo) would apply says no, the stack reports nothing to
+     * undo (or redo) rather than skipping past it: entries depend on the state the ones above them
+     * left. For an entry that belongs to a mode, such as a table operation, which must not be
+     * undone in Change Layout mode, where the table is faded and cannot be edited.
+     */
+    isAvailable?(): boolean;
+
+    /**
      * Capture whatever `redo()` will need, called by the stack immediately before `undo()` runs.
      *
      * Capturing the "after" state lazily like this is what keeps Redo nearly free: nothing extra
@@ -85,8 +94,21 @@ export interface ILegacyUndoProvider {
      */
     canUndo(): boolean;
 
-    /** Undo one step. Only called when `canUndo()` has just returned true. */
-    undo(): void;
+    /**
+     * Undo one step, and say whether anything was undone. Only called when `canUndo()` has just
+     * returned true, but CKEditor can say it has something to undo when it has not (see
+     * editablePage.ckeditorUndo); answering false lets the stack go on to the next provider and
+     * then to its own entries, so the person's Undo is not swallowed.
+     */
+    undo(): boolean;
+
+    /**
+     * When this mechanism last recorded a change, on the sequence in changeOrder.ts. Optional:
+     * only CKEditor reports it. A provider that does stands aside while the stack's newest entry
+     * is more recent than its last change, so that "add a table row, then type" undoes the typing
+     * first and "type, then add a row" the row first.
+     */
+    lastChangeOrder?(): number;
 }
 
 /**

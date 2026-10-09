@@ -263,7 +263,12 @@ namespace BloomTests.Publish.BloomPub
                     Assert.That(html, Does.Contain("href=\"customCollectionStyles.css\""));
                     Assert.That(html, Does.Contain("href=\"defaultLangStyles.css\""));
                     // The parent folder doesn't go with the book, so we shouldn't be referencing anything there
-                    Assert.That(html, Does.Not.Contain("href=\"../"));
+                    Assert.That(
+                        html,
+                        Is.Not.Matches(
+                            Contains.Substring("href=\"../").Using(StringComparison.Ordinal)
+                        )
+                    );
                 },
                 assertionsOnZipArchive: paramObj =>
                 {

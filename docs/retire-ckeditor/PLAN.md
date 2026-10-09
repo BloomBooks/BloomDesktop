@@ -120,6 +120,7 @@ asynchronously after `CKEDITOR.inline()` returns:
 | `toolboxWindow.canUndo/undo` → `readerToolsModel` | A per-editable **text-typing** undo: `{html, text, caretOffset}` snapshots, seeded on focus (`noteFocus`, :557-568, from `decodableReaderTool.tsx:155`) and pushed on every markup-changing keystroke inside `doMarkup` (:753-764) | Gated on `shouldHandleUndo()` — `currentMarkupType !== None` (:570). It is consulted *before* CKEditor **deliberately**: when a reader tool is active it must shadow CKEditor's undo, which would restore stale decodable/leveled markup. Not "reader-setup changes". |
 | `imageOperationCanUndo`/`imageOperationUndo` (`ImageUndoManager.ts`) | Restores an image's `src` / copyright / crop | Clean two-phase prepare/commit; already page-id-scoped; gated on the active element being an image container. |
 | `ckeditorCanUndo`/`ckeditorUndo` | `CKEDITOR.currentInstance.undoManager`, **per editable div** | An "implementation secret". Ordering across boxes is already wrong. |
+| bloom-table's history (added 2026-10, BL-16818) | The library's own per-table history of structural operations | Since §10 decision 8, entries on the one stack rather than a legacy mechanism (`undo/tableUndo.ts`). |
 | Browser-native undo | Invisible | Called directly in `BloomField.PreventRemovalOfSomeElements` (`BloomField.ts:810-825`); also fed implicitly by every `document.execCommand("insertHTML"/"formatBlock"/"justify*"/"insertText")` in `bloomEditing.ts` and `GamePromptDialog.tsx`, and by plain typing in any contenteditable. |
 
 **Correction, verified 2026-08-06 — the table above is the *button* path, not the keyboard path.**
@@ -1088,7 +1089,8 @@ Exit criteria: inventory reviewed; `pnpm test` green; prep commit demonstrably b
   counterpart — it is reached only by Ctrl+Y (§10 q1) — so it is a page-frame keydown binding
   (as both existing Ctrl+Y handlers are), acting only when nothing earlier claimed the key.
 - **Wrap all four existing mechanisms as legacy providers in their current priority order.**
-  No conversions, no behaviour change. **Note precisely what that order governs**, which §3's
+  No conversions, no behaviour change. (Table undo, which reached master during review, went
+  onto the stack directly instead; §10 decision 8.) **Note precisely what that order governs**, which §3's
   correction spells out: `handleUndo` is reached only from the top-bar Undo button, so wrapping it
   reproduces the *button* path exactly and leaves the keyboard path — which is handled per-context in
   the page frame and never enters `handleUndo` — untouched. Behaviour-neutrality holds, but not
@@ -1413,6 +1415,16 @@ Everything here is settled. Recorded with the reasoning so a later session doesn
    entries on every reload too. Two rules came with the decision (§4.1): entries check before they
    undo, and they *prefer* state that would survive a reload, without insisting, noting exceptions
    in comments, so that undo surviving a same-page reload stays affordable to add later.
+8. **Table undo is native to the stack, not a legacy provider**, decided 2026-10-09 when Bloom
+   Tables (BL-16818) reached master while #8387 was in review. Tables arrived with a fifth
+   mechanism, the bloom-table library's own history, ordered against CKEditor by a counter in
+   `undoOrdering.ts`. Rather than wrap it, each operation the library announces becomes a stack
+   entry that asks the library to undo or redo it (`undo/tableUndo.ts`). The ordering against
+   CKEditor became one general rule: entries and CKEditor's changes are numbered from one counter
+   (`undo/changeOrder.ts`), and the CKEditor provider stands aside while the stack's newest entry
+   is newer. A provider whose undo finds nothing passes the turn on, and an entry can be
+   unavailable for now (tables in Change Layout mode). The library's own menus offer no Undo or
+   Redo in Bloom (checked 2026-10-09), so nothing undoes a table operation behind the stack's back.
 ### What the first review changed (2026-08-04)
 
 The first draft of this plan was reviewed by Fable (Claude) against the real source, and every
