@@ -559,6 +559,8 @@ namespace Bloom.TeamCollection
                         checkinMessage = "",
                         isUserAdmin = _tcManager.OkToEditCollectionSettings,
                         checkoutsArePaused = !_settings.AllowCheckouts,
+                        disconnectedBecausePaused = false,
+                        movedToCloud = false,
                     }
                 );
             }
@@ -617,6 +619,8 @@ namespace Bloom.TeamCollection
                 book == null || !Directory.Exists(book.FolderPath)
                     ? ""
                     : BookHistory.GetPendingCheckinMessage(book);
+            var disconnectedTC =
+                _tcManager.CurrentCollectionEvenIfDisconnected as DisconnectedTeamCollection;
             return JsonConvert.SerializeObject(
                 new
                 {
@@ -646,6 +650,10 @@ namespace Bloom.TeamCollection
                     checkinMessage,
                     isUserAdmin = _tcManager.OkToEditCollectionSettings,
                     checkoutsArePaused = !_settings.AllowCheckouts,
+                    // So the panel can say why, when that is an administrator's pause. See BL-16928.
+                    disconnectedBecausePaused = disconnectedTC?.DisconnectedBecauseSharedFolderChangesPaused
+                        ?? false,
+                    movedToCloud = disconnectedTC?.MovedToCloud ?? false,
                 }
             );
         }

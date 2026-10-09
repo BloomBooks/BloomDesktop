@@ -9,6 +9,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -1416,7 +1417,73 @@ namespace Bloom.TeamCollection
                 return true;
 
             UpdateAllowCheckoutsFromRepo();
+            // The change may have been an administrator pausing changes to the shared folder.
+            // If so, switch to Disconnected mode now rather than at the next connection check.
+            // Only the pause is checked here, not the whole connection: a momentary network or
+            // Dropbox blip while a teammate's settings change arrives must not leave an ordinary
+            // collection disconnected for the rest of the session. (We are on the UI thread, in
+            // an Idle handler; our caller then fires the selection-changed event that refreshes
+            // the book status panel.) See BL-16928.
+            var pausedProblem = GetSharedFolderChangesPausedProblem();
+            if (pausedProblem != null && _tcManager.CurrentCollection == this)
+                _tcManager.MakeDisconnected(pausedProblem, RepoDescription);
             return false;
+        }
+
+        /// <summary>
+        /// The L10N id of the message FolderTeamCollection.CheckConnection() gives while the shared
+        /// folder's settings say AllowSharedFolderChanges is false. See BL-16928.
+        /// </summary>
+        public const string kSharedFolderChangesPausedL10nId =
+            "TeamCollection.SharedFolderChangesPaused";
+
+        /// <summary>
+        /// The L10N id of that message once the collection has also been given a CloudCollectionId,
+        /// that is, it has moved to Bloom's cloud collections. See BL-16928.
+        /// </summary>
+        public const string kMovedToCloudL10nId = "TeamCollection.MovedToCloud";
+
+        /// <summary>
+        /// If the repo's copy of the collection settings says that nothing may be written to the
+        /// shared folder (AllowSharedFolderChanges is false), return the message that explains
+        /// this, which puts us in Disconnected mode just as a real connection problem would.
+        /// Return null otherwise, including when we can't read the repo's settings: that is
+        /// normally transient, and no reason on its own to disconnect. See BL-16928.
+        /// </summary>
+        protected TeamCollectionMessage GetSharedFolderChangesPausedProblem()
+        {
+            var content = TryGetRepoCollectionSettingsContent();
+            if (string.IsNullOrWhiteSpace(content))
+                return null;
+            XElement xml;
+            try
+            {
+                xml = XElement.Parse(content);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError("TeamCollection could not parse the repo collection settings", e);
+                return null;
+            }
+            // As when loading settings, missing means allowed and a malformed value means paused.
+            if (CollectionSettings.ReadBoolean(xml, "AllowSharedFolderChanges", true))
+                return null;
+            var cloudId = CollectionSettings.ReadString(
+                xml,
+                CollectionSettings.kCloudCollectionIdElementName,
+                ""
+            );
+            if (!string.IsNullOrEmpty(cloudId))
+                return new TeamCollectionMessage(
+                    MessageAndMilestoneType.Error,
+                    kMovedToCloudL10nId,
+                    "This collection has moved to Bloom's cloud sharing. To keep working with your team, close and reopen the collection, and Bloom will switch it over. Until then, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection."
+                );
+            return new TeamCollectionMessage(
+                MessageAndMilestoneType.Error,
+                kSharedFolderChangesPausedL10nId,
+                "The administrator of this collection has paused changes to it. For now, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection."
+            );
         }
 
         /// <summary>
