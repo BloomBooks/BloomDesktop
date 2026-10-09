@@ -130,7 +130,7 @@ export interface ILaunchBloomOptions {
      * --e2e). See ExperimentalFeatures.TokensFromE2eCommandLine.
      */
     experimentalFeatures?: string[];
-    /** How long to wait for Bloom to start serving the collection. Default 240 seconds. */
+    /** How long to wait for Bloom to start serving the collection. Default LAUNCH_DEADLINE_MS. */
     readyTimeoutMs?: number;
 }
 
@@ -458,6 +458,25 @@ export function launchWithDontDisturb(): boolean {
 }
 
 /**
+ * How long a launch waits for Bloom to serve its collection (or reach the chooser) before failing
+ * with a description of what it saw. Bloom usually gets there in seconds, but startup has taken
+ * well over a minute on a machine busy with a build or scanning freshly built files, and a little
+ * over two minutes when a second e2e Bloom was cold-starting at the same time (one developer
+ * running two suites, or two agents in two worktrees). So this is generous: a slow Bloom is not
+ * what these tests are about, and nothing waits this long in a healthy run, since the wait stops
+ * the moment Bloom answers. The launching fixture's own timeout (bloomTest.ts) is longer, so a
+ * launch that does give up reports why.
+ */
+export const LAUNCH_DEADLINE_MS = 300000;
+
+/**
+ * How long one probe of a port's instanceInfo may take. A probe that times out is simply sent
+ * again on the next pass, so this never fails a launch by itself; it only keeps one unanswered
+ * request from holding up the whole wait.
+ */
+const PROBE_TIMEOUT_MS = 30000;
+
+/**
  * The environment the Bloom we launch runs in. One variable decides where its windows go,
  * BLOOM_AUTOMATION_MONITOR, and Bloom reads it itself (see AutomationWindowPlacement.cs):
  * "headless" puts every window off every monitor, a monitor number puts them on that monitor, and
@@ -526,29 +545,49 @@ interface IInstanceInfo {
  */
 async function readInstanceInfo(
     port: number,
+    timeoutMs: number,
 ): Promise<IInstanceInfo | undefined> {
     try {
+        // A request that reaches a Bloom still starting its server can go unanswered for good, and
+        // without a timeout that one request would hold up discovery until the launch deadline; a
+        // fresh request a moment later is answered at once.
         const response = await fetch(
             `http://localhost:${port}/bloom/api/common/instanceInfo`,
+            { signal: AbortSignal.timeout(timeoutMs) },
         );
         if (!response.ok) return undefined;
         return (await response.json()) as IInstanceInfo;
     } catch {
-        // Nothing responding on that port.
+        // Nothing responding on that port, or not in time.
         return undefined;
     }
+}
+
+/**
+ * How long a probe made during a launch may take: PROBE_TIMEOUT_MS, but no further past the
+ * launch's `deadline` than a second. The ports are probed one after another, so without this cap a
+ * pass that started just before the deadline could run minutes past it, and the launch's own
+ * failure message would lose the race with the launching fixture's timeout.
+ */
+function probeTimeoutBefore(deadline: number): number {
+    return Math.max(1000, Math.min(PROBE_TIMEOUT_MS, deadline - Date.now()));
 }
 
 /**
  * Find the running Bloom whose open editable collection is `wantFolder`, or undefined if none is
  * serving it yet. Matching the folder (rather than assuming a port) is what distinguishes our
  * temp-copy instance from a Bloom the developer already has open on some other collection.
+ * `deadline` is when the launch gives up (see probeTimeoutBefore).
  */
 async function findBloomServingCollection(
     wantFolder: string,
+    deadline: number,
 ): Promise<{ httpPort: number; info: IInstanceInfo } | undefined> {
     for (const httpPort of CANDIDATE_PORTS) {
-        const info = await readInstanceInfo(httpPort);
+        const info = await readInstanceInfo(
+            httpPort,
+            probeTimeoutBefore(deadline),
+        );
         if (
             info?.editableCollectionFolder &&
             samePath(info.editableCollectionFolder, wantFolder)
@@ -563,12 +602,17 @@ async function findBloomServingCollection(
  * we launched into the Choose Collection dialog. The settings folder is unique to one launch (it
  * lives in that launch's temp folder), so unlike a port or an exe path it cannot match a
  * developer's own Bloom, even one from the same build sitting at its own chooser.
+ * `deadline` is when the launch gives up (see probeTimeoutBefore).
  */
 async function findBloomAtChooserUsingSettings(
     wantFolder: string,
+    deadline: number,
 ): Promise<{ httpPort: number; info: IInstanceInfo } | undefined> {
     for (const httpPort of CANDIDATE_PORTS) {
-        const info = await readInstanceInfo(httpPort);
+        const info = await readInstanceInfo(
+            httpPort,
+            probeTimeoutBefore(deadline),
+        );
         if (
             info &&
             !info.editableCollectionFolder &&
@@ -816,10 +860,11 @@ async function startBloomOn(
     const wanted =
         collectionDir ??
         `the Choose Collection dialog, with settings in ${userSettingsDir}`;
-    while (!found && Date.now() - startTime < readyTimeoutMs) {
+    const deadline = startTime + readyTimeoutMs;
+    while (!found && Date.now() < deadline) {
         found = collectionDir
-            ? await findBloomServingCollection(collectionDir)
-            : await findBloomAtChooserUsingSettings(userSettingsDir);
+            ? await findBloomServingCollection(collectionDir, deadline)
+            : await findBloomAtChooserUsingSettings(userSettingsDir, deadline);
         if (found) break;
         if (exitStatus) {
             spawnedExitedAt ??= Date.now();
@@ -837,9 +882,10 @@ async function startBloomOn(
 
     if (!found) {
         // Report which instances we could see, so a mismatch is diagnosable rather than opaque.
+        // Quick probes: the deadline has passed, and this is only for the message.
         const seen: string[] = [];
         for (const port of CANDIDATE_PORTS) {
-            const info = await readInstanceInfo(port);
+            const info = await readInstanceInfo(port, 2000);
             if (info?.editableCollectionFolder)
                 seen.push(`${port} -> ${info.editableCollectionFolder}`);
         }
@@ -896,7 +942,13 @@ async function killAndWaitForPortToGoDark(
     // Confirm rather than assume: taskkill has been seen to under-kill.
     const deadline = Date.now() + 15000;
     while (Date.now() < deadline) {
-        if (!(await readInstanceInfo(running.httpPort))) return;
+        if (
+            !(await readInstanceInfo(
+                running.httpPort,
+                probeTimeoutBefore(deadline),
+            ))
+        )
+            return;
         await delay(500);
     }
     throw new Error(
@@ -963,12 +1015,7 @@ export async function launchBloom(
         throw error;
     }
 
-    // Four minutes, not the two you would expect a start to need. A Bloom cold-starting while a
-    // second e2e Bloom is starting on the same machine -- one developer running two suites, or two
-    // agents in two worktrees -- has been seen to take a little over two minutes to serve its
-    // collection, so a two-minute limit failed runs whose only fault was the company they kept.
-    // Nothing waits this long in a healthy run: the loop stops the moment Bloom answers.
-    const readyTimeoutMs = options.readyTimeoutMs ?? 240000;
+    const readyTimeoutMs = options.readyTimeoutMs ?? LAUNCH_DEADLINE_MS;
 
     // The experimental features the Bloom running now was given. A restart may replace them
     // (ILaunchedBloom.restart), so this is a variable rather than a read of the options.
@@ -1102,7 +1149,11 @@ export async function launchBloomIntoChooser(
     process.once("exit", cleanUpOnExit);
 
     try {
-        running = await startBloomOn(undefined, userSettingsDir, 120000);
+        running = await startBloomOn(
+            undefined,
+            userSettingsDir,
+            LAUNCH_DEADLINE_MS,
+        );
     } catch (error) {
         process.removeListener("exit", cleanUpOnExit);
         fs.rmSync(tempRoot, { recursive: true, force: true });
