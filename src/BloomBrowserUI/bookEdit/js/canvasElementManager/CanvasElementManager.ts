@@ -114,6 +114,7 @@ import { adjustCanvasElementChildrenIfSizeChanged } from "./CanvasElementResizeA
 import {
     adjustBackgroundImageSize as adjustCanvasBackgroundImageSize,
     handleResizeAdjustments as handleBackgroundResizeAdjustments,
+    kBackgroundImageBleedPx,
     setupBackgroundImageAttributes,
     type BackgroundImageManagerState,
 } from "./CanvasElementBackgroundImageManager";
@@ -134,6 +135,12 @@ const kTransformPropName = "bloom-zoomTransformForInitialFocus";
 // The fewest milliseconds between two realignments of the control frame after zoom changes;
 // see onPageZoomChanged.
 const kZoomRealignIntervalMs = 100;
+
+// How close (in px) the background image's size and position must be to what Fit Space would
+// produce for Fit Space to count as already done. adjustBackgroundImageSize makes a picture that
+// fills its bloom-canvas overhang each edge by kBackgroundImageBleedPx, so a fitted picture
+// differs from the bloom-canvas by that much on each side, besides whole-pixel rounding.
+const kFitSpaceTolerancePx = 1 + 2 * kBackgroundImageBleedPx;
 export { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstants";
 
 export {
@@ -1564,10 +1571,10 @@ export class CanvasElementManager {
         const canvasElementFillsCanvas =
             Math.abs(
                 bloomCanvas.clientHeight - this.activeElement.clientHeight,
-            ) <= 1 &&
+            ) <= kFitSpaceTolerancePx &&
             Math.abs(
                 bloomCanvas.clientWidth - this.activeElement.clientWidth,
-            ) <= 1;
+            ) <= kFitSpaceTolerancePx;
 
         if (imgAspectRatio < containerAspectRatio) {
             // When the image fills the width of the container, it will be too tall,
@@ -1581,8 +1588,9 @@ export class CanvasElementManager {
             const newImgTop = -delta / 2;
 
             if (
-                Math.abs(bloomCanvas.clientWidth - currentImgWidth) >= 1 ||
-                Math.abs(currentImgTop - newImgTop) >= 1 ||
+                Math.abs(bloomCanvas.clientWidth - currentImgWidth) >=
+                    kFitSpaceTolerancePx ||
+                Math.abs(currentImgTop - newImgTop) >= kFitSpaceTolerancePx ||
                 !canvasElementFillsCanvas
             ) {
                 // let's not switch into cropped mode if it would make almost no difference.
@@ -1603,8 +1611,9 @@ export class CanvasElementManager {
             );
             const newImgLeft = -delta / 2;
             if (
-                Math.abs(imgWidthForFullHeight - currentImgWidth) >= 1 ||
-                Math.abs(currentImgLeft - newImgLeft) >= 1 ||
+                Math.abs(imgWidthForFullHeight - currentImgWidth) >=
+                    kFitSpaceTolerancePx ||
+                Math.abs(currentImgLeft - newImgLeft) >= kFitSpaceTolerancePx ||
                 !canvasElementFillsCanvas
             ) {
                 return {
@@ -1641,18 +1650,18 @@ export class CanvasElementManager {
             ? CanvasElementManager.pxToNumber(img.style.width)
             : img.clientWidth;
         const alreadyDone =
-            Math.abs(currentWidth - imgWidth) < 1 &&
+            Math.abs(currentWidth - imgWidth) < kFitSpaceTolerancePx &&
             Math.abs(
                 CanvasElementManager.pxToNumber(img.style.left) - imgLeft,
-            ) < 1 &&
+            ) < kFitSpaceTolerancePx &&
             Math.abs(CanvasElementManager.pxToNumber(img.style.top) - imgTop) <
-                1 &&
+                kFitSpaceTolerancePx &&
             Math.abs(
                 bloomCanvas.clientHeight - this.activeElement!.clientHeight,
-            ) <= 1 &&
+            ) <= kFitSpaceTolerancePx &&
             Math.abs(
                 bloomCanvas.clientWidth - this.activeElement!.clientWidth,
-            ) <= 1;
+            ) <= kFitSpaceTolerancePx;
         if (alreadyDone) {
             return null;
         }

@@ -111,7 +111,9 @@ vi.mock("../../../utils/elementUtils", () => ({
 import {
     adjustBackgroundImageSize,
     BackgroundImageManagerState,
+    getBackgroundImageSizeWithBleed,
     handleResizeAdjustments,
+    kBackgroundImageBleedPx,
     repairInterruptedBackgroundConversion,
 } from "./CanvasElementBackgroundImageManager";
 
@@ -507,4 +509,39 @@ describe("adjustBackgroundImageSize on a background that fills the page", () => 
             );
         },
     );
+});
+
+describe("getBackgroundImageSizeWithBleed", () => {
+    test("an image that fills the width overhangs both sides by the bleed and keeps its shape", () => {
+        // A 2:1 image fitted to a 400 x 300 canvas: full width, letterboxed top and bottom.
+        const size = getBackgroundImageSizeWithBleed(400, 200, 400, 300);
+        expect(size.width).toBeCloseTo(400 + 2 * kBackgroundImageBleedPx, 6);
+        expect(size.width / size.height).toBeCloseTo(2, 6);
+        // still letterboxed, so no bleed is forced on the height
+        expect(size.height).toBeLessThan(300);
+    });
+
+    test("an image that misses filling the height by a sliver also overhangs top and bottom", () => {
+        // An origami split that leaves 0.46px of white beside an almost-square image.
+        const size = getBackgroundImageSizeWithBleed(
+            377.476,
+            379.75,
+            377.938,
+            379.75,
+        );
+        expect(size.width).toBeGreaterThanOrEqual(
+            377.938 + 2 * kBackgroundImageBleedPx - 1e-9,
+        );
+        expect(size.height).toBeGreaterThanOrEqual(
+            379.75 + 2 * kBackgroundImageBleedPx - 1e-9,
+        );
+        expect(size.width / size.height).toBeCloseTo(377.476 / 379.75, 6);
+    });
+
+    test("an image well inside the canvas in both dimensions is left alone", () => {
+        expect(getBackgroundImageSizeWithBleed(300, 200, 400, 300)).toEqual({
+            width: 300,
+            height: 200,
+        });
+    });
 });
