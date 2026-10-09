@@ -1,6 +1,10 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
-import { get, postString, postThatMightNavigate } from "../../utils/bloomApi";
+import { get, postString } from "../../utils/bloomApi";
 import $ from "jquery";
+import {
+    postAfterSendingSnapshot,
+    saveChangesAndRethinkPage,
+} from "./pageSnapshot";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -281,9 +285,8 @@ export class EditableDivUtils {
     // to hand the text over: it stores the current wording in the data div, stops generating the
     // sentence, and rebuilds the credits page with that spot as an ordinary editable field.
     // The server saves the page and reloads it, so we have nothing to change here ourselves.
-    // The reload can cut the request off, which must not be reported as an error.
-    public static unlockOriginalCredits() {
-        postThatMightNavigate(
+    public static unlockOriginalCredits(): Promise<void> {
+        return postAfterSendingSnapshot(
             "copyrightAndLicense/unlockOriginalCopyrightNotice",
         );
     }
@@ -291,8 +294,8 @@ export class EditableDivUtils {
     // Close the sentence about the original book again. The wording the user has just typed is
     // theirs from now on; saving the page stores it in the data div, and the page comes back
     // with that spot read-only, as it is on every other visit.
-    public static relockOriginalCredits() {
-        postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+    public static relockOriginalCredits(): Promise<void> {
+        return saveChangesAndRethinkPage();
     }
 
     public static pasteImageCredits() {
@@ -402,6 +405,43 @@ export class EditableDivUtils {
         // EditableDivUtils.logElementsInnerHtml(editableDivs);
 
         return bookmarksForEachEditable;
+    }
+
+    // The non-destructive counterpart of doCkEditorCleanup(): reads CKEditor's data from the live
+    // editors and writes it into the corresponding divs of a detached CLONE, because writing it
+    // back into the live divs disturbs the running editors.
+    // liveRoot and cloneRoot must be a live element and a deep clone of it, so that the Nth
+    // div.bloom-editable in each corresponds; we throw if they have drifted apart.
+    // See doCkEditorCleanup for why we want getData() rather than the raw innerHTML (BL-12391),
+    // and why it is used exactly as it comes (BL-16843).
+    public static copyCkEditorDataToClone(
+        liveRoot: HTMLElement,
+        cloneRoot: HTMLElement,
+    ): void {
+        const liveDivs = Array.from(
+            liveRoot.querySelectorAll<HTMLDivElement>("div.bloom-editable"),
+        );
+        const cloneDivs = Array.from(
+            cloneRoot.querySelectorAll<HTMLDivElement>("div.bloom-editable"),
+        );
+        if (liveDivs.length !== cloneDivs.length) {
+            throw new Error(
+                `copyCkEditorDataToClone(): the clone has ${cloneDivs.length} bloom-editables but the live page has ${liveDivs.length}. The clone must be an untouched copy of the live page.`,
+            );
+        }
+        liveDivs.forEach((liveDiv, index) => {
+            const ckeditorOfThisBox = (<any>liveDiv).bloomCkEditor;
+            if (!ckeditorOfThisBox) {
+                return; // no editor attached (e.g. an invisible language), so nothing to clean.
+            }
+            const ckEditorData = ckeditorOfThisBox.getData();
+            if (ckEditorData !== liveDiv.innerHTML) {
+                this.safelyReplaceContentWithCkEditorData(
+                    cloneDivs[index],
+                    ckEditorData,
+                );
+            }
+        });
     }
 
     // public for unit testing

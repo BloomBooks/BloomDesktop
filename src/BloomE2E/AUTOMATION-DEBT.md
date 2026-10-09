@@ -59,6 +59,10 @@ one step of that manual test that uses it ("make 3 duplicates") is not automated
 only posts `editView/duplicatePageMany`, which `duplicateCurrentPage` already calls for setup,
 so the fix is the same as for every other WinForms dialog: host it in the web UI.
 
+fixed 2026-10-06 on `BL-13502-save-without-reload` (#8209): the dialog now opens inside the Edit
+tab (`duplicateManyDialog.tsx`), and `duplicate-page-many-times.spec.ts` drives it with
+`openDuplicatePageManyTimes` / `finishDuplicatePageManyTimes` (helpers/pageList.ts).
+
 seen again 2026-09-02 (Test Case ID 66, `xmatter-packs.spec.ts`): the case tries each
 front/back matter pack, and the pack is chosen only in the same dialog. `settings/xmatter`
 is not an API for it either: its POST only records a pending choice on the open dialog
@@ -408,6 +412,11 @@ the enabled test cover the Navigating state too, so a command that cannot run is
 or, better, queue the command instead of dropping it. Either would let the helper drop the
 document-marking dance.
 (Found 2026-09-01 while automating Test Case ID 348, copy page preserves everything.)
+
+fixed 2026-10-09 on `BL-13502-save-without-reload` (#8209): `SaveThen` is gone, a page-menu
+command waits its turn instead of being dropped, and Copy Page saves without reloading the page.
+The document-marking helpers are gone too; a test that copies a page waits for Paste Page to be
+enabled (`runPageMenuCommand` does this), as `copy-page.spec.ts` and `tables-extended.spec.ts` do.
 
 ## Copying a page between two Bloom instances cannot be tested at all
 

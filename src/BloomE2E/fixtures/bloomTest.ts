@@ -87,6 +87,12 @@ export interface IBloomApp extends IBloomAppBase {
         changes?: IRelaunchChanges,
     ) => Promise<Page>;
     /**
+     * Quit Bloom the way a person does (closing its window, so it saves on the way out), wait for
+     * it to exit, start it again on the same collection folder, and return the new shell page.
+     * Like restart(), this invalidates the `page` fixture and the old ports.
+     */
+    quitAndRestart: (timeoutMs?: number) => Promise<Page>;
+    /**
      * Find Bloom's shell document again after an action that made Bloom rebuild it in the same
      * process — changing the UI language, for example, reopens the whole project, which destroys
      * the WebView2 page and creates a new one on the same ports. Updates bloomApp.page and
@@ -492,6 +498,21 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                         await launched!.restart(betweenStopAndStart, changes);
                         // Resolve the shell again: the restarted Bloom has a new shell document,
                         // and the old page object points at a dead target.
+                        app.page = await reconnectAndFind(
+                            launched!.cdpPort,
+                            (b) => findShellPage(b, launched!.httpPort),
+                        );
+                        app.httpPort = launched!.httpPort;
+                        app.cdpPort = launched!.cdpPort;
+                        app.bloomPid = launched!.bloomPid;
+                        return app.page;
+                    },
+                    quitAndRestart: async (timeoutMs) => {
+                        // As for restart(): drop the CDP connection into the process that is
+                        // about to go away.
+                        await browser?.close();
+                        browser = undefined;
+                        await launched!.quitAndRestart(timeoutMs);
                         app.page = await reconnectAndFind(
                             launched!.cdpPort,
                             (b) => findShellPage(b, launched!.httpPort),

@@ -31,8 +31,6 @@ namespace Bloom.web.controllers
         private readonly Book.Book.Factory _bookFactory;
         private readonly BookStorage.Factory _storageFactory;
 
-        public static bool ForPageLayout = false; // set when most recent relevant command is ShowChangeLayoutDialog
-
         public PageTemplatesApi(
             SourceCollectionsList sourceCollectionsList,
             BookSelection bookSelection,
@@ -106,11 +104,6 @@ namespace Bloom.web.controllers
                 .Select(bookTemplatePath => GetPageGroup(bookTemplatePath));
             // Never used on the javascript side.
             // addPageSettings.currentLayout = _pageSelection.CurrentSelection.IdOfFirstAncestor
-
-            // This works because this is only used for the add/change page dialog and we never show them
-            // both at once. Pushing this information into the settings that the dialog loads removes the
-            // need for cross-domain communication between the dialog and the page that launches it.
-            addPageSettings.forChooseLayout = ForPageLayout;
 
             var json = JsonConvert.SerializeObject(addPageSettings);
             request.ReplyWithJson(json);

@@ -1043,45 +1043,42 @@ namespace Bloom.web.controllers
             // We might modify the current page, but the user may also have modified it
             // without doing anything to cause a Save before the deactivate. So save their
             // changes before we go to work on it.
-            Model.SaveThen(
-                () =>
+            Model.MergeCurrentPageThenSave(() =>
+            {
+                foreach (var videoPath in filesModifiedSinceDeactivate)
                 {
-                    foreach (var videoPath in filesModifiedSinceDeactivate)
-                    {
-                        // The encoded form of the real file name is what we search for, because
-                        // that is what is in the src (BL-16669).
-                        var expectedSrcAttr = UrlPathString.CreateFromUnencodedString(
-                            BookStorage.GetVideoFolderName + Path.GetFileName(videoPath)
-                        );
-                        var videoElts = CurrentBook.RawDom.SafeSelectNodes(
-                            $"//video/source[contains(@src,'{expectedSrcAttr.UrlEncodedForHttpPath}')]"
-                        );
-                        if (videoElts.Length == 0)
-                            continue; // not used in book, ignore
+                    // The encoded form of the real file name is what we search for, because
+                    // that is what is in the src (BL-16669).
+                    var expectedSrcAttr = UrlPathString.CreateFromUnencodedString(
+                        BookStorage.GetVideoFolderName + Path.GetFileName(videoPath)
+                    );
+                    var videoElts = CurrentBook.RawDom.SafeSelectNodes(
+                        $"//video/source[contains(@src,'{expectedSrcAttr.UrlEncodedForHttpPath}')]"
+                    );
+                    if (videoElts.Length == 0)
+                        continue; // not used in book, ignore
 
-                        // OK, the user has modified the file outside of Bloom. Something is determined to cache video.
-                        // Defeat it by setting a fake param.
-                        // Note that doing this will discard any fragment in the existing URL, typically trimming.
-                        // I think this is good...if the user has edited the video, we should start over assuming he
-                        // wants all of it.
+                    // OK, the user has modified the file outside of Bloom. Something is determined to cache video.
+                    // Defeat it by setting a fake param.
+                    // Note that doing this will discard any fragment in the existing URL, typically trimming.
+                    // I think this is good...if the user has edited the video, we should start over assuming he
+                    // wants all of it.
 
-                        var newSrcAttr = UrlPathString.CreateFromUnencodedString(
-                            BookStorage.GetVideoFolderName + Path.GetFileName(videoPath)
-                        );
-                        HtmlDom.SetSrcOfVideoElement(
-                            newSrcAttr,
-                            (SafeXmlElement)videoElts[0],
-                            true,
-                            "?now=" + DateTime.Now.Ticks
-                        );
-                    }
+                    var newSrcAttr = UrlPathString.CreateFromUnencodedString(
+                        BookStorage.GetVideoFolderName + Path.GetFileName(videoPath)
+                    );
+                    HtmlDom.SetSrcOfVideoElement(
+                        newSrcAttr,
+                        (SafeXmlElement)videoElts[0],
+                        true,
+                        "?now=" + DateTime.Now.Ticks
+                    );
+                }
 
-                    // Likewise, this is probably overkill, but it's a probably-rare case.
-                    View.UpdateAllThumbnails();
-                    return _pageSelection.CurrentSelection.Id;
-                },
-                () => { } // wrong state, do nothing
-            );
+                // Likewise, this is probably overkill, but it's a probably-rare case.
+                View.UpdateAllThumbnails();
+                return _pageSelection.CurrentSelection.Id;
+            });
         }
 
         /// <summary>

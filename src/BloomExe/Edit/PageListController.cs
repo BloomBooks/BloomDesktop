@@ -32,7 +32,7 @@ namespace Bloom.Edit
 
             _thumbNailList.Thumbnailer = thumbnailProvider;
             _thumbNailList.RelocatePageEvent = relocatePageEvent;
-            _thumbNailList.PageSelectedChanged += new EventHandler(OnPageSelectedChanged);
+            _thumbNailList.PageSelectedChanged += OnPageSelectedChanged;
             _thumbNailList.Model = model;
         }
 
@@ -40,13 +40,17 @@ namespace Bloom.Edit
         {
             if (page == null)
                 return;
-            if (!_dontForwardSelectionEvent)
-            {
-                // The only necessary action after saving is to navigate to the desired page.
-                // This is achieved by returning the right ID in the trivial doAfterSaving function
-                // passed as the first argument to SaveThen.
-                _model.SaveThen(() => (page as Page).Id, () => { });
-            }
+            if (_dontForwardSelectionEvent)
+                return;
+
+            var pageId = (page as Page).Id;
+
+            _model.MergeCurrentPageThenSave(
+                () => pageId,
+                // Clicking a thumbnail changes nothing in the book, so that an unedited page is
+                // not written.
+                actionChangesTheBook: false
+            );
         }
 
         public void SetBook(Book.Book book) //review: could do this instead by giving this class the bookselection object

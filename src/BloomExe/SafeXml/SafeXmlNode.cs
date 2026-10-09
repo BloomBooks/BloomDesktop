@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Xml;
 using SIL.Code;
 using SIL.Xml;
@@ -99,6 +100,46 @@ namespace Bloom.SafeXml
                 lock (_doc.Lock)
                     return _wrappedNode.OuterXml;
             }
+        }
+
+        /// <summary>
+        /// Like OuterXml, but with every element's attributes in name order, so that two nodes that
+        /// differ only in the order of their attributes, which means nothing in XML, give the same
+        /// string. For comparing nodes, not for writing them out.
+        /// </summary>
+        public string GetXmlIgnoringAttributeOrder()
+        {
+            var builder = new StringBuilder();
+            lock (_doc.Lock)
+                AppendXmlIgnoringAttributeOrder(_wrappedNode, builder);
+            return builder.ToString();
+        }
+
+        private static void AppendXmlIgnoringAttributeOrder(XmlNode node, StringBuilder builder)
+        {
+            if (node.NodeType != XmlNodeType.Element)
+            {
+                builder.Append(node.OuterXml);
+                return;
+            }
+            builder.Append('<').Append(node.Name);
+            foreach (
+                var attr in node
+                    .Attributes.Cast<XmlAttribute>()
+                    .OrderBy(a => a.Name, StringComparer.Ordinal)
+            )
+            {
+                builder
+                    .Append(' ')
+                    .Append(attr.Name)
+                    .Append("=\"")
+                    .Append(System.Security.SecurityElement.Escape(attr.Value))
+                    .Append('"');
+            }
+            builder.Append('>');
+            foreach (XmlNode child in node.ChildNodes)
+                AppendXmlIgnoringAttributeOrder(child, builder);
+            builder.Append("</").Append(node.Name).Append('>');
         }
 
         public SafeXmlNode AppendChild(SafeXmlNode newChild)

@@ -1,7 +1,7 @@
 // Stateless helpers for resizing/repositioning canvas children when the
 // underlying bloom-canvas changes size.
 
-import { Bubble, Comical, TailSpec } from "comicaljs";
+import { Bubble, BubbleSpec, Comical, TailSpec } from "comicaljs";
 import { getImageFromCanvasElement, isPlaceHolderImage } from "../bloomImages";
 import {
     kBackgroundImageClass,
@@ -9,6 +9,19 @@ import {
 } from "../../toolbox/canvas/canvasElementConstants";
 import { pxToNumber } from "../../toolbox/canvas/canvasElementCssUtils";
 import { adjustCanvasElementAlternates } from "./CanvasElementAlternates";
+
+// Whether Comical draws anything for this canvas element, and so has something to redraw when it
+// moves or changes size. Style "none" (a plain text box) has no outline, but Comical still paints
+// a box sized from the text box with the spec's background and outer border colours. So only a
+// plain text box with no tails and neither colour has nothing to redraw.
+export function comicalDrawsSomethingFor(bubbleSpec: BubbleSpec): boolean {
+    if (bubbleSpec.style !== "none") return true;
+    if (bubbleSpec.tails?.length) return true;
+    if (bubbleSpec.outerBorderColor) return true;
+    return (bubbleSpec.backgroundColors ?? []).some(
+        (color) => color !== "transparent",
+    );
+}
 
 function updateBloomCanvasSizeData(bloomCanvas: HTMLElement): void {
     bloomCanvas.setAttribute(
@@ -156,9 +169,7 @@ export function adjustCanvasElementChildrenIfSizeChanged(
         let reposition = true;
         const bubbleSpec = Bubble.getBubbleSpec(child);
         needComicalUpdate =
-            needComicalUpdate ||
-            (!!bubbleSpec.tails && bubbleSpec.tails.length > 0) ||
-            bubbleSpec.spec !== "none";
+            needComicalUpdate || comicalDrawsSomethingFor(bubbleSpec);
         if (
             Array.from(child.children).some(
                 (c: HTMLElement) =>
