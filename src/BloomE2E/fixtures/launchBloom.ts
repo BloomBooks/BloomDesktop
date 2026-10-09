@@ -545,6 +545,7 @@ interface IInstanceInfo {
  */
 async function readInstanceInfo(
     port: number,
+    timeoutMs: number,
 ): Promise<IInstanceInfo | undefined> {
     try {
         // A request that reaches a Bloom still starting its server can go unanswered for good, and
@@ -552,7 +553,7 @@ async function readInstanceInfo(
         // fresh request a moment later is answered at once.
         const response = await fetch(
             `http://localhost:${port}/bloom/api/common/instanceInfo`,
-            { signal: AbortSignal.timeout(PROBE_TIMEOUT_MS) },
+            { signal: AbortSignal.timeout(timeoutMs) },
         );
         if (!response.ok) return undefined;
         return (await response.json()) as IInstanceInfo;
@@ -563,15 +564,30 @@ async function readInstanceInfo(
 }
 
 /**
+ * How long a probe made during a launch may take: PROBE_TIMEOUT_MS, but no further past the
+ * launch's `deadline` than a second. The ports are probed one after another, so without this cap a
+ * pass that started just before the deadline could run minutes past it, and the launch's own
+ * failure message would lose the race with the launching fixture's timeout.
+ */
+function probeTimeoutBefore(deadline: number): number {
+    return Math.max(1000, Math.min(PROBE_TIMEOUT_MS, deadline - Date.now()));
+}
+
+/**
  * Find the running Bloom whose open editable collection is `wantFolder`, or undefined if none is
  * serving it yet. Matching the folder (rather than assuming a port) is what distinguishes our
  * temp-copy instance from a Bloom the developer already has open on some other collection.
+ * `deadline` is when the launch gives up (see probeTimeoutBefore).
  */
 async function findBloomServingCollection(
     wantFolder: string,
+    deadline: number,
 ): Promise<{ httpPort: number; info: IInstanceInfo } | undefined> {
     for (const httpPort of CANDIDATE_PORTS) {
-        const info = await readInstanceInfo(httpPort);
+        const info = await readInstanceInfo(
+            httpPort,
+            probeTimeoutBefore(deadline),
+        );
         if (
             info?.editableCollectionFolder &&
             samePath(info.editableCollectionFolder, wantFolder)
@@ -586,12 +602,17 @@ async function findBloomServingCollection(
  * we launched into the Choose Collection dialog. The settings folder is unique to one launch (it
  * lives in that launch's temp folder), so unlike a port or an exe path it cannot match a
  * developer's own Bloom, even one from the same build sitting at its own chooser.
+ * `deadline` is when the launch gives up (see probeTimeoutBefore).
  */
 async function findBloomAtChooserUsingSettings(
     wantFolder: string,
+    deadline: number,
 ): Promise<{ httpPort: number; info: IInstanceInfo } | undefined> {
     for (const httpPort of CANDIDATE_PORTS) {
-        const info = await readInstanceInfo(httpPort);
+        const info = await readInstanceInfo(
+            httpPort,
+            probeTimeoutBefore(deadline),
+        );
         if (
             info &&
             !info.editableCollectionFolder &&
@@ -839,10 +860,11 @@ async function startBloomOn(
     const wanted =
         collectionDir ??
         `the Choose Collection dialog, with settings in ${userSettingsDir}`;
-    while (!found && Date.now() - startTime < readyTimeoutMs) {
+    const deadline = startTime + readyTimeoutMs;
+    while (!found && Date.now() < deadline) {
         found = collectionDir
-            ? await findBloomServingCollection(collectionDir)
-            : await findBloomAtChooserUsingSettings(userSettingsDir);
+            ? await findBloomServingCollection(collectionDir, deadline)
+            : await findBloomAtChooserUsingSettings(userSettingsDir, deadline);
         if (found) break;
         if (exitStatus) {
             spawnedExitedAt ??= Date.now();
@@ -860,9 +882,10 @@ async function startBloomOn(
 
     if (!found) {
         // Report which instances we could see, so a mismatch is diagnosable rather than opaque.
+        // Quick probes: the deadline has passed, and this is only for the message.
         const seen: string[] = [];
         for (const port of CANDIDATE_PORTS) {
-            const info = await readInstanceInfo(port);
+            const info = await readInstanceInfo(port, 2000);
             if (info?.editableCollectionFolder)
                 seen.push(`${port} -> ${info.editableCollectionFolder}`);
         }
@@ -919,7 +942,13 @@ async function killAndWaitForPortToGoDark(
     // Confirm rather than assume: taskkill has been seen to under-kill.
     const deadline = Date.now() + 15000;
     while (Date.now() < deadline) {
-        if (!(await readInstanceInfo(running.httpPort))) return;
+        if (
+            !(await readInstanceInfo(
+                running.httpPort,
+                probeTimeoutBefore(deadline),
+            ))
+        )
+            return;
         await delay(500);
     }
     throw new Error(
