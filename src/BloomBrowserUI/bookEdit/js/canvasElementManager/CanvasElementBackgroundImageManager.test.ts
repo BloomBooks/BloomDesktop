@@ -603,6 +603,40 @@ describe("backgroundImageAlreadyFillsCanvas", () => {
         );
     });
 
+    test("a wide crop moved off-centre does not, so Fit Space can re-centre it", () => {
+        bloomCanvasSize.width = 400;
+        bloomCanvasSize.height = 300;
+        // A 4:1 picture filling the height of the overhanging element: 1208 x 302.
+        const element = "left: -1px; top: -1px; width: 402px; height: 302px;";
+        const centred = makeBackground(
+            element,
+            1200,
+            300,
+            "width: 1208px; left: -403px; top: 0px;",
+        );
+        // sanity check: the same picture centred does count as filling
+        expect(
+            backgroundImageAlreadyFillsCanvas(
+                centred.bloomCanvas,
+                centred.bg,
+                centred.img,
+            ),
+        ).toBe(true);
+        const moved = makeBackground(
+            element,
+            1200,
+            300,
+            "width: 1208px; left: -100px; top: 0px;",
+        );
+        expect(
+            backgroundImageAlreadyFillsCanvas(
+                moved.bloomCanvas,
+                moved.bg,
+                moved.img,
+            ),
+        ).toBe(false);
+    });
+
     test("a picture the author cropped well into does not, so Fit Space can reset it", () => {
         bloomCanvasSize.width = 400;
         bloomCanvasSize.height = 300;

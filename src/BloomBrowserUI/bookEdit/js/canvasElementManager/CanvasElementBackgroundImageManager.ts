@@ -398,7 +398,12 @@ export function backgroundImageAlreadyFillsCanvas(
         centreY - drawnHeight / 2 <= kSlop &&
         centreX + drawnWidth / 2 >= canvasWidth - kSlop &&
         centreY + drawnHeight / 2 >= canvasHeight - kSlop;
-    if (!covers) {
+    // Fit Space centres the picture (and so does the bleed), so an off-centre crop is something
+    // Fit Space would still change, even when the picture covers the bloom-canvas.
+    const centred =
+        Math.abs(centreX - canvasWidth / 2) < 1 &&
+        Math.abs(centreY - canvasHeight / 2) < 1;
+    if (!covers || !centred) {
         return false;
     }
     // How much bigger than just covering the bloom-canvas the picture is drawn. The bleed and
