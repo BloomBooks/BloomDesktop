@@ -1,7 +1,6 @@
 import { FunctionComponent, useReducer, useRef, useState } from "react";
 import { ReaderToolSwitch } from "../ReaderToolSwitch";
-import { css, ThemeProvider } from "@emotion/react";
-import { toolboxTheme } from "../../../../bloomMaterialUITheme";
+import { css } from "@emotion/react";
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import BloomButton from "../../../../react_components/bloomButton";
@@ -606,155 +605,151 @@ export const LeveledReaderToolControls: FunctionComponent = () => {
         .filter((reminder) => reminder.trim().length > 0);
 
     return (
-        <ThemeProvider theme={toolboxTheme}>
+        <div
+            css={css`
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                min-height: 0;
+                overflow-x: hidden;
+            `}
+        >
             <div
                 css={css`
                     display: flex;
                     flex-direction: column;
-                    height: 100%;
+                    flex: 1 1 auto;
                     min-height: 0;
                     overflow-x: hidden;
+                    // Stated rather than left implicit: this is what keeps
+                    // everything reachable in a panel too short for the nav,
+                    // the scrolling region's floor and the control block —
+                    // the whole tool scrolls. (It is what overflow-x: hidden
+                    // alone already computes to, since a non-visible axis
+                    // forces the other to auto, but the fallback matters
+                    // enough not to leave it as a side effect.)
+                    overflow-y: auto;
+                    // A single horizontal padding on the whole panel keeps
+                    // every row (including "Level x of y") on one left edge,
+                    // instead of each section supplying its own left margin.
+                    padding: 8px 12px 0 12px;
                 `}
             >
+                {showTool && (
+                    <>
+                        {/* "Level x of y" and its arrows stay pinned at the top,
+                            outside the scrolling region below, just as the
+                            Decodable Reader's stage nav does. (BL-16585) */}
+                        <ReaderToolNav
+                            isForLeveled={true}
+                            changeFunction={changeLevel}
+                        />
+                        {/* The stats and lists scroll here, inside the panel,
+                            rather than letting the whole panel scroll. That
+                            keeps the nav above and the control block below (the
+                            "Book is Leveled" toggle and Set Up Levels) always
+                            visible, the way the Decodable Reader's word lists
+                            scroll between its fixed nav and control block. */}
+                        <div
+                            css={css`
+                                display: flex;
+                                flex-direction: column;
+                                flex: 1 1 auto;
+                                // A floor, not min-height:0, for the same reason
+                                // the Decodable Reader's sections have one: with
+                                // nothing to stop it, this region is the only
+                                // shrinkable thing in the column, so in a short
+                                // panel it would shrink to 0 and the stats would
+                                // be invisible AND unscrollable. Kept short so it
+                                // rarely forces the panel to scroll; when the
+                                // panel is too short even for this, the panel
+                                // scrolls as a whole (as it did before) and
+                                // everything stays reachable.
+                                min-height: 120px;
+                                overflow-y: auto;
+                                overflow-x: hidden;
+                                // Reserve space for the vertical scrollbar so
+                                // its appearance (when the stats grow tall)
+                                // doesn't shrink/reflow the content, matching
+                                // the Decodable Reader's word grids.
+                                scrollbar-gutter: stable;
+                            `}
+                        >
+                            {/* The over-level warning banner and the within/over
+                                legend only make sense when at least one measure
+                                is actually over the current level's limit. */}
+                            {isBookOverLevel(model, bookStats) && (
+                                <>
+                                    <OverLevelBanner
+                                        levelNumber={model.levelNumber}
+                                    />
+                                    <StatsLegend />
+                                </>
+                            )}
+                            <LeveledReaderStats bookStats={bookStats} />
+                            {levelReminders.length > 0 && (
+                                <LeveledReaderList
+                                    l10nKeySuffix="FoThisLevel"
+                                    listHeaderText="For this Level"
+                                    listItems={levelReminders}
+                                />
+                            )}
+                            <LeveledReaderList
+                                l10nKeySuffix="KeepInMind"
+                                listHeaderText="Keep in mind"
+                                listItems={getKeepInMindLinks()}
+                            />
+                        </div>
+                    </>
+                )}
+                {/* Bottom group, top to bottom: Copy Book Stats, the "Book is
+                    Leveled" toggle, then the Set Up Levels button last. It
+                    never shrinks or scrolls: the scrolling region above takes
+                    all the leftover height, so this group stays parked at the
+                    bottom of the panel however tall the stats get. The toggle
+                    stays mounted even when the content is hidden so the user
+                    can turn the book back into a leveled reader. */}
                 <div
                     css={css`
                         display: flex;
                         flex-direction: column;
-                        flex: 1 1 auto;
-                        min-height: 0;
-                        overflow-x: hidden;
-                        // Stated rather than left implicit: this is what keeps
-                        // everything reachable in a panel too short for the nav,
-                        // the scrolling region's floor and the control block —
-                        // the whole tool scrolls. (It is what overflow-x: hidden
-                        // alone already computes to, since a non-visible axis
-                        // forces the other to auto, but the fallback matters
-                        // enough not to leave it as a side effect.)
-                        overflow-y: auto;
-                        // A single horizontal padding on the whole panel keeps
-                        // every row (including "Level x of y") on one left edge,
-                        // instead of each section supplying its own left margin.
-                        padding: 8px 12px 0 12px;
+                        align-items: flex-start;
+                        flex: 0 0 auto;
+                        gap: 8px;
+                        margin-bottom: 10px;
+                        ${showTool ? "padding-top: 12px;" : ""}
                     `}
                 >
                     {showTool && (
-                        <>
-                            {/* "Level x of y" and its arrows stay pinned at the top,
-                                outside the scrolling region below, just as the
-                                Decodable Reader's stage nav does. (BL-16585) */}
-                            <ReaderToolNav
-                                isForLeveled={true}
-                                changeFunction={changeLevel}
-                            />
-                            {/* The stats and lists scroll here, inside the panel,
-                                rather than letting the whole panel scroll. That
-                                keeps the nav above and the control block below (the
-                                "Book is Leveled" toggle and Set Up Levels) always
-                                visible, the way the Decodable Reader's word lists
-                                scroll between its fixed nav and control block. */}
-                            <div
-                                css={css`
-                                    display: flex;
-                                    flex-direction: column;
-                                    flex: 1 1 auto;
-                                    // A floor, not min-height:0, for the same reason
-                                    // the Decodable Reader's sections have one: with
-                                    // nothing to stop it, this region is the only
-                                    // shrinkable thing in the column, so in a short
-                                    // panel it would shrink to 0 and the stats would
-                                    // be invisible AND unscrollable. Kept short so it
-                                    // rarely forces the panel to scroll; when the
-                                    // panel is too short even for this, the panel
-                                    // scrolls as a whole (as it did before) and
-                                    // everything stays reachable.
-                                    min-height: 120px;
-                                    overflow-y: auto;
-                                    overflow-x: hidden;
-                                    // Reserve space for the vertical scrollbar so
-                                    // its appearance (when the stats grow tall)
-                                    // doesn't shrink/reflow the content, matching
-                                    // the Decodable Reader's word grids.
-                                    scrollbar-gutter: stable;
-                                `}
-                            >
-                                {/* The over-level warning banner and the within/over
-                                    legend only make sense when at least one measure
-                                    is actually over the current level's limit. */}
-                                {isBookOverLevel(model, bookStats) && (
-                                    <>
-                                        <OverLevelBanner
-                                            levelNumber={model.levelNumber}
-                                        />
-                                        <StatsLegend />
-                                    </>
-                                )}
-                                <LeveledReaderStats bookStats={bookStats} />
-                                {levelReminders.length > 0 && (
-                                    <LeveledReaderList
-                                        l10nKeySuffix="FoThisLevel"
-                                        listHeaderText="For this Level"
-                                        listItems={levelReminders}
-                                    />
-                                )}
-                                <LeveledReaderList
-                                    l10nKeySuffix="KeepInMind"
-                                    listHeaderText="Keep in mind"
-                                    listItems={getKeepInMindLinks()}
+                        <BloomButton
+                            l10nKey="EditTab.Toolbox.LeveledReaderTool.CopyBookStatistics"
+                            variant="text"
+                            enabled={true}
+                            hasText={true}
+                            iconBeforeText={
+                                <ContentCopySharp
+                                    css={css`
+                                        // currentColor picks up the button's
+                                        // accent text color.
+                                        color: currentColor;
+                                    `}
                                 />
-                            </div>
-                        </>
-                    )}
-                    {/* Bottom group, top to bottom: Copy Book Stats, the "Book is
-                        Leveled" toggle, then the Set Up Levels button last. It
-                        never shrinks or scrolls: the scrolling region above takes
-                        all the leftover height, so this group stays parked at the
-                        bottom of the panel however tall the stats get. The toggle
-                        stays mounted even when the content is hidden so the user
-                        can turn the book back into a leveled reader. */}
-                    <div
-                        css={css`
-                            display: flex;
-                            flex-direction: column;
-                            align-items: flex-start;
-                            flex: 0 0 auto;
-                            gap: 8px;
-                            margin-bottom: 10px;
-                            ${showTool ? "padding-top: 12px;" : ""}
-                        `}
-                    >
-                        {showTool && (
-                            <BloomButton
-                                l10nKey="EditTab.Toolbox.LeveledReaderTool.CopyBookStatistics"
-                                variant="text"
-                                enabled={true}
-                                hasText={true}
-                                iconBeforeText={
-                                    <ContentCopySharp
-                                        css={css`
-                                            // currentColor picks up the button's
-                                            // accent text color.
-                                            color: currentColor;
-                                        `}
-                                    />
-                                }
-                                onClick={() =>
-                                    model.copyLeveledReaderStatsToClipboard()
-                                }
-                                css={readerTextButtonCss}
-                            >
-                                Copy Book Stats
-                            </BloomButton>
-                        )}
-                        <ReaderToolSwitch
-                            isForLeveled={true}
-                            changeDisplayFunc={() =>
-                                setShowTool((prev) => !prev)
                             }
-                        />
-                        {showTool && <ReaderSetupButton isForLeveled={true} />}
-                    </div>
+                            onClick={() =>
+                                model.copyLeveledReaderStatsToClipboard()
+                            }
+                            css={readerTextButtonCss}
+                        >
+                            Copy Book Stats
+                        </BloomButton>
+                    )}
+                    <ReaderToolSwitch
+                        isForLeveled={true}
+                        changeDisplayFunc={() => setShowTool((prev) => !prev)}
+                    />
+                    {showTool && <ReaderSetupButton isForLeveled={true} />}
                 </div>
             </div>
-        </ThemeProvider>
+        </div>
     );
 };

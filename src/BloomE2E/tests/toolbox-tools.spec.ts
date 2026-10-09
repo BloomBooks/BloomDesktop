@@ -27,68 +27,59 @@ test.use({
     collectionSpec: { name: "toolbox-tools", languages: ["en"] },
 });
 
-// SKIPPED: three of these tests are marked test.fixme because they fail on some runs and pass on
-// others. They must be turned back on before the toolbox rework (BL-16608) is finished, because
-// they pin exactly the behavior that rework has to keep.
-//
-// Why they fail: once a page finishes loading, the toolbox restores the book's saved state (whether
-// the toolbox is open, and which tool is current) from settings it read before the page loaded.
-// That overwrites anything done to the toolbox in the meantime: a toolbox just opened is shut again,
-// and a tool just opened (or "More...") closes again, back to the tool saved in the book. A person who
-// clicks that fast simply clicks again; a test clicks at once, so it sometimes loses. Draft PR #8409
-// fixes the shutting half. The tool half is not fixed, and the old toolbox code leans on that late
-// restore to correct other things, so it is left to the rework.
+// These tests were skipped (test.fixme) because they raced the toolbox's late settings
+// restore: it applied settings read before the page was ready, so a toolbox just opened was
+// shut again and a tool just opened closed back to the tool saved in the book. A person who
+// clicks that fast simply clicks again; a test clicks at once, so it sometimes lost. The
+// restore now imposes a saved fact only if that fact has not changed since it was read.
 
-test.fixme(
-    "turning a tool on under More... adds it in alphabetical order and opens it [Test Case ID 830]",
-    async ({ page }) => {
-        await makeBookFromTemplate(page, "Basic Book");
-        await showToolbox(page);
-        // sanity check: a new Basic Book does not already have the Leveled Reader
-        expect(
-            await getShownTools(page),
-            "A new Basic Book should not start with the Leveled Reader tool.",
-        ).not.toContain("leveledReader");
+test("turning a tool on under More... adds it in alphabetical order and opens it [Test Case ID 830]", async ({
+    page,
+}) => {
+    await makeBookFromTemplate(page, "Basic Book");
+    await showToolbox(page);
+    // sanity check: a new Basic Book does not already have the Leveled Reader
+    expect(
+        await getShownTools(page),
+        "A new Basic Book should not start with the Leveled Reader tool.",
+    ).not.toContain("leveledReader");
 
-        await setToolTurnedOn(page, "leveledReader", true);
+    await setToolTurnedOn(page, "leveledReader", true);
 
-        // Bloom opens the tool just turned on, after a moment that lets the person see the box tick
-        // before "More..." closes (BL-16501).
-        await expectOpenTool(
-            page,
-            "leveledReader",
-            "Turning the Leveled Reader on did not open it.",
-        );
-        // Tools are in alphabetical order of their labels, with "More..." always last.
-        const shown = await getShownTools(page);
-        expect(
-            shown.indexOf("leveledReader"),
-            `The Leveled Reader should come before Talking Book. The toolbox shows: ${shown.join(", ")}.`,
-        ).toBeLessThan(shown.indexOf("talkingBook"));
-        expect(
-            shown[shown.length - 1],
-            "More... should be the last tool.",
-        ).toBe("settings");
-    },
-);
+    // Bloom opens the tool just turned on, after a moment that lets the person see the box tick
+    // before "More..." closes (BL-16501).
+    await expectOpenTool(
+        page,
+        "leveledReader",
+        "Turning the Leveled Reader on did not open it.",
+    );
+    // Tools are in alphabetical order of their labels, with "More..." always last.
+    const shown = await getShownTools(page);
+    expect(
+        shown.indexOf("leveledReader"),
+        `The Leveled Reader should come before Talking Book. The toolbox shows: ${shown.join(", ")}.`,
+    ).toBeLessThan(shown.indexOf("talkingBook"));
+    expect(shown[shown.length - 1], "More... should be the last tool.").toBe(
+        "settings",
+    );
+});
 
-test.fixme(
-    "turning a tool off under More... removes it [Test Case ID 830]",
-    async ({ page }) => {
-        const bookFolder = await makeBookFromTemplate(page, "Basic Book");
-        await enableToolForBook(page, bookFolder, "leveledReader");
-        // sanity check: the tool is there to be turned off
-        expect(await getShownTools(page)).toContain("leveledReader");
+test("turning a tool off under More... removes it [Test Case ID 830]", async ({
+    page,
+}) => {
+    const bookFolder = await makeBookFromTemplate(page, "Basic Book");
+    await enableToolForBook(page, bookFolder, "leveledReader");
+    // sanity check: the tool is there to be turned off
+    expect(await getShownTools(page)).toContain("leveledReader");
 
-        await setToolTurnedOn(page, "leveledReader", false);
+    await setToolTurnedOn(page, "leveledReader", false);
 
-        const shown = await getShownTools(page);
-        expect(
-            shown,
-            "Turning the Leveled Reader off should leave the other tools alone.",
-        ).toEqual(expect.arrayContaining(["talkingBook", "settings"]));
-    },
-);
+    const shown = await getShownTools(page);
+    expect(
+        shown,
+        "Turning the Leveled Reader off should leave the other tools alone.",
+    ).toEqual(expect.arrayContaining(["talkingBook", "settings"]));
+});
 
 test("clicking the header of the open tool leaves it open [Test Case ID 830]", async ({
     page,
@@ -103,35 +94,34 @@ test("clicking the header of the open tool leaves it open [Test Case ID 830]", a
     expect(await getOpenTool(page)).toBe(open);
 });
 
-test.fixme(
-    "the book remembers which tool was open [Test Case ID 830]",
-    async ({ page }) => {
-        const bookFolder = await makeBookFromTemplate(page, "Basic Book");
-        await enableToolForBook(page, bookFolder, "leveledReader");
-        await showToolbox(page);
-        // sanity check: the tool we will look for is not the one the book opens anyway
-        expect(
-            await waitForOpenTool(page),
-            "The book should not open the Leveled Reader before it has been opened once.",
-        ).not.toBe("leveledReader");
-        await openReaderTool(page, "leveledReader");
-        expect(await getOpenTool(page)).toBe("leveledReader");
+test("the book remembers which tool was open [Test Case ID 830]", async ({
+    page,
+}) => {
+    const bookFolder = await makeBookFromTemplate(page, "Basic Book");
+    await enableToolForBook(page, bookFolder, "leveledReader");
+    await showToolbox(page);
+    // sanity check: the tool we will look for is not the one the book opens anyway
+    expect(
+        await waitForOpenTool(page),
+        "The book should not open the Leveled Reader before it has been opened once.",
+    ).not.toBe("leveledReader");
+    await openReaderTool(page, "leveledReader");
+    expect(await getOpenTool(page)).toBe("leveledReader");
 
-        await editBook(page, bookFolder);
-        // The book keeps it in its meta.json, not just in memory, so it survives a restart of Bloom.
-        const meta = JSON.parse(
-            fs.readFileSync(Path.join(bookFolder, "meta.json"), "utf8"),
-        ) as { currentTool?: string };
-        expect(
-            meta.currentTool,
-            "The book's meta.json should record the Leveled Reader as its open tool.",
-        ).toMatch(/^leveledReader/);
-        await showToolbox(page);
+    await editBook(page, bookFolder);
+    // The book keeps it in its meta.json, not just in memory, so it survives a restart of Bloom.
+    const meta = JSON.parse(
+        fs.readFileSync(Path.join(bookFolder, "meta.json"), "utf8"),
+    ) as { currentTool?: string };
+    expect(
+        meta.currentTool,
+        "The book's meta.json should record the Leveled Reader as its open tool.",
+    ).toMatch(/^leveledReader/);
+    await showToolbox(page);
 
-        await expectOpenTool(
-            page,
-            "leveledReader",
-            "Coming back to the book should reopen the tool that was open when it was left.",
-        );
-    },
-);
+    await expectOpenTool(
+        page,
+        "leveledReader",
+        "Coming back to the book should reopen the tool that was open when it was left.",
+    );
+});

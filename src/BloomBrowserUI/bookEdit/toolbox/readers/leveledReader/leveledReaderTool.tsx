@@ -1,5 +1,4 @@
 import { get } from "../../../../utils/bloomApi";
-import { renderRoot } from "../../../../utils/reactRender";
 import ToolboxToolReactAdaptor from "../../toolboxToolReactAdaptor";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { beginInitializeLeveledReaderTool } from "../readerTools";
@@ -12,13 +11,14 @@ import { IToolboxSettings } from "../../toolbox";
 // for detaching the tool, reattaching the tool, updating the markup,
 // and restoring the current tool state
 export class LeveledReaderTool extends ToolboxToolReactAdaptor {
-    // renders the leveled reader React tool as a div root element,
-    // and returns it so that the toolbox can display it
-    public makeRootElement(): HTMLDivElement {
-        const root = document.createElement("div");
-
-        renderRoot(<LeveledReaderToolControls />, root);
-        return root as HTMLDivElement;
+    // renders the leveled reader React tool, for the toolbox to display in this
+    // tool's accordion
+    public renderPanel(): JSX.Element {
+        return (
+            <div>
+                <LeveledReaderToolControls />
+            </div>
+        );
     }
 
     // returns the id for this tool, which is used in the
@@ -38,6 +38,9 @@ export class LeveledReaderTool extends ToolboxToolReactAdaptor {
     public async beginRestoreSettings(
         settings: IToolboxSettings,
     ): Promise<void> {
+        // This restore supersedes any level still waiting for the settings; see
+        // forgetLevelAwaitingSynphony().
+        getTheOneReaderToolsModel().forgetLevelAwaitingSynphony();
         await beginInitializeLeveledReaderTool();
         // Despite the type, settings can be undefined/null at runtime when the tool is
         // activated for a book that has no saved leveled-reader settings. Guard before
