@@ -16,7 +16,7 @@
 // route through the "More..." check boxes, and enableToolForBook is the fast setup route that
 // posts the same setting they do.
 
-import { expect, type Frame, type Page } from "@playwright/test";
+import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import { apiPost } from "./api";
 import { editBook } from "./bookMaking";
 
@@ -106,6 +106,30 @@ export function toolboxFrame(page: Page): Frame {
 }
 
 /**
+ * Wait for a tool's header to appear, and explain it in the toolbox's own terms if it never
+ * does. A single count() here is a race: the toolbox renders its headers a moment after it
+ * becomes visible, so a check that runs first sees nothing and reports a tool missing that is
+ * about to arrive -- the error even listed the tool it claimed was absent.
+ */
+async function waitForToolHeader(
+    page: Page,
+    frame: Frame,
+    tool: ToolId,
+    extra = "",
+): Promise<Locator> {
+    const header = frame.locator(toolHeader(tool)).first();
+    try {
+        await header.waitFor({ state: "attached", timeout: 30000 });
+    } catch {
+        throw new Error(
+            `The toolbox is not offering the "${tool}" tool. It shows: ` +
+                `${(await getShownTools(page)).join(", ") || "(nothing)"}.${extra}`,
+        );
+    }
+    return header;
+}
+
+/**
  * Open one of the tools the toolbox is showing, by clicking its accordion header the way a person
  * does, and wait until the tool's own controls are showing. Opens the toolbox drawer first if it is
  * shut. Does nothing but return the frame when the tool's controls are showing already.
@@ -122,15 +146,13 @@ export async function openTool(
     const frame = await showToolbox(page);
     const controls = frame.locator(controlsSelector).first();
     if (await controls.isVisible().catch(() => false)) return frame;
-    const header = frame
-        .locator(`.MuiAccordionSummary-root:has([data-toolid="${tool}"])`)
-        .first();
-    if ((await header.count()) === 0)
-        throw new Error(
-            `The toolbox is not offering the "${tool}" tool. It shows: ` +
-                `${(await getShownTools(page)).join(", ") || "(nothing)"}. A tool is offered ` +
-                `only once the book has it on; the page it belongs to turns it on when clicked.`,
-        );
+    const header = await waitForToolHeader(
+        page,
+        frame,
+        tool,
+        " A tool is offered only once the book has it on; the page it belongs to turns it" +
+            " on when clicked.",
+    );
     await header.click();
     await controls.waitFor({ state: "visible", timeout: 30000 });
     return frame;
@@ -203,12 +225,7 @@ async function waitForToolboxToSettle(page: Page): Promise<void> {
  */
 export async function clickToolHeader(page: Page, tool: ToolId): Promise<void> {
     const frame = await showToolbox(page);
-    const header = frame.locator(toolHeader(tool)).first();
-    if ((await header.count()) === 0)
-        throw new Error(
-            `The toolbox is not offering the "${tool}" tool. It shows: ` +
-                `${(await getShownTools(page)).join(", ") || "(nothing)"}.`,
-        );
+    const header = await waitForToolHeader(page, frame, tool);
     await header.click();
     await waitForToolboxToSettle(page);
 }
