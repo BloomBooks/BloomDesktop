@@ -107,8 +107,8 @@ importers:
         specifier: 0.1.1
         version: 0.1.1
       comicaljs:
-        specifier: 0.4.1
-        version: 0.4.1
+        specifier: 0.4.2
+        version: 0.4.2
       contentful:
         specifier: 8.3.7
         version: 8.3.7
@@ -2936,8 +2936,8 @@ packages:
     resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
     engines: {node: '>= 0.8'}
 
-  comicaljs@0.4.1:
-    resolution: {integrity: sha512-5Z3k/o51TDZ7k4bEzLltI7XAWR9pvvhAYAqcLIHW8j4TDlly6lv5lYgDVKrij04wqFCQ4eOtGYJMkjtB1F6b/Q==}
+  comicaljs@0.4.2:
+    resolution: {integrity: sha512-VCFBe/gL/EwnY1K88cPhSJr2/b1j6WOnWxYqn2RLl+KkQ7LJKWius3gD9bbNYlPRwxpOomyxR9Ih0DhNMzNDMw==}
 
   commander@13.1.0:
     resolution: {integrity: sha512-/rFeCpNJQbhSZjGVwO9RFV3xPqbnERS8MmIQzCtD/zl6gpJuV/bMLuN92oG3F7d8oDEHHRrujSXNUr8fpjntKw==}
@@ -9564,7 +9564,7 @@ snapshots:
     dependencies:
       delayed-stream: 1.0.0
 
-  comicaljs@0.4.1:
+  comicaljs@0.4.2:
     dependencies:
       paper: 0.12.8
 

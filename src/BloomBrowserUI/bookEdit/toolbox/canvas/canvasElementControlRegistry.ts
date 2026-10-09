@@ -15,6 +15,10 @@
 // Design intent: keep each element type's control configuration explicit and
 // readable, while leaving the concrete command/panel implementations in
 // `canvasControlRegistry.ts`.
+//
+// Every element type lists the `layer` section (the "Layer" submenu that changes stacking
+// order) just before `wholeElement`; its availability rules hide it for the background image,
+// which must always stay at the back.
 import { CanvasElementType } from "./canvasElementTypes";
 import {
     ICanvasElementControlConfiguration,
@@ -24,6 +28,7 @@ import {
     audioAvailabilityRules,
     bubbleAvailabilityRules,
     imageAvailabilityRules,
+    layerAvailabilityRules,
     textAvailabilityRules,
     videoAvailabilityRules,
     wholeElementAvailabilityRules,
@@ -50,6 +55,7 @@ export const imageCanvasElementControls: ICanvasElementControlConfiguration = {
         "imageSettings",
         "audio",
         "gameDraggable",
+        "layer",
         "wholeElement",
     ],
     toolbar: [
@@ -65,6 +71,7 @@ export const imageCanvasElementControls: ICanvasElementControlConfiguration = {
     availabilityRules: mergeRules(
         imageAvailabilityRules,
         audioAvailabilityRules,
+        layerAvailabilityRules,
         wholeElementAvailabilityRules,
     ),
 };
@@ -75,11 +82,12 @@ export const videoCanvasElementControls: ICanvasElementControlConfiguration = {
     // and as game pieces on game pages.
     // `gameDraggable` is game-only in practice; non-game pages resolve this
     // section to no visible rows via runtime availability.
-    menuSections: ["video", "gameDraggable", "wholeElement"],
+    menuSections: ["video", "gameDraggable", "layer", "wholeElement"],
     toolbar: ["chooseVideo", "recordVideo", "spacer", "duplicate", "delete"],
     toolPanel: [],
     availabilityRules: mergeRules(
         videoAvailabilityRules,
+        layerAvailabilityRules,
         wholeElementAvailabilityRules,
     ),
 };
@@ -90,11 +98,12 @@ export const soundCanvasElementControls: ICanvasElementControlConfiguration = {
     // can also participate in game layouts.
     // `gameDraggable` is included for game contexts and intentionally resolves
     // to no rows on non-game pages.
-    menuSections: ["audio", "gameDraggable", "wholeElement"],
+    menuSections: ["audio", "gameDraggable", "layer", "wholeElement"],
     toolbar: ["duplicate", "delete"],
     toolPanel: [],
     availabilityRules: mergeRules(
         audioAvailabilityRules,
+        layerAvailabilityRules,
         wholeElementAvailabilityRules,
     ),
 };
@@ -104,13 +113,14 @@ export const rectangleBubbleCanvasElementControls: ICanvasElementControlConfigur
         type: "rectangle",
         // Shared definition: rectangular bubble elements are used in standard canvas
         // pages and can also appear as fixed game pieces.
-        menuSections: ["audio", "bubble", "text", "wholeElement"],
+        menuSections: ["audio", "bubble", "text", "layer", "wholeElement"],
         toolbar: ["format", "spacer", "duplicate", "delete"],
         toolPanel: ["bubble", "text", "outline"],
         availabilityRules: mergeRules(
             audioAvailabilityRules,
             bubbleAvailabilityRules,
             textAvailabilityRules,
+            layerAvailabilityRules,
             wholeElementAvailabilityRules,
         ),
     };
@@ -121,13 +131,21 @@ export const speechCanvasElementControls: ICanvasElementControlConfiguration = {
     // are also a primary game piece type.
     // `gameDraggable` is listed so game pages can expose drag-specific commands;
     // it remains hidden outside game context.
-    menuSections: ["audio", "bubble", "gameDraggable", "text", "wholeElement"],
+    menuSections: [
+        "audio",
+        "bubble",
+        "gameDraggable",
+        "text",
+        "layer",
+        "wholeElement",
+    ],
     toolbar: ["format", "spacer", "duplicate", "delete"],
     toolPanel: ["bubble", "text", "outline"],
     availabilityRules: mergeRules(
         audioAvailabilityRules,
         bubbleAvailabilityRules,
         textAvailabilityRules,
+        layerAvailabilityRules,
         wholeElementAvailabilityRules,
     ),
 };
@@ -144,6 +162,7 @@ export const captionCanvasElementControls: ICanvasElementControlConfiguration =
             "bubble",
             "gameDraggable",
             "text",
+            "layer",
             "wholeElement",
         ],
         toolbar: ["format", "spacer", "duplicate", "delete"],
@@ -152,6 +171,7 @@ export const captionCanvasElementControls: ICanvasElementControlConfiguration =
             audioAvailabilityRules,
             bubbleAvailabilityRules,
             textAvailabilityRules,
+            layerAvailabilityRules,
             wholeElementAvailabilityRules,
         ),
     };
@@ -161,26 +181,31 @@ export const tableCanvasElementControls: ICanvasElementControlConfiguration = {
     // A table carries its own in-page affordances for everything inside it:
     // pills for the table, the row and the column, edge insert buttons, and
     // right-click menus. So the canvas surfaces only what belongs to the
-    // element as a whole, such as Duplicate and Delete.
-    menuSections: ["wholeElement"],
+    // element as a whole, such as its Layer and Duplicate and Delete.
+    menuSections: ["layer", "wholeElement"],
     toolbar: ["duplicate", "delete"],
     toolPanel: [],
-    availabilityRules: mergeRules(wholeElementAvailabilityRules, {
-        // Duplicating a table is making one, so it goes where the rest of table
-        // creation goes when the feature is not available. Delete stays: the user
-        // must always be able to get rid of something they cannot edit.
-        duplicate: {
-            visible: (ctx) => ctx.tablesMayBeRestructured,
+    availabilityRules: mergeRules(
+        layerAvailabilityRules,
+        wholeElementAvailabilityRules,
+        {
+            // Duplicating a table is making one, so it goes where the rest of table
+            // creation goes when the feature is not available. Delete stays: the user
+            // must always be able to get rid of something they cannot edit.
+            duplicate: {
+                visible: (ctx) => ctx.tablesMayBeRestructured,
+            },
         },
-    }),
+    ),
 };
 
 export const bookLinkGridControls: ICanvasElementControlConfiguration = {
     type: "book-link-grid",
-    menuSections: ["linkGrid", "wholeElement"],
+    menuSections: ["linkGrid", "layer", "wholeElement"],
     toolbar: ["linkGridChooseBooks", "spacer", "duplicate", "delete"],
     toolPanel: ["text"],
     availabilityRules: {
+        ...layerAvailabilityRules,
         textColor: "exclude",
     },
 };
@@ -193,6 +218,7 @@ export const navigationImageButtonControls: ICanvasElementControlConfiguration =
             "image",
             "imageArrangement",
             "imageSettings",
+            "layer",
             "wholeElement",
         ],
         toolbar: [
@@ -208,6 +234,7 @@ export const navigationImageButtonControls: ICanvasElementControlConfiguration =
             ...mergeRules(
                 imageAvailabilityRules,
                 textAvailabilityRules,
+                layerAvailabilityRules,
                 wholeElementAvailabilityRules,
             ),
             setDestination: {
@@ -247,6 +274,7 @@ export const navigationImageWithLabelButtonControls: ICanvasElementControlConfig
             "imageArrangement",
             "imageSettings",
             "text",
+            "layer",
             "wholeElement",
         ],
         toolbar: [
@@ -262,6 +290,7 @@ export const navigationImageWithLabelButtonControls: ICanvasElementControlConfig
             ...mergeRules(
                 imageAvailabilityRules,
                 textAvailabilityRules,
+                layerAvailabilityRules,
                 wholeElementAvailabilityRules,
             ),
             setDestination: {
@@ -295,11 +324,15 @@ export const navigationImageWithLabelButtonControls: ICanvasElementControlConfig
 export const navigationLabelButtonControls: ICanvasElementControlConfiguration =
     {
         type: "navigation-label-button",
-        menuSections: ["url", "text", "wholeElement"],
+        menuSections: ["url", "text", "layer", "wholeElement"],
         toolbar: ["setDestination", "spacer", "duplicate", "delete"],
         toolPanel: ["text"],
         availabilityRules: {
-            ...mergeRules(textAvailabilityRules, wholeElementAvailabilityRules),
+            ...mergeRules(
+                textAvailabilityRules,
+                layerAvailabilityRules,
+                wholeElementAvailabilityRules,
+            ),
             setDestination: {
                 visible: true,
             },
@@ -311,11 +344,12 @@ export const navigationLabelButtonControls: ICanvasElementControlConfiguration =
 
 export const noneCanvasElementControls: ICanvasElementControlConfiguration = {
     type: "none",
-    menuSections: ["formatTarget", "wholeElement"],
+    menuSections: ["formatTarget", "layer", "wholeElement"],
     toolbar: ["format", "spacer", "duplicate", "delete"],
     toolPanel: [],
     availabilityRules: mergeRules(
         textAvailabilityRules,
+        layerAvailabilityRules,
         wholeElementAvailabilityRules,
     ),
 };
