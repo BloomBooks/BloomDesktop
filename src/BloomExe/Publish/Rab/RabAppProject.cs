@@ -601,6 +601,12 @@ namespace Bloom.Publish.Rab
             IEnumerable<ExistingFontElement> existingFonts
         )
         {
+            // RAB names the family in its @font-face rules by this id, and books ask for Andika by
+            // name, so a project's own Andika entry (often "font1") must not take over Bloom's.
+            // That entry stays as it is if the app's interface uses it.
+            if (string.Equals(font.FamilyName, PublishHelper.DefaultFont, StringComparison.Ordinal))
+                return font.FamilyName;
+
             foreach (var existingFont in existingFonts)
             {
                 if (

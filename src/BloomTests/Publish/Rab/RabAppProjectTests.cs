@@ -232,9 +232,9 @@ namespace BloomTests.Publish.Rab
             <viewer type='default'/>
         </font-handling>
         <font family='font1'>
-            <font-name>Andika</font-name>
-            <display-name>Andika</display-name>
-            <filename format='woff2'>Andika-Regular.woff2</filename>
+            <font-name>Charis SIL</font-name>
+            <display-name>Charis SIL</display-name>
+            <filename format='truetype'>CharisSIL-Regular.ttf</filename>
             <style-decl property='font-weight' value='normal'/>
             <style-decl property='font-style' value='normal'/>
         </font>
@@ -260,11 +260,11 @@ namespace BloomTests.Publish.Rab
                 {
                     new RabAppFontDefinition
                     {
-                        FamilyName = "Andika",
-                        FontName = "Andika",
-                        DisplayName = "Andika",
-                        FileName = "Andika-Regular.woff2",
-                        Format = "woff2",
+                        FamilyName = "Charis SIL",
+                        FontName = "Charis SIL",
+                        DisplayName = "Charis SIL",
+                        FileName = "CharisSIL-Regular.ttf",
+                        Format = "truetype",
                         Weight = "normal",
                         Style = "normal",
                     },
@@ -284,18 +284,23 @@ namespace BloomTests.Publish.Rab
 
             var document = XDocument.Load(tempFile.Path);
             var fonts = document.Root.Element("fonts")?.Elements("font").ToList();
-            var andikaFont = fonts?.Single(font => font.Element("display-name")?.Value == "Andika");
+            var charisFont = fonts?.Single(font =>
+                font.Element("display-name")?.Value == "Charis SIL"
+            );
             var abeezeeFont = fonts?.Single(font =>
                 font.Element("display-name")?.Value == "ABeeZee"
             );
 
             Assert.That(fonts, Has.Count.EqualTo(2));
             Assert.That(
-                andikaFont?.Attribute("family")?.Value,
+                charisFont?.Attribute("family")?.Value,
                 Is.EqualTo("font1"),
-                "The existing referenced family id should be preserved for Andika."
+                "The existing referenced family id should be preserved for Charis SIL."
             );
-            Assert.That(andikaFont?.Element("display-name")?.Value, Is.EqualTo("Andika"));
+            Assert.That(
+                charisFont?.Element("filename")?.Value,
+                Is.EqualTo("CharisSIL-Regular.ttf")
+            );
             Assert.That(abeezeeFont?.Attribute("family")?.Value, Is.EqualTo("ABeeZee"));
             Assert.That(abeezeeFont?.Element("font-name")?.Value, Is.EqualTo("ABeeZee Bold"));
             Assert.That(
@@ -303,6 +308,103 @@ namespace BloomTests.Publish.Rab
                 Is.False,
                 "Unreferenced stale font entries should be removed."
             );
+        }
+
+        [Test]
+        public void SynchronizeFonts_GivesBloomsAndikaTheFamilyIdAndika_AndKeepsTheProjectsOwn()
+        {
+            using var tempFile = TempFile.WithExtension(".appDef");
+            RobustFile.WriteAllText(
+                tempFile.Path,
+                @"<?xml version='1.0' encoding='utf-8'?>
+<app-definition type='RAB' program-version='13.4'>
+    <project-name>Sample Project</project-name>
+    <fonts>
+        <font-handling>
+            <viewer type='default'/>
+        </font-handling>
+        <font family='font1'>
+            <font-name>Andika</font-name>
+            <display-name>Andika</display-name>
+            <filename format='truetype'>Andika-R.ttf</filename>
+            <style-decl property='font-weight' value='normal'/>
+            <style-decl property='font-style' value='normal'/>
+        </font>
+    </fonts>
+    <books id='C01'>
+        <styles-info>
+            <text-font family='font1'/>
+        </styles-info>
+    </books>
+</app-definition>"
+            );
+
+            var project = RabAppProject.Load(tempFile.Path);
+            project.SynchronizeFonts(RabProjectService.GetAndikaFontDefinitions());
+            project.Save();
+
+            var fonts = XDocument
+                .Load(tempFile.Path)
+                .Root.Element("fonts")
+                .Elements("font")
+                .ToList();
+            var bloomAndika = fonts
+                .Where(font => font.Attribute("family")?.Value == "Andika")
+                .ToList();
+            Assert.That(
+                bloomAndika.Select(font => font.Element("filename")?.Value),
+                Is.EqualTo(
+                    new[]
+                    {
+                        "Andika-Regular.woff2",
+                        "Andika-Bold.woff2",
+                        "Andika-Italic.woff2",
+                        "Andika-BoldItalic.woff2",
+                    }
+                ),
+                "RAB writes the family id into its @font-face rules, and books ask for 'Andika'."
+            );
+            Assert.That(
+                bloomAndika.Select(font => font.Element("font-name")?.Value),
+                Is.EqualTo(new[] { "Andika", "Andika Bold", "Andika Italic", "Andika Bold Italic" })
+            );
+            Assert.That(
+                bloomAndika.Select(font => font.Element("filename")?.Attribute("format")?.Value),
+                Is.All.EqualTo("woff2")
+            );
+            var projectAndika = fonts.Single(font => font.Attribute("family")?.Value == "font1");
+            Assert.That(
+                projectAndika.Element("filename")?.Value,
+                Is.EqualTo("Andika-R.ttf"),
+                "The app's interface still uses font1, so it must be left as it was."
+            );
+            Assert.That(fonts, Has.Count.EqualTo(5));
+        }
+
+        [Test]
+        public void CopyAndikaFontFiles_CopiesTheFourFacesBloomShips()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var fontsFolder = Path.Combine(tempFolder.Path, "App_data", "fonts");
+            Assert.That(Directory.Exists(fontsFolder), Is.False, "test setup: no fonts folder yet");
+
+            RabProjectService.CopyAndikaFontFiles(fontsFolder);
+
+            foreach (
+                var fileName in RabProjectService
+                    .GetAndikaFontDefinitions()
+                    .Select(font => font.FileName)
+            )
+            {
+                var source = FileLocationUtilities.GetFileDistributedWithApplication(
+                    "fonts",
+                    fileName
+                );
+                var copy = Path.Combine(fontsFolder, fileName);
+                Assert.That(RobustFile.Exists(copy), Is.True, fileName + " was not copied");
+                Assert.That(new FileInfo(copy).Length, Is.EqualTo(new FileInfo(source).Length));
+            }
+            Assert.That(Directory.GetFiles(fontsFolder), Has.Length.EqualTo(4));
         }
 
         [Test]
@@ -2331,9 +2433,17 @@ namespace BloomTests.Publish.Rab
             await service.BuildAsync();
 
             var document = XDocument.Load(service.GetStatus().AppDefPath);
-            var fonts = document.Root.Element("fonts")?.Elements("font").ToList();
+            var allFonts = document.Root.Element("fonts")?.Elements("font").ToList();
 
-            Assert.That(fonts, Is.Not.Null);
+            Assert.That(allFonts, Is.Not.Null);
+            Assert.That(
+                allFonts.Count(font => font.Attribute("family")?.Value == "Andika"),
+                Is.EqualTo(4),
+                "Bloom adds the four faces of Andika to every app"
+            );
+            var fonts = allFonts
+                .Where(font => font.Attribute("family")?.Value != "Andika")
+                .ToList();
             Assert.That(fonts, Has.Count.EqualTo(1));
             Assert.That(fonts[0].Element("display-name")?.Value, Is.EqualTo("ABeeZee"));
             Assert.That(fonts[0].Element("filename")?.Value, Is.EqualTo("ABeeZee-Regular.woff2"));
@@ -2383,7 +2493,17 @@ namespace BloomTests.Publish.Rab
                 .ToList();
             Assert.That(
                 fontFileNames,
-                Is.EquivalentTo(new[] { "CharisSIL-Regular.ttf", "CharisSIL-Bold.ttf" })
+                Is.EquivalentTo(
+                    new[]
+                    {
+                        "CharisSIL-Regular.ttf",
+                        "CharisSIL-Bold.ttf",
+                        "Andika-Regular.woff2",
+                        "Andika-Bold.woff2",
+                        "Andika-Italic.woff2",
+                        "Andika-BoldItalic.woff2",
+                    }
+                )
             );
             foreach (var fileName in fontFileNames)
                 Assert.That(

@@ -62,6 +62,9 @@ namespace Bloom.Publish.Rab
         // RAB that is already installed is left alone, not downgraded: Bloom channels installed side
         // by side share one RAB install, and an exact match would make them reinstall over each
         // other. Before changing this, upload the matching installer (see kRabSetupDownloadUrl).
+        // When this moves to a RAB that serves Andika under the names bloom-player asks for
+        // (sillsdev/app-builders#2510), remove GetAndikaFontDefinitions and CopyAndikaFontFiles:
+        // the app would then carry Andika twice.
         private const string kRabInstallerVersion = "14-0-1";
         internal static readonly Version kRabInstallerVersionNumber = new Version(
             kRabInstallerVersion.Replace('-', '.')
@@ -1865,9 +1868,62 @@ namespace Bloom.Publish.Rab
         )
         {
             var project = RabAppProject.Load(appDefPath);
-            project.SynchronizeFonts(ReadFontDefinitionsFromBloomPubs(trackedBooks));
+            project.SynchronizeFonts(
+                ReadFontDefinitionsFromBloomPubs(trackedBooks).Concat(GetAndikaFontDefinitions())
+            );
             project.Save();
             CopyEmbeddedFontFiles(trackedBooks, project.FontsFolderPath);
+            CopyAndikaFontFiles(project.FontsFolderPath);
+        }
+
+        // The four faces of Andika that Bloom ships in DistFiles/fonts.
+        private static readonly (string FileName, string Weight, string Style)[] kAndikaFaces =
+        {
+            ("Andika-Regular.woff2", "normal", "normal"),
+            ("Andika-Bold.woff2", "bold", "normal"),
+            ("Andika-Italic.woff2", "normal", "italic"),
+            ("Andika-BoldItalic.woff2", "bold", "italic"),
+        };
+
+        /// <summary>
+        /// The app's own copy of Andika, Bloom's default font. BloomPUBs never embed Andika,
+        /// because Bloom Reader and other hosts supply it to bloom-player, but a RAB app does not
+        /// serve the files under the names bloom-player asks for, and RAB apps have no internet
+        /// permission for bloom-player's last fallback, so without this Andika text shows in the
+        /// phone's own font (BL-17007, sillsdev/app-builders#2510). Listing Andika in the .appDef
+        /// makes RAB put an @font-face rule for it at the top of every book's fonts.css, and
+        /// bloom-player loads fonts.css after its own Andika rules, so this one wins. It costs
+        /// one copy of the font per app, not per book.
+        /// </summary>
+        internal static IEnumerable<RabAppFontDefinition> GetAndikaFontDefinitions()
+        {
+            return kAndikaFaces.Select(face => new RabAppFontDefinition
+            {
+                FamilyName = PublishHelper.DefaultFont,
+                FontName = BuildFontName(PublishHelper.DefaultFont, face.Weight, face.Style),
+                DisplayName = PublishHelper.DefaultFont,
+                FileName = face.FileName,
+                Format = "woff2",
+                Weight = face.Weight,
+                Style = face.Style,
+            });
+        }
+
+        /// <summary>
+        /// Copies the Andika files GetAndikaFontDefinitions lists into the project's fonts folder,
+        /// where RAB looks for every font the .appDef lists.
+        /// </summary>
+        internal static void CopyAndikaFontFiles(string fontsFolderPath)
+        {
+            Directory.CreateDirectory(fontsFolderPath);
+            foreach (var face in kAndikaFaces)
+            {
+                RobustFile.Copy(
+                    FileLocationUtilities.GetFileDistributedWithApplication("fonts", face.FileName),
+                    Path.Combine(fontsFolderPath, face.FileName),
+                    true
+                );
+            }
         }
 
         /// <summary>
