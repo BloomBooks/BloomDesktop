@@ -1918,6 +1918,12 @@ export class CanvasElementManager {
     // picture, so they go too, unless the caller passes imageTransform, as Undo does to put
     // back the transform the restored picture had. The rotation of the canvas element box
     // belongs to the box and is left alone.
+    //
+    // cropInfo means this is an Undo: we are putting back a picture that was on this page a
+    // moment ago, cropping and all. The undo manager has already put back the canvas
+    // element's box, so here we put back the img's box, which is the other half of a crop,
+    // and tell the sizing code this is NOT a new image, so that it keeps that cropping rather
+    // than fitting the canvas element to the whole picture.
     updateCanvasElementForChangedImage(
         imgOrImageContainer: HTMLElement,
         cropInfo?: IImageCropInfo,
@@ -1940,17 +1946,29 @@ export class CanvasElementManager {
         // With the transform gone, the size code below sees no rotation and fits a background
         // element to the new picture's natural shape.
         img.style.transform = imageTransform;
+        if (cropInfo) {
+            img.style.width = cropInfo.width;
+            img.style.height = cropInfo.height;
+            img.style.left = cropInfo.left;
+            img.style.top = cropInfo.top;
+        }
+        // Only a picture that HAD cropping needs us to keep any, and saying "not a new image"
+        // costs something: it also switches off the wait for the restored src to load. The img
+        // goes on reporting the OUTGOING picture's naturalWidth/naturalHeight until the
+        // restored one decodes, and the sizing code reads those whenever there is no crop to
+        // work from. So an undo back to an uncropped picture is handled exactly as a new image
+        // is: there is no crop to lose, and it gets the real dimensions.
+        const isNewImage = !cropInfo?.width;
         // Get the aspect ratio right (aligns control frame)
         if (canvasElement.classList.contains(kBackgroundImageClass)) {
             this.adjustBackgroundImageSize(
                 canvasElement.closest(kBloomCanvasSelector)!,
                 canvasElement,
-                true,
-                cropInfo,
+                isNewImage,
             );
             SetupMetadataButton(canvasElement);
         } else {
-            this.adjustContainerAspectRatio(canvasElement, true);
+            this.adjustContainerAspectRatio(canvasElement, isNewImage);
         }
     }
 
@@ -3400,7 +3418,6 @@ export class CanvasElementManager {
         bloomCanvas: HTMLElement,
         bgCanvasElement: HTMLElement,
         useSizeOfNewImage: boolean,
-        cropInfo?: IImageCropInfo,
     ) {
         return adjustCanvasBackgroundImageSize(
             this.backgroundImageManagerState,
@@ -3409,7 +3426,6 @@ export class CanvasElementManager {
             useSizeOfNewImage,
             () => this.activeElement,
             this.alignControlFrameWithActiveElement,
-            cropInfo,
         );
     }
 

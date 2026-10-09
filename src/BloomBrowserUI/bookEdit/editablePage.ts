@@ -77,6 +77,10 @@ export interface IPageFrameExports {
     ckeditorUndo(): boolean;
     imageOperationCanUndo(): boolean;
     imageOperationUndo(): boolean;
+    // Used by the top window's Ctrl+Z handler, so that both frames decide the same way
+    // which keystrokes are the image undo's to take. See bloomEditing.ts.
+    isModalOpen(doc: Document): boolean;
+    kNotOurUndoSelector: string;
 
     tableShouldHandleUndo(): boolean;
     tableCanUndo(): boolean;
@@ -140,6 +144,8 @@ import {
     changeImageByElement,
     imageOperationCanUndo,
     imageOperationUndo,
+    isModalOpen,
+    kNotOurUndoSelector,
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
 } from "./js/bloomEditing";
@@ -173,6 +179,8 @@ export {
     changeImageByElement,
     imageOperationCanUndo,
     imageOperationUndo,
+    isModalOpen,
+    kNotOurUndoSelector,
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
     renderDragActivityTabControl,
@@ -490,6 +498,8 @@ interface EditablePageBundleApi {
     changeImageByElement: typeof changeImageByElement;
     imageOperationCanUndo: typeof imageOperationCanUndo;
     imageOperationUndo: typeof imageOperationUndo;
+    isModalOpen: typeof isModalOpen;
+    kNotOurUndoSelector: typeof kNotOurUndoSelector;
     origamiCanUndo: typeof origamiCanUndo;
     origamiUndo: typeof origamiUndo;
     getTheOneCanvasElementManager: typeof getTheOneCanvasElementManager;
@@ -574,6 +584,8 @@ window.editablePageBundle = {
     changeImageByElement,
     imageOperationCanUndo: imageOperationCanUndo,
     imageOperationUndo: imageOperationUndo,
+    isModalOpen,
+    kNotOurUndoSelector,
     origamiCanUndo,
     origamiUndo,
     getTheOneCanvasElementManager,
