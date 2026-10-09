@@ -40,6 +40,21 @@
         <target xml:lang="prs" state="needs-translation">App Builder</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate.Description" translate="no">
+        <source xml:lang="en">When a new version of Bloom is available, Bloom will get it for you.</source>
+        <target xml:lang="prs" state="needs-translation">When a new version of Bloom is available, Bloom will get it for you.</target>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Collection" translate="no">
+        <source xml:lang="en">Collection</source>
+        <target xml:lang="prs" state="needs-translation">Collection</target>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Collection</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.NoRenameTeamCollection" translate="no">
+        <source xml:lang="en">The collection name cannot be changed because this is a Team Collection. Contact the Bloom team for more information.</source>
+        <target xml:lang="prs" state="needs-translation">The collection name cannot be changed because this is a Team Collection. Contact the Bloom team for more information.</target>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.NoRenameTeamCollection</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.Tables" translate="no">
         <source xml:lang="en">Tables</source>
         <target xml:lang="prs" state="needs-translation">Tables</target>
