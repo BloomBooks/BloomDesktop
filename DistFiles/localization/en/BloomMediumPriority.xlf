@@ -60,6 +60,16 @@
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.Tables</note>
         <note>Label of a checkbox in the Experimental Features list of the Advanced tab of Collection Settings. Turning it on lets the user add a table to a custom page.</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BloomLibraryPage.Bookshelf" translate="no">
+        <source xml:lang="en">Bookshelf</source>
+        <note>ID: CollectionSettingsDialog.BloomLibraryPage.Bookshelf</note>
+        <note>On the Bloom Library page of the Collection Settings dialog: the heading of a group, and the label of the list beside it. A bookshelf is a named collection of books on the BloomLibrary.org website, which a project with a subscription can have set up for its books.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BloomLibraryPage.BookshelfDescription" translate="no">
+        <source xml:lang="en">Projects that have Bloom Enterprise subscriptions can arrange for one or more bookshelves on the Bloom Library. All books uploaded from this collection will go into the selected bookshelf.</source>
+        <note>ID: CollectionSettingsDialog.BloomLibraryPage.BookshelfDescription</note>
+        <note>Explains the bookshelf list on the Bloom Library page of the Collection Settings dialog. "Bloom Enterprise" and "Bloom Library" are product names and should not be translated.</note>
+      </trans-unit>
       <trans-unit id="Feature.AiImageEditing">
         <source xml:lang="en">Edit Images with AI</source>
         <note>ID: Feature.AiImageEditing</note>

@@ -8,7 +8,13 @@ export interface IBookshelf {
     tooltip: string;
 }
 
-export function useGetEnterpriseBookshelves(): {
+/**
+ * The bookshelves the collection's subscription offers on Bloom Library, preceded by "none".
+ * @param enabled false to ask nothing (yet), for a caller that is mounted before it is needed;
+ * each time it becomes true the collection's subscription, its bookshelf and the list of
+ * bookshelves are read again.
+ */
+export function useGetEnterpriseBookshelves(enabled: boolean = true): {
     project: string;
     defaultBookshelfUrlKey: string;
     validBookshelves: IBookshelf[];
@@ -36,7 +42,16 @@ export function useGetEnterpriseBookshelves(): {
     // The project or branding retrieved from the settings/bookShelfData API.
     const [project, setProject] = useState("");
     // First query: get the values of the two states above.
+    // An effect, because this reads from Bloom when the caller becomes enabled. While disabled we
+    // forget the project, so that the Contentful query below changes when it is enabled again and
+    // so runs again: useContentful queries only when its query changes, and a caller that stays
+    // mounted (the Collection Settings dialog) would otherwise keep a stale list, or a failure to
+    // reach the server, from an earlier open.
     useEffect(() => {
+        if (!enabled) {
+            setProject("");
+            return;
+        }
         get("settings/bookShelfData", (data) => {
             const descriptor = data.data.subscriptionDescriptor;
             setProject(descriptor === "Default" ? "" : descriptor);
@@ -44,7 +59,7 @@ export function useGetEnterpriseBookshelves(): {
                 data.data.defaultBookshelfUrlKey || "none",
             );
         });
-    }, []);
+    }, [enabled]);
 
     // Second query to get the contentful data
     const { loading, result, error } = useContentful(
