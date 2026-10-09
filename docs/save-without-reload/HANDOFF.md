@@ -38,6 +38,15 @@ to miss there. Delete this folder before the PR merges.
   in `SafeXmlNode`, not `HtmlDom`.
 - **Optional branding images that are missing get no "missing image" alt text**
   (`isBrandingImage` in `bloomImages.ts`). That text was being saved into book-wide data.
+- **Table editing markup is stripped from the saved copy by Bloom's own copy of bloom-table's
+  list** (`removeTableEditingMarkupFromClone` in `tableEditing.ts`). bloom-table's
+  `removeTableEditingArtifacts` also ends Paint Format and Border Brush mode, which a save that runs
+  on every change must not do, and it doesn't export its markup-only part. A unit test compares the
+  two. If bloom-table ever exports that part, call it instead.
+- **Any request that makes C# save the page and then reload it** must first send the page:
+  `saveChangesAndRethinkPage` or `postAfterSendingSnapshot` in `pageSnapshot.ts`. A feature merged
+  from master that posts such a request directly will lose the last moments of typing. The
+  original-copyright sentence's unlock and relock needed this when master was merged on 10-09.
 - **The flaky test fix is in this PR.** `Xml_DoesNotProvide_ThreadSafety` was flaky on master;
   John asked for the fix to go in here.
 - **Left alone on purpose:** bloom-player's `prepareActivity` leaves `touch-action: none` on
@@ -64,7 +73,10 @@ to miss there. Delete this folder before the PR merges.
      `BLOOM_AUTOMATION_MONITOR=headless`:
      `pnpm exec playwright test tests/<spec> --reporter=line`.
 
-  The fixture refuses a build older than any C# source. The commit hook reformats C# files
+  The fixture refuses a build older than any C# source.
+  After merging master, also run `pnpm run build:pageSizes` in `src/content`. It writes
+  `output/browser/pageSizesLookup.json`, which C# needs (about 30 C# tests fail without it). The
+  full front-end build would make it too, but agents must not run that. The commit hook reformats C# files
   (csharpier), which can make the build look stale after a commit: rebuild, then rerun.
 - **The new specs:**
   - `typing-survives-leaving-the-page`
@@ -83,6 +95,9 @@ to miss there. Delete this folder before the PR merges.
   - `capture-book-page`
 
   All 28 of their tests pass.
+- **E2E tests that type and then leave the page** need `waitForBloomToHaveTyping` in between, as
+  a person's pause would provide. Master's specs, written before this PR, may not have it; on
+  10-09, `original-copyright-sentence.spec.ts` needed it.
 - **Quitting Bloom from a test:** `quitAndRestart` in the fixture posts `WM_CLOSE` to Bloom's
   visible windows. In `--dont-disturb` mode the main window has a hidden owner, so `taskkill`
   without `/F` and `CloseMainWindow` both miss it.
