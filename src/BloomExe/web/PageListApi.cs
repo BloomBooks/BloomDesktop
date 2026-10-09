@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -109,12 +108,16 @@ namespace Bloom.web
             var shiftIsDown = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
             var label = shiftIsDown ? "Select Page (SHIFT)" : "Select Page";
 
-            using (PerformanceMeasurement.Global?.Measure(label, requestData.detail ?? ""))
+            // Note this only measures getting the change under way; the new page still has to be
+            // built and displayed.
+            using (
+                PerformanceMeasurement.Global?.Measure(
+                    label,
+                    requestData.IsDefined("detail") ? requestData.detail : ""
+                )
+            )
             {
-                //using (PerformanceMeasurement.Global.Measure(label, requestData.detail ?? ""))
-                //{
                 IPage page = PageFromId(pageId);
-                //}
 
                 if (page != null)
                     PageList.PageClicked(page);
@@ -143,38 +146,25 @@ namespace Bloom.web
 
             if (page != null)
             {
-                // Execute the command asynchronously after a short delay
-                // The discard operator _ indicates we're intentionally not awaiting this
-                _ = Task.Run(async () =>
+                // The command runs right here, under the API lock, so a page click or move that
+                // arrives meanwhile waits for it rather than overtaking it. No command here may open
+                // a modal dialog: it would deadlock, since this handler holds the API lock the
+                // dialog's own requests need. That is why Duplicate Many Times and Choose Different
+                // Layout open their dialogs in the browser and never come here.
+                try
                 {
-                    await Task.Delay(100); // 100ms delay to let the UI respond
-
-                    // Execute on the UI thread using the form's synchronization context
-                    var form = Shell.GetShellOrOtherOpenForm();
-                    if (form != null && !form.IsDisposed)
-                    {
-                        form.BeginInvoke(
-                            new Action(() =>
-                            {
-                                try
-                                {
-                                    PageList.ExecuteContextMenuCommand(page, commandId);
-                                }
-                                catch (Exception ex)
-                                {
-                                    // Log the error.  Should we notify the user as well?
-                                    Logger.WriteEvent(
-                                        $"Error executing content menu command for {commandId} on page {pageId}"
-                                    );
-                                    Logger.WriteError(ex);
-                                }
-                            })
-                        );
-                    }
-                });
+                    PageList.ExecuteContextMenuCommand(page, commandId);
+                }
+                catch (Exception ex)
+                {
+                    // Log the error.  Should we notify the user as well?
+                    Logger.WriteEvent(
+                        $"Error executing content menu command for {commandId} on page {pageId}"
+                    );
+                    Logger.WriteError(ex);
+                }
             }
 
-            // Return success immediately without waiting for the command to execute
             request.PostSucceeded();
         }
 

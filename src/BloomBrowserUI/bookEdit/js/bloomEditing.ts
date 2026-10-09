@@ -20,8 +20,10 @@ import {
 } from "./bloomVideo";
 import { SetupWidgetEditing } from "./bloomWidgets";
 import { setupOrigami, cleanupOrigami } from "./origami";
-import { SetupTableEditing, TeardownTableEditing } from "./tableEditing";
-import { removeTableEditingArtifacts } from "bloom-table";
+import {
+    SetupTableEditing,
+    removeTableEditingMarkupFromClone,
+} from "./tableEditing";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
@@ -29,6 +31,13 @@ import BloomField from "../bloomField/BloomField";
 import BloomNotices from "./bloomNotices";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
+import {
+    addRequestPageContentDelay,
+    getActiveDelayIds,
+    removeRequestPageContentDelay,
+    whenNoActiveDelays,
+    wrapWithRequestPageContentDelay,
+} from "./pageContentDelays";
 import {
     CanvasElementManager,
     initializeCanvasElementManager,
@@ -61,7 +70,7 @@ import { showInvisibles, hideInvisibles } from "./showInvisibles";
 //import promise = require('es6-promise');
 //promise.Promise.polyfill();
 import axios from "axios";
-import { post, postBoolean, postJson, postString } from "../../utils/bloomApi";
+import { post, postBoolean, postJson } from "../../utils/bloomApi";
 import { showRequestStringDialog } from "../../react_components/RequestStringDialog";
 
 import { hookupLinkHandler } from "../../utils/linkHandler";
@@ -77,6 +86,9 @@ import {
 } from "./pageContentCapturePolicy";
 import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
+import { removeNiceScrollArtifacts } from "./niceScrollCleanup";
+import { removeEditorChromeFromClone } from "./editorChromeCleanup";
+import { sendSnapshotNow, stopWatchingPageForSnapshots } from "./pageSnapshot";
 import { setupBookLinkGrids } from "./linkGrid";
 import { fitImageOverTextSplits } from "./autoFitImageOverTextSplits";
 import PlaceholderProvider from "./PlaceholderProvider";
@@ -174,6 +186,9 @@ function Cleanup() {
 
     cleanupImages();
     cleanupOrigami();
+    // The live page, so we want bloom-player's version: it tears down the niceScroll instances
+    // themselves, not just the traces they leave in the DOM (which is all removeNiceScrollArtifacts
+    // can do, since that has to work on a detached clone).
     cleanupNiceScroll();
 }
 
@@ -1353,204 +1368,130 @@ export function localizeCkeditorTooltips(bar: JQuery) {
         });
 }
 
-// This is invoked when we are about to change pages.
-function removeEditingDebris() {
-    resetAbovePageControls();
-    // We are mirroring the Change Layout mode toggle behavior here, in case the user changes
-    // pages while the Change Layout mode toggle is on.
+// Take the editing-only markup out of 'clonedPage', the detached copy we are about to save.
+function removeEditingDebrisFromClone(clonedPage: HTMLElement) {
+    // We are mirroring the Change Layout mode toggle behavior here, in case the user saves
+    // while the Change Layout mode toggle is on.
     // The DOM here is for just one page, so there's only ever one marginBox.
-    const marginBox = document.getElementsByClassName("marginBox")[0];
+    const marginBox = clonedPage.getElementsByClassName("marginBox")[0];
     marginBox.classList.remove("origami-layout-mode");
-    const textLabels = marginBox.getElementsByClassName("textBox-identifier");
-    for (let i = 0; i < textLabels.length; i++) {
-        textLabels[i].remove();
+    for (const textLabel of Array.from(
+        marginBox.getElementsByClassName("textBox-identifier"),
+    )) {
+        textLabel.remove();
     }
-    removeTransientVideoTimestampParams(document.body);
-    removeTableEditingArtifacts(document);
-    TeardownTableEditing(document.body);
-    cleanupNiceScroll(); // don't leave the nicescroll debris around
+    removeTransientVideoTimestampParams(clonedPage);
+    removeTableEditingMarkupFromClone(clonedPage);
+    removeEditorChromeFromClone(clonedPage);
 }
 
-// Delay notification management for requestPageContent
-const activeDelays: string[] = [];
-// Upper bound (not a fixed wait) on how long we wait for in-flight async DOM work
-// (image sizing, canvas-element layout, etc.) to finish before capturing anyway. The
-// wait ends as soon as activeDelays empties, so simple pages are unaffected by this value;
-// it only gives slower computers with complex pages more headroom before we give up.
-const kMaxWaitTimeMs = 4000;
-let requestPageContentTimeout: number | null = null;
-
-// Add a delay notification that will prevent requestPageContent from running immediately.
-// The caller must provide a string ID and pass it to removeRequestPageContentDelay when done.
-// IDs do not need to be unique; the same ID can be added multiple times.
-export function addRequestPageContentDelay(id: string): void {
-    activeDelays.push(id);
-}
-
-// Remove a delay notification, allowing requestPageContent to proceed if no other delays are active.
-// If this was the last delay, proceed with requesting page content.
-export function removeRequestPageContentDelay(id: string): void {
-    const index = activeDelays.indexOf(id);
-    if (index === -1) {
-        console.error(
-            `removeRequestPageContentDelay: ID "${id}" not found in active delays. Active delays: [${activeDelays.join(
-                ", ",
-            )}]`,
-        );
-        return;
-    }
-    activeDelays.splice(index, 1);
-
-    // If there are no more delays, go on and request page content.
-    if (activeDelays.length === 0 && requestPageContentTimeout) {
-        requestPageContentInternal();
-    }
-}
-
-// Wrap a function that returns a promise with delay management.
-// The delay is added before the function is called, and removed when the promise settles (resolves or rejects).
-// This ensures that requestPageContent waits for the async operation to complete before saving the page.
-export async function wrapWithRequestPageContentDelay<T>(
-    fn: () => Promise<T>,
-    delayId: string,
-): Promise<T> {
-    addRequestPageContentDelay(delayId);
-    try {
-        const result = await fn();
-        removeRequestPageContentDelay(delayId);
-        return result;
-    } catch (error) {
-        removeRequestPageContentDelay(delayId);
-        throw error;
-    }
-}
-
-// This is invoked from C# to get the current page content when we want to save it. It removes markup we don't want to save.
-// Then it calls an API with the information we need to save. This works around the lack of a
-// non-async runJavascript API in WebView2.
+// Return the page element + user stylesheet combined with the <SPLIT-DATA> delimiter that C# splits
+// on. Shared by the live editor's gathers (getPageContentForSaveWhenReady) and the off-screen
+// capture path (captureContentForExternalProcessing), so the cleanup steps and the delimiter can't
+// drift between them.
 //
-// When other javascript code is doing something that will change the page DOM asynchronously and will also cause the
-// document to be saved, race conditions are possible. In such cases the delay functions above
-// (preferably wrapWithRequestPageContentDelay) should be used to wrap the asynchronous DOM changes to ensure that this
-// function does not return the page content for saving until after the changes have been completed.
-// The current delay mechanism is not designed to handle multiple concurrent requests.
-export function requestPageContent() {
-    // Check if there are active delay requests.
-    if (activeDelays.length > 0) {
-        requestPageContentTimeout = window.setTimeout(() => {
-            console.warn(
-                `requestPageContent: Maximum wait time (${kMaxWaitTimeMs}ms) exceeded with active delay(s): [${activeDelays.join(
-                    ", ",
-                )}]. Proceeding anyway.`,
-            );
-            requestPageContentInternal();
-        }, kMaxWaitTimeMs);
-    } else {
-        requestPageContentInternal();
-    }
-}
-
-// Run the load-time cleanup and return the page body + user stylesheet combined with the
-// <SPLIT-DATA> delimiter that C# splits on. Shared by the live save path (requestPageContentInternal)
-// and the off-screen capture path (captureContentForExternalProcessing) so the cleanup steps and the
-// delimiter can't drift between them.
-//
-// DESTRUCTIVE READ: this mutates the live DOM as a side effect (removeToolboxMarkup(),
-// removeEditingDebris(), and getBodyContentForSavePage() all strip classes, blur elements, turn off
-// canvas-element editing, and do CKEditor cleanup) and does NOT restore it afterward. Both current
-// callers tolerate this: the live editor re-navigates the page after saving, and the off-screen path
-// navigates to the next page afterwards. Don't call this from a context where the page must stay
-// live and editable afterward.
-function extractAndStripPageContentForSave(): string {
-    // Record how much of the page each image slot covers, while the page is still laid out.
-    // That is the only record of it: the saved HTML otherwise says nothing about how big
-    // anything ends up on screen, so without this the AI image editor could not tell what size
-    // an image on any page but the open one ought to be. Never throws out: a missing size hint
-    // must not cost the user their page.
-    try {
-        recordFractionOfPageOnImageSlots(document.body);
-    } catch (e) {
-        console.error("recordFractionOfPageOnImageSlots failed: ", e);
-    }
-
-    // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports(). (Off-screen,
-    // e.g. process-book, there is no toolbox iframe, so this is a no-op there.)
-    getToolboxBundleExports()?.removeToolboxMarkup();
-    removeEditingDebris();
-    const content = getBodyContentForSavePage();
+// Deliberately NOT exported: every caller should come through getPageContentForSaveWhenReady() (or
+// the off-screen path, which does its own waiting), so that nobody can gather the page while
+// asynchronous work that belongs in it is still running. It is also deliberately synchronous, so
+// that no other event handler can run part way through capturing the page.
+function getPageContentForSave(): string {
+    const content = getPageHtmlForSave();
     const userStylesheet = userStylesheetContent();
     // (We tossed up whether to use a JSON object instead of a delimiter, but combining two strings is
     // simpler: HTML needs escaping to live in JSON, which we'd then have to undo in C#.)
     return content + "<SPLIT-DATA>" + userStylesheet;
 }
 
-function requestPageContentInternal() {
-    if (requestPageContentTimeout !== null) {
-        clearTimeout(requestPageContentTimeout);
-    }
-    requestPageContentTimeout = null;
-    try {
-        postString("editView/pageContent", extractAndStripPageContentForSave());
-    } catch (e) {
-        postString(
-            "editView/pageContent",
-            "ERROR: " +
-                e.message +
-                "\n" +
-                e.stack +
-                "\n\n" +
-                `document ${document ? "exists" : "does not exist"}` +
-                "\n" +
-                "body.innerHTML: " +
-                document?.body?.innerHTML,
-        );
-    }
+// The way anything outside this file gets the current page's content: wait for any in-flight async
+// DOM work that belongs in the saved page, then gather. Nothing is awaited between the two, so no
+// timer can start new work between our finding the register empty and our reading the page.
+export async function getPageContentForSaveWhenReady(): Promise<string> {
+    await whenNoActiveDelays();
+    return getPageContentForSave();
 }
 
-// Caution: We don't want this to become an async method because we don't want
-// any other event handlers running between cleaning up the page and
-// getting the content to save. (Or think hard before changing that.)
-export function getBodyContentForSavePage() {
-    if (hadOrigamiWhenWeLoadedThePage && !hasOrigami(document.body)) {
+// Produce the HTML of the .bloom-page element as it should be saved. All the cleanup is done on a
+// CLONE, so the live page is untouched and stays editable without a reload (BL-13502).
+//
+// Caution: We don't want this to become an async method because we don't want any other event
+// handlers running between cleaning up the page and getting the content to save. (Or think hard
+// before changing that.)
+function getPageHtmlForSave() {
+    const livePage = document.querySelector<HTMLElement>(".bloom-page");
+    if (!livePage) {
         throw new Error(
-            "getBodyContentForSavePage(): The page had origami when it loaded, but it doesn't now (check before cleanup). BL-13120",
+            "getPageHtmlForSave(): there is no .bloom-page to save.",
+        );
+    }
+    if (hadOrigamiWhenWeLoadedThePage && !hasOrigami(livePage)) {
+        throw new Error(
+            "getPageHtmlForSave(): The page had origami when it loaded, but it doesn't now (check before cleanup). BL-13120",
         );
     }
 
-    const canvasElementEditingOn =
-        theOneCanvasElementManager.isCanvasElementEditingOn;
-    if (canvasElementEditingOn) {
-        theOneCanvasElementManager.turnOffCanvasElementEditing();
-    }
-    // Active element should be forced to blur
-    if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur();
-    }
+    // Deliberately do NOT blur the active element: that would throw the user's cursor out of the
+    // box they are typing in on every snapshot. CKEditor's getData() gives the up-to-date text
+    // without a blur.
 
-    const editableDivs = <HTMLDivElement[]>(
-        Array.from(document.querySelectorAll("div.bloom-editable"))
-    );
+    // Only the page element is saved (C# keeps nothing else), so only it is copied and cleaned.
+    // Everything the editor puts outside it -- CKEditor's toolbars, qTip's bubbles, menus, scratch
+    // elements -- never reaches C# at all.
+    const clonedPage = livePage.cloneNode(true) as HTMLElement;
+    cleanCloneOfPageForSave(livePage, clonedPage);
 
-    // We don't think we need to create ckEditor bookmarks and restore the selection
-    // in this case because we are just saving the page.
-    // In fact, it was causing problems when we were using them at one point.
-    // (unfortunately, I don't remember what those problems were...).
-    const createCkEditorBookMarks = false;
-    EditableDivUtils.doCkEditorCleanup(editableDivs, createCkEditorBookMarks);
-
-    if (hadOrigamiWhenWeLoadedThePage && !hasOrigami(document.body)) {
+    if (hadOrigamiWhenWeLoadedThePage && !hasOrigami(clonedPage)) {
         throw new Error(
-            "getBodyContentForSavePage(): The page had origami when it loaded, but it doesn't now (check after cleanup). BL-13120",
+            "getPageHtmlForSave(): The page had origami when it loaded, but it doesn't now (check after cleanup). BL-13120",
         );
     }
 
-    const result = document.body.innerHTML;
+    return clonedPage.outerHTML;
+}
 
-    if (canvasElementEditingOn) {
-        theOneCanvasElementManager.turnOnCanvasElementEditing();
+// Do all the "strip the editing markup" work on 'clonedPage', a detached deep copy of 'livePage'.
+// Nothing here may touch the live page.
+function cleanCloneOfPageForSave(
+    livePage: HTMLElement,
+    clonedPage: HTMLElement,
+) {
+    // Record how much of the page each image slot covers, measured on the live page (the clone
+    // has no layout) and written into the clone. That is the only record of it: the saved HTML
+    // otherwise says nothing about how big anything ends up on screen, so without this the AI
+    // image editor could not tell what size an image on any page but the open one ought to be.
+    // Never throws out: a missing size hint must not cost the user their page.
+    try {
+        recordFractionOfPageOnImageSlots(livePage, clonedPage);
+    } catch (e) {
+        console.error("recordFractionOfPageOnImageSlots failed: ", e);
     }
 
-    return result;
+    // CKEditor's cleaned-up text has to be read from the live editors, since the clone has no
+    // editors attached to it (BL-12391, BL-16490).
+    //
+    // This must come BEFORE the tool cleanup below: getData() reports what the live editors hold,
+    // tool markup included, so the tools must clean the text CKEditor gave us. Otherwise a tool
+    // whose cleanup reaches inside an editable (today, the Talking Book tool's phrase-delimiter
+    // spans and audio highlighting) would have its work overwritten.
+    EditableDivUtils.copyCkEditorDataToClone(livePage, clonedPage);
+
+    // The bubble tails Comical draws, and the canvas element state that goes with them. Like
+    // CKEditor, Comical can only produce this from the live editing state, so this reads from the
+    // live page and writes into the clone.
+    //
+    // Only when canvas-element editing is on: otherwise this would write balloon position and tail
+    // data on pages where editing is suspended (the Image Description and Motion tools, a game page
+    // in Play mode), whose balloon data a save must leave as it found it.
+    if (theOneCanvasElementManager.isCanvasElementEditingOn) {
+        theOneCanvasElementManager.prepareCloneOfPageForSave(clonedPage);
+    }
+
+    // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports(). (Off-screen,
+    // e.g. process-book, there is no toolbox iframe, so this is a no-op there.)
+    getToolboxBundleExports()?.removeToolMarkupFromPageClone(clonedPage);
+
+    removeNiceScrollArtifacts(clonedPage);
+
+    removeEditingDebrisFromClone(clonedPage);
 }
 
 // Resize each text canvas element (bloom-canvas-element) to fit its content -- growing or shrinking
@@ -1603,24 +1544,24 @@ function resizeCanvasElementsToFitContent(): void {
 }
 
 // Used by the off-screen "process whole book" path (C# BookProcessor, driven by the
-// external/process-book API). It gathers the same page content that requestPageContent() would save
-// (via the shared extractAndStripPageContentForSave()), but instead of posting it to the editView/pageContent
-// API (which feeds the LIVE EditingModel and would corrupt the live editor's state), it stashes the
-// combined result on window.__bloomExternalPageContent for the C# caller to poll. Like
-// requestPageContent(), it first waits for any in-flight async DOM work (activeDelays) to finish, so
-// browser-based measurements (image sizing, canvas-element layout, etc.) are complete before we capture
-// the page. Unlike the live save, it is a background job with nobody waiting at the keyboard, so it
-// waits longer (kExternalCaptureMaxWaitMs), and if the one piece of work that must not be captured
-// half-done, the background image conversion, is still pending at the cap, it reports an ERROR instead
-// of capturing (see externalCaptureErrorForPendingWork); the C# caller then fails the page rather than
+// external/process-book API). It gathers the same page content a save would (via the shared
+// getPageContentForSave()), but instead of posting it to an API that feeds the LIVE EditingModel,
+// it stashes the result on window.__bloomExternalPageContent for the C# caller to poll. It first
+// waits on whenNoActiveDelays(), longer than the live editor since nobody is waiting at the
+// keyboard (kExternalCaptureMaxWaitMs), and if the one piece of work that must not be captured
+// half-done, the background image conversion, is still pending at the cap, it reports an ERROR
+// instead of capturing (see externalCaptureErrorForPendingWork); the C# caller then fails the page
+// rather than
 // saving a picture that can neither be cropped nor deleted (BL-16870). It also resizes text canvas
-// elements to fit their content (see
-// resizeCanvasElementsToFitContent), since that auto-height adjustment is otherwise deferred on a
-// timer the wait loop does not track.
+// elements to fit their content (see resizeCanvasElementsToFitContent), since that auto-height
+// adjustment is otherwise deferred on a timer the wait loop does not track.
 export function captureContentForExternalProcessing(
     fitImageTextSplits?: boolean,
 ): void {
     window.__bloomExternalPageContent = undefined;
+    // This off-screen page is a full editing page, so it may have started sending snapshots. C#
+    // refuses them (wrong load id), but they are wasted work.
+    stopWatchingPageForSnapshots();
 
     // Optionally auto-fit image/text origami pages so the fitted split persists into the saved HTML.
     // This handles two-pane image-above-text and image-left-of-text (image in the first pane), plus
@@ -1648,44 +1589,29 @@ export function captureContentForExternalProcessing(
         }
     }
 
-    const start = Date.now();
-    const finish = () => {
-        try {
-            resizeCanvasElementsToFitContent();
-            window.__bloomExternalPageContent =
-                extractAndStripPageContentForSave();
-        } catch (e) {
-            window.__bloomExternalPageContent =
-                "ERROR: " + (e && e.message) + "\n" + (e && e.stack);
-        }
-    };
-    const waitForDelaysThenFinish = () => {
-        if (activeDelays.length === 0) {
-            finish();
-            return;
-        }
-        if (Date.now() - start > kExternalCaptureMaxWaitMs) {
-            const error = externalCaptureErrorForPendingWork(activeDelays);
+    void whenNoActiveDelays(kExternalCaptureMaxWaitMs).then(() => {
+        // If the wait ran out, decide whether what is still pending may be captured half-done.
+        const stillPending = getActiveDelayIds();
+        if (stillPending.length > 0) {
+            const error = externalCaptureErrorForPendingWork(stillPending);
             if (error) {
                 window.__bloomExternalPageContent = error;
                 return;
             }
-            console.warn(
-                `captureContentForExternalProcessing: Maximum wait time (${kExternalCaptureMaxWaitMs}ms) exceeded with active delay(s): [${activeDelays.join(
-                    ", ",
-                )}]. Proceeding anyway.`,
-            );
-            finish();
-            return;
         }
-        setTimeout(waitForDelaysThenFinish, 50);
-    };
-    waitForDelaysThenFinish();
+        try {
+            resizeCanvasElementsToFitContent();
+            window.__bloomExternalPageContent = getPageContentForSave();
+        } catch (e) {
+            window.__bloomExternalPageContent =
+                "ERROR: " + (e && e.message) + "\n" + (e && e.stack);
+        }
+    });
 }
 
-// Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via
-// workspaceBundle.getEditablePageBundleExports().
-export const userStylesheetContent = () => {
+// The user-defined styles, which travel to C# as the second half of what
+// getPageContentForSave() returns.
+const userStylesheetContent = () => {
     const ss = Array.from(document.styleSheets).find(
         (s) => s.title === "userModifiedStyles",
     ) as CSSStyleSheet | undefined;
@@ -1695,12 +1621,29 @@ export const userStylesheetContent = () => {
         .join("\n");
 };
 
+// pageUnloading() can be called twice on the same page: leaving the Edit tab runs it (from
+// EditingView.OnHideEditTab), and coming back runs it again from switchContentPage() before the
+// new page replaces this document. A second run detaches the current tool again, and
+// detachToolFromPage() then falsely reports the tool for not calling super.detachFromPage().
+let thisPageHasBeenUnloaded = false;
+
 export const pageUnloading = () => {
+    if (thisPageHasBeenUnloaded) return;
+    thisPageHasBeenUnloaded = true;
+    stopWatchingPageForSnapshots();
     // It's just possible that 'theOneCanvasElementManager' hasn't been initialized.
     // If not, just ignore this, since it's a no-op at this point anyway.
     if (theOneCanvasElementManager) {
         theOneCanvasElementManager.cleanUp();
     }
+    // Shut the open toolbox tool down, releasing whatever it was holding on the page we are leaving
+    // (observers, listeners, any UI it opened such as a colour picker); the counterpart of the
+    // newPageReady() the tool gets for the next page. Saving never touches the live page, so
+    // nothing else detaches the tool, and without this every page change would leak its hooks.
+    getToolboxBundleExports()?.removeToolboxMarkup();
+    // Unmount the React root for the controls above the page and re-enable the toolbox (the
+    // Change Layout toggle disables it).
+    resetAbovePageControls();
 };
 
 export function topBarButtonClick(button: { command: string }) {
@@ -2079,6 +2022,24 @@ export function attachToCkEditor(element) {
     // see bl-12448. Here we add a rule blocking visibility of the toolbar
     $("body").addClass("hideAllCKEditors");
     const ckedit = CKEDITOR.inline(element);
+
+    // Until this editor is ready, a gather reads the box from the DOM rather than from getData(),
+    // and they differ: SetupElements puts an empty <p></p> into an empty editable, which getData()
+    // reports as empty, as the book on disk does. So the delay register holds gathers until
+    // instanceReady; otherwise an untouched page would look changed and an early save would write
+    // <p></p> into boxes the user left empty.
+    const ckEditorDelayId = "attachToCkEditor " + ckedit.id;
+    addRequestPageContentDelay(ckEditorDelayId);
+    let ckEditorDelayReleased = false;
+    const releaseCkEditorDelay = () => {
+        if (ckEditorDelayReleased) return;
+        ckEditorDelayReleased = true;
+        removeRequestPageContentDelay(ckEditorDelayId);
+    };
+    // (instanceReady is not on CKEditor’s TypeScript type; toolbox.ts declares it the same way.)
+    if ((ckedit as { instanceReady?: boolean }).instanceReady)
+        releaseCkEditorDelay();
+    else ckedit.on("instanceReady", releaseCkEditorDelay);
 
     // Record the div of the edit box for use later in positioning the format bar.
     mapCkeditDiv[ckedit.id] = element;

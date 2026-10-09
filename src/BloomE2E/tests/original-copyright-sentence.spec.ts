@@ -24,6 +24,7 @@ import {
     goToPage,
     makeBookFromSourceBook,
     makeBookFromTemplate,
+    waitForBloomToHaveTyping,
 } from "../helpers/bookMaking";
 import { selectBook } from "../helpers/collection";
 import {
@@ -189,6 +190,9 @@ test.describe("the sentence about the original book on a derivative's credits pa
     }) => {
         await unlockOriginalCopyrightSentence(page);
         await typeInOriginalCopyrightSentence(page, SECOND_WORDING);
+        // Leaving the page saves what the page last sent Bloom, which it does once typing pauses;
+        // a person always pauses that long before clicking another page.
+        await waitForBloomToHaveTyping(page, SECOND_WORDING);
         // THE ACTION UNDER TEST: leaving the credits page and coming back.
         await goToPage(page, (await getPages(page))[0].id);
         await goToCreditsPage(page);

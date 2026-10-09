@@ -1,5 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
-import { addRow, getTableInfo, setupContentsOfCell } from "bloom-table";
+import {
+    addRow,
+    getTableInfo,
+    removeTableEditingArtifacts,
+    setupContentsOfCell,
+} from "bloom-table";
 // A new video cell asks the server to put the video placeholder in the book
 // folder; there is no server here, and the call is also what proves the wiring
 // ran.
@@ -19,6 +24,7 @@ import {
     AttachNewTableThatFillsItsSpace,
     SetupTableEditing,
     TeardownTableEditing,
+    removeTableEditingMarkupFromClone,
 } from "./tableEditing";
 
 // jsdom has no ResizeObserver, which attachSingleTable installs to keep cell
@@ -206,5 +212,45 @@ describe("video cells", () => {
         expect(postMock).not.toHaveBeenCalled();
 
         TeardownTableEditing(document.body);
+    });
+});
+
+// A save cleans a copy of the page, and must not do what bloom-table's own cleanup also does to the
+// live page (end Paint Format and Border Brush). So Bloom strips the markup itself, and this checks
+// that it strips what the library does, plus the attribute only Bloom adds.
+describe("removeTableEditingMarkupFromClone", () => {
+    const pageWithEditingMarkup = `
+        <div class="bloom-page bloom-paint-format">
+            <div class="bloom-table table--selected bloom-pointer-near bloom-current-table"
+                 data-table-attached="1" data-column-widths="fill" data-row-heights="fill">
+                <div class="bloom-cell cell--selected bloom-pulse-fill bloom-pulse-border"
+                     style="--hint-top-color: red; --hint-left-color: blue; color: green">
+                    <div data-btable-anchor-name="--a1" style="anchor-name: --a1; color: green">text</div>
+                </div>
+                <div data-table-overlay="edge">overlay</div>
+            </div>
+        </div>`;
+    const makePage = (): HTMLElement => {
+        const holder = document.createElement("div");
+        holder.innerHTML = pageWithEditingMarkup;
+        return holder.firstElementChild as HTMLElement;
+    };
+
+    it("removes what bloom-table's cleanup removes, and data-table-attached", () => {
+        const ours = makePage();
+        const libraries = makePage();
+        expect(ours.outerHTML).toContain("cell--selected"); // the markup to strip is there
+
+        removeTableEditingMarkupFromClone(ours);
+        removeTableEditingArtifacts(libraries);
+        libraries
+            .querySelectorAll(".bloom-table")
+            .forEach((table) => table.removeAttribute("data-table-attached"));
+
+        expect(ours.outerHTML).toBe(libraries.outerHTML);
+        expect(ours.outerHTML).not.toContain("data-table-attached");
+        // what belongs to the book stays
+        expect(ours.outerHTML).toContain('data-column-widths="fill"');
+        expect(ours.outerHTML).toContain("color: green");
     });
 });

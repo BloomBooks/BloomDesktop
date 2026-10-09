@@ -114,6 +114,22 @@ namespace Bloom.web.controllers
                 false // does not need the UI thread
             );
 
+            // GET ?text=... returns true once the content the browser last sent for the page being
+            // edited (its snapshot; see PageSnapshot) contains that text. Every save takes the page
+            // from that snapshot, which the browser sends a moment after typing settles, so a test
+            // that types and then leaves the page waits on this rather than on a fixed delay: it
+            // stands for the moment a person takes before moving on. Read-only.
+            apiHandler.RegisterBooleanEndpointHandler(
+                kApiUrlPart + "pageSnapshotIncludes",
+                request =>
+                    _editingModel
+                        .GetCurrentPageSnapshotForTests()
+                        ?.Contains(request.RequiredParam("text"), StringComparison.Ordinal)
+                    ?? false,
+                null, // read only
+                false // does not need the UI thread
+            );
+
             // GET returns the selected book's pages as JSON: id, caption, and whether the page is
             // front or back matter. A test needs page ids to navigate (editView/jumpToPage takes
             // one), and the page-list thumbnails do not expose which pages are xmatter, so without

@@ -4298,10 +4298,18 @@ namespace Bloom.Book
         /// Return true if needToDoFullSave is true, or if this method discovers another reason we need to do a full save.
         /// Returns as an out param the page element from the book's dom that got modified.
         /// </summary>
+        /// <param name="anythingChanged">False if what the browser sent turns out to say exactly
+        /// what the book already says, so this page gives us nothing to write. It reports only on
+        /// the data passed in; a caller that knows of a change elsewhere must account for that
+        /// itself. The test is made AFTER our own processing of what we received
+        /// (ProcessPageAfterEditing, SetImageAltAttrsFromDescriptions), so it asks whether the book
+        /// actually changed rather than whether the incoming string differed. The browser cannot
+        /// answer that without duplicating these rules.</param>
         public bool UpdateDomFromEditedPage(
             HtmlDom editedPageDom,
             out SafeXmlElement pageToSaveToDisk,
-            bool needToDoFullSave = true
+            bool needToDoFullSave,
+            out bool anythingChanged
         )
         {
             // This is needed if the user did some ChangeLayout (origami) manipulation. This will populate new
@@ -4315,18 +4323,28 @@ namespace Bloom.Book
             string pageId = pageFromEditedDom.GetAttribute("id");
             pageToSaveToDisk = GetPageFromStorage(pageId);
 
+            // The page div itself, not just its content, because ProcessPageAfterEditing writes the
+            // div’s own class, lang and style attributes too. Attribute order is ignored, because
+            // it does not survive editing: the editing page sets data-languagetipcontent on text
+            // boxes, and the browser can hand an attribute back in a different place from where the
+            // book had it. Comparing OuterXml would report a change on every visit to such a page.
+            var pageAsTheBookHadIt = pageToSaveToDisk.GetXmlIgnoringAttributeOrder();
+
             HtmlDom.ProcessPageAfterEditing(pageToSaveToDisk, pageFromEditedDom);
             HtmlDom.SetImageAltAttrsFromDescriptions(pageToSaveToDisk, Language1Tag);
+            // The user's permission to edit the sentence about the original book was good for
+            // one look at the page, so the copy that goes back into the book holds their wording
+            // as text they cannot type in. Before the comparison, because the book's copy is
+            // always locked: compared unlocked, every save while it is unlocked would look like a
+            // change.
+            BookCopyrightAndLicense.LockOriginalCopyrightNotice(pageToSaveToDisk);
+
+            var pageChanged = pageToSaveToDisk.GetXmlIgnoringAttributeOrder() != pageAsTheBookHadIt;
 
             // The main condition for being able to just write the page is that no shareable data on the
             // page changed during editing. If that's so we can skip this step.
             if (needToDoFullSave)
                 _bookData.SuckInDataFromEditedDom(editedPageDom, BookInfo); //this will do an updatetitle
-
-            // The user's permission to edit the sentence about the original book was good for
-            // one look at the page, so the copy that goes back into the book holds their wording
-            // as text they cannot type in.
-            BookCopyrightAndLicense.LockOriginalCopyrightNotice(pageToSaveToDisk);
 
             // When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles".
             // Here we copy that over to the book DOM.
@@ -4344,6 +4362,12 @@ namespace Bloom.Book
 
                 //Debug.WriteLine("Incoming User Modified Styles:   " + userModifiedStyles.OuterXml);
             }
+
+            // Deliberately NOT including needToDoFullSave: that says how WIDE a save has to be if
+            // there is one (whether the change is confined to this page), not whether anything
+            // changed.
+            anythingChanged = pageChanged || stylesChanged;
+
             return needToDoFullSave || stylesChanged;
         }
 
@@ -4358,8 +4382,12 @@ namespace Bloom.Book
                 var reallyNeedFullSave = UpdateDomFromEditedPage(
                     editedPageDom,
                     out SafeXmlElement pageToSaveToDisk,
-                    needToDoFullSave
+                    needToDoFullSave,
+                    out var anythingChanged
                 );
+
+                if (!anythingChanged)
+                    return; // what the browser sent says exactly what the book already said
 
                 SavePageToDisk(pageToSaveToDisk, reallyNeedFullSave);
             }
@@ -4376,8 +4404,13 @@ namespace Bloom.Book
         /// <summary>
         /// Finish a delayed save. pageToSaveToDisk should be the value from the out param of UpdateDomFromEditedPage().
         /// It is the one page that needs saving, if reallyNeedFullSave is false; if that is true, it is not used.
+        ///
+        /// Returns FALSE if nothing reached disk: the file could not be written, or the page was
+        /// found to be empty and refused. Both of those tell the user; the return value is for the
+        /// caller, which otherwise clears the flags that say the change still needs writing, and so
+        /// never tries again.
         /// </summary>
-        public void SavePageToDisk(SafeXmlElement pageToSaveToDisk, bool reallyNeedFullSave)
+        public bool SavePageToDisk(SafeXmlElement pageToSaveToDisk, bool reallyNeedFullSave)
         {
             try
             {
@@ -4401,7 +4434,8 @@ namespace Bloom.Book
                         // running the full Save rather quickly fragments the heap...allocating about 16 7-megabyte
                         // memory chunks in each Save...to the point where Bloom runs out of memory.)
 
-                        SaveForPageChanged(pageId, pageToSaveToDisk);
+                        if (!SaveForPageChanged(pageId, pageToSaveToDisk))
+                            return false;
                     }
                     else
                     {
@@ -4413,20 +4447,22 @@ namespace Bloom.Book
                         )
                         {
                             // This has been logged and reported to the user. We don't want to save the empty page.
-                            return;
+                            return false;
                         }
-                        Save();
+                        if (!Save())
+                            return false;
                     }
                 }
                 catch (UnauthorizedAccessException e)
                 {
                     BookStorage.ShowAccessDeniedErrorReport(e);
-                    return;
+                    return false;
                 }
 
                 if (!BookInfo.FileNameLocked)
                     Storage.UpdateBookFileAndFolderName(CollectionSettings);
                 //review used to have   UpdateBookFolderAndFileNames(data);
+                return true;
             }
             catch (Exception error)
             {
@@ -4436,6 +4472,7 @@ namespace Bloom.Book
                 );
                 ErrorReport.NotifyUserOfProblem(error, msg);
             }
+            return false;
         }
 
         /// <summary>
@@ -5039,7 +5076,15 @@ namespace Bloom.Book
             }
         }
 
-        public void Save(bool forPublication = false)
+        /// <summary>
+        /// Write the whole book to disk.
+        ///
+        /// Returns FALSE if it did not write: the book is not in a state where it can be saved, or
+        /// the file could not be written. Both of those already tell the user; the return value is
+        /// for callers that must not carry on as though the file now says what they think it says,
+        /// such as the AI image editor, which opens the book FROM DISK.
+        /// </summary>
+        public bool Save(bool forPublication = false)
         {
             // If you add something here, consider whether it is needed in SaveForPageChanged().
             // I believe all the things currently here before the actual Save are not needed
@@ -5058,7 +5103,7 @@ namespace Bloom.Book
                     PassiveIf.All,
                     "Bloom attempted to Save a book which cannot currently be saved: " + FolderPath
                 );
-                return;
+                return false;
             }
 
             RemoveObsoleteSoundAttributes(OurHtmlDom);
@@ -5093,13 +5138,14 @@ namespace Bloom.Book
             catch (UnauthorizedAccessException e)
             {
                 BookStorage.ShowAccessDeniedErrorReport(e);
-                return;
+                return false;
             }
             // If the user has given the book its own title, record the Created entry now so
             // any further renames are reported normally. (If the title is still just the source
             // book name, we defer until deselection or shutdown.)
             RecordPendingCreatedHistoryEvent(onlyIfTitleChanged: true);
             DoPostSaveTasks();
+            return true;
         }
 
         private void RemoveVideoWarnings()
@@ -5114,14 +5160,20 @@ namespace Bloom.Book
             }
         }
 
-        public void SaveForPageChanged(string pageId, SafeXmlElement modifiedPage)
+        /// <summary>
+        /// Write just the one page. Returns FALSE if nothing was written (see
+        /// BookStorage.SaveForPageChanged).
+        /// </summary>
+        public bool SaveForPageChanged(string pageId, SafeXmlElement modifiedPage)
         {
             Guard.Against(HasFatalError, "Save failed: " + FatalErrorDescription);
             Guard.Against(!IsSaveable, "Tried to save a non-editable book.");
-            Storage.SaveForPageChanged(pageId, modifiedPage);
+            if (!Storage.SaveForPageChanged(pageId, modifiedPage))
+                return false;
             // Same as Save(): eagerly record the Created entry once the user has given the book a title.
             RecordPendingCreatedHistoryEvent(onlyIfTitleChanged: true);
             DoPostSaveTasks();
+            return true;
         }
 
         private void DoPostSaveTasks()

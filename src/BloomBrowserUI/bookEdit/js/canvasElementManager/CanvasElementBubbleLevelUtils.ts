@@ -28,7 +28,8 @@ export const putBubbleBefore = (
             const bubble = new Bubble(b as HTMLElement);
             const spec = bubble.getBubbleSpec();
             // the one previously at minLevel will now be at requiredLevel+1, others higher in same sequence.
-            spec.level += requiredLevel - minLevel + 1;
+            // Treat a missing level as 0, as the minLevel computation above does; else this is NaN.
+            spec.level = (spec.level ?? 0) + requiredLevel - minLevel + 1;
             bubble.persistBubbleSpec();
         });
         minLevel = 2;

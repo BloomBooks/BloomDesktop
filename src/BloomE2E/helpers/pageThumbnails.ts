@@ -28,6 +28,7 @@ export type PageMenuCommand =
     | "Copy Page"
     | "Paste Page"
     | "Duplicate Page"
+    | "Duplicate Page Many Times..."
     | "Choose Different Layout"
     | "Remove Page";
 
@@ -36,6 +37,7 @@ const COMMAND_ID: Record<PageMenuCommand, string> = {
     "Copy Page": "copyPage",
     "Paste Page": "pastePage",
     "Duplicate Page": "duplicatePage",
+    "Duplicate Page Many Times...": "duplicatePageManyTimes",
     "Choose Different Layout": "chooseDifferentLayout",
     "Remove Page": "removePage",
 };
@@ -177,77 +179,6 @@ export async function waitForEditablePage(
             message: `Bloom never finished loading page ${pageId} in the Edit tab (its editing state never became Editing).`,
         })
         .toBe("true");
-}
-
-// Property name put on the editable page's document so a later poll can tell whether it is still
-// the same document or a reload has replaced it. Bloom reloads a page to the SAME url (the
-// in-memory file is named after the page id), so the url cannot answer that question.
-const RELOAD_MARKER = "__bloomE2eEditablePageMarker";
-
-/**
- * Mark the document now showing in the Edit tab, so waitForEditablePageReload can tell when
- * Bloom has replaced it. Call this before a command that reloads the page.
- */
-export async function markEditablePage(page: Page): Promise<void> {
-    await page.evaluate((marker) => {
-        const document_ = (
-            document.querySelector("#page") as HTMLIFrameElement | null
-        )?.contentDocument;
-        if (!document_)
-            throw new Error(
-                "The Edit tab is not showing a page, so there is nothing to mark.",
-            );
-        (document_ as unknown as Record<string, boolean>)[marker] = true;
-    }, RELOAD_MARKER);
-}
-
-/**
- * Wait out the page reload that follows a command which saves the book, and for the reloaded
- * page to finish loading. Copy Page is one such command: it saves first, so that unsaved typing
- * is copied too, and Bloom then navigates back to the page. Until that navigation finishes the
- * editing model is in its Navigating state, in which Paste Page silently does nothing while the
- * menu still offers it.
- *
- * Call markEditablePage() before the command.
- */
-export async function waitForEditablePageReload(
-    page: Page,
-    pageId: string,
-    timeoutMs = 60000,
-): Promise<void> {
-    await expect
-        .poll(
-            () =>
-                page.evaluate(
-                    (options) => {
-                        const document_ = (
-                            document.querySelector(
-                                "#page",
-                            ) as HTMLIFrameElement | null
-                        )?.contentDocument;
-                        if (!document_) return "no document";
-                        if (
-                            (document_ as unknown as Record<string, boolean>)[
-                                options.marker
-                            ]
-                        )
-                            return "not reloaded yet";
-                        if (
-                            !document_.querySelector(
-                                `.bloom-page[id="${options.pageId}"]`,
-                            )
-                        )
-                            return "showing some other page";
-                        return document_.readyState;
-                    },
-                    { marker: RELOAD_MARKER, pageId },
-                ),
-            {
-                timeout: timeoutMs,
-                message: `The Edit tab never reloaded page ${pageId}.`,
-            },
-        )
-        .toBe("complete");
 }
 
 /**

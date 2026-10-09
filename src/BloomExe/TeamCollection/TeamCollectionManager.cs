@@ -235,88 +235,82 @@ namespace Bloom.TeamCollection
             _localCollectionFolder = Path.GetDirectoryName(localCollectionPath);
             _bookCollectionHolder = bookCollectionHolder;
             BookSelection = bookSelection;
-            collectionClosingEvent?.Subscribe(
-                (x) =>
+            collectionClosingEvent?.Subscribe(_ =>
+            {
+                // When closing the collection...especially if we're restarting due to
+                // changed settings!...we need to save any settings changes to the repo.
+                // In such cases we can't safely wait for the change watcher to write things,
+                // because (a) if we're shutting down for good, we just might not detect the
+                // change before everything shuts down; and (b) if we're reopening the collection,
+                // we might overwrite the change with current collection settings before we
+                // save the new ones.
+                if (CurrentCollection != null)
                 {
-                    // When closing the collection...especially if we're restarting due to
-                    // changed settings!...we need to save any settings changes to the repo.
-                    // In such cases we can't safely wait for the change watcher to write things,
-                    // because (a) if we're shutting down for good, we just might not detect the
-                    // change before everything shuts down; and (b) if we're reopening the collection,
-                    // we might overwrite the change with current collection settings before we
-                    // save the new ones.
-                    if (CurrentCollection != null)
+                    CurrentCollection.SyncLocalAndRepoCollectionFiles(false);
+                }
+                else if (
+                    FeatureStatus
+                        .GetFeatureStatus(Settings.Subscription, FeatureName.TeamCollection)
+                        .Enabled
+                    && CurrentCollectionEvenIfDisconnected != null
+                    && CurrentCollectionEvenIfDisconnected
+                        is DisconnectedTeamCollection disconnectedTC
+                    && disconnectedTC.DisconnectedBecauseOfSubscriptionTier
+                )
+                {
+                    // We were disconnected because of Enterprise being off, but now the user has
+                    // turned Enterprise on again. We really need to save that, even though we usually don't
+                    // save settings changes when disconnected. Otherwise, restarting will restore the
+                    // no-enterprise state, and we will be stuck.
+                    // Note: We don't need to check for admin privileges here. If the user isn't an admin,
+                    // he could not have made any changes to settings, including turning on enterprise.
+                    var tempCollectionLinkPath = GetTcLinkPathFromLcPath(_localCollectionFolder);
+                    if (RobustFile.Exists(tempCollectionLinkPath))
                     {
-                        CurrentCollection.SyncLocalAndRepoCollectionFiles(false);
-                    }
-                    else if (
-                        FeatureStatus
-                            .GetFeatureStatus(Settings.Subscription, FeatureName.TeamCollection)
-                            .Enabled
-                        && CurrentCollectionEvenIfDisconnected != null
-                        && CurrentCollectionEvenIfDisconnected
-                            is DisconnectedTeamCollection disconnectedTC
-                        && disconnectedTC.DisconnectedBecauseOfSubscriptionTier
-                    )
-                    {
-                        // We were disconnected because of Enterprise being off, but now the user has
-                        // turned Enterprise on again. We really need to save that, even though we usually don't
-                        // save settings changes when disconnected. Otherwise, restarting will restore the
-                        // no-enterprise state, and we will be stuck.
-                        // Note: We don't need to check for admin privileges here. If the user isn't an admin,
-                        // he could not have made any changes to settings, including turning on enterprise.
-                        var tempCollectionLinkPath = GetTcLinkPathFromLcPath(
-                            _localCollectionFolder
-                        );
-                        if (RobustFile.Exists(tempCollectionLinkPath))
+                        try
                         {
-                            try
+                            var repoFolderPath = RepoFolderPathFromLinkPath(tempCollectionLinkPath);
+                            var tempCollection = new FolderTeamCollection(
+                                this,
+                                _localCollectionFolder,
+                                repoFolderPath,
+                                bookCollectionHolder: _bookCollectionHolder,
+                                collectionLock: Lock
+                            );
+                            var problemWithConnection = tempCollection.CheckConnection();
+                            if (problemWithConnection == null)
                             {
-                                var repoFolderPath = RepoFolderPathFromLinkPath(
-                                    tempCollectionLinkPath
-                                );
-                                var tempCollection = new FolderTeamCollection(
-                                    this,
-                                    _localCollectionFolder,
-                                    repoFolderPath,
-                                    bookCollectionHolder: _bookCollectionHolder,
-                                    collectionLock: Lock
-                                );
-                                var problemWithConnection = tempCollection.CheckConnection();
-                                if (problemWithConnection == null)
-                                {
-                                    tempCollection.SyncLocalAndRepoCollectionFiles(false);
-                                }
-                                else
-                                {
-                                    NonFatalProblem.Report(
-                                        ModalIf.All,
-                                        PassiveIf.All,
-                                        "Bloom could not save your settings to the Team Collection: "
-                                            + problemWithConnection.TextForDisplay,
-                                        null,
-                                        null,
-                                        true
-                                    );
-                                }
+                                tempCollection.SyncLocalAndRepoCollectionFiles(false);
                             }
-                            catch (Exception ex)
+                            else
                             {
                                 NonFatalProblem.Report(
                                     ModalIf.All,
                                     PassiveIf.All,
-                                    "Bloom could not save your settings to the Team Collection",
+                                    "Bloom could not save your settings to the Team Collection: "
+                                        + problemWithConnection.TextForDisplay,
                                     null,
-                                    ex,
+                                    null,
                                     true
                                 );
                             }
                         }
-                        // What if there's NOT a TC link file? Then it would be pathological to have a CurrentCollectionEvenIfDisconnected.
-                        // It's no longer a TC, so we don't need to save the settings to the TC. For now I'm just not going to do anything.
+                        catch (Exception ex)
+                        {
+                            NonFatalProblem.Report(
+                                ModalIf.All,
+                                PassiveIf.All,
+                                "Bloom could not save your settings to the Team Collection",
+                                null,
+                                ex,
+                                true
+                            );
+                        }
                     }
+                    // What if there's NOT a TC link file? Then it would be pathological to have a CurrentCollectionEvenIfDisconnected.
+                    // It's no longer a TC, so we don't need to save the settings to the TC. For now I'm just not going to do anything.
                 }
-            );
+            });
             if (bookRenamedEvent != null)
             {
                 bookRenamedEvent.Subscribe(pair =>

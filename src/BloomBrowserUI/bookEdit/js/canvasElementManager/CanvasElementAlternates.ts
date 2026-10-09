@@ -39,7 +39,23 @@ export const saveStateOfCanvasElementAsCurrentLangAlternate = (
     ).find((e) => e.getAttribute("lang") === canvasElementLang);
     if (editable) {
         const bubbleData = canvasElement.getAttribute("data-bubble") ?? "";
-        const bubbleDataObj = JSON.parse(bubbleData.replace(/`/g, '"'));
+        // A missing or unreadable data-bubble must not cost the user the whole page: this runs
+        // inside the clone gather, so a throw would abort gathering, and so saving, the page.
+        // (A missing attribute throws too, since JSON.parse("") is an error.) Skipping leaves any
+        // existing alternate alone; recording one with no tails would lose this language's tails.
+        let bubbleDataObj: { tails?: object[] };
+        try {
+            bubbleDataObj = JSON.parse(bubbleData.replace(/`/g, '"'));
+        } catch (e) {
+            console.warn(
+                "Not recording a canvas-element alternate for lang " +
+                    canvasElementLang +
+                    ": its data-bubble could not be read (" +
+                    bubbleData.slice(0, 60) +
+                    ")",
+            );
+            return;
+        }
         const alternate = {
             lang: canvasElementLang,
             style: canvasElement.getAttribute("style") ?? "",

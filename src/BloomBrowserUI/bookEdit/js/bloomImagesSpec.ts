@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
     getDisplayNameFromImageUrl,
+    isBrandingImage,
     normalizeCoverImageDesignation,
 } from "./bloomImages";
 
@@ -202,5 +203,56 @@ describe("getDisplayNameFromImageUrl", () => {
         expect(
             getDisplayNameFromImageUrl("%E0%B8%A0%E0%B8%B2%E0%B8%9E.jpg"),
         ).toBe("ภาพ.jpg");
+    });
+});
+
+// Branding images get no missing-image alt text, because that alt would be saved into book-wide data.
+describe("isBrandingImage", () => {
+    function imageIn(html: string): HTMLElement {
+        const page = document.createElement("div");
+        page.innerHTML = html;
+        const img = page.querySelector("#img");
+        if (!img) throw new Error("The test markup has no #img");
+        return img as HTMLElement;
+    }
+
+    it("recognises an image marked as branding", () => {
+        expect(
+            isBrandingImage(
+                imageIn(`<img id="img" class="branding" src="logo.png" />`),
+            ),
+        ).toBe(true);
+    });
+
+    it("recognises an unmarked image inside a branding block", () => {
+        expect(
+            isBrandingImage(
+                imageIn(
+                    `<div data-book="outside-back-cover-branding-bottom-html" lang="*">
+                        <div><img id="img" src="lang-qr-code.png" /></div>
+                    </div>`,
+                ),
+            ),
+        ).toBe(true);
+    });
+
+    it("does not count a picture in the book", () => {
+        expect(
+            isBrandingImage(
+                imageIn(
+                    `<div class="bloom-imageContainer"><img id="img" src="tiger.png" /></div>`,
+                ),
+            ),
+        ).toBe(false);
+    });
+
+    it("does not count an image in other book-wide data", () => {
+        expect(
+            isBrandingImage(
+                imageIn(
+                    `<div data-book="licenseImage"><img id="img" src="license.png" /></div>`,
+                ),
+            ),
+        ).toBe(false);
     });
 });

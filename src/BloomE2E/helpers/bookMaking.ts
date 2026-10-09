@@ -692,6 +692,72 @@ export async function clickInGroup(
 }
 
 /**
+ * Wait until the page being shown has finished what it does by itself after loading, and Bloom has
+ * received the page as it then stands. Use it where a test visits a page and moves on, and the
+ * page's saved form matters.
+ *
+ * One fixed wait, for a specific reason: OverflowChecker.AdjustSizeOrMarkOverflowSoon checks each
+ * text box exactly 1000 ms after the page loads (and may set its min-height), on a timer the delay
+ * register does not track. A person reading the page lets it run; so does this. After that, wait
+ * on state: the page's snapshot stream has nothing left to send (isSnapshotStreamIdle in
+ * pageSnapshot.ts).
+ */
+export async function waitForPageToSettle(page: Page): Promise<void> {
+    await page.waitForTimeout(1050);
+    await expect
+        .poll(
+            () =>
+                editablePageFrame(page).evaluate(() =>
+                    (
+                        window as unknown as {
+                            editablePageBundle: {
+                                isSnapshotStreamIdle: () => boolean;
+                            };
+                        }
+                    ).editablePageBundle.isSnapshotStreamIdle(),
+                ),
+            {
+                timeout: 15000,
+                message:
+                    "The page being edited never finished sending itself to Bloom.",
+            },
+        )
+        .toBe(true);
+}
+
+/**
+ * Wait until Bloom has received the page being edited with `text` in it.
+ *
+ * Every save takes the page from the copy the browser sends Bloom a moment after typing settles
+ * (its "snapshot"), so this is the wait a test needs between typing and an action that saves --
+ * the moment a person takes before moving on. Acting within that moment saves the page as it was
+ * just before the last keystroke, which is a deliberate trade, not a bug (see "The freshness
+ * window" in src/BloomExe/Edit/SavingWithoutReloading.md). Reads Bloom's e2e/pageSnapshotIncludes
+ * hook rather than waiting a fixed time.
+ */
+export async function waitForBloomToHaveTyping(
+    page: Page,
+    text: string,
+    timeoutMs = 15000,
+): Promise<void> {
+    await expect
+        .poll(
+            async () =>
+                (
+                    await apiGet(
+                        page,
+                        `e2e/pageSnapshotIncludes?text=${encodeURIComponent(text)}`,
+                    )
+                ).body,
+            {
+                timeout: timeoutMs,
+                message: `Bloom never received the page being edited with "${text}" in it.`,
+            },
+        )
+        .toBe("true");
+}
+
+/**
  * Type text into one language's box of one translation group on the page being shown, the way a
  * person does. `groupSelector` picks the group, e.g. ".bookTitle" for the cover title; when the
  * page has several groups that match, `groupIndex` says which one, in document order.
