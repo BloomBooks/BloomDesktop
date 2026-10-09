@@ -61,7 +61,7 @@ import {
     getPageIds,
     runPageMenuCommand,
     selectPage,
-    waitForEditablePageReload,
+    waitForPageMenuCommandEnabled,
     waitForPageCount,
 } from "../helpers/pageThumbnails";
 import {
@@ -1142,9 +1142,12 @@ test.describe("more ways to use a table", () => {
             await goToPage(page, canvasPage.id);
             await selectPage(page, canvasPage.id);
             await runPageMenuCommand(page, canvasPage.id, "Copy Page");
-            // Copy Page saves the book first, which reloads the page; pasting before that
-            // finishes does nothing at all.
-            await waitForEditablePageReload(page, canvasPage.id);
+            // The page is on Bloom's clipboard once Paste Page is enabled.
+            await waitForPageMenuCommandEnabled(
+                page,
+                canvasPage.id,
+                "Paste Page",
+            );
         });
 
         await step("Paste it into the other book", async () => {

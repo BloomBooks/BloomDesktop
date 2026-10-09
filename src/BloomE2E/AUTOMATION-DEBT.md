@@ -413,6 +413,11 @@ or, better, queue the command instead of dropping it. Either would let the helpe
 document-marking dance.
 (Found 2026-09-01 while automating Test Case ID 348, copy page preserves everything.)
 
+fixed 2026-10-09 on `BL-13502-save-without-reload` (#8209): `SaveThen` is gone, a page-menu
+command waits its turn instead of being dropped, and Copy Page saves without reloading the page.
+The document-marking helpers are gone too; a test that copies a page waits for Paste Page to be
+enabled (`runPageMenuCommand` does this), as `copy-page.spec.ts` and `tables-extended.spec.ts` do.
+
 ## Copying a page between two Bloom instances cannot be tested at all
 
 The manual case "Copy Page Preserves Everything" (Test Case ID 348) ends by copying a page from
