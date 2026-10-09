@@ -38,7 +38,7 @@ import {
     sameEdge,
 } from "./geometry";
 import { realClick } from "./realClick";
-import { undo } from "./workspace";
+import { undo } from "./undo";
 
 // How long a table helper waits for the page to show something. Everything waited for here is
 // done by the page's own script in a few milliseconds, so a wait that runs out is a failure, and a

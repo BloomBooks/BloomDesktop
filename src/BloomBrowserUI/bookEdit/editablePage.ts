@@ -17,12 +17,14 @@ import {
 } from "./js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
 import { renderDragActivityTabControl } from "./js/AbovePageControls";
-import { tableHistoryManager } from "bloom-table";
 import {
-    getCkeditorChangeOrder,
-    getTableChangeOrder,
-    shouldUndoGoToTable,
-} from "./js/undoOrdering";
+    canRedo,
+    canUndo,
+    handleRedo,
+    handleUndo,
+    setUpPageUndo,
+} from "./undo/pageUndo";
+import { tableCanUndo } from "./undo/tableUndo";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -78,9 +80,12 @@ export interface IPageFrameExports {
     imageOperationCanUndo(): boolean;
     imageOperationUndo(): boolean;
 
-    tableShouldHandleUndo(): boolean;
+    // The one undo stack, which lives in this frame (undo/pageUndo.ts).
+    handleUndo(): void;
+    canUndo(): boolean;
+    handleRedo(): void;
+    canRedo(): boolean;
     tableCanUndo(): boolean;
-    tableUndo(): boolean;
 
     addRequestPageContentDelay(id: string): void;
     removeRequestPageContentDelay(id: string): void;
@@ -357,50 +362,18 @@ export function ckeditorCanUndo(): boolean {
  * ckeditorCanUndo() said yes: ckeditor sets its hasUndo flag on the first keystroke of a
  * group and clears it only when it next refreshes its state, so a manager whose snapshots
  * have already been restored keeps claiming an undo it cannot perform. The caller needs to
- * know, so that an Undo the person pressed is not swallowed here. (See workspaceRoot.handleUndo.)
+ * know, so that an Undo the person pressed is not swallowed here. (See the CKEditor provider in
+ * undo/legacyUndoProviders.ts.)
  */
 export function ckeditorUndo(): boolean {
     // review: do we need to examine all instances?
     return (<any>CKEDITOR.currentInstance).undoManager.undo();
 }
 
-// Whether the next Undo belongs to the bloom-table library (which lives in this page iframe,
-// where the tables are attached) rather than to CKEditor. Called cross-frame from
-// workspaceRoot.canUndo()/handleUndo().
-//
-// It is not enough that the library has an operation to undo: its history holds every structural
-// operation until that operation is undone, so after "add a row, then type in a cell" both it and
-// CKEditor have something, and the typing is what came last. See undoOrdering.ts.
-//
-// In Change Layout mode the answer is always no; see tableCanUndo().
-export function tableShouldHandleUndo(): boolean {
-    return shouldUndoGoToTable({
-        tableCanUndo: tableCanUndo(),
-        ckeditorCanUndo: ckeditorCanUndo(),
-        tableChangeOrder: getTableChangeOrder(),
-        ckeditorChangeOrder: getCkeditorChangeOrder(),
-    });
-}
-
-// Whether the bloom-table library has an operation in its history that it could undo. This is
-// the plain question, with no reckoning of what CKEditor has done; tableShouldHandleUndo() above
-// is the one that decides whose Undo it is.
-//
-// In Change Layout mode the answer is always no. The tables stay attached there, so their history
-// still holds what was done before the mode was entered, and an Undo in the mode belongs to
-// origami: taking a row off a faded table the person cannot edit would be invisible and wrong.
-export function tableCanUndo(): boolean {
-    if (document.querySelector(".origami-layout-mode")) return false;
-    return tableHistoryManager.canUndo();
-}
-
-// Undo the most recent bloom-table operation. Called cross-frame from
-// workspaceRoot.handleUndo(). undoLast() finds the relevant attached table on
-// its own, so the caller needn't hold a table reference. Answers whether it found something to
-// undo, like ckeditorUndo() and imageOperationUndo().
-export function tableUndo(): boolean {
-    return tableHistoryManager.undoLast();
-}
+// The bloom-table library's undo is an entry on the one undo stack (undo/tableUndo.ts). This is
+// exported on the bundle only for the e2e tests, which check that a table's history stays out of
+// Undo in Change Layout mode.
+export { tableCanUndo };
 
 for (let j = 0; j < styleSheets.length; j++) {
     // This doesn't work any more because we are now loading this code as a module,
@@ -456,6 +429,10 @@ $(document).ready(() => {
     // in the live editor, which never reads this flag.
     window.__bloomEditablePageReady = true;
 
+    // The one undo stack lives in this frame and starts empty with each page load (see
+    // undo/pageUndo.ts). This registers the pre-existing undo mechanisms with it and binds Ctrl+Y.
+    setUpPageUndo();
+
     // If the user clicks outside of the page thumbnail context menu, we want to close it.
     // Since it is currently a winforms menu, we do that by sending a message
     // back to c#-land. We have a similar listener in the pageThumbnailList itself.
@@ -495,9 +472,11 @@ interface EditablePageBundleApi {
     getTheOneCanvasElementManager: typeof getTheOneCanvasElementManager;
     ckeditorCanUndo: typeof ckeditorCanUndo;
     ckeditorUndo: typeof ckeditorUndo;
-    tableShouldHandleUndo: typeof tableShouldHandleUndo;
+    handleUndo: typeof handleUndo;
+    canUndo: typeof canUndo;
+    handleRedo: typeof handleRedo;
+    canRedo: typeof canRedo;
     tableCanUndo: typeof tableCanUndo;
-    tableUndo: typeof tableUndo;
     addRequestPageContentDelay: typeof addRequestPageContentDelay;
     removeRequestPageContentDelay: typeof removeRequestPageContentDelay;
     e2eSetActiveCanvasElementByIndex: typeof e2eSetActiveCanvasElementByIndex;
@@ -579,9 +558,11 @@ window.editablePageBundle = {
     getTheOneCanvasElementManager,
     ckeditorCanUndo,
     ckeditorUndo,
-    tableShouldHandleUndo,
+    handleUndo,
+    canUndo,
+    handleRedo,
+    canRedo,
     tableCanUndo,
-    tableUndo,
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
     e2eSetActiveCanvasElementByIndex,

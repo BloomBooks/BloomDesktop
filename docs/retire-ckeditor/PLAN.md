@@ -8,16 +8,17 @@ folded in (§11). Live state in [PROGRESS.md](PROGRESS.md).
 1. **Remove CKEditor 4** (a 2015-era, hand-patched, 1.5 MB vendored copy) from Bloom's edit
    mode, replacing it with our own code. No replacement library.
 2. **Give Bloom one consistent Undo stack.** Today there are five poorly-coordinated undo
-   mechanisms. We want a single, ordered stack covering changes to the current page, plus
-   "undo delete page" as the one deliberate cross-page exception. Priority is on operations
-   that are *hard to reverse by hand* (delete a canvas element, delete a page) over ones that
-   are easy (add a canvas element — just delete it).
+   mechanisms. We want a single, ordered stack covering changes to the current page, **as it is
+   currently loaded**: a page change or a same-page reload starts it empty (§4.2, §10 decision 7).
+   Priority is on operations that are *hard to reverse by hand* (delete a canvas element) over
+   ones that are easy (add a canvas element — just delete it).
 3. **Simplify page loading and toolbox init**, most of whose complexity exists only to work
    around CKEditor mutating the DOM asynchronously during startup.
 4. Do it in a way that survives **many rebases** over a long calendar period.
 
 Non-goals (out of scope, but the design must not obstruct them): widening undo beyond the current
-page; undo across a Bloom restart; a rich-text editor usable outside Bloom's edit mode; the C#
+page, including undoing a page deletion; undo that survives a reload of the same page (§4.2 says
+what it would take); undo across a Bloom restart; a rich-text editor usable outside Bloom's edit mode; the C#
 multi-format clipboard write that would close BL-16459 (§10 q3). **Redo is in scope** — Ctrl+Y only,
 no toolbar button (§10 q1).
 
@@ -115,13 +116,35 @@ asynchronously after `CKEDITOR.inline()` returns:
 
 | Mechanism | What it really is | Notes |
 | --- | --- | --- |
-| `origamiCanUndo`/`origamiUndo` (`origami.ts:262-294`) | A stack of **jQuery `clone(true)` copies of `.marginBox`** — DOM plus attached handlers and data — restored with `replaceWith` | Only while Change Layout mode is active. Has its **own** `keydown.origami` Ctrl+Z/Ctrl+Y handler on `html` (`origami.ts:139-146`), and its own Redo. Safe today partly *because* layout mode strips `contentEditable` (`origami.ts:132`), so there are no live CKEditor instances to orphan. |
+| `origamiCanUndo`/`origamiUndo` (`origami.ts:277-294`) | A stack of **jQuery `clone(true)` copies of `.marginBox`** — DOM plus attached handlers and data — restored with `replaceWith` | Only while Change Layout mode is active. Has its **own** `keydown.origami` Ctrl+Z/Ctrl+Y handler on `html` (`origami.ts:137`), and its own Redo. Safe today partly *because* layout mode strips `contentEditable` (`origami.ts:132`), so there are no live CKEditor instances to orphan. |
 | `toolboxWindow.canUndo/undo` → `readerToolsModel` | A per-editable **text-typing** undo: `{html, text, caretOffset}` snapshots, seeded on focus (`noteFocus`, :557-568, from `decodableReaderTool.tsx:155`) and pushed on every markup-changing keystroke inside `doMarkup` (:753-764) | Gated on `shouldHandleUndo()` — `currentMarkupType !== None` (:570). It is consulted *before* CKEditor **deliberately**: when a reader tool is active it must shadow CKEditor's undo, which would restore stale decodable/leveled markup. Not "reader-setup changes". |
 | `imageOperationCanUndo`/`imageOperationUndo` (`ImageUndoManager.ts`) | Restores an image's `src` / copyright / crop | Clean two-phase prepare/commit; already page-id-scoped; gated on the active element being an image container. |
 | `ckeditorCanUndo`/`ckeditorUndo` | `CKEDITOR.currentInstance.undoManager`, **per editable div** | An "implementation secret". Ordering across boxes is already wrong. |
+| bloom-table's history (added 2026-10, BL-16818) | The library's own per-table history of structural operations | Since §10 decision 8, entries on the one stack rather than a legacy mechanism (`undo/tableUndo.ts`). |
 | Browser-native undo | Invisible | Called directly in `BloomField.PreventRemovalOfSomeElements` (`BloomField.ts:810-825`); also fed implicitly by every `document.execCommand("insertHTML"/"formatBlock"/"justify*"/"insertText")` in `bloomEditing.ts` and `GamePromptDialog.tsx`, and by plain typing in any contenteditable. |
 
-Two corrections to the folklore:
+**Correction, verified 2026-08-06 — the table above is the *button* path, not the keyboard path.**
+`handleUndo()` has exactly one caller: `topBarButtonClick` (`bloomEditing.ts:1633-1648`), reached
+when the user clicks the toolbar Undo button. There is **no Ctrl+Z handler anywhere in the workspace
+frame**, and C#'s `UndoCommand.Implementer` is an empty lambda (`WebView2Browser.cs:890`) that exists
+only so the button's `Enabled` can be set. So Ctrl+Z is handled entirely in the **page** frame, by
+whichever of these claims it first:
+
+| Ctrl+Z handler | Where | When it wins |
+| --- | --- | --- |
+| `keydown.origami` on `html` | page frame (`origami.ts:137`) | Change Layout mode only |
+| per-editable `keydown` in the reader tools | page frame (`decodableReaderTool.tsx:158-178`) | any editable, whenever `currentMarkupType !== None`; `preventDefault`s and returns false |
+| CKEditor's own keystroke handling | inside each editable | otherwise |
+| browser-native contenteditable undo | — | when nothing above claims it |
+
+Two consequences the plan depended on and got half right. First, the deliberate
+reader-tools-before-CKEditor precedence is enforced for the keyboard by that `preventDefault`, not by
+`handleUndo`'s ordering — so with a reader tool active, Ctrl+Z in a text box never reaches the shared
+stack at all. Second, that is *why* Stage 1 is behaviour-neutral: it changes only the button path.
+The keyboard path is not unified until those page-frame handlers are converted (Stages 3–4), and
+until then a single consistent Undo exists for the button but not for the keystroke.
+
+Two further corrections to the folklore:
 - `workspaceRoot.ts:125`'s "*See also Browser.Undo; if all else fails we ask the C# browser
   object to Undo*" is **stale** — no such fallback exists in the WebView2 code. The Undo
   button's enabled state comes purely from `workspaceBundle.canUndo()` returning `"yes"`
@@ -134,36 +157,41 @@ toolbox operations — i.e. precisely the hard-to-reverse things.
 
 ## 4. Design decisions
 
-### 4.1 Undo entries are data, interpreted at undo time
+### 4.1 Undo entries: snapshots by default, checked before they undo
 
 Two architectures were considered: a command/inverse-op stack (precise, memory-light, but every
 operation must be taught to undo itself) and a snapshot stack (uniform, covers operations
 nobody enumerated). **Use snapshots as the default entry type, with inverse-op entries where a
 snapshot is too blunt.**
 
-The critical constraint, which shapes the contract: the page iframe's JS context dies not only
-on page *change* but on same-page **reloads** — ctrl+wheel zoom regenerates the page
-(`bloomEditing.ts:1268`), origami exit posts `saveChangesAndRethinkPageEvent`
-(`origami.ts:193`), and several tools navigate. An entry that closes over page-frame DOM or
-functions therefore becomes a live grenade: `undo()` would mutate a detached document or throw.
-
-So **snapshot entries must be pure data**, interpreted at undo time by a restore function that
-re-acquires the current page frame via `getEditablePageBundleExports()`:
-
 ```ts
 export interface IUndoEntry {
     label: string;                  // "Delete canvas element" — tooltips, logging
-    pageId: string | undefined;     // undefined = survives page change (delete-page)
     kind: "pageSnapshot" | "subtreeSnapshot" | "custom";
-    undo(): void | Promise<void>;   // for "custom" only; snapshot kinds carry data instead
+    undo(): void | Promise<void>;
     redo?(): void | Promise<void>;
+    prepareRedo?(): void;           // capture the "after" state just before undo (below)
 }
 ```
 
-Closure-bearing (`custom`) entries are permitted only for **workspace-owned** operations —
-delete-page being the main one — never for page-frame DOM. In addition to clearing page-scoped
-entries when the page id changes, **re-validate or clear on page-frame unload/load**;
-`switchContentPage` (`workspaceRoot.ts:135-186`) already has the hook points.
+Two rules for writing an entry (also in `undoTypes.ts`, where entries are defined):
+
+- **Check before undoing.** Many changes to a page will stay unrecorded for a long time: moving
+  and resizing canvas elements, Format dialog changes, Talking Book's sentence splitting, game
+  tool settings, and until Stage 3 all typing. Any of them can leave the page in a state an older
+  entry does not expect. So before reversing its change, an entry checks that what it changed is
+  still the way it left it, for instance by comparing the affected element's HTML with what the
+  change produced. On a mismatch it throws rather than applies; the stack then discards itself
+  (§4.13), so the user loses undo rather than having the page damaged. Keep entries narrow (one
+  text box, one canvas element) so that unrecorded changes elsewhere cannot invalidate them, and
+  so the check only has to cover that spot.
+- **Prefer data that would survive a reload, but do not insist.** The stack dies with the page
+  frame (§4.2), so an entry may hold references to the page's elements, ranges, or closures over
+  page objects. But where it costs little, capture state as data (HTML strings, structural
+  positions) and find the target again inside `undo()`. Then letting undo survive a same-page
+  reload later (§4.2) would not mean rewriting the entry. Where holding a reference is clearly
+  simpler, hold it, and say so in a comment where the entry is built, so the cost of changing
+  course stays visible.
 
 Bound the stack by **entry count** (~50). Skip byte accounting until something proves it
 necessary; 50 page-HTML strings is single-digit MB worst case.
@@ -179,25 +207,41 @@ behaviour). Two things keep the cost genuinely small:
   falls only where the user actually undoes. Not a new idea: `origamiUndo` already does exactly
   this (`origami.ts:288-292` stashes a fresh clone before decrementing).
 - **`redo?()` stays optional, so Redo can arrive per entry kind.** An entry without it acts as a
-  floor — `canRedo()` is false when the next entry can't redo. That lets delete-page redo (the one
-  case needing real C# work: deleting the page again) be deferred without blocking the rest.
+  floor — `canRedo()` is false when the next entry can't redo.
 
 `canUndo()` must stay **synchronous and cheap** — C# polls it on a timer
 (`WebView2Browser.cs:963-996`, with a reentrancy guard that returns `true` on overlap). A
 `canUndo` that walks entries or touches layout will make the Undo button flicker.
 
-### 4.2 The stack lives in the workspace frame
+### 4.2 The stack lives in the page frame, and dies with it
 
-The page iframe is destroyed on page change; the workspace frame is not. So `theOneUndoStack`
-lives in the **workspace** bundle alongside `handleUndo`, and delete-page entries
-(`pageId: undefined`) survive naturally rather than being bolted on. Page-frame code pushes via
-the established cross-frame pattern (`getWorkspaceBundleExports().pushUndoEntry(...)` — note
-the real export name, see `origami.ts:204`).
+`theOneUndoStack` lives in the **page** frame and is set up when each page loads
+(`bookEdit/undo/pageUndo.ts`, called from `editablePage.ts`). So undo covers the page **as it is
+currently loaded**: changing page, or anything that reloads the same page, starts with an empty
+stack. The page frame is also where the Undo button lands (C# calls `topBarButtonClick("undo")`
+there), where Ctrl+Z and Ctrl+Y arrive, and where every mechanism the stack arbitrates lives. The
+workspace frame's `canUndo()`, which C# polls, and `handleUndo()` just ask the page frame.
 
-Corollary for delete-page: the entry **must not** be constructed in the page frame, which is
-being torn down at that moment. C# initiates the delete, so C# (or the workspace frame on C#'s
-behalf) pushes the entry.
+This is what the old Undo already did: every pre-existing mechanism dies with the page frame. It
+rules out undoing a page deletion, which would have to outlive the page (§10 decision 7).
 
+**Things that reload the current page**, and so empty the stack, without changing page (traced
+2026-10-06; BL-13502 may remove some of the save-only ones): leaving Change Layout mode; choosing
+a different layout for the page, or switching it to or from a custom layout; importing a video;
+turning a canvas text box into a read-only data field; the image copyright and credits dialog,
+including "copy to all images"; the book's copyright and license dialog; opening the AI Image
+Editor; the topic chooser; Book Settings; changing the content languages; page size or
+orientation; moving a page in the page list; the book's files changing outside Bloom; Report a
+Problem. Changing the UI language, and some theme changes, reload the whole Edit tab. None of
+these is undoable, and each discards the undo history of the page before it, as it always has.
+
+**What undo across a same-page reload would take**, if it is ever wanted (most likely first for
+leaving Change Layout mode): the history must survive the reload (the stack back in the workspace
+frame, or its entries saved and restored); its entries must find their targets on the rebuilt
+page (the data preference in §4.1); and the history must stay continuous, so every reload that
+changes the page must itself become an entry, backed by C# keeping the page's HTML from before the
+change, whose undo restores that HTML and reloads. That last part is the hard one, and costs the
+same wherever the stack lives.
 ### 4.3 Selection anchors, not DOM bookmarks
 
 Avoiding CKEditor-style bookmark spans is realistic, but be honest about what exists: Bloom has
@@ -243,10 +287,14 @@ That makes DOM-mutating bookmarks actively hostile to the current architecture, 
 inelegant — inserting and removing marker spans around the caret is exactly the kind of node
 churn those Ranges cannot survive. It also imposes a new obligation on *our* work; see §4.11.
 
-Defer range (non-collapsed) anchors: every identified consumer needs only a caret. And for the
-*snapshot* case specifically there's a simpler trick — inject a caret marker into the captured
-HTML **string** (not the live DOM, so none of the bookmark downsides apply) and strip it on
-restore. Offsets then only have to serve the toolbox-markup case.
+**Anchors must cover a selected range, not just a caret.** Three consumers need a range: undo,
+which restores the selection each step had, so undoing bold re-selects the text (§4.14 item 20);
+the colour dialog, which runs in the workspace frame and must apply to the selection the user made
+before it opened; and the SetupLink hyperlink dialog, which relies on the range surviving a dialog
+(`BloomField.ts` `setupHyperlink`). So an anchor is a start and an end, each in the form above. For
+the *snapshot* case there's a simpler trick: inject start and end markers into the captured HTML
+**string** (not the live DOM, so none of the bookmark downsides apply) and strip them on restore.
+Offsets then only have to serve the toolbox-markup case and the dialogs.
 
 ### 4.4 Build on `beforeinput`, and fence off native undo
 
@@ -262,7 +310,8 @@ correct behaviour under composition (suspend DOM meddling between `compositionst
 Chromium's own undo stack, and today CKEditor's undo plugin is what intercepts Ctrl+Z inside a
 box. If native undo ever fires, the DOM changes outside our stack and the two histories
 diverge. So the new editor **must** intercept `beforeinput` with `inputType`
-`historyUndo`/`historyRedo`, `preventDefault()`, and route to the shared stack. This is
+`historyUndo`/`historyRedo`, `preventDefault()`, and route to the shared stack; that includes
+Ctrl+Shift+Z, which is Redo today alongside Ctrl+Y (§4.14 item 23). This is
 correctness, not polish, and it is the replacement for `BloomField.PreventRemovalOfSomeElements`'s
 `document.execCommand("undo")` too: block any `delete*` whose `getTargetRanges()` covers a
 `.bloom-preventRemoval` element, rather than letting the deletion happen and undoing it.
@@ -284,8 +333,10 @@ plumbing in `attachToCkEditor`.
 ### 4.6 Typing transactions
 
 One undo entry per keystroke is useless. Close the current transaction on a word boundary
-(space / punctuation / Enter), a caret move or focus change, an idle timeout (~1 s), or any
-non-typing command. This approximates CKEditor's `undoManager` and matches user expectation. A
+(space / punctuation / Enter), a switch between inserting and deleting, a caret move or focus
+change, an idle timeout (~1 s), or any non-typing command. A transaction that leaves the content
+as it found it records nothing, and each entry restores the selection as well as the text (§4.14
+items 20–22). This approximates CKEditor's `undoManager` and matches user expectation. A
 transaction holds the snapshot taken when it opened; closing it commits that entry.
 
 ### 4.7 `getData()` replacement
@@ -342,6 +393,11 @@ Four things the new `pasteSanitizer.ts` must get right:
    but *verify* rather than assume, and decide explicitly what to do when only `text/rtf` or an
    unknown flavour is on offer (recommended: fall back to `text/plain`, never attempt to parse
    an unknown format).
+
+§4.14 items 13–19 add the details of what CKEditor's filter and paste pipeline actually do, which
+the sanitizer and the paste handler must reproduce: content copied within the same page session is
+not filtered, disallowed blocks become paragraphs rather than vanishing, pasted HTML is
+normalized, and pasted blocks merge into the current paragraph.
 
 Because its absence is silent, this needs **adversarial tests**, not just happy-path ones: paste
 a table, a nested `div`, an `iframe`, a `<script>`, an `<img>`, a styled `<span>` soup from a real
@@ -504,7 +560,7 @@ Migrating ~90 attachment sites is not a prerequisite we want to put in front of 
   div, which survives an `innerHTML` replacement. Typing undo is unaffected by any of this.
 - **Tier 2 narrow-subtree restore** needs only the contributors touching that subtree — a handful.
 - **Tier 3 turns out to be empty** (§4.11): origami keeps its own working in-place clone restore,
-  delete-page is a C# mechanism, style undo is deferred. So no generic full-page restore gets
+  delete-page undo is out of scope, style undo is deferred. So no generic full-page restore gets
   built, and **`pageScope` is not a prerequisite for undo at all.**
 
 That is the happy outcome: `pageScope` is worth doing for its own reasons — the accumulation bug,
@@ -586,8 +642,7 @@ Enumerate what would actually land there:
   adapted as a custom `IUndoEntry` so it joins the shared stack's ordering. Note that migrating
   origami to `addEventListener` would silently break its undo, since `clone(true)` does not copy
   raw listeners.
-- **Delete page** — C#-side, and navigation happens regardless because the page list changes. A
-  different mechanism entirely (Stage 2a), not a page snapshot.
+- **Delete page** — out of scope: the stack dies with the page (§4.2, §10 decision 7).
 - **Style changes** — deferred (§6 Stage 2c).
 
 That leaves nothing requiring a *generic* full-page restore. So: **do not build one.** If something
@@ -696,17 +751,255 @@ This is the one hard calendar deadline in the whole project — note it in Stage
 (`CanvasElementManager.ts:2755-2770`: `prepareUndoForImageOperation` … 
 `commitPendingImageOperationUndo`). Naïvely wrapping `deleteCurrentCanvasElement` in
 `runUndoable` would then produce **two** entries for one gesture, so the first Ctrl+Z
-half-undoes. Nested wrapping will keep happening as call sites accrete, so specify the
-semantics in `undoTypes.ts` up front: a depth counter, outermost entry wins, inner pushes are
-no-ops.
+half-undoes. Nested wrapping will keep happening as call sites accrete, so the semantics are fixed
+up front (`UndoStack.endUndoableScope`, `compoundUndoEntry.ts`):
 
-## 5. Rebase strategy
+- **The outermost scope defines the one entry.** Everything pushed while it runs, by it or by
+  anything nested inside it, becomes a part of that entry, which carries the outermost label. A
+  nested `runUndoable` only deepens the scope; closing it records nothing.
+- **Undo reverses every part, last first; redo replays them in the original order.** The entry is
+  redoable only if every part is. Each part captures its redo state just before its own undo. A
+  single push is recorded as it is.
+- **A failed undo or redo discards the whole stack**, compound or not, and the error still
+  propagates to Bloom's error reporting. A retry would rarely help (a failure is almost always a
+  bug, which fails the same way again), and the failure leaves the document in a state no entry
+  recorded, so the older entries could no longer be trusted to undo correctly. The legacy
+  mechanisms are unaffected. An entry whose check before undoing (§4.1) finds the page changed
+  fails the same way. A gesture still being recorded when the stack is cleared records nothing.
+
+### 4.14 What CKEditor does without being asked
+
+§2 lists the services Bloom calls CKEditor for. A read of the CKEditor 4.5.1 code we ship
+(`lib/ckeditor/ckeditor.js` and its `plugins/`), done 2026-10-02, found more that it does
+implicitly, in Chromium, with Bloom's config. None of it is a service Bloom asked for, so none of it
+would be noticed missing until a user hit it. Each item below names the Stage 3 file that owns it.
+Where an item says what Chromium does instead, that is expected behaviour, not a measurement:
+**verify each in WebView2** before building against it.
+
+**Enter and Backspace** (owner: `keyCommands.ts`, through `beforeinput` `insertParagraph` and
+`delete*`). Stage 3 must not leave Enter to the browser.
+1. **Enter always makes a `<p>`**, also at the end of a heading, and wraps bare text in a `<p>`
+   first (`enterkey` plugin, `enterBlock`). Chromium's paragraph separator defaults to `<div>`,
+   which Bloom's paragraph CSS, `kBlockElementSelector`, the reader tools and Talking Book would not
+   treat as a paragraph. At minimum set `defaultParagraphSeparator` to `p` for every page.
+2. **Splitting an element at the caret drops its `id` from the second half** (`range.splitBlock` /
+   `node.clone` without ids). Chromium copies every attribute, so pressing Enter inside a recorded
+   `span.audio-sentence` would give two spans with the same id. The split must remove the id from
+   the new half.
+3. **The new paragraph inherits the inline formatting at the caret as `strong`/`em`/`u`/`sup`**
+   (the elements in `CKEDITOR.dtd.$removeEmpty`; `span` excluded by Bloom's config). Chromium
+   re-applies a "typing style", which tends to produce `<b>`, `<i>` or `<font>`.
+4. **BL-16649 "Do Not Indent This Paragraph"** removes `bloom-noIndent` from paragraphs that Enter
+   creates. It hooks CKEditor's `key` event and its `enter` command (`BloomField.WireToCKEditor`).
+   Without them every paragraph started from a no-indent paragraph stays unindented, so it needs an
+   `insertParagraph` hook of its own.
+5. **Backspace or Delete across a block boundary is done by CKEditor**, not the browser
+   (`mergeBlocksCollapsedSelection`, `mergeBlocksNonCollapsedSelection`, "Prevent Webkit/Blink from
+   going rogue when joining blocks"). Blink wraps moved text in `<span style="font-size:…;
+   line-height:…">` to keep its old look, which would then ignore the Format dialog and pollute the
+   saved HTML. Join blocks by moving the nodes ourselves.
+
+**Inline formatting** (owner: `inlineFormat.ts`, `keyCommands.ts`, `FormatToolbar.tsx`).
+6. **A format applied to a collapsed caret applies to what is typed next.** Ctrl+B with nothing
+   selected, then typing, gives bold text; clear-formatting at a caret inside bold splits the bold
+   there. CKEditor inserts an empty element with a ZWSP filling char to hold the caret. Since §4.7
+   removes the filling char, the new engine needs a **pending format** applied to the next
+   `insertText` in `beforeinput`, cleared by a caret move.
+7. **Which tags count as the same format, and the toggle rule.** CKEditor writes `strong`/`em`/`u`/
+   `sup`, but treats legacy `b`/`i` as bold/italic when checking and removing, and removes a nested
+   `b` when applying bold. Whether a click applies or removes depends on the format at the
+   selection's *start* (`style.checkActive` on the start path). Adjacent identical elements are
+   merged (`mergeSiblings`). Without this, Bold over old `<b>` text nests `<strong>` inside it, and
+   markup fragments into `<strong>a</strong><strong>b</strong>`.
+8. **Toolbar buttons show their state.** Bold, italic, underline and superscript appear pressed
+   (`cke_button_on`, `aria-pressed`) when the selection has that format, updated on every selection
+   change. `FormatToolbar.tsx` needs the same, from the rule in item 7.
+9. **Colour.** Applying a colour first removes or splits every existing colour span in the range,
+   so colours never nest; "default" just removes the colour; inside a link the colour span goes
+   *inside* the `<a>`, or the link's own colour wins (`colorbutton` plugin). Using
+   `colorPickerDialog` (§4.5) adds its own requirements: it reports colours live while the user
+   drags, so each report must replace the last and the whole drag must be one undo step; Cancel
+   must restore the original, possibly mixed, colours rather than re-applying one colour; and it can
+   return transparent or gradient values, which text colour must refuse.
+10. **Clear formatting** (`removeformat` plugin) enlarges the range to whole formatting elements,
+    splits partly selected ones at both ends, stops at the block, skips non-editable subtrees,
+    unwraps rather than deletes, and re-selects the original range afterwards.
+11. **The toolbar keeps the selection and follows the box.** Pressing a toolbar control must not
+    move focus or the selection (`preventDefault` on `mousedown`, as CKEditor's floating space
+    does), or Bloom's blur handlers (qtip, `hideInvisibles`, change detection) run. The toolbar
+    repositions on scroll, resize and content change while the box has focus, and hides on blur.
+12. Probably low value, recorded so it is a choice: Alt+F10 moves focus to the toolbar, arrow keys
+    move between buttons and Esc returns to the text, with `role`/`aria` attributes throughout. And
+    Ctrl+B/I/U and Ctrl+Space still work in `bloom-userCannotModifyStyles` fields, where only the
+    toolbar is hidden today (A4); keep that unless decided otherwise.
+
+**Paste, drop and copy** (owner: `pasteSanitizer.ts`, `pasteHandler.ts`, `clipboard.ts`; adds to
+§4.8 and §4.9).
+13. **Copies made within the same page session are not filtered.** CKEditor marks its own copies
+    (`cke/id`) and applies `pasteFilter` only to external pastes and drops
+    (`DATA_TRANSFER_EXTERNAL`). That is why pasted `bloom-linebreak` spans (D4) and audio-sentence
+    spans (D5) survive today. `clipboard.ts` therefore needs its own "copied from this page" marker,
+    and the sanitizer must treat marked content the way CKEditor does. A copy from another page or
+    book stays external, which is what keeps BL-3899's duplicate ids out.
+14. **What a disallowed element becomes** (`filter.js` `removeElement`): a block or table row becomes
+    a `<p>` (`stripBlock`), `script`/`style` disappear with their content, void elements disappear,
+    other inline elements are unwrapped keeping their text, and empty inline elements are removed
+    (`span` excepted). "Discard the rest" in §4.8 must mean this, or table cells and list items run
+    together on one line.
+15. **Normalizing pasted HTML.** Keep only what lies between `<!--StartFragment-->` and
+    `<!--EndFragment-->`; turn a trailing `<br class="Apple-interchange-newline">` into a paragraph
+    end rather than a stray line break; collapse whitespace runs to one space and wrap top-level
+    inline text in paragraphs; give an empty paragraph a `<br>` so the caret can enter it.
+16. **Pasted blocks merge into the current paragraph** (`editable.insertHtml`): it splits the
+    paragraph, joins leading inline text to it, inserts following blocks as siblings, and never nests
+    `<p>`. The existing first-`<p>` unwrapping (D7) assumes this has already happened, so it does not
+    "move unchanged" on its own. Neither `Range.insertNode` nor Chromium's `insertHTML` behaves this
+    way.
+17. **Plain text is converted, not inserted.** The toolbar Paste path (`pasteImpl` → `insertText`)
+    HTML-encodes the text, turns a blank line into a new paragraph and a single newline into `<br>`,
+    and tabs into spaces. Today that path skips every BloomField transform, so Ctrl+V and the Paste
+    button give different results; the new handler should give both the same treatment.
+    `reconstituteParagraphsOnPlainTextPaste` (BL-9961) must HTML-encode each line before wrapping it;
+    today it does not (see "Found while reading", below).
+18. **Copy and cut write CKEditor's own HTML** (`preventDefault`, then `getSelectedHtml` and
+    `getSelectedText`). Chromium's own serializer bakes computed colours and fonts into spans, which
+    would pass the `span{color}` allowance and freeze theme colours into every paste within Bloom.
+    `clipboard.ts` must serialize the selection itself.
+19. **Drops.** CKEditor cancels every drop, files included, so an Explorer file dropped on a box does
+    nothing; the new code must decide that deliberately (check it cannot navigate the frame;
+    `WebView2Browser.cs` `NavigationStarting`). It computes the insertion point from the drop
+    position, and a drag within one box is a *move* recorded as one undo step (`internalDrop`); a drag
+    between boxes deletes from the source box. If the sanitizer takes over drops, it must do the move
+    itself, or a drag-move becomes a copy.
+
+**Undo** (owner: `typingTransactions.ts`; adds to §4.6).
+20. **Undo restores the selection, ranges included.** Each CKEditor snapshot stores the selection
+    (`createBookmarks2`), and one is taken around every command, so undoing bold re-selects the text
+    that was bold. See §4.3.
+21. **A switch between inserting and deleting closes a step** (CKEditor's PRINTABLE and FUNCTIONAL
+    key groups). Typing "abc", Backspace twice, then "xy", then Ctrl+Z removes only "xy".
+22. **A step that changes nothing is not recorded** (`equalsContent`), so Ctrl+Z never appears to do
+    nothing and the Undo button is never enabled with nothing to undo.
+23. **Ctrl+Shift+Z is Redo today**, as well as Ctrl+Y. It stays (§10 decision 1): the `historyRedo`
+    fence (§4.4) routes it to the stack, and the Stage 1 Ctrl+Y binding (`redoKeyBinding.ts`) gains
+    it when the stack first holds entries (Stage 2).
+24. CKEditor groups typing more coarsely than §4.6 (a step every 25 input events, or on a navigation
+    key or click), so word-level steps will feel finer than today. That is intended, but it is a
+    change testers may notice. It ignores IME keydowns (keyCode 229) and does not count paste or drop
+    as typing; copy that.
+
+**Accessibility attributes** (owner: `BloomTextEditor.ts`).
+25. CKEditor sets `role="textbox"`, `aria-label` (the literal `"false"`, because Bloom sets
+    `config.title = false`) and `tabindex` on every inline editable, and they get saved into books.
+    `EditableDivUtils.pasteImageCredits` relies on `role=="textbox"` and `aria-label=="false"` to
+    take its Source Bubble path. Change that test to something Bloom owns rather than reproduce the
+    odd `aria-label`.
+
+**Not a loss:** CKEditor 4.5.1 does nothing for IME composition, so §4.4 is an improvement there.
+Tab, tables and lists are not used by Bloom. Wrapping a caret left directly in the editable into a
+`<p>` (`fixDom`) is mostly covered by `BloomField.EnsureParagraphsPresent` and
+`ManageWhatHappensIfTheyDeleteEverything`; those keyup fix-ups must not open undo steps of their own.
+
+**Found while reading, independent of this project:** `BloomField.reconstituteParagraphsOnPlainTextPaste`
+(BL-9961) wraps each line of a plain-text paste in `<p>` without HTML-encoding it, *after*
+CKEditor's paste filter has run. So a multi-line paste of "a < b" is mangled, and a line such as
+`<img src=x onerror=…>` would run script in the page.
+
+## 5. Keeping up with master
+
+The project runs for months against a fast-moving `master`, and its files are among the most
+frequently edited in the front end (§5.1). The defence is to land small PRs promptly and never keep a
+long-lived branch (§5.2); §5.7 is about keeping each PR's conflicts small in the first place.
+
+### 5.1 How much drift there actually is
+
+Guessing at this would give either paranoid over-syncing or a nasty surprise, so it was measured
+(30 days to 2026-08-06):
+
+| | Commits |
+| --- | --- |
+| All of `master` | **522** (~17/day) |
+| Touching any file this project touches | **50** (~1.7/day) |
+
+And the risk is concentrated — four paths are 74% of it:
+
+| Commits (30d) | File |
+| --- | --- |
+| 19 | `bookEdit/js/bloomEditing.ts` |
+| 9 | `bookEdit/toolbox/toolbox.ts` |
+| 5 | `bookEdit/bloomField/BloomField.ts` |
+| 4 | `lib/ckeditor/` |
+| 3 | `bookEdit/StyleEditor/StyleEditor.ts` |
+| 2 | `bookEdit/toolbox/readers/readerToolsModel.ts` |
+| 1 each | `editableDivUtils.ts`, `canvasElementManager/CanvasElementManager.ts` |
+| **0** | `workspaceRoot.ts`, `origami.ts`, `ImageUndoManager.ts`, `editablePage.ts` |
+
+> **Correction (2026-09-07):** the zero row was measured with the wrong path for `workspaceRoot.ts`
+> (it is `bookEdit/workspaceRoot.ts`, not `bookEdit/js/`). Re-measured over the following month
+> (2026-08-06 → 09-07): `workspaceRoot.ts` **5** commits — BL-16558 changed `handleUndo` itself —
+> `editablePage.ts` **3**, `origami.ts` and `ImageUndoManager.ts` genuinely 0. So Stage 1's
+> integration risk was low, not zero, and the BL-16558 change had to be folded into the legacy
+> providers. **When measuring drift, get the paths from `git ls-tree`, not from memory.**
+
+Three things follow directly:
+
+- **1.7 commits a day is a weekly sync, not a daily one.** A month between syncs would mean ~50
+  commits to reconcile at once, which is what made the one Stage 0 rebase painful.
+- **Stage 1's integration risk is low** (not zero — see the correction above). Stages 3 and 6 are
+  where the cost lands, because that is where `bloomEditing.ts` and `toolbox.ts` are.
+- **`lib/ckeditor/` is still being actively patched** — 4 commits in 30 days, to the library we are
+  deleting. Each is a behaviour somebody needed. Stage 5 must diff that directory against the
+  project's start point and account for every change, rather than deleting a directory assumed
+  frozen.
+
+### 5.2 Topology: short stage branches straight off `master`
+
+Each stage is a **short-lived branch off `master`**, PR'd into `master`, squashed to one commit when
+it goes to human review, and merged. The next stage branches from `master` after that merge. This is
+the plan's original defence against drift — land small PRs promptly, never keep a long-lived
+branch — and it is back in force: the `Version6.5` branch was cut on 2026-09-04, John decided on
+2026-09-16 that this project targets `master` (6.6), Stage 0 merged to `master` on 2026-09-21 as
+one squashed commit, and the integration branch `BL-6681-ckeditor` that the 2026-08-06 constraint
+had required is retired (left in place for its history; nothing branches from it).
+
+Each stage PR gets its own YouTrack card, a subtask of BL-6681 (Stage 0: BL-16878; Stage 1:
+BL-16900), and its branch name starts with that card's id. Preflight reads the card id off the
+branch name, so the card-side steps land on the right card without hand-work.
+
+### 5.3 Sync procedure — merge, never rebase
+
+A stage branch that lives longer than a few days merges `origin/master` in (`git merge`, never
+rebase, never `--force` over a branch a reviewer has looked at). Keep `git config rerere.enabled
+true` so a conflict resolved once is replayed. The squash at review time is the only history
+rewrite, and `pr-ready-for-human` does it.
+
+### 5.4 Keep every stage boundary shippable
+
+Every stage PR must be a state that could ship as-is: green, flag-inert, no half-finished dispatch.
+That is what preserves the "if the project stalls, Bloom is still better off" property.
+
+### 5.5 Coverage a stage branch does not get on its own
+
+The nightly workflow runs against `master` only, and it is the only thing that runs the full C#
+suite and the visual-regression suite. A stage branch gets those the day it merges. For a stage that
+changes editing UI and lives more than a week, run the nightly on the branch by hand:
+`gh workflow run nightly.yml --ref <branch>`.
+
+### 5.6 Stage 0 and the retired integration branch
+
+Stage 0's PR (#8153, card BL-16878) merged to `master` on 2026-09-21. The Stage 1 work was carried
+from the integration-branch topology onto a fresh branch off `master` (`BL-16900-undo-stack`) as one
+squashed commit; the old `BL-6681-stage1-undostack` branch and its PR #8317 are superseded.
+
+### 5.7 Keeping the conflicts small in the first place
+
+These rules predate the no-merging constraint and all survive it — several matter considerably more
+now than they did when stages were landing weekly.
 
 1. **Almost all new code in new directories** — `src/BloomBrowserUI/bookEdit/undo/` and
-   `src/BloomBrowserUI/bookEdit/textEditor/`. New files never conflict.
-2. **Don't keep a long-lived branch.** The real defence against repeated rebasing is not to
-   rebase: land a dozen small PRs on `master`, each green, each inert behind a flag.
-3. **Integration points into existing files are one-line dispatches** wherever possible:
+   `src/BloomBrowserUI/bookEdit/textEditor/`. New files never conflict, which is the single biggest
+   reason a months-long branch is survivable at all.
+2. **Integration points into existing files are one-line dispatches** wherever possible:
 
    ```ts
    export function attachToCkEditor(element) {
@@ -716,7 +1009,7 @@ no-ops.
    ```
    Note the dispatch goes *inside* `attachToCkEditor`, so its two call sites (`bloomEditing.ts:1226`,
    `CanvasElementManager.ts:951`) need no edit at all.
-4. **One exception, and it needs a prep commit.** The toolbox keystroke pipeline
+3. **One exception, and it needs a prep commit.** The toolbox keystroke pipeline
    (`toolbox.ts:1509-1607`) interleaves `createBookmarks`, `removeCommentsFromEditableHtml`, the
    async-updateMarkup double-bookmark dance (BL-10133), `cleanUpNbsps`, and `selectBookmarks`.
    Swapping bookmarks for anchors there rewrites ~100 lines of the most delicate keystroke code
@@ -724,21 +1017,32 @@ no-ops.
    early** (Stage 0): extract the save-selection / restore-selection bracket into two small
    functions with a clean seam. Then the eventual change swaps one function body instead of
    performing open-heart surgery mid-project.
-5. **The flag is read in exactly one function**, `useNewTextEditor()`, in one new file — a
+4. **The flag is read in exactly one function**, `useNewTextEditor()`, in one new file — a
    synchronous body-class check, set by C# at page-generation time from an
    `ExperimentalFeatures` token (with an env-var override). See **§4.12** for why, and for what
    falls out of it.
-6. **All deletion is last** (Stage 5), in a few mechanical commits. Never rebase those —
-   regenerate them.
-7. **Avoid the churn-prone files** until late: `bloomEditing.ts` (2092 lines),
+5. **All deletion is last** (Stage 5), in a few mechanical commits. **Regenerate them, never
+   reconcile them** — if a deletion commit conflicts with an incoming master change, throw it away
+   and redo it mechanically against the new state. §5.1's finding that `lib/ckeditor/` is still
+   being patched makes this concrete rather than theoretical.
+6. **Avoid the churn-prone files** until late: `bloomEditing.ts` (2092 lines),
    `CanvasElementManager.ts` (3224), `toolbox.ts`, `audioRecording.ts` (5121),
-   `StyleEditor.ts` (2627).
-8. Keep [PROGRESS.md](PROGRESS.md) current so an interrupted session resumes cleanly.
+   `StyleEditor.ts` (2627). §5.1's measurements confirm the guess: `bloomEditing.ts` and
+   `toolbox.ts` alone are 56% of all watchlist churn.
+7. Keep [PROGRESS.md](PROGRESS.md) current so an interrupted session resumes cleanly — and record
+   each master-sync SHA there (§5.3).
 
 ## 6. Stages
 
 Stages 1–2 deliver the Undo improvements **without touching CKEditor at all**, and are ordered
-by user value per unit of risk. If the project stalls, Bloom is still better off.
+by user value per unit of risk.
+
+The original reason for that ordering was "if the project stalls, Bloom is still better off",
+which assumed each stage landed as it finished. Under the no-merging constraint (§5) nothing lands
+until the end, so the property has to be maintained deliberately instead: **every stage boundary is
+a green, flag-inert state the integration branch could merge as-is** (§5.4). The ordering then still
+earns its keep — it means that whenever the merge window opens, whatever is finished is the most
+valuable subset, not an arbitrary one.
 
 ### Stage 0 — Inventory, safety net, and the one prep commit
 
@@ -759,7 +1063,7 @@ by user value per unit of risk. If the project stalls, Bloom is still better off
   **pasted and dropped**. Capture today's actual behaviour for each before changing anything, so
   the new sanitizer is measured against reality rather than against the config string.
 - Characterization tests pinning the pure-ish functions before they move.
-- **The toolbox prep commit** from §5.4.
+- **The toolbox prep commit** from §5.7.3.
 - **Attempt to reproduce the handler-accumulation bug** described in §4.10 (repeated
   `refreshCanvasElementEditing` → duplicate `document` keydown handlers and duplicate
   per-editable jQuery handlers; F6 is the likeliest visible symptom). If it reproduces, file it
@@ -774,19 +1078,28 @@ Exit criteria: inventory reviewed; `pnpm test` green; prep commit demonstrably b
 
 ### Stage 1 — One entry point, no conversions
 
-*New:* `bookEdit/undo/UndoStack.ts`, `undoTypes.ts`, `runUndoable.ts`, plus specs.
+*New:* `bookEdit/undo/UndoStack.ts`, `undoTypes.ts`, `runUndoable.ts`, `compoundUndoEntry.ts`,
+`pageUndo.ts`, `legacyUndoProviders.ts`, `redoKeyBinding.ts`, plus specs.
 
-- `UndoStack` in the workspace bundle: push / undo / **redo** / canUndo / **canRedo** /
-  clearForPage / clearOnPageFrameReload. Index-based with truncate-on-push (§4.1), count-bounded,
+- `UndoStack` in the page frame, set up on each page load (§4.2): push / undo / **redo** /
+  canUndo / **canRedo** / clear. Index-based with truncate-on-push (§4.1), count-bounded,
   `canUndo` and `canRedo` both O(1).
-- `workspaceRoot.canUndo`/`handleUndo` become thin delegations (two small edits, one file). Redo
-  needs no C# counterpart — it is reached only by Ctrl+Y (§10 q1), so it stays entirely in JS.
+- The Undo button's page-frame handler (`topBarButtonClick`) calls the stack directly;
+  `workspaceRoot.canUndo`/`handleUndo` become thin delegations to the page frame. Redo needs no C#
+  counterpart — it is reached only by Ctrl+Y (§10 q1) — so it is a page-frame keydown binding
+  (as both existing Ctrl+Y handlers are), acting only when nothing earlier claimed the key.
 - **Wrap all four existing mechanisms as legacy providers in their current priority order.**
-  No conversions, no behaviour change. This preserves the deliberate reader-tools-before-CKEditor
-  precedence (§3) for free. Redo has no legacy providers to wrap — origami's is the only Redo that
-  exists, and it keeps working via its own handler until Stage 4 converts it. (Note
-  `readerToolsModel.redo()` at `:609` appears to be **unreachable** — nothing exports or calls it;
-  worth a moment's check, but it is deleted in Stage 5 regardless.)
+  No conversions, no behaviour change. (Table undo, which reached master during review, went
+  onto the stack directly instead; §10 decision 8.) **Note precisely what that order governs**, which §3's
+  correction spells out: `handleUndo` is reached only from the top-bar Undo button, so wrapping it
+  reproduces the *button* path exactly and leaves the keyboard path — which is handled per-context in
+  the page frame and never enters `handleUndo` — untouched. Behaviour-neutrality holds, but not
+  because the ordering is preserved; because the keyboard path was never in scope.
+- Redo has no legacy providers to wrap, and there are **two** existing Redos, not one: origami's and
+  the reader tools'. Both keep working via their own page-frame handlers until converted.
+  (**Correction, verified 2026-08-06:** the earlier claim that `readerToolsModel.redo()` is
+  unreachable was wrong — `decodableReaderTool.tsx:170` calls it. Stage 5 must **not** delete it
+  blind; doing so would silently remove a working Ctrl+Y/Ctrl+Shift+Z for reader-tool typing.)
 - `runUndoable(label, fn)` with the nesting semantics of §4.13.
 
 Rationale for doing *no* conversions here: the four existing mechanisms are contextually
@@ -800,20 +1113,8 @@ Exit criteria: one entry point; `pnpm test` green; no user-visible change.
 
 ### Stage 2 — The undos the user actually wants
 
-**2a — Undo delete page.** The highest value-per-risk item in the plan; independent of
-CKEditor, of the page frame, and of snapshot restore. Can ship even before Stage 1 settles.
-- *New C# file* `src/BloomExe/Edit/DeletedPageUndoManager.cs`: a session-only stack of
-  `{ pageXml, index, pageId }`, plus an `edit/undoDeletePage` endpoint.
-- Capture **inside the `SaveThen` callback, after the save completes** — `EditingModel.DeletePage`
-  wraps the delete in `SaveThen(..., forceFullSave: true)` (`EditingModel.cs:590-624`), so
-  capturing earlier would snapshot a page missing the user's last edits.
-- Restore must mirror what `Book.DeletePage` (`Book.cs:4110-4132`) tears down: re-insert at the
-  saved index (clamped to the current page count), then `UpdatePageNumberAndSideClassOfPages`,
-  `_pageListChangedEvent.Raise`, `InvokeContentsChanged`, and navigate to the restored page.
-- The matching front-end entry (`pageId: undefined`, `kind: "custom"`) is pushed **by C# into
-  the workspace bundle**, not by the page frame — which is being torn down at that moment.
-- Depth: keep every deletion in the session (capped ~10). The shared stack already provides
-  ordering, so depth costs nothing extra.
+**2a — Undo delete page: dropped** (2026-10-06, §10 decision 7). Undo is scoped to the page as
+it is currently loaded (§4.2), and a page deletion would have to outlive its page.
 
 **2b — Undo delete canvas element.** Do *not* use a whole-page snapshot. Preferred: an
 inverse-op / narrow-subtree entry that re-inserts the element's `outerHTML` into its
@@ -833,11 +1134,27 @@ proves messy, fall back to a **`.bloom-canvas`-subtree snapshot** restored throu
 Also honour §4.13: the background-image branch already records an image undo, so the wrapper
 must not double-record.
 
+**Where to put it back.** Order among a .bloom-canvas's children is the stacking order (no
+z-index), and Comical's bubble levels must agree with it (djustCanvasElementOrdering). New
+elements go last; rectangles and background images go first; draggables are kept at the end. So the
+entry records the deleted element's **neighbours**, not its index: put it back just below the
+element that was directly above it, or failing that just above the one below it. An intervening
+create (not undoable) then does no harm, which an index would not survive if anything reordered
+the siblings. Holding the neighbours as element references is the simple way, and acceptable
+under §4.1's preference rule: canvas elements carry no ids to find them by; say so in a comment.
+Comical.deleteBubbleFromFamily rewrites the *other* family members' bubble data, so the entry
+saves and restores theirs too. Per §4.1 it checks before undoing that the canvas still holds what
+the deletion left. That matters most for the subtree-snapshot fallback, which would otherwise
+silently delete any element created since.
+
+**Ctrl+Shift+Z.** Stage 2 is the first time the stack holds entries, so `redoKeyBinding.ts`'s
+`isRedoKeystroke` must accept Ctrl+Shift+Z as well as Ctrl+Y here (§4.14 item 23), with a test.
+
 **2c** *(deferred, documented not built)*: undo for style changes — a snapshot of
 `userModifiedStyles` would cover it, and the entry contract already allows it.
 
-Exit criteria: deleting a page and deleting a canvas element are both undoable; page
-renumbering and navigation are correct after undo; exactly one entry per gesture.
+Exit criteria: deleting a canvas element is undoable, restored at its old place in the stacking
+order and with its comic family intact; exactly one entry per gesture.
 
 ### Stage 3 — The new text editor, behind a flag, off by default
 
@@ -845,16 +1162,16 @@ renumbering and navigation are correct after undo; exactly one entry per gesture
 
 | File | What |
 | --- | --- |
-| `inlineFormat.ts` | Pure `Range`→DOM formatting engine: bold, italic, underline, superscript, colour, remove-format. **Do this first and test it hard.** Must preserve structural spans (`audio-sentence`, `bloom-highlightSegment`, `bloom-linebreak`) exactly as today's `addRemoveFormatFilter` does. |
+| `inlineFormat.ts` | Pure `Range`→DOM formatting engine: bold, italic, underline, superscript, colour, remove-format. **Do this first and test it hard.** Must preserve structural spans (`audio-sentence`, `bloom-highlightSegment`, `bloom-linebreak`) exactly as today's `addRemoveFormatFilter` does. Must also reproduce §4.14 items 6, 7, 9 and 10: a pending format for a collapsed caret, legacy `b`/`i` counted as bold/italic, the start-of-selection toggle rule, merging, non-nesting colours, and clear-formatting's splitting. |
 | `selectionApi.ts` | `getSelectionAnchor` / `restoreSelectionAnchor` (§4.3 — the capture side is new code), `getCleanHtml(div)`. |
-| `pasteSanitizer.ts` | **Default-deny allow-list** replacing `config.pasteFilter` (§4.8) — the project's main safety guarantee, applied to **both paste and drop**. Pure function, so it can be tested adversarially. Build it early (right after `inlineFormat.ts`) rather than late: it is the one piece whose absence is silent. |
-| `clipboard.ts` | Owns `cut` and `copy` on `.bloom-editable`, replacing CKEditor's interception (service 13). Produces the payload as **both** `text/html` and `text/plain` and keeps the write behind one seam, so a safe cut (§4.9) becomes possible. Read `origin/BL-16459-clipboard-failure-reporting` and PR #8140 first. Also subsumes `bloomEditing.cutSelectionImpl`, which currently uses `undoManager.lock/save` to make the cut one undo step. |
-| `pasteHandler.ts` | Owns the `paste` event **and** the C#-initiated `pasteClipboard` entry point. Must cover *both* existing paths: normal insert-at-selection, and `pasteImpl`'s replace-whole-content path for a canvas element that is selected but not being text-edited (`bloomEditing.ts:1792-1842`: `setData("<p><p>")` + `insertText` under an undo lock, then `updateAutoHeight()` + `scheduleMarkupUpdateAfterPaste()`). Calls the BloomField transforms; pushes **one** undo entry. |
-| `typingTransactions.ts` | `beforeinput`-driven coalescing (§4.6), composition-aware, plus the `historyUndo`/`historyRedo` fence (§4.4). |
-| `keyCommands.ts` | Shift+Enter → `span.bloom-linebreak`; F6/F7/F8; Ctrl+Alt+0/1/2; justify; Ctrl+Space (remove-format); Ctrl+B/I/U. Replaces every `execCommand` call **in the page frame** (`readerSetup.ui.ts:454` lives in the reader-setup dialog and is out of scope). |
-| `autolink.ts` | Word-boundary URL detection (BL-6845). |
-| `FormatToolbar.tsx` | React floating toolbar replacing `.cke_float`, positioned from the selection rect, localized directly (so `localizeCkeditorTooltips` dies), hidden for `bloom-userCannotModifyStyles` (BL-14947). Hosts the SetupLink hyperlink button. |
-| `BloomTextEditor.ts` | Per-editable attach/detach. **Synchronous** — no `instanceReady`, no async DOM rewrite. Also owns the BL-13779 content-changed hook, the BL-11745 qtip z-order handling, and `EnsureCaretNotInsideLineBreakSpan` on `selectionchange`. |
+| `pasteSanitizer.ts` | **Default-deny allow-list** replacing `config.pasteFilter` (§4.8) — the project's main safety guarantee, applied to **both paste and drop**. Pure function, so it can be tested adversarially. Build it early (right after `inlineFormat.ts`) rather than late: it is the one piece whose absence is silent. Reproduces §4.14 items 13–15: same-session copies pass, disallowed blocks become paragraphs, pasted HTML is normalized. |
+| `clipboard.ts` | Owns `cut` and `copy` on `.bloom-editable`, replacing CKEditor's interception (service 13). Produces the payload as **both** `text/html` and `text/plain` and keeps the write behind one seam, so a safe cut (§4.9) becomes possible. Read `origin/BL-16459-clipboard-failure-reporting` and PR #8140 first. Also subsumes `bloomEditing.cutSelectionImpl`, which currently uses `undoManager.lock/save` to make the cut one undo step. Serializes the selection itself and marks same-session copies (§4.14 items 13, 18). |
+| `pasteHandler.ts` | Owns the `paste` event **and** the C#-initiated `pasteClipboard` entry point. Must cover *both* existing paths: normal insert-at-selection, and `pasteImpl`'s replace-whole-content path for a canvas element that is selected but not being text-edited (`bloomEditing.ts:1792-1842`: `setData("<p><p>")` + `insertText` under an undo lock, then `updateAutoHeight()` + `scheduleMarkupUpdateAfterPaste()`). Calls the BloomField transforms; pushes **one** undo entry. Merges pasted blocks into the current paragraph, converts plain text the same way for Ctrl+V and the Paste button, and owns drops, including moves and files (§4.14 items 16, 17, 19). |
+| `typingTransactions.ts` | `beforeinput`-driven coalescing (§4.6), composition-aware, plus the `historyUndo`/`historyRedo` fence (§4.4), routing Ctrl+Y and Ctrl+Shift+Z to the stack. Each entry restores the selection, ranges included (§4.14 items 20–24). |
+| `keyCommands.ts` | Enter and block joins (§4.14 items 1–5: always `<p>`, no duplicated ids, inherited formatting as `strong`/`em`, BL-16649's no-indent rule, joins without style spans); Shift+Enter → `span.bloom-linebreak`; F6/F7/F8; Ctrl+Alt+0/1/2; justify; Ctrl+Space (remove-format); Ctrl+B/I/U. Replaces every `execCommand` call **in the page frame** (`readerSetup.ui.ts:454` lives in the reader-setup dialog and is out of scope). |
+| `autolink.ts` | Turns a paste that is exactly one URL (`http`, `https` or `ftp`) or one email address into a link (BL-6845). **Paste only**, as CKEditor's `autolink` plugin is: Bloom has never linked a URL as it is typed. Skips pastes containing markup and copies from within the page. Called from `pasteHandler.ts`. |
+| `FormatToolbar.tsx` | React floating toolbar replacing `.cke_float`, positioned from the selection rect, localized directly (so `localizeCkeditorTooltips` dies), hidden for `bloom-userCannotModifyStyles` (BL-14947). Hosts the SetupLink hyperlink button. Buttons show pressed state; pressing one keeps focus and selection; the toolbar follows scroll, resize and content change (§4.14 items 8, 11, 12). |
+| `BloomTextEditor.ts` | Per-editable attach/detach. **Synchronous** — no `instanceReady`, no async DOM rewrite. Also owns the BL-13779 content-changed hook, the BL-11745 qtip z-order handling, `EnsureCaretNotInsideLineBreakSpan` on `selectionchange`, and the `role`/`aria-label` dependency of `pasteImageCredits` (§4.14 item 25). |
 | `useNewTextEditor.ts` | The one flag read: `document.body.classList.contains("bloom-newTextEditor")` (§4.12). Synchronous by design. |
 
 Plus four small additive edits outside the new directory, all covered by §4.12: a
@@ -885,8 +1202,11 @@ Integration dispatches (one line each, added as late as possible): `attachToCkEd
 `dataValue`. With CKEditor gone, nothing stamps `cke/id` and nothing strips the spans, so the
 transform is meaningless as written — and the problem it solves may simply not exist when
 `pasteHandler.ts` reads raw `clipboardData`. **Verify against the BL-12357 repro; don't port.**
-Everything else in the paste pipeline (verse markers, audio-id copying, `<p>` unwrapping) moves
-unchanged.
+The verse-marker and audio-id transforms move unchanged. The first-`<p>` unwrapping does not move
+on its own: it only makes sense on top of CKEditor's merging of pasted blocks into the current
+paragraph, which `pasteHandler.ts` must now do itself (§4.14 item 16). The transforms also assume
+HTML in CKEditor's normalized form (a bare `<p>`, `<b style="font-weight:normal">`), so they run
+after the sanitizer and normalizer, not on raw clipboard HTML.
 
 With the flag on, text edits push onto the **same** stack as everything else — the payoff of the
 whole project. At that point the reader-tools and CKEditor legacy providers become redundant
@@ -971,8 +1291,7 @@ CKEditor's doing. Measure before touching it.
   editing behaviour and does not emit `beforeinput` or support `getTargetRanges()`. These can
   only be verified against a live WebView2 — budget for the CDP harness rather than for faking
   `InputEvent`s.
-- **C# tests** through `build/agent-dotnet.sh` for `DeletedPageUndoManager` and
-  `LegacyCkEditorCleanup`.
+- **C# tests** through `build/agent-dotnet.sh` for `LegacyCkEditorCleanup`.
 - **Live-Bloom verification** via the `run-bloom` / `bloom-automation` skills: attach over CDP,
   exercise a page, read the DOM back. The dev server pushes `.ts`/`.tsx` edits into a running
   Bloom, so most iteration needs no build.
@@ -1001,8 +1320,7 @@ CKEditor's doing. Measure before touching it.
    recover. Land `reinitializePageAfterRestore()` in Stage 3 where no CKEditor instances need
    resurrecting. **Mostly dissolved by tiering (§4.11)**: typing and formatting undo restore one
    editable's `innerHTML` and reinit nothing; canvas-element undo restores one subtree through the
-   existing `refreshCanvasElementEditing`; origami keeps its own working clone restore; delete-page
-   is a separate C# mechanism. Nothing left needs a generic full-page reinit, so **don't build
+   existing `refreshCanvasElementEditing`; origami keeps its own working clone restore. Nothing left needs a generic full-page reinit, so **don't build
    one.** Navigation-based restore was considered and rejected — it would require the book DOM to
    already hold the undone state, whose only route in is the save's merge phase (§4.11).
 3. **Silently losing paste/drop sanitizing.** Ranked this high not because it is hard but
@@ -1015,7 +1333,7 @@ CKEditor's doing. Measure before touching it.
    `historyUndo`/`historyRedo` fence (§4.4); listed here because forgetting it is silent and
    corrupting rather than obvious.
 5. **Save interleaving.** Snapshot → save → undo → save must end with the restored HTML on
-   disk. Page-scoped clearing and page-frame-reload invalidation must be exactly right. The
+   disk. The
    sharpest case: an undo arriving while the state machine is in `SavePending` must not let the
    in-flight save merge content we are discarding — `DiscardInFlightSave()`
    (`EditingStateMachine.cs:367`) exists for this shape of problem; decide discard-vs-defer
@@ -1033,8 +1351,12 @@ CKEditor's doing. Measure before touching it.
    So within an edit session, files referenced by restored spans still exist. The remaining
    exposure is the talking-book tool's *explicit* delete / re-record actions; scope the
    investigation to that path only.
-9. **Cross-frame lifetime.** Settled in §4.1–4.2 (data-not-closure entries, invalidate on
-   page-frame reload, C# pushes the delete-page entry). Keep it settled.
+9. **Cross-frame lifetime.** Settled in §4.2: the stack lives in the page frame and dies with it,
+   so no entry can outlive the page it describes. Keep it settled.
+10. **Unrecorded changes.** Much that changes a page will stay unrecorded for a long time (§4.1),
+    and any of it can leave the page in a state an older entry does not expect. Mitigated by the
+    check-before-undo rule (§4.1) and by keeping entries narrow; tests should interleave recorded
+    and unrecorded changes.
 
 ## 9. Follow-ups this design makes cheap
 
@@ -1043,7 +1365,7 @@ CKEditor's doing. Measure before touching it.
   `RedoCommand`, no `SetEditingCommands` parameter, nothing in the `updateEditButtons` websocket
   payload, no icon, no XLF entry. All of that is separable and can be added later without touching
   the stack.
-- **Undo labels in the UI** — "Undo Delete Page" as the button tooltip.
+- **Undo labels in the UI** — "Undo Delete canvas element" as the button tooltip.
 - **Wider undo scope** — style changes, book-level operations, multi-page undo all plug in as new
   entry types without touching the stack.
 
@@ -1051,7 +1373,8 @@ CKEditor's doing. Measure before touching it.
 
 Everything here is settled. Recorded with the reasoning so a later session doesn't reopen it.
 
-1. **Redo: in scope, extended rather than dropped — but Ctrl+Y only, no toolbar button.**
+1. **Redo: in scope, extended rather than dropped — keys only (Ctrl+Y, and Ctrl+Shift+Z, which
+   is also Redo today and stays), no toolbar button.**
    Origami has a Redo today, and removing it while unifying the stacks would be a small regression
    for layout-mode users. The cost is small provided we take the two cheap routes in §4.1: an
    index-based stack, and capturing the redo state lazily at undo time (origami's existing trick),
@@ -1059,8 +1382,8 @@ Everything here is settled. Recorded with the reasoning so a later session doesn
    affordance exactly and needing **zero C# plumbing** — which matters, because Bloom has no Redo
    plumbing whatsoever today (no `RedoCommand`, no `updateEditButtons` field, no icon, no XLF
    entry). A visible button is deferred to §9 and can arrive later without touching the stack.
-   `redo?()` stays optional, so delete-page redo — the one case needing real C# work — can also come
-   later, acting as a redo floor until it does.
+   `redo?()` stays optional, so an entry kind whose redo is hard can come later, acting as a redo
+   floor until it does.
 2. **Hyperlink UI: keep the current `showLinkTargetChooserDialog` flow exactly.** The new
    `FormatToolbar.tsx` hosts the same button invoking the same dialog. No behaviour change.
 3. **Clipboard (BL-16459): seam only.** `clipboard.ts` produces rich **and** plain payloads and
@@ -1068,13 +1391,40 @@ Everything here is settled. Recorded with the reasoning so a later session doesn
    impossible and BL-16459 stays open — much cheaper to close later, because the seam is the part
    that is expensive to retrofit (§4.9). Explicitly **not** doing the C# multi-format write or the
    "HTML Format" byte-offset header in this project.
-4. **Delete-page undo keeps every deletion in the session**, capped at ~10 (§6 Stage 2a).
+4. ~~Delete-page undo keeps every deletion in the session~~: superseded by decision 7, which drops
+   delete-page undo.
 5. **The flag** is an `ExperimentalFeatures` checkbox in Collection Settings → Advanced plus a
    `BLOOM_NEW_TEXT_EDITOR` env-var override, latched into the page by a body class (§4.12). Its XLF
    entry is `translate="no"`, so removal is free — **but must happen before that release goes beta**,
    the project's one hard calendar deadline. Deliberately *not* clearing the obsolete token from
    testers' settings.
+6. **A `runUndoable` gesture is one compound entry of everything pushed inside it** (§4.13),
+   decided 2026-10-02 in John's review of Stage 1. Undo reverses all the parts, last first; redo
+   replays them in order, and only if every part can. Keeping just one of the pushes would work only
+   if the outer operation's entry happened to capture the whole gesture, and would oblige every inner
+   layer to wrap itself in a scope of its own. And a failed undo or redo, of any entry, discards the whole stack rather than offering a
+   retry, because what it leaves is a state no remaining entry can be trusted against.
 
+7. **Undo is scoped to the page as it is currently loaded; undoing a page deletion is dropped**,
+   decided 2026-10-06 after Hatton's review of Stage 1 (raised in standup, then on PR #8387). The
+   stack lives in the page frame and dies with it (§4.2). Undoing a page deletion was the only
+   reason it had lived in the workspace frame, and keeping it there cost page ids on entries,
+   generation counts guarding `runUndoable` scopes against reloads, cross-frame calls for the
+   button and Ctrl+Y, and a rule that entries be pure data. Nothing users had depended on it: every
+   pre-existing undo already died with the page frame, and the workspace stack cleared its page
+   entries on every reload too. Two rules came with the decision (§4.1): entries check before they
+   undo, and they *prefer* state that would survive a reload, without insisting, noting exceptions
+   in comments, so that undo surviving a same-page reload stays affordable to add later.
+8. **Table undo is native to the stack, not a legacy provider**, decided 2026-10-09 when Bloom
+   Tables (BL-16818) reached master while #8387 was in review. Tables arrived with a fifth
+   mechanism, the bloom-table library's own history, ordered against CKEditor by a counter in
+   `undoOrdering.ts`. Rather than wrap it, each operation the library announces becomes a stack
+   entry that asks the library to undo or redo it (`undo/tableUndo.ts`). The ordering against
+   CKEditor became one general rule: entries and CKEditor's changes are numbered from one counter
+   (`undo/changeOrder.ts`), and the CKEditor provider stands aside while the stack's newest entry
+   is newer. A provider whose undo finds nothing passes the turn on, and an entry can be
+   unavailable for now (tables in Change Layout mode). The library's own menus offer no Undo or
+   Redo in Bloom (checked 2026-10-09), so nothing undoes a table operation behind the stack's back.
 ### What the first review changed (2026-08-04)
 
 The first draft of this plan was reviewed by Fable (Claude) against the real source, and every
@@ -1083,7 +1433,7 @@ sections they concern; this list records *that* they came from review, and why, 
 does not reopen them. If you think one of these is wrong, say so explicitly rather than quietly
 changing course.
 
-- **Undo entries are data, not closures** (§4.1). The page iframe's JS context dies on same-page
+- **Undo entries are data, not closures** (§4.1; relaxed to a preference by decision 7). The page iframe's JS context dies on same-page
   reloads too (ctrl+wheel zoom, origami exit), so page-id-scoped clearing alone would leave entries
   closing over a dead document. `canUndo()` stays synchronous and O(1) for the same section's
   reason: C# polls it on a timer.
@@ -1101,9 +1451,9 @@ changing course.
 - **Delete canvas element is an inverse operation on a narrow subtree, not a page snapshot**
   (Stage 2b), reusing `refreshCanvasElementEditing`. Comical bubble-family re-linking and restoring
   a drag-activity target are the two things to verify first.
-- **Delete-page capture happens inside the `SaveThen` callback**, and restore re-raises the
+- **Delete-page capture happens inside the `SaveThen` callback** (moot: decision 7 drops delete-page undo), and restore re-raises the
   page-list events and navigates rather than just renumbering (Stage 2a).
-- **`runUndoable` nests from day one** (§4.13): depth counter, outermost wins.
+- **`runUndoable` nests from day one** (§4.13; its rule is decision 6 above).
 - **Selection anchors locate the editable structurally, not by `id`** (§4.3): ordinary
   `.bloom-editable` divs have none. The capture side is new code — the draft overstated what
   existed. Range anchors are deferred; snapshots use a caret marker in the captured *string*.
@@ -1126,6 +1476,7 @@ changing course.
   save (Risk 7); the cross-frame export is `getWorkspaceBundleExports` (§4.2).
 
 ### Still genuinely open
+
 - **Legacy cleanup lifetime** — leave the C# CKEditor-artifact scrubbers
   (`LegacyCkEditorCleanup`) in place indefinitely, or schedule a one-time book migration? Not
   urgent: nothing in Stages 0–5 depends on the answer, and keeping them is safe. Decide when Stage 5
