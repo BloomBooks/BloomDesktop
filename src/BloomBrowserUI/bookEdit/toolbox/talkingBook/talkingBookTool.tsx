@@ -1,13 +1,14 @@
 import { hideImageDescriptions } from "../imageDescription/imageDescriptionUtils";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
 import { beginLoadSynphonySettings } from "../readers/readerTools";
-import { getTheOneToolbox, IToolboxSettings } from "../toolbox";
+import { IToolboxSettings } from "../toolbox";
 import { getPageIframeBody } from "../../../utils/shared";
 import { getAudioRecorder, getOrCreateAudioRecorder } from "./audioRecording";
 import * as AudioRecorder from "./audioRecording";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { TalkingBookToolControls } from "./TalkingBookToolControls";
 import { kImageDescriptionToolId, kTalkingBookToolId } from "../toolIds";
+import { isToolOffered } from "../toolboxState";
 // Gets these styles into the toolbox document. (The page frame links the compiled
 // audioRecording.css separately; see the styleSheets list in editablePage.ts.)
 import "./audioRecording.less";
@@ -23,11 +24,13 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
     imageUpdated(img: HTMLImageElement | undefined): void {
         // No action needed for this tool
     }
-    public makeRootElement(): HTMLDivElement {
-        return this.adaptReactElement(
-            <TalkingBookToolControls
-                audioRecorder={getOrCreateAudioRecorder()}
-            />,
+    public renderPanel(): JSX.Element {
+        return (
+            <div>
+                <TalkingBookToolControls
+                    audioRecorder={getOrCreateAudioRecorder()}
+                />
+            </div>
         );
     }
     /** This tool saves no state of its own; see ITool.beginRestoreSettings(). */
@@ -48,14 +51,15 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
     }
 
     // When are showTool, newPageReady, and updateMarkup called?
-    // Some scenarios:
+    // (The toolbox runs these from a React effect for whichever tool is the current tool of
+    // a showing toolbox; see useToolLifecycle.ts.) Some scenarios:
     // * Open the toolbox and Talking Book shows up  - showTool, newPageReady
     // * Open a book and Talking Book tool automatically opens - showTool, newPageReady
-    // * Creating a new page while tool is open - newPageReady, newPageReady (again)
+    // * Creating a new page while tool is open - showTool, newPageReady, newPageReady (again)
     // * Changing to an existing page while tool is open - same as above.
     // * Typing in a text box while tool is open - updateMarkup
-    // * Close the toolbox: hideTool()
-    // * hit the Toolbox's "More" switcher: hideTool()
+    // * Close the toolbox: detachFromPage(), hideTool()
+    // * hit the Toolbox's "More" switcher: detachFromPage(), hideTool()
     // * Switching from a different tool to Talking Book Tool - showTool, newPageReady
     // * Add a new text box using Origami ("Change Layout"), then turn off the Origami Editor: newPageReady, updateMarkup
     public async showTool(): Promise<void> {
@@ -170,8 +174,8 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
         return true;
     }
 
-    private isImageDescriptionToolActive(): boolean {
-        return getTheOneToolbox().isToolActive(kImageDescriptionToolId);
+    private isImageDescriptionToolOffered(): boolean {
+        return isToolOffered(kImageDescriptionToolId);
     }
 
     private showImageDescriptionsIfAny() {
@@ -181,7 +185,7 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
         if (!page) {
             return;
         }
-        if (!this.isImageDescriptionToolActive()) {
+        if (!this.isImageDescriptionToolOffered()) {
             getAudioRecorder()?.setShowingImageDescriptions(false);
             return;
         }

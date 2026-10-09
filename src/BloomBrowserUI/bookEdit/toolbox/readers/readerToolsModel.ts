@@ -41,7 +41,7 @@ import {
     allPromiseSettled,
     setTimeoutPromise,
 } from "../../../utils/asyncUtils";
-import { isToolboxUiReady } from "../toolboxReactAdapter";
+import { isToolboxUiMounted } from "../toolboxState";
 
 const SortType = {
     alphabetic: "alphabetic",
@@ -93,9 +93,23 @@ export function isValidSampleTextFileType(path: string): boolean {
     );
 }
 
+/** A stage or level asked for before the Synphony settings were there to judge it. */
+interface IPhaseRequest {
+    value: number;
+    skipSave: boolean | undefined;
+}
+
 export class ReaderToolsModel {
     public stageNumber: number = 1;
     public levelNumber: number = 1;
+    // Has anything told this model which stage or level to show? False only while it is
+    // still sitting on the defaults above. restoreState() uses it to tell a model that
+    // nobody has told anything from one that is already showing a real choice; see there.
+    private hasBeenGivenAPhase = false;
+    // A stage or level someone asked for before the Synphony settings arrived, waiting
+    // for setSynphony() to apply it. See setStageNumber().
+    private stageAwaitingSynphony: IPhaseRequest | undefined;
+    private levelAwaitingSynphony: IPhaseRequest | undefined;
     public synphony: ReadersSynphonyWrapper | undefined; // to ensure detection of async issues, don't init until we load its settings
     public sort: string = SortType.alphabetic;
     public currentMarkupType: number = MarkupType.None;
@@ -152,6 +166,9 @@ export class ReaderToolsModel {
         this.stageNumber = 1;
         this.levelNumber = 1;
         this.synphony = undefined;
+        this.hasBeenGivenAPhase = false;
+        this.stageAwaitingSynphony = undefined;
+        this.levelAwaitingSynphony = undefined;
         this.sort = SortType.alphabetic;
         this.currentMarkupType = MarkupType.None;
         this.allWords = {};
@@ -191,7 +208,13 @@ export class ReaderToolsModel {
         skipSave?: boolean,
     ): Promise<void> {
         if (!this.synphony) {
-            return; // Synphony not loaded yet
+            // Don't throw the caller's choice away. Without the settings we cannot yet
+            // tell whether this is a valid stage, so remember it and let setSynphony()
+            // apply it when they arrive. Discarding it here is how a book's saved stage
+            // could spring back to 1 -- and, because the restore passes skipSave, never
+            // be recorded either -- whenever the settings load was slow or failed.
+            this.stageAwaitingSynphony = { value: stage, skipSave };
+            return;
         }
         // this much needs to be done immediately; otherwise, the result of
         // different routines calling setStageNumber is unpredictable, depending on
@@ -202,6 +225,7 @@ export class ReaderToolsModel {
         }
 
         this.stageNumber = stage;
+        this.hasBeenGivenAPhase = true;
         this.updateStageNumberIfNeeded(); // May change the stage number
 
         return setTimeoutPromise(async () => {
@@ -265,13 +289,16 @@ export class ReaderToolsModel {
 
     public setLevelNumber(val: number, skipSave?: boolean): void {
         if (!this.synphony) {
-            return; // Synphony not loaded yet
+            // Remember it for setSynphony(); see setStageNumber() for why.
+            this.levelAwaitingSynphony = { value: val, skipSave };
+            return;
         }
         const levels = this.synphony.getLevels();
         if (val < 1 || val > levels.length) {
             return;
         }
         this.levelNumber = val;
+        this.hasBeenGivenAPhase = true;
         this.updateLevelNumberIfNeeded(); // May change the level number
         if (!skipSave) {
             this.saveState();
@@ -1307,9 +1334,33 @@ export class ReaderToolsModel {
         return w.length;
     }
 
+    /**
+     * Discard a stage request that is still waiting for the Synphony settings. A restore
+     * beginning now supersedes it, and the waiting one may belong to a book we have since
+     * left: the model outlives a book change (the toolbox frame is not reloaded for one),
+     * so without this a value stashed for the previous book could be applied to this one.
+     */
+    public forgetStageAwaitingSynphony(): void {
+        this.stageAwaitingSynphony = undefined;
+    }
+
+    /** The level equivalent of forgetStageAwaitingSynphony(). */
+    public forgetLevelAwaitingSynphony(): void {
+        this.levelAwaitingSynphony = undefined;
+    }
+
     /** Should be called early on, before other init. */
     public setSynphony(val: ReadersSynphonyWrapper): void {
         this.synphony = val;
+        // Now we can judge anything that asked for a stage or level while we had no
+        // settings to judge it by. Take them before applying, since the setters are
+        // what fill these in and we don't want to re-queue what we are replaying.
+        const stage = this.stageAwaitingSynphony;
+        const level = this.levelAwaitingSynphony;
+        this.stageAwaitingSynphony = undefined;
+        this.levelAwaitingSynphony = undefined;
+        if (stage) this.setStageNumber(stage.value, stage.skipSave);
+        if (level) this.setLevelNumber(level.value, level.skipSave);
     }
 
     //   getSynphony(): ReadersSynphonyWrapper {
@@ -1571,12 +1622,14 @@ export class ReaderToolsModel {
 
     /**
      * Persists the decodable-reader stage/sort and the leveled-reader level in the book.
-     * Does nothing until the toolbox UI exists: before that (and in unit tests, where it
-     * never does) there is no user-chosen state worth saving, and saving would overwrite
-     * the book's real settings with defaults.
+     *
+     * Does nothing while there is no toolbox on screen. We are called from wherever the
+     * user changes a stage, level or sort, and those paths also run before the toolbox has
+     * been built, when the values are still defaults rather than anything the user chose;
+     * saving then would overwrite the book's real settings with those defaults.
      */
     public saveState(): void {
-        if (!isToolboxUiReady()) return;
+        if (!isToolboxUiMounted()) return;
 
         postString(
             "editView/saveToolboxSetting",
@@ -1594,14 +1647,26 @@ export class ReaderToolsModel {
 
     /**
      * Restores the stage/level the book was last using. Like saveState(), does nothing
-     * until the toolbox UI exists (in particular, in unit tests).
+     * while there is no toolbox on screen.
      */
     public restoreState(): void {
-        if (!isToolboxUiReady()) return;
+        if (!isToolboxUiMounted()) return;
 
         const state = new DRTState();
 
         if (!this.currentMarkupType) this.currentMarkupType = state.markupType;
+
+        if (this.hasBeenGivenAPhase) {
+            // Something has already said which stage and level to show -- the user working
+            // the stepper, or the tool restoring the book's saved state. We run late (the
+            // synphony settings arriving are what bring us here), so seeding the defaults
+            // now would undo that choice, and because we skip saving it would leave nothing
+            // recorded either: the stage sprang back to 1 and Bloom never learned the user
+            // had chosen 2. That is what kept the reader-tool e2e tests (Test Case IDs 441,
+            // 442, 460) failing intermittently.
+            return;
+        }
+
         // when restoring state we do NOT want to save the results; things are presumably unchanged,
         // and saving the state of a new book from a template can override system defaults we have
         // not yet applied to the book.
