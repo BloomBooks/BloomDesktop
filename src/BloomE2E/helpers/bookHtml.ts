@@ -197,7 +197,7 @@ export function readXmatterPackOfBook(bookFolder: string): string {
 /**
  * The book's .htm, with what carries no meaning taken out, so that two reads can be compared to
  * ask "did the book change?": each element's attributes in name order (HTML attribute order means
- * nothing, and Bloom's comparison ignores it too; see HtmlDom.GetXmlIgnoringAttributeOrder) and
+ * nothing, and Bloom's comparison ignores it too; see SafeXmlNode.GetXmlIgnoringAttributeOrder) and
  * the data div's entries in a fixed order. Anything else that differs is a real change.
  */
 export async function readBookIgnoringOrder(
