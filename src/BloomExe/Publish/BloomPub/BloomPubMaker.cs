@@ -766,7 +766,8 @@ namespace Bloom.Publish.BloomPub
                 modifiedBook,
                 progress,
                 fontsUsed,
-                FontFileFinder.GetInstance(Program.RunningUnitTests)
+                FontFileFinder.GetInstance(Program.RunningUnitTests),
+                settings?.EmbedDefaultFont ?? false
             );
 
             var bookFile = BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath);
@@ -1193,15 +1194,18 @@ namespace Bloom.Publish.BloomPub
         /// in the local folder, and insert a link to it into the book.
         /// </summary>
         /// <param name="fontFileFinder">use new FontFinder() for real, or a stub in testing</param>
+        /// <param name="embedDefaultFont">true to embed Andika too (see BloomPubPublishSettings.EmbedDefaultFont)</param>
         public static void EmbedFonts(
             Book.Book book,
             IWebSocketProgress progress,
             HashSet<PublishHelper.FontInfo> fontsWanted,
-            IFontFinder fontFileFinder
+            IFontFinder fontFileFinder,
+            bool embedDefaultFont = false
         )
         {
             // "Andika" already in BR in the standard four faces, don't need to embed or make rule.
-            fontsWanted.RemoveWhere(x => x.fontFamily == PublishHelper.DefaultFont);
+            if (!embedDefaultFont)
+                fontsWanted.RemoveWhere(x => x.fontFamily == PublishHelper.DefaultFont);
             // We don't need to embed Andika New Basic, because Andika will handle it.
             fontsWanted.RemoveWhere( // The default Andika font will handle Andika New Basic
                 x =>

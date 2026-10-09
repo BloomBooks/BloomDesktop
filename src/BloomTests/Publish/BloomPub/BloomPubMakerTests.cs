@@ -2417,6 +2417,60 @@ namespace BloomTests.Publish.BloomPub
                 Assert.That(RobustFile.ReadAllText(fontsCssPath).Contains("serif"), Is.False);
         }
 
+        [TestCase(false)]
+        [TestCase(true)]
+        public void EmbedFonts_EmbedsAndikaOnlyWhenAsked(bool embedDefaultFont)
+        {
+            var testBook = CreateBookWithPhysicalFile(
+                "<div class='bloom-page' id='guid1'></div>",
+                "",
+                bringBookUpToDate: false
+            );
+            var andikaPath = FileLocationUtilities.GetFileDistributedWithApplication(
+                "fonts",
+                "Andika-Regular.woff2"
+            );
+            var fontFileFinder = new StubFontFinder();
+            fontFileFinder.FontGroups[PublishHelper.DefaultFont] = new FontGroup
+            {
+                Normal = andikaPath,
+            };
+            fontFileFinder.FilesForFont[PublishHelper.DefaultFont] = andikaPath;
+            FontsApi.AvailableFontMetadataDictionary.Clear();
+            PublishHelper.ClearFontMetadataMapForTests();
+            var fontsWanted = new HashSet<PublishHelper.FontInfo>
+            {
+                new PublishHelper.FontInfo
+                {
+                    fontFamily = PublishHelper.DefaultFont,
+                    fontStyle = "normal",
+                    fontWeight = "400",
+                },
+            };
+            var embeddedCopy = Path.Combine(testBook.FolderPath, "Andika-Regular.woff2");
+            Assert.That(
+                File.Exists(embeddedCopy),
+                Is.False,
+                "test setup: no Andika in the book yet"
+            );
+
+            BloomPubMaker.EmbedFonts(
+                testBook,
+                new StubProgress(),
+                fontsWanted,
+                fontFileFinder,
+                embedDefaultFont
+            );
+
+            Assert.That(File.Exists(embeddedCopy), Is.EqualTo(embedDefaultFont));
+            Assert.That(
+                RobustFile.ReadAllText(Path.Combine(testBook.FolderPath, "fonts.css")),
+                embedDefaultFont
+                    ? Does.Contain("font-family:'Andika'").And.Contain("Andika-Regular.woff2")
+                    : Does.Not.Contain("Andika")
+            );
+        }
+
         private static SafeXmlDocument MakeDom(string bodyInnerXml)
         {
             var doc = SafeXmlDocument.Create();
