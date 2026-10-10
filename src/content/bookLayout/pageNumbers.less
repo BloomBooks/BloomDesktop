@@ -20,13 +20,18 @@
             fit-content
         ); // for when we need to have a colored background, e.g. a circle.
         height: var(--pageNumber-background-width);
-        // With full bleed, --pageNumber-bottom is measured from the cut line, as page margins are
-        // (see .marginAsPadding in basePage.less). Without it, this is just --pageNumber-bottom.
+        // With full bleed, --pageNumber-bottom and --pageNumber-top are measured from the cut line,
+        // as page margins are (see .marginAsPadding in basePage.less). Without it, they are used
+        // as they are. Whichever of the two is "unset" makes its calc() invalid, and the property
+        // then falls back to unset, as it should.
         bottom: calc(
             (var(--pageNumber-bottom) + var(--fullBleed-margin-add-y)) /
                 var(--fullBleed-margin-scale)
         );
-        top: var(--pageNumber-top);
+        top: calc(
+            (var(--pageNumber-top) + var(--fullBleed-margin-add-y)) /
+                var(--fullBleed-margin-scale)
+        );
         background-color: var(--pageNumber-background-color);
         color: var(--pageNumber-color);
 
