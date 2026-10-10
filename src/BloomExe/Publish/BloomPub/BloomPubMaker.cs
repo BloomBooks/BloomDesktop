@@ -1194,7 +1194,8 @@ namespace Bloom.Publish.BloomPub
         /// in the local folder, and insert a link to it into the book.
         /// </summary>
         /// <param name="fontFileFinder">use new FontFinder() for real, or a stub in testing</param>
-        /// <param name="embedDefaultFont">true to embed Andika too (see BloomPubPublishSettings.EmbedDefaultFont)</param>
+        /// <param name="embedDefaultFont">true to embed Andika too (see BloomPubPublishSettings.EmbedDefaultFont),
+        /// and to make text in Andika New Basic use that embedded Andika</param>
         public static void EmbedFonts(
             Book.Book book,
             IWebSocketProgress progress,
@@ -1206,10 +1207,27 @@ namespace Bloom.Publish.BloomPub
             // "Andika" already in BR in the standard four faces, don't need to embed or make rule.
             if (!embedDefaultFont)
                 fontsWanted.RemoveWhere(x => x.fontFamily == PublishHelper.DefaultFont);
+            // Bloom Reader answers requests for Andika New Basic with Andika, but a host that needs
+            // Andika embedded has nothing that does that. So text in Andika New Basic gets the
+            // matching Andika faces, and below we rewrite the book's references to it to Andika.
+            var legacyAndikaFaces = embedDefaultFont
+                ? fontsWanted.Where(x => x.fontFamily == kAndikaNewBasic).ToList()
+                : new List<PublishHelper.FontInfo>();
+            foreach (var face in legacyAndikaFaces)
+            {
+                fontsWanted.Add(
+                    new PublishHelper.FontInfo
+                    {
+                        fontFamily = PublishHelper.DefaultFont,
+                        fontStyle = face.fontStyle,
+                        fontWeight = face.fontWeight,
+                    }
+                );
+            }
             // We don't need to embed Andika New Basic, because Andika will handle it.
             fontsWanted.RemoveWhere( // The default Andika font will handle Andika New Basic
                 x =>
-                x.fontFamily == "Andika New Basic"
+                x.fontFamily == kAndikaNewBasic
             );
 
             PublishHelper.CheckFontsForEmbedding(
@@ -1247,20 +1265,26 @@ namespace Bloom.Publish.BloomPub
             // Tell the document to use the new stylesheet.
             book.OurHtmlDom.EnsureStylesheetLinks("fonts.css");
             // Repair defaultLangStyles.css and other places in the output book if needed.
-            if (badFonts.Any())
+            var fontsToReplaceWithAndika = new HashSet<string>(badFonts);
+            if (legacyAndikaFaces.Any())
+                fontsToReplaceWithAndika.Add(kAndikaNewBasic);
+            if (fontsToReplaceWithAndika.Any())
             {
                 PublishHelper.FixCssReferencesForBadFonts(
                     book.FolderPath,
                     PublishHelper.DefaultFont,
-                    badFonts
+                    fontsToReplaceWithAndika
                 );
                 PublishHelper.FixXmlDomReferencesForBadFonts(
                     book.OurHtmlDom.RawDom,
                     PublishHelper.DefaultFont,
-                    badFonts
+                    fontsToReplaceWithAndika
                 );
             }
         }
+
+        // The font Bloom used before Andika; some collections and books still name it.
+        private const string kAndikaNewBasic = "Andika New Basic";
 
         /// <summary>
         /// Start with a page, which should appear to the user to contain blocks like this,
