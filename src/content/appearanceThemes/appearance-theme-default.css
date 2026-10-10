@@ -48,9 +48,17 @@
     --pageNumber-left-margin: auto;
     --pageNumber-extra-height: 0mm;
 
-    /* Theme-adjustable insets used by explicit Left/Right page-number positioning. */
-    --pageNumber-side-left-inset: var(--page-margin-left);
-    --pageNumber-side-right-inset: var(--page-margin-right);
+    /* Theme-adjustable insets used by explicit Left/Right page-number positioning.
+     * With full bleed these keep the number as far from the cut line as the text (see
+     * .marginAsPadding in basePage.less); without it they are just the page margins. */
+    --pageNumber-side-left-inset: calc(
+        (var(--page-margin-left) + var(--fullBleed-margin-add-x)) /
+            var(--fullBleed-margin-scale)
+    );
+    --pageNumber-side-right-inset: calc(
+        (var(--page-margin-right) + var(--fullBleed-margin-add-x)) /
+            var(--fullBleed-margin-scale)
+    );
     --pageNumber-full-bleed-extra-margin: 0mm;
 
     /* Themes should set to 0 if the marginBox is a different color than the page background. This affects the text padding.
@@ -60,9 +68,9 @@
 
     /* right: value in .numberedPage.side-right:after to display the page number
      * If this is used, --pageNumber-always-left-margin should be set to unset (a keyword).
-     * Note that if used, this should be set the same value as --page-margin-right, which is
-     * what this default value achieves. */
-    --pageNumber-right-margin: var(--page-margin-right);
+     * Note that if used, this should line up with the text, as --pageNumber-side-right-inset does,
+     * which is what this default value achieves. */
+    --pageNumber-right-margin: var(--pageNumber-side-right-inset);
 
     /* left: value in .numberedPage.side-right:after to display the page number */
     /*  This allows the page number to always be on the left, regardless of page side.
@@ -93,6 +101,11 @@
     --page-gutter: 0mm;
 
     --page-margin: 12mm;
+    /* The same value as --page-margin, kept under its own name because other themes may change
+     * --page-margin but still want this theme's margin for some things. For example, Edge to Edge
+     * uses it for the distance of text from the cut line when the book has full bleed.
+     * Every rule in this file that sets --page-margin must also set this. */
+    --default-theme-page-margin: 12mm;
 
     /* padding-top: value in .bloom-page.outsideFrontCover and .bloom-page.outsideBackCover */
     /* same default value as --page-margin-top, but used for outside cover pages */
@@ -154,6 +167,7 @@
 .LegalLandscape,
 .LegalLandscape {
     --page-margin: 15mm;
+    --default-theme-page-margin: 15mm;
     --page-gutter: 10mm;
 }
 .HalfLetterPortrait,/* SIL Mexico says use same as A5 */
@@ -164,19 +178,23 @@
 .Size6x9Portrait,
 .USComicPortrait {
     --page-margin: 12mm;
+    --default-theme-page-margin: 12mm;
 }
 .QuarterLetterPortrait,
 .QuarterLetterLandscape,
 .A6Portrait,
 .A6Landscape {
     --page-margin: 10mm;
+    --default-theme-page-margin: 10mm;
 }
 .Cm13Landscape {
     --page-margin: 5mm;
+    --default-theme-page-margin: 5mm;
 }
 .bloom-page[class*="Ebook"],
 .bloom-page[class*="Device"] {
     --page-margin: 10px;
+    --default-theme-page-margin: 10px;
 }
 
 .bloom-page[class*="Ebook"],

@@ -661,8 +661,20 @@ div[data-book*="branding"] {
 // ------------------------------------------------------------------------
 // application of margins, and the gutter
 // ------------------------------------------------------------------------
+
+// Sets @property to the page padding that gives @margin, plus @plus.
+// With full bleed, @margin is measured from the cut line rather than the page edge: the page is
+// enlarged and part of it lies past the cut (see --fullBleed-margin-add-x in pageBoxesSizing.less).
+// A margin of zero stays zero, so content meant to reach the edge still runs into the bleed:
+// min(add, margin * 1000) is the full correction for any margin of a millimeter or so and up,
+// and nothing for a margin of zero.
+// Without full bleed, add is 0mm and scale is 1, so this is exactly @margin + @plus.
+.marginAsPadding(@property; @margin; @add; @plus: 0px) {
+    @{property}: ~"calc((@{margin} + min(@{add}, @{margin} * 1000)) / var(--fullBleed-margin-scale) + @{plus})";
+}
+
 .bloom-page {
-    padding-top: var(--page-margin-top);
+    .marginAsPadding(padding-top; var(--page-margin-top); var(--fullBleed-margin-add-y));
 
     // at least until/if we put something in the HTML that tells us whether
     // this book wants a page number, we use this --pageNumber-show-multiplicand
@@ -673,13 +685,11 @@ div[data-book*="branding"] {
     --padding-bottom-addition: calc(
         var(--pageNumber-show-multiplicand) * var(--pageNumber-extra-height)
     );
-    padding-bottom: calc(
-        var(--page-margin-bottom) + var(--padding-bottom-addition)
-    );
+    .marginAsPadding(padding-bottom; var(--page-margin-bottom); var(--fullBleed-margin-add-y); var(--padding-bottom-addition));
 
     &.side-left {
-        padding-left: var(--page-margin-left);
-        padding-right: calc(var(--page-margin-right) + var(--page-gutter));
+        .marginAsPadding(padding-left; var(--page-margin-left); var(--fullBleed-margin-add-x));
+        .marginAsPadding(padding-right; var(--page-margin-right); var(--fullBleed-margin-add-x); var(--page-gutter));
         // Some THINKING on gutters
         // 1) If the book is constructed by folding pages into one or more signatures, it's hard to know if a signature is ever so big that a gutter is needed?
         // 2) If an A4 book is printed on A4 paper and bound via staples or spiral, then you would need an inner gutter
@@ -688,13 +698,13 @@ div[data-book*="branding"] {
     }
 
     &.side-right {
-        padding-left: calc(var(--page-margin-left) + var(--page-gutter));
-        padding-right: var(--page-margin-right);
+        .marginAsPadding(padding-left; var(--page-margin-left); var(--fullBleed-margin-add-x); var(--page-gutter));
+        .marginAsPadding(padding-right; var(--page-margin-right); var(--fullBleed-margin-add-x));
     }
     &.outsideFrontCover,
     &.outsideBackCover {
-        padding-top: var(--cover-margin-top);
-        padding-bottom: var(--cover-margin-bottom);
+        .marginAsPadding(padding-top; var(--cover-margin-top); var(--fullBleed-margin-add-y));
+        .marginAsPadding(padding-bottom; var(--cover-margin-bottom); var(--fullBleed-margin-add-y));
     }
 }
 
@@ -720,8 +730,8 @@ div.bloom-page.coverColor {
     &.side-left,
     &.side-right {
         // then use balanced margins, no gutter
-        padding-left: var(--page-margin-left);
-        padding-right: var(--page-margin-left);
+        .marginAsPadding(padding-left; var(--page-margin-left); var(--fullBleed-margin-add-x));
+        .marginAsPadding(padding-right; var(--page-margin-left); var(--fullBleed-margin-add-x));
     }
 }
 // Although normally the same, the cover can have a different margin than the
@@ -730,8 +740,8 @@ div.bloom-page.coverColor {
 .bloom-page.outsideFrontCover {
     &.side-left,
     &.side-right {
-        padding-left: var(--cover-margin-side);
-        padding-right: var(--cover-margin-side);
+        .marginAsPadding(padding-left; var(--cover-margin-side); var(--fullBleed-margin-add-x));
+        .marginAsPadding(padding-right; var(--cover-margin-side); var(--fullBleed-margin-add-x));
     }
 }
 
@@ -1089,6 +1099,12 @@ The buffer would be absent if the marginBox had a border or the page has a backg
     --topLevel-text-padding-bottom: var(--topLevel-text-padding);
     --topLevel-text-padding-right: var(--topLevel-text-padding);
     --topLevel-text-padding-left: var(--topLevel-text-padding);
+
+    // No full-bleed correction to margins; .bloom-fullBleed .bloom-page in pageBoxesSizing.less
+    // sets real values. Units are required: these are used in calc().
+    --fullBleed-margin-add-x: 0mm;
+    --fullBleed-margin-add-y: 0mm;
+    --fullBleed-margin-scale: 1;
 
     // Optional edge-aware inset for top-level text boxes.
     --fullBleed-textBoxInset-left: 0mm;

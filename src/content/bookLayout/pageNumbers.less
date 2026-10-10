@@ -20,9 +20,11 @@
             fit-content
         ); // for when we need to have a colored background, e.g. a circle.
         height: var(--pageNumber-background-width);
+        // With full bleed, --pageNumber-bottom is measured from the cut line, as page margins are
+        // (see .marginAsPadding in basePage.less). Without it, this is just --pageNumber-bottom.
         bottom: calc(
-            var(--pageNumber-bottom) +
-                var(--pageNumber-full-bleed-bottom-adjustment, 0mm)
+            (var(--pageNumber-bottom) + var(--fullBleed-margin-add-y)) /
+                var(--fullBleed-margin-scale)
         );
         top: var(--pageNumber-top);
         background-color: var(--pageNumber-background-color);
