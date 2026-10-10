@@ -1,5 +1,6 @@
 /* Edge-to-edge uses no margins on numbered content pages.
 Front and back matter keep a small margin for readability.
+With full bleed, text keeps the Default theme's distance from the cut line.
 Page-number visibility comes from appearance.json, not from this theme file. */
 
 /* The Ebook/Device selectors match the specificity of the default theme's
@@ -11,6 +12,13 @@ Page-number visibility comes from appearance.json, not from this theme file. */
 [class*="Device"].bloom-frontMatter,
 [class*="Device"].bloom-backMatter {
     --page-margin: 3mm;
+}
+
+/* With full bleed, front and back matter text is as far from the cut line as in the Default
+   theme. 3mm from the edge of the enlarged page would put it right on the cut. */
+.bloom-fullBleed .bloom-frontMatter,
+.bloom-fullBleed .bloom-backMatter {
+    --page-margin: var(--default-theme-page-margin);
 }
 
 /* This statement sets the margins on the numbered content pages */
@@ -34,11 +42,25 @@ Page-number visibility comes from appearance.json, not from this theme file. */
 }
 
 .bloom-fullBleed .numberedPage:not(.bloom-interactive-page) {
-    /* Keep top-level text boxes inside the trim/safe area when full bleed scales the page. */
-    --fullBleed-textBoxInset-left: 3mm;
-    --fullBleed-textBoxInset-right: 3mm;
-    --fullBleed-textBoxInset-top: 3mm;
-    --fullBleed-textBoxInset-bottom: 3mm;
+    /* Pictures run into the bleed, but text along an edge of the page sits as far from the cut
+       line as it would in the Default theme. The inset plus the text box's own padding is the
+       page padding that basePage.less's .marginAsPadding would give for the Default margin. */
+    --fullBleed-textBoxInset-left: calc(
+        (var(--default-theme-page-margin) + var(--fullBleed-margin-add-x)) /
+            var(--fullBleed-margin-scale) - var(--topLevel-text-padding-left)
+    );
+    --fullBleed-textBoxInset-right: calc(
+        (var(--default-theme-page-margin) + var(--fullBleed-margin-add-x)) /
+            var(--fullBleed-margin-scale) - var(--topLevel-text-padding-right)
+    );
+    --fullBleed-textBoxInset-top: calc(
+        (var(--default-theme-page-margin) + var(--fullBleed-margin-add-y)) /
+            var(--fullBleed-margin-scale) - var(--topLevel-text-padding-top)
+    );
+    --fullBleed-textBoxInset-bottom: calc(
+        (var(--default-theme-page-margin) + var(--fullBleed-margin-add-y)) /
+            var(--fullBleed-margin-scale) - var(--topLevel-text-padding-bottom)
+    );
 }
 
 [class*="Ebook"].numberedPage,
@@ -58,22 +80,6 @@ Page-number visibility comes from appearance.json, not from this theme file. */
 }
 .numberedPage.side-right::after {
     --pageNumber-right-margin: var(--pageNumber-side-right-inset);
-}
-/* Full-bleed non-landscape layouts use the generic side-left/side-right badge selectors.
-Landscape layouts have additional overrides below for picture-side placement. */
-.bloom-fullBleed .numberedPage.side-left::after {
-    /* Full-bleed output adds trim overhang; offset the badge toward the trim box. */
-    --pageNumber-left-margin: calc(
-        var(--pageNumber-side-left-inset, 0mm) +
-            (var(--full-bleed-excess-width, 0mm) / 2)
-    );
-}
-.bloom-fullBleed .numberedPage.side-right::after {
-    /* Mirror the full-bleed offset for right-side page numbers. */
-    --pageNumber-right-margin: calc(
-        var(--pageNumber-side-right-inset, 0mm) +
-            (var(--full-bleed-excess-width, 0mm) / 2)
-    );
 }
 .bloom-fullBleed .Ebook7x5Landscape.numberedPage,
 .bloom-fullBleed .Device16x9Landscape.numberedPage {

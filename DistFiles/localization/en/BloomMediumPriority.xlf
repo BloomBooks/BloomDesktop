@@ -1081,6 +1081,11 @@
         <note>BookSettings.ThemeDisablesOptionsNoticeWithLink</note>
         <note>When you translate, make sure to include some text in between square brackets. Those become the clickable link that opens Book and Page Settings.</note>
       </trans-unit>
+      <trans-unit id="BookSettings.EdgeToEdgeNeedsFullBleed" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Pictures cannot reach the edge of a printed page unless this book uses full bleed. Turn it on in [Print Publishing].</source>
+        <note>ID: BookSettings.EdgeToEdgeNeedsFullBleed</note>
+        <note>Warning on the Theme &amp; Layout page of Book Settings, shown when the "Edge to Edge" page theme is chosen but "Use full bleed page layout" is off. "Print Publishing" is the name of another page of Book Settings (BookSettings.PrintPublishingGroupLabel); translate it the same way. Keep the square brackets around it: that text becomes a link which opens that page.</note>
+      </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message" sil:dynamic="true">
         <source xml:lang="en">This feature requires a newer [Page Theme].</source>
         <note>ID: EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message</note>
