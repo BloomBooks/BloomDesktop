@@ -2480,6 +2480,7 @@ namespace BloomTests.Publish.BloomPub
 						<style type='text/css' title='userModifiedStyles'>
 							/*<![CDATA[*/
 							.Old-style[lang='xyz'] { font-family: Andika New Basic ! important; font-size: 12pt  }
+							.Quoted-style[lang='xyz'] { font-family: ""Andika New Basic"" !important; }
 							/*]]>*/
 						</style>";
             var testBook = CreateBookWithPhysicalFile(
@@ -2491,6 +2492,14 @@ namespace BloomTests.Publish.BloomPub
             RobustFile.WriteAllText(
                 langStylesPath,
                 "[lang='xyz'] { font-family: 'Andika New Basic'; direction: ltr; }"
+            );
+            var collectionStylesPath = Path.Combine(
+                testBook.FolderPath,
+                "customCollectionStyles.css"
+            );
+            RobustFile.WriteAllText(
+                collectionStylesPath,
+                ".Normal-style[lang='xyz'] { font-family: \"Andika New Basic\"; }"
             );
             var andikaPath = FileLocationUtilities.GetFileDistributedWithApplication(
                 "fonts",
@@ -2521,8 +2530,9 @@ namespace BloomTests.Publish.BloomPub
             );
             Assert.That(
                 testBook.OurHtmlDom.RawDom.OuterXml,
-                Does.Contain("font-family: Andika New Basic ! important"),
-                "test setup: the book's own style names Andika New Basic"
+                Does.Contain("font-family: Andika New Basic ! important")
+                    .And.Contain("font-family: \"Andika New Basic\" !important"),
+                "test setup: the book's own styles name Andika New Basic, bare and quoted"
             );
 
             BloomPubMaker.EmbedFonts(
@@ -2536,6 +2546,7 @@ namespace BloomTests.Publish.BloomPub
             Assert.That(File.Exists(embeddedCopy), Is.EqualTo(embedDefaultFont));
             var fontsCss = RobustFile.ReadAllText(Path.Combine(testBook.FolderPath, "fonts.css"));
             var langStyles = RobustFile.ReadAllText(langStylesPath);
+            var collectionStyles = RobustFile.ReadAllText(collectionStylesPath);
             var bookXml = testBook.OurHtmlDom.RawDom.OuterXml;
             // Nothing ever declares a font called Andika New Basic: the host, or the rewrite to
             // Andika, takes care of it.
@@ -2545,6 +2556,8 @@ namespace BloomTests.Publish.BloomPub
                 Assert.That(fontsCss, Does.Contain("font-family:'Andika'"));
                 Assert.That(langStyles, Does.Contain("font-family: 'Andika';"));
                 Assert.That(langStyles, Does.Not.Contain("Andika New Basic"));
+                Assert.That(collectionStyles, Does.Contain("font-family: 'Andika';"));
+                Assert.That(collectionStyles, Does.Not.Contain("Andika New Basic"));
                 Assert.That(bookXml, Does.Contain("font-family: Andika !important;"));
                 Assert.That(bookXml, Does.Not.Contain("Andika New Basic"));
             }
@@ -2552,6 +2565,7 @@ namespace BloomTests.Publish.BloomPub
             {
                 Assert.That(fontsCss, Does.Not.Contain("Andika"));
                 Assert.That(langStyles, Does.Contain("font-family: 'Andika New Basic';"));
+                Assert.That(collectionStyles, Does.Contain("font-family: \"Andika New Basic\";"));
                 Assert.That(bookXml, Does.Contain("font-family: Andika New Basic ! important"));
             }
         }
