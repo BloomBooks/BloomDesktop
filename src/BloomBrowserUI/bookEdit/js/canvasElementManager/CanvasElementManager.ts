@@ -1504,8 +1504,8 @@ export class CanvasElementManager {
     // This command deliberately puts nothing on the undo stack, as the older reset-crop
     // command did not either: a reset is itself a way back, so an undo of it would be a way
     // back from a way back. Rotate right and Flip do record undo, because each of them is a
-    // step forward. Those earlier steps are forgotten here, because each one would put back a
-    // turn or a crop from before the reset.
+    // step forward. Those earlier Rotate right and Flip steps are forgotten here, because each
+    // one would put back a turn or a crop from before the reset.
     public resetImage(): void {
         if (!this.activeElement) return;
         const img = getImageFromCanvasElement(this.activeElement);

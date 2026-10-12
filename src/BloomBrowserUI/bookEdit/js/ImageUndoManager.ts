@@ -164,17 +164,18 @@ export class ImageUndoManager {
     }
 
     /**
-     * Drop every recorded step that belongs to this canvas element. Reset Image calls this:
-     * it is not itself undoable, and the steps before it each put back a state from before
-     * the reset, so an Undo after it would turn or crop the picture again.
+     * Drop the Rotate right, Flip and rotation handle steps recorded for this canvas element.
+     * Reset Image calls this: it is not itself undoable, and each of those steps puts back a
+     * turn, mirror or crop from before the reset, so an Undo after it would undo the reset.
+     * A change of picture is kept: undoing it brings back the old picture with the turn and
+     * crop that picture had, which is still a sensible way back.
      */
     public forgetImageOperationUndoFor(canvasElement: HTMLElement): void {
         this.clearImageOperationUndoOnPageChange();
         this.imageOperationUndoStack = this.imageOperationUndoStack.filter(
             (item) =>
-                item.kind === "restoreImageTransform"
-                    ? item.canvasElement !== canvasElement
-                    : !canvasElement.contains(item.element),
+                item.kind !== "restoreImageTransform" ||
+                item.canvasElement !== canvasElement,
         );
     }
 

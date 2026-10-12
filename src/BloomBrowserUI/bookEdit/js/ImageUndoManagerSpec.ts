@@ -330,6 +330,22 @@ describe("ImageUndoManager rotate and flip", () => {
         expect(canvasElement.style.transform).toBe("rotate(180deg)");
         expect(manager.undoImageOperation()).toBe(false);
     });
+
+    it("forgetting an element's steps keeps a change of its picture, which Undo can still take back", () => {
+        // Change the picture, then Rotate right the new one.
+        manager.prepareUndoForImageOperation(imgElement);
+        imgElement.setAttribute("src", "new.png");
+        manager.commitPendingImageOperationUndo(imgElement);
+        manager.pushUndoForImageTransform(canvasElement);
+        setCanvasElementRotation(canvasElement, 90);
+
+        manager.forgetImageOperationUndoFor(canvasElement);
+
+        // The rotation step is gone; the picture change is still there to undo.
+        expect(manager["imageOperationUndoStack"].map((i) => i.kind)).toEqual([
+            "restoreImage",
+        ]);
+    });
 });
 
 describe("ImageUndoManager rotation handle drag", () => {
