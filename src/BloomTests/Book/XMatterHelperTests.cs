@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
@@ -568,8 +569,8 @@ namespace BloomTests.Book
                 "Should have inserted default version of missing style"
             );
             var stylesXml = stylesNode.InnerXml.Trim();
-            Assert.That(stylesXml.StartsWith("/*<![CDATA[*/"));
-            Assert.That(stylesXml.EndsWith("/*]]>*/"));
+            Assert.That(stylesXml.StartsWith("/*<![CDATA[*/", StringComparison.Ordinal));
+            Assert.That(stylesXml.EndsWith("/*]]>*/", StringComparison.Ordinal));
             // Guards against a regression to a problem where the closing wrapper got doubled.
             Assert.That(stylesXml.Substring(13), Does.Not.Contain("<![CDATA["));
             Assert.That(stylesXml.Substring(0, stylesXml.Length - 7), Does.Not.Contain("]]>"));

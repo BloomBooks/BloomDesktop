@@ -113,15 +113,28 @@ make install
 
 cd ..
 
-# Get the sources for ffmpeg and compile them.  The tag n8.0 points to the most recent official
-# release at the time this script was written (October 2025).
+# Get the sources for libopus and build them.  The tag v1.6.1 points to the most recent official
+# release at the time this was added (October 2026).  autogen.sh downloads the model data used
+# by the optional neural network features, so it needs an internet connection.
+
+git clone https://github.com/xiph/opus
+cd opus
+git config core.autocrlf false && git reset --hard
+git checkout v1.6.1
+
+./autogen.sh && ./configure $OPUS_CONFIGFLAGS --prefix=/arm64 --host=aarch64-w64-mingw32 && make install
+
+cd ..
+
+# Get the sources for ffmpeg and compile them.  The tag n8.1.3 points to the most recent official
+# release at the time this script was last updated (October 2026).
 # The configure script is designed to build in a separate build folder.
 git clone https://github.com/FFmpeg/FFmpeg
 cd FFmpeg/
 
 git config core.autocrlf false && git reset --hard
 
-git checkout n8.0
+git checkout n8.1.3
 mkdir build
 cd build
 PKG_CONFIG_PATH="$PKG_CONFIG_PATH:/arm64/lib/pkgconfig" ../configure $FFMPEG_CONFIGFLAGS \

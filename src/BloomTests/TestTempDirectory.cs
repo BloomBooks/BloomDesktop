@@ -40,6 +40,9 @@ namespace BloomTests
 
         private static string _runFolder;
 
+        /// <summary>The absolute folder <see cref="LocalizationSettingPath"/> stands for.</summary>
+        private static string _localizationFolder;
+
         /// <summary>
         /// The machine-wide temp directory, as it was before we redirected. Kept so the tests for
         /// this class can check that we really did move somewhere else.
@@ -50,6 +53,34 @@ namespace BloomTests
         internal static string RunFolder => _runFolder;
 
         /// <summary>
+        /// The relative setting path every test gives L10NSharp (LocalizationManagerWinforms.Create)
+        /// for its writable xlf files: %LOCALAPPDATA%\SIL\BloomTests\runs\&lt;key&gt;-p&lt;pid&gt;, a folder
+        /// belonging to this run alone. Bloom itself passes "SIL/Bloom", and L10NSharp rewrites the
+        /// files there holding them exclusively, so a test sharing that folder fails with "being
+        /// used by another process", or an NRE in XliffLocalizedStringCache after reading a
+        /// half-written file, whenever the developer's Bloom, an e2e Bloom or another test run is
+        /// writing them.
+        /// </summary>
+        /// <remarks>
+        /// This lives under %LOCALAPPDATA%, not in <see cref="RunFolder"/>, only because L10NSharp
+        /// insists on a path relative to %LOCALAPPDATA% (LocalizationManagerInternal.Create throws
+        /// on a rooted one), and temp can be on another drive, as on a build agent, where no
+        /// relative path reaches it. If L10NSharp is changed to accept an absolute folder, pass
+        /// Path.Combine(RunFolder, "localizations") instead, and delete
+        /// <see cref="LocalizationContainer"/> and the extra cleanup: the files would then go with
+        /// the rest of the run's temp folder.
+        /// </remarks>
+        internal static string LocalizationSettingPath { get; private set; }
+
+        /// <summary>
+        /// Where every run's <see cref="LocalizationSettingPath"/> folder lives, relative to
+        /// %LOCALAPPDATA%. A folder of its own because stale folders here get deleted, and its
+        /// parent, SIL/BloomTests, holds the "localizations" folder that older branches' test runs
+        /// still share.
+        /// </summary>
+        private const string LocalizationContainer = "SIL/BloomTests/runs";
+
+        /// <summary>
         /// Points this process's temp directory at a folder of our own, before any fixture runs, and
         /// takes the opportunity to clear out folders left by runs that died. NUnit calls this once.
         /// </summary>
@@ -58,7 +89,8 @@ namespace BloomTests
         {
             MachineTempFolder = Path.GetTempPath();
             var container = Path.Combine(MachineTempFolder, kContainerName);
-            _runFolder = Path.Combine(container, KeyForThisRun());
+            var key = KeyForThisRun();
+            _runFolder = Path.Combine(container, key);
             StartFolderEmpty(_runFolder);
 
             // Path.GetTempPath() is defined in terms of these, so from this point on every temp path
@@ -66,7 +98,22 @@ namespace BloomTests
             Environment.SetEnvironmentVariable("TMP", _runFolder);
             Environment.SetEnvironmentVariable("TEMP", _runFolder);
 
-            RemoveFoldersLeftByRunsThatDiedBeforeCleaningUp(container);
+            RemoveFoldersLeftByRunsThatDiedBeforeCleaningUp(container, _runFolder);
+
+            LocalizationSettingPath = $"{LocalizationContainer}/{key}";
+            var localAppData = Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData
+            );
+            // GetFullPath turns the '/'s into '\'s on both, so the sweep's Directory.GetDirectories
+            // reports our folder spelled exactly as _localizationFolder is.
+            _localizationFolder = Path.GetFullPath(
+                Path.Combine(localAppData, LocalizationSettingPath)
+            );
+            StartFolderEmpty(_localizationFolder);
+            RemoveFoldersLeftByRunsThatDiedBeforeCleaningUp(
+                Path.GetFullPath(Path.Combine(localAppData, LocalizationContainer)),
+                _localizationFolder
+            );
         }
 
         /// <summary>
@@ -100,19 +147,22 @@ namespace BloomTests
 
             // Failing silently is deliberate: a file some test left open must not turn a green run
             // red at the very last moment.
-            TemporaryFolder.DeleteFolderThatMayBeInUseAndIfNotFailSilently(_runFolder);
-
-            // But it should not be *silent* silent. If something is still holding a file, that is
-            // worth knowing: it usually means a test finished without disposing something, which is
-            // a small bug of its own and can make later runs behave oddly.
-            var whatIsLeft = DescribeWhyFolderCouldNotBeDeleted(_runFolder);
-            if (whatIsLeft != null)
+            foreach (var folder in new[] { _runFolder, _localizationFolder })
             {
-                Console.Error.WriteLine(
-                    $"WARNING: could not delete this test run's temp folder, {_runFolder}. "
-                        + "Something in the run probably did not release a file it opened. "
-                        + whatIsLeft
-                );
+                TemporaryFolder.DeleteFolderThatMayBeInUseAndIfNotFailSilently(folder);
+
+                // But it should not be *silent* silent. If something is still holding a file, that
+                // is worth knowing: it usually means a test finished without disposing something,
+                // which is a small bug of its own and can make later runs behave oddly.
+                var whatIsLeft = DescribeWhyFolderCouldNotBeDeleted(folder);
+                if (whatIsLeft != null)
+                {
+                    Console.Error.WriteLine(
+                        $"WARNING: could not delete this test run's temp folder, {folder}. "
+                            + "Something in the run probably did not release a file it opened. "
+                            + whatIsLeft
+                    );
+                }
             }
         }
 
@@ -209,16 +259,20 @@ namespace BloomTests
         }
 
         /// <summary>
-        /// Clear out run folders old enough that nothing can still be using them. Runs that crash,
-        /// or that fail and so deliberately keep their files, would otherwise accumulate forever.
+        /// Clear out run folders old enough that nothing can still be using them, other than this
+        /// run's own <paramref name="ours"/>. Runs that crash, or that fail and so deliberately keep
+        /// their files, would otherwise accumulate forever.
         /// </summary>
-        private static void RemoveFoldersLeftByRunsThatDiedBeforeCleaningUp(string container)
+        private static void RemoveFoldersLeftByRunsThatDiedBeforeCleaningUp(
+            string container,
+            string ours
+        )
         {
             try
             {
                 foreach (var folder in Directory.GetDirectories(container))
                 {
-                    if (folder == _runFolder)
+                    if (folder == ours)
                         continue;
                     if (DateTime.UtcNow - Directory.GetLastWriteTimeUtc(folder) < kStaleAfter)
                         continue;

@@ -41,6 +41,37 @@ describe("textHighlightManager", () => {
             expect(mapOf("Hello<br>world").text).toBe("Hello\nworld");
         });
 
+        it("puts a break where a bloom-linebreak span visually breaks the text", () => {
+            // The Shift+Enter soft return. It is an empty span whose break comes from CSS, so
+            // without a case of its own nothing separates the words either side of it and
+            // "Hello" and "world" become the single word "Helloworld" (BL-16625). A newline, not
+            // a space, so each line counts as its own sentence, just as for a <br>.
+            expect(
+                mapOf('Hello<span class="bloom-linebreak"></span>world').text,
+            ).toBe("Hello\nworld");
+        });
+
+        it("still shows the text of a bloom-linebreak span that has content in it", () => {
+            // Such a span should be empty - Book.NormalizeBloomLinebreakSpansInBookDom moves
+            // stray content out when the book is opened - but if one slips through we must
+            // still see its text rather than silently drop it (BL-15955).
+            expect(
+                mapOf('Hello<span class="bloom-linebreak">there</span>world')
+                    .text,
+            ).toBe("Hello\nthereworld");
+        });
+
+        it("maps offsets around a bloom-linebreak span back to the right text", () => {
+            const map = mapOf(
+                'Hello<span class="bloom-linebreak"></span>world',
+            );
+            // sanity check that the offsets really do straddle the span
+            expect(map.text.substring(6, 11)).toBe("world");
+
+            const range = makeRangeFromTextOffsets(map, 6, 11);
+            expect(range?.toString()).toBe("world");
+        });
+
         it("puts a break at the boundaries of block elements", () => {
             expect(mapOf("<p>Cat</p><p>Dog</p>").text).toBe("Cat\nDog\n");
         });

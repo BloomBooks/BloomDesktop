@@ -280,6 +280,8 @@ namespace BloomTests.Publish.Epub
         [TestCase("LetterPortrait", 816, 1056)] // one where dimensions are inches
         [TestCase("Ebook2x3Portrait", 475, 700)] // dimensions given in exact px
         [TestCase("Ebook7x5Landscape", 959, 690)] // px, and different aspect ratio than portrait
+        [TestCase("Device16x9Portrait", 377.95, 671.92)] // device layouts are in the lookup too
+        [TestCase("Device16x9Landscape", 671.92, 377.95)]
         [TestCase("Garbage", 559.37, 793.7)] // default to A5Portrait
         public void GetPageDimensions(string name, double expectedWidth, double expectedHeight)
         {

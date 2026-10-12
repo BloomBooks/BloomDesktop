@@ -54,7 +54,67 @@ export async function apiGetJson<T>(page: Page, endpoint: string): Promise<T> {
     return JSON.parse(response.body) as T;
 }
 
+// The pages whose Bloom has been seen to answer app/runningE2eTests with "true".
+const pagesOnE2eBlooms = new WeakSet<Page>();
+
+/**
+ * Refuse an e2e/ call to a Bloom that was not launched with --e2e, before it is made. Such a Bloom
+ * has none of the e2e/ endpoints, and it answers every call to a missing endpoint with a modal
+ * "Bloom had a problem" dialog, so a helper that polls one (waitForCollectionReady treats a 404 as
+ * "not ready yet") buries the Bloom in dialogs: 46 in 44 seconds, against a Bloom started by go.sh.
+ * A 404 from the question itself means the collection is reopening, which the caller already
+ * handles as it does a 404 from the e2e/ call.
+ */
+async function requireE2eBloom(page: Page): Promise<void> {
+    if (pagesOnE2eBlooms.has(page)) return;
+    // Through request(), so a reload of the shell mid-question is retried like any GET, whatever
+    // the method of the e2e/ call that asked.
+    const answer = await request(page, "app/runningE2eTests", {
+        method: "GET",
+    });
+    if (answer.body !== "true")
+        throw new Error(
+            "This Bloom was not launched with --e2e, so it has no e2e/ endpoints, and calling one " +
+                "would put up a problem dialog. Drive it with the fixture's Bloom, or launch one with --e2e.",
+        );
+    pagesOnE2eBlooms.add(page);
+}
+
 async function request(
+    page: Page,
+    endpoint: string,
+    options: { method: string; body?: string; contentType?: string },
+): Promise<IApiResponse> {
+    // Bloom reloads the shell document when it switches workspace tabs (and rebuilds it
+    // entirely for things like a UI language change), so a call that is in flight at that
+    // moment dies - as "Execution context was destroyed" when the evaluate loses the race, or
+    // as the fetch's own "TypeError: Failed to fetch" when the navigation aborts the request.
+    // Both are transients of the reload, so GETs retry briefly (a genuinely dead server also
+    // reads "Failed to fetch"; the deadline keeps that from hiding long). POSTs never retry
+    // here: the server may have processed the request before the reload killed the reply, and
+    // repeating a non-idempotent action would, say, make a second book - a call site that
+    // knowingly races a reload tolerates the lost reply itself and confirms the effect
+    // instead (see makeBookFromTemplate). A CLOSED page stays closed - not retried.
+    if (endpoint.startsWith("e2e/")) await requireE2eBloom(page);
+    const deadline = Date.now() + 15000;
+    for (;;) {
+        try {
+            return await attemptRequest(page, endpoint, options);
+        } catch (error) {
+            if (
+                options.method !== "GET" ||
+                !/Execution context was destroyed|Failed to fetch/i.test(
+                    String(error),
+                ) ||
+                Date.now() > deadline
+            )
+                throw error;
+            await new Promise((resolve) => setTimeout(resolve, 250));
+        }
+    }
+}
+
+async function attemptRequest(
     page: Page,
     endpoint: string,
     options: { method: string; body?: string; contentType?: string },

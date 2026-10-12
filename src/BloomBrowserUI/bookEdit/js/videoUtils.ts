@@ -44,6 +44,24 @@ function resolveSelectableVideoContainer(
 // Make sure nothing else has it.
 // If it's in a canvas element, make that canvas element active. If not, make sure no canvas element is active.
 // notifyCanvasElementManager is false when calling FROM setActiveElement, and should not be otherwise.
+/**
+ * The video container inside `canvasElement` that the user means. A canvas
+ * element normally holds one, but a table in a canvas element can have a
+ * video in any number of its cells, and there the first one in the markup is
+ * usually the wrong one: clicking a cell's video selects it, so an already
+ * selected container is the answer whenever there is one.
+ */
+export function videoContainerToRecordInto(
+    canvasElement: HTMLElement,
+): HTMLElement | null {
+    return (
+        canvasElement.querySelector<HTMLElement>(
+            `.${kVideoContainerClass}.bloom-selected`,
+        ) ??
+        canvasElement.querySelector<HTMLElement>(`.${kVideoContainerClass}`)
+    );
+}
+
 export function selectVideoContainer(
     videoContainer: Element | undefined | null,
     notifyCanvasElementManager = true,

@@ -60,12 +60,13 @@
 
 // In a bloom-canvas that has canvas elements other than the background image, we want to
 // hide the placeholder except for when the background image is active/selected.
-// Both steps are child combinators on purpose. A bloom-canvas nested inside another
-// bloom-canvas would otherwise satisfy the :has() from the outer canvas's elements, and
-// so lose its own placeholder. A canvas element is always a direct child of the
-// bloom-canvas it belongs to, except while the Image Description tool has it wrapped in
-// a bloom-describedImage, and that case hides the placeholder anyway (see
-// bloom-describedImage in editMode.less).
+// Both steps are child combinators on purpose: a table cell whose content type is
+// Picture holds a bloom-canvas of its own, so with descendant combinators the page's
+// own canvas elements satisfied the :has() and every picture cell lost its
+// placeholder. A canvas element is always a child of the bloom-canvas it belongs to,
+// except while the Image Description tool has them wrapped in a bloom-describedImage,
+// and that case hides the placeholder anyway (see bloom-describedImage in
+// editMode.less).
 .bloom-canvas.bloom-canvas:has(
         > .bloom-canvas-element:not(.bloom-backgroundImage)
     ) {

@@ -14,6 +14,11 @@
 # .deps.json beside each app - the authoritative record of what that app believes it is loading -
 # and fails the build if any two disagree about an assembly.
 #
+# "Disagree" means either the assembly version or the NuGet package it comes from. The assembly
+# version alone is not enough: libpalaso stamps every 18.0.0 prerelease 18.0.0.0, so when
+# BloomPdfMaker's SIL.Core beta0028 overwrote Bloom's beta0046 the host saw nothing wrong, and
+# Bloom died at startup with a TypeLoadException for a type only beta0046 has.
+#
 # Note that it can only run where the apps have been built side by side, which is build/Bloom.proj's
 # BuildInternal (CI and makeWindowsInstaller.bat), not an ordinary Visual Studio or ./go.sh build.
 # That is enough to stop a mismatch reaching an installer, which is the thing that hurt.
@@ -41,7 +46,7 @@ if ($depsFiles.Count -eq 0) {
 	exit 1
 }
 
-# assembly file name -> assembly version -> list of "app (package/version)" that claim it
+# assembly file name -> "assembly version, package/version" -> list of apps that claim it
 $claims = @{}
 
 foreach ($depsFile in $depsFiles) {
@@ -62,9 +67,11 @@ foreach ($depsFile in $depsFiles) {
 				$version = $asset.Value.assemblyVersion
 				if ([string]::IsNullOrEmpty($version)) { continue }
 
+				# The library name is "package/version", e.g. SIL.Core/18.0.0-beta0046.
+				$claim = "$version  $($library.Name)"
 				if (-not $claims.ContainsKey($fileName)) { $claims[$fileName] = @{} }
-				if (-not $claims[$fileName].ContainsKey($version)) { $claims[$fileName][$version] = @() }
-				$claims[$fileName][$version] += "$app (from $($library.Name))"
+				if (-not $claims[$fileName].ContainsKey($claim)) { $claims[$fileName][$claim] = @() }
+				$claims[$fileName][$claim] += $app
 			}
 		}
 	}
@@ -82,9 +89,9 @@ Write-Host "*** Co-located apps disagree about $($conflicts.Count) assembly vers
 Write-Host ""
 foreach ($fileName in $conflicts) {
 	Write-Host "  $fileName"
-	foreach ($version in ($claims[$fileName].Keys | Sort-Object)) {
-		foreach ($claimant in ($claims[$fileName][$version] | Sort-Object)) {
-			Write-Host "      $version  <- $claimant"
+	foreach ($claim in ($claims[$fileName].Keys | Sort-Object)) {
+		foreach ($claimant in ($claims[$fileName][$claim] | Sort-Object)) {
+			Write-Host "      $claim  <- $claimant"
 		}
 	}
 }
@@ -92,7 +99,9 @@ Write-Host ""
 Write-Host "These apps all install into the same folder, which can hold only one copy of each DLL,"
 Write-Host "so the last one built wins and the others run against a version they never asked for."
 Write-Host "Whoever ends up below the version it asked for will fail at run time with a"
-Write-Host "FileNotFoundException naming a file that is present (BL-16867)."
+Write-Host "FileNotFoundException naming a file that is present (BL-16867). Where only the package"
+Write-Host "differs, the host loads the wrong build without complaint and the app fails later, e.g."
+Write-Host "with a TypeLoadException for a type that only the newer package has."
 Write-Host ""
 Write-Host "Fix it by pinning the lower side up to match, with an explicit PackageReference in the"
 Write-Host "project that is behind - even for a package it never references itself and only gets"

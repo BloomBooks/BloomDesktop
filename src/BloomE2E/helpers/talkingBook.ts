@@ -341,3 +341,38 @@ function toolboxFrame(page: Page) {
 function toolboxToggle(page: Page): Locator {
     return page.locator("#pure-toggle-right");
 }
+
+/**
+ * How many of the Talking Book tool's sentence markers on the page being shown sit inside another
+ * one. Always 0 in a healthy book. A nested marker is the damage BL-10291 did (fixed in 5.1): text
+ * copied from a marked sentence and pasted back with the tool open brought its marker inside the
+ * existing one, which threw script errors and made each later paste slower.
+ */
+export async function countNestedNarrationSentences(
+    page: Page,
+): Promise<number> {
+    return editablePageFrame(page)
+        .locator(".audio-sentence .audio-sentence")
+        .count();
+}
+
+/**
+ * Wait until the Talking Book tool has marked all of the text on the page being shown, i.e. the
+ * text inside its sentence markers adds up to `text`. The tool re-marks a text box a moment after
+ * it changes, so this is how a test waits out that pass before judging what it produced.
+ */
+export async function waitForNarrationSentencesToCover(
+    page: Page,
+    text: string,
+): Promise<void> {
+    await expect
+        .poll(
+            async () =>
+                (await getNarrationSentences(page)).map((s) => s.text).join(""),
+            {
+                timeout: 30000,
+                message: `The Talking Book tool never marked all of "${text}" as recordable sentences.`,
+            },
+        )
+        .toBe(text);
+}

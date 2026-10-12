@@ -1,6 +1,6 @@
 // The one list of the tools that belong in the Edit tab's toolbox.
 //
-// ToolboxRoot renders a section only for a tool that is in the master tool list, and a tool gets
+// ToolboxRoot shows a tool only if it is in the master tool list, and a tool gets
 // there by being registered. In the running app that used to happen as a side effect of loading
 // toolboxBootstrap.ts, which also renders its own toolbox root and assigns window.toolboxBundle.
 // A test harness cannot afford those side effects, so it duplicated the list with a "keep in
@@ -61,11 +61,11 @@ export function registerAllToolboxTools(): void {
  * check. It reads the shared master list rather than a flag in this module because a caller that
  * is a React-Refresh boundary re-executes its own module during `pnpm dev` while masterToolList,
  * which lives in toolbox.ts, keeps its entries. A flag here would reset and we would get eleven
- * duplicate tools and duplicate accordion sections.
+ * duplicate tools, and duplicates in the toolbox.
  *
  * The check is per tool, not "is the list empty": a list holding some other tool is not evidence
  * that these eleven are registered, and skipping all of them on that evidence would leave the
- * toolbox missing every section.
+ * toolbox missing every tool.
  *
  * The caller passes the id and a factory rather than a tool, so that a tool the list already has
  * is never constructed. CanvasTool and GameTool each point a static field at the instance being

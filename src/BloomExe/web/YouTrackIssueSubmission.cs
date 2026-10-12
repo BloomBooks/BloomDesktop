@@ -314,7 +314,7 @@ namespace Bloom
         /// </remarks>
         public bool DeleteIssue(string issueId)
         {
-            if (!issueId.StartsWith("AUT-"))
+            if (!issueId.StartsWith("AUT-", StringComparison.Ordinal))
             {
                 return false;
             }
@@ -333,7 +333,7 @@ namespace Bloom
         /// </remarks>
         public Dictionary<string, int> GetAttachmentDataForIssue(string issueId)
         {
-            if (!issueId.StartsWith("AUT-"))
+            if (!issueId.StartsWith("AUT-", StringComparison.Ordinal))
             {
                 return null;
             }

@@ -241,7 +241,7 @@ namespace Bloom.web.controllers
                 return Array.Empty<string>();
             return Directory
                 .GetDirectories(collectionFolderPath)
-                .Where(d => !Path.GetFileName(d).StartsWith("."))
+                .Where(d => !Path.GetFileName(d).StartsWith(".", StringComparison.Ordinal))
                 .Where(d => !d.ToLowerInvariant().Contains("xmatter"))
                 .Where(d => !RobustFile.Exists(Path.Combine(d, "BloomIgnore.txt")))
                 .Where(d => Directory.GetFiles(d, "*.htm").Length > 0);

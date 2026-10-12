@@ -118,7 +118,10 @@ namespace Bloom
             try
             {
                 var xmlDeclaration = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
-                if (!includeXmlDeclaration && outputXml.StartsWith(xmlDeclaration))
+                if (
+                    !includeXmlDeclaration
+                    && outputXml.StartsWith(xmlDeclaration, StringComparison.Ordinal)
+                )
                 {
                     outputXml = outputXml.Substring(xmlDeclaration.Length);
                 }

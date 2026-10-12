@@ -88,7 +88,8 @@ namespace Bloom.Book
                 // thing; eventually the "Device" name is expected to be retired in favor of a family
                 // of ebook layouts.
                 var name = SizeAndOrientation.ToString();
-                return name.StartsWith("Device") || name.Contains("Ebook");
+                return name.StartsWith("Device", StringComparison.Ordinal)
+                    || name.Contains("Ebook");
             }
         }
 

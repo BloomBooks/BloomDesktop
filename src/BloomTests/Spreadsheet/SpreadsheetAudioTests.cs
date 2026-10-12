@@ -825,7 +825,9 @@ namespace BloomTests.Spreadsheet
             Assert.That(cell.Text, Is.EqualTo("First sentence. Second sentence."));
             Assert.That(
                 cell.Content,
-                Does.Not.Contain("sentence.</span><span"),
+                Is.Not.Matches(
+                    Contains.Substring("sentence.</span><span").Using(StringComparison.Ordinal)
+                ),
                 "the two segments must not be fused with no whitespace between them"
             );
         }

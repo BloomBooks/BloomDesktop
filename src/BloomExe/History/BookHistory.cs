@@ -105,7 +105,7 @@ namespace Bloom.History
                             "^5\\.6\\.1[0-9][0-9][0-9]",
                             RegexOptions.CultureInvariant
                         )
-                        && ev.BloomVersion.CompareTo("5.6.1055") < 0
+                        && string.Compare(ev.BloomVersion, "5.6.1055", StringComparison.Ordinal) < 0
                     )
                 )
                 {

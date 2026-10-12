@@ -1,0 +1,146 @@
+/* Edge-to-edge uses no margins on numbered content pages.
+Front and back matter keep a small margin for readability.
+Page-number visibility comes from appearance.json, not from this theme file. */
+
+/* The Ebook/Device selectors match the specificity of the default theme's
+   .bloom-page[class*="Ebook"] margin rule, which would otherwise win on those sizes. */
+.bloom-frontMatter,
+.bloom-backMatter,
+[class*="Ebook"].bloom-frontMatter,
+[class*="Ebook"].bloom-backMatter,
+[class*="Device"].bloom-frontMatter,
+[class*="Device"].bloom-backMatter {
+    --page-margin: 3mm;
+}
+
+/* This statement sets the margins on the numbered content pages */
+
+.numberedPage:not(.bloom-interactive-page) {
+    --page-margin: 0mm;
+
+    /* instead of a gap, we are using padding because the text should look centered between the image and edge of the screen */
+    --page-verticalSplit-width: 0mm; /* we don't need this; removing it makes it simpler to just have the same spacing on left and right sides */
+    --page-horizontalSplit-height: 0mm;
+
+    /* Keep side-positioned page numbers aligned with top-level text from the page edge. */
+    --pageNumber-side-left-inset: calc(
+        var(--fullBleed-textBoxInset-left, 0mm) +
+            var(--topLevel-text-padding-left, 0px)
+    );
+    --pageNumber-side-right-inset: calc(
+        var(--fullBleed-textBoxInset-right, 0mm) +
+            var(--topLevel-text-padding-right, 0px)
+    );
+}
+
+.bloom-fullBleed .numberedPage:not(.bloom-interactive-page) {
+    /* Keep top-level text boxes inside the trim/safe area when full bleed scales the page. */
+    --fullBleed-textBoxInset-left: 3mm;
+    --fullBleed-textBoxInset-right: 3mm;
+    --fullBleed-textBoxInset-top: 3mm;
+    --fullBleed-textBoxInset-bottom: 3mm;
+}
+
+[class*="Ebook"].numberedPage,
+[class*="Device"].numberedPage {
+    --pageNumber-background-color: transparent;
+    --pageNumber-outline-color: white;
+    --pageNumber-extra-height: 0mm !important; /* we put the page number on top of the image so we don't need a margin boost */
+}
+.Ebook2x3Portrait.numberedPage,
+.Device16x9Portrait.numberedPage {
+    /* this rule will apply more generally than we'd prefer, but the common situation we're improving here
+    is picture on top, text on the bottom, we need to make room for the page number */
+    --pageNumber-extra-height: 12mm !important;
+}
+.numberedPage.side-left::after {
+    --pageNumber-left-margin: var(--pageNumber-side-left-inset);
+}
+.numberedPage.side-right::after {
+    --pageNumber-right-margin: var(--pageNumber-side-right-inset);
+}
+/* Full-bleed non-landscape layouts use the generic side-left/side-right badge selectors.
+Landscape layouts have additional overrides below for picture-side placement. */
+.bloom-fullBleed .numberedPage.side-left::after {
+    /* Full-bleed output adds trim overhang; offset the badge toward the trim box. */
+    --pageNumber-left-margin: calc(
+        var(--pageNumber-side-left-inset, 0mm) +
+            (var(--full-bleed-excess-width, 0mm) / 2)
+    );
+}
+.bloom-fullBleed .numberedPage.side-right::after {
+    /* Mirror the full-bleed offset for right-side page numbers. */
+    --pageNumber-right-margin: calc(
+        var(--pageNumber-side-right-inset, 0mm) +
+            (var(--full-bleed-excess-width, 0mm) / 2)
+    );
+}
+.bloom-fullBleed .Ebook7x5Landscape.numberedPage,
+.bloom-fullBleed .Device16x9Landscape.numberedPage {
+    /* On full-bleed pages we want the page number positioned based on the ideal place where
+       the page should be trimmed, not the actual edge of the page.  Only the left (or right)
+       edge needs to be adjusted.  The bottom edge is already situated properly, probably
+       because the --full-bleed-excess-height variable calculates out to 0mm. (BL-15611) */
+    --pageNumber-full-bleed-extra-margin: calc(
+        var(--full-bleed-excess-width) / 2
+    );
+}
+.Ebook7x5Landscape.numberedPage::after,
+.Device16x9Landscape.numberedPage::after {
+    --pageNumber-bottom: 0mm;
+
+    --pageNumber-top: unset;
+    --pageNumber-font-size: 11pt;
+    border-radius: 50%;
+    --pageNumber-background-color: #ffffff;
+    --pageNumber-background-width: 33px;
+    --pageNumber-always-left-margin: var(--pageNumber-side-left-inset);
+    --pageNumber-right-margin: deliberately-invalid; /* prevents right being set at all. unset does not work. Prevent centering for this layout */
+}
+.bloom-fullBleed
+    .Ebook7x5Landscape.numberedPage.pictureOnRight.pictureOnRight::after,
+.bloom-fullBleed
+    .Device16x9Landscape.numberedPage.pictureOnRight.pictureOnRight::after {
+    /* Adjust the page number position for full bleed pages (BL-15611) */
+    --pageNumber-right-margin: calc(
+        var(--pageNumber-side-right-inset, 0mm) +
+            (var(--full-bleed-excess-width, 0mm) / 2)
+    );
+}
+.Ebook7x5Landscape.numberedPage.pictureOnRight.pictureOnRight::after,
+.Device16x9Landscape.numberedPage.pictureOnRight.pictureOnRight::after {
+    --pageNumber-right-margin: var(--pageNumber-side-right-inset);
+    --pageNumber-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
+    --pageNumber-always-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
+}
+
+/* using "where:" so that the user's custom appearance can override the theme if specified */
+.numberedPage:where(:not(.bloom-interactive-page)) {
+    --topLevel-text-padding: 0.5em;
+}
+.numberedPage:not(.bloom-interactive-page) {
+    /* Keep the format button clear of the page-number badge in lower-left text layouts. */
+    --formatButton-pageNumber-dodge: 20px;
+}
+
+.Ebook2x3Portrait.numberedPage:not(.bloom-interactive-page),
+.Device16x9Portrait.numberedPage:not(.bloom-interactive-page) {
+    /* Portrait Ebook/Device pages leave the page number centered (the default for these
+       page sizes) and reserve 12mm below the text box for it (--pageNumber-extra-height
+       above), so the number sits below the text box wherever it is placed horizontally
+       and the button need not move (BL-14901) */
+    --formatButton-pageNumber-dodge: 0px;
+}
+.Ebook7x5Landscape.numberedPage:not(.bloom-interactive-page),
+.Device16x9Landscape.numberedPage:not(.bloom-interactive-page) {
+    /* how far the format button moves to clear this theme's page number when the user's
+       Page Numbers setting forces the number to the bottom left; editMode.less applies
+       it in that situation whatever the rules below decide (BL-14901) */
+    --formatButton-pageNumber-dodge-when-forced-left: 20px;
+}
+.Ebook7x5Landscape.numberedPage.pictureOnRight.pictureOnRight,
+.Device16x9Landscape.numberedPage.pictureOnRight.pictureOnRight {
+    /* On these pages the page number moves to the right side (rule above),
+       so the format button has nothing to dodge (BL-14901) */
+    --formatButton-pageNumber-dodge: 0px;
+}

@@ -20,7 +20,12 @@ namespace Bloom
         public static string ToLocalhost(this string fileName)
         {
             // don't do this if it is done already
-            if (fileName.StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
+            if (
+                fileName.StartsWith(
+                    BloomServer.ServerUrlWithBloomPrefixEndingInSlash,
+                    StringComparison.Ordinal
+                )
+            )
                 return fileName;
 
             return BloomServer.ServerUrlWithBloomPrefixEndingInSlash
@@ -29,7 +34,12 @@ namespace Bloom
 
         public static string FromLocalhost(this string uri)
         {
-            if (uri.StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
+            if (
+                uri.StartsWith(
+                    BloomServer.ServerUrlWithBloomPrefixEndingInSlash,
+                    StringComparison.Ordinal
+                )
+            )
                 uri = uri.Substring(BloomServer.ServerUrlWithBloomPrefixEndingInSlash.Length)
                     .UnescapeFileNameForHttp();
             return uri;
@@ -101,10 +111,13 @@ namespace Bloom
         /// reason to withhold it -- but note that it is unverified on Linux, since we do not
         /// currently build or test there. Before this, Shell.FinishPuttingShellInFront toggled topmost
         /// instantly, so Linux did not hold it at all. BL-16784.
+        ///
+        /// Does nothing under --dont-disturb: taking the foreground is exactly what a Bloom driven
+        /// by something other than the person at the keyboard must not do (Program.StartupDontDisturb).
         /// </summary>
         public static void BringToFrontNow(this Form form)
         {
-            if (form.IsDisposed)
+            if (form.IsDisposed || Program.StartupDontDisturb)
                 return;
             form.TopMost = true;
             form.Activate();

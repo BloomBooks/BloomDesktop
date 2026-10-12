@@ -352,7 +352,7 @@ namespace BloomTests.web.controllers
                 // an unusual DNS or WINS setup.
                 var bookFolder = @"\\?\" + realFolder.FolderPath;
                 Assert.That(
-                    bookFolder.StartsWith("\\"),
+                    bookFolder.StartsWith("\\", StringComparison.Ordinal),
                     "Sanity check: the path has to trip the guard or this test proves nothing"
                 );
 

@@ -101,7 +101,7 @@ namespace Bloom
                     )
                 )
                 {
-                    if (line.TrimStart().StartsWith("#"))
+                    if (line.TrimStart().StartsWith("#", StringComparison.Ordinal))
                         continue; //comment
 
                     var parts = line.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);

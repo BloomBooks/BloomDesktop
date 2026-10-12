@@ -19,15 +19,34 @@ House rules:
 
 ---
 
-## 2026-09-17 — A running Bloom locks Bloom.xlf and fails the C# suite
-- **Cut:** `LocalizationManager.Create` writes `%LOCALAPPDATA%\SIL\Bloom\localizations\en\Bloom.xlf`,
-  a machine-global path outside the per-run temp isolation, so the developer's own running Bloom.exe
-  collides with a test run: `IOException ... being used by another process` out of `BookDataTests.Setup`
-  (also seen as an NRE in `XliffTransUnitUpdater..ctor` from the same path). It looks like a flaky test.
-- **Idea:** point the localization folder at the per-run temp dir the way `TestTempDirectory.cs` already
-  does for everything else, or at minimum say in AGENTS.md that this one path is still shared — it
-  currently reads as though `agent-dotnet.sh` plus temp isolation fully solve "build/test while Bloom runs".
-- **Context:** hit twice on BL-16806 (PR #8286); passed clean on re-run both times.
+## 2026-10-08 — `CI=true` to satisfy pnpm silently turns off `--dont-disturb`
+- **Cut:** pnpm refuses to run a script when a worktree's deps are stale (`Aborted removal of modules directory due to no TTY`) and the way past it is `CI=true`. The e2e fixture reads that same variable: it then launched Bloom *without* `--dont-disturb` ("Bloom's windows take the foreground as they would for a user"), so a preflight e2e run seized the developer's screen for two minutes. Two unrelated tools, one overloaded variable.
+- **Idea:** key the disturb decision off a `BLOOM_E2E_*` variable rather than bare `CI`, or keep `--dont-disturb` unless the run is really on a CI runner (`GITHUB_ACTIONS`/`TEAMCITY_VERSION` present). Failing that, name the trap in `src/BloomE2E/README.md` beside the existing `CI` note.
+- **Context:** BL-16806-turn-off-icu preflight, running `publish-text-languages.spec.ts` after a rebase left `src/content` deps stale.
+
+## 2026-10-08 — A master merge can need a file only the full front-end build makes
+- **Cut:** Master's page-size work made C# read `output/browser/pageSizesLookup.json`, which only `pnpm build` writes. In a worktree whose `output/browser` predates that, 30 C# tests failed and every Bloom an agent started raised a "Could not locate the required file" Debug.Assert dialog on the developer's screen, and agents are told never to run `pnpm build`.
+- **Idea:** Have `go.sh`, `build/agent-dotnet.sh` and the e2e fixture run `pnpm --dir src/content run build:pageSizes` (instant) when the file is missing or older than `DistFiles/pageSizes.json`, or name that command in `src/BloomBrowserUI/AGENTS.md`.
+- **Context:** BL-16818-tables preflight, after merging master.
+
+## 2026-10-07 — The pre-commit hook commits files that were left unstaged
+- **Cut:** Committing a merge with only the conflict files staged also committed four modified files that were never `git add`ed. The hook runs lint-staged with `--no-stash` and then a C# formatter; which step added them is not yet known. Nothing in the output says the commit grew.
+- **Idea:** Find the step and make it re-stage only the paths that were staged when the hook started, or document that a partial commit must be checked with `git show --stat HEAD` afterwards.
+- **Context:** BL-16818-tables, merging master; caught before pushing and the merge commit was rebuilt.
+
+## 2026-10-02 — Merging master reformats master's own files, and the PR then carries the churn
+- **Cut:** The pre-commit hook's `pretty-quick --staged` formats every staged file, and a merge stages everything master changed. A merge of origin/master reformatted two `src/BloomE2E/tests/*.spec.ts` that master committed without prettier's formatting; keeping master's versions takes `git commit --no-verify`, because the hook reformats them again.
+- **Idea:** Format master's e2e specs once so a merge stops rewriting them.
+- **Context:** BL-16859 merge commit f44dafe8fe, 2026-10-02.
+
+## 2026-09-30 — `winformsUia.ps1 close` can pick a disabled window in a stack of dialogs
+- **Cut:** With about 40 "Bloom had a problem" dialogs stacked, `close -Window ReactDialog` reported "closed" for the first match, which was disabled (`enabled=False`) and ignored the close. Two-dialog stacks made later both came up enabled, so this was not reproduced.
+- **Idea:** When several windows match, have `close` prefer the enabled one, and report failure when the window is still there afterwards.
+
+## 2026-09-25 — An install left a package folder empty, and `pnpm install` would not repair it
+- **Cut:** eslint (so `pnpm lint` and the pre-commit hook, which blocks every commit) died with `Cannot find module 'object-keys'`. The lockfile was fine: `node_modules/.pnpm/object-keys@1.1.1/node_modules/object-keys` existed but was empty, and `pnpm install --frozen-lockfile` answered "Already up to date" even after that folder was deleted. Copying the folder from another worktree fixed it.
+- **Idea:** Document the repair (delete the package's `.pnpm` folder and run `pnpm install --force`, or copy it from a healthy worktree), or have `init.sh` check for empty package folders after installing.
+- **Context:** BL-16893 worktree, 2026-09-25; the empty folder dated from the worktree's install on 2026-09-24.
 
 ## 2026-09-16 — The React component tests log 249 errors in a fully green run
 - **Cut:** A passing nightly (35076535729) carries 249 `[WebServer] Error reported from component:
@@ -96,10 +115,16 @@ House rules:
   book may need selecting) instead of the generic not-found message.
 - **Context:** BloomDesktop PR #8283 preflight; worked around by driving Playwright directly.
 
+## 2026-09-10 — `vitest run` finishes every test and then never exits
+- **Cut:** In a fresh worktree (vitest 4.0.8), `pnpm exec vitest run` prints every ✓ line, then hangs with no summary and no exit code; `--no-file-parallelism` and `--pool=forks` hang the same way. It looks like a hung test, but every directory run alone passes and then hangs too: something keeps the event loop alive after teardown.
+- **Idea:** Find what keeps the process alive after teardown. Until then, document the workaround: run one directory at a time under `timeout` (e.g. `timeout 200 pnpm --dir src/BloomBrowserUI exec vitest run bookEdit/toolbox`) and read the ✓ lines; `timeout` does not kill the pnpm child, so a loop over directories must be watched.
+- **Context:** preflight on BL-16859; the whole front-end suite (~350 tests) was green this way but took an hour to establish.
+
 ## 2026-09-04 — Launcher times out waiting for BLOOM_AUTOMATION_READY while a direct dotnet watch works
 - **Cut:** `go.mjs` / `launcherControl.mjs --ensure-running` built Bloom in ~6s, printed `dotnet watch ⌚ Loaded 2 project(s)`, then never saw the ready marker and tore the whole stack down after the 120s `launchTimeoutMs` in `scripts/watchBloomExe.mjs` — three times in a row. Running `dotnet watch run --project src/BloomExe/BloomExe.csproj --non-interactive -- --automation` by hand from the same shell started Bloom and printed `BLOOM_AUTOMATION_READY` within seconds (alongside a running BetaInternal, so it was not the single-instance token).
 - **Idea:** Find what differs when `watchBloomExe.mjs` spawns dotnet watch (`--vite-port`/`--label` args, control-port env, stdout piping) and make the launcher print dotnet watch's later output or the Bloom PID's window titles when it gives up, so the failure is diagnosable. Consider making the timeout configurable.
 - **Context:** worktree Format-Gear-Positioning-356 at the Version6.5 tip, while fixing BL-16809; hit by Claude.
+- seen again 2026-09-22: main worktree `C:\github\BloomDesktop` on Version6.5, three launches in a row, this time with `--nowatch`, so the `dotnet watch` layer is not the culprit. The log stops after `dotnet PID: <n>`. Running `node ./src/BloomBrowserUI/scripts/dev.mjs --port 51990` and then `dotnet run --project src/BloomExe/BloomExe.csproj -- --automation --vite-port 51990` by hand reached the marker in about 20s and drove fine for an hour. Worth ruling out stdout piping from a plain `dotnet run` child before anything else. Hit by Claude while doing BL-16893.
 
 ## 2026-09-04 — An e2e test cannot use a data-testid you just added to the front end
 - **Cut:** `src/BloomE2E` launches a real `Bloom.exe`, and that Bloom loads its UI from the
@@ -139,6 +164,15 @@ House rules:
   `output/browser`), and log the chosen path once at launch so a stale exe is visible in the output.
 - **Context:** Test Case ID 358, PR #8289; cost about 20 minutes of misdiagnosis.
 
+## 2026-09-02 — Two BloomE2E sessions on one machine compete for the same port block
+
+- **Cut:** BloomE2E runs from two worktrees at once (e.g. a developer session plus
+  improve-test-automation-coverage workers) probe the same candidate port block, so a launch
+  can time out while another session's Blooms hold the ports. It looks like a real regression.
+  (Their user settings no longer collide: each launched Bloom has its own --user-settings-folder.)
+- **Idea:** A cross-session lock file that launchBloom waits on, or a per-session port range.
+- **Context:** preflight of PR #8275.
+
 ## 2026-09-02 — notion_automation.py needs Python, which not every dev machine has
 
 - **Cut:** `.github/skills/improve-test-automation-coverage/notion_automation.py` is the only way the
@@ -152,6 +186,17 @@ House rules:
   split (`[Automated portion]` / `[Manual portion]`, related both ways) that `add-e2e-test` asks
   for and the Python script has no command for either.
 
+## 2026-09-01 — run-bloom skill doesn't warn that Bloom's ports change across restarts
+
+- **Cut:** Bloom picks a free HTTP port at startup, so after `Program.RestartBloom` (e.g.
+  toggling "Show translations which have not been approved yet") the launcher-relaunched Bloom
+  can come back on different HTTP/CDP ports (observed 8089→8095→8092 in one session). Tooling
+  holding a fixed HTTP port or CDP endpoint silently breaks mid-session.
+- **Idea:** Warn in `.claude/skills/run-bloom/SKILL.md` and point at the launcher's control
+  server (`output/bloom-launcher.json` → `/status`), which reports the current
+  `httpPort`/`cdpPort`, so tooling re-asks it around anything that can restart Bloom.
+- **Context:** hit while building the UI-language e2e test on branch automateTests.
+
 ## 2026-09-01 — VR suite: a slow first preview load fails its case via Playwright's default 30s goto timeout
 
 - **Cut:** The first case after Bloom starts pays for the first book-preview load (~33s observed
@@ -163,6 +208,40 @@ House rules:
   TimeoutError inside the retry loop.
 - **Context:** Seen once in three otherwise-identical local runs while verifying the
   bloom-testing-inputs rewire; not the BL-16612 hang (Bloom kept serving all later cases).
+
+## 2026-08-24 — The book folder's own basePage.css can be older than the one you just built
+
+- **Cut:** Bloom serves `basePage.css` for the edit page out of the *book* folder, and the copy
+  there (`<collection>/<book>/basePage.css`) was 71330 bytes with no bloom-table rules at all,
+  byte-for-byte the size of `D:/bloom/output/browser/bookLayout/basePage.css` from Aug 8, while
+  this worktree's freshly built copy was 74244 bytes and had them. The symptom does not look like
+  a CSS problem: the table loses `display: grid`, so every cell becomes a full-width block, cells
+  report a height of 1px, and Bloom's picture-fitting code writes nonsense geometry from those
+  sizes. Rebuilding the worktree's `basePage.css` changes nothing, because nothing re-copies it.
+- **Idea:** When a table (or anything else whose CSS lives in `basePage.css`) is not laid out as
+  expected, fetch the stylesheet the page actually loaded and grep it, rather than reading the
+  built file: `link[rel=stylesheet]` in the page iframe points at the book folder. Copying
+  `output/browser/bookLayout/basePage.css` over the book's copy fixes it immediately. Worth
+  finding out what decides not to re-copy it, and whether a book last opened by another checkout's
+  Bloom keeps that checkout's support files.
+- **Context:** `Add-Tables`, verifying table picture cells in the running Bloom. Cost about an
+  hour of chasing a layout bug that was a stale stylesheet.
+
+## 2026-08-24 — A changed bloom-table.css never reaches basePage.css
+
+- **Cut:** `basePage.less` pulls the library's structural styles in with
+  `@import (inline) ".../node_modules/bloom-table/dist/bloom-table.css"`, but `build:less-inner`
+  (watchLessManager.js) decides whether to recompile by comparing the mtimes of the imports LESS
+  reports, and that inline CSS is not among them. So after the library changes its CSS the built
+  `output/browser/bookLayout/basePage.css` stays stale and the running Bloom lays tables out by
+  the old rules, with nothing saying so.
+- **Idea:** Have the manager count an inline-imported file among an entry's dependencies (the
+  regex in `scanLessImports` already matches `@import (inline) "..."`; it is `resolveLessImport`
+  plus the post-compile `result.imports` list that drop it). Meanwhile: delete
+  `output/browser/bookLayout/basePage.css` and run `pnpm --dir src/content run build:less-inner`,
+  which rebuilds when the output is missing.
+- **Context:** `Add-Tables`, updating Bloom to the current bloom-table. The one stale property was
+  `overflow: hidden` where the library now needs `overflow: clip` for nested tables.
 
 ## 2026-08-28 — Moving a worktree between master and Version6.5 changes which settings file Bloom reads
 

@@ -376,7 +376,7 @@ namespace Bloom.web.controllers
             // it doesn't apply when we're only reading times out of a file the user chose.
             if (!usingManualTimings && !Platform.IsLinux)
             {
-                if (directoryName.StartsWith("\\"))
+                if (directoryName.StartsWith("\\", StringComparison.Ordinal))
                 {
                     // I'm intentionally not adding this to the l10n load, as it seems like a pretty sophisticated thing, to be running in a VM
                     // or directly off a server, and it seems a bit hard to translate.  Ref BL-9959.
@@ -925,7 +925,7 @@ namespace Bloom.web.controllers
                 // split into four fields, with the last one being the label. The label is everything between the quotes.
                 string[] fields = line.Split(new char[] { ' ' }, 4);
 
-                if (fields.Length < 4 || !fields[3].StartsWith("\""))
+                if (fields.Length < 4 || !fields[3].StartsWith("\"", StringComparison.Ordinal))
                 {
                     // so I don't know that Aeneas would ever fail to produce a valid line, but if it did, let's just
                     // output a line that sticks a label at a point in time after the last segment so that someone could

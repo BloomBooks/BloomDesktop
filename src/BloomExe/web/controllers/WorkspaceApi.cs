@@ -17,8 +17,17 @@ namespace Bloom.web.controllers
         // argument, and set this in that constructor.
         public WorkspaceView WorkspaceView;
 
+        /// <summary>
+        /// Closes and reopens the collection once the UI thread is idle. The React Collection
+        /// Settings dialog uses this after saving a change that needs a restart, so that its reply
+        /// reaches the dialog before the collection goes away.
+        /// </summary>
+        public static Action ReopenCollectionWhenIdle;
+
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
+            ReopenCollectionWhenIdle = () => Application.Idle += ReopenCollection;
+
             apiHandler.RegisterEndpointHandler(
                 "workspace/showLegacySettingsDialog",
                 HandleShowLegacySettingsDialog,
@@ -57,8 +66,6 @@ namespace Bloom.web.controllers
             // that thread lock the API processing.  (BL-15858)
             Application.Idle += ShowLegacySettingsDialog;
 
-            // When the fully react dialog is ready, we'll do this instead:
-            // _webSocketServer.LaunchDialog("CollectionSettingsDialog");
             request.PostSucceeded();
         }
 
@@ -66,6 +73,12 @@ namespace Bloom.web.controllers
         {
             Application.Idle -= ShowLegacySettingsDialog;
             WorkspaceView.OpenLegacySettingsDialog();
+        }
+
+        private void ReopenCollection(object sender, EventArgs e)
+        {
+            Application.Idle -= ReopenCollection;
+            WorkspaceView.ReopenCollection();
         }
 
         private void HandleHelpAction(ApiRequest request)
@@ -180,6 +193,14 @@ namespace Bloom.web.controllers
                         "Toast test: unobtrusive warning",
                         "Toast test longer unobtrusive message.",
                         new ApplicationException("Toast test unobtrusive error")
+                    );
+                    break;
+                case "errorReporter/notifyWithReport":
+                    // Not a toast: the ordinary "Bloom had a problem" notify dialog, with its Report
+                    // button, which is otherwise hard to bring up on purpose.
+                    SIL.Reporting.ErrorReport.NotifyUserOfProblem(
+                        new ApplicationException("Toast test notify with report"),
+                        "Toast test: notify dialog with a Report button"
                     );
                     break;
                 case "workspace/teamCollectionClobber":

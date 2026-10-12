@@ -23,7 +23,9 @@ node .claude/skills/run-bloom/launcherControl.mjs --ensure-running --wait-ready 
 `--ensure-running` handles everything: stale discovery files, a launcher mid-startup (waits
 instead of double-launching), an uninitialized worktree (go.mjs runs `./init.sh` itself,
 `phase:"init"`), and starting the stack decoupled from your session (an Orca terminal tab when
-available, else detached to `output/bloom-launcher.log`). Never launch `./go.sh` tied to your own
+available, else detached to `output/bloom-launcher.log`). It starts Bloom with `--dont-disturb`, so
+none of Bloom's windows takes the foreground or the keyboard from the person at the machine (a
+Bloom already running keeps whatever it was started with). Never launch `./go.sh` tied to your own
 shell except when debugging the launcher itself, and never run an already-built `Bloom.exe`
 directly (it is stale).
 
@@ -55,6 +57,8 @@ For arbitrary DOM/console/network work, attach Playwright (loaded from
 `chromium.connectOverCDP`; the scripts above are templates. On the Edit tab the page content is
 inside the iframe named `page`. Drive the UI by clicking and typing; use Bloom's HTTP API only for
 scripted batch setup, from inside the page (`reference.md`, "Driving Bloom HTTP APIs over CDP").
+To build an Android app on Publish > Apps (Build stays disabled until Customize's required
+settings are filled in), follow `reference.md`, "Building an app (Publish > Apps)".
 Never send a request to a live Bloom just to see whether an endpoint exists: an unknown endpoint
 raises a modal error dialog on the developer's screen. Grep `src/BloomExe/web` instead.
 
@@ -72,14 +76,22 @@ node .claude/skills/run-bloom/launcherControl.mjs --shutdown     # everything do
 
 ## Behavior notes
 
-- **The human closing Bloom (window X) shuts the whole stack down** (by design, to free memory).
-  A launcher that was there and is gone usually means exactly that; `--ensure-running` again when
-  needed. dotnet-watch rebuilds after C# edits do not tear the stack down.
+- **Several Blooms run at once, one per worktree.** Each takes the next free block of ports from
+  8089 up, so a Bloom another worktree started never stops yours from starting. When
+  `--status` says nobody is home in your worktree, start your own with `--ensure-running`, even
+  while other Blooms are running; don't wait for them or stop them.
+- **The human closing Bloom (window X), or closing the Orca tab its `go.sh` runs in, shuts the
+  whole stack down** (by design, to free memory). A launcher that was there and is gone usually
+  means exactly that; `--ensure-running` again when needed. dotnet-watch rebuilds after C# edits
+  do not tear the stack down.
 - `/status`'s `sourceChangedSinceReady` says whether a restart would pick up .NET changes; it also
   drives the dev-only restart toast Bloom shows itself.
-- **Port 8089 is first-come, not per-worktree.** Always take `httpPort`/`cdpPort` from the
-  launcher status; a hard-coded 8089 may be another worktree's Bloom.
-- Human path: `./go.sh` in a terminal; Ctrl+C tears everything down.
+- **Port 8089 is first-come, not per-worktree.** Always take `httpPort`/`cdpPort` from your own
+  launcher's status, including in scratch scripts; a hard-coded 8089 or 8091 drives whichever
+  Bloom got there first, which may be another worktree's.
+- Human path: `./go.sh` in a terminal; Ctrl+C tears everything down. That Bloom behaves normally,
+  taking the foreground as it would for a user. An agent that has to run `./go.sh` itself passes
+  `--dont-disturb` (`./go.sh --dont-disturb`), which is what `--ensure-running` does for you.
 
 ## No launcher? (Bloom started some other way)
 
@@ -87,8 +99,9 @@ Discover instances with `node .claude/skills/run-bloom/bloomProcessStatus.mjs --
 (HTTP-based; each entry has httpPort/cdpPort/processId/detectedRepoRoot) and stop with
 `killBloomProcess.mjs`. That path has sharp edges (WMI going blind, under-kills, orphaned
 watchers): read "Field-verified gotchas" in `reference.md` first, and never kill another
-worktree's Bloom without asking. A Bloom from the wrong worktree is a blocker, not something to
-work around.
+worktree's Bloom without asking. Never drive a Bloom whose `detectedRepoRoot` is another
+worktree: it runs that worktree's code, not yours. Start your own with `--ensure-running` instead;
+it runs alongside.
 
 ## Beyond the web content
 

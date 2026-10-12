@@ -41,7 +41,7 @@ import * as toastr from "toastr";
 import WebSocketManager, {
     IBloomWebSocketEvent,
 } from "../../../utils/WebSocketManager";
-import { getActiveToolId, ToolBox } from "../toolbox";
+import { getActiveToolId } from "../toolbox";
 import * as React from "react";
 import { renderRoot } from "../../../utils/reactRender";
 import {
@@ -71,7 +71,7 @@ import {
     FeatureStatus,
     getFeatureStatusAsync,
 } from "../../../react_components/featureStatus";
-import { animateStyleName } from "../../../utils/shared";
+import { animateStyleName, getPageIframeBody } from "../../../utils/shared";
 import jQuery from "jquery";
 import {
     AudioHighlightManager,
@@ -2374,7 +2374,7 @@ export default class AudioRecording implements IAudioRecorder {
     // together in one place.
     public async setShowingImageDescriptions(isOn: boolean) {
         this.showingImageDescriptions = isOn;
-        const page = ToolBox.getPage();
+        const page = getPageIframeBody();
         if (this.showingImageDescriptions) {
             if (page) {
                 // we should always have a page, but testing makes lint happy
@@ -3369,7 +3369,7 @@ export default class AudioRecording implements IAudioRecorder {
             // the async actions complete.
             await this.resetCurrentAudioElementAsync(currentTextBox);
 
-            // cleanUpNbsps() in toolbox.ts runs synchronously while we are suspended at the
+            // cleanUpNbsps() in pageEditingMarkup.ts runs synchronously while we are suspended at the
             // first await above.  It unconditionally sets editableDiv.innerHTML, detaching
             // the span that resetCurrentAudioElementAsync just registered as highlightedElement.
             // IDs are preserved through that replacement, so we can recover the live DOM node.
@@ -4820,7 +4820,7 @@ export default class AudioRecording implements IAudioRecorder {
 
     private getElementsToUpdateForCursor(): (Element | null)[] {
         const elementsToUpdate: (Element | null)[] = [];
-        elementsToUpdate.push(document.getElementById("toolbox"));
+        elementsToUpdate.push(document.querySelector(".toolboxRoot"));
 
         const pageBody = this.getPageDocBody();
         if (pageBody) {

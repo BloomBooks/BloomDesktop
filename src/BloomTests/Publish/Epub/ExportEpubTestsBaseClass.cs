@@ -334,7 +334,7 @@ namespace BloomTests.Publish.Epub
 
         internal static string StripXmlHeader(string data)
         {
-            var index = data.IndexOf("?>");
+            var index = data.IndexOf("?>", StringComparison.Ordinal);
             if (index > 0)
                 return data.Substring(index + 2);
             return data;

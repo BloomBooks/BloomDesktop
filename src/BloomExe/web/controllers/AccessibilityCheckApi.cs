@@ -547,7 +547,10 @@ namespace Bloom.web.controllers
                     .Reflection.Assembly.GetEntryAssembly()
                     .ManifestModule.FullyQualifiedName;
                 var folder = Path.GetDirectoryName(programPath);
-                if (folder.EndsWith("/output/Debug") || folder.EndsWith("/output/Release"))
+                if (
+                    folder.EndsWith("/output/Debug", StringComparison.Ordinal)
+                    || folder.EndsWith("/output/Release", StringComparison.Ordinal)
+                )
                     folder = "";
                 var scriptPath = Path.Combine(folder, "DistFiles", "InstallAce.sh");
                 _webSocketProgress.MessageWithoutLocalizing(

@@ -591,40 +591,15 @@ namespace Bloom.Publish.Epub
 
         public static void GetPageDimensions(string pageSize, out double width, out double height)
         {
-            var path = FileLocationUtilities.GetFileDistributedWithApplication("pageSizes.json");
-            var json = RobustFile.ReadAllText(path);
-            var sizes = DynamicJson.Parse(json).sizes;
-            // FirstOrDefault would be cleaner, but I can't figure out how to use it with dynamic data.
-            for (int i = 0; i < sizes.Count; i++)
+            const double pixelsPerMillimeter = 96d / 25.4d;
+            if (!SizeAndOrientation.TryGetSizeInMillimeters(pageSize, out var dimensions))
             {
-                if (sizes[i].size == pageSize)
-                {
-                    width = ConvertDimension(sizes[i].width);
-                    height = ConvertDimension(sizes[i].height);
-                    return;
-                }
+                // Unknown: use A5Portrait.
+                SizeAndOrientation.TryGetSizeInMillimeters("A5Portrait", out dimensions);
             }
-            // unknown: use first (which should be A5Portrait)
-            width = ConvertDimension(sizes[0].width);
-            height = ConvertDimension(sizes[0].height);
-        }
 
-        // Method must parse the json input in a culture invariant manner, since the computer's culture may not match
-        // the culture of the json file.
-        // Returns the dimension in pixels at 96 DPI. Supported units: "px" (already pixels),
-        // "mm", and anything else is treated as inches.
-        private static double ConvertDimension(string input)
-        {
-            string unit = input.Substring(input.Length - 2);
-            var num = Double.Parse(
-                input.Substring(0, input.Length - 2),
-                CultureInfo.InvariantCulture
-            );
-            double pixelsPerUnit =
-                unit == "px" ? 1
-                : unit == "mm" ? 96 / 25.4
-                : 96;
-            return num * pixelsPerUnit;
+            width = dimensions.width * pixelsPerMillimeter;
+            height = dimensions.height * pixelsPerMillimeter;
         }
 
         /// <summary>
@@ -924,11 +899,14 @@ namespace Bloom.Publish.Epub
             string copyrightString
         )
         {
-            if (copyrightString == null || !copyrightString.StartsWith(COPYRIGHT))
+            if (
+                copyrightString == null
+                || !copyrightString.StartsWith(COPYRIGHT, StringComparison.Ordinal)
+            )
                 return (null, null);
 
             var stripped = copyrightString.Substring(COPYRIGHT.Length);
-            var commaIndex = stripped.IndexOf(","); // Put in by ClearShare; not localized.
+            var commaIndex = stripped.IndexOf(",", StringComparison.Ordinal); // Put in by ClearShare; not localized.
             if (commaIndex < 0)
                 return (null, null);
             var rightsHolder = stripped.Substring(commaIndex + 1).Trim();
@@ -3260,9 +3238,9 @@ namespace Bloom.Publish.Epub
             foreach (var xel in xdoc.SafeSelectNodes("//*", null).Cast<SafeXmlElement>())
             {
                 if (
-                    xel.Name.StartsWith("inkscape:")
-                    || xel.Name.StartsWith("sodipodi:")
-                    || xel.Name.StartsWith("rdf:")
+                    xel.Name.StartsWith("inkscape:", StringComparison.Ordinal)
+                    || xel.Name.StartsWith("sodipodi:", StringComparison.Ordinal)
+                    || xel.Name.StartsWith("rdf:", StringComparison.Ordinal)
                     || xel.Name == "flowRoot"
                 ) // epubcheck objects to this: must be from an obsolete version of SVG?
                 {
@@ -3278,9 +3256,9 @@ namespace Bloom.Publish.Epub
                     {
                         var attr = xel.AttributePairs[i];
                         if (
-                            attr.Name.StartsWith("inkscape:")
-                            || attr.Name.StartsWith("sodipodi:")
-                            || attr.Name.StartsWith("rdf:")
+                            attr.Name.StartsWith("inkscape:", StringComparison.Ordinal)
+                            || attr.Name.StartsWith("sodipodi:", StringComparison.Ordinal)
+                            || attr.Name.StartsWith("rdf:", StringComparison.Ordinal)
                             || attr.Name == "overflow"
                         ) // epubcheck for epub 3.2 reports error: SVG version 2 doesn't have this attribute
                         {
@@ -3337,7 +3315,10 @@ namespace Bloom.Publish.Epub
             )
             {
                 var href = link.GetAttribute("href");
-                if (!string.IsNullOrEmpty(href) && Path.GetFileName(href).StartsWith("custom"))
+                if (
+                    !string.IsNullOrEmpty(href)
+                    && Path.GetFileName(href).StartsWith("custom", StringComparison.Ordinal)
+                )
                     continue;
                 if (
                     !string.IsNullOrEmpty(href)
@@ -3353,7 +3334,7 @@ namespace Bloom.Publish.Epub
                 // xmatter stylesheets for epubs.
                 if (
                     !string.IsNullOrEmpty(href)
-                    && Path.GetFileName(href).StartsWith("Kyrgyzstan2020")
+                    && Path.GetFileName(href).StartsWith("Kyrgyzstan2020", StringComparison.Ordinal)
                 )
                 {
                     // We need to get rid of the link to the standard Kyrgz xmatter and
@@ -3390,7 +3371,10 @@ namespace Bloom.Publish.Epub
             // (quite possibly the same) folder name will be added below as needed.  This
             // simplifies the processing for files being moved into a subfolder for the
             // first time, or into a folder of a different name.
-            if (fileName.StartsWith("audio/") || fileName.StartsWith("video/"))
+            if (
+                fileName.StartsWith("audio/", StringComparison.Ordinal)
+                || fileName.StartsWith("video/", StringComparison.Ordinal)
+            )
                 fileName = fileName.Substring(6);
             string dstPath = SubfolderAdjustedContentPath(subfolder, fileName);
             // We deleted the root directory at the start, so if the file is already
@@ -3438,7 +3422,10 @@ namespace Bloom.Publish.Epub
         {
             string originalFileName;
             // keep subfolder structure if possible
-            if (!string.IsNullOrEmpty(folderPath) && srcPath.StartsWith(folderPath))
+            if (
+                !string.IsNullOrEmpty(folderPath)
+                && srcPath.StartsWith(folderPath, StringComparison.Ordinal)
+            )
                 originalFileName = srcPath.Substring(folderPath.Length + 1).Replace('\\', '/');
             else
                 originalFileName = Path.GetFileName(srcPath);
@@ -3551,7 +3538,7 @@ namespace Bloom.Publish.Epub
                 RobustFile.Copy(srcPath, dstPath);
                 return dstPath;
             }
-            if (dstPath.Contains(kCssFolder) && dstPath.EndsWith(".css"))
+            if (dstPath.Contains(kCssFolder) && dstPath.EndsWith(".css", StringComparison.Ordinal))
             {
                 // ePUB 3.2 does not support direction: settings in CSS files.  We mark direction explicitly elsewhere in the .xhtml files.
                 var cssText = RobustFile.ReadAllText(srcPath);

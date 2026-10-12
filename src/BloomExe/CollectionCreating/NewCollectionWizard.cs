@@ -19,6 +19,10 @@ namespace Bloom.CollectionCreating
     public partial class NewCollectionWizard
         : SIL.Windows.Forms.Miscellaneous.FormForUsingPortableClipboard
     {
+        // Under --dont-disturb this dialog must not take the keyboard from the person at the machine
+        // while something else drives Bloom (see Program.StartupDontDisturb).
+        protected override bool ShowWithoutActivation => Program.StartupDontDisturb;
+
         public Action UiLanguageChanged;
 
         private NewCollectionSettings _collectionInfo;
@@ -145,10 +149,6 @@ namespace Bloom.CollectionCreating
             _collectionNamePage.Text = LocalizationManager.GetString(
                 "NewCollectionWizard.CollectionName",
                 "Collection Name"
-            );
-            _collectionNameProblemPage.Text = LocalizationManager.GetString(
-                "NewCollectionWizard.CollectionNameProblem",
-                "Collection Name Problem"
             );
             _languageLocationPage.Text = LocalizationManager.GetString(
                 "NewCollectionWizard.LocationPage",
@@ -318,8 +318,6 @@ namespace Bloom.CollectionCreating
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }
-
-        private void _languageLocationControl_Load(object sender, EventArgs e) { }
 
         private void _finishPage_Initialize(object sender, EventArgs e)
         {

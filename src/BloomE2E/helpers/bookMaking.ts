@@ -47,32 +47,57 @@ export async function makeBookFromTemplate(
     page: Page,
     templateTitle: string,
 ): Promise<string> {
-    await waitForCollectionReady(page);
-    const { collectionId, template } = await findFactoryTemplate(
-        page,
-        templateTitle,
-    );
-    await apiPost(
-        page,
-        `collections/selected-book?path=${encodeURIComponent(template.folderPath)}` +
-            `&collection-id=${encodeURIComponent(collectionId)}`,
-    );
-    return makeBookFromSelectedBook(page, templateTitle);
+    return makeBookFromSourceBook(page, "Templates", templateTitle);
 }
 
 /**
- * The "Templates" source collection's entry for one factory template, e.g. "Basic Book", with the
- * id of that collection. Throws, listing what Bloom does offer, when there is no such template.
+ * Make a new book in the editable collection from a book in one of the collections under Sources
+ * For New Books, and return its folder. `sourceCollectionName` is the collection's heading there,
+ * e.g. "Sample Shells" (the shell books Bloom installs) or "Templates". Bloom lands in the Edit
+ * tab, showing the new book's cover.
+ *
+ * This is the same action as selecting the book in Sources For New Books and clicking MAKE A BOOK
+ * USING THIS SOURCE. A book that is not a template (a shell) gives a derivative: Bloom records the
+ * source's copyright and license as the original's.
  */
-async function findFactoryTemplate(
+export async function makeBookFromSourceBook(
     page: Page,
-    templateTitle: string,
-): Promise<{ collectionId: string; template: IBookInfo }> {
+    sourceCollectionName: string,
+    bookTitle: string,
+): Promise<string> {
+    // A person makes a book from the Collections tab, and so does this. Selecting the template
+    // while the Edit tab is showing a book has been seen to leave the Edit tab showing the
+    // template, which has no page to edit, once the new book is made (every time the book being
+    // left had a reader tool turned on), so a test making its second book would hang here.
+    await switchTab(page, "collection");
+    await waitForCollectionReady(page);
+    const { collectionId, book } = await findSourceBook(
+        page,
+        sourceCollectionName,
+        bookTitle,
+    );
+    await apiPost(
+        page,
+        `collections/selected-book?path=${encodeURIComponent(book.folderPath)}` +
+            `&collection-id=${encodeURIComponent(collectionId)}`,
+    );
+    return makeBookFromSelectedBook(page, bookTitle);
+}
+
+/**
+ * One book of a source collection (e.g. "Templates" or "Sample Shells"), with the id of that
+ * collection. Throws, listing what Bloom does offer, when there is no such collection or book.
+ */
+async function findSourceBook(
+    page: Page,
+    sourceCollectionName: string,
+    bookTitle: string,
+): Promise<{ collectionId: string; book: IBookInfo }> {
     // collections/list leaves out every source collection whose books have not been read yet,
-    // and Bloom reads the factory templates in the background after the collection opens. So
-    // wait for "Templates" to be listed rather than reading the list once.
+    // and Bloom reads the factory collections in the background after the collection opens. So
+    // wait for the collection to be listed rather than reading the list once.
     let collections: ICollectionInfo[] = [];
-    let templates: ICollectionInfo | undefined;
+    let source: ICollectionInfo | undefined;
     try {
         // The message is built after the wait fails, so that it can name what WAS listed. A
         // message passed to expect.poll would be built before the first poll, when nothing is.
@@ -83,34 +108,52 @@ async function findFactoryTemplate(
                         page,
                         "collections/list",
                     );
-                    templates = collections.find((c) => c.name === "Templates");
-                    return !!templates;
+                    source = collections.find(
+                        (c) => c.name === sourceCollectionName,
+                    );
+                    return !!source;
                 },
                 { timeout: 60000 },
             )
             .toBe(true);
     } catch {
         throw new Error(
-            `Bloom never listed a "Templates" source collection, so there is no ` +
-                `"${templateTitle}" to make a book from. Collections: ` +
+            `Bloom never listed a "${sourceCollectionName}" source collection, so there is no ` +
+                `"${bookTitle}" to make a book from. Collections: ` +
                 collections.map((c) => c.name).join(", "),
         );
     }
-    if (!templates)
+    if (!source)
         throw new Error(
-            `Bloom listed "Templates" a moment ago and then lost it.`,
+            `Bloom listed "${sourceCollectionName}" a moment ago and then lost it.`,
         );
     const books = await apiGetJson<IBookInfo[]>(
         page,
-        `collections/books?collection-id=${encodeURIComponent(templates.id)}`,
+        `collections/books?collection-id=${encodeURIComponent(source.id)}`,
     );
-    const template = books.find((b) => b.title === templateTitle);
-    if (!template)
+    const book = books.find((b) => b.title === bookTitle);
+    if (!book)
         throw new Error(
-            `There is no factory template called "${templateTitle}". ` +
-                `Templates: ${books.map((b) => b.title).join(", ")}.`,
+            `There is no book called "${bookTitle}" in "${sourceCollectionName}". ` +
+                `It has: ${books.map((b) => b.title).join(", ")}.`,
         );
-    return { collectionId: templates.id, template };
+    return { collectionId: source.id, book };
+}
+
+/**
+ * The "Templates" source collection's entry for one factory template, e.g. "Basic Book", with the
+ * id of that collection. Throws, listing what Bloom does offer, when there is no such template.
+ */
+async function findFactoryTemplate(
+    page: Page,
+    templateTitle: string,
+): Promise<{ collectionId: string; template: IBookInfo }> {
+    const { collectionId, book } = await findSourceBook(
+        page,
+        "Templates",
+        templateTitle,
+    );
+    return { collectionId, template: book };
 }
 
 /**
@@ -142,7 +185,18 @@ async function makeBookFromSelectedBook(
     sourceName: string,
 ): Promise<string> {
     const before = await listEditableBooks(page);
-    await apiPost(page, "app/makeFromSelectedBook");
+    // Bloom answers this and then reloads the shell document into the Edit tab, and under load
+    // that reload can abort our fetch before the reply arrives. The request itself got through
+    // - the poll below is what confirms the book really appeared - and a retry would make a
+    // second book, so tolerate exactly the two lost-reply errors a reload produces.
+    await apiPost(page, "app/makeFromSelectedBook").catch((error) => {
+        if (
+            !/Failed to fetch|Execution context was destroyed/i.test(
+                String(error),
+            )
+        )
+            throw error;
+    });
 
     // Bloom makes the book, selects it, and switches to the Edit tab. Wait for the book to exist
     // rather than for the tab, so the folder we return is real.
@@ -562,7 +616,7 @@ export async function goToPage(page: Page, pageId: string): Promise<void> {
  * This is a workaround in the tests for a real Bloom defect, and it is deliberately not a fix for
  * it. Delete it when CKEditor goes (the `retireCkEditor` work).
  */
-async function waitForCkEditorToTakeTheBox(box: Locator): Promise<void> {
+export async function waitForCkEditorToTakeTheBox(box: Locator): Promise<void> {
     // Ask the page what is actually bound to this box, rather than trying to predict it. An
     // earlier version of this replicated bloomEditing.ts's three conditions for attaching an
     // editor (matches ckeditableSelector, no .bloom-canvas on the page, not read-only) and
@@ -754,4 +808,17 @@ export async function visitXmatterPages(
         });
     }
     return shown;
+}
+
+/**
+ * Show a book in the Edit tab, the way a person does by selecting it in the collection and going
+ * back to Edit, and wait until its page is ready to edit. Leaving the book that was being edited
+ * this way is also what makes Bloom save it, so this is how a test leaves one book for another and
+ * comes back to see what the first one remembered.
+ */
+export async function editBook(page: Page, bookFolder: string): Promise<void> {
+    await switchTab(page, "collection");
+    await selectBook(page, bookFolder);
+    await switchTab(page, "edit");
+    await waitForEditablePage(page);
 }

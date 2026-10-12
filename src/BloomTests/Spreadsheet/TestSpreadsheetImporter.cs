@@ -55,7 +55,10 @@ namespace BloomTests.Spreadsheet
             var sentences = text.Replace("\\'", "'").Split(new char[] { '.', '|' });
             for (int i = 0; i < sentences.Length - 1; i++)
             {
-                if (sentences[i].EndsWith(" ") || sentences[i].EndsWith(","))
+                if (
+                    sentences[i].EndsWith(" ", StringComparison.Ordinal)
+                    || sentences[i].EndsWith(",", StringComparison.Ordinal)
+                )
                     sentences[i] = sentences[i] + '|';
                 else
                     sentences[i] = sentences[i] + ".";

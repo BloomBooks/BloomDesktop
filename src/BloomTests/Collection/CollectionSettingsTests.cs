@@ -408,6 +408,61 @@ namespace BloomTests.Collection
         }
 
         [Test]
+        public void Reading_InvariantLanguageNameSavedUnderThaiFormat_LooksTheNameUpAgain()
+        {
+            // BL-16945: under a Thai regional format, a new collection's default Language2 was
+            // saved with the invariant culture's name.
+            var bloomCollectionFileContents =
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<Language1Name>Arta</Language1Name>
+	<Language1IsCustomName>false</Language1IsCustomName>
+	<Language1Iso639Code>atz</Language1Iso639Code>
+	<Language2Name>Invariant Language (Invariant Country)</Language2Name>
+	<Language2IsCustomName>false</Language2IsCustomName>
+	<Language2Iso639Code>en</Language2Iso639Code>
+</Collection>";
+            const string collectionName = "testInvariantName";
+            var collectionPath = CollectionSettings.GetPathForNewSettings(
+                _folder.Path,
+                collectionName
+            );
+            Directory.CreateDirectory(Path.GetDirectoryName(collectionPath));
+            RobustFile.WriteAllText(collectionPath, bloomCollectionFileContents);
+
+            var settings = CreateCollectionSettings(_folder.Path, collectionName);
+
+            Assert.That(settings.Language1.Name, Is.EqualTo("Arta"));
+            Assert.That(settings.Language2.Tag, Is.EqualTo("en"));
+            // The looked-up name follows the machine's UI language, so don't insist on "English".
+            Assert.That(settings.Language2.Name, Is.Not.Empty);
+            Assert.That(settings.Language2.Name, Does.Not.StartWith("Invariant"));
+        }
+
+        [Test]
+        public void Reading_CustomNameStartingWithInvariantLanguage_KeepsIt()
+        {
+            var bloomCollectionFileContents =
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<Language1Name>Invariant Language Lab</Language1Name>
+	<Language1IsCustomName>true</Language1IsCustomName>
+	<Language1Iso639Code>atz</Language1Iso639Code>
+</Collection>";
+            const string collectionName = "testInvariantCustomName";
+            var collectionPath = CollectionSettings.GetPathForNewSettings(
+                _folder.Path,
+                collectionName
+            );
+            Directory.CreateDirectory(Path.GetDirectoryName(collectionPath));
+            RobustFile.WriteAllText(collectionPath, bloomCollectionFileContents);
+
+            var settings = CreateCollectionSettings(_folder.Path, collectionName);
+
+            Assert.That(settings.Language1.Name, Is.EqualTo("Invariant Language Lab"));
+        }
+
+        [Test]
         public void Reading_InvalidSubscription_ClearsDefaultBookshelf()
         {
             var bloomCollectionFileContents =

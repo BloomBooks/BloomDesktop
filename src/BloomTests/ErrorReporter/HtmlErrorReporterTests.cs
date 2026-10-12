@@ -158,6 +158,10 @@ namespace BloomTests.ErrorReporter
                             == ProblemLevel.kNotify
                         && (string)props.GetType().GetProperty("reportLabel").GetValue(props)
                             == "Report"
+                        // The dialog localizes our own label as it is shown, so it follows the
+                        // current UI language rather than whatever it was when it was looked up.
+                        && (string)props.GetType().GetProperty("reportL10nKey").GetValue(props)
+                            == "ErrorReport.Report"
                     )
                 )
             );

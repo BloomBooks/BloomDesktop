@@ -203,8 +203,10 @@ namespace Bloom
             {
                 // Don't annoy developers for expected error if the internet is not available.
                 if (
-                    errorWhileReporting.Message.StartsWith("Bloom could not retrieve the URL")
-                    && Bloom.web.UrlLookup.FastInternetAvailable
+                    errorWhileReporting.Message.StartsWith(
+                        "Bloom could not retrieve the URL",
+                        StringComparison.Ordinal
+                    ) && Bloom.web.UrlLookup.FastInternetAvailable
                 )
                 {
                     Debug.Fail("error in nonfatalError reporting");
@@ -390,6 +392,7 @@ namespace Bloom
                 action = new ToastAction
                 {
                     Label = "Report",
+                    L10nId = "ErrorReport.Report",
                     Callback = () =>
                     {
                         var formForSynchronizing = Shell.GetShellOrOtherOpenForm();
@@ -408,6 +411,7 @@ namespace Bloom
                 action = new ToastAction
                 {
                     Label = "Details",
+                    L10nId = "ErrorReport.Details",
                     Callback = () =>
                     {
                         ErrorReport.NotifyUserOfProblem(
@@ -415,8 +419,11 @@ namespace Bloom
                             null,
                             default(ErrorResult),
                             "{0}",
+                            // NotifyDialog renders the message as HTML, so each line needs a <br>
+                            // to show on its own line (BL-16915). Splitting on both characters
+                            // also handles Linux newlines on Windows (and vice-versa).
                             string.Join(
-                                Environment.NewLine, // handle Linux newlines on Windows (and vice-versa)
+                                "<br>",
                                 fullDetailedMessage.Split(
                                     new[] { '\r', '\n' },
                                     StringSplitOptions.RemoveEmptyEntries

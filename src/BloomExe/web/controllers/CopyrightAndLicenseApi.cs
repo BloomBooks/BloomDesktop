@@ -48,6 +48,11 @@ namespace Bloom.web.controllers
                 HandleImageMetadataForFile,
                 false
             );
+            apiHandler.RegisterEndpointHandler(
+                "copyrightAndLicense/unlockOriginalCopyrightNotice",
+                HandleUnlockOriginalCopyrightNotice,
+                true
+            );
         }
 
         // Returns the file names of the "real" images in the current book (excluding license,
@@ -90,6 +95,17 @@ namespace Bloom.web.controllers
                 );
                 request.ReplyWithJson(String.Empty);
             }
+        }
+
+        /// <summary>
+        /// Called when the user clicks the padlock in the hint bubble on the credits page. Bloom
+        /// stops generating the original copyright and license sentence and turns its place on
+        /// the page into an editable field holding the same words.
+        /// </summary>
+        private void HandleUnlockOriginalCopyrightNotice(ApiRequest request)
+        {
+            Model.UnlockOriginalCopyrightNotice();
+            request.PostSucceeded();
         }
 
         private void HandleGetCCImage(ApiRequest request)

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
@@ -19,6 +19,10 @@ namespace Bloom.Collection
     public partial class CollectionSettingsDialog
         : SIL.Windows.Forms.Miscellaneous.FormForUsingPortableClipboard
     {
+        // Under --dont-disturb this dialog must not take the keyboard from the person at the machine
+        // while something else drives Bloom (see Program.StartupDontDisturb).
+        protected override bool ShowWithoutActivation => Program.StartupDontDisturb;
+
         public delegate CollectionSettingsDialog Factory(); //autofac uses this
 
         public static event EventHandler DialogCancelled;
@@ -50,6 +54,7 @@ namespace Bloom.Collection
         internal bool ShowExperimentalBookSourcesOption = false;
 
         internal bool PendingAllowTeamCollection;
+        internal bool PendingAllowTables;
         internal bool AllowTeamCollectionOptionEnabled = false;
 
         // "Internal" so CollectionSettingsApi can update these.
@@ -116,6 +121,9 @@ namespace Bloom.Collection
             );
             PendingAllowTeamCollection = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kTeamCollections
+            );
+            PendingAllowTables = ExperimentalFeatures.IsFeatureEnabled(
+                ExperimentalFeatures.kTables
             );
 
             if (
@@ -413,6 +421,7 @@ namespace Bloom.Collection
             Settings.Default.Save();
             UpdateExperimentalBookSources();
             UpdateTeamCollectionAllowed();
+            UpdateTablesAllowed();
 
             _collectionSettings.Country = _countryText.Text.Trim();
             _collectionSettings.Province = _provinceText.Text.Trim();
@@ -576,9 +585,13 @@ namespace Bloom.Collection
             if (_originalSubscription.Descriptor == _pendingSubscription.Descriptor)
                 return true;
             if (
-                _pendingSubscription.Descriptor.StartsWith(_originalSubscription.Descriptor + "-")
+                _pendingSubscription.Descriptor.StartsWith(
+                    _originalSubscription.Descriptor + "-",
+                    StringComparison.Ordinal
+                )
                 || _originalSubscription.Descriptor.StartsWith(
-                    _pendingSubscription.Descriptor + "-"
+                    _pendingSubscription.Descriptor + "-",
+                    StringComparison.Ordinal
                 )
             )
             {
@@ -825,6 +838,13 @@ namespace Bloom.Collection
 
             if (wasTeamCollectionsEnabled != PendingAllowTeamCollection)
                 ChangeThatRequiresRestart();
+        }
+
+        private void UpdateTablesAllowed()
+        {
+            // The restart this change needs is requested by CollectionSettingsApi
+            // when the checkbox changes.
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kTables, PendingAllowTables);
         }
     }
 }

@@ -250,7 +250,7 @@ public class EditingStateMachine
         {
             if (pageContentData != null && !discard)
             {
-                if (pageContentData.StartsWith("ERROR:"))
+                if (pageContentData.StartsWith("ERROR:", StringComparison.Ordinal))
                     throw new ApplicationException(pageContentData); // This is caught immediately below. We want that error handling for this case.
                 _updateBookWithPageContents(_pageId, pageContentData);
                 _pageIdWeFailedToSave = null;

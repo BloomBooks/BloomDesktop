@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using Bloom;
@@ -147,8 +148,11 @@ namespace BloomTests.Publish.BloomPub
         private static string FilenameFromStyle(string style)
         {
             const string prefix = "background-image:url('";
-            var start = style.IndexOf(prefix) + prefix.Length;
-            var encoded = style.Substring(start, style.IndexOf("'", start) - start);
+            var start = style.IndexOf(prefix, StringComparison.Ordinal) + prefix.Length;
+            var encoded = style.Substring(
+                start,
+                style.IndexOf("'", start, StringComparison.Ordinal) - start
+            );
             return UrlPathString.CreateFromUrlEncodedString(encoded).NotEncoded;
         }
     }

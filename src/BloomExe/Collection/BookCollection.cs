@@ -333,7 +333,10 @@ namespace Bloom.Collection
                         );
                         foreach (var folder in orderedBookFolders)
                         {
-                            if (Path.GetFileName(folder.FullName).StartsWith(".")) //as in ".hg"
+                            if (
+                                Path.GetFileName(folder.FullName)
+                                    .StartsWith(".", StringComparison.Ordinal)
+                            ) //as in ".hg"
                                 continue;
                             // Don't want a child folder named xMatter either (even
                             // SIL-Cameroon-Mothballed, which no longer has xmatter in its filename).

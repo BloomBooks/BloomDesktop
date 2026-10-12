@@ -418,9 +418,21 @@ export default defineConfig({
         port: 4173,
     },
     resolve: {
-        alias: {
-            "@component-tester": resolve(__dirname),
-        },
+        alias: [
+            {
+                find: "@component-tester",
+                replacement: resolve(__dirname),
+            },
+            // Use the ESM build of each icon. The default `@mui/icons-material/X` files are
+            // CommonJS and `require` @mui/material, which makes esbuild's dependency pre-bundle
+            // wrap @mui/material's `styled` in a lazy initializer. Depending on how the chunks
+            // fall out, a chunk such as Popper's can then call `styled` before it is initialized,
+            // and every component that loads it fails with "styled_default is not a function".
+            {
+                find: /^@mui\/icons-material\/(?!esm\/)([A-Za-z0-9]+)$/,
+                replacement: "@mui/icons-material/esm/$1",
+            },
+        ],
     },
     build: {
         rollupOptions: {

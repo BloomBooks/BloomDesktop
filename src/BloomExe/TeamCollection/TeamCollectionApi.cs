@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -486,6 +487,27 @@ namespace Bloom.TeamCollection
             }
         }
 
+        /// <summary>
+        /// The lock date as the status panel shows it, or "" if there is none to show. Not locked is
+        /// DateTime.MaxValue. Some calendars cannot format every date (ar-SA's Um al-Qura covers only
+        /// 1900-2077), and a lock time written before BL-16948 can be far off (a Thai Buddhist year
+        /// like 2569, or a Hijri year like 1448), so a date the calendar can't show is dropped rather
+        /// than failing the whole status request.
+        /// </summary>
+        internal static string FormatLockDate(DateTime whenLocked)
+        {
+            if (whenLocked == DateTime.MaxValue)
+                return "";
+            var localTime = whenLocked.ToLocalTime();
+            var calendar = CultureInfo.CurrentCulture.Calendar;
+            if (
+                localTime < calendar.MinSupportedDateTime
+                || localTime > calendar.MaxSupportedDateTime
+            )
+                return "";
+            return localTime.ToShortDateString();
+        }
+
         // Needs to be thread-safe
         private string GetBookStatusJson(string bookFolderName, Book.Book book)
         {
@@ -606,7 +628,7 @@ namespace Bloom.TeamCollection
                     whoSurname = _tcManager.CurrentCollectionEvenIfDisconnected?.WhoHasBookLockedSurname(
                         bookFolderName
                     ),
-                    when = whenLocked.ToLocalTime().ToShortDateString(),
+                    when = FormatLockDate(whenLocked),
                     where = _tcManager.CurrentCollectionEvenIfDisconnected?.WhatComputerHasBookLocked(
                         bookFolderName
                     ),

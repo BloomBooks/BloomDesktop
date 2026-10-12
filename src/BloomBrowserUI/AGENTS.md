@@ -55,7 +55,7 @@ Don't use timeouts in tests, that slows things down and is fragile. If a timeout
 
 ## Troubleshooting UI Problems
 
-Usually if you get stuck, the best thing to do is to look at the real thing: attach to the running Bloom's WebView2 over CDP with the `run-bloom` skill (DOM, console, network, screenshots), or get the component showing in the component-tester harness (`component-test` skill). Add console messages that should show, then read the browser's console to test your assumptions.
+Usually if you get stuck, the best thing to do is to look at the real thing: attach to the running Bloom's WebView2 over CDP with the `run-bloom` skill (DOM, console, network, screenshots), or get the component showing in the component-tester harness (`component-test` skill). Add console messages that should show, then read the browser's console to test your assumptions. When the backend is running, you can open http://localhost:8089/bloom/CURRENTPAGE to inspect and interact with the screen.
 
 ## Localization
 
@@ -90,7 +90,9 @@ has Bloom's WebView2 load the UI from it (not from a `vite build --watch`). Two 
 touch `output\browser`, so they never disturb the dev server or a watch:
 
 - `pnpm test` (Vitest) — runs in jsdom and transforms modules in memory. This is your primary
-  "does my logic/component work" check. (`pnpm lint` and `pnpm typecheck` are likewise safe.)
+  "does my logic/component work" check. Tests that need real layout (sizes, positions, canvas)
+  go in `*.browser.spec.ts`, which `pnpm test` runs in headless Edge instead (the `browser`
+  project in `vite.config.mts`; `--project unit` or `--project browser` runs just one). (`pnpm lint` and `pnpm typecheck` are likewise safe.)
 
 **To confirm the real production bundle compiles** — bundling / CommonJS-interop errors and
 the manifest post-build step that the lenient dev server never exercises — use the isolated

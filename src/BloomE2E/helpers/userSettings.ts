@@ -57,3 +57,24 @@ export async function readSavedUserSetting(
     ).exec(xml);
     return match ? match[1] : undefined;
 }
+
+/**
+ * The experimental features (by their ExperimentalFeatures.cs tokens, e.g. "team-collections")
+ * that the user.config in `folder` has saved as turned on.
+ *
+ * Under --e2e Bloom answers "is this feature on?" from its command line alone, never from this
+ * setting (see ExperimentalFeatures.TokensOfEnabledFeatures), so the saved setting is the only
+ * place a test can see a feature the user turned on in Collection Settings.
+ */
+export async function getSavedExperimentalFeatures(
+    folder: string,
+): Promise<string[]> {
+    const saved = await readSavedUserSetting(
+        folder,
+        "EnabledExperimentalFeatures",
+    );
+    return (saved ?? "")
+        .split(",")
+        .map((token) => token.trim())
+        .filter((token) => token.length > 0);
+}

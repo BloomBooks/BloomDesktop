@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -423,8 +423,16 @@ namespace Bloom.Publish.BloomPub
                     ImageTransparencyMode.Auto => "_t",
                     _ => "_r", // None mode: resize / format-conversion only
                 };
-                var newFilename =
-                    Path.GetFileNameWithoutExtension(filename) + modeSuffix + adjustedExt;
+                // The mode suffix keeps different modes apart, but two sources whose names
+                // differ only by extension (e.g. "photo.jpg" and "photo.png", which the AI image
+                // editor readily creates) can both come out as "photo_r.jpg" in the same mode, and
+                // the book may already contain a file with that name. So we take an unused name,
+                // adding a counter if necessary (e.g. "photo_r1.jpg"). See BL-16954.
+                var newFilename = ImageUtils.GetUnusedFilename(
+                    bookFolderPath,
+                    Path.GetFileNameWithoutExtension(filename) + modeSuffix,
+                    adjustedExt
+                );
                 RobustFile.Copy(adjustedPath, Path.Combine(bookFolderPath, newFilename));
                 // Defer deletion: a later element with a different mode may still need
                 // the original. The actual delete happens after all elements are processed.
@@ -480,7 +488,11 @@ namespace Bloom.Publish.BloomPub
             return preservedImages;
         }
 
-        private static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
+        /// <summary>
+        /// Get the image file name out of a background-image style, e.g. "cover.jpg" from
+        /// "background-image:url('cover.jpg')". Internal so a test can reach it.
+        /// </summary>
+        internal static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
         {
             // The url in the style is URL-encoded (HtmlDom.SetImageElementUrl wrote it with
             // UrlPathString.UrlEncoded), so decode it the matching way. HttpUtility.UrlDecode is
@@ -496,8 +508,13 @@ namespace Bloom.Publish.BloomPub
         /// </summary>
         private static string ExtractEncodedUrlFromStyle(string style, out int start, out int end)
         {
-            start = style.IndexOf(kBackgroundImage) + kBackgroundImage.Length;
-            end = style.IndexOf("'", start);
+            // Both searches must be ordinal. Adding kBackgroundImage.Length is only right if the
+            // match consumed exactly that many characters, which a culture-sensitive match need
+            // not do; and under th-TH a search for a punctuation-only string such as "'"
+            // "matches" right where the search starts, which would leave us with an empty file name.
+            start =
+                style.IndexOf(kBackgroundImage, StringComparison.Ordinal) + kBackgroundImage.Length;
+            end = style.IndexOf("'", start, StringComparison.Ordinal);
             return style.Substring(start, end - start);
         }
 
@@ -997,7 +1014,7 @@ namespace Bloom.Publish.BloomPub
                 string src = imgElt.GetAttribute("src");
                 if (ImageUtils.IsPlaceholderImageFilename(src))
                     continue;
-                if (src.StartsWith("data:"))
+                if (src.StartsWith("data:", StringComparison.Ordinal))
                     continue;
                 var file = UrlPathString.CreateFromUrlEncodedString(src).PathOnly.NotEncoded;
                 if (!RobustFile.Exists(Path.Combine(folderPath, file)))
@@ -1065,7 +1082,7 @@ namespace Bloom.Publish.BloomPub
                 );
                 foreach (var attr in img.AttributePairs)
                 {
-                    if (attr.Name.StartsWith("data-"))
+                    if (attr.Name.StartsWith("data-", StringComparison.Ordinal))
                         imgContainer.SetAttribute(attr.Name, attr.Value);
                 }
 
@@ -1320,7 +1337,7 @@ namespace Bloom.Publish.BloomPub
                         {
                             // We already got the question, and haven't seen a blank line since,
                             // so this is one of its answers.
-                            var correct = trimLine.StartsWith("*");
+                            var correct = trimLine.StartsWith("*", StringComparison.Ordinal);
                             if (correct)
                             {
                                 trimLine = trimLine.Substring(1).Trim();

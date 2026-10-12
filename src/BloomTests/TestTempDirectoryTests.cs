@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using BloomTemp;
 using NUnit.Framework;
@@ -38,6 +39,29 @@ namespace BloomTests
                 Is.EqualTo(Normalize(TestTempDirectory.RunFolder)),
                 "Path.GetTempPath() should now return this run's own folder."
             );
+        }
+
+        /// <summary>
+        /// L10NSharp's writable xlf files go to a folder of this run's own, not to the one every
+        /// running Bloom shares. It has to be relative, or L10NSharp throws, and it is named after
+        /// the run folder so the two can be matched.
+        /// </summary>
+        [Test]
+        public void LocalizationSettingPath_IsARelativeFolderOfThisRunsOwn()
+        {
+            var settingPath = TestTempDirectory.LocalizationSettingPath;
+
+            Assert.That(settingPath, Is.Not.Null.And.Not.Empty);
+            Assert.That(Path.IsPathRooted(settingPath), Is.False, settingPath);
+            Assert.That(
+                settingPath,
+                Is.EqualTo($"SIL/BloomTests/runs/{Path.GetFileName(TestTempDirectory.RunFolder)}")
+            );
+            var folder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                settingPath
+            );
+            Assert.That(Directory.Exists(folder), Is.True, $"{folder} should exist during the run");
         }
 
         /// <summary>

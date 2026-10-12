@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
@@ -68,7 +69,7 @@ namespace Bloom.web.controllers
                 true
             );
 
-            // POST body is an appearance theme name, e.g. "default", "zero-margin-ebook" (see the
+            // POST body is an appearance theme name, e.g. "default", "edge-to-edge" (see the
             // files in src/content/appearanceThemes). Lets tests screenshot each theme. Must run
             // on the UI thread because bringing the book up to date shows a dialog.
             apiHandler.RegisterEndpointHandler(kApiUrlPart + "setTheme", HandleSetTheme, true);
@@ -206,7 +207,7 @@ namespace Bloom.web.controllers
         /// </summary>
         private class E2eLoginState
         {
-            public string Email;
+            public string Email { get; set; }
         }
 
         /// <summary>
@@ -387,9 +388,9 @@ namespace Bloom.web.controllers
 
             var lower = branding.ToLowerInvariant();
             SubscriptionTier tier;
-            if (lower.EndsWith("-lc"))
+            if (lower.EndsWith("-lc", StringComparison.Ordinal))
                 tier = SubscriptionTier.LocalCommunity;
-            else if (lower.EndsWith("-pro"))
+            else if (lower.EndsWith("-pro", StringComparison.Ordinal))
                 tier = SubscriptionTier.Pro;
             else
                 tier = SubscriptionTier.Enterprise;

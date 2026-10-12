@@ -192,7 +192,7 @@ namespace Bloom.Edit
             )
             {
                 var href = link.GetAttribute("href");
-                if (href.StartsWith("file://"))
+                if (href.StartsWith("file://", StringComparison.Ordinal))
                     link.SetAttribute(
                         "href",
                         Path.GetFileName(href.Replace("file:///", "").Replace("file://", ""))
@@ -324,7 +324,7 @@ namespace Bloom.Edit
             // eliminates most of the non-complex things quickly, but that character could be in
             // an orthography, too. So if it initially looks complex, we actually verify that we
             // can parse it as an object. If not, we take it as non-complex.
-            if (!value.Trim().StartsWith("{"))
+            if (!value.Trim().StartsWith("{", StringComparison.Ordinal))
                 return false;
             try
             {

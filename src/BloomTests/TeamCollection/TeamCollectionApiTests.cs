@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -393,6 +394,86 @@ namespace BloomTests.TeamCollection
             {
                 // Cleanup
                 Bloom.Registration.Registration.Default.Email = originalValue;
+            }
+        }
+
+        /// <summary>
+        /// A book nobody has checked out has no lock time (DateTime.MaxValue). The Saudi regional
+        /// format uses the Um al-Qura calendar, which cannot format dates after 2077, so formatting
+        /// that value used to make every unlocked book's status request fail (BL-16948).
+        /// </summary>
+        [Test]
+        public void HandleCurrentBookStatus_NotLockedUnderSaudiFormat_ReturnsEmptyWhen()
+        {
+            var originalEmail = Bloom.Registration.Registration.Default.Email;
+            var originalCulture = CultureInfo.CurrentCulture;
+            var originalDefaultCulture = CultureInfo.DefaultThreadCurrentCulture;
+            try
+            {
+                Bloom.Registration.Registration.Default.Email = "me@example.com";
+                // The request is handled on the server's thread, so set the default as well.
+                var saudi = new CultureInfo("ar-SA");
+                Assert.That(saudi.Calendar, Is.InstanceOf<UmAlQuraCalendar>());
+                CultureInfo.DefaultThreadCurrentCulture = saudi;
+                CultureInfo.CurrentCulture = saudi;
+
+                var apiBuilder = new TeamCollectionApiBuilder().WithDefaultMocks(true);
+                var api = apiBuilder.Build();
+                api.RegisterWithApiHandler(_server.ApiHandler);
+
+                var mockTeamCollection = SetupMockTcForBookStatus(apiBuilder);
+                mockTeamCollection
+                    .Setup(x => x.WhoHasBookLocked(It.IsAny<string>()))
+                    .Returns((string)null);
+
+                // System Under Test
+                var result = ApiTest.GetString(
+                    _server,
+                    endPoint: "teamCollection/selectedBookStatus"
+                );
+
+                // Verification
+                StringAssert.Contains("\"who\":null", result);
+                StringAssert.Contains("\"when\":\"\"", result);
+            }
+            finally
+            {
+                // Cleanup
+                Bloom.Registration.Registration.Default.Email = originalEmail;
+                CultureInfo.CurrentCulture = originalCulture;
+                CultureInfo.DefaultThreadCurrentCulture = originalDefaultCulture;
+            }
+        }
+
+        /// <summary>
+        /// A lock time written before BL-16948 can be a Thai Buddhist year (2569) or a Hijri year
+        /// (1448) read back as Gregorian. Um al-Qura (ar-SA) can't format either, so the status
+        /// must drop the date rather than fail.
+        /// </summary>
+        [TestCase(2569, "")]
+        [TestCase(1448, "")]
+        [TestCase(2026, null)] // null: expect the normal short date
+        public void FormatLockDate_UnderSaudiFormat_DropsDatesTheCalendarCannotShow(
+            int year,
+            string expected
+        )
+        {
+            var originalCulture = CultureInfo.CurrentCulture;
+            try
+            {
+                CultureInfo.CurrentCulture = new CultureInfo("ar-SA");
+                Assert.That(CultureInfo.CurrentCulture.Calendar, Is.InstanceOf<UmAlQuraCalendar>());
+                var whenLocked = new DateTime(year, 6, 15, 12, 0, 0, DateTimeKind.Utc);
+                var result = TeamCollectionApi.FormatLockDate(whenLocked);
+                Assert.That(
+                    result,
+                    Is.EqualTo(expected ?? whenLocked.ToLocalTime().ToShortDateString())
+                );
+                Assert.That(TeamCollectionApi.FormatLockDate(DateTime.MaxValue), Is.EqualTo(""));
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
             }
         }
 

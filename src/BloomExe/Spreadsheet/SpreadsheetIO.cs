@@ -318,8 +318,8 @@ namespace Bloom.Spreadsheet
             var key = row.MetadataKey;
             // At this point we're treating all content rows except the headers (and some labels) as wysiwyg
             return key != InternalSpreadsheet.RowTypeColumnLabel
-                && key.StartsWith("[")
-                && key.EndsWith("]");
+                && key.StartsWith("[", StringComparison.Ordinal)
+                && key.EndsWith("]", StringComparison.Ordinal);
         }
 
         // A list of columns that, even if in Wysiwyg rows, should not receive Wysiwyg processing.
@@ -387,7 +387,7 @@ namespace Bloom.Spreadsheet
         {
             var key = row.Spreadsheet.Header.GetRow(0).GetCell(index).Content;
             if (
-                key.StartsWith("[audio ")
+                key.StartsWith("[audio ", StringComparison.Ordinal)
                 || key == InternalSpreadsheet.VideoSourceColumnLabel
                 || key == InternalSpreadsheet.WidgetSourceColumnLabel
                 || key == InternalSpreadsheet.PageTypeColumnLabel

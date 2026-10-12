@@ -121,7 +121,7 @@ namespace Bloom.Book
                 // The .html file must be at the top level of the filesystem??
                 widgetName = "MYWIDGET"; // I doubt this ever happens, but it saves a compiler warning.
             }
-            else if (widgetName.EndsWith(".wdgt"))
+            else if (widgetName.EndsWith(".wdgt", StringComparison.Ordinal))
             {
                 // Book Widgets creates a folder named <ProjectName>.wdgt in which to store the
                 // widget files.  Why a folder and not a zip file, only the programmers/analysts

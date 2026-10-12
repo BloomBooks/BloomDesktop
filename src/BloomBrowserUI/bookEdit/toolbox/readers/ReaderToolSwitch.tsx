@@ -2,7 +2,8 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import { ThemeProvider } from "@emotion/react";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
-import { ToolBox, applyToolboxStateToUpdatedPage } from "../toolbox";
+import { applyToolboxStateToUpdatedPage } from "../toolbox";
+import { getPageIframeBody } from "../../../utils/shared";
 import { BloomSwitch } from "../../../react_components/BloomSwitch";
 import { postBoolean } from "../../../utils/bloomApi";
 import { isReaderToolEnabledOnCurrentPage } from "./readerToolPageState";
@@ -23,6 +24,13 @@ export const ReaderToolSwitch: React.FunctionComponent<{
         <ThemeProvider theme={toolboxTheme}>
             <BloomSwitch
                 size="small"
+                // A stable hook for the e2e suite; the switch's label is localized and also
+                // changes wording when it is on.
+                data-testid={
+                    props.isForLeveled
+                        ? "leveled-reader-switch"
+                        : "decodable-reader-switch"
+                }
                 css={css`
                     margin-left: 2px; // by experimentation. We have to override the default -11px.
                     // Uppercase the label to match the uppercase button labels in
@@ -47,7 +55,7 @@ export const ReaderToolSwitch: React.FunctionComponent<{
 
                     // Set the class on the page we are currently working with in edit mode.
                     // This just ensures our display is correct while editing. Persisting the value is done below.
-                    ToolBox.getPage()?.classList.toggle(
+                    getPageIframeBody()?.classList.toggle(
                         `${prefix}-reader`,
                         checked,
                     );

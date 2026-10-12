@@ -13,7 +13,7 @@ namespace BloomTests.Book
     public class AppearanceMigratorTests
     {
         // This must not be modified even slightly, or the checksum will not match.
-        public static string cssThatTriggersEbookZeroMarginTheme =
+        public static string cssThatTriggersEbookEdgeToEdgeTheme =
             @"/*  Some books may need control over aspects of layout that cannot yet be adjusted
     from the Bloom interface. In those cases, Bloom provides this ""under the hood"" method
     of creating style rules using the underlying ""Cascading Stylesheets"" system.
@@ -134,7 +134,7 @@ namespace BloomTests.Book
         public void GetJsonThatSubstitutesForCustomCSS_FindsRightTheme()
         {
             var result = AppearanceMigrator.Instance.GetAppearanceThatSubstitutesForCustomCSS(
-                cssThatTriggersEbookZeroMarginTheme
+                cssThatTriggersEbookEdgeToEdgeTheme
             );
             Assert.That(
                 result,

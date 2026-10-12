@@ -145,10 +145,10 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void ToCss_ZeroMarginTheme_LeavesPageNumberOutlineDefaultOnPageNotPseudo()
+        public void ToCss_EdgeToEdgeTheme_LeavesPageNumberOutlineDefaultOnPageNotPseudo()
         {
             var appearance = new AppearanceSettings();
-            appearance.CssThemeName = "zero-margin-ebook";
+            appearance.CssThemeName = AppearanceSettings.kEdgeToEdgeThemeName;
 
             var css = appearance.ToCss();
 
@@ -175,7 +175,8 @@ namespace BloomTests.Book
                 bookAppearance
                     .GetCssOwnPropsDeclaration(collectionAppearance)
                     .IndexOf(
-                        $"--boolean-test-L2-show: {AppearanceSettings.kDoShowValueForDisplay};"
+                        $"--boolean-test-L2-show: {AppearanceSettings.kDoShowValueForDisplay};",
+                        StringComparison.Ordinal
                     ) > -1
             );
 
@@ -186,8 +187,10 @@ namespace BloomTests.Book
             Assert.IsTrue(
                 bookAppearance
                     .GetCssOwnPropsDeclaration(collectionAppearance)
-                    .IndexOf($"--boolean-test-L2-show: {AppearanceSettings.kHideValueForDisplay};")
-                    > -1,
+                    .IndexOf(
+                        $"--boolean-test-L2-show: {AppearanceSettings.kHideValueForDisplay};",
+                        StringComparison.Ordinal
+                    ) > -1,
                 bookAppearance.GetCssOwnPropsDeclaration(collectionAppearance).ToString()
             );
         }
@@ -205,8 +208,10 @@ namespace BloomTests.Book
             Assert.IsTrue(
                 bookAppearance
                     .GetCssOwnPropsDeclaration(collectionAppearance)
-                    .IndexOf($"--boolean-test-L2-show: {AppearanceSettings.kHideValueForDisplay};")
-                    > -1
+                    .IndexOf(
+                        $"--boolean-test-L2-show: {AppearanceSettings.kHideValueForDisplay};",
+                        StringComparison.Ordinal
+                    ) > -1
             );
 
             collectionAppearance.UpdateFromJson("{\"boolean-test-L2-show\":true}");
@@ -217,7 +222,8 @@ namespace BloomTests.Book
                 bookAppearance
                     .GetCssOwnPropsDeclaration(collectionAppearance)
                     .IndexOf(
-                        $"--boolean-test-L2-show: {AppearanceSettings.kDoShowValueForDisplay};"
+                        $"--boolean-test-L2-show: {AppearanceSettings.kDoShowValueForDisplay};",
+                        StringComparison.Ordinal
                     ) > -1,
                 bookAppearance.GetCssOwnPropsDeclaration(collectionAppearance).ToString()
             );
@@ -396,14 +402,14 @@ namespace BloomTests.Book
         [TestCase(@"""pageNumber-position"": ""automatic""", "unset", "unset")]
         [TestCase(
             @"""pageNumber-position"": ""left""",
-            "calc(var(--page-margin-left) + var(--pageNumber-full-bleed-extra-margin, 0px) + var(--pageNumber-forced-side-extra-margin, 0px))",
+            "calc(var(--pageNumber-side-left-inset, var(--page-margin-left)) + var(--pageNumber-full-bleed-extra-margin, 0px) + var(--pageNumber-forced-side-extra-margin, 0px))",
             "deliberately-invalid"
         )]
         [TestCase(@"""pageNumber-position"": ""center""", "50%", "50%")]
         [TestCase(
             @"""pageNumber-position"": ""right""",
             "deliberately-invalid",
-            "calc(var(--page-margin-right) + var(--pageNumber-full-bleed-extra-margin, 0px) + var(--pageNumber-forced-side-extra-margin, 0px))"
+            "calc(var(--pageNumber-side-right-inset, var(--page-margin-right)) + var(--pageNumber-full-bleed-extra-margin, 0px) + var(--pageNumber-forced-side-extra-margin, 0px))"
         )]
         [TestCase(@"""pageNumber-position"": ""hidden""", "unset", "unset")]
         // [TestCase(null, null, null)]
@@ -517,7 +523,7 @@ namespace BloomTests.Book
         AppearanceSettings _resultingAppearance;
         private string _generatedAppearanceCss;
         private string _cssOfDefaultTheme;
-        private string _cssOfEbookZeroMarginTheme;
+        private string _cssOfEbookEdgeToEdgeTheme;
         private string _cssOfSettingsObject;
 
         [OneTimeSetUp]
@@ -531,11 +537,11 @@ namespace BloomTests.Book
             {
                 Tuple.Create(
                     "customBookStyles.css",
-                    AppearanceMigratorTests.cssThatTriggersEbookZeroMarginTheme
+                    AppearanceMigratorTests.cssThatTriggersEbookEdgeToEdgeTheme
                 ),
                 Tuple.Create(
                     "customCollectionStyles.css",
-                    AppearanceMigratorTests.cssThatTriggersEbookZeroMarginTheme
+                    AppearanceMigratorTests.cssThatTriggersEbookEdgeToEdgeTheme
                 ),
             };
             _pathToCustomCss = _settings.GetThemeAndSubstituteCss(
@@ -564,13 +570,13 @@ namespace BloomTests.Book
             var splits = _generatedAppearanceCss.Split(
                 new[]
                 {
-                    "from the current appearance theme, 'zero-margin-ebook'",
+                    "from the current appearance theme, 'edge-to-edge'",
                     "/* From this book's appearance settings */",
                 },
                 StringSplitOptions.None
             );
             _cssOfDefaultTheme = splits[0];
-            _cssOfEbookZeroMarginTheme = splits[1];
+            _cssOfEbookEdgeToEdgeTheme = splits[1];
             _cssOfSettingsObject = splits[2];
         }
 
@@ -598,7 +604,7 @@ namespace BloomTests.Book
         [Test]
         public void GetsRightTheme()
         {
-            Assert.That(_resultingAppearance.CssThemeName, Is.EqualTo("zero-margin-ebook"));
+            Assert.That(_resultingAppearance.CssThemeName, Is.EqualTo("edge-to-edge"));
         }
 
         [Test]
@@ -629,7 +635,7 @@ namespace BloomTests.Book
         [Test]
         public void AppearanceCss_HasDefaultSettings()
         {
-            // One that is not overridden in zero-margin-ebook
+            // One that is not overridden in edge-to-edge
             AssertContainsButIgnoreWhitespace(
                 _generatedAppearanceCss,
                 "--cover-margin-top: var(--page-margin);"
@@ -645,11 +651,11 @@ namespace BloomTests.Book
         [Test]
         public void AppearanceCss_HasThemeSettings()
         {
-            // from efl-zero-margin-ebook
+            // from edge-to-edge
             Assert.That(_generatedAppearanceCss, Does.Contain("--page-margin: 3mm;"));
             Assert.That(
                 _generatedAppearanceCss,
-                Does.Contain(":not(.bloom-interactive-page).numberedPage.Device16x9Landscape")
+                Does.Contain(".numberedPage:not(.bloom-interactive-page)")
             );
             Assert.That(_generatedAppearanceCss, Does.Contain("--page-margin: 0mm;"));
         }
@@ -657,7 +663,7 @@ namespace BloomTests.Book
         [Test]
         public void AppearanceCss_HasMigrationSettings()
         {
-            // from efl-zero-margin-ebook
+            // from edge-to-edge
             Assert.That(_generatedAppearanceCss, Does.Contain("--pageNumber-show: none;"));
         }
 
@@ -668,7 +674,7 @@ namespace BloomTests.Book
         [Test]
         public void AppearanceCss_HasNoRootRules()
         {
-            // from efl-zero-margin-ebook
+            // from edge-to-edge
             Assert.That(_generatedAppearanceCss, Does.Not.Contain(":root"));
         }
 
@@ -722,9 +728,9 @@ namespace BloomTests.Book
             Assert.That(_generatedAppearanceCss, Does.Contain("--page-margin: 12mm;"));
             Assert.That(
                 _generatedAppearanceCss,
-                Does.Contain(":not(.bloom-interactive-page).numberedPage.Device16x9Landscape")
+                Does.Contain(".numberedPage:not(.bloom-interactive-page)")
             );
-            Assert.That(_cssOfEbookZeroMarginTheme, Does.Contain("--page-margin: 0mm;"));
+            Assert.That(_cssOfEbookEdgeToEdgeTheme, Does.Contain("--page-margin: 0mm;"));
         }
 
         [Test]

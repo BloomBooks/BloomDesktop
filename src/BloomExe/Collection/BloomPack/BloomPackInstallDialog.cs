@@ -14,6 +14,10 @@ namespace Bloom.Collection.BloomPack
     /// </summary>
     public partial class BloomPackInstallDialog : Form
     {
+        // Under --dont-disturb this dialog must not take the keyboard from the person at the machine
+        // while something else drives Bloom (see Program.StartupDontDisturb).
+        protected override bool ShowWithoutActivation => Program.StartupDontDisturb;
+
         private readonly string _path;
         private string _folderName;
         private string _rootDestFolder;

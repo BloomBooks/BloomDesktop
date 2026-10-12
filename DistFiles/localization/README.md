@@ -49,28 +49,38 @@ Crowdin.  The pseudo-locale is always exactly as complete as the English source 
 
 ### What stays plain English on purpose
 
-A few surfaces are localized by *whole file* rather than string by string: the file for the
-current UI language is chosen at runtime, or the English one is used if there isn't one.  There
-is no `qps-ploc` file for any of them and there should not be, so under the pseudo-locale they
-correctly show English:
+The tester's rule is: **plain English means the string was never internationalized, unless it
+is one of the things below.**  Each of these shows English under the pseudo-locale for a known
+reason, so it is not a finding:
 
-- the built-in template readmes (`ReadMe-en.htm`, baked from
-  `DistFiles/localization/<Template>/ReadMe-<lang>.xlf` at build time by
-  `src/BloomBrowserUI/scripts/l10n-build.js`);
-- readmes of downloaded or user-made templates (`ReadMe-en.md`) -- author content, never
-  localized by us at all;
-- help and documentation pages reached through
-  `BloomFileLocator.GetBestLocalizableFileDistributedWithApplication`;
-- xmatter descriptions (`<desc>-<lang>.txt`, see `XMatterInfo`).
+- **Things localized as whole files, not string by string.**  Bloom picks the file for the
+  current UI language at runtime and falls back to English if there isn't one.  There is no
+  `qps-ploc` file for any of them, and there should not be one:
+  - the built-in template readmes (`ReadMe-en.htm`, baked from
+    `DistFiles/localization/<Template>/ReadMe-<lang>.xlf` at build time by
+    `src/BloomBrowserUI/scripts/l10n-build.js`).  A development build generates only
+    `ReadMe-en.htm`, so there they are English in *every* UI language;
+  - readmes of downloaded or user-made templates (`ReadMe-en.md`): author content that we
+    never localize at all;
+  - help and documentation pages reached through
+    `BloomFileLocator.GetBestLocalizableFileDistributedWithApplication`;
+  - xmatter descriptions (`<desc>-<lang>.txt`, see `XMatterInfo`).
 
-This does not weaken the pseudo-locale: a whole document is either the translated file or the
-English one, so there is no mixed population to read a signal from, and "the readme is in
-English" is already obvious without any transform.  So the tester's rule is: **plain English
-means the string was never internationalized, unless it is one of the whole-file surfaces
-listed above.**
+  This does not weaken the test.  A whole document is either translated or English, so there
+  are no individual strings to tell apart, and you can see a readme is in English without any
+  transform.
+- **The language chooser** (in Collection Settings and the New Collection wizard), apart from
+  the dialog's title and buttons, which are Bloom's.  It comes from the
+  `@ethnolib/language-chooser-react-mui` package, which has its own translations and falls back
+  to English for a language it doesn't know, such as `qps-ploc`.  Teaching it the pseudo-locale
+  would mean changing that package, so it is excluded for now.
+- **Messages meant only for developers**, such as the Alpha-only "Unexpected field ..." toasts,
+  which are deliberately not localized.  The buttons on them, such as **Report**, *are*
+  localized, so English on a button is still a finding.
 
-(Note too that a development build generates only `ReadMe-en.htm`, so template readmes show
-English there for *every* UI language, not just the pseudo-locale.)
+One thing goes the other way: the pseudo-locale does reach a file name.  A new book's folder is
+first named after the localized word for "Book" (`[Böoöok]-…` here, `Livre-…` in French), then
+renamed to the book's title when it is saved.  Every UI language does this, so it is expected.
 
 See BL-16748, and `LocalizationManager.PseudoLocalizationLanguageId` /
 `OfferPseudoLocalization` / `PseudoLocalize` in L10NSharp.

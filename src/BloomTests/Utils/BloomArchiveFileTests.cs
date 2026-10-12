@@ -110,18 +110,20 @@ namespace BloomTests.Utils
                 // Sanity check: the normal files did get archived, so a negative result below
                 // means "excluded", not "AddDirectory added nothing".
                 Assert.That(
-                    entryNames.Any(n => n.EndsWith("root.txt")),
+                    entryNames.Any(n => n.EndsWith("root.txt", StringComparison.Ordinal)),
                     Is.True,
                     "root file should have been archived"
                 );
                 Assert.That(
-                    entryNames.Any(n => n.EndsWith("images/pic.png")),
+                    entryNames.Any(n => n.EndsWith("images/pic.png", StringComparison.Ordinal)),
                     Is.True,
                     "normal subfolder contents should have been archived"
                 );
                 // Other dot-folders are legitimate archive content (widgets, backups...).
                 Assert.That(
-                    entryNames.Any(n => n.EndsWith(".well-known/asset.txt")),
+                    entryNames.Any(n =>
+                        n.EndsWith(".well-known/asset.txt", StringComparison.Ordinal)
+                    ),
                     Is.True,
                     "dot-folders other than .ai-image-editor should still be archived"
                 );
