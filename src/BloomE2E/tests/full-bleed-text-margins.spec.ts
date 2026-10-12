@@ -5,7 +5,7 @@
 // With "Use full bleed page layout" on, Bloom draws each page enlarged so that pictures run past the
 // cut line. Text must not move with them: it sits the same distance from the cut as it does from
 // the paper's edge in a book without full bleed. Edge to Edge, which takes the margins off content
-// pages so pictures can reach the edge, keeps its text at the Default theme's margin from the cut
+// pages so pictures can reach the edge, keeps its text at the standard page margin from the cut
 // when full bleed is on, and its pictures still run into the bleed.
 //
 // One A5 book with one picture page is measured in the Edit tab four ways: Default and Edge to
@@ -50,8 +50,9 @@ test.use({
 
 test.describe.configure({ mode: "serial" });
 
-/** The Default theme's margin on every side of an A5 page (appearance-theme-default.css). */
-const kA5DefaultMarginMm = 12;
+/** The standard page margin on every side of an A5 page, which the Default theme uses
+ * (--standard-page-margin in appearance-theme-default.css). */
+const kA5StandardMarginMm = 12;
 
 /** Edge to Edge's margin on front and back matter when there is no bleed. */
 const kEdgeToEdgeXmatterMarginMm = 3;
@@ -98,13 +99,13 @@ test.describe("text margins with and without full bleed", () => {
         await goToPage(page, picturePage.id);
         expectDistancesFromEdge(
             await getMarginBoxDistancesFromEdge(page),
-            allSides(kA5DefaultMarginMm),
+            allSides(kA5StandardMarginMm),
             "the picture page's margins",
         );
         await goToPage(page, creditsPage.id);
         expectDistancesFromEdge(
             await getMarginBoxDistancesFromEdge(page),
-            allSides(kA5DefaultMarginMm),
+            allSides(kA5StandardMarginMm),
             "the credits page's margins",
         );
     });
@@ -121,13 +122,13 @@ test.describe("text margins with and without full bleed", () => {
         await goToPage(page, picturePage.id);
         expectDistancesFromEdge(
             await getMarginBoxDistancesFromEdge(page),
-            allSides(kA5DefaultMarginMm),
+            allSides(kA5StandardMarginMm),
             "the picture page's margins",
         );
         await goToPage(page, creditsPage.id);
         expectDistancesFromEdge(
             await getMarginBoxDistancesFromEdge(page),
-            allSides(kA5DefaultMarginMm),
+            allSides(kA5StandardMarginMm),
             "the credits page's margins",
         );
     });
@@ -155,7 +156,7 @@ test.describe("text margins with and without full bleed", () => {
         );
     });
 
-    test("with full bleed, Edge to Edge keeps text at the Default margin from the cut line and runs pictures into the bleed [Test Case ID 846]", async ({
+    test("with full bleed, Edge to Edge keeps text at the standard page margin from the cut line and runs pictures into the bleed [Test Case ID 846]", async ({
         page,
     }) => {
         await setBookAppearance(page, {
@@ -176,16 +177,16 @@ test.describe("text margins with and without full bleed", () => {
         expectDistancesFromEdge(
             await getTextAreaDistancesFromEdge(page),
             {
-                left: kA5DefaultMarginMm,
-                right: kA5DefaultMarginMm,
-                bottom: kA5DefaultMarginMm,
+                left: kA5StandardMarginMm,
+                right: kA5StandardMarginMm,
+                bottom: kA5StandardMarginMm,
             },
             "the text under the picture",
         );
         await goToPage(page, creditsPage.id);
         expectDistancesFromEdge(
             await getMarginBoxDistancesFromEdge(page),
-            allSides(kA5DefaultMarginMm),
+            allSides(kA5StandardMarginMm),
             "the credits page's margins",
         );
     });

@@ -1,6 +1,6 @@
 /* Edge-to-edge uses no margins on numbered content pages.
 Front and back matter keep a small margin for readability.
-With full bleed, text keeps the Default theme's distance from the cut line.
+With full bleed, text keeps the standard page margin from the cut line.
 Page-number visibility comes from appearance.json, not from this theme file. */
 
 /* The Ebook/Device selectors match the specificity of the default theme's
@@ -14,11 +14,11 @@ Page-number visibility comes from appearance.json, not from this theme file. */
     --page-margin: 3mm;
 }
 
-/* With full bleed, front and back matter text is as far from the cut line as in the Default
-   theme. 3mm from the edge of the enlarged page would put it right on the cut. */
+/* With full bleed, front and back matter text is the standard page margin from the cut line.
+   3mm from the edge of the enlarged page would put it right on the cut. */
 .bloom-fullBleed .bloom-frontMatter,
 .bloom-fullBleed .bloom-backMatter {
-    --page-margin: var(--default-theme-page-margin);
+    --page-margin: var(--standard-page-margin);
 }
 
 /* This statement sets the margins on the numbered content pages */
@@ -43,22 +43,22 @@ Page-number visibility comes from appearance.json, not from this theme file. */
 
 .bloom-fullBleed .numberedPage:not(.bloom-interactive-page) {
     /* Pictures run into the bleed, but text along an edge of the page sits as far from the cut
-       line as it would in the Default theme. The inset plus the text box's own padding is the
-       page padding that basePage.less's .marginAsPadding would give for the Default margin. */
+       line as the standard page margin. The inset plus the text box's own padding is the page
+       padding that basePage.less's .marginAsPadding would give for that margin. */
     --fullBleed-textBoxInset-left: calc(
-        (var(--default-theme-page-margin) + var(--fullBleed-margin-add-x)) /
+        (var(--standard-page-margin) + var(--fullBleed-margin-add-x)) /
             var(--fullBleed-margin-scale) - var(--topLevel-text-padding-left)
     );
     --fullBleed-textBoxInset-right: calc(
-        (var(--default-theme-page-margin) + var(--fullBleed-margin-add-x)) /
+        (var(--standard-page-margin) + var(--fullBleed-margin-add-x)) /
             var(--fullBleed-margin-scale) - var(--topLevel-text-padding-right)
     );
     --fullBleed-textBoxInset-top: calc(
-        (var(--default-theme-page-margin) + var(--fullBleed-margin-add-y)) /
+        (var(--standard-page-margin) + var(--fullBleed-margin-add-y)) /
             var(--fullBleed-margin-scale) - var(--topLevel-text-padding-top)
     );
     --fullBleed-textBoxInset-bottom: calc(
-        (var(--default-theme-page-margin) + var(--fullBleed-margin-add-y)) /
+        (var(--standard-page-margin) + var(--fullBleed-margin-add-y)) /
             var(--fullBleed-margin-scale) - var(--topLevel-text-padding-bottom)
     );
 }

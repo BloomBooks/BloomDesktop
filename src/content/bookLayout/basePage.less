@@ -662,15 +662,28 @@ div[data-book*="branding"] {
 // application of margins, and the gutter
 // ------------------------------------------------------------------------
 
-// Sets @property to the page padding that gives @margin, plus @plus.
+// Sets @property to the page padding that gives @margin, plus @extraPadding.
 // With full bleed, @margin is measured from the cut line rather than the page edge: the page is
 // enlarged and part of it lies past the cut (see --fullBleed-margin-add-x in pageBoxesSizing.less).
+// Along one axis, in the coordinates of the printed sheet (the left edge shown; the others match):
+//
+//   page edge     media box edge       cut line            content
+//       |               |                  |                    |
+//       |<-excess / 2-->|<---- bleed ----->|<----- margin ----->|
+//       |<-------- @pageEdgeToCut -------->|                    |
+//       |<-------------- padding * --fullBleed-margin-scale --->|
+//
+// The page is scaled up by --fullBleed-margin-scale and shifted so its overhang (excess / 2) lies
+// past the media box edge, where it gets clipped. Padding is in the page's own coordinates, so it
+// is scaled too. Solving for the padding gives (margin + @pageEdgeToCut) / scale.
+// @extraPadding is added after the division, so it is in page coordinates and is not corrected.
 // A margin of zero stays zero, so content meant to reach the edge still runs into the bleed:
-// min(add, margin * 1000) is the full correction for any margin of a millimeter or so and up,
-// and nothing for a margin of zero.
-// Without full bleed, add is 0mm and scale is 1, so this is exactly @margin + @plus.
-.marginAsPadding(@property; @margin; @add; @plus: 0px) {
-    @{property}: ~"calc((@{margin} + min(@{add}, @{margin} * 1000)) / var(--fullBleed-margin-scale) + @{plus})";
+// min(@pageEdgeToCut, margin * 1000) is the full correction for any margin of a millimeter or so
+// and up, and nothing for a margin of zero.
+// Without full bleed, @pageEdgeToCut is 0mm and scale is 1, so this is exactly
+// @margin + @extraPadding.
+.marginAsPadding(@property; @margin; @pageEdgeToCut; @extraPadding: 0px) {
+    @{property}: ~"calc((@{margin} + min(@{pageEdgeToCut}, @{margin} * 1000)) / var(--fullBleed-margin-scale) + @{extraPadding})";
 }
 
 .bloom-page {

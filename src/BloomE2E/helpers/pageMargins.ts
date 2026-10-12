@@ -1,3 +1,12 @@
+// ================================================================================================
+// FIRST USE: full-bleed-text-margins.spec.ts (BL-15958, Test Case ID 846). With full bleed, Bloom
+// draws each page enlarged and shifted so that part of it lies past the cut line, which makes it
+// easy for a theme's margin to end up smaller on paper than the theme says. That test checks that
+// text sits the theme's margin from the cut line, so the Default theme's 12mm at A5 is still 12mm
+// once the printer trims the page, and that pictures still run into the bleed. These helpers are
+// how it measures both.
+// ================================================================================================
+//
 // How far the things on the page being edited sit from the edge of the finished page, in
 // millimetres, the way a person measures a printed book with a ruler.
 //
