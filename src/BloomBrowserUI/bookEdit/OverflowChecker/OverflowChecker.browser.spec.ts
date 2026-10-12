@@ -196,4 +196,36 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowSoon", () => {
             secondPage[0].closest(".marginBox"),
         ]);
     });
+
+    // The waiting check holds on to the last box that asked for it, but the other boxes still
+    // need their page checked if that one is deleted.
+    it("still checks the page when the last box to come due is deleted before the check runs", () => {
+        const [boxes] = loadPages([3]);
+        const marginBox = boxes[0].closest(".marginBox");
+        vi.useFakeTimers();
+        vi.spyOn(
+            OverflowChecker,
+            "AdjustSizeAndMarkSelfOverflow",
+        ).mockImplementation(() => {});
+        const pageChecks = vi
+            .spyOn(OverflowChecker, "CheckPageAncestorOverflow")
+            .mockImplementation(() => {});
+
+        boxes.forEach((box) =>
+            OverflowChecker.AdjustSizeOrMarkOverflowSoon(box),
+        );
+        vi.runOnlyPendingTimers();
+        expect(
+            pageChecks,
+            "the page-wide check should still be waiting",
+        ).not.toHaveBeenCalled();
+        boxes[2].closest(".bloom-translationGroup")!.remove();
+        vi.runOnlyPendingTimers();
+
+        expect(pageChecks).toHaveBeenCalledTimes(1);
+        expect(pageChecks.mock.calls[0][0].isConnected).toBe(true);
+        expect(pageChecks.mock.calls[0][0].closest(".marginBox")).toBe(
+            marginBox,
+        );
+    });
 });

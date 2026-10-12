@@ -413,7 +413,8 @@ export default class OverflowChecker {
     // Run CheckPageAncestorOverflow for the margin box holding `editable` once the timers that
     // are already due have run. Each call replaces any check still waiting for the same margin
     // box, so a batch of boxes whose timers fire together gets one page-wide check, not one each.
-    // The check finds the margin box from the box it is given, so any box of the batch will do.
+    // The check finds the margin box from the box it is given, so any box in the margin box will
+    // do; that matters when `editable` has been deleted but the rest of the margin box is still there.
     private static CheckPageAncestorOverflowSoon(editable: HTMLElement) {
         const marginBox = editable.closest(".marginBox");
         if (!marginBox) {
@@ -428,8 +429,11 @@ export default class OverflowChecker {
             marginBox,
             setTimeout(() => {
                 pageChecksWaiting.delete(marginBox);
-                if (editable.isConnected) {
-                    OverflowChecker.CheckPageAncestorOverflow(editable);
+                const box = editable.isConnected
+                    ? editable
+                    : marginBox.querySelector<HTMLElement>(".bloom-editable");
+                if (box?.isConnected) {
+                    OverflowChecker.CheckPageAncestorOverflow(box);
                 }
             }, 0),
         );
