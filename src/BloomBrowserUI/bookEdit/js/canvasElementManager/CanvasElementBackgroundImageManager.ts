@@ -1,7 +1,6 @@
 import { Bubble, Comical } from "comicaljs";
 import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
 import {
-    getBackgroundImageFromBloomCanvas,
     getImageFromCanvasElement,
     getImageFromContainer,
     HandleImageError,
@@ -239,9 +238,9 @@ function switchBackgroundToCanvasElement(
             }
         }
     }
-    const bgImage = getBackgroundImageFromBloomCanvas(
-        bloomCanvas,
-    ) as HTMLElement; // must exist by now
+    // Take the img from the background canvas element we just found or made, not from a
+    // fresh descendant search, which would find a nested bloom-canvas's picture first.
+    const bgImage = getImageFromCanvasElement(bgCanvasElement) as HTMLElement; // must exist by now
     // Whether it's a new bgImage or not, copy its src from the old-style img
     bgImage.classList.remove("bloom-imageLoadError");
     bgImage.onerror = HandleImageError;

@@ -1,9 +1,19 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-// Comical wants paper.js and a real <canvas>, which jsdom doesn't give us. Nothing in the
-// code under test needs it to do anything.
+// Comical wants paper.js and a real <canvas>, which jsdom doesn't give us. The code under
+// test only reads and writes bubble levels, which nothing here checks.
 vi.mock("comicaljs", () => ({
-    Bubble: class {},
+    Bubble: class {
+        static getBubbleSpec() {
+            return { level: 1 };
+        }
+        getBubbleSpec() {
+            return { level: 1 };
+        }
+        persistBubbleSpec() {
+            // the tests don't look at bubble levels
+        }
+    },
     Comical: {
         setSelectorForBubblesWhichTailMidpointMayOverlap: () => {},
         activateElement: () => {},
@@ -32,6 +42,7 @@ vi.mock("../../../utils/elementUtils", async (importOriginal) => {
 import {
     adjustBackgroundImageSize,
     getBackgroundCanvasElement,
+    handleResizeAdjustments,
 } from "./CanvasElementBackgroundImageManager";
 import type { BackgroundImageManagerState } from "./CanvasElementBackgroundImageManager";
 
@@ -251,5 +262,43 @@ describe("getBackgroundCanvasElement", () => {
         expect(getBackgroundCanvasElement(bloomCanvas)).toBe(
             document.getElementById("bg"),
         );
+    });
+});
+
+describe("converting a legacy background image to a canvas element", () => {
+    test("gives the outer bloom-canvas's picture to its new background element, not to a nested canvas", () => {
+        // The nested canvas comes first in document order, so a plain descendant search
+        // for a background image from the outer canvas would find the inner one.
+        document.body.innerHTML = `
+            <div class="bloom-canvas" id="outer">
+                <div class="bloom-canvas-element">
+                    <div class="bloom-canvas" id="inner">
+                        <div class="bloom-canvas-element bloom-backgroundImage" id="innerBg">
+                            <div class="bloom-imageContainer"><img src="inner.png"/></div>
+                        </div>
+                    </div>
+                </div>
+                <img src="outer.png" />
+            </div>`;
+        const outer = document.getElementById("outer") as HTMLElement;
+        const innerImg = document.querySelector("#innerBg img") as HTMLElement;
+        // Sanity check: the outer canvas starts with no background element of its own.
+        expect(getBackgroundCanvasElement(outer)).toBeUndefined();
+        expect(innerImg.getAttribute("src")).toBe("inner.png");
+
+        handleResizeAdjustments(
+            makeState(),
+            [outer],
+            () => {},
+            () => undefined,
+            () => {},
+        );
+
+        const outerBg = getBackgroundCanvasElement(outer);
+        expect(outerBg).toBeDefined();
+        expect(outerBg?.querySelector("img")?.getAttribute("src")).toBe(
+            "outer.png",
+        );
+        expect(innerImg.getAttribute("src")).toBe("inner.png");
     });
 });
