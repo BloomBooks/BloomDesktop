@@ -1385,6 +1385,11 @@
         <source xml:lang="en">Video</source>
         <note>ID: EditTab.CustomPage.Video</note>
       </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Table" translate="no" sil:dynamic="true">
+        <source xml:lang="en">Table</source>
+        <note>ID: EditTab.CustomPage.Table</note>
+        <note>Shown as an option when a Custom Page section can contain a table, and as the label across a section that holds a table in Change Layout mode</note>
+      </trans-unit>
       <trans-unit id="EditTab.CustomPage.TextBox" sil:dynamic="true">
         <source xml:lang="en">Text Box</source>
         <note>ID: EditTab.CustomPage.TextBox</note>
@@ -1806,6 +1811,11 @@
         <source xml:lang="en">The contributions made by writers, illustrators, editors, etc., in {lang}</source>
         <note>ID: EditTab.FrontMatter.OriginalContributorsPrompt</note>
         <note>Put {lang} in your translation, so it can be replaced by the language name. Do NOT translate "lang".</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.OriginalCopyrightAndLicenseHint" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Original copyright &amp; license</source>
+        <note>ID: EditTab.FrontMatter.OriginalCopyrightAndLicenseHint</note>
+        <note>Label in the hint bubble shown on the credits page next to the sentence Bloom generates about the original book's copyright and license.</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence">
         <source xml:lang="en">This book is an adaptation of the original, {0}.</source>

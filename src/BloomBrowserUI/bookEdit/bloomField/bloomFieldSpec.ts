@@ -37,6 +37,70 @@ describe("BloomField", () => {
         expect(result).toBe("A v 2 B C \\v D E.");
     });
 
+    // What CKEditor hands Bloom's paste handler for a plain-text paste: `dataValue` is the text as
+    // CKEditor filtered it, and the raw text is in the data transfer.
+    function plainTextPaste(text: string, dataValue = "filtered text") {
+        return {
+            type: "text",
+            dataValue,
+            dataTransfer: { getData: (_format: string) => text },
+        };
+    }
+
+    it("reconstituteParagraphsOnPlainTextPaste puts each line of a multi-line paste in its own paragraph", () => {
+        expect(
+            BloomField.reconstituteParagraphsOnPlainTextPaste(
+                plainTextPaste("first\nsecond"),
+            ),
+        ).toBe("<p>first</p><p>second</p>");
+    });
+
+    it("reconstituteParagraphsOnPlainTextPaste escapes text that looks like markup (BL-16982)", () => {
+        const result = BloomField.reconstituteParagraphsOnPlainTextPaste(
+            plainTextPaste("if a <b and c> d & e\nsecond"),
+        );
+
+        expect(result).toBe(
+            "<p>if a &lt;b and c&gt; d &amp; e</p><p>second</p>",
+        );
+        // And the browser reads it back as exactly the text that was pasted, with no elements
+        // other than the paragraphs.
+        const holder = document.createElement("div");
+        holder.innerHTML = result;
+        expect(holder.querySelectorAll("p").length).toBe(2);
+        expect(holder.querySelectorAll("*").length).toBe(2);
+        expect(holder.querySelector("p")!.textContent).toBe(
+            "if a <b and c> d & e",
+        );
+    });
+
+    it("reconstituteParagraphsOnPlainTextPaste does not turn pasted text into a live element (BL-16982)", () => {
+        const result = BloomField.reconstituteParagraphsOnPlainTextPaste(
+            plainTextPaste('<img src="x" onerror="alert(1)">\nsecond'),
+        );
+
+        const holder = document.createElement("div");
+        holder.innerHTML = result;
+        expect(holder.querySelector("img")).toBeNull();
+        expect(holder.querySelector("p")!.textContent).toBe(
+            '<img src="x" onerror="alert(1)">',
+        );
+    });
+
+    it("reconstituteParagraphsOnPlainTextPaste leaves a single-line or HTML paste as CKEditor filtered it", () => {
+        expect(
+            BloomField.reconstituteParagraphsOnPlainTextPaste(
+                plainTextPaste("one line <b>", "filtered one line"),
+            ),
+        ).toBe("filtered one line");
+        expect(
+            BloomField.reconstituteParagraphsOnPlainTextPaste({
+                ...plainTextPaste("two\nlines", "<p>filtered html</p>"),
+                type: "html",
+            }),
+        ).toBe("<p>filtered html</p>");
+    });
+
     it("copyAudioFilesWithNewIdsDuringPasting does not change input when no audio found", () => {
         const input = '<p><span class="bold">This is a test!</span></p>';
         const result = BloomField.copyAudioFilesWithNewIdsDuringPasting(input);

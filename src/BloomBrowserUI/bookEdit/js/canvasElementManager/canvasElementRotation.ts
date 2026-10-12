@@ -14,7 +14,7 @@
 // Not every canvas element can rotate. A speech bubble, thought bubble, caption, rectangle
 // or ellipse has its outline and tail drawn by comicaljs onto a shared SVG layer, from the
 // element's un-rotated offset box. A CSS rotation of the element does not rotate that drawn
-// shape, so we do not offer rotation for those elements. Nor do we offer it for a video. See
+// shape, so we do not offer rotation for those elements. Nor do we offer it for a video or a table. See
 // canRotateCanvasElement.
 import { Bubble } from "comicaljs";
 import {
@@ -87,6 +87,11 @@ export function canRotateCanvasElement(canvasElement: HTMLElement): boolean {
         canvasElement.classList.contains(kBloomButtonClass) ||
         canvasElement.getElementsByClassName("bloom-link-grid").length > 0
     ) {
+        return false;
+    }
+    // A table is a grid of rows and columns that people read across and down; turned
+    // at an angle it stops being one.
+    if (canvasElement.getElementsByClassName("bloom-table").length > 0) {
         return false;
     }
     // comicaljs draws these shapes axis-aligned; see the note at the top of this file.

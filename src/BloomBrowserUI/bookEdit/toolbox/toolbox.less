@@ -65,16 +65,14 @@ span.scroll-button {
     color: white;
     float: left;
 }
-// Reserve space for the vertical scrollbar on the reader tools, so that when
-// their content grows tall enough to need one, the scrollbar's appearance
-// doesn't shrink the content width and reflow/crowd everything. (The dark
-// scrollbar *styling* now comes from the shared `bloomDarkScrollbars` class on
-// the toolbox root — see bloomUI.less — rather than a rule here.) (BL-16585)
-// The scrolling container is the MUI AccordionDetails hosting the tool's body.
-div.MuiAccordionDetails-root:has([data-toolid="leveledReaderTool"]),
-div.MuiAccordionDetails-root:has([data-toolid="decodableReaderTool"]) {
-    scrollbar-gutter: stable;
-}
+// NOTE: the reader tools used to get their scrollbar gutter reserved here, because
+// the jQuery-UI accordion's content element was what scrolled. It no longer is: each
+// reader panel scrolls its own stats/word region and reserves its own gutter there
+// (see LeveledReaderToolControls and DecodableReaderToolControls, BL-16585). Reserving
+// one here as well cost a second ~14px on a container that never shows a scrollbar,
+// which squeezed the Leveled Reader's "Actual" column off the right edge (BL-16585
+// again, reported on BL-16608). Don't add it back without checking which element
+// actually scrolls.
 
 .h1 {
     padding-top: 20px;

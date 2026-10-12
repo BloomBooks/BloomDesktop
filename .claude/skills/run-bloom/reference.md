@@ -307,6 +307,98 @@ switching plus console and network observation. The `playwright` Node library ov
 `http://127.0.0.1:<cdpPort>` is the confirmed attach path; MCP browser wrappers that own their own
 browser cannot attach to an existing CDP endpoint.
 
+## Driving the editable page over CDP (DOM interaction)
+
+Verified driving the real Bloom.exe WebView2 with Playwright's `chromium.connectOverCDP`.
+
+- **The page frame reloads.** After a tab switch or page change, re-find the `page` frame and poll
+  until your target selector exists (e.g. `.bloom-page`) before acting.
+- **Click editables with `{force:true}`.** Bloom overlays a format gear (`#formatButton`,
+  `.bloom-ui`) on a focused editable, and it intercepts normal clicks ("subtree intercepts pointer
+  events"). Re-query the editables between cells; the DOM can re-render.
+- **Saving a page.** There is no save button; navigating away persists the page. Switching
+  workspace tabs (Collections → Edit) forces a save+reload, which suits a round-trip test. The
+  saved book HTML is the book folder's main `<BookName>.htm`; ignore the `*-memsim-*` and
+  `*Pagelist*` temp files. Find the book folder from a page-frame iframe `src` (e.g.
+  `…/Bloom/<collection>/Book-xxxx/`).
+- **Undo is a C# accelerator; synthetic Ctrl+Z over CDP does NOT reach it.** Call the entry points
+  C# uses, from the *top* frame: `window.workspaceBundle.handleUndo()` and
+  `window.workspaceBundle.canUndo()` (returns `"yes"`/`"fail"`). Page-frame functions are likewise
+  on `window.editablePageBundle.*` inside the page frame, handy for asserting state without
+  scraping the DOM.
+- **Toolbox tools.** Optional/experimental tools must first be enabled via the "More…" settings
+  checkbox (e.g. `#<toolname>Check`, which calls `toolboxBundle.showOrHideTool_click(this)`) before
+  their accordion section appears. Tool buttons expose `title`/`aria-label` (e.g.
+  `button[title="Insert Row Below"]`), not `alt`.
+- **Capture console errors** while exercising React UI:
+  `page.on('console', m => { if (m.type()==='error') errors.push(m.text()); })`, the cheapest
+  check for "multiple React"/hook/MUI problems.
+- **After changing a front-end dependency** (relinking it, or bumping a GitHub dependency's hash),
+  restart the whole stack rather than relying on hot reload; otherwise the page runs the stale
+  copy. `launcherControl.mjs --restart` is *not* enough: it restarts Bloom.exe, but the Vite dev
+  server keeps serving the module it transformed at startup
+  (`curl http://localhost:<vitePort>/@id/<dep>` and grep for your change to confirm). Do not kill
+  the Vite process on its own either, because that takes the launcher down with it. Use `--shutdown` then
+  `--ensure-running`; the new stack picks new Vite and control ports, so re-read the status.
+
+## Change Layout (adding a section to a custom page)
+
+The Change Layout toggle turns on origami layout mode, which is the only place the
+section chooser ("Image, Video, Table, or Text") appears. So to give yourself a
+table, an image or a video to work with: turn the toggle on, click the section you
+want, then turn the toggle off.
+
+The toggle is **inside the page iframe**, not the shell: `AbovePageControls.tsx`
+renders a visually hidden checkbox `#changeLayoutToggle` with a visible
+`<label class="onoffswitch-label" for="changeLayoutToggle">`. Click the label; the
+checkbox itself is not clickable.
+
+```js
+const f = appPage.frames().find((fr) => fr.name() === "page");
+const state = () =>
+    f.evaluate(() => ({
+        checked: document.getElementById("changeLayoutToggle")?.checked,
+        marginBox: document.querySelector(".marginBox")?.className,
+    }));
+await f.locator('label.onoffswitch-label[for="changeLayoutToggle"]').click();
+// Layout mode adds a class, so the marginBox reads
+// "marginBox origami-layout-mode" while the toggle is on.
+```
+
+Two gotchas:
+
+- Allow about two seconds after the click. The page rebuilds its controls, and
+  `state()` right after the click still reports the old value.
+- **The chooser links exist twice.** A hidden `.origami-template-container` holds a
+  prototype copy of every link, and a plain locator matches that one first. Ask for
+  the visible one:
+  `f.locator('a[data-i18n="EditTab.CustomPage.Table"]:visible').first().click()`.
+
+The link's `data-i18n` values are `EditTab.CustomPage.Image`, `.Video`, `.Table`
+and `.Text`. A link only appears when its feature is on, so a missing Table link
+usually means the feature is not visible (see its entry in FeatureRegistry.cs), not that the
+click failed.
+
+## Building an app (Publish > Apps)
+
+The Apps screen drives Reading App Builder (RAB). Select a book first, because the Publish tab
+only appears once one is selected; then click `Apps` in the Publish sidebar. The RAB project lives
+in `<collection>/Bloom App Data`, so build test apps in a scratch collection, not one of the
+developer's own.
+
+1. **Prepare** installs RAB if needed, creates the signing key and the project, and turns the
+   other buttons on.
+2. **Build stays disabled while the screen shows "Required or invalid settings: …"** under
+   Customize. A new project has no Copyright, so Build is off until you open **Customize...**,
+   fill it in, and click OK. Also give a test app its own **Package Name** (e.g.
+   `org.sil.en.bl17007test`): the default `org.sil.<lang>.stories` is shared by every test app
+   in that language, so installing one replaces another on the phone. The dialog's fields are
+   inputs inside the row whose label text is the setting name.
+3. **Build** runs RAB. Watch progress with `GET /bloom/api/publish/rab/status` (`ProjectExists`,
+   `ActiveAction`, `ApkExists`, `ApkPath`) instead of sleeping; the APK is done when `ApkExists`
+   is true and `ActiveAction` is empty.
+4. **Try on phone** installs the APK on the developer's connected phone; leave that step to them.
+
 ## Field-verified gotchas (all hit in real agent runs)
 
 - **Port 8089 is first-come, not per-worktree.** Bloom starts at 8089 and falls forward when it

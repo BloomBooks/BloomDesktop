@@ -42,24 +42,49 @@ const initialValues: ICollectionSettingsValues = {
         district: "",
     },
     advanced: { autoUpdate: true, collectionName: "Test Collection" },
-    experimental: {},
+    experimental: { "team-collections": false, tables: false },
 };
 
 const settingsResponse: ICollectionSettingsResponse = {
     values: initialValues,
     restartPaths: ["frontBackMatter.xmatter", "languages.language3.tag"],
+    isTeamCollection: false,
     notAllowedMessage: null,
 };
 
-const { mockGet, mockPostJson, mockCloseDialog, dialogState } = vi.hoisted(
-    () => ({
-        mockGet: vi.fn(),
-        mockPostJson: vi.fn(),
-        mockCloseDialog: vi.fn(),
-        // Lets a test close and re-open the dialog, which is what the real launch plumbing does.
-        dialogState: { open: true },
-    }),
-);
+const {
+    mockGet,
+    mockPostJson,
+    mockCloseDialog,
+    dialogState,
+    teamCollectionFeature,
+    tableFeature,
+} = vi.hoisted(() => ({
+    mockGet: vi.fn(),
+    mockPostJson: vi.fn(),
+    mockCloseDialog: vi.fn(),
+    // Lets a test close and re-open the dialog, which is what the real launch plumbing does.
+    dialogState: { open: true },
+    // Whether Bloom has answered the subscription check yet, and whether the collection's tier
+    // includes Team Collections.
+    teamCollectionFeature: { loaded: true, enabled: true },
+    // The same, for Tables.
+    tableFeature: { loaded: true, enabled: true },
+}));
+
+vi.mock("../react_components/featureStatus", () => ({
+    useGetFeatureStatus: (featureName: string | undefined) => {
+        const feature =
+            featureName === "Table" ? tableFeature : teamCollectionFeature;
+        return feature.loaded ? { enabled: feature.enabled } : undefined;
+    },
+}));
+
+vi.mock("../react_components/requiresSubscription", () => ({
+    BloomSubscriptionIndicatorIconAndText: (props: { feature: string }) => (
+        <div data-testid="subscription-badge" data-feature={props.feature} />
+    ),
+}));
 
 vi.mock("../utils/bloomApi", () => ({
     get: mockGet,
@@ -119,6 +144,12 @@ vi.mock("../react_components/BloomDialog/commonDialogComponents", () => ({
     ),
 }));
 
+const { MockConfigrGroup } = vi.hoisted(() => ({
+    MockConfigrGroup: (props: React.PropsWithChildren<object>) => (
+        <div>{props.children}</div>
+    ),
+}));
+
 vi.mock("@sillsdev/config-r", () => ({
     ConfigrPane: (props: {
         children: React.ReactNode;
@@ -169,19 +200,81 @@ vi.mock("@sillsdev/config-r", () => ({
                     })
                 }
             />
+            <button
+                data-testid="pad-country"
+                onClick={() =>
+                    props.onChange({
+                        ...props.initialValues,
+                        frontBackMatter: {
+                            ...props.initialValues.frontBackMatter,
+                            country: "  Kenya ",
+                        },
+                    })
+                }
+            />
+            <button
+                data-testid="pad-collection-name"
+                onClick={() =>
+                    props.onChange({
+                        ...props.initialValues,
+                        advanced: {
+                            ...props.initialValues.advanced,
+                            collectionName: ` ${props.initialValues.advanced.collectionName}  `,
+                        },
+                    })
+                }
+            />
             {props.children}
         </div>
     ),
-    ConfigrPage: (props: React.PropsWithChildren<{ pageKey: string }>) => (
-        <div data-testid="configr-page" data-page-key={props.pageKey}>
-            {props.children}
-        </div>
-    ),
-    ConfigrGroup: (props: React.PropsWithChildren<object>) => (
-        <div>{props.children}</div>
-    ),
+    ConfigrPage: (props: React.PropsWithChildren<{ pageKey: string }>) => {
+        // The real ConfigrPage throws (and blanks the whole UI) unless every child is a group.
+        React.Children.forEach(props.children, (child) => {
+            if (
+                !React.isValidElement(child) ||
+                child.type !== MockConfigrGroup
+            ) {
+                throw new Error(
+                    `ConfigrPage "${props.pageKey}" has a child that is not a ConfigrGroup`,
+                );
+            }
+        });
+        return (
+            <div data-testid="configr-page" data-page-key={props.pageKey}>
+                {props.children}
+            </div>
+        );
+    },
+    ConfigrGroup: MockConfigrGroup,
     ConfigrStatic: (props: React.PropsWithChildren<object>) => (
         <div>{props.children}</div>
+    ),
+    ConfigrBoolean: (props: { path: string; disabled?: boolean }) => (
+        <input
+            type="checkbox"
+            data-testid="configr-boolean"
+            data-path={props.path}
+            disabled={props.disabled}
+        />
+    ),
+    ConfigrInput: (props: {
+        path: string;
+        disabled?: boolean;
+        description?: string;
+    }) => (
+        <div>
+            <input
+                type="text"
+                data-testid="configr-input"
+                data-path={props.path}
+                disabled={props.disabled}
+            />
+            {props.description && (
+                <div data-testid="configr-input-description">
+                    {props.description}
+                </div>
+            )}
+        </div>
     ),
 }));
 
@@ -223,10 +316,22 @@ describe("CollectionSettingsDialog", () => {
         (container.querySelector('[data-testid="dialog-ok"]') as HTMLElement)
             .textContent;
 
+    const respondWith = (response: ICollectionSettingsResponse) => {
+        mockGet.mockImplementation(
+            (_url: string, successCallback: (r: unknown) => void) => {
+                successCallback({ data: response });
+            },
+        );
+    };
+
     beforeEach(() => {
         container = document.createElement("div");
         document.body.appendChild(container);
         dialogState.open = true;
+        teamCollectionFeature.loaded = true;
+        teamCollectionFeature.enabled = true;
+        tableFeature.loaded = true;
+        tableFeature.enabled = true;
         mockGet.mockReset();
         mockGet.mockImplementation(
             (_url: string, successCallback: (r: unknown) => void) => {
@@ -439,5 +544,261 @@ describe("CollectionSettingsDialog", () => {
         await flushDeferredChange();
 
         expect(okButtonLabel()).toBe("Restart");
+    });
+
+    it("ignores spaces around the collection name, both for Restart and in what it saves", async () => {
+        respondWith({
+            ...settingsResponse,
+            restartPaths: [
+                ...settingsResponse.restartPaths,
+                "advanced.collectionName",
+            ],
+        });
+        await renderDialog();
+
+        click("pad-collection-name");
+        await flushDeferredChange();
+        // A name that differs only by spaces is no rename, so OK stays OK.
+        expect(okButtonLabel()).toBe("OK");
+        click("dialog-ok");
+
+        expect(mockPostJson).toHaveBeenCalledTimes(1);
+        expect(mockPostJson.mock.calls[0][1]).toEqual({
+            values: initialValues,
+            restartRequired: false,
+        });
+    });
+
+    it("trims any text the user edited, on any page, when it saves", async () => {
+        expect(initialValues.frontBackMatter.country).toBe("");
+        await renderDialog();
+
+        click("pad-country");
+        await flushDeferredChange();
+        click("dialog-ok");
+
+        expect(mockPostJson.mock.calls[0][1].values).toEqual({
+            ...initialValues,
+            frontBackMatter: {
+                ...initialValues.frontBackMatter,
+                country: "Kenya",
+            },
+        });
+    });
+
+    it("does not rename a collection whose name already has a leading space when it saves", async () => {
+        const spacedValues: ICollectionSettingsValues = {
+            ...initialValues,
+            advanced: {
+                ...initialValues.advanced,
+                collectionName: " Spaced Books",
+            },
+        };
+        respondWith({
+            ...settingsResponse,
+            values: spacedValues,
+            restartPaths: [
+                ...settingsResponse.restartPaths,
+                "advanced.collectionName",
+            ],
+        });
+        await renderDialog();
+        expect(okButtonLabel()).toBe("OK");
+
+        click("dialog-ok");
+
+        // The name goes back exactly as it was, so C# sees no rename.
+        expect(mockPostJson.mock.calls[0][1]).toEqual({
+            values: spacedValues,
+            restartRequired: false,
+        });
+    });
+
+    it("lets the user remove a leading space the collection name already has", async () => {
+        const spacedValues: ICollectionSettingsValues = {
+            ...initialValues,
+            advanced: {
+                ...initialValues.advanced,
+                collectionName: " Spaced Books",
+            },
+        };
+        respondWith({
+            ...settingsResponse,
+            values: spacedValues,
+            restartPaths: [
+                ...settingsResponse.restartPaths,
+                "advanced.collectionName",
+            ],
+        });
+        await renderDialog();
+
+        // Any edit of the name; the posted name is then trimmed.
+        click("pad-collection-name");
+        await flushDeferredChange();
+        expect(okButtonLabel()).toBe("Restart");
+        click("dialog-ok");
+
+        expect(
+            mockPostJson.mock.calls[0][1].values.advanced.collectionName,
+        ).toBe("Spaced Books");
+        expect(mockPostJson.mock.calls[0][1].restartRequired).toBe(true);
+    });
+
+    describe("Advanced page", () => {
+        const advancedPageElement = (selector: string) =>
+            container.querySelector(
+                `[data-testid="configr-page"][data-page-key="advanced"] ${selector}`,
+            ) as HTMLInputElement | null;
+
+        const collectionNameBox = () => {
+            const box = advancedPageElement(
+                '[data-path="advanced.collectionName"]',
+            );
+            if (!box) {
+                throw new Error("The Advanced page has no Collection Name box");
+            }
+            return box;
+        };
+
+        it("offers automatic updating", async () => {
+            await renderDialog();
+
+            expect(
+                advancedPageElement('[data-path="advanced.autoUpdate"]'),
+            ).not.toBeNull();
+        });
+
+        it("lets the user rename a collection that is not a Team Collection", async () => {
+            expect(settingsResponse.isTeamCollection).toBe(false);
+
+            await renderDialog();
+
+            expect(collectionNameBox().disabled).toBe(false);
+            expect(
+                advancedPageElement(
+                    '[data-testid="configr-input-description"]',
+                ),
+            ).toBeNull();
+        });
+
+        it("will not let a Team Collection be renamed, and says why", async () => {
+            respondWith({ ...settingsResponse, isTeamCollection: true });
+
+            await renderDialog();
+
+            expect(collectionNameBox().disabled).toBe(true);
+            expect(
+                advancedPageElement('[data-testid="configr-input-description"]')
+                    ?.textContent,
+            ).toBe(
+                "The collection name cannot be changed because this is a Team Collection. Contact the Bloom team for more information.",
+            );
+        });
+    });
+
+    describe("Experimental page", () => {
+        const teamCollectionsCheckbox = () => {
+            const checkbox = container.querySelector(
+                '[data-testid="configr-page"][data-page-key="experimental"] [data-path="experimental.team-collections"]',
+            ) as HTMLInputElement | null;
+            if (!checkbox) {
+                throw new Error(
+                    "The Experimental page has no Team Collections checkbox",
+                );
+            }
+            return checkbox;
+        };
+
+        const tablesCheckbox = () => {
+            const checkbox = container.querySelector(
+                '[data-testid="configr-page"][data-page-key="experimental"] [data-path="experimental.tables"]',
+            ) as HTMLInputElement | null;
+            if (!checkbox) {
+                throw new Error("The Experimental page has no Tables checkbox");
+            }
+            return checkbox;
+        };
+
+        it("offers Team Collections, with its subscription badge, when the tier allows it", async () => {
+            await renderDialog();
+
+            expect(teamCollectionsCheckbox().disabled).toBe(false);
+            expect(
+                container
+                    .querySelector(
+                        '[data-page-key="experimental"] [data-testid="subscription-badge"]',
+                    )
+                    ?.getAttribute("data-feature"),
+            ).toBe("TeamCollection");
+        });
+
+        it("disables Team Collections when the tier does not include it", async () => {
+            teamCollectionFeature.enabled = false;
+
+            await renderDialog();
+
+            expect(teamCollectionsCheckbox().disabled).toBe(true);
+        });
+
+        it("disables Team Collections until the subscription check has answered", async () => {
+            teamCollectionFeature.loaded = false;
+
+            await renderDialog();
+
+            expect(teamCollectionsCheckbox().disabled).toBe(true);
+        });
+
+        it("will not let someone in a Team Collection turn the feature off", async () => {
+            respondWith({
+                ...settingsResponse,
+                isTeamCollection: true,
+                values: {
+                    ...initialValues,
+                    experimental: { "team-collections": true },
+                },
+            });
+
+            await renderDialog();
+
+            expect(teamCollectionsCheckbox().disabled).toBe(true);
+        });
+
+        it("lets someone in a Team Collection turn the feature on if it is off", async () => {
+            respondWith({ ...settingsResponse, isTeamCollection: true });
+            expect(initialValues.experimental["team-collections"]).toBe(false);
+
+            await renderDialog();
+
+            expect(teamCollectionsCheckbox().disabled).toBe(false);
+        });
+
+        it("offers Tables, with its subscription badge, when the tier allows it", async () => {
+            await renderDialog();
+
+            expect(tablesCheckbox().disabled).toBe(false);
+            const badgeFeatures = Array.from(
+                container.querySelectorAll(
+                    '[data-page-key="experimental"] [data-testid="subscription-badge"]',
+                ),
+            ).map((badge) => badge.getAttribute("data-feature"));
+            expect(badgeFeatures).toContain("Table");
+        });
+
+        it("disables Tables when the tier does not include it", async () => {
+            tableFeature.enabled = false;
+
+            await renderDialog();
+
+            expect(tablesCheckbox().disabled).toBe(true);
+            expect(teamCollectionsCheckbox().disabled).toBe(false);
+        });
+
+        it("disables Tables until the subscription check has answered", async () => {
+            tableFeature.loaded = false;
+
+            await renderDialog();
+
+            expect(tablesCheckbox().disabled).toBe(true);
+        });
     });
 });

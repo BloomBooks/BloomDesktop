@@ -23,6 +23,7 @@ import {
     type ILaunchedBloom,
     type ILaunchedChooserBloom,
     type ICollectionSpec,
+    type IRelaunchChanges,
 } from "./launchBloom";
 import { chromium } from "@playwright/test";
 import * as fs from "node:fs";
@@ -33,6 +34,12 @@ import {
     startProblemDialogWatcher,
     type IProblemDialogWatcher,
 } from "./problemDialogWatcher";
+import {
+    beginCaption,
+    finishCaption,
+    runStep,
+    type StepFunction,
+} from "../helpers/caption";
 import { applyRequestedViewport } from "./viewport";
 
 /** What every launched Bloom gives a test, whichever mode it started in. */
@@ -49,8 +56,8 @@ interface IBloomAppBase {
 
 /**
  * A Bloom launched on a collection (the normal case). Every field except collectionDir is
- * replaced by restart(), so read them from this object each time rather than copying them into
- * a local.
+ * replaced by restart(), and followRelaunch() replaces collectionDir too, so read them from this
+ * object each time rather than copying them into a local.
  */
 export interface IBloomApp extends IBloomAppBase {
     mode: "collection";
@@ -69,11 +76,15 @@ export interface IBloomApp extends IBloomAppBase {
      * rewrite the .bloomCollection; use it to change collection settings, which have no API and
      * live in a WinForms dialog CDP cannot reach.
      *
+     * `changes` replaces launch options that Bloom reads only at startup, such as which
+     * experimental features are on; see IRelaunchChanges.
+     *
      * A restart invalidates the `page` fixture and the old ports. Take the page this returns, or
      * read bloomApp.page afterwards; the old Page object throws once its target is gone.
      */
     restart: (
         betweenStopAndStart?: () => void | Promise<void>,
+        changes?: IRelaunchChanges,
     ) => Promise<Page>;
     /**
      * Find Bloom's shell document again after an action that made Bloom rebuild it in the same
@@ -84,6 +95,13 @@ export interface IBloomApp extends IBloomAppBase {
      * or this can find the outgoing page.
      */
     reattachToShell: () => Promise<Page>;
+    /**
+     * Follow Bloom to the new copy of itself that it starts on `newCollectionDir`, as it does to
+     * finish renaming a collection, and return that copy's shell page. Updates every field here,
+     * collectionDir included, and teardown then stops the new copy. The caller makes sure the old
+     * Bloom is on its way out first (wait for the old page's "close" event).
+     */
+    followRelaunch: (newCollectionDir: string) => Promise<Page>;
 }
 
 /**
@@ -132,7 +150,7 @@ interface IBloomWorkerFixtures {
     collectionSpec: ICollectionSpec | undefined;
     /**
      * Experimental features this Bloom should have on, by their ExperimentalFeatures.cs tokens
-     * (e.g. ["team-collections"]). Set it with test.use(). See
+     * (e.g. ["tables"]). Set it with test.use(). See
      * ILaunchBloomOptions.experimentalFeatures for why this is not done the way a person does it.
      * Honoured only for a Bloom launched on a collection.
      */
@@ -164,6 +182,17 @@ interface IBloomTestFixtures {
      * log, and a copy of the collection as Bloom left it. Runs automatically.
      */
     keepEvidenceOnFailure: void;
+    /**
+     * Puts this test's name and clock on the caption strip in the Bloom window, and stops the
+     * clock when it ends. Runs automatically, so a test that never calls `step` still shows.
+     */
+    e2eCaption: void;
+    /**
+     * Run one step of the test: `await step("Add a row", async () => { ... })`. It shows on the
+     * caption strip in the Bloom window and nests in the Playwright report. Purely cosmetic in
+     * the window; it never changes what the test does or whether it passes.
+     */
+    step: StepFunction;
 }
 
 /**
@@ -462,12 +491,12 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                     bloomPid: launched.bloomPid,
                     collectionDir: launched.collectionDir,
                     userSettingsDir: launched.userSettingsDir,
-                    restart: async (betweenStopAndStart) => {
+                    restart: async (betweenStopAndStart, changes) => {
                         // Close the old CDP connection first: it holds a socket into the process
                         // that is about to be killed.
                         await browser?.close();
                         browser = undefined;
-                        await launched!.restart(betweenStopAndStart);
+                        await launched!.restart(betweenStopAndStart, changes);
                         // Resolve the shell again: the restarted Bloom has a new shell document,
                         // and the old page object points at a dead target.
                         app.page = await reconnectAndFind(
@@ -484,6 +513,21 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                             launched!.cdpPort,
                             (b) => findShellPage(b, launched!.httpPort),
                         );
+                        return app.page;
+                    },
+                    followRelaunch: async (newCollectionDir) => {
+                        // The old connection points into a process that is exiting.
+                        await browser?.close();
+                        browser = undefined;
+                        await launched!.followRelaunch(newCollectionDir);
+                        app.page = await reconnectAndFind(
+                            launched!.cdpPort,
+                            (b) => findShellPage(b, launched!.httpPort),
+                        );
+                        app.httpPort = launched!.httpPort;
+                        app.cdpPort = launched!.cdpPort;
+                        app.bloomPid = launched!.bloomPid;
+                        app.collectionDir = launched!.collectionDir;
                         return app.page;
                     },
                 };
@@ -550,6 +594,34 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
     // dead target.
     page: async ({ _launchedApp }, use) => {
         await use(_launchedApp.page);
+    },
+
+    e2eCaption: [
+        async ({ _launchedApp }, use, testInfo) => {
+            // Read the app's page at each call rather than capturing it: restart() and the
+            // reattach methods replace it.
+            await beginCaption(
+                () => _launchedApp.page,
+                testInfo.file,
+                testInfo.title,
+            );
+            await use();
+            await finishCaption(() => _launchedApp.page);
+        },
+        { auto: true },
+    ],
+
+    step: async ({ _launchedApp, e2eCaption }, use) => {
+        // Depending on e2eCaption only orders the setup: the caption must know the test before a
+        // step can be added to it.
+        void e2eCaption;
+        await use(((title, body, options) =>
+            runStep(
+                () => _launchedApp.page,
+                title,
+                body,
+                options,
+            )) as StepFunction);
     },
 
     // Torn down after every other test-scoped fixture (failOnBloomProblem depends on it, so it is

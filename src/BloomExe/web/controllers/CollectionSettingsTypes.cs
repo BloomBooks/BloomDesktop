@@ -26,6 +26,11 @@ namespace Bloom.web.controllers
         public string[] RestartPaths;
 
         /// <summary>
+        /// Whether the open collection is a Team Collection (even if disconnected).
+        /// </summary>
+        public bool IsTeamCollection;
+
+        /// <summary>
         /// Set only when the user may not edit the collection settings (a Team Collection member
         /// who is not an administrator); the other fields are then null.
         /// </summary>
@@ -339,6 +344,16 @@ namespace Bloom.web.controllers
         {
             get => ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections);
             set => ExperimentalFeatures.SetValue(ExperimentalFeatures.kTeamCollections, value);
+        }
+
+        // An open edit page fetched the table feature's status when it loaded and keeps that
+        // answer (tableFeature.ts), so only a restart makes it see the new value.
+        [JsonProperty(ExperimentalFeatures.kTables)]
+        [RequiresRestart]
+        public bool Tables
+        {
+            get => ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTables);
+            set => ExperimentalFeatures.SetValue(ExperimentalFeatures.kTables, value);
         }
     }
 
