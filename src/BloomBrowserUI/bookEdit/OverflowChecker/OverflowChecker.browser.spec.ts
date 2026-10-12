@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import OverflowChecker from "./OverflowChecker";
 import OverflowAncestorFixture from "./OverflowAncestorFixture.html?raw";
 import OverflowFixture from "./OverflowFixture.html?raw";
@@ -101,5 +101,99 @@ describe("OverflowChecker.overflowingAncestor", () => {
                 describeMeasurements(element),
             ).toBe(testCase.expectToOverflow);
         });
+    });
+});
+
+describe("OverflowChecker.AdjustSizeOrMarkOverflowSoon", () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+        vi.useRealTimers();
+    });
+
+    // Puts one bloom-page per entry of `boxesPerPage` in the document, each with a margin box
+    // holding that many text boxes, and returns the boxes page by page.
+    function loadPages(boxesPerPage: number[]): HTMLElement[][] {
+        const pages = boxesPerPage
+            .map(
+                (count) =>
+                    `<div class="bloom-page"><div class="marginBox" style="width:25em;height:400px">` +
+                    `<div class="bloom-translationGroup"><div class="bloom-editable bloom-visibility-code-on">Short.</div></div>`.repeat(
+                        count,
+                    ) +
+                    `</div></div>`,
+            )
+            .join("");
+        loadFixture(pages);
+        return Array.from(
+            document.querySelectorAll<HTMLElement>("#fixtureRoot .marginBox"),
+        ).map((marginBox) =>
+            Array.from(
+                marginBox.querySelectorAll<HTMLElement>(".bloom-editable"),
+            ),
+        );
+    }
+
+    // The page-wide check measures every box in the margin box, so one per box would make a page
+    // of n boxes do n * n measurements: over ten seconds of work for a page with a 28-cell table
+    // (BL-16816).
+    it("checks each box itself, and the page once, when all the boxes come due together", () => {
+        const [boxes] = loadPages([6]);
+        expect(boxes.length).toBe(6);
+        vi.useFakeTimers();
+        const selfChecks = vi
+            .spyOn(OverflowChecker, "AdjustSizeAndMarkSelfOverflow")
+            .mockImplementation(() => {});
+        const pageChecks = vi
+            .spyOn(OverflowChecker, "CheckPageAncestorOverflow")
+            .mockImplementation(() => {});
+
+        boxes.forEach((box) =>
+            OverflowChecker.AdjustSizeOrMarkOverflowSoon(box),
+        );
+        vi.advanceTimersByTime(999);
+        expect(
+            selfChecks,
+            "nothing should be checked before the second is up",
+        ).not.toHaveBeenCalled();
+
+        // Just the timers that are due: the boxes' own. (Fake timers give a timer made during
+        // this run a delay of at least 1ms, where the browser runs it as soon as these are done,
+        // so the page-wide check is run as a separate step below.)
+        vi.runOnlyPendingTimers();
+        expect(selfChecks.mock.calls.map((call) => call[0])).toEqual(boxes);
+        expect(
+            pageChecks,
+            "the page-wide check should wait until every box has checked itself",
+        ).not.toHaveBeenCalled();
+
+        vi.runOnlyPendingTimers();
+        expect(pageChecks).toHaveBeenCalledTimes(1);
+    });
+
+    it("checks each margin box once when boxes on two pages come due together", () => {
+        const [firstPage, secondPage] = loadPages([3, 2]);
+        expect([firstPage.length, secondPage.length]).toEqual([3, 2]);
+        vi.useFakeTimers();
+        vi.spyOn(
+            OverflowChecker,
+            "AdjustSizeAndMarkSelfOverflow",
+        ).mockImplementation(() => {});
+        const pageChecks = vi
+            .spyOn(OverflowChecker, "CheckPageAncestorOverflow")
+            .mockImplementation(() => {});
+
+        [...firstPage, ...secondPage].forEach((box) =>
+            OverflowChecker.AdjustSizeOrMarkOverflowSoon(box),
+        );
+        vi.runOnlyPendingTimers();
+        vi.runOnlyPendingTimers();
+
+        const marginBoxesChecked = pageChecks.mock.calls.map((call) =>
+            call[0].closest(".marginBox"),
+        );
+        expect(marginBoxesChecked).toEqual([
+            firstPage[0].closest(".marginBox"),
+            secondPage[0].closest(".marginBox"),
+        ]);
     });
 });
