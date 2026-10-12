@@ -1175,6 +1175,11 @@
         <target xml:lang="pt-PT" state="final">O [Tema da Página] selecionado não suporta as seguintes configurações.</target>
         <note>BookSettings.ThemeDisablesOptionsNoticeWithLink</note>
       </trans-unit>
+      <trans-unit id="BookSettings.EdgeToEdgeNeedsFullBleed" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Pictures cannot reach the edge of a printed page unless this book uses full bleed. Turn it on in [Print Publishing].</source>
+        <target xml:lang="pt-PT" state="needs-translation">Pictures cannot reach the edge of a printed page unless this book uses full bleed. Turn it on in [Print Publishing].</target>
+        <note>ID: BookSettings.EdgeToEdgeNeedsFullBleed</note>
+      </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This feature requires a newer [Page Theme].</source>
         <target xml:lang="pt-PT" state="final">Este recurso requer uma versão mais recente do [Tema de Página].</target>
