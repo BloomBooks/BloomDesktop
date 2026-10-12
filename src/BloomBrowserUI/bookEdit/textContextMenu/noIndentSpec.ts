@@ -27,6 +27,19 @@ function setupPage(): void {
                     </div>
                 </div>
             </div>
+            <div class="bloom-canvas">
+                <div class="bloom-canvas-element">
+                    <div class="bloom-table">
+                        <div class="bloom-cell">
+                            <div class="bloom-translationGroup">
+                                <div class="bloom-editable">
+                                    <p id="cellParagraph">Text in a cell</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div id="notText">Not in a text box at all</div>
         </div>`;
 }
@@ -63,6 +76,20 @@ describe("findParagraphForTextContextMenu", () => {
         expect(
             findParagraphForTextContextMenu(element("canvasParagraph")),
         ).toBeUndefined();
+    });
+
+    it("finds the paragraph of a table cell, even inside a canvas element", () => {
+        // A table dropped on a Canvas page is inside a canvas element, so this paragraph is
+        // rejected by the canvas-element test unless the cell is allowed first. Which menu a
+        // cell's right-click actually gets is setupTextContextMenu's decision; all that matters
+        // here is that the paragraph is offered to it.
+        // sanity check: this really is inside a canvas element, so the cell is what saves it
+        expect(
+            element("cellParagraph").closest(".bloom-canvas-element"),
+        ).toBeTruthy();
+        expect(findParagraphForTextContextMenu(element("cellParagraph"))).toBe(
+            element("cellParagraph"),
+        );
     });
 
     it("ignores a click that is not in a paragraph of a bloom-editable", () => {

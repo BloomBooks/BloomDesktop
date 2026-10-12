@@ -161,6 +161,12 @@ export interface IControlContext {
     // edit (see aiImageEditorImageFormats.ts). False for formats the editor can't open
     // (e.g. svg), which keeps "Edit with AI" disabled for them.
     imageIsAiEditableFormat: boolean;
+    // True when the user may create and restructure tables: the subscription is Pro
+    // or better and the table feature is visible. A book whose tables are frozen (see
+    // installHostHooks in tableEditing.ts) may still be typed in and published as a
+    // derivative, so its table element keeps Delete but loses Duplicate, which would
+    // be making a new table.
+    tablesMayBeRestructured: boolean;
     // Deletes the object these controls belong to, when that object is not a canvas element.
     // An inline image (a picture inside a text block) sets this, because deleting one means
     // removing it from every language's text, and the canvas element manager does not know

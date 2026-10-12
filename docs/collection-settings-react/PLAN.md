@@ -45,7 +45,7 @@ What a page card builds on:
 - **Launch.** `showCollectionSettingsDialog(pageKey?)` raises the dialog's `LaunchDialog` event in
   the browser; `App.tsx` renders the dialog, so it opens from any workspace tab, optionally on a
   named page. No C# launch endpoint and no feature flag (Q4).
-- **Data.** `GET collection/settings` returns `{ values, restartPaths }`, or only
+- **Data.** `GET collection/settings` returns `{ values, restartPaths, isTeamCollection }`, or only
   `notAllowedMessage` for a Team Collection member who is not an administrator (shown in a small
   dialog with Close). OK posts `{ values, restartRequired }` once; Cancel posts nothing.
 - **One place per setting.** `CollectionSettingsValues` (`CollectionSettingsTypes.cs`) is a live
@@ -60,6 +60,11 @@ What a page card builds on:
   Collection; the BL-15056 expired-bookshelf cases) and `ApplyAdministrators`. `Apply` already
   calls the last two with "unchanged" on every save, which keeps an expired subscription's
   bookshelf in the file.
+- **Pages.** Each built page is a hook in its own file under `collection/settingsPages/` that
+  returns its `ConfigrPage` (Config-R throws, blanking the UI, if a pane's child is not a
+  `ConfigrPage` or a page's child is not a `ConfigrGroup`, so a page cannot be a component of its
+  own). `ExperimentalPage.tsx` is the first; each card moves its page out of the placeholders in
+  `CollectionSettingsDialog.tsx` the same way.
 - **Validation and clean-up belong in the client** (Config-R can validate a field; it does not
   trim, so add that to Config-R if a page needs it). The POST has no validation reply.
 - **Restart.** The dialog compares `restartPaths`, shows the restart reminder and relabels OK; C#
@@ -120,16 +125,19 @@ branding-forced pack), QR Codes (show, caption, and a new live badge preview: C#
 today, so the preview needs an endpoint), Places (Country, Province, District, trimmed in the
 client), Page Numbering Style (Q5). Values for xmatter, QR and places already exist in the model.
 
-**BL-16737 Advanced.** Automatically update Bloom (a user-level setting, shown only where
-supported), Collection Name (disabled in a Team Collection; the model already queues the rename;
-trim in the client).
+**BL-16737 Advanced.** Automatically update Bloom (a user-level setting), Collection Name
+(disabled in a Team Collection; the model already queues the rename; trim in the client).
 
 **BL-16736 Bloom Library.** The bookshelf, with subscription gating (Q10). Post it and hand it to
 `ApplySubscriptionAndBookshelf`, which has the expired-bookshelf rules.
 
 **BL-16734 Subscription.** Reuse `SubscriptionSettings`. Hand the entered subscription to
 `ApplySubscriptionAndBookshelf` (its descriptor-change bookshelf clearing never fires; BL-16904).
-Reset its preview on Cancel. The "fix invalid branding" startup path must open this page.
+Reset its preview on Cancel. The "fix invalid branding" startup path must open this page. Decide
+whether the other pages' subscription gating (Experimental's Team Collections box, the bookshelf)
+should follow a code typed here but not yet saved; `features/status` only knows the saved one. If
+so, replace the Experimental page's own `useGetFeatureStatus` call with a small dialog-level
+subscription lookup that every page reads.
 
 **BL-16735 Team Collection.** Reuse `TeamCollectionSettingsPanel` with its overlay and warning.
 Validate administrator emails in the client (`CollectionSettings.ValidateAdministrators` has the
@@ -145,7 +153,8 @@ and the Book Making font controls. Could split into rows-and-fonts, then "More".
 `UpdateLanguageSettings` still takes the fonts as a separate array, a WinForms leftover (fonts
 were on another tab there); in the values the font is already part of each language.
 
-**BL-16738 Experimental.** Per Q9.
+**BL-16738 Experimental.** Per Q9. Built: a feature that lands adds an `ExperimentalFeatureSetting`
+row in `settingsPages/ExperimentalPage.tsx` and a property in `ExperimentalValues`.
 
 ## 6. Cutover (new card)
 

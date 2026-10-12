@@ -1,5 +1,12 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import $ from "jquery";
 import { EditableDivUtils } from "./editableDivUtils";
+import { postThatMightNavigate } from "../../utils/bloomApi";
+
+vi.mock("../../utils/bloomApi", async (importOriginal) => ({
+    ...((await importOriginal()) as object),
+    postThatMightNavigate: vi.fn(),
+}));
 
 describe("EditableDivUtils Tests", () => {
     it("normalizeBloomLineBreakSpansInElement preserves a simple linebreak span", () => {
@@ -713,5 +720,32 @@ describe("EditableDivUtils Tests", () => {
 
         // In particular, it must not merge text across an element boundary.
         expect(div.innerHTML).toBe(before);
+    });
+});
+
+describe("EditableDivUtils.unlockOriginalCredits", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    // All the work happens on the server, which stores the current wording, stops generating
+    // the sentence, and reloads the page with an editable field in its place. All this side
+    // has to get right is the endpoint name.
+    it("asks the server to hand the notice over to the user", () => {
+        EditableDivUtils.unlockOriginalCredits();
+
+        expect(postThatMightNavigate).toHaveBeenCalledWith(
+            "copyrightAndLicense/unlockOriginalCopyrightNotice",
+        );
+    });
+
+    // The server saves the page, which stores what the user typed, and reloads it with the
+    // sentence read-only again.
+    it("relocking asks the server to save and reload the page", () => {
+        EditableDivUtils.relockOriginalCredits();
+
+        expect(postThatMightNavigate).toHaveBeenCalledWith(
+            "common/saveChangesAndRethinkPageEvent",
+        );
     });
 });

@@ -19,6 +19,7 @@ interface IAdvancedSettings {
     autoUpdate?: boolean;
     showExperimentalBookSources?: boolean;
     allowTeamCollection?: boolean;
+    allowTables?: boolean;
     showQrCode?: boolean;
     qrcodeCaption?: string;
 }
@@ -59,6 +60,10 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         "Team Collections",
         "TeamCollection.TeamCollections",
     );
+    const tablesLabel = useL10n(
+        "Tables",
+        "CollectionSettingsDialog.AdvancedTab.Experimental.Tables",
+    );
     const qrCodesLabel = useL10n(
         "QR Codes",
         "CollectionSettingsDialog.AdvancedTab.QrCodes",
@@ -83,6 +88,9 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
     const featureStatus = useGetFeatureStatus("TeamCollection");
     const teamCollectionOptionEnabled =
         featureStatus === undefined ? true : featureStatus.enabled;
+    const tablesFeatureStatus = useGetFeatureStatus("Table");
+    const tablesOptionEnabled =
+        tablesFeatureStatus === undefined ? false : tablesFeatureStatus.enabled;
     const canChangeTeamCollectionOption = allowTeamCollectionEnabled !== false;
 
     const normalizeConfigrSettings = React.useCallback(
@@ -222,6 +230,34 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                                 >
                                     <BloomSubscriptionIndicatorIconAndText
                                         feature="TeamCollection"
+                                        className="bloom-subscriptionIndicator"
+                                    />
+                                </div>
+                            </div>
+                            <div
+                                css={css`
+                                    .Mui-disabled {
+                                        opacity: 1;
+                                    }
+                                `}
+                            >
+                                <ConfigrBoolean
+                                    label={tablesLabel}
+                                    path="allowTables"
+                                    disabled={!tablesOptionEnabled}
+                                />
+                                <div
+                                    css={css`
+                                        display: flex;
+                                        justify-content: flex-end;
+                                        .bloom-subscriptionIndicator {
+                                            font-size: 10pt;
+                                            font-weight: 700;
+                                        }
+                                    `}
+                                >
+                                    <BloomSubscriptionIndicatorIconAndText
+                                        feature="Table"
                                         className="bloom-subscriptionIndicator"
                                     />
                                 </div>

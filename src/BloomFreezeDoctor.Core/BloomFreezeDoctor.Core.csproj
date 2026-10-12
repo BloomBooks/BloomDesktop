@@ -104,7 +104,7 @@
 
       Keep the version in step with BloomExe's SIL.* references by hand.
     -->
-    <PackageReference Include="SIL.Core.Desktop" Version="18.0.0-beta0028" />
+    <PackageReference Include="SIL.Core.Desktop" Version="18.0.0-beta0046" />
     <!--
       Not used here: SIL.Core.Desktop drags it in, so it lands in the folder either way. Pinned only to
       match BloomExe, which asks for beta0005 where the transitive resolution alone would settle on

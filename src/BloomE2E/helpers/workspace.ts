@@ -111,7 +111,7 @@ export async function setZoom(page: Page, percent: number): Promise<void> {
     );
     await expect
         .poll(async () => (await getZoom(page)).zoom, {
-            timeout: 30000,
+            timeout: 5000,
             message: `Bloom never reported the zoom as ${percent}%.`,
         })
         .toBe(percent);
@@ -130,7 +130,7 @@ export async function setZoom(page: Page, percent: number): Promise<void> {
                         return match ? Math.round(Number(match[1]) * 100) : 0;
                     }),
             {
-                timeout: 30000,
+                timeout: 5000,
                 message: `The page being edited was never drawn at ${percent}%.`,
             },
         )
@@ -152,6 +152,26 @@ export async function canUndo(page: Page): Promise<boolean> {
         ).workspaceBundle.canUndo(),
     );
     return answer === "yes";
+}
+
+/**
+ * Click Undo in the Edit tab's toolbar, the way a person does, once Bloom shows it enabled. Like
+ * `undo`, this returns as soon as the click is made; wait for the state you expect.
+ *
+ * Use this when the undo is the action under test; `undo` below is the quicker route for setup.
+ * Ctrl+Z is no alternative: it is a WinForms accelerator, and a key a test sends never reaches
+ * it. The button is found by its enabled icon, which is also what tells a person that there is
+ * something to undo; the button has no test id.
+ */
+export async function clickUndoButton(page: Page): Promise<void> {
+    const button = page.locator('button:has(img[src$="/undo32x32.png"])');
+    await button.waitFor({ state: "visible", timeout: 30000 }).catch(() => {
+        throw new Error(
+            "The toolbar's Undo button never showed as enabled, so Bloom has nothing to undo " +
+                "or the Edit tab's toolbar is not showing.",
+        );
+    });
+    await button.click();
 }
 
 /**

@@ -60,10 +60,35 @@ export interface ILaunchedBloom {
      *
      * The ports change, so the caller must re-attach. This object's httpPort, cdpPort and
      * bloomPid are updated in place; fixtures/bloomTest.ts reconnects over CDP.
+     *
+     * `changes` replaces launch options for this start and every later one, for the options a
+     * person changes in the collection Settings dialog and Bloom then reads only at startup.
      */
     restart: (
         betweenStopAndStart?: () => void | Promise<void>,
+        changes?: IRelaunchChanges,
     ) => Promise<void>;
+    /**
+     * Follow a Bloom that started a new copy of itself on `newCollectionDir`, as Bloom does to
+     * finish renaming a collection: wait for the new process to serve that folder, then take it
+     * over, so its ports, pid and collectionDir replace the old ones here and stop() kills it.
+     * The new copy is not a child of the process we spawned, so without this it would outlive the
+     * test.
+     */
+    followRelaunch: (newCollectionDir: string) => Promise<void>;
+}
+
+/**
+ * What a restart may change about how Bloom is launched. Everything else stays as the first
+ * launch had it.
+ */
+export interface IRelaunchChanges {
+    /**
+     * The experimental features the restarted Bloom has on, replacing whatever the last launch
+     * had. An empty array means none, which is how a test asks what Bloom does with an
+     * experiment turned off.
+     */
+    experimentalFeatures?: string[];
 }
 
 /**
@@ -106,14 +131,14 @@ export interface ILaunchBloomOptions {
     collectionSpec?: ICollectionSpec;
     /**
      * Experimental features this Bloom should have on, by the tokens ExperimentalFeatures.cs uses:
-     * "team-collections", "experimental-source-books". A person turns these on in the Advanced tab
+     * "tables", "team-collections", "experimental-source-books". A person turns these on in the Advanced tab
      * of the collection Settings dialog, which is WinForms and so unreachable, and the saved
      * setting is shared with the developer's own Bloom, so the launch hands them to this instance
      * on its command line instead (--experimental-features, which Bloom accepts only beside
      * --e2e). See ExperimentalFeatures.TokensFromE2eCommandLine.
      */
     experimentalFeatures?: string[];
-    /** How long to wait for Bloom to start serving the collection. Default 120 seconds. */
+    /** How long to wait for Bloom to start serving the collection. Default 240 seconds. */
     readyTimeoutMs?: number;
 }
 
@@ -244,6 +269,9 @@ const FOLDERS_THAT_ARE_NOT_SOURCE = new Set([
     "component-tests",
     "canvas-e2e-tests",
     "test",
+    // Playwright's own output, written by every component-test run in src/BloomBrowserUI.
+    "test-results",
+    "playwright-report",
 ]);
 
 /**
@@ -865,6 +893,65 @@ async function startBloomOn(
 }
 
 /**
+ * Wait for a Bloom that relaunched itself (see ILaunchedBloom.followRelaunch) to serve
+ * `collectionDir`, keeping its settings in `userSettingsDir`, and return it. Throws, naming the
+ * instances it could see, when none does within `readyTimeoutMs`.
+ */
+async function waitForRelaunchedBloom(
+    collectionDir: string,
+    userSettingsDir: string,
+    readyTimeoutMs: number,
+): Promise<IRunningBloom> {
+    const deadline = Date.now() + readyTimeoutMs;
+    while (Date.now() < deadline) {
+        const found = await findBloomServingCollection(collectionDir);
+        if (found?.info.processId && found.info.cdpPort) {
+            // The relaunched copy must have been given our launch options again; one that was not
+            // would be sharing the developer's own user settings.
+            if (
+                !found.info.userSettingsFolder ||
+                !samePath(found.info.userSettingsFolder, userSettingsDir)
+            ) {
+                killProcessTree([found.info.processId]);
+                throw new Error(
+                    `The relaunched Bloom serving ${collectionDir} keeps its user settings in ` +
+                        `${found.info.userSettingsFolder ?? "no folder it reports"}, not ` +
+                        `${userSettingsDir}: it was started without the e2e launch options.`,
+                );
+            }
+            return {
+                httpPort: found.httpPort,
+                cdpPort: found.info.cdpPort,
+                servingPid: found.info.processId,
+                pids: [found.info.processId],
+            };
+        }
+        await delay(1000);
+    }
+    // A copy that came up on something else (another folder, the chooser) is still ours if it
+    // keeps its settings in our folder. Nothing else tracks it, so kill it here, or it would
+    // outlive the test and hold the temp folder open.
+    const seen: string[] = [];
+    for (const port of CANDIDATE_PORTS) {
+        const info = await readInstanceInfo(port);
+        if (!info) continue;
+        seen.push(
+            `${port} -> ${info.editableCollectionFolder ?? "no collection"}`,
+        );
+        if (
+            info.processId &&
+            info.userSettingsFolder &&
+            samePath(info.userSettingsFolder, userSettingsDir)
+        )
+            killProcessTree([info.processId]);
+    }
+    throw new Error(
+        `No Bloom started serving ${collectionDir} within ${readyTimeoutMs / 1000}s after it ` +
+            `relaunched itself.\n  Bloom instances seen: ${seen.length ? seen.join("; ") : "none"}`,
+    );
+}
+
+/**
  * Kill a running Bloom and wait until its HTTP port really goes dark. Shared by stop() and
  * restart(): a survivor holds file handles on the collection, which breaks both the delete and
  * the rewrite-then-relaunch.
@@ -890,6 +977,31 @@ async function killAndWaitForPortToGoDark(
  * copy of a prepared fixture — and wait until it is serving it. The returned object carries the
  * discovered ports, a restart(), and a stop() that tears everything down.
  */
+/**
+ * Delete a run's temp folder, and never in place of the error that made us give up on the launch.
+ *
+ * A Bloom that failed part way through starting can still hold its collection file open, so
+ * removing the folder throws EBUSY. That used to be the only error the run reported, which said
+ * nothing about why Bloom had not started. The folder is left behind instead; a later run clears
+ * it.
+ */
+function removeTempRoot(tempRoot: string): void {
+    try {
+        // Retries, because Bloom can release its file handles a moment after it dies.
+        fs.rmSync(tempRoot, {
+            recursive: true,
+            force: true,
+            maxRetries: 20,
+            retryDelay: 500,
+        });
+    } catch (error) {
+        process.stderr.write(
+            `[e2e] could not delete ${tempRoot}: ${(error as Error).message}
+`,
+        );
+    }
+}
+
 export async function launchBloom(
     options: ILaunchBloomOptions,
 ): Promise<ILaunchedBloom> {
@@ -914,11 +1026,20 @@ export async function launchBloom(
             : copyPreparedCollection(tempRoot, options.collectionName!);
         fs.mkdirSync(userSettingsDir);
     } catch (error) {
-        fs.rmSync(tempRoot, { recursive: true, force: true });
+        removeTempRoot(tempRoot);
         throw error;
     }
 
-    const readyTimeoutMs = options.readyTimeoutMs ?? 120000;
+    // Four minutes, not the two you would expect a start to need. A Bloom cold-starting while a
+    // second e2e Bloom is starting on the same machine -- one developer running two suites, or two
+    // agents in two worktrees -- has been seen to take a little over two minutes to serve its
+    // collection, so a two-minute limit failed runs whose only fault was the company they kept.
+    // Nothing waits this long in a healthy run: the loop stops the moment Bloom answers.
+    const readyTimeoutMs = options.readyTimeoutMs ?? 240000;
+
+    // The experimental features the Bloom running now was given. A restart may replace them
+    // (ILaunchedBloom.restart), so this is a variable rather than a read of the options.
+    let experimentalFeatures = options.experimentalFeatures;
 
     // The Bloom running right now. restart() replaces it, so everything that kills or reports on
     // Bloom reads this variable rather than capturing the first launch.
@@ -928,7 +1049,7 @@ export async function launchBloom(
     // reads `running`, so it still names the right pids after a restart.
     const cleanUpOnExit = () => {
         if (running) killProcessTree(running.pids);
-        fs.rmSync(tempRoot, { recursive: true, force: true });
+        removeTempRoot(tempRoot);
     };
     process.once("exit", cleanUpOnExit);
 
@@ -937,11 +1058,11 @@ export async function launchBloom(
             collectionDir,
             userSettingsDir,
             readyTimeoutMs,
-            options.experimentalFeatures,
+            experimentalFeatures,
         );
     } catch (error) {
         process.removeListener("exit", cleanUpOnExit);
-        fs.rmSync(tempRoot, { recursive: true, force: true });
+        removeTempRoot(tempRoot);
         throw error;
     }
 
@@ -952,18 +1073,33 @@ export async function launchBloom(
         collectionDir,
         userSettingsDir,
 
-        restart: async (betweenStopAndStart) => {
+        restart: async (betweenStopAndStart, changes) => {
             await killAndWaitForPortToGoDark(running!);
             // Bloom releases its file handles slightly after it dies, and the caller is usually
             // about to rewrite one of the files it had open.
             await delay(1000);
             if (betweenStopAndStart) await betweenStopAndStart();
+            if (changes?.experimentalFeatures)
+                experimentalFeatures = changes.experimentalFeatures;
             running = await startBloomOn(
                 collectionDir,
                 userSettingsDir,
                 readyTimeoutMs,
-                options.experimentalFeatures,
+                experimentalFeatures,
             );
+            launched.httpPort = running.httpPort;
+            launched.cdpPort = running.cdpPort;
+            launched.bloomPid = running.servingPid;
+        },
+
+        followRelaunch: async (newCollectionDir) => {
+            running = await waitForRelaunchedBloom(
+                newCollectionDir,
+                userSettingsDir,
+                readyTimeoutMs,
+            );
+            collectionDir = newCollectionDir;
+            launched.collectionDir = newCollectionDir;
             launched.httpPort = running.httpPort;
             launched.cdpPort = running.cdpPort;
             launched.bloomPid = running.servingPid;

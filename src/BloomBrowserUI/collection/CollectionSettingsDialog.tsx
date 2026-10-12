@@ -31,6 +31,8 @@ import {
     ICollectionSettingsResponse,
     ICollectionSettingsValues,
 } from "./collectionSettingsTypes";
+import { useAdvancedPage } from "./settingsPages/AdvancedPage";
+import { useExperimentalPage } from "./settingsPages/ExperimentalPage";
 
 // Temporary content for every page. Each of the seven tab cards replaces its page's group with
 // real controls, so this text is deliberately plain English and is never localized.
@@ -57,6 +59,29 @@ function valueAtPath(values: ICollectionSettingsValues, path: string): unknown {
                 (current as Record<string, unknown> | null | undefined)?.[key],
             values,
         );
+}
+
+// The values as they should be saved. Config-R does not trim what is typed, and C# saves exactly
+// what we post, so every piece of text the user changed is trimmed here: a collection name typed
+// with a trailing space would otherwise count as a rename, and Windows will not make a folder whose
+// name ends in a space. Text the user did not touch goes back exactly as it was, so saving one
+// setting never alters another value that already has surrounding spaces, nor one the user could
+// not edit at all (a disabled field, such as a Team Collection's name). `valueWhenOpened` is the
+// matching value as it was when the dialog opened.
+function withEditedTextTrimmed<T>(value: T, valueWhenOpened: unknown): T {
+    if (typeof value === "string")
+        return (value === valueWhenOpened ? value : value.trim()) as T;
+    if (value === null || typeof value !== "object") return value;
+    // The value is an object: a group of named values (one page's, or one language's), each of
+    // which is processed the same way. A branch that did not exist when the dialog opened (a
+    // third language just added) has nothing to compare with, so all its text counts as edited.
+    const whenOpened = (valueWhenOpened ?? {}) as Record<string, unknown>;
+    return Object.fromEntries(
+        Object.entries(value).map(([key, child]) => [
+            key,
+            withEditedTextTrimmed(child, whenOpened[key]),
+        ]),
+    ) as T;
 }
 
 /**
@@ -135,45 +160,54 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         "Bloom Library",
         "CollectionSettingsDialog.BloomLibraryPage",
     );
-    const advancedLabel = useL10n("Advanced", "Common.Advanced");
-    const experimentalLabel = useL10n(
-        "Experimental",
-        "CollectionSettingsDialog.ExperimentalPage",
-    );
     const restartMessage = useL10n(
         "Bloom will close and re-open this project with the new settings.",
         "CollectionSettingsDialog.RestartMessage",
     );
 
-    // C# names these pageKeys when it asks us to open on a particular page.
-    const pages = [
+    // C# names these pageKeys when it asks us to open on a particular page. Each built page is a
+    // hook in its own file under settingsPages/ that returns its ConfigrPage (Config-R rejects a
+    // page wrapped in a component); each placeholder below moves to one when its tab card adds it.
+    const placeholderPages = [
         { pageKey: "languages", label: languagesLabel },
         { pageKey: "frontBackMatter", label: frontBackMatterLabel },
         { pageKey: "subscription", label: subscriptionLabel },
         { pageKey: "teamCollection", label: teamCollectionLabel },
         { pageKey: "bloomLibrary", label: bloomLibraryLabel },
-        { pageKey: "advanced", label: advancedLabel },
-        { pageKey: "experimental", label: experimentalLabel },
     ];
+    const advancedPage = useAdvancedPage({ settings: loadedSettings });
+    const experimentalPage = useExperimentalPage({
+        dialogOpen: propsForBloomDialog.open,
+        settings: loadedSettings,
+    });
 
     // A Team Collection member who is not an administrator gets this instead of any settings.
     const notAllowedMessage = loadedSettings?.notAllowedMessage;
 
     // C# decides which paths need a restart (they come with the GET reply), so that rule lives in
-    // one place; every path ends at a plain value, so !== is enough.
-    function restartNeededFor(values: ICollectionSettingsValues | undefined) {
+    // one place; every path ends at a plain value, so !== is enough. Give it the values exactly as
+    // they will be saved (see withEditedTextTrimmed), so it judges what C# will receive.
+    function restartNeededFor(
+        valuesToSave: ICollectionSettingsValues | undefined,
+    ) {
         return (
             loadedSettings !== undefined &&
             !notAllowedMessage &&
-            values !== undefined &&
+            valuesToSave !== undefined &&
             loadedSettings.restartPaths.some(
                 (path) =>
                     valueAtPath(loadedSettings.values, path) !==
-                    valueAtPath(values, path),
+                    valueAtPath(valuesToSave, path),
             )
         );
     }
-    const needsRestart = restartNeededFor(currentValues);
+    // Both are checked: a deferred onChange can set currentValues after a close has already
+    // cleared loadedSettings.
+    const needsRestart = restartNeededFor(
+        currentValues &&
+            loadedSettings &&
+            withEditedTextTrimmed(currentValues, loadedSettings.values),
+    );
 
     function saveAndCloseDialog() {
         // Block the button while the save is in flight, so a second click cannot save (and
@@ -182,11 +216,16 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         // Always post, even if nothing changed: saving the same values again is harmless, and it
         // keeps OK to a single path. The ref, not the deferred state, has the newest values, so
         // the restart flag is worked out from it too.
+        // OK is enabled only once the values have loaded.
+        const valuesToSave = withEditedTextTrimmed(
+            latestValuesRef.current!,
+            loadedSettings!.values,
+        );
         postJson(
             "collection/settings",
             {
-                values: latestValuesRef.current,
-                restartRequired: restartNeededFor(latestValuesRef.current),
+                values: valuesToSave,
+                restartRequired: restartNeededFor(valuesToSave),
             },
             () => {
                 // C# performs the restart itself if one is needed.
@@ -252,7 +291,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                             }, 0);
                         }}
                     >
-                        {pages.map((page) => (
+                        {placeholderPages.map((page) => (
                             <ConfigrPage
                                 key={page.pageKey}
                                 label={page.label}
@@ -266,6 +305,8 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                                 </ConfigrGroup>
                             </ConfigrPage>
                         ))}
+                        {advancedPage}
+                        {experimentalPage}
                     </ConfigrPane>
                 )}
             </ConfigrDialogMiddle>

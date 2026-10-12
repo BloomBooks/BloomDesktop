@@ -1448,9 +1448,9 @@ namespace Bloom.Book
         /// This routine uses the user-specified name for the main project language.
         /// For the other two project languages, it explicitly uses the appropriate collection settings
         /// name for that language, which the user also set.
-        /// If the user hasn't set a name for the given language, this returns the language's
-        /// standard name from the subtag registry Palaso ships ("Spanish"), and falls
-        /// back to the code itself if it can't find a name.
+        /// If the user hasn't set a name for the given language, this will find a fairly readable name
+        /// for the languages Palaso knows about (probably the autonym) and fall back to the code itself
+        /// if it can't find a name.
         /// BL-8174 But in case the code includes Script/Region/Variant codes, we should show them somewhere too.
         /// </summary>
         public string GetDisplayNameForLanguage(string code)
@@ -1702,6 +1702,10 @@ namespace Bloom.Book
                 "spellcheck",
                 "data-hasqtip",
                 "data-languagetipcontent",
+                // Asks the editing code to put the cursor in a field the server has just opened;
+                // it takes the attribute off again, but if the page is shown with focus
+                // suppressed it is still there at save time.
+                "data-bloom-focus-when-shown",
                 // These are the keys that are used to match the copy-from and copy-to elements.
                 // They are already on both so no point in copying.
                 "data-book",

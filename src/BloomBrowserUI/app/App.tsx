@@ -15,6 +15,7 @@ import { PublishTabPane } from "../publish/PublishTab/PublishTabPane";
 import { kPanelBackground } from "../bloomMaterialUITheme";
 import { EditTabPane } from "./EditTabPane";
 import { ToastHost } from "../toast/ToastHost";
+import { E2eStepCaption } from "./e2eCaption/E2eStepCaption";
 import { CollectionSettingsDialog } from "../collection/CollectionSettingsDialog";
 import {
     EmbeddedSimpleProgressDialog,
@@ -87,6 +88,9 @@ export const App: React.FunctionComponent = () => {
                 socketContext={kBloomBridgeProgressContext}
             />
             <ToastHost />
+            {/* Says what an end-to-end test is doing. Renders nothing unless Bloom was
+                launched with --e2e. */}
+            <E2eStepCaption />
         </div>
     );
 };

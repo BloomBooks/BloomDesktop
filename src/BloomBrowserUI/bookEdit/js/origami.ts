@@ -4,7 +4,11 @@ import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { post, postThatMightNavigate } from "../../utils/bloomApi";
 import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
-import { getFeatureStatusAsync } from "../../react_components/featureStatus";
+import {
+    FeatureStatus,
+    getFeatureStatusAsync,
+} from "../../react_components/featureStatus";
+import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import $ from "jquery";
 import "../../lib/jquery.i18n.custom";
 import { splitPane } from "../../lib/split-pane/split-pane";
@@ -12,6 +16,7 @@ import { kCanvasToolId } from "../toolbox/toolIds";
 import { updateAbovePageControls } from "./AbovePageControls";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
+import { AttachNewTable } from "./tableEditing";
 
 $(() => {
     splitPane($("div.split-pane"));
@@ -19,14 +24,23 @@ $(() => {
 
 let isWidgetFeatureEnabledForOrigami = false;
 let isCanvasFeatureEnabledForOrigami = false;
+// The Table link needs both parts of the feature's status, because it behaves
+// differently for each: a feature that is not visible hides the link, while a
+// subscription tier below Pro shows it disabled, with a badge saying why.
+let tableFeatureStatusForOrigami: FeatureStatus | undefined = undefined;
 
 export function setupOrigami() {
-    getFeatureStatusAsync("widget").then((widgetFeatureStatus) => {
-        getFeatureStatusAsync("canvas").then((canvasFeatureStatus) => {
+    Promise.all([
+        getFeatureStatusAsync("widget"),
+        getFeatureStatusAsync("canvas"),
+        getFeatureStatusAsync("table"),
+    ]).then(
+        ([widgetFeatureStatus, canvasFeatureStatus, tableFeatureStatus]) => {
             isWidgetFeatureEnabledForOrigami =
                 widgetFeatureStatus?.enabled || false;
             isCanvasFeatureEnabledForOrigami =
                 canvasFeatureStatus?.enabled || false;
+            tableFeatureStatusForOrigami = tableFeatureStatus;
             replaceOrigamiTemplates();
             const customPages = document.getElementsByClassName("customPage");
             const bloomPage = document.getElementsByClassName(
@@ -51,15 +65,15 @@ export function setupOrigami() {
                 );
             }
             // I'm not clear why the rest of this needs to wait until we have
-            // the two results, but none of the controls shows up if we leave it all
+            // the feature results, but none of the controls shows up if we leave it all
             // outside the bloomApi functions.
             if ($(".customPage .marginBox.origami-layout-mode").length) {
                 setupLayoutMode();
             }
 
             $(".customPage").find("*[data-i18n]").localize();
-        });
-    });
+        },
+    );
 }
 
 export function cleanupOrigami() {
@@ -80,7 +94,8 @@ function replaceOrigamiTemplates() {
                 isCanvasFeatureEnabledForOrigami,
             ),
         )
-        .append(createTextBoxIdentifier());
+        .append(createTextBoxIdentifier())
+        .append(createTableIdentifier());
 
     const pageScalingContainer = document.getElementById(
         "page-scaling-container",
@@ -120,6 +135,10 @@ function setupLayoutMode() {
 
         $this.append(getButtons());
 
+        if ($this.children(".bloom-table").length) {
+            $this.append(getTableIdentifier());
+        }
+
         if (!doesSplitPaneComponentNeedTextBoxIdentifier($this)) {
             return true; // continue .each()
         }
@@ -147,7 +166,7 @@ function setupLayoutMode() {
 // N.B. If you add/remove a container class, you'll likely need to modify 'createTypeSelectors()' too.
 // These are the top-level things, other than text, that an origami split can contain.
 const bloomContainerClasses =
-    ".bloom-canvas, .bloom-widgetContainer, .bloom-videoContainer,";
+    ".bloom-canvas, .bloom-widgetContainer, .bloom-videoContainer, .bloom-table,";
 
 function isSplitPaneComponentInnerEmpty(spci: JQuery) {
     return !spci.find(
@@ -183,7 +202,7 @@ function changeLayoutModeToggleClickHandler() {
         theOneCanvasElementManager.resumeComicEditing();
 
         marginBox.removeClass("origami-layout-mode");
-        marginBox.find(".textBox-identifier").remove();
+        marginBox.find(".textBox-identifier, .table-identifier").remove();
         origamiUndoStack.length = origamiUndoIndex = 0;
         // delay further processing to avoid messing up the Change Layout mode toggle transition
         // 400ms CSS toggle transition + 50ms extra to give it time to finish up.
@@ -430,6 +449,53 @@ function getCloseButton() {
     return closeButton;
 }
 
+/**
+ * The Table entry of a section's type chooser, or nothing when tables are not on offer.
+ *
+ * A table feature that is not visible hides the entry altogether, the way the Canvas and
+ * HTML Widget entries disappear when their features are off. A subscription tier below
+ * the one tables need is different: the entry stays, so the user can see that tables
+ * exist, but it does nothing except explain itself. It carries the same badge as the
+ * subscription-only tools in the toolbox, and clicking either the word or the badge
+ * opens the dialog that says what subscription tables need.
+ */
+function createTableSelector(): JQuery | undefined {
+    const status = tableFeatureStatusForOrigami;
+    if (!status?.visible) {
+        return undefined;
+    }
+    const tableLink = $(
+        "<a href='' data-i18n='EditTab.CustomPage.Table'>Table</a>",
+    );
+    if (status.enabled) {
+        tableLink.click(makeTableFieldClickHandler);
+        return tableLink;
+    }
+    tableLink.addClass("origami-featureNeedsSubscription");
+    const badge = $("<span class='subscription-badge'></span>");
+    const explain = () => {
+        getWorkspaceBundleExports().showRequiresSubscriptionDialog("table");
+        return false;
+    };
+    tableLink.click(explain);
+    badge.click(explain);
+    theOneLocalizationManager
+        .asyncGetText(
+            "Subscription.RequiredTierForFeatureSentence",
+            'This feature requires a Bloom subscription tier of at least "{0}".',
+            "tooltip text",
+            status.localizedTier,
+        )
+        .done((tooltip) => {
+            tableLink.attr("title", tooltip);
+            badge.attr("title", tooltip);
+        });
+    // One element for the caller to place, so the word and its badge stay together.
+    return $("<span class='origami-tableSelector'></span>")
+        .append(tableLink)
+        .append(badge);
+}
+
 // N.B. If we ever add a new type, make sure you also modify 'bloomContainerClasses'.
 function createTypeSelectors(includeWidget: boolean, includeCanvas: boolean) {
     const space = " ";
@@ -455,9 +521,11 @@ function createTypeSelectors(includeWidget: boolean, includeCanvas: boolean) {
         "<a href='' data-i18n='EditTab.CustomPage.HtmlWidget'>HTML Widget</a>",
     );
     htmlWidgetLink.click(makeHtmlWidgetFieldClickHandler);
+    const tableSelector = createTableSelector();
     links.append(imageLink).append(",").append(space);
     if (includeCanvas) links.append(canvasLink).append(",");
     links.append(space).append(videoLink).append(",").append(space);
+    if (tableSelector) links.append(tableSelector).append(",").append(space);
     if (includeWidget) {
         links
             .append(textLink)
@@ -481,6 +549,18 @@ function createTextBoxIdentifier() {
         "<div class='container-textBox-id bloom-ui origami.ui'></div>",
     ).append(textBoxId);
 }
+// The label across a section that holds a table, in layout mode, where the table
+// itself is faded and does not respond.
+function createTableIdentifier() {
+    // The word is an element of its own so that it can have a backing of its own:
+    // centered on the table, it usually lies across a line between two rows.
+    const tableId = $(
+        "<div class='table-identifier bloom-ui origami-ui'><span data-i18n='EditTab.CustomPage.Table'>Table</span></div>",
+    );
+    return $(
+        "<div class='container-table-id bloom-ui origami-ui'></div>",
+    ).append(tableId);
+}
 function getTypeSelectors() {
     return getRequiredOrigamiTemplate(
         ".container-selector-links > .selector-links",
@@ -489,6 +569,11 @@ function getTypeSelectors() {
 function getTextBoxIdentifier() {
     return getRequiredOrigamiTemplate(
         ".container-textBox-id > .textBox-identifier",
+    ).clone();
+}
+function getTableIdentifier() {
+    return getRequiredOrigamiTemplate(
+        ".container-table-id > .table-identifier",
     ).clone();
 }
 function makeTextFieldClickHandler(e) {
@@ -572,5 +657,24 @@ function makeHtmlWidgetFieldClickHandler(e) {
     // everywhere, this one is only meant to be around when needed. This call asks the server to make
     // sure it is present in the book folder.
     post("edit/pageControls/requestWidgetPlaceHolder");
+    $(this).closest(".selector-links").remove();
+}
+
+function makeTableFieldClickHandler(e) {
+    e.preventDefault();
+    const container = $(this).closest(".split-pane-component-inner");
+    addUndoPoint();
+    const tableContainer = $(
+        "<div class='bloom-table bloom-leadingElement'></div>",
+    );
+    container.append(tableContainer);
+    // AttachNewTable registers Bloom-specific content types and calls attachTable,
+    // which creates the initial 2×2 structure. The page-level event listener
+    // installed by SetupTableEditing on the body handles kTableCellContentChangedEvent.
+    // In layout mode the table does not respond; tableEditing.ts,
+    // tableEditing.less and tableCanUndo() see to that while the marginBox has
+    // the origami-layout-mode class.
+    AttachNewTable(tableContainer[0] as HTMLElement);
+    container.append(getTableIdentifier());
     $(this).closest(".selector-links").remove();
 }
