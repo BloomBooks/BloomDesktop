@@ -309,6 +309,43 @@ describe("ImageUndoManager rotate and flip", () => {
         expect(manager.undoImageOperation()).toBe(true);
         expect(manager.undoImageOperation()).toBe(false);
     });
+
+    it("forgetting an element's steps leaves another element's steps to undo", () => {
+        const other = document.createElement("div");
+        other.className = "bloom-canvas-element";
+        document.querySelector(".bloom-page")!.appendChild(other);
+        // Rotate right twice on our element, with the other element's step between them.
+        manager.pushUndoForImageTransform(canvasElement);
+        setCanvasElementRotation(canvasElement, 90);
+        manager.pushUndoForImageTransform(other);
+        setCanvasElementRotation(other, 90);
+        manager.pushUndoForImageTransform(canvasElement);
+        setCanvasElementRotation(canvasElement, 180);
+
+        manager.forgetImageOperationUndoFor(canvasElement);
+
+        // Only the other element's step is left, and it puts back the other element's angle.
+        expect(manager.undoImageOperation()).toBe(true);
+        expect(other.style.transform).toBe("");
+        expect(canvasElement.style.transform).toBe("rotate(180deg)");
+        expect(manager.undoImageOperation()).toBe(false);
+    });
+
+    it("forgetting an element's steps keeps a change of its picture, which Undo can still take back", () => {
+        // Change the picture, then Rotate right the new one.
+        manager.prepareUndoForImageOperation(imgElement);
+        imgElement.setAttribute("src", "new.png");
+        manager.commitPendingImageOperationUndo(imgElement);
+        manager.pushUndoForImageTransform(canvasElement);
+        setCanvasElementRotation(canvasElement, 90);
+
+        manager.forgetImageOperationUndoFor(canvasElement);
+
+        // The rotation step is gone; the picture change is still there to undo.
+        expect(manager["imageOperationUndoStack"].map((i) => i.kind)).toEqual([
+            "restoreImage",
+        ]);
+    });
 });
 
 describe("ImageUndoManager rotation handle drag", () => {
