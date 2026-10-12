@@ -2074,14 +2074,14 @@
         <target xml:lang="es-ES" state="final">Tamaño</target>
         <note>ID: AiImageEditor.Param.Size</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Param.Style">
+      <trans-unit id="AiImageEditor.Param.Style" approved="yes">
         <source xml:lang="en">Style</source>
-        <target xml:lang="es-ES" state="translated">Estilo</target>
+        <target xml:lang="es-ES" state="final">Estilo</target>
         <note>ID: AiImageEditor.Param.Style</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Preview.Gallery">
+      <trans-unit id="AiImageEditor.Preview.Gallery" approved="yes">
         <source xml:lang="en">Gallery</source>
-        <target xml:lang="es-ES" state="translated">Galería</target>
+        <target xml:lang="es-ES" state="final">Galería</target>
         <note>ID: AiImageEditor.Preview.Gallery</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Preview.InTheBookNow">
@@ -2099,14 +2099,14 @@
         <target xml:lang="es-ES" state="translated">Usar esta</target>
         <note>ID: AiImageEditor.Result.UseThis</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Result.UseThisImage">
+      <trans-unit id="AiImageEditor.Result.UseThisImage" approved="yes">
         <source xml:lang="en">Use this Image</source>
-        <target xml:lang="es-ES" state="translated">Usar esta imagen</target>
+        <target xml:lang="es-ES" state="final">Usar esta imagen</target>
         <note>ID: AiImageEditor.Result.UseThisImage</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Run.AddAnImageToEdit">
+      <trans-unit id="AiImageEditor.Run.AddAnImageToEdit" approved="yes">
         <source xml:lang="en">Add an image to edit</source>
-        <target xml:lang="es-ES" state="translated">Agregue una imagen para editar</target>
+        <target xml:lang="es-ES" state="final">Agregue una imagen para editar</target>
         <note>ID: AiImageEditor.Run.AddAnImageToEdit</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.AddDescriptionOrReference">
@@ -2114,9 +2114,9 @@
         <target xml:lang="es-ES" state="translated">Agregue una descripción o una imagen de referencia</target>
         <note>ID: AiImageEditor.Run.AddDescriptionOrReference</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Run.AddReferenceImage">
+      <trans-unit id="AiImageEditor.Run.AddReferenceImage" approved="yes">
         <source xml:lang="en">Add reference image</source>
-        <target xml:lang="es-ES" state="translated">Agregue una imagen de referencia</target>
+        <target xml:lang="es-ES" state="final">Agregue una imagen de referencia</target>
         <note>ID: AiImageEditor.Run.AddReferenceImage</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.BatchGo">
