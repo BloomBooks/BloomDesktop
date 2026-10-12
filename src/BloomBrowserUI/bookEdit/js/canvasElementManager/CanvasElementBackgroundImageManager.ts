@@ -1,6 +1,7 @@
 import { Bubble, Comical } from "comicaljs";
 import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
 import {
+    getBackgroundCanvasElementFromBloomCanvas,
     getImageFromCanvasElement,
     getImageFromContainer,
     HandleImageError,
@@ -86,26 +87,6 @@ export function revertBackgroundCanvasElements(): void {
     }
 }
 
-/**
- * Find the canvas element that holds the background image of this bloom-canvas, if any.
- *
- * A descendant search is not enough once a bloom-canvas can be nested inside another:
- * the outer canvas would find the inner canvas's background image and treat it as its
- * own. A direct-child search is not enough either, because the Image Description tool
- * temporarily wraps the background image in a bloom-describedImage. So we take the
- * first background image whose nearest bloom-canvas is this one.
- */
-export function getBackgroundCanvasElement(
-    bloomCanvas: HTMLElement,
-): HTMLElement | undefined {
-    return Array.from(
-        bloomCanvas.getElementsByClassName(kBackgroundImageClass),
-    ).find(
-        (candidate) =>
-            candidate.closest(`.${kBloomCanvasClass}`) === bloomCanvas,
-    ) as HTMLElement | undefined;
-}
-
 export function handleResizeAdjustments(
     state: BackgroundImageManagerState,
     bloomCanvases: HTMLElement[],
@@ -138,7 +119,8 @@ function switchBackgroundToCanvasElementIfNeeded(
     getActiveElement: () => HTMLElement | undefined,
     alignControlFrameWithActiveElement: () => void,
 ) {
-    const bgCanvasElement = getBackgroundCanvasElement(bloomCanvas);
+    const bgCanvasElement =
+        getBackgroundCanvasElementFromBloomCanvas(bloomCanvas);
     if (bgCanvasElement) {
         // I think this is redundant, but it got added by mistake at one point,
         // and will hide the placeholder if it's there, so make sure it's not.
@@ -190,7 +172,8 @@ function switchBackgroundToCanvasElement(
     alignControlFrameWithActiveElement: () => void,
 ) {
     const oldBgImage = getImageFromContainer(bloomCanvas);
-    let bgCanvasElement = getBackgroundCanvasElement(bloomCanvas);
+    let bgCanvasElement =
+        getBackgroundCanvasElementFromBloomCanvas(bloomCanvas);
     if (!bgCanvasElement) {
         // various legacy behavior, such as hiding the old-style background placeholder.
         bloomCanvas.classList.add(kHasCanvasElementClass);
@@ -288,7 +271,7 @@ export function setupBackgroundImageAttributes(
     useSizeOfNewImage = false,
 ): Promise<void> {
     if (!bgElement) {
-        bgElement = getBackgroundCanvasElement(bloomCanvas);
+        bgElement = getBackgroundCanvasElementFromBloomCanvas(bloomCanvas);
     }
     if (bgElement?.getAttribute("data-bubble")) {
         return Promise.resolve(); // setup has already been done (data-bubble is added by putBubbleBefore)

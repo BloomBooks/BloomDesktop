@@ -41,9 +41,12 @@ vi.mock("../../../utils/elementUtils", async (importOriginal) => {
 // they pull in gets the stubbed modules.
 import {
     adjustBackgroundImageSize,
-    getBackgroundCanvasElement,
     handleResizeAdjustments,
 } from "./CanvasElementBackgroundImageManager";
+import {
+    getBackgroundCanvasElementFromBloomCanvas,
+    getBackgroundImageFromBloomCanvas,
+} from "../bloomImages";
 import type { BackgroundImageManagerState } from "./CanvasElementBackgroundImageManager";
 
 // The inline styles a background image already has when something asks for a refit.
@@ -181,10 +184,12 @@ describe("adjustBackgroundImageSize", () => {
     });
 });
 
-describe("getBackgroundCanvasElement", () => {
+describe("getBackgroundCanvasElementFromBloomCanvas", () => {
     test("finds the background image that is a direct child of the bloom-canvas", () => {
         const { bloomCanvas, bgCanvasElement } = setUpBackgroundImage();
-        expect(getBackgroundCanvasElement(bloomCanvas)).toBe(bgCanvasElement);
+        expect(getBackgroundCanvasElementFromBloomCanvas(bloomCanvas)).toBe(
+            bgCanvasElement,
+        );
     });
 
     test("returns undefined when the bloom-canvas has no background image", () => {
@@ -195,7 +200,9 @@ describe("getBackgroundCanvasElement", () => {
         const bloomCanvas = document.querySelector(
             ".bloom-canvas",
         ) as HTMLElement;
-        expect(getBackgroundCanvasElement(bloomCanvas)).toBeUndefined();
+        expect(
+            getBackgroundCanvasElementFromBloomCanvas(bloomCanvas),
+        ).toBeUndefined();
     });
 
     test("does not take a nested bloom-canvas's background image for the outer one", () => {
@@ -217,8 +224,10 @@ describe("getBackgroundCanvasElement", () => {
             innerBg,
         );
 
-        expect(getBackgroundCanvasElement(outer)).toBeUndefined();
-        expect(getBackgroundCanvasElement(inner)).toBe(innerBg);
+        expect(
+            getBackgroundCanvasElementFromBloomCanvas(outer),
+        ).toBeUndefined();
+        expect(getBackgroundCanvasElementFromBloomCanvas(inner)).toBe(innerBg);
     });
 
     test("finds each bloom-canvas's own background image when both have one", () => {
@@ -237,10 +246,10 @@ describe("getBackgroundCanvasElement", () => {
             </div>`;
         const outer = document.getElementById("outer") as HTMLElement;
         const inner = document.getElementById("inner") as HTMLElement;
-        expect(getBackgroundCanvasElement(outer)).toBe(
+        expect(getBackgroundCanvasElementFromBloomCanvas(outer)).toBe(
             document.getElementById("outerBg"),
         );
-        expect(getBackgroundCanvasElement(inner)).toBe(
+        expect(getBackgroundCanvasElementFromBloomCanvas(inner)).toBe(
             document.getElementById("innerBg"),
         );
     });
@@ -259,7 +268,7 @@ describe("getBackgroundCanvasElement", () => {
         const bloomCanvas = document.querySelector(
             ".bloom-canvas",
         ) as HTMLElement;
-        expect(getBackgroundCanvasElement(bloomCanvas)).toBe(
+        expect(getBackgroundCanvasElementFromBloomCanvas(bloomCanvas)).toBe(
             document.getElementById("bg"),
         );
     });
@@ -283,7 +292,9 @@ describe("converting a legacy background image to a canvas element", () => {
         const outer = document.getElementById("outer") as HTMLElement;
         const innerImg = document.querySelector("#innerBg img") as HTMLElement;
         // Sanity check: the outer canvas starts with no background element of its own.
-        expect(getBackgroundCanvasElement(outer)).toBeUndefined();
+        expect(
+            getBackgroundCanvasElementFromBloomCanvas(outer),
+        ).toBeUndefined();
         expect(innerImg.getAttribute("src")).toBe("inner.png");
 
         handleResizeAdjustments(
@@ -294,11 +305,43 @@ describe("converting a legacy background image to a canvas element", () => {
             () => {},
         );
 
-        const outerBg = getBackgroundCanvasElement(outer);
+        const outerBg = getBackgroundCanvasElementFromBloomCanvas(outer);
         expect(outerBg).toBeDefined();
         expect(outerBg?.querySelector("img")?.getAttribute("src")).toBe(
             "outer.png",
         );
         expect(innerImg.getAttribute("src")).toBe("inner.png");
+    });
+});
+
+// getBackgroundImageFromBloomCanvas is what the picture's hover buttons, Change Image, the
+// picture tooltip and the Motion tool use to find the picture they act on.
+describe("getBackgroundImageFromBloomCanvas", () => {
+    test("returns nothing for an outer bloom-canvas that has no background image of its own", () => {
+        // An outer canvas whose picture has not been converted yet, with a table cell's
+        // bloom-canvas inside it.
+        document.body.innerHTML = `
+            <div class="bloom-canvas" id="outer">
+                <img src="outer.png" />
+                <div class="bloom-canvas-element">
+                    <div class="bloom-canvas" id="inner">
+                        <div class="bloom-canvas-element bloom-backgroundImage">
+                            <div class="bloom-imageContainer"><img src="inner.png" id="innerImg"/></div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        const outer = document.getElementById("outer") as HTMLElement;
+        const inner = document.getElementById("inner") as HTMLElement;
+        const innerImg = document.getElementById("innerImg");
+        // Sanity check: a plain descendant search from the outer canvas finds the cell's picture.
+        expect(
+            outer
+                .getElementsByClassName("bloom-backgroundImage")[0]
+                .querySelector("img"),
+        ).toBe(innerImg);
+
+        expect(getBackgroundImageFromBloomCanvas(outer)).toBeNull();
+        expect(getBackgroundImageFromBloomCanvas(inner)).toBe(innerImg);
     });
 });

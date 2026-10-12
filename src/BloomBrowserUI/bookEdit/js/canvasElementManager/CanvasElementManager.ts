@@ -28,6 +28,7 @@ import {
 } from "../bloomEditing";
 import {
     EnableAllImageEditing,
+    getBackgroundCanvasElementFromBloomCanvas,
     getImageFromCanvasElement,
     kImageContainerClass,
     normalizeCoverImageDesignation,
@@ -113,7 +114,6 @@ import { CanvasElementEditingSuspension } from "./CanvasElementEditingSuspension
 import { adjustCanvasElementChildrenIfSizeChanged } from "./CanvasElementResizeAdjustments";
 import {
     adjustBackgroundImageSize as adjustCanvasBackgroundImageSize,
-    getBackgroundCanvasElement,
     handleResizeAdjustments as handleBackgroundResizeAdjustments,
     setupBackgroundImageAttributes,
     type BackgroundImageManagerState,
@@ -3432,7 +3432,8 @@ export class CanvasElementManager {
      * page-load pass has run.
      */
     public refitBackgroundImage(bloomCanvas: HTMLElement): Promise<void> {
-        const bgCanvasElement = getBackgroundCanvasElement(bloomCanvas);
+        const bgCanvasElement =
+            getBackgroundCanvasElementFromBloomCanvas(bloomCanvas);
         if (!bgCanvasElement) return Promise.resolve();
         // The promise settles once the image has loaded and been fitted, so a caller
         // that lays out other things around the picture can wait for it.

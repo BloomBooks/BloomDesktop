@@ -60,6 +60,14 @@ vi.mock("../bloomImages", () => {
             ? getImageFromContainer(container as HTMLElement)
             : null;
     };
+    const getBackgroundCanvasElementFromBloomCanvas = (
+        bloomCanvas: HTMLElement,
+    ) =>
+        Array.from(
+            bloomCanvas.getElementsByClassName("bloom-backgroundImage"),
+        ).find(
+            (candidate) => candidate.closest(".bloom-canvas") === bloomCanvas,
+        ) as HTMLElement | undefined;
     return {
         isPlaceHolderImage: (src: string | null) =>
             !!src && src.toLowerCase().includes("placeholder.png"),
@@ -67,10 +75,9 @@ vi.mock("../bloomImages", () => {
         SetupMetadataButton: vi.fn(),
         getImageFromContainer,
         getImageFromCanvasElement,
+        getBackgroundCanvasElementFromBloomCanvas,
         getBackgroundImageFromBloomCanvas: (bloomCanvas: HTMLElement) => {
-            const bg = bloomCanvas.getElementsByClassName(
-                "bloom-backgroundImage",
-            )[0] as HTMLElement | undefined;
+            const bg = getBackgroundCanvasElementFromBloomCanvas(bloomCanvas);
             return bg ? getImageFromCanvasElement(bg) : null;
         },
     };

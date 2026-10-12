@@ -846,12 +846,22 @@ export function getImageFromCanvasElement(
 // (It also has bloom-backgroundImage).
 // There are enough common behaviors to make it useful to use the same structure, and I
 // (JohnT) at least find it useful to think of it as a background canvas element.
+//
+// A descendant search is not enough to find it, because a bloom-canvas can be nested inside
+// another (a table's picture cell holds one, and a table can sit on a canvas page): the outer
+// canvas would find the inner canvas's background image and treat it as its own. A direct-child
+// search is not enough either, because the Image Description tool temporarily wraps the
+// background image in a bloom-describedImage. So we take the first background image whose
+// nearest bloom-canvas is this one.
 export function getBackgroundCanvasElementFromBloomCanvas(
     bloomCanvas: HTMLElement,
-): HTMLElement | null {
-    return bloomCanvas.getElementsByClassName(
-        kBackgroundImageClass,
-    )[0] as HTMLElement;
+): HTMLElement | undefined {
+    return Array.from(
+        bloomCanvas.getElementsByClassName(kBackgroundImageClass),
+    ).find(
+        (candidate) =>
+            candidate.closest(`.${kBloomCanvasClass}`) === bloomCanvas,
+    ) as HTMLElement | undefined;
 }
 
 // Shortcut to get the img element from the background canvas element (if any) of a bloom-canvas.
