@@ -14,21 +14,32 @@
 // its style attribute hold everything about where the image sits and how big it is.
 // Because of that, inlineImages.ts can copy the class list and the style attribute from
 // one language's wrapper onto the wrappers in the sibling editables, and the copies come
-// out right without anything being parsed or recalculated. The properties are:
-//     --inline-image-width         width of the visible image, as a % of the editable
+// out right without anything being parsed or recalculated. The properties, and the units
+// the code in bookEdit/js writes them in, are:
+//     --inline-image-width         width of the visible image, always a percentage of
+//                                  the editable's width, such as 40%
 //     --inline-image-offset        how far down from the top of the editable the image
-//                                  sits (see the comment on the offset rule below)
-//     --inline-image-aspect-ratio  natural width/height of the image, so that layout
-//                                  (and therefore the overflow checker) is right even
-//                                  before the image has loaded
+//                                  sits, always in px (see the comment on the offset
+//                                  rule below). It cannot be a percentage: in
+//                                  padding-top a percentage is a share of the editable's
+//                                  width, not its height. Since a pixel distance does
+//                                  not grow or shrink with the block, inlineImages.ts
+//                                  records the block size it was measured against in
+//                                  data-inline-image-offset-basedon and scales the
+//                                  offset when that size changes.
+//     --inline-image-aspect-ratio  natural width / height of the image, with no units,
+//                                  such as 1200 / 800, so that layout (and therefore the
+//                                  overflow checker) is right even before the image has
+//                                  loaded
 //     --inline-image-contour       the shape the text wraps around when it follows the
 //                                  image's transparent silhouette instead of its
 //                                  rectangle; when unset the text wraps the rectangle
 //                                  (see the contour comment below)
-//     --inline-image-contour-margin  the space between that silhouette and the text
+//     --inline-image-contour-margin  the space between that silhouette and the text, a
+//                                  length; nothing sets it yet
 // --inline-image-gap, set below, is not one of these per-image values. It is a constant,
-// written as a custom property so that the margin and the contour's spacing use the same
-// number and cannot get out of step.
+// 1em so that it scales with the text, written as a custom property so that the margin and
+// the contour's spacing use the same number and cannot get out of step.
 // The width is a custom property rather than a plain `width` because a middle-docked
 // image needs a full-width wrapper with a narrower image inside it. With the number in a
 // variable, one declaration serves both cases, and we need neither !important nor a
@@ -101,6 +112,13 @@
     // wider than its image, so percentages of the wrapper would not line up with the
     // picture, and since that wrapper spans the full width there is no text beside it to
     // wrap anyway.
+    //
+    // The margin itself is set with --inline-image-gap in the left and right rules below,
+    // and that is all the rectangle needs: inset() is measured against the margin box,
+    // which already includes the margin. shape-margin therefore stays 0 until a contour
+    // turns it on through --inline-image-contour-margin. Setting it to the gap all the time
+    // would also grow the rectangle upward into the offset padding, so the text running
+    // above the image would stop a gap short of it.
     &.bloom-inlineImageLeft,
     &.bloom-inlineImageRight {
         shape-outside: var(
@@ -110,7 +128,8 @@
         shape-margin: var(--inline-image-contour-margin, 0px);
     }
 
-    // A text block may hold any number of inline images, so each side clears only its
+    // A text block may hold any number of inline images: Insert Image on the text's
+    // context menu adds another each time it is chosen. So each side clears only its
     // own side. A left image clears earlier left floats and a right image clears earlier
     // right ones. Two images on the same side stack down that edge, each one's offset
     // measured from where the previous one ended, while a left image and a right image
