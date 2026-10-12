@@ -120,6 +120,7 @@ import {
 import {
     clearImageOperationUndoState,
     commitPendingImageOperationUndo,
+    forgetImageOperationUndoFor,
     IImageCropInfo,
     initializeImageUndoManager,
     prepareUndoForImageOperation,
@@ -1503,13 +1504,15 @@ export class CanvasElementManager {
     // This command deliberately puts nothing on the undo stack, as the older reset-crop
     // command did not either: a reset is itself a way back, so an undo of it would be a way
     // back from a way back. Rotate right and Flip do record undo, because each of them is a
-    // step forward.
+    // step forward. Those earlier steps are forgotten here, because each one would put back a
+    // turn or a crop from before the reset.
     public resetImage(): void {
         if (!this.activeElement) return;
         const img = getImageFromCanvasElement(this.activeElement);
         if (!img) return;
         clearImageContentTransform(img);
         setCanvasElementRotation(this.activeElement, 0);
+        forgetImageOperationUndoFor(this.activeElement);
         this.resetCropping();
         this.adjustStuffRelatedToImage(this.activeElement, img);
     }

@@ -1,8 +1,15 @@
-import { describe, it, expect, vi } from "vitest";
+import { beforeAll, describe, it, expect, vi } from "vitest";
 import { getTestRoot, removeTestRoot } from "../../../utils/testHelper";
 import { CanvasElementManager } from "./CanvasElementManager";
 import jQuery from "jquery";
-import { ImageUndoManager, ImageUndoManagerHost } from "../ImageUndoManager";
+import {
+    canUndoImageOperation,
+    ImageUndoManager,
+    ImageUndoManagerHost,
+    initializeImageUndoManager,
+    pushUndoForImageTransform,
+} from "../ImageUndoManager";
+import { setCanvasElementRotation } from "./canvasElementRotation";
 
 // A (currently very incomplete) set of tests for CanvasElementManager.
 
@@ -218,6 +225,17 @@ describe("CanvasElementManager.updateCanvasElementForChangedImage", () => {
 });
 
 describe("CanvasElementManager.resetImage", () => {
+    // resetImage reaches the page's one undo manager through module functions, so it has
+    // to exist. The selected element is whatever a test puts here.
+    let selected: HTMLElement | undefined;
+    beforeAll(() => {
+        initializeImageUndoManager({
+            getCurrentPage: () =>
+                document.querySelector<HTMLElement>(".bloom-page") ?? undefined,
+            getActiveElement: () => selected,
+        } as unknown as ImageUndoManagerHost);
+    });
+
     it("straightens a picture's box as well as taking away its crop, rotation and mirror", () => {
         document.body.innerHTML = `
             <div class="bloom-canvas">
@@ -247,6 +265,38 @@ describe("CanvasElementManager.resetImage", () => {
         expect(element.style.transform).toBe("");
         expect(element.classList.contains("bloom-rotated")).toBe(false);
         expect(manager.resetCropping).toHaveBeenCalled();
+    });
+
+    it("leaves no earlier rotation for Undo to put back on the reset picture", () => {
+        document.body.innerHTML = `
+            <div class="bloom-page" data-page-id="page1">
+                <div class="bloom-canvas">
+                    <div class="bloom-canvas-element">
+                        <div class="bloom-imageContainer"><img src="picture.png"></div>
+                    </div>
+                </div>
+            </div>`;
+        const element = document.querySelector(
+            ".bloom-canvas-element",
+        ) as HTMLElement;
+        selected = element;
+        // Turn the box to 45 degrees, then to 90.
+        pushUndoForImageTransform(element);
+        setCanvasElementRotation(element, 45);
+        pushUndoForImageTransform(element);
+        setCanvasElementRotation(element, 90);
+        // Sanity check: before the reset, Undo is offered.
+        expect(canUndoImageOperation()).toBe(true);
+        const manager = {
+            activeElement: element,
+            resetCropping: vi.fn(),
+            adjustStuffRelatedToImage: vi.fn(),
+        };
+
+        CanvasElementManager.prototype.resetImage.call(manager);
+
+        expect(element.style.transform).toBe("");
+        expect(canUndoImageOperation()).toBe(false);
     });
 });
 
