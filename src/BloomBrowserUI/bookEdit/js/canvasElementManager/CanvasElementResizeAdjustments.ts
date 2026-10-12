@@ -9,6 +9,7 @@ import {
 } from "../../toolbox/canvas/canvasElementConstants";
 import { pxToNumber } from "../../toolbox/canvas/canvasElementCssUtils";
 import { adjustCanvasElementAlternates } from "./CanvasElementAlternates";
+import { getBackgroundCanvasElement } from "./CanvasElementBackgroundImageManager";
 
 function updateBloomCanvasSizeData(bloomCanvas: HTMLElement): void {
     bloomCanvas.setAttribute(
@@ -228,9 +229,7 @@ export function adjustCanvasElementChildrenIfSizeChanged(
     // The above algorithm works for the background image most of the time,
     // but we've found cases where we still need a final readjustment.
     // So we readjust here to be sure.
-    const backgroundCanvasElement = bloomCanvas.getElementsByClassName(
-        kBackgroundImageClass,
-    )[0] as HTMLElement;
+    const backgroundCanvasElement = getBackgroundCanvasElement(bloomCanvas);
     if (backgroundCanvasElement) {
         adjustBackgroundImageSize(bloomCanvas, backgroundCanvasElement, false);
     }
