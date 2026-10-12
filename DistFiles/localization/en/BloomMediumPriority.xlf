@@ -1610,6 +1610,16 @@
         <note>ID: ImageLibrary.ThisPage</note>
         <note>Short link text used in setup instructions (e.g., as in "go to this page"). Should be lowercase as it appears mid-sentence.</note>
       </trans-unit>
+      <trans-unit id="Common.Dimensions" translate="no">
+        <source xml:lang="en">Dimensions</source>
+        <note>ID: Common.Dimensions</note>
+        <note>Label beside an image's width and height in pixels (e.g. "576 x 1024"), as in the Image Chooser's image details panel.</note>
+      </trans-unit>
+      <trans-unit id="Common.FileSize" translate="no">
+        <source xml:lang="en">File size</source>
+        <note>ID: Common.FileSize</note>
+        <note>Label beside how large a file is (e.g. "1.2 MB"), as in the Image Chooser's image details panel.</note>
+      </trans-unit>
       <trans-unit id="BookProcessor.HousekeepingMessage">
         <source xml:lang="en">Please wait while Bloom does some housekeeping on your book...</source>
         <note>ID: BookProcessor.HousekeepingMessage</note>
