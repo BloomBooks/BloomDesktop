@@ -10,6 +10,7 @@ import {
     discardPendingInlineImageUndo,
     getEditables,
     getInlineImage,
+    getInlineImageChangeOrder,
     getInlineImageById,
     getInlineImageId,
     getInlineImageInEditable,
@@ -39,6 +40,11 @@ import {
     setupInlineImages,
     syncInlineImagesFromEditable,
 } from "./inlineImages";
+import {
+    getTableChangeOrder,
+    noteTableHistoryUpdate,
+    shouldUndoGoToTable,
+} from "./undoOrdering";
 
 // Each group is built inside its own .bloom-page with a new data-page-id. That is how it looks
 // in Bloom, and the inline image undo code clears its stack when that id changes, so a new id
@@ -1071,6 +1077,79 @@ describe("inlineImages", () => {
                     editableFor(group, "en"),
                 )!.style.getPropertyValue("--inline-image-width"),
             ).toBe("40%");
+        });
+
+        // The Undo button asks the table first (workspaceRoot.handleUndo), so a picture change made
+        // after a table operation has to be recorded as the newer of the two, or the Undo would
+        // take the row back off and leave the picture as it is.
+        it("is newer than a table operation made before it, until it is undone", () => {
+            const group = makeTranslationGroup([
+                { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
+            ]);
+            const wrapper = insertInlineImage(group);
+            noteTableHistoryUpdate("Add Row");
+            const row = getTableChangeOrder();
+            // Sanity check: inserting the picture put an undo point on the stack, before the row.
+            const insert = getInlineImageChangeOrder();
+            expect(insert).toBeGreaterThan(0);
+            expect(insert).toBeLessThan(row);
+
+            recordInlineImageUndoPoint(group);
+            wrapper.style.setProperty("--inline-image-width", "80%");
+            syncInlineImagesFromEditable(editableFor(group, "en"));
+            select(wrapper);
+            expect(inlineImageCanUndo()).toBe(true);
+
+            const undoGoesToTable = () =>
+                shouldUndoGoToTable({
+                    tableCanUndo: true,
+                    ckeditorCanUndo: false,
+                    inlineImageCanUndo: inlineImageCanUndo(),
+                    tableChangeOrder: row,
+                    ckeditorChangeOrder: 0,
+                    inlineImageChangeOrder: getInlineImageChangeOrder(),
+                });
+            expect(getInlineImageChangeOrder()).toBeGreaterThan(row);
+            expect(
+                undoGoesToTable(),
+                "The picture change came after the row, so Undo should take it back first.",
+            ).toBe(false);
+
+            expect(inlineImageUndo()).toBe(true);
+
+            expect(getInlineImageChangeOrder()).toBe(insert);
+            expect(
+                undoGoesToTable(),
+                "With the resize undone, the row is newer than the insert that is left.",
+            ).toBe(true);
+        });
+
+        it("is older than a table operation made after it", () => {
+            const group = makeTranslationGroup([
+                { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
+            ]);
+            const wrapper = insertInlineImage(group);
+            recordInlineImageUndoPoint(group);
+            wrapper.style.setProperty("--inline-image-width", "80%");
+            syncInlineImagesFromEditable(editableFor(group, "en"));
+            select(wrapper);
+            const picture = getInlineImageChangeOrder();
+            // Sanity check: the picture change was recorded.
+            expect(picture).toBeGreaterThan(0);
+
+            noteTableHistoryUpdate("Add Row");
+
+            expect(getTableChangeOrder()).toBeGreaterThan(picture);
+            expect(
+                shouldUndoGoToTable({
+                    tableCanUndo: true,
+                    ckeditorCanUndo: false,
+                    inlineImageCanUndo: inlineImageCanUndo(),
+                    tableChangeOrder: getTableChangeOrder(),
+                    ckeditorChangeOrder: 0,
+                    inlineImageChangeOrder: picture,
+                }),
+            ).toBe(true);
         });
 
         // When the page frame is rebuilt, every recorded element is detached, and restoring

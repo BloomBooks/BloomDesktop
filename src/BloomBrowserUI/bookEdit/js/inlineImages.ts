@@ -27,6 +27,7 @@
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { kBlockElementSelector } from "../bloomField/BloomField";
 import { createValidXhtmlUniqueId } from "./xhtmlIdUtils";
+import { takeInlineImageChangeOrder } from "./undoOrdering";
 
 export const kInlineImageClass = "bloom-inlineImage";
 
@@ -571,6 +572,10 @@ type InlineImageUndoItem = {
     // this operation can be told apart from typing done before it. Undefined when there was
     // no CKEditor to ask.
     ckeditorUndoAtSnapshot?: CkeditorUndoPosition;
+    // When this undo point went on the stack, on the counter undoOrdering.ts shares with the
+    // table and CKEditor, so that the Undo button can tell whether a table operation is newer
+    // than this change. Zero until the point is pushed.
+    changeOrder: number;
 };
 
 // Where CKEditor stands in its own stack of undo snapshots, and which editable's stack that is.
@@ -627,7 +632,7 @@ export function commitPendingInlineImageUndo(element: HTMLElement): void {
         // recordInlineImageUndoPoint runs BEFORE its change, when the snapshot always matches.
         !isInlineImageSnapshotStillTrue(pendingInlineImageUndo)
     ) {
-        inlineImageUndoStack.push(pendingInlineImageUndo);
+        pushInlineImageUndoItem(pendingInlineImageUndo);
     }
     pendingInlineImageUndo = undefined;
 }
@@ -673,9 +678,26 @@ export function recordInlineImageUndoPoint(element: HTMLElement): void {
         pendingInlineImageUndo &&
         pendingInlineImageUndo.translationGroup === translationGroup
     ) {
-        inlineImageUndoStack.push(pendingInlineImageUndo);
+        pushInlineImageUndoItem(pendingInlineImageUndo);
     }
     pendingInlineImageUndo = undefined;
+}
+
+/** Puts an undo point on the stack, numbered as the newest change of any kind on the page. */
+function pushInlineImageUndoItem(item: InlineImageUndoItem): void {
+    item.changeOrder = takeInlineImageChangeOrder();
+    inlineImageUndoStack.push(item);
+}
+
+/**
+ * When the change that the next inline image undo would take back was made, on the counter
+ * undoOrdering.ts shares with the table and CKEditor. Zero when there is nothing to undo.
+ */
+export function getInlineImageChangeOrder(): number {
+    clearInlineImageUndoOnPageChange();
+    return (
+        inlineImageUndoStack[inlineImageUndoStack.length - 1]?.changeOrder ?? 0
+    );
 }
 
 /**
@@ -974,6 +996,7 @@ function takeInlineImageSnapshot(
             getInlineImageUndoContentFingerprint(translationGroup),
         wasEditedSinceSnapshot: false,
         ckeditorUndoAtSnapshot: getCkeditorUndoPosition(),
+        changeOrder: 0,
         editables: getEditables(translationGroup).map((editable) => ({
             editable,
             wrapperHtmls: getInlineImagesInEditable(editable).map(

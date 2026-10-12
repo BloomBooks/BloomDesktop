@@ -6,6 +6,7 @@ import {
     noteTableHistoryUpdate,
     resetUndoOrderingForTests,
     shouldUndoGoToTable,
+    takeInlineImageChangeOrder,
 } from "./undoOrdering";
 
 describe("shouldUndoGoToTable", () => {
@@ -14,10 +15,12 @@ describe("shouldUndoGoToTable", () => {
             shouldUndoGoToTable({
                 tableCanUndo: false,
                 ckeditorCanUndo: true,
+                inlineImageCanUndo: false,
                 // Even with the table as the more recent of the two, an empty history cannot
                 // answer an Undo.
                 tableChangeOrder: 2,
                 ckeditorChangeOrder: 1,
+                inlineImageChangeOrder: 0,
             }),
         ).toBe(false);
     });
@@ -27,8 +30,10 @@ describe("shouldUndoGoToTable", () => {
             shouldUndoGoToTable({
                 tableCanUndo: true,
                 ckeditorCanUndo: false,
+                inlineImageCanUndo: false,
                 tableChangeOrder: 1,
                 ckeditorChangeOrder: 0,
+                inlineImageChangeOrder: 0,
             }),
         ).toBe(true);
     });
@@ -40,8 +45,10 @@ describe("shouldUndoGoToTable", () => {
             shouldUndoGoToTable({
                 tableCanUndo: true,
                 ckeditorCanUndo: false,
+                inlineImageCanUndo: false,
                 tableChangeOrder: 1,
                 ckeditorChangeOrder: 5,
+                inlineImageChangeOrder: 0,
             }),
         ).toBe(true);
     });
@@ -51,8 +58,10 @@ describe("shouldUndoGoToTable", () => {
             shouldUndoGoToTable({
                 tableCanUndo: true,
                 ckeditorCanUndo: true,
+                inlineImageCanUndo: false,
                 tableChangeOrder: 2,
                 ckeditorChangeOrder: 1,
+                inlineImageChangeOrder: 0,
             }),
         ).toBe(true);
     });
@@ -64,10 +73,55 @@ describe("shouldUndoGoToTable", () => {
             shouldUndoGoToTable({
                 tableCanUndo: true,
                 ckeditorCanUndo: true,
+                inlineImageCanUndo: false,
                 tableChangeOrder: 1,
                 ckeditorChangeOrder: 2,
+                inlineImageChangeOrder: 0,
             }),
         ).toBe(false);
+    });
+
+    it("says no when a picture was changed after the row", () => {
+        // Add a row, then resize an inline image: the Undo button asks the table first, and the
+        // picture is what the person means to take back.
+        expect(
+            shouldUndoGoToTable({
+                tableCanUndo: true,
+                ckeditorCanUndo: false,
+                inlineImageCanUndo: true,
+                tableChangeOrder: 1,
+                ckeditorChangeOrder: 0,
+                inlineImageChangeOrder: 2,
+            }),
+        ).toBe(false);
+    });
+
+    it("says yes when the row came after the picture change", () => {
+        expect(
+            shouldUndoGoToTable({
+                tableCanUndo: true,
+                ckeditorCanUndo: false,
+                inlineImageCanUndo: true,
+                tableChangeOrder: 2,
+                ckeditorChangeOrder: 0,
+                inlineImageChangeOrder: 1,
+            }),
+        ).toBe(true);
+    });
+
+    it("says yes when the newer picture change cannot be undone from here", () => {
+        // inlineImageCanUndo says no when the person is working in some other block, and then
+        // the inline image stack cannot answer, however recently it changed.
+        expect(
+            shouldUndoGoToTable({
+                tableCanUndo: true,
+                ckeditorCanUndo: false,
+                inlineImageCanUndo: false,
+                tableChangeOrder: 1,
+                ckeditorChangeOrder: 0,
+                inlineImageChangeOrder: 2,
+            }),
+        ).toBe(true);
     });
 
     it("says no when neither has ever changed", () => {
@@ -75,8 +129,10 @@ describe("shouldUndoGoToTable", () => {
             shouldUndoGoToTable({
                 tableCanUndo: false,
                 ckeditorCanUndo: false,
+                inlineImageCanUndo: false,
                 tableChangeOrder: 0,
                 ckeditorChangeOrder: 0,
+                inlineImageChangeOrder: 0,
             }),
         ).toBe(false);
     });
@@ -122,8 +178,10 @@ describe("the recorded order of the two stacks", () => {
             shouldUndoGoToTable({
                 tableCanUndo: true,
                 ckeditorCanUndo: true,
+                inlineImageCanUndo: false,
                 tableChangeOrder: getTableChangeOrder(),
                 ckeditorChangeOrder: getCkeditorChangeOrder(),
+                inlineImageChangeOrder: 0,
             }),
         ).toBe(false);
     });
@@ -149,8 +207,10 @@ describe("the recorded order of the two stacks", () => {
             shouldUndoGoToTable({
                 tableCanUndo: true,
                 ckeditorCanUndo: true,
+                inlineImageCanUndo: false,
                 tableChangeOrder: getTableChangeOrder(),
                 ckeditorChangeOrder: getCkeditorChangeOrder(),
+                inlineImageChangeOrder: 0,
             }),
             "The next Undo should take back the typing, not the first row.",
         ).toBe(false);
@@ -168,5 +228,16 @@ describe("the recorded order of the two stacks", () => {
         noteTableHistoryUpdate("Add Row");
         noteTableHistoryUpdate("Clear History");
         expect(getTableChangeOrder()).toBe(0);
+    });
+
+    it("numbers an inline image change after the table operation before it", () => {
+        noteTableHistoryUpdate("Add Row");
+        const picture = takeInlineImageChangeOrder();
+        expect(picture).toBeGreaterThan(getTableChangeOrder());
+        noteTableHistoryUpdate("Add Row");
+        expect(
+            getTableChangeOrder(),
+            "A row added after the picture change should come after it.",
+        ).toBeGreaterThan(picture);
     });
 });

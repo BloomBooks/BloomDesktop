@@ -128,7 +128,8 @@ export function handleUndo(): void {
     // (Origami undo works only while the origami tool is active.)
     const contentWindow = getEditablePageBundleExports();
     // Check table (bloom-table) undo first. Structural grid ops leave no CKEditor footprint, and
-    // when both stacks hold something, whichever was written to last wins; see undoOrdering.ts.
+    // when it and CKEditor or the inline image stack both hold something, whichever was written to
+    // last wins; see undoOrdering.ts.
     // A pure text edit inside a cell routes to CKEditor below.
     if (contentWindow && contentWindow.tableShouldHandleUndo()) {
         contentWindow.tableUndo();

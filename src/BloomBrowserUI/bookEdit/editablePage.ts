@@ -186,7 +186,11 @@ export {
 // Inline (Word-style) images keep their own undo stack. Like the origami and image operation
 // undo functions, these are exported so that the workspace undo command can call them. See
 // inlineImages.ts.
-import { inlineImageCanUndo, inlineImageUndo } from "./js/inlineImages";
+import {
+    getInlineImageChangeOrder,
+    inlineImageCanUndo,
+    inlineImageUndo,
+} from "./js/inlineImages";
 export { inlineImageCanUndo, inlineImageUndo };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
 import { postString } from "../utils/bloomApi";
@@ -372,20 +376,23 @@ export function ckeditorUndo(): boolean {
 }
 
 // Whether the next Undo belongs to the bloom-table library (which lives in this page iframe,
-// where the tables are attached) rather than to CKEditor. Called cross-frame from
+// where the tables are attached) rather than to CKEditor or an inline image. Called cross-frame from
 // workspaceRoot.canUndo()/handleUndo().
 //
 // It is not enough that the library has an operation to undo: its history holds every structural
 // operation until that operation is undone, so after "add a row, then type in a cell" both it and
-// CKEditor have something, and the typing is what came last. See undoOrdering.ts.
+// CKEditor have something, and the typing is what came last. "Add a row, then resize a picture in
+// a text block" is the same with the inline image stack in place of CKEditor. See undoOrdering.ts.
 //
 // In Change Layout mode the answer is always no; see tableCanUndo().
 export function tableShouldHandleUndo(): boolean {
     return shouldUndoGoToTable({
         tableCanUndo: tableCanUndo(),
         ckeditorCanUndo: ckeditorCanUndo(),
+        inlineImageCanUndo: inlineImageCanUndo(),
         tableChangeOrder: getTableChangeOrder(),
         ckeditorChangeOrder: getCkeditorChangeOrder(),
+        inlineImageChangeOrder: getInlineImageChangeOrder(),
     });
 }
 

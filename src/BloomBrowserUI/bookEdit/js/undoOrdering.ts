@@ -1,4 +1,4 @@
-// Which of two independent undo stacks should answer the next Undo.
+// Which of the independent undo stacks should answer the next Undo.
 //
 // A table's structural operations (add a row, change a cell's content type, ...) go through the
 // bloom-table library's own history, and typing inside a cell goes through CKEditor's. Neither
@@ -6,7 +6,11 @@
 // "add a row, then type" leaves both stacks non-empty at once, and a caller that always asks the
 // table first takes the row back off while the typing, which came later, is what the person meant.
 //
-// The two stacks cannot be merged, so we record the order they were last written in and let that
+// Inline (Word-style) images have a third stack of their own (see inlineImages.ts), which takes
+// its numbers from the same counter. Without that, "add a row, then resize a picture in a text
+// block" would have the Undo button take the row back off, because the table is asked first.
+//
+// The stacks cannot be merged, so we record the order they were last written in and let that
 // decide. The counter is a bare sequence number rather than a clock because two changes in the
 // same millisecond are ordinary and a tie has no right answer.
 //
@@ -41,6 +45,15 @@ export function noteCkeditorChange(): void {
     ckeditorChangeOrder = ++changeCounter;
 }
 
+/**
+ * Take the next number on the shared counter for an inline image change that has just been put on
+ * the inline image undo stack. That stack keeps the number with the undo point, so undoing the
+ * point takes its number off with it, as noteTableHistoryUpdate does for the table.
+ */
+export function takeInlineImageChangeOrder(): number {
+    return ++changeCounter;
+}
+
 /** When the operation now at the top of the table library's history was made, on the shared counter. */
 export function getTableChangeOrder(): number {
     return tableChangeOrders[tableChangeOrders.length - 1] ?? 0;
@@ -52,24 +65,35 @@ export function getCkeditorChangeOrder(): number {
 }
 
 /**
- * Whether the next Undo belongs to the table rather than to CKEditor.
+ * Whether the next Undo belongs to the table rather than to CKEditor or an inline image.
  *
  * Pure, and exported so it can be tested on its own. A table with nothing to undo never wins; a
- * table with something to undo wins unless CKEditor also has something to undo AND changed more
- * recently than the table did.
+ * table with something to undo wins unless CKEditor or the inline image stack also has something
+ * to undo AND changed more recently than the table did.
  */
 export function shouldUndoGoToTable(state: {
     tableCanUndo: boolean;
     ckeditorCanUndo: boolean;
+    inlineImageCanUndo: boolean;
     tableChangeOrder: number;
     ckeditorChangeOrder: number;
+    inlineImageChangeOrder: number;
 }): boolean {
     if (!state.tableCanUndo) return false;
-    if (!state.ckeditorCanUndo) return true;
-    return state.tableChangeOrder > state.ckeditorChangeOrder;
+    if (
+        state.ckeditorCanUndo &&
+        state.ckeditorChangeOrder > state.tableChangeOrder
+    )
+        return false;
+    if (
+        state.inlineImageCanUndo &&
+        state.inlineImageChangeOrder > state.tableChangeOrder
+    )
+        return false;
+    return true;
 }
 
-/** Forget both stacks' recorded order. For tests, and for tearing table editing down. */
+/** Forget the recorded order of the table's and CKEditor's changes. For tests, and for tearing table editing down. */
 export function resetUndoOrderingForTests(): void {
     changeCounter = 0;
     tableChangeOrders = [];
