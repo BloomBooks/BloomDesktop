@@ -105,16 +105,39 @@ describe("CanvasElementManager.updateCanvasElementForChangedImage", () => {
         };
     }
 
-    it("gives a new picture none of the old picture's rotation and mirror, and keeps the box rotation", () => {
+    it("gives a new picture none of the old picture's rotation and mirror, and straightens the box", () => {
         const { element, img } = makeRotatedAndMirroredPicture();
         expect(img.style.transform).toBe("rotate(90deg) scale(-1, 1)");
+        expect(element.style.transform).toBe("rotate(30deg)");
 
         img.setAttribute("src", "new.png");
         updateForChangedImage(img);
 
         expect(img.style.transform).toBe("");
-        expect(element.style.transform).toBe("rotate(30deg)");
+        expect(element.style.transform).toBe("");
+        expect(element.classList.contains("bloom-rotated")).toBe(false);
         expect(manager.adjustContainerAspectRatio).toHaveBeenCalled();
+    });
+
+    it("puts the old box rotation back when the change is undone", () => {
+        const { element, img } = makeRotatedAndMirroredPicture();
+        const undoManager = new ImageUndoManager({
+            getCurrentPage: () =>
+                document.querySelector<HTMLElement>(".bloom-page") ?? undefined,
+            updateCanvasElementForChangedImage: updateForChangedImage,
+            getActiveElement: () => undefined,
+        } as unknown as ImageUndoManagerHost);
+        undoManager.prepareUndoForImageOperation(img);
+        img.setAttribute("src", "new.png");
+        updateForChangedImage(img);
+        undoManager.commitPendingImageOperationUndo(img);
+        // Sanity check: the change really straightened the box.
+        expect(element.style.transform).toBe("");
+
+        expect(undoManager.undoImageOperation()).toBe(true);
+
+        expect(element.style.transform).toBe("rotate(30deg)");
+        expect(element.classList.contains("bloom-rotated")).toBe(true);
     });
 
     it("clears the picture's rotation before a background element is fitted to the new picture", () => {
@@ -191,6 +214,39 @@ describe("CanvasElementManager.updateCanvasElementForChangedImage", () => {
         expect(undoManager.undoImageOperation()).toBe(true);
 
         expect(geometryWhenFitted).toEqual(["150px", "300px", "125px", "0px"]);
+    });
+});
+
+describe("CanvasElementManager.resetImage", () => {
+    it("straightens a picture's box as well as taking away its crop, rotation and mirror", () => {
+        document.body.innerHTML = `
+            <div class="bloom-canvas">
+                <div class="bloom-canvas-element bloom-rotated" style="transform: rotate(90deg)">
+                    <div class="bloom-imageContainer">
+                        <img src="picture.png" style="transform: scale(-1, 1)">
+                    </div>
+                </div>
+            </div>`;
+        const element = document.querySelector(
+            ".bloom-canvas-element",
+        ) as HTMLElement;
+        const img = element.querySelector("img") as HTMLImageElement;
+        // resetCropping and the frame update need layout, which jsdom does not do.
+        const manager = {
+            activeElement: element,
+            resetCropping: vi.fn(),
+            adjustStuffRelatedToImage: vi.fn(),
+        };
+        // Sanity check: Rotate right turned the box and Flip mirrored the picture.
+        expect(element.style.transform).toBe("rotate(90deg)");
+        expect(img.style.transform).toBe("scale(-1, 1)");
+
+        CanvasElementManager.prototype.resetImage.call(manager);
+
+        expect(img.style.transform).toBe("");
+        expect(element.style.transform).toBe("");
+        expect(element.classList.contains("bloom-rotated")).toBe(false);
+        expect(manager.resetCropping).toHaveBeenCalled();
     });
 });
 
