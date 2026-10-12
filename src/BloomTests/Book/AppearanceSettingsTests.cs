@@ -686,7 +686,11 @@ namespace BloomTests.Book
         public void CssOfDefaultTheme_HasExpectedMargins()
         {
             // we expect the default settings before the theme ones
-            AssertContainsButIgnoreWhitespace(_cssOfDefaultTheme, "--page-margin: 12mm;");
+            AssertContainsButIgnoreWhitespace(_cssOfDefaultTheme, "--standard-page-margin: 12mm;");
+            AssertContainsButIgnoreWhitespace(
+                _cssOfDefaultTheme,
+                "--page-margin: var(--standard-page-margin);"
+            );
             AssertContainsButIgnoreWhitespace(
                 _cssOfDefaultTheme,
                 "--cover-margin-top: var(--page-margin);"
@@ -694,22 +698,22 @@ namespace BloomTests.Book
             AssertContainsButIgnoreWhitespace(
                 _cssOfDefaultTheme,
                 @".LegalLandscape {
-    --page-margin: 15mm;"
+    --standard-page-margin: 15mm;"
             );
             AssertContainsButIgnoreWhitespace(
                 _cssOfDefaultTheme,
                 @".A6Landscape {
-    --page-margin: 10mm;"
+    --standard-page-margin: 10mm;"
             );
             AssertContainsButIgnoreWhitespace(
                 _cssOfDefaultTheme,
                 @".bloom-page[class*=""Device""] {
-    --page-margin: 10px;"
+    --standard-page-margin: 10px;"
             );
             AssertContainsButIgnoreWhitespace(
                 _cssOfDefaultTheme,
                 @".Cm13Landscape {
-    --page-margin: 5mm;"
+    --standard-page-margin: 5mm;"
             );
         }
 
@@ -725,7 +729,7 @@ namespace BloomTests.Book
         [Test]
         public void CssOfChosenTheme_OverridesMargin()
         {
-            Assert.That(_generatedAppearanceCss, Does.Contain("--page-margin: 12mm;"));
+            Assert.That(_generatedAppearanceCss, Does.Contain("--standard-page-margin: 12mm;"));
             Assert.That(
                 _generatedAppearanceCss,
                 Does.Contain(".numberedPage:not(.bloom-interactive-page)")
