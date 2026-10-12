@@ -1175,6 +1175,11 @@
         <target xml:lang="es-ES" state="needs-translation">The selected [Page Theme] does not support the following settings.</target>
         <note>BookSettings.ThemeDisablesOptionsNoticeWithLink</note>
       </trans-unit>
+      <trans-unit id="BookSettings.EdgeToEdgeNeedsFullBleed" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Pictures cannot reach the edge of a printed page unless this book uses full bleed. Turn it on in [Print Publishing].</source>
+        <target xml:lang="es-ES" state="needs-translation">Pictures cannot reach the edge of a printed page unless this book uses full bleed. Turn it on in [Print Publishing].</target>
+        <note>ID: BookSettings.EdgeToEdgeNeedsFullBleed</note>
+      </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message" sil:dynamic="true">
         <source xml:lang="en">This feature requires a newer [Page Theme].</source>
         <target xml:lang="es-ES" state="needs-translation">This feature requires a newer [Page Theme].</target>
@@ -1966,17 +1971,17 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.google-gemini-3-1-flash-image.Description">
         <source xml:lang="en">Good for changing an image. It leaves alone the parts you did not ask it to change. It does not follow your instructions quite as well as Gemini 3 Pro.</source>
-        <target xml:lang="es-ES" state="translated">Bueno para modificar una imagen. Deja intactas las partes que no pidió cambiar. No sigue sus instrucciones tan bien como Gemini 3 Pro.</target>
+        <target xml:lang="es-ES" state="translated">Bueno para modificar una imagen. Deja intactas las partes que no se pidió cambiar. No sigue instrucciones tan bien como Gemini 3 Pro.</target>
         <note>ID: AiImageEditor.Model.google-gemini-3-1-flash-image.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.google-gemini-3-pro-image.Description">
         <source xml:lang="en">Good for changing an image. It leaves alone the parts you did not ask it to change. It follows your instructions better than the others here, but it costs more.</source>
-        <target xml:lang="es-ES" state="translated">Bueno para modificar una imagen. Deja intactas las partes que no pidió cambiar. Sigue sus instrucciones mejor que los demás de esta lista, pero cuesta más.</target>
+        <target xml:lang="es-ES" state="translated">Bueno para modificar una imagen. Deja intactas las partes que no se pidió cambiar. Sigue instrucciones mejor que los demás de esta lista, pero cuesta más.</target>
         <note>ID: AiImageEditor.Model.google-gemini-3-pro-image.Description</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Model.openai-gpt-image-2-5-sunburst.Description">
+      <trans-unit id="AiImageEditor.Model.openai-gpt-image-2-5-sunburst.Description" approved="yes">
         <source xml:lang="en">Good with small details. Slower than the Gemini models.</source>
-        <target xml:lang="es-ES" state="translated">Bueno con los detalles pequeños. Más lento que los modelos Gemini.</target>
+        <target xml:lang="es-ES" state="final">Bueno con los detalles pequeños. Más lento que los modelos Gemini.</target>
         <note>ID: AiImageEditor.Model.openai-gpt-image-2-5-sunburst.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.OpenRouter.AccountLink">
@@ -1984,19 +1989,19 @@
         <target xml:lang="es-ES" state="translated">la cuenta de OpenRouter</target>
         <note>ID: AiImageEditor.OpenRouter.AccountLink</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.ConnectWithKey">
+      <trans-unit id="AiImageEditor.OpenRouter.ConnectWithKey" approved="yes">
         <source xml:lang="en">Connect with OpenRouter API key</source>
-        <target xml:lang="es-ES" state="translated">Conectarse con una clave API de OpenRouter</target>
+        <target xml:lang="es-ES" state="final">Conectarse con una clave API de OpenRouter</target>
         <note>ID: AiImageEditor.OpenRouter.ConnectWithKey</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.ConnectedWithKey">
+      <trans-unit id="AiImageEditor.OpenRouter.ConnectedWithKey" approved="yes">
         <source xml:lang="en">Connected with OpenRouter API key</source>
-        <target xml:lang="es-ES" state="translated">Conectado con una clave API de OpenRouter</target>
+        <target xml:lang="es-ES" state="final">Conectado con una clave API de OpenRouter</target>
         <note>ID: AiImageEditor.OpenRouter.ConnectedWithKey</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.CreditsExplanation">
+      <trans-unit id="AiImageEditor.OpenRouter.CreditsExplanation" approved="yes">
         <source xml:lang="en">OpenRouter credits are how you pre-pay for use of the AI Image Tools from Google and others. Once you have an OpenRouter account, paste in an API key below.</source>
-        <target xml:lang="es-ES" state="translated">Los créditos de OpenRouter son la manera de pagar por adelantado el uso de las Herramientas de imágenes con IA de Google y de otros proveedores. Una vez que tenga una cuenta de OpenRouter, pegue abajo una clave API.</target>
+        <target xml:lang="es-ES" state="final">Los créditos de OpenRouter son la manera de pagar por adelantado el uso de las Herramientas de imágenes con IA de Google y de otros proveedores. Una vez que tenga una cuenta de OpenRouter, pegue abajo una clave API.</target>
         <note>ID: AiImageEditor.OpenRouter.CreditsExplanation</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.OpenRouter.NoSpendingLimit">
@@ -2004,29 +2009,29 @@
         <target xml:lang="es-ES" state="translated">Esta clave no tiene límite de gasto. Asegúrese de que {0} no tenga activado 'Auto Top-Up'</target>
         <note>ID: AiImageEditor.OpenRouter.NoSpendingLimit</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.PasteKeyPlaceholder">
+      <trans-unit id="AiImageEditor.OpenRouter.PasteKeyPlaceholder" approved="yes">
         <source xml:lang="en">Paste OpenRouter key</source>
-        <target xml:lang="es-ES" state="translated">Pegue la clave de OpenRouter</target>
+        <target xml:lang="es-ES" state="final">Pegue la clave de OpenRouter</target>
         <note>ID: AiImageEditor.OpenRouter.PasteKeyPlaceholder</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.TestKey">
+      <trans-unit id="AiImageEditor.OpenRouter.TestKey" approved="yes">
         <source xml:lang="en">Test Key</source>
-        <target xml:lang="es-ES" state="translated">Probar la clave</target>
+        <target xml:lang="es-ES" state="final">Probar la clave</target>
         <note>ID: AiImageEditor.OpenRouter.TestKey</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Panel.CharacterGridOrScene">
         <source xml:lang="en">Character grid or scene to change</source>
-        <target xml:lang="es-ES" state="translated">Cuadrícula de personajes o escena a cambiar</target>
+        <target xml:lang="es-ES" state="translated">Matriz de personajes o escena a cambiar</target>
         <note>ID: AiImageEditor.Panel.CharacterGridOrScene</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Panel.ImageToEdit">
+      <trans-unit id="AiImageEditor.Panel.ImageToEdit" approved="yes">
         <source xml:lang="en">Image to Edit</source>
-        <target xml:lang="es-ES" state="translated">Imagen a editar</target>
+        <target xml:lang="es-ES" state="final">Imagen a editar</target>
         <note>ID: AiImageEditor.Panel.ImageToEdit</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Panel.ImagesShowingCharacters">
+      <trans-unit id="AiImageEditor.Panel.ImagesShowingCharacters" approved="yes">
         <source xml:lang="en">Images from the book that show all the characters</source>
-        <target xml:lang="es-ES" state="translated">Imágenes del libro que muestran todos los personajes</target>
+        <target xml:lang="es-ES" state="final">Imágenes del libro que muestran todos los personajes</target>
         <note>ID: AiImageEditor.Panel.ImagesShowingCharacters</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Panel.Pieces">
@@ -2034,39 +2039,39 @@
         <target xml:lang="es-ES" state="translated">Recortes</target>
         <note>ID: AiImageEditor.Panel.Pieces</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Panel.ReferenceImages">
+      <trans-unit id="AiImageEditor.Panel.ReferenceImages" approved="yes">
         <source xml:lang="en">Characters and other Reference Images</source>
-        <target xml:lang="es-ES" state="translated">Personajes y otras imágenes de referencia</target>
+        <target xml:lang="es-ES" state="final">Personajes y otras imágenes de referencia</target>
         <note>ID: AiImageEditor.Panel.ReferenceImages</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Panel.Result">
         <source xml:lang="en">Result</source>
-        <target xml:lang="es-ES" state="translated">Resultado</target>
+        <target xml:lang="es-ES" state="translated">Imagen generada</target>
         <note>ID: AiImageEditor.Panel.Result</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Param.AddExtraInstructions">
         <source xml:lang="en">Add any extra instructions...</source>
-        <target xml:lang="es-ES" state="translated">Agregue instrucciones adicionales...</target>
+        <target xml:lang="es-ES" state="translated">Agregue cualquier instrucción adicional...</target>
         <note>ID: AiImageEditor.Param.AddExtraInstructions</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Param.FurtherInstructions">
+      <trans-unit id="AiImageEditor.Param.FurtherInstructions" approved="yes">
         <source xml:lang="en">Further Instructions</source>
-        <target xml:lang="es-ES" state="translated">Instrucciones adicionales</target>
+        <target xml:lang="es-ES" state="final">Instrucciones adicionales</target>
         <note>ID: AiImageEditor.Param.FurtherInstructions</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Param.Instructions">
+      <trans-unit id="AiImageEditor.Param.Instructions" approved="yes">
         <source xml:lang="en">Instructions</source>
-        <target xml:lang="es-ES" state="translated">Instrucciones</target>
+        <target xml:lang="es-ES" state="final">Instrucciones</target>
         <note>ID: AiImageEditor.Param.Instructions</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Param.Shape">
+      <trans-unit id="AiImageEditor.Param.Shape" approved="yes">
         <source xml:lang="en">Shape</source>
-        <target xml:lang="es-ES" state="translated">Forma</target>
+        <target xml:lang="es-ES" state="final">Forma</target>
         <note>ID: AiImageEditor.Param.Shape</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Param.Size">
+      <trans-unit id="AiImageEditor.Param.Size" approved="yes">
         <source xml:lang="en">Size</source>
-        <target xml:lang="es-ES" state="translated">Tamaño</target>
+        <target xml:lang="es-ES" state="final">Tamaño</target>
         <note>ID: AiImageEditor.Param.Size</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Param.Style">
