@@ -1248,3 +1248,17 @@ Later, not Stage 0:
   to `TypeLoadException: SIL.IO.UnixFilePermissions` after BL-16806 moved BloomExe to libpalaso
   beta0046 while BloomFreezeDoctor.Core, BloomFreezeDoctor.Protocol and WebView2PdfMaker stayed on
   beta0028.
+
+### 2026-10-13 — Stage 2 parked; on to Stage 3
+
+- John's decision: Stage 2's main purpose was to prove the stack with real operations, and table
+  undo (native on the stack, §10 decision 8) now does that. So undoing a canvas element deletion
+  (BL-17003, draft PR #8451) is **parked**, not dropped: BL-17003 is back in Ready For Work,
+  unassigned, and #8451's last comment says what picking it up involves.
+- Salvaged from #8451: the comicaljs 0.4.2 bump (stale bubble observers) is its own PR, #8466; the
+  detached-box guards on the reader tools' and CKEditor's undo are in #8387. Ctrl+Shift+Z as a Redo
+  key waits for the first stack entry that can redo, which should also make typing after an undo
+  cut off the stack's redo branch.
+- #8387: preflight re-run after master merges and the table conversion; the mirrored Devin
+  discussions are resolved on Reviewable. Next: John's own look at the table undo, then
+  `pr-ready-for-human`.

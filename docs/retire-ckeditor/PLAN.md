@@ -1116,7 +1116,7 @@ Exit criteria: one entry point; `pnpm test` green; no user-visible change.
 **2a — Undo delete page: dropped** (2026-10-06, §10 decision 7). Undo is scoped to the page as
 it is currently loaded (§4.2), and a page deletion would have to outlive its page.
 
-**2b — Undo delete canvas element.** Do *not* use a whole-page snapshot. Preferred: an
+**2b — Undo delete canvas element** (*parked 2026-10-13*: table undo proved the stack instead, so the project went on to Stage 3; the work is on draft PR #8451, BL-17003). Do *not* use a whole-page snapshot. Preferred: an
 inverse-op / narrow-subtree entry that re-inserts the element's `outerHTML` into its
 `.bloom-canvas` and calls the **existing, battle-tested** `refreshCanvasElementEditing` — the
 same path used when adding or duplicating a canvas element
