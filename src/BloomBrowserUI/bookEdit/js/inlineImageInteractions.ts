@@ -34,6 +34,8 @@ import { default as InsertImageIcon } from "@mui/icons-material/AddPhotoAlternat
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
+import BloomField from "../bloomField/BloomField";
+import { EditableDivUtils } from "./editableDivUtils";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 import { buildCanvasElementControlRegistryContext } from "../toolbox/canvas/buildCanvasElementControlRegistryContext";
 import { imageAvailabilityRules } from "../toolbox/canvas/canvasControlAvailabilityRules";
@@ -254,22 +256,19 @@ export function computeInlineImageDock(
  * an image in the part of the text below what is showing.
  *
  * Everything the drag reads from the pointer is in viewport pixels, and the block's scroll
- * measurements are in layout pixels. The two differ whenever the page is zoomed. The rectangle
- * and clientHeight measure the same distance from edge to edge, so dividing one by the other
- * gives the page's scale, and no caller has to know the zoom.
+ * measurements are in layout pixels. The two differ whenever the page is zoomed, so the caller
+ * passes the page's scale (see getViewportPxPerLayoutPx).
  *
- * For a block whose text fits, this returns the block's own rectangle. With a clientHeight of
+ * For a block whose text fits, this returns the block's own rectangle. With a scrollHeight of
  * zero (in jsdom, where nothing is laid out) it returns the rectangle unchanged.
  */
 export function computeBlockContentBox(
     visibleBoxViewportPx: IBox,
-    clientHeightLayoutPx: number,
     scrollHeightLayoutPx: number,
     scrollTopLayoutPx: number,
+    viewportPxPerLayoutPx: number,
 ): IBox {
-    if (!(clientHeightLayoutPx > 0)) return visibleBoxViewportPx;
-    const viewportPxPerLayoutPx =
-        visibleBoxViewportPx.height / clientHeightLayoutPx;
+    if (!(scrollHeightLayoutPx > 0)) return visibleBoxViewportPx;
     return {
         left: visibleBoxViewportPx.left,
         width: visibleBoxViewportPx.width,
@@ -335,22 +334,6 @@ export function shouldRevertInlineImageMove(
 ): boolean {
     if (startOverflowLayoutPx > 0) return false;
     return currentOverflowLayoutPx > startOverflowLayoutPx + 1;
-}
-
-/**
- * How much bigger a distance in viewport pixels is than the same distance in layout pixels,
- * which is the page's zoom. Offsets are written in layout pixels, because the custom property
- * is used inside the scaled page, while a drag measures in viewport pixels. So every distance
- * taken from the pointer is divided by this before it is used as an offset. Returns 1 when
- * there is nothing to measure (jsdom).
- */
-export function computeViewportPxPerLayoutPx(
-    visibleBoxViewportPx: IBox,
-    clientHeightLayoutPx: number,
-): number {
-    if (!(clientHeightLayoutPx > 0) || !(visibleBoxViewportPx.height > 0))
-        return 1;
-    return visibleBoxViewportPx.height / clientHeightLayoutPx;
 }
 
 /**
@@ -475,25 +458,30 @@ export function deselectAllInlineImages(doc: Document): void {
 }
 
 // How many times fitInlineImageOffsetsToBlock may reduce an offset. Each pass reduces it by
-// exactly the amount the block now overflows by, so one pass is normally enough. The extra
-// passes are for when reducing the offset rewraps the text beside the float and changes that
-// amount again.
+// exactly the amount the block now overflows by, which is often enough. But moving a picture up
+// rewraps the text beside it, so the overflow after a pass can be anything, even more than
+// before it. The extra passes are for that.
 const kMaxOffsetFitPasses = 4;
 
 /**
  * Works out every inline image's offset again for the size its block is now, and records that
- * size as the one the offsets are now measured against. Call it when the page is set up, after each language's copy has been made to
- * match.
+ * size as the one the offsets are now measured against. Call it when the page is set up, after
+ * each language's copy has been made to match.
  *
- * The offset is a distance in pixels (see kInlineImageOffsetBasedOnAttr), and only a drag
- * writes it. A drag undoes any move that would leave the block with more text than it can show.
- * Without this function, nothing would change the offset when the block itself changes size.
+ * The offset is a distance in pixels (see kInlineImageOffsetBasedOnAttr). A drag writes it, and
+ * so does this function. A drag undoes any move that would leave the block with more text than
+ * it can show. Without this function, nothing would change the offset when the block itself
+ * changes size.
  * Showing the book at a shorter page size would then cause the problem the drag prevents: the
  * picture stays the same distance below the start of the text, and the lines after it are
  * pushed off the end of the block. Bloom does not warn about it either, because it does not
  * count a block it has allowed to scroll as overflowing. With the picture near the bottom of
  * the text on an A5 Portrait page, changing the book to A5 Landscape pushed eleven lines off
  * the end.
+ *
+ * Moving the pictures up cannot always fix that. A block that has shrunk a lot may not hold its
+ * text even with every offset at zero, or even with no picture at all. Then this does what it
+ * can (see fitInlineImageOffsetsToBlock), and the rest is for the user to fix.
  *
  * Only the editable the reader sees is laid out. The others are display:none and measure zero.
  * So this measures that one, and syncInlineImagesFromEditable copies the result to the rest.
@@ -549,24 +537,38 @@ export function adjustInlineImageOffsetsIfBlockSizeChanged(
 // is what has gone off the end of the block. If the block still overflows with the offset at
 // zero, it has more text than it can hold wherever the pictures are. That is for the user to
 // fix, and a drag gives the same result when the largest offset it may use is zero.
+//
+// Moving a picture up changes which lines are full width and which are beside the picture, so
+// a pass can leave more text off the end than there was before it. So this keeps the offsets
+// that left the least overflow, which may be the ones it started with.
 function fitInlineImageOffsetsToBlock(
     editable: HTMLElement,
     wrappers: HTMLElement[],
 ): void {
+    const measureOverflow = () => editable.scrollHeight - editable.clientHeight;
+    const readOffsets = () => wrappers.map(getInlineImageOffsetLayoutPx);
+    let best = { overflowLayoutPx: measureOverflow(), offsets: readOffsets() };
     for (let pass = 0; pass < kMaxOffsetFitPasses; pass++) {
-        const overflowLayoutPx = editable.scrollHeight - editable.clientHeight;
-        if (overflowLayoutPx <= 0) return;
+        if (best.overflowLayoutPx <= 0) break;
+        const overflowLayoutPx = measureOverflow();
         const wrapper = [...wrappers]
             .reverse()
             .find((each) => getInlineImageOffsetLayoutPx(each) > 0);
-        if (!wrapper) return;
+        if (!wrapper) break;
         setInlineImageOffset(
             wrapper,
             clampInlineImageOffset(
                 getInlineImageOffsetLayoutPx(wrapper) - overflowLayoutPx,
             ),
         );
+        const now = measureOverflow();
+        if (now < best.overflowLayoutPx) {
+            best = { overflowLayoutPx: now, offsets: readOffsets() };
+        }
     }
+    wrappers.forEach((wrapper, i) =>
+        setInlineImageOffset(wrapper, best.offsets[i]),
+    );
 }
 
 function setInlineImageOffset(
@@ -828,6 +830,7 @@ function withInlineImageSync(
 // and puts a copy in every editable of the group, so nothing has to be copied here.
 function addInlineImage(translationGroup: HTMLElement): void {
     const wrapper = insertInlineImage(translationGroup);
+    updateProtectedPictureCounts(translationGroup);
     selectInlineImage(wrapper);
     refreshOverflow(translationGroup);
 }
@@ -852,11 +855,23 @@ function removeInlineImageCommand(wrapper: HTMLElement): void {
     removeInlineImage(wrapper, () =>
         keepSurvivorsInPlace(editable, survivors, keptTops),
     );
+    updateProtectedPictureCounts(translationGroup);
     // The toolbar is a div on the body (see kInlineImageContextControlsId), so removing the
     // picture does not remove it. Without this it would stay on screen under a picture that is
     // gone, offering commands for it.
     deselectAllInlineImages(editable.ownerDocument);
     refreshOverflow(translationGroup);
+}
+
+// BloomField undoes a Ctrl+A then Delete that removes a picture, by comparing how many pictures each
+// block has with how many it should have. Inserting and deleting a picture, and undoing or redoing
+// either, change that number on purpose, so each of them records the new number here. Otherwise a
+// picture inserted after the page was set up would not be protected, and the next keystroke after
+// a deliberate delete would put the picture back.
+function updateProtectedPictureCounts(translationGroup: HTMLElement): void {
+    getEditables(translationGroup).forEach((editable) =>
+        BloomField.UpdateProtectedElementCount(editable),
+    );
 }
 
 // Moves the images left in the editable after a delete back to where they were before it
@@ -867,22 +882,21 @@ function keepSurvivorsInPlace(
     keptTops: Map<HTMLElement, number>,
 ): void {
     if (editable.getBoundingClientRect().height > 0) {
-        const viewportPxPerLayoutPx =
-            getViewportPxPerLayoutPxOfEditable(editable);
-        for (let pass = 0; pass < 2; pass++) {
-            survivors.forEach((other) => {
-                if (!other.isConnected) return;
-                const wanted = keptTops.get(other);
-                if (wanted === undefined) return;
-                const current = getImageBox(other).top;
-                if (Math.abs(wanted - current) <= 1) return;
-                nudgeInlineImageOffset(
-                    other,
-                    wanted - current,
-                    viewportPxPerLayoutPx,
-                );
-            });
-        }
+        const viewportPxPerLayoutPx = getViewportPxPerLayoutPx(editable);
+        // One pass in document order is enough: a float's position depends only on the floats
+        // before it in the DOM, and those are already back in place.
+        survivors.forEach((other) => {
+            if (!other.isConnected) return;
+            const wanted = keptTops.get(other);
+            if (wanted === undefined) return;
+            const current = getImageBox(other).top;
+            if (Math.abs(wanted - current) <= 1) return;
+            nudgeInlineImageOffset(
+                other,
+                wanted - current,
+                viewportPxPerLayoutPx,
+            );
+        });
         // The offsets above were corrected in this editable, so copy them to the other
         // languages.
         syncInlineImagesFromEditable(editable);
@@ -996,7 +1010,7 @@ export function positionInlineImageContextControls(wrapper: HTMLElement): void {
     const image = getImageBox(wrapper);
     const editable = wrapper.closest(".bloom-editable") as HTMLElement | null;
     const viewportPxPerLayoutPx = editable
-        ? getViewportPxPerLayoutPxOfEditable(editable)
+        ? getViewportPxPerLayoutPx(editable)
         : 1;
     root.style.left =
         image.left +
@@ -1068,6 +1082,7 @@ export function getInlineImageMenuItemsForClick(
 function onInlineImagesRestored(event: Event): void {
     const translationGroup = event.target as HTMLElement | null;
     if (!translationGroup) return;
+    updateProtectedPictureCounts(translationGroup);
     const selected = translationGroup.querySelector(
         "." + kInlineImageClass + "." + kInlineImageSelectedClass,
     ) as HTMLElement | null;
@@ -1098,7 +1113,7 @@ interface IInlineImageDragState {
     // the block's rectangle, so that the image can still be dragged into the part of an
     // overflowing block's text that is scrolled out of sight.
     editableContentBoxViewportPx: IBox;
-    // Viewport pixels per layout pixel; see computeViewportPxPerLayoutPx.
+    // Viewport pixels per layout pixel; see getViewportPxPerLayoutPx.
     viewportPxPerLayoutPx: number;
     // Where the image's center was in relation to the pointer when the drag began. The dock is
     // chosen from where the image is, and not from where the cursor is. Otherwise grabbing a
@@ -1240,20 +1255,17 @@ function startDrag(
     editable: HTMLElement,
 ): void {
     const imageBox = getImageBox(wrapper);
-    const visibleBoxViewportPx = getBox(editable);
+    const viewportPxPerLayoutPx = getViewportPxPerLayoutPx(editable);
     dragState = {
         wrapper,
         editable,
         editableContentBoxViewportPx: computeBlockContentBox(
-            visibleBoxViewportPx,
-            editable.clientHeight,
+            getBox(editable),
             editable.scrollHeight,
             editable.scrollTop,
+            viewportPxPerLayoutPx,
         ),
-        viewportPxPerLayoutPx: computeViewportPxPerLayoutPx(
-            visibleBoxViewportPx,
-            editable.clientHeight,
-        ),
+        viewportPxPerLayoutPx,
         grabOffsetXViewportPx:
             imageBox.left + imageBox.width / 2 - event.clientX,
         grabOffsetYViewportPx:
@@ -1528,13 +1540,14 @@ function nudgeInlineImageOffset(
     );
 }
 
-// The page's scale, measured on the block an image is in. This is for callers that do not
-// have drag state. A drag measures the scale once and keeps it.
-function getViewportPxPerLayoutPxOfEditable(editable: HTMLElement): number {
-    return computeViewportPxPerLayoutPx(
-        getBox(editable),
-        editable.clientHeight,
-    );
+// How much bigger a distance in viewport pixels is than the same distance in layout pixels,
+// which is the page's zoom. Offsets are written in layout pixels, because the custom property
+// is used inside the scaled page, while a drag measures in viewport pixels. So every distance
+// taken from the pointer is divided by this before it is used as an offset. A drag reads the
+// scale once, at pointerdown, and keeps it. It is 1 when the editable is not in the page's
+// scaling container, as in jsdom.
+function getViewportPxPerLayoutPx(editable: HTMLElement): number {
+    return EditableDivUtils.getPageScale(editable);
 }
 
 // Moves the dragged wrapper to the place among the floating wrappers that its target height
@@ -1572,8 +1585,7 @@ function startResize(event: PointerEvent, handle: HTMLElement): void {
     // compared with. clientWidth is in layout pixels, which differ from viewport pixels
     // whenever the page is zoomed, and mixing the two made every resize wrong by the zoom.
     const editableWidthViewportPx =
-        editable.clientWidth *
-        computeViewportPxPerLayoutPx(getBox(editable), editable.clientHeight);
+        editable.clientWidth * getViewportPxPerLayoutPx(editable);
     // With no width to take a percentage of, a resize would write a meaningless number.
     if (editableWidthViewportPx <= 0) return;
     const corner = (handle.getAttribute(kInlineImageCornerAttribute) ??
@@ -1706,22 +1718,21 @@ function normalizeFloatingClusterOrder(
     const anchor = floats[floats.length - 1].nextElementSibling;
     sorted.forEach((w) => editable.insertBefore(w, anchor));
     // The new order changed which floats each one clears, so put them all back where they
-    // were. This takes two passes, since correcting an earlier float moves the later ones.
-    for (let pass = 0; pass < 2; pass++) {
-        getFloatingWrappersIn(editable).forEach((w) => {
-            const wanted = wantedTops.get(w);
-            if (wanted === undefined) return;
-            const current = getImageBox(w).top;
-            if (Math.abs(wanted - current) <= 1) return;
-            nudgeInlineImageOffset(w, wanted - current, viewportPxPerLayoutPx);
-        });
-    }
+    // were. One pass in document order is enough: a float's position depends only on the
+    // floats before it in the DOM, and those have already been put back.
+    getFloatingWrappersIn(editable).forEach((w) => {
+        const wanted = wantedTops.get(w);
+        if (wanted === undefined) return;
+        const current = getImageBox(w).top;
+        if (Math.abs(wanted - current) <= 1) return;
+        nudgeInlineImageOffset(w, wanted - current, viewportPxPerLayoutPx);
+    });
 }
 
 // Puts every image that is not being dragged back where it was when the drag began, as far as
 // the new layout allows. An image cannot go above where it would start with no offset, so an
-// image whose old place is now taken ends up as close below it as the floats allow. This takes
-// two passes, because correcting an earlier float moves where the later ones start.
+// image whose old place is now taken ends up as close below it as the floats allow. One pass in
+// document order is enough, because a float's position depends only on the floats before it.
 function restoreNeighborImagePositions(state: IInlineImageDragState): void {
     if (state.editableContentBoxViewportPx.height <= 0) return; // no real layout to measure (jsdom)
     for (let pass = 0; pass < 2; pass++) {

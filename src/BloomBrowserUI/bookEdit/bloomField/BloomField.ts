@@ -40,6 +40,21 @@ import { kNoIndentClass } from "../textContextMenu/noIndent";
 export const kBlockElementSelector = "p,h1,h2,h3,h4,h5,h6";
 
 export default class BloomField {
+    // How many bloom-preventRemoval elements each field should have. See PreventRemovalOfSomeElements.
+    private static protectedElementCounts = new WeakMap<HTMLElement, number>();
+
+    /**
+     * Records how many bloom-preventRemoval elements this field has now as the number it should have.
+     * Call it after adding or removing one on purpose, such as inserting or deleting an inline image, or
+     * after undo or redo has done so.
+     */
+    public static UpdateProtectedElementCount(field: HTMLElement): void {
+        BloomField.protectedElementCounts.set(
+            field,
+            field.querySelectorAll(".bloom-preventRemoval").length,
+        );
+    }
+
     public static ManageField(bloomEditableDiv: HTMLElement) {
         BloomField.PreventRemovalOfSomeElements(bloomEditableDiv);
         BloomField.ManageWhatHappensIfTheyDeleteEverything(bloomEditableDiv);
@@ -886,21 +901,22 @@ export default class BloomField {
     // around the picture. The problem is that the user can do (ctrl+a, del) to start over on the text, and
     // inadvertently remove the embedded images. So we introduced the "bloom-preventRemoval" class, and this
     // tries to safeguard elements bearing that class.
+    //
+    // The guard is installed on every field, even one with nothing to protect yet, because an inline image
+    // can be inserted later. Code that adds or removes protected elements on purpose calls
+    // UpdateProtectedElementCount afterwards, so the guard neither misses the new ones nor puts back a
+    // deliberately deleted one.
     private static PreventRemovalOfSomeElements(field: HTMLElement) {
-        const numberThatShouldBeThere = $(field).find(
-            ".bloom-preventRemoval",
-        ).length;
-        if (numberThatShouldBeThere > 0) {
-            $(field).keyup((e) => {
-                if (
-                    $(field).find(".bloom-preventRemoval").length <
-                    numberThatShouldBeThere
-                ) {
-                    document.execCommand("undo");
-                    e.preventDefault();
-                }
-            });
-        }
+        BloomField.UpdateProtectedElementCount(field);
+        $(field).keyup((e) => {
+            if (
+                $(field).find(".bloom-preventRemoval").length <
+                (BloomField.protectedElementCounts.get(field) ?? 0)
+            ) {
+                document.execCommand("undo");
+                e.preventDefault();
+            }
+        });
 
         //OK, now what if the above fails in some scenario? This adds a last-resort way of getting
         //bloom-editable back to the state it was in when the page was first created, by having
