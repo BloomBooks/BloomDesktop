@@ -1,7 +1,7 @@
 import { Bubble, Comical } from "comicaljs";
 import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
 import {
-    getBackgroundImageFromBloomCanvas,
+    getBackgroundCanvasElementFromBloomCanvas,
     getImageFromCanvasElement,
     getImageFromContainer,
     HandleImageError,
@@ -119,9 +119,8 @@ function switchBackgroundToCanvasElementIfNeeded(
     getActiveElement: () => HTMLElement | undefined,
     alignControlFrameWithActiveElement: () => void,
 ) {
-    const bgCanvasElement = bloomCanvas.getElementsByClassName(
-        kBackgroundImageClass,
-    )[0] as HTMLElement;
+    const bgCanvasElement =
+        getBackgroundCanvasElementFromBloomCanvas(bloomCanvas);
     if (bgCanvasElement) {
         // I think this is redundant, but it got added by mistake at one point,
         // and will hide the placeholder if it's there, so make sure it's not.
@@ -173,9 +172,8 @@ function switchBackgroundToCanvasElement(
     alignControlFrameWithActiveElement: () => void,
 ) {
     const oldBgImage = getImageFromContainer(bloomCanvas);
-    let bgCanvasElement = bloomCanvas.getElementsByClassName(
-        kBackgroundImageClass,
-    )[0] as HTMLElement;
+    let bgCanvasElement =
+        getBackgroundCanvasElementFromBloomCanvas(bloomCanvas);
     if (!bgCanvasElement) {
         // various legacy behavior, such as hiding the old-style background placeholder.
         bloomCanvas.classList.add(kHasCanvasElementClass);
@@ -223,9 +221,9 @@ function switchBackgroundToCanvasElement(
             }
         }
     }
-    const bgImage = getBackgroundImageFromBloomCanvas(
-        bloomCanvas,
-    ) as HTMLElement; // must exist by now
+    // Take the img from the background canvas element we just found or made, not from a
+    // fresh descendant search, which would find a nested bloom-canvas's picture first.
+    const bgImage = getImageFromCanvasElement(bgCanvasElement) as HTMLElement; // must exist by now
     // Whether it's a new bgImage or not, copy its src from the old-style img
     bgImage.classList.remove("bloom-imageLoadError");
     bgImage.onerror = HandleImageError;
@@ -273,9 +271,7 @@ export function setupBackgroundImageAttributes(
     useSizeOfNewImage = false,
 ): Promise<void> {
     if (!bgElement) {
-        bgElement = bloomCanvas.getElementsByClassName(
-            kBackgroundImageClass,
-        )[0] as HTMLElement;
+        bgElement = getBackgroundCanvasElementFromBloomCanvas(bloomCanvas);
     }
     if (bgElement?.getAttribute("data-bubble")) {
         return Promise.resolve(); // setup has already been done (data-bubble is added by putBubbleBefore)
@@ -420,13 +416,16 @@ function adjustBackgroundImageSizeToFit(
 ): Promise<void> {
     const { width: bloomCanvasWidth, height: bloomCanvasHeight } =
         getExactClientSize(bloomCanvas);
-    if (bloomCanvasWidth === 0 || bloomCanvasHeight === 0) {
+    if (bloomCanvasWidth <= 0 || bloomCanvasHeight <= 0) {
         // Nothing useful can be computed from a box with no area, and the numbers
         // we would write are not neutral: they become the baseline that later
         // resizes scale, so the picture ends up somewhere arbitrary. A bloom-canvas
         // in a table cell is in this state during page load, because the table lays
         // itself out with JavaScript after Bloom's page-load pass; tableEditing.ts
-        // asks for a refit once the cell has its real size.
+        // asks for a refit once the cell has its real size. A hidden bloom-canvas is
+        // in this state too. (A hidden bloom-canvas with a border reports a negative
+        // size, since getExactClientSize subtracts the border from a zero bounding
+        // rectangle.)
         return Promise.resolve();
     }
     let imgAspectRatio =
