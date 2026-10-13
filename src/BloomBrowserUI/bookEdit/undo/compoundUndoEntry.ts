@@ -15,6 +15,7 @@ import { IUndoEntry } from "./undoTypes";
  *   `undo`, so that each part captures the state it will need to redo when that state is current.
  * - **Redo** runs the parts first to last. The compound can redo only if every part can; otherwise
  *   it has no `redo`, which makes it a redo floor like any other entry that cannot redo.
+ * - **It is available** (IUndoEntry.isAvailable) only when every part is.
  * - **A part that fails** stops the run and propagates the failure, and the stack then discards
  *   everything (UndoStack.apply), so nothing here tries to resume or roll back.
  *
@@ -36,6 +37,12 @@ export function makeCompoundUndoEntry(
                 }),
             ),
     };
+    if (parts.some((part) => part.isAvailable)) {
+        // Available only when every part is: undoing some parts of a gesture and not others
+        // would leave the page in a state no entry recorded.
+        entry.isAvailable = () =>
+            parts.every((part) => part.isAvailable?.() ?? true);
+    }
     if (parts.every((part) => part.redo)) {
         entry.redo = () =>
             runInSequence(parts.map((part) => () => part.redo!()));

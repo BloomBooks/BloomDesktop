@@ -368,6 +368,20 @@ describe("UndoStack", () => {
             expect(stack.canRedo()).toBe(false);
         });
 
+        it("is unavailable when any part is", () => {
+            let available = false;
+            stack.beginUndoableScope("Gesture");
+            stack.push(makeEntry("a", log));
+            const b = makeEntry("b", log);
+            b.isAvailable = () => available;
+            stack.push(b);
+            stack.endUndoableScope();
+
+            expect(stack.canUndo()).toBe(false);
+            available = true;
+            expect(stack.canUndo()).toBe(true);
+        });
+
         it("cannot be redone unless every part can", () => {
             stack.beginUndoableScope("gesture");
             stack.push(makeEntry("can redo", log));

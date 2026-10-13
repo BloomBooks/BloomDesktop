@@ -1419,10 +1419,12 @@ Everything here is settled. Recorded with the reasoning so a later session doesn
    Tables (BL-16818) reached master while #8387 was in review. Tables arrived with a fifth
    mechanism, the bloom-table library's own history, ordered against CKEditor by a counter in
    `undoOrdering.ts`. Rather than wrap it, each operation the library announces becomes a stack
-   entry that asks the library to undo or redo it (`undo/tableUndo.ts`). The ordering against
-   CKEditor became one general rule: entries and CKEditor's changes are numbered from one counter
-   (`undo/changeOrder.ts`), and the CKEditor provider stands aside while the stack's newest entry
-   is newer. A provider whose undo finds nothing passes the turn on, and an entry can be
+   entry that asks the library to undo it (`undo/tableUndo.ts`). The ordering against CKEditor
+   became one general rule: entries and CKEditor's changes are numbered from one counter
+   (`undo/changeOrder.ts`), and the CKEditor and reader-tools providers (whose undo takes back
+   CKEditor typing) stand aside while the stack's newest entry is newer. Table entries have no
+   redo yet: the library redoes by restoring the whole table as it was at the undo, which would
+   lose typing in its cells since; redo can come when typing joins the stack in Stage 3. A provider whose undo finds nothing passes the turn on, and an entry can be
    unavailable for now (tables in Change Layout mode). The library's own menus offer no Undo or
    Redo in Bloom (checked 2026-10-09), so nothing undoes a table operation behind the stack's back.
 ### What the first review changed (2026-08-04)

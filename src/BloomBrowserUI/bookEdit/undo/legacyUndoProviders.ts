@@ -68,6 +68,10 @@ export const origamiUndoProvider: ILegacyUndoProvider = {
  */
 export const toolboxUndoProvider: ILegacyUndoProvider = {
     name: "toolbox",
+    // The reader tools' undo takes back typing, and typing with a reader tool open is CKEditor
+    // typing too, so CKEditor's change number says when it happened. That lets a newer table
+    // operation be undone first, as for CKEditor's own undo. See changeOrder.ts.
+    lastChangeOrder: getCkeditorChangeOrder,
     canUndo: () => {
         const toolbox = getToolboxBundleExports();
         return !!toolbox?.canUndo?.();

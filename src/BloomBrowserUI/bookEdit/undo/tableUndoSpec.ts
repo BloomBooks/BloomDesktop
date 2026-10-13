@@ -87,21 +87,27 @@ describe("table undo on the one stack", () => {
         });
     });
 
-    it("makes each operation the library records an entry that the library undoes and redoes", () => {
+    it("makes each operation the library records an entry that the library undoes", () => {
         tableOperation("Add Row");
         expect(stack.getEntryCount()).toBe(1);
         expect(stack.peekUndoLabel()).toBe("Add Row");
 
         stack.undo();
+
         expect(library.history).toEqual([]);
         // The library's announcement of that undo adds nothing to the stack.
         expect(stack.getEntryCount()).toBe(1);
-        expect(stack.peekRedoLabel()).toBe("Add Row");
+    });
 
+    it("does not offer to redo a table operation", () => {
+        // The library would put back the whole table as it was at the undo, losing any typing in
+        // its cells since, which is not on this stack.
+        tableOperation("Add Row");
+        stack.undo();
+
+        expect(stack.canRedo()).toBe(false);
         stack.redo();
-        expect(library.history).toEqual(["Add Row"]);
-        expect(stack.getEntryCount()).toBe(1);
-        expect(stack.peekUndoLabel()).toBe("Add Row");
+        expect(library.history).toEqual([]);
     });
 
     it("undoes typing that came after a row before the row", () => {

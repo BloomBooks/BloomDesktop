@@ -1237,9 +1237,11 @@ Later, not Stage 0:
   `workspaceRoot.handleUndo`, ordered against CKEditor by `js/undoOrdering.ts`. Merged master into
   `BL-16900-undo-stack` (merge, not rebase) and, at John's request, made table undo native to the
   stack rather than a fifth legacy provider (PLAN.md §10 decision 8): `undo/tableUndo.ts`,
-  `undo/changeOrder.ts`; `undoOrdering.ts` removed. Table operations are now also redoable with
-  Ctrl+Y / Ctrl+Shift+Z. The library's own menus offer no Undo/Redo in Bloom (checked in a live
-  Bloom).
+  `undo/changeOrder.ts`; `undoOrdering.ts` removed. The library's own menus offer no Undo/Redo in
+  Bloom (checked in a live Bloom). Preflight's review then caught two departures from master, both
+  fixed: table redo (now reachable by Ctrl+Y) restored a whole table and could lose typing in it, so
+  table entries have no redo, as on master; and with a reader tool open its undo came before a
+  newer table operation, so the reader-tools provider now uses CKEditor's change number too.
 - Local e2e on master needs `output/browser/pageSizesLookup.json`, which only `pnpm build` writes
   (PAPERCUTS.md); `node pageSizes.ts` in `src/content` generates it alone.
 - Separately (not in this PR): master's nightly broke on 2026-10-09; another investigation traced it

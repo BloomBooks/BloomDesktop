@@ -89,6 +89,12 @@ describe("legacyUndoProviders", () => {
             expect(ckeditorUndoProvider.undo()).toBe(true);
         });
 
+        it("lets the reader tools' undo, which takes back CKEditor typing, use CKEditor's change number", () => {
+            resetChangeOrderForTests();
+            noteCkeditorChange();
+            expect(toolboxUndoProvider.lastChangeOrder!()).toBe(1);
+        });
+
         it("reports when CKEditor last changed, on the shared sequence", () => {
             resetChangeOrderForTests();
             expect(ckeditorUndoProvider.lastChangeOrder!()).toBe(0);

@@ -3,9 +3,9 @@
 // The bloom-table library keeps its own history of what it did to each table (add a row, change a
 // cell's content type, ...) and knows how to undo and redo it. What it cannot know is how those
 // operations interleave with everything else on the page. So each operation it announces becomes
-// an entry on the one stack, and the entry asks the library to undo or redo it: the library still
-// does the work, and the stack decides when. Typing in a cell is CKEditor's, and is ordered against
-// these entries by changeOrder.ts.
+// an entry on the one stack, and the entry asks the library to undo it: the library still does the
+// work, and the stack decides when. (Not redo yet; see makeTableUndoEntry.) Typing in a cell is
+// CKEditor's, and is ordered against these entries by changeOrder.ts.
 //
 // The library's history and ours have to stay in step: the library's newest operation must be the
 // one our next table entry stands for. Nothing else in Bloom undoes a table operation, and an entry
@@ -29,14 +29,14 @@ import { IUndoEntry } from "./undoTypes";
  */
 let historyGeneration = 0;
 
-/** True while one of our entries is having the library undo or redo, whose announcement we expect. */
+/** True while one of our entries is having the library undo, whose announcement we expect. */
 let applyingOurEntry = false;
 
 /**
  * Note what the table library just did to its history, given the `operation` its
  * tableHistoryUpdated event names. An operation of its own becomes an entry on the stack. The
- * library announces our entries' undos and redos as "Undo <label>" and "Redo <label>"; those, and
- * the library dropping history ("Clear History", "Detach Table"), add nothing.
+ * library announces our entries' undos as "Undo <label>"; that, a redo (which nothing in Bloom
+ * asks for), and the library dropping history ("Clear History", "Detach Table") add nothing.
  *
  * @param stack defaults to the one real stack; a parameter only so tests need not use a singleton.
  */
@@ -109,10 +109,10 @@ function makeTableUndoEntry(operation: string): IUndoEntry {
             checkStillInStep(tableHistoryManager.getLastOperationLabel());
             runInLibrary(() => tableHistoryManager.undoLast(), "undo");
         },
-        redo: () => {
-            checkStillInStep(tableHistoryManager.getNextRedoLabel());
-            runInLibrary(() => tableHistoryManager.redoLast(), "redo");
-        },
+        // No redo, so a table entry is a redo floor. The library redoes an operation by putting
+        // back the whole table as it was when the operation was undone, and typing in its cells
+        // since then is not on this stack, so it would be silently lost. Redo can come when
+        // typing joins the stack (Stage 3).
     };
 }
 
