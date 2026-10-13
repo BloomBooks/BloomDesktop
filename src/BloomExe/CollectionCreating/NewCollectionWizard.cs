@@ -9,7 +9,6 @@ using Bloom.Properties;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
-using DesktopAnalytics;
 using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
@@ -20,6 +19,10 @@ namespace Bloom.CollectionCreating
     public partial class NewCollectionWizard
         : SIL.Windows.Forms.Miscellaneous.FormForUsingPortableClipboard
     {
+        // Under --dont-disturb this dialog must not take the keyboard from the person at the machine
+        // while something else drives Bloom (see Program.StartupDontDisturb).
+        protected override bool ShowWithoutActivation => Program.StartupDontDisturb;
+
         public Action UiLanguageChanged;
 
         private NewCollectionSettings _collectionInfo;
@@ -109,6 +112,7 @@ namespace Bloom.CollectionCreating
             string languageTag,
             string desiredName,
             string defaultName,
+            bool? isRtl,
             string country
         )
         {
@@ -116,6 +120,8 @@ namespace Bloom.CollectionCreating
                 return;
 
             _collectionInfo.Language1.Tag = languageTag;
+            if (isRtl.HasValue)
+                _fontDetails.RightToLeft = isRtl.Value;
             _collectionInfo.Language1.SetName(desiredName, desiredName != defaultName);
             _collectionInfo.Country = country;
             SetNextButtonState(true, languageTag != null);
@@ -143,10 +149,6 @@ namespace Bloom.CollectionCreating
             _collectionNamePage.Text = LocalizationManager.GetString(
                 "NewCollectionWizard.CollectionName",
                 "Collection Name"
-            );
-            _collectionNameProblemPage.Text = LocalizationManager.GetString(
-                "NewCollectionWizard.CollectionNameProblem",
-                "Collection Name Problem"
             );
             _languageLocationPage.Text = LocalizationManager.GetString(
                 "NewCollectionWizard.LocationPage",
@@ -296,7 +298,7 @@ namespace Bloom.CollectionCreating
             _collectionInfo.SetAnalyticsProperties();
 
             Logger.WriteEvent("Finshed New Collection Wizard");
-            Analytics.Track("Create New Vernacular Collection");
+            BloomAnalytics.Track("Create New Vernacular Collection");
 
             Close();
         }
@@ -316,8 +318,6 @@ namespace Bloom.CollectionCreating
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }
-
-        private void _languageLocationControl_Load(object sender, EventArgs e) { }
 
         private void _finishPage_Initialize(object sender, EventArgs e)
         {

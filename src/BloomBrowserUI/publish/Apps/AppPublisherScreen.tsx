@@ -3,6 +3,7 @@ import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
 import SettingsIcon from "@mui/icons-material/Settings";
 import {
+    Alert,
     Button,
     Step,
     StepContent,
@@ -48,7 +49,7 @@ const apkToPhoneIconUrl = new URL(
 
 // Keep this URL in sync with kRabSetupDownloadUrl in BloomExe/Publish/Rab/RabProjectService.cs.
 export const rabInstallerDownloadUrl =
-    "https://bloomlibrary.org/RAB/installers/Reading-App-Builder-For-Bloom-14-0-Setup.exe";
+    "https://bloomlibrary.org/RAB/installers/Reading-App-Builder-For-Bloom-14-0-1-Setup.exe";
 
 const AppActionButton: React.FunctionComponent<{
     enabled: boolean;
@@ -94,6 +95,10 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         React.useState(false);
     const [showUsbDebuggingHelpDialog, setShowUsbDebuggingHelpDialog] =
         React.useState(false);
+    // Note: this screen no longer tells the publish-tab host when it is busy. Blocking the other
+    // publish tools during a prepare/build/install is now driven by the same C# navigation lock
+    // that greys out the main workspace tabs (RabPublishApi sets it; PublishTabPane reads it),
+    // so the two can't disagree, and the lock survives this component remounting mid-action.
     const prepareTooltip = useL10n(
         "Create the Reading App Builder project in this collection's Bloom App Data folder.",
         "PublishTab.Apps.Prepare.TooltipBloomAppData",
@@ -121,6 +126,12 @@ const AppPublisherScreenContents: React.FunctionComponent<{
     const prepareRequiredTooltip = useL10n(
         "Run Prepare before using this step.",
         "PublishTab.Apps.PrepareRequiredTooltip",
+    );
+    const rabUpdateNeededMessage = useL10n(
+        "This version of Bloom needs Reading App Builder %0. Click Prepare to update.",
+        "PublishTab.Apps.RabUpdateNeeded",
+        undefined,
+        screenState.status.rabUpdateVersion ?? "",
     );
     const buildNeedsPrepareTooltip = useL10n(
         "Run Prepare before building the app.",
@@ -155,6 +166,15 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         "PublishTab.Apps.SettingsDialog.Copyright",
     );
     const aboutLabel = useL10n("About", "PublishTab.Apps.SettingsDialog.About");
+    const usbDebuggingHelpLabel = useL10n(
+        "How to set up your Android phone",
+        "PublishTab.Apps.UsbDebuggingHelpLink",
+    );
+    const whatsNextLabel = useL10n("What's Next?", "PublishTab.Apps.WhatsNext");
+    const whatsNextExplanation = useL10n(
+        "Actually publishing your app to the Android App Store requires several more steps. In the near future we hope to expand Bloom to help with that part of the process.",
+        "PublishTab.Apps.WhatsNext.Explanation",
+    );
     const preparingWorkspaceLabel = useL10n(
         "Preparing workspace",
         "PublishTab.Apps.Progress.PreparingWorkspace",
@@ -355,19 +375,53 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                     >
                         <Step expanded={true} completed={false}>
                             <StepLabel>
-                                <AppActionButton
-                                    enabled={canRunPrepare}
-                                    l10nKey="PublishTab.Apps.PrepareButton"
-                                    onClick={() =>
-                                        screenState.runAction("prepare")
-                                    }
-                                    size="large"
-                                    tooltip={prepareTooltipToShow}
+                                <div
+                                    css={css`
+                                        display: flex;
+                                        flex-wrap: wrap;
+                                        gap: 12px;
+                                        align-items: flex-start;
+                                    `}
                                 >
-                                    {prepareButtonLabel}
-                                </AppActionButton>
+                                    <AppActionButton
+                                        enabled={canRunPrepare}
+                                        l10nKey="PublishTab.Apps.PrepareButton"
+                                        onClick={() =>
+                                            screenState.runAction("prepare")
+                                        }
+                                        size="large"
+                                        tooltip={prepareTooltipToShow}
+                                    >
+                                        {prepareButtonLabel}
+                                    </AppActionButton>
+                                    {busyAction === "prepare" && (
+                                        <AppActionButton
+                                            enabled={true}
+                                            l10nKey="Common.Cancel"
+                                            onClick={() =>
+                                                screenState.cancelAction()
+                                            }
+                                            size="large"
+                                            variant="outlined"
+                                        >
+                                            Cancel
+                                        </AppActionButton>
+                                    )}
+                                </div>
                             </StepLabel>
                             <StepContent>
+                                {screenState.status.rabUpdateVersion && (
+                                    <Alert
+                                        severity="warning"
+                                        data-testid="rab-update-needed"
+                                        css={css`
+                                            margin-bottom: 12px;
+                                            width: min(640px, 100%);
+                                        `}
+                                    >
+                                        {rabUpdateNeededMessage}
+                                    </Alert>
+                                )}
                                 <PrepareAppStepper
                                     steps={prepareSteps}
                                     activeStepId={activePrepareStepId}
@@ -459,20 +513,42 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                         </Step>
                         <Step expanded={true} completed={false}>
                             <StepLabel>
-                                <AppActionButton
-                                    enabled={prepareIsReady && canRunBuild}
-                                    l10nKey="PublishTab.Apps.Build"
-                                    onClick={() =>
-                                        screenState.runAction("build")
-                                    }
-                                    size="large"
-                                    tooltip={buildTooltipToShow}
-                                    iconBeforeText={
-                                        <PrecisionManufacturingIcon />
-                                    }
+                                <div
+                                    css={css`
+                                        display: flex;
+                                        flex-wrap: wrap;
+                                        gap: 12px;
+                                        align-items: flex-start;
+                                    `}
                                 >
-                                    Build
-                                </AppActionButton>
+                                    <AppActionButton
+                                        enabled={prepareIsReady && canRunBuild}
+                                        l10nKey="PublishTab.Apps.Build"
+                                        onClick={() =>
+                                            screenState.runAction("build")
+                                        }
+                                        size="large"
+                                        tooltip={buildTooltipToShow}
+                                        iconBeforeText={
+                                            <PrecisionManufacturingIcon />
+                                        }
+                                    >
+                                        Build
+                                    </AppActionButton>
+                                    {busyAction === "build" && (
+                                        <AppActionButton
+                                            enabled={true}
+                                            l10nKey="Common.Cancel"
+                                            onClick={() =>
+                                                screenState.cancelAction()
+                                            }
+                                            size="large"
+                                            variant="outlined"
+                                        >
+                                            Cancel
+                                        </AppActionButton>
+                                    )}
+                                </div>
                             </StepLabel>
                             <StepContent>
                                 <InlineProgressStatus
@@ -530,6 +606,19 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                                     >
                                         Try on phone
                                     </AppActionButton>
+                                    {busyAction === "install" && (
+                                        <AppActionButton
+                                            enabled={true}
+                                            l10nKey="Common.Cancel"
+                                            onClick={() =>
+                                                screenState.cancelAction()
+                                            }
+                                            size="large"
+                                            variant="outlined"
+                                        >
+                                            Cancel
+                                        </AppActionButton>
+                                    )}
                                     <AppActionButton
                                         enabled={canUseCurrentApk}
                                         l10nKey="PublishTab.Apps.ShowApkInFileExplorer"
@@ -587,7 +676,7 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                                             text-transform: none;
                                         `}
                                     >
-                                        How to set up your Android phone
+                                        {usbDebuggingHelpLabel}
                                     </Button>
                                 </div>
                                 <ActionLogAccordion
@@ -618,13 +707,9 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                         margin-bottom: 4px;
                     `}
                 >
-                    What's Next?
+                    {whatsNextLabel}
                 </div>
-                <div>
-                    Actually publishing your app to the Android App Store
-                    requires several more steps. In the near future we hope to
-                    expand Bloom to help with that part of the process.
-                </div>
+                <div>{whatsNextExplanation}</div>
             </NoteBox>
             {showSettingsDialog && (
                 <AppBuilderSettingsDialog

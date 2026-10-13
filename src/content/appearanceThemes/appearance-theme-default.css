@@ -48,6 +48,19 @@
     --pageNumber-left-margin: auto;
     --pageNumber-extra-height: 0mm;
 
+    /* Theme-adjustable insets used by explicit Left/Right page-number positioning.
+     * With full bleed these keep the number as far from the cut line as the text (see
+     * .marginAsPadding in basePage.less); without it they are just the page margins. */
+    --pageNumber-side-left-inset: calc(
+        (var(--page-margin-left) + var(--fullBleed-margin-add-x)) /
+            var(--fullBleed-margin-scale)
+    );
+    --pageNumber-side-right-inset: calc(
+        (var(--page-margin-right) + var(--fullBleed-margin-add-x)) /
+            var(--fullBleed-margin-scale)
+    );
+    --pageNumber-full-bleed-extra-margin: 0mm;
+
     /* Themes should set to 0 if the marginBox is a different color than the page background. This affects the text padding.
       Note that we could eventually figure this out in code, and probably need to once we provide a UI for
       setting the marginBox border or page background color. */
@@ -55,9 +68,9 @@
 
     /* right: value in .numberedPage.side-right:after to display the page number
      * If this is used, --pageNumber-always-left-margin should be set to unset (a keyword).
-     * Note that if used, this should be set the same value as --page-margin-right, which is
-     * what this default value achieves. */
-    --pageNumber-right-margin: var(--page-margin-right);
+     * Note that if used, this should line up with the text, as --pageNumber-side-right-inset does,
+     * which is what this default value achieves. */
+    --pageNumber-right-margin: var(--pageNumber-side-right-inset);
 
     /* left: value in .numberedPage.side-right:after to display the page number */
     /*  This allows the page number to always be on the left, regardless of page side.
@@ -87,7 +100,14 @@
     /* Most Bloom books are too small to need a gutter. NB: THIS MUST HAVE UNITS even when 0, else calc() fails */
     --page-gutter: 0mm;
 
-    --page-margin: 12mm;
+    /* The standard margin for this page size. The page-size rules later in this file set it, and
+     * nothing else should: a theme that wants different margins sets --page-margin instead.
+     * A theme whose own margins are too small for print can read it where it needs a margin that
+     * is safe to print, as Edge to Edge does for the distance of text from the cut line when the
+     * book has full bleed. In principle each such theme could choose its own safe margin; none
+     * does yet, so this one value per page size serves them all. */
+    --standard-page-margin: 12mm;
+    --page-margin: var(--standard-page-margin);
 
     /* padding-top: value in .bloom-page.outsideFrontCover and .bloom-page.outsideBackCover */
     /* same default value as --page-margin-top, but used for outside cover pages */
@@ -125,8 +145,9 @@
     --marginBox-border-width: medium; /* must not be 0px/0mm/0in to have a border. 'medium' is a keyword. */
 
     /* In some themes, at edit-
-    time, the format button lands under the page number. See BL-13206. The name is is intentionally vague about direction and what we do with it. */
-    --formatButton-pageNumber-dodge: 0;
+    time, the format button lands under the page number. See BL-13206. The name is is intentionally vague about direction and what we do with it.
+    Must have a unit: this feeds a calc() with px, where a unitless 0 makes the whole expression invalid (BL-14901). */
+    --formatButton-pageNumber-dodge: 0px;
 }
 
 /* this rule might not always be what we need for every kind of interactive page, but it's a good default.
@@ -147,7 +168,7 @@
 .LetterPortrait,
 .LegalLandscape,
 .LegalLandscape {
-    --page-margin: 15mm;
+    --standard-page-margin: 15mm;
     --page-gutter: 10mm;
 }
 .HalfLetterPortrait,/* SIL Mexico says use same as A5 */
@@ -157,20 +178,24 @@
 .Size6x9Landscape,
 .Size6x9Portrait,
 .USComicPortrait {
-    --page-margin: 12mm;
+    --standard-page-margin: 12mm;
 }
 .QuarterLetterPortrait,
 .QuarterLetterLandscape,
 .A6Portrait,
 .A6Landscape {
-    --page-margin: 10mm;
+    --standard-page-margin: 10mm;
 }
 .Cm13Landscape {
-    --page-margin: 5mm;
+    --standard-page-margin: 5mm;
 }
 .bloom-page[class*="Ebook"],
 .bloom-page[class*="Device"] {
-    --page-margin: 10px;
+    --standard-page-margin: 10px;
+    /* Set again here, not just in the .bloom-page rule, because this selector is more specific:
+     * on these sizes a later .bloom-page rule that sets --page-margin does not win against it.
+     * Edge to Edge's front and back matter rule is written to match. */
+    --page-margin: var(--standard-page-margin);
 }
 
 .bloom-page[class*="Ebook"],

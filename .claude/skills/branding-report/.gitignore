@@ -1,0 +1,5 @@
+# Generated capture output (PNGs + manifest) and Chrome profiles — never commit these.
+branding-report-out/
+br-*/
+*-out/
+.chrome-profile/

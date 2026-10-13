@@ -37,6 +37,70 @@ describe("BloomField", () => {
         expect(result).toBe("A v 2 B C \\v D E.");
     });
 
+    // What CKEditor hands Bloom's paste handler for a plain-text paste: `dataValue` is the text as
+    // CKEditor filtered it, and the raw text is in the data transfer.
+    function plainTextPaste(text: string, dataValue = "filtered text") {
+        return {
+            type: "text",
+            dataValue,
+            dataTransfer: { getData: (_format: string) => text },
+        };
+    }
+
+    it("reconstituteParagraphsOnPlainTextPaste puts each line of a multi-line paste in its own paragraph", () => {
+        expect(
+            BloomField.reconstituteParagraphsOnPlainTextPaste(
+                plainTextPaste("first\nsecond"),
+            ),
+        ).toBe("<p>first</p><p>second</p>");
+    });
+
+    it("reconstituteParagraphsOnPlainTextPaste escapes text that looks like markup (BL-16982)", () => {
+        const result = BloomField.reconstituteParagraphsOnPlainTextPaste(
+            plainTextPaste("if a <b and c> d & e\nsecond"),
+        );
+
+        expect(result).toBe(
+            "<p>if a &lt;b and c&gt; d &amp; e</p><p>second</p>",
+        );
+        // And the browser reads it back as exactly the text that was pasted, with no elements
+        // other than the paragraphs.
+        const holder = document.createElement("div");
+        holder.innerHTML = result;
+        expect(holder.querySelectorAll("p").length).toBe(2);
+        expect(holder.querySelectorAll("*").length).toBe(2);
+        expect(holder.querySelector("p")!.textContent).toBe(
+            "if a <b and c> d & e",
+        );
+    });
+
+    it("reconstituteParagraphsOnPlainTextPaste does not turn pasted text into a live element (BL-16982)", () => {
+        const result = BloomField.reconstituteParagraphsOnPlainTextPaste(
+            plainTextPaste('<img src="x" onerror="alert(1)">\nsecond'),
+        );
+
+        const holder = document.createElement("div");
+        holder.innerHTML = result;
+        expect(holder.querySelector("img")).toBeNull();
+        expect(holder.querySelector("p")!.textContent).toBe(
+            '<img src="x" onerror="alert(1)">',
+        );
+    });
+
+    it("reconstituteParagraphsOnPlainTextPaste leaves a single-line or HTML paste as CKEditor filtered it", () => {
+        expect(
+            BloomField.reconstituteParagraphsOnPlainTextPaste(
+                plainTextPaste("one line <b>", "filtered one line"),
+            ),
+        ).toBe("filtered one line");
+        expect(
+            BloomField.reconstituteParagraphsOnPlainTextPaste({
+                ...plainTextPaste("two\nlines", "<p>filtered html</p>"),
+                type: "html",
+            }),
+        ).toBe("<p>filtered html</p>");
+    });
+
     it("copyAudioFilesWithNewIdsDuringPasting does not change input when no audio found", () => {
         const input = '<p><span class="bold">This is a test!</span></p>';
         const result = BloomField.copyAudioFilesWithNewIdsDuringPasting(input);
@@ -262,6 +326,54 @@ describe("BloomField", () => {
     it("bloom-editable div creates a <p>", () => {
         WireUp();
         expect($("div p").length).toBeGreaterThan(0);
+    });
+
+    // Content converted from other formats can arrive with a real heading as the first thing
+    // in the box. Prepending an empty paragraph above it would show the reader a blank first
+    // line, and saving the page would make that permanent.
+    it("bloom-editable div starting with a heading does not get a paragraph prepended", () => {
+        const editable = document.getElementById("simple");
+        if (!editable) {
+            throw new Error("Test setup error: expected #simple to exist.");
+        }
+        editable.innerHTML = "<h1>The Heading</h1><p>The body.</p>";
+        // Sanity check on the setup: the heading really is first before we do anything.
+        expect(editable.firstElementChild!.tagName).toBe("H1");
+
+        WireUp();
+
+        expect(editable.firstElementChild!.tagName).toBe("H1");
+        expect(editable.getElementsByTagName("p").length).toBe(1);
+    });
+
+    // A heading is a block, so a box holding nothing else needs no paragraph added. This is
+    // also the case that used to make MoveCursorToEdgeOfField throw, since it looked for a
+    // paragraph and found none.
+    it("bloom-editable div holding only a heading is left alone", () => {
+        const editable = document.getElementById("simple");
+        if (!editable) {
+            throw new Error("Test setup error: expected #simple to exist.");
+        }
+        editable.innerHTML = "<h2>Only a heading</h2>";
+
+        WireUp();
+
+        expect(editable.innerHTML).toBe("<h2>Only a heading</h2>");
+    });
+
+    // The other half of the rule: a box with no block element at all still gets a paragraph,
+    // which is what everything from styling to the Talking Book tool assumes.
+    it("bloom-editable div with only bare text still gets a paragraph", () => {
+        const editable = document.getElementById("simple");
+        if (!editable) {
+            throw new Error("Test setup error: expected #simple to exist.");
+        }
+        editable.innerHTML = "loose text";
+        expect(editable.getElementsByTagName("p").length).toBe(0); // sanity check
+
+        WireUp();
+
+        expect(editable.getElementsByTagName("p").length).toBe(1);
     });
 
     describe("backspacePreventionTests", () => {

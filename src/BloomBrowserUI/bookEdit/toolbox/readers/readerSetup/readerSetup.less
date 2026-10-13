@@ -1,4 +1,8 @@
 @import "../../../../bloomUI.less";
+// The UI @font-face declarations. readerSetup.css is linked in ReaderSetup.pug's <head>
+// (present before first paint), making it the ONE source of these declarations for the
+// reader setup dialog document. See bloomUIFontFaces.css for why only once per document.
+@import (less) "../../../../bloomUIFontFaces.css";
 
 // Things are getting a little messy here. It's getting tricky to figure out what is
 // shared by decodable and leveled settings, and what is unique to one or the other.

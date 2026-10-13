@@ -154,7 +154,7 @@ namespace Bloom.CollectionTab
                     {
                         // The derivative path builds its Book in memory and adds it to the collection
                         // itself, so it needs no reload.
-                        var book = MakeDerivativeFromBloomSourceFile(path);
+                        var book = MakeDerivativeFromBloomSourceFile(path, progress);
                         if (book != null)
                             lastImported = book;
                     }
@@ -561,7 +561,10 @@ namespace Bloom.CollectionTab
         /// creation was cancelled (e.g. a template configuration dialog). Because a derivative always
         /// gets a fresh id, there is never a duplicate to resolve.
         /// </summary>
-        internal Book.Book MakeDerivativeFromBloomSourceFile(string sourcePath)
+        internal Book.Book MakeDerivativeFromBloomSourceFile(
+            string sourcePath,
+            IWebSocketProgress progress
+        )
         {
             var tempFolder = ExtractAndPrepareBloomSourceToTemp(sourcePath, out _, out _);
             try
@@ -589,7 +592,10 @@ namespace Bloom.CollectionTab
                     newBook.BookData.Language1Tag
                 );
 
-                newBook.BringBookUpToDate(new NullProgress(), false);
+                newBook.BringBookUpToDate(
+                    progress == null ? new NullProgress() : new WebProgressAdapter(progress),
+                    false
+                );
 
                 TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
                 newBook.RecordPendingCreatedHistoryEvent();

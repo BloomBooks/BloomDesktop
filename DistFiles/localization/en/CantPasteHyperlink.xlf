@@ -17,12 +17,6 @@
         <target />
         <note>ID: hyperlink.2</note>
       </trans-unit>
-      <trans-unit id="hyperlink.title">
-        <source xml:lang="en">Can't Paste Hyperlink</source>
-        <target />
-        <note>ID: hyperlink.title</note>
-        <note>obsolete as of Bloom 6.3</note>
-      </trans-unit>
     </body>
   </file>
 </xliff>

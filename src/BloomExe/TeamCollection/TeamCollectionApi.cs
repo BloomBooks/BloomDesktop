@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,7 +15,6 @@ using Bloom.MiscUI;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.Workspace;
-using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using Sentry;
@@ -221,7 +221,7 @@ namespace Bloom.TeamCollection
 
                 UpdateUiForBook();
 
-                Analytics.Track(
+                BloomAnalytics.Track(
                     "TeamCollectionRevertOtherCheckout",
                     new Dictionary<string, string>()
                     {
@@ -286,8 +286,11 @@ namespace Bloom.TeamCollection
         /// </remarks>
         private void HandleReportBadZip(ApiRequest request)
         {
-            var fileEncoded = request.Parameters["file"];
-            var file = UrlPathString.CreateFromUrlEncodedString(fileEncoded).NotEncoded;
+            // No decoding here: ApiRequest.Parameters comes from RequestInfo.GetQueryParameters(),
+            // i.e. HttpUtility.ParseQueryString, which has already decoded the value once.
+            // Decoding again turned a path that genuinely contains a '%' ("photo%41.bloom") into a
+            // different one ("photoA.bloom"). (BL-16669)
+            var file = request.Parameters["file"];
             request.PostSucceeded(); // this should come before a modal dialog
             NonFatalProblem.Report(
                 ModalIf.All,
@@ -395,7 +398,7 @@ namespace Bloom.TeamCollection
                 // But we may as well handle the situation properly.
                 if (!string.IsNullOrEmpty(joinType))
                 {
-                    Analytics.Track(
+                    BloomAnalytics.Track(
                         "TeamCollectionJoin",
                         new Dictionary<string, string>()
                         {
@@ -484,6 +487,27 @@ namespace Bloom.TeamCollection
             }
         }
 
+        /// <summary>
+        /// The lock date as the status panel shows it, or "" if there is none to show. Not locked is
+        /// DateTime.MaxValue. Some calendars cannot format every date (ar-SA's Um al-Qura covers only
+        /// 1900-2077), and a lock time written before BL-16948 can be far off (a Thai Buddhist year
+        /// like 2569, or a Hijri year like 1448), so a date the calendar can't show is dropped rather
+        /// than failing the whole status request.
+        /// </summary>
+        internal static string FormatLockDate(DateTime whenLocked)
+        {
+            if (whenLocked == DateTime.MaxValue)
+                return "";
+            var localTime = whenLocked.ToLocalTime();
+            var calendar = CultureInfo.CurrentCulture.Calendar;
+            if (
+                localTime < calendar.MinSupportedDateTime
+                || localTime > calendar.MaxSupportedDateTime
+            )
+                return "";
+            return localTime.ToShortDateString();
+        }
+
         // Needs to be thread-safe
         private string GetBookStatusJson(string bookFolderName, Book.Book book)
         {
@@ -534,6 +558,7 @@ namespace Bloom.TeamCollection
                         isNewLocalBook = true,
                         checkinMessage = "",
                         isUserAdmin = _tcManager.OkToEditCollectionSettings,
+                        checkoutsArePaused = !_settings.AllowCheckouts,
                     }
                 );
             }
@@ -603,7 +628,7 @@ namespace Bloom.TeamCollection
                     whoSurname = _tcManager.CurrentCollectionEvenIfDisconnected?.WhoHasBookLockedSurname(
                         bookFolderName
                     ),
-                    when = whenLocked.ToLocalTime().ToShortDateString(),
+                    when = FormatLockDate(whenLocked),
                     where = _tcManager.CurrentCollectionEvenIfDisconnected?.WhatComputerHasBookLocked(
                         bookFolderName
                     ),
@@ -620,6 +645,7 @@ namespace Bloom.TeamCollection
                     isNewLocalBook,
                     checkinMessage,
                     isUserAdmin = _tcManager.OkToEditCollectionSettings,
+                    checkoutsArePaused = !_settings.AllowCheckouts,
                 }
             );
         }
@@ -688,6 +714,23 @@ namespace Bloom.TeamCollection
                 return;
             }
 
+            // The UI disables the checkout button when checkouts are paused, but it decides that
+            // from a status snapshot it fetched earlier, and not every path back here re-checks it
+            // -- the post issued after the registration dialog, for one, doesn't. This is also the
+            // side that notices an administrator pausing checkouts part way through a session (see
+            // TeamCollection.UpdateAllowCheckoutsFromRepo), so it can know before the browser does.
+            // Either way, refuse here rather than rely on the browser having current status.
+            // See BL-16691.
+            if (!_settings.AllowCheckouts)
+            {
+                // Tell the browser to re-read book status, so the panel redraws itself into the
+                // paused state and explains why the checkout didn't happen. Without this the
+                // person just sees the button stop responding with no reason given.
+                _socketServer.SendEvent("bookTeamCollectionStatus", "reload");
+                request.Failed("checkouts are paused for this collection");
+                return;
+            }
+
             try
             {
                 // Could be a problem if there's no current book or it's not in the collection folder.
@@ -697,7 +740,7 @@ namespace Bloom.TeamCollection
                 {
                     UpdateUiForBook();
 
-                    Analytics.Track(
+                    BloomAnalytics.Track(
                         "TeamCollectionCheckoutBook",
                         new Dictionary<string, string>()
                         {
@@ -994,7 +1037,7 @@ namespace Bloom.TeamCollection
 
                     reportProgressFraction(0); // hides the progress bar (important if a different book has been selected that is still checked out)
 
-                    Analytics.Track(
+                    BloomAnalytics.Track(
                         "TeamCollectionCheckinBook",
                         new Dictionary<string, string>()
                         {
@@ -1034,7 +1077,7 @@ namespace Bloom.TeamCollection
 
                     progress.MessageWithoutLocalizing($"{msgFmt}", ProgressKind.Error);
 
-                    Analytics.Track(
+                    BloomAnalytics.Track(
                         "TeamCollectionConflictingEditOrCheckout",
                         new Dictionary<string, string>()
                         {
@@ -1232,7 +1275,7 @@ namespace Bloom.TeamCollection
                 _tcManager.ConnectToTeamCollection(repoFolderParentPath, _settings.CollectionId);
                 _callbackToReopenCollection?.Invoke();
 
-                Analytics.Track(
+                BloomAnalytics.Track(
                     "TeamCollectionCreate",
                     new Dictionary<string, string>()
                     {

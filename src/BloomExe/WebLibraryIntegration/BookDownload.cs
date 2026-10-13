@@ -14,12 +14,12 @@ using Amazon.Runtime;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
+using Bloom.FreezeDoctor;
 using Bloom.MiscUI;
 using Bloom.Publish.BloomLibrary;
 using Bloom.ToPalaso;
 using Bloom.web.controllers;
 using BloomTemp;
-using DesktopAnalytics;
 using L10NSharp;
 using Microsoft.VisualBasic;
 using SIL.Extensions;
@@ -58,6 +58,11 @@ namespace Bloom.WebLibraryIntegration
             bool forEdit = false
         )
         {
+            // Slowest exactly where our users are: a large book over a poor connection can take many minutes.
+            using var _longOperation = FreezeDoctorSupport.LongOperation(
+                "downloading a book from Bloom Library"
+            );
+
             string storageKeyOfBookFolderParentOnS3 = "unknown";
             try
             {
@@ -94,7 +99,7 @@ namespace Bloom.WebLibraryIntegration
                     return ""; // user cancelled
                 LastBookDownloadedPath = destinationPath;
 
-                Analytics.Track(
+                BloomAnalytics.Track(
                     "DownloadedBook-Success",
                     new Dictionary<string, string>()
                     {
@@ -110,7 +115,7 @@ namespace Bloom.WebLibraryIntegration
                 {
                     // We want to try this before we give a report that may terminate the program. But if something
                     // more goes wrong, ignore it.
-                    Analytics.Track(
+                    BloomAnalytics.Track(
                         "DownloadedBook-Failure",
                         new Dictionary<string, string>()
                         {
@@ -118,7 +123,7 @@ namespace Bloom.WebLibraryIntegration
                             { "title", bookTitleForAnalytics },
                         }
                     );
-                    Analytics.ReportException(e);
+                    BloomAnalytics.ReportException(e);
                 }
                 catch (Exception) { }
                 var showSendReport = true;
@@ -313,7 +318,7 @@ namespace Bloom.WebLibraryIntegration
             const string BloomS3UrlPrefix = "https://s3.amazonaws.com/";
 
             _progressDialog = new ConsoleProgress();
-            if (!url.StartsWith(BloomS3UrlPrefix))
+            if (!url.StartsWith(BloomS3UrlPrefix, StringComparison.Ordinal))
             {
                 Console.WriteLine($"Url unexpectedly does not start with {BloomS3UrlPrefix}");
                 return "";
@@ -381,7 +386,9 @@ namespace Bloom.WebLibraryIntegration
 
         private static bool IsUrlOrder(string argument)
         {
-            return argument.ToLowerInvariant().StartsWith(BloomLinkArgs.kBloomUrlPrefix);
+            return argument
+                .ToLowerInvariant()
+                .StartsWith(BloomLinkArgs.kBloomUrlPrefix, StringComparison.Ordinal);
         }
 
         public string PathToCollectionCreatedForLastDownload { get; private set; }

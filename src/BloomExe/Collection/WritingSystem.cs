@@ -3,7 +3,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Xml.Linq;
+using Bloom.ToPalaso;
+using SIL.Reporting;
 using SIL.Windows.Forms.WritingSystems;
 using SIL.WritingSystems;
 
@@ -11,6 +14,25 @@ namespace Bloom.Collection
 {
     public class WritingSystem
     {
+        static WritingSystem()
+        {
+            // LibPalaso otherwise decides once per process whether to ask ICU, and the two
+            // answers differ -- with ICU it names Spanish in French as "espagnol"; without it the
+            // name comes from CultureInfo.DisplayName, which on an English-speaking machine gives
+            // the autonym "espanol". So the name a user saw turned on whether some unrelated
+            // software had left an ICU library on the machine (BL-16806). Bloom ships no
+            // icuuc.dll, so the non-ICU answer is also the one most users already get.
+            //
+            // Note what this does and does not buy. It removes the dependence on ICU being
+            // installed. It does not make the name a pure function of the request: the remaining
+            // path renders in the process's CurrentUICulture, so a Bloom running in French can
+            // still name Spanish "espagnol". Same UI language, same name -- which is the
+            // guarantee this card needed.
+            // This is a static constructor so that it also covers the tests and the CLI, not
+            // just a normal Bloom startup.
+            IetfLanguageTag.UseICUForLanguageNames = false;
+        }
+
         private readonly Func<string> _tagOfDefaultLanguageForNaming;
         public static LanguageLookupModel LookupModel = new LanguageLookupModel();
         private string _langTag;
@@ -109,11 +131,11 @@ namespace Bloom.Collection
                 if (string.IsNullOrEmpty(Tag))
                     return string.Empty;
 
-                var name = IetfLanguageTag.GetLocalizedLanguageName(Tag, inLanguage);
+                var name = IetfLanguageTagExtra.GetLocalizedLanguageName(Tag, inLanguage);
                 if (name == Tag)
                 {
                     string match;
-                    if (!IetfLanguageTag.GetBestLanguageName(Tag, out match))
+                    if (!IetfLanguageTagExtra.GetBestLanguageName(Tag, out match))
                     {
                         return $"Unknown-{Tag}";
                     }
@@ -303,6 +325,12 @@ namespace Bloom.Collection
                 // of languages in the collection.  So we retry with the migrated name.
                 Name = ReadString(xml, "Language1Name", "");
             }
+            // Under a Thai regional format, Bloom computed and saved the invariant culture's name,
+            // "Invariant Language (Invariant Country)", for a language named from its tag, such as
+            // the default Language2 of a new collection (BL-16945). No real language has that
+            // exact name, so look it up again.
+            if (Name == CultureInfo.InvariantCulture.EnglishName)
+                Name = "";
             if (Name == "")
             {
                 Name = GetLanguageName_NoCache(
@@ -381,11 +409,7 @@ namespace Bloom.Collection
             if (!LookupModel.AreLanguagesLoaded)
             {
                 EnsureSldrInitialized(true); // needed for tests
-                LookupModel.IncludeScriptMarkers = false;
-                // The previous line should have loaded the LanguageLookup object: if something changes so that
-                // it doesn't, ensure that happens anyway.
-                if (!LookupModel.AreLanguagesLoaded)
-                    LookupModel.LoadLanguages();
+                LoadLookupModelLanguages();
             }
             if (string.IsNullOrWhiteSpace(Tag))
                 return false; // undefined (probably language3 or sign language)
@@ -393,6 +417,66 @@ namespace Bloom.Collection
             var language = LookupModel.LanguageLookup.GetLanguageFromCode(Tag);
             // (If the lookup didn't find a language, treat the name as custom.)
             return Name != language?.Names?.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Load the language list into LookupModel. Loading it makes Sldr compare its langtags.json
+        /// cache with the server, inside a machine-wide mutex named "SldrCache". If a process is
+        /// killed while it holds that mutex (for example, a Bloom the e2e harness kills during that
+        /// web request), the next process to wait on it gets AbandonedMutexException. That process
+        /// then owns the mutex, but the library lets the exception out without releasing it, so the
+        /// mutex is abandoned again when the process exits, and every Bloom on the machine fails to
+        /// load a collection until something releases it. So release it here and try once more.
+        /// (BL-16802)
+        /// </summary>
+        private static void LoadLookupModelLanguages()
+        {
+            try
+            {
+                LoadLookupModelLanguagesOnce();
+            }
+            catch (AbandonedMutexException)
+            {
+                ReleaseSldrCacheMutexHeldByThisThread();
+                LoadLookupModelLanguagesOnce();
+            }
+        }
+
+        private static void LoadLookupModelLanguagesOnce()
+        {
+            LookupModel.IncludeScriptMarkers = false;
+            // The previous line should have loaded the LanguageLookup object: if something changes so that
+            // it doesn't, ensure that happens anyway.
+            if (!LookupModel.AreLanguagesLoaded)
+                LookupModel.LoadLanguages();
+        }
+
+        /// <summary>
+        /// A mutex belongs to a thread, not to a handle, so a second handle to the same named mutex
+        /// on this thread can release what the library's handle acquired when it got
+        /// AbandonedMutexException. Sldr names the mutex "SldrCache"; the library's Windows adapter
+        /// uses that name as it is, and another adapter puts it in the Global namespace.
+        /// </summary>
+        private static void ReleaseSldrCacheMutexHeldByThisThread()
+        {
+            foreach (var name in new[] { "SldrCache", @"Global\SldrCache" })
+            {
+                try
+                {
+                    using (var mutex = Mutex.OpenExisting(name))
+                    {
+                        mutex.ReleaseMutex();
+                        Logger.WriteEvent("Released the abandoned SldrCache mutex ({0})", name);
+                        return;
+                    }
+                }
+                catch (Exception e)
+                    when (e is WaitHandleCannotBeOpenedException || e is ApplicationException)
+                {
+                    // No mutex of this name exists, or this thread does not own it. Try the next name.
+                }
+            }
+            Logger.WriteEvent("Could not find the abandoned SldrCache mutex to release it");
         }
 
         private bool ReadBoolean(XElement xml, string id, bool defaultValue)

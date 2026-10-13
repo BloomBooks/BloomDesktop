@@ -54,8 +54,10 @@ function shouldShowTag(editable: HTMLElement): boolean {
     if (editable.closest(".bloom-hideLanguageNameDisplay")) return false;
 
     // Inside a canvas element the language is shown in the context controls box,
-    // not as a corner tag.
-    if (editable.closest("[data-bubble]")) return false;
+    // not as a corner tag. A table is the exception: it is many text boxes, so
+    // each cell names its own language, as a text box on an ordinary page does.
+    if (editable.closest("[data-bubble]") && !editable.closest(".bloom-table"))
+        return false;
 
     // With a really small box the tag fights for space with hint bubbles, so we
     // suppress it — but not inside canvas elements, where boxes are small by

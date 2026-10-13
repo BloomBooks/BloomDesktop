@@ -37,12 +37,13 @@ import { default as CopyIcon } from "@mui/icons-material/ContentCopy";
 import { default as PasteIcon } from "@mui/icons-material/ContentPaste";
 import { default as CopyrightIcon } from "@mui/icons-material/Copyright";
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
+import { default as FlipIcon } from "@mui/icons-material/Flip";
+import { default as RotateRightIcon } from "@mui/icons-material/RotateRight";
 import { default as SearchIcon } from "@mui/icons-material/Search";
 import { default as VolumeUpIcon } from "@mui/icons-material/VolumeUp";
 import { getWorkspaceBundleExports } from "../../js/workspaceFrames";
 import {
     doImageCommand,
-    getImageFromCanvasElement,
     getImageFromContainer,
     getImageTransparencyMode,
     getImageUrlFromImageContainer,
@@ -73,9 +74,9 @@ import {
     playSound,
     showDialogToChooseSoundFileAsync,
 } from "../games/GameTool";
-import AudioRecording from "../talkingBook/audioRecording";
-import { showLinkTargetChooserDialog } from "../../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
+import { showTalkingBookTool } from "../talkingBook/showTalkingBookTool";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
+import { trackEvent } from "../../../utils/bloomApi";
 import {
     IControlContext,
     IControlDefinition,
@@ -92,6 +93,7 @@ import {
 import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { isDraggable, kDraggableIdAttribute } from "./canvasElementDraggables";
 import { setGeneratedDraggableId } from "./CanvasElementItem";
+import { launchAiImageEditor } from "../../aiImageEditor/aiImageEditorPageCommands";
 import {
     makeFieldTypeMenuItem,
     makeLanguageMenuItem,
@@ -113,7 +115,12 @@ const getImageContainer = (ctx: IControlContext): HTMLElement | undefined => {
     if (imageContainer) {
         return imageContainer;
     }
-    return getImageFromCanvasElement(ctx.canvasElement)
+    // Some elements have the img as a direct child with no bloom-imageContainer. Older books
+    // have canvas elements like that, and an inline image in a text block is like that too
+    // (its wrapper is passed in here as ctx.canvasElement). Such an element serves as its own
+    // image container. buildCanvasElementControlRegistryContext falls back the same way when
+    // it sets hasImage, and hasImage decides whether these commands are offered.
+    return getImageFromContainer(ctx.canvasElement)
         ? ctx.canvasElement
         : undefined;
 };
@@ -125,6 +132,64 @@ const getImage = (ctx: IControlContext): HTMLImageElement | undefined => {
     }
     return getImageFromContainer(imageContainer) ?? undefined;
 };
+
+// Analytics support for the Transparency menu (BL-16716). Keyed by image FILE rather than by
+// element, because saving the page rebuilds the DOM and we want the whole sequence of choices
+// the user made on one picture, not one entry per surviving element. Session-scoped on purpose:
+// what we are after is the person still guessing a minute later, not a history across runs.
+const transparencyChoicesByImage = new Map<string, string[]>();
+
+// The image file, with any query string removed.
+function imageFileOf(img: HTMLImageElement): string {
+    return (img.getAttribute("src") ?? "").split("?")[0];
+}
+
+// The key the choice history is filed under. Two things it must NOT be:
+//
+//  - the raw src, because setImgTransparentParam adds and removes a "?transparent=yes"
+//    parameter, so each choice would be filed under a different key from the one before it and
+//    the sequence would restart on the very first change;
+//  - the file alone, because a page image's src is just its bare name relative to the book
+//    folder ("placeholder.png", "aor_AOR_ABC.png"). This map is module-level and lives for the
+//    whole run of Bloom, so two books -- or two pages -- using the same file would append to
+//    one another's history and produce a sequence no single picture ever went through.
+//
+// Page id and file together, then: unique across books, since page ids are GUIDs.
+function imageHistoryKeyOf(img: HTMLImageElement): string {
+    const pageId = img.closest(".bloom-page")?.getAttribute("id") ?? "";
+    return `${pageId}/${imageFileOf(img)}`;
+}
+
+// Append this choice to the image's sequence and return the whole of it, e.g.
+// "auto > transparent > opaque".
+function recordTransparencyChoice(
+    img: HTMLImageElement,
+    from: string,
+    to: string,
+): string {
+    const key = imageHistoryKeyOf(img);
+    const choices = transparencyChoicesByImage.get(key) ?? [from];
+    choices.push(to);
+    transparencyChoicesByImage.set(key, choices);
+    return choices.join(" > ");
+}
+
+// The current transparency mode of an image, read from its classes. Read at click time rather
+// than captured when the menu was built, so that two choices from one open submenu still
+// report the mode each was actually made from.
+function transparencyModeOf(img: HTMLImageElement): string {
+    if (img.classList.contains("bloom-transparent")) return "transparent";
+    if (img.classList.contains("bloom-opaque")) return "opaque";
+    return "auto";
+}
+
+// The image's file type, lower case and without the dot ("png", "jpg", ...). Tells us whether
+// the detection failures cluster on photos or on line art.
+function imageFormatOf(img: HTMLImageElement): string {
+    const src = imageFileOf(img);
+    const dot = src.lastIndexOf(".");
+    return dot < 0 ? "" : src.substring(dot + 1).toLowerCase();
+}
 
 const getVideoContainer = (ctx: IControlContext): HTMLElement | undefined => {
     return ctx.canvasElement.getElementsByClassName(
@@ -334,14 +399,17 @@ const makeChooseAudioMenuItemForText = (
                 englishLabel: "Use Talking Book Tool",
                 onSelect: () => {
                     runtime.closeMenu(false);
-                    AudioRecording.showTalkingBookTool();
+                    showTalkingBookTool();
                 },
             },
         ],
     };
 };
 
-const makeChooseAudioMenuItemForImage = (
+// Exported for unit testing: the labels on these rows have regressed once (the
+// play row showed the localized "A Recording" instead of the sound's file name),
+// and this is the only way to assert them without a running Bloom.
+export const makeChooseAudioMenuItemForImage = (
     ctx: IControlContext,
     runtime: IControlRuntime,
 ): IControlMenuCommandRow => {
@@ -373,9 +441,12 @@ const makeChooseAudioMenuItemForImage = (
             },
             {
                 id: "playCurrentAudio",
-                l10nId: "ARecording",
+                // Deliberately no l10nId: this row's label is the chosen sound
+                // file's name, which must not be replaced by a localized string.
                 englishLabel: imageSoundLabel,
                 featureName: "canvas",
+                // Marks this as the sound currently in effect.
+                icon: React.createElement(CheckIcon, null),
                 availability: {
                     visible: (itemCtx) => itemCtx.hasCurrentImageSound,
                 },
@@ -403,6 +474,8 @@ const makeChooseAudioMenuItemForImage = (
                         return;
                     }
 
+                    // The plain file name, deliberately NOT URL-encoded; C# reads it straight
+                    // back as a file name. See the encoding conventions note on UrlPathString.cs.
                     ctx.canvasElement.setAttribute("data-sound", selectedSound);
                     void copyAndPlaySoundAsync(selectedSound, ctx.page, false);
                 },
@@ -493,14 +566,100 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         id: "resetImage",
         l10nId: "EditTab.Image.Reset",
         englishLabel: "Reset Image",
-        iconScale: 0.9,
+        // No icon: the row reads better without one, and the command is the odd one out in
+        // its group, because it undoes the commands above it.
+        action: () => {
+            getCanvasElementManager()?.resetImage();
+        },
+    },
+    // "Rotate right" — 90 degrees clockwise. What rotates depends on what the image is
+    // part of, because the two cases want different things:
+    // - An ordinary image canvas element rotates as a whole, using the same rotation the
+    //   rotate handle on the control frame sets, so the two commands cannot disagree.
+    // - A background image fills its bloom-canvas and cannot be rotated as a box, so the
+    //   picture inside rotates and its own box is reshaped to match. Any cropping is kept: the
+    //   cropped region rotates with the picture and is scaled to fit the page.
+    rotateRight: {
+        kind: "command",
+        id: "rotateRight",
+        l10nId: "EditTab.Image.RotateRight",
+        englishLabel: "Rotate right",
+        icon: RotateRightIcon,
+        action: () => {
+            getCanvasElementManager()?.rotateActiveImageRight90Degrees();
+        },
+    },
+    // "Flip" — mirror the picture. This always applies to the picture rather than to the
+    // canvas element, because mirroring a box moves it without changing how it looks.
+    // The axes are the ones the user sees on screen, whatever way the picture is rotated.
+    flipImage: {
+        kind: "command",
+        id: "flipImage",
+        l10nId: "EditTab.Image.Flip",
+        englishLabel: "Flip",
+        icon: FlipIcon,
+        action: () => {},
+        menu: {
+            buildMenuItem: () => {
+                return {
+                    id: "flipImage",
+                    l10nId: "EditTab.Image.Flip",
+                    englishLabel: "Flip",
+                    onSelect: () => {},
+                    subMenuItems: [
+                        {
+                            l10nId: "EditTab.Image.FlipHorizontal",
+                            englishLabel: "Flip horizontal",
+                            icon: React.createElement(FlipIcon, null),
+                            onSelect: () => {
+                                getCanvasElementManager()?.flipActiveImage(
+                                    "horizontal",
+                                );
+                            },
+                        },
+                        {
+                            l10nId: "EditTab.Image.FlipVertical",
+                            englishLabel: "Flip vertical",
+                            // The same icon rotated 90 degrees, so that the pair reads as
+                            // one idea about two axes. MUI has no vertical flip icon.
+                            icon: React.createElement(FlipIcon, {
+                                style: { transform: "rotate(90deg)" },
+                            }),
+                            onSelect: () => {
+                                getCanvasElementManager()?.flipActiveImage(
+                                    "vertical",
+                                );
+                            },
+                        },
+                    ],
+                };
+            },
+        },
+    },
+    // "Edit with AI…" — the entry point for the AI Image Editor integration. This command
+    // only reports the clicked image to C#, which saves the page and then opens the overlay
+    // (aiImageEditorPageCommands.launchAiImageEditor explains why). The heavy lifting — overlay,
+    // postMessage handshake, commit — is in the top window, like the two commands above;
+    // see aiImageEditorOverlay.ts's header for the full flow.
+    editWithAi: {
+        kind: "command",
+        id: "editWithAi",
+        featureName: "AiImageEditing",
+        l10nId: "EditTab.Image.EditWithAI",
+        englishLabel: "Edit with AI...",
+        iconScale: 0.75,
         icon: React.createElement("img", {
-            src: "/bloom/images/reset image black.svg",
+            src: "/bloom/images/ai-edit.svg",
             alt: "",
             className: "canvas-context-menu-monochrome-icon",
         }),
-        action: () => {
-            getCanvasElementManager()?.resetCropping();
+        action: (ctx, runtime) => {
+            const img = getImage(ctx);
+            if (!img) {
+                return;
+            }
+            launchAiImageEditor(img, getImageContainer(ctx));
+            runtime.closeMenu(true);
         },
     },
     expandToFillSpace: {
@@ -727,6 +886,36 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                     );
                 }
 
+                // Every explicit choice here is a user telling us our line-art detection got
+                // it wrong -- and which way. Opaque means Auto fired when it should not have
+                // and Bloom was eating parts of their picture (forcing transparency "can also
+                // erase very light-colored parts of an image"); Transparent means the detector
+                // failed to recognise line art that plainly is line art. There is no other way
+                // to evaluate that heuristic in the field, and this gives us a continuous read
+                // on it. Call this BEFORE mutating the classes, so "from" is the mode we chose.
+                function reportTransparencyChoice(to: string) {
+                    if (!img) return;
+                    const from = transparencyModeOf(img);
+                    if (from === to) return; // re-picking what is already ticked says nothing
+                    const choices = recordTransparencyChoice(img, from, to);
+                    trackEvent("Image Transparency Set", {
+                        from,
+                        to,
+                        // What gates Auto in the first place, so failures can be read against it.
+                        pageBackgroundIsColored:
+                            pageBackgroundNeedsTransparency(
+                                getOwningPageBackgroundColor(img),
+                            ),
+                        imageFormat: imageFormatOf(img),
+                        // Every transparency choice made on this image so far, joined with " > "
+                        // -- so a picture switched twice reads "auto > transparent > opaque"
+                        // (built by recordTransparencyChoice above). A long one may mean the three
+                        // labels did not predict the result and the user was guessing, though it
+                        // could as easily be someone just exploring the options.
+                        choices,
+                    });
+                }
+
                 return {
                     id: "imageBackground",
                     l10nId: "EditTab.Image.Transparency",
@@ -741,6 +930,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                                 : undefined,
                             onSelect: () => {
                                 if (!img) return;
+                                reportTransparencyChoice("auto");
                                 img.classList.remove(
                                     "bloom-transparent",
                                     "bloom-opaque",
@@ -756,6 +946,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                                 : undefined,
                             onSelect: () => {
                                 if (!img) return;
+                                reportTransparencyChoice("transparent");
                                 img.classList.add("bloom-transparent");
                                 img.classList.remove("bloom-opaque");
                                 applyTransparencyParam();
@@ -769,6 +960,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                                 : undefined,
                             onSelect: () => {
                                 if (!img) return;
+                                reportTransparencyChoice("opaque");
                                 img.classList.add("bloom-opaque");
                                 img.classList.remove("bloom-transparent");
                                 // bloom-opaque always means "none" regardless of page background.
@@ -966,8 +1158,8 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     bubbleStyle: {
         kind: "panel",
         id: "bubbleStyle",
-        l10nId: "EditTab.Toolbox.ComicTool.Options.Style",
-        englishLabel: "Style",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.ElementType",
+        englishLabel: "Element Type",
         canvasToolsControl: BubbleStylePanelControl,
     },
     showTail: {
@@ -1001,8 +1193,8 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     outlineColor: {
         kind: "panel",
         id: "outlineColor",
-        l10nId: "EditTab.Toolbox.ComicTool.Options.OutlineColor",
-        englishLabel: "Outline Color",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.OuterOutlineColor",
+        englishLabel: "Outer Outline Color",
         canvasToolsControl: OutlineColorPanelControl,
     },
     setDestination: {
@@ -1022,6 +1214,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             // element itself (not on any nested image container).
             const currentUrl =
                 ctx.canvasElement.getAttribute("data-href") ?? "";
+            // Shown from the workspace root so its backdrop covers the page list too.
+            const showLinkTargetChooserDialog =
+                getWorkspaceBundleExports().showLinkTargetChooserDialog;
             showLinkTargetChooserDialog(currentUrl, (newUrl) => {
                 if (newUrl) {
                     ctx.canvasElement.setAttribute("data-href", newUrl);
@@ -1128,7 +1323,14 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         menu: {
             iconScale: 1.2,
         },
-        action: () => {
+        action: (ctx) => {
+            // An inline image supplies deleteThisObject (see IControlContext), because it is
+            // not the page's active canvas element, and deleting it means removing it from
+            // every language's text.
+            if (ctx.deleteThisObject) {
+                ctx.deleteThisObject();
+                return;
+            }
             getCanvasElementManager()?.deleteCurrentCanvasElement?.();
         },
     },
@@ -1216,20 +1418,32 @@ export const controlSections: Record<SectionId, IControlSection> = {
             menu: ["format"],
         },
     },
+    // The image commands come in three menu sections, so that the menu shows a line between
+    // them. The first section is about which picture is in the box, the second about how the
+    // picture sits in the box, and the third about the other things we can do to it. Reset
+    // image is last in its section because it undoes the commands above it.
     image: {
         id: "image",
         controlsBySurface: {
+            menu: ["missingMetadata", "chooseImage", "copyImage", "pasteImage"],
+        },
+    },
+    imageArrangement: {
+        id: "imageArrangement",
+        controlsBySurface: {
             menu: [
-                "missingMetadata",
-                "chooseImage",
-                "copyImage",
-                "pasteImage",
-                "resetImage",
                 "expandToFillSpace",
-                "becomeBackground",
-                "imageFieldType",
+                "rotateRight",
+                "flipImage",
                 "imageBackground",
+                "resetImage",
             ],
+        },
+    },
+    imageSettings: {
+        id: "imageSettings",
+        controlsBySurface: {
+            menu: ["becomeBackground", "imageFieldType", "editWithAi"],
         },
     },
     imagePanel: {

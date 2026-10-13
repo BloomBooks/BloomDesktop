@@ -68,7 +68,7 @@ namespace Bloom.WebLibraryIntegration
 
         public BloomLinkArgs(string url)
         {
-            if (!url.StartsWith(kBloomUrlPrefix))
+            if (!url.StartsWith(kBloomUrlPrefix, StringComparison.Ordinal))
                 throw new ArgumentException(
                     String.Format("unrecognized BloomLinkArgs URL string: {0}", url)
                 );
@@ -81,13 +81,13 @@ namespace Bloom.WebLibraryIntegration
                     String.Format("badly formed BloomLinkArgs URL string: {0}", url)
                 );
             OrderUrl = HttpUtility.UrlDecode(parts[1]);
-            if (qparams.Length > 1 && qparams[1].StartsWith("title="))
+            if (qparams.Length > 1 && qparams[1].StartsWith("title=", StringComparison.Ordinal))
                 Title = HttpUtility.UrlDecode(qparams[1].Substring("title=".Length));
             if (qparams.Any(x => x == "forEdit=true"))
                 ForEdit = true;
-            if (qparams.Any(x => x.StartsWith("database-id=")))
+            if (qparams.Any(x => x.StartsWith("database-id=", StringComparison.Ordinal)))
                 DatabaseId = qparams
-                    .First(x => x.StartsWith("database-id="))
+                    .First(x => x.StartsWith("database-id=", StringComparison.Ordinal))
                     .Substring("database-id=".Length);
         }
     }

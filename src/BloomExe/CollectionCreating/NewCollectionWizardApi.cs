@@ -24,6 +24,7 @@ namespace Bloom.web.controllers
                             data.LanguageTag,
                             data.DesiredName,
                             data.DefaultName,
+                            data.IsRtl,
                             data.Country
                         );
                         request.PostSucceeded();

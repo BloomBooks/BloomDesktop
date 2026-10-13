@@ -1,0 +1,16 @@
+{
+    "name": "bloom-e2e",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "test": "playwright test",
+        "typecheck": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "@playwright/test": "1.56.1",
+        "@types/node": "24.13.0",
+        "typescript": "6.0.3"
+    },
+    "packageManager": "pnpm@11.5.2"
+}

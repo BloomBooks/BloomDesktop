@@ -8,6 +8,10 @@ using SIL.Progress;
 
 namespace BloomTests.WebLibraryIntegration
 {
+    // Integration tests: the fixture setup uploads (and later downloads) a real book to the
+    // live unit-test S3 bucket, so these need internet access. Exclude them from a quick local
+    // run with --filter TestCategory!=Integration
+    [Category("Integration")]
     class BloomS3StandardUpDownloadTests
     {
         private BloomS3ClientTestDouble _client;
@@ -126,7 +130,9 @@ namespace BloomTests.WebLibraryIntegration
                 var relativePath in Directory
                     .GetFiles(fullBookSrcPath, "*.*", SearchOption.AllDirectories)
                     .Select(fullPath => fullPath.Substring(fullBookSrcPath.Length + 1))
-                    .Where(relativePath => !relativePath.EndsWith("preview.pdf"))
+                    .Where(relativePath =>
+                        !relativePath.EndsWith("preview.pdf", StringComparison.Ordinal)
+                    )
             )
             {
                 Assert.IsTrue(

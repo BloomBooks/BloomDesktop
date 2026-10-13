@@ -8,7 +8,6 @@ using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
-using DesktopAnalytics;
 using L10NSharp;
 using SIL.Reporting;
 using Application = System.Windows.Forms.Application;
@@ -302,7 +301,7 @@ namespace Bloom.Publish.PDF
 
         private void HandlePrintAnalytics(ApiRequest request)
         {
-            Analytics.Track(
+            BloomAnalytics.Track(
                 "Print PDF",
                 new Dictionary<string, string>()
                 {
@@ -351,6 +350,11 @@ namespace Bloom.Publish.PDF
         // that calls PublishModel.LoadBook.
         public void MakePdf()
         {
+            // Crop marks are automatic when print bleed is enabled.
+            // This applies to both Simple and booklet outputs.
+            _publishModel.ShowCropMarks =
+                (CurrentBook?.FullBleed ?? false) && (CurrentBook?.UserPrefs.FullBleed ?? false);
+
             var message = CheckForLicenseWarning();
             if (!String.IsNullOrEmpty(message))
             {

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.MiscUI;
@@ -304,6 +305,110 @@ namespace Bloom.TeamCollection
         }
 
         /// <summary>
+        /// Read AllowCheckouts straight out of the repo's copy of the collection settings file,
+        /// which lives inside "Other Collection Files.zip". We deliberately do not go through the
+        /// local copy: that is only refreshed from the repo when the collection is opened, and the
+        /// whole point is to notice a change made while Bloom is running. See BL-16691.
+        /// </summary>
+        public override bool? GetAllowCheckoutsFromRepo()
+        {
+            try
+            {
+                var zipPath = GetRepoProjectFilesZipPath(_repoFolderPath);
+                if (!RobustFile.Exists(zipPath))
+                    return null;
+                var entryName = GetCollectionSettingsEntryName(zipPath);
+                if (entryName == null)
+                    return null;
+                var content = RobustZip.GetZipEntryContent(zipPath, entryName);
+                if (string.IsNullOrWhiteSpace(content))
+                    return null;
+                return CollectionSettings.ReadBoolean(
+                    XElement.Parse(content),
+                    "AllowCheckouts",
+                    true
+                );
+            }
+            catch (Exception e)
+            {
+                // The zip may be part-written, or Dropbox may be midway through syncing it. There
+                // is nothing to do about it now: we'll get another notification when the file
+                // settles, and failing that we read it again at startup. Leaving the setting alone
+                // is the safe outcome either way.
+                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// The name of the .bloomCollection entry within the given zip, or null if there isn't one.
+        /// Found by extension rather than by building the name, because the collection may have
+        /// been renamed locally.
+        /// </summary>
+        private static string GetCollectionSettingsEntryName(string zipPath)
+        {
+            using (var zipFile = new ICSharpCode.SharpZipLib.Zip.ZipFile(zipPath))
+            {
+                foreach (ICSharpCode.SharpZipLib.Zip.ZipEntry entry in zipFile)
+                {
+                    if (
+                        entry.IsFile
+                        && entry.Name.EndsWith(
+                            CollectionSettings.kFileExtension,
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    )
+                        return entry.Name;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// The repository's copy of the collection settings for a local collection folder, or null if
+        /// this is not a Team Collection or we cannot reach the repository right now.
+        ///
+        /// Static, and taking a plain folder path, because the minimum-version gate has to ask this
+        /// before any TeamCollection object exists -- indeed before Bloom has committed to opening
+        /// the collection at all. Otherwise a member whose repository has just gained a minimum
+        /// version would be judged on their own stale copy and let in for the whole session, since
+        /// the repository is not copied down until later in startup. See BL-16690.
+        /// </summary>
+        internal static string GetRepoCollectionSettingsForCollectionFolder(
+            string localCollectionFolder
+        )
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(localCollectionFolder))
+                    return null;
+                var linkPath = TeamCollectionManager.GetTcLinkPathFromLcPath(localCollectionFolder);
+                if (!RobustFile.Exists(linkPath))
+                    return null; // an ordinary collection; nothing to consult
+                var repoFolder = TeamCollectionManager.RepoFolderPathFromLinkPath(linkPath);
+                if (string.IsNullOrWhiteSpace(repoFolder) || !Directory.Exists(repoFolder))
+                    return null; // disconnected, or the shared folder has moved
+                var zipPath = GetRepoProjectFilesZipPath(repoFolder);
+                if (!RobustFile.Exists(zipPath))
+                    return null;
+                var entryName = GetCollectionSettingsEntryName(zipPath);
+                if (entryName == null)
+                    return null;
+                return RobustZip.GetZipEntryContent(zipPath, entryName);
+            }
+            catch (Exception e)
+            {
+                // Offline, a part-written zip, a network share that has gone away: none of that is a
+                // good reason to stop someone opening a collection. The local file still has its say.
+                Logger.WriteError(
+                    "Could not read the Team Collection repo settings while checking the minimum Bloom version",
+                    e
+                );
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Return a list of all the books currently in the repo. (It will not update as changes are made,
         /// either locally or remotely. Beware that conceivably a book in the list might be removed
         /// before you get around to processing it.)
@@ -337,7 +442,7 @@ namespace Bloom.TeamCollection
                 GetBookNameWithoutSuffix(bookName)
             );
             Debug.Assert(
-                !destFolder.EndsWith(".bloom"),
+                !destFolder.EndsWith(".bloom", StringComparison.Ordinal),
                 $"Copying zipFile to folder \"{destFolder}\", which ends with .bloom. This is probably an error, unless the book title literally contains .bloom"
             );
 
@@ -408,6 +513,26 @@ namespace Bloom.TeamCollection
         {
             var destPath = GetRepoProjectFilesZipPath(_repoFolderPath);
             RobustZip.WriteFilesToZip(names, _localCollectionFolder, destPath);
+        }
+
+        /// <summary>
+        /// Read the collection settings straight out of the repo's zip of collection files, without
+        /// unpacking anything or disturbing the local copy. Used to notice a minimum Bloom version
+        /// arriving from an administrator while the user has the collection open.
+        /// </summary>
+        protected override string GetRepoCollectionSettingsContent()
+        {
+            var zipPath = GetRepoProjectFilesZipPath(_repoFolderPath);
+            if (!RobustFile.Exists(zipPath))
+                return null;
+            // Find the entry by its extension rather than building the name from the local
+            // collection path: the collection may have been renamed locally, in which case the
+            // name we would build is not the one in the repo. (Shared with BL-16691, which reads
+            // AllowCheckouts out of the same file.)
+            var entryName = GetCollectionSettingsEntryName(zipPath);
+            if (entryName == null)
+                return null;
+            return RobustZip.GetZipEntryContent(zipPath, entryName);
         }
 
         protected override DateTime LastRepoCollectionFileModifyTime
@@ -911,7 +1036,11 @@ namespace Bloom.TeamCollection
                     return true;
                 // The creation of the temp folder where we write local stuff during put
                 // is not interesting.
-                if (path.Replace("\\", "/").ToLowerInvariant().EndsWith("/books/temp"))
+                if (
+                    path.Replace("\\", "/")
+                        .ToLowerInvariant()
+                        .EndsWith("/books/temp", StringComparison.Ordinal)
+                )
                     return true;
                 // Not the book we most recently wrote, so not an 'own write'.
                 // Note that our zip library sometimes creates a temp file by adding a suffix to the
@@ -919,7 +1048,7 @@ namespace Bloom.TeamCollection
                 // wrote is a result of that.
                 if (
                     !string.IsNullOrWhiteSpace(_lastWriteBookPath)
-                    && !path.StartsWith(_lastWriteBookPath)
+                    && !path.StartsWith(_lastWriteBookPath, StringComparison.Ordinal)
                 )
                     return false;
                 // We're still writing it...definitely an 'own write'
@@ -1212,7 +1341,7 @@ namespace Bloom.TeamCollection
         /// <returns></returns>
         public static bool IsJoinTeamCollectionFile(string[] args)
         {
-            return args.Length == 1 && args[0].EndsWith(".JoinBloomTC");
+            return args.Length == 1 && args[0].EndsWith(".JoinBloomTC", StringComparison.Ordinal);
         }
 
         /// <summary>

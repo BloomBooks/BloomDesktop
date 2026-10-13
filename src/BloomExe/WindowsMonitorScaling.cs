@@ -16,7 +16,7 @@ namespace Bloom
         [DllImport("user32.dll")]
         private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
 
-        private const int MONITOR_DEFAULTTONEAREST = 0x00000002;
+        private const uint MONITOR_DEFAULTTONEAREST = 0x00000002;
 
         [DllImport("Shcore.dll")]
         private static extern int GetDpiForMonitor(

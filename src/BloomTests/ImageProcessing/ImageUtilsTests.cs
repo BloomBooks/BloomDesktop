@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Bloom;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
 using NUnit.Framework;
@@ -68,6 +69,130 @@ namespace BloomTests.ImageProcessing
         {
             // Import no longer converts formats; PNG is preserved as-is.
             ProcessAndSaveImageIntoFolder_AndTestResults("man.png", ImageFormat.Png);
+        }
+
+        [Test]
+        public void AdjustImageForDisplay_PhotoPngThatAlsoNeedsResizing_StillConvertsToJpeg()
+        {
+            // The publication paths (BloomPubMaker, EpubMaker) pass maxShortSide/maxLongSide, so a
+            // large photo hits resize AND format conversion together. Shrinking it must not cost us
+            // the JPEG re-encoding: a photo published as a resized PNG is several times bigger than
+            // it needs to be. The sibling test above uses a 118x154 image, which never resizes, so
+            // it cannot catch a regression on this path (BL-16645).
+            var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                "man.png"
+            );
+            using (var destFolder = new TemporaryFolder("AdjustImageForDisplay_PhotoPngResized"))
+            {
+                // Ask for a size smaller than the source, which is what makes needsResize true.
+                var result = ImageUtils.AdjustImageForDisplay(
+                    inputPath,
+                    destFolder.Path,
+                    maxShortSide: 60,
+                    maxLongSide: 80
+                );
+
+                Assert.That(result, Is.Not.Null, "Expected a processed version to be created");
+                using (var img = Image.FromFile(result))
+                {
+                    // Sanity: it really did take the resize path, so this is the combined case.
+                    Assert.That(
+                        img.Width,
+                        Is.LessThan(118),
+                        "setup: the image should have been shrunk"
+                    );
+                    Assert.That(
+                        img.RawFormat,
+                        Is.EqualTo(ImageFormat.Jpeg),
+                        "a resized photo must still be re-encoded as a JPEG"
+                    );
+                }
+                Assert.That(Path.GetExtension(result), Is.EqualTo(".jpg"));
+            }
+        }
+
+        [Test]
+        public void AdjustImageForDisplay_PhotoPngWithOneStrayTransparentPixel_StillConvertsToJpeg()
+        {
+            // The publish path settles for a sampled transparency check deliberately: a photograph
+            // carrying a stray non-opaque pixel — a common artifact of editing and AI tools — must
+            // still get the JPEG re-encoding that keeps published books small. Nothing pinned that,
+            // which is how an exhaustive per-pixel scan reached this call site unnoticed and blocked
+            // the conversion for any such photo (BL-16645). The AI image editor keeps the exhaustive
+            // scan, because it deletes the original; that is covered by its own tests.
+            var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                "man.png"
+            );
+            using (var sourceFolder = new TemporaryFolder("AdjustImageForDisplay_StrayAlphaSource"))
+            using (var destFolder = new TemporaryFolder("AdjustImageForDisplay_StrayAlphaDest"))
+            {
+                var strayPath = Path.Combine(sourceFolder.Path, "stray.png");
+                using (var source = new Bitmap(inputPath))
+                using (
+                    var photo = new Bitmap(source.Width, source.Height, PixelFormat.Format32bppArgb)
+                )
+                {
+                    using (var g = Graphics.FromImage(photo))
+                        g.DrawImage(source, 0, 0, source.Width, source.Height);
+
+                    // Find a pixel the sampler doesn't look at rather than assuming which one that
+                    // is, so this test doesn't quietly stop testing anything if the sample pattern
+                    // changes.
+                    var strayX = -1;
+                    for (var y = source.Height / 2; y < source.Height && strayX < 0; ++y)
+                    {
+                        for (var x = source.Width / 2; x < source.Width; ++x)
+                        {
+                            var wasOpaque = photo.GetPixel(x, y);
+                            photo.SetPixel(x, y, Color.FromArgb(254, wasOpaque));
+                            if (!ImageUtils.HasTransparency(photo))
+                            {
+                                strayX = x;
+                                break;
+                            }
+                            photo.SetPixel(x, y, wasOpaque);
+                        }
+                    }
+                    Assert.That(
+                        strayX,
+                        Is.GreaterThanOrEqualTo(0),
+                        "setup: could not find a pixel the sampling misses"
+                    );
+                    // Sanity: the transparency really is in the image, and only the exhaustive scan
+                    // sees it — otherwise this test would pass without exercising the choice at all.
+                    Assert.That(
+                        ImageUtils.HasTransparency(photo),
+                        Is.False,
+                        "setup: sampling should miss a single stray pixel"
+                    );
+                    Assert.That(
+                        ImageUtils.HasTransparency(photo, samplePixels: false),
+                        Is.True,
+                        "setup: the stray pixel should really be there"
+                    );
+                    photo.Save(strayPath, ImageFormat.Png);
+                }
+
+                // Ask for a size smaller than the source, the way the publication code calls in.
+                var result = ImageUtils.AdjustImageForDisplay(
+                    strayPath,
+                    destFolder.Path,
+                    maxShortSide: 60,
+                    maxLongSide: 80
+                );
+
+                Assert.That(result, Is.Not.Null, "Expected a processed version to be created");
+                using (var img = Image.FromFile(result))
+                {
+                    Assert.That(
+                        img.RawFormat,
+                        Is.EqualTo(ImageFormat.Jpeg),
+                        "a stray transparent pixel must not cost a photo its JPEG conversion"
+                    );
+                }
+            }
         }
 
         [Test]
@@ -252,6 +377,336 @@ namespace BloomTests.ImageProcessing
                     Assert.That(resultBitmap.GetPixel(0, 0).A, Is.EqualTo(0));
                     Assert.That(resultBitmap.GetPixel(20, 20).A, Is.EqualTo(255));
                 }
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // HasTransparency. It samples rather than proving opacity: the top-left corner, plus a
+        // handful of pixels scattered over the rest of the image. The scattered part was added for
+        // BL-16645, where a "no" makes the AI image editor re-encode the picture as a JPEG and
+        // delete the original — so a picture the corner check alone called opaque was flattened
+        // for good.
+        // ------------------------------------------------------------------
+
+        // A 32-bit bitmap with an opaque border and a fully transparent middle: the shape of a
+        // subject knocked out of an otherwise solid canvas. The border is wider than the 15-pixel
+        // corner scan, so the corner alone sees nothing but opaque pixels.
+        private static Bitmap MakeBitmapTransparentOnlyInTheMiddle(int size, int borderWidth)
+        {
+            var bitmap = new Bitmap(size, size, PixelFormat.Format32bppArgb);
+            for (int y = 0; y < size; ++y)
+            for (int x = 0; x < size; ++x)
+            {
+                var inBorder =
+                    x < borderWidth
+                    || y < borderWidth
+                    || x >= size - borderWidth
+                    || y >= size - borderWidth;
+                // Vary the border colors so the PNG of this can't compress away to nothing.
+                bitmap.SetPixel(
+                    x,
+                    y,
+                    inBorder
+                        ? Color.FromArgb(255, (x * 7) % 256, (y * 13) % 256, (x + y) % 256)
+                        : Color.FromArgb(0, 0, 0, 0)
+                );
+            }
+            return bitmap;
+        }
+
+        [Test]
+        public void HasTransparency_TransparentOnlyInTheMiddle_IsDetected()
+        {
+            using (var bitmap = MakeBitmapTransparentOnlyInTheMiddle(200, 20))
+            {
+                // Sanity: the corner scan really is blind here, so this test is exercising the
+                // scattered sampling and not just re-testing the corner.
+                Assert.That(
+                    bitmap.GetPixel(0, 0).A,
+                    Is.EqualTo(255),
+                    "setup: the corner must be opaque"
+                );
+                Assert.That(
+                    bitmap.GetPixel(14, 14).A,
+                    Is.EqualTo(255),
+                    "setup: the whole 15x15 corner scan must be opaque"
+                );
+                Assert.That(
+                    bitmap.GetPixel(100, 100).A,
+                    Is.EqualTo(0),
+                    "setup: the middle really is transparent"
+                );
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap),
+                    Is.True,
+                    "an interior-only cutout must be found, or the AI image editor would flatten it"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_PaletteBasedTransparency_IsDetected()
+        {
+            // A PNG-8 (or GIF-style) picture keeps its transparency in its palette, and GDI+ loads
+            // it as Format8bppIndexed — a pixel format that does NOT carry the Alpha flag. So the
+            // "no alpha channel, therefore opaque" shortcut must not be allowed to answer for an
+            // indexed image; the palette is the only place its transparency lives.
+            using (var bitmap = new Bitmap(50, 50, PixelFormat.Format8bppIndexed))
+            {
+                var palette = bitmap.Palette;
+                palette.Entries[0] = Color.FromArgb(0, 0, 0, 0); // a transparent palette entry
+                for (int i = 1; i < palette.Entries.Length; ++i)
+                    palette.Entries[i] = Color.FromArgb(255, i % 256, 128, 64);
+                bitmap.Palette = palette;
+
+                // Sanity: this really is the shape described above, so the assertion below is
+                // testing the indexed path and not something else.
+                Assert.That(
+                    (bitmap.PixelFormat & PixelFormat.Indexed),
+                    Is.EqualTo(PixelFormat.Indexed),
+                    "setup: must be an indexed image"
+                );
+                Assert.That(
+                    (bitmap.PixelFormat & PixelFormat.Alpha),
+                    Is.Not.EqualTo(PixelFormat.Alpha),
+                    "setup: an indexed format carries no Alpha flag — that's the trap"
+                );
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap),
+                    Is.True,
+                    "a transparent palette entry means the picture has transparency"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_PaletteWithNoTransparentEntry_IsFalse()
+        {
+            // The other direction, so the indexed path isn't just answering "true" for everything.
+            using (var bitmap = new Bitmap(50, 50, PixelFormat.Format8bppIndexed))
+            {
+                var palette = bitmap.Palette;
+                for (int i = 0; i < palette.Entries.Length; ++i)
+                    palette.Entries[i] = Color.FromArgb(255, i % 256, 128, 64);
+                bitmap.Palette = palette;
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap),
+                    Is.False,
+                    "an all-opaque palette means no transparency"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_FullyOpaqueRgbaImage_IsFalse()
+        {
+            // The other direction matters just as much: AI tools routinely emit fully opaque RGBA
+            // PNGs, and a false positive here would silently switch off the size optimization
+            // BL-16645 added for them.
+            using (var bitmap = new Bitmap(200, 200, PixelFormat.Format32bppArgb))
+            {
+                for (int y = 0; y < 200; ++y)
+                for (int x = 0; x < 200; ++x)
+                    bitmap.SetPixel(x, y, Color.FromArgb(255, (x * 3) % 256, (y * 5) % 256, 128));
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap),
+                    Is.False,
+                    "an opaque image must not be reported as transparent"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_SameImageTwice_GivesTheSameAnswer()
+        {
+            // Callers delete the original on a "no", so the answer has to be reproducible rather
+            // than varying from run to run. A tiny transparent patch is the case where a sampled
+            // answer could differ if the sample positions were not fixed.
+            using (var bitmap = new Bitmap(400, 400, PixelFormat.Format32bppArgb))
+            {
+                for (int y = 0; y < 400; ++y)
+                for (int x = 0; x < 400; ++x)
+                    bitmap.SetPixel(x, y, Color.FromArgb(255, 10, 20, 30));
+                bitmap.SetPixel(390, 390, Color.FromArgb(0, 0, 0, 0));
+
+                var first = ImageUtils.HasTransparency(bitmap);
+                for (int i = 0; i < 5; ++i)
+                {
+                    Assert.That(
+                        ImageUtils.HasTransparency(bitmap),
+                        Is.EqualTo(first),
+                        "the same picture must get the same answer every time"
+                    );
+                }
+            }
+        }
+
+        // An opaque bitmap of the given format, with one transparent pixel at (x, y).
+        private static Bitmap MakeOpaqueBitmapWithOneClearPixel(
+            int width,
+            int height,
+            int x,
+            int y,
+            PixelFormat format
+        )
+        {
+            var bitmap = new Bitmap(width, height, format);
+            using (var g = Graphics.FromImage(bitmap))
+                g.Clear(Color.FromArgb(255, 10, 20, 30));
+            bitmap.SetPixel(x, y, Color.FromArgb(0, 0, 0, 0));
+            return bitmap;
+        }
+
+        [Test]
+        public void HasTransparency_TruecolorPngWithTrnsChunk_IsDetected()
+        {
+            // A PNG can be truecolour with no alpha channel and still be transparent, by naming one
+            // colour transparent in a tRNS chunk. If GDI+ handed us that as a plain 24-bit bitmap,
+            // the "no alpha channel" shortcut would call it opaque — and the AI image editor deletes
+            // the original once told that, so it would be flattened for good. This is the same shape
+            // as the palette bug (BL-16645), so it is worth pinning rather than assuming.
+            var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                "truecolor-trns.png"
+            );
+            using (var image = Image.FromFile(path))
+            {
+                Assert.That(
+                    ImageUtils.HasTransparency(image, samplePixels: false),
+                    Is.True,
+                    $"a tRNS truecolour PNG must not be called opaque (GDI+ gave us {image.PixelFormat})"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_Exhaustive_FindsTheOnePixelSamplingMisses()
+        {
+            // The whole point of samplePixels:false. This is also the test that would catch the
+            // exhaustive scan reading the wrong byte or the wrong rows: if it did, it would report
+            // this image opaque, and its caller would flatten the transparency and delete the
+            // original.
+            using (
+                var bitmap = MakeOpaqueBitmapWithOneClearPixel(
+                    900,
+                    700,
+                    613,
+                    417,
+                    PixelFormat.Format32bppArgb
+                )
+            )
+            {
+                // Sanity: the sampled answer really does miss it, so the two modes are being
+                // distinguished rather than both trivially succeeding.
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap, samplePixels: true),
+                    Is.False,
+                    "setup: one stray pixel is exactly what sampling cannot see"
+                );
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap, samplePixels: false),
+                    Is.True,
+                    "reading every pixel must find it"
+                );
+            }
+        }
+
+        [Test]
+        // The corners of the buffer are where an off-by-one in the row arithmetic or the alpha
+        // offset shows up: first pixel, last pixel of the first row, first of the last row, and
+        // the very last pixel. A stride mistake typically loses the last row or the last column.
+        [TestCase(0, 0)]
+        [TestCase(899, 0)]
+        [TestCase(0, 699)]
+        [TestCase(899, 699)]
+        [TestCase(898, 698)]
+        public void HasTransparency_Exhaustive_FindsTransparencyAtTheEdges(int x, int y)
+        {
+            using (
+                var bitmap = MakeOpaqueBitmapWithOneClearPixel(
+                    900,
+                    700,
+                    x,
+                    y,
+                    PixelFormat.Format32bppArgb
+                )
+            )
+            {
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap, samplePixels: false),
+                    Is.True,
+                    $"a transparent pixel at ({x},{y}) must be found"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_Exhaustive_PremultipliedFormat_IsStillRead()
+        {
+            // We ask LockBits for Format32bppArgb whatever the bitmap really is, so GDI+ converts
+            // a premultiplied image for us. If that ever stopped working we would read nonsense.
+            using (
+                var bitmap = MakeOpaqueBitmapWithOneClearPixel(
+                    500,
+                    400,
+                    321,
+                    222,
+                    PixelFormat.Format32bppPArgb
+                )
+            )
+            {
+                Assert.That(
+                    bitmap.PixelFormat,
+                    Is.EqualTo(PixelFormat.Format32bppPArgb),
+                    "setup: the bitmap really is premultiplied"
+                );
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap, samplePixels: false),
+                    Is.True,
+                    "transparency in a premultiplied image must still be found"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_Exhaustive_FullyOpaque_IsFalse()
+        {
+            // The other direction, and the one that matters for the size optimization: a false
+            // positive here would stop an opaque photo ever being re-encoded.
+            using (var bitmap = new Bitmap(900, 700, PixelFormat.Format32bppArgb))
+            {
+                using (var g = Graphics.FromImage(bitmap))
+                    g.Clear(Color.FromArgb(255, 10, 20, 30));
+
+                Assert.That(
+                    ImageUtils.HasTransparency(bitmap, samplePixels: false),
+                    Is.False,
+                    "an opaque image must not be reported as transparent"
+                );
+            }
+        }
+
+        [Test]
+        public void HasTransparency_Exhaustive_IndexedImage_StillUsesThePalette()
+        {
+            // samplePixels only governs the non-indexed path; an indexed image is exact either way,
+            // and must not fall through to the pixel scan.
+            using (var bitmap = new Bitmap(50, 50, PixelFormat.Format8bppIndexed))
+            {
+                var palette = bitmap.Palette;
+                palette.Entries[0] = Color.FromArgb(0, 0, 0, 0);
+                for (int i = 1; i < palette.Entries.Length; ++i)
+                    palette.Entries[i] = Color.FromArgb(255, i % 256, 128, 64);
+                bitmap.Palette = palette;
+
+                Assert.That(ImageUtils.HasTransparency(bitmap, samplePixels: false), Is.True);
+                Assert.That(ImageUtils.HasTransparency(bitmap, samplePixels: true), Is.True);
             }
         }
 
@@ -628,6 +1083,73 @@ namespace BloomTests.ImageProcessing
                 Math.Abs(expected - ImageUtils.GetNumberFromPx(label, input)),
                 Is.LessThan(0.001)
             );
+        }
+
+        /// <summary>
+        /// Build a DOM holding one canvas element with the given canvas-element and img styles,
+        /// and return its img.
+        /// </summary>
+        private static SafeXmlElement MakeImgWithCropStyles(
+            string canvasElementStyle,
+            string imgStyle
+        )
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body><div class=""bloom-page""><div class=""marginBox"">"
+                    + ReallyCropImagesTests.MakeImageCanvasElement(
+                        "theImg",
+                        "man.png",
+                        canvasElementStyle,
+                        imgStyle
+                    )
+                    + "</div></div></body></html>"
+            );
+            return dom.SelectSingleNode("//img[@id='theImg']");
+        }
+
+        [Test]
+        public void CropHidesPartOfImage_ImageIsCropped_True()
+        {
+            // The file is 1000x500; the canvas element shows a 500x250 window onto it,
+            // offset 250 from the left and 125 from the top.
+            var img = MakeImgWithCropStyles(
+                "width: 200px; height: 100px;",
+                "width: 400px; left: -100px; top: -50px;"
+            );
+            Assert.That(ImageUtils.HasCropStyles(img), Is.True, "sanity check: styles are there");
+            Assert.That(ImageUtils.CropHidesPartOfImage(img, new Size(1000, 500)), Is.True);
+        }
+
+        [Test]
+        public void CropHidesPartOfImage_ImageMerelyFittedToCanvas_False()
+        {
+            // The whole file is visible; the styles only size it to its canvas element.
+            var img = MakeImgWithCropStyles(
+                "width: 200px; height: 100px;",
+                "width: 200px; left: 0px; top: 0px;"
+            );
+            Assert.That(ImageUtils.HasCropStyles(img), Is.True, "sanity check: styles are there");
+            Assert.That(ImageUtils.CropHidesPartOfImage(img, new Size(1000, 500)), Is.False);
+        }
+
+        [Test]
+        public void CropHidesPartOfImage_CanvasElementHasNoHeight_False()
+        {
+            // Without a height the crop rectangle has no area, so it shows nothing at all
+            // rather than part of the image, and must not be offered to the renderer.
+            var img = MakeImgWithCropStyles("width: 200px;", "width: 200px; left: 0px; top: 0px;");
+            Assert.That(ImageUtils.HasCropStyles(img), Is.True, "sanity check: styles are there");
+            Assert.That(ImageUtils.CropHidesPartOfImage(img, new Size(1000, 500)), Is.False);
+        }
+
+        [Test]
+        public void CropHidesPartOfImage_ImageSizeUnknown_False()
+        {
+            var img = MakeImgWithCropStyles(
+                "width: 200px; height: 100px;",
+                "width: 400px; left: -100px; top: -50px;"
+            );
+            Assert.That(ImageUtils.CropHidesPartOfImage(img, Size.Empty), Is.False);
         }
     }
 
@@ -1720,6 +2242,664 @@ namespace BloomTests.ImageProcessing
                     Is.GreaterThanOrEqualTo(canvasHeight - 0.01),
                     "Adjusted style should ensure the cropped image still fills the canvas height"
                 );
+            }
+        }
+
+        // Markup modeled on a real book (BL-16907): a cropped cover image whose data-div entry
+        // carries the same crop style plus the data needed to rebuild its canvas element.
+        private static HtmlDom MakeCroppedCoverDom()
+        {
+            return new HtmlDom(
+                @"<html><head></head><body>
+                <div id=""bloomDataDiv"">
+                    <div data-book=""coverImage"" lang=""*"" src=""cover.png""
+                        data-canvas-element-style=""width: 296.823px; left: 177.542px; top: 0px; height: 204.562px;""
+                        data-canvas-imgsizebasedon=""652,204""
+                        style=""width: 296.823px; left: 0px; top: -24.6001px"">cover.png</div>
+                </div>
+                <div class=""bloom-page"" id=""frontCover"">
+                    <div class=""marginBox"">
+                        <div class=""bloom-canvas"" data-imgsizebasedon=""652,204"">
+                            <div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 296.823px; left: 177.542px; top: 0px; height: 204.562px;"">
+                                <div tabindex=""0"" class=""bloom-imageContainer bloom-leadingElement"">
+                                    <img id=""coverImg"" src=""cover.png"" data-book=""coverImage""
+                                         style=""width: 296.823px; left: 0px; top: -24.6001px"" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body></html>"
+            );
+        }
+
+        [Test]
+        public void ReallyCropImages_UploadMode_CoverImage_DataDivStyleMatchesPageAndIsNotCroppedAgain()
+        {
+            // BL-16907: upload crops the cover image file and adjusts the page img style to fit it.
+            // If the data-div entry keeps the old crop style, reopening the book copies that old
+            // style back onto the page img, and publishing then crops the already-cropped file again.
+            using (var folder = new TemporaryFolder("UploadCropCoverDataDiv"))
+            using (var publishFolder = new TemporaryFolder("UploadCropCoverDataDivPublish"))
+            using (var settingsFolder = new TemporaryFolder("UploadCropCoverDataDivSettings"))
+            {
+                using (var bitmap = new Bitmap(1001, 800))
+                {
+                    bitmap.Save(Path.Combine(folder.Path, "cover.png"), ImageFormat.Png);
+                }
+                var dom = MakeCroppedCoverDom();
+                var img = dom.SelectSingleNode("//img[@id='coverImg']");
+                var dataDivEntry = dom.SelectSingleNode(
+                    "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+                );
+                // Sanity check: the page and the data-div start out agreeing on the crop.
+                Assert.That(
+                    dataDivEntry.GetAttribute("style"),
+                    Is.EqualTo(img.GetAttribute("style"))
+                );
+                Assert.That(
+                    ImageUtils.GetNumberFromPx("top", img.GetAttribute("style")),
+                    Is.EqualTo(-24.6001).Within(0.0001)
+                );
+
+                // SUT, as BookUpload does it
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path, true, true);
+
+                var uploadedSrc = img.GetAttribute("src");
+                var uploadedPath = UrlPathString.GetFullyDecodedPath(folder.Path, ref uploadedSrc);
+                Assert.That(
+                    ImageUtils.TryGetImageSize(uploadedPath, out var uploadedSize),
+                    Is.True
+                );
+                Assert.That(
+                    uploadedSize.Height,
+                    Is.LessThan(800),
+                    "Upload should have cropped the file"
+                );
+                var uploadedStyle = img.GetAttribute("style");
+                Assert.That(
+                    ImageUtils.GetNumberFromPx("top", uploadedStyle),
+                    Is.GreaterThan(-1),
+                    "Upload should have adjusted the page img style to the cropped file"
+                );
+                Assert.That(
+                    dataDivEntry.GetAttribute("style"),
+                    Is.EqualTo(uploadedStyle),
+                    "The data-div entry should get the same adjusted style as the page img"
+                );
+
+                // Reopening the book pushes the data-div values back onto the page.
+                var collectionSettings = new CollectionSettings(
+                    new NewCollectionSettings()
+                    {
+                        PathToSettingsFile = CollectionSettings.GetPathForNewSettings(
+                            settingsFolder.Path,
+                            "test"
+                        ),
+                    }
+                );
+                new BookData(dom, collectionSettings, null).SynchronizeDataItemsThroughoutDOM();
+                img = dom.SelectSingleNode("//img[@data-book='coverImage']");
+                Assert.That(
+                    img.GetAttribute("style"),
+                    Is.EqualTo(uploadedStyle),
+                    "Reopening the book should not restore the old crop style"
+                );
+
+                // Publishing (e.g., the harvester's BloomPUB) must not crop the file again.
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, publishFolder.Path);
+                var publishedSrc = img.GetAttribute("src");
+                var publishedPath = UrlPathString.GetFullyDecodedPath(
+                    publishFolder.Path,
+                    ref publishedSrc
+                );
+                Assert.That(
+                    ImageUtils.TryGetImageSize(publishedPath, out var publishedSize),
+                    Is.True
+                );
+                Assert.That(
+                    publishedSize.Height,
+                    Is.GreaterThanOrEqualTo(uploadedSize.Height - 1),
+                    "Publishing should not crop the already-cropped cover image again"
+                );
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_DefaultMode_CoverImage_RemovesDataDivCropStyle()
+        {
+            using (var folder = new TemporaryFolder("DefaultCropCoverDataDiv"))
+            {
+                using (var bitmap = new Bitmap(1001, 800))
+                {
+                    bitmap.Save(Path.Combine(folder.Path, "cover.png"), ImageFormat.Png);
+                }
+                var dom = MakeCroppedCoverDom();
+                var img = dom.SelectSingleNode("//img[@id='coverImg']");
+                var dataDivEntry = dom.SelectSingleNode(
+                    "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+                );
+                // Sanity check
+                Assert.That(dataDivEntry.HasAttribute("style"), Is.True);
+
+                // SUT
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path);
+
+                Assert.That(img.HasAttribute("style"), Is.False);
+                Assert.That(
+                    dataDivEntry.HasAttribute("style"),
+                    Is.False,
+                    "The data-div entry should lose its crop style along with the page img"
+                );
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_UploadMode_CropFails_LeavesDataDivCropStyle()
+        {
+            // If the file can't be cropped, it is unchanged, so the data-div must keep the author's
+            // crop; reopening the book can then restore it.
+            using (var folder = new TemporaryFolder("UploadCropFailsDataDiv"))
+            {
+                // Deliberately no cover.png in the folder, so the crop fails.
+                var dom = MakeCroppedCoverDom();
+                var img = dom.SelectSingleNode("//img[@id='coverImg']");
+                var dataDivEntry = dom.SelectSingleNode(
+                    "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+                );
+                var originalDataDivStyle = dataDivEntry.GetAttribute("style");
+                // Sanity check
+                Assert.That(
+                    ImageUtils.GetNumberFromPx("top", originalDataDivStyle),
+                    Is.EqualTo(-24.6001).Within(0.0001)
+                );
+
+                // SUT, as BookUpload does it
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path, true, true);
+
+                Assert.That(
+                    img.GetAttribute("style"),
+                    Is.EqualTo(originalDataDivStyle),
+                    "The file is unchanged, so the page img must keep its crop style"
+                );
+                Assert.That(dataDivEntry.GetAttribute("style"), Is.EqualTo(originalDataDivStyle));
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_UploadMode_DuplicateCropFails_LeavesDataDivCropStyle()
+        {
+            // A second img with the same src and crop must not treat the first one's failed crop
+            // as done, which would take the duplicate path and clear the data-div crop.
+            using (var folder = new TemporaryFolder("UploadDuplicateCropFailsDataDiv"))
+            {
+                // Deliberately no cover.png in the folder, so the crop fails.
+                var dom = MakeCroppedCoverDom();
+                var page = dom.SelectSingleNode("//div[@id='frontCover']");
+                page.ParentNode.AppendChild(page.CloneNode(true));
+                var dataDivEntry = dom.SelectSingleNode(
+                    "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+                );
+                var originalDataDivStyle = dataDivEntry.GetAttribute("style");
+                // Sanity check
+                Assert.That(
+                    dom.SafeSelectNodes("//img[@data-book='coverImage']").Length,
+                    Is.EqualTo(2)
+                );
+
+                // SUT, as BookUpload does it
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path, true, true);
+
+                Assert.That(dataDivEntry.GetAttribute("style"), Is.EqualTo(originalDataDivStyle));
+                foreach (var img in dom.SafeSelectNodes("//img[@data-book='coverImage']"))
+                {
+                    Assert.That(
+                        img.GetAttribute("style"),
+                        Is.EqualTo(originalDataDivStyle),
+                        "Neither img's file changed, so both keep their crop style"
+                    );
+                }
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_UploadMode_CustomLayoutCoverImage_DropsDataDivCrop()
+        {
+            // The data-div entry describes the standard cover layout (BL-16357): a crop style for
+            // the original file, and a canvas element sized for the original file's shape. Upload
+            // replaces the file with one cropped for the custom layout, possibly of another shape,
+            // so neither applies any more and the entry must lose them. Then switching back to the
+            // standard layout (e.g. when the subscription no longer allows custom layouts) shows
+            // the whole cropped picture, not cropped a second time.
+            using (var folder = new TemporaryFolder("UploadCropCustomCoverDataDiv"))
+            using (var settingsFolder = new TemporaryFolder("UploadCropCustomCoverDataDivSettings"))
+            {
+                using (var bitmap = new Bitmap(1001, 800))
+                {
+                    bitmap.Save(Path.Combine(folder.Path, "cover.png"), ImageFormat.Png);
+                }
+                var dom = MakeCroppedCoverDom();
+                var page = dom.SelectSingleNode("//div[@id='frontCover']");
+                page.AddClass("bloom-customLayout");
+                // Give the custom layout a square canvas element with a zoomed-in crop, unlike the
+                // standard layout's wide one recorded in the data-div.
+                var canvasElement = dom.SelectSingleNode(
+                    "//div[@id='frontCover']//div[contains(@class,'bloom-canvas-element')]"
+                );
+                canvasElement.SetAttribute(
+                    "style",
+                    "width: 250px; left: 100px; top: 0px; height: 250px;"
+                );
+                var img = dom.SelectSingleNode("//img[@id='coverImg']");
+                img.SetAttribute("style", "width: 400px; left: -50px; top: -60px");
+                var dataDivEntry = dom.SelectSingleNode(
+                    "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+                );
+                var originalDataDivStyle = dataDivEntry.GetAttribute("style");
+                var originalCanvasElementStyle = dataDivEntry.GetAttribute(
+                    "data-canvas-element-style"
+                );
+                // Sanity checks: the custom crop is square, but the standard layout's canvas
+                // element was sized for the wide original picture inside a 652x204 bloom-canvas.
+                Assert.That(HtmlDom.IsInCustomLayoutPage(img), Is.True);
+                Assert.That(
+                    dataDivEntry.GetAttribute("data-canvas-imgsizebasedon"),
+                    Is.EqualTo("652,204")
+                );
+                Assert.That(
+                    ImageUtils.GetNumberFromPx("width", originalCanvasElementStyle),
+                    Is.EqualTo(296.823).Within(0.001)
+                );
+
+                // SUT, as BookUpload does it
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path, true, true);
+
+                var croppedSrc = img.GetAttribute("src");
+                var croppedPath = UrlPathString.GetFullyDecodedPath(folder.Path, ref croppedSrc);
+                Assert.That(ImageUtils.TryGetImageSize(croppedPath, out var croppedSize), Is.True);
+                Assert.That(
+                    croppedSize.Width,
+                    Is.EqualTo(croppedSize.Height).Within(2),
+                    "The file should be cropped to the custom layout's square canvas element"
+                );
+                Assert.That(dataDivEntry.GetAttribute("src"), Is.EqualTo(img.GetAttribute("src")));
+
+                // The entry keeps the picture but loses the standard layout's crop and frame.
+                Assert.That(dataDivEntry.HasAttribute("style"), Is.False);
+                Assert.That(dataDivEntry.HasAttribute("data-canvas-element-style"), Is.False);
+                Assert.That(dataDivEntry.HasAttribute("data-canvas-imgsizebasedon"), Is.False);
+                Assert.That(
+                    img.GetAttribute("style"),
+                    Is.Not.EqualTo(originalDataDivStyle),
+                    "The custom page img itself should still get its adjusted crop style"
+                );
+
+                // Switch back to the standard layout, as Bloom does when the subscription doesn't
+                // allow custom layouts: the cover comes fresh from the xmatter template, with a
+                // plain img in the bloom-canvas, and the data-div fills it in.
+                page.RemoveClass("bloom-customLayout");
+                var bloomCanvas = dom.SelectSingleNode(
+                    "//div[@id='frontCover']//div[@class='bloom-canvas']"
+                );
+                bloomCanvas.InnerXml = @"<img data-book=""coverImage"" src=""placeHolder.png"" />";
+                var collectionSettings = new CollectionSettings(
+                    new NewCollectionSettings()
+                    {
+                        PathToSettingsFile = CollectionSettings.GetPathForNewSettings(
+                            settingsFolder.Path,
+                            "test"
+                        ),
+                    }
+                );
+                new BookData(dom, collectionSettings, null).SynchronizeDataItemsThroughoutDOM();
+                img = dom.SelectSingleNode("//img[@data-book='coverImage']");
+                Assert.That(img.GetAttribute("src"), Is.EqualTo(dataDivEntry.GetAttribute("src")));
+                Assert.That(
+                    img.HasAttribute("style"),
+                    Is.False,
+                    "The standard cover should show the cropped file whole, with no crop"
+                );
+                Assert.That(
+                    (img.ParentNode as SafeXmlElement).GetAttribute("class"),
+                    Is.EqualTo("bloom-canvas"),
+                    "With no saved frame, the plain template structure is left for the editor to lay out"
+                );
+            }
+        }
+    }
+
+    /// <summary>
+    /// ReallyCropImages on pictures whose img carries the picture's own rotation and mirror in
+    /// its inline transform. Each test uses a 40x20 PNG with four coloured quadrants, shown at
+    /// its natural size, so an img px is an image pixel and the expected colours can be worked
+    /// out by hand.
+    /// </summary>
+    [TestFixture]
+    public class ReallyCropImagesTransformTests
+    {
+        internal static readonly Color kTopLeft = Color.FromArgb(255, 255, 0, 0);
+        internal static readonly Color kTopRight = Color.FromArgb(255, 0, 255, 0);
+        internal static readonly Color kBottomLeft = Color.FromArgb(255, 0, 0, 255);
+        internal static readonly Color kBottomRight = Color.FromArgb(255, 255, 255, 0);
+
+        /// <summary>
+        /// Write an image of 40x20 units, each unit <paramref name="pixelsPerUnit"/> pixels square,
+        /// whose four quadrants are red (top left), green (top right), blue (bottom left) and
+        /// yellow (bottom right). PNG unless <paramref name="format"/> says otherwise.
+        /// </summary>
+        internal static void MakeQuadrantImage(
+            string path,
+            ImageFormat format = null,
+            int pixelsPerUnit = 1
+        )
+        {
+            var width = 40 * pixelsPerUnit;
+            var height = 20 * pixelsPerUnit;
+            using (var bitmap = new Bitmap(width, height))
+            {
+                for (var x = 0; x < width; x++)
+                {
+                    for (var y = 0; y < height; y++)
+                    {
+                        Color color;
+                        if (y < height / 2)
+                            color = x < width / 2 ? kTopLeft : kTopRight;
+                        else
+                            color = x < width / 2 ? kBottomLeft : kBottomRight;
+                        bitmap.SetPixel(x, y, color);
+                    }
+                }
+                bitmap.Save(path, format ?? ImageFormat.Png);
+            }
+        }
+
+        /// <summary>
+        /// Make the quadrant image in a folder, put one img showing it in a canvas element with
+        /// the given styles, run ReallyCropImages, and return the img and the bytes of the file
+        /// it ends up pointing at.
+        /// </summary>
+        private static SafeXmlElement RunOnOneImage(
+            TemporaryFolder folder,
+            string canvasElementStyle,
+            string imgStyle,
+            out byte[] outputBytes,
+            string fileName = "quadrants.png",
+            ImageFormat format = null,
+            int pixelsPerUnit = 1
+        )
+        {
+            MakeQuadrantImage(Path.Combine(folder.Path, fileName), format, pixelsPerUnit);
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+                <div class=""bloom-page"">
+                    <div class=""marginBox"">
+                        <div class=""bloom-canvas"">"
+                    + ReallyCropImagesTests.MakeImageCanvasElement(
+                        "picture",
+                        fileName,
+                        canvasElementStyle,
+                        imgStyle
+                    )
+                    + @"</div>
+                    </div>
+                </div>
+            </body></html>"
+            );
+            Assert.That(
+                ImageUtils.GetPictureTransform(imgStyle).IsIdentity,
+                Is.EqualTo(!imgStyle.Contains("transform")),
+                "sanity check: the test's img style parses as the test intends"
+            );
+
+            ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path);
+
+            var img = dom.SelectSingleNode("//img[@id='picture']");
+            outputBytes = RobustFile.ReadAllBytes(
+                Path.Combine(folder.Path, img.GetAttribute("src"))
+            );
+            return img;
+        }
+
+        /// <summary>
+        /// Check the output's size and the colour at the centre of each of its four quadrants.
+        /// Each colour channel may differ from the expected one by up to
+        /// <paramref name="tolerance"/>, which a JPEG needs.
+        /// </summary>
+        internal static void AssertQuadrants(
+            byte[] imageBytes,
+            int width,
+            int height,
+            Color topLeft,
+            Color topRight,
+            Color bottomLeft,
+            Color bottomRight,
+            int tolerance = 0
+        )
+        {
+            using (var stream = new MemoryStream(imageBytes))
+            using (var bitmap = new Bitmap(stream))
+            {
+                Assert.That(bitmap.Width, Is.EqualTo(width), "output width");
+                Assert.That(bitmap.Height, Is.EqualTo(height), "output height");
+                AssertColor(bitmap.GetPixel(width / 4, height / 4), topLeft, tolerance, "top left");
+                AssertColor(
+                    bitmap.GetPixel(width * 3 / 4, height / 4),
+                    topRight,
+                    tolerance,
+                    "top right"
+                );
+                AssertColor(
+                    bitmap.GetPixel(width / 4, height * 3 / 4),
+                    bottomLeft,
+                    tolerance,
+                    "bottom left"
+                );
+                AssertColor(
+                    bitmap.GetPixel(width * 3 / 4, height * 3 / 4),
+                    bottomRight,
+                    tolerance,
+                    "bottom right"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Check that each colour channel of <paramref name="actual"/> is within
+        /// <paramref name="tolerance"/> of <paramref name="expected"/>.
+        /// </summary>
+        private static void AssertColor(Color actual, Color expected, int tolerance, string where)
+        {
+            var message = $"{where}: expected {expected}, got {actual}";
+            Assert.That(actual.R, Is.EqualTo(expected.R).Within(tolerance), message);
+            Assert.That(actual.G, Is.EqualTo(expected.G).Within(tolerance), message);
+            Assert.That(actual.B, Is.EqualTo(expected.B).Within(tolerance), message);
+        }
+
+        [TestCase("transform: rotate(90deg) scale(-1, 1);", 1, true, false)]
+        [TestCase("width: 40px; left: 0px; transform: rotate(270deg);", 3, false, false)]
+        [TestCase("transform: scale(-1);", 0, true, true)]
+        [TestCase("transform: rotate(-90deg) scale(1, -1)", 3, false, true)]
+        [TestCase("width: 40px; left: 0px; top: 0px;", 0, false, false)]
+        public void GetPictureTransform_ReadsRotationAndMirrors(
+            string style,
+            int quarterRotations,
+            bool flipX,
+            bool flipY
+        )
+        {
+            var transform = ImageUtils.GetPictureTransform(style);
+            Assert.That(transform.QuarterRotations, Is.EqualTo(quarterRotations));
+            Assert.That(transform.FlipX, Is.EqualTo(flipX));
+            Assert.That(transform.FlipY, Is.EqualTo(flipY));
+        }
+
+        [Test]
+        public void ReallyCropImages_Rotate90Uncropped_RotatesPixelsAndRemovesTransform()
+        {
+            using (var folder = new TemporaryFolder("Rotate90Uncropped"))
+            {
+                var img = RunOnOneImage(
+                    folder,
+                    "height: 40px; left: 0px; top: 0px; width: 20px;",
+                    "transform: rotate(90deg)",
+                    out var bytes
+                );
+
+                Assert.That(img.HasAttribute("style"), Is.False);
+                // Rotated clockwise, the left column (red over blue) becomes the top row
+                // (blue, red), and the right column the bottom row (yellow, green).
+                AssertQuadrants(bytes, 20, 40, kBottomLeft, kTopLeft, kBottomRight, kTopRight);
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_Rotate90CroppedOffCentre_CropsShownRectangle()
+        {
+            using (var folder = new TemporaryFolder("Rotate90Cropped"))
+            {
+                // The box is 40x20 with its centre at (10, 10). Rotated, it shows a 20x40
+                // rectangle at left 0, top -10, and the 20x30 element shows its lower 30 rows.
+                var img = RunOnOneImage(
+                    folder,
+                    "height: 30px; left: 0px; top: 0px; width: 20px;",
+                    "width: 40px; left: -10px; top: 0px; transform: rotate(90deg);",
+                    out var bytes
+                );
+
+                Assert.That(img.HasAttribute("style"), Is.False);
+                // Rows 10 to 40 of the rotated image: its quarter-way row is rotated row 17,
+                // still in the top half (blue, red); its three-quarter row is in the bottom half.
+                AssertQuadrants(bytes, 20, 30, kBottomLeft, kTopLeft, kBottomRight, kTopRight);
+                using (var stream = new MemoryStream(bytes))
+                using (var bitmap = new Bitmap(stream))
+                {
+                    // A crop taken from the unrotated box would begin at rotated row 0, leaving
+                    // output row 12 in the top half.
+                    Assert.That(
+                        bitmap.GetPixel(5, 12).ToArgb(),
+                        Is.EqualTo(kBottomRight.ToArgb()),
+                        "output row 12 is rotated row 22, in the bottom half"
+                    );
+                }
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_Rotate90CroppedOffCentreJpeg_CropsShownRectangle()
+        {
+            using (var folder = new TemporaryFolder("Rotate90CroppedJpeg"))
+            {
+                // The rotate 90 cropped test at eight times the size, so the quadrants are
+                // several JPEG blocks across: a 320x160 box whose rotated 160x320 rectangle
+                // shows its lower 240 rows in the 160x240 element.
+                var img = RunOnOneImage(
+                    folder,
+                    "height: 240px; left: 0px; top: 0px; width: 160px;",
+                    "width: 320px; left: -80px; top: 0px; transform: rotate(90deg);",
+                    out var bytes,
+                    "quadrants.jpg",
+                    ImageFormat.Jpeg,
+                    8
+                );
+
+                Assert.That(img.HasAttribute("style"), Is.False);
+                AssertQuadrants(
+                    bytes,
+                    160,
+                    240,
+                    kBottomLeft,
+                    kTopLeft,
+                    kBottomRight,
+                    kTopRight,
+                    40
+                );
+                using (var stream = new MemoryStream(bytes))
+                using (var bitmap = new Bitmap(stream))
+                {
+                    // Output row 100 is rotated row 180, in the bottom half. A crop taken from
+                    // the unrotated box would begin at rotated row 0, leaving it in the top half.
+                    var pixel = bitmap.GetPixel(40, 100);
+                    Assert.That(pixel.R, Is.GreaterThan(200), $"yellow expected, got {pixel}");
+                    Assert.That(pixel.G, Is.GreaterThan(200), $"yellow expected, got {pixel}");
+                    Assert.That(pixel.B, Is.LessThan(60), $"yellow expected, got {pixel}");
+                }
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_MirrorOnly_MirrorsPixelsAndRemovesTransform()
+        {
+            using (var folder = new TemporaryFolder("MirrorOnly"))
+            {
+                var img = RunOnOneImage(
+                    folder,
+                    "height: 20px; left: 0px; top: 0px; width: 40px;",
+                    "transform: scale(-1, 1)",
+                    out var bytes
+                );
+
+                Assert.That(img.HasAttribute("style"), Is.False);
+                AssertQuadrants(bytes, 40, 20, kTopRight, kTopLeft, kBottomRight, kBottomLeft);
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_Rotate270AndMirrorCropped_MirrorsThenRotatesThenCrops()
+        {
+            using (var folder = new TemporaryFolder("Rotate270MirrorCropped"))
+            {
+                // Mirrored first and then rotated 270 degrees clockwise, the picture is its own
+                // transpose: red top left, blue top right, green bottom left, yellow bottom right.
+                // The crop is the same as in the rotate 90 test: the lower 30 of 40 rows.
+                var img = RunOnOneImage(
+                    folder,
+                    "height: 30px; left: 0px; top: 0px; width: 20px;",
+                    "width: 40px; left: -10px; top: 0px; transform: rotate(270deg) scale(-1, 1);",
+                    out var bytes
+                );
+
+                Assert.That(img.HasAttribute("style"), Is.False);
+                AssertQuadrants(bytes, 20, 30, kTopLeft, kBottomLeft, kTopRight, kBottomRight);
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_NoTransformUncropped_LeavesFileAndStyleAlone()
+        {
+            using (var folder = new TemporaryFolder("NoTransformUncropped"))
+            {
+                MakeQuadrantImage(Path.Combine(folder.Path, "original.png"));
+                var originalBytes = RobustFile.ReadAllBytes(
+                    Path.Combine(folder.Path, "original.png")
+                );
+                var img = RunOnOneImage(
+                    folder,
+                    "height: 20px; left: 0px; top: 0px; width: 40px;",
+                    "left: 0px; top: 0px;",
+                    out var bytes
+                );
+
+                Assert.That(img.GetAttribute("src"), Is.EqualTo("quadrants.png"));
+                Assert.That(img.GetAttribute("style"), Is.EqualTo("left: 0px; top: 0px;"));
+                Assert.That(bytes, Is.EqualTo(originalBytes));
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_NoTransformCropped_CropsUnrotatedBox()
+        {
+            using (var folder = new TemporaryFolder("NoTransformCropped"))
+            {
+                // The element shows columns 10 to 30 and rows 0 to 20 of the picture.
+                var img = RunOnOneImage(
+                    folder,
+                    "height: 20px; left: 0px; top: 0px; width: 20px;",
+                    "width: 40px; left: -10px; top: 0px;",
+                    out var bytes
+                );
+
+                Assert.That(img.HasAttribute("style"), Is.False);
+                AssertQuadrants(bytes, 20, 20, kTopLeft, kTopRight, kBottomLeft, kBottomRight);
             }
         }
     }

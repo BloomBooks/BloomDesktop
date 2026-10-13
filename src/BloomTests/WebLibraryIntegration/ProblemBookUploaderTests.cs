@@ -8,7 +8,10 @@ using SIL.Progress;
 
 namespace BloomTests.WebLibraryIntegration
 {
+    // Integration test: uploads a real zip to the live unit-test S3 bucket, so it needs
+    // internet access. Exclude it from a quick local run with --filter TestCategory!=Integration
     [TestFixture]
+    [Category("Integration")]
     public class ProblemBookUploaderTests
     {
         [Test]

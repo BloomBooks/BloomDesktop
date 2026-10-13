@@ -51,6 +51,7 @@ export interface IAppBuilderPublisherScreenState {
     progressStageCode?: string;
     sizeEstimates: IAppSizeEstimates;
     runAction: (action: AppBuilderAction) => void;
+    cancelAction: () => void;
     showApkInExplorerInShell: () => void;
     markConfigurationChanged: () => void;
 }
@@ -448,6 +449,10 @@ export function useAppBuilderPublisherScreen(
         void postJson("fileIO/showInFolder", { folderPath: status.apkPath });
     }
 
+    function cancelAction(): void {
+        post("publish/rab/cancel");
+    }
+
     function markConfigurationChanged(): void {
         setPendingBuildNeeded(true);
         void refreshStatus();
@@ -467,6 +472,7 @@ export function useAppBuilderPublisherScreen(
         progressStageCode,
         sizeEstimates,
         runAction,
+        cancelAction,
         showApkInExplorerInShell,
         markConfigurationChanged,
     };

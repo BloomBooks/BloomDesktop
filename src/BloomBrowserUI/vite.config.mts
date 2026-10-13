@@ -87,7 +87,7 @@ function compileMarkdownFile(
 // Custom plugin to compile Markdown files to HTML
 // Handles 4 different types of markdown files with different styling/output
 // Claude sonnet 4.5 came up with this, based on our previous gulpfile handling of markdown.
-function compileMarkdownPlugin(): Plugin {
+function compileMarkdownPlugin(outputBrowserDir: string): Plugin {
     return {
         name: "compile-markdown",
         apply: "build",
@@ -102,7 +102,7 @@ function compileMarkdownPlugin(): Plugin {
             md.use(markdownItContainer, "note");
             md.use(markdownItAttrs);
 
-            const outputBase = path.resolve(__dirname, "../../output/browser");
+            const outputBase = outputBrowserDir;
 
             // 1. Help files: ./help/**/*.md -> output/browser/help/*.htm (flattened)
             const helpFiles = glob.sync("./help/**/*.md");
@@ -186,7 +186,7 @@ function compileMarkdownPlugin(): Plugin {
 // and make an xBundle.js that would REPLACE xBundle-main.js, reducing the number of files and
 // the indirection,but somehow it works out that some of the bundles actually load the root
 // -main.js files of OTHER bundles, so modifying or deleting them is not a good option.
-function postBuildPlugin(): Plugin {
+function postBuildPlugin(outputBrowserDir: string): Plugin {
     interface ManifestEntry {
         file: string;
         isEntry?: boolean;
@@ -199,7 +199,7 @@ function postBuildPlugin(): Plugin {
         name: "post-build",
         apply: "build", // Only run during build, not dev
         async closeBundle() {
-            const outputDir = path.resolve(__dirname, "../../output/browser");
+            const outputDir = outputBrowserDir;
             const manifestPath = path.join(outputDir, ".vite/manifest.json");
 
             try {
@@ -506,6 +506,19 @@ ${injectedCss.map((call) => `(function() { ${call} })();`).join("\n")}
         },
     };
 }
+
+// Files that neither vitest project (see `test.projects` below) should treat as tests.
+const testExcludes = [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/cypress/**",
+    "**/.{idea,git,cache,output,temp}/**",
+    "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+    "**/bookEdit/canvas-e2e-tests/**", // Exclude Playwright e2e suite (run via pnpm e2e canvas)
+    "**/react_components/component-tester/**", // Exclude playwright component tests
+    "**/*.uitest.{ts,tsx}", // Exclude UI tests that use Playwright
+];
+
 // Use dynamic imports so that if Vite/esbuild emits a CommonJS wrapper for this
 // config, Node can still load ESM-only plugins (like @vitejs/plugin-react) via
 // native dynamic import instead of require().
@@ -515,6 +528,33 @@ export default defineConfig(async ({ command }) => {
         Number.isInteger(parsedPort) && parsedPort > 0 && parsedPort <= 65535
             ? parsedPort
             : 5173;
+
+    // LINKED LIBRARIES (set by `go.mjs --with`): alias each bare package import to its local
+    // checkout so edits there flow into this dev server. Format: "name=absPath;name=absPath".
+    // Empty/absent in a normal run, so the libraries resolve from node_modules as usual.
+    const linkedLibs: Record<string, string> = {};
+    for (const pair of (process.env.BLOOM_LINKED_LIBS ?? "")
+        .split(";")
+        .map((p) => p.trim())
+        .filter(Boolean)) {
+        const eq = pair.indexOf("=");
+        if (eq > 0) {
+            linkedLibs[pair.slice(0, eq)] = pair.slice(eq + 1);
+        }
+    }
+
+    // AGENT (ISOLATED) BUILD
+    // When BLOOM_UI_OUTDIR is set (by build/agent-vite.sh|ps1), redirect the whole
+    // build into a private per-terminal tree instead of the shared output/browser, so
+    // an agent can verify the bundle compiles without clobbering a developer's running
+    // Bloom, its Vite dev server, or a `vite build --watch`. This is the front-end twin
+    // of the C# build/agent-dotnet.sh wrapper. In an agent build we also skip the
+    // pug/LESS/markdown/static-copy side-effect plugins (see the plugins array below).
+    const agentOutDir = process.env.BLOOM_UI_OUTDIR;
+    const isAgentBuild = !!agentOutDir;
+    const outputBrowserDir = agentOutDir
+        ? path.resolve(agentOutDir)
+        : path.resolve(__dirname, "../../output/browser");
 
     // ENTRY POINTS CONFIGURATION
     // Define all JavaScript/TypeScript entry points - these are the "root" files that
@@ -590,18 +630,26 @@ export default defineConfig(async ({ command }) => {
                 },
             }),
             transformLessImportsPlugin(), // Transform LESS imports to inline CSS injection (build only)
-            compilePugPlugin(), // Compile Pug templates to HTML during build
-            compileLessPlugin(), // Compile standalone LESS files to CSS during build
-            compileMarkdownPlugin(), // Compile Markdown files to HTML during build
+            // In an agent build (BLOOM_UI_OUTDIR set) skip these side-effect plugins:
+            // they exist to populate the shared output/browser for a running Bloom, are
+            // irrelevant to a bundle-compile check, and skipping them keeps the isolated
+            // build fast and guarantees it writes ONLY under the private tree.
+            ...(isAgentBuild
+                ? []
+                : [
+                      compilePugPlugin(), // Compile Pug templates to HTML during build
+                      compileLessPlugin(), // Compile standalone LESS files to CSS during build
+                      compileMarkdownPlugin(outputBrowserDir), // Compile Markdown files to HTML during build
+                  ]),
             reportBuildErrorPlugin(),
-            postBuildPlugin(), // Process manifest and create final bundles (build only)
+            postBuildPlugin(outputBrowserDir), // Process manifest and create final bundles (build only)
 
             // STATIC FILE COPYING (BUILD ONLY)
             // vite-plugin-static-copy copies files from source to output directory
             // CRITICAL: These plugins must only run during build, not dev mode
             // In dev mode, scanning 525+ files causes 30+ second delays
             // Conditionally include these plugins only when command === 'build'
-            ...(command === "build"
+            ...(command === "build" && !isAgentBuild
                 ? [
                       // structured: false = flatten directory structure (all files go to dest root)
                       // Copy files that need flattening (structured: false)
@@ -618,6 +666,13 @@ export default defineConfig(async ({ command }) => {
                               {
                                   src: "node_modules/bloom-player/dist/*",
                                   dest: "./bloom-player/dist/",
+                              },
+                              // Copy the AI Image Editor's prebuilt app (dist-app/) so Bloom
+                              // serves it at /bloom/aiImageEditor/. Mirrors the dev-time
+                              // staging in go.mjs/aiImageEditorBuild.mjs.
+                              {
+                                  src: "node_modules/bloom-ai-image-tools/dist-app/*",
+                                  dest: "./aiImageEditor/",
                               },
                           ],
                       }),
@@ -673,10 +728,28 @@ export default defineConfig(async ({ command }) => {
             },
         },
 
+        // CSS PREPROCESSING
+        css: {
+            // Compile LESS on the main thread instead of in Vite's worker pool.
+            //
+            // In the pool, the worker blocks on Atomics.wait() while the main thread
+            // resolves each @import for it, and gives up after ~5s if the main thread
+            // looks idle, on the theory that the two have deadlocked. A busy CI machine
+            // makes that guess wrong: the build dies with "[vite:css] [less] timed-out"
+            // naming whichever .less file was in flight, which reads like a fault in that
+            // file and isn't one.
+            //
+            // 0 means "no worker" (Vite treats max <= 0 as disabling the real worker), so
+            // the watchdog does not exist and the error cannot occur. We lose preprocessor
+            // parallelism, which is nearly free here: most of our LESS is compiled by the
+            // compile-less plugin in closeBundle, not through this path.
+            preprocessorMaxWorkers: 0,
+        },
+
         // BUILD CONFIGURATION
         // Controls how Vite creates production bundles
         build: {
-            outDir: "../../output/browser", // Where to output built files
+            outDir: outputBrowserDir, // Where to output built files (redirected by BLOOM_UI_OUTDIR for agent builds)
             sourcemap: true, // Generate .map files for debugging production code
             minify: false, // Keep code readable (set to 'esbuild' or 'terser' to minify)
             cssCodeSplit: true, // Generate separate CSS files (loaded dynamically by postBuildPlugin)
@@ -783,6 +856,8 @@ export default defineConfig(async ({ command }) => {
                     "lib/long-press/jquery.longpress.js",
                 ),
                 "App.less": path.resolve(__dirname, "app/App.less"),
+                // Local checkouts of our libraries when launched via `go.sh --with <name>`.
+                ...linkedLibs,
             },
         },
 
@@ -790,52 +865,85 @@ export default defineConfig(async ({ command }) => {
         // Vitest is Vite's test runner (replaces Karma + Jasmine)
         // See vitest.dev for full documentation
         test: {
-            setupFiles: ["./vitest.setup.ts"], // Run this file before each test file
-            include: ["./**/*{test,spec,Spec}.{js,ts,jsx,tsx}"], // Which files are tests
             reporters: globalThis.process?.env?.TEAMCITY_VERSION
                 ? ["default", "junit"]
                 : ["default"],
             outputFile: "./bloombrowserui-test-results.xml",
             includeConsoleOutput: false,
-            // Uncomment to run only specific test files during development:
-            // include: ["./bookEdit/toolbox/talkingBook/audioRecordingSpec.ts"],
-            exclude: [
-                "**/node_modules/**",
-                "**/dist/**",
-                "**/cypress/**",
-                "**/.{idea,git,cache,output,temp}/**",
-                "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
-                "**/bookEdit/canvas-e2e-tests/**", // Exclude Playwright e2e suite (run via pnpm e2e canvas)
-                "**/react_components/component-tester/**", // Exclude playwright component tests
-                "**/*.uitest.{ts,tsx}", // Exclude UI tests that use Playwright
+            // Two projects, both run by `pnpm test`.
+            projects: [
+                {
+                    extends: true,
+                    test: {
+                        name: "unit",
+                        setupFiles: ["./vitest.setup.ts"], // Run this file before each test file
+                        include: ["./**/*{test,spec,Spec}.{js,ts,jsx,tsx}"], // Which files are tests
+                        // Uncomment to run only specific test files during development:
+                        // include: ["./bookEdit/toolbox/talkingBook/audioRecordingSpec.ts"],
+                        exclude: [
+                            ...testExcludes,
+                            "**/*.browser.spec.ts", // Run by the browser project below
+                        ],
+                        environment: "jsdom", // Use jsdom to simulate browser DOM in Node
+                        environmentOptions: {
+                            jsdom: {},
+                        },
+                    },
+                },
+                {
+                    // Tests that need a real layout engine (scrollHeight, offsetTop, canvas
+                    // pixels, ...), which jsdom doesn't have. They run in headless Edge, which
+                    // is the engine behind WebView2 and is already installed on Windows.
+                    // This project deliberately does not extend the rest of this config.
+                    // The app's optimizeDeps and plugins stop Vite from pre-bundling the
+                    // CommonJS dependencies a browser needs, and the jsdom setup file (which
+                    // mocks canvas, innerText and more) would break real layout measurement.
+                    test: {
+                        name: "browser",
+                        setupFiles: ["./vitest.browser.setup.ts"],
+                        include: ["./**/*.browser.spec.ts"],
+                        exclude: testExcludes,
+                        browser: {
+                            enabled: true,
+                            headless: true,
+                            provider: playwright({
+                                launchOptions: { channel: "msedge" },
+                            }),
+                            instances: [
+                                {
+                                    browser: "chromium",
+                                },
+                            ],
+                        },
+                    },
+                },
             ],
-            environment: "jsdom", // Use jsdom to simulate browser DOM in Node
             globals: false, // Don't inject global test functions (use imports instead)
             testTimeout: 30000, // 30 second timeout for async operations
             teardownTimeout: 10000, // 10s max for after-test cleanup; prevents hung workers from blocking the pool
-            // Cap parallel workers. On Windows, running too many jsdom workers simultaneously
-            // may exhaust system resources (TCP connections to localhost, libuv thread pool), causing
-            // workers to stall indefinitely. This may slightly slow things down on some computers
-            // but reduces the chance of the tests hanging altogether.
-            maxWorkers: "70%",
+            // Use worker threads instead of child-process forks. Vitest 4.0 changed the
+            // default pool to 'forks', but on Windows the process-creation overhead causes
+            // workers to time out before they start ("Timeout starting forks runner").
+            // The threads pool is lighter-weight and avoids that issue.
+            pool: "threads",
+            // Limit concurrent workers. The heavy transform cost of some test files
+            // (notably PrepareAppStepper.spec.tsx with its deep MUI import chain) saturates
+            // the CPU while workers are starting, causing other workers to miss the
+            // hardcoded 5-second vitest startup timeout. With pool: "threads" the
+            // per-worker startup overhead is negligible, so we can safely use more workers.
+            // 4 workers roughly halves the wall-clock collect time compared to 2.
+            maxWorkers: 4,
             minWorkers: 2,
             sourcemap: true, // Enable source maps for debugging test code
-            deps: {
-                inline: ["vitest-canvas-mock"], // Force this dep to be bundled (not externalized)
-            },
-            browser: {
-                // This whole block is unused since enabled is false. The settings are our current
-                // best guess for our next attempt to get browser mode working.
-                enabled: false, // Browser mode disabled (we use jsdom instead)
-                provider: playwright(),
-                instances: [
-                    {
-                        browser: "chromium",
-                    },
-                ],
-            },
-            environmentOptions: {
-                jsdom: {},
+            server: {
+                deps: {
+                    // Process bloom-table with Vite's resolver rather than handing it to
+                    // Node's ESM loader. Its ESM build imports MUI by subpath
+                    // (@mui/material/Divider and friends), and MUI 5 ships no "exports"
+                    // map, so Node rejects those as unsupported directory imports and the
+                    // whole test file fails to load. Vite resolves them via "main".
+                    inline: ["bloom-table"],
+                },
             },
         },
 
@@ -845,10 +953,30 @@ export default defineConfig(async ({ command }) => {
             include: [
                 "jquery", // Always pre-bundle jQuery
                 "comicaljs", // Pre-bundle comicaljs (webpack UMD bundle needs processing)
+                // bloom-table is excluded below, so Vite never scans its imports. Any of
+                // these it imports that is not pre-bundled would be served raw, and the page
+                // then fails to load (react/jsx-runtime is CommonJS; MUI's ESM files import
+                // the CommonJS prop-types).
+                "bloom-table > @mui/material/Divider",
+                "bloom-table > @mui/material/IconButton",
+                "bloom-table > @mui/material/ListItemIcon",
+                "bloom-table > @mui/material/ListItemText",
+                "bloom-table > @mui/material/MenuItem",
+                "bloom-table > @mui/material/ToggleButton",
+                "bloom-table > react",
+                "bloom-table > react/jsx-runtime",
+                "bloom-table > react-dom",
+                "bloom-table > react-dom/client",
             ],
             exclude: [
                 "lib/localizationManager/localizationManager", // Don't pre-bundle this
                 "bloom-image-gallery", // TypeScript source entry point — must go through Vite's transform pipeline, not esbuild pre-bundling
+                // bloom-table comes from a committed-dist tag on GitHub, but a developer
+                // working on the library pnpm-links a local build instead (see the note in
+                // package.json). A pre-bundled copy would outlive that swap, so it is served
+                // as is. A running dev server still keeps the copy it first transformed:
+                // restart the whole go.sh stack to pick up a new build.
+                "bloom-table",
             ],
             // Force Vite to treat comicaljs as having named exports even though it's CommonJS/UMD
             esbuildOptions: {

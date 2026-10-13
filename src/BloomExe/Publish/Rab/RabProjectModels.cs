@@ -15,6 +15,10 @@ namespace Bloom.Publish.Rab
     public class RabProjectStatus
     {
         public bool RabInstalled { get; set; }
+
+        // The Reading App Builder for Bloom version this Bloom needs, when the installed one is
+        // older; null when no update is needed. The Apps screen tells the user to run Prepare.
+        public string RabUpdateVersion { get; set; }
         public bool ProjectExists { get; set; }
         public bool ApkExists { get; set; }
         public bool BuildNeeded { get; set; }

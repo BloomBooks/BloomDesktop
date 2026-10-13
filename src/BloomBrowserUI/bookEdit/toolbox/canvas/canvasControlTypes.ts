@@ -44,7 +44,10 @@ export type ControlId =
     | "pasteImage"
     | "copyImage"
     | "missingMetadata"
+    | "editWithAi"
     | "resetImage"
+    | "rotateRight"
+    | "flipImage"
     | "expandToFillSpace"
     | "imageFieldType"
     | "becomeBackground"
@@ -99,6 +102,8 @@ export type SectionId =
     | "gameDraggable"
     | "formatTarget"
     | "image"
+    | "imageArrangement"
+    | "imageSettings"
     | "imagePanel"
     | "video"
     | "audio"
@@ -115,6 +120,10 @@ export interface IControlContext {
     elementType: CanvasElementType;
     hasImage: boolean;
     hasRealImage: boolean;
+    // True when the image slot is an empty placeholder (it shows placeHolder.png).
+    // Distinct from !hasRealImage, which is also true for an image that failed to
+    // load: an empty slot is a normal state a user can fill, a broken image is not.
+    isPlaceholderImage: boolean;
     hasVideo: boolean;
     hasPreviousVideoContainer: boolean;
     hasNextVideoContainer: boolean;
@@ -123,6 +132,8 @@ export interface IControlContext {
     isRectangle: boolean;
     rectangleHasBackground: boolean;
     isCropped: boolean;
+    // The picture inside the box has been rotated or mirrored by Rotate right or Flip.
+    isImageContentTransformed: boolean;
     isNavigationButton: boolean;
     isButton: boolean;
     isBackgroundImage: boolean;
@@ -142,6 +153,25 @@ export interface IControlContext {
     hasClipboardText: boolean;
     isCustomPage: boolean;
     languageNameValues: ILanguageNameValues;
+    // True when the AI Image Editing experimental feature is turned on (its
+    // FeatureStatus.visible). Off by default, so the "Edit with AI" menu item is
+    // hidden until the user enables the feature in Experimental Features.
+    aiImageEditingAvailable: boolean;
+    // True when the current image's format is one the AI Image Editor can actually
+    // edit (see aiImageEditorImageFormats.ts). False for formats the editor can't open
+    // (e.g. svg), which keeps "Edit with AI" disabled for them.
+    imageIsAiEditableFormat: boolean;
+    // True when the user may create and restructure tables: the subscription is Pro
+    // or better and the table feature is visible. A book whose tables are frozen (see
+    // installHostHooks in tableEditing.ts) may still be typed in and published as a
+    // derivative, so its table element keeps Delete but loses Duplicate, which would
+    // be making a new table.
+    tablesMayBeRestructured: boolean;
+    // Deletes the object these controls belong to, when that object is not a canvas element.
+    // An inline image (a picture inside a text block) sets this, because deleting one means
+    // removing it from every language's text, and the canvas element manager does not know
+    // how to do that. When this is not set, Delete removes the page's active canvas element.
+    deleteThisObject?: () => void;
 }
 
 export interface IControlRuntime {

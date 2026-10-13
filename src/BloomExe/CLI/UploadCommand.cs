@@ -83,7 +83,15 @@ namespace Bloom.CLI
                             break;
                     }
                     Console.WriteLine("\nStarting upload...");
-                    await uploader.BulkUpload(applicationContainer, options);
+                    var succeeded = await uploader.BulkUpload(applicationContainer, options);
+                    if (!succeeded)
+                    {
+                        // Don't say "complete" and exit 0 when books failed; whatever is driving us
+                        // (a partner's script, our nightly e2e test) needs to see the failure. The
+                        // individual errors are already in BloomBulkUploadLog.txt. (BL-16869)
+                        Console.WriteLine("\nBulk upload FAILED. See BloomBulkUploadLog.txt.\n");
+                        return 1;
+                    }
                     Console.WriteLine(("\nBulk upload complete.\n"));
                 }
                 return 0;

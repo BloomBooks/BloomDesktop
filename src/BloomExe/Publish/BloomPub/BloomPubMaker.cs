@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -9,6 +9,7 @@ using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.FontProcessing;
+using Bloom.FreezeDoctor;
 using Bloom.ImageProcessing;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
@@ -128,6 +129,10 @@ namespace Bloom.Publish.BloomPub
             bool isTemplateBook = false
         )
         {
+            // Marked at the innermost worker rather than at the publish screens, because every route to a
+            // BloomPUB comes through here - including the bulk publisher and app building, which run longest.
+            using var _longOperation = FreezeDoctorSupport.LongOperation("making a BloomPUB");
+
             // PrepareBookForBloomReader is about to modify sTheMostRecentBloomFileLocator.
             // Record the previous value so we can restore it later.
             var previousLocator = BloomFileLocator.sTheMostRecentBloomFileLocator;
@@ -296,14 +301,10 @@ namespace Bloom.Publish.BloomPub
                             claimedFilenames
                         );
                         if (newFilename != null)
-                        {
-                            var oldEncoded = System.Web.HttpUtility.UrlPathEncode(filename);
-                            var newEncoded = System.Web.HttpUtility.UrlPathEncode(newFilename);
                             div.SetAttribute(
                                 "style",
-                                style.Replace(oldEncoded, newEncoded).Replace(filename, newFilename)
+                                ReplaceBackgroundImageFilename(style, newFilename)
                             );
-                        }
                     }
 
                     // After ConvertImagesToBackground, all content images (inside
@@ -422,8 +423,16 @@ namespace Bloom.Publish.BloomPub
                     ImageTransparencyMode.Auto => "_t",
                     _ => "_r", // None mode: resize / format-conversion only
                 };
-                var newFilename =
-                    Path.GetFileNameWithoutExtension(filename) + modeSuffix + adjustedExt;
+                // The mode suffix keeps different modes apart, but two sources whose names
+                // differ only by extension (e.g. "photo.jpg" and "photo.png", which the AI image
+                // editor readily creates) can both come out as "photo_r.jpg" in the same mode, and
+                // the book may already contain a file with that name. So we take an unused name,
+                // adding a counter if necessary (e.g. "photo_r1.jpg"). See BL-16954.
+                var newFilename = ImageUtils.GetUnusedFilename(
+                    bookFolderPath,
+                    Path.GetFileNameWithoutExtension(filename) + modeSuffix,
+                    adjustedExt
+                );
                 RobustFile.Copy(adjustedPath, Path.Combine(bookFolderPath, newFilename));
                 // Defer deletion: a later element with a different mode may still need
                 // the original. The actual delete happens after all elements are processed.
@@ -470,18 +479,63 @@ namespace Bloom.Publish.BloomPub
                     .Cast<SafeXmlElement>()
             )
             {
-                preservedImages.Add(System.Web.HttpUtility.UrlDecode(img.GetAttribute("src")));
+                // An img @src is URL-encoded (see the encoding conventions in UrlPathString), and
+                // must be decoded the matching way; HttpUtility.UrlDecode would eat a literal '+'.
+                preservedImages.Add(
+                    UrlPathString.CreateFromUrlEncodedString(img.GetAttribute("src")).NotEncoded
+                );
             }
             return preservedImages;
         }
 
-        private static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
+        /// <summary>
+        /// Get the image file name out of a background-image style, e.g. "cover.jpg" from
+        /// "background-image:url('cover.jpg')". Internal so a test can reach it.
+        /// </summary>
+        internal static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
         {
-            var filename = style.Substring(
-                style.IndexOf(kBackgroundImage) + kBackgroundImage.Length
-            );
-            filename = filename.Substring(0, filename.IndexOf("'"));
-            return System.Web.HttpUtility.UrlDecode(filename);
+            // The url in the style is URL-encoded (HtmlDom.SetImageElementUrl wrote it with
+            // UrlPathString.UrlEncoded), so decode it the matching way. HttpUtility.UrlDecode is
+            // NOT the matching way: it would turn a '+' in a real file name into a space (BL-3259).
+            return UrlPathString
+                .CreateFromUrlEncodedString(ExtractEncodedUrlFromStyle(style, out _, out _))
+                .NotEncoded;
+        }
+
+        /// <summary>
+        /// Return the encoded url between the quotes of a "background-image:url('...')" style,
+        /// along with where in <paramref name="style"/> it starts and ends.
+        /// </summary>
+        private static string ExtractEncodedUrlFromStyle(string style, out int start, out int end)
+        {
+            // Both searches must be ordinal. Adding kBackgroundImage.Length is only right if the
+            // match consumed exactly that many characters, which a culture-sensitive match need
+            // not do; and under th-TH a search for a punctuation-only string such as "'"
+            // "matches" right where the search starts, which would leave us with an empty file name.
+            start =
+                style.IndexOf(kBackgroundImage, StringComparison.Ordinal) + kBackgroundImage.Length;
+            end = style.IndexOf("'", start, StringComparison.Ordinal);
+            return style.Substring(start, end - start);
+        }
+
+        /// <summary>
+        /// Point a "background-image:url('...')" style at a different file in the same folder,
+        /// leaving the rest of the style alone.
+        /// </summary>
+        /// <remarks>
+        /// This replaces the url outright rather than looking for the old name in the style and
+        /// substituting, because the search is what used to go wrong: it encoded the old and new
+        /// names with HttpUtility.UrlPathEncode, which encodes neither '%' nor '#' nor '&amp;', while
+        /// the style itself was written with UrlPathString.UrlEncoded, which encodes all three. So
+        /// for any such name nothing matched, the style went on naming the file that the resize
+        /// had just replaced, and the image vanished from the published book (BL-16669).
+        /// </remarks>
+        private static string ReplaceBackgroundImageFilename(string style, string newFilename)
+        {
+            ExtractEncodedUrlFromStyle(style, out var start, out var end);
+            return style.Substring(0, start)
+                + UrlPathString.CreateFromUnencodedString(newFilename).UrlEncoded
+                + style.Substring(end);
         }
 
         private static void CreateVersionFileWithSha(string bookFilePath, string outputDirectory)
@@ -960,7 +1014,7 @@ namespace Bloom.Publish.BloomPub
                 string src = imgElt.GetAttribute("src");
                 if (ImageUtils.IsPlaceholderImageFilename(src))
                     continue;
-                if (src.StartsWith("data:"))
+                if (src.StartsWith("data:", StringComparison.Ordinal))
                     continue;
                 var file = UrlPathString.CreateFromUrlEncodedString(src).PathOnly.NotEncoded;
                 if (!RobustFile.Exists(Path.Combine(folderPath, file)))
@@ -1028,7 +1082,7 @@ namespace Bloom.Publish.BloomPub
                 );
                 foreach (var attr in img.AttributePairs)
                 {
-                    if (attr.Name.StartsWith("data-"))
+                    if (attr.Name.StartsWith("data-", StringComparison.Ordinal))
                         imgContainer.SetAttribute(attr.Name, attr.Value);
                 }
 
@@ -1283,7 +1337,7 @@ namespace Bloom.Publish.BloomPub
                         {
                             // We already got the question, and haven't seen a blank line since,
                             // so this is one of its answers.
-                            var correct = trimLine.StartsWith("*");
+                            var correct = trimLine.StartsWith("*", StringComparison.Ordinal);
                             if (correct)
                             {
                                 trimLine = trimLine.Substring(1).Trim();

@@ -14,6 +14,10 @@ namespace Bloom.Collection.BloomPack
     /// </summary>
     public partial class BloomPackInstallDialog : Form
     {
+        // Under --dont-disturb this dialog must not take the keyboard from the person at the machine
+        // while something else drives Bloom (see Program.StartupDontDisturb).
+        protected override bool ShowWithoutActivation => Program.StartupDontDisturb;
+
         private readonly string _path;
         private string _folderName;
         private string _rootDestFolder;
@@ -359,7 +363,7 @@ namespace Bloom.Collection.BloomPack
                     "Common.CancelButton",
                     "&Cancel"
                 );
-                DesktopAnalytics.Analytics.ReportException(e.Error);
+                BloomAnalytics.ReportException(e.Error);
                 ErrorReport.NotifyUserOfProblem(e.Error, _message.Text);
                 return;
             }
@@ -385,7 +389,7 @@ namespace Bloom.Collection.BloomPack
                 }
                 ExitWithoutRunningBloom = true;
             }
-            //Analytics.Track("Install Bloom Pack");
+            //BloomAnalytics.Track("Install Bloom Pack");
         }
 
         private void _backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)

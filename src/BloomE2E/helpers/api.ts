@@ -1,0 +1,141 @@
+// Call Bloom's HTTP API from a test.
+//
+// The calls go THROUGH THE PAGE (page.evaluate + fetch with a relative URL) rather than straight
+// from Node, and that is not incidental. Two constraints pull in opposite directions:
+//
+//  - Bloom's HTTP server validates the Host header and accepts only "localhost". A fetch from Node
+//    to http://127.0.0.1:<httpPort>/bloom/api/... comes back 400 with a generic HTML error page,
+//    and Host is a forbidden header, so you cannot override it.
+//  - Our CDP connection has to use 127.0.0.1, because WebView2's debugging port does not answer on
+//    ::1, which is what "localhost" resolves to first on Windows.
+//
+// Issuing the request from inside the page satisfies both: the page's own origin is
+// http://localhost:<httpPort>, so the Host header is right, while the Node-to-CDP link stays IPv4.
+//
+// Per the UI-vs-API policy in README.md, use these for setup, navigation, and assertions. The
+// behavior a test measures is always driven through the real UI.
+
+import type { Page } from "@playwright/test";
+
+/** The response of a Bloom API call: its HTTP status and its body as text. */
+export interface IApiResponse {
+    status: number;
+    body: string;
+}
+
+/**
+ * GET a Bloom API endpoint, e.g. apiGet(page, "workspace/tabs"). `endpoint` is the part after
+ * /bloom/api/. Throws when Bloom answers with an error status.
+ */
+export async function apiGet(
+    page: Page,
+    endpoint: string,
+): Promise<IApiResponse> {
+    return request(page, endpoint, { method: "GET" });
+}
+
+/**
+ * POST to a Bloom API endpoint. `body` is sent as-is; pass a JSON string and set contentType to
+ * "application/json" for the endpoints that expect JSON, or a bare string for those that read the
+ * raw body. Throws when Bloom answers with an error status.
+ */
+export async function apiPost(
+    page: Page,
+    endpoint: string,
+    body?: string,
+    contentType?: string,
+): Promise<IApiResponse> {
+    return request(page, endpoint, { method: "POST", body, contentType });
+}
+
+/** Read a Bloom API endpoint that replies with JSON, parsed into T. */
+export async function apiGetJson<T>(page: Page, endpoint: string): Promise<T> {
+    const response = await apiGet(page, endpoint);
+    return JSON.parse(response.body) as T;
+}
+
+// The pages whose Bloom has been seen to answer app/runningE2eTests with "true".
+const pagesOnE2eBlooms = new WeakSet<Page>();
+
+/**
+ * Refuse an e2e/ call to a Bloom that was not launched with --e2e, before it is made. Such a Bloom
+ * has none of the e2e/ endpoints, and it answers every call to a missing endpoint with a modal
+ * "Bloom had a problem" dialog, so a helper that polls one (waitForCollectionReady treats a 404 as
+ * "not ready yet") buries the Bloom in dialogs: 46 in 44 seconds, against a Bloom started by go.sh.
+ * A 404 from the question itself means the collection is reopening, which the caller already
+ * handles as it does a 404 from the e2e/ call.
+ */
+async function requireE2eBloom(page: Page): Promise<void> {
+    if (pagesOnE2eBlooms.has(page)) return;
+    // Through request(), so a reload of the shell mid-question is retried like any GET, whatever
+    // the method of the e2e/ call that asked.
+    const answer = await request(page, "app/runningE2eTests", {
+        method: "GET",
+    });
+    if (answer.body !== "true")
+        throw new Error(
+            "This Bloom was not launched with --e2e, so it has no e2e/ endpoints, and calling one " +
+                "would put up a problem dialog. Drive it with the fixture's Bloom, or launch one with --e2e.",
+        );
+    pagesOnE2eBlooms.add(page);
+}
+
+async function request(
+    page: Page,
+    endpoint: string,
+    options: { method: string; body?: string; contentType?: string },
+): Promise<IApiResponse> {
+    // Bloom reloads the shell document when it switches workspace tabs (and rebuilds it
+    // entirely for things like a UI language change), so a call that is in flight at that
+    // moment dies - as "Execution context was destroyed" when the evaluate loses the race, or
+    // as the fetch's own "TypeError: Failed to fetch" when the navigation aborts the request.
+    // Both are transients of the reload, so GETs retry briefly (a genuinely dead server also
+    // reads "Failed to fetch"; the deadline keeps that from hiding long). POSTs never retry
+    // here: the server may have processed the request before the reload killed the reply, and
+    // repeating a non-idempotent action would, say, make a second book - a call site that
+    // knowingly races a reload tolerates the lost reply itself and confirms the effect
+    // instead (see makeBookFromTemplate). A CLOSED page stays closed - not retried.
+    if (endpoint.startsWith("e2e/")) await requireE2eBloom(page);
+    const deadline = Date.now() + 15000;
+    for (;;) {
+        try {
+            return await attemptRequest(page, endpoint, options);
+        } catch (error) {
+            if (
+                options.method !== "GET" ||
+                !/Execution context was destroyed|Failed to fetch/i.test(
+                    String(error),
+                ) ||
+                Date.now() > deadline
+            )
+                throw error;
+            await new Promise((resolve) => setTimeout(resolve, 250));
+        }
+    }
+}
+
+async function attemptRequest(
+    page: Page,
+    endpoint: string,
+    options: { method: string; body?: string; contentType?: string },
+): Promise<IApiResponse> {
+    const result = await page.evaluate(
+        async (call) => {
+            const response = await fetch(`/bloom/api/${call.endpoint}`, {
+                method: call.method,
+                headers: call.contentType
+                    ? { "Content-Type": call.contentType }
+                    : undefined,
+                body: call.body,
+            });
+            return { status: response.status, body: await response.text() };
+        },
+        { endpoint, ...options },
+    );
+    if (result.status >= 400)
+        throw new Error(
+            `Bloom's ${options.method} /bloom/api/${endpoint} returned ${result.status}. ` +
+                `Body: ${result.body.slice(0, 500)}`,
+        );
+    return result;
+}

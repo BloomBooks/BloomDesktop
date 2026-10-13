@@ -136,6 +136,11 @@ namespace Bloom.web.controllers
 
         private string SelectFileUsingDialog(OpenFileRequest requestParameters)
         {
+            // In e2e test mode, a test may have pre-answered this dialog (POST e2e/nextFileToChoose),
+            // because Playwright cannot dismiss a native dialog and a run that opens one hangs.
+            // BloomOpenFileDialog.ShowDialog answers with the armed path itself, so nothing here
+            // needs to know; see the FilePathMemory guard below for the one thing that does.
+
             // For saving and recalling the last chosen file location
             // requestParameters.title is something like "Choose Audio File", use as an identifier for recalling this filepath
             var extraTag = requestParameters.title;
@@ -167,31 +172,42 @@ namespace Bloom.web.controllers
                     // We are not trying get a memory or time diff, just a point measure.
                     PerformanceMeasurement.Global.Measure("Choose file", dlg.FileName)?.Dispose();
 
-                    // remember selected folder path for next time
-                    FilePathMemory.RememberFolderPath(
-                        extraTag,
-                        Path.GetDirectoryName(dlg.FileName)
-                    );
-
-                    if (!string.IsNullOrEmpty(requestParameters.destFolder))
-                    {
-                        var fileName = Path.GetFileNameWithoutExtension(dlg.FileName);
-                        var ext = Path.GetExtension(dlg.FileName);
-                        var destFolder = Path.Combine(
-                            CurrentBook.FolderPath,
-                            requestParameters.destFolder
+                    // remember selected folder path for next time. Not under --e2e: FilePathMemory
+                    // is machine-wide settings shared with the developer's own Bloom, and a test's
+                    // temp folder has no business turning up there.
+                    if (!Program.RunningE2eTests)
+                        FilePathMemory.RememberFolderPath(
+                            extraTag,
+                            Path.GetDirectoryName(dlg.FileName)
                         );
-                        var destPath = BookStorage.GetUniqueFileName(destFolder, fileName, ext);
-                        Directory.CreateDirectory(destFolder);
-                        RobustFile.Copy(dlg.FileName, destPath);
-                        return Path.GetFileName(destPath);
-                    }
 
-                    return dlg.FileName.Replace("\\", "/");
+                    return DeliverChosenFile(dlg.FileName, requestParameters);
                 }
             }
 
             return String.Empty;
+        }
+
+        /// <summary>
+        /// Turn the file the caller settled on into the answer this endpoint gives: normally the
+        /// path itself, but where the request named a destFolder, a copy of the file inside the
+        /// book and just that copy's name. Shared by the real dialog and by the answer an e2e test
+        /// pre-arms, so both routes treat destFolder alike.
+        /// </summary>
+        private string DeliverChosenFile(string chosenPath, OpenFileRequest requestParameters)
+        {
+            if (!string.IsNullOrEmpty(requestParameters.destFolder))
+            {
+                var fileName = Path.GetFileNameWithoutExtension(chosenPath);
+                var ext = Path.GetExtension(chosenPath);
+                var destFolder = Path.Combine(CurrentBook.FolderPath, requestParameters.destFolder);
+                var destPath = BookStorage.GetUniqueFileName(destFolder, fileName, ext);
+                Directory.CreateDirectory(destFolder);
+                RobustFile.Copy(chosenPath, destPath);
+                return Path.GetFileName(destPath);
+            }
+
+            return chosenPath.Replace("\\", "/");
         }
 
         private void GetSpecialLocation(ApiRequest request)

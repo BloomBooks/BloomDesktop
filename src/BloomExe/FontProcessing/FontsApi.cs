@@ -160,14 +160,16 @@ namespace Bloom.FontProcessing
             lock (_fontNameToMetadata)
             {
                 var list = new List<FontMetadata>(_fontNameToMetadata.Values);
-                list.Sort((a, b) => a.name.CompareTo(b.name));
+                list.Sort(
+                    (a, b) => string.Compare(a.name, b.name, StringComparison.CurrentCulture)
+                );
                 return list;
             }
         }
 
         internal static bool ProcessHostFontsRequest(IRequestInfo info, string localPath)
         {
-            var idx = localPath.IndexOf("/host/fonts/");
+            var idx = localPath.IndexOf("/host/fonts/", StringComparison.Ordinal);
             if (idx >= 0)
             {
                 // If the request is for an existing file, return it.
@@ -190,7 +192,10 @@ namespace Bloom.FontProcessing
                     // code mimics what BloomReader does (in a somewhat generalized way) for handling
                     // Andika and Andika New Basic /host/fonts/ requests from bloom-player.  We need
                     // to handle bloom-player requests for BloomPub previews.
-                    if (fontDesc.StartsWith(fontInfo.family) && fontInfo.family == "Andika")
+                    if (
+                        fontDesc.StartsWith(fontInfo.family, StringComparison.Ordinal)
+                        && fontInfo.family == "Andika"
+                    )
                     {
                         // If the request is for a descriptive font name, do the best we can.
                         var file = fontInfo.files.normal;

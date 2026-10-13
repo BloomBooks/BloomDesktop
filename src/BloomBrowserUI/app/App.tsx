@@ -8,14 +8,21 @@ import {
     defaultWorkspaceTabState,
     getActiveWorkspaceTab,
     TopBar,
-    TabStates,
+    useWorkspaceTabInfo,
     WorkspaceTabId,
 } from "../react_components/TopBar/TopBar";
 import { PublishTabPane } from "../publish/PublishTab/PublishTabPane";
 import { kPanelBackground } from "../bloomMaterialUITheme";
-import { useWatchApiObject } from "../utils/bloomApi";
 import { EditTabPane } from "./EditTabPane";
 import { ToastHost } from "../toast/ToastHost";
+import { E2eStepCaption } from "./e2eCaption/E2eStepCaption";
+import { CollectionSettingsDialog } from "../collection/CollectionSettingsDialog";
+import {
+    EmbeddedSimpleProgressDialog,
+    kBloomBridgeProgressContext,
+    kBloomBridgeProgressDialogId,
+    kUpdateBookProgressDialogId,
+} from "../react_components/Progress/SimpleProgressDialog";
 
 export const App: React.FunctionComponent = () => {
     // Eventually the source of truth of what tab is active will be on the
@@ -27,12 +34,7 @@ export const App: React.FunctionComponent = () => {
     // Team collection toast click returns to collection tab in WorkspaceView.cs:606.
     // Publish flow can force jump to edit tab in LibraryPublishApi.cs:517.
     // Edit-book command switches to edit tab in WorkspaceView.cs:1164.
-    const state = useWatchApiObject<{ tabStates: TabStates }>(
-        "workspace/tabs",
-        defaultWorkspaceTabState,
-        "workspace",
-        "tabs",
-    );
+    const state = useWorkspaceTabInfo();
 
     const tabStates = state.tabStates ?? defaultWorkspaceTabState.tabStates;
     const activeTab = React.useMemo((): WorkspaceTabId => {
@@ -71,7 +73,24 @@ export const App: React.FunctionComponent = () => {
                 {renderActiveTab()}
             </div>
             <div id="modal-dialog-container" />
+            {/* Here rather than in a tab pane, so Settings can be opened from any tab. */}
+            <CollectionSettingsDialog />
+            {/* Bringing a book up to date ("Update Book", and the automatic pass before the AI
+                image editor or after a page-size change) shows its progress here, at the top
+                level: it is started from more than one tab, and the Edit tab empties its own
+                page while the work runs, so the dialog cannot live inside a tab. Being here
+                also means its backdrop covers the whole of Bloom while it is up. */}
+            <EmbeddedSimpleProgressDialog id={kUpdateBookProgressDialogId} />
+            {/* The same dialog for BloomBridge's process-book runs, on a websocket context of its
+                own (see kBloomBridgeProgressContext). */}
+            <EmbeddedSimpleProgressDialog
+                id={kBloomBridgeProgressDialogId}
+                socketContext={kBloomBridgeProgressContext}
+            />
             <ToastHost />
+            {/* Says what an end-to-end test is doing. Renders nothing unless Bloom was
+                launched with --e2e. */}
+            <E2eStepCaption />
         </div>
     );
 };

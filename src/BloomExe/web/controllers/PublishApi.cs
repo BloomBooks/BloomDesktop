@@ -98,7 +98,20 @@ namespace Bloom.web.controllers
                 {
                     // Abort any work we're doing to prepare a preview (at least stop it interfering with other navigation)
                     PublishHelper.Cancel();
-                    request.PostSucceeded();
+                    // Every tool publishes the book's pages, so a book that needs its page layout
+                    // update must have it before a tool opens. If it does, the update runs behind
+                    // its dialog and we tell the tab to hold the tool back; when the dialog closes
+                    // we send pagesUpToDate and the tab opens the tool. (When no update is needed the
+                    // event goes out at once, with no tool waiting for it.)
+                    var book = _publishModel.BookSelection.CurrentSelection;
+                    var pagesBeingUpdated =
+                        book != null
+                        && BookProcessor.UpdatePageLayoutIfNeededThen(
+                            book,
+                            (BloomWebSocketServer)_webSocketServer,
+                            () => _webSocketServer.SendEvent("publish", "pagesUpToDate")
+                        );
+                    request.ReplyWithJson(new { pagesBeingUpdated });
                 },
                 false
             );
@@ -470,13 +483,10 @@ namespace Bloom.web.controllers
             var collectionSettings = Model.Book.CollectionSettings;
             void onLanguageChange(LanguageChangeEventArgs args)
             {
-                // How to know if the new sign language name is custom or not!?
-                // 1- set the Tag (which also sets the Name to the non-custom default
-                // 2- read the Name
-                // 3- if it's not the same as DesiredName, the new name is custom
+                // As in the Collection Settings dialog's sign-language handler, args.IsRtl is
+                // deliberately ignored: a sign language has no text direction.
                 collectionSettings.SignLanguageTag = args.LanguageTag;
-                var slIsCustom = collectionSettings.SignLanguage.Name != args.DesiredName;
-                collectionSettings.SignLanguage.SetName(args.DesiredName, slIsCustom);
+                collectionSettings.SignLanguage.SetName(args.DesiredName, args.IsCustomName);
                 collectionSettings.Save();
                 Model.UpdateLangDataCache();
 
@@ -752,6 +762,50 @@ namespace Bloom.web.controllers
             }
 
             return modifiedBook.GetPathHtmlFile().ToLocalhost();
+        }
+
+        /// <summary>
+        /// For automated/e2e testing only (see src/BloomVisualRegressionTests): stage
+        /// <paramref name="book"/> exactly as the interactive Publish:BloomPub preview does
+        /// (full PrepareBookForBloomReader + image compression + save into PlaceForStagingBook)
+        /// and return the localhost URL of the staged book's .htm file, ready to be loaded in
+        /// bloom-player. bloom-player is designed to render the files staging produces (the same
+        /// set an unzipped .bloompub contains), so this is the only way to get a faithful player
+        /// rendering of a page. Only reachable via the e2e endpoint, which is registered only in e2e
+        /// test mode; the guard below is defense-in-depth now that this compiles into Release too.
+        /// </summary>
+        public string StageBookForBloomPubPreviewForTest(Book.Book book)
+        {
+            // Defense-in-depth: this is a test-only affordance, so refuse outside e2e test mode even
+            // though the endpoint that calls it is already gated on the same flag (see ProjectContext).
+            if (!Program.RunningE2eTests)
+                throw new InvalidOperationException(
+                    "StageBookForBloomPubPreviewForTest is only available in e2e test mode (--e2e)."
+                );
+
+            // Staging goes through PublishHelper, which guards against building a BloomPUB while the
+            // app is not on the publish tab. Rather than fake that state, the test must genuinely
+            // put Bloom into the publish tab first (POST workspace/selectTab {tab:"publish"}), which
+            // runs all the real publish-tab setup; otherwise we might miss setup that the tab does
+            // now or adds later. Fail Fast here (via the guard) if the caller forgot to do that.
+            if (!PublishHelper.InPublishTab)
+                throw new InvalidOperationException(
+                    "makeBloomPubPreview requires the publish tab to be active. "
+                        + "POST workspace/selectTab with {tab:\"publish\"} before calling this."
+                );
+
+            // Populate the book's publish language settings from its actual content, the same way
+            // entering the publish tab does; otherwise FromBookInfo would find no languages to
+            // include and the staged book would have no text.
+            InitializeLanguagesInBook(book);
+            var settings = BloomPubPublishSettings.FromBookInfo(book.BookInfo);
+            return MakeBloomPubForPreview(
+                book,
+                _bookServer,
+                _progress,
+                _thumbnailBackgroundColor,
+                settings
+            );
         }
 
         internal bool UpdatePreviewIfNeeded(ApiRequest request)

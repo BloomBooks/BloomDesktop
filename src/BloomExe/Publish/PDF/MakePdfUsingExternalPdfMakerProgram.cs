@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.ToPalaso;
 using Bloom.web;
 using L10NSharp;
@@ -162,7 +163,10 @@ namespace Bloom.Publish.PDF
                 (msg) =>
                 {
                     var parts = msg.Split('|');
-                    if (parts.Length == 2 && parts[1].StartsWith("Percent: "))
+                    if (
+                        parts.Length == 2
+                        && parts[1].StartsWith("Percent: ", StringComparison.Ordinal)
+                    )
                     {
                         var percent = int.Parse(parts[1].Substring(@"Percent: ".Length));
                         socketProgress.SendPercent(
@@ -204,27 +208,24 @@ namespace Bloom.Publish.PDF
                     @"***ERROR PDF generation failed: res.StandardError = " + res.StandardError
                 );
 
-                var msg = L10NSharp.LocalizationManager.GetString(
-                    @"PublishTab.PDF.Error.Failed",
-                    "Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.",
-                    @"Error message displayed in a message dialog box. {0} is the filename, {1} is a newline character."
-                );
+                var fullMsg = GetUnsupportedPageSizeMessage(specs, res.StandardError);
+                if (fullMsg == null)
+                {
+                    var msg = L10NSharp.LocalizationManager.GetString(
+                        @"PublishTab.PDF.Error.Failed",
+                        "Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.",
+                        @"Error message displayed in a message dialog box. {0} is the filename, {1} is a newline character."
+                    );
 
-                // This message string is intentionally separate because it was added after the previous string had already been localized in most languages.
-                // It's not useful to add if we're already in save memory mode.
-                var msg2 = specs.SaveMemoryMode
-                    ? ""
-                    : L10NSharp.LocalizationManager.GetString(
-                        @"PublishTab.PDF.Error.TrySinglePage",
-                        "The book's images might have exceeded the amount of RAM memory available. Please turn on the \"Use Less Memory\" option which is slower but uses less memory.",
-                        @"Error message displayed in a message dialog box"
-                    ) + Environment.NewLine;
-
-                var fullMsg =
-                    String.Format(msg, specs.OutputPdfPath, Environment.NewLine)
-                    + Environment.NewLine
-                    + msg2
-                    + res.StandardOutput;
+                    // We used to follow this with PublishTab.PDF.Error.TrySinglePage, which told the user
+                    // to turn on the "Use Less Memory" option. That option was taken out of the UI back in
+                    // 5.5 (BL-11954), so ever since then we have been sending people to hunt for a setting
+                    // that isn't there, whatever the real cause of the failure was (BL-16684).
+                    fullMsg =
+                        String.Format(msg, specs.OutputPdfPath, Environment.NewLine)
+                        + Environment.NewLine
+                        + res.StandardOutput;
+                }
 
                 var except = new ApplicationException(fullMsg);
                 // Note that if we're being run by a BackgroundWorker, it will catch the exception.
@@ -245,6 +246,45 @@ namespace Bloom.Publish.PDF
             }
         }
 
+        /// <summary>
+        /// BloomPdfMaker keeps its own list of the page sizes it can render. If we ask it for one
+        /// that isn't in that list, it can't make the PDF at all -- and because uploading makes a
+        /// PDF preview, the book can't be uploaded either. That means we offered the user a page
+        /// size we cannot actually produce, which is a bug in Bloom rather than anything they did.
+        ///
+        /// This turns that specific failure into a message that names the page size and says as
+        /// much, instead of the generic "did not produce the expected document" followed by the
+        /// child process's developer-facing output. See BL-16684, where an Ebook7x5 book failed
+        /// this way and the message instead advised turning on a memory option removed in 5.5.
+        /// </summary>
+        /// <returns>The message to show, or null if this failure was something else.</returns>
+        internal static string GetUnsupportedPageSizeMessage(
+            PdfMakingSpecs specs,
+            string standardError
+        )
+        {
+            // The marker is written by WebView2PdfMaker.Options.kUnsupportedPageSizeMarker. We match
+            // on it rather than on the English sentence around it so that rewording either end
+            // can't quietly turn this back into the generic message.
+            if (standardError == null || !standardError.Contains(kUnsupportedPageSizeMarker))
+                return null;
+
+            // Deliberately not localized: this can only appear if we have shipped a page size
+            // BloomPdfMaker can't render, which is a bug on our side that we expect to fix rather
+            // than translate. English is better than nothing for the rare user who hits it, and it
+            // is the form we want quoted back to us in the problem report.
+            // Note "Report a Problem..." rather than "report this": ReportPdfGenerationError sends
+            // ApplicationExceptions to ErrorReport.NotifyUserOfProblem(message) with no exception,
+            // and HtmlErrorReporter only shows its Report button when one is passed
+            // (AllowSendReport.AllowIfException). So this dialog has no report button, and we have
+            // to point at the Help menu instead of an affordance that isn't there.
+            return $"Bloom was not able to make a PDF of this book because its page size, \"{specs.PaperSizeName}\", is one that Bloom's PDF maker does not yet support. Please tell us using \"Report a Problem...\" on the Help menu. You can work around it by changing the book's page size.";
+        }
+
+        // Must match WebView2PdfMaker.Options.kUnsupportedPageSizeMarker. The two programs are
+        // built together and always ship together, so a shared literal is enough.
+        private const string kUnsupportedPageSizeMarker = "UNSUPPORTED-PAGE-SIZE";
+
         private static string GetNoDefaultPrinterErrorMessage()
         {
             return L10NSharp.LocalizationManager.GetString(
@@ -256,10 +296,6 @@ namespace Bloom.Publish.PDF
 
         const double inchesToMM = 25.4;
 
-        const double A4PortraitHeight = 297; // mm
-        private const double A4PortraitWidth = 210; // mm
-        private const double A3PortraitWidth = A4PortraitHeight;
-        private const double A3PortraitHeight = A4PortraitWidth * 2d;
         const double bleedWidth = 3; // mm
         private const double bleedExtra = bleedWidth * 2;
 
@@ -349,46 +385,17 @@ namespace Bloom.Publish.PDF
             bool landscape
         )
         {
-            double height;
-            double width;
-            switch (paperSizeName.ToLowerInvariant())
-            {
-                case "a5":
-                    height = A4PortraitWidth + bleedExtra;
-                    // we floor because that actually gives us the 148mm that is official
-                    width = Math.Floor(A4PortraitHeight / 2) + bleedExtra;
-                    break;
-                case "a4":
-                    height = A4PortraitHeight + bleedExtra;
-                    width = A4PortraitWidth + bleedExtra;
-                    break;
-                case "a3":
-                    height = A3PortraitHeight + bleedExtra;
-                    width = A3PortraitWidth + bleedExtra;
-                    break;
-                case "uscomic":
-                    height = USComicPortraitHeight + bleedExtra;
-                    width = USComicPortraitWidth + bleedExtra;
-                    break;
-                case "halffolio":
-                    // added for consistency, but not tested.
-                    height = HalfFolioPortraitHeight + bleedExtra;
-                    width = HalfFolioPortraitWidth + bleedExtra;
-                    break;
-                case "size6x9":
-                    height = Size6x9PortraitHeight + bleedExtra;
-                    width = Size6x9PortraitWidth + bleedExtra;
-                    break;
-                default:
-                    return null; // Page size doesn't support full bleed
-            }
+            if (
+                !SizeAndOrientation.TryGetPaperLayoutInMillimeters(
+                    paperSizeName,
+                    landscape,
+                    out var trimSize
+                )
+            )
+                return null;
 
-            if (landscape)
-            {
-                var temp = height;
-                height = width;
-                width = temp;
-            }
+            var width = trimSize.width + bleedExtra;
+            var height = trimSize.height + bleedExtra;
 
             return (height, width);
         }
@@ -402,7 +409,7 @@ namespace Bloom.Publish.PDF
             if (dimensions == null)
             {
                 var exception = new ArgumentException(
-                    $"Full bleed printing of paper size '{specs.PaperSizeName}' is not yet implemented. Supported sizes are: A5, A4, A3, USComic, HalfFolio, and Size6x9."
+                    $"Full bleed printing of paper size '{specs.PaperSizeName}' is not supported for this layout."
                 );
                 exception.Data["argument"] = "specs.PaperSizeName";
                 throw exception;
@@ -421,9 +428,8 @@ namespace Bloom.Publish.PDF
         public PublishModel.BookletLayoutMethod BooketLayoutMethod; // NoBooklet,SideFold,CutAndStack,Calendar
         public PublishModel.BookletPortions BookletPortion; // None,AllPagesNoBooklet,BookletCover,BookletPages,InnerContent
         public bool LayoutPagesForRightToLeft; // true if RTL, false if LTR layout
-        public bool SaveMemoryMode; // true if PDF file is to be produced using less memory (but more time)
         public bool BookIsFullBleed; // True if the book is laid out for full-bleed printing (and Enterprise is enabled)
-        public bool PrintWithFullBleed; // True if (BookIsFullBleed and) full bleed is requested in the PdfOptions menu and we're not making a booklet
+        public bool PrintWithFullBleed; // True if BookIsFullBleed and full bleed is requested in the PdfOptions menu
         public string ColorProfile; // the name of the ICC color profile file to use, empty string if none
         public int HtmlPageCount;
 

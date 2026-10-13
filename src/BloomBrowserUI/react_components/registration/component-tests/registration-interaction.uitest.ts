@@ -46,12 +46,12 @@ test.describe("Registration Dialog - Form Submission", () => {
         await clickRegisterButton(page);
 
         // what are the required fields? Make sure each shows error state
-        expect(await field.firstName.markedInvalid).toBe(true);
-        expect(await field.surname.markedInvalid).toBe(true);
+        await field.firstName.expectMarkedInvalid(true);
+        await field.surname.expectMarkedInvalid(true);
         // Email is optional by default, so it should NOT be marked as invalid when empty
-        expect(await field.email.markedInvalid).toBe(false);
-        expect(await field.organization.markedInvalid).toBe(true);
-        expect(await field.usingFor.markedInvalid).toBe(true);
+        await field.email.expectMarkedInvalid(false);
+        await field.organization.expectMarkedInvalid(true);
+        await field.usingFor.expectMarkedInvalid(true);
     });
 });
 
@@ -136,11 +136,11 @@ test.describe("Registration Dialog - Data Pre-population", () => {
         await expect(usingForField).toHaveValue("Creating literacy materials");
 
         // Verify no fields show error states initially
-        expect(await field.firstName.markedInvalid).toBe(false);
-        expect(await field.surname.markedInvalid).toBe(false);
-        expect(await field.email.markedInvalid).toBe(false);
-        expect(await field.organization.markedInvalid).toBe(false);
-        expect(await field.usingFor.markedInvalid).toBe(false);
+        await field.firstName.expectMarkedInvalid(false);
+        await field.surname.expectMarkedInvalid(false);
+        await field.email.expectMarkedInvalid(false);
+        await field.organization.expectMarkedInvalid(false);
+        await field.usingFor.expectMarkedInvalid(false);
     });
 });
 

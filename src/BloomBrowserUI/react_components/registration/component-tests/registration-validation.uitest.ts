@@ -73,10 +73,10 @@ test.describe("Registration Dialog - Required Fields Validation", () => {
 
         await clickRegisterButton(page);
 
-        expect(await field.firstName.markedInvalid).toBe(true);
-        expect(await field.surname.markedInvalid).toBe(true);
-        expect(await field.organization.markedInvalid).toBe(true);
-        expect(await field.usingFor.markedInvalid).toBe(true);
+        await field.firstName.expectMarkedInvalid(true);
+        await field.surname.expectMarkedInvalid(true);
+        await field.organization.expectMarkedInvalid(true);
+        await field.usingFor.expectMarkedInvalid(true);
     });
 
     test("Whitespace-only is invalid", async ({ page }) => {
@@ -89,7 +89,7 @@ test.describe("Registration Dialog - Required Fields Validation", () => {
 
         await clickRegisterButton(page);
 
-        expect(await field.firstName.markedInvalid).toBe(true);
+        await field.firstName.expectMarkedInvalid(true);
     });
 });
 

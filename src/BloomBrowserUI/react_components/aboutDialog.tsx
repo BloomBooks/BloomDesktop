@@ -223,6 +223,18 @@ export const AboutDialog: React.FunctionComponent<{
                     </p>
                     <br></br>
                     <p>
+                        Heather Sullivan (
+                        <a
+                            href="https://sil.org"
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            SIL Global
+                        </a>
+                        ): Testing
+                    </p>
+                    <br></br>
+                    <p>
                         John Thomson (
                         <a
                             href="https://sil.org"

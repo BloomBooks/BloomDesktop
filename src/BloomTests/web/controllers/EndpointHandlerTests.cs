@@ -23,7 +23,7 @@ namespace BloomTests.web
         [TearDown]
         public void Teardown()
         {
-            _server.Dispose();
+            RetiredTestServers.Retire(_server);
             _server = null;
             Monitor.Exit(_portMonitor);
         }

@@ -15,7 +15,7 @@ import {
     useLocalizedTier,
     useSubscriptionInfo,
 } from "./useSubscriptionInfo";
-import { NoteBox, WarningBox } from "../react_components/boxes";
+import { NoteBox } from "../react_components/boxes";
 import { kBloomBlue, kErrorColor } from "../bloomMaterialUITheme";
 
 type Status =
@@ -149,19 +149,12 @@ const StatusText: React.FC<{
                         width: 100%;
                     `}
                 >
-                    <WarningBox
+                    <NoteBox
                         l10nKey="Settings.Subscription.UnknownCode"
                         bottomRightButton={
                             <Button
                                 variant="outlined"
                                 onClick={() => post("common/checkForUpdates")}
-                                sx={{
-                                    color: "black",
-                                    borderColor: "black",
-                                    "&:hover": {
-                                        borderColor: "black",
-                                    },
-                                }}
                             >
                                 <Label l10nKey="Settings.Subscription.CheckUpdates">
                                     Check for updates
@@ -169,9 +162,9 @@ const StatusText: React.FC<{
                             </Button>
                         }
                     >
-                        This version of Bloom does not have the artwork that
-                        goes with that subscription.
-                    </WarningBox>
+                        This version of Bloom does not contain any special
+                        branding artwork for this subscription.
+                    </NoteBox>
                 </div>
             )}
             {props.status === "SubscriptionExpired" && (
@@ -208,6 +201,18 @@ const StatusText: React.FC<{
         </div>
     );
 };
+
+// Today's date in the user's own time zone, formatted so that it can be compared as a string
+// with the YYYY-MM-DD expiration date that the server sends us. Note that we deliberately do
+// not use toISOString(), which would give us the date in UTC and so could be off by a day
+// (BL-16786); the C# code that decides whether a subscription is expired uses local time.
+export function getTodayAsYYYYMMDD(): string {
+    const now = new Date();
+    const twoDigits = (n: number) => n.toString().padStart(2, "0");
+    return `${now.getFullYear()}-${twoDigits(now.getMonth() + 1)}-${twoDigits(
+        now.getDate(),
+    )}`;
+}
 
 export function getSafeLocalizedDate(dateAsYYYYMMDD: string | null) {
     const dateParts = dateAsYYYYMMDD ? dateAsYYYYMMDD.split("-") : null;
@@ -252,7 +257,7 @@ function getStatusSansEditingBlorgBook(
     expiryDateStringAsYYYYMMDD: string,
     missingBrandingFiles: boolean,
 ): Status {
-    const todayAsYYYYMMDD = new Date().toISOString().slice(0, 10);
+    const todayAsYYYYMMDD = getTodayAsYYYYMMDD();
     if (subscriptionCode === "" || subscriptionCodeIntegrity === "none") {
         return "None";
     }

@@ -35,6 +35,7 @@ if [ -s $filesToCheck ]; then
     case "$file" in
       src/BloomExe/RobustFileIO.cs) continue;;
       src/BloomTests/*) continue;;
+      src/BloomFreezeDoctor.Tests/*) continue;;
     esac
     if awk '
       # Flag ordinary banned file APIs directly.
@@ -45,6 +46,10 @@ if [ -s $filesToCheck ]; then
         allow_filestream_until = NR + 12;
       }
       /PublishTab\.Android\.File\./ {
+        next;
+      }
+      # TagLib.File is a TagLib# class, not System.IO.File.
+      /TagLib\.File\./ {
         next;
       }
       /(^|[^A-Za-z0-9_])File\.[A-Z]/ ||

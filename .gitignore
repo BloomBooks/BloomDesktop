@@ -186,7 +186,19 @@ src/BloomBrowserUI/templates/template books/Activity/choiceActivities.css
 src/BloomBrowserUI/react_components/component-tester/test-results/
 
 src/BloomBrowserUI/test-results/
+# What a failing *.browser.spec.ts leaves behind (vitest browser mode)
+src/BloomBrowserUI/**/__screenshots__/
+src/BloomBrowserUI/.vitest-attachments/
 critiqueAI.json
 
 pr-comments*.md
 *.stackdump
+
+# Per-developer Claude Code settings.
+.claude/settings.json
+.claude/settings.local.json
+
+# Scratch folders the nightly's diagnostics steps create at the repo root (also created if you
+# run build/ci/watch-for-hung-bloom.ps1 locally). Never meant to be committed.
+bloom-diagnostics/
+bloom-watchdog/

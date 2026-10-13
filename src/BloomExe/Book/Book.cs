@@ -20,6 +20,7 @@ using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
@@ -455,6 +456,22 @@ namespace Bloom.Book
 
                 const char kBOM = '\uFEFF'; // Unicode Byte Order Mark character.
 
+                // The user sees a line break both for Shift+Enter (a bloom-linebreak span) and for
+                // plain Enter (a new block element), so both get the same replacement text.
+                var lineBreakReplacement = "";
+                switch (lineBreakSpanConversionOption)
+                {
+                    case LineBreakSpanConversionMode.ToNewline:
+                        lineBreakReplacement = Environment.NewLine;
+                        break;
+                    case LineBreakSpanConversionMode.ToSpace:
+                        lineBreakReplacement = " ";
+                        break;
+                    case LineBreakSpanConversionMode.ToSimpleNewline:
+                        lineBreakReplacement = "\n";
+                        break;
+                }
+
                 // Handle Shift+Enter, which gets translated to <span class="bloom-linebreak" />
                 // This is being handled using at the XML level instead of string level, so that it'll work regardless of
                 // whether it uses the <span /> form or <span></span> form. (I do see places in the debugger where the data is in <span></span> form.)
@@ -480,21 +497,40 @@ namespace Bloom.Book
                     }
 
                     // Now delete lineBreakSpan and replace it
-                    var replacementForLinebreakSpan = "";
-                    switch (lineBreakSpanConversionOption)
-                    {
-                        case LineBreakSpanConversionMode.ToNewline:
-                            replacementForLinebreakSpan = Environment.NewLine;
-                            break;
-                        case LineBreakSpanConversionMode.ToSpace:
-                            replacementForLinebreakSpan = " ";
-                            break;
-                        case LineBreakSpanConversionMode.ToSimpleNewline:
-                            replacementForLinebreakSpan = "\n";
-                            break;
-                    }
-                    var newlineNode = doc.CreateTextNode(replacementForLinebreakSpan);
+                    var newlineNode = doc.CreateTextNode(lineBreakReplacement);
                     lineBreakSpan.ParentNode.ReplaceChild(newlineNode, lineBreakSpan);
+                }
+
+                // Handle plain Enter, which starts a new block element (a paragraph, or with the
+                // heading support added in 6.4, a heading). InnerText just runs the blocks
+                // together, so we have to put the line break in ourselves. Up through Bloom 6.2 we
+                // got away without this because HTML Tidy always left whitespace between block
+                // elements when it wrote the book out; HtmlAgilityPack, which replaced Tidy in the
+                // .NET 8 upgrade, does not. See https://issues.bloomlibrary.org/youtrack/issue/BL-16808.
+                var blocks = doc.SafeSelectNodes("//p | //h1 | //h2 | //h3 | //h4 | //h5 | //h6")
+                    .Cast<SafeXmlElement>()
+                    .ToArray();
+                foreach (var block in blocks)
+                {
+                    var previous = block.PreviousSibling;
+                    if (previous == null)
+                        continue; // nothing comes before it, so there is no boundary to mark
+
+                    // Throw away any whitespace Tidy left between the block elements (books
+                    // written out by Bloom 6.2 and earlier have it). It isn't rendered anywhere,
+                    // and it is what used to stand in for the line break the user sees, so
+                    // replacing it rather than adding to it makes a book written by an older
+                    // Bloom give the same answer as one written by this one.
+                    var isWhitespaceNode =
+                        previous.NodeType == XmlNodeType.Whitespace
+                        || (
+                            previous.NodeType == XmlNodeType.Text
+                            && String.IsNullOrWhiteSpace(previous.Value)
+                        );
+                    if (isWhitespaceNode)
+                        block.ParentNode.RemoveChild(previous);
+
+                    block.ParentNode.InsertBefore(doc.CreateTextNode(lineBreakReplacement), block);
                 }
 
                 return doc.DocumentElement.InnerText;
@@ -853,7 +889,8 @@ namespace Bloom.Book
             return new HtmlDom(builder.ToString());
         }
 
-        private bool IsDownloaded => FolderPath.StartsWith(BookDownload.DownloadFolder);
+        private bool IsDownloaded =>
+            FolderPath.StartsWith(BookDownload.DownloadFolder, StringComparison.Ordinal);
 
         // BL-2678: we want the user to be able to delete troublesome/no longer needed books
         // downloaded from BloomLibrary.org
@@ -1059,6 +1096,29 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// The caller's progress with its status lines suppressed (warnings, errors and the percent
+        /// still get through). Used for the passes that work through the book's images one by one
+        /// (mirroring their metadata into the HTML, shrinking oversized files), which report a
+        /// status line per image as well as the percent done. Here, bringing a book up to date, the
+        /// dialog is determinate, so the percent bar already shows how far along we are, and a line
+        /// per image only fills the log with dozens of near-identical entries (BL-16893). The stage
+        /// statuses this class writes itself ("Updating pages...") are not suppressed: callers with
+        /// an overwriting status label (Update All Books, importing a .bloomSource) still want
+        /// them. The one place the per-image lines are wanted, the Copyright and License dialog's
+        /// "add this to all images", does not come through here.
+        /// </summary>
+        private static IProgress NoStatusProgress(IProgress progress)
+        {
+            if (
+                progress == null
+                || progress is NullProgress
+                || progress is QuietStatusProgress // already quiet (e.g. from BookProcessor.ProcessBook)
+            )
+                return progress;
+            return new QuietStatusProgress(progress);
+        }
+
+        /// <summary>
         /// Make any needed changes to make a book which might have come from an old version of Bloom
         /// consistent with the current data model. Also makes sure it has the current XMatter
         /// and a folder name consistent with its title (unless folder name has been overridden).
@@ -1107,7 +1167,7 @@ namespace Bloom.Book
             EnsureUpToDateMemory(progress);
             UpdateSupportFiles();
 
-            Storage.MigrateToMediaLevel1ShrinkLargeImages();
+            Storage.MigrateToMediaLevel1ShrinkLargeImages(NoStatusProgress(progress));
 
             Storage.CleanupUnusedSupportFiles(forCopyOfUpToDateBook);
 
@@ -1500,6 +1560,9 @@ namespace Bloom.Book
             if (string.IsNullOrEmpty(coverImageFileName))
                 return;
             coverImageFileName = coverImageFileName.Trim();
+            // This entry is meant to hold the plain file name, not a URL-encoded one -- see the
+            // encoding conventions note on UrlPathString. A few old books break that rule, hence
+            // the tolerant read below and the write-back that normalizes them to the plain name.
             // The fileName might be URL encoded.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
             var coverImagePath = UrlPathString.GetFullyDecodedPath(
                 StoragePageFolder,
@@ -1832,10 +1895,19 @@ namespace Bloom.Book
                     _domBeingUpdated = OurHtmlDom;
                     _updateStackTrace = Environment.StackTrace;
                     _doingBookUpdate = true;
-                    EnsureUpToDateMemoryUnprotected(progress);
-                    _doingBookUpdate = false;
-                    _domBeingUpdated = null;
-                    _updateStackTrace = null;
+                    // Reset the guard in a finally: if the update throws, the flag must not
+                    // stay stuck (which would make every later update falsely look like a
+                    // concurrent BL-3166 update and, in DEBUG, pop a blocking MessageBox).
+                    try
+                    {
+                        EnsureUpToDateMemoryUnprotected(progress);
+                    }
+                    finally
+                    {
+                        _doingBookUpdate = false;
+                        _domBeingUpdated = null;
+                        _updateStackTrace = null;
+                    }
                 }
             }
             RemoveObsoleteSoundAttributes(OurHtmlDom);
@@ -1870,7 +1942,7 @@ namespace Bloom.Book
                 ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(
                     FolderPath,
                     OurHtmlDom,
-                    progress
+                    NoStatusProgress(progress)
                 );
             }
             catch (UnauthorizedAccessException e)
@@ -1886,7 +1958,7 @@ namespace Bloom.Book
             // already been done, so they must be called in exactly this order.
             Storage.RestoreStuffBeforeMigration();
             Storage.MigrateMaintenanceLevels();
-            Storage.MigrateToMediaLevel1ShrinkLargeImages();
+            Storage.MigrateToMediaLevel1ShrinkLargeImages(NoStatusProgress(progress));
             Storage.MigrateToLevel2RemoveTransparentComicalSvgs();
             Storage.MigrateToLevel3PutImgFirst();
             Storage.MigrateToLevel4UseAppearanceSystem();
@@ -1953,9 +2025,20 @@ namespace Bloom.Book
             // language.
             // (The commit label when these were added says "so that a single branding can vary things by lang."
             // We don't appear to actually do that but it still seems like it might be useful.)
-            bookDom.Body.SetAttribute("data-L1", this._bookData.Language1Tag);
-            bookDom.Body.SetAttribute("data-L2", this._bookData.Language2Tag);
-            bookDom.Body.SetAttribute("data-L3", this._bookData.Language3Tag);
+            SetLanguageAttributeOnBody(bookDom, 1, this._bookData.Language1Tag);
+            SetLanguageAttributeOnBody(bookDom, 2, this._bookData.Language2Tag);
+            SetLanguageAttributeOnBody(bookDom, 3, this._bookData.Language3Tag);
+        }
+
+        /// <summary>
+        /// Set data-l1 (etc.) on the body. The name must be lower case: HTML does not allow upper case
+        /// in data- attribute names, and browsers lower-case them anyway. Bloom used to write data-L1;
+        /// our DOM treats that as a different attribute, so remove it or the book would carry both.
+        /// </summary>
+        private static void SetLanguageAttributeOnBody(HtmlDom bookDom, int number, string tag)
+        {
+            bookDom.Body.RemoveAttribute("data-L" + number);
+            bookDom.Body.SetAttribute("data-l" + number, tag);
         }
 
         private void AddReaderBodyAttributes(HtmlDom bookDom)
@@ -2186,7 +2269,12 @@ namespace Bloom.Book
             }
             // Rename/remove/create files that have changed names or locations to match link href changes above.
             // Don't do this in distributed folders.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7550.
-            if (!FolderPath.StartsWith(BloomFileLocator.FactoryCollectionsDirectory))
+            if (
+                !FolderPath.StartsWith(
+                    BloomFileLocator.FactoryCollectionsDirectory,
+                    StringComparison.Ordinal
+                )
+            )
             {
                 BookStorage.CssFilesThatAreObsolete.ForEach(filename =>
                 {
@@ -2265,9 +2353,9 @@ namespace Bloom.Book
                 for (var index = 0; index < cssLines.Length; ++index)
                 {
                     var line = cssLines[index].Trim();
-                    if (line.StartsWith(kLangTag))
+                    if (line.StartsWith(kLangTag, StringComparison.Ordinal))
                     {
-                        var idxQuote = line.IndexOf("'", kLangTag.Length);
+                        var idxQuote = line.IndexOf("'", kLangTag.Length, StringComparison.Ordinal);
                         if (idxQuote > 0)
                         {
                             var lang = line.Substring(kLangTag.Length, idxQuote - kLangTag.Length);
@@ -2400,7 +2488,10 @@ namespace Bloom.Book
             {
                 // If we already have a data-i18n attribute with the right contents, skip this one.
                 var i18nValue = pageLabelElt.GetOptionalStringAttribute(i18nAttr, i18nPrefix);
-                if (i18nValue.StartsWith(i18nPrefix) && i18nValue.Length > prefixLength)
+                if (
+                    i18nValue.StartsWith(i18nPrefix, StringComparison.Ordinal)
+                    && i18nValue.Length > prefixLength
+                )
                 {
                     // As best we can tell, this already has the right localization attribute contents.
                     continue;
@@ -2478,6 +2569,9 @@ namespace Bloom.Book
                 // This preserves expectations in BringBookUpToDate_EmbeddedEmptyImgTagRemoved.
                 if (string.IsNullOrWhiteSpace(src))
                     src = "placeHolder.png";
+                // Stored as the plain file name, deliberately not URL-encoded, which is why the
+                // encoded @src has to be decoded on the way in -- see the encoding conventions
+                // note on UrlPathString.
                 coverImageElement.InnerText = HttpUtility.UrlDecode(src);
             }
         }
@@ -2577,6 +2671,9 @@ namespace Bloom.Book
             //we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.
             // Per BL-3571, if it's using a layout we don't know (e.g., from a newer Bloom) we switch to A5Portrait.
             // Various things, especially publication, don't work with unknown page sizes.
+            var sizeClassBefore = Layout
+                .FromDom(bookDOM, Layout.A5Portrait)
+                .SizeAndOrientation.ClassName;
             Layout layout = Layout.FromDomAndChoices(bookDOM, Layout.A5Portrait, fileLocator);
             var oldIds = new List<string>();
             var customLayoutIds = XMatterHelper.GatherCustomLayoutIds(bookDOM);
@@ -2584,6 +2681,11 @@ namespace Bloom.Book
             // this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
             // still requiring it to be a valid layout.
             layout = Layout.FromDomAndChoices(bookDOM, layout, fileLocator);
+            // A size the xmatter or branding does not support, or one we do not know, was replaced
+            // above. VerifyLayout later spreads the new size to every page, but by then the first
+            // page already has it, so SetLayout sees no change; record it here instead.
+            if (layout.SizeAndOrientation.ClassName != sizeClassBefore)
+                BookProcessor.RecordPageLayoutChanged(bookDOM);
             helper.InjectXMatter(
                 _bookData.WritingSystemAliases,
                 layout,
@@ -2643,7 +2745,7 @@ namespace Bloom.Book
             var paragraphs = bookDOM.SafeSelectNodes("//div[contains(@class,'bloom-editable')]/p");
             foreach (SafeXmlElement para in paragraphs)
             {
-                // spans are the only paragraph internal elements that should have any attributes.
+                // spans and hyperlinks are the only paragraph internal elements that should have any attributes.
                 RemoveUnwantedAttributesFromChildren(para);
                 string inner = para.InnerXml;
                 if (String.IsNullOrEmpty(inner) || !inner.Contains("<"))
@@ -2716,11 +2818,17 @@ namespace Bloom.Book
             }
         }
 
+        /// <summary>
+        /// Strip attributes from character-style markup (b, i, strong, em, u, sup...) inside a paragraph.
+        /// Spans keep theirs (audio-sentence ids, bloom-linebreak, etc.), and so do hyperlinks: an
+        /// anchor without its href is no longer a link at all (BL-16892).
+        /// </summary>
         private static void RemoveUnwantedAttributesFromChildren(SafeXmlElement paraOrMarkup)
         {
             foreach (var child in paraOrMarkup.ChildNodes.OfType<SafeXmlElement>())
             {
-                if (child.Name.ToLowerInvariant() != "span")
+                var name = child.Name.ToLowerInvariant();
+                if (name != "span" && name != "a")
                 {
                     foreach (var attrName in child.AttributeNames)
                         child.RemoveAttribute(attrName);
@@ -3304,7 +3412,12 @@ namespace Bloom.Book
                             )
                         )
                             return false; // missing audio file
-                        if (!textOfDiv.StartsWith(audioSentenceChildNode.InnerText))
+                        if (
+                            !textOfDiv.StartsWith(
+                                audioSentenceChildNode.InnerText,
+                                StringComparison.Ordinal
+                            )
+                        )
                             return false; // missing audio span?
                         textOfDiv = textOfDiv.Substring(audioSentenceChildNode.InnerText.Length);
                         textOfDiv = textOfDiv.TrimStart();
@@ -3319,7 +3432,7 @@ namespace Bloom.Book
 
         /// <summary>
         /// Determines whether the book references an existing image file other than
-        /// branding, placeholder, or license images.
+        /// branding, placeholder, license, or QR code images.
         /// </summary>
         /// <returns></returns>
         public bool HasImages()
@@ -3338,7 +3451,14 @@ namespace Bloom.Book
         {
             if (image.Name == "img")
             {
-                if (image.HasClass("branding") || image.HasClass("licenseImage"))
+                // The QR code of the "Made with Bloom" badge is as much a part of the branding as
+                // the badge image itself (which has the "branding" class), so it doesn't count as
+                // one of the book's images.
+                if (
+                    image.HasClass("branding")
+                    || image.HasClass("licenseImage")
+                    || image.HasClass(BookStorage.kQrCodeClass)
+                )
                     return false;
             }
             var imageUrl = HtmlDom.GetImageElementUrl(image);
@@ -3508,6 +3628,12 @@ namespace Bloom.Book
         /// <param name="dom"></param>
         internal void AddPreviewJavascript(HtmlDom dom)
         {
+            // Keep this bundle free of Bloom's UI css. It goes into book documents (preview,
+            // thumbnails, printing), so anything UI-ish it drags in gets applied to the rendered
+            // book: bloomUI.css used to come along and put the UI font stack on book text, which
+            // then broke when BL-15300 moved the matching @font-face declarations out of the
+            // bundle. These documents deliberately carry no UI font faces, so a re-leak shows up
+            // as a wrong font rather than rendering plausibly.
             dom.AddJavascriptFile("bookPreviewBundle.js".ToLocalhost());
         }
 
@@ -3902,6 +4028,8 @@ namespace Bloom.Book
             string templateBookFolderPath
         )
         {
+            // Used verbatim as a file name below: the sound attributes hold a plain, NOT
+            // URL-encoded, name -- see the encoding conventions note on UrlPathString.
             var fileName = sourceElt.GetAttribute(attrName);
             // For some sound attrs (e.g., data-correct-sound), 'none' is a valid value of the
             // attribute but signifies we don't want a default sound. So we don't want to copy.
@@ -4195,6 +4323,11 @@ namespace Bloom.Book
             if (needToDoFullSave)
                 _bookData.SuckInDataFromEditedDom(editedPageDom, BookInfo); //this will do an updatetitle
 
+            // The user's permission to edit the sentence about the original book was good for
+            // one look at the page, so the copy that goes back into the book holds their wording
+            // as text they cannot type in.
+            BookCopyrightAndLicense.LockOriginalCopyrightNotice(pageToSaveToDisk);
+
             // When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles".
             // Here we copy that over to the book DOM.
             var userModifiedStyles = HtmlDom.GetUserModifiedStyleElement(editedPageDom.Head);
@@ -4250,7 +4383,16 @@ namespace Bloom.Book
             {
                 try
                 {
-                    if (pageToSaveToDisk != null && !reallyNeedFullSave)
+                    // A book still recording a page layout update level above ours has to go
+                    // through the full Save, which is what brings that level down to what we can
+                    // honestly claim (BL-16852). SaveForPageChanged copies the existing file through
+                    // and replaces one page, so it would leave the old level in the head. This costs
+                    // one full save: afterwards the level is ours and the fast path resumes.
+                    if (
+                        pageToSaveToDisk != null
+                        && !reallyNeedFullSave
+                        && !BookProcessor.RecordsPageLayoutUpdateLevelAboveOurs(OurHtmlDom)
+                    )
                     {
                         string pageId = pageToSaveToDisk.GetAttribute("id");
                         // nothing changed outside this page. We can do a much more efficient write operation.
@@ -4792,6 +4934,10 @@ namespace Bloom.Book
 
         public void SetLayout(Layout layout)
         {
+            // The page layout update records measurements relative to the page, so a new size or
+            // orientation leaves them stale.
+            if (GetLayout().SizeAndOrientation.ClassName != layout.SizeAndOrientation.ClassName)
+                BookProcessor.RecordPageLayoutChanged(OurHtmlDom);
             SizeAndOrientation.AddClassesForLayout(OurHtmlDom, layout);
         }
 
@@ -4838,6 +4984,39 @@ namespace Bloom.Book
                 BookInfo.MetaData.UseOriginalCopyright
             );
             BookInfo.SetLicenseAndCopyrightMetadata(metadata);
+        }
+
+        /// <summary>
+        /// True for exactly one rendering of the credits page: the one right after the user
+        /// clicks the padlock. Editing the sentence about the original book is a momentary
+        /// permission, so leaving the page or refreshing it shows it locked again.
+        /// </summary>
+        public bool OriginalCopyrightNoticeIsUnlockedForOneRendering { get; set; }
+
+        /// <summary>
+        /// Hand the sentence about the original book's copyright and license over to the user.
+        /// The wording Bloom is showing right now goes into the data div, which makes Bloom stop
+        /// generating it, and the next rendering of the page shows it as an editable field.
+        /// </summary>
+        public void LetUserEditOriginalCopyrightNotice()
+        {
+            // Only the first time: after that the data div already holds the user's own wording.
+            if (
+                XmlString.IsNullOrEmpty(
+                    _bookData.GetVariableOrNull(
+                        BookCopyrightAndLicense.kUserOriginalCopyrightAndLicense,
+                        "*"
+                    )
+                )
+            )
+            {
+                BookCopyrightAndLicense.SeedUserEditableOriginalCopyrightNotice(
+                    OurHtmlDom,
+                    _bookData
+                );
+                SetMetadata(GetLicenseMetadata());
+            }
+            OriginalCopyrightNoticeIsUnlockedForOneRendering = true;
         }
 
         public void SetTitle(string name)
@@ -5293,49 +5472,60 @@ namespace Bloom.Book
             if (outsideFrontCover == null)
                 return null;
 
-            // Prefer the designated cover image if it is present and not placeholder.
-            var designatedCoverImage = outsideFrontCover
+            // We take the image the book marks as its cover, and failing that an image out of an
+            // image container. That is the whole rule: the branding logo, the license image and the
+            // QR code of the "Made with Bloom" badge belong to the branding or the license rather
+            // than to the book, and none of them is in an image container, so nothing needs to name
+            // them. We used to accept any img on the cover, so a branded book whose cover picture
+            // was still a placeholder took the branding logo instead. For the ABC brandings that
+            // logo is an SVG, which PalasoImage cannot load, so such a book had no thumbnail at all
+            // (BL-16780).
+            //
+            // Take the mark from either the img or the container. Both shapes are already here: the
+            // standard xmatter marks the img, while the Afghan Children Read xmatter marks the
+            // bloom-canvas itself (Afghan-Children-Read-XMatter-mixins.pug). We accept an img
+            // inside a marked container too. Nothing in this repo produces that shape today, but a
+            // book on disk or a project-specific xmatter kept elsewhere may, and a marked container
+            // has no image URL of its own, so without it the search would fall through to an
+            // earlier container and take the wrong picture.
+            //
+            // The container itself is a candidate as well as the imgs inside it, because a book old
+            // enough to use an obsolete image representation carries the picture on the container.
+            // We handle those here rather than only for editable books, because publish and preview
+            // use this code too.
+            // Match whole class names. "contains(@class, 'bloom-canvas')" is also true of
+            // bloom-canvas-element, which is not a container at all.
+            const string kImageContainer =
+                "div[contains(concat(' ', normalize-space(@class), ' '), ' bloom-imageContainer ')]";
+            const string kBloomCanvas =
+                "div[contains(concat(' ', normalize-space(@class), ' '), ' bloom-canvas ')]";
+            var markedAsTheCoverImage = outsideFrontCover
                 .SafeSelectNodes(
                     ".//img[@data-book='coverImage'] | .//div[@data-book='coverImage']"
+                        + " | .//div[@data-book='coverImage']//img"
                 )
-                .Cast<SafeXmlElement>()
-                .FirstOrDefault();
+                .Cast<SafeXmlElement>();
+            // An img anywhere inside an image container is one of the book's pictures, but under a
+            // bloom-canvas only a direct child is: on a custom-layout cover the whole margin box is
+            // one bloom-canvas and everything on the cover, branding included, is a canvas element
+            // inside it, so a descendant search there would sweep up the branding logo. A direct
+            // child of the bloom-canvas is the old shape, a background image not yet converted to a
+            // canvas element (see SetupImagesInContainer).
+            var inAnImageContainer = outsideFrontCover
+                .SafeSelectNodes(
+                    $".//{kImageContainer} | .//{kImageContainer}//img"
+                        + $" | .//{kBloomCanvas} | .//{kBloomCanvas}/img"
+                )
+                .Cast<SafeXmlElement>();
+            var candidates = markedAsTheCoverImage.Concat(inAnImageContainer);
 
-            SafeXmlElement bestPlaceholderElt = null;
-            string bestPlaceholderPath = null;
+            // A placeholder means "no picture chosen yet", so keep looking for a real one. Ending
+            // up with the placeholder is a fine answer; ending up with the branding logo is not.
+            SafeXmlElement placeholderElt = null;
+            string placeholderPath = null;
 
-            if (designatedCoverImage != null)
+            foreach (var candidate in candidates)
             {
-                var designatedPath = GetImagePath(designatedCoverImage);
-                if (designatedPath != null)
-                {
-                    if (!ImageUtils.IsPlaceholderImageFilename(designatedPath))
-                    {
-                        coverImgElt = designatedCoverImage;
-                        return designatedPath;
-                    }
-
-                    bestPlaceholderElt = designatedCoverImage;
-                    bestPlaceholderPath = designatedPath;
-                }
-            }
-
-            foreach (
-                // we may not need to consider any options other than img, since anything that is old enough
-                // in format to use an obsolete image representation probably only has one image on the
-                // cover, properly designated with data-book. However, it's not much more work or complexity
-                // to handle the older cases here, too, and we do use this code in publish and preview situations,
-                // not only for editable books.
-                var candidate in outsideFrontCover
-                    .SafeSelectNodes(
-                        ".//img | .//div[contains(@class, 'bloom-imageContainer') or contains(@class, 'bloom-canvas')]"
-                    )
-                    .Cast<SafeXmlElement>()
-            )
-            {
-                if (candidate == designatedCoverImage)
-                    continue;
-
                 var candidatePath = GetImagePath(candidate);
                 if (candidatePath == null)
                     continue;
@@ -5346,15 +5536,15 @@ namespace Bloom.Book
                     return candidatePath;
                 }
 
-                if (bestPlaceholderPath == null)
+                if (placeholderPath == null)
                 {
-                    bestPlaceholderElt = candidate;
-                    bestPlaceholderPath = candidatePath;
+                    placeholderElt = candidate;
+                    placeholderPath = candidatePath;
                 }
             }
 
-            coverImgElt = bestPlaceholderElt;
-            return bestPlaceholderPath;
+            coverImgElt = placeholderElt;
+            return placeholderPath;
         }
 
         private string GetImagePath(SafeXmlElement imageElement)
@@ -5469,7 +5659,8 @@ namespace Bloom.Book
                 OurHtmlDom,
                 CollectionSettings.ShowBlorgLanguageQrCode,
                 CollectionSettings.PrimaryLangTagWithSignPrioritized,
-                CollectionSettings.BadgeQrCodeLabelLocalizedWithLang,
+                CollectionSettings.BadgeQrCodeLabelLocalized,
+                CollectionSettings.PrimaryLanguageWithSignPrioritized,
                 FolderPath,
                 updateQrCodeFileEvenIfItExists
             );

@@ -66,7 +66,6 @@ function GetInlineDictionary() {
         "BookEditor.FontSizeTip":
             "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\\nCurrent size is {2}pt.",
         "EditTab.FrontMatter.BookTitlePrompt": "Book title in {lang}",
-        "EditTab.FrontMatter.TopicPrompt": "Click to choose topic",
         "EditTab.FrontMatter.TopicPrompt2": "Choose topic",
         "EditTab.FrontMatter.ISBNPrompt":
             "International Standard Book Number. Leave blank if you don't have one of these.",

@@ -30,6 +30,7 @@ import {
 import { AboutDialogLauncher } from "../../react_components/aboutDialog";
 import { RegistrationDialogEventLauncher } from "../../react_components/registration/registrationDialogLauncher";
 import { RequiresSubscriptionOverlayWrapper } from "../../react_components/requiresSubscription";
+import { useWorkspaceTabInfo } from "../../react_components/TopBar/TopBar";
 
 export const CheckoutNeededScreen: React.FunctionComponent<{
     titleForDisplay: string;
@@ -108,6 +109,31 @@ export const PublishTabPane: React.FunctionComponent = () => {
     const [tabIndex, setTabIndex] = React.useState(
         kWaitForUserToChooseTabIndex,
     );
+    // True while a long-running publish operation has made itself modal by locking navigation:
+    // a BloomLibrary upload, or one of the Apps tool's Reading App Builder actions. C# owns this
+    // flag (it is the same one that greys out the main workspace tabs), so the publish tools
+    // unlock at exactly the moment the operation really finishes or is cancelled — not when the
+    // browser guesses it has. See BL-16654.
+    const navigationLocked = useWorkspaceTabInfo().navigationLocked;
+    // The Web tool tells us directly when the user has committed to an upload, because C# does
+    // not take its lock until a couple of API round trips later, leaving a window where the
+    // screen already shows Cancel but the tools were still clickable (BL-16654).
+    const [uploadUnderway, setUploadUnderway] = React.useState(false);
+    // OR, never AND. C#'s flag is the authority on when an operation has really finished, and
+    // uploadUnderway is deliberately only ever an *additional* reason to lock: it is unreliable
+    // as an unlock signal (it clears the moment Cancel is pressed, and on any error line in the
+    // progress log) but adding it can only lock more than C# alone would, never less.
+    //
+    // Both are then gated on a tool actually showing. The lock exists to stop the user walking
+    // away from an operation in progress, and none can be in progress while the sentinel "no tool
+    // chosen yet" panel is up. That gate matters because the C# flag is shared with other
+    // subsystems — e.g. the Copyright and License dialog, reachable from this tab's own "Missing
+    // Copyright" link, posts editView/setModalState, which locks. Without it, a lock still set
+    // while tabIndex is the sentinel would grey out every tool at once and leave the user no way
+    // to choose one at all.
+    const publishToolsLocked =
+        (navigationLocked || uploadUnderway) &&
+        tabIndex !== kWaitForUserToChooseTabIndex;
     const appBuilderFeatureStatus = useGetFeatureStatus("AppBuilder");
     const setup = () => {
         setTabIndex(kWaitForUserToChooseTabIndex);
@@ -129,6 +155,15 @@ export const PublishTabPane: React.FunctionComponent = () => {
     // User is switching to publish tab from another tab
     useSubscribeToWebSocketForEvent("publish", "switchToPublishTab", () => {
         setup();
+    });
+    // The tool the user chose while C# brings the book's pages up to date (see onSelect below).
+    const toolWaitingForPages = React.useRef<number>();
+    useSubscribeToWebSocketForEvent("publish", "pagesUpToDate", () => {
+        if (toolWaitingForPages.current === undefined) {
+            return;
+        }
+        setTabIndex(toolWaitingForPages.current);
+        toolWaitingForPages.current = undefined;
     });
     // User is switching out of publish tab, clear the display so the the old stuff doesn't flash when the user comes back on another book
     useSubscribeToWebSocketForEvent("publish", "switchOutOfPublishTab", () => {
@@ -239,9 +274,30 @@ export const PublishTabPane: React.FunctionComponent = () => {
                             labelBackgroundColor={kPanelBackground}
                             selectedIndex={tabIndex}
                             onSelect={(newIndex) => {
-                                post("publish/switchingPublishMode");
+                                // While an upload or an Apps action is running (its Cancel button is
+                                // showing), the operation is modal: veto switching to another publish
+                                // tool until it finishes or is cancelled. The main workspace tabs are
+                                // locked from C# by the same flag.
+                                if (publishToolsLocked) {
+                                    return false;
+                                }
                                 logPublishTabSelected(newIndex);
-                                setTabIndex(newIndex);
+                                // Every tool publishes the book's pages, so C# first brings them
+                                // up to date if they need it, behind its own progress dialog.
+                                // Hold the tool back until it says the pages are ready. Record the
+                                // choice before asking, because the "pagesUpToDate" event can arrive
+                                // before this request's reply does.
+                                toolWaitingForPages.current = newIndex;
+                                post(
+                                    "publish/switchingPublishMode",
+                                    (result) => {
+                                        if (result.data.pagesBeingUpdated) {
+                                            return;
+                                        }
+                                        toolWaitingForPages.current = undefined;
+                                        setTabIndex(newIndex);
+                                    },
+                                );
                             }}
                             css={css`
                                 height: 100%;
@@ -300,12 +356,35 @@ export const PublishTabPane: React.FunctionComponent = () => {
                                 .invisible_tab {
                                     display: none;
                                 }
+                                // Doubled class for enough specificity to override the tab color
+                                // rule above, so tools disabled during a modal operation read as
+                                // greyed out (react-tabs already makes them non-clickable).
+                                .react-tabs__tab--disabled.react-tabs__tab--disabled {
+                                    opacity: 0.4;
+                                    cursor: default;
+                                }
                             `}
                         >
-                            <TabList>
+                            {/* Dark panel: the far-left tab strip scrolls and is
+                                dark, so opt it into Bloom's shared dark scrollbar
+                                style (bloomUI.less). The class goes on the tab-list
+                                only, not on BloomTabs, so the light tab panels
+                                (which are siblings, not descendants) are unaffected.
+                                react-tabs supplies "react-tabs__tab-list" only as a
+                                default className, so a custom className replaces it;
+                                we must repeat it here to keep the tab-list styling. */}
+                            <TabList className="react-tabs__tab-list bloomDarkScrollbars">
                                 {publishTabs.map((tab, index) => (
                                     <Tab
                                         key={index}
+                                        // Grey out the other publish tools while a modal operation
+                                        // is running, so it's clear why they don't respond. The tool
+                                        // the operation belongs to stays looking normal, the same way
+                                        // C# leaves the active workspace tab looking active.
+                                        disabled={
+                                            publishToolsLocked &&
+                                            index !== tabIndex
+                                        }
                                         className={
                                             tab.hidden
                                                 ? "invisible_tab"
@@ -337,7 +416,9 @@ export const PublishTabPane: React.FunctionComponent = () => {
                             </TabPanel>
                             <TabPanel>
                                 {publishTabInfo.canUpload ? (
-                                    <LibraryPublishScreen />
+                                    <LibraryPublishScreen
+                                        onUploadingChange={setUploadUnderway}
+                                    />
                                 ) : (
                                     <WarningBox
                                         css={css`

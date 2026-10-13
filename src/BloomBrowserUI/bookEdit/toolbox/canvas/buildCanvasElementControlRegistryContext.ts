@@ -19,6 +19,8 @@ import { inferCanvasElementType } from "./canvasElementTypeInference";
 import { canvasElementControlRegistry } from "./canvasElementControlRegistry";
 import { CanvasElementType } from "./canvasElementTypes";
 import { IControlContext } from "./canvasControlTypes";
+import { isAiEditableImageSrc } from "../../aiImageEditor/aiImageEditorImageFormats";
+import { imageContentIsTransformed } from "../../js/imageContentTransform";
 
 const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
     if (!img) {
@@ -173,6 +175,8 @@ export const buildCanvasElementControlRegistryContext = (
         elementType,
         hasImage,
         hasRealImage: hasRealImage(img ?? undefined),
+        isPlaceholderImage:
+            hasImage && isPlaceHolderImage(img?.getAttribute("src")),
         hasVideo,
         hasPreviousVideoContainer: videoContainer
             ? !!findPreviousVideoContainer(videoContainer)
@@ -186,6 +190,7 @@ export const buildCanvasElementControlRegistryContext = (
         rectangleHasBackground:
             rectangle?.classList.contains("bloom-theme-background") ?? false,
         isCropped: !!img?.style?.width,
+        isImageContentTransformed: img ? imageContentIsTransformed(img) : false,
         isNavigationButton: elementType.startsWith("navigation-"),
         isButton,
         isBackgroundImage,
@@ -204,9 +209,18 @@ export const buildCanvasElementControlRegistryContext = (
             !!img &&
             !img.getAttribute("data-copyright"),
         isInDraggableGame,
+        // A click sound ("play when touched") is offered for any image, on any page, not
+        // just inside a draggable game: attaching a sound to a picture is ordinary book
+        // making, and the game-only gate was an unintended casualty of the move to this
+        // declarative registry -- it left no way at all to set one on a normal page
+        // (BL-16669 testing).
+        // Text is deliberately NOT broadened. There has never been a click sound for text;
+        // the text form of this menu item just points at the Talking Book tool, so it stays
+        // where it was.
         canChooseAudioForElement:
             elementType === "sound" ||
-            (isInDraggableGame && (hasImage || hasText)),
+            hasImage ||
+            (isInDraggableGame && hasText),
         hasCurrentImageSound,
         currentImageSoundLabel: hasCurrentImageSound
             ? dataSound.replace(/\.mp3$/, "")
@@ -226,5 +240,13 @@ export const buildCanvasElementControlRegistryContext = (
             language2Name: "",
             language2Tag: "",
         },
+        // Default off; CanvasElementContextControls overlays the real feature
+        // status (which is async) when it assembles the context.
+        aiImageEditingAvailable: false,
+        imageIsAiEditableFormat: isAiEditableImageSrc(img?.getAttribute("src")),
+        // Default off, for the same reason as aiImageEditingAvailable above:
+        // CanvasElementContextControls overlays the real (async) feature status when
+        // it assembles the context.
+        tablesMayBeRestructured: false,
     };
 };

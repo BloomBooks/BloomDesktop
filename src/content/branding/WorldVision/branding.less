@@ -1,9 +1,15 @@
 @import "../branding-base.less";
-[data-book="outside-back-cover-branding-top-html"] img {
-    margin-left: auto;
-    margin-right: 0;
-    width: 20%;
-}
+// The top slot now holds the "Made with Bloom" QR badge (.bloom-branding-wrapper),
+// which sizes and centers itself via branding-base.less. We deliberately do NOT set a
+// width on the images here: a rule like `img { width: 20% }` would override the wrapper's
+// own logo (4.7cm) and QR code (2.8cm) sizes and break the badge layout.
+
+// The badge is in the top slot and the World Vision logo in the bottom one, so the middle text
+// box has to be able to give up its 30% floor when the badge's caption wraps onto a third line;
+// otherwise the logo is pushed off the bottom of a short page such as Device16x9Landscape
+// (BL-16370). See the mixin's comment in branding-base.less.
+.allow-back-cover-text-box-to-squeeze();
+
 [data-book="outside-back-cover-branding-bottom-html"] img {
     width: 60%;
 }

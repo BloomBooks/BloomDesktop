@@ -102,15 +102,25 @@ namespace Bloom.Api
             WriteOutput(Encoding.UTF8.GetBytes(s), _actualContext.Response);
         }
 
+        /// <summary>
+        /// Adds the permissive CORS headers Bloom's local server uses so cross-origin callers
+        /// can read our responses. This is particularly useful in allowing the bloom-player used
+        /// in the BloomPUB preview (and local browsers running bloom-player, and bloomlibrary.org)
+        /// to access the current book; Allow-Methods:* also satisfies the CORS preflight for the
+        /// DELETE the AI image editor's persistence layer uses when clearing session data.
+        /// Applied uniformly to every response path (success, stream, error, redirect).
+        /// </summary>
+        private static void AppendCorsHeaders(HttpListenerResponse response)
+        {
+            response.AppendHeader("Access-Control-Allow-Origin", "*");
+            response.AppendHeader("Access-Control-Allow-Headers", "*");
+            response.AppendHeader("Access-Control-Allow-Methods", "*");
+        }
+
         private void WriteOutput(byte[] buffer, HttpListenerResponse response)
         {
             response.ContentLength64 += buffer.Length;
-            // This is particularly useful in allowing the bloom-player used in the BloomPUB preview
-            // to access the current preview book. Also allows local browsers running bloom-player
-            // to access it.
-            response.AppendHeader("Access-Control-Allow-Origin", "*");
-            // Allows bloomlibrary.org to call the external endpoints.
-            response.AppendHeader("Access-Control-Allow-Headers", "*");
+            AppendCorsHeaders(response);
             Stream output = response.OutputStream;
             try
             {
@@ -189,7 +199,7 @@ namespace Bloom.Api
             {
                 _actualContext.Response.ContentLength64 = fs.Length;
                 _actualContext.Response.AppendHeader("PathOnDisk", HttpUtility.UrlEncode(path));
-                _actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
+                AppendCorsHeaders(_actualContext.Response);
                 if (
                     path.EndsWith(".mp4", StringComparison.InvariantCultureIgnoreCase)
                     || path.EndsWith(".webm", StringComparison.InvariantCultureIgnoreCase)
@@ -265,28 +275,51 @@ namespace Bloom.Api
                     {
                         var buffer = new byte[1024 * 512]; //512KB
                         int read;
-                        while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
+                        long promised = _actualContext.Response.ContentLength64;
+                        long written = 0;
+                        // Never read past the length we promised: if the file grew while we were sending it,
+                        // writing more than ContentLength64 bytes would throw.
+                        int NextPieceLength() => (int)Math.Min(buffer.Length, promised - written);
+                        while ((read = fs.Read(buffer, 0, NextPieceLength())) > 0)
                         {
                             long pos = fs.Position;
                             fs.Dispose();
                             fs = null; // prevent double dispose
                             _actualContext.Response.OutputStream.Write(buffer, 0, read);
+                            written += read;
                             try
                             {
                                 fs = OpenSharedReadStreamWithRetry(path);
                             }
-                            catch (FileNotFoundException)
+                            catch (Exception e)
+                                when (e is IOException || e is UnauthorizedAccessException)
                             {
-                                // and we've made it possible to delete (or move) the file in the middle
-                                // of our read, so it may be gone. If so, just pretend it ended with
-                                // what we already returned.
+                                // and we've made it possible to delete (or move) the file, or even its folder,
+                                // in the middle of our read, so it may be gone. If so, stop here; the check
+                                // below deals with the reply being shorter than we promised.
+                                // (A deleted file that some other process still has open is "delete pending",
+                                // and opening it gives UnauthorizedAccessException rather than FileNotFound.)
+                                // IOException also covers a file some other process has kept locked for longer
+                                // than OpenSharedReadStreamWithRetry keeps trying.
                                 break;
                             }
 
                             fs.Seek(pos, SeekOrigin.Begin);
                         }
 
-                        _actualContext.Response.OutputStream.Close();
+                        if (written < promised)
+                        {
+                            // The file was deleted, shrank or stayed locked while we were sending it (e.g. the
+                            // image cache was cleared because the user selected another book). We already promised
+                            // ContentLength64 bytes, and Close() throws "Cannot close stream until all bytes
+                            // are written" if we send fewer, so drop the connection instead.
+                            Logger.WriteEvent(
+                                $"Aborted reply for {path}: sent {written} of {promised} bytes before the file went away or could no longer be read."
+                            );
+                            _actualContext.Response.Abort();
+                        }
+                        else
+                            _actualContext.Response.OutputStream.Close();
                     }
                     catch (HttpListenerException e)
                     {
@@ -320,7 +353,7 @@ namespace Bloom.Api
             var actualLength = input.Read(buffer, 0, buffer.Length);
 
             _actualContext.Response.ContentLength64 = actualLength;
-            _actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
+            AppendCorsHeaders(_actualContext.Response);
 
             // A HEAD request (rather than a GET or POST request) is a request for just headers, and nothing can be written
             // to the OutputStream. It is normally used to check if the contents of the file have changed without taking the
@@ -360,18 +393,19 @@ namespace Bloom.Api
             if (bypassCache)
                 return false;
 
-            if (path.EndsWith(ProblemReportApi.ScreenshotName))
+            if (path.EndsWith(ProblemReportApi.ScreenshotName, StringComparison.Ordinal))
                 return false; // Otherwise we can get stale screenshot images from our ProblemReportApi
             if (string.IsNullOrEmpty(DoNotCacheFolder))
                 return false; // if for some reason this hasn't been set, play safe and don't cache.
             // if we're using a lower resolution version of an image (with a generated filename),
             // we want ShouldCache to do its tests on the original filename.
             var folderToCheck = (originalPath ?? path).Replace('\\', '/');
-            if (folderToCheck.StartsWith(DoNotCacheFolder))
+            if (folderToCheck.StartsWith(DoNotCacheFolder, StringComparison.Ordinal))
                 return false; // in the folder we never cache, typically the editable project folder.)
             if (
                 folderToCheck.StartsWith(
-                    Bloom.Publish.Epub.EpubMaker.EpubExportRootFolder.Replace('\\', '/')
+                    Bloom.Publish.Epub.EpubMaker.EpubExportRootFolder.Replace('\\', '/'),
+                    StringComparison.Ordinal
                 )
             )
                 return false; // ePUB export files should not be cached.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-6253.
@@ -390,10 +424,10 @@ namespace Bloom.Api
             // in a specific book folder. But if the browser is allowed to cache the result of asking
             // for /book-preview/Image1.jpg, it will not know that /book-preview/Image1.jpg
             // could mean something quite different in a different book.
-            if (RawUrl.StartsWith("/book-preview/"))
+            if (RawUrl.StartsWith("/book-preview/", StringComparison.Ordinal))
                 return false;
 
-            if (RawUrl.EndsWith("no-cache=true"))
+            if (RawUrl.EndsWith("no-cache=true", StringComparison.Ordinal))
                 return false;
 
             if (Path.GetExtension(path).Equals(".js", StringComparison.OrdinalIgnoreCase))
@@ -428,9 +462,24 @@ namespace Bloom.Api
             // and tries to parse it as such if we don't specify that it is actually json.
             // This happens before we even see the data in the axios.get().then().catch() code!
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-7900.
-            if (LocalPathWithoutQuery.ToLowerInvariant().EndsWith(".json"))
+            if (
+                LocalPathWithoutQuery.ToLowerInvariant().EndsWith(".json", StringComparison.Ordinal)
+            )
                 _actualContext.Response.ContentType = "application/json";
-            _actualContext.Response.Close();
+            // Consistent with WriteCompleteOutput and ReplyWithFileContent: error responses
+            // also need CORS headers so cross-origin callers can read the status code.
+            AppendCorsHeaders(_actualContext.Response);
+            // Also send the message as the response body. The status description above is
+            // sanitized to ASCII (mangling localized text) and many HTTP clients don't expose
+            // it at all; the body is what client code (e.g. axios error.response.data) actually
+            // reads, and it can carry the full UTF-8 message.
+            // A HEAD response must not have a body (see WriteOutput and ReplyWithFileContent);
+            // http.sys throws ProtocolViolationException if we try, which would leave the
+            // client hanging without a response.
+            if (_actualContext.Request.HttpMethod == "HEAD")
+                _actualContext.Response.Close();
+            else
+                _actualContext.Response.Close(Encoding.UTF8.GetBytes(errorDescription), false);
             HaveFullyProcessedRequest = true;
         }
 
@@ -573,7 +622,12 @@ namespace Bloom.Api
 
         public NameValueCollection GetPostDataWhenFormEncoded()
         {
-            Debug.Assert(RequestContentType.StartsWith("application/x-www-form-urlencoded"));
+            Debug.Assert(
+                RequestContentType.StartsWith(
+                    "application/x-www-form-urlencoded",
+                    StringComparison.Ordinal
+                )
+            );
             if (_postData == null)
             {
                 var request = _actualContext.Request;
@@ -598,7 +652,9 @@ namespace Bloom.Api
         // only handles simple key/value pairs, not nested objects or arrays
         public NameValueCollection GetPostDataWhenSimpleJsonEncoded()
         {
-            Debug.Assert(RequestContentType.StartsWith("application/json"));
+            Debug.Assert(
+                RequestContentType.StartsWith("application/json", StringComparison.Ordinal)
+            );
             if (_postData == null)
             {
                 var request = _actualContext.Request;
@@ -630,6 +686,11 @@ namespace Bloom.Api
             get { return _actualContext.Request.RawUrl; }
         }
 
+        public string Referer
+        {
+            get { return _actualContext.Request.Referer; }
+        }
+
         HttpMethods IRequestInfo.HttpMethod
         {
             get
@@ -650,13 +711,17 @@ namespace Bloom.Api
             var queryPart = queryIndex >= 0 ? url.Substring(queryIndex) : string.Empty;
 
             // handle, e.g. http://localhost:8089/bloom/C:/foo/bar/ปก2.jpg
+            // PossiblyEncoded because callers genuinely differ: BloomServer redirects using its
+            // own RawUrl, which is encoded, while ServerHandlerForBloomPlayer builds one from a
+            // raw book path, which is not. This is a public entry point, so it has to cope with
+            // both; see the note on CreateFromPossiblyEncodedString.
             var encodedPath = UrlPathString
-                .CreateFromUnencodedString(pathPart)
+                .CreateFromPossiblyEncodedString(pathPart)
                 .UrlEncodedForHttpPath;
             var encodedUrl = encodedPath + queryPart;
             _actualContext.Response.Headers.Add("Location", encodedUrl);
             // This supports Bloom Player Storybook's "Live from Bloom Editor" feature, preventing CORS errors on the redirect.
-            _actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
+            AppendCorsHeaders(_actualContext.Response);
             _actualContext.Response.Close();
             HaveFullyProcessedRequest = true;
         }

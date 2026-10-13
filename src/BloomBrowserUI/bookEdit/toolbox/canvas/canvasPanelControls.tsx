@@ -83,8 +83,8 @@ export const BubbleStylePanelControl: React.FunctionComponent<{
     return (
         <FormControl variant="standard">
             <InputLabel htmlFor="canvasElement-style-dropdown">
-                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.Style">
-                    Style
+                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.ElementType">
+                    Element Type
                 </Span>
             </InputLabel>
             <ThemeProvider theme={toolboxMenuPopupTheme}>

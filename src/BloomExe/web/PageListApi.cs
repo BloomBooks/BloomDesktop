@@ -358,7 +358,7 @@ namespace Bloom.web
 
         // As a further form of optimization, mark img elements as being thumbnails. The server
         // produces miniatures that take up less memory.
-        private static void MarkImageNodesForThumbnail(SafeXmlElement pageElementForThumbnail)
+        internal static void MarkImageNodesForThumbnail(SafeXmlElement pageElementForThumbnail)
         {
             var imgNodes = HtmlDom.SelectChildImgAndBackgroundImageElements(
                 pageElementForThumbnail
@@ -372,7 +372,12 @@ namespace Bloom.web
                     if (imageElementUrl.NotEncoded.Contains("/api/"))
                         continue;
 
-                    var filename = imageElementUrl.PathOnly.UrlEncoded;
+                    // UrlEncodedForHttpPath rather than UrlEncoded, because the latter escapes the
+                    // path separators themselves ('/' as %2f, ':' as %3a). For an ordinary book
+                    // image the two are identical -- a Windows file name can contain neither
+                    // character -- but for a src that really is a path (say "/bloom/branding/x.png",
+                    // which the "/api/" test above doesn't catch) only this form stays requestable.
+                    var filename = imageElementUrl.PathOnly.UrlEncodedForHttpPath;
                     if (!string.IsNullOrWhiteSpace(filename))
                     {
                         var url = filename + "?thumbnail=1";
@@ -384,8 +389,19 @@ namespace Bloom.web
                             // gets interpreted as part of the filename.
                             url = filename + query.NotEncoded + "&thumbnail=1";
                         }
-                        // filename is already URL-encoded; we must NOT re-encode the whole string or ? becomes
-                        // %3f and lands in the path, making the thumbnail param invisible to GetQueryParameters().
+                        // At this point url is exactly what we want in the src attribute: an
+                        // already-URL-encoded path followed by a literal (unencoded) query. So we
+                        // must neither encode nor decode it on the way out (BL-16658).
+                        // - urlEncode:false, because re-encoding the whole string would turn the ?
+                        //   into %3f and bury the thumbnail param in the path, invisible to
+                        //   GetQueryParameters().
+                        // - CreateFromUnencodedString rather than CreateFromPossiblyEncodedString,
+                        //   because the latter would see the %XX escapes in the path and decode
+                        //   them, and we would then write out a raw filename like
+                        //   "This Image !@#$%^&()2.jpg?thumbnail=1", where the browser treats the
+                        //   # as the start of a fragment and never requests the real file. (This
+                        //   is the one place where "unencoded" is a slight fiction: what we hold
+                        //   is encoded, and the point is precisely that we must not touch it.)
                         HtmlDom.SetImageElementUrl(
                             imgNode,
                             UrlPathString.CreateFromUnencodedString(url),

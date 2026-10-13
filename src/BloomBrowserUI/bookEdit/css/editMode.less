@@ -1,9 +1,13 @@
 /*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
+// The UI @font-face declarations. editMode.css is linked in the edit page's <head> by the C#
+// (so it is present before first paint) and is never included in published books; it is the
+// ONE place the edit-page document gets these declarations. See bloomUIFontFaces.css for why
+// they must not arrive again later (BL-15300 text flicker).
+@import (less) "../../bloomUIFontFaces.css";
 @import "../../bloomUI.less";
 @import "../sourceBubbles/sourceBubbles.less";
 @import "../../placeHolderImages.less";
-
-@bleed: 3mm; // Duplicated from basePage.less to remove circular dependency between BloomBrowserUI and content
+@import "bleedAndCropMarks.less";
 
 @focusBorderColor: transparent; // #d6eaed; // @bloom-blue; // rgba(82, 168, 236, 0.6);
 @tipLinkColor: #8e3581; // intentionally a bit darker to be legible
@@ -66,45 +70,6 @@ body {
     // Geckofx anymore. However, its purpose is to keep the browser from having redraw errors during
     // Ctrl + mousewheel zooming and I saw some errors doing that, so I left it here.
     transition: transform 20ms;
-}
-
-// See comments on .bloom-mediaBox in basePage.less for a description of the mediaBox.
-// Here, we are causing it to be visible when desired.
-.bloom-mediaBox {
-    pointer-events: none; // we want all clicks to go through this to the child
-
-    & > * {
-        pointer-events: auto; // start up clicks again a the next level
-    }
-
-    :not(.Device16x9Portrait):not(.Device16x9Landscape):not(
-            .Ebook2x3Portrait
-        ):not(.Ebook7x5Landscape)&::before {
-        // show bleed area
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-
-        top: 0;
-        bottom: 0;
-        border: 3mm solid rgba(0, 0, 0, 0.8);
-        z-index: 1;
-    }
-
-    :not(.Device16x9Portrait):not(.Device16x9Landscape):not(
-            .Ebook2x3Portrait
-        ):not(.Ebook7x5Landscape)&:after {
-        // show safety area (the area inside of the trim box that still could get cut)
-        content: "";
-        position: absolute;
-        left: @bleed;
-        right: @bleed;
-        top: @bleed;
-        bottom: @bleed;
-        border: 3mm solid rgba(0, 0, 0, 0.05);
-        z-index: 2;
-    }
 }
 
 #labelAndLayoutPane {
@@ -333,12 +298,56 @@ body:has(#canvas-element-context-controls:hover) .bloom-page,
     }
 }
 
+// A table cell is often smaller than the 63 by 52 pixel image buttons, so a button
+// there hides the picture instead of helping the user edit it. In a cell the user
+// clicks the picture, which selects it and puts the canvas element toolbar below the
+// cell. See the matching test in SetupBloomCanvas (bloomImages.ts), which does not
+// even make the "change image" button for a cell.
+.bloom-cell .imageButton {
+    display: none !important;
+}
+
 /*....NB: we have 2 rules because some pageLabels may be within the margin box, some outside*/
 .marginBox div.pageLabel {
     /*+placement:anchor-top-left -1px -29px;*/
     position: absolute;
     left: -1px;
     top: calc(@PageLabelVerticalDisplacement - 48);
+}
+
+// An icon in the top right corner of a hint bubble, floated so the text wraps beside it.
+// See BloomHintBubbles.getPossibleLinkIcon.
+.hintBubbleIcon {
+    float: right;
+    line-height: 0;
+    margin: 0 0 4px 10px;
+
+    img {
+        display: block;
+        // Sized by height rather than width: the open padlock's drawing is wider than the
+        // closed one's only because its shackle swings out to the side, and both are drawn in
+        // a box of the same height, so matching the heights makes the two padlocks match.
+        height: 15px;
+        width: auto;
+    }
+}
+
+// When there is somewhere for it to go, it behaves like a small button.
+a.hintBubbleIcon {
+    padding: 3px;
+    margin: -3px -3px 1px 7px;
+    border-radius: 3px;
+    opacity: 0.7;
+    cursor: pointer;
+
+    &:hover {
+        opacity: 1;
+        background-color: fade(@tipLinkColor, 15%);
+    }
+
+    &:active {
+        background-color: fade(@tipLinkColor, 30%);
+    }
 }
 
 [data-derived="originalCopyrightAndLicense"] {
@@ -944,17 +953,27 @@ div.textWholePage ul {
 // Now sometimes, the format button lands under the page number.
 // Changing the z-index did not help. So we allow themes to "dodge" it.
 // Kind of a hack, I know. See BL-13206.
+// The dodge only makes sense when the page number actually sits at the bottom left,
+// which depends on two things (BL-14901):
+//  - the theme's automatic placement, expressed as --formatButton-pageNumber-dodge on
+//    the page (themes set it to 0 on pages where they move the number elsewhere,
+//    e.g. pictureOnRight);
+//  - the user's Book Settings > Page Numbers choice, which beats the theme. It reaches
+//    CSS as the pageNumber margin overrides (see AppearanceSettings.SetPageNumberProperties):
+//    Center sets both overrides to 50%; Right sets the left override to deliberately-invalid;
+//    Left sets the right override to deliberately-invalid; Automatic/Hidden set neither.
+// The rules below fold all of that into --formatButton-pageNumber-dodge-effective,
+// which is what the margin actually uses.
 @container style(--pageNumber-show-multiplicand:1) {
-    .split-pane-component.position-right
-        .split-pane-component-inner
-        > .bloom-translationGroup
-        > #formatButton,
-    .split-pane-component.position-top
-        .split-pane-component-inner
-        > .bloom-translationGroup
-        > #formatButton {
-        // don't need this dodge if the page number can't be in this text area
-        --formatButton-pageNumber-dodge: 0px;
+    #formatButton {
+        // Default: the theme's automatic-placement decision. The 0px fallback matters:
+        // legacy-theme books get no appearance-theme-default.css block (see
+        // AppearanceSettings.ToCss), so nothing defines the variable there, and an
+        // undefined var() would invalidate the margin calc() below entirely.
+        --formatButton-pageNumber-dodge-effective: var(
+            --formatButton-pageNumber-dodge,
+            0px
+        );
     }
     .split-pane-component.position-left
         > .split-pane-component-inner
@@ -970,7 +989,43 @@ div.textWholePage ul {
         > .bloom-translationGroup
         > #formatButton {
         // this "3px" is there from long ago, nothing to do with this nudging
-        margin-left: calc(3px + var(--formatButton-pageNumber-dodge));
+        margin-left: calc(3px + var(--formatButton-pageNumber-dodge-effective));
+    }
+}
+// The user put the page number at the center or the right: nothing to dodge,
+// whatever the theme wanted.
+@container style(--pageNumber-left-margin-override: 50%) or
+    style(--pageNumber-left-margin-override: deliberately-invalid) {
+    #formatButton {
+        --formatButton-pageNumber-dodge-effective: 0px;
+    }
+}
+// The user forced the page number to the left: dodge, even on pages where the theme's
+// automatic placement would have moved the number away (e.g. pictureOnRight). Themes
+// that waive the dodge per-page publish the distance to use in this situation as
+// --formatButton-pageNumber-dodge-when-forced-left; stylesheets that never waive it
+// per-page (e.g. the EFL migration books' customBookStyles.css) don't define it, so
+// fall back to their ordinary dodge value.
+@container style(--pageNumber-right-margin-override: deliberately-invalid) {
+    #formatButton {
+        --formatButton-pageNumber-dodge-effective: var(
+            --formatButton-pageNumber-dodge-when-forced-left,
+            var(--formatButton-pageNumber-dodge, 0px)
+        );
+    }
+}
+// A text box with any position-right or position-top split among its ancestors sits
+// somewhere in the right or top portion of the page, so it can never be over a
+// bottom-left page number and never needs the dodge — whatever the rules above decided.
+// Deliberately no child combinators: however deep the origami nesting, one top/right
+// ancestor is enough. (The margin rule above does use child combinators, and there they
+// matter: they anchor the dodge to a pane's own immediate text box and keep
+// canvas-element text boxes out of it.) These selectors still out-rank the plain
+// #formatButton rules above.
+@container style(--pageNumber-show-multiplicand:1) {
+    .split-pane-component.position-right #formatButton,
+    .split-pane-component.position-top #formatButton {
+        --formatButton-pageNumber-dodge-effective: 0px;
     }
 }
 
@@ -1061,15 +1116,82 @@ even when the div is focused (as long as it is empty).*/
     color: @bloom-buff;
 }
 
-/*This block handles marking elements that violate decodable book and leveled reader constraints*/
-span.sentence-too-long {
-    background-color: @LeveledReaderViolationColor;
-    position: unset; // BL-11633, works around Chromium bug
+// BL-11633: Works around a Chromium bug where an element with position:relative and a
+// background color makes the caret disappear. The bug can trigger on inline text-formatting
+// elements at any level of nesting, so this unsets position on those children wherever they
+// appear. Use this (rather than .bl11633-unset-position()) on BLOCK containers such as
+// div.bloom-editable and p: those must keep their own position:relative, because the little
+// language-code tags and paragraph/line-break markers are positioned relative to them and
+// would otherwise jump to the wrong corner.
+.bl11633-unset-position-on-children() {
+    em,
+    i,
+    strong,
+    span[style],
+    u,
+    sup {
+        position: unset;
+    }
+}
+// For an INLINE element that is itself background-colored (e.g. the sentence span that is the
+// ::highlight range), also unset position on the element itself. Do not use this on block
+// containers - see the note above.
+.bl11633-unset-position() {
+    position: unset;
+    .bl11633-unset-position-on-children();
 }
 
-span.word-too-long {
-    background-color: @bloom-lightblue;
-    position: unset; // BL-11633, works around Chromium bug
+// This block handles marking text that violates decodable book and leveled reader constraints.
+// These are ::highlight() pseudo-elements painted over Ranges by readerHighlights.ts, not
+// classes on spans: marking up the DOM inside a contenteditable tempts CKEditor into copying
+// the highlight's background color into a permanent inline style (BL-16558).
+// As for the Talking Book highlight, we paint with a thick offset underline rather than a
+// background color. Because the underline is drawn behind the glyphs and does not extend as far
+// upwards as a background would, it covers much less of the previous line when lines are
+// tightly spaced.
+.reader-violation-highlight(@color) {
+    text-decoration-line: underline;
+    text-decoration-style: solid;
+    text-decoration-color: @color;
+    // The skip-ink setting allows the underline to be drawn right against the text.
+    text-decoration-thickness: 1.1em;
+    text-underline-offset: -0.8em;
+    text-decoration-skip-ink: none;
+}
+
+::highlight(bloom-reader-sentence-too-long) {
+    .reader-violation-highlight(@LeveledReaderViolationColor);
+}
+
+::highlight(bloom-reader-word-too-long) {
+    .reader-violation-highlight(@bloom-lightblue);
+}
+
+::highlight(bloom-reader-word-not-decodable) {
+    .reader-violation-highlight(@DecodableReaderViolationColor);
+}
+
+// Sight words get no paint of their own; the highlight exists so that hovering one can explain
+// why it is not marked as a problem. (See bloom-reader-highlight-tip below.)
+
+// The hover tip readerHighlights.ts shows when the mouse is over one of the highlights above.
+// Since the highlights are pseudo-elements there is no element to hang a tooltip on, so we
+// position our own. bloom-ui keeps it out of the saved page.
+.bloom-reader-highlight-tip {
+    position: absolute;
+    z-index: 25000;
+    display: none;
+    max-width: 250px;
+    padding: 3px 6px;
+    border: 1px solid @bloom-gray;
+    border-radius: 3px;
+    background-color: white;
+    color: black;
+    font-family: @UIFontStack;
+    font-size: 9pt;
+    // The tip must never intercept clicks meant for the text underneath it, nor trigger the
+    // mousemove hit test against itself.
+    pointer-events: none;
 }
 
 .page-too-many-words-or-sentences .marginBox {
@@ -1088,36 +1210,22 @@ span.word-too-long {
     z-index: 20000;
 }
 
-span.sight-word {
+// div.bloom-editable and p are block-level and carry the language-code tags and paragraph/
+// line-break markers, which are positioned relative to them, so they must keep their own
+// position:relative; only their inline children need position:unset. (In the edit tab the
+// current highlight is a ::highlight pseudo-element drawn with text-decoration, not a
+// background color, so the block itself does not trigger the BL-11633 caret bug.)
+div.bloom-editable,
+div.bloom-editable p {
+    .bl11633-unset-position-on-children();
 }
 
-span.word-not-found {
-    background-color: @DecodableReaderViolationColor;
-    position: unset; // BL-11633, works around Chromium bug
+// Sentence spans / highlight segments are inline and are themselves the ::highlight range in
+// sentence mode, so they (and their inline children) need position:unset on the element itself.
+div.bloom-editable p > .audio-sentence,
+div.bloom-editable p > .bloom-highlightSegment {
+    .bl11633-unset-position();
 }
-
-div.bloom-editable {
-    // Chrome 105 and later (ie, WebView2) has the :has selector.
-    // These rules may not need the :has(span) selector, but I
-    // don't want to risk breaking something.  This is enough to
-    // work around the Chromium bug reported in BL-11633.
-    span[style]:has(span),
-    em:has(span),
-    strong:has(span),
-    u:has(span),
-    sup:has(span) {
-        position: unset; // BL-11633, works around Chromium bug
-    }
-}
-
-/* We are disabling the "Possible Word" feature at this time.
-SPAN.possible-word
-{
-    -moz-text-decoration-style: wavy;
-    -moz-text-decoration-line: underline;
-    -moz-text-decoration-color: blue;
-}
-*/
 
 div.cke_float {
     div.cke_top {
@@ -1250,10 +1358,10 @@ body {
 // and a background color cause the caret not to show up. Somehow, this
 // triggers when a decodable reader error span is nested inside one of these
 // spans, even though when DR is active the rules that give these segments
-// background color are not active. Nothing depends on thei being position:relative,
+// background color are not active. Nothing depends on their being position:relative,
 // so it's easiest to just prevent it. See BL-11633 for reproduction steps in Bloom 5.5.
 .bloom-highlightSegment {
-    position: unset;
+    .bl11633-unset-position();
 }
 
 // Don't show text over picture borders, resizing handles, or format buttons unless hovering over the image
@@ -1343,6 +1451,18 @@ body {
     // in the canvas element context controls.)
 }
 
+// A canvas element holding a table is not one text box, so moving its format
+// button out to the context controls beneath the element would leave no way to
+// reach the format dialog of the other cells. Each cell therefore keeps its own
+// format button, as a text box on an ordinary page does. (Each cell's language
+// name comes from the editableControls manager, which makes the same exception
+// for tables.)
+.bloom-canvas-element .bloom-table {
+    #formatButton {
+        display: block;
+    }
+}
+
 // hideAllCKEditors is toggled by bloomEditing.ts to prevent bl-12448
 body.hideAllCKEditors .cke_chrome {
     // "display" is manipulated on the `style` element by ckeditor, so we can't use that
@@ -1401,6 +1521,11 @@ canvas.moving {
 @resizeHandleRadius: 8px;
 @sideHandleRadius: 4px;
 @sideHandleCenter: 6px;
+// The rotate handle is a small pill on the end of a short stem, above the middle of the top
+// edge of the control frame. We put it outside the frame because the middle of every side
+// inside the frame is already a crop handle.
+@rotateHandleDiameter: 18px;
+@rotateHandleStemLength: 20px;
 // We place this frame over each canvas element to support resizing and cropping.
 // The frame itself is invisible (and ignores pointer events), but it provides a container
 // for the resize and crop handles and the toolbox below.
@@ -1435,7 +1560,8 @@ canvas.moving {
     // (except for the resize or crop control we are operating).
     &.moving {
         .bloom-ui-canvas-element-resize-handle,
-        .bloom-ui-canvas-element-side-handle {
+        .bloom-ui-canvas-element-side-handle,
+        .bloom-ui-canvas-element-rotate-handle {
             display: none;
             &.active-control {
                 display: block;
@@ -1461,7 +1587,10 @@ canvas.moving {
         // Enhance: Canva uses these handles on text boxes to resize the box by modifying
         // font size. This is nice for tweaking things but it's not clear how it should interact
         // with our style system. For now we're just not showing them for text boxes.
-        .bloom-ui-canvas-element-resize-handle {
+        // A table keeps them: it counts as a text box because every cell holds one, but its rows
+        // share out the height the way its columns share out the width, so a person needs the
+        // corner that changes both at once.
+        &:not(.holds-table) .bloom-ui-canvas-element-resize-handle {
             display: none;
         }
     }
@@ -1479,6 +1608,17 @@ canvas.moving {
     &.has-image:not(.moving):not(.has-svg):not(.is-button)
         .bloom-ui-canvas-element-side-handle {
         display: block;
+    }
+
+    // A picture in a table cell is sized by the cell, so cropping it inside the cell
+    // has no meaning yet: the four crop handles would only offer the user a way to
+    // make the picture disagree with the cell that holds it.
+    // The selector repeats the one above so that it wins on specificity as well as
+    // on order.
+    .bloom-cell
+        &.has-image:not(.moving):not(.has-svg):not(.is-button)
+        .bloom-ui-canvas-element-side-handle {
+        display: none;
     }
 
     // We want the crop handles to look disabled on an empty/placeholder image. Disabling them is actually done in
@@ -1537,6 +1677,73 @@ canvas.moving {
         left: calc(50% - @resizeHandleRadius);
         display: none;
         cursor: move;
+    }
+
+    // The rotate handle. It is only shown for the canvas elements we can rotate: an element
+    // whose bubble outline is drawn by comicaljs cannot rotate, because that drawing stays
+    // upright, and neither can a background image, which fills its bloom-canvas.
+    // The frame carries the same rotation as its element, so the handle orbits with it and
+    // always shows which way is up for the element.
+    .bloom-ui-canvas-element-rotate-handle {
+        display: none;
+        position: absolute;
+        width: @rotateHandleDiameter;
+        height: @rotateHandleDiameter;
+        top: -(@rotateHandleDiameter + @rotateHandleStemLength);
+        left: calc(50% - @rotateHandleDiameter / 2);
+        border-radius: 50%;
+        background-color: white;
+        border: 1px solid var(--canvas-element-control-color);
+        box-sizing: border-box;
+        pointer-events: all;
+        cursor: grab;
+        &.active-control {
+            cursor: grabbing;
+        }
+        &.active-control,
+        &:hover {
+            background-color: var(--canvas-element-control-color);
+        }
+        // the icon in the knob, which tells the user what the knob does. The mouse events
+        // belong to the knob, so the icon must not take any of them.
+        svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+            fill: var(--canvas-element-control-color);
+            pointer-events: none;
+        }
+        &.active-control svg,
+        &:hover svg {
+            fill: white;
+        }
+        // the stem, joining the pill to the top edge of the frame
+        &:before {
+            content: "";
+            position: absolute;
+            left: calc(50% - 0.5px);
+            top: 100%;
+            width: 1px;
+            height: @rotateHandleStemLength;
+            background-color: var(--canvas-element-control-color);
+        }
+    }
+    &.can-rotate:not(.moving) .bloom-ui-canvas-element-rotate-handle {
+        display: block;
+    }
+
+    // Once the element is rotated far enough, its top edge points down the screen, and a
+    // lollipop hanging from that edge lands behind the panel of controls that sits below the
+    // element. For those angles we hang the lollipop from the element's bottom
+    // edge, which is then the upper edge on screen. The stem goes with it, so it now rises
+    // from the pill to the edge below. alignControlFrameWithActiveElement adds this class.
+    &.rotate-handle-on-bottom-edge .bloom-ui-canvas-element-rotate-handle {
+        top: auto;
+        bottom: -(@rotateHandleDiameter + @rotateHandleStemLength);
+        &:before {
+            top: auto;
+            bottom: 100%;
+        }
     }
 
     &.bloom-ui-canvas-element-show-move-crop-handle
@@ -1599,6 +1806,10 @@ canvas.moving {
         padding: 0.2em;
         z-index: 2;
         text-wrap-mode: nowrap;
+        // The control frame rotates with the element, so this text would lie at the angle
+        // of the element. Rotate it back by the same angle to keep it level and readable.
+        // The frame sets the angle; a frame with no angle set gets zero and stays put.
+        transform: rotate(calc(-1 * var(--canvas-element-rotation, 0deg)));
     }
     // the tooltip may not be visible outside the frame, so
     // on the south and east sides we move it to the other side.

@@ -29,15 +29,42 @@ Object.keys(require.cache).forEach((key) => {
 
 const config: PlaywrightTestConfig = {
     testDir: "..",
-    testMatch: "**/*.uitest.*",
+    // The show-component.manual.ts files are not tests: each one mounts a component in a
+    // visible browser and waits forever so a developer can play with it. They are collected
+    // only when show-component.sh asks for them, so a normal run (and the nightly report)
+    // never counts them as skipped tests.
+    testMatch:
+        process.env.PLAYWRIGHT_INCLUDE_MANUAL === "1"
+            ? ["**/*.uitest.*", "**/*.manual.*"]
+            : "**/*.uitest.*",
+    // The bloom-exe*.uitest.ts specs belong to the other config
+    // (playwright.bloom-exe.config.ts): they attach over CDP to a running Bloom.exe and
+    // import from the repo-level `playwright/test` rather than this package's
+    // @playwright/test. Collecting them here loads a second copy of Playwright, which
+    // fails hard with "Requiring @playwright/test second time" and aborts the whole run
+    // before any component test executes. node_modules is pruned so the crawl stays fast.
+    testIgnore: ["**/bloom-exe*.uitest.*", "**/node_modules/**"],
     // Allow extra time for the first Vite build when the harness is cold.
-    timeout: 15000,
+    timeout: 30000,
     expect: {
-        timeout: 1000,
+        // This is the retry budget for web-first assertions, not a fixed wait: a passing
+        // assertion still returns as soon as it is true, so raising it costs nothing on
+        // green runs. It was 1000ms, which was too tight to wait for a component's first
+        // mount while the dev server was still transforming its module graph — roughly one
+        // test per full-suite run failed with "element(s) not found", a different one each
+        // time, while passing in isolation. 5000ms matches playwright.bloom-exe.config.ts.
+        // The overall test timeout above is raised in step so that a genuinely broken
+        // assertion still reports as an assertion failure rather than a whole-test timeout.
+        timeout: 5000,
     },
     use: {
         baseURL: "http://127.0.0.1:5183",
-        trace: "on-first-retry",
+        // This config sets no `retries`, so Playwright's default of 0 applies and a
+        // first-retry trace would never be written. Keep the trace on any failure
+        // instead: these tests run unattended overnight, where a failure nobody can
+        // reproduce by hand is all we get, and the trace is the only record of what
+        // the browser and the dev server were doing at the time.
+        trace: "retain-on-failure",
     },
     // Spin up the Vite dev server so the harness is available during tests.
     webServer: {

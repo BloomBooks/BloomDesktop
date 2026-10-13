@@ -95,7 +95,7 @@ namespace Bloom.Registration
 
                 if (!hadEmailAlready && !string.IsNullOrWhiteSpace(Registration.Default.Email))
                 {
-                    DesktopAnalytics.Analytics.Track("Register");
+                    BloomAnalytics.Track("Register");
                 }
             }
             catch (Exception)

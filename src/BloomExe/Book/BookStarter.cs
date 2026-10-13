@@ -143,14 +143,21 @@ namespace Bloom.Book
                 from x in Directory.GetFiles(folder, "*.htm")
                 where
                     !(
-                        Path.GetFileName(x).ToLowerInvariant().StartsWith("configuration.htm")
+                        Path.GetFileName(x)
+                            .ToLowerInvariant()
+                            .StartsWith("configuration.htm", StringComparison.Ordinal)
                         || IsPathToReadMeHtm(x)
                     )
                 select x;
             if (!candidates.Any())
                 candidates =
                     from x in Directory.GetFiles(folder, "*.html")
-                    where !(Path.GetFileName(x).ToLowerInvariant().StartsWith("configuration.html"))
+                    where
+                        !(
+                            Path.GetFileName(x)
+                                .ToLowerInvariant()
+                                .StartsWith("configuration.html", StringComparison.Ordinal)
+                        )
                     select x;
             return candidates;
         }
@@ -334,6 +341,22 @@ namespace Bloom.Book
             }
 
             ClearAwayDraftText(storage.Dom.RawDom);
+
+            // A new book made from one of our own templates holds only fresh xmatter and the few template
+            // pages that are not "extra"; there is nothing on them for the per-page browser pass to do. So
+            // record it as done, or the first "Edit with AI" or page-size change would stop to run the pass
+            // behind a dialog on a book minutes old (BL-16905). Other sources carry their own record
+            // (our Sample Shells ship with it), or have really been edited, so we leave them alone.
+            if (
+                usingTemplate
+                && sourceFolderPath.StartsWith(
+                    BloomFileLocator.FactoryTemplateBookDirectory,
+                    StringComparison.Ordinal
+                )
+            )
+            {
+                BookProcessor.RecordPageLayoutUpdateDone(storage.Dom);
+            }
 
             storage.UpdateSupportFiles();
             try
@@ -730,7 +753,10 @@ namespace Bloom.Book
                 //better to not just copy the old thumbnail, as the on in the library may well need to look different
                 if (Path.GetFileNameWithoutExtension(filePath).ToLowerInvariant() == "thumbnail")
                     continue;
-                if (Path.GetFileNameWithoutExtension(filePath).StartsWith(".")) //.guidsForInstaller.xml
+                if (
+                    Path.GetFileNameWithoutExtension(filePath)
+                        .StartsWith(".", StringComparison.Ordinal)
+                ) //.guidsForInstaller.xml
                     continue;
                 // We don't want to include any history of the original in the new collection history.
                 if (Path.GetFileName(filePath) == "history.db")

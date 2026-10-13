@@ -895,7 +895,9 @@ namespace BloomTests.CollectionTab
 
             // get the reader file from the BloomPack
             var actualFiles = GetActualFilenamesFromZipfile(bloomPackName);
-            var zipEntryName = actualFiles.FirstOrDefault(file => file.EndsWith(testFileName));
+            var zipEntryName = actualFiles.FirstOrDefault(file =>
+                file.EndsWith(testFileName, StringComparison.Ordinal)
+            );
             Assert.That(zipEntryName, Is.Not.Null.And.Not.Empty);
 
             string outputText;

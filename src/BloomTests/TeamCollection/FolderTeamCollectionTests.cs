@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -451,6 +452,37 @@ namespace BloomTests.TeamCollection
             var lockTime = _collection.WhenWasBookLocked("My book");
             Assert.That(lockTime <= DateTime.Now);
             Assert.That(lockTime >= beforeLock);
+        }
+
+        /// <summary>
+        /// The lock time is shared with every team member, so it must mean the same thing whatever
+        /// the regional format of the computer that wrote it and the one that reads it (BL-16948).
+        /// Thai uses the Buddhist calendar, whose year is 543 ahead of the Gregorian one; Saudi uses
+        /// the Um al-Qura calendar, which cannot read a Gregorian year like 2026 at all.
+        /// </summary>
+        [TestCase("th-TH", "en-US")]
+        [TestCase("en-US", "th-TH")]
+        [TestCase("ar-SA", "en-US")]
+        [TestCase("en-US", "ar-SA")]
+        public void WhenWasBookLocked_WrittenAndReadInDifferentCultures_RetrievesTime(
+            string lockingCulture,
+            string readingCulture
+        )
+        {
+            var originalCulture = Thread.CurrentThread.CurrentCulture;
+            try
+            {
+                var beforeLock = DateTime.Now.AddSeconds(-0.1);
+                Thread.CurrentThread.CurrentCulture = new CultureInfo(lockingCulture);
+                Assert.That(_collection.AttemptLock("My book", "fred@somewhere.org"), Is.True);
+                Thread.CurrentThread.CurrentCulture = new CultureInfo(readingCulture);
+                var lockTime = _collection.WhenWasBookLocked("My book");
+                Assert.That(lockTime, Is.InRange(beforeLock, DateTime.Now));
+            }
+            finally
+            {
+                Thread.CurrentThread.CurrentCulture = originalCulture;
+            }
         }
 
         // This can be reinstated temporarily (with any necessary updates, including setting inputFile

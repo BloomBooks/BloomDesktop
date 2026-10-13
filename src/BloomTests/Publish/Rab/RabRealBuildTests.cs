@@ -5,7 +5,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Bloom.Publish.BloomPub;
 using Bloom.Publish.Rab;
 using BloomTests.Book;
@@ -24,6 +26,13 @@ namespace BloomTests.Publish.Rab
         private const string kRunManualRabBuildEnvVar = "BLOOM_RUN_RAB_MANUAL_TESTS";
         private const string kManualCollectionFolderName = "Kasɩm Books";
         private const string kManualBloomOwnedRabFolderName = "ReadingAppBuilder";
+
+        /// <summary>
+        /// Windows switch that stops cmd.exe looking in the current directory when it resolves a
+        /// bare command name. See RemoveNoDefaultCurrentDirectoryInExePath for why that breaks RAB.
+        /// </summary>
+        private const string kNoDefaultCurrentDirectoryEnvVar =
+            "NoDefaultCurrentDirectoryInExePath";
 
         private static string GetManualWorkRoot([CallerFilePath] string currentFilePath = "")
         {
@@ -73,6 +82,9 @@ namespace BloomTests.Publish.Rab
             var rabLauncherPath = RealRabProjectService.FindInstalledRabLauncherPath(paths);
             var rabKeytoolPath = RealRabProjectService.FindInstalledRabKeytoolPath(paths);
 
+            // The user opted in with the env var, so an incomplete toolchain is a failure — but a
+            // fast one, checked up front, rather than letting the build churn for ~10 seconds
+            // before reporting a confusing error.
             Assert.That(
                 !string.IsNullOrWhiteSpace(rabLauncherPath) && RobustFile.Exists(rabLauncherPath),
                 Is.True,
@@ -109,8 +121,16 @@ namespace BloomTests.Publish.Rab
                 iconPaths
             );
 
-            await service.PrepareAsync();
-            await service.BuildAsync();
+            var restoreNoDefaultCurrentDirectory = RemoveNoDefaultCurrentDirectoryInExePath();
+            try
+            {
+                await service.PrepareAsync();
+                await service.BuildAsync();
+            }
+            finally
+            {
+                restoreNoDefaultCurrentDirectory();
+            }
 
             var status = service.GetStatus();
             Assert.That(status.ProjectExists, Is.True);
@@ -142,7 +162,100 @@ namespace BloomTests.Publish.Rab
                     Is.True,
                     "The generated APK should contain AndroidManifest.xml."
                 );
+                AssertEmbeddedFontsReachedTheApp(status.AppDefPath, archive);
             }
+        }
+
+        // BL-16959: Bloom lists each font embedded in the book in the .appDef, and RAB takes the
+        // font files from the project's fonts folder. RAB 14.0-14.4 silently leaves out a font whose
+        // file isn't there (14.5+ fails the build), so check both that each file got there and that
+        // the APK contains it. RAB may obfuscate font file names in the APK, so match by content.
+        private static void AssertEmbeddedFontsReachedTheApp(string appDefPath, ZipArchive apk)
+        {
+            var fontFileNames = XDocument
+                .Load(appDefPath)
+                .Root.Element("fonts")
+                .Elements("font")
+                .Select(font => font.Element("filename").Value)
+                .ToList();
+            Assert.That(
+                fontFileNames,
+                Does.Contain("ABeeZee-Regular.woff2"),
+                "test input check: Book4.bloompub embeds ABeeZee, so the .appDef should list it"
+            );
+
+            var fontsFolder = Path.Combine(
+                Path.GetDirectoryName(appDefPath),
+                Path.GetFileNameWithoutExtension(appDefPath) + "_data",
+                "fonts"
+            );
+            // The book's own copy of each font also goes into the APK, under assets/books/; leave
+            // those out, or this check would pass in exactly the case it is meant to catch.
+            var apkEntryHashes = apk
+                .Entries.Where(entry =>
+                    entry.Length > 0
+                    && !entry.FullName.StartsWith("assets/books/", StringComparison.Ordinal)
+                )
+                .Select(entry =>
+                {
+                    using var stream = entry.Open();
+                    return Convert.ToBase64String(SHA256.HashData(stream));
+                })
+                .ToHashSet();
+            foreach (var fileName in fontFileNames)
+            {
+                var fontPath = Path.Combine(fontsFolder, fileName);
+                Assert.That(
+                    RobustFile.Exists(fontPath),
+                    Is.True,
+                    $"{fileName} should be in the project's fonts folder, where RAB looks for it"
+                );
+                var fontHash = Convert.ToBase64String(
+                    SHA256.HashData(RobustFile.ReadAllBytes(fontPath))
+                );
+                Assert.That(
+                    apkEntryHashes,
+                    Does.Contain(fontHash),
+                    $"The APK should contain {fileName} as one of the app's fonts"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Clears NoDefaultCurrentDirectoryInExePath for this process (and therefore for the
+        /// processes Bloom starts) for the duration of the RAB run, and returns an action that
+        /// restores it.
+        ///
+        /// Reading App Builder generates its Android project — including the buildapp.bat that
+        /// drives Gradle — into a work folder, and then runs that script with
+        /// `Runtime.exec("cmd.exe /C buildapp.bat", null, thatFolder)`. It passes the script as a
+        /// bare file name and depends entirely on cmd.exe's default "look in the current directory
+        /// first" behaviour. NoDefaultCurrentDirectoryInExePath turns exactly that off, so with it
+        /// set the build dies instantly with "'buildapp.bat' is not recognized as an internal or
+        /// external command" even though the file is sitting in cmd's working directory.
+        ///
+        /// No normal developer setup sets that variable: it is in neither the user nor the machine
+        /// environment, Windows does not set it, and Git Bash does not either — so Bloom runs RAB
+        /// fine however it is launched, including from ./go.sh. It is agent tooling that sets it.
+        /// The Claude Code CLI puts it in the environment of every process it spawns, so a suite
+        /// run driven by an agent inherits it all the way down to RAB and this test fails, while
+        /// the identical build succeeds for a human. Clearing it here keeps the test measuring
+        /// Reading App Builder rather than the harness that happened to start the test runner.
+        /// </summary>
+        private static Action RemoveNoDefaultCurrentDirectoryInExePath()
+        {
+            var originalValue = Environment.GetEnvironmentVariable(
+                kNoDefaultCurrentDirectoryEnvVar
+            );
+            if (originalValue == null)
+                return () => { };
+
+            TestContext.Progress.WriteLine(
+                $"Clearing {kNoDefaultCurrentDirectoryEnvVar} (was '{originalValue}') so Reading App Builder can find the buildapp.bat it generates."
+            );
+            Environment.SetEnvironmentVariable(kNoDefaultCurrentDirectoryEnvVar, null);
+            return () =>
+                Environment.SetEnvironmentVariable(kNoDefaultCurrentDirectoryEnvVar, originalValue);
         }
 
         private string[] CreateLauncherIcons(string launcherIconRoot)

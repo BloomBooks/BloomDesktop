@@ -1,11 +1,27 @@
+using System.Linq;
 using Bloom;
 using NUnit.Framework;
+using Sentry;
+using Sentry.Protocol;
 
 namespace BloomTests
 {
     [TestFixture]
     public class ProgramTests
     {
+        /// <summary>
+        /// ParseStartupPortArguments stores its results in Program statics (StartupAutomation etc.)
+        /// which live for the rest of the test run. Re-parse empty args after each test to restore
+        /// the defaults; the method resets all of them on entry. Without this, the "--automation"
+        /// tests here left StartupAutomation=true for every later fixture, which (among other
+        /// things) made BloomServer print automation banners in unrelated tests' output.
+        /// </summary>
+        [TearDown]
+        public void TearDown()
+        {
+            Program.ParseStartupPortArguments(System.Array.Empty<string>(), out _);
+        }
+
         [Test]
         public void ParseStartupPortArguments_RemovesPortsAndStoresExplicitValues()
         {
@@ -28,6 +44,178 @@ namespace BloomTests
             Assert.That(remainingArgs, Is.EqualTo(new[] { @"C:\Temp\Example.bloomcollection" }));
         }
 
+        /// <summary>
+        /// Windows' own rule for splitting a command line into arguments, which is what the copy
+        /// of Bloom that RestartBloom starts will see.
+        /// </summary>
+        private static string[] SplitCommandLineAsWindowsDoes(string arguments)
+        {
+            // The first token is parsed as a program name, by slightly different rules.
+            var argv = CommandLineToArgvW("Bloom.exe " + arguments, out var count);
+            Assert.That(argv, Is.Not.EqualTo(System.IntPtr.Zero), "CommandLineToArgvW failed");
+            try
+            {
+                return Enumerable
+                    .Range(1, count - 1)
+                    .Select(i =>
+                        System.Runtime.InteropServices.Marshal.PtrToStringUni(
+                            System.Runtime.InteropServices.Marshal.ReadIntPtr(
+                                argv,
+                                i * System.IntPtr.Size
+                            )
+                        )
+                    )
+                    .ToArray();
+            }
+            finally
+            {
+                LocalFree(argv);
+            }
+        }
+
+        [System.Runtime.InteropServices.DllImport(
+            "shell32.dll",
+            CharSet = System.Runtime.InteropServices.CharSet.Unicode
+        )]
+        private static extern System.IntPtr CommandLineToArgvW(string commandLine, out int count);
+
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        private static extern System.IntPtr LocalFree(System.IntPtr memory);
+
+        /// <summary>
+        /// Values that end in a backslash or contain quotes must come back unchanged, so a
+        /// folder path written with a trailing separator, say, is not split wrongly.
+        /// </summary>
+        [TestCase("plain")]
+        [TestCase("with spaces")]
+        [TestCase(@"C:\folder\")]
+        [TestCase(@"ends in two\\")]
+        [TestCase("has \"quotes\" inside")]
+        [TestCase(@"backslash before \""quote")]
+        [TestCase("")]
+        public void QuoteArgument_ComesBackUnchanged(string value)
+        {
+            Assert.That(
+                SplitCommandLineAsWindowsDoes(Program.QuoteArgument(value) + " next"),
+                Is.EqualTo(new[] { value, "next" })
+            );
+        }
+
+        /// <summary>
+        /// A copy of Bloom that RestartBloom starts (e.g. to finish a collection rename) must come
+        /// up in the same mode, so parsing what StartupArgumentsToForward produces, after the
+        /// caller's own --rename, must give back every option, and leave --rename first.
+        /// </summary>
+        [Test]
+        public void StartupArgumentsToForward_ParseBackToTheSameStartupOptions()
+        {
+            var settingsFolder = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                "Bloom user settings"
+            );
+            const string label = "my \"quoted\" feature\\";
+            Program.ParseStartupPortArguments(
+                new[]
+                {
+                    "--e2e",
+                    "--automation",
+                    "--dont-disturb",
+                    "--vite-port",
+                    "15173",
+                    "--label",
+                    label,
+                    "--user-settings-folder",
+                    settingsFolder,
+                    "--experimental-features",
+                    "team-collections",
+                },
+                out var firstError
+            );
+            Assert.That(firstError, Is.Null, "Sanity check: the original options parse");
+
+            // As Shell asks for a rename: the two folders, then its process id.
+            var commandLine =
+                "--rename \"C:\\Old Books\" \"C:\\New Books\" 1234 "
+                + Program.StartupArgumentsToForward();
+            var remainingArgs = Program.ParseStartupPortArguments(
+                SplitCommandLineAsWindowsDoes(commandLine),
+                out var secondError
+            );
+
+            Assert.That(secondError, Is.Null);
+            Assert.That(
+                remainingArgs,
+                Is.EqualTo(new[] { "--rename", @"C:\Old Books", @"C:\New Books", "1234" })
+            );
+            Assert.That(Program.RunningE2eTests, Is.True);
+            Assert.That(Program.StartupAutomation, Is.True);
+            Assert.That(Program.StartupDontDisturb, Is.True);
+            Assert.That(Program.StartupVitePort, Is.EqualTo(15173));
+            Assert.That(Program.StartupLabel, Is.EqualTo(label));
+            Assert.That(Program.StartupUserSettingsFolder, Is.EqualTo(settingsFolder));
+            Assert.That(Program.StartupExperimentalFeatures, Is.EqualTo("team-collections"));
+        }
+
+        /// <summary>
+        /// A developer's or an agent's Bloom from ./go.sh has --automation but not --e2e. A rename
+        /// keeps its session its own (settings folder, quiet window, label) but not --vite-port:
+        /// its launcher stops the Vite server when it exits, so the copy would load nothing.
+        /// </summary>
+        [Test]
+        public void StartupArgumentsToForward_AutomationWithoutE2eKeepsItsSessionButNotVite()
+        {
+            var settingsFolder = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                "Agent settings"
+            );
+            Program.ParseStartupPortArguments(
+                new[]
+                {
+                    "--automation",
+                    "--dont-disturb",
+                    "--vite-port",
+                    "15173",
+                    "--label",
+                    "dev",
+                    "--user-settings-folder",
+                    settingsFolder,
+                },
+                out var firstError
+            );
+            Assert.That(firstError, Is.Null, "Sanity check: the original options parse");
+            Assert.That(Program.RunningE2eTests, Is.False);
+
+            Program.ParseStartupPortArguments(
+                SplitCommandLineAsWindowsDoes(Program.StartupArgumentsToForward()),
+                out var secondError
+            );
+
+            Assert.That(secondError, Is.Null);
+            Assert.That(Program.StartupAutomation, Is.True);
+            Assert.That(Program.StartupDontDisturb, Is.True);
+            Assert.That(Program.StartupLabel, Is.EqualTo("dev"));
+            Assert.That(Program.StartupUserSettingsFolder, Is.EqualTo(settingsFolder));
+            Assert.That(Program.StartupVitePort, Is.Null);
+            Assert.That(Program.RunningE2eTests, Is.False);
+        }
+
+        /// <summary>
+        /// An ordinary Bloom (no --automation, no --e2e) restarts exactly as it always has.
+        /// </summary>
+        [Test]
+        public void StartupArgumentsToForward_IsEmptyForAnOrdinaryBloom()
+        {
+            Program.ParseStartupPortArguments(
+                new[] { "--vite-port", "15173", "--label", "dev" },
+                out var errorMessage
+            );
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(Program.StartupAutomation, Is.False);
+            Assert.That(Program.RunningE2eTests, Is.False);
+
+            Assert.That(Program.StartupArgumentsToForward(), Is.EqualTo(""));
+        }
+
         [Test]
         public void ParseStartupPortArguments_UsesAutomationFlagToBypassSingleInstance()
         {
@@ -39,6 +227,52 @@ namespace BloomTests
             Assert.That(automationErrorMessage, Is.Null);
             Assert.That(Program.StartupAutomation, Is.True);
             Assert.That(Program.StartupRequestedPortSummary, Is.EqualTo("automation=true"));
+        }
+
+        /// <summary>
+        /// ./go.sh passes --automation to every developer Bloom, so it must not by itself stop
+        /// Bloom taking the foreground; only --dont-disturb does that.
+        /// </summary>
+        [Test]
+        public void ParseStartupPortArguments_AutomationAloneDoesNotSetDontDisturb()
+        {
+            Program.ParseStartupPortArguments(new[] { "--automation" }, out var errorMessage);
+
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(Program.StartupAutomation, Is.True);
+            Assert.That(Program.StartupDontDisturb, Is.False);
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_DontDisturbIsItsOwnFlag()
+        {
+            // Sanity check: the TearDown of an earlier test left the flag off.
+            Assert.That(Program.StartupDontDisturb, Is.False);
+
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[] { "--automation", "--dont-disturb", @"C:\Temp\Example.bloomcollection" },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(Program.StartupDontDisturb, Is.True);
+            Assert.That(Program.StartupAutomation, Is.True);
+            Assert.That(
+                Program.StartupRequestedPortSummary,
+                Is.EqualTo("automation=true, dontDisturb=true")
+            );
+            Assert.That(remainingArgs, Is.EqualTo(new[] { @"C:\Temp\Example.bloomcollection" }));
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_RejectsARepeatedDontDisturb()
+        {
+            Program.ParseStartupPortArguments(
+                new[] { "--dont-disturb", "--dont-disturb" },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Does.Contain("--dont-disturb"));
         }
 
         [Test]
@@ -65,6 +299,57 @@ namespace BloomTests
             Assert.That(errorMessage, Is.Null);
             Assert.That(Program.StartupLabel, Is.Null);
             Assert.That(remainingArgs, Is.EqualTo(new[] { @"C:\Temp\Example.bloomcollection" }));
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_StoresExperimentalFeaturesUnderE2e()
+        {
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[]
+                {
+                    "--e2e",
+                    "--experimental-features",
+                    "team-collections,experimental-source-books",
+                    @"C:\Temp\Example.bloomcollection",
+                },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(Program.RunningE2eTests, Is.True);
+            Assert.That(
+                Program.StartupExperimentalFeatures,
+                Is.EqualTo("team-collections,experimental-source-books")
+            );
+            Assert.That(remainingArgs, Is.EqualTo(new[] { @"C:\Temp\Example.bloomcollection" }));
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_LeavesExperimentalFeaturesNullWhenNotGiven()
+        {
+            Program.ParseStartupPortArguments(new[] { "--e2e" }, out var errorMessage);
+
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(Program.StartupExperimentalFeatures, Is.Null);
+        }
+
+        /// <summary>
+        /// The switch exists for e2e runs only: a person turns features on in Settings, and the
+        /// switch would otherwise be a way for a stray shortcut to enable one silently.
+        /// </summary>
+        [Test]
+        public void ParseStartupPortArguments_RejectsExperimentalFeaturesWithoutE2e()
+        {
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[] { "--experimental-features", "team-collections" },
+                out var errorMessage
+            );
+
+            Assert.That(
+                errorMessage,
+                Is.EqualTo("Bloom only accepts --experimental-features together with --e2e.")
+            );
+            Assert.That(remainingArgs, Is.Empty);
         }
 
         [Test]
@@ -118,6 +403,324 @@ namespace BloomTests
             Assert.That(errorMessage, Is.EqualTo("Bloom requires a value after --label."));
             Assert.That(Program.StartupLabel, Is.Null);
             Assert.That(remainingArgs, Is.Empty);
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_StoresUserSettingsFolderAndRemovesIt()
+        {
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[]
+                {
+                    "--user-settings-folder",
+                    @"C:\Temp\bloom-e2e-abc\user-settings",
+                    @"C:\Temp\Example.bloomcollection",
+                },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(
+                Program.StartupUserSettingsFolder,
+                Is.EqualTo(@"C:\Temp\bloom-e2e-abc\user-settings")
+            );
+            Assert.That(
+                BloomSettingsProvider.GetUserSettingsFolder(),
+                Is.EqualTo(@"C:\Temp\bloom-e2e-abc\user-settings"),
+                "the parser did not hand the folder to the settings provider"
+            );
+            Assert.That(remainingArgs, Is.EqualTo(new[] { @"C:\Temp\Example.bloomcollection" }));
+            Assert.That(
+                Program.StartupRequestedPortSummary,
+                Is.EqualTo(@"userSettingsFolder=C:\Temp\bloom-e2e-abc\user-settings")
+            );
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_MakesRelativeUserSettingsFolderAbsolute()
+        {
+            // Bloom changes its working directory during startup, so a relative folder is pinned
+            // to the directory Bloom was started in before that can happen.
+            Program.ParseStartupPortArguments(
+                new[] { @"--user-settings-folder=relative\settings" },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(
+                BloomSettingsProvider.GetUserSettingsFolder(),
+                Is.EqualTo(
+                    System.IO.Path.Combine(
+                        System.IO.Directory.GetCurrentDirectory(),
+                        @"relative\settings"
+                    )
+                )
+            );
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_LeavesTheUsualUserSettingsFolderWithoutArgument()
+        {
+            Program.ParseStartupPortArguments(
+                new[] { @"C:\Temp\Example.bloomcollection" },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(Program.StartupUserSettingsFolder, Is.Null);
+            AssertProviderIsOnTheUsualFolder();
+        }
+
+        /// <summary>
+        /// The settings provider is keeping user.config in libpalaso's per-version folder under
+        /// %LOCALAPPDATA%, not in any folder a command line named.
+        /// </summary>
+        private static void AssertProviderIsOnTheUsualFolder()
+        {
+            Assert.That(
+                BloomSettingsProvider.GetUserSettingsFolder(),
+                Does.StartWith(
+                    System.Environment.GetFolderPath(
+                        System.Environment.SpecialFolder.LocalApplicationData
+                    )
+                )
+            );
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_RejectsUserSettingsFolderWithoutValue()
+        {
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[] { "--user-settings-folder" },
+                out var errorMessage
+            );
+
+            Assert.That(
+                errorMessage,
+                Is.EqualTo("Bloom requires a value after --user-settings-folder.")
+            );
+            Assert.That(Program.StartupUserSettingsFolder, Is.Null);
+            AssertProviderIsOnTheUsualFolder();
+            Assert.That(remainingArgs, Is.Empty);
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_RejectsEmptyUserSettingsFolder()
+        {
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[] { "--user-settings-folder=" },
+                out var errorMessage
+            );
+
+            Assert.That(
+                errorMessage,
+                Does.StartWith("Bloom cannot use \"\" as the --user-settings-folder")
+            );
+            Assert.That(Program.StartupUserSettingsFolder, Is.Null);
+            AssertProviderIsOnTheUsualFolder();
+            Assert.That(remainingArgs, Is.Empty);
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_RejectsDuplicateUserSettingsFolders()
+        {
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[] { @"--user-settings-folder=C:\one", @"--user-settings-folder=C:\two" },
+                out var errorMessage
+            );
+
+            Assert.That(
+                errorMessage,
+                Is.EqualTo("Bloom only accepts one --user-settings-folder argument.")
+            );
+            Assert.That(Program.StartupUserSettingsFolder, Is.Null);
+            AssertProviderIsOnTheUsualFolder();
+            Assert.That(remainingArgs, Is.Empty);
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_GivesTheProviderNoFolderWhenALaterArgumentIsBad()
+        {
+            // A valid folder before a bad argument must not reach the settings provider: the launch
+            // is rejected, and startup must not open that folder's user.config before reporting the
+            // error.
+            Program.ParseStartupPortArguments(
+                new[] { @"--user-settings-folder=C:\valid", "--vite-port", "70000" },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Is.Not.Null);
+            Assert.That(Program.StartupUserSettingsFolder, Is.Null);
+            AssertProviderIsOnTheUsualFolder();
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_GivesTheProviderNoFolderWhenExperimentalFeaturesLackE2e()
+        {
+            // The experimental-features check rejects the launch after the loop, so a folder the
+            // loop already accepted must not reach the provider either.
+            Program.ParseStartupPortArguments(
+                new[]
+                {
+                    @"--user-settings-folder=C:alid",
+                    "--experimental-features",
+                    "team-collections",
+                },
+                out var errorMessage
+            );
+
+            Assert.That(
+                errorMessage,
+                Is.EqualTo("Bloom only accepts --experimental-features together with --e2e.")
+            );
+            Assert.That(Program.StartupUserSettingsFolder, Is.Null);
+            AssertProviderIsOnTheUsualFolder();
+        }
+
+        // --- IsBenignUnobservedTaskSocketNoise: the Sentry BeforeSend filter for
+        //     BLOOM-DESKTOP-EQ4 / -E4J / -E9K ---
+
+        private static SentryException MakeException(
+            string type,
+            string value = null,
+            string mechanismType = null
+        )
+        {
+            var exception = new SentryException { Type = type, Value = value };
+            if (mechanismType != null)
+                exception.Mechanism = new Mechanism { Type = mechanismType, Handled = false };
+            return exception;
+        }
+
+        private static SentryEvent MakeEvent(params SentryException[] exceptions)
+        {
+            return new SentryEvent { SentryExceptions = exceptions };
+        }
+
+        [Test]
+        public void IsBenignUnobservedTaskSocketNoise_DropsUnobservedSocketAbort()
+        {
+            // The shape Sentry actually serialized for BLOOM-DESKTOP-EQ4: an inner SocketException,
+            // wrapped in an AggregateException carrying the UnobservedTaskException mechanism.
+            var sentryEvent = MakeEvent(
+                MakeException(
+                    "System.Net.Sockets.SocketException",
+                    "The I/O operation has been aborted because of either a thread exit or an application request."
+                ),
+                MakeException(
+                    "System.AggregateException",
+                    "A Task's exception(s) were not observed...",
+                    "UnobservedTaskException"
+                )
+            );
+
+            // Sanity check the setup before asserting the method's behavior.
+            Assert.That(
+                sentryEvent.SentryExceptions,
+                Is.Not.Empty,
+                "test setup should produce an exception chain"
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.True);
+        }
+
+        [Test]
+        public void IsBenignUnobservedTaskSocketNoise_DropsUnobservedIoAbort()
+        {
+            var sentryEvent = MakeEvent(
+                MakeException("System.IO.IOException", "aborted"),
+                MakeException("System.AggregateException", null, "UnobservedTaskException")
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.True);
+        }
+
+        [TestCase("System.OperationCanceledException")]
+        [TestCase("System.Threading.Tasks.TaskCanceledException")]
+        public void IsBenignUnobservedTaskSocketNoise_DropsUnobservedCancellation(
+            string cancellationType
+        )
+        {
+            // A shutdown race can cancel the fire-and-forget send instead of aborting the socket;
+            // that is still benign teardown noise, so both cancellation types are dropped.
+            var sentryEvent = MakeEvent(
+                MakeException(cancellationType, "A task was canceled."),
+                MakeException("System.AggregateException", null, "UnobservedTaskException")
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.True);
+        }
+
+        [Test]
+        public void IsBenignUnobservedTaskSocketNoise_DropsRegardlessOfLocalizedMessage()
+        {
+            // The message is localized by the user's OS (this is the Spanish variant,
+            // BLOOM-DESKTOP-E4J). The filter must decide on TYPE + mechanism, not text.
+            var sentryEvent = MakeEvent(
+                MakeException(
+                    "System.Net.Sockets.SocketException",
+                    "Se ha anulado la operacion de E/S debido a la salida del subproceso o a una solicitud de la aplicacion."
+                ),
+                MakeException("System.AggregateException", null, "UnobservedTaskException")
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.True);
+        }
+
+        [Test]
+        public void IsBenignUnobservedTaskSocketNoise_KeepsUnobservedTaskThatIsNotSocketNoise()
+        {
+            // A genuine unobserved-Task bug (not a socket/IO abort) must still be reported.
+            var sentryEvent = MakeEvent(
+                MakeException("System.NullReferenceException", "Object reference not set..."),
+                MakeException("System.AggregateException", null, "UnobservedTaskException")
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.False);
+        }
+
+        [Test]
+        public void IsBenignUnobservedTaskSocketNoise_KeepsMixedChainContainingRealBug()
+        {
+            // An AggregateException can aggregate several faults. If a genuine bug is mixed in
+            // with the benign socket noise, the whole event must still be reported; one benign
+            // entry in the chain is not license to drop everything alongside it.
+            var sentryEvent = MakeEvent(
+                MakeException("System.NullReferenceException", "Object reference not set..."),
+                MakeException("System.Net.Sockets.SocketException", "aborted"),
+                MakeException("System.AggregateException", null, "UnobservedTaskException")
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.False);
+        }
+
+        [Test]
+        public void IsBenignUnobservedTaskSocketNoise_KeepsBareAggregateExceptionWithNoBenignInner()
+        {
+            // An unobserved-Task event whose chain is only the AggregateException wrapper carries
+            // no evidence of socket noise, so it must be reported (guards the All from passing
+            // vacuously).
+            var sentryEvent = MakeEvent(
+                MakeException("System.AggregateException", null, "UnobservedTaskException")
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.False);
+        }
+
+        [Test]
+        public void IsBenignUnobservedTaskSocketNoise_KeepsSocketExceptionWithoutUnobservedMechanism()
+        {
+            // A SocketException reported through some other (e.g. handled) path is not this noise.
+            var sentryEvent = MakeEvent(
+                MakeException("System.Net.Sockets.SocketException", "connection reset")
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.False);
+        }
+
+        [Test]
+        public void IsBenignUnobservedTaskSocketNoise_KeepsEventWithNoExceptions()
+        {
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(new SentryEvent()), Is.False);
         }
     }
 }

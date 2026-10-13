@@ -30,6 +30,12 @@ namespace Bloom
         private readonly IEnumerable<string> _userInstalledSearchPaths;
         private readonly IEnumerable<string> _afterXMatterSearchPaths;
 
+        /// <summary>
+        /// Where our built web assets live, *relative* to the application (or solution) folder.
+        /// Only pass this to something that resolves it against that folder, such as
+        /// FileLocationUtilities.GetFileDistributedWithApplication() or GetBrowserFile(). If you
+        /// want to test for a file yourself, use <see cref="AbsoluteBrowserRoot"/> instead.
+        /// </summary>
         public static string BrowserRoot
         {
             get
@@ -41,6 +47,21 @@ namespace Bloom
                     : "browser";
             }
         }
+
+        /// <summary>
+        /// The full path of the folder that <see cref="BrowserRoot"/> names. Use this anywhere we
+        /// test for, or hand around, the location of a file that ships with Bloom.
+        ///
+        /// BrowserRoot on its own is a relative path, so asking whether something exists at it
+        /// silently resolves against the process's current working directory. Bloom does not
+        /// control that directory: Windows File Explorer sets it to the folder of a file you
+        /// double-click (see the comment on Program.NormalizeWorkingDirectory), a shortcut's
+        /// "Start in" value can override it (BL-16230), and any Open/Save dialog that does not set
+        /// RestoreDirectory moves it mid-session. Files that ship with Bloom must not be findable
+        /// only when that directory happens to be right. See BL-16577.
+        /// </summary>
+        public static string AbsoluteBrowserRoot =>
+            Path.Combine(FileLocationUtilities.DirectoryOfApplicationOrSolution, BrowserRoot);
 
         public static BloomFileLocator sTheMostRecentBloomFileLocator;
 
@@ -126,7 +147,11 @@ namespace Bloom
         /// <returns></returns>
         protected IEnumerable<string> GetSearchPaths(string fileName = null)
         {
-            yield return BloomFileLocator.BrowserRoot;
+            // Absolute, not BrowserRoot itself: LocateFile() combines each of these with the file
+            // name and asks whether it exists, so a relative root here would make files that ship
+            // with Bloom findable only when the current working directory happens to be the
+            // application folder. See BL-16577 and AbsoluteBrowserRoot.
+            yield return BloomFileLocator.AbsoluteBrowserRoot;
 
             //The versions of the files that come with the program should always win out.
             //NB: This should not include any sample books.
@@ -303,11 +328,15 @@ namespace Bloom
         {
             var folder = GetCodeBaseFolder();
             var slash = Path.DirectorySeparatorChar;
-            // In the case of a debug build, the executable files are not at the root of the whole install,
-            // but typically in output\Debug\x64. The "browser" folder, however, is not there but
-            // directly in output. So we need to back up two levels to find the folder to test in Debug builds.
+            // When Bloom runs from a source tree rather than an install, the executable files are not at
+            // the root of the whole install, but typically in output\Debug\x64 or output\Release\x64 (the
+            // latter is what CI's e2e and visual-regression runs use). The "browser" folder, however, is
+            // not there but directly in output. So we need to back up two levels to find the folder to test.
             var pathLessOne = Path.GetDirectoryName(folder);
-            if (pathLessOne.EndsWith($"{slash}output{slash}Debug"))
+            if (
+                pathLessOne.EndsWith($"{slash}output{slash}Debug", StringComparison.Ordinal)
+                || pathLessOne.EndsWith($"{slash}output{slash}Release", StringComparison.Ordinal)
+            )
                 folder = Path.GetDirectoryName(pathLessOne);
 
             return filepath.Contains(folder);

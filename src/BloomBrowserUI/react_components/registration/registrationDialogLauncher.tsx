@@ -38,7 +38,7 @@ export const RegistrationDialogLauncher: React.FunctionComponent<
 
     React.useEffect(() => {
         if (props.dialogEnvironment?.mode === Mode.Edit) {
-            // Tell edit tab to disable everything when the dialog is up
+            // Tell C# to lock the workspace tabs while the dialog is up
             postBoolean("editView/setModalState", propsForBloomDialog.open);
         }
     }, [props.dialogEnvironment?.mode, propsForBloomDialog.open]);

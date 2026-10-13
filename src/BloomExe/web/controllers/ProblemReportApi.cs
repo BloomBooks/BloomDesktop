@@ -80,6 +80,7 @@ namespace Bloom.web.controllers
                 }
                 else
                 {
+                    // All we want here is the HTML encoding; a heading is prose, never a url.
                     HeadingHtml = UrlPathString.CreateFromUnencodedString(heading).HtmlXmlEncoded;
                 }
 
@@ -260,7 +261,12 @@ namespace Bloom.web.controllers
                             null
                         );
 
-                        if (issueLinkOrFailureWithZipPath.StartsWith(kFailureResult))
+                        if (
+                            issueLinkOrFailureWithZipPath.StartsWith(
+                                kFailureResult,
+                                StringComparison.Ordinal
+                            )
+                        )
                         {
                             bool failed = true;
                             string zippedReportPath = issueLinkOrFailureWithZipPath.Substring(
@@ -359,6 +365,11 @@ namespace Bloom.web.controllers
             else
             {
                 issueLink = "https://issues.bloomlibrary.org/youtrack/issue/" + issueId;
+                // Tell any Freeze Doctor that this problem has already been reported, so it does not file a
+                // second card about the same trouble. Cheap insurance against duplicate reports, since a
+                // user reporting a problem by hand and a Doctor noticing the same problem are exactly the
+                // situation where both would fire.
+                FreezeDoctor.FreezeDoctorSupport.NoteBloomReportedAProblem(issueId);
                 if (includeBook || _additionalPathsToInclude?.Any() == true)
                 {
                     try
@@ -725,16 +736,17 @@ namespace Bloom.web.controllers
                             dlg.SetScaledSize(731, height);
 
                             // ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
-                            BloomServer._theOneInstance.RegisterThreadBlocking();
-                            try
+                            using (BloomServer._theOneInstance.ReportThreadBlocking())
                             {
-                                // Keep dialog on top of program window if possible.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10292.
-                                dlg.ShowDialog(owner);
-                            }
-                            finally
-                            {
-                                BloomServer._theOneInstance.RegisterThreadUnblocked();
-                                _additionalPathsToInclude = null;
+                                try
+                                {
+                                    // Keep dialog on top of program window if possible.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10292.
+                                    dlg.ShowDialog(owner);
+                                }
+                                finally
+                                {
+                                    _additionalPathsToInclude = null;
+                                }
                             }
                         }
                     }
@@ -798,6 +810,14 @@ namespace Bloom.web.controllers
                 );
                 return;
             }
+            if (
+                ReportProblemWithoutUiIfNonInteractive(
+                    levelOfProblem,
+                    exception,
+                    string.Join(" ", new[] { shortUserLevelMessage, detailedMessage }).Trim()
+                )
+            )
+                return;
             StartupScreenManager.CloseSplashScreen(); // if it's still up, it'll be on top of the dialog
 
             lock (_showingProblemReportLock)
@@ -979,7 +999,7 @@ namespace Bloom.web.controllers
                 _showingProblemReport = false;
             }
 
-            string message = issueLink.StartsWith(kFailureResult)
+            string message = issueLink.StartsWith(kFailureResult, StringComparison.Ordinal)
                 ? "Failed to report issue. Please email Bloom team manually."
                 : "Successfully reported issue: " + issueLink;
 
@@ -1171,10 +1191,18 @@ namespace Bloom.web.controllers
                             {
                                 ResetScreenshotFile();
                             }
-                            else if (IsBloomProcessInForeground())
+                            else if (
+                                IsBloomProcessInForeground()
+                                && !AutomationWindowPlacement.IsOffEveryMonitor
+                            )
                             {
                                 // Bloom is the foreground app: a plain screen copy is cheaper
                                 // and avoids re-triggering any paint-related bugs.
+                                //
+                                // Not when the window is off every monitor, though. Copying from
+                                // those screen coordinates would save whatever the desktop has
+                                // there, which is nothing. Render the window itself instead, the
+                                // way the not-in-front case already does.
                                 var scaledBounds = controlForScreenshotting.Bounds;
 #if !__MonoCS__
                                 scaledBounds =
@@ -1247,6 +1275,31 @@ namespace Bloom.web.controllers
             }
         }
 
+        /// <summary>
+        /// Report a problem on standard error instead of in a dialog, when there is nobody to
+        /// click the dialog. Callers must already have called LogProblem, and must return without
+        /// showing any UI when this returns true.
+        /// </summary>
+        /// <remarks>
+        /// A modal dialog in a command-line verb or an e2e run blocks forever: the operation
+        /// neither succeeds nor fails, and the caller just waits (BL-16869). NonFatalProblem.Report
+        /// has done this for a while; this is the same guard for the problem-report dialogs.
+        /// </remarks>
+        /// <returns>true if the problem was reported here and the caller should return</returns>
+        internal static bool ReportProblemWithoutUiIfNonInteractive(
+            string levelOfProblem,
+            Exception exception,
+            string message
+        )
+        {
+            if (!Program.RunningNonInteractive)
+                return false;
+            Console.Error.WriteLine($"Problem ({levelOfProblem}): {message}");
+            if (exception != null)
+                Console.Error.WriteLine(exception.ToString());
+            return true;
+        }
+
         internal static void LogProblem(
             Exception exception,
             string detailedMessage,
@@ -1289,7 +1342,7 @@ namespace Bloom.web.controllers
 
         private static string GetDomainlessEmail(string rawEmail)
         {
-            var atIndex = rawEmail.IndexOf("@");
+            var atIndex = rawEmail.IndexOf("@", StringComparison.Ordinal);
             return atIndex < 0 ? rawEmail : rawEmail.Substring(0, atIndex);
         }
 

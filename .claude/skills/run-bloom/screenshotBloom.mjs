@@ -1,5 +1,5 @@
 // Screenshot the embedded WebView2 of a running Bloom.exe over CDP.
-// Companion to the helpers in .github/skills/bloom-automation/; reuses their
+// Companion to the helpers in .claude/skills/run-bloom/; reuses their
 // instance discovery so it targets the exact Bloom that owns a given HTTP port.
 //
 // Usage:
@@ -15,7 +15,7 @@ import {
     requireOptionValue,
     requireTcpPortOption,
     toLocalOrigin,
-} from "../../../.github/skills/bloom-automation/bloomProcessCommon.mjs";
+} from "./bloomProcessCommon.mjs";
 
 const parseArgs = () => {
     const args = process.argv.slice(2);

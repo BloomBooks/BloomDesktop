@@ -1,4 +1,4 @@
-// a static registry of features. Each one has a name, a subscription tier, and a flag indicating whether it is experimental or advanced.
+﻿// a static registry of features. Each one has a name, a subscription tier, and a flag indicating whether it is experimental or advanced.
 using System.Collections.Generic;
 
 namespace Bloom.SubscriptionAndFeatures
@@ -29,6 +29,8 @@ namespace Bloom.SubscriptionAndFeatures
         BulkBloomPub,
         Bookshelf,
         AppBuilder,
+        AiImageEditing,
+        Table,
     }
 
     public static class FeatureRegistry
@@ -182,6 +184,7 @@ namespace Bloom.SubscriptionAndFeatures
             {
                 Feature = FeatureName.TeamCollection,
                 SubscriptionTier = SubscriptionTier.LocalCommunity,
+                UnlockedByPlayground = false,
             },
             new FeatureInfo
             {
@@ -192,7 +195,31 @@ namespace Bloom.SubscriptionAndFeatures
             {
                 Feature = FeatureName.AppBuilder,
                 SubscriptionTier = SubscriptionTier.Pro,
-                ExperimentalFeatureToken = Bloom.ExperimentalFeatures.kAppBuilder,
+                // An app can include other books from the collection, so a selected Playground
+                // book must not unlock the Apps screen; it shows its "requires a subscription"
+                // overlay as for any other book. See UnlockedByPlayground (BL-16855).
+                UnlockedByPlayground = false,
+            },
+            new FeatureInfo
+            {
+                Feature = FeatureName.AiImageEditing,
+                SubscriptionTier = SubscriptionTier.Pro,
+            },
+            new FeatureInfo
+            {
+                Feature = FeatureName.Table,
+                SubscriptionTier = SubscriptionTier.Pro,
+                ExperimentalFeatureToken = Bloom.ExperimentalFeatures.kTables,
+                SupportedMediums = PublishingMediums.All,
+                // A table follows the same rule as a canvas element (see the Canvas
+                // entry above): anyone may translate and publish a book someone else
+                // made a table in, but an author below Pro may not publish a table of
+                // their own making. So a derivative publishes and an original is
+                // blocked, rather than having the table removed: a page whose table
+                // was taken out would have a hole in it.
+                PreventPublishingInDerivativeBooks = PreventionMethod.None,
+                PreventPublishingInOriginalBooks = PreventionMethod.Block,
+                ExistsInPageXPath = ".//div[contains(@class,'bloom-table')]",
             },
             // ----------------------------------------
             // Enterprise Tier Features

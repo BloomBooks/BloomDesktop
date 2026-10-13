@@ -168,7 +168,11 @@ namespace Bloom.Utils
                     var instances = searcher.Get();
                     foreach (var instance in instances)
                     {
-                        collector.Add(instance.GetText(TextFormat.Mof));
+                        var mof = instance.GetText(TextFormat.Mof);
+                        if (instance["productState"] is uint productState)
+                            mof +=
+                                $"({instance["displayName"]}: {FileAccessDiagnostics.DescribeAntivirusProductState((int)productState)}){Environment.NewLine}";
+                        collector.Add(mof);
                     }
                 }
                 catch (Exception error)
@@ -213,13 +217,32 @@ namespace Bloom.Utils
             string firstLine = null
         )
         {
+            return GetExtendedFileCopyErrorInformation(path, out _, firstLine);
+        }
+
+        /// <summary>
+        /// As above, and also return a sentence naming the likely cause when the evidence points at
+        /// one (see FileAccessDiagnostics.GetLikelyCause), else null. Callers may add that sentence
+        /// to the message the user sees.
+        /// </summary>
+        public static string GetExtendedFileCopyErrorInformation(
+            string path,
+            out string likelyCause,
+            string firstLine = null
+        )
+        {
             var bldr = new StringBuilder();
             if (!String.IsNullOrEmpty(firstLine))
                 bldr.AppendLine(firstLine);
-            if (RobustFile.Exists(path))
+            if (FileAccessDiagnostics.FileIsPresent(path))
             {
+                // The user sees this text in NotifyDialog, which renders it as HTML, so the URL
+                // must be an anchor to be clickable, and the line breaks must be <br> to show
+                // (BL-16915). Logs just get the markup.
+                const string helpUrl =
+                    "https://community.software.sil.org/t/when-bloom-is-prevented-from-changing-png-image-files/4445";
                 bldr.AppendLine(
-                    $"You may find help for this problem at https://community.software.sil.org/t/when-bloom-is-prevented-from-changing-png-image-files/4445."
+                    $"<br>You may find help for this problem at <a href='{helpUrl}'>{helpUrl}</a>.<br>"
                 );
                 bldr.AppendLine($"The following specific information may also be helpful.");
                 bldr.Append(CollectFilePermissionInformation(path));
@@ -229,6 +252,7 @@ namespace Bloom.Utils
                 bldr.AppendLine($"The file ({path}) does not exist!?");
                 bldr.AppendLine($"The following specific information may be helpful.");
             }
+            bldr.Append(FileAccessDiagnostics.Collect(path, out likelyCause));
             bldr.Append(InstalledAntivirusPrograms());
             return bldr.ToString();
         }
@@ -410,14 +434,44 @@ namespace Bloom.Utils
         }
 
         /// <summary>
+        /// Get the spelling of a path that matches what is really on disk. (but case insensitive on Windows)
+        /// </summary>
+        /// <remarks>
+        /// Windows silently drops trailing periods and spaces when it creates a folder, so a
+        /// collection whose name ends with one (BL-16679) leaves us holding a path string that no
+        /// folder literally matches: the name lives on in the .bloomCollection file name, but the
+        /// folder lost it. Ordinary File/Directory APIs hide this from us because they normalize the
+        /// path before using it, but FileSystemWatcher does not: .NET prefixes a path ending in a
+        /// period or space with \\?\, which turns Windows normalization OFF, so StartRaisingEvents
+        /// fails with "Error reading the ... directory". Normalizing at the few places where a
+        /// collection path enters Bloom keeps every later consumer (the watchers included) working
+        /// with the folder that exists.
+        /// Note that Path.GetFullPath also resolves relative paths, which is a no-op for the absolute
+        /// collection paths we pass it. This is about trailing periods and spaces only -- it is not a
+        /// general "spelling on disk" fixer: it does not correct the case of a name, or expand a short
+        /// (8.3) name. It is also effectively a no-op on Linux, where such folder names are legal and
+        /// are therefore what is really on disk, and where FileSystemWatcher has no trouble with them.
+        /// </remarks>
+        public static string GetFullPath(string path)
+        {
+            return string.IsNullOrEmpty(path) ? path : Path.GetFullPath(path);
+        }
+
+        /// <summary>
         /// Check whether the path is inside either the installed collection folder or inside the folder
         /// containing factory template books.  If either condition is true, the collection cannot be edited.
         /// </summary>
         /// <returns><c>true</c> if the collection pointed to by path is not valid to edit, <c>false</c> otherwise.</returns>
         public static bool IsInvalidCollectionToEdit(string path)
         {
-            return path.StartsWith(ProjectContext.GetInstalledCollectionsDirectory())
-                || path.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory);
+            return path.StartsWith(
+                    ProjectContext.GetInstalledCollectionsDirectory(),
+                    StringComparison.Ordinal
+                )
+                || path.StartsWith(
+                    BloomFileLocator.FactoryTemplateBookDirectory,
+                    StringComparison.Ordinal
+                );
         }
 
         /// <summary>
@@ -442,7 +496,11 @@ namespace Bloom.Utils
                     dlg.DefaultExt = defaultExtension;
                     dlg.FileName = initialFilename;
                     dlg.Filter = filter;
-                    dlg.RestoreDirectory = false;
+                    // True so the dialog does not leave the process's current working directory
+                    // wherever the user browsed; see the comment in BloomOpenFileDialog's
+                    // constructor (BL-16577). Where the dialog opens is controlled by
+                    // InitialDirectory below, not by this.
+                    dlg.RestoreDirectory = true;
                     dlg.OverwritePrompt = true;
                     dlg.InitialDirectory = initialFolder;
                     dlg.FileOk += (sender, args) =>
@@ -734,7 +792,7 @@ namespace Bloom.Utils
         {
             var trimmedEmail = email.Trim();
 
-            if (trimmedEmail.EndsWith("."))
+            if (trimmedEmail.EndsWith(".", StringComparison.Ordinal))
             {
                 return false; // suggested by @TK-421
             }
@@ -787,7 +845,7 @@ namespace Bloom.Utils
         public static string NormalizeLanguageTagCapitalization(string tag)
         {
             // Degenerate (albeit valid) case that may only ever occur in unit tests.
-            if (tag.StartsWith("x-"))
+            if (tag.StartsWith("x-", StringComparison.Ordinal))
                 return tag;
             // The IetfLanguageTag parser appears to be case insensitive.
             // We need to ensure the pieces are properly capitalized.

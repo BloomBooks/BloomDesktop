@@ -60,6 +60,11 @@ namespace Bloom.Collection
         {
             if (_filePath == null)
                 return;
+            // Nothing to close if we never locked, or already unlocked. Without this, unlocking twice
+            // throws inside the try below, which a DEBUG build rethrows. ProjectContext.Dispose can
+            // run twice: its constructor disposes it when construction fails. (BL-16679)
+            if (_streamToLockCollectionFile == null)
+                return;
             try
             {
                 _streamToLockCollectionFile.Close();

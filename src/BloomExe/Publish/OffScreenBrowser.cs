@@ -141,7 +141,7 @@ namespace Bloom.Publish
         {
             _browser =
                 _environment == null
-                    ? new WebView2Browser()
+                    ? WebView2Browser.CreateForOffScreenUse()
                     : WebView2Browser.CreateWithInjectedEnvironment(_environment);
             // Realize the HWND now; CoreWebView2 initialization can only complete once the control has a
             // window handle, and nothing else (no parent Form) will create it for us. Same trick as
@@ -151,6 +151,13 @@ namespace Bloom.Publish
             var timer = Stopwatch.StartNew();
             while (!_browser.IsReadyToNavigate)
             {
+                // Initialization failed outright, so it will never become ready. Fail now with the real
+                // cause instead of waiting out the timeout and then blaming the timeout (BL-16773).
+                if (_browser.InitializationError != null)
+                    throw new ApplicationException(
+                        "The off-screen WebView2 failed to initialize.",
+                        _browser.InitializationError
+                    );
                 if (timer.ElapsedMilliseconds > kInitTimeoutMs)
                     throw new ApplicationException(
                         "Timed out initializing the off-screen WebView2."
@@ -286,7 +293,25 @@ namespace Bloom.Publish
                 },
                 null
             );
-            return tcs.Task.GetAwaiter().GetResult();
+
+            // We are about to block, and publishing runs as an api request, so the thread we block is
+            // usually a BloomServer worker. Tell the server, so that it keeps a worker free to serve the
+            // requests this browser is about to make -- including the very page we navigate to, which
+            // BloomServer serves from memory.
+            //
+            // Without this the server could not tell that its whole pool was blocked. Reporting a block is
+            // opt-in, and neither of the two existing reports covers us. BloomApiHandler's covers ACQUIRING
+            // the api lock, not the long stretch while publishing holds it. ApiRequest's covers marshalling
+            // a handler onto the UI thread, which the publish endpoints deliberately opt out of (they
+            // register with handleOnUiThread: false), so it never runs on this path -- and that opt-out is
+            // also why the thread we block here is a server worker rather than the UI thread, which is what
+            // makes reporting it worth doing at all. So every other worker could be waiting for that lock,
+            // and this one waiting here, with the server believing a worker was still free. That is
+            // BL-16612.
+            using (BloomServer._theOneInstance?.ReportThreadBlocking())
+            {
+                return tcs.Task.GetAwaiter().GetResult();
+            }
         }
 
         /// <summary>

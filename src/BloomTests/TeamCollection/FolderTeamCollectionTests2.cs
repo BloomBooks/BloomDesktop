@@ -46,7 +46,7 @@ namespace BloomTests.TeamCollection
                         "Strange book content",
                         bookFolderName2
                     );
-                    var settingsPath = CollectionSettings.GetSettingsFilePath(
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
                         collectionFolder.FolderPath
                     );
 
@@ -103,7 +103,7 @@ namespace BloomTests.TeamCollection
                     Assert.That(File.Exists(teamCollectionLinkPath));
                     var collectionFileContent = RobustFile.ReadAllText(teamCollectionLinkPath);
                     Assert.That(collectionFileContent, Is.EqualTo(sharedFolder.FolderPath));
-                    var sharedSettingsPath = CollectionSettings.GetSettingsFilePath(
+                    var sharedSettingsPath = CollectionSettings.GetDefaultSettingsFilePath(
                         collectionFolder.FolderPath
                     );
                     Assert.That(
@@ -242,7 +242,7 @@ namespace BloomTests.TeamCollection
                     )
                 )
                 {
-                    var settingsPath = CollectionSettings.GetSettingsFilePath(
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
                         collectionFolder.FolderPath
                     );
                     var tcManager = new TeamCollectionManager(
@@ -781,7 +781,7 @@ namespace BloomTests.TeamCollection
                         collectionFolder.FolderPath,
                         repoFolder.FolderPath
                     );
-                    var otherPath = CollectionSettings.GetSettingsFilePath(
+                    var otherPath = CollectionSettings.GetDefaultSettingsFilePath(
                         collectionFolder.FolderPath
                     );
                     Directory.CreateDirectory(Path.GetDirectoryName(otherPath));
@@ -875,7 +875,7 @@ namespace BloomTests.TeamCollection
                         collectionFolder.FolderPath,
                         repoFolder.FolderPath
                     );
-                    var otherPath = CollectionSettings.GetSettingsFilePath(
+                    var otherPath = CollectionSettings.GetDefaultSettingsFilePath(
                         collectionFolder.FolderPath
                     );
                     // this test doesn't need this folder except that StartMonitoring does.
@@ -1266,6 +1266,511 @@ namespace BloomTests.TeamCollection
                     );
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets up a team collection whose repo holds a settings file with the given content, and
+        /// runs the given check against it. See BL-16691.
+        /// </summary>
+        private void WithRepoSettingsFile(
+            string testName,
+            string settingsFileContent,
+            Action<TestFolderTeamCollection, CollectionSettings> check
+        )
+        {
+            using (var collectionFolder = new TemporaryFolder(testName + "_Collection"))
+            {
+                using (var repoFolder = new TemporaryFolder(testName + "_Repo"))
+                {
+                    var mockTcManager = new Mock<ITeamCollectionManager>();
+                    var settings = new CollectionSettings();
+                    mockTcManager.Setup(m => m.Settings).Returns(settings);
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
+                    Directory.CreateDirectory(Path.GetDirectoryName(settingsPath));
+                    Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                    if (settingsFileContent != null)
+                    {
+                        File.WriteAllText(settingsPath, settingsFileContent);
+                        tc.CopyRepoCollectionFilesFromLocal(collectionFolder.FolderPath);
+                    }
+                    check(tc, settings);
+                }
+            }
+        }
+
+        [TestCase("False", false)]
+        [TestCase("True", true)]
+        public void GetAllowCheckoutsFromRepo_ReadsTheRepoCopy(string valueInFile, bool expected)
+        {
+            WithRepoSettingsFile(
+                "GetAllowCheckouts" + valueInFile,
+                $"<Collection version=\"0.2\"><AllowCheckouts>{valueInFile}</AllowCheckouts></Collection>",
+                (tc, settings) => Assert.That(tc.GetAllowCheckoutsFromRepo(), Is.EqualTo(expected))
+            );
+        }
+
+        /// <summary>
+        /// Reading the repo copy has to cope with what Bloom actually writes, and Bloom writes the
+        /// settings file with a UTF-8 BOM. The other tests here write the file themselves without
+        /// one, so they would not notice if the BOM reached the XML parser. See BL-16691.
+        /// </summary>
+        [Test]
+        public void GetAllowCheckoutsFromRepo_FileWrittenByBloomWithBom_IsRead()
+        {
+            using (var collectionFolder = new TemporaryFolder("GetAllowCheckoutsBom_Collection"))
+            {
+                using (var repoFolder = new TemporaryFolder("GetAllowCheckoutsBom_Repo"))
+                {
+                    var mockTcManager = new Mock<ITeamCollectionManager>();
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+                    Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
+
+                    // Write it the way Bloom really does, rather than by hand.
+                    var settings = new CollectionSettings(settingsPath) { AllowCheckouts = false };
+                    settings.Save();
+
+                    // Sanity check: the whole point of this test is that Bloom emits a BOM.
+                    Assert.That(
+                        File.ReadAllBytes(settingsPath).Take(3).ToArray(),
+                        Is.EqualTo(new byte[] { 0xEF, 0xBB, 0xBF }),
+                        "setup failed: expected Bloom to write a UTF-8 BOM"
+                    );
+                    tc.CopyRepoCollectionFilesFromLocal(collectionFolder.FolderPath);
+
+                    Assert.That(tc.GetAllowCheckoutsFromRepo(), Is.False);
+                }
+            }
+        }
+
+        [Test]
+        public void GetAllowCheckoutsFromRepo_ElementMissing_IsTrue()
+        {
+            WithRepoSettingsFile(
+                "GetAllowCheckoutsMissing",
+                "<Collection version=\"0.2\"><AllowNewBooks>True</AllowNewBooks></Collection>",
+                (tc, settings) => Assert.That(tc.GetAllowCheckoutsFromRepo(), Is.True)
+            );
+        }
+
+        /// <summary>
+        /// If we can't read the repo copy we must leave the setting alone rather than guess.
+        /// </summary>
+        [Test]
+        public void GetAllowCheckoutsFromRepo_NoRepoSettings_IsNull()
+        {
+            WithRepoSettingsFile(
+                "GetAllowCheckoutsNoRepo",
+                null,
+                (tc, settings) => Assert.That(tc.GetAllowCheckoutsFromRepo(), Is.Null)
+            );
+        }
+
+        /// <summary>
+        /// The point of the whole exercise: an administrator pausing checkouts must take effect
+        /// on a machine that is already running, without waiting for a restart. See BL-16691.
+        /// </summary>
+        [Test]
+        public void UpdateAllowCheckoutsFromRepo_RepoSaysPaused_UpdatesLiveSettings()
+        {
+            WithRepoSettingsFile(
+                "UpdateAllowCheckoutsPaused",
+                "<Collection version=\"0.2\"><AllowCheckouts>False</AllowCheckouts></Collection>",
+                (tc, settings) =>
+                {
+                    // Sanity check: the running Bloom starts out allowing checkouts, which is what
+                    // makes the change below meaningful.
+                    Assert.That(
+                        settings.AllowCheckouts,
+                        Is.True,
+                        "setup failed: should have started out allowing checkouts"
+                    );
+
+                    tc.UpdateAllowCheckoutsFromRepo();
+
+                    Assert.That(settings.AllowCheckouts, Is.False);
+                }
+            );
+        }
+
+        /// <summary>
+        /// The administrator pauses checkouts by editing their own local settings file while Bloom
+        /// runs, and Bloom pushes that up to the repo. Their own repo watcher is suppressed while
+        /// we write, so without help the machine that made the change is the one machine that
+        /// doesn't act on it -- and its stale in-memory "allowed" would be written back over the
+        /// change by the next Save(), un-pausing the whole team. See BL-16691.
+        /// </summary>
+        [Test]
+        public void SyncLocalAndRepoCollectionFiles_LocalPausePushedUp_UpdatesLiveSettings()
+        {
+            using (var collectionFolder = new TemporaryFolder("LocalPausePushedUp_Collection"))
+            {
+                using (var repoFolder = new TemporaryFolder("LocalPausePushedUp_Repo"))
+                {
+                    var mockTcManager = new Mock<ITeamCollectionManager>();
+                    var settings = new CollectionSettings();
+                    mockTcManager.Setup(m => m.Settings).Returns(settings);
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+                    Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
+
+                    // The administrator's hand-edit: the file says paused...
+                    File.WriteAllText(
+                        settingsPath,
+                        "<Collection version=\"0.2\"><AllowCheckouts>False</AllowCheckouts></Collection>"
+                    );
+                    // ...while this running Bloom still has the value it loaded at startup.
+                    Assert.That(
+                        settings.AllowCheckouts,
+                        Is.True,
+                        "setup failed: the running Bloom should still think checkouts are allowed"
+                    );
+
+                    tc.SyncLocalAndRepoCollectionFiles(false);
+
+                    Assert.That(
+                        settings.AllowCheckouts,
+                        Is.False,
+                        "the machine that made the change should be paused too"
+                    );
+                    Assert.That(
+                        tc.GetAllowCheckoutsFromRepo(),
+                        Is.False,
+                        "and the pause should have reached the repo"
+                    );
+                }
+            }
+        }
+
+        /// <summary>
+        /// The first-launch gap. An administrator sets a minimum version while a teammate's Bloom is
+        /// closed. When that teammate starts up, their own copy of the settings is still yesterday's
+        /// -- Bloom does not copy the repository's collection files down until later in startup, well
+        /// after the gate has decided whether to open the collection. So the gate has to ask the
+        /// repository itself, or the teammate gets the whole session inside a collection they are no
+        /// longer allowed in. See BL-16690.
+        /// </summary>
+        [Test]
+        public void IsThisBloomTooOld_OnlyTheRepoKnowsAboutTheRequirement_StillSaysTooOld()
+        {
+            using (var collectionFolder = new TemporaryFolder("RepoOnlyRequirement_Collection"))
+            {
+                using (var repoFolder = new TemporaryFolder("RepoOnlyRequirement_Repo"))
+                {
+                    var mockTcManager = new Mock<ITeamCollectionManager>();
+                    var settings = new CollectionSettings();
+                    mockTcManager.Setup(m => m.Settings).Returns(settings);
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+                    Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
+
+                    // The administrator's edit, pushed to the repository...
+                    File.WriteAllText(
+                        settingsPath,
+                        "<Collection version=\"0.2\"><MinimumBloomVersion>99.0</MinimumBloomVersion></Collection>"
+                    );
+                    tc.CopyRepoCollectionFilesFromLocal(collectionFolder.FolderPath);
+                    FolderTeamCollection.CreateTeamCollectionLinkFile(
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+
+                    // ...while this teammate's own copy still says nothing about it, exactly as it
+                    // would on the morning after the administrator made the change.
+                    File.WriteAllText(settingsPath, "<Collection version=\"0.2\"></Collection>");
+                    Assert.That(
+                        MinimumBloomVersionCheck.ReadMinimumBloomVersion(settingsPath),
+                        Is.Empty,
+                        "setup failed: the local file should not know about the requirement"
+                    );
+
+                    Assert.That(
+                        MinimumBloomVersionCheck.IsThisBloomTooOld(
+                            settingsPath,
+                            out var minimumVersion
+                        ),
+                        Is.True,
+                        "the repository's requirement should be honoured on the very first launch"
+                    );
+                    Assert.That(minimumVersion, Is.EqualTo("99.0"));
+                }
+            }
+        }
+
+        /// <summary>
+        /// A Team Collection whose repository copy cannot be read at all. Used to prove that
+        /// picking up the administrator's newly pushed requirement does not depend on reading back
+        /// the zip we have just written -- that zip can briefly refuse to open while Dropbox is
+        /// syncing it, and losing the value there is what would let the next save erase the
+        /// administrator's protection for the whole team. See BL-16690.
+        /// </summary>
+        private class TeamCollectionWhoseRepoReadFails : TestFolderTeamCollection
+        {
+            public TeamCollectionWhoseRepoReadFails(
+                ITeamCollectionManager tcManager,
+                string localCollectionFolder,
+                string repoFolderPath
+            )
+                : base(tcManager, localCollectionFolder, repoFolderPath) { }
+
+            protected override string GetRepoCollectionSettingsContent()
+            {
+                throw new IOException("pretending the repo zip is mid-sync");
+            }
+        }
+
+        [Test]
+        public void SyncLocalAndRepoCollectionFiles_RepoReadFails_StillRemembersWhatWePushed()
+        {
+            using (var collectionFolder = new TemporaryFolder("RepoReadFails_Collection"))
+            {
+                using (var repoFolder = new TemporaryFolder("RepoReadFails_Repo"))
+                {
+                    var mockTcManager = new Mock<ITeamCollectionManager>();
+                    var settings = new CollectionSettings();
+                    mockTcManager.Setup(m => m.Settings).Returns(settings);
+                    var tc = new TeamCollectionWhoseRepoReadFails(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+                    Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
+
+                    File.WriteAllText(
+                        settingsPath,
+                        "<Collection version=\"0.2\"><MinimumBloomVersion>1.0</MinimumBloomVersion></Collection>"
+                    );
+                    Assert.That(
+                        settings.MinimumBloomVersion,
+                        Is.Empty,
+                        "setup failed: the running Bloom should not know about it yet"
+                    );
+
+                    tc.SyncLocalAndRepoCollectionFiles(false);
+
+                    Assert.That(
+                        settings.MinimumBloomVersion,
+                        Is.EqualTo("1.0"),
+                        "a repo read failure must not lose the requirement we just pushed, or the next save deletes it for everyone"
+                    );
+                }
+            }
+        }
+
+        /// <summary>
+        /// The administrator must be able to undo a mistake. Once a member is being refused, they
+        /// never open the collection, so the startup sync that would refresh their own copy of the
+        /// settings never runs -- which means a requirement lifted in the repository has to be
+        /// honoured from the repository, or that member is shut out on every launch for ever, with
+        /// no way back in from inside Bloom. See BL-16690.
+        /// </summary>
+        [Test]
+        public void IsThisBloomTooOld_RepoHasWithdrawnTheRequirement_LetsThemBackIn()
+        {
+            using (var collectionFolder = new TemporaryFolder("RepoWithdrewRequirement_Collection"))
+            {
+                using (var repoFolder = new TemporaryFolder("RepoWithdrewRequirement_Repo"))
+                {
+                    var mockTcManager = new Mock<ITeamCollectionManager>();
+                    var settings = new CollectionSettings();
+                    mockTcManager.Setup(m => m.Settings).Returns(settings);
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+                    Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
+
+                    // The administrator has thought better of it, so the repository asks for nothing...
+                    File.WriteAllText(settingsPath, "<Collection version=\"0.2\"></Collection>");
+                    tc.CopyRepoCollectionFilesFromLocal(collectionFolder.FolderPath);
+                    FolderTeamCollection.CreateTeamCollectionLinkFile(
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+
+                    // ...but this member's own copy still carries the requirement they were refused
+                    // by, and always will, because being refused is what stops it being refreshed.
+                    File.WriteAllText(
+                        settingsPath,
+                        "<Collection version=\"0.2\"><MinimumBloomVersion>99.0</MinimumBloomVersion></Collection>"
+                    );
+                    Assert.That(
+                        MinimumBloomVersionCheck.ReadMinimumBloomVersion(settingsPath),
+                        Is.EqualTo("99.0"),
+                        "setup failed: the local file should still carry the old requirement"
+                    );
+
+                    Assert.That(
+                        MinimumBloomVersionCheck.IsThisBloomTooOld(settingsPath, out _),
+                        Is.False,
+                        "the administrator lifting the requirement must let the member back in"
+                    );
+                }
+            }
+        }
+
+        /// <summary>
+        /// The same workflow, and the same trap, for MinimumBloomVersion: the administrator adds it
+        /// to their own local settings file while Bloom runs. Their in-memory copy is still empty,
+        /// so the next Save() would rewrite the file without it and push that up, erasing the
+        /// requirement for the whole team. We deliberately only take the value here -- locking the
+        /// administrator out mid-sync is not this method's job. See BL-16690.
+        /// </summary>
+        [Test]
+        public void SyncLocalAndRepoCollectionFiles_LocalMinimumVersionPushedUp_UpdatesLiveSettings()
+        {
+            using (var collectionFolder = new TemporaryFolder("LocalMinVersionPushedUp_Collection"))
+            {
+                using (var repoFolder = new TemporaryFolder("LocalMinVersionPushedUp_Repo"))
+                {
+                    var mockTcManager = new Mock<ITeamCollectionManager>();
+                    var settings = new CollectionSettings();
+                    mockTcManager.Setup(m => m.Settings).Returns(settings);
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+                    Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
+
+                    // The administrator's hand-edit. 1.0 is old enough that nothing here will try to
+                    // shut them out, which would want a dialog we cannot show from a unit test.
+                    File.WriteAllText(
+                        settingsPath,
+                        "<Collection version=\"0.2\"><MinimumBloomVersion>1.0</MinimumBloomVersion></Collection>"
+                    );
+                    // ...while this running Bloom still has the value it loaded at startup.
+                    Assert.That(
+                        settings.MinimumBloomVersion,
+                        Is.Empty,
+                        "setup failed: the running Bloom should not know about the minimum version yet"
+                    );
+
+                    tc.SyncLocalAndRepoCollectionFiles(false);
+
+                    Assert.That(
+                        settings.MinimumBloomVersion,
+                        Is.EqualTo("1.0"),
+                        "the machine that made the change should know about it too, or its next save will erase it"
+                    );
+                }
+            }
+        }
+
+        [Test]
+        public void UpdateAllowCheckoutsFromRepo_NoRepoSettings_LeavesSettingAlone()
+        {
+            WithRepoSettingsFile(
+                "UpdateAllowCheckoutsNoRepo",
+                null,
+                (tc, settings) =>
+                {
+                    settings.AllowCheckouts = false;
+                    tc.UpdateAllowCheckoutsFromRepo();
+                    Assert.That(settings.AllowCheckouts, Is.False);
+                }
+            );
+        }
+
+        /// <summary>
+        /// Picking up the repo's minimum version matters even when this Bloom is new enough to carry
+        /// on working. CollectionSettings.Save() rebuilds the file from memory, so if we were still
+        /// holding the empty value we loaded at startup, the next ordinary save would drop the
+        /// element and the Team Collection would push that up -- removing the administrator's
+        /// protection for everybody. See BL-16690.
+        /// </summary>
+        [Test]
+        public void HandleCollectionSettingsChange_RepoDeclaresAMinimumWeMeet_RemembersIt()
+        {
+            WithRepoSettingsFile(
+                "RememberMinimumVersion",
+                "<Collection version=\"0.2\"><MinimumBloomVersion>1.0</MinimumBloomVersion></Collection>",
+                (tc, settings) =>
+                {
+                    // Sanity check: we must start out not knowing about it, or the test proves nothing.
+                    Assert.That(
+                        settings.MinimumBloomVersion,
+                        Is.Empty,
+                        "setup failed: should have started with no minimum version"
+                    );
+                    // And this Bloom really must satisfy the 1.0 below. On a build where the
+                    // version was never stamped in (0.0.x) it would not, and the code under test
+                    // would try to lock the user out -- which from a unit test means a dialog and a
+                    // hang rather than a failure. Better to say so plainly here.
+                    Assert.That(
+                        typeof(CollectionSettings).Assembly.GetName().Version,
+                        Is.GreaterThanOrEqualTo(new Version(1, 0)),
+                        "setup failed: this Bloom's assembly version is not stamped, so the test cannot tell a met minimum from an unmet one"
+                    );
+
+                    // 1.0 is old enough that this cannot try to lock anyone out (which would want a dialog).
+                    var lockedOut = tc.HandleCollectionSettingsChange(new RepoChangeEventArgs());
+
+                    Assert.That(
+                        lockedOut,
+                        Is.False,
+                        "should not shut anyone out over a minimum this Bloom easily meets"
+                    );
+                    Assert.That(settings.MinimumBloomVersion, Is.EqualTo("1.0"));
+                }
+            );
+        }
+
+        /// <summary>
+        /// Not being able to read the repo copy is quite different from the repo saying there is no
+        /// minimum, and only the second should clear what we are holding. Getting this wrong would
+        /// turn a transient read failure into the loss of the setting. See BL-16690.
+        /// </summary>
+        [Test]
+        public void HandleCollectionSettingsChange_NoRepoSettings_LeavesMinimumVersionAlone()
+        {
+            WithRepoSettingsFile(
+                "RememberMinimumVersionNoRepo",
+                null,
+                (tc, settings) =>
+                {
+                    settings.MinimumBloomVersion = "1.0";
+
+                    tc.HandleCollectionSettingsChange(new RepoChangeEventArgs());
+
+                    Assert.That(settings.MinimumBloomVersion, Is.EqualTo("1.0"));
+                }
+            );
         }
     }
 }

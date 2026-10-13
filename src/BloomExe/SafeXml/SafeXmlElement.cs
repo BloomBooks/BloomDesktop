@@ -91,6 +91,15 @@ namespace Bloom.SafeXml
             }
         }
 
+        public SafeXmlNode PreviousSibling
+        {
+            get
+            {
+                lock (_doc.Lock)
+                    return WrapNode(WrappedElement.PreviousSibling, _doc);
+            }
+        }
+
         #region Additional Methods
 
         /// <summary>

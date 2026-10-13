@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -11,6 +11,7 @@ using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.SafeXml;
+using Bloom.ToPalaso;
 using L10NSharp;
 using Microsoft.CSharp.RuntimeBinder;
 using SIL.Extensions;
@@ -1427,10 +1428,18 @@ namespace Bloom.Book
             }
         }
 
-        private static string TrimEnd(string source, string value)
+        /// <summary>
+        /// Remove every trailing copy of value from the end of source.
+        /// </summary>
+        internal static string TrimEnd(string source, string value)
         {
-            while (source.EndsWith(value))
-                source = source.Remove(source.LastIndexOf(value));
+            // Every string ends with the empty string, and removing it changes nothing, so the
+            // loop below would never end. The separator we are called with is translated, so a
+            // translator really can hand us one.
+            if (string.IsNullOrEmpty(value))
+                return source;
+            while (source.EndsWith(value, StringComparison.Ordinal))
+                source = source.Remove(source.LastIndexOf(value, StringComparison.Ordinal));
             return source;
         }
 
@@ -1581,7 +1590,7 @@ namespace Bloom.Book
                         if (itemsToDelete != null)
                             itemsToDelete.Add(Tuple.Create(key, lang));
                     }
-                    else if (!value.StartsWith("{"))
+                    else if (!value.StartsWith("{", StringComparison.Ordinal))
                     //ignore placeholder stuff like "{Book Title}"; that's not a value we want to collect
                     {
                         if (
@@ -1693,6 +1702,10 @@ namespace Bloom.Book
                 "spellcheck",
                 "data-hasqtip",
                 "data-languagetipcontent",
+                // Asks the editing code to put the cursor in a field the server has just opened;
+                // it takes the attribute off again, but if the page is shown with focus
+                // suppressed it is still there at save time.
+                "data-bloom-focus-when-shown",
                 // These are the keys that are used to match the copy-from and copy-to elements.
                 // They are already on both so no point in copying.
                 "data-book",
@@ -1741,7 +1754,18 @@ namespace Bloom.Book
         // at least the next Save should be able to remove it. Similarly keymanweb-font heals any book saved by an
         // earlier POC-era session that left the class sitting in the data-div.)
         static HashSet<string> _classesToRemoveIfAbsent = new HashSet<string>(
-            new[] { "bloom-postAudioSplit", "ui-suppressHighlight", "keymanweb-font" }
+            new[]
+            {
+                "bloom-postAudioSplit",
+                "ui-suppressHighlight",
+                // The user's Transparency choice for an image (Opaque/Transparent; Auto is the absence
+                // of both). Changing the choice removes the old class from the img, and the data-div
+                // copy must follow, or the old choice comes back when the cover image is restored from
+                // the data-div on the next open. See _imgClassesToRestoreFromDataDiv and BL-16819.
+                "bloom-opaque",
+                "bloom-transparent",
+                "keymanweb-font",
+            }
         );
 
         private List<Tuple<string, XmlString>> GetAttributesToSave(SafeXmlElement node)
@@ -1795,7 +1819,10 @@ namespace Bloom.Book
                 if (attr.Name == "class")
                 {
                     var classes = attr.Value.Split().ToList();
-                    classes.RemoveAll(x => _classesNotToCopy.Contains(x) || x.EndsWith("-style"));
+                    classes.RemoveAll(x =>
+                        _classesNotToCopy.Contains(x)
+                        || x.EndsWith("-style", StringComparison.Ordinal)
+                    );
                     result.Add(
                         Tuple.Create("class", XmlString.FromUnencoded(string.Join(" ", classes)))
                     );
@@ -1834,7 +1861,7 @@ namespace Bloom.Book
                 if (
                     attribute.Name != kDataXmatterPage
                     && attribute.Name != "data-custom-layout-id"
-                    && attribute.Name.StartsWith("data-")
+                    && attribute.Name.StartsWith("data-", StringComparison.Ordinal)
                 )
                 {
                     // xmatter pages are not numbered.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7303.
@@ -1892,14 +1919,27 @@ namespace Bloom.Book
                     .Cast<SafeXmlElement>()
                     .ToArray();
                 foreach (var elt in nodesToProcessFirst)
+                {
+                    // Same reason as the IsStillInDocument check in the second pass below: an
+                    // earlier update in this very loop could have detached a later one of these.
+                    if (!IsStillInDocument(elt))
+                        continue;
                     UpdateOneElementFromDataSet(data, itemsToDelete, elt);
+                }
 
                 // After restoring custom page content from the data-div, prepare any bloom-editables
                 // for languages that weren't present in the saved version (e.g. a newly-added content
                 // language). Without this, the second pass below that updates e.g. bookTitle would
                 // find no destination elements for newly-added languages on the custom page.
                 foreach (var elt in nodesToProcessFirst)
+                {
+                    // Same guard as the loops either side: an update above may have detached one of
+                    // these. Nothing here walks to the document root, so an orphan would not crash,
+                    // but preparing elements in a page the book no longer has is pointless work.
+                    if (!IsStillInDocument(elt))
+                        continue;
                     TranslationGroupManager.PrepareElementsInPageOrDocument(elt, this);
+                }
 
                 // Run this query AFTER that update, so that we're updating the (possibly modified) set of nodes that
                 // result from doing it.
@@ -1911,10 +1951,17 @@ namespace Bloom.Book
                 {
                     // if we already processed it, we should not do so again,
                     // since doing so might replace some of the nodes in our list with new ones.
-                    if (!nodesToProcessFirst.Contains(elt))
-                    {
-                        UpdateOneElementFromDataSet(data, itemsToDelete, elt);
-                    }
+                    if (nodesToProcessFirst.Contains(elt))
+                        continue;
+                    // Updating one element can replace the entire content of an ancestor of another
+                    // element in this list (for example, restoring a branding html value replaces
+                    // everything inside that element), leaving the descendant orphaned. An orphan is
+                    // no longer part of the book, so there is nothing in it worth updating, and the
+                    // update code rightly assumes it still has the parents it was collected with.
+                    // See BL-16776.
+                    if (!IsStillInDocument(elt))
+                        continue;
+                    UpdateOneElementFromDataSet(data, itemsToDelete, elt);
                 }
             }
             catch (Exception error)
@@ -1927,6 +1974,22 @@ namespace Bloom.Book
                     error
                 );
             }
+        }
+
+        /// <summary>
+        /// True if the node is still attached to its document, that is, we can reach the document's
+        /// root element by following parents. A node we collected earlier may since have been
+        /// detached by an update to one of its ancestors.
+        /// </summary>
+        internal static bool IsStillInDocument(SafeXmlNode node)
+        {
+            var root = node.OwnerDocument.DocumentElement;
+            for (var current = node; current != null; current = current.ParentNode)
+            {
+                if (current == root)
+                    return true;
+            }
+            return false;
         }
 
         private void UpdateOneElementFromDataSet(
@@ -2257,7 +2320,7 @@ namespace Bloom.Book
 
         internal static string GetInactiveAttributeName(string activeAttributeName)
         {
-            if (activeAttributeName.StartsWith("data-"))
+            if (activeAttributeName.StartsWith("data-", StringComparison.Ordinal))
                 return $"{activeAttributeName}-inactive";
             // We don't want to make bad HTML by creating invalid non-data attributes like "id-inactive",
             // so if the attribute we want to make inactive doesn't already start with data- we'll add that.
@@ -2460,7 +2523,11 @@ namespace Bloom.Book
                     ?.Item2.Unencoded;
             }
 
-            var hasBackgroundImgData = backgroundImgValues.All(x => x != null);
+            // Not "all of them are present": the fraction-of-page value is optional, so that a
+            // book saved before it existed still gets its background image rebuilt.
+            var hasBackgroundImgData = HtmlDom.HaveDataForReconstructingBackgroundImgWrapper(
+                backgroundImgValues
+            );
 
             // Note that these attributes were already run through the _attributesNotToCopy filter, which wipes out the ones
             // we don't ever want restored. The style attribute is special, for a series of historical reasons,
@@ -2486,7 +2553,58 @@ namespace Bloom.Book
             {
                 HtmlDom.ReconstructBackgroundImgWrapper(node, backgroundImgValues);
             }
+
+            RestoreImgClassesFromDataDiv(imgOrDivWithBackgroundImage, otherAttributes);
             return true;
+        }
+
+        // The img classes that are user data and so must be restored from the data-div copy when
+        // an image (currently only the cover image) is refilled from it. Classes in general are
+        // deliberately NOT copied back (e.g. bloom-imageLoadError is meant to be re-derived each
+        // time the book is opened), so a class only gets restored by being listed here.
+        // A class listed here should normally also be in _classesToRemoveIfAbsent, so that the
+        // data-div copy follows the img when the class is removed from it.
+        // Currently these are the classes that record the user's Transparency choice for an image
+        // (Auto is the absence of both). See getImageTransparencyMode in bloomImages.ts and
+        // HtmlDom.GetImageTransparencyMode.
+        private static readonly string[] _imgClassesToRestoreFromDataDiv =
+        {
+            "bloom-opaque",
+            "bloom-transparent",
+        };
+
+        /// <summary>
+        /// Make the img's _imgClassesToRestoreFromDataDiv classes match the class attribute saved
+        /// in the data-div. The data-div copy is authoritative: a listed class it lacks is removed
+        /// from the image (so, for the transparency classes, Auto is restored too). Without this,
+        /// the user's choice would be lost every time the xmatter is regenerated from the template.
+        /// See BL-16819.
+        /// A null savedAttributes means the data set carries no attribute information for this
+        /// image at all, not that the image has no classes, so the image is left alone (as
+        /// MergeAttrsIntoElement does). This is the normal state of the member _dataset once a page
+        /// has been saved: UpdateSingleTextVariableInDataDiv recreates its entry with the new value
+        /// but without the attribute list, and UpdateDomFromDataset() pushes that data set to the
+        /// pages (e.g. from Book.SetMultilingualContentLanguages every time the Edit tab is entered).
+        /// </summary>
+        private static void RestoreImgClassesFromDataDiv(
+            SafeXmlElement img,
+            List<Tuple<string, XmlString>> savedAttributes
+        )
+        {
+            if (savedAttributes == null)
+                return;
+            var savedClasses =
+                savedAttributes
+                    .Find(a => a.Item1 == "class")
+                    ?.Item2.Unencoded.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                ?? new string[0];
+            foreach (var className in _imgClassesToRestoreFromDataDiv)
+            {
+                if (savedClasses.Contains(className))
+                    img.AddClass(className);
+                else
+                    img.RemoveClass(className);
+            }
         }
 
         /// <summary>
@@ -2889,7 +3007,7 @@ namespace Bloom.Book
                             .Any(word =>
                                 word == "©"
                                 || word.ToLowerInvariant() == "copyright"
-                                || word.StartsWith("20")
+                                || word.StartsWith("20", StringComparison.Ordinal)
                             );
                         if (!presetContainsMoreThanPublisher)
                         {
@@ -2927,6 +3045,15 @@ namespace Bloom.Book
                                 "{bookshelfUrlKey}",
                                 CollectionSettings.DefaultBookshelf
                             );
+                    }
+
+                    // Expand branding badge tokens like {bloom-badge-default} into their canonical
+                    // HTML. This keeps the (identical, verbose) badge markup in one place rather
+                    // than repeated across every branding.json. A token can sit anywhere in the
+                    // content string, so a branding can combine a badge with other markup.
+                    foreach (var badge in BookStorage.BrandingBadgeHtmlByToken)
+                    {
+                        content = content.Replace("{" + badge.Key + "}", badge.Value);
                     }
 
                     content = MergeInPersonalization(content);
@@ -3244,7 +3371,7 @@ namespace Bloom.Book
                 if (lang != null)
                     name = lang.Name;
                 else
-                    IetfLanguageTag.GetBestLanguageName(code, out name);
+                    IetfLanguageTagExtra.GetBestLanguageName(code, out name);
                 string ethCode;
                 LanguageSubtag data;
                 if (!StandardSubtags.RegisteredLanguages.TryGet(code.ToLowerInvariant(), out data))

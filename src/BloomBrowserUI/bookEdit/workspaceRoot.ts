@@ -8,6 +8,7 @@ import {
     hideColorPickerDialog as doHideColorPickerDialog,
 } from "../react_components/color-picking/colorPickerDialog";
 import { postJson } from "../utils/bloomApi";
+import { Link } from "../react_components/BookGridSetup/BookLinkTypes";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 import $ from "jquery";
 
@@ -33,7 +34,16 @@ export interface IWorkspaceExports {
     hideColorPickerDialog(): void;
     showCopyrightAndLicenseDialog(imageUrl?: string): void;
     showEditViewTopicChooserDialog(): void;
+    showLinkTargetChooserDialog(
+        currentUrl: string,
+        onSetUrl: (url: string) => void,
+    ): void;
+    showBookGridSetupDialog(
+        currentLinks: Link[],
+        setLinksCallback: (links: Link[]) => void,
+    ): void;
     showAdjustTimingsDialogFromWorkspaceRoot(
+        currentTextBox: HTMLElement,
         // The split and applyTimingsFile calls both return a list of new timings,
         // such as we might find in data-audioRecordingEndTimes
         split: (timingFilePath: string) => Promise<string | undefined>,
@@ -50,7 +60,10 @@ export interface IWorkspaceExports {
     ): void;
     showAboutDialogFromWorkspaceRoot(): void;
     showBookSettingsDialog(initiallySelectedPageKey?: string): void;
+    showDecodableReaderSetupDialog(): void;
+    closeDecodableReaderSetupDialog(): void;
     showImageGalleryDialog(img: HTMLElement, searchLang: string): void;
+    openAiImageEditor(target: IAiImageEditorTarget): void;
 }
 
 export function SayHello() {
@@ -68,10 +81,21 @@ import { getEditablePageBundleExports } from "./js/workspaceFrames";
 export { getEditablePageBundleExports };
 import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
 export { showPageChooserDialog };
+// These two are launched from code that runs in the page iframe. They must be shown from here,
+// the workspace root, so that their modal backdrop covers the whole workspace including the
+// page list; rendered in the page iframe the backdrop covers only the book pane (BL-16809).
+import { showLinkTargetChooserDialog } from "../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
+export { showLinkTargetChooserDialog };
+import { showBookGridSetupDialog } from "../react_components/BookGridSetup/BookGridSetupDialog";
+export { showBookGridSetupDialog };
 
 import "../lib/errorHandler";
 import { showBookSettingsDialog } from "./bookAndPageSettings/BookAndPageSettingsDialog";
 export { showBookSettingsDialog };
+import {
+    closeDecodableReaderSetupDialog,
+    showDecodableReaderSetupDialog,
+} from "./toolbox/readers/readerSetup/DecodableReaderSetupDialog";
 import { showRegistrationDialogForEditTab } from "../react_components/registration/registrationDialog";
 export { showRegistrationDialogForEditTab as showRegistrationDialog };
 import { showAboutDialog } from "../react_components/aboutDialog";
@@ -81,6 +105,12 @@ import type { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
 import { showImageGalleryDialog as doShowImageGalleryDialog } from "../react_components/image-gallery/ImageGalleryDialog";
+// The AI Image Editor overlay belongs up here, not in the page iframe, because saving the
+// page reloads that iframe and would strand the overlay; C# calls this once it has saved.
+// See aiImageEditorOverlay.ts.
+import { openAiImageEditor } from "./aiImageEditor/aiImageEditorOverlay";
+import type { IAiImageEditorTarget } from "./aiImageEditor/aiImageEditorShared";
+export { openAiImageEditor };
 import { renderRoot } from "../utils/reactRender";
 import { FunctionComponentElement } from "react";
 import { ToastDebugInput, toastDebugEvents } from "../toast/toastUtils";
@@ -97,6 +127,14 @@ export function handleUndo(): void {
     // First see if origami is active and knows about something we can undo.
     // (Origami undo works only while the origami tool is active.)
     const contentWindow = getEditablePageBundleExports();
+    // Check table (bloom-table) undo first. Structural grid ops leave no CKEditor footprint, and
+    // when both stacks hold something, whichever was written to last wins; see undoOrdering.ts.
+    // A pure text edit inside a cell routes to CKEditor below.
+    if (contentWindow && contentWindow.tableShouldHandleUndo()) {
+        contentWindow.tableUndo();
+        return;
+    }
+    // Next see if origami is active and knows about something we can undo.
     if (contentWindow && contentWindow.origamiCanUndo()) {
         contentWindow.origamiUndo();
         return;
@@ -106,6 +144,11 @@ export function handleUndo(): void {
     const toolboxWindow = getToolboxBundleExports();
     if (toolboxWindow && toolboxWindow.canUndo()) {
         toolboxWindow.undo();
+        // The reader tools' undo restores a saved innerHTML, which replaces the text nodes
+        // their highlights are painted over. Nothing else will notice: unlike Ctrl+Z, a click
+        // on this button produces no keystroke in the page, so the usual keyup markup update
+        // never happens and the highlights would stay dead. (BL-16558)
+        toolboxWindow.updateMarkupAfterUndoOrRedo();
         return;
     }
     // In an ideal world, we would have all undo information stored in the order of the operations.
@@ -119,7 +162,19 @@ export function handleUndo(): void {
     if (contentWindow && contentWindow.imageOperationCanUndo()) {
         contentWindow.imageOperationUndo();
     } else if (contentWindow && contentWindow.ckeditorCanUndo()) {
-        contentWindow.ckeditorUndo();
+        const ckeditorUndidSomething = contentWindow.ckeditorUndo();
+        // As above: this undo replaces the content of an editable, and there is no keystroke
+        // to trigger the markup update that repaints the tools' highlights over the new text
+        // nodes. (We call ckeditor's undoManager directly rather than its undo command, so the
+        // afterCommandExec handler in attachToCkEditor doesn't see this one.)
+        toolboxWindow?.updateMarkupAfterUndoOrRedo();
+        // ckeditor says it can undo more often than it can (see ckeditorUndo), and a table's
+        // history is behind it: the person typed in a cell after changing the table's shape, so
+        // the shape change is the next thing they expect back. Without this, their Undo does
+        // nothing at all and the row they added is out of reach.
+        if (!ckeditorUndidSomething && contentWindow.tableCanUndo()) {
+            contentWindow.tableUndo();
+        }
     }
     // See also Browser.Undo; if all else fails we ask the C# browser object to Undo.
 }
@@ -248,6 +303,11 @@ export function doWhenToolboxLoaded(
 export function canUndo(): string {
     // See comments on handleUndo()
     const contentWindow = getEditablePageBundleExports();
+    // When the table declines because CKEditor changed more recently, the ckeditorCanUndo() test
+    // further down is what answers, and it is true by the same reckoning: see undoOrdering.ts.
+    if (contentWindow && contentWindow.tableShouldHandleUndo()) {
+        return "yes";
+    }
     if (contentWindow && contentWindow.origamiCanUndo()) {
         return "yes";
     }
@@ -288,6 +348,24 @@ export function ShowEditViewDialog(dialog: FunctionComponentElement<unknown>) {
     }
     let root = doc.getElementById("modal-dialog-react-root");
     // remove any left over dialog stuff
+    //
+    // Known limitation, recorded here because this is the shared place every edit-view dialog
+    // goes through: detaching the container does NOT unmount the React tree that renderRoot
+    // created in it, and renderRoot keys its root by container element, so each showing makes a
+    // new root and abandons the previous one. Those abandoned trees are never freed for the life
+    // of the edit view.
+    //
+    // What that does and does not cost, measured rather than assumed (BL-16607): it does NOT
+    // leak a dialog's subscriptions. A dialog closes by setting its own `open` to false, and
+    // BloomDialog does not pass keepMounted, so MUI unmounts the dialog's children and their
+    // effect cleanups run -- opening and closing the Decodable Reader setup dialog three times,
+    // visiting the tab that registers a window "focus" listener each time, ends with a net zero
+    // of those listeners. What is left behind is the empty shell: one root object and its
+    // top-level component per showing. Small, but unbounded over a long editing session.
+    //
+    // Fixing it means unmounting the old root here (or having the dialog close through something
+    // that does) rather than only detaching its container. That changes teardown for every
+    // dialog shown this way, so it wants its own testing pass.
     if (root) {
         doc.body.removeChild(root);
     }
@@ -388,6 +466,9 @@ export function setZoom(zoom: number): void {
         // But if you read it back it will be something like calc(125% - 6.25px)
         // (which is actually equivalent).
         container.style.width = newWidth;
+        getEditablePageBundleExports()
+            ?.getTheOneCanvasElementManager()
+            ?.onPageZoomChanged();
     } else {
         console.warn("setZoom called before page loaded");
     }
@@ -426,11 +507,16 @@ interface WorkspaceBundleApi {
     showRegistrationDialogFromWorkspaceRoot: typeof showRegistrationDialogFromWorkspaceRoot;
     showAdjustTimingsDialogFromWorkspaceRoot: typeof showAdjustTimingsDialogFromWorkspaceRoot;
     showImageGalleryDialog: typeof showImageGalleryDialog;
+    openAiImageEditor: typeof openAiImageEditor;
     setZoom: typeof setZoom;
     getToolboxBundleExports: typeof getToolboxBundleExports;
     getEditablePageBundleExports: typeof getEditablePageBundleExports;
     showPageChooserDialog: typeof showPageChooserDialog;
+    showLinkTargetChooserDialog: typeof showLinkTargetChooserDialog;
+    showBookGridSetupDialog: typeof showBookGridSetupDialog;
     showBookSettingsDialog: typeof showBookSettingsDialog;
+    showDecodableReaderSetupDialog: typeof showDecodableReaderSetupDialog;
+    closeDecodableReaderSetupDialog: typeof closeDecodableReaderSetupDialog;
     showRegistrationDialog: typeof showRegistrationDialogForEditTab;
     showAboutDialog: typeof showAboutDialog;
 }
@@ -470,12 +556,17 @@ window.workspaceBundle = {
     showAdjustTimingsDialogFromWorkspaceRoot:
         showAdjustTimingsDialogFromWorkspaceRoot,
     showImageGalleryDialog,
+    openAiImageEditor,
     setZoom,
     // re-exported cross-frame helpers
     getToolboxBundleExports,
     getEditablePageBundleExports,
     showPageChooserDialog,
+    showLinkTargetChooserDialog,
+    showBookGridSetupDialog,
     showBookSettingsDialog,
+    showDecodableReaderSetupDialog,
+    closeDecodableReaderSetupDialog,
     showRegistrationDialog: showRegistrationDialogForEditTab,
     showAboutDialog,
 };

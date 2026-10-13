@@ -1,0 +1,11 @@
+{
+    "presets": [
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "//": "The bloom-branding-wrapper produces our standard QR-code badge: Bloom fills in the QR image and 'on bloomlibrary.org' label at runtime, and the href is replaced then too. It comes first because branding.less anchors it to the top of the page, with the partner artwork below it, anchored to the bottom.",
+            "content": "<div class='bloom-branding-wrapper'><a href='https://bloomlibrary.org/'><img class='branding' src='made-with-bloom-badge-text.svg'/></a></div><img class='branding' src='Vanuatu-Literacy-LFA-back-cover.svg'/>",
+            "condition": "always"
+        }
+    ]
+}

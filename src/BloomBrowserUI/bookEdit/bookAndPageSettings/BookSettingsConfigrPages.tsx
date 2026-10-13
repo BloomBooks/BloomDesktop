@@ -26,6 +26,7 @@ import {
 import { isLegacyThemeName } from "./appearanceThemeUtils";
 import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
 import { StyleAndFontTable } from "./StyleAndFontTable";
+import { splitAtLinkText } from "../../utils/textUtils";
 
 // Should stay in sync with AppearanceSettings.PageNumberPosition
 enum PageNumberPosition {
@@ -45,6 +46,7 @@ type BookSettingsAreaProps = {
     appearanceDisabled: boolean;
     tierAllowsFullBleed?: boolean;
     pageSizeSupportsFullBleed: boolean;
+    fullBleed: boolean;
     settings: object | undefined;
     settingsToReturnLater: object | undefined;
     getAdditionalProps: <T>(subPath: string) => {
@@ -58,6 +60,7 @@ type BookSettingsAreaProps = {
     deleteCustomBookStyles: () => void;
     saveSettingsAndCloseDialog: () => void;
     onGoToThemeAndLayout?: () => void;
+    onGoToPrintPublishing?: () => void;
     onColorPickerVisibilityChanged?: (open: boolean) => void;
     themeNames: Array<{ label: string; value: string }>;
     unusedLanguageDataExists?: boolean;
@@ -112,6 +115,11 @@ export const useBookSettingsAreaDefinition = (
     const whatToShowOnCoverLabel = useL10n(
         "Front Cover",
         "BookSettings.WhatToShowOnCover",
+    );
+
+    const allCoverPagesLabel = useL10n(
+        "All Cover Pages",
+        "BookSettings.AllCoverPagesGroupLabel",
     );
 
     const showLanguageNameLabel = useL10n(
@@ -191,8 +199,8 @@ export const useBookSettingsAreaDefinition = (
         "BookSettings.FullBleed",
     );
     const fullBleedDescription = useL10n(
-        "Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.",
-        "BookSettings.FullBleed.Description",
+        'Enable full bleed layout for printing. Use with the "Edge to Edge" theme. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.',
+        "BookSettings.FullBleed.Description.EdgeToEdge",
     );
     const otherLanguagesLabel = useL10n(
         "Other Languages",
@@ -337,6 +345,21 @@ export const useBookSettingsAreaDefinition = (
                                 </Div>
                             </NoteBox>
                         )}
+                        {props.theme === "edge-to-edge" &&
+                            props.pageSizeSupportsFullBleed &&
+                            !props.fullBleed && (
+                                <WarningBox
+                                    css={css`
+                                        margin-left: 20px;
+                                    `}
+                                >
+                                    <EdgeToEdgeNeedsFullBleedWarning
+                                        onGoToPrintPublishing={
+                                            props.onGoToPrintPublishing
+                                        }
+                                    />
+                                </WarningBox>
+                            )}
                     </div>
                     <ConfigrSelect
                         label={pageNumbersLabel}
@@ -460,7 +483,7 @@ export const useBookSettingsAreaDefinition = (
                         )}
                     />
                 </ConfigrGroup>
-                <ConfigrGroup label={"All Cover Pages"}>
+                <ConfigrGroup label={allCoverPagesLabel}>
                     <ConfigrCustomStringInput
                         label={coverBackgroundColorLabel}
                         control={coverColorPickerControl}
@@ -592,16 +615,15 @@ export const ThemeDisablesOptionsNoticeWithLink: React.FunctionComponent<{
         "BookSettings.ThemeDisablesOptionsNoticeWithLink",
     );
 
-    const linkStart = message.indexOf("[");
-    const linkEnd = message.indexOf("]", linkStart >= 0 ? linkStart + 1 : 0);
+    const parts = splitAtLinkText(message);
 
-    if (linkStart < 0 || linkEnd <= linkStart) {
+    if (!parts.found) {
         return <span>{message}</span>;
     }
 
     return (
         <span>
-            {message.substring(0, linkStart)}
+            {parts.beforeLink}
             <Link
                 component="button"
                 type="button"
@@ -611,9 +633,46 @@ export const ThemeDisablesOptionsNoticeWithLink: React.FunctionComponent<{
                     props.onGoToThemeAndLayout?.();
                 }}
             >
-                {message.substring(linkStart + 1, linkEnd)}
+                {parts.linkText}
             </Link>
-            {message.substring(linkEnd + 1)}
+            {parts.afterLink}
+        </span>
+    );
+};
+
+// Shown when the theme is Edge to Edge on a paper size but full bleed is off: without bleed,
+// a picture meant to reach the edge of the page stops short of it once the paper is printed.
+// The bracketed text links to the Print Publishing page, where full bleed is turned on.
+export const EdgeToEdgeNeedsFullBleedWarning: React.FunctionComponent<{
+    onGoToPrintPublishing?: () => void;
+}> = (props) => {
+    const message = useL10n(
+        "Pictures cannot reach the edge of a printed page unless this book uses full bleed. Turn it on in [Print Publishing].",
+        "BookSettings.EdgeToEdgeNeedsFullBleed",
+    );
+
+    const parts = splitAtLinkText(message);
+    const testId = "edge-to-edge-needs-full-bleed-warning";
+
+    if (!parts.found) {
+        return <span data-testid={testId}>{message}</span>;
+    }
+
+    return (
+        <span data-testid={testId}>
+            {parts.beforeLink}
+            <Link
+                component="button"
+                type="button"
+                underline="always"
+                onClick={(event) => {
+                    event.preventDefault();
+                    props.onGoToPrintPublishing?.();
+                }}
+            >
+                {parts.linkText}
+            </Link>
+            {parts.afterLink}
         </span>
     );
 };

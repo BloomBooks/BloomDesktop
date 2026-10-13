@@ -209,9 +209,30 @@ namespace Bloom.Api
                         .BookInfo
                         .AppearanceSettings
                         .CssThemeName;
+                    var appearanceBefore = JsonConvert.SerializeObject(
+                        _bookSelection
+                            .CurrentSelection
+                            .BookInfo
+                            .AppearanceSettings
+                            .GetCopyOfProperties
+                    );
                     _bookSelection.CurrentSelection.BookInfo.AppearanceSettings.UpdateFromDynamic(
                         newAppearance
                     );
+                    // A new theme, margins and so on change where things sit on the pages, which
+                    // leaves the measurements the page layout update recorded stale.
+                    if (
+                        JsonConvert.SerializeObject(
+                            _bookSelection
+                                .CurrentSelection
+                                .BookInfo
+                                .AppearanceSettings
+                                .GetCopyOfProperties
+                        ) != appearanceBefore
+                    )
+                        BookProcessor.RecordPageLayoutChanged(
+                            _bookSelection.CurrentSelection.OurHtmlDom
+                        );
                     var newTheme = _bookSelection
                         .CurrentSelection
                         .BookInfo

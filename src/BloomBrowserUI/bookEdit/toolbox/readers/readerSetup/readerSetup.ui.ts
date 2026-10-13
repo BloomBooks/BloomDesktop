@@ -51,8 +51,9 @@ function process_UI_Message(event: MessageEvent): void {
                             "</span>";
                         foundNotSupported = true;
                     } else {
-                        const ext: string | undefined =
-                            filenameComponents.pop();
+                        const ext: string | undefined = filenameComponents
+                            .pop()
+                            ?.toLowerCase(); // a .TXT file is just as readable as a .txt one
                         if (!ext || extensions.indexOf(ext) === -1) {
                             array[index] =
                                 element +
@@ -254,6 +255,13 @@ function requestWordsForSelectedStage(): void {
     const tr = <HTMLTableRowElement>(
         $("#stages-table").find("tbody tr.selected").get(0)
     );
+    // wordListChangedCallback() can reach us before the dialog has been given its data
+    // (the listener is hooked up on document.ready, but the stages table is not built
+    // and a row selected until the "Data" message arrives), and there is nothing to ask
+    // for until then. (BL-16732)
+    if (!tr) {
+        return;
+    }
 
     desiredGPCs = (<HTMLTableCellElement>tr.cells[1]).innerHTML.split(" ");
     previousGPCs = $.makeArray(

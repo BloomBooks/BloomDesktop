@@ -307,6 +307,47 @@
             display: inline-flex;
         }
     }
+
+    // The same label for a section holding a table, which has no format button. It
+    // sits across the middle of the table's rows rather than of the section: the
+    // table element fills its section, but rows that hug their text leave the
+    // lower part of it empty page. So the label spans from the top of the first
+    // cell to the bottom of the last, and centers itself in that. Each section
+    // scopes the anchor names, so every label finds its own section's table.
+    .split-pane-component-inner {
+        anchor-scope: all;
+        > .bloom-table {
+            anchor-name: --origami-section-table;
+            > .bloom-cell:first-child {
+                anchor-name: --origami-table-first-cell;
+            }
+            // The last cell that has a box: a cell covered by a merge is display:none
+            // and cannot be an anchor, and the bottom right one is covered whenever a
+            // merge reaches that corner.
+            > .bloom-cell:nth-last-child(1 of .bloom-cell:not(.bloom-skip)) {
+                anchor-name: --origami-table-last-cell;
+            }
+        }
+    }
+    .split-pane-component-inner .table-identifier {
+        color: @flowerPetalGrey;
+        white-space: normal;
+        position: absolute;
+        top: anchor(--origami-table-first-cell top);
+        bottom: anchor(--origami-table-last-cell bottom);
+        left: anchor(--origami-section-table left);
+        width: anchor-size(--origami-section-table width);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+
+        span {
+            background-color: fade(white, 85%);
+            border-radius: 3px;
+            padding: 0 6px;
+        }
+    }
 }
 
 // end .origami-layout-mode

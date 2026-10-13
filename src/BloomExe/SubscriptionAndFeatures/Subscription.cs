@@ -128,12 +128,17 @@ namespace Bloom.SubscriptionAndFeatures
                 // name is still written out as "Local-Community". The final part of the test is probably not needed,
                 // but we all believe in both belt and suspenders, right?
                 if (
-                    sub.Descriptor.ToLowerInvariant().EndsWith("-lc")
-                    || (descriptor != null && descriptor.ToLowerInvariant().EndsWith("-lc"))
+                    sub.Descriptor.ToLowerInvariant().EndsWith("-lc", StringComparison.Ordinal)
+                    || (
+                        descriptor != null
+                        && descriptor.ToLowerInvariant().EndsWith("-lc", StringComparison.Ordinal)
+                    )
                     || brandingProjectName == "Local-Community"
                 )
                     sub.Tier = SubscriptionTier.LocalCommunity;
-                else if (sub.Descriptor.ToLowerInvariant().EndsWith("-pro"))
+                else if (
+                    sub.Descriptor.ToLowerInvariant().EndsWith("-pro", StringComparison.Ordinal)
+                )
                     sub.Tier = SubscriptionTier.Pro;
                 else if (
                     !string.IsNullOrWhiteSpace(sub.Descriptor)
@@ -195,6 +200,13 @@ namespace Bloom.SubscriptionAndFeatures
             return true;
         }
 
+        /// <summary>
+        /// True if the subscription is no longer usable. A subscription remains valid through the
+        /// end of its expiration date, so it only becomes expired on the following day. (BL-16786:
+        /// ExpirationDate is midnight at the start of the expiration day, so comparing it to
+        /// DateTime.Now made us expire a day early, contradicting the Subscription tab of the
+        /// Collection Settings dialog, which compares whole dates.)
+        /// </summary>
         public bool IsExpired()
         {
             if (Code == null)
@@ -202,7 +214,7 @@ namespace Bloom.SubscriptionAndFeatures
             var date = ExpirationDate;
             if (date == DateTime.MinValue)
                 return true; // invalid code
-            return date < DateTime.Now;
+            return date.Date < DateTime.Now.Date;
         }
 
         private bool LooksIncomplete()
@@ -318,7 +330,7 @@ namespace Bloom.SubscriptionAndFeatures
             if (string.IsNullOrEmpty(code))
                 return;
             // see if the last part has "***-***" like a redacted date and checksum. If so, the descriptor is what precedes it.
-            if (code.EndsWith(kRedactedCodeSuffix))
+            if (code.EndsWith(kRedactedCodeSuffix, StringComparison.Ordinal))
             {
                 descriptor = code.Replace(kRedactedCodeSuffix, "");
                 return;
@@ -385,7 +397,9 @@ namespace Bloom.SubscriptionAndFeatures
 
         private SubscriptionTier CalculateTier()
         {
-            if (GetIntegrityLabel() != "ok" || ExpirationDate < DateTime.Now)
+            // Note that IsExpired() allows the subscription to work through the end of its
+            // expiration date; see the comment there.
+            if (GetIntegrityLabel() != "ok" || IsExpired())
                 return SubscriptionTier.Basic;
             var descriptor = CalculateDescriptor();
             if (string.IsNullOrWhiteSpace(descriptor) || descriptor == "Default")
@@ -393,10 +407,10 @@ namespace Bloom.SubscriptionAndFeatures
             else if (
                 descriptor == "Local-Community"
                 || descriptor == "Local Community" /* pre 4.4 */
-                || descriptor.ToLowerInvariant().EndsWith("-lc")
+                || descriptor.ToLowerInvariant().EndsWith("-lc", StringComparison.Ordinal)
             )
                 return SubscriptionTier.LocalCommunity;
-            else if (descriptor.ToLowerInvariant().EndsWith("-pro"))
+            else if (descriptor.ToLowerInvariant().EndsWith("-pro", StringComparison.Ordinal))
                 return SubscriptionTier.Pro;
             else
                 return SubscriptionTier.Enterprise;

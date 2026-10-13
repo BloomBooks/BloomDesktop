@@ -58,6 +58,18 @@ describe("localizationManager", () => {
         expect(result6).toBe("This is a [**] test (*).");
     });
 
+    it("processSimpleMarkdown leaves the pseudo-localization wrapper alone (BL-16748)", () => {
+        // Pseudo-English wraps the whole string in square brackets. The link markup is
+        // still the inner pair, so only "here" may become the link; the wrapper's own
+        // brackets stay as visible text.
+        const result = theOneLocalizationManager.processSimpleMarkdown(
+            "[Séeée höow îit wöorks [héerée](https://sil.org).]",
+        );
+        expect(result).toBe(
+            '[Séeée höow îit wöorks <a href="https://sil.org">héerée</a>.]',
+        );
+    });
+
     it("simpleFormat replaces %0 and %1 with l10nParams", () => {
         const result = theOneLocalizationManager.simpleFormat(
             "%1 likes %0, but %0 does not like %1",

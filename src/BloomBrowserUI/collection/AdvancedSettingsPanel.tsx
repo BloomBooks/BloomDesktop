@@ -19,7 +19,7 @@ interface IAdvancedSettings {
     autoUpdate?: boolean;
     showExperimentalBookSources?: boolean;
     allowTeamCollection?: boolean;
-    allowAppBuilder?: boolean;
+    allowTables?: boolean;
     showQrCode?: boolean;
     qrcodeCaption?: string;
 }
@@ -60,9 +60,9 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         "Team Collections",
         "TeamCollection.TeamCollections",
     );
-    const appBuilderLabel = useL10n(
-        "App Builder",
-        "CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder",
+    const tablesLabel = useL10n(
+        "Tables",
+        "CollectionSettingsDialog.AdvancedTab.Experimental.Tables",
     );
     const qrCodesLabel = useL10n(
         "QR Codes",
@@ -81,18 +81,16 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         "CollectionSettingsDialog.AdvancedTab.Caption",
     );
     const captionDescription = useL10n(
-        'If your caption contains "{0}", Bloom will fill this in with the name of the language.',
+        'Bloom shows the BloomLibrary.org address on its own line beneath this caption, so you don\'t need to include it here. If your caption contains "{0}", Bloom will fill this in with the name of the language.',
         "CollectionSettingsDialog.AdvancedTab.Caption.Description",
     );
 
     const featureStatus = useGetFeatureStatus("TeamCollection");
     const teamCollectionOptionEnabled =
         featureStatus === undefined ? true : featureStatus.enabled;
-    const appBuilderFeatureStatus = useGetFeatureStatus("AppBuilder");
-    const appBuilderOptionEnabled =
-        appBuilderFeatureStatus === undefined
-            ? false
-            : appBuilderFeatureStatus.enabled;
+    const tablesFeatureStatus = useGetFeatureStatus("Table");
+    const tablesOptionEnabled =
+        tablesFeatureStatus === undefined ? false : tablesFeatureStatus.enabled;
     const canChangeTeamCollectionOption = allowTeamCollectionEnabled !== false;
 
     const normalizeConfigrSettings = React.useCallback(
@@ -244,9 +242,9 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                                 `}
                             >
                                 <ConfigrBoolean
-                                    label={appBuilderLabel}
-                                    path="allowAppBuilder"
-                                    disabled={!appBuilderOptionEnabled}
+                                    label={tablesLabel}
+                                    path="allowTables"
+                                    disabled={!tablesOptionEnabled}
                                 />
                                 <div
                                     css={css`
@@ -259,7 +257,7 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                                     `}
                                 >
                                     <BloomSubscriptionIndicatorIconAndText
-                                        feature="AppBuilder"
+                                        feature="Table"
                                         className="bloom-subscriptionIndicator"
                                     />
                                 </div>

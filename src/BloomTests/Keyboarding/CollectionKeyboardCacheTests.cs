@@ -67,9 +67,9 @@ namespace BloomTests.Keyboarding
                 var response = new HttpResponseMessage(HttpStatusCode.OK);
                 if (url.Contains("api.keyman.com/cloud"))
                     response.Content = new StringContent(_downloadJson, Encoding.UTF8);
-                else if (url.EndsWith(".js"))
+                else if (url.EndsWith(".js", StringComparison.Ordinal))
                     response.Content = new ByteArrayContent(s_jsBytes);
-                else if (url.EndsWith(".ttf"))
+                else if (url.EndsWith(".ttf", StringComparison.Ordinal))
                     response.Content = new ByteArrayContent(s_fontBytes);
                 else
                     response.StatusCode = HttpStatusCode.NotFound;
