@@ -113,6 +113,7 @@ import { CanvasElementEditingSuspension } from "./CanvasElementEditingSuspension
 import { adjustCanvasElementChildrenIfSizeChanged } from "./CanvasElementResizeAdjustments";
 import {
     adjustBackgroundImageSize as adjustCanvasBackgroundImageSize,
+    backgroundImageAlreadyFillsCanvas,
     handleResizeAdjustments as handleBackgroundResizeAdjustments,
     setupBackgroundImageAttributes,
     type BackgroundImageManagerState,
@@ -1548,6 +1549,17 @@ export class CanvasElementManager {
             kBloomCanvasSelector,
         ) as HTMLElement;
         if (!bloomCanvas) return null;
+        // adjustBackgroundImageSize makes a picture that fills its bloom-canvas overhang the
+        // edges slightly, which the size comparisons below would read as "not yet expanded".
+        if (
+            backgroundImageAlreadyFillsCanvas(
+                bloomCanvas,
+                this.activeElement,
+                img,
+            )
+        ) {
+            return null;
+        }
 
         const imgAspectRatio = img.naturalWidth / img.naturalHeight;
         const containerAspectRatio =
