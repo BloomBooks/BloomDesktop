@@ -870,6 +870,38 @@ describe("inlineImages", () => {
             expect(editableFor(group, "fr").textContent).toBe("b");
         });
 
+        // The delete command moves the images left in the block back to where they were, and
+        // one Undo has to take back both that and the delete.
+        it("makes what afterRemoving changes part of the remove's entry", () => {
+            const group = makeTranslationGroup([
+                { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
+                { lang: "fr", content: "<p>b</p>" },
+            ]);
+            const first = insertInlineImage(group);
+            const second = insertInlineImage(group);
+            const entriesBefore = theOneUndoStack.getEntryCount();
+
+            removeInlineImage(first, () => {
+                second.style.setProperty(kInlineImageWidthVar, "80%");
+                syncInlineImagesFromEditable(editableFor(group, "en"));
+            });
+            // Sanity check: one entry for both, and the change reached the other language.
+            expect(theOneUndoStack.getEntryCount()).toBe(entriesBefore + 1);
+            expect(widthIn(editableFor(group, "fr"))).toBe("80%");
+
+            theOneUndoStack.undo();
+
+            expect(getInlineImages(group).length).toBe(4);
+            getEditables(group).forEach((editable) => {
+                const survivor = getInlineImagesInEditable(editable).find(
+                    (w) => getInlineImageId(w) === getInlineImageId(second),
+                )!;
+                expect(
+                    survivor.style.getPropertyValue(kInlineImageWidthVar),
+                ).toBe("40%");
+            });
+        });
+
         it("undoes a dock and size change in every editable at once", () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
