@@ -7,8 +7,7 @@
 @import "../../bloomUI.less";
 @import "../sourceBubbles/sourceBubbles.less";
 @import "../../placeHolderImages.less";
-
-@bleed: 3mm; // Duplicated from basePage.less to remove circular dependency between BloomBrowserUI and content
+@import "bleedAndCropMarks.less";
 
 @focusBorderColor: transparent; // #d6eaed; // @bloom-blue; // rgba(82, 168, 236, 0.6);
 @tipLinkColor: #8e3581; // intentionally a bit darker to be legible
@@ -71,45 +70,6 @@ body {
     // Geckofx anymore. However, its purpose is to keep the browser from having redraw errors during
     // Ctrl + mousewheel zooming and I saw some errors doing that, so I left it here.
     transition: transform 20ms;
-}
-
-// See comments on .bloom-mediaBox in basePage.less for a description of the mediaBox.
-// Here, we are causing it to be visible when desired.
-.bloom-mediaBox {
-    pointer-events: none; // we want all clicks to go through this to the child
-
-    & > * {
-        pointer-events: auto; // start up clicks again a the next level
-    }
-
-    :not(.Device16x9Portrait):not(.Device16x9Landscape):not(
-            .Ebook2x3Portrait
-        ):not(.Ebook7x5Landscape)&::before {
-        // show bleed area
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-
-        top: 0;
-        bottom: 0;
-        border: 3mm solid rgba(0, 0, 0, 0.8);
-        z-index: 1;
-    }
-
-    :not(.Device16x9Portrait):not(.Device16x9Landscape):not(
-            .Ebook2x3Portrait
-        ):not(.Ebook7x5Landscape)&:after {
-        // show safety area (the area inside of the trim box that still could get cut)
-        content: "";
-        position: absolute;
-        left: @bleed;
-        right: @bleed;
-        top: @bleed;
-        bottom: @bleed;
-        border: 3mm solid rgba(0, 0, 0, 0.05);
-        z-index: 2;
-    }
 }
 
 #labelAndLayoutPane {
