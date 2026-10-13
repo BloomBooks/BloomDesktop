@@ -26,6 +26,10 @@
 //    class list and style attribute together hold everything needed to copy it.
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { kBlockElementSelector } from "../bloomField/BloomField";
+import {
+    kBloomEditableClass,
+    kBloomEditableSelector,
+} from "./bloomEditableConstants";
 import { createValidXhtmlUniqueId } from "./xhtmlIdUtils";
 import { takeInlineImageChangeOrder } from "./undoOrdering";
 
@@ -58,14 +62,6 @@ export const kInlineImageSelectedClass = "bloom-inlineImage-selected";
 // Dispatched on the translation group, and bubbling, after an undo has replaced its wrappers,
 // so that anything attached to the old elements can be rebuilt. See inlineImageUndo.
 export const kInlineImagesRestoredEvent = "bloom-inlineImagesRestored";
-
-// Dispatched from the wrapper, and bubbling, when a new picture has been put in an inline
-// image; event.detail is the wrapper. Choosing a picture goes out to C# and comes back into
-// changeImage, so this event is the only way the code that opened the image chooser learns
-// that it finished. That code manages which wrapper is selected, and it needs to know,
-// because undoing the change (or the insert before it) only works while the wrapper is
-// selected. See handleInlineImageChanged.
-export const kInlineImageChangedEvent = "bloom-inlineImageChanged";
 
 // Identifies one inline image. Its copy in every language's editable has the same value. A
 // text block can hold any number of inline images, so there may be no single "wrapper in this
@@ -103,6 +99,8 @@ export const kInlineImageOffsetBasedOnAttr = "data-inline-image-offset-basedon";
 export const kKeepFirstInFieldClass = "bloom-keepFirstInField";
 export const kPreventRemovalClass = "bloom-preventRemoval";
 
+// The width a new wrapper gets. The width rules in content/bookLayout/inlineImages.less fall
+// back to the same 40% when --inline-image-width is unset, so change both together.
 export const kDefaultInlineImageWidth = "40%";
 // A new wrapper holds a placeholder, which never loads, so there is no natural size to take
 // a ratio from. Without a ratio the wrapper would have no height, and the user would have
@@ -110,7 +108,6 @@ export const kDefaultInlineImageWidth = "40%";
 // soon as a real image loads.
 export const kDefaultInlineImageAspectRatio = "4 / 3";
 
-const kEditableSelector = ".bloom-editable";
 const kInlineImageSelector = "." + kInlineImageClass;
 
 // The imgs that already have our load handler. We track them here instead of marking the
@@ -124,7 +121,7 @@ const imagesWithLoadHandler = new WeakSet<HTMLImageElement>();
  */
 export function getEditables(translationGroup: HTMLElement): HTMLElement[] {
     return Array.from(translationGroup.children).filter((child) =>
-        child.classList.contains("bloom-editable"),
+        child.classList.contains(kBloomEditableClass),
     ) as HTMLElement[];
 }
 
@@ -233,19 +230,50 @@ export function hasInlineImages(translationGroup: HTMLElement): boolean {
 export function getInlineImages(container: HTMLElement): HTMLElement[] {
     return Array.from(
         container.querySelectorAll(
-            kEditableSelector + " > " + kInlineImageSelector,
+            kBloomEditableSelector + " > " + kInlineImageSelector,
         ),
     ) as HTMLElement[];
+}
+
+// The order of preference the CSS in inlineImages.less uses to choose the one visible editable
+// that shows a group's inline images: bloom-contentFirst (which the appearance system adds when
+// it controls visibility), then bloom-content1, then bloom-content2, then bloom-content3, then
+// the first editable in DOM order. Keep it in step with that CSS.
+const kEditablePrecedenceClasses = [
+    "bloom-contentFirst",
+    "bloom-content1",
+    "bloom-content2",
+    "bloom-content3",
+];
+
+/**
+ * The first of the given editables in the order of kEditablePrecedenceClasses, falling back to
+ * the first one in DOM order, or undefined if there are none.
+ */
+function pickEditableByPrecedence(
+    editables: HTMLElement[],
+): HTMLElement | undefined {
+    for (const contentClass of kEditablePrecedenceClasses) {
+        const found = editables.find((e) => e.classList.contains(contentClass));
+        if (found) return found;
+    }
+    return editables[0];
 }
 
 /**
  * The editable whose inline images the other editables should copy. It is the one the user is
  * looking at, so when we sync, its images, their sizes and positions, and their order replace
  * those in the other editables. A visible editable is always chosen over a hidden one. Among
- * editables that are equally visible, the order of preference is bloom-contentFirst (which the
- * appearance system adds when it controls visibility), then bloom-content1, then the first
- * editable that has any images. This matches both the CSS that decides where images show and
- * bloomEditing.ts's SetupThingsSensitiveToStyleChanges.
+ * editables that are equally visible, it uses the same order of preference as
+ * getFirstVisibleEditable (see pickEditableByPrecedence).
+ *
+ * It differs from getFirstVisibleEditable in one way: it only considers editables that hold an
+ * inline image. Normally every editable holds a copy, and then the two give the same answer.
+ * But normalizeInlineImages, which uses this, exists to repair a group where some editable has
+ * no copy, such as a language added by an older Bloom. If that editable were the first visible
+ * one, syncing from it would do nothing (syncInlineImagesFromEditable ignores an editable with
+ * no images), so the picture would stay only in editables the CSS hides, and the reader would
+ * see no picture at all. Choosing the best editable that has a copy puts the picture back.
  * Returns null if no editable in the group has an inline image.
  */
 export function getCanonicalInlineImageEditable(
@@ -263,28 +291,20 @@ export function getCanonicalInlineImageEditable(
     const visibleWithImages = withImages.filter(isVisible);
     const candidates =
         visibleWithImages.length > 0 ? visibleWithImages : withImages;
-    return (
-        candidates.find((e) => e.classList.contains("bloom-contentFirst")) ??
-        candidates.find((e) => e.classList.contains("bloom-content1")) ??
-        candidates[0]
-    );
+    return pickEditableByPrecedence(candidates) ?? null;
 }
 
 /**
- * The editable whose copy of the image the reader sees. It uses the same order of preference
- * as the CSS in inlineImages.less that shows the image in only one editable: a visible
- * bloom-contentFirst, else a visible bloom-content1, else the first visible editable. Returns
- * undefined if the group has no visible editable, which happens on template pages where the
- * group holds only the lang="z" prototype.
+ * The editable whose copy of the image the reader sees: the first visible editable in the
+ * order of preference that the CSS in inlineImages.less uses to show the image in only one
+ * editable (see pickEditableByPrecedence). Returns undefined if the group has no visible
+ * editable, which happens on template pages where the group holds only the lang="z" prototype.
  */
 export function getFirstVisibleEditable(
     translationGroup: HTMLElement,
 ): HTMLElement | undefined {
-    const visibles = getEditables(translationGroup).filter(isVisible);
-    return (
-        visibles.find((e) => e.classList.contains("bloom-contentFirst")) ??
-        visibles.find((e) => e.classList.contains("bloom-content1")) ??
-        visibles[0]
+    return pickEditableByPrecedence(
+        getEditables(translationGroup).filter(isVisible),
     );
 }
 
@@ -516,22 +536,14 @@ export function setupInlineImages(container: HTMLElement): void {
 export function handleInlineImageChanged(img: HTMLElement): void {
     const wrapper = img.closest(kInlineImageSelector) as HTMLElement | null;
     if (!wrapper) return;
-    const editable = wrapper.closest(kEditableSelector) as HTMLElement | null;
+    const editable = wrapper.closest(
+        kBloomEditableSelector,
+    ) as HTMLElement | null;
     if (!editable) return;
     wrapper.style.removeProperty(kInlineImageAspectRatioVar);
     wireUpImage(wrapper);
     syncInlineImagesFromEditable(editable);
     OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
-    // Tell the code that opened the image chooser, which also manages the selection, that the
-    // picture has arrived. It needs to select the wrapper again, because the trip through the
-    // image chooser can leave the focus in the text, and undoing this change (or the insert
-    // before it) only works while the wrapper is selected.
-    wrapper.dispatchEvent(
-        new CustomEvent(kInlineImageChangedEvent, {
-            bubbles: true,
-            detail: wrapper,
-        }),
-    );
 }
 
 // --- undo --------------------------------------------------------------------
@@ -907,7 +919,7 @@ export function inlineImageUndo(): boolean {
     ) as HTMLElement | null;
     const selectedId = wasSelected ? getInlineImageId(wasSelected) : undefined;
     const editableThatWasSelected = wasSelected?.closest(
-        kEditableSelector,
+        kBloomEditableSelector,
     ) as HTMLElement | null;
     undoItem.editables.forEach((snapshot) => {
         restoreInlineImageSnapshot(snapshot);
@@ -1114,7 +1126,7 @@ function wireUpImage(wrapper: HTMLElement): void {
     img.addEventListener("load", () => {
         setAspectRatioFromNaturalSize(wrapper, img);
         const editable = wrapper.closest(
-            kEditableSelector,
+            kBloomEditableSelector,
         ) as HTMLElement | null;
         if (editable) OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
     });

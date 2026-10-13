@@ -17,7 +17,6 @@ import {
     getInlineImages,
     getInlineImagesInEditable,
     handleInlineImageChanged,
-    kInlineImageChangedEvent,
     kInlineImageLeftClass,
     kInlineImageMiddleClass,
     inlineImageCanUndo,
@@ -485,6 +484,67 @@ describe("inlineImages", () => {
             ).toBe("15%");
         });
 
+        // inlineImages.less shows the image in a visible bloom-content2 rather than a visible
+        // bloom-content3, so the content2 copy is the one the user has been working with.
+        it("prefers bloom-content2 over bloom-content3 when there is no bloom-content1", () => {
+            const group = makeTranslationGroup([
+                {
+                    lang: "es",
+                    classes: "bloom-content3 bloom-visibility-code-on",
+                    content: "<p>c</p>",
+                },
+                {
+                    lang: "fr",
+                    classes: "bloom-content2 bloom-visibility-code-on",
+                    content: "<p>b</p>",
+                },
+            ]);
+            const returned = insertInlineImage(group);
+            expect(returned).toBe(
+                getInlineImageInEditable(editableFor(group, "fr")),
+            );
+            returned.style.setProperty("--inline-image-width", "15%");
+
+            normalizeInlineImages(group);
+
+            expect(
+                getInlineImageInEditable(
+                    editableFor(group, "es"),
+                )!.style.getPropertyValue("--inline-image-width"),
+            ).toBe("15%");
+        });
+
+        // A language added by an older Bloom has no copy. If normalize chose that editable
+        // because it is the one the reader sees, syncing from it would do nothing and the
+        // picture would stay only where the CSS hides it.
+        it("copies from a visible editable with a copy when the top-ranked visible one has none", () => {
+            const group = makeTranslationGroup([
+                {
+                    lang: "en",
+                    classes: "bloom-content1 bloom-visibility-code-on",
+                    content: "<p>a</p>",
+                },
+                {
+                    lang: "fr",
+                    classes: "bloom-content2 bloom-visibility-code-on",
+                    content: "<p>b</p>",
+                },
+            ]);
+            insertInlineImage(group);
+            getInlineImageInEditable(editableFor(group, "en"))!.remove();
+            // Sanity check: only the French editable has a copy now.
+            expect(getInlineImages(group).length).toBe(1);
+
+            normalizeInlineImages(group);
+
+            expect(
+                getInlineImageInEditable(editableFor(group, "en")),
+            ).not.toBeNull();
+            expect(getInlineImage(group)).toBe(
+                getInlineImageInEditable(editableFor(group, "en")),
+            );
+        });
+
         it("falls back to the first editable that has a copy", () => {
             const group = makeTranslationGroup([
                 { lang: "es", content: "<p>c</p>" },
@@ -774,7 +834,7 @@ describe("inlineImages", () => {
     });
 
     describe("handleInlineImageChanged", () => {
-        it("syncs the new picture to the siblings and announces it", () => {
+        it("syncs the new picture to the siblings", () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
                 { lang: "fr", content: "<p>b</p>" },
@@ -783,10 +843,6 @@ describe("inlineImages", () => {
             const img = wrapper.querySelector("img")!;
             // The old picture's ratio must be removed when the picture changes.
             wrapper.style.setProperty("--inline-image-aspect-ratio", "3 / 2");
-            let wrapperFromEvent: unknown;
-            document.addEventListener(kInlineImageChangedEvent, (e) => {
-                wrapperFromEvent = (e as CustomEvent).detail;
-            });
 
             img.setAttribute("src", "flower.jpg");
             handleInlineImageChanged(img);
@@ -799,7 +855,6 @@ describe("inlineImages", () => {
                     .querySelector("img")!
                     .getAttribute("src"),
             ).toBe("flower.jpg");
-            expect(wrapperFromEvent).toBe(wrapper);
         });
     });
 
