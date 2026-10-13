@@ -58,10 +58,10 @@ export interface IInlineImageOptions {
  * The host styles are deliberately minimal and monospaced so that a line's measured
  * edges mean something exact.
  */
-export const loadInlineImagePage = async (
+export async function loadInlineImagePage(
     page: Page,
     options: IInlineImageOptions,
-): Promise<void> => {
+): Promise<void> {
     const css = await getInlineImageCss();
     const vars = [
         `--inline-image-width: ${options.width ?? "40%"}`,
@@ -98,7 +98,7 @@ export const loadInlineImagePage = async (
     await page.waitForFunction(
         () => (document.querySelector("#text") as HTMLElement).offsetHeight > 0,
     );
-};
+}
 
 export interface ILine {
     /** top of the line, relative to the top of the editable's content box */
@@ -113,8 +113,8 @@ export interface ILine {
  * Where the text really is, line by line. Measured from glyph rectangles rather than
  * from the CSS, so it reports what the reader would see.
  */
-export const measureLines = async (page: Page): Promise<ILine[]> =>
-    page.evaluate(() => {
+export async function measureLines(page: Page): Promise<ILine[]> {
+    return page.evaluate(() => {
         const editable = document.querySelector(
             ".bloom-editable",
         ) as HTMLElement;
@@ -146,10 +146,11 @@ export const measureLines = async (page: Page): Promise<ILine[]> =>
             }))
             .sort((a, b) => a.top - b.top);
     });
+}
 
 /** The advance width of one character, which is the resolution of a `right` reading. */
-export const measureCharacterWidth = async (page: Page): Promise<number> =>
-    page.evaluate(() => {
+export async function measureCharacterWidth(page: Page): Promise<number> {
+    return page.evaluate(() => {
         const node = (document.querySelector("#text") as HTMLElement)
             .firstChild as Text;
         const range = document.createRange();
@@ -157,11 +158,13 @@ export const measureCharacterWidth = async (page: Page): Promise<number> =>
         range.setEnd(node, 2); // "i " -- one character plus its space
         return range.getBoundingClientRect().width;
     });
+}
 
 /** The left edges of the lines starting at the given tops, for readable assertions. */
-export const leftEdgesAt = (lines: ILine[], tops: number[]): number[] =>
-    tops.map((top) => {
+export function leftEdgesAt(lines: ILine[], tops: number[]): number[] {
+    return tops.map((top) => {
         const line = lines.find((l) => l.top === top);
         if (!line) throw new Error(`no line of text at y=${top}`);
         return line.left;
     });
+}
