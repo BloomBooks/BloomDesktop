@@ -288,6 +288,35 @@ describe("UndoStack", () => {
             expect(log).toEqual(["legacy toolbox"]);
         });
 
+        it("says which of our entries the next undo would apply, if any", () => {
+            let ckeditorChangedAt = 0;
+            stack.registerLegacyProvider(
+                makeProvider("ckeditor", log, () => ckeditorChangedAt > 0, {
+                    lastChangeOrder: () => ckeditorChangedAt,
+                }),
+            );
+            expect(stack.getEntryForNextUndo()).toBeUndefined();
+
+            const ours = makeEntry("ours", log);
+            stack.push(ours);
+            expect(stack.getEntryForNextUndo()).toBe(ours);
+
+            // Typing after it: CKEditor has the next undo.
+            ckeditorChangedAt = nextChangeOrder();
+            expect(stack.getEntryForNextUndo()).toBeUndefined();
+
+            // Asking changes nothing.
+            expect(log).toEqual([]);
+        });
+
+        it("names no entry for the next undo when ours is not available just now", () => {
+            const ours = makeEntry("ours", log);
+            ours.isAvailable = () => false;
+            stack.push(ours);
+
+            expect(stack.getEntryForNextUndo()).toBeUndefined();
+        });
+
         it("takes no part in redo", () => {
             stack.registerLegacyProvider(
                 makeProvider("origami", log, () => true),

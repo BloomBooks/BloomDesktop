@@ -135,6 +135,24 @@ export class UndoStack {
         return this.entryOrders[this.currentIndex] < provider.lastChangeOrder();
     }
 
+    /**
+     * The entry of ours that the next undo would apply, or undefined when a legacy provider has
+     * the next undo or our newest entry is not available just now.
+     *
+     * For a key handler that has to decide, before CKEditor acts on Ctrl+Z, whether the keystroke
+     * belongs to an entry on this stack (inline images do this; see inlineImageCanUndo). Like
+     * {@link canUndo}, it believes a provider that says it can undo, so it answers undefined when
+     * CKEditor claims an undo it then finds nothing for.
+     */
+    public getEntryForNextUndo(): IUndoEntry | undefined {
+        if (this.legacyProviders.some((p) => this.providerHasTheNextUndo(p))) {
+            return undefined;
+        }
+        return this.ownEntryCanUndo()
+            ? this.entries[this.currentIndex]
+            : undefined;
+    }
+
     /** Whether our own newest entry can be undone just now. */
     private ownEntryCanUndo(): boolean {
         const entry = this.entries[this.currentIndex];
