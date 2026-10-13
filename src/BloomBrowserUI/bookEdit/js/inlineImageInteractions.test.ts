@@ -1,4 +1,12 @@
-import { describe, it, expect, beforeEach, afterAll, vi } from "vitest";
+import {
+    describe,
+    it,
+    expect,
+    beforeEach,
+    afterEach,
+    afterAll,
+    vi,
+} from "vitest";
 
 // The code under test asks the api in three ways whether AI image editing is turned on:
 // setupInlineImageInteractions calls getFeatureStatusAsync, and the toolbar component that the
@@ -48,7 +56,6 @@ import {
     clampInlineImageWidthPercent,
     computeBlockContentBox,
     computeInlineImageDragScrollLayoutPx,
-    computeViewportPxPerLayoutPx,
     shouldRevertInlineImageMove,
     computeInlineImageClusterIndex,
     computeInlineImageDock,
@@ -68,6 +75,7 @@ import {
     setupInlineImageInteractions,
 } from "./inlineImageInteractions";
 import { resetChangeOrderForTests } from "../undo/changeOrder";
+import BloomField from "../bloomField/BloomField";
 import { theOneUndoStack } from "../undo/UndoStack";
 
 // jsdom reports every element's box as empty, so these tests cannot check where a drag put the
@@ -305,7 +313,8 @@ describe("inlineImageInteractions", () => {
             width: 353,
             height: 532.159,
         },
-        clientHeightLayoutPx: 484,
+        // 532.159 screen pixels showing 484 layout pixels: the page is drawn at 110%.
+        viewportPxPerLayoutPx: 532.159 / 484,
         scrollHeightLayoutPx: 841,
         // The image had an offset of 661 layout pixels on the A4 page, which puts it below
         // everything the smaller page can show at once.
@@ -318,15 +327,15 @@ describe("inlineImageInteractions", () => {
     describe("computeBlockContentBox", () => {
         it("gives a block that fits its text its own rectangle", () => {
             const box = { left: 71, top: 87, width: 353, height: 200 };
-            expect(computeBlockContentBox(box, 200, 200, 0)).toEqual(box);
+            expect(computeBlockContentBox(box, 200, 0, 1)).toEqual(box);
         });
 
         it("reaches past the bottom of a block whose text overflows", () => {
             const content = computeBlockContentBox(
                 kA6Report.visibleBoxViewportPx,
-                kA6Report.clientHeightLayoutPx,
                 kA6Report.scrollHeightLayoutPx,
                 0,
+                kA6Report.viewportPxPerLayoutPx,
             );
             expect(content.top).toBe(87);
             // 841 layout pixels of text, drawn at 110%.
@@ -337,9 +346,9 @@ describe("inlineImageInteractions", () => {
         it("follows the block as it is scrolled, so the content keeps one position", () => {
             const scrolled = computeBlockContentBox(
                 kA6Report.visibleBoxViewportPx,
-                kA6Report.clientHeightLayoutPx,
                 kA6Report.scrollHeightLayoutPx,
                 324.667,
+                kA6Report.viewportPxPerLayoutPx,
             );
             expect(Math.round(scrolled.top)).toBe(-270);
             expect(Math.round(scrolled.top + scrolled.height)).toBe(655);
@@ -347,7 +356,7 @@ describe("inlineImageInteractions", () => {
 
         it("returns the rectangle unchanged when nothing is laid out (jsdom)", () => {
             const box = { left: 0, top: 0, width: 0, height: 0 };
-            expect(computeBlockContentBox(box, 0, 0, 0)).toEqual(box);
+            expect(computeBlockContentBox(box, 0, 0, 1)).toEqual(box);
         });
     });
 
@@ -433,26 +442,6 @@ describe("inlineImageInteractions", () => {
         });
     });
 
-    describe("computeViewportPxPerLayoutPx", () => {
-        it("is the ratio of the screen rectangle to the laid-out height", () => {
-            expect(
-                computeViewportPxPerLayoutPx(
-                    kA6Report.visibleBoxViewportPx,
-                    kA6Report.clientHeightLayoutPx,
-                ),
-            ).toBeCloseTo(1.0995, 4);
-        });
-
-        it("is 1 when there is nothing to measure", () => {
-            expect(
-                computeViewportPxPerLayoutPx(
-                    { left: 0, top: 0, width: 0, height: 0 },
-                    0,
-                ),
-            ).toBe(1);
-        });
-    });
-
     // The bug report: "I added an image to the bottom right-hand corner of an A4 portrait page
     // that was pretty full of text. I then changed the page layout to be A6 portrait, the
     // text now requires scrolling. I was not able to reposition that image anymore. It was
@@ -475,9 +464,9 @@ describe("inlineImageInteractions", () => {
 
             const contentBox = computeBlockContentBox(
                 kA6Report.visibleBoxViewportPx,
-                kA6Report.clientHeightLayoutPx,
                 kA6Report.scrollHeightLayoutPx,
                 0,
+                kA6Report.viewportPxPerLayoutPx,
             );
             expect(
                 computeInlineImageDock(
@@ -512,17 +501,13 @@ describe("inlineImageInteractions", () => {
 
             const contentBox = computeBlockContentBox(
                 kA6Report.visibleBoxViewportPx,
-                kA6Report.clientHeightLayoutPx,
                 kA6Report.scrollHeightLayoutPx,
                 0,
-            );
-            const viewportPxPerLayoutPx = computeViewportPxPerLayoutPx(
-                kA6Report.visibleBoxViewportPx,
-                kA6Report.clientHeightLayoutPx,
+                kA6Report.viewportPxPerLayoutPx,
             );
             const roomByContent =
                 (contentBox.top + contentBox.height - wrapperBottomViewportPx) /
-                viewportPxPerLayoutPx;
+                kA6Report.viewportPxPerLayoutPx;
             expect(roomByContent).toBeGreaterThan(0);
             expect(
                 clampInlineImageOffset(
@@ -1330,6 +1315,87 @@ describe("inlineImageInteractions", () => {
             expect(
                 wrapper.querySelector("." + kInlineImageHandleFrameClass),
             ).not.toBeNull();
+        });
+    });
+
+    // BloomField undoes a Ctrl+A then Delete that removes a picture. It knows how many pictures a
+    // block should have, and the commands that add and delete pictures on purpose have to keep
+    // that number up to date.
+    describe("protection from Ctrl+A then Delete", () => {
+        const originalExecCommand = document.execCommand;
+        let execCommand: ReturnType<typeof vi.fn>;
+        beforeEach(() => {
+            execCommand = vi.fn();
+            document.execCommand =
+                execCommand as unknown as typeof document.execCommand;
+        });
+        afterEach(() => {
+            document.execCommand = originalExecCommand;
+        });
+
+        const runMenuCommand = (clicked: HTMLElement, l10nId: string) => {
+            const item = buildInlineImageMenuItems(
+                getInlineImageActionTarget(clicked),
+            ).find((i) => i.l10nId === l10nId);
+            expect(item, `expected a ${l10nId} item`).toBeTruthy();
+            (item!.onClick as () => void)();
+        };
+        const releaseAKey = (editable: HTMLElement) =>
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true }),
+            );
+
+        it("protects a picture inserted after the block was set up", () => {
+            const group = makeSimpleGroup();
+            const english = editableFor(group, "en");
+            // The block starts with no picture, so there is nothing to protect yet.
+            BloomField.ManageField(english);
+            runMenuCommand(
+                english.querySelector("p") as HTMLElement,
+                "EditTab.InlineImage.InsertImage",
+            );
+            // Sanity check: the picture is there, and nothing has asked for an undo.
+            expect(getInlineImageInEditable(english)).not.toBeNull();
+            releaseAKey(english);
+            expect(execCommand).not.toHaveBeenCalled();
+
+            // This is what Ctrl+A then Delete leaves.
+            getInlineImageInEditable(english)!.remove();
+            releaseAKey(english);
+
+            expect(execCommand).toHaveBeenCalledWith("undo");
+        });
+
+        it("does not put back a picture deleted with the Delete command", () => {
+            const group = makeSimpleGroup();
+            const english = editableFor(group, "en");
+            insertInlineImage(group);
+            // Set up after the insert, so the picture counts from the start, as in a saved book.
+            BloomField.ManageField(english);
+
+            runMenuCommand(getInlineImageInEditable(english)!, "Common.Delete");
+            // Sanity check: the delete happened.
+            expect(getInlineImageInEditable(english)).toBeNull();
+            releaseAKey(english);
+
+            expect(execCommand).not.toHaveBeenCalled();
+        });
+
+        it("counts the picture an undo of its delete brings back", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            const english = editableFor(group, "en");
+            insertInlineImage(group);
+            BloomField.ManageField(english);
+            runMenuCommand(getInlineImageInEditable(english)!, "Common.Delete");
+            expect(inlineImageUndo()).toBe(true);
+            // Sanity check: the undo brought the picture back.
+            expect(getInlineImageInEditable(english)).not.toBeNull();
+
+            getInlineImageInEditable(english)!.remove();
+            releaseAKey(english);
+
+            expect(execCommand).toHaveBeenCalledWith("undo");
         });
     });
 
