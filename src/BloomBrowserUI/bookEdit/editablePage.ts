@@ -348,7 +348,11 @@ export function ckeditorCanUndo(): boolean {
         CKEDITOR &&
         CKEDITOR.currentInstance &&
         (<any>CKEDITOR.currentInstance).undoManager &&
-        (<any>CKEDITOR.currentInstance).undoManager.undoable()
+        (<any>CKEDITOR.currentInstance).undoManager.undoable() &&
+        // Not an editor whose box has gone from the page (a table undo rebuilds its cells, for
+        // instance): undoing there would change nothing anyone can see, and would stop the Undo
+        // button reaching whatever comes next.
+        (<any>CKEDITOR.currentInstance).element.$.isConnected
     ) {
         return true;
     }
