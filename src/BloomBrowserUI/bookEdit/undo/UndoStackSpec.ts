@@ -5,6 +5,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { nextChangeOrder } from "./changeOrder";
+import { trackCkeditorChanges } from "./ckeditorChanges";
 import { UndoStack } from "./UndoStack";
 import { ILegacyUndoProvider, IUndoEntry, kMaxUndoEntries } from "./undoTypes";
 
@@ -138,6 +139,148 @@ describe("UndoStack", () => {
             stack.redo();
 
             expect(log).toEqual(["undo noRedo"]);
+        });
+
+        it("is discarded by discardRedo, which leaves what can be undone alone", () => {
+            stack.push(makeEntry("first", log));
+            stack.push(makeEntry("second", log));
+            stack.undo();
+            expect(stack.canRedo()).toBe(true); // sanity check
+
+            stack.discardRedo();
+
+            expect(stack.canRedo()).toBe(false);
+            expect(stack.getEntryCount()).toBe(1);
+            stack.undo();
+            expect(log).toEqual(["undo second", "undo first"]);
+        });
+
+        it("is kept when discardRedo is called while an undo of ours is being applied", () => {
+            // Our own undo can make CKEditor report a change; that is not a new edit.
+            stack.push(makeEntry("first", log));
+            stack.push({
+                label: "second",
+                kind: "custom",
+                undo: () => {
+                    log.push("undo second");
+                    stack.discardRedo();
+                },
+                redo: () => {
+                    log.push("redo second");
+                },
+            });
+
+            stack.undo();
+
+            expect(log).toEqual(["undo second"]); // sanity check
+            expect(stack.canRedo()).toBe(true);
+            stack.redo();
+            expect(log).toEqual(["undo second", "redo second"]);
+        });
+    });
+
+    describe("a change CKEditor records (trackCkeditorChanges)", () => {
+        type Listener = (evt: {
+            data?: { name?: string };
+            cancel: () => void;
+        }) => void;
+
+        /**
+         * Enough of a CKEditor instance for trackCkeditorChanges: listeners run in priority order
+         * (default 10, as in CKEditor), and one can cancel the event, which stops the rest.
+         */
+        function makeFakeEditor() {
+            const listeners: {
+                name: string;
+                listener: Listener;
+                priority: number;
+            }[] = [];
+            const editor = {
+                undoManager: { undoable: () => true },
+                on(
+                    name: string,
+                    listener: Listener,
+                    _scope?: unknown,
+                    _data?: unknown,
+                    priority = 10,
+                ) {
+                    listeners.push({ name, listener, priority });
+                },
+                fire(name: string, data?: { name?: string }): boolean {
+                    let cancelled = false;
+                    const evt = { data, cancel: () => (cancelled = true) };
+                    for (const l of listeners
+                        .filter((x) => x.name === name)
+                        .sort((a, b) => a.priority - b.priority)) {
+                        l.listener(evt);
+                        if (cancelled) return false;
+                    }
+                    return true;
+                },
+                /** What CKEditor's execCommand does around a command that "change"s the box. */
+                runCommand(commandName: string) {
+                    if (
+                        !editor.fire("beforeCommandExec", { name: commandName })
+                    )
+                        return;
+                    editor.fire("change");
+                    editor.fire("afterCommandExec", { name: commandName });
+                },
+            };
+            return editor;
+        }
+
+        let editor: ReturnType<typeof makeFakeEditor>;
+
+        beforeEach(() => {
+            editor = makeFakeEditor();
+            trackCkeditorChanges(editor, stack);
+            stack.push(makeEntry("picture change", log));
+            stack.undo();
+            expect(stack.canRedo()).toBe(true); // sanity check
+        });
+
+        it("discards the stack's redo branch when the person types", () => {
+            editor.fire("change");
+
+            expect(stack.canRedo()).toBe(false);
+        });
+
+        it("keeps the redo branch when the change is CKEditor's own undo or redo", () => {
+            editor.runCommand("undo");
+            editor.runCommand("redo");
+
+            expect(stack.canRedo()).toBe(true);
+            // And once that command is over, typing still discards it.
+            editor.fire("change");
+            expect(stack.canRedo()).toBe(false);
+        });
+
+        it("does not treat later typing as an undo when an earlier listener cancelled the undo command", () => {
+            // The inline image Ctrl+Z handler cancels CKEditor's undo command at priority 1.
+            editor.on(
+                "beforeCommandExec",
+                (evt) => {
+                    if (evt.data?.name === "undo") evt.cancel();
+                },
+                null,
+                null,
+                1,
+            );
+            editor.runCommand("undo");
+            expect(stack.canRedo()).toBe(true); // sanity check: no change was fired
+
+            editor.fire("change");
+
+            expect(stack.canRedo()).toBe(false);
+        });
+
+        it("ignores a change nobody could undo, such as CKEditor attaching itself to a box", () => {
+            editor.undoManager.undoable = () => false;
+
+            editor.fire("change");
+
+            expect(stack.canRedo()).toBe(true);
         });
     });
 

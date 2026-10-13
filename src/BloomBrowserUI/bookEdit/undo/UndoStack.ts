@@ -89,11 +89,28 @@ export class UndoStack {
         this.record(entry);
     }
 
+    /**
+     * Forget everything that could be redone, because the user has made a change the stack did
+     * not record, such as typing, which CKEditor keeps (see ckeditorChanges.ts). Does nothing
+     * while an undo or redo of ours is being applied: a change that causes is not a new edit.
+     */
+    public discardRedo(): void {
+        if (this.applying) {
+            return;
+        }
+        this.truncateRedoBranch();
+    }
+
+    /** Drop the entries above the current index. */
+    private truncateRedoBranch(): void {
+        this.entries.length = this.currentIndex + 1;
+        this.entryOrders.length = this.currentIndex + 1;
+    }
+
     /** Actually add an entry, truncating any redo branch. */
     private record(entry: IUndoEntry): void {
         // Anything the user had undone is now unreachable: they have taken a different branch.
-        this.entries.length = this.currentIndex + 1;
-        this.entryOrders.length = this.currentIndex + 1;
+        this.truncateRedoBranch();
 
         this.entries.push(entry);
         this.entryOrders.push(nextChangeOrder());
