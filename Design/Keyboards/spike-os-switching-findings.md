@@ -44,7 +44,7 @@ Two instruments, both non-intrusive:
 
 | Action | Bloom UI thread HKL | **WebView thread HKL** | getLayoutMap (KeyA / Semicolon) |
 |---|---|---|---|
-| Baseline (default) | `0x04090409` US | **`0x04090409` US** | `a` / `;` |
+| None yet: layout at startup, before any switch attempt | `0x04090409` US | **`0x04090409` US** | `a` / `;` |
 | libpalaso `Activate()` Thai (**FORPROCESS**) | `0x041E041E` Thai | **`0x04090409` US — UNCHANGED** | `a` / `;` — UNCHANGED |
 | `WM_INPUTLANGCHANGEREQUEST` → child webview HWND | (n/a) | **`0x04090409` US — UNCHANGED** | unchanged |
 | our TSF `ActivateProfile` **FORSESSION** (Bloom in background) | Thai | **US — UNCHANGED** | unchanged |
