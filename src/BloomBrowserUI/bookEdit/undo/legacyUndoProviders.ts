@@ -131,7 +131,9 @@ export const ckeditorUndoProvider: ILegacyUndoProvider = {
         // the new text nodes. (ckeditorUndo calls the undoManager directly rather than the undo
         // command, so the afterCommandExec handler in attachToCkEditor does not see this one.)
         // (BL-16558)
-        getToolboxBundleExports()?.updateMarkupAfterUndoOrRedo();
+        if (undidSomething) {
+            getToolboxBundleExports()?.updateMarkupAfterUndoOrRedo();
+        }
         return undidSomething;
     },
 };

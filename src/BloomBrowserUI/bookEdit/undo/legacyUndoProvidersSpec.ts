@@ -121,6 +121,14 @@ describe("legacyUndoProviders", () => {
             );
         });
 
+        it("does not follow a CKEditor undo that found nothing to undo", () => {
+            page.ckeditorUndo.mockReturnValue(false);
+            expect(ckeditorUndoProvider.undo()).toBe(false);
+            expect(page.ckeditorUndo).toHaveBeenCalledTimes(1);
+            expect(toolbox.updateMarkupAfterUndoOrRedo).not.toHaveBeenCalled();
+            page.ckeditorUndo.mockReturnValue(true);
+        });
+
         it("does not follow origami's or the image undo, which rewrite no editable", () => {
             origamiUndoProvider.undo();
             imageUndoProvider.undo();
