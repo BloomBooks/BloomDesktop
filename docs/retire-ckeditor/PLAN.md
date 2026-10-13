@@ -121,6 +121,7 @@ asynchronously after `CKEDITOR.inline()` returns:
 | `imageOperationCanUndo`/`imageOperationUndo` (`ImageUndoManager.ts`) | Restores an image's `src` / copyright / crop | Clean two-phase prepare/commit; already page-id-scoped; gated on the active element being an image container. |
 | `ckeditorCanUndo`/`ckeditorUndo` | `CKEDITOR.currentInstance.undoManager`, **per editable div** | An "implementation secret". Ordering across boxes is already wrong. |
 | bloom-table's history (added 2026-10, BL-16818) | The library's own per-table history of structural operations | Since §10 decision 8, entries on the one stack rather than a legacy mechanism (`undo/tableUndo.ts`). |
+| Inline (Word-style) images (BL-16822) | Each operation on a block's pictures (insert, delete, dock, move, resize, picture change), recorded as the markup of the pictures in every language's editable before and after | Entries on the one stack from the start (`js/inlineImages.ts`), with redo. `inlineImageCanUndo` and `inlineImageUndo` let a Ctrl+Z handler in the text, which CKEditor would otherwise take, send the key to them. |
 | Browser-native undo | Invisible | Called directly in `BloomField.PreventRemovalOfSomeElements` (`BloomField.ts:810-825`); also fed implicitly by every `document.execCommand("insertHTML"/"formatBlock"/"justify*"/"insertText")` in `bloomEditing.ts` and `GamePromptDialog.tsx`, and by plain typing in any contenteditable. |
 
 **Correction, verified 2026-08-06 — the table above is the *button* path, not the keyboard path.**
