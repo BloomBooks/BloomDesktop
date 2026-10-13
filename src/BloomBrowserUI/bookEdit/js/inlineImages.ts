@@ -2,7 +2,7 @@
 // that editable wrapping around them. A picture can be docked on the left, on the right, as a
 // full-width band across the middle, or at the bottom. The layout rules are in
 // content/bookLayout/inlineImages.less, and the handles and outlines shown while editing are
-// in bookEdit/css/editMode.less.
+// in bookEdit/css/inlineImageEditing.less.
 //
 // Two things about the design explain most of the code in this file:
 //
@@ -395,8 +395,14 @@ export function insertInlineImage(translationGroup: HTMLElement): HTMLElement {
  * block has several images, a function given only the group could only guess which one was
  * meant. It throws if given something that is not an inline image, so that it can't quietly
  * delete the wrong thing.
+ *
+ * `afterRemoving` runs after the copies are gone and before the undo entry is recorded, for
+ * changes to the other images that belong to the same step, so that one Undo takes back both.
  */
-export function removeInlineImage(wrapper: HTMLElement): void {
+export function removeInlineImage(
+    wrapper: HTMLElement,
+    afterRemoving?: () => void,
+): void {
     const id = getInlineImageId(wrapper);
     const translationGroup = getTranslationGroupOf(wrapper);
     if (!wrapper.classList.contains(kInlineImageClass) || !translationGroup) {
@@ -411,6 +417,7 @@ export function removeInlineImage(wrapper: HTMLElement): void {
         if (id) getInlineImageById(editable, id)?.remove();
     });
     if (!id) wrapper.remove();
+    afterRemoving?.();
     commitPendingInlineImageUndo(translationGroup);
 }
 

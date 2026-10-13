@@ -19,6 +19,21 @@ import {
     SetupVideoEditing,
 } from "./bloomVideo";
 import { SetupWidgetEditing } from "./bloomWidgets";
+import {
+    clearInlineImageSelection,
+    inlineImageCanUndo,
+    inlineImageUndo,
+    commitInlineImageUndoForImageChange,
+    kInlineImageClass,
+    prepareInlineImageUndoForImageChange,
+    setupInlineImages,
+} from "./inlineImages";
+import {
+    cleanupInlineImageInteractions,
+    adjustInlineImageOffsetsIfBlockSizeChanged,
+    inlineImagePictureChanged,
+    setupInlineImageInteractions,
+} from "./inlineImageInteractions";
 import { setupOrigami, cleanupOrigami } from "./origami";
 import { SetupTableEditing, TeardownTableEditing } from "./tableEditing";
 import { removeTableEditingArtifacts } from "bloom-table";
@@ -86,6 +101,7 @@ import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
 import { setupTextContextMenu } from "../textContextMenu/TextContextMenu";
 import { resetAbovePageControls } from "./AbovePageControls";
 import { noteCkeditorChange } from "../undo/changeOrder";
+import { theOneUndoStack } from "../undo/UndoStack";
 import { recordFractionOfPageOnImageSlots } from "./imageTargetResolution";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
@@ -175,6 +191,9 @@ function Cleanup() {
     cleanupImages();
     cleanupOrigami();
     cleanupNiceScroll();
+    // The inline image handles are bloom-ui, so they have already been removed. The class that
+    // marks an inline image as selected is on the wrapper itself, which is saved with the book.
+    cleanupInlineImageInteractions();
 }
 
 //add a delete button which shows up when you hover
@@ -463,7 +482,19 @@ export function changeImage(imageInfo: IImageInfo) {
         );
     }
     if (imageInfo.undoable === "true") {
-        prepareUndoForImageOperation(imgOrImageContainer);
+        // An inline image's undo is an entry on the one undo stack, because undoing a change to it
+        // means restoring the wrapper in every language's editable as well as this img's src.
+        // prepareInlineImageUndoForImageChange returns true when it has taken charge of the
+        // undo, and then prepareUndoForImageOperation must not be called.
+        if (!prepareInlineImageUndoForImageChange(imgOrImageContainer)) {
+            prepareUndoForImageOperation(imgOrImageContainer);
+        }
+    } else if (imgOrImageContainer.closest("." + kInlineImageClass)) {
+        // This does for inline images what clearImageOperationUndoState() above does for other
+        // images. After a change that cannot be undone, undo must not be able to reach older
+        // inline image entries behind it. The stack can't skip an entry, so it is cleared, which
+        // leaves CKEditor's typing undoable.
+        theOneUndoStack.clear();
     }
     changeImageInfo(imgOrImageContainer, imageInfo);
     // id is just a temporary expedient to find the right image easily in this method.
@@ -471,7 +502,9 @@ export function changeImage(imageInfo: IImageInfo) {
     theOneCanvasElementManager.updateCanvasElementForChangedImage(
         imgOrImageContainer,
     );
-    commitPendingImageOperationUndo(imgOrImageContainer);
+    if (!commitInlineImageUndoForImageChange(imgOrImageContainer)) {
+        commitPendingImageOperationUndo(imgOrImageContainer);
+    }
     notifyToolOfChangedImage();
 }
 
@@ -487,14 +520,21 @@ export function changeImageByElement(
     if (imageInfo.undoable !== "true") {
         clearImageOperationUndoState();
     }
+    // See changeImage for why an inline image handles its own undo here.
     if (imageInfo.undoable === "true") {
-        prepareUndoForImageOperation(imgOrImageContainer);
+        if (!prepareInlineImageUndoForImageChange(imgOrImageContainer)) {
+            prepareUndoForImageOperation(imgOrImageContainer);
+        }
+    } else if (imgOrImageContainer.closest("." + kInlineImageClass)) {
+        theOneUndoStack.clear();
     }
     changeImageInfo(imgOrImageContainer, imageInfo as IImageInfo);
     theOneCanvasElementManager.updateCanvasElementForChangedImage(
         imgOrImageContainer,
     );
-    commitPendingImageOperationUndo(imgOrImageContainer);
+    if (!commitInlineImageUndoForImageChange(imgOrImageContainer)) {
+        commitPendingImageOperationUndo(imgOrImageContainer);
+    }
     notifyToolOfChangedImage();
 }
 
@@ -544,6 +584,14 @@ export function changeImageInfo(
     imgOrImageContainer.setAttribute("data-creator", imageInfo.creator);
     imgOrImageContainer.setAttribute("data-license", imageInfo.license);
 
+    // An inline image is inside a bloom-editable, and every language's editable in the
+    // translation group has its own copy of it, so a new picture has to be copied to the other
+    // editables, and the image selected again. Both changeImage and changeImageByElement call
+    // this function, so this is the only place that has to do it.
+    if (imgOrImageContainer.closest("." + kInlineImageClass)) {
+        inlineImagePictureChanged(imgOrImageContainer);
+    }
+
     const page = imgOrImageContainer.closest(
         ".bloom-page",
     ) as HTMLElement | null;
@@ -577,6 +625,19 @@ export function SetupElements(
     CanvasElementManager.recordInitialZoom(container);
 
     SetupImagesInContainer(container);
+    // SetupImagesInContainer does not handle inline images, because they are not in a
+    // bloom-canvas or bloom-imageContainer. setupInlineImages makes each language's copy match
+    // and watches for the images to load.
+    setupInlineImages(container);
+    // This sets up the right-click menu that adds and removes inline images, and selecting,
+    // dragging and resizing them.
+    setupInlineImageInteractions(container);
+    // An inline image's offset is a distance in pixels. If the block has changed size since the
+    // offset was measured (another page size, another layout for the page, or a pane dragged in
+    // Change Layout), the offset has to be worked out again, or the text after the picture is
+    // pushed off the end of the block. This must run after setupInlineImages, which makes the
+    // languages' copies match.
+    adjustInlineImageOffsetsIfBlockSizeChanged(container);
 
     SetupVideoEditing(container);
     SetupWidgetEditing(container);
@@ -1232,13 +1293,9 @@ export function bootstrap() {
     // configure ckeditor
     if (typeof CKEDITOR === "undefined") return; // this happens during unit testing
 
-    if ($(this).find(".bloom-canvas").length) {
-        // We would *like* to wire up ckeditor, but would need to get it to stop interfering
-        // with the embedded image. See https://silbloom.myjetbrains.com/youtrack/issue/BL-3125.
-        // Currently this is only possible in the grade 4 Uganda books by SIL-LEAD.
-        // So for now, we just going to say that you don't get ckeditor inside fields that have an embedded image.
-        return;
-    }
+    // ckeditor is attached even to fields that hold an embedded image. A contenteditable=false
+    // element inside a field that ckeditor manages works (the format cog is one), and inline
+    // images depend on that.
 
     // Attach ckeditor to the fields that can have styled editable text.
     // (See comment above on ckeditableSelector for what fields those are.)
@@ -1366,6 +1423,10 @@ function removeEditingDebris() {
         textLabels[i].remove();
     }
     removeTransientVideoTimestampParams(document.body);
+    // If a picture is selected when the page is saved, this removes the class that marks it as
+    // selected. Otherwise the class would be saved in the book's HTML, and from there go into
+    // spreadsheet exports and published books.
+    clearInlineImageSelection(document.body);
     removeTableEditingArtifacts(document);
     TeardownTableEditing(document.body);
     cleanupNiceScroll(); // don't leave the nicescroll debris around
@@ -2157,6 +2218,33 @@ export function attachToCkEditor(element) {
         }
     });
 
+    // Ctrl+Z in a text block never reaches the one undo stack: it arrives in the page, and
+    // ckeditor's undo plugin runs it as the "undo" command (see undo/legacyUndoProviders.ts). That
+    // command restores the saved HTML of a single editable, but an inline image has a copy in each
+    // language's editable in the group. If ckeditor handled the key after an inline image
+    // operation, it put back the copy in the focused block and left the others, including the
+    // lang="z" one that a language added later is copied from, with the size and position the user
+    // had just undone. (In one test the "en" copy went back to 40% wide while another copy stayed
+    // at 47.7%.)
+    //
+    // So when inlineImageCanUndo() says the stack's next undo is an inline image entry, we run
+    // inlineImageUndo(), which undoes it through the stack, and cancel ckeditor's command. When
+    // ckeditor's typing is newer than that entry, the stack says ckeditor has the next undo, and
+    // the key is left to ckeditor.
+    ckedit.on(
+        "beforeCommandExec",
+        (evt) => {
+            if (evt.data.name !== "undo") return;
+            if (!inlineImageCanUndo()) return;
+            inlineImageUndo();
+            evt.cancel();
+        },
+        // Priority 1 runs this before the undo plugin's own listeners, so the plugin does not
+        // take or restore a snapshot.
+        null,
+        null,
+        1,
+    );
     // A table's operations are entries on the one undo stack, separate from this history, and
     // whichever of the two was written to last is the one the next Undo belongs to. See
     // undo/changeOrder.ts. The undoable() test keeps

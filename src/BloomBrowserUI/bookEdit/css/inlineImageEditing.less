@@ -1,0 +1,162 @@
+// Styling for inline (Word-style) images that applies only while editing. editMode.less
+// imports this file. The build also compiles every .less file on its own, so this one imports
+// what it uses.
+@import "../../bloomUI.less";
+@import "../../placeHolderImages.less";
+
+// An inline image is a picture docked inside a bloom-editable, with the text wrapping around
+// it. The layout rules are in content/bookLayout/inlineImages.less. This file adds only what
+// the user sees while editing; the resize handles that inlineImageInteractions.ts adds to a
+// selected image are styled further down.
+.bloom-editable .bloom-inlineImage {
+    // The wrapper is contenteditable=false. The pointer cursor shows that it is something
+    // you click on, and that you cannot type in it.
+    cursor: pointer;
+
+    // Bloom's paragraphs are position:relative, and a positioned element that comes later in
+    // the DOM paints above a float, so it also receives the clicks there. Without a z-index of
+    // its own, a click on the image lands on the next paragraph's invisible full-width box, and
+    // the image cannot be selected (checked in the running Bloom with elementsFromPoint). This
+    // is needed only while editing: nothing clicks the image in a published book, and the text
+    // never paints over the float in either case.
+    position: relative;
+    z-index: 1;
+
+    // These custom properties give the box of the image itself, for anything that has to sit
+    // exactly on the image. The wrapper's box is bigger: the vertical offset is transparent
+    // padding at its top, and in the middle band the wrapper spans the whole editable with a
+    // narrower image centered in it. The resize handle frame and the placeholder flower below
+    // both use these values, so they always line up with each other.
+    --inline-image-box-top: 0px;
+    --inline-image-box-inset: 0px;
+    // Only the left, right and middle docks put the offset padding at the top of the wrapper.
+    // The bottom dock ignores --inline-image-offset, so its image starts at the top.
+    &.bloom-inlineImageLeft,
+    &.bloom-inlineImageRight,
+    &.bloom-inlineImageMiddle {
+        --inline-image-box-top: var(--inline-image-offset, 0px);
+    }
+    // In the middle band the image is centered and is --inline-image-width of a full-width
+    // wrapper, so half of the remaining width on each side is wrapper and not image.
+    &.bloom-inlineImageMiddle {
+        --inline-image-box-inset: calc(
+            (100% - var(--inline-image-width, 40%)) / 2
+        );
+    }
+
+    // Until a real image has been chosen, draw the usual flower placeholder on the image's
+    // box. If it were drawn on the wrapper's box, the flower would float up into the offset
+    // padding where the text goes, away from the handles.
+    &:has(img[src*="placeHolder.png"]) {
+        // There is no placeHolder.png file to load, so hide the broken-image icon. The img
+        // still has to take up space: its width and --inline-image-aspect-ratio are the only
+        // things that give the image area a height to draw the flower in.
+        img[src*="placeHolder.png"] {
+            display: block;
+            visibility: hidden;
+        }
+
+        &::after {
+            content: "";
+            position: absolute;
+            top: var(--inline-image-box-top);
+            bottom: 0;
+            left: var(--inline-image-box-inset);
+            right: var(--inline-image-box-inset);
+            background-image: @image-placeholder;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            // This puts the flower behind the resize handles. The wrapper has z-index:1, so it
+            // is its own stacking context and -1 does not send the flower behind the wrapper.
+            // The flower also ignores the mouse.
+            z-index: -1;
+            pointer-events: none;
+        }
+    }
+
+    // The wrapper gets no outline when hovered or selected. Its box includes the transparent
+    // offset padding above the image, so once the image is dragged down an outline would run
+    // all the way up to the top of the text block. The corner handles, which sit on the
+    // image's box, show that it is selected.
+    &.bloom-inlineImage-selected {
+        // Dragging a selected inline image somewhere else is the main thing people do with it.
+        cursor: move;
+        // The handle frame below is positioned against this box.
+        position: relative;
+    }
+}
+
+// INLINE IMAGE SELECTION HANDLES (added by bookEdit/js/inlineImageInteractions.ts)
+// Everything in this section is used only while editing. The elements are bloom-ui, so
+// Cleanup() removes them before the page is saved, and the code that copies a wrapper to the
+// other languages' editables leaves them out of the copy.
+@inline-image-handle-size: 10px;
+// The handles sit entirely inside the image's box. Most editors put handles across the
+// corners, but that pushes them past the wrapper's edge, and for a right-docked image past the
+// editable's edge as well, which gave the whole text block a horizontal scrollbar. The corners
+// are still easy to see and grab from inside.
+@inline-image-handle-nudge: 0px;
+
+// The frame that the four resize handles are positioned in. It covers the image's box, using
+// --inline-image-box-top and --inline-image-box-inset from the wrapper section above, the same
+// values the placeholder flower uses.
+.bloom-ui-inlineImage-handle-frame {
+    position: absolute;
+    top: var(--inline-image-box-top, 0px);
+    bottom: 0;
+    left: var(--inline-image-box-inset, 0px);
+    right: var(--inline-image-box-inset, 0px);
+    // The frame only positions the handles. A press on it goes through to the image, where it
+    // starts a drag; only the handles themselves take presses, below.
+    pointer-events: none;
+}
+
+.bloom-ui-inlineImage-handle {
+    position: absolute;
+    width: @inline-image-handle-size;
+    height: @inline-image-handle-size;
+    box-sizing: border-box;
+    background-color: white;
+    border: 1px solid @bloom-blue;
+    pointer-events: auto; // see the frame above
+
+    &.bloom-ui-inlineImage-handle-nw {
+        top: @inline-image-handle-nudge;
+        left: @inline-image-handle-nudge;
+        cursor: nwse-resize;
+    }
+    &.bloom-ui-inlineImage-handle-ne {
+        top: @inline-image-handle-nudge;
+        right: @inline-image-handle-nudge;
+        cursor: nesw-resize;
+    }
+    &.bloom-ui-inlineImage-handle-sw {
+        bottom: @inline-image-handle-nudge;
+        left: @inline-image-handle-nudge;
+        cursor: nesw-resize;
+    }
+    &.bloom-ui-inlineImage-handle-se {
+        bottom: @inline-image-handle-nudge;
+        right: @inline-image-handle-nudge;
+        cursor: nwse-resize;
+    }
+}
+
+// While an inline image is being dragged or resized, moving the pointer across the block
+// would also select text. The class goes on the body, which is outside the bloom-page and so
+// is never saved.
+body.bloom-inlineImage-dragging .bloom-editable {
+    user-select: none;
+}
+
+// The resize handles disappear when the mouse leaves the page, as the other guides shown while
+// editing do (see the .bloom-page:hover section near the top of editMode.less), so the user
+// sees the page as it will print even while the image is still selected. They stay while the
+// image is being dragged or resized: pointer capture lets the pointer go off the page during
+// the drag, and handles that vanish in the middle of a resize are confusing.
+body:not(.bloom-inlineImage-dragging)
+    .bloom-page:not(:hover)
+    .bloom-ui-inlineImage-handle-frame {
+    display: none;
+}
