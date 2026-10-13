@@ -61,7 +61,7 @@ import {
 import { typeWithKeys } from "../helpers/keys";
 import { realClick } from "../helpers/realClick";
 import { saveScreenshotIfAsked } from "../helpers/screenshot";
-import { undo } from "../helpers/workspace";
+import { undo } from "../helpers/undo";
 
 // The Canvas tool is a Pro feature, so the collection is on the Test enterprise subscription.
 test.use({
