@@ -55,6 +55,7 @@ import {
     doWhenWorkspaceBundleLoaded,
     getToolboxBundleExports,
 } from "./workspaceFrames";
+import { handleUndo } from "../undo/pageUndo";
 import { showInvisibles, hideInvisibles } from "./showInvisibles";
 
 //promise may be needed to run tests with phantomjs
@@ -81,11 +82,10 @@ import { setupBookLinkGrids } from "./linkGrid";
 import { fitImageOverTextSplits } from "./autoFitImageOverTextSplits";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
-import { handleUndo } from "../workspaceRoot";
 import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
 import { setupTextContextMenu } from "../textContextMenu/TextContextMenu";
 import { resetAbovePageControls } from "./AbovePageControls";
-import { noteCkeditorChange } from "./undoOrdering";
+import { noteCkeditorChange } from "../undo/changeOrder";
 import { recordFractionOfPageOnImageSlots } from "./imageTargetResolution";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
@@ -1712,6 +1712,7 @@ export function topBarButtonClick(button: { command: string }) {
             cutSelection();
             break;
         case "undo":
+            // The one undo stack lives in this, the page frame (undo/pageUndo.ts).
             handleUndo();
             break;
         // We don't handle paste this way. We need code on the C# side to decide if we have
@@ -2156,8 +2157,9 @@ export function attachToCkEditor(element) {
         }
     });
 
-    // A table's own undo stack is separate from this one, and whichever of the two was written
-    // to last is the one the next Undo belongs to. See undoOrdering.ts. The undoable() test keeps
+    // A table's operations are entries on the one undo stack, separate from this history, and
+    // whichever of the two was written to last is the one the next Undo belongs to. See
+    // undo/changeOrder.ts. The undoable() test keeps
     // the changes ckeditor makes while it attaches itself to a box out of the reckoning: only a
     // change a person could undo counts as a change the person made.
     ckedit.on("change", () => {
