@@ -384,8 +384,9 @@ every caller that used to go the long way gets the short one for free.
 The first version posted one for *every* page opened, which would have made "no snapshot" mean
 nothing at all. The cause is that loading is not finished when `bootstrap()` returns: image sizing
 and canvas-element layout complete asynchronously and mutate the page, and a `MutationObserver`
-cannot tell those from the user. Taking a **baseline** once the page has settled fixes most of it,
-and is why `startWatchingPageForSnapshots` gathers once before it starts posting.
+cannot tell those from the user. Gathering the page once it has settled, and treating that first
+gather as already sent, fixes most of it, and is why `startWatchingPageForSnapshots` gathers once
+before it starts posting.
 
 Chased down, because the three turned out to be two different things.
 
@@ -400,12 +401,12 @@ the commonest save there is. Now stripped in the clone cleanup. The snapshot onl
 it gathers far more often than a save does.
 
 **The third is benign, and deliberately left alone.** With that fixed, an untouched page posts
-exactly one snapshot, and it is byte-identical to the settled page. The cause is that the baseline
-is taken before the page has finished settling: at that moment the asynchronous fix-ups have not
+exactly one snapshot, and it is byte-identical to the settled page. The cause is that the first gather
+runs before the page has finished settling: at that moment the asynchronous fix-ups have not
 registered their delays yet, so `whenNoActiveDelays()` returns at once.
 
-Delaying the baseline until the page is quiet would remove it, and would be a bad trade. The
-baseline would then include any edit the user managed in the meantime, and because load-time
+Delaying the first gather until the page is quiet would remove it, and would be a bad trade. The
+first gather would then include any edit the user managed in the meantime, and because load-time
 settling is indistinguishable from typing, we would have no way to know we still owed C# a snapshot
 of it — swapping a harmless duplicate for a lost edit. One post per page visit, carrying exactly
 what a save would have written, is the better end of that trade.

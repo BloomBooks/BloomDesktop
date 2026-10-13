@@ -50,7 +50,7 @@ function changeThePage(text: string) {
 
 // startWatching... reads the page once to learn what "unchanged" looks like after loading has
 // finished. Nothing is posted until that has resolved.
-async function letTheBaselineSettle() {
+async function letTheFirstGatherFinish() {
     await vi.runAllTicks();
     await Promise.resolve();
 }
@@ -93,7 +93,7 @@ describe("pageSnapshot", () => {
     it("posts nothing for a page the user never changes", async () => {
         contentToReport = "the untouched page";
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
 
         vi.advanceTimersByTime(quietMsForTests * 5);
         await vi.runAllTicks();
@@ -107,13 +107,14 @@ describe("pageSnapshot", () => {
     it("does not treat the page finishing loading as an edit", async () => {
         // Loading is not over when we start watching: image sizing and canvas-element layout
         // complete afterwards and mutate the page. The observer cannot tell those from the user,
-        // so the baseline has to. Without it the real app posted a snapshot for every page opened,
-        // which would have made "no snapshot" meaningless on the C# side.
+        // so the first gather, which reads the page once it has loaded and treats that as already
+        // sent, has to. Without it the real app posted a snapshot for every page opened, which
+        // would have made "no snapshot" meaningless on the C# side.
         contentToReport = "the settled page";
         startWatchingPageForSnapshots(gather);
 
         changeThePage("a late load-time fix-up");
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
         changeThePage("and another");
         await letTheSnapshotHappen();
 
@@ -125,7 +126,7 @@ describe("pageSnapshot", () => {
 
     it("posts the content, with the page id, once the page has been changed and settles", async () => {
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
         contentToReport = "edited content";
         changeThePage("goodbye");
         await letTheSnapshotHappen();
@@ -138,7 +139,7 @@ describe("pageSnapshot", () => {
 
     it("does not post again when the content has not actually changed", async () => {
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
         contentToReport = "same every time";
         changeThePage("a");
         await letTheSnapshotHappen();
@@ -154,7 +155,7 @@ describe("pageSnapshot", () => {
 
     it("stops posting once the page is unloaded", async () => {
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
         contentToReport = "first";
         changeThePage("a");
         await letTheSnapshotHappen();
@@ -172,7 +173,7 @@ describe("pageSnapshot", () => {
 
     it("waits for the page to be quiet rather than posting per change", async () => {
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
         contentToReport = "typed a word";
 
         // Three changes in quick succession, as typing produces.
@@ -211,7 +212,7 @@ describe("pageSnapshot", () => {
             });
 
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
 
         contentToReport = "first";
         changeThePage("a");
@@ -262,10 +263,10 @@ describe("pageSnapshot", () => {
         };
         startWatchingPageForSnapshots(slowGather);
 
-        // The first gather is the baseline; let it finish.
-        expect(gatherCount, "sanity: the baseline gather started").toBe(1);
-        release("baseline");
-        await letTheBaselineSettle();
+        // The first gather reads the page as loaded; let it finish.
+        expect(gatherCount, "sanity: the first gather started").toBe(1);
+        release("the page as loaded");
+        await letTheFirstGatherFinish();
 
         changeThePage("a");
         await Promise.resolve();
@@ -291,9 +292,9 @@ describe("pageSnapshot", () => {
             "the change that landed mid-gather must trigger another snapshot, not be dropped",
         ).toBe(3);
     });
-    it("does not count an edit made while the baseline was being read as already sent", async () => {
-        // The baseline gather waits for the page's load-time work to finish, and the user can start
-        // typing before it does. The baseline then already contains that typing. Treating it as
+    it("does not count an edit made while the first gather was reading the page as already sent", async () => {
+        // The first gather waits for the page's load-time work to finish, and the user can start
+        // typing before it does. What it reads then already contains that typing. Treating it as
         // "already sent" would swallow the edit: nothing would ever post it, and quitting would
         // write what C# holds.
         let release: (value: string) => void = () => {};
@@ -306,9 +307,9 @@ describe("pageSnapshot", () => {
         changeThePage("typed while the page was still loading");
         await Promise.resolve(); // let the observer see it
         release("hello, typed while the page was still loading");
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
 
-        // The follow-up gather reports the same content the baseline did.
+        // The follow-up gather reports the same content the first gather did.
         vi.advanceTimersByTime(quietMsForTests);
         await vi.runAllTicks();
         release("hello, typed while the page was still loading");
@@ -318,7 +319,7 @@ describe("pageSnapshot", () => {
 
         expect(
             posted.length,
-            "the edit that landed during the baseline must be posted",
+            "the edit that landed during the first gather must be posted",
         ).toBe(1);
         expect(posted[0].body).toBe(
             "hello, typed while the page was still loading",
@@ -329,7 +330,7 @@ describe("pageSnapshot", () => {
         // register the way a gather here does, so it waits for our idle notice instead. That notice
         // must therefore come AFTER the snapshot of the finished page, or C# would save the old one.
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
         posted.length = 0;
 
         addRequestPageContentDelay("sizing an image");
@@ -368,8 +369,8 @@ describe("pageSnapshot", () => {
                 release = resolve;
             });
         startWatchingPageForSnapshots(slowGather);
-        release("baseline");
-        await letTheBaselineSettle();
+        release("the page as loaded");
+        await letTheFirstGatherFinish();
         posted.length = 0;
 
         // The user types; a snapshot run starts and is now reading the page.
@@ -421,7 +422,7 @@ describe("pageSnapshot", () => {
 
         postReply = { data: true };
         removeRequestPageContentDelay("sizing an image");
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
         for (let i = 0; i < 6; i++) await Promise.resolve();
     });
 
@@ -429,7 +430,7 @@ describe("pageSnapshot", () => {
         // A failed post looks like a successful one apart from the missing reply (wrapAxios
         // swallows the rejection). C# has not heard, so a save it makes meanwhile would not wait.
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
         posted.length = 0;
         postReply = undefined;
 
@@ -450,7 +451,7 @@ describe("pageSnapshot", () => {
 
     it("offers the idle notice again when it is not taken, so C# is not left believing the page busy", async () => {
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
         addRequestPageContentDelay("sizing an image");
         await Promise.resolve();
         posted.length = 0;
@@ -477,7 +478,7 @@ describe("pageSnapshot", () => {
         // They travel as separate requests, and C# uses the numbers to ignore one that arrives
         // after a later one -- an idle notice landing after the busy notice for newer work.
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
         posted.length = 0;
 
         addRequestPageContentDelay("sizing an image");
@@ -501,7 +502,7 @@ describe("pageSnapshot", () => {
         // Idle means "and you already have the page as it is now". If the snapshot of the finished
         // page fails to post, saying idle anyway would let C# save the page from before the work.
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
         addRequestPageContentDelay("sizing an image");
         await Promise.resolve();
         await Promise.resolve();
@@ -540,7 +541,7 @@ describe("pageSnapshot", () => {
                 ? Promise.reject(new Error("the page could not be read"))
                 : Promise.resolve(contentToReport);
         startWatchingPageForSnapshots(flakyGather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
         addRequestPageContentDelay("sizing an image");
         await Promise.resolve();
         await Promise.resolve();
@@ -578,7 +579,7 @@ describe("pageSnapshot", () => {
                 ? Promise.reject(new Error("the page could not be read"))
                 : Promise.resolve(contentToReport);
         startWatchingPageForSnapshots(flakyGather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
         addRequestPageContentDelay("sizing an image");
         await Promise.resolve();
         await Promise.resolve();
@@ -590,7 +591,7 @@ describe("pageSnapshot", () => {
         for (let i = 0; i < 6; i++) await Promise.resolve();
         expect(posted).toEqual([]);
 
-        gatherShouldThrow = false; // and contentToReport is unchanged from the baseline
+        gatherShouldThrow = false; // and contentToReport is unchanged from what the first gather read
         vi.advanceTimersByTime(retryMsForTests);
         await vi.runAllTicks();
         for (let i = 0; i < 6; i++) await Promise.resolve();
@@ -603,7 +604,7 @@ describe("pageSnapshot", () => {
         // C# refuses notices about a load it is not yet showing, exactly as it refuses snapshots,
         // and this page may simply not have reported itself ready yet.
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
         posted.length = 0;
         postReply = { data: false };
 
@@ -629,7 +630,7 @@ describe("pageSnapshot", () => {
         // everything typed since.
         contentToReport = "first";
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
 
         postHook = () => Promise.reject(new Error("network gone"));
         contentToReport = "second";
@@ -649,12 +650,12 @@ describe("pageSnapshot", () => {
         // user's work disappears without a word.
         contentToReport = "fine";
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
 
         const exploding = () => Promise.reject(new Error("no marginBox"));
         stopWatchingPageForSnapshots();
         startWatchingPageForSnapshots(exploding);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
 
         changeThePage("one");
         await letTheSnapshotHappen();
@@ -670,7 +671,7 @@ describe("pageSnapshot", () => {
         // post overtaking a reload of the same page cannot be merged over what the reload built.
         contentToReport = "before";
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
 
         contentToReport = "after";
         changeThePage("after");
@@ -690,7 +691,7 @@ describe("pageSnapshot", () => {
         // otherwise produce no snapshot at all, and leaving the tab would write the old styles.
         contentToReport = "first";
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
         expect(posted.length, "sanity: nothing posted yet").toBe(0);
 
         // The style editor changed a rule. Nothing in the page changed.
@@ -711,7 +712,7 @@ describe("pageSnapshot", () => {
         // costs nothing.
         contentToReport = "first";
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
 
         notePageContentMayHaveChanged();
         vi.advanceTimersByTime(quietMsForTests);
@@ -728,7 +729,7 @@ describe("pageSnapshot", () => {
         // refused; counting it as delivered would leave C# with nothing to save.
         contentToReport = "first";
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
 
         postReply = { data: false }; // refused
         contentToReport = "typed";
@@ -751,7 +752,7 @@ describe("pageSnapshot", () => {
         // recorded as sent and never offered again, and the next save wrote what C# still held.
         contentToReport = "first";
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
 
         postReply = undefined; // the post failed; wrapAxios gives us nothing
         contentToReport = "typed";
@@ -777,7 +778,7 @@ describe("pageSnapshot", () => {
         // report per page.
         contentToReport = "first";
         startWatchingPageForSnapshots(gather);
-        await letTheBaselineSettle();
+        await letTheFirstGatherFinish();
 
         postReply = undefined; // every post fails
         contentToReport = "typed";

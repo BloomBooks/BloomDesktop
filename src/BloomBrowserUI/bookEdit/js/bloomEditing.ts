@@ -2092,8 +2092,9 @@ export function attachToCkEditor(element) {
     // window differs from one taken just after it, for every empty box on the page.
     //
     // That difference is what made a page nobody had touched decide it had unsaved changes: the
-    // page snapshot’s baseline is taken as soon as the delay register is clear, which used to be
-    // before any editor was ready. Registering here (and releasing at instanceReady) puts CKEditor
+    // page snapshot’s first gather, which reads the page once it has loaded and treats that as
+    // already sent, runs as soon as the delay register is clear, which used to be before any
+    // editor was ready. Registering here (and releasing at instanceReady) puts CKEditor
     // attachment under the same gate as image sizing and the other load-time work that finishes
     // asynchronously -- which is exactly what the register is for, and it means an early SAVE gets
     // the real text too, instead of writing <p></p> into boxes the user left empty.

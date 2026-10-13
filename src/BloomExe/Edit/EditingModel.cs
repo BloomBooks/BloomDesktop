@@ -1959,8 +1959,8 @@ namespace Bloom.Edit
                 return false;
             if (pageContent != null)
             {
-                // What we just saved is the new baseline for deciding whether the NEXT save has
-                // changed anything the rest of the book shares, and the page list's thumbnail of
+                // What we just saved is what the NEXT save compares against, to decide whether it
+                // has changed anything the rest of the book shares, and the page list's thumbnail of
                 // this page is out of date. Navigating does both of these for
                 // MergeCurrentPageThenSave (in EditingView.StartNavigationToEditPage); we stay put.
                 SaveStateForFullSaveDecision();
