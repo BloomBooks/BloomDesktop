@@ -167,7 +167,7 @@ export function getInlineImage(
  * Records the block size this image's offset was measured against. Call it wherever the offset
  * has just been set, so that if the block later changes size the offset can be recalculated.
  */
-export function recordInlineImageOffsetBaseline(
+export function recordInlineImageOffsetBasedOn(
     wrapper: HTMLElement,
     editable: HTMLElement,
 ): void {
@@ -182,7 +182,7 @@ export function recordInlineImageOffsetBaseline(
  * by a Bloom that did not record it. That is not an error; the caller records the current
  * size and leaves the offset alone.
  */
-export function getInlineImageOffsetBaseline(
+export function getInlineImageOffsetBasedOn(
     wrapper: HTMLElement,
 ): { widthLayoutPx: number; heightLayoutPx: number } | undefined {
     const parts = (
