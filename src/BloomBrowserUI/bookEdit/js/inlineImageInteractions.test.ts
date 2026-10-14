@@ -21,6 +21,15 @@ vi.mock("../../react_components/featureStatus", () => ({
     useGetFeatureAvailabilityMessage: () => "",
     openBloomSubscriptionSettings: () => {},
 }));
+// There is no toolbox frame in these tests. A test that needs the reader tools to have a markup
+// tool selected sets readerToolsHandleUndoKeys.
+const toolboxStub = vi.hoisted(() => ({ readerToolsHandleUndoKeys: false }));
+vi.mock("./workspaceFrames", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("./workspaceFrames")>()),
+    getToolboxBundleExports: () => ({
+        readerToolsHandleUndoKeys: () => toolboxStub.readerToolsHandleUndoKeys,
+    }),
+}));
 import {
     getTestRoot,
     cleanTestRoot,
@@ -1603,6 +1612,27 @@ describe("inlineImageInteractions", () => {
             expect(event.defaultPrevented).toBe(false);
             expect(widthIn(group, "fr")).toBe("60%");
         });
+
+        it("leaves both keys to the reader tools while a markup tool is selected", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            resizeTo(group, "60%");
+            const english = editableFor(group, "en");
+            // Sanity check: without the reader tools, Ctrl+Z would be taken.
+            expect(inlineImageCanUndo()).toBe(true);
+            toolboxStub.readerToolsHandleUndoKeys = true;
+            try {
+                const undoEvent = pressKey(english, "z");
+                const redoEvent = pressKey(english, "y");
+
+                expect(undoEvent.defaultPrevented).toBe(false);
+                expect(redoEvent.defaultPrevented).toBe(false);
+                expect(widthIn(group, "fr")).toBe("60%");
+            } finally {
+                toolboxStub.readerToolsHandleUndoKeys = false;
+            }
+        });
     });
 
     // To CKEditor, a selection change looked like an edit, and an undo of typing first spent a
@@ -1634,11 +1664,66 @@ describe("inlineImageInteractions", () => {
             expect(filtered).not.toContain(kInlineImageSelectedClass);
         });
 
+        it("deselects the picture when CKEditor's undo of typing replaces it", () => {
+            const listeners = new Map<string, () => void>();
+            let loadSnapshotPriority: number | undefined;
+            keepInlineImageSelectionOutOfCkeditorSnapshots({
+                on: (name, l, _scope, _data, priority) => {
+                    listeners.set(name, l as () => void);
+                    if (name === "loadSnapshot")
+                        loadSnapshotPriority = priority;
+                },
+            });
+            const group = makeSimpleGroup();
+            const english = editableFor(group, "en");
+            insertInlineImage(group);
+            selectInlineImage(getInlineImageInEditable(english)!);
+            // Sanity check: the toolbar is showing.
+            expect(
+                document.getElementById(kInlineImageContextControlsId),
+            ).not.toBeNull();
+            // CKEditor puts back a snapshot, which has no selection in it.
+            english.innerHTML = removeInlineImageSelectionFromHtml(
+                english.innerHTML,
+            );
+
+            listeners.get("loadSnapshot")!();
+
+            expect(
+                document.getElementById(kInlineImageContextControlsId),
+            ).toBeNull();
+            expect(
+                loadSnapshotPriority,
+                "it must run after the editable's own loadSnapshot listener, at 10",
+            ).toBeGreaterThan(10);
+        });
+
+        it("keeps a selection that CKEditor's undo did not replace", () => {
+            const listeners = new Map<string, () => void>();
+            keepInlineImageSelectionOutOfCkeditorSnapshots({
+                on: (name, l) => listeners.set(name, l as () => void),
+            });
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            const wrapper = getInlineImageInEditable(editableFor(group, "en"))!;
+            selectInlineImage(wrapper);
+
+            listeners.get("loadSnapshot")!();
+
+            expect(wrapper.classList.contains(kInlineImageSelectedClass)).toBe(
+                true,
+            );
+            expect(
+                document.getElementById(kInlineImageContextControlsId),
+            ).not.toBeNull();
+        });
+
         it("filters what the editable's own listener put in the snapshot", () => {
             let listener: ((evt: { data?: unknown }) => void) | undefined;
             let priority: number | undefined;
             keepInlineImageSelectionOutOfCkeditorSnapshots({
-                on: (_name, l, _scope, _data, p) => {
+                on: (name, l, _scope, _data, p) => {
+                    if (name !== "getSnapshot") return;
                     listener = l;
                     priority = p;
                 },
@@ -1657,7 +1742,7 @@ describe("inlineImageInteractions", () => {
         });
     });
 
-    describe("keeping CKEditor's snapshots current", () => {
+    describe("resetting CKEditor's history after a picture change", () => {
         // Stands in for CKEditor's undo Image, which takes a snapshot of an editor; the second
         // argument says whether to leave out the selection.
         class FakeImage {
@@ -1674,65 +1759,65 @@ describe("inlineImageInteractions", () => {
         afterEach(() => {
             delete (globalThis as unknown as { CKEDITOR?: unknown }).CKEDITOR;
         });
-        const runInsertImageCommand = (editable: HTMLElement) => {
-            const insert = buildInlineImageMenuItems(
-                getInlineImageActionTarget(
-                    editable.querySelector("p") as HTMLElement,
-                ),
-            ).find((i) => i.l10nId === "EditTab.InlineImage.InsertImage")!;
-            (insert.onClick as () => void)();
-        };
 
         // Gives each editable a stand-in for the CKEditor instance Bloom attaches to it.
         const attachFakeEditors = (group: HTMLElement, hasSnapshot = true) =>
             ["en", "fr"].map((lang) => {
-                const update = vi.fn();
+                const undoManager = {
+                    currentImage: hasSnapshot ? {} : undefined,
+                    reset: vi.fn(),
+                    save: vi.fn(),
+                    refreshState: vi.fn(),
+                    editingHandler: {
+                        keyEventsStack: { resetInputs: vi.fn() },
+                    },
+                };
                 (
                     editableFor(group, lang) as HTMLElement & {
                         bloomCkEditor?: unknown;
                     }
-                ).bloomCkEditor = {
-                    undoManager: {
-                        currentImage: hasSnapshot ? {} : undefined,
-                        snapshots: hasSnapshot ? [{}] : [],
-                        index: hasSnapshot ? 0 : -1,
-                        save: vi.fn(),
-                        update,
-                        refreshState: vi.fn(),
-                        editingHandler: {
-                            keyEventsStack: { resetInputs: vi.fn() },
-                        },
-                    },
-                };
-                return update;
+                ).bloomCkEditor = { undoManager };
+                return undoManager;
             });
 
-        it("updates every editable's snapshot after an undo restores the pictures", () => {
+        it("starts every editable's history again after an undo restores the pictures", () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
             insertInlineImage(group);
-            const updates = attachFakeEditors(group);
+            const undoManagers = attachFakeEditors(group);
 
             expect(inlineImageUndo()).toBe(true);
 
             // Sanity check: the undo took the picture out.
             expect(getInlineImages(group).length).toBe(0);
-            updates.forEach((update) => expect(update).toHaveBeenCalled());
-            // Recording the selection of editables that do not have the focus scrolled the page.
-            updates.forEach((update) =>
+            undoManagers.forEach((undoManager) => {
+                expect(undoManager.reset).toHaveBeenCalled();
+                expect(undoManager.save).toHaveBeenCalledTimes(1);
+                const [onContentOnly, image, autoFireChange] =
+                    undoManager.save.mock.calls[0];
+                // Recording the selection of editables that do not have the focus scrolled the
+                // page.
                 expect(
-                    (update.mock.calls[0][0] as FakeImage).contentOnly,
+                    (image as FakeImage).contentOnly,
                     "expected a snapshot of the content only",
-                ).toBe(true),
-            );
+                ).toBe(true);
+                expect(onContentOnly).toBe(true);
+                expect(
+                    autoFireChange,
+                    "a change event would count the picture change as typing",
+                ).toBe(false);
+                expect(
+                    undoManager.reset.mock.invocationCallOrder[0],
+                ).toBeLessThan(undoManager.save.mock.invocationCallOrder[0]);
+            });
         });
 
-        it("updates every editable's snapshot after a menu command", async () => {
+        it("starts every editable's history again after a menu command", async () => {
             const group = makeSimpleGroup();
             const wrapper = insertInlineImage(group);
             (wrapper.querySelector("img") as HTMLImageElement).src =
                 "flower.jpg";
-            const updates = attachFakeEditors(group);
+            const undoManagers = attachFakeEditors(group);
             const transparent = buildInlineImageMenuItems(
                 getInlineImageActionTarget(wrapper),
             )
@@ -1745,57 +1830,9 @@ describe("inlineImageInteractions", () => {
             (transparent.onClick as () => void)();
 
             await vi.waitFor(() =>
-                updates.forEach((update) => expect(update).toHaveBeenCalled()),
-            );
-        });
-
-        // CKEditor took those snapshots before the picture change, so redoing one would put the
-        // old picture back in one editable.
-        it("discards what CKEditor could redo", () => {
-            setupInlineImageInteractions(getTestRoot());
-            const group = makeSimpleGroup();
-            insertInlineImage(group);
-            const editable = editableFor(group, "en") as HTMLElement & {
-                bloomCkEditor?: unknown;
-            };
-            // Typing, then Ctrl+Z on it: CKEditor is at its first snapshot, with one to redo.
-            const undoManager = {
-                currentImage: {},
-                snapshots: [{ typed: false }, { typed: true }],
-                index: 0,
-                save: vi.fn(),
-                update: vi.fn(),
-                refreshState: vi.fn(),
-                editingHandler: { keyEventsStack: { resetInputs: vi.fn() } },
-            };
-            editable.bloomCkEditor = { undoManager };
-
-            expect(inlineImageUndo()).toBe(true);
-
-            expect(undoManager.snapshots).toEqual([{ typed: false }]);
-            expect(undoManager.refreshState).toHaveBeenCalled();
-        });
-
-        it("works out again whether CKEditor can redo, even when it has nothing to drop", () => {
-            setupInlineImageInteractions(getTestRoot());
-            const group = makeSimpleGroup();
-            insertInlineImage(group);
-            attachFakeEditors(group);
-
-            expect(inlineImageUndo()).toBe(true);
-
-            ["en", "fr"].forEach((lang) =>
-                expect(
-                    (
-                        editableFor(group, lang) as HTMLElement & {
-                            bloomCkEditor: {
-                                undoManager: {
-                                    refreshState: ReturnType<typeof vi.fn>;
-                                };
-                            };
-                        }
-                    ).bloomCkEditor.undoManager.refreshState,
-                ).toHaveBeenCalled(),
+                undoManagers.forEach((undoManager) =>
+                    expect(undoManager.reset).toHaveBeenCalled(),
+                ),
             );
         });
 
@@ -1806,78 +1843,28 @@ describe("inlineImageInteractions", () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
             insertInlineImage(group);
-            attachFakeEditors(group);
+            const undoManagers = attachFakeEditors(group);
 
             expect(inlineImageUndo()).toBe(true);
 
-            ["en", "fr"].forEach((lang) =>
+            undoManagers.forEach((undoManager) =>
                 expect(
-                    (
-                        editableFor(group, lang) as HTMLElement & {
-                            bloomCkEditor: {
-                                undoManager: {
-                                    editingHandler: {
-                                        keyEventsStack: {
-                                            resetInputs: ReturnType<
-                                                typeof vi.fn
-                                            >;
-                                        };
-                                    };
-                                };
-                            };
-                        }
-                    ).bloomCkEditor.undoManager.editingHandler.keyEventsStack
-                        .resetInputs,
+                    undoManager.editingHandler.keyEventsStack.resetInputs,
                 ).toHaveBeenCalled(),
             );
-        });
-
-        // CKEditor saves typing as a snapshot only every so many keystrokes. Without a save
-        // before the change, the update after it would write over the snapshot from before the
-        // typing, and Undo could no longer take the typing back.
-        it("saves typing CKEditor has not recorded before a picture change", () => {
-            const group = makeSimpleGroup();
-            const english = editableFor(group, "en");
-            attachFakeEditors(group);
-            const undoManager = (
-                english as HTMLElement & {
-                    bloomCkEditor: {
-                        undoManager: {
-                            save: ReturnType<typeof vi.fn>;
-                            update: ReturnType<typeof vi.fn>;
-                        };
-                    };
-                }
-            ).bloomCkEditor.undoManager;
-            let picturesWhenSaved = -1;
-            undoManager.save.mockImplementation(() => {
-                picturesWhenSaved = getInlineImages(group).length;
-            });
-
-            runInsertImageCommand(english);
-
-            expect(undoManager.save).toHaveBeenCalled();
-            expect(
-                picturesWhenSaved,
-                "expected the save to come before the picture went in",
-            ).toBe(0);
-            expect(
-                (undoManager.save.mock.calls[0][1] as FakeImage).contentOnly,
-            ).toBe(true);
-            // Sanity check: the picture did go in, and the snapshot was then updated.
-            expect(getInlineImages(group).length).toBe(2);
-            expect(undoManager.update).toHaveBeenCalled();
         });
 
         it("leaves alone an editor that has not recorded a snapshot yet", () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
             insertInlineImage(group);
-            const updates = attachFakeEditors(group, false);
+            const undoManagers = attachFakeEditors(group, false);
 
             expect(inlineImageUndo()).toBe(true);
 
-            updates.forEach((update) => expect(update).not.toHaveBeenCalled());
+            undoManagers.forEach((undoManager) =>
+                expect(undoManager.reset).not.toHaveBeenCalled(),
+            );
         });
     });
 

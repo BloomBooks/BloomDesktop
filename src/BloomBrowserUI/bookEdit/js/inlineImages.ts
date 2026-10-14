@@ -623,14 +623,16 @@ export function prepareInlineImageUndo(
  * where it was, so a drag into a full side, or past the level of another image, ends exactly
  * where it began. An entry for that would give the person an Undo that visibly does nothing,
  * and the Undo after it would take back a change they had stopped thinking about.
+ *
+ * Returns whether it pushed an entry, that is, whether the operation changed anything.
  */
-export function commitPendingInlineImageUndo(element: HTMLElement): void {
+export function commitPendingInlineImageUndo(element: HTMLElement): boolean {
     const pending = pendingInlineImageUndo;
     pendingInlineImageUndo = undefined;
     const translationGroup = getTranslationGroupOf(element);
-    if (!pending || pending.translationGroup !== translationGroup) return;
+    if (!pending || pending.translationGroup !== translationGroup) return false;
     const after = getInlineImageGroupState(translationGroup);
-    if (inlineImageGroupStatesMatch(pending.before, after)) return;
+    if (inlineImageGroupStatesMatch(pending.before, after)) return false;
     const entry = makeInlineImageUndoEntry(
         pending.label,
         translationGroup,
@@ -639,6 +641,7 @@ export function commitPendingInlineImageUndo(element: HTMLElement): void {
     );
     inlineImageUndoEntries.add(entry);
     theOneUndoStack.push(entry);
+    return true;
 }
 
 /** Throws away a prepared operation, for one that turned out not to happen. */
