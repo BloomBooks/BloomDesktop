@@ -21,8 +21,6 @@ import {
 import { SetupWidgetEditing } from "./bloomWidgets";
 import {
     clearInlineImageSelection,
-    inlineImageCanUndo,
-    inlineImageUndo,
     commitInlineImageUndoForImageChange,
     kInlineImageClass,
     prepareInlineImageUndoForImageChange,
@@ -2232,33 +2230,6 @@ export function attachToCkEditor(element) {
         }
     });
 
-    // Ctrl+Z in a text block never reaches the one undo stack: it arrives in the page, and
-    // ckeditor's undo plugin runs it as the "undo" command (see undo/legacyUndoProviders.ts). That
-    // command restores the saved HTML of a single editable, but an inline image has a copy in each
-    // language's editable in the group. If ckeditor handled the key after an inline image
-    // operation, it put back the copy in the focused block and left the others, including the
-    // lang="z" one that a language added later is copied from, with the size and position the user
-    // had just undone. (In one test the "en" copy went back to 40% wide while another copy stayed
-    // at 47.7%.)
-    //
-    // So when inlineImageCanUndo() says the stack's next undo is an inline image entry, we run
-    // inlineImageUndo(), which undoes it through the stack, and cancel ckeditor's command. When
-    // ckeditor's typing is newer than that entry, the stack says ckeditor has the next undo, and
-    // the key is left to ckeditor.
-    ckedit.on(
-        "beforeCommandExec",
-        (evt) => {
-            if (evt.data.name !== "undo") return;
-            if (!inlineImageCanUndo()) return;
-            inlineImageUndo();
-            evt.cancel();
-        },
-        // Priority 1 runs this before the undo plugin's own listeners, so the plugin does not
-        // take or restore a snapshot.
-        undefined,
-        undefined,
-        1,
-    );
     // A table's operations are entries on the one undo stack, separate from this history, and
     // whichever of the two was written to last is the one the next Undo belongs to; and typing
     // abandons anything the stack could redo. See undo/ckeditorChanges.ts.

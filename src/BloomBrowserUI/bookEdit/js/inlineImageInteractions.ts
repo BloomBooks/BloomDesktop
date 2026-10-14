@@ -35,6 +35,8 @@ import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import BloomField from "../bloomField/BloomField";
+import { isInChangeLayoutMode, isRedoKeystroke } from "../undo/redoKeyBinding";
+import { theOneUndoStack } from "../undo/UndoStack";
 import { EditableDivUtils } from "./editableDivUtils";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 import { buildCanvasElementControlRegistryContext } from "../toolbox/canvas/buildCanvasElementControlRegistryContext";
@@ -68,7 +70,9 @@ import {
     getInlineImageOffsetBasedOn,
     getInlineImagesInEditable,
     getTranslationGroupsWithInlineImages,
+    inlineImageCanUndo,
     InlineImageDock,
+    inlineImageUndo,
     insertInlineImage,
     kInlineImageBottomClass,
     handleInlineImageChanged,
@@ -593,6 +597,7 @@ export function setupInlineImageInteractions(container: HTMLElement): void {
     doc.addEventListener("pointerdown", onPointerDown, true);
     doc.addEventListener("mousedown", onMouseDown, true);
     doc.addEventListener("focusin", onFocusIn);
+    doc.addEventListener("keydown", onUndoOrRedoKeyDown, true);
     // inlineImages.ts sends this event when an undo or redo replaces the wrappers, and afterwards the
     // selection has to be updated. It bubbles, so one listener on the document covers the page.
     doc.addEventListener(kInlineImagesRestoredEvent, onInlineImagesRestored);
@@ -601,6 +606,77 @@ export function setupInlineImageInteractions(container: HTMLElement): void {
     void getFeatureStatusAsync("AiImageEditing").then((status) => {
         aiImageEditingIsAvailable = status?.visible ?? false;
     });
+}
+
+// Ctrl+Z and Ctrl+Y for picture changes. Inside a text block, CKEditor's undo plugin claims both
+// keys: it prevents their default on keydown and runs its own "undo" or "redo" command, which
+// restores the saved HTML of the focused editable alone. An inline image has a copy in every
+// language's editable in the group, so CKEditor would put back the copy in the focused block and
+// leave the others, including the lang="z" one that a language added later is copied from. And
+// when CKEditor has nothing of its own to undo or redo, it runs no command at all, so the key
+// would do nothing. Outside a text block (a picture clicked when the caret was never in its
+// block), nothing handles Ctrl+Z.
+//
+// So this listens on the page's document in the capture phase, which runs before CKEditor's
+// listeners on the editable. It takes Ctrl+Z when the one undo stack's next undo is a picture
+// change (inlineImageCanUndo, which leaves the key to CKEditor while typing is newer). It takes
+// Ctrl+Y (or Ctrl+Shift+Z) when the stack has something to redo and the focused block's CKEditor
+// has nothing of its own: typing discards what the stack could redo, and a picture change
+// discards what CKEditor could redo (see updateCkeditorSnapshots), so at most one of them has a
+// redo. Either way it stops the event, so CKEditor and the other key handlers never see it.
+// In Change Layout mode origami owns both keys, so this leaves them alone.
+function onUndoOrRedoKeyDown(event: KeyboardEvent): void {
+    const doc = (event.target as Node).ownerDocument ?? document;
+    if (isInChangeLayoutMode(doc)) return;
+    if (isUndoKeystroke(event)) {
+        if (!inlineImageCanUndo()) return;
+        claimKeystroke(event);
+        inlineImageUndo();
+    } else if (isRedoKeystroke(event) || isShiftedUndoKeystroke(event)) {
+        if (!theOneUndoStack.canRedo()) return;
+        if (focusedCkeditorCanRedo(doc)) return;
+        claimKeystroke(event);
+        void theOneUndoStack.redo();
+    }
+}
+
+// Ctrl+Z with no other modifier.
+function isUndoKeystroke(event: KeyboardEvent): boolean {
+    return (
+        event.ctrlKey &&
+        !event.altKey &&
+        !event.metaKey &&
+        !event.shiftKey &&
+        (event.key === "z" || event.key === "Z")
+    );
+}
+
+// Ctrl+Shift+Z, which CKEditor also treats as Redo.
+function isShiftedUndoKeystroke(event: KeyboardEvent): boolean {
+    return (
+        event.ctrlKey &&
+        event.shiftKey &&
+        !event.altKey &&
+        !event.metaKey &&
+        (event.key === "z" || event.key === "Z")
+    );
+}
+
+function claimKeystroke(event: KeyboardEvent): void {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+}
+
+// Whether the CKEditor of the text block that has the focus has a redo of its own.
+function focusedCkeditorCanRedo(doc: Document): boolean {
+    const editable = (doc.activeElement as HTMLElement | null)?.closest(
+        ".bloom-editable",
+    ) as
+        | (HTMLElement & {
+              bloomCkEditor?: { undoManager?: { redoable(): boolean } };
+          })
+        | null;
+    return !!editable?.bloomCkEditor?.undoManager?.redoable();
 }
 
 /**
