@@ -43,6 +43,7 @@ import {
     kInlineImageOffsetBasedOnAttr,
     kInlineImageRightClass,
     kInlineImageSelectedClass,
+    kInlineImageWidthVar,
     prepareInlineImageUndo,
     setInlineImageDock,
     syncInlineImagesFromEditable,
@@ -1413,6 +1414,130 @@ describe("inlineImageInteractions", () => {
 
     // CKEditor compares each editable with its latest snapshot on every keyup, and would take a
     // picture change for typing. So every finished picture change updates that snapshot.
+    // CKEditor claims Ctrl+Z and Ctrl+Y inside a text block, and does nothing with them when it
+    // has nothing of its own to undo or redo, so the page takes them first for picture changes.
+    describe("Ctrl+Z and Ctrl+Y", () => {
+        const pressKey = (
+            target: HTMLElement,
+            key: string,
+            options: { shiftKey?: boolean } = {},
+        ) => {
+            const event = new KeyboardEvent("keydown", {
+                key,
+                ctrlKey: true,
+                shiftKey: options.shiftKey ?? false,
+                bubbles: true,
+                cancelable: true,
+            });
+            target.dispatchEvent(event);
+            return event;
+        };
+        // A resize as the page records it: prepare, change, sync, commit.
+        const resizeTo = (group: HTMLElement, width: string) => {
+            prepareInlineImageUndo(group);
+            getInlineImageInEditable(
+                editableFor(group, "en"),
+            )!.style.setProperty(kInlineImageWidthVar, width);
+            syncInlineImagesFromEditable(editableFor(group, "en"));
+            commitPendingInlineImageUndo(group);
+        };
+        const widthIn = (group: HTMLElement, lang: string) =>
+            getInlineImageInEditable(
+                editableFor(group, lang),
+            )!.style.getPropertyValue(kInlineImageWidthVar);
+
+        it("Ctrl+Z undoes a picture change in every copy, before CKEditor sees the key", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            resizeTo(group, "60%");
+            const english = editableFor(group, "en");
+            const reachedTheEditable = vi.fn();
+            english.addEventListener("keydown", reachedTheEditable);
+            // Sanity check: both copies have the new width.
+            expect(widthIn(group, "fr")).toBe("60%");
+
+            const event = pressKey(english, "z");
+
+            expect(widthIn(group, "en")).toBe("40%");
+            expect(widthIn(group, "fr")).toBe("40%");
+            expect(event.defaultPrevented).toBe(true);
+            expect(
+                reachedTheEditable,
+                "CKEditor listens on the editable, and must not also act on the key",
+            ).not.toHaveBeenCalled();
+        });
+
+        it("leaves Ctrl+Z alone when the next undo is not a picture change", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            // Sanity check: nothing on the stack.
+            expect(inlineImageCanUndo()).toBe(false);
+
+            const event = pressKey(editableFor(group, "en"), "z");
+
+            expect(event.defaultPrevented).toBe(false);
+        });
+
+        it("Ctrl+Y and Ctrl+Shift+Z redo the picture change Ctrl+Z took back", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            resizeTo(group, "60%");
+            const english = editableFor(group, "en");
+            pressKey(english, "z");
+            // Sanity check: undone.
+            expect(widthIn(group, "fr")).toBe("40%");
+
+            const event = pressKey(english, "y");
+
+            expect(event.defaultPrevented).toBe(true);
+            expect(widthIn(group, "en")).toBe("60%");
+            expect(widthIn(group, "fr")).toBe("60%");
+
+            pressKey(english, "z");
+            pressKey(english, "Z", { shiftKey: true });
+            expect(widthIn(group, "fr")).toBe("60%");
+        });
+
+        it("leaves Ctrl+Y to CKEditor when it has a redo of its own", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            resizeTo(group, "60%");
+            const english = editableFor(group, "en") as HTMLElement & {
+                bloomCkEditor?: unknown;
+            };
+            pressKey(english, "z");
+            english.bloomCkEditor = { undoManager: { redoable: () => true } };
+            english.setAttribute("tabindex", "0");
+            english.focus();
+            // Sanity check: the focus is in the block, and the stack has a redo.
+            expect(document.activeElement).toBe(english);
+            expect(theOneUndoStack.canRedo()).toBe(true);
+
+            const event = pressKey(english, "y");
+
+            expect(event.defaultPrevented).toBe(false);
+            expect(widthIn(group, "en")).toBe("40%");
+        });
+
+        it("leaves both keys to origami in Change Layout mode", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            resizeTo(group, "60%");
+            const marginBox = document.createElement("div");
+            marginBox.className = "marginBox origami-layout-mode";
+            getTestRoot().appendChild(marginBox);
+
+            const event = pressKey(editableFor(group, "en"), "z");
+
+            expect(event.defaultPrevented).toBe(false);
+            expect(widthIn(group, "fr")).toBe("60%");
+        });
+    });
+
     describe("keeping CKEditor's snapshots current", () => {
         // Stands in for CKEditor's undo Image, which takes a snapshot of an editor; the second
         // argument says whether to leave out the selection.
