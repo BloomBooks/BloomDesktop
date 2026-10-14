@@ -765,6 +765,7 @@ export function setupInlineImageInteractions(container: HTMLElement): void {
     doc.addEventListener("mousedown", onMouseDown, true);
     doc.addEventListener("focusin", onFocusIn);
     doc.addEventListener("keydown", onUndoOrRedoKeyDown, true);
+    doc.addEventListener("keydown", onSelectAllKeyDown, true);
     // inlineImages.ts sends this event when an undo or redo replaces the wrappers, and afterwards the
     // selection has to be updated. It bubbles, so one listener on the document covers the page.
     doc.addEventListener(kInlineImagesRestoredEvent, onInlineImagesRestored);
@@ -858,6 +859,40 @@ function isShiftedUndoKeystroke(event: KeyboardEvent): boolean {
         !event.metaKey &&
         isZKey(event)
     );
+}
+
+// Ctrl+A in a text block that holds an inline image. Left to the browser, Ctrl+A in a block
+// whose first child is a picture (contenteditable=false) with its image showing leaves a
+// collapsed selection at the end of the text, so Ctrl+A then Delete deletes nothing. (With the
+// placeholder, whose img is hidden, the browser selects the text.) So this selects the block's
+// text itself, from the start of its first child that is not a picture to the end of its last
+// one. The pictures docked at the start and at the bottom stay out of the selection, so Ctrl+A
+// then Delete clears the text and keeps them, as it does when the browser selects the text.
+// It does not stop the event, so the other key handlers still see it.
+function onSelectAllKeyDown(event: KeyboardEvent): void {
+    if (
+        !event.ctrlKey ||
+        event.altKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        !(event.key === "a" || event.key === "A" || event.keyCode === 65)
+    )
+        return;
+    const editable = (event.target as Element).closest?.(
+        ".bloom-editable",
+    ) as HTMLElement | null;
+    if (!editable) return;
+    const text = Array.from(editable.children).filter(
+        (child) => !child.classList.contains(kInlineImageClass),
+    );
+    if (text.length === editable.children.length || text.length === 0) return;
+    event.preventDefault();
+    const range = editable.ownerDocument.createRange();
+    range.setStartBefore(text[0]);
+    range.setEndAfter(text[text.length - 1]);
+    const selection = editable.ownerDocument.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
 }
 
 function claimKeystroke(event: KeyboardEvent): void {
