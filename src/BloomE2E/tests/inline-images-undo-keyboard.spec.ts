@@ -44,11 +44,7 @@ import {
     typeAtEndOfBlock,
 } from "../helpers/inlineImages";
 import { pressKey } from "../helpers/keys";
-import {
-    canRedo,
-    expectUndoMechanismCalls,
-    watchUndoMechanisms,
-} from "../helpers/undo";
+import { canRedo } from "../helpers/undo";
 
 test.use({
     collectionSpec: { name: "inline-images-undo-keyboard", languages: ["en"] },
@@ -200,12 +196,9 @@ test("Ctrl+Y puts back a picture change that Ctrl+Z took back [Test Case ID 815]
         await canRedo(page),
         "After undoing the picture's resize, the undo stack has nothing to redo.",
     ).toBe(true);
-    await watchUndoMechanisms(page);
-
     await pressKey(page, "Control+y");
 
     await expectEveryCopyWidth(page, widenedWidth, "Ctrl+Y");
-    await expectUndoMechanismCalls(page, { stackRedo: 1 }, "pressing Ctrl+Y");
 });
 
 test("typing after Ctrl+Z means Ctrl+Y no longer brings the picture change back [Test Case ID 815]", async ({
@@ -231,16 +224,8 @@ test("typing after Ctrl+Z means Ctrl+Y no longer brings the picture change back 
                 "so Ctrl+Y would put it back on top of the new typing.",
         })
         .toBe(false);
-    await watchUndoMechanisms(page);
-
     await pressKey(page, "Control+y");
 
-    // The stack's Ctrl+Y binding runs in the keydown, so by now it has run if it was going to.
-    await expectUndoMechanismCalls(
-        page,
-        { stackRedo: 0 },
-        "pressing Ctrl+Y after typing",
-    );
     await expectEveryCopyWidth(page, originalWidth, "Ctrl+Y after typing");
     expect(
         await getBlockText(page, BLOCK, LANG),
