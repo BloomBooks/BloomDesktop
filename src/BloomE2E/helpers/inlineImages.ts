@@ -1278,6 +1278,43 @@ export async function clickInBlockText(
 }
 
 /**
+ * Click the page's margin, outside every text block, the way a person clicks on an empty part of
+ * the page. That takes the caret out of the text. Returns once no text block has the focus.
+ */
+export async function clickPageMargin(page: Page): Promise<void> {
+    const frame = editablePageFrame(page);
+    // The click goes near the page's top left corner, so that corner has to be in view.
+    await frame
+        .locator("body")
+        .evaluate((body) => body.ownerDocument.defaultView!.scrollTo(0, 0));
+    const pageBox = await frame.locator(".bloom-page").first().boundingBox();
+    if (!pageBox)
+        throw new Error(
+            "The page being edited has no box to click a margin of.",
+        );
+    // A few pixels in from the page's top left corner is inside the page but outside its margin
+    // box, so no text block is there.
+    await realClickAt(page, pageBox.x + 6, pageBox.y + 6);
+    await expect
+        .poll(async () => anyTextBlockHasFocus(page), {
+            timeout: 30000,
+            message:
+                "Clicking the page's margin left the caret in a text block.",
+        })
+        .toBe(false);
+}
+
+/** True when the keyboard focus is inside one of the page's text blocks. */
+export async function anyTextBlockHasFocus(page: Page): Promise<boolean> {
+    return editablePageFrame(page)
+        .locator("body")
+        .evaluate(
+            (body) =>
+                !!body.ownerDocument.activeElement?.closest(".bloom-editable"),
+        );
+}
+
+/**
  * Put the caret at the end of a block's text and type there with real key presses, the way a
  * person adds to the text. Real keys matter when the subject is undo: CKEditor records typing for
  * its undo only from keystrokes, and the one undo stack learns of typing from CKEditor. Returns
