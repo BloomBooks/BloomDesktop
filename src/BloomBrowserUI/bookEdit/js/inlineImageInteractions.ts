@@ -35,7 +35,7 @@ import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import BloomField from "../bloomField/BloomField";
-import { isInChangeLayoutMode, isRedoKeystroke } from "../undo/redoKeyBinding";
+import { isInChangeLayoutMode } from "../undo/redoKeyBinding";
 import { theOneUndoStack } from "../undo/UndoStack";
 import { EditableDivUtils } from "./editableDivUtils";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
@@ -370,7 +370,8 @@ export function clampInlineImageOffset(
  * Scaling alone does not always keep the text inside the block. The text beside a float
  * rewraps when the block changes width, so a scaled offset can still leave the block with more
  * text than it can show. adjustInlineImageOffsetsIfBlockSizeChanged reduces the offset
- * afterwards when that happens, so the block ends up fitting its text, as it does after a drag.
+ * afterwards when that happens and a smaller offset lets the block fit its text, as a drag
+ * would.
  */
 export function computeInlineImageOffsetForNewBlockHeight(
     offsetLayoutPx: number,
@@ -484,8 +485,8 @@ const kMaxOffsetFitPasses = 4;
  * the end.
  *
  * Moving the pictures up cannot always fix that. A block that has shrunk a lot may not hold its
- * text even with every offset at zero, or even with no picture at all. Then this does what it
- * can (see fitInlineImageOffsetsToBlock), and the rest is for the user to fix.
+ * text even with every offset at zero, or even with no picture at all. Then the pictures keep
+ * their scaled offsets (see fitInlineImageOffsetsToBlock), and the rest is for the user to fix.
  *
  * Only the editable the reader sees is laid out. The others are display:none and measure zero.
  * So this measures that one, and syncInlineImagesFromEditable copies the result to the rest.
@@ -545,13 +546,21 @@ export function adjustInlineImageOffsetsIfBlockSizeChanged(
 // Moving a picture up changes which lines are full width and which are beside the picture, so
 // a pass can leave more text off the end than there was before it. So this keeps the offsets
 // that left the least overflow, which may be the ones it started with.
+//
+// If no pass gets the text to fit, this puts back the offsets it started with. Then the block
+// has more text than it can hold wherever the picture is, and moving the picture up gains only
+// part of a line while taking it away from where the person put it.
 function fitInlineImageOffsetsToBlock(
     editable: HTMLElement,
     wrappers: HTMLElement[],
 ): void {
     const measureOverflow = () => editable.scrollHeight - editable.clientHeight;
     const readOffsets = () => wrappers.map(getInlineImageOffsetLayoutPx);
-    let best = { overflowLayoutPx: measureOverflow(), offsets: readOffsets() };
+    const startingOffsets = readOffsets();
+    let best = {
+        overflowLayoutPx: measureOverflow(),
+        offsets: startingOffsets,
+    };
     for (let pass = 0; pass < kMaxOffsetFitPasses; pass++) {
         if (best.overflowLayoutPx <= 0) break;
         const overflowLayoutPx = measureOverflow();
@@ -570,9 +579,8 @@ function fitInlineImageOffsetsToBlock(
             best = { overflowLayoutPx: now, offsets: readOffsets() };
         }
     }
-    wrappers.forEach((wrapper, i) =>
-        setInlineImageOffset(wrapper, best.offsets[i]),
-    );
+    const offsets = best.overflowLayoutPx <= 0 ? best.offsets : startingOffsets;
+    wrappers.forEach((wrapper, i) => setInlineImageOffset(wrapper, offsets[i]));
 }
 
 function setInlineImageOffset(
@@ -628,6 +636,8 @@ export function setupInlineImageInteractions(container: HTMLElement): void {
 function onUndoOrRedoKeyDown(event: KeyboardEvent): void {
     const doc = (event.target as Node).ownerDocument ?? document;
     if (isInChangeLayoutMode(doc)) return;
+    // A form field has its own undo of what was typed in it.
+    if ((event.target as Element).closest?.("input, textarea, select")) return;
     if (isUndoKeystroke(event)) {
         if (!inlineImageCanUndo()) return;
         claimKeystroke(event);
@@ -640,6 +650,17 @@ function onUndoOrRedoKeyDown(event: KeyboardEvent): void {
     }
 }
 
+// Whether this is the Z (or Y) key. CKEditor recognizes its undo and redo keys by keyCode, which
+// is the key's place on the keyboard, so it gets Ctrl+Z on any layout; on a Russian layout, for
+// one, event.key is "я". This has to recognize every Ctrl+Z that CKEditor would, or CKEditor
+// would undo the focused copy of a picture alone.
+function isZKey(event: KeyboardEvent): boolean {
+    return event.key === "z" || event.key === "Z" || event.keyCode === 90;
+}
+function isYKey(event: KeyboardEvent): boolean {
+    return event.key === "y" || event.key === "Y" || event.keyCode === 89;
+}
+
 // Ctrl+Z with no other modifier.
 function isUndoKeystroke(event: KeyboardEvent): boolean {
     return (
@@ -647,7 +668,18 @@ function isUndoKeystroke(event: KeyboardEvent): boolean {
         !event.altKey &&
         !event.metaKey &&
         !event.shiftKey &&
-        (event.key === "z" || event.key === "Z")
+        isZKey(event)
+    );
+}
+
+// Ctrl+Y with no other modifier.
+function isRedoKeystroke(event: KeyboardEvent): boolean {
+    return (
+        event.ctrlKey &&
+        !event.altKey &&
+        !event.metaKey &&
+        !event.shiftKey &&
+        isYKey(event)
     );
 }
 
@@ -658,7 +690,7 @@ function isShiftedUndoKeystroke(event: KeyboardEvent): boolean {
         event.shiftKey &&
         !event.altKey &&
         !event.metaKey &&
-        (event.key === "z" || event.key === "Z")
+        isZKey(event)
     );
 }
 
