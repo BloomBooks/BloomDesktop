@@ -1414,24 +1414,48 @@ export async function selectAllAndDeleteInBlock(
     await expect
         .poll(
             async () =>
-                // A selection that starts at a picture's wrapper, which is not editable, has no
-                // text in Chrome's Selection.toString, so this asks only whether the selection
-                // is a range that lies in the block.
-                block.evaluate((element) => {
+                // In a block that holds a picture, Bloom's Ctrl+A selects from the first child that
+                // is not a picture to the end of the last one, leaving the pictures out. So this
+                // asks whether the selection's range covers at least that much, and otherwise
+                // describes where the selection is.
+                block.evaluate((element, wrapperClass) => {
                     const selection = element.ownerDocument.getSelection();
-                    return (
-                        !!selection &&
-                        !selection.isCollapsed &&
-                        element.contains(selection.anchorNode) &&
-                        element.contains(selection.focusNode)
+                    if (!selection || selection.rangeCount === 0)
+                        return "there is no selection";
+                    if (selection.isCollapsed)
+                        return "the selection is only a caret";
+                    const range = selection.getRangeAt(0);
+                    const text = Array.from(element.children).filter(
+                        (child) => !child.classList.contains(wrapperClass),
                     );
-                }),
+                    if (text.length === 0)
+                        return "the block holds nothing but pictures";
+                    const content = element.ownerDocument.createRange();
+                    content.setStartBefore(text[0]);
+                    content.setEndAfter(text[text.length - 1]);
+                    if (
+                        range.compareBoundaryPoints(
+                            Range.START_TO_START,
+                            content,
+                        ) <= 0 &&
+                        range.compareBoundaryPoints(
+                            Range.END_TO_END,
+                            content,
+                        ) >= 0
+                    )
+                        return "covers the block's text";
+                    const describe = (node: Node | null) =>
+                        node instanceof Element
+                            ? `<${node.tagName.toLowerCase()} class="${node.className}">`
+                            : `${node?.nodeName} in <${node?.parentElement?.tagName.toLowerCase()} class="${node?.parentElement?.className}">`;
+                    return `the selection runs from ${describe(selection.anchorNode)} to ${describe(selection.focusNode)}`;
+                }, kWrapperClass),
             {
                 timeout: 15000,
-                message: `Ctrl+A selected nothing in the "${languageTag}" block.`,
+                message: `Ctrl+A did not select all the text of the "${languageTag}" block.`,
             },
         )
-        .toBe(true);
+        .toBe("covers the block's text");
     await page.keyboard.press("Delete");
 }
 

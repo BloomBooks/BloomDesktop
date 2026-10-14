@@ -1,28 +1,20 @@
-// Checks what happens when the person tries to delete a picture with the keyboard instead of
-// from its menu.
+// Checks what the keyboard does to a picture in a text block, and that deleting a picture from its
+// menu lasts.
 //
-// Two pieces of code are involved.
+// Ctrl+A in a block that holds a picture selects the block's text and leaves the picture out
+// (inlineImageInteractions.ts). Chrome's own Ctrl+A selects nothing in a block whose first child is
+// a picture that is showing. So Ctrl+A then Delete clears the text, and the picture stays in every
+// language. The first test checks that, with a picture inserted after the page was set up.
 //
-// BloomField's PreventRemovalOfSomeElements keeps the picture from being deleted. The wrapper has
-// the bloom-preventRemoval class. BloomField records how many such elements each field should have,
-// and if a keystroke leaves the field with fewer, it calls document.execCommand("undo"). It is there
-// to handle Ctrl+A DEL. Inserting and deleting a picture, and undoing or redoing either, change
-// that number on purpose, so each records the new number (updateProtectedPictureCounts in
-// inlineImageInteractions.ts). Without that, a picture inserted after the page was set up would not
-// be protected, and the next keystroke after a deliberate delete would put the picture back.
-//
-// The other is normalizeInlineImages, which runs when the page is set up and copies the images
-// in the editable chosen by getCanonicalInlineImageEditable over the group's other editables.
-// getCanonicalInlineImageEditable only chooses an editable that has images, so an editable the
-// person emptied is never the one copied from, and the picture comes back from whichever language
-// still has it. Also, nothing calls syncInlineImagesFromEditable after ordinary typing or cutting
-// (only the inline image operations call it), so a deletion made with the keyboard never reaches
-// the other languages.
-//
-// So if PreventRemovalOfSomeElements ever fails to put the picture back, the person deletes the
-// picture, saves, comes back, and finds it there again, with no way to tell why. These tests check
-// in the browser whether Ctrl+A DEL leaves a picture inserted on the page in this session in place,
-// and whether a deletion from the menu lasts through the next keystroke, a save and a reload.
+// A picture can only be deleted on purpose from its menu. That deletion has to reach every
+// language: normalizeInlineImages, which runs when the page is set up, copies the pictures of the
+// editable chosen by getCanonicalInlineImageEditable over the group's other editables, and only an
+// editable that has pictures can be chosen. So a copy left in one language would bring the picture
+// back in all of them. BloomField's PreventRemovalOfSomeElements also counts the pictures a block
+// should have, and undoes any keystroke that leaves fewer; the menu's Delete lowers that count
+// (updateProtectedPictureCounts in inlineImageInteractions.ts), or the next keystroke would put the
+// picture back. The second test checks that the deletion lasts through a keystroke, a save and a
+// reload.
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -39,6 +31,7 @@ import {
     addInlineImage,
     changeInlineImagePicture,
     deleteInlineImage,
+    getBlockText,
     getInlineImages,
     selectAllAndDeleteInBlock,
     typeAtEndOfBlock,
@@ -113,47 +106,33 @@ test("Ctrl+A DEL does not take out a picture inserted after the page was set up 
         copiesBefore.reduce((a, b) => a + b, 0),
         "The group holds fewer than two copies of the picture, so this test is measuring nothing.",
     ).toBeGreaterThan(1);
+    expect(
+        await getBlockText(page, BLOCK, LANG),
+        "The block has no text, so this test could not see Delete clear it.",
+    ).toContain("kingfisher");
 
-    // The action under test: press Ctrl+A and then Delete with real keys, which is what
-    // bloom-preventRemoval is there to handle. The picture was inserted after the page was set
-    // up, so this also checks that inserting it updated the number BloomField protects.
+    // The action under test: press Ctrl+A and then Delete with real keys. selectAllAndDeleteInBlock
+    // checks that Ctrl+A selected all of the block's text before it presses Delete.
     await selectAllAndDeleteInBlock(page, BLOCK, LANG);
 
-    // Wait until PreventRemovalOfSomeElements has run. It undoes the deletion on keyup when it
-    // sees there are fewer wrappers, and CKEditor's handling of a paste or a deletion is
-    // asynchronous. So this waits for the picture to be back in every language, which is the
-    // state under test, and not for a fixed time. If the undo never runs, the poll times out and
-    // fails with the message below.
+    // CKEditor handles the deletion after the keystroke, so this waits for the text to go rather
+    // than for a fixed time.
     await expect
-        .poll(
-            async () =>
-                (await getInlineImages(page, BLOCK)).map(
-                    (editable) => editable.images.length,
-                ),
-            {
-                timeout: 30000,
-                message:
-                    `Ctrl+A DEL did not leave every language's block holding its one copy of ` +
-                    `the picture. bloom-preventRemoval is supposed to undo a keystroke that ` +
-                    `removes the wrapper, and nothing carries such a removal to the other ` +
-                    `languages, so a block left empty here gets the picture stamped back into ` +
-                    `it by normalizeInlineImages at the next page setup -- which reads as "I ` +
-                    `deleted it, saved, and it came back".`,
-            },
-        )
-        .toEqual(copiesBefore);
+        .poll(async () => getBlockText(page, BLOCK, LANG), {
+            timeout: 30000,
+            message: "Ctrl+A then Delete did not clear the block's text.",
+        })
+        .toBe("");
 
-    const after = await getInlineImages(page, BLOCK);
-    for (const editable of after)
-        expect(
-            editable.images.length,
-            `Ctrl+A DEL left the "${editable.languageTag}" block with ` +
-                `${editable.images.length} copies of the picture instead of 1. ` +
-                `bloom-preventRemoval is supposed to undo a keystroke that removes the wrapper, ` +
-                `and nothing carries such a removal to the other languages, so a block left ` +
-                `empty here gets the picture stamped back into it by normalizeInlineImages at ` +
-                `the next page setup -- which reads as "I deleted it, saved, and it came back".`,
-        ).toBe(1);
+    expect(
+        (await getInlineImages(page, BLOCK)).map(
+            (editable) => editable.images.length,
+        ),
+        "Ctrl+A then Delete took a copy of the picture out of a language's block. Ctrl+A is " +
+            "supposed to leave pictures out of the selection, and nothing carries a removal made " +
+            "with the keyboard to the other languages, so the picture would come back at the next " +
+            'page setup, which reads as "I deleted it, saved, and it came back".',
+    ).toEqual(copiesBefore);
 });
 
 test("a picture deleted from its own menu stays deleted through the next keystroke, a save and a reload [Test Case ID 815]", async ({
