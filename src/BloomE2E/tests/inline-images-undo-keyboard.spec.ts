@@ -33,7 +33,9 @@ import {
 } from "../helpers/bookMaking";
 import {
     addInlineImage,
+    anyTextBlockHasFocus,
     changeInlineImagePicture,
+    clickPageMargin,
     getBlockText,
     getInlineImage,
     getInlineImageInEveryLanguage,
@@ -288,4 +290,39 @@ test("after typing and then a picture change, Ctrl+Z takes back the picture chan
     // CKEditor's undo restores a snapshot of this editable, so the picture in it has to be the
     // one the first Ctrl+Z left, not the widened one from before.
     await expectEveryCopyWidth(page, widthBefore, "the second Ctrl+Z");
+});
+
+test("Ctrl+Z takes back a picture change when the caret is not in the picture's block [Test Case ID 815]", async ({
+    page,
+}) => {
+    test.setTimeout(300000);
+    // A person who clicks the page's margin and then works only on the picture never puts the
+    // caret in its block, and clicking a picture does not move the focus there either.
+    await clickPageMargin(page);
+    widenedWidth = await resizeInlineImage(
+        page,
+        BLOCK,
+        LANG,
+        imageId,
+        "se",
+        40,
+    );
+    expect(
+        widenedWidth,
+        "The resize did not change the picture's width, so there is nothing for undo to take back.",
+    ).not.toBe(originalWidth);
+    await selectInlineImage(page, BLOCK, LANG, imageId);
+    expect(
+        await anyTextBlockHasFocus(page),
+        "Changing and selecting the picture put the caret in a text block, so this test cannot " +
+            "show Ctrl+Z working without it there.",
+    ).toBe(false);
+
+    await pressKey(page, "Control+z");
+
+    await expectEveryCopyWidth(
+        page,
+        originalWidth,
+        "Ctrl+Z with no caret in the block",
+    );
 });
