@@ -1509,7 +1509,10 @@ describe("inlineImageInteractions", () => {
                 bloomCkEditor?: unknown;
             };
             pressKey(english, "z");
-            english.bloomCkEditor = { undoManager: { redoable: () => true } };
+            // CKEditor is at its first snapshot, with one after it to redo.
+            english.bloomCkEditor = {
+                undoManager: { index: 0, snapshots: [{}, {}] },
+            };
             english.setAttribute("tabindex", "0");
             english.focus();
             // Sanity check: the focus is in the block, and the stack has a redo.
@@ -1520,6 +1523,34 @@ describe("inlineImageInteractions", () => {
 
             expect(event.defaultPrevented).toBe(false);
             expect(widthIn(group, "en")).toBe("40%");
+        });
+
+        // CKEditor's redoable() can say yes after a save has dropped its redo snapshots.
+        it("takes Ctrl+Y when CKEditor's flag says it can redo but it has no snapshot to redo", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            resizeTo(group, "60%");
+            const english = editableFor(group, "en") as HTMLElement & {
+                bloomCkEditor?: unknown;
+            };
+            pressKey(english, "z");
+            english.bloomCkEditor = {
+                undoManager: {
+                    index: 1,
+                    snapshots: [{}, {}],
+                    redoable: () => true,
+                },
+            };
+            english.setAttribute("tabindex", "0");
+            english.focus();
+            // Sanity check: the focus is in the block.
+            expect(document.activeElement).toBe(english);
+
+            const event = pressKey(english, "y");
+
+            expect(event.defaultPrevented).toBe(true);
+            expect(widthIn(group, "fr")).toBe("60%");
         });
 
         it("leaves both keys to origami in Change Layout mode", () => {
@@ -1655,6 +1686,29 @@ describe("inlineImageInteractions", () => {
 
             expect(undoManager.snapshots).toEqual([{ typed: false }]);
             expect(undoManager.refreshState).toHaveBeenCalled();
+        });
+
+        it("works out again whether CKEditor can redo, even when it has nothing to drop", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            attachFakeEditors(group);
+
+            expect(inlineImageUndo()).toBe(true);
+
+            ["en", "fr"].forEach((lang) =>
+                expect(
+                    (
+                        editableFor(group, lang) as HTMLElement & {
+                            bloomCkEditor: {
+                                undoManager: {
+                                    refreshState: ReturnType<typeof vi.fn>;
+                                };
+                            };
+                        }
+                    ).bloomCkEditor.undoManager.refreshState,
+                ).toHaveBeenCalled(),
+            );
         });
 
         // An input event with no keydown before it (a spelling suggestion, a paste from the menu)
