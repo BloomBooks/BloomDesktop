@@ -1275,6 +1275,33 @@ export async function getBlockText(
 }
 
 /**
+ * Whether the CKEditor of one language's block has any of its own history to undo, that is,
+ * whether Ctrl+Z in that block would change its text.
+ */
+export async function blockCkeditorCanUndo(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+): Promise<boolean> {
+    return inlineImageBlock(page, groupSelector, languageTag).evaluate(
+        (block) => {
+            const editor = (
+                block as HTMLElement & {
+                    bloomCkEditor?: {
+                        undoManager: { undoable: () => boolean };
+                    };
+                }
+            ).bloomCkEditor;
+            if (!editor)
+                throw new Error(
+                    "The block has no CKEditor, so this cannot ask what Ctrl+Z would undo.",
+                );
+            return editor.undoManager.undoable();
+        },
+    );
+}
+
+/**
  * Click on the text of a block, away from every inline image in it, the way a person puts the
  * caret back in the text. That deselects the picture, so its corner handles go away. Returns once
  * no inline image in the group is selected.
@@ -1373,7 +1400,34 @@ export async function selectAllAndDeleteInBlock(
     languageTag: string,
 ): Promise<void> {
     await clickInBlockText(page, groupSelector, languageTag);
+    const block = inlineImageBlock(page, groupSelector, languageTag);
+    await expect(
+        block,
+        `Clicking the text of the "${languageTag}" block did not give it the focus, so Ctrl+A ` +
+            `and Delete would go elsewhere.`,
+    ).toBeFocused({ timeout: 15000 });
     await page.keyboard.press("Control+a");
+    await expect
+        .poll(
+            async () =>
+                // A selection that starts at a picture's wrapper, which is not editable, has no
+                // text in Chrome's Selection.toString, so this asks only whether the selection
+                // is a range that lies in the block.
+                block.evaluate((element) => {
+                    const selection = element.ownerDocument.getSelection();
+                    return (
+                        !!selection &&
+                        !selection.isCollapsed &&
+                        element.contains(selection.anchorNode) &&
+                        element.contains(selection.focusNode)
+                    );
+                }),
+            {
+                timeout: 15000,
+                message: `Ctrl+A selected nothing in the "${languageTag}" block.`,
+            },
+        )
+        .toBe(true);
     await page.keyboard.press("Delete");
 }
 
