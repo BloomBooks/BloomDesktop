@@ -1277,6 +1277,48 @@ export async function clickInBlockText(
         .toBe(0);
 }
 
+/**
+ * Put the caret at the end of a block's text and type there with real key presses, the way a
+ * person adds to the text. Real keys matter when the subject is undo: CKEditor records typing for
+ * its undo only from keystrokes, and the one undo stack learns of typing from CKEditor. Returns
+ * once the block's text ends with what was typed.
+ */
+export async function typeAtEndOfBlock(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    text: string,
+): Promise<void> {
+    await clickInBlockText(page, groupSelector, languageTag);
+    await page.keyboard.press("Control+End");
+    await page.keyboard.type(text);
+    await expect
+        .poll(async () => getBlockText(page, groupSelector, languageTag), {
+            timeout: 30000,
+            message: `Typing "${text}" at the end of the "${languageTag}" block did not land.`,
+        })
+        .toMatch(new RegExp(`${escapeForRegExp(text.trim())}$`));
+}
+
+/**
+ * Select everything in a block with Ctrl+A and press Delete, with real keys, the way a person
+ * clears a block to start its text over. Waits for nothing, because what the keystroke should do to
+ * the block's pictures is the caller's question.
+ */
+export async function selectAllAndDeleteInBlock(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+): Promise<void> {
+    await clickInBlockText(page, groupSelector, languageTag);
+    await page.keyboard.press("Control+a");
+    await page.keyboard.press("Delete");
+}
+
+function escapeForRegExp(text: string): string {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 // --- private helpers, which tests do not call ---------------------------------
 
 // renderTextContextMenu puts the text block's MUI context menu into the document of the page

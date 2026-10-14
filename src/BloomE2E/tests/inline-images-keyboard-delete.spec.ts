@@ -1,12 +1,15 @@
 // Checks what happens when the person tries to delete a picture with the keyboard instead of
 // from its menu.
 //
-// Two pieces of code are involved, and each works correctly by itself.
+// Two pieces of code are involved.
 //
 // BloomField's PreventRemovalOfSomeElements keeps the picture from being deleted. The wrapper has
-// the bloom-preventRemoval class, and if a keystroke leaves the field with fewer elements that
-// have that class than it had before, the code calls document.execCommand("undo"). It is there to
-// handle Ctrl+A DEL.
+// the bloom-preventRemoval class. BloomField records how many such elements each field should have,
+// and if a keystroke leaves the field with fewer, it calls document.execCommand("undo"). It is there
+// to handle Ctrl+A DEL. Inserting and deleting a picture, and undoing or redoing either, change
+// that number on purpose, so each records the new number (updateProtectedPictureCounts in
+// inlineImageInteractions.ts). Without that, a picture inserted after the page was set up would not
+// be protected, and the next keystroke after a deliberate delete would put the picture back.
 //
 // The other is normalizeInlineImages, which runs when the page is set up and copies the images
 // in the editable chosen by getCanonicalInlineImageEditable over the group's other editables.
@@ -17,9 +20,9 @@
 // the other languages.
 //
 // So if PreventRemovalOfSomeElements ever fails to put the picture back, the person deletes the
-// picture, saves, comes back, and finds it there again, with no way to tell why. This test checks
-// in the browser whether Ctrl+A DEL leaves the picture in place, and whether a deletion from the
-// menu lasts through a save and a reload.
+// picture, saves, comes back, and finds it there again, with no way to tell why. These tests check
+// in the browser whether Ctrl+A DEL leaves a picture inserted on the page in this session in place,
+// and whether a deletion from the menu lasts through the next keystroke, a save and a reload.
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -37,6 +40,8 @@ import {
     changeInlineImagePicture,
     deleteInlineImage,
     getInlineImages,
+    selectAllAndDeleteInBlock,
+    typeAtEndOfBlock,
 } from "../helpers/inlineImages";
 
 test.use({
@@ -72,7 +77,7 @@ let imageId: string;
 let contentPageId: string;
 let coverId: string;
 
-test("Ctrl+A DEL does not take the picture out of the block [Test Case ID 815]", async ({
+test("Ctrl+A DEL does not take out a picture inserted after the page was set up [Test Case ID 815]", async ({
     page,
 }) => {
     test.setTimeout(300000);
@@ -110,14 +115,9 @@ test("Ctrl+A DEL does not take the picture out of the block [Test Case ID 815]",
     ).toBeGreaterThan(1);
 
     // The action under test: press Ctrl+A and then Delete with real keys, which is what
-    // bloom-preventRemoval is there to handle.
-    const block = page
-        .frameLocator("#page")
-        .locator(`${BLOCK} > .bloom-editable[lang="${LANG}"]`)
-        .first();
-    await block.click();
-    await page.keyboard.press("Control+a");
-    await page.keyboard.press("Delete");
+    // bloom-preventRemoval is there to handle. The picture was inserted after the page was set
+    // up, so this also checks that inserting it updated the number BloomField protects.
+    await selectAllAndDeleteInBlock(page, BLOCK, LANG);
 
     // Wait until PreventRemovalOfSomeElements has run. It undoes the deletion on keyup when it
     // sees there are fewer wrappers, and CKEditor's handling of a paste or a deletion is
@@ -156,7 +156,7 @@ test("Ctrl+A DEL does not take the picture out of the block [Test Case ID 815]",
         ).toBe(1);
 });
 
-test("a picture deleted from its own menu stays deleted through a save and a reload [Test Case ID 815]", async ({
+test("a picture deleted from its own menu stays deleted through the next keystroke, a save and a reload [Test Case ID 815]", async ({
     page,
 }) => {
     test.setTimeout(300000);
@@ -167,6 +167,16 @@ test("a picture deleted from its own menu stays deleted through a save and a rel
     expect(
         await countImages(page),
         "The menu's Delete left copies of the picture in the group.",
+    ).toBe(0);
+
+    // A keystroke in the block next. If the menu's Delete had not lowered the number of pictures
+    // BloomField protects, this keystroke would look to it like one that removed a picture, and
+    // its browser undo would put the picture back.
+    await typeAtEndOfBlock(page, BLOCK, LANG, " The end.");
+    expect(
+        await countImages(page),
+        "Typing after the menu's Delete put the picture back. BloomField still expected the " +
+            "block to hold a protected picture, so it undid the keystroke.",
     ).toBe(0);
 
     // Leave the page and come back, so that Bloom saves it and sets it up again.
