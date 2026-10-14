@@ -1414,6 +1414,31 @@ describe("inlineImageInteractions", () => {
     // CKEditor compares each editable with its latest snapshot on every keyup, and would take a
     // picture change for typing. So every finished picture change updates that snapshot.
     describe("keeping CKEditor's snapshots current", () => {
+        // Stands in for CKEditor's undo Image, which takes a snapshot of an editor; the second
+        // argument says whether to leave out the selection.
+        class FakeImage {
+            public contentOnly: boolean;
+            constructor(_editor: unknown, contentOnly: boolean) {
+                this.contentOnly = contentOnly;
+            }
+        }
+        beforeEach(() => {
+            (globalThis as unknown as { CKEDITOR?: unknown }).CKEDITOR = {
+                plugins: { undo: { Image: FakeImage } },
+            };
+        });
+        afterEach(() => {
+            delete (globalThis as unknown as { CKEDITOR?: unknown }).CKEDITOR;
+        });
+        const runInsertImageCommand = (editable: HTMLElement) => {
+            const insert = buildInlineImageMenuItems(
+                getInlineImageActionTarget(
+                    editable.querySelector("p") as HTMLElement,
+                ),
+            ).find((i) => i.l10nId === "EditTab.InlineImage.InsertImage")!;
+            (insert.onClick as () => void)();
+        };
+
         // Gives each editable a stand-in for the CKEditor instance Bloom attaches to it.
         const attachFakeEditors = (group: HTMLElement, hasSnapshot = true) =>
             ["en", "fr"].map((lang) => {
@@ -1427,8 +1452,12 @@ describe("inlineImageInteractions", () => {
                         currentImage: hasSnapshot ? {} : undefined,
                         snapshots: hasSnapshot ? [{}] : [],
                         index: hasSnapshot ? 0 : -1,
+                        save: vi.fn(),
                         update,
                         refreshState: vi.fn(),
+                        editingHandler: {
+                            keyEventsStack: { resetInputs: vi.fn() },
+                        },
                     },
                 };
                 return update;
@@ -1445,6 +1474,13 @@ describe("inlineImageInteractions", () => {
             // Sanity check: the undo took the picture out.
             expect(getInlineImages(group).length).toBe(0);
             updates.forEach((update) => expect(update).toHaveBeenCalled());
+            // Recording the selection of editables that do not have the focus scrolled the page.
+            updates.forEach((update) =>
+                expect(
+                    (update.mock.calls[0][0] as FakeImage).contentOnly,
+                    "expected a snapshot of the content only",
+                ).toBe(true),
+            );
         });
 
         it("updates every editable's snapshot after a menu command", async () => {
@@ -1483,8 +1519,10 @@ describe("inlineImageInteractions", () => {
                 currentImage: {},
                 snapshots: [{ typed: false }, { typed: true }],
                 index: 0,
+                save: vi.fn(),
                 update: vi.fn(),
                 refreshState: vi.fn(),
+                editingHandler: { keyEventsStack: { resetInputs: vi.fn() } },
             };
             editable.bloomCkEditor = { undoManager };
 
@@ -1492,6 +1530,76 @@ describe("inlineImageInteractions", () => {
 
             expect(undoManager.snapshots).toEqual([{ typed: false }]);
             expect(undoManager.refreshState).toHaveBeenCalled();
+        });
+
+        // An input event with no keydown before it (a spelling suggestion, a paste from the menu)
+        // leaves CKEditor counting typing in progress, and it then records typing on every keyup,
+        // which discarded what the undo stack could redo.
+        it("clears CKEditor's count of typing in progress", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            attachFakeEditors(group);
+
+            expect(inlineImageUndo()).toBe(true);
+
+            ["en", "fr"].forEach((lang) =>
+                expect(
+                    (
+                        editableFor(group, lang) as HTMLElement & {
+                            bloomCkEditor: {
+                                undoManager: {
+                                    editingHandler: {
+                                        keyEventsStack: {
+                                            resetInputs: ReturnType<
+                                                typeof vi.fn
+                                            >;
+                                        };
+                                    };
+                                };
+                            };
+                        }
+                    ).bloomCkEditor.undoManager.editingHandler.keyEventsStack
+                        .resetInputs,
+                ).toHaveBeenCalled(),
+            );
+        });
+
+        // CKEditor saves typing as a snapshot only every so many keystrokes. Without a save
+        // before the change, the update after it would write over the snapshot from before the
+        // typing, and Undo could no longer take the typing back.
+        it("saves typing CKEditor has not recorded before a picture change", () => {
+            const group = makeSimpleGroup();
+            const english = editableFor(group, "en");
+            attachFakeEditors(group);
+            const undoManager = (
+                english as HTMLElement & {
+                    bloomCkEditor: {
+                        undoManager: {
+                            save: ReturnType<typeof vi.fn>;
+                            update: ReturnType<typeof vi.fn>;
+                        };
+                    };
+                }
+            ).bloomCkEditor.undoManager;
+            let picturesWhenSaved = -1;
+            undoManager.save.mockImplementation(() => {
+                picturesWhenSaved = getInlineImages(group).length;
+            });
+
+            runInsertImageCommand(english);
+
+            expect(undoManager.save).toHaveBeenCalled();
+            expect(
+                picturesWhenSaved,
+                "expected the save to come before the picture went in",
+            ).toBe(0);
+            expect(
+                (undoManager.save.mock.calls[0][1] as FakeImage).contentOnly,
+            ).toBe(true);
+            // Sanity check: the picture did go in, and the snapshot was then updated.
+            expect(getInlineImages(group).length).toBe(2);
+            expect(undoManager.update).toHaveBeenCalled();
         });
 
         it("leaves alone an editor that has not recorded a snapshot yet", () => {

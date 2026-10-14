@@ -814,6 +814,7 @@ function withInlineImageSync(
             // asynchronous and may end up changing nothing. The commit comes after the sync,
             // because the entry checks, before it undoes, that every language's copy is as the
             // commit recorded it.
+            saveCkeditorSnapshotsBeforePictureChange(target.translationGroup);
             prepareInlineImageUndo(target.wrapper, row.l10nId);
             await row.onSelect(rowCtx, rowRuntime);
             syncInlineImagesFromEditable(target.editable);
@@ -830,6 +831,7 @@ function withInlineImageSync(
 // later, with "Change image" on the image's menu. insertInlineImage records its own undo entry
 // and puts a copy in every editable of the group, so nothing has to be copied here.
 function addInlineImage(translationGroup: HTMLElement): void {
+    saveCkeditorSnapshotsBeforePictureChange(translationGroup);
     const wrapper = insertInlineImage(translationGroup);
     updateProtectedPictureCounts(translationGroup);
     updateCkeditorSnapshots(translationGroup);
@@ -854,6 +856,7 @@ function removeInlineImageCommand(wrapper: HTMLElement): void {
     const keptTops = new Map(
         survivors.map((other) => [other, getImageBox(other).top]),
     );
+    saveCkeditorSnapshotsBeforePictureChange(translationGroup);
     removeInlineImage(wrapper, () =>
         keepSurvivorsInPlace(editable, survivors, keptTops),
     );
@@ -877,46 +880,102 @@ function updateProtectedPictureCounts(translationGroup: HTMLElement): void {
     );
 }
 
-// The part of CKEditor's undo manager that updateCkeditorSnapshots uses.
+// The parts of CKEditor's undo manager that the functions below use.
 interface ICkeditorUndoManager {
     // The snapshot of the editable that CKEditor last recorded; undefined until it records one.
     currentImage?: object;
     // Every snapshot CKEditor holds, oldest first. Those after `index` are what it can redo.
     snapshots: object[];
     index: number;
-    update: () => void;
+    // Records `image` as a new snapshot if its content differs from the latest one, and then
+    // fires "change". `onContentOnly` makes it ignore a difference in the selection alone.
+    save: (onContentOnly: boolean, image: object) => boolean;
+    // Replaces the latest snapshot with `newImage`, firing nothing.
+    update: (newImage: object) => void;
     // Works out again whether there is anything to undo or redo.
     refreshState: () => void;
+    // Counts the input events of the keys being pressed. On keyup, CKEditor treats any count
+    // above zero as typing.
+    editingHandler: { keyEventsStack: { resetInputs: () => void } };
 }
 
-// CKEditor keeps its own undo history for each editable, as snapshots of its HTML, and on every
-// keyup it compares the editable with its latest snapshot. A picture change is not CKEditor's,
-// but it changes the editable, so on the next keyup, even of a bare modifier key, CKEditor would
-// record the difference as typing. It would fire "change", which trackCkeditorChanges
-// (undo/ckeditorChanges.ts) takes as a new edit: that makes CKEditor's history the newest and
-// discards what the undo stack could redo, so Ctrl+Y after Ctrl+Z on a picture change would do
-// nothing, and the next Ctrl+Z would restore CKEditor's stale snapshot of this one editable. So
-// when a picture change finishes, the latest snapshot of every editable in the group is replaced
-// with the editable's current content. UndoManager.update() does that and fires no "change". It
-// reads the current snapshot, so an editor that has not recorded one yet is left alone.
+// The CKEditor instances of a translation group's editables that have recorded a snapshot. An
+// editor that has not recorded one yet has nothing to keep in step.
+function getCkeditorsWithSnapshots(translationGroup: HTMLElement): {
+    editor: unknown;
+    undoManager: ICkeditorUndoManager;
+}[] {
+    return getEditables(translationGroup).flatMap((editable) => {
+        const editor = (
+            editable as HTMLElement & {
+                bloomCkEditor?: { undoManager?: ICkeditorUndoManager };
+            }
+        ).bloomCkEditor;
+        const undoManager = editor?.undoManager;
+        return undoManager?.currentImage ? [{ editor, undoManager }] : [];
+    });
+}
+
+// A CKEditor snapshot of the editable's content only (the second argument to CKEditor's undo
+// Image). A full snapshot also records the selection as bookmarks, and doing that for editables
+// that do not have the focus moved the selection and scrolled the page after every drag, so the
+// next drag started from the wrong place.
+function makeContentOnlySnapshot(editor: unknown): object {
+    // Our CKEditor typings leave out the undo plugin.
+    const undoPlugin = (
+        CKEDITOR.plugins as unknown as {
+            undo: {
+                Image: new (editor: unknown, contentOnly: boolean) => object;
+            };
+        }
+    ).undo;
+    return new undoPlugin.Image(editor, true);
+}
+
+// CKEditor keeps its own undo history for each editable, as snapshots of its HTML. A picture
+// change is not CKEditor's, but it changes every editable in the group, so the functions below
+// keep CKEditor's history in step with it, before and after.
+//
+// Typing is recorded as a snapshot only every so many keystrokes, so the latest snapshot can be
+// older than what the person has just typed. Before a picture change, this records that typing
+// as a snapshot of its own, the way CKEditor does before one of its own commands. Otherwise the
+// update after the change would write over the snapshot from before the typing, and Undo could
+// no longer take the typing back.
+export function saveCkeditorSnapshotsBeforePictureChange(
+    translationGroup: HTMLElement,
+): void {
+    getCkeditorsWithSnapshots(translationGroup).forEach(
+        ({ editor, undoManager }) =>
+            undoManager.save(true, makeContentOnlySnapshot(editor)),
+    );
+}
+
+// After a picture change, the latest snapshot of every editable in the group is replaced with its
+// current content. UndoManager.update() does that and fires no "change". Otherwise CKEditor would
+// take the picture change for typing: trackCkeditorChanges (undo/ckeditorChanges.ts) would then
+// count it as a new edit, which discards what the undo stack could redo, so Ctrl+Y after Ctrl+Z
+// on a picture change would do nothing, and the next Ctrl+Z would restore CKEditor's stale
+// snapshot of this one editable.
+//
+// Its count of typing in progress goes back to zero too. On every keyup, even of a bare modifier
+// key, CKEditor records typing whenever that count is above zero, and an input event that came
+// without a keydown (a spelling suggestion, a paste from the menu, a drop) leaves a count that no
+// keyup clears. The typing is all in the snapshot that was just recorded.
 //
 // CKEditor's redo snapshots go too. They were taken before the picture change, so redoing one
 // would put back the old picture in this editable alone. A change of CKEditor's own discards
 // them in the same way.
 function updateCkeditorSnapshots(translationGroup: HTMLElement): void {
-    getEditables(translationGroup).forEach((editable) => {
-        const undoManager = (
-            editable as HTMLElement & {
-                bloomCkEditor?: { undoManager?: ICkeditorUndoManager };
+    getCkeditorsWithSnapshots(translationGroup).forEach(
+        ({ editor, undoManager }) => {
+            undoManager.update(makeContentOnlySnapshot(editor));
+            undoManager.editingHandler.keyEventsStack.resetInputs();
+            if (undoManager.snapshots.length > undoManager.index + 1) {
+                undoManager.snapshots.splice(undoManager.index + 1);
+                undoManager.refreshState();
             }
-        ).bloomCkEditor?.undoManager;
-        if (!undoManager?.currentImage) return;
-        undoManager.update();
-        if (undoManager.snapshots.length > undoManager.index + 1) {
-            undoManager.snapshots.splice(undoManager.index + 1);
-            undoManager.refreshState();
-        }
-    });
+        },
+    );
 }
 
 // Moves the images left in the editable after a delete back to where they were before it
@@ -1692,6 +1751,9 @@ function beginGestureIfMoved(
     )
         return false;
     state.started = true;
+    saveCkeditorSnapshotsBeforePictureChange(
+        state.wrapper.closest(".bloom-translationGroup") as HTMLElement,
+    );
     prepareInlineImageUndo(state.wrapper);
     state.wrapper.ownerDocument.body.classList.add(kInlineImageDraggingClass);
     setInlineImageContextControlsMoving(state.wrapper.ownerDocument, true);
