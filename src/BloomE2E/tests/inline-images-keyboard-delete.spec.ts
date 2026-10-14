@@ -142,6 +142,10 @@ test("a picture deleted from its own menu stays deleted through the next keystro
     // The picture's menu is how a person deletes it. That deletion has to reach every language,
     // or normalizeInlineImages brings the picture back from a language that still has it.
     await goToPage(page, contentPageId);
+    // Deleting from the menu and then typing both start with a click on the block's text, so the
+    // block needs some. The previous test leaves it empty.
+    if ((await getBlockText(page, BLOCK, LANG)) === "")
+        await typeInGroup(page, BLOCK, LANG, TEXT);
     await deleteInlineImage(page, BLOCK, LANG, imageId);
     expect(
         await countImages(page),
