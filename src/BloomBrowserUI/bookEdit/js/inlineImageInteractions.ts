@@ -667,16 +667,23 @@ function claimKeystroke(event: KeyboardEvent): void {
     event.stopImmediatePropagation();
 }
 
-// Whether the CKEditor of the text block that has the focus has a redo of its own.
+// Whether the CKEditor of the text block that has the focus has a redo of its own: a snapshot
+// after the current one. This reads the snapshots rather than CKEditor's redoable(), whose flag
+// can say there is a redo after a save has dropped it (see updateCkeditorSnapshots).
 function focusedCkeditorCanRedo(doc: Document): boolean {
     const editable = (doc.activeElement as HTMLElement | null)?.closest(
         ".bloom-editable",
     ) as
         | (HTMLElement & {
-              bloomCkEditor?: { undoManager?: { redoable(): boolean } };
+              bloomCkEditor?: {
+                  undoManager?: { index: number; snapshots: object[] };
+              };
           })
         | null;
-    return !!editable?.bloomCkEditor?.undoManager?.redoable();
+    const undoManager = editable?.bloomCkEditor?.undoManager;
+    return (
+        !!undoManager && undoManager.index < undoManager.snapshots.length - 1
+    );
 }
 
 /**
@@ -1046,10 +1053,11 @@ function updateCkeditorSnapshots(translationGroup: HTMLElement): void {
         ({ editor, undoManager }) => {
             undoManager.update(makeContentOnlySnapshot(editor));
             undoManager.editingHandler.keyEventsStack.resetInputs();
-            if (undoManager.snapshots.length > undoManager.index + 1) {
-                undoManager.snapshots.splice(undoManager.index + 1);
-                undoManager.refreshState();
-            }
+            undoManager.snapshots.splice(undoManager.index + 1);
+            // CKEditor's own record of whether it can redo goes stale: a save it makes with
+            // autoFireChange false (as on every click in the block) can drop the redo snapshots
+            // without updating it. So it is worked out again here every time.
+            undoManager.refreshState();
         },
     );
 }
