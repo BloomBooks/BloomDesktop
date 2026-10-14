@@ -275,6 +275,25 @@ describe("UndoStack", () => {
             expect(stack.canRedo()).toBe(false);
         });
 
+        it("keeps the redo branch when the Undo button undoes typing through the CKEditor provider", () => {
+            // That provider restores CKEditor's snapshot directly, not through its undo command,
+            // and CKEditor reports the restore as a change.
+            stack.registerLegacyProvider(
+                makeProvider("ckeditor", log, () => true, {
+                    undoes: () => {
+                        editor.fire("change");
+                        return true;
+                    },
+                    lastChangeOrder: () => Number.MAX_SAFE_INTEGER,
+                }),
+            );
+
+            stack.undo();
+
+            expect(log).toEqual(["undo picture change", "legacy ckeditor"]); // sanity check
+            expect(stack.canRedo()).toBe(true);
+        });
+
         it("ignores a change nobody could undo, such as CKEditor attaching itself to a box", () => {
             editor.undoManager.undoable = () => false;
 

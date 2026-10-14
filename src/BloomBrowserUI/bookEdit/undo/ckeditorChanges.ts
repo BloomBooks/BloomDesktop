@@ -9,8 +9,10 @@
 //
 // CKEditor fires "change" for its own Undo and Redo too (its undo manager's restoreImage does), and
 // those are not new edits: undoing typing must not discard a picture change the stack could still
-// redo. So a change that happens while CKEditor runs its "undo" or "redo" command counts for the
-// ordering, as before, but leaves the redo branch alone.
+// redo. So a change that happens while CKEditor runs its "undo" or "redo" command (Ctrl+Z and
+// Ctrl+Y in a box) counts for the ordering, as before, but leaves the redo branch alone. The Undo
+// button reaches CKEditor's history another way, through the stack's CKEditor provider, which
+// calls the undo manager directly; the stack itself ignores discardRedo while that runs.
 //
 // This goes away in Stage 3, when typing moves onto the stack itself.
 

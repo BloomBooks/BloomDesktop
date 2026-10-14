@@ -92,13 +92,28 @@ export class UndoStack {
     /**
      * Forget everything that could be redone, because the user has made a change the stack did
      * not record, such as typing, which CKEditor keeps (see ckeditorChanges.ts). Does nothing
-     * while an undo or redo of ours is being applied: a change that causes is not a new edit.
+     * while an undo or redo of ours, or a legacy provider's undo, is being applied: a change that
+     * causes is not a new edit. (The Undo button undoes typing through the CKEditor provider,
+     * which restores CKEditor's snapshot directly and so reports a change.)
      */
     public discardRedo(): void {
-        if (this.applying) {
+        if (this.applying || this.runningLegacyUndo) {
             return;
         }
         this.truncateRedoBranch();
+    }
+
+    /** True while a legacy provider's undo runs; see {@link discardRedo}. */
+    private runningLegacyUndo = false;
+
+    /** Run a legacy provider's undo, marking it as running for {@link discardRedo}. */
+    private runLegacyUndo(provider: ILegacyUndoProvider): boolean {
+        this.runningLegacyUndo = true;
+        try {
+            return provider.undo();
+        } finally {
+            this.runningLegacyUndo = false;
+        }
     }
 
     /** Drop the entries above the current index. */
@@ -213,7 +228,10 @@ export class UndoStack {
         for (const provider of this.legacyProviders) {
             // A provider that turns out to have nothing to undo passes the turn on, so the
             // person's Undo still reaches whatever is next.
-            if (this.providerHasTheNextUndo(provider) && provider.undo()) {
+            if (
+                this.providerHasTheNextUndo(provider) &&
+                this.runLegacyUndo(provider)
+            ) {
                 return;
             }
         }
