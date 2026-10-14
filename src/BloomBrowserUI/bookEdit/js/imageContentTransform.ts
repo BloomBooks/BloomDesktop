@@ -245,7 +245,16 @@ function roundPx(value: number): number {
     return Math.round(value * 100) / 100;
 }
 
-// The picture's drawn rectangle inside its layout box, in the container's coordinates.
+// A length as written in pixels, or the measured one when none was written in pixels. Bloom
+// writes fractional sizes, and clientWidth and clientHeight round them to whole pixels. Rotating
+// from rounded sizes changes the picture's shape a little each time, and once the background's
+// overhang is added the change grows from one rotation to the next.
+function writtenPxOr(styleValue: string, measured: number): number {
+    return styleValue.endsWith("px") ? parseFloat(styleValue) : measured;
+}
+
+// The picture's drawn rectangle inside its layout box, in the container's coordinates. The
+// container is the size of the canvas element, which the caller passes.
 //
 // A cropped picture has an explicit width, and then its box and its drawn rectangle are the
 // same thing. An uncropped picture has a box the size of its container and is drawn inside that
@@ -254,20 +263,28 @@ function roundPx(value: number): number {
 // drawn rectangle out rather than assume it.
 function getDrawnPictureRectangle(
     img: HTMLImageElement,
+    containerWidth: number,
+    containerHeight: number,
 ): { width: number; height: number; left: number; top: number } | undefined {
-    const boxWidth = img.clientWidth;
-    const boxHeight = img.clientHeight;
-    if (!boxWidth || !boxHeight) {
-        return undefined;
-    }
+    const naturalWidth = img.naturalWidth;
+    const naturalHeight = img.naturalHeight;
     const left = pxOrZero(img.style.left);
     const top = pxOrZero(img.style.top);
     if (img.style.width) {
-        return { width: boxWidth, height: boxHeight, left, top };
+        // A cropped picture's height follows its width and its own shape; Bloom writes no height.
+        const width = writtenPxOr(img.style.width, img.clientWidth);
+        const height =
+            naturalWidth && naturalHeight
+                ? (width * naturalHeight) / naturalWidth
+                : img.clientHeight;
+        if (!width || !height) {
+            return undefined;
+        }
+        return { width, height, left, top };
     }
-    const naturalWidth = img.naturalWidth;
-    const naturalHeight = img.naturalHeight;
-    if (!naturalWidth || !naturalHeight) {
+    const boxWidth = containerWidth;
+    const boxHeight = containerHeight;
+    if (!boxWidth || !boxHeight || !naturalWidth || !naturalHeight) {
         return undefined;
     }
     const containScale = Math.min(
@@ -306,8 +323,11 @@ function setRotatedBackgroundLayout(img: HTMLImageElement): boolean {
         return false;
     }
     const isBackground = element.classList.contains(kBackgroundImageClass);
-    const elementWidth = element.clientWidth;
-    const elementHeight = element.clientHeight;
+    const elementWidth = writtenPxOr(element.style.width, element.clientWidth);
+    const elementHeight = writtenPxOr(
+        element.style.height,
+        element.clientHeight,
+    );
     // The area the rotated element has to land in. A background's area is the bloom-canvas,
     // measured exactly, as adjustBackgroundImageSizeToFit measures it. clientWidth would round it
     // to whole pixels, and on a page whose picture area is a fraction of a pixel wider the
@@ -315,7 +335,7 @@ function setRotatedBackgroundLayout(img: HTMLImageElement): boolean {
     const pageSize = isBackground ? getExactClientSize(page) : undefined;
     const areaWidth = pageSize ? pageSize.width : elementHeight;
     const areaHeight = pageSize ? pageSize.height : elementWidth;
-    const picture = getDrawnPictureRectangle(img);
+    const picture = getDrawnPictureRectangle(img, elementWidth, elementHeight);
     if (
         !areaWidth ||
         !areaHeight ||

@@ -109,31 +109,34 @@ function makeBackgroundImage(
         }
         return axis === "width" ? elementWidth : elementHeight;
     };
+    // Like the page's, these round to whole pixels, as a browser's do.
     for (const box of [element, container]) {
         Object.defineProperty(box, "clientWidth", {
-            get: () => elementSize("width"),
+            get: () => Math.round(elementSize("width")),
         });
         Object.defineProperty(box, "clientHeight", {
-            get: () => elementSize("height"),
+            get: () => Math.round(elementSize("height")),
         });
     }
     Object.defineProperty(img, "clientWidth", {
         get: () => {
             const written = parseFloat(img.style.width);
-            return isNaN(written) ? elementSize("width") : written;
+            return Math.round(isNaN(written) ? elementSize("width") : written);
         },
     });
     Object.defineProperty(img, "clientHeight", {
         get: () => {
             const writtenHeight = parseFloat(img.style.height);
             if (!isNaN(writtenHeight)) {
-                return writtenHeight;
+                return Math.round(writtenHeight);
             }
             const writtenWidth = parseFloat(img.style.width);
             if (!isNaN(writtenWidth)) {
-                return (writtenWidth * naturalHeight) / naturalWidth;
+                return Math.round(
+                    (writtenWidth * naturalHeight) / naturalWidth,
+                );
             }
-            return elementSize("height");
+            return Math.round(elementSize("height"));
         },
     });
     return img;
@@ -332,6 +335,36 @@ describe("rotateImageContentRight90Degrees, on a page background picture", () =>
         expect(px(element.style.height)).toBeCloseTo(before.height, 1);
         expect(px(element.style.left)).toBeCloseTo(before.left, 1);
         expect(px(element.style.top)).toBeCloseTo(before.top, 1);
+        expect(img.style.width).toBe("");
+        expect(img.style.left).toBe("");
+        expect(img.style.top).toBe("");
+        expect(img.style.transform).toBe("");
+    });
+
+    it("brings a picture the shape of the page back to where it began after four rotations", () => {
+        // A portrait picture the shape of the page: Bloom makes its element as big as the page
+        // and the bleed, 482 by 723, which overhangs the top and bottom by 1.5. The rotated
+        // element's sizes are fractions of a pixel, and the rotation must work from the sizes it
+        // wrote, not from the whole pixels a browser's clientWidth and clientHeight round them to.
+        const img = makeBackgroundImage(480, 720, 480 * k, 720 * k, 200, 300);
+        const element = elementOf(img);
+        element.style.width = `${480 * k}px`;
+        element.style.height = `${720 * k}px`;
+        element.style.left = `${-kBackgroundImageBleedPx}px`;
+        element.style.top = `${(720 - 720 * k) / 2}px`;
+        rotateImageContentRight90Degrees(img);
+        // Sanity check: the first rotation leaves the element a fraction of a pixel high.
+        expect(px(element.style.height) % 1).not.toBe(0);
+
+        for (let rotation = 1; rotation < 4; rotation++) {
+            rotateImageContentRight90Degrees(img);
+        }
+
+        expect(px(element.style.width)).toBeCloseTo(480 * k, 1);
+        expect(px(element.style.height)).toBeCloseTo(720 * k, 1);
+        expect(px(element.style.left)).toBeCloseTo(-kBackgroundImageBleedPx, 1);
+        expect(px(element.style.top)).toBeCloseTo((720 - 720 * k) / 2, 1);
+        // A picture nobody cropped must not come back with a crop's numbers.
         expect(img.style.width).toBe("");
         expect(img.style.left).toBe("");
         expect(img.style.top).toBe("");
