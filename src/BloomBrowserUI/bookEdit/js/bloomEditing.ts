@@ -31,7 +31,6 @@ import {
     adjustInlineImageOffsetsIfBlockSizeChanged,
     inlineImagePictureChanged,
     keepInlineImageSelectionOutOfCkeditorSnapshots,
-    saveCkeditorSnapshotsBeforePictureChange,
     setupInlineImageInteractions,
 } from "./inlineImageInteractions";
 import { setupOrigami, cleanupOrigami } from "./origami";
@@ -464,17 +463,6 @@ export function notifyToolOfChangedImage(img?: HTMLImageElement) {
     toolbox?.getCurrentTool()?.imageUpdated(img);
 }
 
-// Before a new picture goes into an inline image, CKEditor records any typing it has not yet
-// saved (see saveCkeditorSnapshotsBeforePictureChange). Does nothing for other images.
-function saveCkeditorSnapshotsBeforeInlinePictureChange(
-    imgOrImageContainer: HTMLElement,
-): void {
-    if (!imgOrImageContainer.closest("." + kInlineImageClass)) return;
-    saveCkeditorSnapshotsBeforePictureChange(
-        imgOrImageContainer.closest(".bloom-translationGroup") as HTMLElement,
-    );
-}
-
 // called by c# so be careful about changing the signature, including names of parameters
 export function changeImage(imageInfo: IImageInfo) {
     if (imageInfo.undoable !== "true") {
@@ -497,7 +485,6 @@ export function changeImage(imageInfo: IImageInfo) {
         // means restoring the wrapper in every language's editable as well as this img's src.
         // prepareInlineImageUndoForImageChange returns true when it has taken charge of the
         // undo, and then prepareUndoForImageOperation must not be called.
-        saveCkeditorSnapshotsBeforeInlinePictureChange(imgOrImageContainer);
         if (!prepareInlineImageUndoForImageChange(imgOrImageContainer)) {
             prepareUndoForImageOperation(imgOrImageContainer);
         }
@@ -534,7 +521,6 @@ export function changeImageByElement(
     }
     // See changeImage for why an inline image handles its own undo here.
     if (imageInfo.undoable === "true") {
-        saveCkeditorSnapshotsBeforeInlinePictureChange(imgOrImageContainer);
         if (!prepareInlineImageUndoForImageChange(imgOrImageContainer)) {
             prepareUndoForImageOperation(imgOrImageContainer);
         }

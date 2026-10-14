@@ -35,9 +35,10 @@ import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import BloomField from "../bloomField/BloomField";
-import { isInChangeLayoutMode, isRedoKeystroke } from "../undo/redoKeyBinding";
+import { isInChangeLayoutMode } from "../undo/redoKeyBinding";
 import { theOneUndoStack } from "../undo/UndoStack";
 import { EditableDivUtils } from "./editableDivUtils";
+import { getToolboxBundleExports } from "./workspaceFrames";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 import { buildCanvasElementControlRegistryContext } from "../toolbox/canvas/buildCanvasElementControlRegistryContext";
 import { imageAvailabilityRules } from "../toolbox/canvas/canvasControlAvailabilityRules";
@@ -64,6 +65,18 @@ import {
     flipImageContent,
 } from "./imageContentTransform";
 import {
+    clampCropPosition,
+    getCroppedSides,
+} from "./canvasElementManager/CanvasElementHandleDragInteractions";
+import {
+    clearInlineImageCrop,
+    getInlineImageCrop,
+    IInlineImageCrop,
+    inlineImageIsCropped,
+    mirrorInlineImageCrop,
+    setInlineImageCrop,
+} from "./inlineImageCrop";
+import {
     commitPendingInlineImageUndo,
     getEditables,
     getFirstVisibleEditable,
@@ -87,6 +100,7 @@ import {
     kInlineImageWidthVar,
     prepareInlineImageUndo,
     recordInlineImageOffsetBasedOn,
+    refreshInlineImageAspectRatio,
     removeInlineImage,
     setInlineImageDock,
     syncInlineImagesFromEditable,
@@ -108,6 +122,27 @@ const kInlineImageHandleCorners = ["nw", "ne", "sw", "se"] as const;
 export type InlineImageHandleCorner =
     (typeof kInlineImageHandleCorners)[number];
 const kInlineImageCornerAttribute = "data-inline-image-corner";
+
+// The four crop handles, one in the middle of each side of the picture, and the handle in the
+// middle of the picture that moves the picture inside its crop. They work as the side handles
+// and the move-crop handle of a picture on a canvas do. All of them are inside the handle frame.
+export const kInlineImageSideHandleClass = "bloom-ui-inlineImage-side-handle";
+export const kInlineImageMoveCropHandleClass =
+    "bloom-ui-inlineImage-move-crop-handle";
+const kInlineImageCropSides = ["n", "e", "s", "w"] as const;
+export type InlineImageCropSide = (typeof kInlineImageCropSides)[number];
+const kInlineImageSideAttribute = "data-inline-image-side";
+// On a side handle whose side of the picture is cropped, as on a canvas. It changes the
+// handle's look.
+export const kCurrentlyCroppedClass = "bloom-currently-cropped";
+// On the handle frame while the picture is cropped. Only then is the move-crop handle shown,
+// because an uncropped picture has nowhere to move to.
+export const kInlineImageFrameCroppedClass = "bloom-ui-inlineImage-cropped";
+
+// A crop must leave at least this much of the picture showing, as a percentage of its height
+// (for the top and bottom handles) or width (for the left and right ones). The width limits
+// below also apply to a crop from the left or right.
+const kMinInlineImageCropKeptPercent = 10;
 
 // Limits on an image's width, as percentages of the editable's width. A wider image leaves no
 // room for text to wrap beside it, and a narrower one is too small to be worth wrapping around.
@@ -370,7 +405,8 @@ export function clampInlineImageOffset(
  * Scaling alone does not always keep the text inside the block. The text beside a float
  * rewraps when the block changes width, so a scaled offset can still leave the block with more
  * text than it can show. adjustInlineImageOffsetsIfBlockSizeChanged reduces the offset
- * afterwards when that happens, so the block ends up fitting its text, as it does after a drag.
+ * afterwards when that happens and a smaller offset lets the block fit its text, as a drag
+ * would.
  */
 export function computeInlineImageOffsetForNewBlockHeight(
     offsetLayoutPx: number,
@@ -422,6 +458,135 @@ export function getInlineImageHandleHorizontalSign(
     corner: InlineImageHandleCorner,
 ): number {
     return corner === "ne" || corner === "se" ? 1 : -1;
+}
+
+// The side of the crop each handle changes, and the side opposite it.
+const kCropSideOf: Record<
+    InlineImageCropSide,
+    { side: keyof IInlineImageCrop; opposite: keyof IInlineImageCrop }
+> = {
+    n: { side: "top", opposite: "bottom" },
+    e: { side: "right", opposite: "left" },
+    s: { side: "bottom", opposite: "top" },
+    w: { side: "left", opposite: "right" },
+};
+
+/**
+ * The crop, and the width as a percentage of the editable, that dragging one side handle has
+ * reached. inwardViewportPx is how far the pointer has moved toward the middle of the picture
+ * from where the drag began; a negative value uncrops. shownSizeViewportPx is the size, across
+ * the handle's side, of the part of the picture that showed when the drag began: its height for
+ * the top and bottom handles, its width for the others.
+ *
+ * As on a canvas, the picture does not change size: only the part that shows does. So cropping
+ * from the left or right makes the image narrower on the page, and its width is worked out here.
+ * A crop cannot go past the edge of the picture, or leave less than
+ * kMinInlineImageCropKeptPercent of it, and the width stays within the limits a corner resize
+ * keeps to.
+ */
+export function computeInlineImageSideCrop(
+    startCrop: IInlineImageCrop,
+    handle: InlineImageCropSide,
+    inwardViewportPx: number,
+    shownSizeViewportPx: number,
+    startWidthPercent: number,
+): { crop: IInlineImageCrop; widthPercent: number } {
+    const { side, opposite } = kCropSideOf[handle];
+    const keptAtStart = 100 - startCrop[side] - startCrop[opposite];
+    const pictureSizeViewportPx = (shownSizeViewportPx * 100) / keptAtStart;
+    let cut =
+        startCrop[side] + (inwardViewportPx / pictureSizeViewportPx) * 100;
+    cut = Math.min(
+        Math.max(cut, 0),
+        100 - startCrop[opposite] - kMinInlineImageCropKeptPercent,
+    );
+    const horizontal = handle === "e" || handle === "w";
+    if (horizontal) {
+        // The width on the page grows and shrinks with the part of the picture that shows.
+        const width =
+            (startWidthPercent * (100 - startCrop[opposite] - cut)) /
+            keptAtStart;
+        const clampedWidth = clampInlineImageWidthPercent(width);
+        if (clampedWidth !== width) {
+            cut = Math.max(
+                0,
+                100 -
+                    startCrop[opposite] -
+                    (clampedWidth * keptAtStart) / startWidthPercent,
+            );
+        }
+    }
+    cut = Math.round(cut * 100) / 100;
+    const widthPercent = horizontal
+        ? Math.round(
+              ((startWidthPercent * (100 - startCrop[opposite] - cut)) /
+                  keptAtStart) *
+                  10,
+          ) / 10
+        : startWidthPercent;
+    return { crop: { ...startCrop, [side]: cut }, widthPercent };
+}
+
+/**
+ * The crop after the move-crop handle has moved the picture by (deltaX, deltaY) inside the part
+ * that shows. The part that shows keeps its size, so the image does not change on the page. The
+ * picture stops at its edges, as on a canvas: clampCropPosition is the rule a canvas picture
+ * uses, here applied in the image's own box.
+ */
+export function computeInlineImageMovedCrop(
+    startCrop: IInlineImageCrop,
+    deltaXViewportPx: number,
+    deltaYViewportPx: number,
+    shownWidthViewportPx: number,
+    shownHeightViewportPx: number,
+): IInlineImageCrop {
+    const keptWidth = 100 - startCrop.left - startCrop.right;
+    const keptHeight = 100 - startCrop.top - startCrop.bottom;
+    const pictureWidth = (shownWidthViewportPx * 100) / keptWidth;
+    const pictureHeight = (shownHeightViewportPx * 100) / keptHeight;
+    const position = clampCropPosition(
+        shownWidthViewportPx,
+        shownHeightViewportPx,
+        (-startCrop.left / 100) * pictureWidth + deltaXViewportPx,
+        (-startCrop.top / 100) * pictureHeight + deltaYViewportPx,
+        pictureWidth,
+        pictureHeight,
+        // Rotate Right is not offered for an inline image.
+        0,
+    );
+    // Adding zero turns -0 into 0, which would otherwise be written as "-0".
+    const round = (n: number) => Math.round(n * 100) / 100 + 0;
+    const left = round((-position.left / pictureWidth) * 100);
+    const top = round((-position.top / pictureHeight) * 100);
+    return {
+        left,
+        top,
+        right: round(100 - keptWidth - left),
+        bottom: round(100 - keptHeight - top),
+    };
+}
+
+/**
+ * Which sides of the picture are cropped, for marking the side handles. It asks getCroppedSides,
+ * the same function the canvas uses, with the picture as a box 100 units each way.
+ */
+export function getInlineImageCroppedSides(crop: IInlineImageCrop): {
+    n: boolean;
+    e: boolean;
+    s: boolean;
+    w: boolean;
+} {
+    return getCroppedSides(
+        100 - crop.left - crop.right,
+        100 - crop.top - crop.bottom,
+        -crop.left,
+        -crop.top,
+        100,
+        100,
+        0,
+        // The crop is rounded to a hundredth, so anything bigger is a real crop.
+        0.001,
+    );
 }
 
 /** The dock an existing wrapper is in. */
@@ -484,8 +649,8 @@ const kMaxOffsetFitPasses = 4;
  * the end.
  *
  * Moving the pictures up cannot always fix that. A block that has shrunk a lot may not hold its
- * text even with every offset at zero, or even with no picture at all. Then this does what it
- * can (see fitInlineImageOffsetsToBlock), and the rest is for the user to fix.
+ * text even with every offset at zero, or even with no picture at all. Then the pictures keep
+ * their scaled offsets (see fitInlineImageOffsetsToBlock), and the rest is for the user to fix.
  *
  * Only the editable the reader sees is laid out. The others are display:none and measure zero.
  * So this measures that one, and syncInlineImagesFromEditable copies the result to the rest.
@@ -545,13 +710,21 @@ export function adjustInlineImageOffsetsIfBlockSizeChanged(
 // Moving a picture up changes which lines are full width and which are beside the picture, so
 // a pass can leave more text off the end than there was before it. So this keeps the offsets
 // that left the least overflow, which may be the ones it started with.
+//
+// If no pass gets the text to fit, this puts back the offsets it started with. Then the block
+// has more text than it can hold wherever the picture is, and moving the picture up gains only
+// part of a line while taking it away from where the person put it.
 function fitInlineImageOffsetsToBlock(
     editable: HTMLElement,
     wrappers: HTMLElement[],
 ): void {
     const measureOverflow = () => editable.scrollHeight - editable.clientHeight;
     const readOffsets = () => wrappers.map(getInlineImageOffsetLayoutPx);
-    let best = { overflowLayoutPx: measureOverflow(), offsets: readOffsets() };
+    const startingOffsets = readOffsets();
+    let best = {
+        overflowLayoutPx: measureOverflow(),
+        offsets: startingOffsets,
+    };
     for (let pass = 0; pass < kMaxOffsetFitPasses; pass++) {
         if (best.overflowLayoutPx <= 0) break;
         const overflowLayoutPx = measureOverflow();
@@ -570,9 +743,8 @@ function fitInlineImageOffsetsToBlock(
             best = { overflowLayoutPx: now, offsets: readOffsets() };
         }
     }
-    wrappers.forEach((wrapper, i) =>
-        setInlineImageOffset(wrapper, best.offsets[i]),
-    );
+    const offsets = best.overflowLayoutPx <= 0 ? best.offsets : startingOffsets;
+    wrappers.forEach((wrapper, i) => setInlineImageOffset(wrapper, offsets[i]));
 }
 
 function setInlineImageOffset(
@@ -586,9 +758,10 @@ export function setupInlineImageInteractions(container: HTMLElement): void {
     // Setting up again ends any drag or resize, because its state may point at elements that
     // are no longer in the page.
     stopEdgeScrollTimer(dragState);
-    releaseGesturePointer(resizeState ?? dragState);
+    releaseGesturePointer(getGestureState());
     dragState = undefined;
     resizeState = undefined;
+    cropState = undefined;
     const doc = container.ownerDocument;
     if (documentsWithInlineImageListeners.has(doc)) return;
     documentsWithInlineImageListeners.add(doc);
@@ -622,12 +795,21 @@ export function setupInlineImageInteractions(container: HTMLElement): void {
 // change (inlineImageCanUndo, which leaves the key to CKEditor while typing is newer). It takes
 // Ctrl+Y (or Ctrl+Shift+Z) when the stack has something to redo and the focused block's CKEditor
 // has nothing of its own: typing discards what the stack could redo, and a picture change
-// discards what CKEditor could redo (see updateCkeditorSnapshots), so at most one of them has a
-// redo. Either way it stops the event, so CKEditor and the other key handlers never see it.
-// In Change Layout mode origami owns both keys, so this leaves them alone.
+// clears the history of the CKEditors in its group (see resetCkeditorHistories). Either way it
+// stops the event, so CKEditor and the other key handlers never see it.
+// In Change Layout mode origami owns both keys, so this leaves them alone. So do the reader
+// tools, in a text block, while one of their markup tools is selected: they keep their own
+// history of the marked text and take both keys on the editable.
 function onUndoOrRedoKeyDown(event: KeyboardEvent): void {
     const doc = (event.target as Node).ownerDocument ?? document;
     if (isInChangeLayoutMode(doc)) return;
+    // A form field has its own undo of what was typed in it.
+    if ((event.target as Element).closest?.("input, textarea, select")) return;
+    if (
+        (event.target as Element).closest?.(".bloom-editable") &&
+        getToolboxBundleExports()?.readerToolsHandleUndoKeys()
+    )
+        return;
     if (isUndoKeystroke(event)) {
         if (!inlineImageCanUndo()) return;
         claimKeystroke(event);
@@ -640,6 +822,17 @@ function onUndoOrRedoKeyDown(event: KeyboardEvent): void {
     }
 }
 
+// Whether this is the Z (or Y) key. CKEditor recognizes its undo and redo keys by keyCode, which
+// is the key's place on the keyboard, so it gets Ctrl+Z on any layout; on a Russian layout, for
+// one, event.key is "я". This has to recognize every Ctrl+Z that CKEditor would, or CKEditor
+// would undo the focused copy of a picture alone.
+function isZKey(event: KeyboardEvent): boolean {
+    return event.key === "z" || event.key === "Z" || event.keyCode === 90;
+}
+function isYKey(event: KeyboardEvent): boolean {
+    return event.key === "y" || event.key === "Y" || event.keyCode === 89;
+}
+
 // Ctrl+Z with no other modifier.
 function isUndoKeystroke(event: KeyboardEvent): boolean {
     return (
@@ -647,7 +840,18 @@ function isUndoKeystroke(event: KeyboardEvent): boolean {
         !event.altKey &&
         !event.metaKey &&
         !event.shiftKey &&
-        (event.key === "z" || event.key === "Z")
+        isZKey(event)
+    );
+}
+
+// Ctrl+Y with no other modifier.
+function isRedoKeystroke(event: KeyboardEvent): boolean {
+    return (
+        event.ctrlKey &&
+        !event.altKey &&
+        !event.metaKey &&
+        !event.shiftKey &&
+        isYKey(event)
     );
 }
 
@@ -658,7 +862,7 @@ function isShiftedUndoKeystroke(event: KeyboardEvent): boolean {
         event.shiftKey &&
         !event.altKey &&
         !event.metaKey &&
-        (event.key === "z" || event.key === "Z")
+        isZKey(event)
     );
 }
 
@@ -669,7 +873,7 @@ function claimKeystroke(event: KeyboardEvent): void {
 
 // Whether the CKEditor of the text block that has the focus has a redo of its own: a snapshot
 // after the current one. This reads the snapshots rather than CKEditor's redoable(), whose flag
-// can say there is a redo after a save has dropped it (see updateCkeditorSnapshots).
+// can say there is a redo after a save has dropped it.
 function focusedCkeditorCanRedo(doc: Document): boolean {
     const editable = (doc.activeElement as HTMLElement | null)?.closest(
         ".bloom-editable",
@@ -694,9 +898,10 @@ function focusedCkeditorCanRedo(doc: Document): boolean {
  */
 export function cleanupInlineImageInteractions(): void {
     stopEdgeScrollTimer(dragState);
-    releaseGesturePointer(resizeState ?? dragState);
+    releaseGesturePointer(getGestureState());
     dragState = undefined;
     resizeState = undefined;
+    cropState = undefined;
     document.body.classList.remove(kInlineImageDraggingClass);
     deselectAllInlineImages(document);
 }
@@ -779,6 +984,8 @@ export function buildInlineImageMenuItems(
         const ctx: IControlContext = {
             ...buildCanvasElementControlRegistryContext(target.wrapper),
             aiImageEditingAvailable: aiImageEditingIsAvailable,
+            // That looks for a crop on the img, where a canvas picture keeps it.
+            isCropped: inlineImageIsCropped(target.wrapper),
         };
         const imageSections = getMenuSections(
             inlineImageControlConfiguration,
@@ -845,14 +1052,25 @@ function withInlineImageTransforms(
                 ...row,
                 subMenuItems: row.subMenuItems!.map((subRow) => ({
                     ...subRow,
-                    onSelect: () =>
-                        flipImageContent(picture(), flipAxisOf(subRow)),
+                    onSelect: () => {
+                        flipImageContent(picture(), flipAxisOf(subRow));
+                        // The crop describes the picture as it is seen, so a mirror swaps
+                        // two of its sides; see inlineImageCrop.ts.
+                        mirrorInlineImageCrop(wrapper, flipAxisOf(subRow));
+                        updateInlineImageCropHandles(wrapper);
+                    },
                 })),
             };
         case "resetImage":
+            // As on a canvas, Reset Image takes away the crop as well as the flip.
             return {
                 ...row,
-                onSelect: () => clearImageContentTransform(picture()),
+                onSelect: () => {
+                    clearImageContentTransform(picture());
+                    clearInlineImageCrop(wrapper);
+                    refreshInlineImageAspectRatio(wrapper);
+                    updateInlineImageCropHandles(wrapper);
+                },
             };
         default:
             return row;
@@ -897,12 +1115,11 @@ function withInlineImageSync(
             // asynchronous and may end up changing nothing. The commit comes after the sync,
             // because the entry checks, before it undoes, that every language's copy is as the
             // commit recorded it.
-            saveCkeditorSnapshotsBeforePictureChange(target.translationGroup);
             prepareInlineImageUndo(target.wrapper, row.l10nId);
             await row.onSelect(rowCtx, rowRuntime);
             syncInlineImagesFromEditable(target.editable);
-            commitPendingInlineImageUndo(target.wrapper);
-            updateCkeditorSnapshots(target.translationGroup);
+            if (commitPendingInlineImageUndo(target.wrapper))
+                resetCkeditorHistories(target.translationGroup);
             refreshOverflow(target.translationGroup);
         },
     }));
@@ -914,10 +1131,9 @@ function withInlineImageSync(
 // later, with "Change image" on the image's menu. insertInlineImage records its own undo entry
 // and puts a copy in every editable of the group, so nothing has to be copied here.
 function addInlineImage(translationGroup: HTMLElement): void {
-    saveCkeditorSnapshotsBeforePictureChange(translationGroup);
     const wrapper = insertInlineImage(translationGroup);
     updateProtectedPictureCounts(translationGroup);
-    updateCkeditorSnapshots(translationGroup);
+    resetCkeditorHistories(translationGroup);
     selectInlineImage(wrapper);
     refreshOverflow(translationGroup);
 }
@@ -939,12 +1155,11 @@ function removeInlineImageCommand(wrapper: HTMLElement): void {
     const keptTops = new Map(
         survivors.map((other) => [other, getImageBox(other).top]),
     );
-    saveCkeditorSnapshotsBeforePictureChange(translationGroup);
     removeInlineImage(wrapper, () =>
         keepSurvivorsInPlace(editable, survivors, keptTops),
     );
     updateProtectedPictureCounts(translationGroup);
-    updateCkeditorSnapshots(translationGroup);
+    resetCkeditorHistories(translationGroup);
     // The toolbar is a div on the body (see kInlineImageContextControlsId), so removing the
     // picture does not remove it. Without this it would stay on screen under a picture that is
     // gone, offering commands for it.
@@ -973,6 +1188,14 @@ function updateProtectedPictureCounts(translationGroup: HTMLElement): void {
 // It listens after the editable's own getSnapshot listener (priority 10), which fills in the
 // HTML. Every such snapshot goes through the same parse and serialize, selected or not, so two
 // snapshots of the same content compare as equal.
+//
+// When CKEditor's Undo or Redo of typing puts back one of these snapshots, the editable's
+// pictures are replaced by copies that are not selected. If the selected picture was one of
+// them, the toolbar would stay on screen with commands for a picture that is gone, so then the
+// picture is deselected. This listens to the editor's loadSnapshot, after the editable's own
+// listener (priority 10) has put the snapshot in. CKEditor fires afterUndo and afterRedo on its
+// undo and redo commands, not on the editor, and the Undo button calls the undo manager
+// directly, without the command; every one of those restores goes through loadSnapshot.
 export function keepInlineImageSelectionOutOfCkeditorSnapshots(editor: {
     on(
         eventName: string,
@@ -989,6 +1212,17 @@ export function keepInlineImageSelectionOutOfCkeditorSnapshots(editor: {
             if (!evt.data.includes(kInlineImageClass)) return;
             evt.data = removeInlineImageSelectionFromHtml(evt.data);
         },
+        undefined,
+        undefined,
+        20,
+    );
+    const deselectIfSelectionWasReplaced = () => {
+        if (!document.querySelector("." + kInlineImageSelectedClass))
+            deselectAllInlineImages(document);
+    };
+    editor.on(
+        "loadSnapshot",
+        deselectIfSelectionWasReplaced,
         undefined,
         undefined,
         20,
@@ -1010,40 +1244,24 @@ export function removeInlineImageSelectionFromHtml(html: string): string {
     return template.innerHTML;
 }
 
-// The parts of CKEditor's undo manager that the functions below use.
+// The parts of CKEditor's undo manager that resetCkeditorHistories uses.
 interface ICkeditorUndoManager {
     // The snapshot of the editable that CKEditor last recorded; undefined until it records one.
     currentImage?: object;
-    // Every snapshot CKEditor holds, oldest first. Those after `index` are what it can redo.
-    snapshots: object[];
-    index: number;
-    // Records `image` as a new snapshot if its content differs from the latest one, and then
-    // fires "change". `onContentOnly` makes it ignore a difference in the selection alone.
-    save: (onContentOnly: boolean, image: object) => boolean;
-    // Replaces the latest snapshot with `newImage`, firing nothing.
-    update: (newImage: object) => void;
+    // Forgets every snapshot.
+    reset: () => void;
+    // Records `image` as a snapshot. `onContentOnly` makes it ignore a difference in the
+    // selection alone, and an `autoFireChange` of false stops it firing "change".
+    save: (
+        onContentOnly: boolean,
+        image: object,
+        autoFireChange: boolean,
+    ) => boolean;
     // Works out again whether there is anything to undo or redo.
     refreshState: () => void;
     // Counts the input events of the keys being pressed. On keyup, CKEditor treats any count
     // above zero as typing.
     editingHandler: { keyEventsStack: { resetInputs: () => void } };
-}
-
-// The CKEditor instances of a translation group's editables that have recorded a snapshot. An
-// editor that has not recorded one yet has nothing to keep in step.
-function getCkeditorsWithSnapshots(translationGroup: HTMLElement): {
-    editor: unknown;
-    undoManager: ICkeditorUndoManager;
-}[] {
-    return getEditables(translationGroup).flatMap((editable) => {
-        const editor = (
-            editable as HTMLElement & {
-                bloomCkEditor?: { undoManager?: ICkeditorUndoManager };
-            }
-        ).bloomCkEditor;
-        const undoManager = editor?.undoManager;
-        return undoManager?.currentImage ? [{ editor, undoManager }] : [];
-    });
 }
 
 // A CKEditor snapshot of the editable's content only (the second argument to CKEditor's undo
@@ -1063,50 +1281,37 @@ function makeContentOnlySnapshot(editor: unknown): object {
 }
 
 // CKEditor keeps its own undo history for each editable, as snapshots of its HTML. A picture
-// change is not CKEditor's, but it changes every editable in the group, so the functions below
-// keep CKEditor's history in step with it, before and after.
+// change is not CKEditor's, but it changes every editable in the group, and an older snapshot
+// would put the old picture back in one editable alone. So after a picture change, and after an
+// undo or redo of one, each editable's history starts again from its current content. Ctrl+Z in
+// that block then cannot take back typing done before the picture change. That comes back when
+// typing moves onto the one undo stack (stage 3 of docs/retire-ckeditor/PLAN.md). A menu
+// command, drag or resize that ends up changing nothing leaves the history alone.
 //
-// Typing is recorded as a snapshot only every so many keystrokes, so the latest snapshot can be
-// older than what the person has just typed. Before a picture change, this records that typing
-// as a snapshot of its own, the way CKEditor does before one of its own commands. Otherwise the
-// update after the change would write over the snapshot from before the typing, and Undo could
-// no longer take the typing back.
-export function saveCkeditorSnapshotsBeforePictureChange(
-    translationGroup: HTMLElement,
-): void {
-    getCkeditorsWithSnapshots(translationGroup).forEach(
-        ({ editor, undoManager }) =>
-            undoManager.save(true, makeContentOnlySnapshot(editor)),
-    );
-}
-
-// After a picture change, the latest snapshot of every editable in the group is replaced with its
-// current content. UndoManager.update() does that and fires no "change". Otherwise CKEditor would
-// take the picture change for typing: trackCkeditorChanges (undo/ckeditorChanges.ts) would then
-// count it as a new edit, which discards what the undo stack could redo, so Ctrl+Y after Ctrl+Z
-// on a picture change would do nothing, and the next Ctrl+Z would restore CKEditor's stale
-// snapshot of this one editable.
+// The new first snapshot fires no "change". If it did, trackCkeditorChanges
+// (undo/ckeditorChanges.ts) would count the picture change as typing, which discards what the
+// undo stack could redo, so Ctrl+Y after Ctrl+Z on a picture change would do nothing.
 //
-// Its count of typing in progress goes back to zero too. On every keyup, even of a bare modifier
-// key, CKEditor records typing whenever that count is above zero, and an input event that came
-// without a keydown (a spelling suggestion, a paste from the menu, a drop) leaves a count that no
-// keyup clears. The typing is all in the snapshot that was just recorded.
+// CKEditor's count of typing in progress goes back to zero too. On every keyup, even of a bare
+// modifier key, CKEditor records typing whenever that count is above zero, and an input event
+// that came without a keydown (a spelling suggestion, a paste from the menu, a drop) leaves a
+// count that no keyup clears.
 //
-// CKEditor's redo snapshots go too. They were taken before the picture change, so redoing one
-// would put back the old picture in this editable alone. A change of CKEditor's own discards
-// them in the same way.
-function updateCkeditorSnapshots(translationGroup: HTMLElement): void {
-    getCkeditorsWithSnapshots(translationGroup).forEach(
-        ({ editor, undoManager }) => {
-            undoManager.update(makeContentOnlySnapshot(editor));
-            undoManager.editingHandler.keyEventsStack.resetInputs();
-            undoManager.snapshots.splice(undoManager.index + 1);
-            // CKEditor's own record of whether it can redo goes stale: a save it makes with
-            // autoFireChange false (as on every click in the block) can drop the redo snapshots
-            // without updating it. So it is worked out again here every time.
-            undoManager.refreshState();
-        },
-    );
+// An editor that has not recorded a snapshot yet has no history to reset.
+function resetCkeditorHistories(translationGroup: HTMLElement): void {
+    getEditables(translationGroup).forEach((editable) => {
+        const editor = (
+            editable as HTMLElement & {
+                bloomCkEditor?: { undoManager?: ICkeditorUndoManager };
+            }
+        ).bloomCkEditor;
+        const undoManager = editor?.undoManager;
+        if (!undoManager?.currentImage) return;
+        undoManager.reset();
+        undoManager.save(true, makeContentOnlySnapshot(editor), false);
+        undoManager.refreshState();
+        undoManager.editingHandler.keyEventsStack.resetInputs();
+    });
 }
 
 // Moves the images left in the editable after a delete back to where they were before it
@@ -1216,6 +1421,7 @@ function buildInlineImageControls(
         ),
         contextAdditions: {
             aiImageEditingAvailable: aiImageEditingIsAvailable,
+            isCropped: inlineImageIsCropped(wrapper),
             deleteThisObject: () => removeInlineImageCommand(wrapper),
         },
         afterToolbarCommand: () => {
@@ -1318,7 +1524,7 @@ function onInlineImagesRestored(event: Event): void {
     const translationGroup = event.target as HTMLElement | null;
     if (!translationGroup) return;
     updateProtectedPictureCounts(translationGroup);
-    updateCkeditorSnapshots(translationGroup);
+    resetCkeditorHistories(translationGroup);
     const selected = translationGroup.querySelector(
         "." + kInlineImageClass + "." + kInlineImageSelectedClass,
     ) as HTMLElement | null;
@@ -1334,7 +1540,7 @@ function onInlineImagesRestored(event: Event): void {
  */
 export function inlineImagePictureChanged(img: HTMLElement): void {
     handleInlineImageChanged(img);
-    updateCkeditorSnapshots(
+    resetCkeditorHistories(
         img.closest(".bloom-translationGroup") as HTMLElement,
     );
     const wrapper = img.closest("." + kInlineImageClass) as HTMLElement | null;
@@ -1393,8 +1599,31 @@ interface IInlineImageResizeState {
     pointerId: number;
 }
 
+// A drag of one of the crop handles, or of the move-crop handle.
+interface IInlineImageCropState {
+    wrapper: HTMLElement;
+    editable: HTMLElement;
+    handle: InlineImageCropSide | "move";
+    startXViewportPx: number;
+    startYViewportPx: number;
+    // Everything below is as it was when the drag began. Each move works out the crop again
+    // from these, so rounding does not build up over a long drag.
+    startCrop: IInlineImageCrop;
+    startWidthPercent: number;
+    startOffsetLayoutPx: number;
+    // The part of the picture that showed.
+    shownWidthViewportPx: number;
+    shownHeightViewportPx: number;
+    // Viewport pixels per layout pixel; see getViewportPxPerLayoutPx.
+    viewportPxPerLayoutPx: number;
+    started: boolean;
+    // The pointer this gesture captured; see captureGesturePointer.
+    pointerId: number;
+}
+
 let dragState: IInlineImageDragState | undefined;
 let resizeState: IInlineImageResizeState | undefined;
+let cropState: IInlineImageCropState | undefined;
 let documentWithPointerListeners: Document | undefined;
 const documentsWithInlineImageListeners = new WeakSet<Document>();
 
@@ -1406,6 +1635,13 @@ function onPointerDown(event: PointerEvent): void {
     // editing controls around the page, must not deselect the image. Otherwise choosing a
     // command would deselect the image the command is for.
     if (!target.closest(".bloom-page")) return;
+    const cropHandle = target.closest(
+        `.${kInlineImageSideHandleClass}, .${kInlineImageMoveCropHandleClass}`,
+    ) as HTMLElement | null;
+    if (cropHandle) {
+        startCrop(event, cropHandle);
+        return;
+    }
     const handle = target.closest(
         "." + kInlineImageHandleClass,
     ) as HTMLElement | null;
@@ -1866,6 +2102,117 @@ function continueResize(
     state.wrapper.style.setProperty(kInlineImageWidthVar, `${percent}%`);
 }
 
+function startCrop(event: PointerEvent, handle: HTMLElement): void {
+    const wrapper = handle.closest(
+        "." + kInlineImageClass,
+    ) as HTMLElement | null;
+    const editable = wrapper?.closest(".bloom-editable") as HTMLElement | null;
+    if (!wrapper || !editable) return;
+    // Grabbing a handle is not the start of a text selection.
+    event.preventDefault();
+    // A placeholder, or a picture that has not loaded, has no shape to crop to. CSS hides the
+    // handles on a placeholder; this is for a picture that is still loading.
+    const img = getImageOf(wrapper) as HTMLImageElement | undefined;
+    if (!img?.naturalWidth || !img.naturalHeight) return;
+    const shown = getImageBox(wrapper);
+    if (!(shown.width > 0) || !(shown.height > 0)) return;
+    const viewportPxPerLayoutPx = getViewportPxPerLayoutPx(editable);
+    const widthVar = parseFloat(
+        wrapper.style.getPropertyValue(kInlineImageWidthVar),
+    );
+    cropState = {
+        wrapper,
+        editable,
+        handle: (handle.getAttribute(kInlineImageSideAttribute) ?? "move") as
+            | InlineImageCropSide
+            | "move",
+        startXViewportPx: event.clientX,
+        startYViewportPx: event.clientY,
+        startCrop: getInlineImageCrop(wrapper),
+        startWidthPercent: Number.isNaN(widthVar)
+            ? (shown.width / (editable.clientWidth * viewportPxPerLayoutPx)) *
+              100
+            : widthVar,
+        startOffsetLayoutPx: getInlineImageOffsetLayoutPx(wrapper),
+        shownWidthViewportPx: shown.width,
+        shownHeightViewportPx: shown.height,
+        viewportPxPerLayoutPx,
+        started: false,
+        pointerId: event.pointerId,
+    };
+    addPointerListeners(editable.ownerDocument);
+    captureGesturePointer(wrapper, event.pointerId);
+}
+
+function continueCrop(state: IInlineImageCropState, event: PointerEvent): void {
+    const deltaXViewportPx = event.clientX - state.startXViewportPx;
+    const deltaYViewportPx = event.clientY - state.startYViewportPx;
+    if (
+        !beginGestureIfMoved(
+            state,
+            Math.abs(deltaXViewportPx),
+            Math.abs(deltaYViewportPx),
+        )
+    )
+        return;
+    if (state.handle === "move") {
+        setInlineImageCrop(
+            state.wrapper,
+            computeInlineImageMovedCrop(
+                state.startCrop,
+                deltaXViewportPx,
+                deltaYViewportPx,
+                state.shownWidthViewportPx,
+                state.shownHeightViewportPx,
+            ),
+        );
+    } else {
+        const vertical = state.handle === "n" || state.handle === "s";
+        const inwardViewportPx = {
+            n: deltaYViewportPx,
+            s: -deltaYViewportPx,
+            w: deltaXViewportPx,
+            e: -deltaXViewportPx,
+        }[state.handle];
+        const { crop, widthPercent } = computeInlineImageSideCrop(
+            state.startCrop,
+            state.handle,
+            inwardViewportPx,
+            vertical ? state.shownHeightViewportPx : state.shownWidthViewportPx,
+            state.startWidthPercent,
+        );
+        setInlineImageCrop(state.wrapper, crop);
+        if (!vertical)
+            state.wrapper.style.setProperty(
+                kInlineImageWidthVar,
+                `${widthPercent}%`,
+            );
+        // On a canvas, cropping the top leaves the rest of the picture where it was. Here the
+        // image's top is where its offset puts it, so the offset grows by as much as was cut
+        // away. The bottom dock has no offset; there, and when the offset is already zero and
+        // the top is uncropped, the picture moves instead.
+        if (
+            state.handle === "n" &&
+            getInlineImageDock(state.wrapper) !== kInlineImageBottomClass
+        ) {
+            const pictureHeightViewportPx =
+                (state.shownHeightViewportPx * 100) /
+                (100 - state.startCrop.top - state.startCrop.bottom);
+            setInlineImageOffset(
+                state.wrapper,
+                clampInlineImageOffset(
+                    state.startOffsetLayoutPx +
+                        ((crop.top - state.startCrop.top) / 100) *
+                            (pictureHeightViewportPx /
+                                state.viewportPxPerLayoutPx),
+                ),
+            );
+        }
+    }
+    refreshInlineImageAspectRatio(state.wrapper);
+    updateInlineImageCropHandles(state.wrapper);
+}
+
 // A press that has not moved far enough is still a click, so nothing changes and no undo entry
 // is recorded until it has. The undo is prepared here, and onPointerEnd commits it
 // through commitInlineImageChange, since even a real drag may end up changing nothing. Returns
@@ -1882,9 +2229,6 @@ function beginGestureIfMoved(
     )
         return false;
     state.started = true;
-    saveCkeditorSnapshotsBeforePictureChange(
-        state.wrapper.closest(".bloom-translationGroup") as HTMLElement,
-    );
     prepareInlineImageUndo(state.wrapper);
     state.wrapper.ownerDocument.body.classList.add(kInlineImageDraggingClass);
     setInlineImageContextControlsMoving(state.wrapper.ownerDocument, true);
@@ -1896,13 +2240,23 @@ function beginGestureIfMoved(
 // check, a second finger on a touch screen, or a brush of a trackpad during a mouse drag,
 // would move the picture to wherever that pointer is and end the drag there.
 function isThisGesturesPointer(event: PointerEvent): boolean {
-    const state = resizeState ?? dragState;
+    const state = getGestureState();
     return !!state && state.pointerId === event.pointerId;
+}
+
+// The drag, resize or crop in progress, if there is one. Only one can be in progress at a time.
+function getGestureState():
+    | IInlineImageDragState
+    | IInlineImageResizeState
+    | IInlineImageCropState
+    | undefined {
+    return resizeState ?? cropState ?? dragState;
 }
 
 function onPointerMove(event: PointerEvent): void {
     if (!isThisGesturesPointer(event)) return;
     if (resizeState) continueResize(resizeState, event);
+    else if (cropState) continueCrop(cropState, event);
     else if (dragState)
         continueDrag(dragState, { x: event.clientX, y: event.clientY });
 }
@@ -1913,8 +2267,9 @@ function onPointerMove(event: PointerEvent): void {
 function onPointerEnd(event: PointerEvent): void {
     if (!isThisGesturesPointer(event)) return;
     const drag = dragState;
-    const state = resizeState ?? dragState;
+    const state = getGestureState();
     resizeState = undefined;
+    cropState = undefined;
     dragState = undefined;
     stopEdgeScrollTimer(drag);
     releaseGesturePointer(state);
@@ -2006,10 +2361,10 @@ function commitInlineImageChange(
         recordInlineImageOffsetBasedOn(each, editable),
     );
     syncInlineImagesFromEditable(editable);
-    commitPendingInlineImageUndo(wrapper);
-    updateCkeditorSnapshots(
-        editable.closest(".bloom-translationGroup") as HTMLElement,
-    );
+    if (commitPendingInlineImageUndo(wrapper))
+        resetCkeditorHistories(
+            editable.closest(".bloom-translationGroup") as HTMLElement,
+        );
     OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
 }
 
@@ -2046,7 +2401,43 @@ function addHandles(wrapper: HTMLElement): void {
         handle.setAttribute(kInlineImageCornerAttribute, corner);
         frame.appendChild(handle);
     });
+    kInlineImageCropSides.forEach((side) => {
+        const handle = doc.createElement("div");
+        handle.className = `bloom-ui ${kInlineImageSideHandleClass} ${kInlineImageSideHandleClass}-${side}`;
+        handle.setAttribute(kInlineImageSideAttribute, side);
+        frame.appendChild(handle);
+    });
+    const moveCropHandle = doc.createElement("div");
+    moveCropHandle.className = `bloom-ui ${kInlineImageMoveCropHandleClass}`;
+    frame.appendChild(moveCropHandle);
     wrapper.appendChild(frame);
+    updateInlineImageCropHandles(wrapper);
+}
+
+/**
+ * Shows on the selected image's handles which sides are cropped, and shows the move-crop handle
+ * only while the picture is cropped, as a canvas does. Call it after anything that changes the
+ * crop. It does nothing for an image that has no handles.
+ */
+export function updateInlineImageCropHandles(wrapper: HTMLElement): void {
+    const frame = wrapper.querySelector(
+        ":scope > ." + kInlineImageHandleFrameClass,
+    );
+    if (!frame) return;
+    const crop = getInlineImageCrop(wrapper);
+    frame.classList.toggle(
+        kInlineImageFrameCroppedClass,
+        inlineImageIsCropped(wrapper),
+    );
+    const cropped = getInlineImageCroppedSides(crop);
+    frame
+        .querySelectorAll("." + kInlineImageSideHandleClass)
+        .forEach((handle) => {
+            const side = handle.getAttribute(
+                kInlineImageSideAttribute,
+            ) as InlineImageCropSide;
+            handle.classList.toggle(kCurrentlyCroppedClass, cropped[side]);
+        });
 }
 
 const getImageOf = (wrapper: HTMLElement): HTMLElement | undefined =>
@@ -2055,8 +2446,26 @@ const getImageOf = (wrapper: HTMLElement): HTMLElement | undefined =>
 // The image's box. It is smaller than the wrapper's box, because the vertical offset is
 // transparent padding at the top of the wrapper, and in the middle band a full-width wrapper
 // holds a narrower image.
+//
+// For a cropped picture it is the part that shows. The img's own rectangle would include the
+// scale and translate that draw the whole picture (see the crop rules in inlineImages.less), so
+// this takes the img's layout box instead, which those leave alone. The img is positioned inside
+// the wrapper (inlineImageEditing.less), and the wrapper is not transformed, so the wrapper's
+// rectangle and the img's offsets give it.
 function getImageBox(wrapper: HTMLElement): IBox {
-    return getBox(getImageOf(wrapper) ?? wrapper);
+    const img = getImageOf(wrapper);
+    if (!img) return getBox(wrapper);
+    if (!inlineImageIsCropped(wrapper)) return getBox(img);
+    const wrapperBox = getBox(wrapper);
+    // The page's zoom: offsets are in layout pixels and the rectangle is in viewport pixels.
+    const scale =
+        wrapper.offsetWidth > 0 ? wrapperBox.width / wrapper.offsetWidth : 1;
+    return {
+        left: wrapperBox.left + img.offsetLeft * scale,
+        top: wrapperBox.top + img.offsetTop * scale,
+        width: img.offsetWidth * scale,
+        height: img.offsetHeight * scale,
+    };
 }
 
 function getBox(element: HTMLElement): IBox {

@@ -21,6 +21,15 @@ vi.mock("../../react_components/featureStatus", () => ({
     useGetFeatureAvailabilityMessage: () => "",
     openBloomSubscriptionSettings: () => {},
 }));
+// There is no toolbox frame in these tests. A test that needs the reader tools to have a markup
+// tool selected sets readerToolsHandleUndoKeys.
+const toolboxStub = vi.hoisted(() => ({ readerToolsHandleUndoKeys: false }));
+vi.mock("./workspaceFrames", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("./workspaceFrames")>()),
+    getToolboxBundleExports: () => ({
+        readerToolsHandleUndoKeys: () => toolboxStub.readerToolsHandleUndoKeys,
+    }),
+}));
 import {
     getTestRoot,
     cleanTestRoot,
@@ -61,7 +70,14 @@ import {
     computeInlineImageClusterIndex,
     computeInlineImageDock,
     computeInlineImageWidthPercent,
+    computeInlineImageMovedCrop,
+    computeInlineImageSideCrop,
     deselectAllInlineImages,
+    getInlineImageCroppedSides,
+    kCurrentlyCroppedClass,
+    kInlineImageFrameCroppedClass,
+    kInlineImageMoveCropHandleClass,
+    kInlineImageSideHandleClass,
     getInlineImageActionTarget,
     getInlineImageDock,
     getInlineImageHandleHorizontalSign,
@@ -77,6 +93,12 @@ import {
     selectInlineImage,
     setupInlineImageInteractions,
 } from "./inlineImageInteractions";
+import {
+    getInlineImageCrop,
+    IInlineImageCrop,
+    kNoInlineImageCrop,
+    setInlineImageCrop,
+} from "./inlineImageCrop";
 import { resetChangeOrderForTests } from "../undo/changeOrder";
 import BloomField from "../bloomField/BloomField";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
@@ -1470,6 +1492,40 @@ describe("inlineImageInteractions", () => {
             ).not.toHaveBeenCalled();
         });
 
+        it("recognizes Ctrl+Z on a non-Latin keyboard layout, as CKEditor does", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            resizeTo(group, "60%");
+            // On a Russian layout the Z key gives "я"; CKEditor goes by keyCode 90.
+            const event = new KeyboardEvent("keydown", {
+                key: "я",
+                keyCode: 90,
+                ctrlKey: true,
+                bubbles: true,
+                cancelable: true,
+            });
+
+            editableFor(group, "en").dispatchEvent(event);
+
+            expect(event.defaultPrevented).toBe(true);
+            expect(widthIn(group, "fr")).toBe("40%");
+        });
+
+        it("leaves Ctrl+Z to a form field", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            resizeTo(group, "60%");
+            const input = document.createElement("input");
+            getTestRoot().appendChild(input);
+
+            const event = pressKey(input, "z");
+
+            expect(event.defaultPrevented).toBe(false);
+            expect(widthIn(group, "fr")).toBe("60%");
+        });
+
         it("leaves Ctrl+Z alone when the next undo is not a picture change", () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
@@ -1569,6 +1625,27 @@ describe("inlineImageInteractions", () => {
             expect(event.defaultPrevented).toBe(false);
             expect(widthIn(group, "fr")).toBe("60%");
         });
+
+        it("leaves both keys to the reader tools while a markup tool is selected", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            resizeTo(group, "60%");
+            const english = editableFor(group, "en");
+            // Sanity check: without the reader tools, Ctrl+Z would be taken.
+            expect(inlineImageCanUndo()).toBe(true);
+            toolboxStub.readerToolsHandleUndoKeys = true;
+            try {
+                const undoEvent = pressKey(english, "z");
+                const redoEvent = pressKey(english, "y");
+
+                expect(undoEvent.defaultPrevented).toBe(false);
+                expect(redoEvent.defaultPrevented).toBe(false);
+                expect(widthIn(group, "fr")).toBe("60%");
+            } finally {
+                toolboxStub.readerToolsHandleUndoKeys = false;
+            }
+        });
     });
 
     // To CKEditor, a selection change looked like an edit, and an undo of typing first spent a
@@ -1600,11 +1677,66 @@ describe("inlineImageInteractions", () => {
             expect(filtered).not.toContain(kInlineImageSelectedClass);
         });
 
+        it("deselects the picture when CKEditor's undo of typing replaces it", () => {
+            const listeners = new Map<string, () => void>();
+            let loadSnapshotPriority: number | undefined;
+            keepInlineImageSelectionOutOfCkeditorSnapshots({
+                on: (name, l, _scope, _data, priority) => {
+                    listeners.set(name, l as () => void);
+                    if (name === "loadSnapshot")
+                        loadSnapshotPriority = priority;
+                },
+            });
+            const group = makeSimpleGroup();
+            const english = editableFor(group, "en");
+            insertInlineImage(group);
+            selectInlineImage(getInlineImageInEditable(english)!);
+            // Sanity check: the toolbar is showing.
+            expect(
+                document.getElementById(kInlineImageContextControlsId),
+            ).not.toBeNull();
+            // CKEditor puts back a snapshot, which has no selection in it.
+            english.innerHTML = removeInlineImageSelectionFromHtml(
+                english.innerHTML,
+            );
+
+            listeners.get("loadSnapshot")!();
+
+            expect(
+                document.getElementById(kInlineImageContextControlsId),
+            ).toBeNull();
+            expect(
+                loadSnapshotPriority,
+                "it must run after the editable's own loadSnapshot listener, at 10",
+            ).toBeGreaterThan(10);
+        });
+
+        it("keeps a selection that CKEditor's undo did not replace", () => {
+            const listeners = new Map<string, () => void>();
+            keepInlineImageSelectionOutOfCkeditorSnapshots({
+                on: (name, l) => listeners.set(name, l as () => void),
+            });
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            const wrapper = getInlineImageInEditable(editableFor(group, "en"))!;
+            selectInlineImage(wrapper);
+
+            listeners.get("loadSnapshot")!();
+
+            expect(wrapper.classList.contains(kInlineImageSelectedClass)).toBe(
+                true,
+            );
+            expect(
+                document.getElementById(kInlineImageContextControlsId),
+            ).not.toBeNull();
+        });
+
         it("filters what the editable's own listener put in the snapshot", () => {
             let listener: ((evt: { data?: unknown }) => void) | undefined;
             let priority: number | undefined;
             keepInlineImageSelectionOutOfCkeditorSnapshots({
-                on: (_name, l, _scope, _data, p) => {
+                on: (name, l, _scope, _data, p) => {
+                    if (name !== "getSnapshot") return;
                     listener = l;
                     priority = p;
                 },
@@ -1623,7 +1755,7 @@ describe("inlineImageInteractions", () => {
         });
     });
 
-    describe("keeping CKEditor's snapshots current", () => {
+    describe("resetting CKEditor's history after a picture change", () => {
         // Stands in for CKEditor's undo Image, which takes a snapshot of an editor; the second
         // argument says whether to leave out the selection.
         class FakeImage {
@@ -1640,65 +1772,65 @@ describe("inlineImageInteractions", () => {
         afterEach(() => {
             delete (globalThis as unknown as { CKEDITOR?: unknown }).CKEDITOR;
         });
-        const runInsertImageCommand = (editable: HTMLElement) => {
-            const insert = buildInlineImageMenuItems(
-                getInlineImageActionTarget(
-                    editable.querySelector("p") as HTMLElement,
-                ),
-            ).find((i) => i.l10nId === "EditTab.InlineImage.InsertImage")!;
-            (insert.onClick as () => void)();
-        };
 
         // Gives each editable a stand-in for the CKEditor instance Bloom attaches to it.
         const attachFakeEditors = (group: HTMLElement, hasSnapshot = true) =>
             ["en", "fr"].map((lang) => {
-                const update = vi.fn();
+                const undoManager = {
+                    currentImage: hasSnapshot ? {} : undefined,
+                    reset: vi.fn(),
+                    save: vi.fn(),
+                    refreshState: vi.fn(),
+                    editingHandler: {
+                        keyEventsStack: { resetInputs: vi.fn() },
+                    },
+                };
                 (
                     editableFor(group, lang) as HTMLElement & {
                         bloomCkEditor?: unknown;
                     }
-                ).bloomCkEditor = {
-                    undoManager: {
-                        currentImage: hasSnapshot ? {} : undefined,
-                        snapshots: hasSnapshot ? [{}] : [],
-                        index: hasSnapshot ? 0 : -1,
-                        save: vi.fn(),
-                        update,
-                        refreshState: vi.fn(),
-                        editingHandler: {
-                            keyEventsStack: { resetInputs: vi.fn() },
-                        },
-                    },
-                };
-                return update;
+                ).bloomCkEditor = { undoManager };
+                return undoManager;
             });
 
-        it("updates every editable's snapshot after an undo restores the pictures", () => {
+        it("starts every editable's history again after an undo restores the pictures", () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
             insertInlineImage(group);
-            const updates = attachFakeEditors(group);
+            const undoManagers = attachFakeEditors(group);
 
             expect(inlineImageUndo()).toBe(true);
 
             // Sanity check: the undo took the picture out.
             expect(getInlineImages(group).length).toBe(0);
-            updates.forEach((update) => expect(update).toHaveBeenCalled());
-            // Recording the selection of editables that do not have the focus scrolled the page.
-            updates.forEach((update) =>
+            undoManagers.forEach((undoManager) => {
+                expect(undoManager.reset).toHaveBeenCalled();
+                expect(undoManager.save).toHaveBeenCalledTimes(1);
+                const [onContentOnly, image, autoFireChange] =
+                    undoManager.save.mock.calls[0];
+                // Recording the selection of editables that do not have the focus scrolled the
+                // page.
                 expect(
-                    (update.mock.calls[0][0] as FakeImage).contentOnly,
+                    (image as FakeImage).contentOnly,
                     "expected a snapshot of the content only",
-                ).toBe(true),
-            );
+                ).toBe(true);
+                expect(onContentOnly).toBe(true);
+                expect(
+                    autoFireChange,
+                    "a change event would count the picture change as typing",
+                ).toBe(false);
+                expect(
+                    undoManager.reset.mock.invocationCallOrder[0],
+                ).toBeLessThan(undoManager.save.mock.invocationCallOrder[0]);
+            });
         });
 
-        it("updates every editable's snapshot after a menu command", async () => {
+        it("starts every editable's history again after a menu command", async () => {
             const group = makeSimpleGroup();
             const wrapper = insertInlineImage(group);
             (wrapper.querySelector("img") as HTMLImageElement).src =
                 "flower.jpg";
-            const updates = attachFakeEditors(group);
+            const undoManagers = attachFakeEditors(group);
             const transparent = buildInlineImageMenuItems(
                 getInlineImageActionTarget(wrapper),
             )
@@ -1711,57 +1843,9 @@ describe("inlineImageInteractions", () => {
             (transparent.onClick as () => void)();
 
             await vi.waitFor(() =>
-                updates.forEach((update) => expect(update).toHaveBeenCalled()),
-            );
-        });
-
-        // CKEditor took those snapshots before the picture change, so redoing one would put the
-        // old picture back in one editable.
-        it("discards what CKEditor could redo", () => {
-            setupInlineImageInteractions(getTestRoot());
-            const group = makeSimpleGroup();
-            insertInlineImage(group);
-            const editable = editableFor(group, "en") as HTMLElement & {
-                bloomCkEditor?: unknown;
-            };
-            // Typing, then Ctrl+Z on it: CKEditor is at its first snapshot, with one to redo.
-            const undoManager = {
-                currentImage: {},
-                snapshots: [{ typed: false }, { typed: true }],
-                index: 0,
-                save: vi.fn(),
-                update: vi.fn(),
-                refreshState: vi.fn(),
-                editingHandler: { keyEventsStack: { resetInputs: vi.fn() } },
-            };
-            editable.bloomCkEditor = { undoManager };
-
-            expect(inlineImageUndo()).toBe(true);
-
-            expect(undoManager.snapshots).toEqual([{ typed: false }]);
-            expect(undoManager.refreshState).toHaveBeenCalled();
-        });
-
-        it("works out again whether CKEditor can redo, even when it has nothing to drop", () => {
-            setupInlineImageInteractions(getTestRoot());
-            const group = makeSimpleGroup();
-            insertInlineImage(group);
-            attachFakeEditors(group);
-
-            expect(inlineImageUndo()).toBe(true);
-
-            ["en", "fr"].forEach((lang) =>
-                expect(
-                    (
-                        editableFor(group, lang) as HTMLElement & {
-                            bloomCkEditor: {
-                                undoManager: {
-                                    refreshState: ReturnType<typeof vi.fn>;
-                                };
-                            };
-                        }
-                    ).bloomCkEditor.undoManager.refreshState,
-                ).toHaveBeenCalled(),
+                undoManagers.forEach((undoManager) =>
+                    expect(undoManager.reset).toHaveBeenCalled(),
+                ),
             );
         });
 
@@ -1772,78 +1856,28 @@ describe("inlineImageInteractions", () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
             insertInlineImage(group);
-            attachFakeEditors(group);
+            const undoManagers = attachFakeEditors(group);
 
             expect(inlineImageUndo()).toBe(true);
 
-            ["en", "fr"].forEach((lang) =>
+            undoManagers.forEach((undoManager) =>
                 expect(
-                    (
-                        editableFor(group, lang) as HTMLElement & {
-                            bloomCkEditor: {
-                                undoManager: {
-                                    editingHandler: {
-                                        keyEventsStack: {
-                                            resetInputs: ReturnType<
-                                                typeof vi.fn
-                                            >;
-                                        };
-                                    };
-                                };
-                            };
-                        }
-                    ).bloomCkEditor.undoManager.editingHandler.keyEventsStack
-                        .resetInputs,
+                    undoManager.editingHandler.keyEventsStack.resetInputs,
                 ).toHaveBeenCalled(),
             );
-        });
-
-        // CKEditor saves typing as a snapshot only every so many keystrokes. Without a save
-        // before the change, the update after it would write over the snapshot from before the
-        // typing, and Undo could no longer take the typing back.
-        it("saves typing CKEditor has not recorded before a picture change", () => {
-            const group = makeSimpleGroup();
-            const english = editableFor(group, "en");
-            attachFakeEditors(group);
-            const undoManager = (
-                english as HTMLElement & {
-                    bloomCkEditor: {
-                        undoManager: {
-                            save: ReturnType<typeof vi.fn>;
-                            update: ReturnType<typeof vi.fn>;
-                        };
-                    };
-                }
-            ).bloomCkEditor.undoManager;
-            let picturesWhenSaved = -1;
-            undoManager.save.mockImplementation(() => {
-                picturesWhenSaved = getInlineImages(group).length;
-            });
-
-            runInsertImageCommand(english);
-
-            expect(undoManager.save).toHaveBeenCalled();
-            expect(
-                picturesWhenSaved,
-                "expected the save to come before the picture went in",
-            ).toBe(0);
-            expect(
-                (undoManager.save.mock.calls[0][1] as FakeImage).contentOnly,
-            ).toBe(true);
-            // Sanity check: the picture did go in, and the snapshot was then updated.
-            expect(getInlineImages(group).length).toBe(2);
-            expect(undoManager.update).toHaveBeenCalled();
         });
 
         it("leaves alone an editor that has not recorded a snapshot yet", () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
             insertInlineImage(group);
-            const updates = attachFakeEditors(group, false);
+            const undoManagers = attachFakeEditors(group, false);
 
             expect(inlineImageUndo()).toBe(true);
 
-            updates.forEach((update) => expect(update).not.toHaveBeenCalled());
+            undoManagers.forEach((undoManager) =>
+                expect(undoManager.reset).not.toHaveBeenCalled(),
+            );
         });
     });
 
@@ -2147,6 +2181,334 @@ describe("inlineImageInteractions", () => {
                 true,
             );
             french.stop();
+        });
+    });
+
+    describe("cropping", () => {
+        const crop = (
+            top: number,
+            right: number,
+            bottom: number,
+            left: number,
+        ) => ({ top, right, bottom, left }) as IInlineImageCrop;
+
+        describe("computeInlineImageSideCrop", () => {
+            it("cropping the top cuts that share of the picture's height and leaves the width alone", () => {
+                const result = computeInlineImageSideCrop(
+                    kNoInlineImageCrop,
+                    "n",
+                    20,
+                    100,
+                    40,
+                );
+                expect(result.crop).toEqual(crop(20, 0, 0, 0));
+                expect(result.widthPercent).toBe(40);
+            });
+
+            it("cropping the right makes the image narrower on the page by the same share", () => {
+                const result = computeInlineImageSideCrop(
+                    kNoInlineImageCrop,
+                    "e",
+                    50,
+                    200,
+                    40,
+                );
+                expect(result.crop).toEqual(crop(0, 25, 0, 0));
+                expect(result.widthPercent).toBe(30);
+            });
+
+            it("measures against the whole picture when part of it is already cut away", () => {
+                // 50% of the width shows, 100px of it, so the picture is 200px wide and
+                // another 20px is another 10%.
+                const result = computeInlineImageSideCrop(
+                    crop(0, 25, 0, 25),
+                    "w",
+                    20,
+                    100,
+                    40,
+                );
+                expect(result.crop).toEqual(crop(0, 25, 0, 35));
+                expect(result.widthPercent).toBe(32);
+            });
+
+            it("cannot uncrop past the edge of the picture", () => {
+                const result = computeInlineImageSideCrop(
+                    crop(0, 0, 0, 10),
+                    "w",
+                    -100,
+                    180,
+                    36,
+                );
+                expect(result.crop.left).toBe(0);
+                expect(result.widthPercent).toBe(40);
+            });
+
+            it("leaves at least a tenth of the picture showing", () => {
+                const result = computeInlineImageSideCrop(
+                    crop(20, 0, 0, 0),
+                    "s",
+                    10000,
+                    80,
+                    40,
+                );
+                expect(result.crop).toEqual(crop(20, 0, 70, 0));
+            });
+
+            it("keeps the width within the limits a corner resize keeps to", () => {
+                const result = computeInlineImageSideCrop(
+                    crop(0, 0, 0, 20),
+                    "w",
+                    -10000,
+                    800,
+                    90,
+                );
+                expect(result.widthPercent).toBe(kMaxInlineImageWidthPercent);
+                // 80% of the picture was 90% of the block; 95% of the block is 84.44% of it.
+                expect(result.crop.left).toBeCloseTo(15.56, 2);
+            });
+        });
+
+        describe("computeInlineImageMovedCrop", () => {
+            it("moving the picture right shows more of its left side, keeping the part that shows the same size", () => {
+                // 60% of the width shows in 120px, so the picture is 200px wide, and 30px is 15%.
+                expect(
+                    computeInlineImageMovedCrop(
+                        crop(10, 20, 30, 20),
+                        30,
+                        0,
+                        120,
+                        60,
+                    ),
+                ).toEqual(crop(10, 35, 30, 5));
+            });
+
+            it("stops at the edges of the picture, as on a canvas", () => {
+                expect(
+                    computeInlineImageMovedCrop(
+                        crop(10, 20, 30, 20),
+                        1000,
+                        -1000,
+                        120,
+                        60,
+                    ),
+                    // Moving it up shows more of its bottom.
+                ).toEqual(crop(40, 40, 0, 0));
+            });
+        });
+
+        it("getInlineImageCroppedSides names the sides that are cut", () => {
+            expect(getInlineImageCroppedSides(crop(5, 0, 0, 7))).toEqual({
+                n: true,
+                e: false,
+                s: false,
+                w: true,
+            });
+            expect(getInlineImageCroppedSides(kNoInlineImageCrop)).toEqual({
+                n: false,
+                e: false,
+                s: false,
+                w: false,
+            });
+        });
+
+        it("a selected image gets four crop handles and a move-crop handle, marked when cropped", () => {
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            setInlineImageCrop(wrapper, crop(10, 0, 0, 0));
+
+            selectInlineImage(wrapper);
+
+            const frame = wrapper.querySelector(
+                "." + kInlineImageHandleFrameClass,
+            ) as HTMLElement;
+            const sides = Array.from(
+                frame.querySelectorAll("." + kInlineImageSideHandleClass),
+            );
+            expect(sides.length).toBe(4);
+            expect(
+                frame.querySelectorAll("." + kInlineImageMoveCropHandleClass)
+                    .length,
+            ).toBe(1);
+            // The corner handles are still the only resize handles.
+            expect(
+                frame.querySelectorAll("." + kInlineImageHandleClass).length,
+            ).toBe(4);
+            expect(
+                frame.classList.contains(kInlineImageFrameCroppedClass),
+            ).toBe(true);
+            const marked = sides.filter((h) =>
+                h.classList.contains(kCurrentlyCroppedClass),
+            );
+            expect(
+                marked.map((h) => h.getAttribute("data-inline-image-side")),
+            ).toEqual(["n"]);
+        });
+
+        it("the other languages' copies get the crop", () => {
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            setInlineImageCrop(wrapper, crop(10, 20, 30, 5));
+
+            syncInlineImagesFromEditable(editableFor(group, "en"));
+
+            expect(
+                getInlineImageCrop(
+                    getInlineImageInEditable(editableFor(group, "fr"))!,
+                ),
+            ).toEqual(crop(10, 20, 30, 5));
+        });
+
+        function menuItemFor(wrapper: HTMLElement, id: string) {
+            return buildInlineImageMenuItems(
+                getInlineImageActionTarget(wrapper),
+            ).find((i) => i.l10nId === id)!;
+        }
+
+        it("Flip on a cropped picture mirrors the crop in every language, and Undo puts it back", async () => {
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            wrapper.querySelector("img")!.setAttribute("src", "flower.jpg");
+            setInlineImageCrop(wrapper, crop(10, 20, 30, 5));
+            syncInlineImagesFromEditable(editableFor(group, "en"));
+            const flipHorizontal = menuItemFor(
+                wrapper,
+                "EditTab.Image.Flip",
+            ).subMenu!.find(
+                (s) => s.l10nId === "EditTab.Image.FlipHorizontal",
+            )!;
+
+            (flipHorizontal.onClick as () => void)();
+
+            await vi.waitFor(() =>
+                expect(wrapper.querySelector("img")!.style.transform).toBe(
+                    "scale(-1, 1)",
+                ),
+            );
+            // The same part of the picture shows, mirrored: left and right swap.
+            expect(getInlineImageCrop(wrapper)).toEqual(crop(10, 5, 30, 20));
+            expect(
+                getInlineImageCrop(
+                    getInlineImageInEditable(editableFor(group, "fr"))!,
+                ),
+            ).toEqual(crop(10, 5, 30, 20));
+
+            expect(inlineImageUndo()).toBe(true);
+
+            expect(getInlineImageCrop(getInlineImage(group)!)).toEqual(
+                crop(10, 20, 30, 5),
+            );
+        });
+
+        it("Reset Image is offered for a cropped picture, and takes the crop away in every language", async () => {
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            wrapper.querySelector("img")!.setAttribute("src", "flower.jpg");
+            // Sanity check: nothing to reset yet.
+            expect(menuItemFor(wrapper, "EditTab.Image.Reset").disabled).toBe(
+                true,
+            );
+            setInlineImageCrop(wrapper, crop(10, 20, 30, 5));
+            syncInlineImagesFromEditable(editableFor(group, "en"));
+            expect(menuItemFor(wrapper, "EditTab.Image.Reset").disabled).toBe(
+                false,
+            );
+
+            (
+                menuItemFor(wrapper, "EditTab.Image.Reset")
+                    .onClick as () => void
+            )();
+
+            await vi.waitFor(() =>
+                expect(getInlineImageCrop(wrapper)).toEqual(kNoInlineImageCrop),
+            );
+            expect(
+                getInlineImageCrop(
+                    getInlineImageInEditable(editableFor(group, "fr"))!,
+                ),
+            ).toEqual(kNoInlineImageCrop);
+        });
+
+        it("choosing a new picture takes the crop away, as on a canvas", () => {
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            setInlineImageCrop(wrapper, crop(10, 20, 30, 5));
+            const img = wrapper.querySelector("img") as HTMLElement;
+            img.setAttribute("src", "another.jpg");
+
+            inlineImagePictureChanged(img);
+
+            expect(getInlineImageCrop(wrapper)).toEqual(kNoInlineImageCrop);
+            expect(
+                getInlineImageCrop(
+                    getInlineImageInEditable(editableFor(group, "fr"))!,
+                ),
+            ).toEqual(kNoInlineImageCrop);
+        });
+
+        // jsdom lays nothing out and loads no pictures, so this gives the picture a size and a
+        // box by hand. That is enough for the whole gesture: press, move, release.
+        it("dragging a crop handle crops every language's copy, and one Undo takes it back", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            const img = wrapper.querySelector("img") as HTMLImageElement;
+            img.setAttribute("src", "flower.jpg");
+            Object.defineProperty(img, "naturalWidth", { value: 800 });
+            Object.defineProperty(img, "naturalHeight", { value: 600 });
+            img.getBoundingClientRect = () =>
+                ({ left: 0, top: 0, width: 200, height: 150 }) as DOMRect;
+            selectInlineImage(wrapper);
+            const eastHandle = wrapper.querySelector(
+                `.${kInlineImageSideHandleClass}-e`,
+            ) as HTMLElement;
+            // Sanity check: the starting width.
+            expect(wrapper.style.getPropertyValue(kInlineImageWidthVar)).toBe(
+                "40%",
+            );
+
+            eastHandle.dispatchEvent(pointerEvent("pointerdown", 200, 75));
+            document.dispatchEvent(pointerEvent("pointermove", 150, 75));
+            document.dispatchEvent(pointerEvent("pointerup", 150, 75));
+
+            // 50px of a 200px picture is a quarter of it.
+            expect(getInlineImageCrop(wrapper)).toEqual(crop(0, 25, 0, 0));
+            expect(wrapper.style.getPropertyValue(kInlineImageWidthVar)).toBe(
+                "30%",
+            );
+            // The text wraps around the part that shows: 600 by 600 of the 800 by 600 picture.
+            expect(
+                wrapper.style.getPropertyValue("--inline-image-aspect-ratio"),
+            ).toBe("600 / 600");
+            const french = getInlineImageInEditable(editableFor(group, "fr"))!;
+            expect(getInlineImageCrop(french)).toEqual(crop(0, 25, 0, 0));
+
+            expect(inlineImageUndo()).toBe(true);
+
+            const restored = getInlineImage(group)!;
+            expect(getInlineImageCrop(restored)).toEqual(kNoInlineImageCrop);
+            expect(restored.style.getPropertyValue(kInlineImageWidthVar)).toBe(
+                "40%",
+            );
+        });
+
+        it("a crop handle does nothing on a picture that has not loaded", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            selectInlineImage(wrapper);
+            const northHandle = wrapper.querySelector(
+                `.${kInlineImageSideHandleClass}-n`,
+            ) as HTMLElement;
+
+            northHandle.dispatchEvent(pointerEvent("pointerdown", 100, 0));
+            document.dispatchEvent(pointerEvent("pointermove", 100, 40));
+            document.dispatchEvent(pointerEvent("pointerup", 100, 40));
+
+            expect(getInlineImageCrop(wrapper)).toEqual(kNoInlineImageCrop);
+            // Nor does the press start a drag of the image.
+            expect(inlineImageCanUndo()).toBe(true); // the insert
+            expect(inlineImageUndo()).toBe(true);
+            expect(getInlineImage(group)).toBeNull();
         });
     });
 });
