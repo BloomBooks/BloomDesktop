@@ -1,4 +1,13 @@
-import { describe, it, expect, beforeEach, afterAll } from "vitest";
+import {
+    describe,
+    it,
+    expect,
+    beforeEach,
+    afterEach,
+    afterAll,
+    vi,
+} from "vitest";
+import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import {
     getTestRoot,
     cleanTestRoot,
@@ -87,6 +96,17 @@ describe("inlineImages", () => {
         theOneUndoStack.clearLegacyProviders();
         resetChangeOrderForTests();
         discardPendingInlineImageUndo();
+        // Some of the code under test asks for an overflow check, which OverflowChecker runs on a
+        // one-second timer. That timer would fire after the test has ended, when the canvas
+        // element manager it calls is gone, and vitest reports the error as unhandled. The
+        // overflow check needs real layout, which jsdom does not have, so it is not run here.
+        vi.spyOn(
+            OverflowChecker,
+            "AdjustSizeOrMarkOverflowSoon",
+        ).mockImplementation(() => {});
+    });
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
     afterAll(removeTestRoot);
 
