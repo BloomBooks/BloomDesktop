@@ -556,6 +556,47 @@ describe("BloomField", () => {
             expect(execCommand).toHaveBeenCalledWith("undo");
         });
 
+        // If Ctrl is let go while Z is still held, Z's auto-repeat types the letter z, which can
+        // replace a selected picture. That is typing, so the picture is put back.
+        it("protects the image when ctrl is let go and z repeats as typing", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", {
+                    bubbles: true,
+                    key: "z",
+                    code: "KeyZ",
+                    ctrlKey: true,
+                }),
+            );
+            // Ctrl comes up; Z is still down and repeats, now without Ctrl.
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true, key: "Control" }),
+            );
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", {
+                    bubbles: true,
+                    key: "z",
+                    code: "KeyZ",
+                    repeat: true,
+                }),
+            );
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", {
+                    bubbles: true,
+                    key: "z",
+                    code: "KeyZ",
+                }),
+            );
+
+            expect(execCommand).toHaveBeenCalledWith("undo");
+        });
+
         it("does not undo on a keyup that left the inline image alone", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = inlineImageHtml + "<p>Some text</p>";

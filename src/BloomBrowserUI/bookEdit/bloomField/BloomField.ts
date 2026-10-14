@@ -919,6 +919,10 @@ export default class BloomField {
             const event = e.originalEvent as KeyboardEvent;
             if (BloomField.isUndoOrRedoKey(event))
                 heldUndoOrRedoKey = BloomField.whichKey(event);
+            // If Ctrl is let go while Z is still held, Z's auto-repeat types the letter, which
+            // can replace a selected picture, so from then on the keystroke is ordinary typing.
+            else if (BloomField.whichKey(event) === heldUndoOrRedoKey)
+                heldUndoOrRedoKey = undefined;
         });
         $(field).keyup((e) => {
             const event = e.originalEvent as KeyboardEvent;
