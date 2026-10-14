@@ -12,10 +12,8 @@ import {
     kBloomButtonClass,
     kBloomCanvasSelector,
 } from "../../toolbox/canvas/canvasElementConstants";
-import {
-    CanvasElementHandleDragInteractions,
-    shownPictureIsBiggerThanElement,
-} from "./CanvasElementHandleDragInteractions";
+import { CanvasElementHandleDragInteractions } from "./CanvasElementHandleDragInteractions";
+import { shownPictureIsBiggerThanElement } from "../imageCrop";
 import { getImageContentTransform } from "../imageContentTransform";
 import {
     canRotateCanvasElement,

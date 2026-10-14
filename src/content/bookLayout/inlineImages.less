@@ -33,7 +33,14 @@
 //     --inline-image-aspect-ratio  natural width / height of the image, with no units,
 //                                  such as 1200 / 800, so that layout (and therefore the
 //                                  overflow checker) is right even before the image has
-//                                  loaded
+//                                  loaded. For a cropped image it is the shape of the
+//                                  part that shows.
+//     --inline-image-crop-top, -right, -bottom, -left
+//                                  how much of the picture is cut away on each side, as
+//                                  a number with no units: a percentage of the picture's
+//                                  height (top, bottom) or width (left, right). An image
+//                                  that is not cropped has none of them. See the crop
+//                                  comment at the end of this file.
 //     --inline-image-contour       the shape the text wraps around when it follows the
 //                                  image's transparent silhouette instead of its
 //                                  rectangle; when unset the text wraps the rectangle
@@ -256,5 +263,86 @@
         ):not(.bloom-content2):not(.bloom-content3)
         > .bloom-inlineImage {
         display: none;
+    }
+}
+
+// Cropping
+// The img stays the box that shows on the page: --inline-image-width wide and the shape of
+// the part of the picture that shows, so the text wraps around that part. With the default
+// object-fit, the whole picture is drawn into that box, squeezed to its shape. The `scale` and
+// `translate` properties then enlarge it, by a different amount in each direction, which
+// undoes the squeeze, and move it so that the part that shows lands on the box. The wrapper's
+// clip-path hides the rest.
+//
+// Three things about this are deliberate:
+//  - It uses `scale` and `translate` and not `transform`. Flip writes `transform` into the
+//    img's own style attribute, which would override a `transform` here. The three properties
+//    combine instead, all about the img's center, so a flipped picture is cropped the same way.
+//  - The clip is on the wrapper. clip-path on the img would be enlarged and moved with it.
+//    The clip leaves out the offset padding above the image, and in the middle dock the band
+//    on each side of the centered image, so it is exactly the image's box.
+//  - It does not use object-view-box, which would do this in one line. Firefox and Safari do
+//    not support it, so a book read in either would show the whole picture squeezed into the
+//    crop's shape. These properties work in every browser that runs Bloom Player.
+//
+// The rules apply only to a wrapper that has a crop property, so an image that is not cropped
+// is drawn exactly as it was before cropping existed. The numbers are written by
+// bookEdit/js/inlineImageCrop.ts.
+.bloom-editable
+    .bloom-inlineImage:is(
+        [style*="--inline-image-crop-top"],
+        [style*="--inline-image-crop-right"],
+        [style*="--inline-image-crop-bottom"],
+        [style*="--inline-image-crop-left"]
+    ) {
+    --inline-image-crop-kept-width: calc(
+        100 - var(--inline-image-crop-left, 0) -
+            var(--inline-image-crop-right, 0)
+    );
+    --inline-image-crop-kept-height: calc(
+        100 - var(--inline-image-crop-top, 0) -
+            var(--inline-image-crop-bottom, 0)
+    );
+    clip-path: inset(0);
+    // clip-path only hides what is drawn outside it. The enlarged picture still counts as
+    // content for scrolling, and a picture docked right, cropped on its right, reaches past
+    // the block's edge and gave the block a horizontal scrollbar. overflow:clip stops that
+    // and, unlike overflow:hidden, does not make the wrapper scrollable either. It clips to
+    // the padding box, which takes in the offset above the image, so the clip-path is still
+    // needed for that.
+    overflow: clip;
+
+    img {
+        scale: calc(100 / var(--inline-image-crop-kept-width))
+            calc(100 / var(--inline-image-crop-kept-height));
+        // Each is the distance between the middle of the picture and the middle of the part
+        // that shows, which is half the difference between what is cut from each side, as a
+        // percentage of the img's box.
+        translate: calc(
+                (
+                        var(--inline-image-crop-right, 0) -
+                            var(--inline-image-crop-left, 0)
+                    ) /
+                    (2 * var(--inline-image-crop-kept-width)) * 100%
+            )
+            calc(
+                (
+                        var(--inline-image-crop-bottom, 0) -
+                            var(--inline-image-crop-top, 0)
+                    ) /
+                    (2 * var(--inline-image-crop-kept-height)) * 100%
+            );
+    }
+
+    &.bloom-inlineImageLeft,
+    &.bloom-inlineImageRight {
+        clip-path: inset(var(--inline-image-offset, 0px) 0 0 0);
+    }
+
+    &.bloom-inlineImageMiddle {
+        clip-path: inset(
+            var(--inline-image-offset, 0px)
+                calc((100% - var(--inline-image-width, 40%)) / 2) 0
+        );
     }
 }
