@@ -9,6 +9,7 @@
 @import "../../placeHolderImages.less";
 @import "bleedAndCropMarks.less";
 @import "inlineImageEditing.less";
+@import "cropHandles.less";
 
 @focusBorderColor: transparent; // #d6eaed; // @bloom-blue; // rgba(82, 168, 236, 0.6);
 @tipLinkColor: #8e3581; // intentionally a bit darker to be legible
@@ -1518,8 +1519,6 @@ canvas.moving {
 }
 
 @resizeHandleRadius: 8px;
-@sideHandleRadius: 4px;
-@sideHandleCenter: 6px;
 // The rotate handle is a small pill on the end of a short stem, above the middle of the top
 // edge of the control frame. We put it outside the frame because the middle of every side
 // inside the frame is already a crop handle.
@@ -1632,10 +1631,7 @@ canvas.moving {
     }
 
     // The resize handles are the small circles in the four corners.
-    // The move crop handle is the small circle in the center, used to change how an
-    // image is cropped by (apparently) moving the image within the frame.
-    .bloom-ui-canvas-element-resize-handle,
-    .bloom-ui-canvas-element-move-crop-handle {
+    .bloom-ui-canvas-element-resize-handle {
         position: absolute;
         width: @resizeHandleRadius * 2;
         height: @resizeHandleRadius * 2;
@@ -1671,11 +1667,10 @@ canvas.moving {
         cursor: se-resize;
     }
 
+    // The move crop handle is the small circle in the center, used to change how an
+    // image is cropped by (apparently) moving the image within the frame.
     .bloom-ui-canvas-element-move-crop-handle {
-        top: calc(50% - @resizeHandleRadius);
-        left: calc(50% - @resizeHandleRadius);
-        display: none;
-        cursor: move;
+        .move-crop-handle(var(--canvas-element-control-color));
     }
 
     // The rotate handle. It is only shown for the canvas elements we can rotate: an element
@@ -1753,43 +1748,10 @@ canvas.moving {
     // Used to crop images, but for text boxes the left and right ones are actually used to change width (and thus
     // aspect ratio).
     .bloom-ui-canvas-element-side-handle {
-        position: absolute;
-        width: @sideHandleRadius * 2;
-        height: @sideHandleRadius * 2;
-        border-radius: @sideHandleRadius;
-        background-color: white;
-        border: 1px solid var(--canvas-element-control-color);
-        box-sizing: border-box;
-        pointer-events: all;
-        &.bloom-currently-cropped {
-            background-color: var(--canvas-element-control-color);
-        }
+        .crop-side-handle(var(--canvas-element-control-color));
     }
-
-    .bloom-ui-canvas-element-side-handle-n {
-        top: -@sideHandleRadius;
-        left: calc(50% - @sideHandleRadius - @sideHandleCenter);
-        width: @sideHandleCenter * 2 + @sideHandleRadius * 2;
-        cursor: ns-resize;
-    }
-    .bloom-ui-canvas-element-side-handle-e {
-        top: calc(50% - @sideHandleRadius - @sideHandleCenter);
-        right: -@sideHandleRadius;
-        height: @sideHandleCenter * 2 + @sideHandleRadius * 2;
-        cursor: ew-resize;
-    }
-    .bloom-ui-canvas-element-side-handle-s {
-        bottom: -@sideHandleRadius;
-        left: calc(50% - @sideHandleRadius - @sideHandleCenter);
-        width: @sideHandleCenter * 2 + @sideHandleRadius * 2;
-        cursor: ns-resize;
-    }
-    .bloom-ui-canvas-element-side-handle-w {
-        top: calc(50% - @sideHandleRadius - @sideHandleCenter);
-        left: -@sideHandleRadius;
-        height: @sideHandleCenter * 2 + @sideHandleRadius * 2;
-        cursor: ew-resize;
-    }
+    // Each handle is centred on its side of the frame.
+    .crop-side-handle-positions(bloom-ui-canvas-element-side-handle; -@sideHandleRadius);
     [data-title]:hover:after,
     [data-title]:active:after {
         // display the data-title like a title, but we will show it immediately,

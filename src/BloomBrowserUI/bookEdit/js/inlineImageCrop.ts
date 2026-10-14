@@ -15,7 +15,12 @@
 //
 // The wrapper's --inline-image-aspect-ratio is the shape of the part that shows, so that the
 // text wraps around that and not around the whole picture.
+//
+// The handles work the same way as a canvas picture's, using the arithmetic in imageCrop.ts.
+// inlineImageCropToBox and inlineImageCropFromBox turn a crop into the element and the picture's
+// box that that arithmetic works with, and back.
 import { FlipAxis } from "./imageContentTransform";
+import { mirrorCropPosition } from "./imageCrop";
 
 export const kInlineImageCropTopVar = "--inline-image-crop-top";
 export const kInlineImageCropRightVar = "--inline-image-crop-right";
@@ -84,20 +89,82 @@ export function clearInlineImageCrop(wrapper: HTMLElement): void {
 }
 
 /**
- * Swaps the crop's left and right (for a horizontal flip) or top and bottom (for a vertical one),
- * so that after the flip the same part of the picture shows, mirrored. Call it with every Flip of
- * the picture; the numbers describe the picture as it is seen.
+ * The crop as imageCrop.ts describes one: the part of the picture that shows is the element, and
+ * the whole picture is a box inside it, reaching past it on the cropped sides. The picture is
+ * pictureWidth by pictureHeight; with the default sizes, every number is a percentage of the
+ * picture, as the crop is.
+ */
+export function inlineImageCropToBox(
+    crop: IInlineImageCrop,
+    pictureWidth = 100,
+    pictureHeight = 100,
+): {
+    elementWidth: number;
+    elementHeight: number;
+    box: { left: number; top: number; width: number; height: number };
+} {
+    return {
+        elementWidth: (pictureWidth * (100 - crop.left - crop.right)) / 100,
+        elementHeight: (pictureHeight * (100 - crop.top - crop.bottom)) / 100,
+        box: {
+            left: (-pictureWidth * crop.left) / 100,
+            top: (-pictureHeight * crop.top) / 100,
+            width: pictureWidth,
+            height: pictureHeight,
+        },
+    };
+}
+
+/**
+ * The crop that an element and a picture's box describe; the reverse of inlineImageCropToBox.
+ * Each side is rounded to a hundredth of a percent, as setInlineImageCrop stores it.
+ */
+export function inlineImageCropFromBox(
+    elementWidth: number,
+    elementHeight: number,
+    box: { left: number; top: number; width: number; height: number },
+): IInlineImageCrop {
+    // Adding zero turns -0 into 0, which would otherwise be written as "-0".
+    const round = (n: number) => Math.round(n * 100) / 100 + 0;
+    const left = (-box.left / box.width) * 100;
+    const top = (-box.top / box.height) * 100;
+    return {
+        left: round(left),
+        top: round(top),
+        right: round(100 - left - (elementWidth / box.width) * 100),
+        bottom: round(100 - top - (elementHeight / box.height) * 100),
+    };
+}
+
+/**
+ * Changes the crop so that after a flip the same part of the picture shows, mirrored, as Flip
+ * does for a picture on a canvas (mirrorCropPosition). Call it with every Flip of the picture;
+ * the numbers describe the picture as it is seen.
  */
 export function mirrorInlineImageCrop(
     wrapper: HTMLElement,
     axis: FlipAxis,
 ): void {
-    const crop = getInlineImageCrop(wrapper);
+    const { elementWidth, elementHeight, box } = inlineImageCropToBox(
+        getInlineImageCrop(wrapper),
+    );
+    const position = mirrorCropPosition(
+        elementWidth,
+        elementHeight,
+        box.left,
+        box.top,
+        box.width,
+        box.height,
+        // Rotate Right is not offered for an inline image.
+        0,
+        axis === "horizontal",
+    );
     setInlineImageCrop(
         wrapper,
-        axis === "horizontal"
-            ? { ...crop, left: crop.right, right: crop.left }
-            : { ...crop, top: crop.bottom, bottom: crop.top },
+        inlineImageCropFromBox(elementWidth, elementHeight, {
+            ...box,
+            ...position,
+        }),
     );
 }
 

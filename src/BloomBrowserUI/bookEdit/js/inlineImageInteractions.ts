@@ -64,14 +64,13 @@ import {
     FlipAxis,
     flipImageContent,
 } from "./imageContentTransform";
-import {
-    clampCropPosition,
-    getCroppedSides,
-} from "./canvasElementManager/CanvasElementHandleDragInteractions";
+import { clampCropPosition, cropOneSide, getCroppedSides } from "./imageCrop";
 import {
     clearInlineImageCrop,
     getInlineImageCrop,
     IInlineImageCrop,
+    inlineImageCropFromBox,
+    inlineImageCropToBox,
     inlineImageIsCropped,
     mirrorInlineImageCrop,
     setInlineImageCrop,
@@ -480,7 +479,8 @@ const kCropSideOf: Record<
  *
  * As on a canvas, the picture does not change size: only the part that shows does. So cropping
  * from the left or right makes the image narrower on the page, and its width is worked out here.
- * A crop cannot go past the edge of the picture, or leave less than
+ * cropOneSide, which a canvas picture's side handles use, does the cropping, in percentages of
+ * the picture. A crop cannot go past the edge of the picture, or leave less than
  * kMinInlineImageCropKeptPercent of it, and the width stays within the limits a corner resize
  * keeps to.
  */
@@ -493,36 +493,33 @@ export function computeInlineImageSideCrop(
 ): { crop: IInlineImageCrop; widthPercent: number } {
     const { side, opposite } = kCropSideOf[handle];
     const keptAtStart = 100 - startCrop[side] - startCrop[opposite];
-    const pictureSizeViewportPx = (shownSizeViewportPx * 100) / keptAtStart;
-    let cut =
-        startCrop[side] + (inwardViewportPx / pictureSizeViewportPx) * 100;
-    cut = Math.min(
-        Math.max(cut, 0),
-        100 - startCrop[opposite] - kMinInlineImageCropKeptPercent,
-    );
+    const inward = (inwardViewportPx * keptAtStart) / shownSizeViewportPx;
     const horizontal = handle === "e" || handle === "w";
-    if (horizontal) {
-        // The width on the page grows and shrinks with the part of the picture that shows.
-        const width =
-            (startWidthPercent * (100 - startCrop[opposite] - cut)) /
-            keptAtStart;
-        const clampedWidth = clampInlineImageWidthPercent(width);
-        if (clampedWidth !== width) {
-            cut = Math.max(
-                0,
-                100 -
-                    startCrop[opposite] -
-                    (clampedWidth * keptAtStart) / startWidthPercent,
-            );
-        }
-    }
-    cut = Math.round(cut * 100) / 100;
+    // How wide the image is on the page, as a percentage of the editable, for each percent of
+    // the picture's width that shows.
+    const widthPerKept = startWidthPercent / keptAtStart;
+    const { elementWidth, elementHeight, box } =
+        inlineImageCropToBox(startCrop);
+    const result = cropOneSide(
+        handle,
+        // cropOneSide measures right and down; the top and left handles move inward that way.
+        handle === "n" || handle === "w" ? inward : -inward,
+        elementWidth,
+        elementHeight,
+        box,
+        horizontal
+            ? Math.max(
+                  kMinInlineImageCropKeptPercent,
+                  kMinInlineImageWidthPercent / widthPerKept,
+              )
+            : kMinInlineImageCropKeptPercent,
+        horizontal ? kMaxInlineImageWidthPercent / widthPerKept : undefined,
+    );
+    const kept = horizontal ? result.width : result.height;
+    // Adding zero turns -0 into 0, which would otherwise be written as "-0".
+    const cut = Math.round((100 - startCrop[opposite] - kept) * 100) / 100 + 0;
     const widthPercent = horizontal
-        ? Math.round(
-              ((startWidthPercent * (100 - startCrop[opposite] - cut)) /
-                  keptAtStart) *
-                  10,
-          ) / 10
+        ? Math.round(widthPerKept * (100 - startCrop[opposite] - cut) * 10) / 10
         : startWidthPercent;
     return { crop: { ...startCrop, [side]: cut }, widthPercent };
 }
@@ -531,7 +528,7 @@ export function computeInlineImageSideCrop(
  * The crop after the move-crop handle has moved the picture by (deltaX, deltaY) inside the part
  * that shows. The part that shows keeps its size, so the image does not change on the page. The
  * picture stops at its edges, as on a canvas: clampCropPosition is the rule a canvas picture
- * uses, here applied in the image's own box.
+ * uses.
  */
 export function computeInlineImageMovedCrop(
     startCrop: IInlineImageCrop,
@@ -540,35 +537,31 @@ export function computeInlineImageMovedCrop(
     shownWidthViewportPx: number,
     shownHeightViewportPx: number,
 ): IInlineImageCrop {
-    const keptWidth = 100 - startCrop.left - startCrop.right;
-    const keptHeight = 100 - startCrop.top - startCrop.bottom;
-    const pictureWidth = (shownWidthViewportPx * 100) / keptWidth;
-    const pictureHeight = (shownHeightViewportPx * 100) / keptHeight;
+    const { box } = inlineImageCropToBox(
+        startCrop,
+        (shownWidthViewportPx * 100) / (100 - startCrop.left - startCrop.right),
+        (shownHeightViewportPx * 100) /
+            (100 - startCrop.top - startCrop.bottom),
+    );
     const position = clampCropPosition(
         shownWidthViewportPx,
         shownHeightViewportPx,
-        (-startCrop.left / 100) * pictureWidth + deltaXViewportPx,
-        (-startCrop.top / 100) * pictureHeight + deltaYViewportPx,
-        pictureWidth,
-        pictureHeight,
+        box.left + deltaXViewportPx,
+        box.top + deltaYViewportPx,
+        box.width,
+        box.height,
         // Rotate Right is not offered for an inline image.
         0,
     );
-    // Adding zero turns -0 into 0, which would otherwise be written as "-0".
-    const round = (n: number) => Math.round(n * 100) / 100 + 0;
-    const left = round((-position.left / pictureWidth) * 100);
-    const top = round((-position.top / pictureHeight) * 100);
-    return {
-        left,
-        top,
-        right: round(100 - keptWidth - left),
-        bottom: round(100 - keptHeight - top),
-    };
+    return inlineImageCropFromBox(shownWidthViewportPx, shownHeightViewportPx, {
+        ...box,
+        ...position,
+    });
 }
 
 /**
  * Which sides of the picture are cropped, for marking the side handles. It asks getCroppedSides,
- * the same function the canvas uses, with the picture as a box 100 units each way.
+ * the same function the canvas uses.
  */
 export function getInlineImageCroppedSides(crop: IInlineImageCrop): {
     n: boolean;
@@ -576,13 +569,14 @@ export function getInlineImageCroppedSides(crop: IInlineImageCrop): {
     s: boolean;
     w: boolean;
 } {
+    const { elementWidth, elementHeight, box } = inlineImageCropToBox(crop);
     return getCroppedSides(
-        100 - crop.left - crop.right,
-        100 - crop.top - crop.bottom,
-        -crop.left,
-        -crop.top,
-        100,
-        100,
+        elementWidth,
+        elementHeight,
+        box.left,
+        box.top,
+        box.width,
+        box.height,
         0,
         // The crop is rounded to a hundredth, so anything bigger is a real crop.
         0.001,

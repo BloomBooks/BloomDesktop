@@ -3,6 +3,7 @@
 // what it uses.
 @import "../../bloomUI.less";
 @import "../../placeHolderImages.less";
+@import "cropHandles.less";
 
 // An inline image is a picture docked inside a bloom-editable, with the text wrapping around
 // it. The layout rules are in content/bookLayout/inlineImages.less. This file adds only what
@@ -144,65 +145,15 @@
 }
 
 // The crop handles: a bar in the middle of each side, and a circle in the middle of the picture
-// that moves the picture inside its crop. They look and work like the side handles and the
-// move-crop handle of a picture on a canvas (editMode.less), but sit inside the image's box like
-// the corner handles above.
-@inline-image-side-handle-thickness: 8px;
-@inline-image-side-handle-length: 20px;
-@inline-image-move-crop-handle-size: 16px;
-
-.bloom-ui-inlineImage-side-handle,
-.bloom-ui-inlineImage-move-crop-handle {
-    position: absolute;
-    box-sizing: border-box;
-    background-color: white;
-    border: 1px solid @bloom-blue;
-    pointer-events: auto; // see the frame above
-}
-
+// that moves the picture inside its crop. They are the handles a picture on a canvas has
+// (cropHandles.less), but sit inside the image's box like the corner handles above.
 .bloom-ui-inlineImage-side-handle {
-    border-radius: (@inline-image-side-handle-thickness / 2);
-    // A filled bar marks a side that is cropped, as on a canvas.
-    &.bloom-currently-cropped {
-        background-color: @bloom-blue;
-    }
-    &.bloom-ui-inlineImage-side-handle-n,
-    &.bloom-ui-inlineImage-side-handle-s {
-        left: calc(50% - (@inline-image-side-handle-length / 2));
-        width: @inline-image-side-handle-length;
-        height: @inline-image-side-handle-thickness;
-        cursor: ns-resize;
-    }
-    &.bloom-ui-inlineImage-side-handle-e,
-    &.bloom-ui-inlineImage-side-handle-w {
-        top: calc(50% - (@inline-image-side-handle-length / 2));
-        width: @inline-image-side-handle-thickness;
-        height: @inline-image-side-handle-length;
-        cursor: ew-resize;
-    }
-    &.bloom-ui-inlineImage-side-handle-n {
-        top: 0;
-    }
-    &.bloom-ui-inlineImage-side-handle-s {
-        bottom: 0;
-    }
-    &.bloom-ui-inlineImage-side-handle-e {
-        right: 0;
-    }
-    &.bloom-ui-inlineImage-side-handle-w {
-        left: 0;
-    }
+    .crop-side-handle(@bloom-blue);
 }
+.crop-side-handle-positions(bloom-ui-inlineImage-side-handle; 0);
 
-// Only a cropped picture has anywhere to move to, so the handle shows only then.
 .bloom-ui-inlineImage-move-crop-handle {
-    display: none;
-    top: calc(50% - (@inline-image-move-crop-handle-size / 2));
-    left: calc(50% - (@inline-image-move-crop-handle-size / 2));
-    width: @inline-image-move-crop-handle-size;
-    height: @inline-image-move-crop-handle-size;
-    border-radius: 50%;
-    cursor: move;
+    .move-crop-handle(@bloom-blue);
 }
 .bloom-ui-inlineImage-cropped .bloom-ui-inlineImage-move-crop-handle {
     display: block;
