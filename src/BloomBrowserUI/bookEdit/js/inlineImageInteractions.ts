@@ -818,6 +818,7 @@ function withInlineImageSync(
             await row.onSelect(rowCtx, rowRuntime);
             syncInlineImagesFromEditable(target.editable);
             commitPendingInlineImageUndo(target.wrapper);
+            updateCkeditorSnapshots(target.translationGroup);
             refreshOverflow(target.translationGroup);
         },
     }));
@@ -831,6 +832,7 @@ function withInlineImageSync(
 function addInlineImage(translationGroup: HTMLElement): void {
     const wrapper = insertInlineImage(translationGroup);
     updateProtectedPictureCounts(translationGroup);
+    updateCkeditorSnapshots(translationGroup);
     selectInlineImage(wrapper);
     refreshOverflow(translationGroup);
 }
@@ -856,6 +858,7 @@ function removeInlineImageCommand(wrapper: HTMLElement): void {
         keepSurvivorsInPlace(editable, survivors, keptTops),
     );
     updateProtectedPictureCounts(translationGroup);
+    updateCkeditorSnapshots(translationGroup);
     // The toolbar is a div on the body (see kInlineImageContextControlsId), so removing the
     // picture does not remove it. Without this it would stay on screen under a picture that is
     // gone, offering commands for it.
@@ -872,6 +875,35 @@ function updateProtectedPictureCounts(translationGroup: HTMLElement): void {
     getEditables(translationGroup).forEach((editable) =>
         BloomField.UpdateProtectedElementCount(editable),
     );
+}
+
+// The part of CKEditor's undo manager that updateCkeditorSnapshots uses.
+interface ICkeditorUndoManager {
+    // The snapshot of the editable that CKEditor last recorded; undefined until it records one.
+    currentImage?: object;
+    update: () => void;
+}
+
+// CKEditor keeps its own undo history for each editable, as snapshots of its HTML, and on every
+// keyup it compares the editable with its latest snapshot. A picture change is not CKEditor's,
+// but it changes the editable, so on the next keyup, even of a bare modifier key, CKEditor would
+// record the difference as typing. It would fire "change", which trackCkeditorChanges
+// (undo/ckeditorChanges.ts) takes as a new edit: that makes CKEditor's history the newest and
+// discards what the undo stack could redo, so Ctrl+Y after Ctrl+Z on a picture change would do
+// nothing, and the next Ctrl+Z would restore CKEditor's stale snapshot of this one editable. So
+// when a picture change finishes, the latest snapshot of every editable in the group is replaced
+// with the editable's current content. UndoManager.update() does that and fires no "change". It
+// reads the current snapshot, so an editor that has not recorded one yet is left alone.
+function updateCkeditorSnapshots(translationGroup: HTMLElement): void {
+    getEditables(translationGroup).forEach((editable) => {
+        const undoManager = (
+            editable as HTMLElement & {
+                bloomCkEditor?: { undoManager?: ICkeditorUndoManager };
+            }
+        ).bloomCkEditor?.undoManager;
+        if (!undoManager?.currentImage) return;
+        undoManager.update();
+    });
 }
 
 // Moves the images left in the editable after a delete back to where they were before it
@@ -1083,6 +1115,7 @@ function onInlineImagesRestored(event: Event): void {
     const translationGroup = event.target as HTMLElement | null;
     if (!translationGroup) return;
     updateProtectedPictureCounts(translationGroup);
+    updateCkeditorSnapshots(translationGroup);
     const selected = translationGroup.querySelector(
         "." + kInlineImageClass + "." + kInlineImageSelectedClass,
     ) as HTMLElement | null;
@@ -1098,6 +1131,9 @@ function onInlineImagesRestored(event: Event): void {
  */
 export function inlineImagePictureChanged(img: HTMLElement): void {
     handleInlineImageChanged(img);
+    updateCkeditorSnapshots(
+        img.closest(".bloom-translationGroup") as HTMLElement,
+    );
     const wrapper = img.closest("." + kInlineImageClass) as HTMLElement | null;
     if (wrapper) selectInlineImage(wrapper);
 }
@@ -1765,6 +1801,9 @@ function commitInlineImageChange(
     );
     syncInlineImagesFromEditable(editable);
     commitPendingInlineImageUndo(wrapper);
+    updateCkeditorSnapshots(
+        editable.closest(".bloom-translationGroup") as HTMLElement,
+    );
     OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
 }
 
