@@ -13,8 +13,8 @@
 //    display:flow-root keeps the picture inside its block.
 //  - What Bloom writes to the .htm file when it saves: the editing decorations removed, and
 //    contenteditable="false" still on the wrapper.
-//  - Undo through the workspace's undo chain, which the front end shares with CKEditor and the
-//    canvas element manager.
+//  - The top bar's Undo button, which takes back a picture change through Bloom's one undo stack
+//    (inline-images-undo-keyboard.spec.ts covers Ctrl+Z and Ctrl+Y).
 //
 // The tests run in order, and each starts from the book the previous one left, so the file works
 // through one text block the way a person would in one sitting.
@@ -54,7 +54,7 @@ import {
     textWrapsBesideInlineImage,
 } from "../helpers/inlineImages";
 import { expectInside } from "../helpers/geometry";
-import { undo } from "../helpers/undo";
+import { clickUndoButton } from "../helpers/undo";
 
 test.use({
     collectionSpec: { name: "inline-images", languages: ["en"] },
@@ -357,7 +357,9 @@ test.describe("inline images in a text block [Test Case ID 815]", () => {
         for (const copy of copies) expect(copy.widthPercent).toBe(widthPercent);
     });
 
-    test("Undo takes back the last change to the image", async ({ page }) => {
+    test("the Undo button takes back the last change to the image", async ({
+        page,
+    }) => {
         const before = await getInlineImage(page, BLOCK, LANG, imageId);
         const widened = await resizeInlineImage(
             page,
@@ -369,8 +371,7 @@ test.describe("inline images in a text block [Test Case ID 815]", () => {
         );
         expect(widened).not.toBe(before.widthPercent);
 
-        // THE ACTION UNDER TEST: the workspace's own undo, which is what Ctrl+Z reaches.
-        await undo(page);
+        await clickUndoButton(page);
 
         await expect
             .poll(
@@ -379,15 +380,14 @@ test.describe("inline images in a text block [Test Case ID 815]", () => {
                         .widthPercent,
                 {
                     message:
-                        "Undo did not put the picture's width back. Inline images keep their own " +
-                        "undo stack, because CKEditor's cannot see a change made to the DOM by " +
-                        "code (inlineImages.ts).",
+                        "The Undo button did not put the picture's width back. A picture change " +
+                        "is an entry on Bloom's one undo stack (inlineImages.ts), because " +
+                        "CKEditor's undo cannot see a change made to the DOM by code.",
                 },
             )
             .toBe(before.widthPercent);
-        // Undo rebuilds the wrapper in every language from the markup it saved before the
-        // change, so every copy gets the old width back, and the selected copy still has its
-        // handles.
+        // Undo puts back the markup the entry saved in every language before the change, so every
+        // copy gets the old width back, and the selected copy still has its handles.
         const copies = await getInlineImageInEveryLanguage(
             page,
             BLOCK,
