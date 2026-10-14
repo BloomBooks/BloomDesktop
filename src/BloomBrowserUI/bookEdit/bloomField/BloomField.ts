@@ -908,7 +908,22 @@ export default class BloomField {
     // deliberately deleted one.
     private static PreventRemovalOfSomeElements(field: HTMLElement) {
         BloomField.UpdateProtectedElementCount(field);
+        // Ctrl+Z and Ctrl+Y can remove a protected element on purpose: undoing the insertion of an
+        // inline image takes it out through Bloom's undo stack. That code records the new count,
+        // but an undo entry may finish after the keyup, and then the browser undo below would take
+        // back the person's last typing instead. So the keyup of an undo or redo key takes the count
+        // as it is. Taking it then also covers the keyup of Ctrl, which comes after the Z.
+        let theKeystrokeIsUndoOrRedo = false;
+        $(field).keydown((e) => {
+            if (BloomField.isUndoOrRedoKey(e.originalEvent as KeyboardEvent))
+                theKeystrokeIsUndoOrRedo = true;
+        });
         $(field).keyup((e) => {
+            if (theKeystrokeIsUndoOrRedo) {
+                theKeystrokeIsUndoOrRedo = false;
+                BloomField.UpdateProtectedElementCount(field);
+                return;
+            }
             if (
                 $(field).find(".bloom-preventRemoval").length <
                 (BloomField.protectedElementCounts.get(field) ?? 0)
@@ -916,6 +931,13 @@ export default class BloomField {
                 document.execCommand("undo");
                 e.preventDefault();
             }
+        });
+        // If the focus leaves the field between an undo key's keydown and its keyup, the keyup goes
+        // somewhere else, and the next keystroke here must not be skipped.
+        // This uses addEventListener because jQuery 3 makes its focusout events out of focus/blur,
+        // and so it misses a focusout event that code dispatches directly.
+        field.addEventListener("focusout", () => {
+            theKeystrokeIsUndoOrRedo = false;
         });
 
         //OK, now what if the above fails in some scenario? This adds a last-resort way of getting
@@ -932,6 +954,16 @@ export default class BloomField {
                 );
             }
         });
+    }
+
+    // Whether this key event is Ctrl+Z, Ctrl+Y or Ctrl+Shift+Z (Cmd on a Mac), the keys that undo
+    // and redo. The physical key (e.code) is checked too, so it works whatever the keyboard layout.
+    private static isUndoOrRedoKey(e: KeyboardEvent): boolean {
+        if (!(e.ctrlKey || e.metaKey) || e.altKey) return false;
+        const key = e.key?.toLowerCase();
+        return (
+            key === "z" || key === "y" || e.code === "KeyZ" || e.code === "KeyY"
+        );
     }
 
     // Work around a bug in geckofx. The effect was that if you clicked in a completely empty text box

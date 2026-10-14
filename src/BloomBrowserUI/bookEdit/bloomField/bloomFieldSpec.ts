@@ -1,6 +1,6 @@
 ///<reference path="BloomField.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
-import { describe, it, expect, beforeEach, afterAll } from "vitest";
+import { describe, it, expect, beforeEach, afterAll, vi } from "vitest";
 import { getTestRoot, removeTestRoot } from "../../utils/testHelper";
 import BloomField from "./BloomField";
 import $ from "jquery";
@@ -326,6 +326,212 @@ describe("BloomField", () => {
     it("bloom-editable div creates a <p>", () => {
         WireUp();
         expect($("div p").length).toBeGreaterThan(0);
+    });
+
+    // Inline (Word-style) images carry the same two classes that the old embedded-image
+    // templates used, bloom-keepFirstInField and bloom-preventRemoval. These tests check that
+    // BloomField still honors those classes when they are on a .bloom-inlineImage wrapper.
+    // See inlineImages.ts.
+    describe("inline image protections", () => {
+        const inlineImageHtml =
+            '<div class="bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval" contenteditable="false"><img src="placeHolder.png" alt=""></div>';
+
+        it("EnsureParagraphsPresent puts the <p> after a bloom-keepFirstInField inline image", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml;
+            // Sanity check: no paragraph yet, and the image is the only child.
+            expect(editable.querySelectorAll("p").length).toBe(0);
+            expect(editable.children.length).toBe(1);
+
+            WireUp();
+
+            expect(editable.querySelectorAll("p").length).toBe(1);
+            // bloom-keepFirstInField means the image stays the first child. The paragraph goes
+            // after it, because text has to come after a float in order to wrap around it.
+            expect(
+                editable.firstElementChild!.classList.contains(
+                    "bloom-inlineImage",
+                ),
+            ).toBe(true);
+            expect(editable.lastElementChild!.tagName).toBe("P");
+        });
+
+        it("counts a bloom-preventRemoval inline image, so ctrl+a DEL is undone", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            // jsdom has no execCommand, and we only want to know that BloomField asked for
+            // the undo.
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            // Simulate what ctrl+a DEL does: the keydown, then the removal it causes, then the
+            // keyup. BloomField compares the count from the keydown with the count at the
+            // keyup, so the test needs to send the keydown too.
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", { bubbles: true }),
+            );
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true }),
+            );
+
+            expect(execCommand).toHaveBeenCalledWith("undo");
+        });
+
+        // When the person deletes a picture from its own menu, they meant to. The code that
+        // deletes it records the new count, so the typing that follows is not undone one
+        // character at a time.
+        it("does not undo the typing that follows a deliberate deletion of the image", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            // The menu's Delete, which involves no keystroke, and records the new count.
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            BloomField.UpdateProtectedElementCount(editable);
+
+            // And now the person types.
+            for (let i = 0; i < 3; i++) {
+                editable.dispatchEvent(
+                    new KeyboardEvent("keydown", { bubbles: true }),
+                );
+                editable.dispatchEvent(
+                    new KeyboardEvent("keyup", { bubbles: true }),
+                );
+            }
+
+            expect(execCommand).not.toHaveBeenCalled();
+        });
+
+        // When Delete is held down, the browser's auto-repeat sends a run of keydowns and one
+        // keyup at the end. The deletion happens before that keyup, which still has to catch it.
+        it("protects the image when delete is held down rather than pressed", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            // First press: the deletion happens.
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", { bubbles: true, repeat: false }),
+            );
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            // ...and the key is still down, so auto-repeat keeps sending keydowns.
+            for (let i = 0; i < 3; i++) {
+                editable.dispatchEvent(
+                    new KeyboardEvent("keydown", {
+                        bubbles: true,
+                        repeat: true,
+                    }),
+                );
+            }
+            // The one keyup, when they finally let go.
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true }),
+            );
+
+            expect(execCommand).toHaveBeenCalledWith("undo");
+        });
+
+        // An image inserted after the page was set up is protected too, so if ctrl+a DEL
+        // removes it, BloomField puts it back. The code that inserts it records the new count.
+        it("protects an inline image inserted after the field was wired up", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+            // Sanity check: nothing to protect when the field was wired up.
+            expect(
+                editable.querySelectorAll(".bloom-preventRemoval").length,
+            ).toBe(0);
+
+            editable.insertAdjacentHTML("afterbegin", inlineImageHtml);
+            BloomField.UpdateProtectedElementCount(editable);
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", { bubbles: true }),
+            );
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true }),
+            );
+
+            expect(execCommand).toHaveBeenCalledWith("undo");
+        });
+
+        // Ctrl+Z after inserting a picture takes the picture out through Bloom's undo stack.
+        // BloomField must not treat that as an accidental deletion, even when the new count has not
+        // been recorded by the keyup: a browser undo on top of it would take back the person's last
+        // typing. That includes the keyup of Ctrl, which comes after the Z.
+        it("does not undo again when ctrl+z itself removes the image", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            // Ctrl goes down first, then Z, whose undo removes the picture.
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", {
+                    bubbles: true,
+                    key: "Control",
+                    ctrlKey: true,
+                }),
+            );
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", {
+                    bubbles: true,
+                    key: "z",
+                    code: "KeyZ",
+                    ctrlKey: true,
+                }),
+            );
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", {
+                    bubbles: true,
+                    key: "z",
+                    code: "KeyZ",
+                    ctrlKey: true,
+                }),
+            );
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true, key: "Control" }),
+            );
+
+            expect(execCommand).not.toHaveBeenCalled();
+
+            // Sanity check that the undo keystroke did not switch the guard off: a later Delete
+            // that removes a protected picture is still undone.
+            editable.insertAdjacentHTML("afterbegin", inlineImageHtml);
+            BloomField.UpdateProtectedElementCount(editable);
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", { bubbles: true, key: "Delete" }),
+            );
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true, key: "Delete" }),
+            );
+            expect(execCommand).toHaveBeenCalledWith("undo");
+        });
+
+        it("does not undo on a keyup that left the inline image alone", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true }),
+            );
+
+            expect(execCommand).not.toHaveBeenCalled();
+        });
     });
 
     // Content converted from other formats can arrive with a real heading as the first thing
