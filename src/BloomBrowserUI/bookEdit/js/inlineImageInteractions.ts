@@ -881,7 +881,12 @@ function updateProtectedPictureCounts(translationGroup: HTMLElement): void {
 interface ICkeditorUndoManager {
     // The snapshot of the editable that CKEditor last recorded; undefined until it records one.
     currentImage?: object;
+    // Every snapshot CKEditor holds, oldest first. Those after `index` are what it can redo.
+    snapshots: object[];
+    index: number;
     update: () => void;
+    // Works out again whether there is anything to undo or redo.
+    refreshState: () => void;
 }
 
 // CKEditor keeps its own undo history for each editable, as snapshots of its HTML, and on every
@@ -894,6 +899,10 @@ interface ICkeditorUndoManager {
 // when a picture change finishes, the latest snapshot of every editable in the group is replaced
 // with the editable's current content. UndoManager.update() does that and fires no "change". It
 // reads the current snapshot, so an editor that has not recorded one yet is left alone.
+//
+// CKEditor's redo snapshots go too. They were taken before the picture change, so redoing one
+// would put back the old picture in this editable alone. A change of CKEditor's own discards
+// them in the same way.
 function updateCkeditorSnapshots(translationGroup: HTMLElement): void {
     getEditables(translationGroup).forEach((editable) => {
         const undoManager = (
@@ -903,6 +912,10 @@ function updateCkeditorSnapshots(translationGroup: HTMLElement): void {
         ).bloomCkEditor?.undoManager;
         if (!undoManager?.currentImage) return;
         undoManager.update();
+        if (undoManager.snapshots.length > undoManager.index + 1) {
+            undoManager.snapshots.splice(undoManager.index + 1);
+            undoManager.refreshState();
+        }
     });
 }
 

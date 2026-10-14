@@ -1425,7 +1425,10 @@ describe("inlineImageInteractions", () => {
                 ).bloomCkEditor = {
                     undoManager: {
                         currentImage: hasSnapshot ? {} : undefined,
+                        snapshots: hasSnapshot ? [{}] : [],
+                        index: hasSnapshot ? 0 : -1,
                         update,
+                        refreshState: vi.fn(),
                     },
                 };
                 return update;
@@ -1464,6 +1467,31 @@ describe("inlineImageInteractions", () => {
             await vi.waitFor(() =>
                 updates.forEach((update) => expect(update).toHaveBeenCalled()),
             );
+        });
+
+        // CKEditor took those snapshots before the picture change, so redoing one would put the
+        // old picture back in one editable.
+        it("discards what CKEditor could redo", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            const editable = editableFor(group, "en") as HTMLElement & {
+                bloomCkEditor?: unknown;
+            };
+            // Typing, then Ctrl+Z on it: CKEditor is at its first snapshot, with one to redo.
+            const undoManager = {
+                currentImage: {},
+                snapshots: [{ typed: false }, { typed: true }],
+                index: 0,
+                update: vi.fn(),
+                refreshState: vi.fn(),
+            };
+            editable.bloomCkEditor = { undoManager };
+
+            expect(inlineImageUndo()).toBe(true);
+
+            expect(undoManager.snapshots).toEqual([{ typed: false }]);
+            expect(undoManager.refreshState).toHaveBeenCalled();
         });
 
         it("leaves alone an editor that has not recorded a snapshot yet", () => {
