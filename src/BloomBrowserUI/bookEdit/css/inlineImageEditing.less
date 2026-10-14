@@ -3,6 +3,7 @@
 // what it uses.
 @import "../../bloomUI.less";
 @import "../../placeHolderImages.less";
+@import "cropHandles.less";
 
 // An inline image is a picture docked inside a bloom-editable, with the text wrapping around
 // it. The layout rules are in content/bookLayout/inlineImages.less. This file adds only what
@@ -140,6 +141,30 @@
         bottom: @inline-image-handle-nudge;
         right: @inline-image-handle-nudge;
         cursor: nwse-resize;
+    }
+}
+
+// The crop handles: a bar in the middle of each side, and a circle in the middle of the picture
+// that moves the picture inside its crop. They are the handles a picture on a canvas has
+// (cropHandles.less), but sit inside the image's box like the corner handles above.
+.bloom-ui-inlineImage-side-handle {
+    .crop-side-handle(@bloom-blue);
+}
+.crop-side-handle-positions(bloom-ui-inlineImage-side-handle; 0);
+
+.bloom-ui-inlineImage-move-crop-handle {
+    .move-crop-handle(@bloom-blue);
+}
+.bloom-ui-inlineImage-cropped .bloom-ui-inlineImage-move-crop-handle {
+    display: block;
+}
+
+// A placeholder has no picture to crop, so it gets no crop handles. (The canvas shows them
+// faded and inactive; here there is no room for them beside the flower.)
+.bloom-inlineImage:has(img[src*="placeHolder.png"]) {
+    .bloom-ui-inlineImage-side-handle,
+    .bloom-ui-inlineImage-move-crop-handle {
+        display: none;
     }
 }
 
