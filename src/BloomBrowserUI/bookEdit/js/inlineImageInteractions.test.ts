@@ -76,6 +76,7 @@ import {
 } from "./inlineImageInteractions";
 import { resetChangeOrderForTests } from "../undo/changeOrder";
 import BloomField from "../bloomField/BloomField";
+import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { theOneUndoStack } from "../undo/UndoStack";
 
 // jsdom reports every element's box as empty, so these tests cannot check where a drag put the
@@ -189,6 +190,17 @@ describe("inlineImageInteractions", () => {
         theOneUndoStack.clearLegacyProviders();
         resetChangeOrderForTests();
         discardPendingInlineImageUndo();
+        // Much of the code under test asks for an overflow check, which OverflowChecker runs on
+        // a one-second timer. That timer would fire after the test has ended, when the canvas
+        // element manager it calls is gone, and vitest reports the error as unhandled. The
+        // overflow check needs real layout, which jsdom does not have, so it is not run here.
+        vi.spyOn(
+            OverflowChecker,
+            "AdjustSizeOrMarkOverflowSoon",
+        ).mockImplementation(() => {});
+    });
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
     afterAll(removeTestRoot);
 
