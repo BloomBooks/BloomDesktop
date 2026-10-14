@@ -1411,6 +1411,73 @@ describe("inlineImageInteractions", () => {
         });
     });
 
+    // CKEditor compares each editable with its latest snapshot on every keyup, and would take a
+    // picture change for typing. So every finished picture change updates that snapshot.
+    describe("keeping CKEditor's snapshots current", () => {
+        // Gives each editable a stand-in for the CKEditor instance Bloom attaches to it.
+        const attachFakeEditors = (group: HTMLElement, hasSnapshot = true) =>
+            ["en", "fr"].map((lang) => {
+                const update = vi.fn();
+                (
+                    editableFor(group, lang) as HTMLElement & {
+                        bloomCkEditor?: unknown;
+                    }
+                ).bloomCkEditor = {
+                    undoManager: {
+                        currentImage: hasSnapshot ? {} : undefined,
+                        update,
+                    },
+                };
+                return update;
+            });
+
+        it("updates every editable's snapshot after an undo restores the pictures", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            const updates = attachFakeEditors(group);
+
+            expect(inlineImageUndo()).toBe(true);
+
+            // Sanity check: the undo took the picture out.
+            expect(getInlineImages(group).length).toBe(0);
+            updates.forEach((update) => expect(update).toHaveBeenCalled());
+        });
+
+        it("updates every editable's snapshot after a menu command", async () => {
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            (wrapper.querySelector("img") as HTMLImageElement).src =
+                "flower.jpg";
+            const updates = attachFakeEditors(group);
+            const transparent = buildInlineImageMenuItems(
+                getInlineImageActionTarget(wrapper),
+            )
+                .find((i) => i.l10nId === "EditTab.Image.Transparency")!
+                .subMenu!.find(
+                    (i) =>
+                        i.l10nId === "EditTab.Image.Transparency.Transparent",
+                )!;
+
+            (transparent.onClick as () => void)();
+
+            await vi.waitFor(() =>
+                updates.forEach((update) => expect(update).toHaveBeenCalled()),
+            );
+        });
+
+        it("leaves alone an editor that has not recorded a snapshot yet", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            const updates = attachFakeEditors(group, false);
+
+            expect(inlineImageUndo()).toBe(true);
+
+            updates.forEach((update) => expect(update).not.toHaveBeenCalled());
+        });
+    });
+
     describe("selection", () => {
         it("marks the wrapper and gives it four resize handles", () => {
             const group = makeSimpleGroup();
