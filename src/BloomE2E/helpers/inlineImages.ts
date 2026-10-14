@@ -564,8 +564,8 @@ export async function closeInlineImageMenu(page: Page): Promise<void> {
 
 /**
  * Select an inline image the way a person does, with a click on the picture, and wait until its
- * four corner handles are showing. The drag and resize helpers below select the picture
- * themselves, so call this directly only when the test is about selecting.
+ * four corner handles and its toolbar are showing. The drag and resize helpers below select the
+ * picture themselves, so call this directly only when the test is about selecting.
  */
 export async function selectInlineImage(
     page: Page,
@@ -590,6 +590,21 @@ export async function selectInlineImage(
             },
         )
         .toBe(4);
+    // React draws the toolbar after the handles appear. Every selected picture's toolbar has a
+    // Choose Image button, so waiting for it means a test that reads the toolbar next, including
+    // one that checks a button is absent, reads a toolbar that is there.
+    await expect
+        .poll(
+            async () =>
+                (await getInlineImageToolbarButtons(page)).map(
+                    (button) => button.id,
+                ),
+            {
+                timeout: 30000,
+                message: `Inline image ${id} was selected, but its toolbar never showed.`,
+            },
+        )
+        .toContain("chooseImage");
 }
 
 /**
@@ -1053,9 +1068,12 @@ export async function resizeInlineImage(
  * picture in Bloom ends in a native file picker, which hangs a test run (AUTOMATION-DEBT.md,
  * "Native OS dialogs hang automation"). Instead it does what the chooser does after a picture has
  * been chosen. Bloom's imageGallery/imageGalleryResult endpoint copies the file into the book,
- * and changeImageByElement puts it in the img element the chooser was opened on. So everything
- * Bloom does after a picture is chosen still runs, including copying the new picture to the other
- * languages' wrappers (handleInlineImageChanged).
+ * and changeImageByElement puts it in the img element the chooser was opened on, which copies the
+ * new picture to the other languages' wrappers (handleInlineImageChanged).
+ *
+ * One difference from the real chooser: this passes undoable "false" where the chooser passes
+ * "true". So the change is not an undo entry, and for an inline image changeImageByElement
+ * empties the undo stack, which the real chooser never does.
  */
 export async function changeInlineImagePicture(
     page: Page,

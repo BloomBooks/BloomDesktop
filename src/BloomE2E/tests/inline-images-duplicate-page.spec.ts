@@ -5,10 +5,11 @@
 // data-bloom-inline-image-id as the page it came from. This is intended and does no harm, because
 // this feature only ever looks up an inline image within one translation group:
 // syncInlineImagesFromEditable, getInlineImageById and normalizeInlineImages are all given a group
-// or an editable, and none of them searches the whole page or book. Nothing in the code shows that
-// it depends on this, so a later change could easily break it, for example by using a
-// document-wide querySelector. This test checks that changing one page's picture leaves the other
-// page's picture alone.
+// or an editable, and none of them searches the whole page or book. This test checks that
+// changing one page's picture leaves the other page's picture alone after a save and a page
+// change. The Edit tab shows one page at a time, so a lookup in the browser cannot reach the other
+// page however widely it searches; what this test can catch is code that saves or processes the
+// book, in C# or elsewhere, matching pictures by that id across pages.
 //
 // InsertPageAfter also copies the image file, but only `if (!RobustFile.Exists(path))`. So a page
 // pasted into a book that already has a different file with the same name shows that book's
@@ -113,8 +114,8 @@ test("a duplicated page's picture is independent of the original's [Test Case ID
     ).toBe(true);
 
     // The main check: changing the picture on the copied page must leave the original's alone.
-    // The two have the same id, so code that looked the picture up across the whole page or book
-    // could find the wrong one.
+    // The two have the same id, so code that matched pictures by id across the book could change
+    // the wrong one.
     const widened = await resizeInlineImage(
         page,
         BLOCK,
@@ -138,7 +139,7 @@ test("a duplicated page's picture is independent of the original's [Test Case ID
             `Resizing the duplicated page's picture changed the original page's too: the ` +
                 `"${image.languageTag}" copy there is now ${image.widthPercent}% instead of ` +
                 `${widthAtStart}%. The two pages' pictures share a ` +
-                `data-bloom-inline-image-id, so a lookup that is not scoped to one translation ` +
-                `group reaches across pages.`,
+                `data-bloom-inline-image-id, so something that matches pictures by that id ` +
+                `reaches across pages.`,
         ).toBe(widthAtStart);
 });

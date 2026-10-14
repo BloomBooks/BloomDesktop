@@ -125,7 +125,8 @@ test("a drag follows the pointer at every zoom [Test Case ID 815]", async ({
     try {
         for (const zoom of zoomsToTry) {
             await setZoom(page, zoom);
-            // Start each drag with the picture docked in the middle at the top of the text.
+            // Start each drag with the picture docked in the middle. It stays as far down the
+            // text as the previous zoom's drag left it.
             await scrollBlockToTop(page, BLOCK, LANG);
             await dragInlineImageToDock(page, BLOCK, LANG, imageId, "middle");
 

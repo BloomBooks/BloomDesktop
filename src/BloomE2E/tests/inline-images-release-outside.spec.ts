@@ -27,6 +27,7 @@ import { fileURLToPath } from "node:url";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
+    editablePageFrame,
     getContentPages,
     goToPage,
     makeBookFromTemplate,
@@ -97,11 +98,30 @@ test("letting go of the mouse outside the page still ends the drag [Test Case ID
     await scrollBlockToTop(page, BLOCK, LANG);
     await dragInlineImageToDock(page, BLOCK, LANG, imageId, "middle");
 
-    // The action under test. Press on the picture, drag the pointer out of the page iframe to
-    // (8, 8) in the top-level document, which is Bloom's own toolbar well above the page, and let
-    // go there. The check in between confirms that the moves still reach the page's document
-    // while the pointer is over a different one.
+    // The action under test. Press on the picture and drag it into the left third of the block,
+    // which docks it on the left, so that the drag has a change for its end to copy to the other
+    // languages. Then drag the pointer out of the page iframe to (8, 8) in the top-level
+    // document, which is Bloom's own toolbar well above the page, and let go there. The check in
+    // between confirms that the moves still reach the page's document while the pointer is over a
+    // different one.
+    const frame = editablePageFrame(page);
+    const block = await frame
+        .locator(`${BLOCK} > .bloom-editable[lang="${LANG}"]`)
+        .first()
+        .boundingBox();
+    const picture = await frame
+        .locator(
+            `${BLOCK} > .bloom-editable[lang="${LANG}"] .bloom-inlineImage[data-bloom-inline-image-id="${imageId}"]`,
+        )
+        .first()
+        .boundingBox();
+    if (!block || !picture)
+        throw new Error("The block or its picture is not on screen to drag.");
     await beginInlineImageDrag(page, BLOCK, LANG, imageId);
+    await moveInlineImageDragTo(page, {
+        x: block.x + block.width / 6,
+        y: picture.y + picture.height / 2,
+    });
     await moveInlineImageDragTo(page, { x: 8, y: 8 });
     expect(
         await inlineImageDragIsInProgress(page),
@@ -125,19 +145,29 @@ test("letting go of the mouse outside the page still ends the drag [Test Case ID
         .toBe(false);
 
     // The drag must also have finished properly, with the change saved to every copy of the
-    // picture. The copies are synced only when a drag ends, so if they agree, the code that ends
-    // the drag ran.
+    // picture. The drag moved the picture from the middle to the left, and the copies are synced
+    // only when a drag ends, so every copy docked on the left means the code that ends the drag
+    // ran.
     const settled = await getInlineImage(page, BLOCK, LANG, imageId);
+    expect(
+        settled.dock,
+        `Dragging the picture into the left third of the block left it docked "${settled.dock}", ` +
+            `so this test has no change to see copied to the other languages.`,
+    ).toBe("left");
     const copies = (await getInlineImages(page, BLOCK))
         .flatMap((block) => block.images)
         .filter((image) => image.id === imageId);
+    expect(
+        copies.length,
+        "The group holds fewer than two copies of the picture, so this test cannot see the end " +
+            "of the drag copy the change.",
+    ).toBeGreaterThan(1);
     for (const copy of copies)
         expect(
-            copy.offsetPx,
-            `The "${copy.languageTag}" copy is at ${copy.offsetPx}px while the "${LANG}" copy is ` +
-                `at ${settled.offsetPx}px. The copies are synced at the end of a gesture, so ` +
-                `disagreeing copies mean the end never ran.`,
-        ).toBe(settled.offsetPx);
+            `${copy.dock} at ${copy.offsetPx}px`,
+            `The "${copy.languageTag}" copy differs from the "${LANG}" copy. The copies are ` +
+                `synced at the end of a gesture, so disagreeing copies mean the end never ran.`,
+        ).toBe(`${settled.dock} at ${settled.offsetPx}px`);
 
     // The picture must stay in the block wherever the pointer went. A pointer above the page means
     // the person wants the picture at the top of the text.

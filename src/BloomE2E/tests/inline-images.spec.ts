@@ -192,9 +192,8 @@ test.describe("inline images in a text block [Test Case ID 815]", () => {
             (await getInlineImage(page, BLOCK, LANG, imageId)).handleCount,
         ).toBe(0);
 
-        // THE ACTION UNDER TEST: a click on the picture. The first click has to select it. That
-        // click also moves keyboard focus to the block that contains the picture, and the code
-        // has to tell that focus change apart from the person clicking back into the text.
+        // THE ACTION UNDER TEST: a click on the picture. The first click has to select it, and a
+        // later click in the text has to let it go.
         await selectInlineImage(page, BLOCK, LANG, imageId);
         const selected = await getInlineImage(page, BLOCK, LANG, imageId);
         expect(selected.selected).toBe(true);
