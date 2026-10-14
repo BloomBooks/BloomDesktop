@@ -35,7 +35,7 @@ import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import BloomField from "../bloomField/BloomField";
-import { isInChangeLayoutMode, isRedoKeystroke } from "../undo/redoKeyBinding";
+import { isInChangeLayoutMode } from "../undo/redoKeyBinding";
 import { theOneUndoStack } from "../undo/UndoStack";
 import { EditableDivUtils } from "./editableDivUtils";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
@@ -628,6 +628,8 @@ export function setupInlineImageInteractions(container: HTMLElement): void {
 function onUndoOrRedoKeyDown(event: KeyboardEvent): void {
     const doc = (event.target as Node).ownerDocument ?? document;
     if (isInChangeLayoutMode(doc)) return;
+    // A form field has its own undo of what was typed in it.
+    if ((event.target as Element).closest?.("input, textarea, select")) return;
     if (isUndoKeystroke(event)) {
         if (!inlineImageCanUndo()) return;
         claimKeystroke(event);
@@ -640,6 +642,17 @@ function onUndoOrRedoKeyDown(event: KeyboardEvent): void {
     }
 }
 
+// Whether this is the Z (or Y) key. CKEditor recognizes its undo and redo keys by keyCode, which
+// is the key's place on the keyboard, so it gets Ctrl+Z on any layout; on a Russian layout, for
+// one, event.key is "я". This has to recognize every Ctrl+Z that CKEditor would, or CKEditor
+// would undo the focused copy of a picture alone.
+function isZKey(event: KeyboardEvent): boolean {
+    return event.key === "z" || event.key === "Z" || event.keyCode === 90;
+}
+function isYKey(event: KeyboardEvent): boolean {
+    return event.key === "y" || event.key === "Y" || event.keyCode === 89;
+}
+
 // Ctrl+Z with no other modifier.
 function isUndoKeystroke(event: KeyboardEvent): boolean {
     return (
@@ -647,7 +660,18 @@ function isUndoKeystroke(event: KeyboardEvent): boolean {
         !event.altKey &&
         !event.metaKey &&
         !event.shiftKey &&
-        (event.key === "z" || event.key === "Z")
+        isZKey(event)
+    );
+}
+
+// Ctrl+Y with no other modifier.
+function isRedoKeystroke(event: KeyboardEvent): boolean {
+    return (
+        event.ctrlKey &&
+        !event.altKey &&
+        !event.metaKey &&
+        !event.shiftKey &&
+        isYKey(event)
     );
 }
 
@@ -658,7 +682,7 @@ function isShiftedUndoKeystroke(event: KeyboardEvent): boolean {
         event.shiftKey &&
         !event.altKey &&
         !event.metaKey &&
-        (event.key === "z" || event.key === "Z")
+        isZKey(event)
     );
 }
 

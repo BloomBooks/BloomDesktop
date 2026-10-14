@@ -1470,6 +1470,40 @@ describe("inlineImageInteractions", () => {
             ).not.toHaveBeenCalled();
         });
 
+        it("recognizes Ctrl+Z on a non-Latin keyboard layout, as CKEditor does", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            resizeTo(group, "60%");
+            // On a Russian layout the Z key gives "я"; CKEditor goes by keyCode 90.
+            const event = new KeyboardEvent("keydown", {
+                key: "я",
+                keyCode: 90,
+                ctrlKey: true,
+                bubbles: true,
+                cancelable: true,
+            });
+
+            editableFor(group, "en").dispatchEvent(event);
+
+            expect(event.defaultPrevented).toBe(true);
+            expect(widthIn(group, "fr")).toBe("40%");
+        });
+
+        it("leaves Ctrl+Z to a form field", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            insertInlineImage(group);
+            resizeTo(group, "60%");
+            const input = document.createElement("input");
+            getTestRoot().appendChild(input);
+
+            const event = pressKey(input, "z");
+
+            expect(event.defaultPrevented).toBe(false);
+            expect(widthIn(group, "fr")).toBe("60%");
+        });
+
         it("leaves Ctrl+Z alone when the next undo is not a picture change", () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
