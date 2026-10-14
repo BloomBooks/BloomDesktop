@@ -597,6 +597,32 @@ describe("BloomField", () => {
             expect(execCommand).toHaveBeenCalledWith("undo");
         });
 
+        // The page claims a Ctrl+Z that undoes a picture change before the field sees its keydown,
+        // so only the keyup arrives here. It must not fire a browser undo either.
+        it("does not undo on the keyup of a ctrl+z whose keydown the page claimed", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            // No keydown reaches the field; the undo removes the picture.
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", {
+                    bubbles: true,
+                    key: "z",
+                    code: "KeyZ",
+                    ctrlKey: true,
+                }),
+            );
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true, key: "Control" }),
+            );
+
+            expect(execCommand).not.toHaveBeenCalled();
+        });
+
         it("does not undo on a keyup that left the inline image alone", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
