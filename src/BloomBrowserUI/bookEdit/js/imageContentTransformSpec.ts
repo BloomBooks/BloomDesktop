@@ -562,7 +562,7 @@ describe("rotateImageContentRight90Degrees, on an ordinary picture element", () 
         expect(img.style.transform).toBe("rotate(90deg)");
     });
 
-    it("rotates a crop with a written height about the centre of the box that height makes", () => {
+    it("keeps the centre of a crop shown at a written height, and drops the height", () => {
         // A picture 600 by 400 cropped into a box 150 wide and 120 high, filling an element of
         // that size. Its own shape would make the box only 100 high; Undo can put back a
         // height like this one, and the box is then 120 high.
@@ -574,10 +574,14 @@ describe("rotateImageContentRight90Degrees, on an ordinary picture element", () 
 
         rotateImageContentRight90Degrees(img);
 
-        // The box's centre, (75, 60), lands at the centre of the element, now 120 by 150.
-        // Taking the box as 100 high would put it 10 pixels to the right of that.
-        expect(px(img.style.left)).toBeCloseTo(60 - 75);
-        expect(px(img.style.top)).toBeCloseTo(75 - 60);
+        // The rotation removes the written height, so the box becomes 150 by 100, and its centre
+        // is the centre of the box as it was shown, (75, 60), carried to the centre of the
+        // element, now 120 by 150. Centring the 100-high box on (75, 50) instead would put it
+        // 10 pixels to the right of that.
+        expect(img.style.height).toBe("");
+        expect(px(img.style.width)).toBeCloseTo(150);
+        expect(px(img.style.left)).toBeCloseTo(60 - 150 / 2);
+        expect(px(img.style.top)).toBeCloseTo(75 - 100 / 2);
     });
 });
 
