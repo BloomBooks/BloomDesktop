@@ -30,6 +30,7 @@ import {
     cleanupInlineImageInteractions,
     adjustInlineImageOffsetsIfBlockSizeChanged,
     inlineImagePictureChanged,
+    keepInlineImageSelectionOutOfCkeditorSnapshots,
     saveCkeditorSnapshotsBeforePictureChange,
     setupInlineImageInteractions,
 } from "./inlineImageInteractions";
@@ -2234,6 +2235,7 @@ export function attachToCkEditor(element) {
     // whichever of the two was written to last is the one the next Undo belongs to; and typing
     // abandons anything the stack could redo. See undo/ckeditorChanges.ts.
     trackCkeditorChanges(ckedit);
+    keepInlineImageSelectionOutOfCkeditorSnapshots(ckedit);
 
     // hide the toolbar when ckeditor starts
     ckedit.on("instanceReady", (evt) => {

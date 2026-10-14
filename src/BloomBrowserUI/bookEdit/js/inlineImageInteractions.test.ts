@@ -71,7 +71,9 @@ import {
     kInlineImageHandleClass,
     kInlineImageHandleFrameClass,
     kMaxInlineImageWidthPercent,
+    keepInlineImageSelectionOutOfCkeditorSnapshots,
     kMinInlineImageWidthPercent,
+    removeInlineImageSelectionFromHtml,
     selectInlineImage,
     setupInlineImageInteractions,
 } from "./inlineImageInteractions";
@@ -1566,6 +1568,58 @@ describe("inlineImageInteractions", () => {
 
             expect(event.defaultPrevented).toBe(false);
             expect(widthIn(group, "fr")).toBe("60%");
+        });
+    });
+
+    // To CKEditor, a selection change looked like an edit, and an undo of typing first spent a
+    // step taking the handles away.
+    describe("keeping the selection out of CKEditor's snapshots", () => {
+        it("snapshots a selected picture as if it were not selected", () => {
+            const group = makeSimpleGroup();
+            const english = editableFor(group, "en");
+            insertInlineImage(group);
+            const unselected = english.innerHTML;
+            selectInlineImage(getInlineImageInEditable(english)!);
+            // Sanity check: selecting added handles and the class.
+            expect(english.innerHTML).toContain(kInlineImageHandleFrameClass);
+            expect(english.innerHTML).toContain(kInlineImageSelectedClass);
+
+            expect(removeInlineImageSelectionFromHtml(english.innerHTML)).toBe(
+                removeInlineImageSelectionFromHtml(unselected),
+            );
+        });
+
+        it("keeps other bloom-ui, such as the format button", () => {
+            const html =
+                '<div class="bloom-inlineImage bloom-inlineImage-selected"><img src="a.png"></div>' +
+                '<p>Text</p><div id="formatButton" class="bloom-ui"></div>';
+
+            const filtered = removeInlineImageSelectionFromHtml(html);
+
+            expect(filtered).toContain("formatButton");
+            expect(filtered).not.toContain(kInlineImageSelectedClass);
+        });
+
+        it("filters what the editable's own listener put in the snapshot", () => {
+            let listener: ((evt: { data?: unknown }) => void) | undefined;
+            let priority: number | undefined;
+            keepInlineImageSelectionOutOfCkeditorSnapshots({
+                on: (_name, l, _scope, _data, p) => {
+                    listener = l;
+                    priority = p;
+                },
+            });
+            const evt: { data?: unknown } = {
+                data: '<div class="bloom-inlineImage bloom-inlineImage-selected"></div>',
+            };
+
+            listener!(evt);
+
+            expect(
+                priority,
+                "it must run after the editable's listener, at 10",
+            ).toBeGreaterThan(10);
+            expect(evt.data).not.toContain(kInlineImageSelectedClass);
         });
     });
 
