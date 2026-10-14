@@ -117,7 +117,9 @@ export function inlineImageCropToBox(
 
 /**
  * The crop that an element and a picture's box describe; the reverse of inlineImageCropToBox.
- * Each side is rounded to a hundredth of a percent, as setInlineImageCrop stores it.
+ * Each side is rounded to a hundredth of a percent, as setInlineImageCrop stores it. The right and
+ * bottom are worked out from the rounded left and top, so that the part that shows keeps the size
+ * the element gives it.
  */
 export function inlineImageCropFromBox(
     elementWidth: number,
@@ -126,11 +128,11 @@ export function inlineImageCropFromBox(
 ): IInlineImageCrop {
     // Adding zero turns -0 into 0, which would otherwise be written as "-0".
     const round = (n: number) => Math.round(n * 100) / 100 + 0;
-    const left = (-box.left / box.width) * 100;
-    const top = (-box.top / box.height) * 100;
+    const left = round((-box.left / box.width) * 100);
+    const top = round((-box.top / box.height) * 100);
     return {
-        left: round(left),
-        top: round(top),
+        left,
+        top,
         right: round(100 - left - (elementWidth / box.width) * 100),
         bottom: round(100 - top - (elementHeight / box.height) * 100),
     };

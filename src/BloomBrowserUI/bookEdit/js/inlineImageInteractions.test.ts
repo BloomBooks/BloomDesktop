@@ -2295,6 +2295,21 @@ describe("inlineImageInteractions", () => {
                     // Moving it up shows more of its bottom.
                 ).toEqual(crop(40, 40, 0, 0));
             });
+
+            it("keeps the part that shows the same size when a cut has to be rounded", () => {
+                // 50% of the width shows in 120px, so the picture is 240px wide, and 14.7px is
+                // 6.125%: the left cut becomes 26.125%, stored as 26.13%.
+                const moved = computeInlineImageMovedCrop(
+                    crop(0, 30, 0, 20),
+                    -14.7,
+                    0,
+                    120,
+                    100,
+                );
+                expect(moved.left).toBe(26.13);
+                expect(moved.right).toBe(23.87);
+                expect(100 - moved.left - moved.right).toBeCloseTo(50, 10);
+            });
         });
 
         it("getInlineImageCroppedSides names the sides that are cut", () => {
