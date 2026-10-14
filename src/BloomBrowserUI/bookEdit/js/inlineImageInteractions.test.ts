@@ -1369,6 +1369,54 @@ describe("inlineImageInteractions", () => {
                 new KeyboardEvent("keyup", { bubbles: true }),
             );
 
+        const pressCtrlA = (target: HTMLElement) => {
+            const event = new KeyboardEvent("keydown", {
+                key: "a",
+                ctrlKey: true,
+                bubbles: true,
+                cancelable: true,
+            });
+            target.dispatchEvent(event);
+            return event;
+        };
+
+        // With a picture showing first in the block, the browser's Ctrl+A left a collapsed
+        // selection, so Ctrl+A then Delete deleted nothing.
+        it("Ctrl+A selects the block's text and leaves out its pictures", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            const english = editableFor(group, "en");
+            const wrapper = insertInlineImage(group);
+            english.appendChild(document.createElement("p")).textContent =
+                "More text";
+            const paragraphs = Array.from(english.querySelectorAll("p"));
+            // Sanity check: the picture comes first, then two paragraphs.
+            expect(english.firstElementChild).toBe(wrapper);
+            expect(paragraphs.length).toBe(2);
+
+            const event = pressCtrlA(paragraphs[0]);
+
+            expect(event.defaultPrevented).toBe(true);
+            const range = document.getSelection()!.getRangeAt(0);
+            expect(range.intersectsNode(paragraphs[0])).toBe(true);
+            expect(range.intersectsNode(paragraphs[1])).toBe(true);
+            expect(
+                range.intersectsNode(wrapper),
+                "Ctrl+A then Delete must not take the picture",
+            ).toBe(false);
+        });
+
+        it("leaves Ctrl+A to the browser in a block with no picture", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+
+            const event = pressCtrlA(
+                editableFor(group, "en").querySelector("p") as HTMLElement,
+            );
+
+            expect(event.defaultPrevented).toBe(false);
+        });
+
         it("protects a picture inserted after the block was set up", () => {
             const group = makeSimpleGroup();
             const english = editableFor(group, "en");
