@@ -884,7 +884,7 @@ interface ICkeditorUndoManager {
     // Every snapshot CKEditor holds, oldest first. Those after `index` are what it can redo.
     snapshots: object[];
     index: number;
-    update: () => void;
+    update: (newImage: object) => void;
     // Works out again whether there is anything to undo or redo.
     refreshState: () => void;
 }
@@ -900,18 +900,35 @@ interface ICkeditorUndoManager {
 // with the editable's current content. UndoManager.update() does that and fires no "change". It
 // reads the current snapshot, so an editor that has not recorded one yet is left alone.
 //
+// The new snapshot holds the content only (the second argument to CKEditor's undo Image). Left to
+// itself, update() would also record the selection of every editable in the group, as bookmarks,
+// and doing that for editables that do not have the focus moved the selection and scrolled the
+// page after every drag, so the next drag started from the wrong place.
+//
 // CKEditor's redo snapshots go too. They were taken before the picture change, so redoing one
 // would put back the old picture in this editable alone. A change of CKEditor's own discards
 // them in the same way.
 function updateCkeditorSnapshots(translationGroup: HTMLElement): void {
     getEditables(translationGroup).forEach((editable) => {
-        const undoManager = (
+        const editor = (
             editable as HTMLElement & {
                 bloomCkEditor?: { undoManager?: ICkeditorUndoManager };
             }
-        ).bloomCkEditor?.undoManager;
+        ).bloomCkEditor;
+        const undoManager = editor?.undoManager;
         if (!undoManager?.currentImage) return;
-        undoManager.update();
+        // Our CKEditor typings leave out the undo plugin.
+        const undoPlugin = (
+            CKEDITOR.plugins as unknown as {
+                undo: {
+                    Image: new (
+                        editor: unknown,
+                        contentOnly: boolean,
+                    ) => object;
+                };
+            }
+        ).undo;
+        undoManager.update(new undoPlugin.Image(editor, true));
         if (undoManager.snapshots.length > undoManager.index + 1) {
             undoManager.snapshots.splice(undoManager.index + 1);
             undoManager.refreshState();

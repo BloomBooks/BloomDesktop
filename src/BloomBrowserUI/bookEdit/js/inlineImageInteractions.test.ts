@@ -1414,6 +1414,23 @@ describe("inlineImageInteractions", () => {
     // CKEditor compares each editable with its latest snapshot on every keyup, and would take a
     // picture change for typing. So every finished picture change updates that snapshot.
     describe("keeping CKEditor's snapshots current", () => {
+        // Stands in for CKEditor's undo Image, which takes a snapshot of an editor; the second
+        // argument says whether to leave out the selection.
+        class FakeImage {
+            public contentOnly: boolean;
+            constructor(_editor: unknown, contentOnly: boolean) {
+                this.contentOnly = contentOnly;
+            }
+        }
+        beforeEach(() => {
+            (globalThis as unknown as { CKEDITOR?: unknown }).CKEDITOR = {
+                plugins: { undo: { Image: FakeImage } },
+            };
+        });
+        afterEach(() => {
+            delete (globalThis as unknown as { CKEDITOR?: unknown }).CKEDITOR;
+        });
+
         // Gives each editable a stand-in for the CKEditor instance Bloom attaches to it.
         const attachFakeEditors = (group: HTMLElement, hasSnapshot = true) =>
             ["en", "fr"].map((lang) => {
@@ -1445,6 +1462,13 @@ describe("inlineImageInteractions", () => {
             // Sanity check: the undo took the picture out.
             expect(getInlineImages(group).length).toBe(0);
             updates.forEach((update) => expect(update).toHaveBeenCalled());
+            // Recording the selection of editables that do not have the focus scrolled the page.
+            updates.forEach((update) =>
+                expect(
+                    (update.mock.calls[0][0] as FakeImage).contentOnly,
+                    "expected a snapshot of the content only",
+                ).toBe(true),
+            );
         });
 
         it("updates every editable's snapshot after a menu command", async () => {
