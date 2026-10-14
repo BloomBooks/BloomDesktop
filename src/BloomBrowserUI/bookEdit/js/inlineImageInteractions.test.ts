@@ -55,6 +55,7 @@ import {
     kInlineImageWidthVar,
     prepareInlineImageUndo,
     setInlineImageDock,
+    setupInlineImages,
     syncInlineImagesFromEditable,
 } from "./inlineImages";
 import {
@@ -1382,6 +1383,54 @@ describe("inlineImageInteractions", () => {
                 new KeyboardEvent("keyup", { bubbles: true }),
             );
 
+        const pressCtrlA = (target: HTMLElement) => {
+            const event = new KeyboardEvent("keydown", {
+                key: "a",
+                ctrlKey: true,
+                bubbles: true,
+                cancelable: true,
+            });
+            target.dispatchEvent(event);
+            return event;
+        };
+
+        // With a picture showing first in the block, the browser's Ctrl+A left a collapsed
+        // selection, so Ctrl+A then Delete deleted nothing.
+        it("Ctrl+A selects the block's text and leaves out its pictures", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            const english = editableFor(group, "en");
+            const wrapper = insertInlineImage(group);
+            english.appendChild(document.createElement("p")).textContent =
+                "More text";
+            const paragraphs = Array.from(english.querySelectorAll("p"));
+            // Sanity check: the picture comes first, then two paragraphs.
+            expect(english.firstElementChild).toBe(wrapper);
+            expect(paragraphs.length).toBe(2);
+
+            const event = pressCtrlA(paragraphs[0]);
+
+            expect(event.defaultPrevented).toBe(true);
+            const range = document.getSelection()!.getRangeAt(0);
+            expect(range.intersectsNode(paragraphs[0])).toBe(true);
+            expect(range.intersectsNode(paragraphs[1])).toBe(true);
+            expect(
+                range.intersectsNode(wrapper),
+                "Ctrl+A then Delete must not take the picture",
+            ).toBe(false);
+        });
+
+        it("leaves Ctrl+A to the browser in a block with no picture", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+
+            const event = pressCtrlA(
+                editableFor(group, "en").querySelector("p") as HTMLElement,
+            );
+
+            expect(event.defaultPrevented).toBe(false);
+        });
+
         it("protects a picture inserted after the block was set up", () => {
             const group = makeSimpleGroup();
             const english = editableFor(group, "en");
@@ -2294,6 +2343,21 @@ describe("inlineImageInteractions", () => {
                     // Moving it up shows more of its bottom.
                 ).toEqual(crop(40, 40, 0, 0));
             });
+
+            it("keeps the part that shows the same size when a cut has to be rounded", () => {
+                // 50% of the width shows in 120px, so the picture is 240px wide, and 14.7px is
+                // 6.125%: the left cut becomes 26.125%, stored as 26.13%.
+                const moved = computeInlineImageMovedCrop(
+                    crop(0, 30, 0, 20),
+                    -14.7,
+                    0,
+                    120,
+                    100,
+                );
+                expect(moved.left).toBe(26.13);
+                expect(moved.right).toBe(23.87);
+                expect(100 - moved.left - moved.right).toBeCloseTo(50, 10);
+            });
         });
 
         it("getInlineImageCroppedSides names the sides that are cut", () => {
@@ -2426,6 +2490,44 @@ describe("inlineImageInteractions", () => {
                     getInlineImageInEditable(editableFor(group, "fr"))!,
                 ),
             ).toEqual(kNoInlineImageCrop);
+        });
+
+        // While a crop handle is dragged, only the copy being dragged has the new crop. Another
+        // language's copy of the picture can finish loading in the meantime, and it must not write
+        // the shape of its own, older crop onto the copy being dragged (found by Devin on #8467).
+        it("a copy whose picture loads during a crop keeps each copy's shape to its own crop", () => {
+            const group = makeSimpleGroup();
+            const english = insertInlineImage(group);
+            english.querySelector("img")!.setAttribute("src", "flower.jpg");
+            syncInlineImagesFromEditable(editableFor(group, "en"));
+            setupInlineImages(getTestRoot());
+            const french = getInlineImageInEditable(editableFor(group, "fr"))!;
+            const frenchPicture = french.querySelector(
+                "img",
+            ) as HTMLImageElement;
+            Object.defineProperty(frenchPicture, "naturalWidth", {
+                value: 800,
+            });
+            Object.defineProperty(frenchPicture, "naturalHeight", {
+                value: 600,
+            });
+            // The drag has cut the top half off the English copy and not yet reached French.
+            setInlineImageCrop(english, crop(50, 0, 0, 0));
+            english.style.setProperty(
+                "--inline-image-aspect-ratio",
+                "800 / 300",
+            );
+            // Sanity check: the French copy has no crop yet.
+            expect(getInlineImageCrop(french)).toEqual(kNoInlineImageCrop);
+
+            frenchPicture.dispatchEvent(new Event("load"));
+
+            expect(
+                french.style.getPropertyValue("--inline-image-aspect-ratio"),
+            ).toBe("800 / 600");
+            expect(
+                english.style.getPropertyValue("--inline-image-aspect-ratio"),
+            ).toBe("800 / 300");
         });
 
         it("choosing a new picture takes the crop away, as on a canvas", () => {

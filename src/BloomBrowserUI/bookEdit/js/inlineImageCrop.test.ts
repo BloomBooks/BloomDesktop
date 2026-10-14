@@ -3,6 +3,8 @@ import {
     clearInlineImageCrop,
     computeCroppedInlineImageAspectRatio,
     getInlineImageCrop,
+    inlineImageCropFromBox,
+    inlineImageCropToBox,
     inlineImageIsCropped,
     kInlineImageCropLeftVar,
     kInlineImageCropRightVar,
@@ -104,6 +106,21 @@ describe("inline image crop storage", () => {
             bottom: 1,
             left: 2,
         });
+    });
+
+    it("describes a crop as an element and the picture's box, and back", () => {
+        const crop = { top: 20, right: 10, bottom: 15, left: 30 };
+        const { elementWidth, elementHeight, box } = inlineImageCropToBox(
+            crop,
+            800,
+            400,
+        );
+        expect(elementWidth).toBe(480);
+        expect(elementHeight).toBe(260);
+        expect(box).toEqual({ left: -240, top: -80, width: 800, height: 400 });
+        expect(
+            inlineImageCropFromBox(elementWidth, elementHeight, box),
+        ).toEqual(crop);
     });
 
     it("gives the aspect ratio of the part of the picture that shows", () => {

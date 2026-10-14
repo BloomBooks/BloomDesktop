@@ -27,6 +27,7 @@ import {
     kBloomCanvasSelector,
     kCanvasElementSelector,
 } from "../toolbox/canvas/canvasElementConstants";
+import { mirrorCropPosition } from "./imageCrop";
 
 export type FlipAxis = "horizontal" | "vertical";
 
@@ -366,15 +367,9 @@ export function rotateImageContentRight90Degrees(img: HTMLImageElement): void {
 }
 
 // Move a cropped picture's box so that a mirror shows the same part of the picture, mirrored,
-// instead of another part.
-//
-// A crop is the box of the whole picture moved and sized so that the element shows part of it.
-// The transform mirrors the picture about the centre of that box, so unless the box is centred
-// on the element, the mirrored picture puts a different part of itself in view. Mirroring the
-// rectangle the element shows about the element's own centre line keeps the same part in view,
-// so we move the box by as much as that moves the rectangle. The rectangle is the box with its
-// two dimensions swapped when the picture is rotated 90 or 270 degrees, centred where the box is.
-// An uncropped picture has no width of its own and fills its element, so it needs nothing.
+// instead of another part (see mirrorCropPosition). A crop is the box of the whole picture moved
+// and sized so that the element shows part of it. An uncropped picture has no width of its own
+// and fills its element, so it needs nothing.
 function mirrorCropInPlace(
     img: HTMLImageElement,
     // True to mirror left and right in the element's own frame, false for up and down.
@@ -385,23 +380,20 @@ function mirrorCropInPlace(
         return;
     }
     const element = img.closest(kCanvasElementSelector) as HTMLElement;
-    const boxWidth = pxOrZero(img.style.width);
-    const boxHeight = img.clientHeight;
-    const boxLeft = pxOrZero(img.style.left);
-    const boxTop = pxOrZero(img.style.top);
-    const isQuarterRotation = quarterRotations % 2 === 1;
-    const shownWidth = isQuarterRotation ? boxHeight : boxWidth;
-    const shownHeight = isQuarterRotation ? boxWidth : boxHeight;
+    const position = mirrorCropPosition(
+        element.clientWidth,
+        element.clientHeight,
+        pxOrZero(img.style.left),
+        pxOrZero(img.style.top),
+        pxOrZero(img.style.width),
+        img.clientHeight,
+        quarterRotations,
+        mirrorLeftRight,
+    );
     if (mirrorLeftRight) {
-        const shownLeft = boxLeft + boxWidth / 2 - shownWidth / 2;
-        const mirroredShownLeft =
-            element.clientWidth - (shownLeft + shownWidth);
-        img.style.left = `${roundPx(boxLeft + mirroredShownLeft - shownLeft)}px`;
+        img.style.left = `${roundPx(position.left)}px`;
     } else {
-        const shownTop = boxTop + boxHeight / 2 - shownHeight / 2;
-        const mirroredShownTop =
-            element.clientHeight - (shownTop + shownHeight);
-        img.style.top = `${roundPx(boxTop + mirroredShownTop - shownTop)}px`;
+        img.style.top = `${roundPx(position.top)}px`;
     }
 }
 
