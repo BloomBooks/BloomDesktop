@@ -561,6 +561,24 @@ describe("rotateImageContentRight90Degrees, on an ordinary picture element", () 
         expect(px(img.style.top)).toBeCloseTo(50);
         expect(img.style.transform).toBe("rotate(90deg)");
     });
+
+    it("rotates a crop with a written height about the centre of the box that height makes", () => {
+        // A picture 600 by 400 cropped into a box 150 wide and 120 high, filling an element of
+        // that size. Its own shape would make the box only 100 high; Undo can put back a
+        // height like this one, and the box is then 120 high.
+        const img = makeBackgroundImage(480, 720, 150, 120, 600, 400, false);
+        img.style.width = "150px";
+        img.style.height = "120px";
+        img.style.left = "0px";
+        img.style.top = "0px";
+
+        rotateImageContentRight90Degrees(img);
+
+        // The box's centre, (75, 60), lands at the centre of the element, now 120 by 150.
+        // Taking the box as 100 high would put it 10 pixels to the right of that.
+        expect(px(img.style.left)).toBeCloseTo(60 - 75);
+        expect(px(img.style.top)).toBeCloseTo(75 - 60);
+    });
 });
 
 describe("computeRotatedBackgroundLayout", () => {

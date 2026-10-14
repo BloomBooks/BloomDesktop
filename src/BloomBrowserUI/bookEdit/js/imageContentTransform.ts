@@ -271,12 +271,17 @@ function getDrawnPictureRectangle(
     const left = pxOrZero(img.style.left);
     const top = pxOrZero(img.style.top);
     if (img.style.width) {
-        // A cropped picture's height follows its width and its own shape; Bloom writes no height.
+        // A cropped picture's height usually follows its width and its own shape, but Undo can
+        // put back a height that was written, and then that height is the box's.
         const width = writtenPxOr(img.style.width, img.clientWidth);
-        const height =
-            naturalWidth && naturalHeight
-                ? (width * naturalHeight) / naturalWidth
-                : img.clientHeight;
+        let height: number;
+        if (img.style.height) {
+            height = writtenPxOr(img.style.height, img.clientHeight);
+        } else if (naturalWidth && naturalHeight) {
+            height = (width * naturalHeight) / naturalWidth;
+        } else {
+            height = img.clientHeight;
+        }
         if (!width || !height) {
             return undefined;
         }
