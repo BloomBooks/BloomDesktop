@@ -519,6 +519,43 @@ describe("BloomField", () => {
             expect(execCommand).toHaveBeenCalledWith("undo");
         });
 
+        // Only the undo key's own keyup is exempt. A Delete pressed and released while Z is still
+        // held down is an ordinary keystroke, and a picture it removes is put back.
+        it("still protects the image from a delete pressed while ctrl+z is held", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", {
+                    bubbles: true,
+                    key: "z",
+                    code: "KeyZ",
+                    ctrlKey: true,
+                }),
+            );
+            // With Z still down, Delete removes the picture.
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", {
+                    bubbles: true,
+                    key: "Delete",
+                    code: "Delete",
+                }),
+            );
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", {
+                    bubbles: true,
+                    key: "Delete",
+                    code: "Delete",
+                }),
+            );
+
+            expect(execCommand).toHaveBeenCalledWith("undo");
+        });
+
         it("does not undo on a keyup that left the inline image alone", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = inlineImageHtml + "<p>Some text</p>";

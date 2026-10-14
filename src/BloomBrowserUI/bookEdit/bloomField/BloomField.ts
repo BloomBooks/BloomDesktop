@@ -911,18 +911,24 @@ export default class BloomField {
         // Ctrl+Z and Ctrl+Y can remove a protected element on purpose: undoing the insertion of an
         // inline image takes it out through Bloom's undo stack. That code records the new count,
         // but an undo entry may finish after the keyup, and then the browser undo below would take
-        // back the person's last typing instead. So the keyup of an undo or redo key takes the count
-        // as it is. Taking it then also covers the keyup of Ctrl, which comes after the Z.
-        let theKeystrokeIsUndoOrRedo = false;
+        // back the person's last typing instead. So the keyup of the undo or redo key itself takes
+        // the count as it is, and so does a modifier's keyup while that key is down. Any other key
+        // pressed meanwhile, such as Delete while Z is still held, is checked as usual.
+        let heldUndoOrRedoKey: string | undefined;
         $(field).keydown((e) => {
-            if (BloomField.isUndoOrRedoKey(e.originalEvent as KeyboardEvent))
-                theKeystrokeIsUndoOrRedo = true;
+            const event = e.originalEvent as KeyboardEvent;
+            if (BloomField.isUndoOrRedoKey(event))
+                heldUndoOrRedoKey = BloomField.whichKey(event);
         });
         $(field).keyup((e) => {
-            if (theKeystrokeIsUndoOrRedo) {
-                theKeystrokeIsUndoOrRedo = false;
-                BloomField.UpdateProtectedElementCount(field);
-                return;
+            const event = e.originalEvent as KeyboardEvent;
+            if (heldUndoOrRedoKey !== undefined) {
+                if (BloomField.whichKey(event) === heldUndoOrRedoKey) {
+                    heldUndoOrRedoKey = undefined;
+                    BloomField.UpdateProtectedElementCount(field);
+                    return;
+                }
+                if (["Control", "Meta", "Shift"].includes(event.key)) return;
             }
             if (
                 $(field).find(".bloom-preventRemoval").length <
@@ -937,7 +943,7 @@ export default class BloomField {
         // This uses addEventListener because jQuery 3 makes its focusout events out of focus/blur,
         // and so it misses a focusout event that code dispatches directly.
         field.addEventListener("focusout", () => {
-            theKeystrokeIsUndoOrRedo = false;
+            heldUndoOrRedoKey = undefined;
         });
 
         //OK, now what if the above fails in some scenario? This adds a last-resort way of getting
@@ -964,6 +970,12 @@ export default class BloomField {
         return (
             key === "z" || key === "y" || e.code === "KeyZ" || e.code === "KeyY"
         );
+    }
+
+    // Identifies the key of a keydown or keyup, so a keyup can be matched to its keydown: the
+    // physical key where the event has one, otherwise the key's value.
+    private static whichKey(e: KeyboardEvent): string {
+        return e.code || e.key?.toLowerCase() || "";
     }
 
     // Work around a bug in geckofx. The effect was that if you clicked in a completely empty text box
