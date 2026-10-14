@@ -1503,12 +1503,10 @@ function onFocusIn(event: FocusEvent): void {
     const target = event.target as HTMLElement | null;
     if (!target?.closest(".bloom-page")) return;
     if (target.closest("." + kInlineImageClass)) return;
-    // Clicking the wrapper, which is contenteditable=false, always moves keyboard focus to the
-    // editable that contains it, just after onPointerDown has selected the image. That focus
-    // change comes from the click that selected the image, and the caret has not gone back to
-    // the text, so it must not deselect the image. A press on the text itself deselects in
-    // onPointerDown. Without this check, the first click on an image always deselected it
-    // again and only a second click kept it selected (checked in WebView2 over CDP).
+    // Focus moving into the editable that holds the selected image does not deselect it: that
+    // is not the caret going back into the text. A press on the text itself deselects in
+    // onPointerDown. (A click on the image does not move focus at all, because onMouseDown
+    // cancels the mousedown; checked in WebView2 over CDP.)
     const selected = target.ownerDocument.querySelector(
         "." + kInlineImageSelectedClass,
     );
