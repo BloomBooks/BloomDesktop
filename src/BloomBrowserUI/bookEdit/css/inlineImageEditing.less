@@ -150,6 +150,17 @@ body.bloom-inlineImage-dragging .bloom-editable {
     user-select: none;
 }
 
+// Moving an image to another dock changes the height of the content above it, and the browser's
+// scroll anchoring then scrolls the page, and a block whose text overflows, to keep its anchor
+// still. During a drag that made the page jump back and forth under the pointer by about the
+// height of the image, and the image could end up under Bloom's top bar. A drag positions the
+// image from the pointer, so nothing needs anchoring while it lasts.
+html:has(> body.bloom-inlineImage-dragging),
+body.bloom-inlineImage-dragging,
+body.bloom-inlineImage-dragging .bloom-editable {
+    overflow-anchor: none;
+}
+
 // The resize handles disappear when the mouse leaves the page, as the other guides shown while
 // editing do (see the .bloom-page:hover section near the top of editMode.less), so the user
 // sees the page as it will print even while the image is still selected. They stay while the
