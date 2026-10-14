@@ -646,7 +646,12 @@ export async function dragInlineImageUp(
     pixels: number,
 ): Promise<number> {
     const before = await getInlineImage(page, groupSelector, languageTag, id);
-    const picture = await pictureRect(page, groupSelector, languageTag, id);
+    const picture = await pictureRectInView(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+    );
     await dragInlineImageTo(page, groupSelector, languageTag, id, {
         x: picture.x + picture.width / 2,
         y: picture.y + picture.height / 2 - pixels,
@@ -728,7 +733,12 @@ export async function dragInlineImageToDock(
     dock: InlineImageDock,
 ): Promise<void> {
     const block = await blockRect(page, groupSelector, languageTag);
-    const picture = await pictureRect(page, groupSelector, languageTag, id);
+    const picture = await pictureRectInView(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+    );
     // Count the copies before the drag. The wait below checks that every language ends up in
     // the new dock, and a count taken afterwards could not tell all the copies from only the one
     // the drag happened in.
@@ -791,7 +801,12 @@ export async function dragInlineImageDown(
     pixels: number,
 ): Promise<number> {
     const before = await getInlineImage(page, groupSelector, languageTag, id);
-    const picture = await pictureRect(page, groupSelector, languageTag, id);
+    const picture = await pictureRectInView(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+    );
     await dragInlineImageTo(page, groupSelector, languageTag, id, {
         x: picture.x + picture.width / 2,
         y: picture.y + picture.height / 2 + pixels,
@@ -829,7 +844,12 @@ export async function nudgeInlineImageDown(
     id: string,
     pixels: number,
 ): Promise<{ dock: InlineImageDock; offsetPx: number; roomBelowPx: number }> {
-    const picture = await pictureRect(page, groupSelector, languageTag, id);
+    const picture = await pictureRectInView(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+    );
     await dragInlineImageTo(page, groupSelector, languageTag, id, {
         x: picture.x + picture.width / 2,
         y: picture.y + picture.height / 2 + pixels,
@@ -860,7 +880,12 @@ export async function beginInlineImageDrag(
     languageTag: string,
     id: string,
 ): Promise<void> {
-    const picture = await pictureRect(page, groupSelector, languageTag, id);
+    const picture = await pictureRectInView(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+    );
     await page.mouse.move(
         picture.x + picture.width / 2,
         picture.y + picture.height / 2,
@@ -1422,6 +1447,42 @@ async function blockRect(
     return box;
 }
 
+/**
+ * Scroll the page, if it has to, so the whole picture is inside the page frame's view, and then
+ * measure it. A gesture starts on the picture, and a picture partly scrolled out of view can have
+ * its centre behind Bloom's top bar, so the press would land there instead; a person scrolls to
+ * see a picture before they drag it. Only the page scrolls here, not the text block, because some
+ * tests set the block's own scroll on purpose.
+ *
+ * The page's scroll position does change by itself: during a drag that changes the dock, the
+ * browser moves it back and forth as the layout changes (CSS scroll anchoring), and where it
+ * stops varies from run to run.
+ */
+async function pictureRectInView(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+): Promise<IRect> {
+    const picture = inlineImagePicture(page, groupSelector, languageTag, id);
+    await picture.waitFor({ state: "visible", timeout: 30000 });
+    await picture.evaluate((element) => {
+        const view = element.ownerDocument.defaultView!;
+        const rect = element.getBoundingClientRect();
+        const margin = 20;
+        if (rect.top < margin) view.scrollBy(0, rect.top - margin);
+        else if (rect.bottom > view.innerHeight - margin)
+            view.scrollBy(
+                0,
+                Math.min(
+                    rect.bottom - (view.innerHeight - margin),
+                    rect.top - margin,
+                ),
+            );
+    });
+    return pictureRect(page, groupSelector, languageTag, id);
+}
+
 /** Where one inline image's picture is on screen. */
 async function pictureRect(
     page: Page,
@@ -1472,7 +1533,12 @@ async function dragInlineImageTo(
     id: string,
     to: { x: number; y: number },
 ): Promise<void> {
-    const picture = await pictureRect(page, groupSelector, languageTag, id);
+    const picture = await pictureRectInView(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+    );
     const from = {
         x: picture.x + picture.width / 2,
         y: picture.y + picture.height / 2,
@@ -1490,7 +1556,12 @@ async function openInlineImageMenu(
     languageTag: string,
     id: string,
 ): Promise<void> {
-    const picture = await pictureRect(page, groupSelector, languageTag, id);
+    const picture = await pictureRectInView(
+        page,
+        groupSelector,
+        languageTag,
+        id,
+    );
     await rightClickAt(
         page,
         picture.x + picture.width / 2,
