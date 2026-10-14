@@ -1107,14 +1107,18 @@ export async function changeInlineImagePicture(
                     groupSelector,
                     id,
                 );
-                return copies.filter((copy) => copy.fileName === fileName)
-                    .length;
+                // Changing the picture clears the wrapper's aspect ratio, and Bloom writes the new
+                // one onto every copy when the picture has loaded. Until then the copy has the
+                // default shape, not the picture's.
+                return copies.filter(
+                    (copy) => copy.fileName === fileName && copy.aspectRatio,
+                ).length;
             },
             {
                 timeout: 30000,
                 message:
                     `${fileName} never reached all ${copyCount} of the languages' copies of ` +
-                    `inline image ${id}.`,
+                    `inline image ${id}, with the picture's shape written on each.`,
             },
         )
         .toBe(copyCount);
