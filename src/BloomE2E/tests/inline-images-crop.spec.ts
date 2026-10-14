@@ -228,9 +228,22 @@ test("a side handle crops an inline image in every language, Flip keeps the crop
     await goToPage(page, contentPage.id);
 
     // The action under test: Reset Image, which shows the whole picture again.
+    // resetInlineImage waits for the flip to go, and the Undo above already took the flip back,
+    // so this waits for the crop itself.
     await resetInlineImage(page, BLOCK, LANG, imageId);
-    for (const copy of await getCropInEveryLanguage(page, imageId))
-        expect(copy.crop).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
+    await expect
+        .poll(
+            async () =>
+                (await getCropInEveryLanguage(page, imageId)).map(
+                    (copy) => copy.crop,
+                ),
+            {
+                timeout: 30000,
+                message:
+                    "Reset Image did not take the crop away in every language.",
+            },
+        )
+        .toEqual(copies.map(() => ({ top: 0, right: 0, bottom: 0, left: 0 })));
     const reset = await getInlineImage(page, BLOCK, LANG, imageId);
     expect(reset.aspectRatio).toBe(before.aspectRatio);
 });

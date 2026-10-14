@@ -1,19 +1,16 @@
 // Checks that every copy of a picture records the picture's shape.
 //
 // --inline-image-aspect-ratio gives the wrapper the shape of the picture inside it. It is set from
-// the img's naturalWidth and naturalHeight once the file has loaded (setAspectRatioFromNaturalSize,
-// called from wireUpImage and again from the img's load event). Each editable of the translation
-// group has its own copy of the picture with its own img, and the comment on that load handler
-// says each copy therefore records its own ratio and nothing needs to be synced.
+// the img's naturalWidth and naturalHeight once the file has loaded (setAspectRatioFromNaturalSize
+// in inlineImages.ts), and written onto the picture's copy in every editable of the translation
+// group, not only the one whose img loaded. Each copy has its own img, but a copy's own load
+// cannot be relied on: it can happen before the src changed, or not at all.
 //
-// But a copy whose img never loaded, or loaded before its src changed, then has no ratio at all,
-// and a wrapper with no ratio uses kDefaultInlineImageAspectRatio, 4 / 3. The copy in the
-// lang="z" editable matters most. It is hidden, so the person never sees that it is wrong, and
+// A copy with no ratio uses kDefaultInlineImageAspectRatio, 4 / 3. The copy in the lang="z"
+// editable matters most. It is hidden, so the person never sees that it is wrong, and
 // TranslationGroupManager clones it when a language is added to the collection later. If it has
-// the wrong shape, every language added from then on gets the wrong shape.
-//
-// When only the load event set the ratio, choosing bird.png (274 x 300) left the "en" copy with
-// "274 / 300" and the "z" copy with "".
+// the wrong shape, every language added from then on gets the wrong shape. So this test checks
+// the ratio on every copy, the prototype's included.
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
