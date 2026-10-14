@@ -963,6 +963,53 @@ function updateProtectedPictureCounts(translationGroup: HTMLElement): void {
     );
 }
 
+// Selecting a picture adds its resize handles inside the editable and marks its wrapper with
+// kInlineImageSelectedClass. CKEditor's undo snapshots are the editable's HTML, so to CKEditor a
+// change of selection looked like an edit: an undo of typing first spent a step taking the
+// handles away, and only the next one reached the typing. This takes both out of every
+// snapshot of an editable that holds an inline image. Other bloom-ui stays, such as the format
+// button, which CKEditor's undo would otherwise remove from the page.
+//
+// It listens after the editable's own getSnapshot listener (priority 10), which fills in the
+// HTML. Every such snapshot goes through the same parse and serialize, selected or not, so two
+// snapshots of the same content compare as equal.
+export function keepInlineImageSelectionOutOfCkeditorSnapshots(editor: {
+    on(
+        eventName: string,
+        listener: (evt: { data?: unknown }) => void,
+        scope?: unknown,
+        listenerData?: unknown,
+        priority?: number,
+    ): void;
+}): void {
+    editor.on(
+        "getSnapshot",
+        (evt) => {
+            if (typeof evt.data !== "string") return;
+            if (!evt.data.includes(kInlineImageClass)) return;
+            evt.data = removeInlineImageSelectionFromHtml(evt.data);
+        },
+        undefined,
+        undefined,
+        20,
+    );
+}
+
+/** The editable's HTML without the selected picture's handles and selection class. */
+export function removeInlineImageSelectionFromHtml(html: string): string {
+    const template = document.createElement("template");
+    template.innerHTML = html;
+    template.content
+        .querySelectorAll("." + kInlineImageHandleFrameClass)
+        .forEach((frame) => frame.remove());
+    template.content
+        .querySelectorAll("." + kInlineImageSelectedClass)
+        .forEach((wrapper) =>
+            wrapper.classList.remove(kInlineImageSelectedClass),
+        );
+    return template.innerHTML;
+}
+
 // The parts of CKEditor's undo manager that the functions below use.
 interface ICkeditorUndoManager {
     // The snapshot of the editable that CKEditor last recorded; undefined until it records one.
