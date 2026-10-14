@@ -952,21 +952,27 @@ function setAspectRatioFromNaturalSize(
     img: HTMLImageElement,
 ): void {
     if (!img.naturalWidth || !img.naturalHeight) return; // not loaded (or a placeholder)
-    const ratio = computeCroppedInlineImageAspectRatio(
-        img.naturalWidth,
-        img.naturalHeight,
-        getInlineImageCrop(wrapper),
-    );
-    wrapper.style.setProperty(kInlineImageAspectRatioVar, ratio);
+    // Each copy's shape comes from its own crop. While a crop handle is being dragged, only
+    // the copy being dragged has the new crop; the others get it when the drag ends. A copy
+    // whose picture loads in the meantime must not write the shape of its old crop onto the
+    // copy being dragged, or onto the copy that is about to be synced from it.
+    const setRatio = (each: HTMLElement) =>
+        each.style.setProperty(
+            kInlineImageAspectRatioVar,
+            computeCroppedInlineImageAspectRatio(
+                img.naturalWidth,
+                img.naturalHeight,
+                getInlineImageCrop(each),
+            ),
+        );
+    setRatio(wrapper);
     const id = getInlineImageId(wrapper);
     const group = getTranslationGroupOf(wrapper);
     if (!id || !group) return;
     getEditables(group).forEach((editable) => {
         getInlineImagesInEditable(editable)
             .filter((each) => getInlineImageId(each) === id)
-            .forEach((each) =>
-                each.style.setProperty(kInlineImageAspectRatioVar, ratio),
-            );
+            .forEach(setRatio);
     });
 }
 

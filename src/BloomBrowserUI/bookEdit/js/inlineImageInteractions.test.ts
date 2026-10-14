@@ -55,6 +55,7 @@ import {
     kInlineImageWidthVar,
     prepareInlineImageUndo,
     setInlineImageDock,
+    setupInlineImages,
     syncInlineImagesFromEditable,
 } from "./inlineImages";
 import {
@@ -2426,6 +2427,44 @@ describe("inlineImageInteractions", () => {
                     getInlineImageInEditable(editableFor(group, "fr"))!,
                 ),
             ).toEqual(kNoInlineImageCrop);
+        });
+
+        // While a crop handle is dragged, only the copy being dragged has the new crop. Another
+        // language's copy of the picture can finish loading in the meantime, and it must not write
+        // the shape of its own, older crop onto the copy being dragged (found by Devin on #8467).
+        it("a copy whose picture loads during a crop keeps each copy's shape to its own crop", () => {
+            const group = makeSimpleGroup();
+            const english = insertInlineImage(group);
+            english.querySelector("img")!.setAttribute("src", "flower.jpg");
+            syncInlineImagesFromEditable(editableFor(group, "en"));
+            setupInlineImages(getTestRoot());
+            const french = getInlineImageInEditable(editableFor(group, "fr"))!;
+            const frenchPicture = french.querySelector(
+                "img",
+            ) as HTMLImageElement;
+            Object.defineProperty(frenchPicture, "naturalWidth", {
+                value: 800,
+            });
+            Object.defineProperty(frenchPicture, "naturalHeight", {
+                value: 600,
+            });
+            // The drag has cut the top half off the English copy and not yet reached French.
+            setInlineImageCrop(english, crop(50, 0, 0, 0));
+            english.style.setProperty(
+                "--inline-image-aspect-ratio",
+                "800 / 300",
+            );
+            // Sanity check: the French copy has no crop yet.
+            expect(getInlineImageCrop(french)).toEqual(kNoInlineImageCrop);
+
+            frenchPicture.dispatchEvent(new Event("load"));
+
+            expect(
+                french.style.getPropertyValue("--inline-image-aspect-ratio"),
+            ).toBe("800 / 600");
+            expect(
+                english.style.getPropertyValue("--inline-image-aspect-ratio"),
+            ).toBe("800 / 300");
         });
 
         it("choosing a new picture takes the crop away, as on a canvas", () => {
