@@ -1666,8 +1666,13 @@ describe("inlineImageInteractions", () => {
 
         it("deselects the picture when CKEditor's undo of typing replaces it", () => {
             const listeners = new Map<string, () => void>();
+            let loadSnapshotPriority: number | undefined;
             keepInlineImageSelectionOutOfCkeditorSnapshots({
-                on: (name, l) => listeners.set(name, l as () => void),
+                on: (name, l, _scope, _data, priority) => {
+                    listeners.set(name, l as () => void);
+                    if (name === "loadSnapshot")
+                        loadSnapshotPriority = priority;
+                },
             });
             const group = makeSimpleGroup();
             const english = editableFor(group, "en");
@@ -1682,11 +1687,15 @@ describe("inlineImageInteractions", () => {
                 english.innerHTML,
             );
 
-            listeners.get("afterUndo")!();
+            listeners.get("loadSnapshot")!();
 
             expect(
                 document.getElementById(kInlineImageContextControlsId),
             ).toBeNull();
+            expect(
+                loadSnapshotPriority,
+                "it must run after the editable's own loadSnapshot listener, at 10",
+            ).toBeGreaterThan(10);
         });
 
         it("keeps a selection that CKEditor's undo did not replace", () => {
@@ -1699,7 +1708,7 @@ describe("inlineImageInteractions", () => {
             const wrapper = getInlineImageInEditable(editableFor(group, "en"))!;
             selectInlineImage(wrapper);
 
-            listeners.get("afterRedo")!();
+            listeners.get("loadSnapshot")!();
 
             expect(wrapper.classList.contains(kInlineImageSelectedClass)).toBe(
                 true,

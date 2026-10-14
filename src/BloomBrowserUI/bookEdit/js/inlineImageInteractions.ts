@@ -940,8 +940,8 @@ function withInlineImageSync(
             prepareInlineImageUndo(target.wrapper, row.l10nId);
             await row.onSelect(rowCtx, rowRuntime);
             syncInlineImagesFromEditable(target.editable);
-            commitPendingInlineImageUndo(target.wrapper);
-            resetCkeditorHistories(target.translationGroup);
+            if (commitPendingInlineImageUndo(target.wrapper))
+                resetCkeditorHistories(target.translationGroup);
             refreshOverflow(target.translationGroup);
         },
     }));
@@ -1014,7 +1014,10 @@ function updateProtectedPictureCounts(translationGroup: HTMLElement): void {
 // When CKEditor's Undo or Redo of typing puts back one of these snapshots, the editable's
 // pictures are replaced by copies that are not selected. If the selected picture was one of
 // them, the toolbar would stay on screen with commands for a picture that is gone, so then the
-// picture is deselected.
+// picture is deselected. This listens to the editor's loadSnapshot, after the editable's own
+// listener (priority 10) has put the snapshot in. CKEditor fires afterUndo and afterRedo on its
+// undo and redo commands, not on the editor, and the Undo button calls the undo manager
+// directly, without the command; every one of those restores goes through loadSnapshot.
 export function keepInlineImageSelectionOutOfCkeditorSnapshots(editor: {
     on(
         eventName: string,
@@ -1039,8 +1042,13 @@ export function keepInlineImageSelectionOutOfCkeditorSnapshots(editor: {
         if (!document.querySelector("." + kInlineImageSelectedClass))
             deselectAllInlineImages(document);
     };
-    editor.on("afterUndo", deselectIfSelectionWasReplaced);
-    editor.on("afterRedo", deselectIfSelectionWasReplaced);
+    editor.on(
+        "loadSnapshot",
+        deselectIfSelectionWasReplaced,
+        undefined,
+        undefined,
+        20,
+    );
 }
 
 /** The editable's HTML without the selected picture's handles and selection class. */
@@ -1099,7 +1107,8 @@ function makeContentOnlySnapshot(editor: unknown): object {
 // would put the old picture back in one editable alone. So after a picture change, and after an
 // undo or redo of one, each editable's history starts again from its current content. Ctrl+Z in
 // that block then cannot take back typing done before the picture change. That comes back when
-// typing moves onto the one undo stack (stage 3 of docs/retire-ckeditor/PLAN.md).
+// typing moves onto the one undo stack (stage 3 of docs/retire-ckeditor/PLAN.md). A menu
+// command, drag or resize that ends up changing nothing leaves the history alone.
 //
 // The new first snapshot fires no "change". If it did, trackCkeditorChanges
 // (undo/ckeditorChanges.ts) would count the picture change as typing, which discards what the
@@ -2021,10 +2030,10 @@ function commitInlineImageChange(
         recordInlineImageOffsetBasedOn(each, editable),
     );
     syncInlineImagesFromEditable(editable);
-    commitPendingInlineImageUndo(wrapper);
-    resetCkeditorHistories(
-        editable.closest(".bloom-translationGroup") as HTMLElement,
-    );
+    if (commitPendingInlineImageUndo(wrapper))
+        resetCkeditorHistories(
+            editable.closest(".bloom-translationGroup") as HTMLElement,
+        );
     OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
 }
 
