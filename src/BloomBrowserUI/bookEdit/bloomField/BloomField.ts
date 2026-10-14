@@ -934,6 +934,13 @@ export default class BloomField {
                 }
                 if (["Control", "Meta", "Shift"].includes(event.key)) return;
             }
+            // The page takes Ctrl+Z and Ctrl+Y for a picture change before they reach the field
+            // (onUndoOrRedoKeyDown in inlineImageInteractions.ts), so their keydown never comes
+            // here, only their keyup. A keyup that is itself an undo or redo is left alone too.
+            if (BloomField.isUndoOrRedoKey(event)) {
+                BloomField.UpdateProtectedElementCount(field);
+                return;
+            }
             if (
                 $(field).find(".bloom-preventRemoval").length <
                 (BloomField.protectedElementCounts.get(field) ?? 0)
