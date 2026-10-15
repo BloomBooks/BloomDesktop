@@ -1293,7 +1293,11 @@ namespace Bloom.Book
                 return;
             //Collect up all the image files in our book's directory
             var imageFiles = new List<string>();
-            var imageExtentions = new HashSet<string>(new[] { ".jpg", ".png", ".svg", ".gif" });
+            // .jpeg and .webp are here because the AI image editor can put pictures in those
+            // formats into the book, and this is the only place they are cleaned up.
+            var imageExtentions = new HashSet<string>(
+                new[] { ".jpg", ".jpeg", ".png", ".svg", ".gif", ".webp" }
+            );
             var ignoredFilenameStarts = new HashSet<string>(
                 new[]
                 {
@@ -1338,7 +1342,7 @@ namespace Bloom.Book
                 // one deletes a file the book is using.
                 foreach (
                     SafeXmlElement dataDivImage in Dom.RawDom.SafeSelectNodes(
-                        "//div[@id='bloomDataDiv']//div[contains(text(),'.png') or contains(text(),'.jpg') or contains(text(),'.svg')]"
+                        "//div[@id='bloomDataDiv']//div[contains(text(),'.png') or contains(text(),'.jpg') or contains(text(),'.jpeg') or contains(text(),'.svg') or contains(text(),'.webp')]"
                     )
                 )
                 {

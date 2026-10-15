@@ -36,12 +36,10 @@ import {
 } from "./canvasElementManager/CanvasElementManager";
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 import {
-    canUndoImageOperation,
-    clearImageOperationUndoState,
-    commitPendingImageOperationUndo,
-    prepareUndoForImageOperation,
-    undoImageOperation,
-} from "./ImageUndoManager";
+    currentPageHistory,
+    doOutsideHistoryIfAny,
+} from "../pageHistory/pageHistoryAccess";
+import type { PageHistory } from "../pageHistory/pageHistoryTypes";
 import {
     kCanvasElementClass,
     kCanvasElementSelector,
@@ -55,7 +53,7 @@ import {
     doWhenWorkspaceBundleLoaded,
     getToolboxBundleExports,
 } from "./workspaceFrames";
-import { handleUndo } from "../undo/pageUndo";
+import { handleUndo } from "../pageHistory/pageHistorySetup";
 import { showInvisibles, hideInvisibles } from "./showInvisibles";
 
 //promise may be needed to run tests with phantomjs
@@ -85,7 +83,6 @@ import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
 import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
 import { setupTextContextMenu } from "../textContextMenu/TextContextMenu";
 import { resetAbovePageControls } from "./AbovePageControls";
-import { noteCkeditorChange } from "../undo/changeOrder";
 import { recordFractionOfPageOnImageSlots } from "./imageTargetResolution";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
@@ -182,7 +179,7 @@ function SetupDeletable(containerDiv) {
     $(containerDiv)
         .mouseenter(function () {
             const button = $(
-                "<button class='deleteButton smallImageButton' title='Delete'></button>",
+                "<button class='deleteButton smallImageButton bloom-ui' title='Delete'></button>",
             );
             $(button).click(() => {
                 $(containerDiv).remove();
@@ -426,7 +423,7 @@ export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
 // called by C# to remove the id attribute from the image element
 export function removeImageId(imageId: string) {
     const imgOrImageContainer = document.getElementById(imageId);
-    imgOrImageContainer?.removeAttribute("id");
+    doOutsideHistoryIfAny(() => imgOrImageContainer?.removeAttribute("id"));
 }
 
 export interface IImageInfo {
@@ -435,6 +432,7 @@ export interface IImageInfo {
     copyright: string;
     creator: string;
     license: string;
+    // Nothing reads this: every picture change is a step of the page history.
     undoable: string;
 }
 
@@ -445,34 +443,32 @@ export function notifyToolOfChangedImage(img?: HTMLImageElement) {
     toolbox?.getCurrentTool()?.imageUpdated(img);
 }
 
+/** The description of the undo step that replacing a picture makes. */
+export const kChangePictureUndoL10nKey = "EditTab.Image.ChangeImage";
+
 // called by c# so be careful about changing the signature, including names of parameters
 export function changeImage(imageInfo: IImageInfo) {
-    if (imageInfo.undoable !== "true") {
-        clearImageOperationUndoState();
-    }
-    if (imageInfo.imageId === kMakeNewCanvasElement) {
-        theOneCanvasElementManager.finishPasteImageFromClipboard(imageInfo);
-        // like to do this here, but the image overlay isn't always really created yet.
-        //notifyToolOfChangedImage();
-        return;
-    }
-    const imgOrImageContainer = document.getElementById(imageInfo.imageId);
-    if (!imgOrImageContainer) {
-        throw new Error(
-            `changeImage: imageOrImageContainerId: "${imageInfo.imageId}" not found`,
+    doTransactionUntilPageSettles(kChangePictureUndoL10nKey, () => {
+        if (imageInfo.imageId === kMakeNewCanvasElement) {
+            theOneCanvasElementManager.finishPasteImageFromClipboard(imageInfo);
+            // like to do this here, but the image overlay isn't always really created yet.
+            //notifyToolOfChangedImage();
+            return;
+        }
+        const imgOrImageContainer = document.getElementById(imageInfo.imageId);
+        if (!imgOrImageContainer) {
+            throw new Error(
+                `changeImage: imageOrImageContainerId: "${imageInfo.imageId}" not found`,
+            );
+        }
+        changeImageInfo(imgOrImageContainer, imageInfo);
+        // id is just a temporary expedient to find the right image easily in this method.
+        doOutsideHistoryIfAny(() => imgOrImageContainer.removeAttribute("id"));
+        theOneCanvasElementManager.updateCanvasElementForChangedImage(
+            imgOrImageContainer,
         );
-    }
-    if (imageInfo.undoable === "true") {
-        prepareUndoForImageOperation(imgOrImageContainer);
-    }
-    changeImageInfo(imgOrImageContainer, imageInfo);
-    // id is just a temporary expedient to find the right image easily in this method.
-    imgOrImageContainer.removeAttribute("id");
-    theOneCanvasElementManager.updateCanvasElementForChangedImage(
-        imgOrImageContainer,
-    );
-    commitPendingImageOperationUndo(imgOrImageContainer);
-    notifyToolOfChangedImage();
+        notifyToolOfChangedImage();
+    });
 }
 
 /**
@@ -484,27 +480,13 @@ export function changeImageByElement(
     imgOrImageContainer: HTMLElement,
     imageInfo: Omit<IImageInfo, "imageId">,
 ): void {
-    if (imageInfo.undoable !== "true") {
-        clearImageOperationUndoState();
-    }
-    if (imageInfo.undoable === "true") {
-        prepareUndoForImageOperation(imgOrImageContainer);
-    }
-    changeImageInfo(imgOrImageContainer, imageInfo as IImageInfo);
-    theOneCanvasElementManager.updateCanvasElementForChangedImage(
-        imgOrImageContainer,
-    );
-    commitPendingImageOperationUndo(imgOrImageContainer);
-    notifyToolOfChangedImage();
-}
-
-export function imageOperationCanUndo(): boolean {
-    return canUndoImageOperation();
-}
-
-export function imageOperationUndo(): boolean {
-    const didUndo = undoImageOperation();
-    return didUndo;
+    doTransactionUntilPageSettles(kChangePictureUndoL10nKey, () => {
+        changeImageInfo(imgOrImageContainer, imageInfo as IImageInfo);
+        theOneCanvasElementManager.updateCanvasElementForChangedImage(
+            imgOrImageContainer,
+        );
+        notifyToolOfChangedImage();
+    });
 }
 
 export function changeImageInfo(
@@ -1405,6 +1387,82 @@ export function removeRequestPageContentDelay(id: string): void {
     if (activeDelays.length === 0 && requestPageContentTimeout) {
         requestPageContentInternal();
     }
+    if (activeDelays.length === 0) {
+        const waiters = waitersForNoPageContentDelay;
+        waitersForNoPageContentDelay = [];
+        waiters.forEach((waiter) => waiter());
+    }
+}
+
+// Called, in the order they were added, when the last page content delay is removed.
+let waitersForNoPageContentDelay: (() => void)[] = [];
+
+/**
+ * Resolves once no page content delay is pending (at once if none is), or after kMaxWaitTimeMs,
+ * when requestPageContent also stops waiting. Waits that began earlier resolve first.
+ */
+export function whenNoRequestPageContentDelays(): Promise<void> {
+    if (activeDelays.length === 0) return Promise.resolve();
+    return new Promise<void>((resolve) => {
+        const timeout = window.setTimeout(finish, kMaxWaitTimeMs);
+        function finish() {
+            window.clearTimeout(timeout);
+            waitersForNoPageContentDelay = waitersForNoPageContentDelay.filter(
+                (waiter) => waiter !== finish,
+            );
+            resolve();
+        }
+        waitersForNoPageContentDelay.push(finish);
+    });
+}
+
+// True while the change passed to doTransactionUntilPageSettles runs.
+let insideChangeThatWaitsForPageToSettle = false;
+
+/**
+ * Run change as one step of the page history, if there is one, and keep the step open until the
+ * asynchronous page changes that change started have finished: those that hold a page content
+ * delay, such as fitting a canvas element to a new picture once the picture has loaded. Without
+ * that, such a change would join whatever the user does next. For changes that C# or another
+ * frame makes with no click or key press behind them. If change throws, its changes are put back.
+ * If the delays never clear, the step closes after kMaxWaitTimeMs, as a save stops waiting then.
+ */
+export function doTransactionUntilPageSettles<T>(
+    descriptionL10nKey: string,
+    change: () => T,
+): T {
+    // A call made by the change of another joins that step, which waits for the same delays.
+    if (insideChangeThatWaitsForPageToSettle) return change();
+    const transaction =
+        currentPageHistory()?.beginTransaction(descriptionL10nKey);
+    let result: T;
+    insideChangeThatWaitsForPageToSettle = true;
+    try {
+        result = change();
+    } catch (error) {
+        transaction?.cancel();
+        throw error;
+    } finally {
+        insideChangeThatWaitsForPageToSettle = false;
+    }
+    if (transaction) {
+        if (activeDelays.length === 0) transaction.end();
+        else
+            void whenNoRequestPageContentDelays().then(() => transaction.end());
+    }
+    return result;
+}
+
+/**
+ * Run fn in a doTransaction of the page history, if there is one; otherwise just run it. Either
+ * way the result is a promise that settles when fn has.
+ */
+export async function doTransactionIfAny<T>(
+    descriptionL10nKey: string,
+    fn: () => T | Promise<T>,
+): Promise<T> {
+    const history = currentPageHistory();
+    return history ? history.doTransaction(descriptionL10nKey, fn) : fn();
 }
 
 // Wrap a function that returns a promise with delay management.
@@ -1703,16 +1761,39 @@ export const pageUnloading = () => {
     }
 };
 
+/**
+ * Register what must happen around each undo and redo of history, the page history that has just
+ * started for this page. Before: the toolbox abandons a markup pass it has scheduled. After: the
+ * canvas element manager re-reads the page, and Talking Book and the reader tools paint their
+ * highlights again from the restored text, writing nothing that the history records (Talking
+ * Book also drops the class changes that its visibility observer would otherwise answer with a
+ * markup pass). Call once for each history, right after it starts; the components' own setup
+ * may run before the history exists.
+ */
+export function listenToPageHistory(history: PageHistory): void {
+    history.onBeforeUndoOrRedo(() =>
+        getToolboxBundleExports()?.cancelPendingMarkupUpdates(),
+    );
+    history.onAfterUndoOrRedo(() =>
+        theOneCanvasElementManager?.updateAfterUndoOrRedo(),
+    );
+    history.onAfterUndoOrRedo(() => {
+        const toolbox = getToolboxBundleExports();
+        toolbox?.getTheOneAudioRecorderForExportOnly()?.updateAfterUndoOrRedo();
+        toolbox?.repaintReaderHighlights();
+    });
+}
+
 export function topBarButtonClick(button: { command: string }) {
     switch (button.command) {
         case "copy":
             copySelection();
             break;
         case "cut":
-            cutSelection();
+            void cutSelection();
             break;
         case "undo":
-            // The one undo stack lives in this, the page frame (undo/pageUndo.ts).
+            // The page history lives in this, the page frame (pageHistory/pageHistorySetup.ts).
             handleUndo();
             break;
         // We don't handle paste this way. We need code on the C# side to decide if we have
@@ -1779,33 +1860,29 @@ async function copyImpl() {
     navigator.clipboard.writeText(sel.toString());
 }
 
-// See comment on copySelection
-export const cutSelection = () => {
-    cutSelectionImpl();
+// See comment on copySelection. C# runs this with no click or key press in this frame, so the cut
+// is a doTransaction of its own: one undo step, not joined to the typing before it.
+export const cutSelection = (): Promise<void> => {
+    return doTransactionIfAny("EditTab.CutButton", cutSelectionImpl);
 };
 
 async function cutSelectionImpl() {
     const sel = document.getSelection();
     if (!sel) return;
     await navigator.clipboard.writeText(sel.toString());
-    // Using ckeditor here because it's the only way I've found to integrate clipboard
-    // ops into an Undo stack that we can operate from an external button.
-    // We do a Save before and after to make sure that the cut is distinct from
-    // any other editing and that ckEditor actually has an item in its undo stack
-    // so that the Undo gets activated.
-    (<any>CKEDITOR.currentInstance).undoManager.save(true);
     const range = CKEDITOR.currentInstance.getSelection().getRanges()[0];
     range.deleteContents();
     range.select(); // Select emptied range to place the caret in its place.
-    (<any>CKEDITOR.currentInstance).undoManager.save(true);
-    // This is a non-ckeditor way to perform the deletion, but doesn't integrate with Undo.
-    //sel.deleteFromDocument();
 }
 
-// See comment on copySelection
-export const pasteClipboard = (imageAvailable: boolean) => {
-    wrapWithRequestPageContentDelay(
-        () => pasteImpl(imageAvailable),
+// See comment on copySelection. As with cutSelection, the paste is a doTransaction of its own.
+// The Paste Text command awaits the result, so that the paste ends inside that command's step.
+export const pasteClipboard = (imageAvailable: boolean): Promise<void> => {
+    return wrapWithRequestPageContentDelay(
+        () =>
+            doTransactionIfAny("EditTab.PasteButton", () =>
+                pasteImpl(imageAvailable),
+            ),
         "pasteImpl",
     );
 };
@@ -1907,12 +1984,7 @@ async function pasteImpl(imageAvailable: boolean) {
         // Replace its entire content with what's on the clipboard.
         const editor = (activeCanvasElementEditable as any).bloomCkEditor;
         if (editor) {
-            const manager = editor.undoManager;
             editor.focus();
-            manager.save(true);
-            // The description of these arguments is quite mysterious, but by experiment, if both are passed true,
-            // then the two changes we are about to make are treated as a single operation for undo purposes.
-            manager.lock(true, true);
             // I tried a few options here. Using insertText is desirable because, unlike embedding the text in the
             // html between the <p> tags, it doesn't bypass ckeditor's usual checks, nor allow unexpected things
             // to happen if the clipboard contains something that looks like HTML. The setData gets rid of the
@@ -1920,8 +1992,6 @@ async function pasteImpl(imageAvailable: boolean) {
             // place for the desired text to be inserted.
             editor.setData(`<p><p>`);
             editor.insertText(textToPaste);
-            manager.unlock();
-            manager.save(true);
             // We need to update the canvas element height (BL-14004).
             canvasElementManager.updateAutoHeight();
             scheduleMarkupUpdateAfterPaste();
@@ -1933,14 +2003,7 @@ async function pasteImpl(imageAvailable: boolean) {
     }
     const ckEditorInstance = CKEDITOR.currentInstance;
     if (ckEditorInstance) {
-        // Using ckeditor here because it's the only way I've found to integrate clipboard
-        // ops into an Undo stack that we can operate from an external button.
-        // We do a Save before and after to make sure that the cut is distinct from
-        // any other editing and that ckEditor actually has an item in its undo stack
-        // so that the Undo gets activated.
-        (<any>ckEditorInstance).undoManager.save(true);
         ckEditorInstance.insertText(textToPaste);
-        (<any>ckEditorInstance).undoManager.save(true);
         // We need to update the canvas element height (BL-14004).
         if (
             activeCanvasElementEditable &&
@@ -1962,8 +2025,7 @@ async function pasteImpl(imageAvailable: boolean) {
         // was not to paste an image overlay. So we'll just do our best to insert the
         // text ourselves.
         // Currently not trying to handle inputs or textareas, since it's very difficult
-        // to insert text into those. Also don't see any good way to get this change
-        // into the undo stack, but I think at least making the change is something.
+        // to insert text into those.
         const sel = document.getSelection();
         if (sel && sel.rangeCount > 0) {
             const range = sel.getRangeAt(0);
@@ -2145,26 +2207,10 @@ export function attachToCkEditor(element) {
         updateCkEditorButtonStatus(editor);
     });
 
-    // Ctrl+Z and Ctrl+Y (and Ctrl+Shift+Z) are handled by ckeditor's own undo plugin, which
-    // runs them as the "undo" and "redo" commands. Undo writes a whole saved snapshot over the
-    // editable, so the active tool's markup no longer matches the text and, worse, the tools'
-    // ::highlight() Ranges are left pointing at text nodes that no longer exist. Tell the
-    // toolbox, which knows how to put both right. See updateMarkupAfterUndoOrRedo().
-    ckedit.on("afterCommandExec", (evt) => {
-        const commandName = evt.data.name;
-        if (commandName === "undo" || commandName === "redo") {
-            getToolboxBundleExports()?.updateMarkupAfterUndoOrRedo();
-        }
-    });
-
-    // A table's operations are entries on the one undo stack, separate from this history, and
-    // whichever of the two was written to last is the one the next Undo belongs to. See
-    // undo/changeOrder.ts. The undoable() test keeps
-    // the changes ckeditor makes while it attaches itself to a box out of the reckoning: only a
-    // change a person could undo counts as a change the person made.
-    ckedit.on("change", () => {
-        if (ckedit.undoManager?.undoable()) noteCkeditorChange();
-    });
+    // CKEditor's "change" event comes from its undo plugin, which Bloom leaves out
+    // (lib/ckeditor/config.js), so fire it from the box's own input events. BloomField and
+    // CKEditor's floating toolbar listen for it.
+    element.addEventListener("input", () => ckedit.fire("change"));
 
     // hide the toolbar when ckeditor starts
     ckedit.on("instanceReady", (evt) => {

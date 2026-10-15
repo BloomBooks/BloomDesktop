@@ -118,14 +118,6 @@ import {
     setupBackgroundImageAttributes,
     type BackgroundImageManagerState,
 } from "./CanvasElementBackgroundImageManager";
-import {
-    clearImageOperationUndoState,
-    commitPendingImageOperationUndo,
-    IImageCropInfo,
-    initializeImageUndoManager,
-    prepareUndoForImageOperation,
-    pushUndoForImageTransform,
-} from "../ImageUndoManager";
 
 const kComicalGeneratedClass: string = "comical-generated";
 const kAdjustContainerAspectRatioDelayId =
@@ -186,20 +178,6 @@ export class CanvasElementManager {
     private lastZoomRealignTime = -Infinity;
 
     public constructor() {
-        initializeImageUndoManager({
-            getCurrentPage: () =>
-                document.getElementsByClassName("bloom-page")[0] as
-                    | HTMLElement
-                    | undefined,
-            updateCanvasElementForChangedImage:
-                this.updateCanvasElementForChangedImage.bind(this),
-            updateCanvasElementAfterTransformChange:
-                this.adjustStuffRelatedToImage.bind(this),
-            getActiveElement: this.getActiveElement.bind(this),
-            setActiveElement: this.setActiveElement.bind(this),
-            removeDetachedTargets: this.removeDetachedTargets.bind(this),
-            updateCanvasElementClass,
-        });
         this.snapProvider = new CanvasSnapProvider();
         this.guideProvider = new CanvasGuideProvider();
         this.editingSuspension = new CanvasElementEditingSuspension({
@@ -1092,6 +1070,43 @@ export class CanvasElementManager {
         }
     }
 
+    /**
+     * Bring canvas element editing back in line with the page after an undo or redo has put
+     * back attributes, text or children (the page history's onAfterUndoOrRedo). Undo puts back
+     * the same element objects, with the event listeners and CKEditor instances they had, so
+     * nothing needs wiring again; but the active element may be gone, and Comical draws the
+     * bubbles from data-bubble only when told to. This reads the page and writes only what the
+     * history ignores (data-bloom-active, the control frame, Comical's drawing surfaces), so
+     * that it does not clear redo. It does not use refreshCanvasElementEditing, whose
+     * SetupElements adds the edit key handlers to the document again on every call.
+     */
+    public updateAfterUndoOrRedo(): void {
+        if (!this.isCanvasElementEditingOn) return;
+        if (this.activeElement && !this.activeElement.isConnected) {
+            this.activeElement = undefined;
+            this.theCanvasElementWeAreTextEditing = undefined;
+        }
+        document.querySelectorAll("[data-bloom-active]").forEach((e) => {
+            if (e !== this.activeElement)
+                e.removeAttribute("data-bloom-active");
+        });
+        this.activeElement?.setAttribute("data-bloom-active", "true");
+        // Draw each bloom-canvas's bubbles again from data-bubble. One without a drawing surface
+        // is one that Comical is not editing.
+        this.getAllBloomCanvasesOnPage().forEach((bloomCanvas) => {
+            if (
+                bloomCanvas.querySelector(
+                    `:scope > canvas.${kComicalGeneratedClass}`,
+                )
+            )
+                Comical.update(bloomCanvas);
+            else Comical.startEditing([bloomCanvas]);
+        });
+        Comical.activateElement(this.activeElement);
+        this.setupControlFrame();
+        this.doNotifyChange();
+    }
+
     private migrateOldCanvasElements(canvasElements: HTMLElement[]): void {
         canvasElements.forEach((top) => {
             if (!top.getAttribute("data-bubble")) {
@@ -1443,11 +1458,9 @@ export class CanvasElementManager {
             return false;
         }
         if (canRotateCanvasElement(this.activeElement)) {
-            pushUndoForImageTransform(this.activeElement);
             this.rotateActiveElementRight90Degrees();
             return true;
         }
-        pushUndoForImageTransform(this.activeElement);
         rotateImageContentRight90Degrees(img);
         this.adjustStuffRelatedToImage(this.activeElement, img);
         return true;
@@ -1464,7 +1477,6 @@ export class CanvasElementManager {
         if (!img) {
             return;
         }
-        pushUndoForImageTransform(this.activeElement);
         flipImageContent(img, axis);
         this.adjustStuffRelatedToImage(this.activeElement, img);
     }
@@ -1500,11 +1512,6 @@ export class CanvasElementManager {
     // the picture. The rotation of a canvas element box is left alone, because it belongs to
     // the box, like its size and its position; the rotate handle and Undo are the way back
     // from that.
-    //
-    // This command deliberately puts nothing on the undo stack, as the older reset-crop
-    // command did not either: a reset is itself a way back, so an undo of it would be a way
-    // back from a way back. Rotate right and Flip do record undo, because each of them is a
-    // step forward.
     public resetImage(): void {
         if (!this.activeElement) return;
         const img = getImageFromCanvasElement(this.activeElement);
@@ -1927,14 +1934,9 @@ export class CanvasElementManager {
     // When the image is changed in a canvas element (e.g., choose or paste image),
     // we remove cropping, adjust the aspect ratio, and move the control frame.
     // The rotation and mirror of the picture (imageContentTransform.ts) belong to the old
-    // picture, so they go too, unless the caller passes imageTransform, as Undo does to put
-    // back the transform the restored picture had. The rotation of the canvas element box
-    // belongs to the box and is left alone.
-    updateCanvasElementForChangedImage(
-        imgOrImageContainer: HTMLElement,
-        cropInfo?: IImageCropInfo,
-        imageTransform = "",
-    ) {
+    // picture, so they go too. The rotation of the canvas element box belongs to the box and
+    // is left alone.
+    updateCanvasElementForChangedImage(imgOrImageContainer: HTMLElement) {
         const canvasElement = imgOrImageContainer.closest(
             kCanvasElementSelector,
         ) as HTMLElement;
@@ -1951,14 +1953,13 @@ export class CanvasElementManager {
         img.style.top = "";
         // With the transform gone, the size code below sees no rotation and fits a background
         // element to the new picture's natural shape.
-        img.style.transform = imageTransform;
+        img.style.transform = "";
         // Get the aspect ratio right (aligns control frame)
         if (canvasElement.classList.contains(kBackgroundImageClass)) {
             this.adjustBackgroundImageSize(
                 canvasElement.closest(kBloomCanvasSelector)!,
                 canvasElement,
                 true,
-                cropInfo,
             );
             SetupMetadataButton(canvasElement);
         } else {
@@ -3033,7 +3034,6 @@ export class CanvasElementManager {
             // just revert it to a placeholder
             const img = getImageFromCanvasElement(textOverPicDiv);
             if (img) {
-                prepareUndoForImageOperation(img);
                 img.classList.remove("bloom-imageLoadError");
                 img.onerror = HandleImageError;
                 img.src = "placeHolder.png";
@@ -3041,7 +3041,6 @@ export class CanvasElementManager {
                     normalizeCoverImageDesignation(page);
                 }
                 this.updateCanvasElementForChangedImage(img);
-                commitPendingImageOperationUndo(img);
                 notifyToolOfChangedImage(img);
             }
             return;
@@ -3153,8 +3152,6 @@ export class CanvasElementManager {
     }
 
     public initializeCanvasElementEditing(): void {
-        clearImageOperationUndoState();
-
         // This gets called in bloomEditable's SetupElements method. This is how it gets set up on page
         // load, so that canvas element editing works even when the Canvas element tool is not active. So it definitely
         // needs to be called there when we're calling SetupElements during page load. It's possible
@@ -3412,7 +3409,6 @@ export class CanvasElementManager {
         bloomCanvas: HTMLElement,
         bgCanvasElement: HTMLElement,
         useSizeOfNewImage: boolean,
-        cropInfo?: IImageCropInfo,
     ) {
         return adjustCanvasBackgroundImageSize(
             this.backgroundImageManagerState,
@@ -3421,7 +3417,6 @@ export class CanvasElementManager {
             useSizeOfNewImage,
             () => this.activeElement,
             this.alignControlFrameWithActiveElement,
-            cropInfo,
         );
     }
 

@@ -559,17 +559,75 @@ export function applyToolboxStateToUpdatedPage() {
 }
 
 function scheduleDelayedNewPageReady(tool: ITool): void {
+    const pageDocument = getPageIframeBody()?.ownerDocument;
     window.setTimeout(() => {
         if (
             currentTool !== tool ||
             !toolbox.toolboxIsShowing() ||
             !isToolInitialized(tool)
         ) {
+            noteNewPageReadyPassesHaveRun(pageDocument);
             return;
         }
 
-        Promise.resolve(tool.newPageReady());
+        Promise.resolve(tool.newPageReady()).finally(() =>
+            noteNewPageReadyPassesHaveRun(pageDocument),
+        );
     }, 600);
+}
+
+// The page frame starts its undo history only after the tools' newPageReady passes for its page
+// have run, so that what they change is part of the page as the user found it (whenPageIsReady
+// in pageHistory/pageReadiness.ts). These are the page documents whose second pass has run, and
+// the page frames waiting for theirs.
+const pagesWhoseNewPageReadyPassesHaveRun = new WeakSet<Document>();
+const waitersForNewPageReadyPasses: {
+    pageDocument: Document;
+    resolve: () => void;
+}[] = [];
+
+// How long a page frame waits for passes that the toolbox expected to run but that never came: a
+// tool switched while its page was loading, for instance, abandons them.
+const kMaxWaitForNewPageReadyPassesMs = 3000;
+
+function noteNewPageReadyPassesHaveRun(pageDocument: Document | undefined) {
+    if (!pageDocument) return;
+    pagesWhoseNewPageReadyPassesHaveRun.add(pageDocument);
+    for (let i = waitersForNewPageReadyPasses.length - 1; i >= 0; i--) {
+        const waiter = waitersForNewPageReadyPasses[i];
+        if (waiter.pageDocument !== pageDocument) continue;
+        waitersForNewPageReadyPasses.splice(i, 1);
+        waiter.resolve();
+    }
+}
+
+/**
+ * Resolves once the current tool has run its two newPageReady passes for the page in
+ * pageDocument: at once if it has, or if there is no tool that will (the toolbox is hidden, or no
+ * tool is current), and otherwise when the second pass has finished, or after
+ * kMaxWaitForNewPageReadyPassesMs if it never comes. Called from the page frame.
+ */
+export function whenNewPageReadyPassesHaveRun(
+    pageDocument: Document,
+): Promise<void> {
+    if (pagesWhoseNewPageReadyPassesHaveRun.has(pageDocument))
+        return Promise.resolve();
+    if (
+        !currentTool ||
+        !toolbox.toolboxIsShowing() ||
+        !isToolInitialized(currentTool)
+    )
+        return Promise.resolve();
+    return new Promise((resolve) => {
+        const waiter = { pageDocument, resolve };
+        waitersForNewPageReadyPasses.push(waiter);
+        window.setTimeout(() => {
+            const index = waitersForNewPageReadyPasses.indexOf(waiter);
+            if (index < 0) return;
+            waitersForNewPageReadyPasses.splice(index, 1);
+            resolve();
+        }, kMaxWaitForNewPageReadyPassesMs);
+    });
 }
 
 function doWhenPageReady(action: () => void) {

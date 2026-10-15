@@ -889,12 +889,11 @@ export default class BloomField {
             ".bloom-preventRemoval",
         ).length;
         if (numberThatShouldBeThere > 0) {
-            $(field).keyup((e) => {
-                if (
-                    $(field).find(".bloom-preventRemoval").length <
-                    numberThatShouldBeThere
-                ) {
-                    document.execCommand("undo");
+            // Refuse an edit whose range covers a protected element, which would remove it,
+            // whether the edit deletes (Delete, Backspace, cut) or replaces a selection (typing
+            // or pasting over Ctrl+A).
+            field.addEventListener("beforeinput", (e) => {
+                if (BloomField.wouldRemoveProtectedElement(field, e)) {
                     e.preventDefault();
                 }
             });
@@ -913,6 +912,32 @@ export default class BloomField {
                     "Now go to another book, then back to this book and page.",
                 );
             }
+        });
+    }
+
+    /**
+     * True if the edit that this beforeinput announces covers an element of field that has the
+     * bloom-preventRemoval class, wholly or in part. An edit inside such an element leaves it in
+     * place.
+     */
+    public static wouldRemoveProtectedElement(
+        field: HTMLElement,
+        event: InputEvent,
+    ): boolean {
+        const protectedElements = Array.from(
+            field.querySelectorAll(".bloom-preventRemoval"),
+        );
+        if (protectedElements.length === 0) return false;
+        return event.getTargetRanges().some((staticRange) => {
+            if (staticRange.collapsed) return false;
+            const range = field.ownerDocument.createRange();
+            range.setStart(staticRange.startContainer, staticRange.startOffset);
+            range.setEnd(staticRange.endContainer, staticRange.endOffset);
+            return protectedElements.some(
+                (element) =>
+                    range.intersectsNode(element) &&
+                    !element.contains(range.commonAncestorContainer),
+            );
         });
     }
 

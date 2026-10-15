@@ -3083,6 +3083,30 @@ export default class AudioRecording implements IAudioRecorder {
         }
     }
 
+    /**
+     * The page history calls this after each undo and redo, in the same task. It drops the
+     * changes that the visibility observer has seen but not yet handled, so that a class that the
+     * undo put back does not start a markup pass, which would write the page and lose redo. And
+     * it paints the current highlight again, whose Ranges cover text that the undo has changed;
+     * that writes only the highlight registry and the microphone marker, which is bloom-ui.
+     */
+    public updateAfterUndoOrRedo(): void {
+        this.visibilityObserver?.takeRecords();
+        if (!this.isShowing) return;
+        if (
+            this.highlightedElement?.isConnected &&
+            !this.currentHighlightSuppressed &&
+            !this.inShowPlaybackOrderMode
+        ) {
+            this.refreshAudioTextHighlights(this.highlightedElement);
+            return;
+        }
+        // The highlighted element is gone, or the highlight is meant not to show: the repair
+        // that the integrity observer does re-points it by id, or leaves it alone.
+        const pageBody = this.getPageDocBody();
+        if (pageBody) this.repairCurrentHighlightInPlace(pageBody);
+    }
+
     private getDivsThatMightChangeAffectingVisibility() {
         const pageBody = this.getPageDocBody();
         if (!pageBody) {

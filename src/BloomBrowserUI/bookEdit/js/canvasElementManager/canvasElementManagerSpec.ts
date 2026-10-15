@@ -2,7 +2,21 @@ import { describe, it, expect, vi } from "vitest";
 import { getTestRoot, removeTestRoot } from "../../../utils/testHelper";
 import { CanvasElementManager } from "./CanvasElementManager";
 import jQuery from "jquery";
-import { ImageUndoManager, ImageUndoManagerHost } from "../ImageUndoManager";
+
+// vitest.setup.ts mocks comicaljs without Comical; updateAfterUndoOrRedo needs it.
+const comical = vi.hoisted(() => ({
+    activateElement: vi.fn(),
+    update: vi.fn(),
+    startEditing: vi.fn(),
+}));
+vi.mock("comicaljs", () => ({
+    Bubble: vi.fn(),
+    Node: vi.fn(),
+    Parser: vi.fn(),
+    BubbleSpec: {},
+    TailSpec: {},
+    Comical: comical,
+}));
 
 // A (currently very incomplete) set of tests for CanvasElementManager.
 
@@ -72,13 +86,13 @@ describe("CanvasElementManager.updateCanvasElementForChangedImage", () => {
         adjustContainerAspectRatio: vi.fn(),
         adjustBackgroundImageSize: vi.fn(),
     };
-    function updateForChangedImage(img: HTMLElement, ...rest: unknown[]): void {
+    function updateForChangedImage(img: HTMLElement): void {
         (
             CanvasElementManager.prototype
                 .updateCanvasElementForChangedImage as (
                 ...args: unknown[]
             ) => void
-        ).call(manager, img, ...rest);
+        ).call(manager, img);
     }
 
     // A picture canvas element whose box is rotated 30 degrees and whose picture Rotate Right
@@ -130,67 +144,6 @@ describe("CanvasElementManager.updateCanvasElementForChangedImage", () => {
 
         expect(manager.adjustBackgroundImageSize).toHaveBeenCalled();
         expect(transformWhenFitted).toBe("");
-    });
-
-    it("puts the old picture's rotation and mirror back when the change is undone", () => {
-        const { img } = makeRotatedAndMirroredPicture();
-        const undoManager = new ImageUndoManager({
-            getCurrentPage: () =>
-                document.querySelector<HTMLElement>(".bloom-page") ?? undefined,
-            updateCanvasElementForChangedImage: updateForChangedImage,
-            getActiveElement: () => undefined,
-        } as unknown as ImageUndoManagerHost);
-        undoManager.prepareUndoForImageOperation(img);
-        img.setAttribute("src", "new.png");
-        updateForChangedImage(img);
-        undoManager.commitPendingImageOperationUndo(img);
-        // Sanity check: the change really took the transform away.
-        expect(img.style.transform).toBe("");
-
-        expect(undoManager.undoImageOperation()).toBe(true);
-
-        expect(img.getAttribute("src")).toBe("old.png");
-        expect(img.style.transform).toBe("rotate(90deg) scale(-1, 1)");
-    });
-
-    it("puts a background element back in the old picture's shape before it is fitted on undo", () => {
-        const { element, img } = makeRotatedAndMirroredPicture();
-        element.classList.add("bloom-backgroundImage");
-        element.style.transform = "";
-        // The shape Rotate Right gave the old picture: portrait, centred in the picture area.
-        element.style.width = "150px";
-        element.style.height = "300px";
-        element.style.left = "125px";
-        element.style.top = "0px";
-        img.style.width = "300px";
-        const undoManager = new ImageUndoManager({
-            getCurrentPage: () =>
-                document.querySelector<HTMLElement>(".bloom-page") ?? undefined,
-            updateCanvasElementForChangedImage: updateForChangedImage,
-            getActiveElement: () => undefined,
-        } as unknown as ImageUndoManagerHost);
-        undoManager.prepareUndoForImageOperation(img);
-        img.setAttribute("src", "new.png");
-        updateForChangedImage(img);
-        // What fitting the landscape replacement does to the element.
-        element.style.width = "400px";
-        element.style.height = "200px";
-        element.style.left = "0px";
-        element.style.top = "50px";
-        undoManager.commitPendingImageOperationUndo(img);
-        let geometryWhenFitted: string[] | undefined;
-        manager.adjustBackgroundImageSize.mockImplementationOnce(() => {
-            geometryWhenFitted = [
-                element.style.width,
-                element.style.height,
-                element.style.left,
-                element.style.top,
-            ];
-        });
-
-        expect(undoManager.undoImageOperation()).toBe(true);
-
-        expect(geometryWhenFitted).toEqual(["150px", "300px", "125px", "0px"]);
     });
 });
 
@@ -251,5 +204,85 @@ describe("CanvasElementManager.rotateActiveImageRight90Degrees", () => {
         ).not.toHaveBeenCalled();
         expect(element.style.transform).toBe("");
         expect(img.style.transform).toBe("");
+    });
+});
+
+describe("CanvasElementManager.updateAfterUndoOrRedo", () => {
+    // As above, the method runs against a stand-in with just what it uses.
+    function makeManager(activeElement: HTMLElement | undefined) {
+        return {
+            isCanvasElementEditingOn: true,
+            activeElement,
+            theCanvasElementWeAreTextEditing: activeElement,
+            getAllBloomCanvasesOnPage: () =>
+                Array.from(
+                    document.querySelectorAll<HTMLElement>(".bloom-canvas"),
+                ),
+            setupControlFrame: vi.fn(),
+            doNotifyChange: vi.fn(),
+        };
+    }
+
+    it("lets go of an active element that the undo took out of the page", () => {
+        document.body.innerHTML = `<div class="bloom-canvas-element" data-bloom-active="true"></div>`;
+        const removed = document.querySelector(
+            ".bloom-canvas-element",
+        ) as HTMLElement;
+        removed.remove();
+        const manager = makeManager(removed);
+
+        CanvasElementManager.prototype.updateAfterUndoOrRedo.call(manager);
+
+        expect(manager.activeElement).toBeUndefined();
+        expect(manager.theCanvasElementWeAreTextEditing).toBeUndefined();
+        expect(manager.setupControlFrame).toHaveBeenCalled();
+        expect(manager.doNotifyChange).toHaveBeenCalled();
+    });
+
+    it("keeps an active element that is still in the page, and marks only it active", () => {
+        document.body.innerHTML = `
+            <div class="bloom-canvas-element" id="a"></div>
+            <div class="bloom-canvas-element" id="b" data-bloom-active="true"></div>`;
+        const active = document.getElementById("a") as HTMLElement;
+        const manager = makeManager(active);
+
+        CanvasElementManager.prototype.updateAfterUndoOrRedo.call(manager);
+
+        expect(manager.activeElement).toBe(active);
+        expect(active.getAttribute("data-bloom-active")).toBe("true");
+        expect(
+            document.getElementById("b")!.hasAttribute("data-bloom-active"),
+        ).toBe(false);
+    });
+
+    it("draws again the bubbles of a bloom-canvas Comical edits, and starts editing one it does not", () => {
+        document.body.innerHTML = `
+            <div class="bloom-canvas" id="edited"><canvas class="comical-generated"></canvas></div>
+            <div class="bloom-canvas" id="new"></div>`;
+        comical.update.mockClear();
+        comical.startEditing.mockClear();
+        const manager = makeManager(undefined);
+
+        CanvasElementManager.prototype.updateAfterUndoOrRedo.call(manager);
+
+        expect(comical.update).toHaveBeenCalledWith(
+            document.getElementById("edited"),
+        );
+        expect(comical.startEditing).toHaveBeenCalledWith([
+            document.getElementById("new"),
+        ]);
+        expect(comical.update).toHaveBeenCalledTimes(1);
+        expect(comical.startEditing).toHaveBeenCalledTimes(1);
+    });
+
+    it("does nothing while canvas element editing is off", () => {
+        const manager = {
+            ...makeManager(undefined),
+            isCanvasElementEditingOn: false,
+        };
+
+        CanvasElementManager.prototype.updateAfterUndoOrRedo.call(manager);
+
+        expect(manager.setupControlFrame).not.toHaveBeenCalled();
     });
 });

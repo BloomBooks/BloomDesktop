@@ -50,8 +50,12 @@ Talking Book, video, games and book settings have no undo today.
    and `beginTransaction`, undo and redo with the check of rule 4, and `clearUndoAndRedo()`. Rule 1
    counts only a net change, so that a `classList.add` of a class that is already there (the quiz and
    placeholder observers after every undo, issue 8) doesn't clear redo.
-2. **The filter of rule 6**, shared with the save path's cleanup, so that undo neither records nor
-   puts back what the save strips.
+2. **The filter of rule 6**, so that undo neither records nor puts back what the save strips: the
+   declarative rules of section 3.7 in one module (`editTimeMarkup.ts`), tested value by value
+   (class token by token, style property by property), and CKEditor's tracked filling character
+   taken out of text values. On master the save strips the live page and then reloads it, so the
+   history never meets what the save strips; the save path takes up the same module when PR 8209
+   stops the reloads, and until then the module's rules are checked against master's save path.
 3. **Rule 2 for input in the page frame.** A real click or key press in the page frame that changes
    the page opens an "Undo edit" transaction. A drag is one transaction from pointer down to the
    event that ends it (with mouse events, `buttons === 0` at the next move, issue 11). Typing in one
@@ -81,8 +85,13 @@ Talking Book, video, games and book settings have no undo today.
      `topBarButtonClick` also runs the Undo button's undo, which opens no transaction, so only its
      cut case is wrapped; the top bar's paste goes straight to C#
      (`EditingViewApi.HandleTopBarButtonClick`), which then calls the paste function.
-6. **A moment when the page is ready.** Until then the history records nothing, and every change is
-   starting state. The page is ready when no page content delay
+6. **A moment when the page is ready.** The history starts when the page loads, so that a click or
+   key press in the first seconds is recorded and undoable like any other. Until the page is ready, a
+   change made outside any transaction (tool setup, CKEditor taking over a box, the background
+   picture conversion) is not recorded, as if made in `doOutsideHistory`; if one of them later
+   changes a value that a user's step holds, undo's check refuses that undo, which loses history and
+   damages nothing. An e2e run showed the cost of starting the history only at the ready moment: an
+   action right after a page load was not undoable. The page is ready when no page content delay
    (`wrapWithRequestPageContentDelay`) is pending, every CKEditor instance has fired `instanceReady`
    (CKEditor writes `<p><br></p>` into an empty box after `CKEDITOR.inline()` returns), and the
    toolbox's second `newPageReady`, 600 ms later, has run (issue 3). This keeps the background picture conversion (BL-16870) and the Games

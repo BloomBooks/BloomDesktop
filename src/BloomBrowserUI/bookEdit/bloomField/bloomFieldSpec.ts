@@ -830,3 +830,86 @@ describe("normalizeBloomLineBreakSpans", () => {
         );
     });
 });
+
+describe("BloomField.wouldRemoveProtectedElement", () => {
+    let field: HTMLElement;
+    let protectedElement: HTMLElement;
+    beforeEach(() => {
+        const root = getTestRoot();
+        root.innerHTML =
+            '<div id="field" contenteditable="true" class="bloom-editable">' +
+            '<p id="before">Before</p>' +
+            '<div id="picture" class="bloom-preventRemoval"><p id="inside">Caption</p></div>' +
+            '<p id="after">After</p></div>';
+        field = root.querySelector<HTMLElement>("#field")!;
+        protectedElement = root.querySelector<HTMLElement>("#picture")!;
+    });
+
+    // A beforeinput whose edit covers the range from start to end.
+    function editOver(
+        startContainer: Node,
+        startOffset: number,
+        endContainer: Node,
+        endOffset: number,
+    ): InputEvent {
+        const range = new StaticRange({
+            startContainer,
+            startOffset,
+            endContainer,
+            endOffset,
+        });
+        return {
+            getTargetRanges: () => [range],
+        } as unknown as InputEvent;
+    }
+
+    function textOf(id: string): Node {
+        return field.querySelector(`#${id}`)!.firstChild!;
+    }
+
+    it("refuses an edit over the whole box, as after Ctrl+A", () => {
+        expect(
+            BloomField.wouldRemoveProtectedElement(
+                field,
+                editOver(field, 0, field, field.childNodes.length),
+            ),
+        ).toBe(true);
+    });
+
+    it("refuses an edit that runs into the protected element", () => {
+        expect(
+            BloomField.wouldRemoveProtectedElement(
+                field,
+                editOver(textOf("before"), 3, textOf("inside"), 2),
+            ),
+        ).toBe(true);
+    });
+
+    it("allows an edit beside the protected element, or inside it", () => {
+        expect(
+            BloomField.wouldRemoveProtectedElement(
+                field,
+                editOver(textOf("before"), 1, textOf("before"), 4),
+            ),
+        ).toBe(false);
+        expect(
+            BloomField.wouldRemoveProtectedElement(
+                field,
+                editOver(textOf("inside"), 1, textOf("inside"), 4),
+            ),
+        ).toBe(false);
+        expect(
+            protectedElement.isConnected,
+            "test setup: the protected element should be on the page",
+        ).toBe(true);
+    });
+
+    it("allows a collapsed edit, which deletes nothing", () => {
+        expect(
+            BloomField.wouldRemoveProtectedElement(
+                field,
+                editOver(field, 1, field, 1),
+            ),
+        ).toBe(false);
+    });
+});

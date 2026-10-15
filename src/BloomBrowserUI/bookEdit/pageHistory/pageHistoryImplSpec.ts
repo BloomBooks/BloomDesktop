@@ -3,7 +3,7 @@
 // and telling a batch with a net change from one without.
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createPageHistory } from "./pageHistory";
+import { createPageHistory, kKeepEverythingFilter } from "./pageHistory";
 import { childrenBeforeRecords, putBackChildLists } from "./pageHistoryDom";
 import { PageHistory, PageHistoryOptions } from "./pageHistoryTypes";
 
@@ -349,10 +349,14 @@ describe("page history", () => {
         const box = addChild(root, "box");
         const h = makeHistory({
             filter: {
+                ...kKeepEverythingFilter,
                 ignoreNode: (node) =>
                     node.nodeType === Node.ELEMENT_NODE &&
                     (node as Element).classList.contains("ui"),
-                ignoreAttribute: (_element, name) => name === "data-active",
+                keptAttributeValue: (_element, name, value) =>
+                    name === "data-active" ? undefined : value,
+                valueToPutBack: (_element, name, kept, current) =>
+                    name === "data-active" ? current : kept,
             },
         });
         await h.doTransaction("Add", () => addChild(box, "content"));

@@ -57,6 +57,7 @@ import {
 import { doVideoCommand } from "../../js/bloomVideo";
 import {
     copySelection,
+    doTransactionIfAny,
     GetEditor,
     pasteClipboard,
 } from "../../js/bloomEditing";
@@ -78,6 +79,7 @@ import { showTalkingBookTool } from "../talkingBook/showTalkingBookTool";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
 import { trackEvent } from "../../../utils/bloomApi";
 import {
+    ICommandControlDefinition,
     IControlContext,
     IControlDefinition,
     IControlRuntime,
@@ -249,6 +251,20 @@ const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
     return true;
 };
 
+/**
+ * Run a command control's action as one step of the page history, so that a command from a
+ * menu or a toolbar, in the page or in the Canvas tool, is an undo step of its own rather than a
+ * change that ends the history. The step is described by the command's label. An async action
+ * keeps the step open until it settles, so an action must await any work of its own that
+ * changes the page later.
+ */
+export const runCommandControlAction = (
+    control: ICommandControlDefinition,
+    ctx: IControlContext,
+    runtime: IControlRuntime,
+): Promise<void> =>
+    doTransactionIfAny(control.l10nId, () => control.action(ctx, runtime));
+
 const buildDynamicMenuItemFromControl = (
     controlId: TopLevelControlId,
     runtime: IControlRuntime,
@@ -269,7 +285,7 @@ const buildDynamicMenuItemFromControl = (
         onSelect:
             overrides.onSelect ??
             (async (rowCtx) => {
-                await control.action(rowCtx, runtime);
+                await runCommandControlAction(control, rowCtx, runtime);
             }),
     };
 };
@@ -1076,9 +1092,8 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Toolbox.ComicTool.Options.PasteText",
         englishLabel: "Paste Text",
         icon: PasteIcon,
-        action: () => {
-            pasteClipboard(false);
-        },
+        // Returning the paste keeps this command's step open until the paste has finished.
+        action: () => pasteClipboard(false),
     },
     autoHeight: {
         kind: "command",

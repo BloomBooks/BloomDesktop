@@ -16,13 +16,31 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 const postJson = vi.fn();
 const changeImageByElement = vi.fn();
 const setActiveElementToClosest = vi.fn();
+// Each call records whether a swap ran inside it, so a test can see that the swaps of one
+// commit share one step of the page history.
+const transactions: { swapsInside: number }[] = [];
+let openTransaction: { swapsInside: number } | undefined;
 
 vi.mock("../../utils/bloomApi", () => ({
     postJson: (...args: unknown[]) => postJson(...args),
 }));
 
 vi.mock("../js/bloomEditing", () => ({
-    changeImageByElement: (...args: unknown[]) => changeImageByElement(...args),
+    changeImageByElement: (...args: unknown[]) => {
+        if (openTransaction) openTransaction.swapsInside++;
+        return changeImageByElement(...args);
+    },
+    kChangePictureUndoL10nKey: "EditTab.Image.ChangeImage",
+    doTransactionUntilPageSettles: (_key: string, change: () => unknown) => {
+        const transaction = { swapsInside: 0 };
+        transactions.push(transaction);
+        openTransaction = transaction;
+        try {
+            return change();
+        } finally {
+            openTransaction = undefined;
+        }
+    },
 }));
 
 vi.mock("../js/canvasElementManager/CanvasElementManager", () => ({
@@ -240,10 +258,11 @@ describe("aiImageEditorPageCommands: applying current-page replacements", () => 
     beforeEach(() => {
         changeImageByElement.mockClear();
         setActiveElementToClosest.mockClear();
+        transactions.length = 0;
         document.body.innerHTML = "";
     });
 
-    test("swaps the image of the named slot, undoably, and reports it applied", () => {
+    test("swaps the image of the named slot and reports it applied", () => {
         const [img] = makePageWithImages("old.png");
 
         const outcome = applyAiImageEditorReplacements([
@@ -257,13 +276,21 @@ describe("aiImageEditorPageCommands: applying current-page replacements", () => 
         expect(changeImageByElement.mock.calls[0][0]).toBe(img);
         expect(changeImageByElement.mock.calls[0][1]).toMatchObject({
             src: "ai-image1.png",
-            // Registers an image undo, like a pasted image; that is why the overlay must
-            // not save afterwards (the reload would discard the undo stack).
-            undoable: "true",
         });
-        // The swapped slot becomes the active element, or canUndoImageOperation would
-        // refuse to offer the undo until the user clicked the image.
+        // The swapped slot becomes the active element, which rebuilds a game target's copy.
         expect(setActiveElementToClosest).toHaveBeenCalledWith(img);
+    });
+
+    test("the swaps of one commit are one step of the page history", () => {
+        makePageWithImages("old0.png", "old1.png");
+
+        const outcome = applyAiImageEditorReplacements([
+            currentPageResult(0, "old0.png", "ai-image1.png"),
+            currentPageResult(1, "old1.png", "ai-image2.png"),
+        ]);
+
+        expect(outcome).toEqual({ applied: 2, expected: 2 });
+        expect(transactions).toEqual([{ swapsInside: 2 }]);
     });
 
     test("a slot with no img of its own is swapped on the container", () => {

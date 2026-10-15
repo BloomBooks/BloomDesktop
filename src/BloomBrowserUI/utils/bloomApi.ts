@@ -7,6 +7,7 @@ import {
     useSubscribeToWebSocketForEvent,
     useSubscribeToWebSocketForObject,
 } from "./WebSocketManager";
+import { clearUndoAndRedoIfAny } from "../bookEdit/pageHistory/pageHistoryAccess";
 
 // You can modify mockReplies in order to work on UI components without the Bloom backend...
 // namely, storybook.
@@ -39,6 +40,128 @@ export function getBloomApiPrefix(includeApi: boolean = true): string {
 export const mockReplies = {};
 
 let pageIsClosing: boolean = false;
+
+// The page history (docs/undo/MINIMUM.md item 7): every request that may change state, that is every
+// request except a GET, ends the history of the page open in the Edit tab, unless its path is on this
+// list. Undo can't put back what C# changed, so a request that nobody has classified loses the history
+// rather than risk an undo that leaves the page naming a file or a book state that is gone. A path
+// belongs here only if the request changes nothing that the page names, or only writes a file under a
+// new name. docs/undo/CODE-WALK.md Part 3 classifies the Edit tab's requests. Paths are compared
+// without the query string and ignoring case, as C# matches them.
+const kRequestsThatKeepThePageHistory = new Set(
+    [
+        // Saving the page; a save that reloads ends the history through the page load.
+        "editView/pageContent",
+        // Tells C# that the page has loaded; the only actions it runs then launch the AI image editor.
+        "editView/pageDomLoaded",
+        // Tool state in meta.json. When the leveled reader's level changes, C# saves and reloads the
+        // page, and the page load ends the history.
+        "editView/saveToolboxSetting",
+        // Requests that only make C# run script in the page, which records its own changes.
+        "editView/paste",
+        "editView/topBarButtonClick",
+        // Requests that write a file under a new name, or only choose one.
+        "imageGallery/imageGalleryResult",
+        "imageGallery/pickLocalImageFile",
+        "editView/pasteImage",
+        "audio/copyAudioFile",
+        "fileIO/chooseFile",
+        // Safe only once C# no longer runs DeleteSupersededAiImageFiles on a commit, which can delete
+        // a file that undo then puts back a reference to (CODE-WALK issue 4). That C# change is a
+        // separate step of MINIMUM item 7.
+        "aiImageEditor/commit",
+        // Starts an AI image editor session; nothing on the page changes until the commit.
+        "aiImageEditor/launch",
+        // Make sure a placeholder file that is never deleted is in the book folder.
+        "edit/pageControls/requestVideoPlaceHolder",
+        "edit/pageControls/requestWidgetPlaceHolder",
+        // Files that no page names.
+        "fileIO/writeFile",
+        "audioSegmentation/getForcedAlignmentTimings",
+        "audioSegmentation/eSpeakPreview",
+        // Requests that only read, though they are POSTs.
+        "i18n/loadStrings",
+        "editView/requestTranslationGroupContent",
+        "fileIO/getSpecialLocation",
+        "fileIO/completeRelativePath",
+        // State of the Edit tab's UI, not of the book.
+        "editView/isTextSelected",
+        "editView/setModalState",
+        "editView/sourceTextTab",
+        "editView/updateTopBarDropdownDisplay",
+        "common/closeReactDialog",
+        "app/closeDialog",
+        "edit/pageControls/zoomBy",
+        "workspace/topRight/zoom",
+        // The reader tools' default level and stage.
+        "readers/io/defaultLevel",
+        "readers/io/defaultStage",
+        // User settings, service keys, the default recording mode, custom palette colours.
+        "app/userSetting",
+        "serviceKeys/key",
+        "serviceKeys/keys",
+        "talkingBook/defaultAudioRecordingMode",
+        "settings/addCustomPaletteColor",
+        // Accessibility checks.
+        "accessibilityCheck/kindOfColorBlindness",
+        "accessibilityCheck/showAccessibilityChecker",
+        "accessibilityCheck/cataracts",
+        "accessibilityCheck/colorBlindness",
+        // Recording devices.
+        "audio/currentRecordingDevice",
+        "audio/stopMonitoring",
+        // The clipboard.
+        "common/clipboardText",
+        "editView/copyImage",
+        "readers/ui/copyBookStatsToClipboard",
+        // Logging and analytics.
+        "common/logger/writeEvent",
+        "logger/writeEvent",
+        "common/debugMessage",
+        "analytics/track",
+        // Help, links that open in the browser, and showing files.
+        "help",
+        "link",
+        "fileIO/showInFolder",
+        "readers/ui/openTextsFolder",
+    ].map((path) => path.toLowerCase()),
+);
+
+/**
+ * True if sending this request must end the page history: a method other than GET, HEAD or
+ * OPTIONS, to a Bloom API path that is not on kRequestsThatKeepThePageHistory. url is as the
+ * caller gave it to axios, with or without the host. Exported for unit tests.
+ */
+export function requestEndsPageHistory(
+    method: string | undefined,
+    url: string | undefined,
+): boolean {
+    // axios sends a GET when no method is given.
+    const verb = (method ?? "get").toLowerCase();
+    if (verb === "get" || verb === "head" || verb === "options") return false;
+    if (!url) return false;
+    const apiMarker = "/bloom/api/";
+    const apiStart = url.indexOf(apiMarker);
+    if (apiStart < 0) return false; // not a request to Bloom
+    const path = url
+        .substring(apiStart + apiMarker.length)
+        .split(/[?#]/)[0]
+        .replace(/\/+$/, "")
+        .toLowerCase();
+    return !kRequestsThatKeepThePageHistory.has(path);
+}
+
+// Every request that this frame sends through axios passes here, including the ones that callers
+// send with axios directly instead of through the functions below. axios 0.21 runs request
+// interceptors in a promise chain, so the history ends a microtask after the call, before the
+// request goes out; page changes that the caller makes synchronously right after the call are
+// dropped from the history with the rest (CODE-WALK issue 5). Requests sent with jQuery's $.ajax
+// don't come here.
+axios.interceptors.request.use((config) => {
+    if (requestEndsPageHistory(config.method, config.url))
+        clearUndoAndRedoIfAny();
+    return config;
+});
 
 // This function is designed to be used like this:
 // wrapAxios(axios.{get, post, etc}().then(...));

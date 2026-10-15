@@ -114,10 +114,6 @@ export class ReaderToolsModel {
     // BL-599: Speed up the decodable reader tool
     public stageGraphemes: string[] = [];
 
-    public activeElement: HTMLElement | undefined;
-    public undoStack: any[];
-    public redoStack: any[];
-
     public wordListChangedListeners: any = {};
 
     // some things need to wait until the word list has finished loading
@@ -162,9 +158,6 @@ export class ReaderToolsModel {
         this.maxAllowedWords = 10000;
         this.pageIDToText = [];
         this.stageGraphemes = [];
-        this.activeElement = undefined;
-        this.undoStack = [];
-        this.redoStack = [];
         this.wordListChangedListeners = {};
     }
     public getReadableFileExtensions() {
@@ -603,77 +596,6 @@ export class ReaderToolsModel {
         );
     }
 
-    public noteFocus(element: HTMLElement): void {
-        this.activeElement = element;
-        this.undoStack = [];
-        this.redoStack = [];
-        this.undoStack.push({
-            html: element.innerHTML,
-            text: element.textContent,
-            offset: EditableDivUtils.getElementSelectionIndex(
-                this.activeElement,
-            ),
-        });
-    }
-
-    public shouldHandleUndo(): boolean {
-        return this.currentMarkupType !== MarkupType.None;
-    }
-
-    public undo(): void {
-        if (!this.activeElement) return;
-        if (
-            this.activeElement.textContent ==
-                this.undoStack[this.undoStack.length - 1].text &&
-            this.undoStack.length > 1
-        ) {
-            this.redoStack.push(this.undoStack.pop());
-        }
-        this.activeElement.innerHTML =
-            this.undoStack[this.undoStack.length - 1].html;
-        const restoreOffset = this.undoStack[this.undoStack.length - 1].offset;
-        if (restoreOffset < 0) return;
-        EditableDivUtils.makeSelectionIn(
-            this.activeElement,
-            restoreOffset,
-            -1,
-            true,
-        );
-    }
-
-    public canUndo(): boolean {
-        if (!this.activeElement) return false;
-        // The box we last saw focused may have gone from the page since: a table undo rebuilds
-        // its cells, for instance. Undoing typing there would change nothing anyone can see, and
-        // would stop the Undo button reaching whatever comes next.
-        if (!this.activeElement.isConnected) return false;
-        if (
-            this.undoStack &&
-            (this.undoStack.length > 1 ||
-                this.activeElement.textContent !== this.undoStack[0].text)
-        ) {
-            return true;
-        }
-        return false;
-    }
-
-    public redo(): void {
-        if (!this.activeElement) return;
-        if (this.redoStack.length > 0) {
-            this.undoStack.push(this.redoStack.pop());
-        }
-        this.activeElement.innerHTML =
-            this.undoStack[this.undoStack.length - 1].html;
-        const restoreOffset = this.undoStack[this.undoStack.length - 1].offset;
-        if (restoreOffset < 0) return;
-        EditableDivUtils.makeSelectionIn(
-            this.activeElement,
-            restoreOffset,
-            -1,
-            true,
-        );
-    }
-
     public getTopPageWindow(): Window | null {
         const page = top?.document.getElementById("page");
         if (!page) return null;
@@ -681,20 +603,29 @@ export class ReaderToolsModel {
     }
 
     /**
-     * Displays the correct markup for the current page.
+     * Paint the reader highlights again from the text that the boxes hold now, without the
+     * CKEditor cleanup that doMarkup does first, which can rewrite a box. The page history calls
+     * this (through the toolbox) after every undo and redo: the highlights are Ranges over the
+     * boxes' text nodes, which the undo has given back their earlier text, and a page write at
+     * that point would lose redo. Painting writes nothing to the page that the history records.
      */
-    public doMarkup(createCkEditorBookMarks: boolean = true): void {
+    public repaintHighlights(): void {
+        this.doMarkup(false, false);
+    }
+
+    /**
+     * Displays the correct markup for the current page. cleanUpBoxes false leaves out the
+     * CKEditor cleanup of the boxes (see repaintHighlights).
+     */
+    public doMarkup(
+        createCkEditorBookMarks: boolean = true,
+        cleanUpBoxes: boolean = true,
+    ): void {
         if (!this.readyToDoMarkup()) return;
         if (this.currentMarkupType === MarkupType.None) {
             this.clearReaderHighlights();
             return;
         }
-
-        let oldSelectionPosition = -1;
-        if (this.activeElement)
-            oldSelectionPosition = EditableDivUtils.getElementSelectionIndex(
-                this.activeElement,
-            );
 
         const editableElements = this.getElementsToCheck();
 
@@ -718,8 +649,9 @@ export class ReaderToolsModel {
                 .remove();
 
             if (
-                this.currentMarkupType === MarkupType.Decodable ||
-                this.currentMarkupType === MarkupType.Leveled
+                cleanUpBoxes &&
+                (this.currentMarkupType === MarkupType.Decodable ||
+                    this.currentMarkupType === MarkupType.Leveled)
             )
                 bookmarksForEachEditable = EditableDivUtils.doCkEditorCleanup(
                     editableElements
@@ -810,19 +742,6 @@ export class ReaderToolsModel {
 
         // console.log("end of doMarkup:");
         // EditableDivUtils.logElementsInnerHtml(editableElements.toArray());
-
-        if (
-            this.activeElement &&
-            this.activeElement.textContent !=
-                this.undoStack[this.undoStack.length - 1].text
-        ) {
-            this.undoStack.push({
-                html: this.activeElement.innerHTML,
-                text: this.activeElement.textContent,
-                offset: oldSelectionPosition,
-            });
-            this.redoStack = []; // ok because only referred to by this variable.
-        }
     }
 
     private getValueFromCurrentLevel(

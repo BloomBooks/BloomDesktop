@@ -45,7 +45,8 @@ const kObserverOptions: MutationObserverInit = {
 type Values = "before" | "after";
 
 interface AttributeValues {
-    // undefined when the element has no such attribute
+    // The part of the value that the filter keeps; undefined when the element has no such
+    // attribute or the filter keeps none of it. Texts likewise hold the kept part.
     before: string | undefined;
     after: string | undefined;
 }
@@ -74,7 +75,8 @@ interface Step {
 
 /**
  * The net effect of one batch of records: for each attribute, text and child list whose value at
- * the end of the batch differs from its value at the start, the value at the start.
+ * the end of the batch differs from its value at the start, the value at the start. Attributes
+ * and texts are compared and given by the part that the filter keeps.
  */
 interface BatchChange {
     attributes?: Map<string, string | undefined>;
@@ -87,10 +89,16 @@ type BatchChanges = Map<Node, BatchChange>;
 /** The outermost open transaction, and every transaction nested inside it, together. */
 interface OpenTransaction {
     descriptionL10nKey: string;
+    // The nested transaction that gave the step its description, in place of the general one.
+    descriptionGivenBy?: TransactionFrame;
     changes: ChangeSet;
     // Every record since the outermost transaction opened, filtered or not, oldest first, so that
     // a rollback can reverse them back to the point where any of the nested transactions began.
     records: MutationRecord[];
+    // For the first characterData record of each text node in each batch, the kept text of its
+    // old value. A rollback writes this and not the raw old value, which may hold a character
+    // that only the editor's state at that time explains.
+    keptOldTexts: Map<MutationRecord, string>;
     selectionBefore?: SavedSelection;
 }
 
@@ -100,6 +108,9 @@ interface OpenTransaction {
  */
 class TransactionFrame implements BegunTransaction {
     public ended = false;
+    // True for the outermost stand-in transaction once its end() has been called while
+    // transactions begun inside it were still open: it closes when the last of them ends.
+    public endRequested = false;
 
     public constructor(
         private readonly history: PageHistoryImpl,
@@ -110,8 +121,8 @@ class TransactionFrame implements BegunTransaction {
     ) {}
 
     /** Close this transaction; see BegunTransaction.end. */
-    public end(): void {
-        this.history.endFrame(this);
+    public end(): boolean {
+        return this.history.endFrame(this);
     }
 
     /** Put back this transaction's changes; see BegunTransaction.cancel. */
@@ -126,7 +137,7 @@ type CallContext = "addToLatestTransaction" | "doOutsideHistory" | undefined;
 /** The PageHistory for one page. See pageHistoryTypes.ts for what each member must do. */
 class PageHistoryImpl implements PageHistory {
     private readonly root: Element;
-    private readonly filter: PageHistoryFilter | undefined;
+    private readonly filter: PageHistoryFilter;
     private readonly maxUndoSteps: number;
     private readonly onUnmarkedChange: (whatChanged: string) => void;
     private readonly observer: MutationObserver;
@@ -143,10 +154,13 @@ class PageHistoryImpl implements PageHistory {
         (restored: RestoredContent) => void
     >();
     private disposed = false;
+    // False until markPageReady: a change outside any transaction is then not recorded.
+    private pageReady: boolean;
 
     public constructor(options: PageHistoryOptions) {
         this.root = options.root;
-        this.filter = options.filter;
+        this.pageReady = options.startsReady ?? true;
+        this.filter = options.filter ?? kKeepEverythingFilter;
         this.maxUndoSteps = options.maxUndoSteps ?? kDefaultMaxUndoSteps;
         this.onUnmarkedChange =
             options.onUnmarkedChange ?? warnInDevelopmentBuilds;
@@ -154,6 +168,7 @@ class PageHistoryImpl implements PageHistory {
             this.noteRecords(records),
         );
         this.observer.observe(this.root, kObserverOptions);
+        this.filter.noteRecords(this.root, []);
     }
 
     /** See PageHistory.doTransaction. */
@@ -206,6 +221,15 @@ class PageHistoryImpl implements PageHistory {
         this.assertNotDisposed();
         this.processPendingRecords();
         return this.runInContext("doOutsideHistory", fn);
+    }
+
+    /** See PageHistory.markPageReady. */
+    public markPageReady(): void {
+        this.assertNotDisposed();
+        // The changes made so far, before ready, must be taken as made before ready, though the
+        // observer has not delivered them yet.
+        this.processPendingRecords();
+        this.pageReady = true;
     }
 
     /** See PageHistory.clearUndoAndRedo. */
@@ -278,22 +302,35 @@ class PageHistoryImpl implements PageHistory {
     }
 
     /**
-     * Close frame (BegunTransaction.end, or doTransaction's fn settling). Closing the outermost
-     * transaction makes the undo step. Ending a transaction while one begun inside it is still
+     * Close frame (BegunTransaction.end, or doTransaction's fn settling), and return true when
+     * that made an undo step. Closing the outermost transaction makes the step. The outermost
+     * stand-in with the general description, ended while transactions begun inside it are open,
+     * waits for them instead. Ending any other transaction while one begun inside it is still
      * open is a bug in the caller: the inner ones end with it, and in development it throws.
      * Does nothing if frame has already ended.
      */
-    public endFrame(frame: TransactionFrame): void {
-        if (frame.ended) return;
+    public endFrame(frame: TransactionFrame): boolean {
+        if (frame.ended || frame.endRequested) return false;
         this.processPendingRecords();
         const index = this.frames.indexOf(frame);
         const innerStillOpen = index < this.frames.length - 1;
+        if (
+            index === 0 &&
+            innerStillOpen &&
+            frame.descriptionL10nKey === kGenericUndoDescriptionL10nKey
+        ) {
+            frame.endRequested = true;
+            return false;
+        }
         this.endFramesFrom(index);
-        if (index === 0) this.closeOpenTransaction();
+        let madeStep = false;
+        if (index === 0) madeStep = this.closeOpenTransaction();
+        else madeStep = this.closeStandInIfItWaitsForNoOne();
         if (innerStillOpen && import.meta.env.DEV)
             throw new Error(
                 `Page history: the transaction "${frame.descriptionL10nKey}" ended while a transaction begun inside it was still open.`,
             );
+        return madeStep;
     }
 
     /**
@@ -301,16 +338,26 @@ class PageHistoryImpl implements PageHistory {
      * throwing). The transactions begun inside it end with it, without complaint, since putting
      * everything back since frame began leaves nothing of theirs to get wrong; and a doTransaction
      * whose fn threw must rethrow fn's error, not a new one. Does nothing if frame has already
-     * ended.
+     * ended, or is the stand-in waiting to close. Cancelling the last transaction that the
+     * stand-in waits for lets it close with whatever else changed.
      */
     public cancelFrame(frame: TransactionFrame): void {
-        if (frame.ended) return;
+        if (frame.ended || frame.endRequested) return;
         this.processPendingRecords();
         const index = this.frames.indexOf(frame);
-        this.endFramesFrom(index);
         const open = this.openTransaction!;
+        if (
+            open.descriptionGivenBy &&
+            this.frames.indexOf(open.descriptionGivenBy) >= index
+        ) {
+            // The nested transaction that described the step is putting back all its changes.
+            open.descriptionL10nKey = kGenericUndoDescriptionL10nKey;
+            open.descriptionGivenBy = undefined;
+        }
+        this.endFramesFrom(index);
         const records = open.records.splice(frame.firstRecordIndex);
         for (let i = records.length - 1; i >= 0; i--) reverseRecord(records[i]);
+        this.putBackKeptOldTexts(records, open.keptOldTexts);
         // The rollback's own changes are not edits.
         this.discardPendingRecords();
         // The open transaction's changes may still name values that the rollback put back; they
@@ -318,10 +365,29 @@ class PageHistoryImpl implements PageHistory {
         if (index === 0) {
             this.openTransaction = undefined;
             this.stopObservingRemovedNodes();
+        } else {
+            this.closeStandInIfItWaitsForNoOne();
         }
     }
 
-    /** Open a transaction, nested inside the open one if there is one. */
+    /**
+     * When the only transaction left open is the stand-in whose end() was called while others
+     * were open inside it, close it now, and return true when that made an undo step.
+     */
+    private closeStandInIfItWaitsForNoOne(): boolean {
+        if (this.frames.length !== 1 || !this.frames[0].endRequested)
+            return false;
+        this.endFramesFrom(0);
+        return this.closeOpenTransaction();
+    }
+
+    /**
+     * Open a transaction, nested inside the open one if there is one. An outermost transaction
+     * with the general description is a stand-in, such as the one that Bloom opens on a real
+     * click or key press, so the first transaction nested inside it with a description of its
+     * own gives the step that description (APPROACHES 11.8.1, "Transactions inside
+     * transactions").
+     */
     private openFrame(descriptionL10nKey: string): TransactionFrame {
         this.processPendingRecords();
         if (!this.openTransaction) {
@@ -329,14 +395,24 @@ class PageHistoryImpl implements PageHistory {
                 descriptionL10nKey,
                 changes: new Map(),
                 records: [],
+                keptOldTexts: new Map(),
                 selectionBefore: saveSelection(this.root.ownerDocument),
             };
         }
+        const open = this.openTransaction;
         const frame = new TransactionFrame(
             this,
             descriptionL10nKey,
-            this.openTransaction.records.length,
+            open.records.length,
         );
+        if (
+            this.frames.length > 0 &&
+            open.descriptionL10nKey === kGenericUndoDescriptionL10nKey &&
+            descriptionL10nKey !== kGenericUndoDescriptionL10nKey
+        ) {
+            open.descriptionL10nKey = descriptionL10nKey;
+            open.descriptionGivenBy = frame;
+        }
         this.frames.push(frame);
         return frame;
     }
@@ -359,15 +435,16 @@ class PageHistoryImpl implements PageHistory {
 
     /**
      * Make the undo step of the outermost transaction, which has just ended, from its before
-     * values and the page's values now. A transaction with no net change makes no step.
+     * values and the page's values now. A transaction with no net change makes no step. Returns
+     * true when it made one.
      */
-    private closeOpenTransaction(): void {
+    private closeOpenTransaction(): boolean {
         const open = this.openTransaction!;
         this.openTransaction = undefined;
         this.stopObservingRemovedNodes();
         this.readAfterValues(open.changes, open.changes);
         removeEntriesWithNoNetChange(open.changes);
-        if (open.changes.size === 0) return;
+        if (open.changes.size === 0) return false;
         this.undoSteps.push({
             descriptionL10nKey: open.descriptionL10nKey,
             changes: open.changes,
@@ -382,6 +459,7 @@ class PageHistoryImpl implements PageHistory {
         while (this.undoSteps.length > this.maxUndoSteps)
             this.undoSteps.shift();
         this.redoSteps = [];
+        return true;
     }
 
     /** Run fn with the records of its changes going where context says. */
@@ -404,7 +482,10 @@ class PageHistoryImpl implements PageHistory {
 
     /** Take the records that the observer holds and drop them: they are not edits. */
     private discardPendingRecords(): void {
-        this.observeRemovedNodes(this.observer.takeRecords());
+        const records = this.observer.takeRecords();
+        if (records.length === 0) return;
+        this.filter.noteRecords(this.root, records);
+        this.observeRemovedNodes(records);
     }
 
     /**
@@ -443,20 +524,27 @@ class PageHistoryImpl implements PageHistory {
     }
 
     /**
-     * Send one batch of records where it belongs: nowhere inside doOutsideHistory; to the open
-     * transaction if there is one; otherwise to the latest step (rule 1), which clears redo,
-     * warning unless inside addToLatestTransaction. With no latest step, the changes become
-     * starting state. A batch with no net change changes nothing here.
+     * Send one batch of records where it belongs: nowhere inside doOutsideHistory, or outside any
+     * transaction before markPageReady; to the open transaction if there is one; otherwise to the
+     * latest step (rule 1), which clears redo, warning unless inside addToLatestTransaction. With
+     * no latest step, the changes become starting state. A batch with no net change changes
+     * nothing here.
      */
     private noteRecords(records: MutationRecord[]): void {
         if (records.length === 0) return;
+        this.filter.noteRecords(this.root, records);
         this.observeRemovedNodes(records);
         if (this.callContext === "doOutsideHistory") return;
-        const batch = this.netChanges(records);
+        if (!this.openTransaction && !this.pageReady) return;
+        const keptOldTexts = new Map<MutationRecord, string>();
+        const batch = this.netChanges(records, keptOldTexts);
         if (this.openTransaction) {
-            for (const record of records)
-                this.openTransaction.records.push(record);
-            addBeforeValues(this.openTransaction.changes, batch);
+            const open = this.openTransaction;
+            for (const record of records) open.records.push(record);
+            keptOldTexts.forEach((kept, record) =>
+                open.keptOldTexts.set(record, kept),
+            );
+            addBeforeValues(open.changes, batch);
             return;
         }
         if (batch.size === 0) return;
@@ -488,14 +576,19 @@ class PageHistoryImpl implements PageHistory {
      * The net effect of a batch of records, which must be all the records up to now, leaving out
      * what the filter ignores. The value at the start of the batch comes from the first record
      * for each attribute and text, and for a child list from working back from the children now
-     * through that parent's records.
+     * through that parent's records. Attributes and texts are compared, and their values given, by
+     * the part that the filter keeps. Adds to keptOldTexts the kept text of the old value of the
+     * first record of each text node.
      */
-    private netChanges(records: MutationRecord[]): BatchChanges {
+    private netChanges(
+        records: MutationRecord[],
+        keptOldTexts: Map<MutationRecord, string>,
+    ): BatchChanges {
         const firstAttributeValues = new Map<
             Element,
             Map<string, string | undefined>
         >();
-        const firstTexts = new Map<Node, string>();
+        const firstTextRecords = new Map<Node, MutationRecord>();
         const childListRecords = new Map<Node, MutationRecord[]>();
         for (const record of records) {
             if (this.isIgnored(record.target)) continue;
@@ -503,7 +596,6 @@ class PageHistoryImpl implements PageHistory {
                 case "attributes": {
                     const element = record.target as Element;
                     const name = record.attributeName!;
-                    if (this.filter?.ignoreAttribute(element, name)) continue;
                     let values = firstAttributeValues.get(element);
                     if (!values) {
                         values = new Map();
@@ -514,8 +606,8 @@ class PageHistoryImpl implements PageHistory {
                     break;
                 }
                 case "characterData":
-                    if (!firstTexts.has(record.target))
-                        firstTexts.set(record.target, record.oldValue ?? "");
+                    if (!firstTextRecords.has(record.target))
+                        firstTextRecords.set(record.target, record);
                     break;
                 case "childList": {
                     let list = childListRecords.get(record.target);
@@ -529,6 +621,16 @@ class PageHistoryImpl implements PageHistory {
             }
         }
 
+        // Each parent's children at the start of the batch, ignored ones included.
+        const childrenAtStart = new Map<Node, Node[]>();
+        childListRecords.forEach((parentRecords, parent) =>
+            childrenAtStart.set(
+                parent,
+                childrenBeforeRecords(parent, parentRecords),
+            ),
+        );
+        const mayBeNeeded = this.nodesThatUndoMayNeed(childrenAtStart);
+
         const batch: BatchChanges = new Map();
         const entryFor = (node: Node): BatchChange => {
             let entry = batch.get(node);
@@ -539,25 +641,97 @@ class PageHistoryImpl implements PageHistory {
             return entry;
         };
         firstAttributeValues.forEach((values, element) => {
-            values.forEach((before, name) => {
-                if (before === attributeValue(element, name)) return;
+            if (!mayBeNeeded(element)) return;
+            values.forEach((oldValue, name) => {
+                const before = this.filter.keptAttributeValue(
+                    element,
+                    name,
+                    oldValue,
+                );
+                if (before === this.keptAttributeValue(element, name)) return;
                 const entry = entryFor(element);
                 if (!entry.attributes) entry.attributes = new Map();
                 entry.attributes.set(name, before);
             });
         });
-        firstTexts.forEach((before, node) => {
-            if (before !== (node as CharacterData).data)
+        firstTextRecords.forEach((record, node) => {
+            const before = this.filter.keptText(
+                node as CharacterData,
+                record.oldValue ?? "",
+                "earlier",
+            );
+            keptOldTexts.set(record, before);
+            if (mayBeNeeded(node) && before !== this.keptText(node))
                 entryFor(node).text = before;
         });
-        childListRecords.forEach((parentRecords, parent) => {
-            const before = childrenBeforeRecords(parent, parentRecords).filter(
-                (child) => !this.isIgnoredChild(child),
-            );
+        // Whether a child was left out of child lists at the start of the batch. A text node may
+        // be left out for one value and not another, so this uses its text at that time.
+        const wasIgnoredChild = (child: Node): boolean => {
+            if (this.filter.ignoreNode(child)) return true;
+            if (!isCharacterData(child)) return false;
+            const record = firstTextRecords.get(child);
+            const textAtStart = record ? (record.oldValue ?? "") : child.data;
+            return this.filter.isIgnoredText(child, textAtStart, "earlier");
+        };
+        childrenAtStart.forEach((children, parent) => {
+            if (!mayBeNeeded(parent)) return;
+            const before = children.filter((child) => !wasIgnoredChild(child));
             if (!sameNodes(before, this.filteredChildren(parent)))
                 entryFor(parent).children = before;
         });
         return batch;
+    }
+
+    /**
+     * A test of whether undo or redo may ever need a node that a batch of records changed. A node
+     * in the page does. A node out of the page at the end of the batch does only if it, or a node
+     * that contains it, was in the page at the start of the batch, or is in a child list of the
+     * open transaction or of an undo or redo step. A node was in the page at the start when it is
+     * among the children at the start (childrenAtStart) of a parent that undo may need. A node
+     * made and thrown away within the batch, such as a hidden clone that measures text, never was
+     * part of the page, and its changes are no change.
+     */
+    private nodesThatUndoMayNeed(
+        childrenAtStart: Map<Node, Node[]>,
+    ): (node: Node) => boolean {
+        let held: Set<Node> | undefined;
+        return (node: Node) => {
+            if (this.root.contains(node)) return true;
+            if (!held) held = this.heldNodes(childrenAtStart);
+            return isInsideOneOf(node, held);
+        };
+    }
+
+    /**
+     * The nodes in a child list of the open transaction or of an undo or redo step, and the
+     * children at the start of the batch of each parent that is in the page or inside a node
+     * already found, repeated until no more are found.
+     */
+    private heldNodes(childrenAtStart: Map<Node, Node[]>): Set<Node> {
+        const held = new Set<Node>();
+        const addChildLists = (changes: ChangeSet) =>
+            changes.forEach((change) => {
+                change.children?.before.forEach((child) => held.add(child));
+                change.children?.after.forEach((child) => held.add(child));
+            });
+        if (this.openTransaction) addChildLists(this.openTransaction.changes);
+        this.undoSteps.forEach((step) => addChildLists(step.changes));
+        this.redoSteps.forEach((step) => addChildLists(step.changes));
+        const parentsLeft = new Set(childrenAtStart.keys());
+        let found = true;
+        while (found) {
+            found = false;
+            parentsLeft.forEach((parent) => {
+                if (!this.root.contains(parent) && !isInsideOneOf(parent, held))
+                    return;
+                childrenAtStart
+                    .get(parent)!
+                    .forEach((child) => held.add(child));
+                parentsLeft.delete(parent);
+                found = true;
+            });
+        }
+        return held;
     }
 
     /**
@@ -571,13 +745,13 @@ class PageHistoryImpl implements PageHistory {
         keys.forEach((key, node) => {
             const change = changes.get(node)!;
             key.attributes?.forEach((_value, name: string) => {
-                change.attributes!.get(name)!.after = attributeValue(
+                change.attributes!.get(name)!.after = this.keptAttributeValue(
                     node as Element,
                     name,
                 );
             });
             if (key.text !== undefined)
-                change.text!.after = (node as CharacterData).data;
+                change.text!.after = this.keptText(node);
             if (key.children)
                 change.children!.after = this.filteredChildren(node);
         });
@@ -621,16 +795,13 @@ class PageHistoryImpl implements PageHistory {
             if (change.attributes) {
                 for (const [name, values] of change.attributes) {
                     if (
-                        attributeValue(node as Element, name) !==
+                        this.keptAttributeValue(node as Element, name) !==
                         values[expected]
                     )
                         return false;
                 }
             }
-            if (
-                change.text &&
-                (node as CharacterData).data !== change.text[expected]
-            )
+            if (change.text && this.keptText(node) !== change.text[expected])
                 return false;
             if (
                 change.children &&
@@ -648,20 +819,55 @@ class PageHistoryImpl implements PageHistory {
         return true;
     }
 
-    /** Give the page the `values` values of every entry of step. */
+    /**
+     * Give the page the `values` values of every entry of step. An attribute gets back its kept
+     * part, and keeps the rest of its value now, as the filter says.
+     */
     private putBackValues(step: Step, values: Values): void {
         const childLists = new Map<Node, Node[]>();
         step.changes.forEach((change, node) => {
             change.attributes?.forEach((attributeValues, name) => {
-                const value = attributeValues[values];
-                if (value === undefined)
-                    (node as Element).removeAttribute(name);
-                else (node as Element).setAttribute(name, value);
+                const element = node as Element;
+                const current = attributeValue(element, name);
+                const value = this.filter.valueToPutBack(
+                    element,
+                    name,
+                    attributeValues[values],
+                    current,
+                );
+                if (value === current) return;
+                if (value === undefined) element.removeAttribute(name);
+                else element.setAttribute(name, value);
             });
-            if (change.text) (node as CharacterData).data = change.text[values];
+            if (change.text) this.putBackText(node, change.text[values]);
             if (change.children) childLists.set(node, change.children[values]);
         });
         putBackChildLists(childLists, (child) => this.isIgnoredChild(child));
+    }
+
+    /** Write the kept text `kept` into a text node, in the form that the filter gives it. */
+    private putBackText(node: Node, kept: string): void {
+        const textNode = node as CharacterData;
+        const data = this.filter.textToPutBack(textNode, kept);
+        if (textNode.data !== data) textNode.data = data;
+    }
+
+    /**
+     * After a rollback has reversed records, give each text node that they changed the kept text
+     * of its oldest record's old value, in place of the raw old value that reversing wrote.
+     */
+    private putBackKeptOldTexts(
+        records: MutationRecord[],
+        keptOldTexts: Map<MutationRecord, string>,
+    ): void {
+        const done = new Set<Node>();
+        for (const record of records) {
+            if (record.type !== "characterData" || done.has(record.target))
+                continue;
+            done.add(record.target);
+            const kept = keptOldTexts.get(record);
+            if (kept !== undefined) this.putBackText(record.target, kept);
+        }
     }
 
     /**
@@ -749,9 +955,26 @@ class PageHistoryImpl implements PageHistory {
         return this.undoSteps[this.undoSteps.length - 1];
     }
 
+    /** The part of an element's attribute value now that the filter keeps. */
+    private keptAttributeValue(
+        element: Element,
+        name: string,
+    ): string | undefined {
+        return this.filter.keptAttributeValue(
+            element,
+            name,
+            attributeValue(element, name),
+        );
+    }
+
+    /** The part of a text node's data now that the filter keeps. */
+    private keptText(node: Node): string {
+        const textNode = node as CharacterData;
+        return this.filter.keptText(textNode, textNode.data, "now");
+    }
+
     /** True for a node that the filter ignores, or that is inside one, up to the root. */
     private isIgnored(node: Node): boolean {
-        if (!this.filter) return false;
         for (let n: Node | null = node; n; n = n.parentNode) {
             if (this.filter.ignoreNode(n)) return true;
             if (n === this.root) return false;
@@ -761,7 +984,11 @@ class PageHistoryImpl implements PageHistory {
 
     /** True for a child, of a node that is not ignored, that the filter ignores. */
     private isIgnoredChild(child: Node): boolean {
-        return !!this.filter && this.filter.ignoreNode(child);
+        if (this.filter.ignoreNode(child)) return true;
+        return (
+            isCharacterData(child) &&
+            this.filter.isIgnoredText(child, child.data, "now")
+        );
     }
 
     /** The children of node that the filter does not ignore. */
@@ -777,6 +1004,30 @@ class PageHistoryImpl implements PageHistory {
             throw new Error("Page history: used after it was disposed.");
     }
 }
+
+/** True when node, or a node that contains it, is in nodes. */
+function isInsideOneOf(node: Node, nodes: Set<Node>): boolean {
+    for (let n: Node | null = node; n; n = n.parentNode) {
+        if (nodes.has(n)) return true;
+    }
+    return false;
+}
+
+/** True for a text node. */
+function isCharacterData(node: Node): node is CharacterData {
+    return node.nodeType === Node.TEXT_NODE;
+}
+
+/** The filter of a history given none: it ignores nothing and keeps every value whole. */
+export const kKeepEverythingFilter: PageHistoryFilter = {
+    ignoreNode: () => false,
+    isIgnoredText: () => false,
+    keptAttributeValue: (_element, _name, value) => value,
+    valueToPutBack: (_element, _name, kept) => kept,
+    keptText: (_node, value) => value,
+    textToPutBack: (_node, kept) => kept,
+    noteRecords: () => undefined,
+};
 
 /** An element's attribute value, undefined when it has none. */
 function attributeValue(element: Element, name: string): string | undefined {

@@ -7,7 +7,8 @@
 // reaches the history only at the next microtask or at the next call to the history. Tests of
 // changes made outside any transaction use letObserverDeliver() for that.
 import { afterEach, describe, expect, it, vi, type Mock } from "vitest";
-import { createPageHistory } from "./pageHistory";
+import { createPageHistory, kKeepEverythingFilter } from "./pageHistory";
+import { kGenericUndoDescriptionL10nKey } from "./pageHistoryTypes";
 import type {
     BegunTransaction,
     PageHistory,
@@ -1415,6 +1416,285 @@ describe("page history: descriptions", () => {
     });
 });
 
+describe("page history: a transaction nested in a general one describes the step", () => {
+    // Bloom opens a transaction with the general description on a real click or key press; the
+    // first transaction nested inside it with a description of its own names the step.
+    it("takes the description of the first nested doTransaction", async () => {
+        const f = setUp();
+        const click = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        await f.history.doTransaction("EditTab.Undo.Delete", () =>
+            byId(f, "img1").setAttribute("src", "b.png"),
+        );
+        await f.history.doTransaction("EditTab.Undo.Later", () =>
+            byId(f, "box2").setAttribute("lang", "es"),
+        );
+        click.end();
+        expect(f.history.undoDescriptionL10nKey).toBe("EditTab.Undo.Delete");
+        await f.history.undo();
+        expect(f.history.redoDescriptionL10nKey).toBe("EditTab.Undo.Delete");
+        expect(byId(f, "box2").getAttribute("lang")).toBe("fr");
+    });
+
+    it("takes the description of a nested beginTransaction, and of one nested deeper", async () => {
+        const f = setUp();
+        const click = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        const inner = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        const drag = f.history.beginTransaction("EditTab.Undo.Drag");
+        byId(f, "img1").setAttribute("src", "b.png");
+        drag.end();
+        inner.end();
+        click.end();
+        expect(f.history.undoDescriptionL10nKey).toBe("EditTab.Undo.Drag");
+    });
+
+    it("keeps the description of an outermost transaction that is not general", async () => {
+        const f = setUp();
+        await f.history.doTransaction("EditTab.Undo.Paste", async () => {
+            await f.history.doTransaction("EditTab.Undo.ChangeImage", () =>
+                byId(f, "img1").setAttribute("src", "b.png"),
+            );
+        });
+        expect(f.history.undoDescriptionL10nKey).toBe("EditTab.Undo.Paste");
+    });
+
+    it("goes back to the general description when the describing transaction fails, and lets a later one describe it", async () => {
+        const f = setUp();
+        const click = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        await expect(
+            f.history.doTransaction("EditTab.Undo.Failed", () => {
+                byId(f, "img1").setAttribute("src", "b.png");
+                throw new Error("expected by the test");
+            }),
+        ).rejects.toThrow("expected by the test");
+        byId(f, "box2").setAttribute("lang", "es");
+        click.end();
+        expect(f.history.undoDescriptionL10nKey).toBe(
+            kGenericUndoDescriptionL10nKey,
+        );
+
+        const secondClick = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        const cancelled = f.history.beginTransaction("EditTab.Undo.Cancelled");
+        byId(f, "img1").setAttribute("src", "c.png");
+        cancelled.cancel();
+        await f.history.doTransaction("EditTab.Undo.Kept", () =>
+            byId(f, "img1").setAttribute("src", "d.png"),
+        );
+        secondClick.end();
+        expect(f.history.undoDescriptionL10nKey).toBe("EditTab.Undo.Kept");
+    });
+
+    it("is general when the nested transaction is cancelled along with one nested in it", async () => {
+        const f = setUp();
+        const click = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        const outerNested = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        f.history.beginTransaction("EditTab.Undo.Inner");
+        byId(f, "img1").setAttribute("src", "b.png");
+        outerNested.cancel();
+        byId(f, "box2").setAttribute("lang", "es");
+        click.end();
+        expect(f.history.undoDescriptionL10nKey).toBe(
+            kGenericUndoDescriptionL10nKey,
+        );
+    });
+});
+
+describe("page history: what end() returns", () => {
+    it("is true only from the call that makes an undo step", async () => {
+        const f = setUp();
+        const outer = f.history.beginTransaction("Outer");
+        const inner = f.history.beginTransaction("Inner");
+        byId(f, "img1").setAttribute("src", "b.png");
+        expect(inner.end(), "a nested transaction makes no step").toBe(false);
+        expect(outer.end()).toBe(true);
+        expect(f.history.undoDescriptionL10nKey).toBe("Outer");
+        expect(outer.end(), "it has already ended").toBe(false);
+        expect(inner.end(), "it has already ended").toBe(false);
+
+        const nothing = f.history.beginTransaction("Nothing");
+        expect(nothing.end(), "nothing changed").toBe(false);
+        expect(f.history.undoDescriptionL10nKey).toBe("Outer");
+
+        const cleared = f.history.beginTransaction("Cleared");
+        byId(f, "box2").setAttribute("lang", "es");
+        f.history.clearUndoAndRedo();
+        expect(cleared.end(), "clearUndoAndRedo ended it").toBe(false);
+    });
+});
+
+describe("page history: the general transaction waits for transactions begun inside it", () => {
+    // Bloom opens a transaction with the general description on a real click or key press and
+    // ends it just after the release, but the click may have begun a transaction that lasts
+    // longer, such as a dialog's.
+    it("closes when a dialog-style transaction begun inside it ends, taking its description", async () => {
+        const f = setUp();
+        const click = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        byId(f, "box2").setAttribute("lang", "es");
+        const dialog = f.history.beginTransaction("EditTab.Undo.Dialog");
+
+        expect(
+            click.end(),
+            "the click's end does not throw or make a step",
+        ).toBe(false);
+        expect(f.history.hasOpenTransaction).toBe(true);
+        expect(f.history.undoDescriptionL10nKey).toBeUndefined();
+        expect(click.end(), "a second end does nothing").toBe(false);
+        click.cancel();
+        expect(
+            byId(f, "box2").getAttribute("lang"),
+            "cancel() after end() does nothing",
+        ).toBe("es");
+
+        byId(f, "img1").setAttribute("src", "b.png");
+        expect(dialog.end(), "the dialog's end closes the click's step").toBe(
+            true,
+        );
+        expect(f.history.hasOpenTransaction).toBe(false);
+        expect(f.history.undoDescriptionL10nKey).toBe("EditTab.Undo.Dialog");
+
+        await f.history.undo();
+        expect(byId(f, "img1").getAttribute("src")).toBe("a.png");
+        expect(byId(f, "box2").getAttribute("lang")).toBe("fr");
+        expect(f.history.undoDescriptionL10nKey).toBeUndefined();
+    });
+
+    it("closes when an async doTransaction begun inside it settles, taking its description", async () => {
+        const f = setUp();
+        const click = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        let answerFromCSharp!: () => void;
+        const answered = new Promise<void>((resolve) => {
+            answerFromCSharp = resolve;
+        });
+        const paste = f.history.doTransaction(
+            "EditTab.Undo.Paste",
+            async () => {
+                byId(f, "box2").setAttribute("lang", "es");
+                await answered;
+                byId(f, "img1").setAttribute("src", "b.png");
+            },
+        );
+        expect(click.end()).toBe(false);
+        expect(f.history.hasOpenTransaction).toBe(true);
+
+        answerFromCSharp();
+        await paste;
+
+        expect(f.history.hasOpenTransaction).toBe(false);
+        expect(f.history.undoDescriptionL10nKey).toBe("EditTab.Undo.Paste");
+        await f.history.undo();
+        expect(byId(f, "img1").getAttribute("src")).toBe("a.png");
+        expect(byId(f, "box2").getAttribute("lang")).toBe("fr");
+    });
+
+    it("waits for the last of several transactions begun inside it", () => {
+        const f = setUp();
+        const click = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        const first = f.history.beginTransaction("EditTab.Undo.First");
+        byId(f, "img1").setAttribute("src", "b.png");
+        click.end();
+        const second = f.history.beginTransaction("EditTab.Undo.Second");
+        byId(f, "box2").setAttribute("lang", "es");
+        expect(second.end()).toBe(false);
+        expect(f.history.hasOpenTransaction).toBe(true);
+        expect(first.end()).toBe(true);
+        expect(f.history.undoDescriptionL10nKey).toBe("EditTab.Undo.First");
+    });
+
+    it("closes with whatever else changed when the transaction begun inside it is cancelled", async () => {
+        const f = setUp();
+        const click = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        byId(f, "box2").setAttribute("lang", "es");
+        const dialog = f.history.beginTransaction("EditTab.Undo.Dialog");
+        byId(f, "img1").setAttribute("src", "b.png");
+        click.end();
+
+        dialog.cancel();
+
+        expect(byId(f, "img1").getAttribute("src")).toBe("a.png");
+        expect(f.history.hasOpenTransaction).toBe(false);
+        expect(f.history.undoDescriptionL10nKey).toBe(
+            kGenericUndoDescriptionL10nKey,
+        );
+        await f.history.undo();
+        expect(byId(f, "box2").getAttribute("lang")).toBe("fr");
+    });
+
+    it("makes no step when nothing is left after the transaction begun inside it is cancelled", () => {
+        const f = setUp();
+        const click = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        const dialog = f.history.beginTransaction("EditTab.Undo.Dialog");
+        byId(f, "img1").setAttribute("src", "b.png");
+        click.end();
+        dialog.cancel();
+        expect(f.history.hasOpenTransaction).toBe(false);
+        expect(f.history.undoDescriptionL10nKey).toBeUndefined();
+    });
+
+    it("still cancels everything when the general transaction itself is cancelled before its end", () => {
+        const f = setUp();
+        const click = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        byId(f, "box2").setAttribute("lang", "es");
+        const dialog = f.history.beginTransaction("EditTab.Undo.Dialog");
+        byId(f, "img1").setAttribute("src", "b.png");
+        click.cancel();
+        expect(byId(f, "img1").getAttribute("src")).toBe("a.png");
+        expect(byId(f, "box2").getAttribute("lang")).toBe("fr");
+        expect(f.history.hasOpenTransaction).toBe(false);
+        expect(dialog.end()).toBe(false);
+    });
+
+    it("still throws in development when any other outer transaction ends before an inner one", () => {
+        const f = setUp();
+        const generic = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        const nestedGeneric = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        f.history.beginTransaction("EditTab.Undo.Inner");
+        expect(
+            () => nestedGeneric.end(),
+            "only the outermost general transaction waits",
+        ).toThrow();
+        generic.end();
+        expect(f.history.hasOpenTransaction).toBe(false);
+    });
+});
+
+describe("page history: isDisposed", () => {
+    it("is false until dispose() runs", () => {
+        const f = setUp();
+        expect(f.history.isDisposed).toBe(false);
+        disposeHistory(f);
+        expect(f.history.isDisposed).toBe(true);
+    });
+});
+
 describe("page history: maxUndoSteps", () => {
     it("keeps only the newest steps when given a limit", async () => {
         const f = setUp(kStandardPage, { maxUndoSteps: 3 });
@@ -1453,10 +1733,13 @@ describe("page history: the filter (rule 6)", () => {
     // The filter answers only for the node itself; the history must apply it to everything inside
     // an ignored node.
     const filter: PageHistoryFilter = {
+        ...kKeepEverythingFilter,
         ignoreNode: (node) =>
             node instanceof Element && node.classList.contains("bloom-ui"),
-        ignoreAttribute: (_element, attributeName) =>
-            attributeName === "data-hover",
+        keptAttributeValue: (_element, attributeName, value) =>
+            attributeName === "data-hover" ? undefined : value,
+        valueToPutBack: (_element, attributeName, kept, current) =>
+            attributeName === "data-hover" ? current : kept,
     };
     const kPageWithUi =
         kStandardPage +
@@ -1544,6 +1827,74 @@ describe("page history: the filter (rule 6)", () => {
     });
 });
 
+describe("page history: a node made and thrown away within one batch", () => {
+    // As the overflow checker does: it appends a hidden clone of a box to measure it, changes
+    // styles inside it, and removes it again, all in one task.
+    function measureWithClone(f: IFixture, moveIn?: Node): void {
+        const clone = byId(f, "box1").cloneNode(true) as HTMLElement;
+        clone.removeAttribute("id");
+        clone.querySelectorAll("[id]").forEach((e) => e.removeAttribute("id"));
+        clone.setAttribute(
+            "style",
+            "min-height: 24px; visibility: hidden; position: absolute; width: 450px;",
+        );
+        byId(f, "group").appendChild(clone);
+        const paragraph = clone.querySelector("p") as HTMLElement;
+        paragraph.style.flexGrow = "1";
+        clone.style.flexGrow = "1";
+        (paragraph.firstChild as Text).data = "measured";
+        if (moveIn) {
+            paragraph.appendChild(moveIn);
+            (moveIn as Element).setAttribute("data-x", "1");
+            (moveIn.firstChild as Text).data = "changed";
+        }
+        paragraph.style.flexGrow = "";
+        clone.remove();
+    }
+
+    it("is no change outside any transaction, and keeps redo", async () => {
+        const f = setUp();
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        await f.history.undo();
+        expect(f.history.redoDescriptionL10nKey, "test setup").toBe("A");
+
+        measureWithClone(f);
+        await letObserverDeliver();
+
+        expect(f.unmarked).not.toHaveBeenCalled();
+        expect(f.history.redoDescriptionL10nKey).toBe("A");
+        await f.history.redo();
+        expect(byId(f, "img1").getAttribute("src")).toBe("b.png");
+    });
+
+    it("makes no step inside a transaction", async () => {
+        const f = setUp();
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        await f.history.undo();
+
+        await f.history.doTransaction("Measure", () => measureWithClone(f));
+
+        expect(f.history.undoDescriptionL10nKey).toBeUndefined();
+        expect(f.history.redoDescriptionL10nKey).toBe("A");
+    });
+
+    it("still counts a change to a node of the page that was moved into it", async () => {
+        const f = setUp();
+        const bold = byId(f, "b1");
+        await f.history.doTransaction("Move", () => {
+            measureWithClone(f, bold);
+        });
+        expect(bold.isConnected, "test setup").toBe(false);
+        expect(f.history.undoDescriptionL10nKey).toBe("Move");
+
+        await f.history.undo();
+
+        expect(bold.parentNode).toBe(byId(f, "p1"));
+        expect(bold.hasAttribute("data-x")).toBe(false);
+        expect(bold.textContent).toBe("bold");
+    });
+});
+
 describe("page history: dispose", () => {
     it("makes every later call throw", async () => {
         const f = setUp();
@@ -1580,5 +1931,121 @@ describe("page history: dispose", () => {
         byId(f, "box1").setAttribute("lang", "de");
         await letObserverDeliver();
         expect(f.unmarked).not.toHaveBeenCalled();
+    });
+});
+
+describe("page history: before the page is ready (startsReady false, markPageReady)", () => {
+    it("does not record a change made outside any transaction before ready, nor join it to a step", async () => {
+        const f = setUp(kStandardPage, { startsReady: false });
+        const user = f.history.beginTransaction(kGenericUndoDescriptionL10nKey);
+        byId(f, "box1").setAttribute("data-x", "user");
+        expect(user.end(), "test setup: the user's change makes a step").toBe(
+            true,
+        );
+
+        // Bloom's setup, after the user's step but before ready.
+        byId(f, "box2").setAttribute("data-setup", "1");
+        await letObserverDeliver();
+        expect(f.unmarked).not.toHaveBeenCalled();
+
+        await f.history.undo();
+        expect(
+            byId(f, "box1").hasAttribute("data-x"),
+            "undo should take back the user's change",
+        ).toBe(false);
+        expect(
+            byId(f, "box2").getAttribute("data-setup"),
+            "the setup change joined no step, so undo leaves it",
+        ).toBe("1");
+    });
+
+    it("keeps redo when a change is made outside any transaction before ready", async () => {
+        const f = setUp(kStandardPage, { startsReady: false });
+        await f.history.doTransaction("Test.Edit", () =>
+            byId(f, "box1").setAttribute("data-x", "1"),
+        );
+        await f.history.undo();
+        expect(f.history.redoDescriptionL10nKey).toBe("Test.Edit");
+
+        byId(f, "box2").setAttribute("data-setup", "1");
+        await letObserverDeliver();
+
+        expect(f.history.redoDescriptionL10nKey).toBe("Test.Edit");
+        await f.history.redo();
+        expect(byId(f, "box1").getAttribute("data-x")).toBe("1");
+    });
+
+    it("records a transaction before ready, and undoes it", async () => {
+        const f = setUp(kStandardPage, { startsReady: false });
+        const before = f.page.innerHTML;
+        const click = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        byId(f, "p2").textContent = "Salut";
+        click.end();
+        expect(f.history.undoDescriptionL10nKey).toBe(
+            kGenericUndoDescriptionL10nKey,
+        );
+
+        await f.history.undo();
+        expect(f.page.innerHTML).toBe(before);
+    });
+
+    it("applies rule 1 again once the page is marked ready", async () => {
+        const f = setUp(kStandardPage, { startsReady: false });
+        await f.history.doTransaction("Test.Edit", () =>
+            byId(f, "box1").setAttribute("data-x", "1"),
+        );
+        // Made before ready but not yet delivered when markPageReady is called: still setup.
+        byId(f, "box2").setAttribute("data-setup", "1");
+        f.history.markPageReady();
+        await letObserverDeliver();
+        expect(
+            f.unmarked,
+            "a change made before markPageReady is setup, even if delivered after",
+        ).not.toHaveBeenCalled();
+
+        byId(f, "box2").setAttribute("data-late", "1");
+        await letObserverDeliver();
+        expect(f.unmarked).toHaveBeenCalled();
+
+        await f.history.undo();
+        expect(byId(f, "box1").hasAttribute("data-x")).toBe(false);
+        expect(
+            byId(f, "box2").hasAttribute("data-late"),
+            "after ready, an unmarked change joins the latest step",
+        ).toBe(false);
+        expect(byId(f, "box2").getAttribute("data-setup")).toBe("1");
+    });
+
+    it("refuses an undo when a setup change before ready wrote a value that the step holds (rule 4)", async () => {
+        const f = setUp(kStandardPage, { startsReady: false });
+        await f.history.doTransaction("Test.Edit", () =>
+            byId(f, "box1").setAttribute("data-x", "user"),
+        );
+        byId(f, "box1").setAttribute("data-x", "setup");
+        await letObserverDeliver();
+        expect(
+            f.history.undoDescriptionL10nKey,
+            "test setup: the step should still be there",
+        ).toBe("Test.Edit");
+
+        await f.history.undo();
+
+        expect(
+            byId(f, "box1").getAttribute("data-x"),
+            "a refused undo must leave the page as it is",
+        ).toBe("setup");
+        expect(f.history.undoDescriptionL10nKey).toBeUndefined();
+    });
+
+    it("starts ready by default", async () => {
+        const f = setUp();
+        await f.history.doTransaction("Test.Edit", () =>
+            byId(f, "box1").setAttribute("data-x", "1"),
+        );
+        byId(f, "box2").setAttribute("data-late", "1");
+        await letObserverDeliver();
+        expect(f.unmarked).toHaveBeenCalled();
     });
 });

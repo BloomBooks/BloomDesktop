@@ -3,6 +3,12 @@
 // headless Edge (the "browser" vitest project). The rest of the contract is tested in
 // pageHistorySpec.ts.
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { removeTableEditingArtifacts } from "bloom-table";
+import {
+    createEditTimeMarkupFilter,
+    isInsideEditTimeElement,
+    keptAttributeValue,
+} from "./editTimeMarkup";
 import { createPageHistory } from "./pageHistory";
 import type { PageHistory } from "./pageHistoryTypes";
 
@@ -214,5 +220,183 @@ describe("page history in a real browser: a subtree changed after removal", () =
         );
         await f.history.redo();
         expect(f.page.outerHTML).toBe(finalHtml);
+    });
+});
+
+describe("the edit-time markup filter in a real browser", () => {
+    function setUpWithFilter(
+        innerHtml: string,
+        onUnmarkedChange = vi.fn<(whatChanged: string) => void>(),
+    ): { page: HTMLElement; history: PageHistory } {
+        page = document.createElement("div");
+        page.className = "bloom-page";
+        page.innerHTML = innerHtml;
+        document.body.appendChild(page);
+        history = createPageHistory({
+            root: page,
+            filter: createEditTimeMarkupFilter(),
+            onUnmarkedChange,
+        });
+        return { page, history };
+    }
+
+    it("ignores the style and class writes that niceScroll makes, after Chromium rewrites the attribute", async () => {
+        const unmarked = vi.fn<(whatChanged: string) => void>();
+        const { page, history } = setUpWithFilter(
+            '<div class="bloom-translationGroup bloom-vertical-align-center" id="group">' +
+                '<div class="bloom-editable bloom-visibility-code-on" id="box" style="color:#FF0000;margin:0">' +
+                "<p>text</p></div></div>" +
+                '<img id="img" src="a.png">',
+            unmarked,
+        );
+        await history.doTransaction("A", () =>
+            byId(page, "img").setAttribute("src", "b.png"),
+        );
+        await history.undo();
+
+        const box = byId(page, "box");
+        box.style.overflowY = "hidden";
+        box.style.outline = "none";
+        box.style.width = "40px";
+        const group = byId(page, "group");
+        group.classList.remove("bloom-vertical-align-center");
+        group.classList.add("bloom-vertical-align-center-removed");
+        await letObserverDeliver();
+        expect(
+            box.getAttribute("style"),
+            "test setup: Chromium should have rewritten the authored values",
+        ).not.toContain("#FF0000");
+        // As cleanupNiceScroll does.
+        box.style.overflow = "";
+        box.style.outline = "";
+        box.style.width = "";
+        group.classList.remove("bloom-vertical-align-center-removed");
+        group.classList.add("bloom-vertical-align-center");
+        await letObserverDeliver();
+
+        expect(unmarked).not.toHaveBeenCalled();
+        expect(history.redoDescriptionL10nKey).toBe("A");
+    });
+
+    it("drops exactly what bloom-table's save cleanup removes from a table", () => {
+        const { page } = setUpWithFilter(
+            '<div class="bloom-table table--selected bloom-current-table bloom-pointer-near" id="table" data-column-widths="fill,fill">' +
+                '<div class="bloom-cell cell--selected bloom-pulse-fill bloom-pulse-border" id="cell1" data-content-type="text" style="--hint-top-color: red; --hint-left-color: blue; grid-column: 1;"></div>' +
+                '<div class="bloom-cell" id="cell2" data-btable-anchor-name="--a" style="anchor-name: --a; color: blue;"></div>' +
+                '<div data-table-overlay="1" id="overlay"><span id="inOverlay"></span></div>' +
+                "</div>",
+        );
+        // Turn off the history, so that it does not see the cleanup.
+        history?.dispose();
+        history = undefined;
+        const before = new Map<Element, Map<string, string>>();
+        page.querySelectorAll("*").forEach((element) =>
+            before.set(
+                element,
+                new Map(
+                    element
+                        .getAttributeNames()
+                        .map((name) => [name, element.getAttribute(name)!]),
+                ),
+            ),
+        );
+        expect(before.size, "test setup").toBe(5);
+
+        removeTableEditingArtifacts(document);
+
+        before.forEach((attributes, element) => {
+            if (!page.contains(element)) {
+                expect(
+                    isInsideEditTimeElement(element),
+                    `the save removed <${element.tagName} id=${element.id}>`,
+                ).toBe(true);
+                return;
+            }
+            const names = new Set([
+                ...attributes.keys(),
+                ...element.getAttributeNames(),
+            ]);
+            names.forEach((name) => {
+                const after = element.getAttribute(name) ?? undefined;
+                expect(
+                    keptAttributeValue(element, name, attributes.get(name)),
+                    `the save should change only the edit-time part of ${name} on #${element.id}`,
+                ).toBe(keptAttributeValue(element, name, after));
+                if (after === undefined) return;
+                expect(
+                    keptAttributeValue(element, name, after),
+                    `the rules should drop nothing that the save left in ${name} on #${element.id}`,
+                ).toBeDefined();
+            });
+            const keptClassCount = (
+                keptAttributeValue(
+                    element,
+                    "class",
+                    element.getAttribute("class") ?? undefined,
+                ) ?? ""
+            )
+                .split(" ")
+                .filter((t) => t).length;
+            expect(keptClassCount, `the classes of #${element.id}`).toBe(
+                element.classList.length,
+            );
+            const scratch = document.createElement("div");
+            scratch.setAttribute(
+                "style",
+                keptAttributeValue(
+                    element,
+                    "style",
+                    element.getAttribute("style") ?? undefined,
+                ) ?? "",
+            );
+            expect(scratch.style.length, `the style of #${element.id}`).toBe(
+                (element as HTMLElement).style.length,
+            );
+        });
+        expect(byId(page, "cell1").getAttribute("style")).toBe(
+            "grid-column: 1;",
+        );
+    });
+});
+
+describe("page history in a real browser: a node made and thrown away within one batch", () => {
+    // As the overflow checker does after an undo: a hidden clone of a box is appended, styled
+    // inside, and removed in one task. Unlike jsdom, the browser reports changes made to the
+    // clone after its removal too.
+    it("keeps redo when a measuring clone comes and goes, and still records a moved page node", async () => {
+        const unmarked = vi.fn<(whatChanged: string) => void>();
+        const { page, history } = setUp(unmarked);
+        await history.doTransaction("A", () =>
+            byId(page, "img1").setAttribute("src", "b.png"),
+        );
+        await history.undo();
+
+        const box1 = byId(page, "box1");
+        const clone = box1.cloneNode(true) as HTMLElement;
+        clone.removeAttribute("id");
+        clone.querySelectorAll("[id]").forEach((e) => e.removeAttribute("id"));
+        box1.parentElement!.appendChild(clone);
+        const paragraph = clone.querySelector("p") as HTMLElement;
+        paragraph.style.flexGrow = "1";
+        clone.style.flexGrow = "1";
+        clone.remove();
+        paragraph.style.flexGrow = "2";
+        await letObserverDeliver();
+
+        expect(unmarked).not.toHaveBeenCalled();
+        expect(history.redoDescriptionL10nKey).toBe("A");
+
+        const bold = byId(page, "p1").querySelector("b") as HTMLElement;
+        await history.doTransaction("Move", () => {
+            const holder = document.createElement("div");
+            box1.parentElement!.appendChild(holder);
+            holder.appendChild(bold);
+            holder.remove();
+            bold.setAttribute("data-x", "1");
+        });
+        expect(history.undoDescriptionL10nKey).toBe("Move");
+        await history.undo();
+        expect(bold.parentElement).toBe(byId(page, "p1"));
+        expect(bold.hasAttribute("data-x")).toBe(false);
     });
 });

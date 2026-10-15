@@ -1,12 +1,11 @@
 import ToolboxToolReactAdaptor from "../../toolboxToolReactAdaptor";
 import { DecodableReaderToolControls } from "./DecodableReaderToolControls";
 import { beginInitializeDecodableReaderTool } from "../readerTools";
-import { getTheOneReaderToolsModel, MarkupType } from "../readerToolsModel";
+import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import { get } from "../../../../utils/bloomApi";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { renderRoot } from "../../../../utils/reactRender";
 import { isLongPressEvaluating, IToolboxSettings } from "../../toolbox";
-import { updateMarkupAfterUndoOrRedo } from "../../pageEditingMarkup";
 import StyleEditor from "../../../StyleEditor/StyleEditor";
 import $ from "jquery";
 
@@ -16,7 +15,7 @@ import $ from "jquery";
 // restoring the current tool state (which includes the saved stage
 // number, sorting type, and current graphemes and words for that stage),
 // and handling certain events such as focsuing in an element (such as
-// a textbox), focusing out of an element, and undo/redo.
+// a textbox) and focusing out of an element.
 export class DecodableReaderTool extends ToolboxToolReactAdaptor {
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
@@ -152,38 +151,6 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
                     return;
                 }
                 getTheOneReaderToolsModel().doMarkup(createCkEditorBookMarks);
-            });
-
-        $(container)
-            .find(".bloom-editable")
-            .focusin(function () {
-                getTheOneReaderToolsModel().noteFocus(this); // 'This' is the element that just got focus.
-            });
-
-        $(container)
-            .find(".bloom-editable")
-            .keydown((e): boolean => {
-                if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) {
-                    // ctrl-z or ctrl-Y
-                    if (
-                        getTheOneReaderToolsModel().currentMarkupType !==
-                        MarkupType.None
-                    ) {
-                        e.preventDefault();
-                        if (e.shiftKey || e.keyCode == 89) {
-                            // ctrl-shift-z or ctrl-y
-                            getTheOneReaderToolsModel().redo();
-                        } else {
-                            getTheOneReaderToolsModel().undo();
-                        }
-                        // Both of those restore a saved innerHTML, which replaces the text
-                        // nodes our highlights are painted over, so the markup has to be
-                        // redone before they can paint anything again (BL-16558).
-                        updateMarkupAfterUndoOrRedo();
-                        return false;
-                    }
-                }
-                return true;
             });
     }
     public configureElements(container: HTMLElement) {

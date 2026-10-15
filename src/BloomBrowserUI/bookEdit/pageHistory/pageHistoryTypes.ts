@@ -24,11 +24,24 @@ export interface BegunTransaction extends Transaction {
     /**
      * Close the transaction. If nothing changed, no undo step is made. Does nothing if the
      * transaction has already ended, including when clearUndoAndRedo() ended it.
+     *
+     * An outermost transaction with kGenericUndoDescriptionL10nKey, the stand-in that Bloom opens
+     * on a real click or key press (rule 2), may be ended while transactions begun inside it are
+     * still open, such as a dialog's: it then stays open, and closes, making its step, when the
+     * last of them ends or is cancelled, as if end() were called then. Ending any other
+     * transaction while one begun inside it is open is a bug in the caller: the inner ones end
+     * with it, and in development it throws.
+     *
+     * Returns true when this call made an undo step, false otherwise: nothing changed, an
+     * outermost transaction is still open around this one, the stand-in waits for transactions
+     * begun inside it, or the transaction had already ended. Only the call that closes the
+     * outermost transaction can make a step, and that is the stand-in's own end() or the end() of
+     * the last transaction that it waited for.
      */
-    end(): void;
+    end(): boolean;
     /**
      * Put back every change made since beginTransaction, and make no undo step. Does nothing if
-     * the transaction has already ended.
+     * the transaction has already ended, or if it is the stand-in and its end() has been called.
      */
     cancel(): void;
 }
@@ -41,15 +54,76 @@ export interface RestoredContent {
 }
 
 /**
- * What the history leaves out. Nodes and attributes that it ignores are never recorded and never
- * put back (rule 6). The real filter, shared with the save path's cleanup, comes in a later step;
- * until then a caller may pass none.
+ * What the history leaves out (rule 6): markup that exists only while editing and that a save
+ * strips. The history records, compares and puts back only the part of each value that a save
+ * keeps, so a change made only to the rest is no change at all, and putting a value back leaves
+ * the rest as it is on the page. editTimeMarkup.ts makes the real one; a caller may pass none, and
+ * then the history keeps everything.
  */
 export interface PageHistoryFilter {
     /** True for a node that the history ignores, together with everything inside it. */
     ignoreNode(node: Node): boolean;
-    /** True for an attribute of a node that is not ignored, whose changes the history ignores. */
-    ignoreAttribute(element: Element, attributeName: string): boolean;
+
+    /**
+     * True for a text node that the history leaves out of child lists while it has this value,
+     * as it does an ignored node: its insertion and removal are no change, and putting back a
+     * child list leaves it where it is. Its text is still recorded and put back, and whether it
+     * is left out must follow from its identity and its text alone, so that putting back its text
+     * puts back whether it is in the child lists. `when` is as for keptText.
+     */
+    isIgnoredText(
+        node: CharacterData,
+        value: string,
+        when: "now" | "earlier",
+    ): boolean;
+
+    /**
+     * The part of an attribute's value that the history records and compares, or undefined when
+     * there is none: the attribute is absent, or a save would drop all of it. Two values that
+     * differ only in what this leaves out must give the same result.
+     */
+    keptAttributeValue(
+        element: Element,
+        attributeName: string,
+        value: string | undefined,
+    ): string | undefined;
+
+    /**
+     * The value to give an attribute when undo or redo puts back the kept part `kept`, while the
+     * attribute's value now is `current`: kept, with the part of current that keptAttributeValue
+     * leaves out. Undefined removes the attribute. keptAttributeValue of the result must be kept.
+     */
+    valueToPutBack(
+        element: Element,
+        attributeName: string,
+        kept: string | undefined,
+        current: string | undefined,
+    ): string | undefined;
+
+    /**
+     * The part of a text node's value that the history records and compares. `when` says whether
+     * value is the node's data now, or the node's data at the start of the batch of records most
+     * recently passed to noteRecords.
+     */
+    keptText(
+        node: CharacterData,
+        value: string,
+        when: "now" | "earlier",
+    ): string;
+
+    /**
+     * The data to write into a text node when undo, redo or a rollback puts back the kept text
+     * `kept`. Called just before the history writes it, so a filter may first bring state
+     * outside the DOM in line with the write.
+     */
+    textToPutBack(node: CharacterData, kept: string): string;
+
+    /**
+     * Called once with no records when the history starts observing root, and then with every
+     * batch of records the history takes, before it reads any value from them. A filter whose
+     * rules depend on state outside the DOM notes that state here.
+     */
+    noteRecords(root: Element, records: MutationRecord[]): void;
 }
 
 export interface PageHistoryOptions {
@@ -58,6 +132,12 @@ export interface PageHistoryOptions {
     filter?: PageHistoryFilter;
     /** How many undo steps to keep; the oldest go first. Default 50, as the one stack today. */
     maxUndoSteps?: number;
+    /**
+     * False for a history that starts before the page is ready, while Bloom is still setting the
+     * page up: until markPageReady() is called, a change made outside any transaction is not
+     * recorded, as if made inside doOutsideHistory. Default true.
+     */
+    startsReady?: boolean;
     /**
      * Called when a change made outside any transaction, and not inside addToLatestTransaction or
      * doOutsideHistory, joins the latest transaction (rule 1). The text names the node and
@@ -75,7 +155,10 @@ export interface PageHistory {
      * If fn throws, the changes made since this call are put back at once and the error is
      * rethrown (rule 9). Called while another transaction is open, it nests inside it: it makes
      * no undo step of its own, and a failure puts back only the changes since it began
-     * (APPROACHES 11.8.1, "Transactions inside transactions").
+     * (APPROACHES 11.8.1, "Transactions inside transactions"). Its description is not used, with
+     * one exception: when the outermost transaction has kGenericUndoDescriptionL10nKey, the first
+     * nested transaction with a different description gives the step that description, unless
+     * it is cancelled or fails.
      */
     doTransaction<T>(
         descriptionL10nKey: string,
@@ -101,6 +184,17 @@ export interface PageHistory {
      * recomputes from other content (rule 3).
      */
     doOutsideHistory<T>(fn: () => T): T;
+
+    /**
+     * Say that Bloom has finished setting the page up, for a history made with startsReady false.
+     * Before this, a change made outside any transaction is not recorded: it makes no step, joins
+     * none, gives no warning and keeps redo, as inside doOutsideHistory, so Bloom's setup is part
+     * of the page as the user found it. Transactions record as usual from the start, so the user's
+     * actions are undoable at once. A setup change to a value that a step holds makes that step's
+     * undo refuse (rule 4). After this, rule 1 applies to every change outside a transaction.
+     * Does nothing more if the history is already ready.
+     */
+    markPageReady(): void;
 
     /**
      * A boundary: drop every undo and redo step. A transaction open at the time ends with them:
@@ -142,6 +236,8 @@ export interface PageHistory {
     readonly redoDescriptionL10nKey: string | undefined;
     /** True while a transaction is open, including one that began inside another. */
     readonly hasOpenTransaction: boolean;
+    /** True once dispose() has run; every other call then throws. */
+    readonly isDisposed: boolean;
 
     /**
      * Stop observing, for the page unload. An open transaction ends; every step is dropped. Any
