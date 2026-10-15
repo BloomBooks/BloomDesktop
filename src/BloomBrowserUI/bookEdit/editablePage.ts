@@ -87,6 +87,12 @@ export interface IPageFrameExports {
     canRedo(): boolean;
     tableCanUndo(): boolean;
 
+    // The new page history (pageHistory/pageHistory.ts). Nothing starts one yet; these are here
+    // so that it can be tried from the console of a running Bloom.
+    createPageHistory(options: PageHistoryOptions): PageHistory;
+    startPageHistory(options: PageHistoryOptions): PageHistory;
+    pageHistory(): PageHistory;
+
     addRequestPageContentDelay(id: string): void;
     removeRequestPageContentDelay(id: string): void;
 
@@ -160,6 +166,15 @@ import type {
     IAiImageEditorCommitResult,
 } from "./aiImageEditor/aiImageEditorShared";
 import type { IPageMetrics } from "./js/imageTargetResolution";
+import {
+    createPageHistory,
+    pageHistory,
+    startPageHistory,
+} from "./pageHistory/pageHistory";
+import type {
+    PageHistory,
+    PageHistoryOptions,
+} from "./pageHistory/pageHistoryTypes";
 export {
     getBodyContentForSavePage,
     requestPageContent,
@@ -185,6 +200,9 @@ export {
     showGamePromptDialog,
     applyAiImageEditorReplacements,
     getAiImageEditorPageMetrics,
+    createPageHistory,
+    startPageHistory,
+    pageHistory,
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
 import { postString } from "../utils/bloomApi";
@@ -481,6 +499,9 @@ interface EditablePageBundleApi {
     handleRedo: typeof handleRedo;
     canRedo: typeof canRedo;
     tableCanUndo: typeof tableCanUndo;
+    createPageHistory: typeof createPageHistory;
+    startPageHistory: typeof startPageHistory;
+    pageHistory: typeof pageHistory;
     addRequestPageContentDelay: typeof addRequestPageContentDelay;
     removeRequestPageContentDelay: typeof removeRequestPageContentDelay;
     e2eSetActiveCanvasElementByIndex: typeof e2eSetActiveCanvasElementByIndex;
@@ -567,6 +588,9 @@ window.editablePageBundle = {
     handleRedo,
     canRedo,
     tableCanUndo,
+    createPageHistory,
+    startPageHistory,
+    pageHistory,
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
     e2eSetActiveCanvasElementByIndex,

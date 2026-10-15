@@ -300,7 +300,7 @@ for (const type of ["pointerdown", "keydown", "click"]) {
             const box = e.type === "keydown" ? editableContaining(e.target) : undefined;
             const generic = box && latestIsKeyPressesIn(box) // consecutive key presses in one box
                 ? reopenLatest() // merge into one step
-                : openTransaction(kGeneralEditL10nKey, undefined, { keyPressesIn: box }); // "Undo edit" (§4.1)
+                : openTransaction(kGeneralEditL10nKey, { keyPressesIn: box }); // "Undo edit" (§4.1)
             // A task queued now runs after this event's task and its microtasks. A task queued
             // earlier can still land inside (section 3.2). A drag stays open until pointerup.
             setTimeout(() => closeUnlessDragging(generic));
@@ -556,9 +556,9 @@ gives most components their own descriptions and step boundaries:
 
 - Canvas commands. `control.action(...)` is called in three places: menu rows built from a control
   (`canvasControlRegistry.ts:272`), resolved menu rows (`canvasControlResolution.ts:201`), and
-  toolbar buttons (`CanvasElementContextControls.tsx:363`). Each control has an `l10nId` and
-  `englishLabel` (the `delete` control at `canvasControlRegistry.ts:1317` has `Common.Delete`),
-  which gives the transaction the localizable description §4.1 asks for at no cost. Not every command
+  toolbar buttons (`CanvasElementContextControls.tsx:363`). Each control has an `l10nId` (the
+  `delete` control at `canvasControlRegistry.ts:1317` has `Common.Delete`), which gives the
+  transaction the localizable description §4.1 asks for at no cost. Not every command
   passes through those three:
   - Menu rows that supply their own `onSelect` never call `control.action`
     (`canvasControlRegistry.ts:269-271`, `overrides.onSelect ??`). Rows of this kind are at
@@ -997,7 +997,7 @@ Undo puts the before copy back. CKEditor 4's undo plugin does this for one box, 
 
 ```mermaid
 flowchart LR
-  A["User action"] --> B["pageHistory.doTransaction(descriptionL10nKey, descriptionEnglish, fn)"]
+  A["User action"] --> B["pageHistory.doTransaction(descriptionL10nKey, fn)"]
   B --> C["copy page: clone body, strip derived markup,<br/>CSS rule text, selection"]
   C --> D["fn changes the page"]
   D --> E["copy page again"]
@@ -1036,7 +1036,7 @@ flowchart LR
   whether features keep working.
 - Typing: the system copies the page once per typing step.
 
-**What an author writes.** `pageHistory.doTransaction(descriptionL10nKey, descriptionEnglish, fn)` around a discrete action,
+**What an author writes.** `pageHistory.doTransaction(descriptionL10nKey, fn)` around a discrete action,
 `beginTransaction`/`end` around a drag, `addToLatestTransaction(fn)` in a reaction that should join
 the transaction before it, `doOutsideHistory(fn)` around a value that Bloom recomputes, and
 `onAfterUndoOrRedo` where the component keeps JS state. Most components write
@@ -1075,7 +1075,7 @@ where all match it replaces those parts with the before text.
 
 ```mermaid
 flowchart LR
-  A["User action"] --> B["pageHistory.doTransaction(descriptionL10nKey, descriptionEnglish, fn)"]
+  A["User action"] --> B["pageHistory.doTransaction(descriptionL10nKey, fn)"]
   B --> D["fn changes the page"]
   D --> O["MutationObserver marks the parts touched"]
   O --> E["serialize touched parts,<br/>compare with kept text"]
@@ -1241,7 +1241,7 @@ record's `addedNodes` and putting back its `removedNodes` after `previousSibling
 
 ```mermaid
 flowchart LR
-  A["User action"] --> B["pageHistory.doTransaction(descriptionL10nKey, descriptionEnglish, fn)"]
+  A["User action"] --> B["pageHistory.doTransaction(descriptionL10nKey, fn)"]
   B --> D["fn, CKEditor, browser, libraries<br/>change the page"]
   D --> O["MutationObserver records, filtered"]
   O --> C["per node: value before the first change,<br/>value after the last"]
@@ -1429,7 +1429,7 @@ sequenceDiagram
   participant Hist as pageHistory
   participant Refit as ResizeObserver and refit
   User->>Table: mousedown on a column boundary
-  Table->>Hist: beginTransaction("Resize Column", undefined)
+  Table->>Hist: beginTransaction("Resize Column")
   User->>Table: mousemove, many times
   Table->>Table: data-column-widths, render()
   User->>Table: mouseup
@@ -1659,22 +1659,20 @@ interface PageHistory {
      * and every change made meanwhile joins it, the user's typing included (section 3.0, rule 7).
      * If fn throws, its changes are put back at once and the error is rethrown (section 3.6).
      * fn gets the transaction, through which it records changes to state held in C#
-     * (Transaction, section 11.8.1).
+     * (Transaction, section 11.8.1). Called while another transaction is open, it nests inside
+     * it and makes no undo step of its own (section 11.8.1, "Transactions inside transactions").
      */
     doTransaction<T>(
         descriptionL10nKey: string,
-        descriptionEnglish: string | undefined,
         fn: (transaction: Transaction) => T | Promise<T>,
     ): Promise<T>;
     /**
      * For drags, sliders and dialogs that preview live. If nothing changed by end(), no transaction
      * is made (§17.2). cancel() puts back what changed since beginTransaction and makes no transaction.
      * Only the returned object can end it; see section 11.8.1 for a transaction that is never ended.
+     * Called while another transaction is open, it nests inside it, as doTransaction does.
      */
-    beginTransaction(
-        descriptionL10nKey: string,
-        descriptionEnglish: string | undefined,
-    ): Transaction & { end(): void; cancel(): void };
+    beginTransaction(descriptionL10nKey: string): Transaction & { end(): void; cancel(): void };
     /**
      * Bloom's own change, joined to the latest transaction, where an unmarked change made outside any
      * input goes anyway (section 3.0, rule 1). The call says that a reviewer has thought about the
@@ -1702,14 +1700,10 @@ interface PageHistory {
     undo(): Promise<void>;
     redo(): Promise<void>;
     readonly undoDescriptionL10nKey: string | undefined; // for "Undo Delete" (§4.1)
-    readonly undoDescriptionEnglish: string | undefined;
     readonly redoDescriptionL10nKey: string | undefined;
-    readonly redoDescriptionEnglish: string | undefined;
 }
-// descriptionL10nKey is the l10n key of the action's description. descriptionEnglish is the English
-// description, needed only when the English XLF file does not have that key; a caller whose key is in
-// that file passes undefined. The two always come first, key then English. The Undo button shows
-// "Undo <description>".
+// descriptionL10nKey is the l10n key of the action's description, whose English is in the English
+// XLF. The Undo button shows "Undo <description>".
 ```
 
 A real click or key press that changes the page while no transaction is open opens one with the
@@ -1728,12 +1722,8 @@ the order of one undo. Section 11.8.5 gives the rule for files.
 Shared by all three:
 
 ```ts
-async function doTransaction<T>(
-    descriptionL10nKey: string,
-    descriptionEnglish: string | undefined,
-    fn: () => T | Promise<T>,
-): Promise<T> {
-    const transaction = openTransaction(descriptionL10nKey, descriptionEnglish);
+async function doTransaction<T>(descriptionL10nKey: string, fn: () => T | Promise<T>): Promise<T> {
+    const transaction = openTransaction(descriptionL10nKey);
     try {
         const result = await fn();
         closeTransaction(transaction);
@@ -1755,7 +1745,6 @@ interface PageCopy {
 }
 interface SnapshotTransaction {
     descriptionL10nKey: string;
-    descriptionEnglish?: string;
     before: PageCopy;
     after: PageCopy;
 }
@@ -1778,7 +1767,6 @@ Snapshot diffs:
 type PartKey = string;
 interface DiffTransaction {
     descriptionL10nKey: string;
-    descriptionEnglish?: string;
     parts: Map<PartKey, { before: string; after: string }>;
     selectionBefore: PathBookmark;
     selectionAfter: PathBookmark;
@@ -1807,7 +1795,6 @@ interface NodeChange {
 }
 interface MutationTransaction {
     descriptionL10nKey: string;
-    descriptionEnglish?: string;
     nodes: Map<Node, NodeChange>;
     removedAsText: Map<Node, string>; // each removed subtree, serialized when it was removed
     selectionBefore: StaticRange; // node and offset stay valid, because nodes are kept
@@ -1848,7 +1835,6 @@ function undoTransaction(transaction: MutationTransaction): void {
 interface UndoElement {
     // after VS Code's IResourceUndoRedoElement
     descriptionL10nKey: string;
-    descriptionEnglish?: string;
     undo(): void | Promise<void>;
     redo(): void | Promise<void>;
 }
@@ -1899,15 +1885,14 @@ The places to change are the Delete key and the menu rows built from a control
 (`canvasControlRegistry.ts:269-273`, where `control.action` is called at `:272`). The same wrapper
 goes around the two other calls of `control.action` (`canvasControlResolution.ts:201`,
 `CanvasElementContextControls.tsx:363`) and around the menu rows that supply their own `onSelect`
-(section 3.2). A control's `l10nId` is the l10n key of the transaction's description, and its
-`englishLabel` is the optional English.
+(section 3.2). A control's `l10nId` is the l10n key of the transaction's description.
 
 **Page snapshots.**
 
 ```ts
 // CanvasElementKeyboardProvider.ts:72
 if (event.key === "Delete" || event.key === "Backspace") {
-    void pageHistory.doTransaction(kDeleteL10nKey, undefined, () => this.actions.deleteCurrentCanvasElement());
+    void pageHistory.doTransaction(kDeleteL10nKey, () => this.actions.deleteCurrentCanvasElement());
     event.preventDefault();
     return;
 }
@@ -1916,7 +1901,7 @@ if (event.key === "Delete" || event.key === "Backspace") {
 onSelect:
     overrides.onSelect ??
     (async (rowCtx) =>
-        pageHistory.doTransaction(control.l10nId, control.englishLabel, () => control.action(rowCtx, runtime))),
+        pageHistory.doTransaction(control.l10nId, () => control.action(rowCtx, runtime))),
 
 // CanvasElementManager, after an undo or redo
 // Nothing: undo replaces the whole body, and restorePage (case 7.8) sets up every canvas
@@ -1931,7 +1916,7 @@ again. Selecting the restored element (§2.7) needs a path to it, because it is 
 ```ts
 // CanvasElementKeyboardProvider.ts:72
 if (event.key === "Delete" || event.key === "Backspace") {
-    void pageHistory.doTransaction(kDeleteL10nKey, undefined, () => this.actions.deleteCurrentCanvasElement());
+    void pageHistory.doTransaction(kDeleteL10nKey, () => this.actions.deleteCurrentCanvasElement());
     event.preventDefault();
     return;
 }
@@ -1940,7 +1925,7 @@ if (event.key === "Delete" || event.key === "Backspace") {
 onSelect:
     overrides.onSelect ??
     (async (rowCtx) =>
-        pageHistory.doTransaction(control.l10nId, control.englishLabel, () => control.action(rowCtx, runtime))),
+        pageHistory.doTransaction(control.l10nId, () => control.action(rowCtx, runtime))),
 
 // CanvasElementManager, after an undo or redo
 pageHistory.onAfterUndoOrRedo((roots) => {
@@ -2001,7 +1986,7 @@ Every helper here is new code that has to track `deleteCanvasElement` as it chan
 ```ts
 // CanvasElementKeyboardProvider.ts:72
 if (event.key === "Delete" || event.key === "Backspace") {
-    void pageHistory.doTransaction(kDeleteL10nKey, undefined, () => this.actions.deleteCurrentCanvasElement());
+    void pageHistory.doTransaction(kDeleteL10nKey, () => this.actions.deleteCurrentCanvasElement());
     event.preventDefault();
     return;
 }
@@ -2010,7 +1995,7 @@ if (event.key === "Delete" || event.key === "Backspace") {
 onSelect:
     overrides.onSelect ??
     (async (rowCtx) =>
-        pageHistory.doTransaction(control.l10nId, control.englishLabel, () => control.action(rowCtx, runtime))),
+        pageHistory.doTransaction(control.l10nId, () => control.action(rowCtx, runtime))),
 
 // CanvasElementManager, after an undo or redo
 pageHistory.onAfterUndoOrRedo((roots) => {
@@ -2052,18 +2037,11 @@ attribute through `setAspectRatioFromNaturalSize` (`:950`) whenever an image loa
 **Page snapshots, snapshot diffs and recorded mutations.**
 
 ```ts
-// inlineImageInteractions.ts:2247, beginTransactionIfMoved, gains the description's l10n key and
-// English as its first two parameters, from its caller: the move at :1840, the resize at :2116, the
-// crop at :2178
-function beginTransactionIfMoved(
-    descriptionL10nKey: string,
-    descriptionEnglish: string | undefined,
-    state,
-    absDeltaX,
-    absDeltaY,
-): boolean {
+// inlineImageInteractions.ts:2247, beginTransactionIfMoved, gains the description's l10n key as its
+// first parameter, from its caller: the move at :1840, the resize at :2116, the crop at :2178
+function beginTransactionIfMoved(descriptionL10nKey: string, state, absDeltaX, absDeltaY): boolean {
     // ... once the threshold is passed:
-    state.transaction = pageHistory.beginTransaction(descriptionL10nKey, descriptionEnglish);
+    state.transaction = pageHistory.beginTransaction(descriptionL10nKey);
 }
 
 // inlineImageInteractions.ts:2318, onPointerEnd
@@ -2143,7 +2121,7 @@ this.dragState.operation?.end();
 
 // tableEditing.ts:147, installHostHooks
 setOperationReporter({
-    begin: (label) => pageHistory.beginTransaction(tableL10nKey(label), undefined),
+    begin: (label) => pageHistory.beginTransaction(tableL10nKey(label)),
 });
 
 // tableEditing.ts:314, refitImageCellPictures: the refit a frame later joins the drag's transaction
@@ -2377,7 +2355,7 @@ public changeFont(fontname: string) {
     if (this.ignoreControlChanges) {
         return;
     }
-    void pageHistory.doTransaction(kFontL10nKey, undefined, () => {
+    void pageHistory.doTransaction(kFontL10nKey, () => {
         const rule = this.getStyleRule(false);
         if (rule != null) {
             rule.style.setProperty("font-family", fontname, "important");
@@ -2399,7 +2377,7 @@ public changeFont(fontname: string) {
     if (this.ignoreControlChanges) {
         return;
     }
-    void pageHistory.doTransaction(kFontL10nKey, undefined, () => {
+    void pageHistory.doTransaction(kFontL10nKey, () => {
         const rule = this.getStyleRule(false);
         if (rule != null) {
             rule.style.setProperty("font-family", fontname, "important");
@@ -2455,7 +2433,7 @@ public changeFont(fontname: string) {
     if (this.ignoreControlChanges) {
         return;
     }
-    void pageHistory.doTransaction(kFontL10nKey, undefined, () => {
+    void pageHistory.doTransaction(kFontL10nKey, () => {
         const rule = this.getStyleRule(false);
         if (rule != null) {
             rule.style.setProperty("font-family", fontname, "important");
@@ -3340,7 +3318,7 @@ ckedit.on("afterCommandExec", (evt) => typingSteps.closeStep(commandL10nKey(evt.
 // removes are in the same transaction as the pasted text.
 let pasteTransaction: (Transaction & { end(): void; cancel(): void }) | undefined;
 ckeditor.on("paste", (event) => {
-    pasteTransaction = pageHistory.beginTransaction(kPasteL10nKey, undefined);
+    pasteTransaction = pageHistory.beginTransaction(kPasteL10nKey);
     // ... the existing rewriting of event.data.dataValue ...
 });
 ckeditor.on("afterPaste", () => {
@@ -3353,7 +3331,7 @@ ckeditor.on("afterPaste", () => {
 // bloomEditing.ts:1806, the top bar's Paste button: async, so the transaction stays open while the
 // clipboard is read (rule 7).
 export const pasteClipboard = (imageAvailable: boolean) => {
-    void pageHistory.doTransaction(kPasteL10nKey, undefined, () =>
+    void pageHistory.doTransaction(kPasteL10nKey, () =>
         wrapWithRequestPageContentDelay(() => pasteImpl(imageAvailable), "pasteImpl"),
     );
 };
@@ -3453,7 +3431,7 @@ later task and joins the latest transaction (rule 1).
 // ImageGalleryDialog.tsx:148, in the root window. The C# call is not page state, so the
 // transaction covers only the page change, after the reply.
 const result = await postJsonAsync("imageGallery/imageGalleryResult", request);
-await pageHistory().doTransaction(kChangeImageL10nKey, undefined, () =>
+await pageHistory().doTransaction(kChangeImageL10nKey, () =>
     changeImageByElement(props.img, { ...result, undoable: "true" }),
 );
 
@@ -3463,7 +3441,7 @@ export function changeImage(imageInfo: IImageInfo) {
         // C# wrote over a file that an earlier state uses (section 11.8.5): a boundary.
         pageHistory.clearUndoAndRedo();
     }
-    void pageHistory.doTransaction(kPasteImageL10nKey, undefined, () => {
+    void pageHistory.doTransaction(kPasteImageL10nKey, () => {
         // ... the existing body, without today's image undo calls ...
     });
 }
@@ -3596,7 +3574,7 @@ boundaries, not only re-recording (§4.0 names only re-recording):
 pageHistory().doOutsideHistory(() => sentence.setAttribute("data-duration", duration));
 
 // showAdjustTimingsDialog (:1819): the dialog changes the page when it opens and writes on OK.
-const transaction = pageHistory().beginTransaction(kAdjustTimingsL10nKey, undefined);
+const transaction = pageHistory().beginTransaction(kAdjustTimingsL10nKey);
 // ... OK calls transaction.end(); Cancel calls transaction.cancel(), which also takes out the sentence
 // spans the dialog added when it opened, which today's Cancel leaves in place.
 ```
@@ -3702,7 +3680,7 @@ the book's theme, and clicks OK.
 
 ```ts
 // BookAndPageSettingsDialog.tsx:272, when the dialog opens (in place of the attribute copy)
-const transaction = pageHistory().beginTransaction(kPageSettingsL10nKey, undefined);
+const transaction = pageHistory().beginTransaction(kPageSettingsL10nKey);
 
 // Cancel (:328)
 transaction.cancel(); // puts back everything the preview changed, the pictures' src included
@@ -3853,10 +3831,12 @@ open transaction; and, outside the interface, an interceptor in the API wrapper 
 ```ts
 /** One per page load, in the page frame (section 3.3). Other frames call pageHistory(). */
 interface PageHistory {
-    /** One transaction (section 6.1). fn gets the transaction, to record changes outside the page. */
+    /**
+     * One transaction (section 6.1). fn gets the transaction, to record changes outside the page.
+     * Inside an open transaction it nests (see "Transactions inside transactions" below).
+     */
     doTransaction<T>(
         descriptionL10nKey: string,
-        descriptionEnglish: string | undefined,
         fn: (transaction: Transaction) => T | Promise<T>,
     ): Promise<T>;
     /**
@@ -3866,12 +3846,9 @@ interface PageHistory {
      * A transaction that is never ended would take in every later change. So code that begins one
      * at pointer down also ends it on pointercancel and when the window loses focus, not only on
      * pointer up; a dialog ends or cancels its own when it closes, however it closes; and the
-     * history ends any open transaction when the page unloads.
+     * history ends any open transaction when the page unloads. Inside an open transaction it nests.
      */
-    beginTransaction(
-        descriptionL10nKey: string,
-        descriptionEnglish: string | undefined,
-    ): Transaction & { end(): void; cancel(): void };
+    beginTransaction(descriptionL10nKey: string): Transaction & { end(): void; cancel(): void };
     /**
      * Bloom's own change, joined to the latest transaction (section 6.1, rule 1). fn gets that
      * transaction, available only inside fn; with none, one that records nothing.
@@ -3912,9 +3889,7 @@ interface PageHistory {
     undo(): Promise<void>;
     redo(): Promise<void>;
     readonly undoDescriptionL10nKey: string | undefined;
-    readonly undoDescriptionEnglish: string | undefined;
     readonly redoDescriptionL10nKey: string | undefined;
-    readonly redoDescriptionEnglish: string | undefined;
 }
 
 /**
@@ -3929,8 +3904,10 @@ interface Transaction {
      * records it in this transaction. Undo calls bidirectional(before) or undo(before); redo
      * calls bidirectional(after) or doAndRedo(after). The change's functions are the only code
      * that sets the state: the action does not make the change separately. If this transaction
-     * has already ended (clearUndoAndRedo ran meanwhile), it still calls bidirectional(after) or
-     * doAndRedo(after) and records nothing.
+     * was ended by clearUndoAndRedo, it still calls bidirectional(after) or doAndRedo(after) and
+     * records nothing, since a boundary is not the caller's mistake. If it closed normally (its
+     * doTransaction's fn returned, or end() or cancel() was called), it throws: code that kept a
+     * transaction and used it later would otherwise add a change to an older transaction.
      */
     addChangeOutsidePage<T>(change: ChangeOutsidePage<T>): Promise<void>;
 }
@@ -3992,6 +3969,35 @@ function pageHistory(): PageHistory {
     return getEditablePageBundleExports()!.pageHistory;
 }
 ```
+
+**Transactions inside transactions.** A `doTransaction` or `beginTransaction` that starts while
+another transaction is open nests inside it, and says nothing to make that happen. That is what
+lets a helper wrap itself: `changeImageByElement` can run in its own `doTransaction`, so that it is
+one undo step when called alone, and still work when a paste that has its own transaction calls
+it. If nesting had to be declared, or were forbidden, the helper would need to know who calls it.
+
+An inner transaction is a point inside the outer one that the history can roll back to. Databases
+call this a savepoint (SQL's `SAVEPOINT` and `ROLLBACK TO SAVEPOINT`); Django's `atomic()` blocks
+nest the same way, with no declaration.
+
+- **The inner one finishes normally** (its `fn` returns, or `end()`): its changes stay in the outer
+  transaction, and nothing else happens.
+- **The inner one fails** (its `fn` throws, or `cancel()`): only the changes made since it began are
+  put back: the page changes, by reversing the `MutationObserver` records since that point, newest
+  first, from the old values that the records carry; and the changes outside the page made since
+  then, newest first. The outer transaction carries on, so rule 9 (an action that throws is rolled
+  back) holds for the helper without losing the work before it. An inner `fn` that throws rethrows
+  as usual, and the outer code may catch it or let it end the outer transaction too.
+- **Only the outermost transaction makes an undo step**, with its own description. An inner
+  description is not used, with one exception: the "Undo edit" transaction that Bloom opens on a
+  real click or key press (rule 2) is a stand-in, so the first `doTransaction` or
+  `beginTransaction` inside it gives it its description, and the step reads, say, "Undo Delete".
+- **An inner transaction must end before the outer one.** Ending the outer one while an inner one
+  is still open (an inner `beginTransaction` not yet ended, or an inner async `fn` still running)
+  is a bug in the code that began them, and it throws in development.
+- **A transaction that has closed accepts nothing more.** `addChangeOutsidePage` on it throws,
+  whether it closed as an inner one or an outermost one; see `Transaction` above. Only a transaction
+  that `clearUndoAndRedo()` ended still makes the change and records nothing.
 
 Order of one undo (redo is the same with after values):
 
@@ -4273,7 +4279,7 @@ A dialog that changes book metadata, under these conditions:
 // 3.3). ICopyrightAndLicenseData (:40) is the type that the dialog already GETs and POSTs.
 // props.data is what the dialog's GET returned when it opened (:478-483); gatherData() (:158) is
 // what the user set.
-await pageHistory().doTransaction(kCopyrightLicenseL10nKey, undefined, (transaction: Transaction) =>
+await pageHistory().doTransaction(kCopyrightLicenseL10nKey, (transaction: Transaction) =>
     transaction.addChangeOutsidePage({
         before: props.data,
         after: gatherData(),
@@ -4363,7 +4369,7 @@ image editor (section 3.4), sign language videos (`src/BloomExe/web/controllers/
 an existing file has to let that re-encode through).
 
 **An option, not decided: snapshots of the files that an action lists.** An action lists the files
-that it will change in place, for example `doTransaction(key, undefined, fn, { files: ["audio/abc.mp3"] })`. Before the
+that it will change in place, for example `doTransaction(key, fn, { files: ["audio/abc.mp3"] })`. Before the
 action runs, each listed file is moved aside (moved, not copied); a listed file that does not exist
 is recorded as absent. Undo and redo swap the versions back with renames. This would make the
 actions that write over a file in place undoable without changing Bloom's file names:
