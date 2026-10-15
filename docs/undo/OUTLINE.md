@@ -1,8 +1,9 @@
 # Undo in Bloom: outline
 
 Status: outline for discussion (2026-10-14). This file lists every topic we need to think through
-before we write a plan. Items marked **(?)** are open questions. The requirement lists are first
-guesses to argue about, not decisions.
+before we write a plan. Items marked **(?)** are open questions, gathered in §14. Items marked
+"agreed" are decided, provisionally in the sense of §1 goal 7; the rest of the requirement lists
+are drafts to argue about.
 
 Today's undo implementation is deliberately left out of this document.
 
@@ -22,9 +23,15 @@ dialog should need zero or a few lines of undo code. Today a component can spend
 code on undo; the goal is to stop that.
 3. **Users get what they expect.** Undo undoes the last thing the user did, whatever kind of
 thing it was, in the order they did it. Redo reverses that.
-4. **Undo never damages a book.** A wrong or partial undo is worse than no undo.
+4. **Undo never damages a book.** A wrong or partial undo is worse than no undo. Any design that
+could lead to corruption must be rejected outright. We can't just rely on extensive testing to make
+sure we didn't corrupt anything. So undo and redo only ever return the page to a state that it was in
+(APPROACHES §3.0).
 5. **The design does not depend on CKEditor's behaviour**, whether we patch it, replace it, or
-retire it.
+retire it. Whether CKEditor will ever be removed is uncertain, so approaches are judged on their
+merits apart from CKEditor, with the cost of making CKEditor fit counted separately. If one
+approach is far better except for CKEditor, we choose it and adapt CKEditor (goal 6); we do not
+settle for a lesser approach because of CKEditor.
 6. **We change a library when that is simpler than adapting around it.** This applies to
 CKEditor (see §2.9) and equally to `bloom-table`, `comicaljs`, and any other library.
 7. **Behaviour decisions stay cheap to change.** UX is settled by trying it and watching people,
@@ -33,6 +40,12 @@ the plan must guarantee is that moving an action to another kind later is cheap.
 outcome to avoid: "we didn't foresee that X should be undoable, and now it is expensive to
 retrofit." Example: some toolbox actions, even ones that change state outside the page, may
 need to be undoable.
+8. **Arrives in small steps.** The change ships as many small PRs, with Bloom shippable after
+each, and the steps can be cut along several lines: which component moves, which of a
+component's actions move, and which features come at all. Redo can come later: Bloom has no Redo
+button, so few users know Ctrl+Y exists. While actions are still moving, a step may lose history
+in cases not yet moved, or show an action not moved yet with the general description, but never
+damages a book (goal 4).
 
 How far back undo reaches: the current page only (§5), with the boundaries in §4.0.
 
@@ -51,7 +64,7 @@ hyperlinks.
 - **Text box properties**: style chosen for a box, box-level classes and attributes.
 - **Translation groups**: the same box in several languages; changes to which languages show.
 - **Images**: choose or replace an image, crop/pan/zoom, image description text, AI image edits.
-- **Canvas elements**: add, delete, duplicate, move, resize, rotate(?), change z-order, change
+- **Canvas elements**: add, delete, duplicate, move, resize, rotate (?), change z-order, change
 bubble style or tail, change element type, background image.
 - **Video**: insert, replace, trim (processing writes a file).
 - **Widgets** (HTML activity elements).
@@ -74,26 +87,27 @@ recording mode and highlight settings, sign language video, reader-tool markup.
 copyright...). Editing one copy changes the others, but only when the user switches pages, which
 is a boundary (4.0). Until then the edit is ordinary content of the current page.
 - Copyright and license.
-- Style definitions the user changes (they live in the book's stylesheet, so they affect every
-page).
+- Style definitions the user changes. They end up in the book's stylesheet and affect every page,
+but until the page is saved they live in the current page (§16), so for undo they are ordinary
+page content.
 
 ### 2.4 Book settings
 
 - Page size and orientation, cover colour, xmatter choice, appearance/theme settings, languages
 of the book, topic, features recorded in the book's metadata.
-- (?) Are these undoable at all, or is "change it back in the dialog" enough?
+- Changing them is a boundary, with undo as a nice-to-have (§4.0, §4.2).
 
 ### 2.5 Files on disk
 
 - Images added or replaced, audio recordings (including re-recording over an existing clip),
 videos, music files, image metadata stored inside image files.
 - Cleanup of files no longer referenced: if undo brings a reference back, the file must still
-exist.
+exist. Today a replaced image keeps its old file until a book is selected or the page
+orientation changes, which is a boundary (§16).
 
 ### 2.6 Collection-level state
 
-- Collection settings, collection membership of books, book order. Probably out of scope; list it
-so we decide explicitly.
+- Collection settings, collection membership of books, book order. Not undoable (§4.3).
 - Leveled and decodable reader word lists and stages: stored for the whole collection, but edited
 while working on a book.
 
@@ -155,9 +169,11 @@ The single event has to span 2.1, 2.3, 2.4 and 2.5.
 
 ### 2.12 Parts of Bloom in external libraries
 
-- tables (`bloom-table`, a BloomBooks repo, pinned to a dist tag)
+- tables (`bloom-table`, a BloomBooks repo, pinned to a dist tag). Keeps its own undo history
+today (§17.3).
 - speech bubbles and tails on canvas elements (`comicaljs`, also ours). It keeps bubble state in
-JS objects as well as in the DOM, so it is also a 2.14 case.
+JS objects as well as in the DOM, so it is also a 2.14 case; the JS state can be rebuilt from
+the DOM (§16).
 
 ### 2.13 things in the c# variables
 
@@ -178,40 +194,43 @@ it drops its listeners.
 - Observers and timers (`MutationObserver`, `ResizeObserver`, pending timeouts) watching or acting
 on the page.
 - Open connections between the front end and C#, such as websockets.
-- (?) Are these state that undo restores, or things that get set up again after content is
-restored?
+- After undo or redo, every feature on the page must work as it did before (§4.4 item 4). Whether
+that means restoring these or setting them up again is an implementation question.
 
 ## 3. Kinds of change
 
 A classification of user actions, because the central system has to handle each shape.
 
-- **Discrete**: one click, one entry (delete a canvas element).
+- **Discrete**: one click, one transaction (delete a canvas element).
 - **Continuous**: dragging, resizing, slider movement, typing.
-  - Dragging, resizing, a slider: one entry per gesture, from mouse down to mouse up (agreed).
+  - Dragging, resizing, a slider: one transaction per gesture, from mouse down to mouse up (agreed).
   - Typing: we do not make our own rules. Users carry subconscious expectations from a decade of
   typing in the editors they use every day, so typing undoes in the steps those editors use.
   We may well leave this to CKEditor or to the browser's own `contenteditable` undo and not
   decide typing steps ourselves (§2.9, §7). Only if we take it on do we need to find out what
   Chrome, Microsoft Word and Google Docs do, and reason about any differences.
 - **Compound**: one action changes several kinds of state at once (delete a canvas element that
-has a recording). One entry, never several (agreed).
-- **Made inside a dialog**: (?) one entry per OK? What about dialogs that apply changes live?
+has a recording). One transaction, never several (agreed).
+- **Made inside a dialog**: one transaction per OK (§2.11); changes a dialog previews live while open
+are not recorded.
   - StyleEditor format dialog: applies each change live and has no Cancel. Provisionally, each
-  change is its own entry.
+  change is its own transaction.
 - **Asynchronous**: an operation that runs in the background while the user can keep working on
-the page, and changes state when it finishes. We may have none; this is a theoretical case
-recorded so it gets an answer. Intuition: such an operation is not undoable. Since it changes
-content, it can't be a view change, so by the §4.0 rule its completion would be a boundary.
-An operation that blocks the page until it finishes (behind a progress dialog, say) is not in
-this category; it is an ordinary action. Small ones do exist (§16): link-grid thumbnails,
-Talking Book audio import, short image-sizing jobs. Agreed: none is undoable; they are changes
-made by Bloom on its own (below).
+the page, and changes state when it finishes. Not undoable. An operation that blocks the page
+until it finishes (behind a progress dialog, say) is not in this category; it is an ordinary
+action. Decided: Bloom never changes page content in the background while the user keeps
+working, except values it recomputes from other content (link-grid thumbnails). A job that does
+is a bug to fix: it blocks until it is done, or it finishes before the next input is handled.
+Follow-on jobs such as the markup pass after typing are finished before the next input, so their
+changes land in the transaction that started them. To check against this (§16): Talking Book
+audio import, and short jobs registered with `wrapWithRequestPageContentDelay` (image sizing,
+pasting a canvas element).
 - **Made by C#**: changes performed in the back end and then shown in the page.
 - **Made by Bloom on its own**: normalising or migrating a page on load, splitting text into
 sentences for talking book, auto-fit layout, CKEditor's own changes to the DOM. Not undoable
 (agreed for: Talking Book's sentence spans added when the tool opens, link-grid thumbnails,
-which are derived state, background audio import, which is probably unintentional if it is in
-the background, image sizing). They are untracked changes (§4.0, kind 4).
+which are derived state, image sizing). They are untracked changes (§4.0, kind 4): never a transaction of
+their own, but undone along with a user change they follow from (§4.4 item 3).
 - **Across frames**: the page, the toolbox and the page list are separate frames; a change can
 start in one and land in another.
 
@@ -222,16 +241,18 @@ start in one and land in another.
 ### 4.0 Not every action needs undo
 
 There is a tendency to assume things need to be undoable when they do not. Some user actions are
-boundaries: they end the undo history instead of being entries in it. Every action falls into one
+boundaries: they end the undo history instead of being transactions in it. Every action falls into one
 of four kinds:
 
-1. **Undoable**: recorded as an entry in the history.
+1. **Undoable**: recorded as a transaction in the history.
 2. **Boundary**: clears the history; Undo is unavailable immediately after it.
-   - (?) Boundaries Bloom causes, not the user: with flow text, typing can hand the caret to the
+   - Boundaries Bloom causes, not the user: with flow text, typing can hand the caret to the
     next page (a real page switch), and a refit can add pages, delete the current page, or
-    navigate (§17).
+    navigate (§17.1). These clear the history like any boundary; acceptable under §4.4 item 2
+    (undo may work poorly with flow text, but must not damage the book).
    - Agreed: switching to another page, adding a page, deleting a page (Bloom already asks the
-    user to confirm in a dialog), moving a page, duplicating a page, leaving the Edit tab.
+    user to confirm in a dialog), moving a page, duplicating a page, leaving the Edit tab,
+   opening Talking Book when it splits text into sentence spans (a starting point; §4.4 item 3).
    - Agreed as the minimum, with undo as a nice-to-have (4.2):
      - changing book settings. It can re-lay out the current page, so it can't be a view
       change. A user may reasonably click OK, see the result, and want it back.
@@ -242,16 +263,25 @@ of four kinds:
 3. **View change**: not recorded, and the history continues past it (zoom, scrolling, opening a
 tool; the markup Talking Book adds when opened is an untracked change, kind 4). The name follows VS Code, whose editor calls scroll position and cursor "view state"
 (`saveViewState`, `restoreViewState`) and keeps it out of undo history. Allowed only when the action changes nothing an earlier
-entry depends on; otherwise it must be a boundary. Window resize is a view change: Bloom has no
+transaction depends on; otherwise it must be a boundary. Window resize is a view change: Bloom has no
 resize listener on the page (§16); the refits that `ResizeObserver`s make to elements are
 untracked changes (kind 4).
-4. **Untracked**: a change Bloom makes to content on its own, not the user. Never undone, never
-clears the history, and survives undo of the user's changes made before it. Example: the user
-types a sentence, a link-grid thumbnail arrives, the user invokes undo; the sentence goes away
-and the thumbnail stays. The name follows Yjs, whose `UndoManager` records only changes from
-`trackedOrigins` and leaves others in place. Agreed members are listed in §3 under "Made by
-Bloom on its own". Undoing the user's change without reverting a later untracked change is the
-hard part for the mechanism (§15, point 2).
+4. **Untracked**: a change Bloom makes to content on its own, not the user. Never a transaction of its
+own and never clears the history. If it follows from a user's change, it is undone along with
+that change; if it is a value that Bloom recomputes from other content, it survives (§4.4 item 3); any
+other untracked change joins the latest transaction. Example of surviving: the
+user types a sentence, a link-grid thumbnail arrives, the user invokes undo; the sentence goes
+away and the thumbnail stays. The name follows Yjs, whose `UndoManager` records only changes
+from `trackedOrigins` and leaves others in place. Agreed members are listed in §3 under "Made by
+Bloom on its own". Undoing the user's change without reverting a later independent change is the
+hard part for the mechanism (§15, point 2). A user action that no code has wrapped yet is not
+untracked. Agreed: when a real click or key press changes the page and no code has opened a
+transaction for it, Bloom opens one with the general description ("Undo edit", §4.1), so the
+action is its own undo step from the first release; wrapping it later only gives it its own
+description and better step boundaries (APPROACHES §3.0, rule 2). A change made outside any input,
+such as Bloom's reaction a moment after an action (a timer, a picture's load event, code after an
+await), finishes before the next input (§3, Asynchronous) and joins the transaction of the action
+that caused it, which is the latest one (APPROACHES §3.0, rule 1).
 
 Draft test for which kind an action is: it needs undo when the user can't easily get back by
 hand, especially when it can happen by accident (typing over a selection, Delete with a canvas
@@ -272,16 +302,19 @@ replace image (including OK in the AI image editor).
 undo after a save still works.
 - Undo inside a dialog field or toolbox input undoes that field, not the page.
 - The user can read what undo and redo will do before invoking them ("Undo Move Image"). So
-every entry carries a description, and those are localizable strings. Caveat: this may prove
-too many strings to be achievable, or end up vague ("Undo edit" rather than "Undo making that
-text bold italic").
+every transaction can carry a description, and those are localizable strings. Giving each action its
+own description is a nice-to-have (§4.2); a transaction without one shows a general description
+("Undo edit" rather than "Undo making that text bold italic").
 - The undo/redo commands' enabled state is correct.
 
 ### 4.2 Nice to have (draft)
 
+- Each action supplies its own description for the undo and redo commands ("Undo Move Image").
+This may prove too many strings to be achievable; actions without one show a general
+description (§4.1).
 - Undo of book settings changes: the user clicks OK, sees the result, and wants it back. Without
 this, changing book settings is a boundary (4.0). If it is undoable, undoing it puts back the
-layout that earlier entries were made on, so (?) history before it might survive.
+layout that earlier transactions were made on, so (?) history before it might survive.
 - Undo of changing the page's layout or template, for the same reason. Without this, it is a
 boundary (4.0).
 - Undo of re-recording audio over an existing clip. Without this, it is a boundary (4.0); with
@@ -302,27 +335,43 @@ it, the old audio file has to be kept until history can no longer reach it.
 
 What the mechanism must allow, without saying how it works.
 
-1. An entry can cover more than one text box: at minimum the whole translation group (inline
+1. A transaction can cover more than one text box: at minimum the whole translation group (inline
 images change every language's copy at once), probably the whole page.
-2. An entry can include toolbox state and book-level state outside the page (§1 goal 7). Not
+2. A transaction can include toolbox state and book-level state outside the page (§1 goal 7). Not
 extended to other pages for flow text: we do not complicate undo to support flow text, and
 would rather undo work poorly with it. Working poorly must still never damage the book (goal 4).
 Scenario agreed: the user types, overflow is pushed to the next page, the user invokes undo.
 Undo restores this page only, and the flow pass reacts to that like any other change, pulling
 text back so nothing is duplicated. This puts the work on flow text: its pass must reconcile
 after a restore (today it would leave the text in two places, §17.1).
+Agreed: state outside the page comes in two cases. When nothing on the page depends on it (the leveled reader
+level, a toolbox setting, a user preference), it may stay outside the history, with no
+registration and no boundary: undo never touches it and cannot damage anything, because no page
+content has to match it, and its change is not undoable, like a view change, unless it is
+recorded. When the page refers to it or must match it (audio files named by sentence ids, the
+metadata inside a picture file, book metadata that the page's copyright fields show, book settings
+that change page content), undoing the page alone would leave the two out of step, so the action is
+either undoable as a whole, with the state recorded, or a boundary (APPROACHES §3.0, rule 5).
 3. Untracked changes come in two classes (§4.0 kind 4):
-   - swept up: undone along with the user change they followed (likely the default; cheap);
-   - survives: stays when that change is undone (costly: the history must step around it).
+   - swept up: undone along with the user change they followed;
+   - survives: stays when that change is undone (the history must step around it).
    The rule follows from goal 3 (undo reverses what the user did, its consequences included,
-   and nothing else): a change caused by the user's change is swept up with it; a change that
-   happened independently survives. So:
+   and nothing else): a change caused by the user's change is swept up with it. Goal 4 narrows
+   what survives: only a value that Bloom recomputes from other content (§2.8), which fits whatever
+   state undo returns to. Any other change made outside a transaction, independent or not, joins
+   the latest transaction, so undo only ever returns the page to a state that it was in (APPROACHES
+   §3.0, rules 1 and 3). Because Bloom makes no background changes to page content (§3,
+   Asynchronous), every such change follows from a user change or is a recomputed value, so this
+   does not conflict with goal 3. So:
    - swept up: the table picture refit after a column drag; the inline image aspect ratio
    written when a chosen image loads; image sizing after a paste; the overflow marker, which
    follows from the text;
-   - survives: a link-grid thumbnail arriving while the user types; background audio import
-   finishing; Talking Book spans added when the tool opens (caused by opening the tool, a view
-   change, not by an edit).
+   - survives: a link-grid thumbnail's `src` arriving while the user types, which Bloom can ask
+   for again from the button's link.
+   - Talking Book spans added when the tool opens are caused by opening the tool, not by an
+   edit, but they rewrite text that earlier transactions hold, so they can't simply survive.
+   Agreed as a starting point: opening Talking Book is a boundary when it changes content
+   (§4.0).
    Where an untracked change follows from a user's change on another page (flow text), Bloom's
    own reactions restore consistency, not undo (item 2).
 4. After undo or redo, every feature on the page works as it did before the change (tables
@@ -330,7 +379,7 @@ editable, inline image handles present, and so on).
 5. Libraries report their operations to the central history instead of keeping their own. We
 can change our libraries freely to fit; no protective layer between them and undo is wanted.
 Modal dialogs probably need to know nothing about undo; libraries like `comicaljs` may.
-6. Every entry can carry a description (§4.1, with its caveat).
+6. Every transaction can carry a description (§4.1, with its caveat).
 
 Not requirements: whether undo's own changes set off reactions such as the flow-text pass is a
 UX question (§9). How components learn that content was restored, how actions move between
@@ -340,36 +389,39 @@ kinds, and whether a gesture marks its start are implementation questions.
 
 ## 5. Scope of the undo history
 
-The decision most of the design hangs on. Leaning: since switching pages is a boundary (4.0),
-history covers only the current page, and the options below that reach other pages fall away.
-
-- (?) One history for the current page, cleared on page change?
-- (?) One history per page, kept while the book is open?
-- (?) One history for the book, where undo can switch pages?
-- What clears history: the boundaries listed in 4.0.
+Decided: one history for the current page, cleared by the boundaries listed in §4.0, switching
+pages among them. Histories kept per page, or one for the whole book, are not needed (§4.3).
 - Book-level fields edited from a page (title, credits...): an edit changes only the current
 page; other places showing the field are updated when the user switches pages, a boundary. So
 for undo they are ordinary page content (2.3). Style changes: the same; they live in the
 current page until saved (§16), though as CSS rules, not as HTML text.
-- (?) Flow text breaks "history covers only the current page": typing can push text onto the
-next page, and C# saves that page at once (§17).
-- (?) Cross-page operations (delete page, move page) under each of the options above.
+- Flow text: typing can push text onto the next page, and C# saves that page at once (§17.1).
+History still covers only the current page; flow text reconciles after an undo (§4.4 item 2).
+- Operations across pages (add, delete, move, duplicate a page) are boundaries (§4.0).
 
 ---
 
 ## 6. Approaches to compare
 
-To evaluate later against §4 and against the goal of almost no per-component code.
+Analysed against §1 and §4 in `APPROACHES.md` alongside this file.
 
-- **Snapshots**: capture the state before and after each user action; undo restores the earlier
-snapshot. Components only mark where an action starts and ends. Questions: memory, restore cost,
+Every approach handles the page's DOM, and each pairs with the same small capture/restore
+interface through which components supply state outside the DOM (CSS rules, toolbox settings,
+book metadata). The choice is which mechanism records and replays the page's own nodes.
+
+- **Page snapshots**: copy the page before and after each user action; undo restores the earlier
+copy. Components only mark where an action starts and ends. Questions: memory, restore cost,
 React components re-reading the DOM, caret restoration.
+- **Snapshot diffs**: compare parts of the page (each text box, canvas element, table) as cleaned
+text, and keep the before and after text of each changed part.
 - **Commands**: each change is an object with do and undo. Precise, but every component writes
 its own inverse logic, which is the code volume we want to get rid of.
 - **Recorded DOM mutations**: a `MutationObserver` records changes and undo applies them in
 reverse. Generic for anything in the DOM; does not cover files, C#, or state outside the DOM.
-- **Mixed**: DOM changes captured generically (snapshots or recorded mutations); state outside
-the DOM supplied by components through a small capture/restore interface.
+- **Adjusting older transactions**: later changes adjust older transactions so they still apply. Needs a
+model of the whole page.
+
+`APPROACHES.md` recommends recorded DOM mutations, with snapshot diffs second.
 - (?) Should the page DOM be the single source of truth, so that after any undo every component
 re-reads its state from the DOM?
 - (?) What exactly does a component register? The smallest contract that works.
@@ -389,10 +441,19 @@ source of inspiration (§15), and read it only after reaching our own conclusion
 
 ## 8. Files on disk and the C# side
 
-- Keep replaced or deleted files until history can no longer reach them.
-- Re-recorded audio overwrites a file: keep the old version somewhere.
-- Interaction with cleanup of unused files when the book is saved or closed.
-- Operations implemented in C# (add/delete/move page, image import): who records them?
+- Keep replaced or deleted files until history can no longer reach them. Today a replaced
+image's old file stays until a book is selected or the page orientation changes, both outside
+any history (§16).
+- Re-recorded audio overwrites a file. Re-recording is a boundary (§4.0), so the old file is only
+needed if its undo, a nice-to-have, is ever added (§4.2).
+- Option, not decided (APPROACHES §11.8.5): an action lists the files that it will change in
+place, each is moved aside before the action runs, and undo and redo swap the versions back with
+renames. That would make re-recording, Import and Set Image Information undoable without changing
+Bloom's file names.
+- Cleanup of unused files runs when a book is selected and when page orientation changes, not on
+save or page switch (§16).
+- Operations implemented in C#: page add, delete and move are boundaries; image import and other
+C# work done for the current page (`changeImage`): who records them?
 - Constraint to confirm: the front end owns workflows, C# offers thin APIs. Does that make the
 undo history a front-end object entirely?
 
@@ -401,9 +462,10 @@ undo history a front-end object entirely?
 ## 9. User experience
 
 - Undo and redo can each be invoked by a button or a keyboard shortcut.
-- Which frame or control receives the keyboard shortcut, and how it reaches the central system.
-- Undo of a change the user can't currently see (another page, a collapsed tool, scrolled off):
-show it, navigate to it, or just do it?
+- Answered (EXPERIMENTS §4): C# takes none of Ctrl+Z, Ctrl+Y or Ctrl+Shift+Z. The keys reach the
+JavaScript of whichever frame has focus, so each frame forwards them to the page's one history.
+- Undo of a change the user can't currently see: undo brings it into view (§2.7). Changes on
+another page can't be undone (§5).
 - Undo while a dialog or popup is open: agreed, undo acts in the dialog only (a field's own
 undo), otherwise does nothing; it never changes the page underneath.
 - Focus in a toolbox field: undo is bounded to that field. No tool has a place to type today.
@@ -442,7 +504,7 @@ compare with the state after.
 
 ## 12. Performance and limits
 
-- Size of a page's state; how many history entries to keep.
+- Size of a page's state; how many transactions to keep.
 - Cost of capturing on every keystroke vs. merging typing.
 - Cost of restoring, and avoiding a full page reload on undo.
 
@@ -450,14 +512,39 @@ compare with the state after.
 
 ## 13. Moving from today's code (later)
 
-Left empty until the design is settled. It will need an inventory of existing undo code to delete
-and an order for replacing it.
+The order of steps is in `APPROACHES.md` section 10 (§1 goal 8). Still needed: an inventory of
+existing undo code to delete.
 
 ---
 
 ## 14. Open questions collected
 
-Gathered from the (?) marks above once we start resolving them.
+Still open as of 2026-10-14. Behaviour questions are settled by trying them with users (§1 goal
+7); the design only has to keep them possible.
+
+Behaviour:
+- Reader level and decodable stage buttons in the toolbox: undoable or a view change? (§9)
+- Should undo's own changes set off the reactions a user's change would (a flow-text refit after
+undoing a page size change)? (§9)
+- If undo of book settings is added, does the history before it survive? (§4.2)
+- Rotation of canvas elements: does it exist, and is it continuous? (§2.1)
+- While an undoable action is still finishing (an async `doTransaction`, such as one that awaits C#), the
+user's typing joins its transaction and is undone with it (APPROACHES §3.0, rule 7). Do users
+accept that?
+
+Design:
+- Everything in §2.8 can be recomputed from content: should undo never record it, and every
+capture of state ignore it? (§2.8)
+- Should the page DOM be the single source of truth, with every component re-reading its state
+from it after an undo? (§6) Settled for CSS: StyleEditor writes its rules as `<style>` text, so
+undo sees them (APPROACHES §3.0, rule 5).
+- What exactly does a component register? The smallest contract that works. (§6)
+- Who records C# work done for the current page, such as image import (`changeImage`)? Is the
+history entirely a front-end object, given that the front end owns workflows? (§8)
+- Who decides typing steps: CKEditor, the browser, or the central history? (§3, §7)
+- How a reviewer can tell a component handles undo correctly, and what guardrail catches state
+changes made outside the system. (§10)
+- How many transactions to keep, and the cost of capturing and restoring. (§12)
 
 ---
 
@@ -475,12 +562,12 @@ Close to our three kinds (§4.0) and to operations that finish later (§3).
 [history.ts](https://github.com/excalidraw/excalidraw/blob/master/packages/excalidraw/history.ts)
 - **tldraw**: `editor.run(fn, { history: 'ignore' | 'record' | 'record-preserveRedoStack' })`.
 `markHistoryStoppingPoint` sets where undo returns to, so a mark at the start of a drag makes the
-whole drag one entry (§3). "Only store records take part in undo/redo; state held outside the
+whole drag one step (§3). "Only store records take part in undo/redo; state held outside the
 store ... does not." Component authors write nothing.
 [history](https://tldraw.dev/sdk-features/history)
-- **CodeMirror 6**: `addToHistory: false` changes are not dropped; older entries are adjusted so
+- **CodeMirror 6**: `addToHistory: false` changes are not dropped; older steps are adjusted so
 they still apply after them. Typing and deleting within 500 ms merge, paste never does.
-`isolateHistory` forces an entry boundary. `invertedEffects` lets an extension add state other
+`isolateHistory` forces a step boundary. `invertedEffects` lets an extension add state other
 than text to undo, the only code an author writes.
 [history.ts](https://github.com/codemirror/commands/blob/main/src/history.ts)
 - **ProseMirror** (`prosemirror-history`): stores inverted steps, groups within 500 ms, keeps
@@ -489,20 +576,20 @@ document (and the history) only when the upload finishes.
 [history.ts](https://github.com/ProseMirror/prosemirror-history/blob/master/src/history.ts),
 [upload example](https://prosemirror.net/examples/upload/)
 - **VS Code**: one history per file; an edit across several files asks "Would you like to undo
-'{0}' across all files?" and splits the entry if a file changed since. `confirmBeforeUndo` asks
+'{0}' across all files?" and splits the step if a file changed since. `confirmBeforeUndo` asks
 first (used for file operations); `undo()` may be async with a synchronous `prepareUndoRedo()`
 before it. Calls cursor and scroll position "view state". Relevant to compound actions (§3) and
 state outside the page (§2.5).
 [undoRedo.ts](https://github.com/microsoft/vscode/blob/main/src/vs/platform/undoRedo/common/undoRedo.ts)
-- **Lexical**: each entry is a whole immutable snapshot of editor state including selection;
-typing within 300 ms merges, paste gets its own entry. Calls `preventDefault()` on the browser's
+- **Lexical**: each step is a whole immutable snapshot of editor state including selection;
+typing within 300 ms merges, paste gets its own step. Calls `preventDefault()` on the browser's
 `historyUndo`/`historyRedo` so only its own history runs (§2.10).
 [lexical-history](https://github.com/facebook/lexical/blob/main/packages/lexical-history/src/index.ts)
-- **Slate**: entries are lists of operations plus the selection before them; undo applies their
+- **Slate**: steps are lists of operations plus the selection before them; undo applies their
 inverses in reverse. `HistoryEditor.withoutSaving` skips recording.
 [with-history.ts](https://github.com/ianstormtaylor/slate/blob/main/packages/slate-history/src/with-history.ts)
-- **CKEditor 4 undo plugin** (what Bloom runs): each entry is a full HTML snapshot plus selection
-bookmarks; 20 entries by default; a snapshot every 25 keystrokes. `lockSnapshot`/`unlockSnapshot`
+- **CKEditor 4 undo plugin** (what Bloom runs): each step is a full HTML snapshot plus selection
+bookmarks; 20 steps by default; a snapshot every 25 keystrokes. `lockSnapshot`/`unlockSnapshot`
 suspend recording around script DOM changes; `resetUndo()` clears it (§2.9).
 [plugin.js](https://github.com/ckeditor/ckeditor4/blob/major/plugins/undo/plugin.js)
 - **CKEditor 5**: changes are grouped in a `Batch` flagged `isUndoable`, `isTyping`, and so on;
@@ -510,7 +597,7 @@ a batch reverts as a whole.
 [Batch](https://ckeditor.com/docs/ckeditor5/latest/api/module_engine_model_batch-Batch.html)
 - **Yjs `UndoManager`**: records only transactions whose origin is in `trackedOrigins` (relevant
 to "Made by Bloom on its own", §3); changes within 500 ms merge. It does not store the caret; it
-gives each entry a `meta` map where the application saves and restores it.
+gives each stack item a `meta` map where the application saves and restores it.
 [UndoManager.js](https://github.com/yjs/yjs/blob/main/src/utils/UndoManager.js)
 - **redux-undo**: the plain snapshot approach (`past`, `present`, `future`), with a filter that
 excludes actions and `groupBy` for merging. The baseline for "Snapshots" in §6.
@@ -537,12 +624,12 @@ What matters most for us:
 change is recorded. Component authors write nothing else. The closest equivalent for a DOM is a
 snapshot of the page's HTML (CKEditor 4, Lexical).
 2. With snapshots, undoing past a change that was not recorded reverts it too. CodeMirror and
-ProseMirror avoid this by adjusting older entries, which snapshots cannot do. So a view change
+ProseMirror avoid this by adjusting older steps, which snapshots cannot do. So a view change
 must touch only state the history does not cover, or else be a boundary. This is the rule in
 §4.0.
 3. Operations that finish later become one undoable change when they complete (Excalidraw,
 ProseMirror's upload example, VS Code).
-4. Selection travels with each entry and is restored on undo, but a change only to selection
+4. Selection travels with each step and is restored on undo, but a change only to selection
 does not clear redo (Excalidraw, tldraw).
 5. Lexical and Slate cancel the browser's own undo so exactly one history runs. Bloom would also
 have to silence CKEditor's.
@@ -572,7 +659,10 @@ elements change saved DOM: table image cells are refit (`tableEditing.ts`),
 `.bloom-centerVertically` re-centred (`bloomEditing.ts`).
 - **Zoom**: changes only `#page-scaling-container`, outside the saved page. A view change.
 - **Toolbox tools**: on save, the current tool strips its markup from the copy being saved.
-Reader tools, Image Description, Games and Impairment Visualizer strip everything they add.
+Reader tools, Image Description, Games and Impairment Visualizer strip everything they add. The
+reader tools paint their highlights with the CSS Custom Highlight API, which writes no DOM; their
+rewrite of the text box after typing is to be removed, after which they change nothing that undo sees
+(APPROACHES §5.3).
 Talking Book keeps the `audio-sentence` spans and ids it adds when it opens on a page, so
 opening it can change saved content (`audioRecording.ts`).
 - **Changes Bloom makes after a page loads**, saved: reordering editables in translation
@@ -589,8 +679,9 @@ restore the selection when the page reloads. So selecting a canvas element chang
 source is already the book's own file, which is overwritten). Re-recording audio replaces the
 file and deletes the old one once the new recording succeeds. Unused files are deleted by
 `CleanupUnusedSupportFiles`, which runs when a book is selected and when page orientation
-changes in Edit; not on save or page switch. The AI image editor deletes its own unreferenced
-`ai-image*` files when the user commits.
+changes in Edit; not on save or page switch. When the user commits, the AI image editor deletes
+`ai-image*` files displaced from slots on other pages that nothing references any more; files on
+the open page are left for `CleanupUnusedSupportFiles` (`AiImageEditorApi.cs`).
 - **Dialogs that change the page live**: `BookAndPageSettingsDialog` (restores the page's
 attributes on Cancel), `ColorPickerDialog` (restores the initial colour on Cancel), probably
 StyleEditor's colour picker. The StyleEditor format dialog applies changes live and has no
@@ -609,6 +700,16 @@ changes use direct JS calls instead (`changeImage`).
 - **Saves while staying on the page**: C# can save a snapshot the browser volunteers
 (`ReceivePageSnapshot`) without reloading the page. The saved book then includes Bloom's own
 changes (Talking Book spans, auto-fit, `data-bloom-active`).
+- **Actions that save and reload the open page**: opening the AI image editor
+(`aiImageEditorPageCommands.ts`, `AiImageEditorApi.cs`), Set Image Information
+(`canvasControlRegistry.ts`), choosing a video (`bloomVideo.ts`), leaving origami layout mode
+(`origami.ts`), changing a canvas text field's type (`canvasControlTextMenuItems.ts`), topic
+choice (`EditingModel.cs`), unlocking or relocking the original credits (`editableDivUtils.ts`),
+OK in the book's Copyright and license dialog, Copy Page, and (inferred, not traced) changing the
+leveled reader level (`EnsureLevelAttrCorrect`).
+None is a boundary in §4.0, yet a history kept in the page frame would not survive the reload.
+Agreed: these reloads are to be removed (goal 6 applied to Bloom's own code, building on the
+"save a page without reloading it" work, BL-13502, PR 8209).
 - **Orientation change** runs `BringBookUpToDate`, which deletes unreferenced image, audio and
 video files at once. A file an undo would need could be gone after it.
 
@@ -658,7 +759,7 @@ Issues for the design, as the agent ranked them:
 
 1. A user types, overflow is pushed to the next page, the user undoes. The box gets its text back
 while the next page still holds it, and the pull-back finds nothing to fix, so the text is in
-two places (inferred). That breaks goal 4. Either an entry must also cover the next page's box
+two places (inferred). That breaks goal 4. Either a transaction must also cover the next page's box
 in C#, or typing that moves text across a page must be a boundary.
 2. Bloom causes boundaries in the middle of typing (caret handover, refit navigation).
 3. Undo and the flow pass act on each other: undo must not set off the pass, queued refits must
@@ -678,9 +779,9 @@ through the text; image edits and text edits touch different nodes and share onl
 child list. While editing, selection is a class on the saved wrapper plus handles inside the
 editable, stripped on save.
 - **Kinds of action.**
-  - Undoable, one entry each: insert, delete (all copies at once), Flip, Reset Image,
+  - Undoable, one transaction each: insert, delete (all copies at once), Flip, Reset Image,
   Transparency, Paste image, Set Image Information, choose a picture.
-  - Undoable, one entry per gesture: drag to a dock, corner resize, crop handles. A gesture that
+  - Undoable, one transaction per gesture: drag to a dock, corner resize, crop handles. A gesture that
   ends where it started records nothing.
   - Boundary decided by the component: a picture change C# marks not undoable clears the
   history. This conflicts with §4.1 (replacing an image is undoable).
@@ -702,7 +803,7 @@ had to exclude these from their checks and recapture state at undo time by hand.
   step with the content, which script changes break (§7).
   - Paste of a wrapper goes through CKEditor unfiltered and lands in one language only.
 - **History lost without a boundary.** If the pictures changed in a way the stack didn't record
-(a CKEditor restore, a paste), an entry fails on undo and the history is discarded. A user's
+(a CKEditor restore, a paste), a step fails on undo and the history is discarded. A user's
 history can disappear with no boundary. Conflicts with goal 4.
 - **Cost (§1 goal 2).** About 850 of roughly 5,300 non-test lines (16%) are undo code, plus about
 2,000 lines of undo tests. About 300 lines record and restore snapshots of every copy; about
@@ -732,11 +833,11 @@ stripped from the saved copy.
 tables, snapshots of the table's `innerHTML` and attributes), resize-drag state, paint-format
 and border-brush modes, copied properties. Most of it is keyed by element.
 - **Kinds of action.**
-  - Undoable, one entry per click: add, delete, move or duplicate rows and columns, merge or
+  - Undoable, one transaction per click: add, delete, move or duplicate rows and columns, merge or
   split cells, change a cell's content type (discards its content), Delete Table, Cut Table,
   corners, alignment, paste properties, auto-size, paint-format and border-brush clicks.
-  - Undoable, one entry per gesture: dragging a row or column boundary. The padding slider and
-  fill and border colours should be too, but today record one entry per input event. The gap
+  - Undoable, one transaction per gesture: dragging a row or column boundary. The padding slider and
+  fill and border colours should be too, but today record one step per input event. The gap
   sliders record nothing.
   - Typing and pasting in a cell follow the text rules; pictures and video in cells use Bloom's
   image and video tools.
@@ -751,10 +852,12 @@ listeners survive; an HTML snapshot does not keep element identity.
 - **Untracked changes.** `refitImageCellPictures` runs a frame after a `ResizeObserver` callback,
 refits every `bloom-canvas` on the page (not only in cells), and is saved; it lands just after
 the user's table operation. On attach, defaults, `tabindex` and rendered styles are written and
-saved. It is a pure function of cell size, so re-running it after any restore may be the
-answer.
+saved. It is not a pure function of cell size: `adjustAfterContainerResize` scales canvas
+elements from the previous size stored in `data-imgsizebasedon`, so re-running it after a
+restore can drift. It is swept up with the table change that caused it (§4.4 item 3).
 - **Changing the library (§1 goal 6).** Nearly every operation goes through
-`addHistoryEntry(table, description, performOperation)`, so the library could report the start
+`addHistoryEntry(table, description, performOperation, undoOperation, redoOperation)`, so the
+library could report the start
 and end of each operation to the central history instead of keeping its own. Resize-drag
 changes the DOM during the preview, so its start must be marked at mousedown.
 
@@ -762,6 +865,6 @@ Issues for the design, as the agent ranked them:
 
 1. Wiring after a restore: markers in the DOM make a restored copy look wired when it is not.
 2. `bloom-table`'s own history should become reports to the central history; a small library
-change, plus one entry per gesture for sliders and colours and recording for the gap sliders.
+change, plus one transaction per gesture for sliders and colours and recording for the gap sliders.
 3. The picture refit is an untracked change that lands right after a user's change and is
 saved, the case a snapshot approach reverts on undo (§15, point 2).
