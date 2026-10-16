@@ -390,8 +390,8 @@ flowchart TD
    makes ends the history instead, so a dialog or toolbox control that changes the page either
    gives its step a description of its own or makes its change outside the history (MINIMUM.md
    item 4). The Undo button and the undo and
-   redo keys open no transaction: undo and redo file their own changes, and undo does nothing while
-   a transaction is open. The button carries `data-runs-undo` so that the history can tell it from
+   redo keys open no transaction: undo and redo file their own changes, and an undo asked for while
+   a transaction is open waits, and runs as soon as none is. The button carries `data-runs-undo` so that the history can tell it from
    other controls. A modifier or lock key pressed alone opens nothing either, so that the Ctrl of a
    Ctrl+Y cannot make a step and clear redo before the Y arrives. Its cost: a view change that writes something the recorder
    keeps, and an action that is a boundary, need marking so they make no transaction of their own;
@@ -3982,8 +3982,9 @@ an interceptor in the API wrapper that calls `clearUndoAndRedo()` for requests t
 state (section 11.8.7).
 
 The first version builds this interface in `bookEdit/pageHistory/pageHistoryTypes.ts`, all but
-`addChangeOutsidePage`: its `Transaction` holds only `descriptionL10nKey`. Undo and redo do nothing
-while a transaction is open; that choice is provisional (OPEN-ISSUES.md). Nothing shows the
+`addChangeOutsidePage`: its `Transaction` holds only `descriptionL10nKey`. Undo and redo asked for
+while a transaction is open wait, and run in the order asked for as soon as none is; a page change
+or `clearUndoAndRedo` drops them (`PageHistory.undo`). Nothing shows the
 descriptions yet, so a description key that no control's label already uses has no XLF entry until
 the Undo button shows the descriptions.
 
@@ -4384,7 +4385,7 @@ otherwise; `comicaljs` is `node_modules/comicaljs/dist/index.js`, `bloom-table` 
 | `CanvasElementManager.getPatriarchBubbleOfActiveElement` | returns comicaljs's cached `Bubble` (`CanvasElementManager.ts:2252-2259`) | `updateSelectedFamilyBubbleSpec` merges new properties into the cached spec and writes it (`:2694-2718`) | Covered once comicaljs is rebuilt (row 1) | Confirmed |
 | Canvas tool panel (`toolbox/canvas/CanvasToolControls.tsx`) | `currentBubble` and its spec in React state (`:185-194`, set at `:233`, `:238`, `:317`) | a style change copies `backgroundColors` from the cached spec (`:406-408`) and writes it (`:439-442`) | Re-read: set `currentBubble` again from the active element | Confirmed |
 | `CanvasElementManager.activeElement`, `theCanvasElementWeAreTextEditing` | references to elements (`:158`, `:1351`, `:2571`) | `moveActiveCanvasElement` writes position into it (`:363-411`); after an undo of Add, the element is detached and a later redo would bring it back carrying that change | Re-read: clear them if no longer in the page, else keep | Suspect |
-| Canvas element drag, resize, crop and rotate state | start geometry (`js/canvasElementManager/CanvasElementHandleDragInteractions.ts:194-236`; `CanvasElementPointerInteractions.ts:62-72`) | each pointer move during the drag | Nothing, if Undo does nothing while a gesture is open (below) | Suspect |
+| Canvas element drag, resize, crop and rotate state | start geometry (`js/canvasElementManager/CanvasElementHandleDragInteractions.ts:194-236`; `CanvasElementPointerInteractions.ts:62-72`) | each pointer move during the drag | Nothing: an undo asked for during a gesture waits until it ends (below) | Suspect |
 | Picture load listeners | closures over the element and the new picture (`CanvasElementManager.ts:1883-1924`; `js/canvasElementManager/CanvasElementBackgroundImageManager.ts:656-673`) | the canvas element's geometry when the picture loads | Abandon (section 11.2) | Suspect |
 | Games tool (`toolbox/games/GameTool.tsx`) | toggles and sound ids in React state, from `getStateFromPage` | none for the toggles, which read the page when clicked and write outside the history (`toggleAllSameSizeOnPage` and the two after it); the sound chooser compares with the cached id | Nothing for the toggles; the sounds also change outside the history (rule 3) | Confirmed |
 | Games tool, draggable to target | the target's copy of the active draggable (`:930-971`; `js/dragActivityRuntimeUtils.ts:17-21`) | its observer rewrites the target when the draggable changes, undo included | Nothing for the active draggable, whose target is in the same transaction; re-read for the others | Suspect |
@@ -4421,10 +4422,12 @@ A component that schedules work that will write to the page later (a timer, a lo
 playback) either finishes it before the next input is handled (§3, Asynchronous) or abandons it in
 `onBeforeUndoOrRedo`.
 
-What Undo does while a transaction from `beginTransaction` is open (a drag in progress): in the
-first version, nothing, so the drag state above needs nothing. The choice is provisional
-(OPEN-ISSUES.md). The typing step, which stays open between key presses, is ended by the press of
-the Undo button or the undo key before undo runs (`pageHistoryInput.ts`).
+What Undo does while a transaction is open (a drag in progress, a picture change waiting for its
+fit): the undo waits, and runs as soon as no transaction is open, after any
+undo or redo asked for before it, so the drag state above needs nothing. A page change or
+`clearUndoAndRedo` drops the requests that are waiting. The typing step, which stays open between
+key presses, is ended by the press of the Undo button or the undo key before undo runs
+(`pageHistoryInput.ts`), so that undo does not wait.
 
 #### 11.8.4 Book-level data and state held in C#
 
