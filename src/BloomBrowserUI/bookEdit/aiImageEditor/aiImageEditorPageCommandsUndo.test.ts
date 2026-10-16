@@ -115,29 +115,33 @@ afterEach(() => {
     document.body.innerHTML = "";
 });
 
-const currentPageResult = (
-    ordinal: number,
-    oldSrc: string,
-    newSrc: string,
-) => ({
-    incomingId: `${kPageId}:${ordinal}`,
-    ok: true,
-    isCurrentPage: true,
-    oldSrc,
-    newSrc,
-    copyright: "",
-    creator: "",
-    license: "",
-});
+/** A commit's result for the picture at this ordinal on the current page. */
+function currentPageResult(ordinal: number, oldSrc: string, newSrc: string) {
+    return {
+        incomingId: `${kPageId}:${ordinal}`,
+        ok: true,
+        isCurrentPage: true,
+        oldSrc,
+        newSrc,
+        copyright: "",
+        creator: "",
+        license: "",
+    };
+}
 
-const sources = () =>
-    Array.from(page.querySelectorAll("img")).map((img) =>
+/** The src of each picture on the page. */
+function sources(): (string | null)[] {
+    return Array.from(page.querySelectorAll("img")).map((img) =>
         img.getAttribute("src"),
     );
-const widths = () =>
-    Array.from(page.querySelectorAll<HTMLElement>(".bloom-canvas-element")).map(
-        (element) => element.style.width,
-    );
+}
+
+/** The width of each canvas element on the page. */
+function widths(): string[] {
+    return Array.from(
+        page.querySelectorAll<HTMLElement>(".bloom-canvas-element"),
+    ).map((element) => element.style.width);
+}
 
 describe("applyAiImageEditorReplacements and the page history", () => {
     it("makes the swaps of one commit and the fits that follow them one undo step", async () => {
