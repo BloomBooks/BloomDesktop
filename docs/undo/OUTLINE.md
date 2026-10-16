@@ -262,7 +262,10 @@ of four kinds:
 3. **View change**: not recorded, and the history continues past it (zoom, scrolling, opening a
 tool; the markup Talking Book adds when opened is an untracked change, kind 4). The name follows VS Code, whose editor calls scroll position and cursor "view state"
 (`saveViewState`, `restoreViewState`) and keeps it out of undo history. Allowed only when the action changes nothing an earlier
-transaction depends on; otherwise it must be a boundary. Window resize is a view change: Bloom has no
+transaction depends on; otherwise it must be a boundary. One exception: a user change kept outside
+the history on purpose (for now the Format dialog, Games same-size, sign-language trim, Music) is
+neither recorded nor a boundary; the history continues, and a later undo whose transaction needs the
+earlier value is refused, which empties the undo history. Window resize is a view change: Bloom has no
 resize listener on the page (§16); the refits that `ResizeObserver`s make to elements are
 untracked changes (kind 4).
 4. **Untracked**: a change Bloom makes to content on its own, not the user. Never a transaction of its
@@ -358,7 +361,9 @@ either undoable as a whole, with the state recorded, or a boundary (APPROACHES �
    and nothing else): a change caused by the user's change is swept up with it. Goal 4 narrows
    what survives: only a value that Bloom recomputes from other content (§2.8), which fits whatever
    state undo returns to. Any other change made outside a transaction, independent or not, joins
-   the latest transaction, so undo only ever returns the page to a state that it was in (APPROACHES
+   the latest transaction, except some tool setup that is left outside the history (Talking Book's
+   tabindex order and its "|" split markers, Motion's default rectangles), so undo only ever returns
+   the page to a state that it was in (APPROACHES
    §3.0, rules 1 and 3). Because Bloom makes no background changes to page content (§3,
    Asynchronous), every such change follows from a user change or is a recomputed value, so this
    does not conflict with goal 3. So:
