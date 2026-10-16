@@ -4,6 +4,9 @@ The smallest version of the page history (APPROACHES.md, recorded mutations with
 11.8) that undoes everything that today's undo undoes. Later steps add to it one at a time. Section
 numbers refer to APPROACHES.md, and "issue N" to Part 1 of CODE-WALK.md.
 
+This document describes the code as built in the BL-17020 stack of pull requests; until they
+merge, master has today's undo.
+
 It is built (`src/BloomBrowserUI/bookEdit/pageHistory/`, with the changes that the items name
 elsewhere), first in commit `ec71549342`, and the items below describe the code on this branch,
 which also takes some of the later steps: dialogs and toolbox controls that make undo steps of their
@@ -130,7 +133,7 @@ Talking Book, video, games and book settings have no undo today.
      of them changed, or names a node that one of them took out of the page, is refused by the
      check of rule 4, and the refusal empties that stack.
    - **Ends the history**: what still sends a request that is not on item 7's list (Talking Book's
-     Record, Clear and Import; posting book settings; copying a Games built-in sound into the book),
+     Record, Clear and Import; posting book settings),
      or reloads the page (changing the Leveled Reader's level, through
      `EditingModel.EnsureLevelAttrCorrect`; Set Image Information; the book's Copyright and
      license), and any press elsewhere whose change has no transaction of its own.
@@ -285,9 +288,7 @@ below.
   makes an undo step nor keeps outside the history**: recording, changing the Leveled Reader's
   level, and any control that has no transaction of its own. Today CKEditor's history of a box
   survives these.
-- **History is lost on every request that isn't on item 7's list**, including copying one of the
-  Games tool's built-in sounds into the book (`fileIO/copyFile`, which the interceptor can't tell
-  apart from Talking Book's Import).
+- **History is lost on every request that isn't on item 7's list.**
 - **History is lost when an undo is refused** because a change made outside the history (item 4)
   altered a value that the step holds, or took out of the page a node that the step names, such as
   undoing a sign language recording after trimming it. The refusal empties the undo stack.

@@ -177,52 +177,70 @@ export function saveSelection(doc: Document): SavedSelection | undefined {
 /**
  * Select what saved selected, when both its nodes are inside root and its offsets still fit them;
  * otherwise leave the selection alone. Either way, first drop the selections that CKEditor saved
- * when the focus left its boxes (dropCkEditorLockedSelections), which the undo or redo that calls
- * this may have made stale.
+ * when the focus left the boxes that hold a node in changedNodes, which the undo or redo that
+ * calls this changed, and the box that the selection goes into (dropCkEditorLockedSelections).
  */
 export function restoreSelection(
     doc: Document,
     root: Node,
     saved: SavedSelection | undefined,
+    changedNodes: Node[],
 ): void {
-    dropCkEditorLockedSelections(doc);
-    if (!saved) return;
-    if (
-        !fitsNode(root, saved.anchorNode, saved.anchorOffset) ||
-        !fitsNode(root, saved.focusNode, saved.focusOffset)
-    )
-        return;
+    const toSelect =
+        saved &&
+        fitsNode(root, saved.anchorNode, saved.anchorOffset) &&
+        fitsNode(root, saved.focusNode, saved.focusOffset)
+            ? saved
+            : undefined;
+    dropCkEditorLockedSelections(
+        doc,
+        toSelect
+            ? changedNodes.concat(toSelect.anchorNode, toSelect.focusNode)
+            : changedNodes,
+    );
+    if (!toSelect) return;
     doc.getSelection()?.setBaseAndExtent(
-        saved.anchorNode,
-        saved.anchorOffset,
-        saved.focusNode,
-        saved.focusOffset,
+        toSelect.anchorNode,
+        toSelect.anchorOffset,
+        toSelect.focusNode,
+        toSelect.focusOffset,
     );
 }
 
 /** The part of CKEditor that dropCkEditorLockedSelections uses. */
 interface WindowWithCkEditor {
     CKEDITOR?: {
-        instances: Record<string, { unlockSelection(restore?: boolean): void }>;
+        instances: Record<
+            string,
+            {
+                element: { $: Node };
+                unlockSelection(restore?: boolean): void;
+            }
+        >;
     };
 }
 
 /**
- * Make each CKEditor of doc's window forget the selection that it saved when the focus left its
- * box, without selecting it. CKEditor 4.5.1 saves it then (editor.lockSelection, from the box's
- * blur) and selects it again when the focus comes back (editor.unlockSelection(true), from the
- * box's focus listener). Putting the selection in a box focuses the box, so restoring it would
- * set that listener off; and the saved selection names text as it was before the undo or redo,
- * which may now be too short for its offsets, so that selecting it throws an IndexSizeError, or
- * may put the caret somewhere other than where the step had it. unlockSelection(false) only
- * unlocks and forgets it. A window with no CKEditor, as in unit tests, has nothing to drop.
+ * Make each CKEditor of doc's window whose box contains one of nodes, or is inside one of them,
+ * forget the selection that it saved when the focus left its box, without selecting it.
+ * CKEditor 4.5.1 saves it then (editor.lockSelection, from the box's blur) and selects it again
+ * when the focus comes back to that box with no mouse press (editor.unlockSelection(true), from
+ * the box's focus listener). Putting the selection in a box focuses the box, so restoring it would
+ * set that listener off; and in a box that the undo or redo changed, the saved selection names
+ * text as it was before, which may now be too short for its offsets, so that selecting it throws
+ * an IndexSizeError, or may put the caret somewhere other than where the step had it.
+ * unlockSelection(false) only unlocks and forgets it. Any other box keeps its saved selection, so
+ * that Tab back into it puts the caret where the user left it. A window with no CKEditor, as in
+ * unit tests, has nothing to drop.
  */
-function dropCkEditorLockedSelections(doc: Document): void {
+function dropCkEditorLockedSelections(doc: Document, nodes: Node[]): void {
     const ckeditor = (doc.defaultView as WindowWithCkEditor | null)?.CKEDITOR;
     if (!ckeditor) return;
-    Object.values(ckeditor.instances).forEach((editor) =>
-        editor.unlockSelection(false),
-    );
+    Object.values(ckeditor.instances).forEach((editor) => {
+        const box = editor.element.$;
+        if (nodes.some((node) => box.contains(node) || node.contains(box)))
+            editor.unlockSelection(false);
+    });
 }
 
 /** True when node is inside root and offset is a position in it. */
