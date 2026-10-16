@@ -78,8 +78,11 @@ CKEDITOR.editorConfig = function(config) {
     // this aligns to tool bar with the right side fo the edit field
     config.floatSpacePreferRight = true;
 
-    // This is required to prevent Bloom from crashing when the Undo button is clicked.
-    config.undoStackSize = 0;
+    // Bloom's page history (bookEdit/pageHistory) is the one undo for the page, so CKEditor's
+    // undo plugin must neither record snapshots nor answer Ctrl+Z and Ctrl+Y. That plugin is
+    // also what fires the editor's "change" event; attachToCkEditor fires it from the DOM's
+    // input events instead, for the listeners that need it.
+    config.removePlugins = "undo";
 
     // Remove the annoying tooltip "Rich Text Editor, editorN".
     config.title = false;

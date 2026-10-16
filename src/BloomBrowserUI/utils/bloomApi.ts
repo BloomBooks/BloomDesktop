@@ -7,6 +7,7 @@ import {
     useSubscribeToWebSocketForEvent,
     useSubscribeToWebSocketForObject,
 } from "./WebSocketManager";
+import { clearUndoAndRedoIfAny } from "../bookEdit/pageHistory/pageHistoryAccess";
 
 // You can modify mockReplies in order to work on UI components without the Bloom backend...
 // namely, storybook.
@@ -39,6 +40,150 @@ export function getBloomApiPrefix(includeApi: boolean = true): string {
 export const mockReplies = {};
 
 let pageIsClosing: boolean = false;
+
+// The page history (docs/undo/MINIMUM.md item 7): every request that may change state, that is every
+// request except a GET, ends the history of the page open in the Edit tab, unless its path is on this
+// list. Undo can't put back what C# changed, so a request that nobody has classified loses the history
+// rather than risk an undo that leaves the page naming a file or a book state that is gone. A path
+// belongs here only if the request changes nothing that the page names, or only writes a file under a
+// new name. docs/undo/CODE-WALK.md Part 3 classifies the Edit tab's requests. Paths are compared
+// without the query string and ignoring case, as C# matches them.
+const kRequestsThatKeepThePageHistory = new Set(
+    [
+        // Saving the page; a save that reloads ends the history through the page load.
+        "editView/pageContent",
+        // Tells C# that the page has loaded; the only actions it runs then launch the AI image editor.
+        "editView/pageDomLoaded",
+        // Tool state in meta.json. When the leveled reader's level changes, C# saves and reloads the
+        // page, and the page load ends the history.
+        "editView/saveToolboxSetting",
+        // Requests that only make C# run script in the page, which records its own changes.
+        "editView/paste",
+        "editView/topBarButtonClick",
+        // Requests that write a file under a new name, or only choose one.
+        "imageGallery/imageGalleryResult",
+        "imageGallery/pickLocalImageFile",
+        "editView/pasteImage",
+        "audio/copyAudioFile",
+        "fileIO/chooseFile",
+        // A commit writes its pictures under new names and deletes no file that a page may name. If
+        // it ever deletes the picture it replaced, undo would put back a page naming a missing file,
+        // and this request must come off the list.
+        "aiImageEditor/commit",
+        // Starts an AI image editor session; nothing on the page changes until the commit.
+        "aiImageEditor/launch",
+        // A sign language video, recorded or imported, is written under a new name
+        // (SignLanguageApi.GetNewVideoFileName). Neither request overwrites or deletes a file that a
+        // page names: an import deletes only its own new file, when it is cancelled or fails. If
+        // either ever replaces the video it was given, undo would put back a page naming a changed
+        // or missing file, and the request must come off the list.
+        "signLanguage/recordedVideo",
+        "signLanguage/processVideo",
+        // Choosing a video to import only shows a file dialog; cancelling an import only stops it.
+        "signLanguage/chooseVideo",
+        "signLanguage/cancelImportVideo",
+        // Requests from a progress dialog, such as the one that a video import shows, which posts
+        // progress/closed after the import made its undo step. progress/ready only sets a flag, and
+        // progress/cancel only calls the running job's cancel handler. progress/closed runs the job's
+        // follow-up (BrowserProgressDialog.HandleProgressDialogClosed). C# cannot change the open page,
+        // so a follow-up that changes the book must save and reload the page, and the reload ends the
+        // history.
+        "progress/ready",
+        "progress/cancel",
+        "progress/closed",
+        // Make sure a placeholder file that is never deleted is in the book folder.
+        "edit/pageControls/requestVideoPlaceHolder",
+        "edit/pageControls/requestWidgetPlaceHolder",
+        // A link grid's thumbnail of a linked book's cover. It never deletes a file, and its name
+        // depends only on that book's id, so every page that names it shows that book's cover.
+        "editView/addImageFromUrl",
+        // Files that no page names.
+        "fileIO/writeFile",
+        "audioSegmentation/getForcedAlignmentTimings",
+        "audioSegmentation/eSpeakPreview",
+        // Requests that only read, though they are POSTs.
+        "i18n/loadStrings",
+        "editView/requestTranslationGroupContent",
+        "fileIO/getSpecialLocation",
+        "fileIO/completeRelativePath",
+        // State of the Edit tab's UI, not of the book.
+        "editView/isTextSelected",
+        "editView/setModalState",
+        "editView/sourceTextTab",
+        "editView/updateTopBarDropdownDisplay",
+        "common/closeReactDialog",
+        "app/closeDialog",
+        "edit/pageControls/zoomBy",
+        "workspace/topRight/zoom",
+        // The reader tools' default level and stage.
+        "readers/io/defaultLevel",
+        "readers/io/defaultStage",
+        // User settings, service keys, the default recording mode, custom palette colours.
+        "app/userSetting",
+        "serviceKeys/key",
+        "serviceKeys/keys",
+        "talkingBook/defaultAudioRecordingMode",
+        "settings/addCustomPaletteColor",
+        // Accessibility checks.
+        "accessibilityCheck/kindOfColorBlindness",
+        "accessibilityCheck/showAccessibilityChecker",
+        "accessibilityCheck/cataracts",
+        "accessibilityCheck/colorBlindness",
+        // Recording devices.
+        "audio/currentRecordingDevice",
+        "audio/stopMonitoring",
+        // The clipboard.
+        "common/clipboardText",
+        "editView/copyImage",
+        "readers/ui/copyBookStatsToClipboard",
+        // Logging and analytics.
+        "common/logger/writeEvent",
+        "logger/writeEvent",
+        "common/debugMessage",
+        "analytics/track",
+        // Help, links that open in the browser, and showing files.
+        "help",
+        "link",
+        "fileIO/showInFolder",
+        "readers/ui/openTextsFolder",
+    ].map((path) => path.toLowerCase()),
+);
+
+/**
+ * True if sending this request must end the page history: a method other than GET, HEAD or
+ * OPTIONS, to a Bloom API path that is not on kRequestsThatKeepThePageHistory. url is as the
+ * caller gave it to axios, with or without the host. Exported for unit tests.
+ */
+export function requestEndsPageHistory(
+    method: string | undefined,
+    url: string | undefined,
+): boolean {
+    // axios sends a GET when no method is given.
+    const verb = (method ?? "get").toLowerCase();
+    if (verb === "get" || verb === "head" || verb === "options") return false;
+    if (!url) return false;
+    const apiMarker = "/bloom/api/";
+    const apiStart = url.indexOf(apiMarker);
+    if (apiStart < 0) return false; // not a request to Bloom
+    const path = url
+        .substring(apiStart + apiMarker.length)
+        .split(/[?#]/)[0]
+        .replace(/\/+$/, "")
+        .toLowerCase();
+    return !kRequestsThatKeepThePageHistory.has(path);
+}
+
+// Every request that this frame sends through axios passes here, including the ones that callers
+// send with axios directly instead of through the functions below. axios 0.21 runs request
+// interceptors in a promise chain, so the history ends a microtask after the call, before the
+// request goes out; page changes that the caller makes synchronously right after the call are
+// dropped from the history with the rest (CODE-WALK issue 5). Requests sent with jQuery's $.ajax
+// don't come here.
+axios.interceptors.request.use((config) => {
+    if (requestEndsPageHistory(config.method, config.url))
+        clearUndoAndRedoIfAny();
+    return config;
+});
 
 // This function is designed to be used like this:
 // wrapAxios(axios.{get, post, etc}().then(...));

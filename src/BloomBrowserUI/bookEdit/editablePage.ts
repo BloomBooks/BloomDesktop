@@ -22,9 +22,8 @@ import {
     canUndo,
     handleRedo,
     handleUndo,
-    setUpPageUndo,
-} from "./undo/pageUndo";
-import { tableCanUndo } from "./undo/tableUndo";
+    startPageHistoryForThisPage,
+} from "./pageHistory/pageHistorySetup";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -70,22 +69,13 @@ export interface IPageFrameExports {
     SetupElements(container: HTMLElement): void;
     attachToCkEditor(element: any): void;
 
-    origamiCanUndo(): boolean;
-    origamiUndo(): void;
-
     getTheOneCanvasElementManager(): CanvasElementManager;
 
-    ckeditorCanUndo(): boolean;
-    ckeditorUndo(): boolean;
-    imageOperationCanUndo(): boolean;
-    imageOperationUndo(): boolean;
-
-    // The one undo stack, which lives in this frame (undo/pageUndo.ts).
+    // Undo and redo of this page (pageHistory/pageHistorySetup.ts).
     handleUndo(): void;
     canUndo(): boolean;
     handleRedo(): void;
     canRedo(): boolean;
-    tableCanUndo(): boolean;
 
     // The page history (pageHistory/pageHistory.ts), which pageHistorySetup.ts starts once the
     // page is ready. pageHistory() throws until then; createPageHistory and startPageHistory are
@@ -150,10 +140,10 @@ import {
     removeImageId,
     changeImage,
     changeImageByElement,
-    imageOperationCanUndo,
-    imageOperationUndo,
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
+    whenNoRequestPageContentDelays,
+    listenToPageHistory,
 } from "./js/bloomEditing";
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
 // Called from the AI Image Editor overlay in the top window, which owns the session but
@@ -192,8 +182,6 @@ export {
     removeImageId,
     changeImage,
     changeImageByElement,
-    imageOperationCanUndo,
-    imageOperationUndo,
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
     renderDragActivityTabControl,
@@ -205,9 +193,8 @@ export {
     startPageHistory,
     pageHistory,
 };
-import { origamiCanUndo, origamiUndo } from "./js/origami";
 import { postString } from "../utils/bloomApi";
-export { origamiCanUndo, origamiUndo };
+import { getToolboxBundleExports } from "./js/workspaceFrames";
 
 const styleSheets = [
     "themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css",
@@ -353,51 +340,6 @@ function e2eClearCanExpandToFillSpaceOverride(): void {
     originalCanExpandToFillSpaceForE2e = undefined;
 }
 
-// This is using an implementation secret of a particular version of ckeditor; but it seems to
-// be the only way to get at whether ckeditor thinks there is something it can undo.
-// And we really NEED to get at the ckeditor undo mechanism, since ckeditor intercepts paste
-// in such a way that after a paste the C# browser object answers false to CanUndo.
-export function ckeditorCanUndo(): boolean {
-    // review: do we need to examine all instances?
-    // C# may apparently call this before the module that defines the variable CKEDITOR
-    // is even loaded. To avoid an error, we have to check both that it is defined AND
-    // that it has a value.
-    if (
-        typeof CKEDITOR !== "undefined" &&
-        CKEDITOR &&
-        CKEDITOR.currentInstance &&
-        (<any>CKEDITOR.currentInstance).undoManager &&
-        (<any>CKEDITOR.currentInstance).undoManager.undoable() &&
-        // Not an editor whose box has gone from the page (a table undo rebuilds its cells, for
-        // instance): undoing there would change nothing anyone can see, and would stop the Undo
-        // button reaching whatever comes next.
-        (<any>CKEDITOR.currentInstance).element.$.isConnected
-    ) {
-        return true;
-    }
-    return false;
-}
-
-/**
- * Undo the most recent change ckeditor knows about, and say whether it undid anything.
- *
- * undo() answers false when it finds nothing to restore, which happens even after
- * ckeditorCanUndo() said yes: ckeditor sets its hasUndo flag on the first keystroke of a
- * group and clears it only when it next refreshes its state, so a manager whose snapshots
- * have already been restored keeps claiming an undo it cannot perform. The caller needs to
- * know, so that an Undo the person pressed is not swallowed here. (See the CKEditor provider in
- * undo/legacyUndoProviders.ts.)
- */
-export function ckeditorUndo(): boolean {
-    // review: do we need to examine all instances?
-    return (<any>CKEDITOR.currentInstance).undoManager.undo();
-}
-
-// The bloom-table library's undo is an entry on the one undo stack (undo/tableUndo.ts). This is
-// exported on the bundle only for the e2e tests, which check that a table's history stays out of
-// Undo in Change Layout mode.
-export { tableCanUndo };
-
 for (let j = 0; j < styleSheets.length; j++) {
     // This doesn't work any more because we are now loading this code as a module,
     // which means it is loaded after the document is parsed.
@@ -441,6 +383,26 @@ window["RelockOriginalCredits"] = () => {
 
 $(document).ready(() => {
     $("body").find("*[data-i18n]").localize();
+    // The page history lives in this frame, one for each page load. It starts before bootstrap,
+    // so that the user's first action is undoable however soon it comes, and is marked ready once
+    // Bloom has finished setting the page up (pageHistory/pageReadiness.ts); what Bloom changes
+    // before then is the page as the user found it. A page loaded on its own, off screen, with no
+    // Edit tab around it, has no undo.
+    if (window.parent !== window) {
+        startPageHistoryForThisPage(
+            {
+                noPageContentDelays: whenNoRequestPageContentDelays,
+                toolboxPassesHaveRun: () =>
+                    getToolboxBundleExports()?.whenNewPageReadyPassesHaveRun(
+                        document,
+                    ) ?? Promise.resolve(),
+            },
+            windowsOtherThanThePageFrame(),
+            // The listeners that put the canvas elements, Talking Book and the reader tools
+            // right after an undo or redo.
+            listenToPageHistory,
+        );
+    }
     bootstrap();
     // Step 1 of the off-screen page-capture handshake (see __bloomEditablePageReady in the
     // `declare global` block below): bootstrap()/SetupElements() has now run. That applies the
@@ -452,10 +414,6 @@ $(document).ready(() => {
     // in the live editor, which never reads this flag.
     window.__bloomEditablePageReady = true;
 
-    // The one undo stack lives in this frame and starts empty with each page load (see
-    // undo/pageUndo.ts). This registers the pre-existing undo mechanisms with it and binds Ctrl+Y.
-    setUpPageUndo();
-
     // If the user clicks outside of the page thumbnail context menu, we want to close it.
     // Since it is currently a winforms menu, we do that by sending a message
     // back to c#-land. We have a similar listener in the pageThumbnailList itself.
@@ -465,6 +423,17 @@ $(document).ready(() => {
         (window as any).chrome?.webview?.postMessage("browser-clicked");
     });
 });
+
+// The toolbox frame and the root window, with its top bar and dialogs, whose input the page
+// history watches too.
+function windowsOtherThanThePageFrame(): Window[] {
+    const rootWindow = window.parent;
+    const toolboxFrame = rootWindow.document.getElementById(
+        "toolbox",
+    ) as HTMLIFrameElement | null;
+    const toolboxWindow = toolboxFrame?.contentWindow;
+    return toolboxWindow ? [toolboxWindow, rootWindow] : [rootWindow];
+}
 
 export function SayHello() {
     alert("hello from editable page frame.");
@@ -488,18 +457,11 @@ interface EditablePageBundleApi {
     removeImageId: typeof removeImageId;
     changeImage: typeof changeImage;
     changeImageByElement: typeof changeImageByElement;
-    imageOperationCanUndo: typeof imageOperationCanUndo;
-    imageOperationUndo: typeof imageOperationUndo;
-    origamiCanUndo: typeof origamiCanUndo;
-    origamiUndo: typeof origamiUndo;
     getTheOneCanvasElementManager: typeof getTheOneCanvasElementManager;
-    ckeditorCanUndo: typeof ckeditorCanUndo;
-    ckeditorUndo: typeof ckeditorUndo;
     handleUndo: typeof handleUndo;
     canUndo: typeof canUndo;
     handleRedo: typeof handleRedo;
     canRedo: typeof canRedo;
-    tableCanUndo: typeof tableCanUndo;
     createPageHistory: typeof createPageHistory;
     startPageHistory: typeof startPageHistory;
     pageHistory: typeof pageHistory;
@@ -577,18 +539,11 @@ window.editablePageBundle = {
     removeImageId,
     changeImage,
     changeImageByElement,
-    imageOperationCanUndo: imageOperationCanUndo,
-    imageOperationUndo: imageOperationUndo,
-    origamiCanUndo,
-    origamiUndo,
     getTheOneCanvasElementManager,
-    ckeditorCanUndo,
-    ckeditorUndo,
     handleUndo,
     canUndo,
     handleRedo,
     canRedo,
-    tableCanUndo,
     createPageHistory,
     startPageHistory,
     pageHistory,

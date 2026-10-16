@@ -52,6 +52,7 @@ class NoopResizeObserver {
         id: "stubEditor",
         config: {},
         on: () => {},
+        fire: () => true,
         addCommand: () => {},
         ui: { addButton: () => {} },
     }),

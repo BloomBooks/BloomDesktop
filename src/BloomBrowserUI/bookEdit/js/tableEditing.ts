@@ -35,13 +35,12 @@ import {
     refreshTableFeatureStatus,
     tablesMayBeRestructured,
 } from "./tableFeature";
-import { noteTableHistoryUpdate } from "../undo/tableUndo";
 
 // The library's own "something changed in a table" notification. It fires on the
 // page's document at the end of every operation that goes through the table's
 // history (adding a row or column, changing a cell's content type, pasting or
-// deleting a table, an undo or a redo), which is exactly when new cell content
-// may need Bloom's wiring.
+// deleting a table), which is exactly when new cell content may need Bloom's
+// wiring.
 const kTableHistoryUpdatedEvent = "tableHistoryUpdated";
 
 let contentTypesRegistered = false;
@@ -156,8 +155,7 @@ function installHostHooks(): void {
  *
  * The library builds cell content itself, and it does so long after the page
  * loaded: a new row or column, every cell of a nested table, a cell whose
- * content type the user changed, and the whole table again after an undo, which
- * restores the table's innerHTML. Bloom's own page-load pass (SetupElements in
+ * content type the user changed. Bloom's own page-load pass (SetupElements in
  * bloomEditing.ts) is what makes a bloom-editable typable, gives it CKEditor,
  * its language name and long-press, and what wires an image cell's
  * bloom-canvas; content built after that pass has none of it, so until this
@@ -264,25 +262,9 @@ function onTableHistoryUpdated(e: Event): void {
     ).detail;
     const table = detail?.table?.closest<HTMLElement>(".bloom-table");
     // Deleting a table takes it out of the document, so there may be nothing to
-    // wire; and an operation on a nested table hands us that table, while an
-    // undo can have restored the cells of the table that holds it. Wiring from
-    // the outermost table covers both.
-    if (table?.isConnected) wireBloomContentOfNewCells(outermostTable(table));
-    // After the wiring, not before: wiring attaches CKEditor to the cells the operation built,
-    // and an attach can be reported as a CKEditor change. Recording the table's change last
-    // leaves the table as the more recent of the two, which is what it is.
-    noteTableHistoryUpdate(detail?.operation);
-}
-
-/** The table that holds `table`, and holds no other table itself. */
-function outermostTable(table: HTMLElement): HTMLElement {
-    let outermost = table;
-    let parent = outermost.parentElement?.closest<HTMLElement>(".bloom-table");
-    while (parent) {
-        outermost = parent;
-        parent = outermost.parentElement?.closest<HTMLElement>(".bloom-table");
-    }
-    return outermost;
+    // wire. An operation on a nested table hands us the outermost table that
+    // holds it, so its cells are wired too.
+    if (table?.isConnected) wireBloomContentOfNewCells(table);
 }
 
 // The one ResizeObserver watching every image cell on the page, so we can
@@ -452,8 +434,8 @@ export function TeardownTableEditing(container: HTMLElement): void {
     imageCellObserver?.disconnect();
     imageCellObserver = undefined;
     // Every table, not only the ones we attached: the library attaches a nested
-    // table itself, both when the user makes one and when an undo rebuilds it,
-    // so a nested table has no data-table-attached of ours to find it by.
+    // table itself when the user makes one, so a nested table has no
+    // data-table-attached of ours to find it by.
     container
         .querySelectorAll<HTMLElement>(".bloom-table")
         .forEach((tableDiv) => {
