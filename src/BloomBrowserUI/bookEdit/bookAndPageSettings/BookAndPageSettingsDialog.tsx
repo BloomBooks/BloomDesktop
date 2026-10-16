@@ -540,7 +540,9 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
 // Put the page back as the dialog found it: the attributes of the page element, which hold its
 // style, and the src of each picture. The dialog changes only a picture's transparent query
 // parameter (updateImageTransparencyForPage), so a picture that something else replaced while the
-// dialog was open, such as a link grid's thumbnail arriving, gets back only the parameter.
+// dialog was open, such as a link grid's thumbnail arriving, gets back only the parameter. A
+// picture that had no src when the dialog opened, such as a thumbnail that had not arrived yet,
+// gets back no parameter, since none comes with the src that arrives.
 function restoreInitialPage(
     pageAttributes: ElementAttributeSnapshot,
     imageSrcs: Array<{ img: HTMLImageElement; src: string | null }>,
@@ -548,14 +550,16 @@ function restoreInitialPage(
     pageAttributes.restoreToElement(getCurrentPageElement());
     for (const imageSrc of imageSrcs) {
         const src = imageSrc.img.getAttribute("src");
-        if (src === imageSrc.src || src === null || imageSrc.src === null)
-            continue;
-        let srcToPutBack = imageSrc.src;
-        if (
+        if (src === imageSrc.src || src === null) continue;
+        let srcToPutBack: string;
+        if (imageSrc.src === null)
+            srcToPutBack = buildSrcWithTransparentParam(src, "none");
+        else if (
             buildSrcWithTransparentParam(src, "none") !==
             buildSrcWithTransparentParam(imageSrc.src, "none")
         )
             srcToPutBack = withTransparentParamOf(src, imageSrc.src);
+        else srcToPutBack = imageSrc.src;
         if (srcToPutBack !== src)
             imageSrc.img.setAttribute("src", srcToPutBack);
     }

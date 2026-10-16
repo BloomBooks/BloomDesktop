@@ -3256,15 +3256,33 @@ export default class AudioRecording implements IAudioRecorder {
         );
     }
 
-    /** See the end of updateAfterUndoOrRedo. */
+    /**
+     * See the end of updateAfterUndoOrRedo. When the undo or redo took away every sentence of
+     * textBoxBefore, which the tool cannot split again until the user's next action
+     * (splitAgainIfNeededAsync), the whole box has the highlight until then. Looking for a
+     * sentence would find one in another box, which Speak would then record.
+     */
     private async highlightAgainAfterUndoOrRedoAsync(
         textBoxBefore: HTMLElement | null,
     ): Promise<void> {
-        if (textBoxBefore?.isConnected)
+        if (!textBoxBefore?.isConnected)
+            await this.setCurrentAudioElementToDefaultAsync();
+        else if (
+            this.recordingMode === RecordingMode.Sentence &&
+            this.getFirstAudioSentenceWithinElement(textBoxBefore) === null &&
+            new Recordable(textBoxBefore).checkForMissingAudioMarkup()
+        ) {
+            // The next action splits the box first, then moves the highlight to the first
+            // sentence of the box that has it (resetCurrentAudioElementAsync). Until then
+            // the sound stays that of the sentence that the undo took away.
+            await this.setHighlightToAsync({
+                newElement: textBoxBefore,
+                shouldScrollToElement: false,
+            });
+        } else
             await this.setCurrentAudioElementBasedOnRecordingModeAsync(
                 textBoxBefore,
             );
-        else await this.setCurrentAudioElementToDefaultAsync();
         await this.changeStateAndSetExpectedAsync("record");
     }
 
