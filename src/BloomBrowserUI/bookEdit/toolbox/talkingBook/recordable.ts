@@ -3,7 +3,7 @@ import { getChecksum } from "./talkingBookChecksum";
 import { kAnyRecordingApiUrl } from "./audioUtils";
 import { RecordingMode } from "./recordingMode";
 import axios, { AxiosResponse } from "axios";
-import { doOutsideHistoryIfAny } from "../../pageHistory/pageHistoryAccess";
+import { doOutsideHistory } from "../../pageHistory/pageHistoryAccess";
 
 const kAudioSentence = "audio-sentence";
 
@@ -174,7 +174,7 @@ export default class Recordable {
                 const md5 = getChecksum(sentence.innerText);
                 // Talking Book fills in a missing checksum when it opens on a page; that is not
                 // something the user did, so it is not recorded in the page history.
-                doOutsideHistoryIfAny(() =>
+                doOutsideHistory(() =>
                     sentence.setAttribute("recordingmd5", md5),
                 );
             }

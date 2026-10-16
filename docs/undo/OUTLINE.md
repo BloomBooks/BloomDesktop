@@ -258,7 +258,8 @@ of four kinds:
      - changing the page's layout or template, for the same reasons.
      - re-recording audio over an existing clip. As a boundary, undo never has to keep old
       audio files.
-   - Not a boundary: OK in the AI image editor is undoable, the same as replacing an image (4.1).
+   - Not a boundary: OK in the AI image editor is undoable on the current page, the same as
+     replacing an image (4.1). Pictures that it replaces on other pages stay replaced.
 3. **View change**: not recorded, and the history continues past it (zoom, scrolling, opening a
 tool; the markup Talking Book adds when opened is an untracked change, kind 4). The name follows VS Code, whose editor calls scroll position and cursor "view state"
 (`saveViewState`, `restoreViewState`) and keeps it out of undo history. Allowed only when the action changes nothing an earlier
