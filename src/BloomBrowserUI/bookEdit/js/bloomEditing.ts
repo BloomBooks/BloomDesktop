@@ -85,7 +85,7 @@ import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
 import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
 import { setupTextContextMenu } from "../textContextMenu/TextContextMenu";
 import { resetAbovePageControls } from "./AbovePageControls";
-import { noteCkeditorChange } from "../undo/changeOrder";
+import { trackCkeditorChanges } from "../undo/ckeditorChanges";
 import { recordFractionOfPageOnImageSlots } from "./imageTargetResolution";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
@@ -2158,13 +2158,9 @@ export function attachToCkEditor(element) {
     });
 
     // A table's operations are entries on the one undo stack, separate from this history, and
-    // whichever of the two was written to last is the one the next Undo belongs to. See
-    // undo/changeOrder.ts. The undoable() test keeps
-    // the changes ckeditor makes while it attaches itself to a box out of the reckoning: only a
-    // change a person could undo counts as a change the person made.
-    ckedit.on("change", () => {
-        if (ckedit.undoManager?.undoable()) noteCkeditorChange();
-    });
+    // whichever of the two was written to last is the one the next Undo belongs to; and typing
+    // abandons anything the stack could redo. See undo/ckeditorChanges.ts.
+    trackCkeditorChanges(ckedit);
 
     // hide the toolbar when ckeditor starts
     ckedit.on("instanceReady", (evt) => {

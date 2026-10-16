@@ -17,7 +17,10 @@
 // out right without anything being parsed or recalculated. The properties, and the units
 // the code in bookEdit/js writes them in, are:
 //     --inline-image-width         width of the visible image, always a percentage of
-//                                  the editable's width, such as 40%
+//                                  the editable's width, such as 40%. The width rules
+//                                  below fall back to 40% when it is unset, which is
+//                                  kDefaultInlineImageWidth in inlineImages.ts, the
+//                                  width a new wrapper gets; change both together.
 //     --inline-image-offset        how far down from the top of the editable the image
 //                                  sits, always in px (see the comment on the offset
 //                                  rule below). It cannot be a percentage: in
@@ -214,7 +217,9 @@
 // set the flex `order` property, so the DOM order of the editables does not tell us which
 // one the reader sees first. bloom-contentFirst (set by the appearance system) comes
 // first when the group has one, then bloom-content1, then content2, then content3. This
-// is the same preference bloomEditing.ts uses in SetupThingsSensitiveToStyleChanges.
+// is the same preference bloomEditing.ts uses in SetupThingsSensitiveToStyleChanges, and
+// inlineImages.ts's pickEditableByPrecedence follows it too, so the code works with the
+// copy the reader sees. Change them together.
 //
 // Each rule below hides the copy in a visible editable when some other visible editable
 // in the same group has higher precedence. So:
