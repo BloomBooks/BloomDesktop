@@ -1,5 +1,4 @@
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
-import { renderRoot } from "../../../utils/reactRender";
 import { kCanvasToolId } from "../toolIds";
 import { EnableAllImageEditing } from "../../js/bloomImages";
 import { getCanvasElementManager } from "./canvasElementPageBridge";
@@ -18,12 +17,12 @@ export class CanvasTool extends ToolboxToolReactAdaptor {
         CanvasTool.theOneCanvasTool = this;
     }
 
-    public makeRootElement(): HTMLDivElement {
-        const root = document.createElement("div");
-        root.setAttribute("class", "CanvasBody");
-
-        renderRoot(<CanvasToolControls />, root);
-        return root as HTMLDivElement;
+    public renderPanel(): JSX.Element {
+        return (
+            <div className="CanvasBody">
+                <CanvasToolControls />
+            </div>
+        );
     }
 
     public id(): string {

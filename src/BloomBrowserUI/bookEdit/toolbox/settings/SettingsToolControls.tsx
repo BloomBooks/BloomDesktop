@@ -1,17 +1,13 @@
-import { FunctionComponent, useState } from "react";
+import { FunctionComponent, useSyncExternalStore } from "react";
 import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
 import {
     getMasterToolList,
-    isToolEnabledInToolbox,
     ITool,
     setToolEnabledFromSettings,
-    setToolboxSettingsChangeHandler,
 } from "../toolbox";
+import { getToolboxUiState, subscribeToToolboxUiState } from "../toolboxState";
 import { css } from "@emotion/react";
 import { SubscriptionBadgeWithTooltipAndDialog } from "../../../react_components/requiresSubscription";
-import { ThemeProvider } from "@mui/material/styles";
-import { toolboxTheme } from "../../../bloomMaterialUITheme";
-import { useMountEffect } from "../../../utils/useMountEffect";
 import {
     compareToolsByLabel,
     getToolLabelInfo,
@@ -96,44 +92,28 @@ const ToolboxCheckbox: FunctionComponent<{
 
 export const SettingsToolControls: FunctionComponent = () => {
     const toolsOffered = getToolsOfferedAsCheckboxes();
-    const [checkedState, setCheckedState] = useState<Record<string, boolean>>(
-        () =>
-            Object.fromEntries(
-                toolsOffered.map((tool) => [
-                    tool.id(),
-                    isToolEnabledInToolbox(tool.id()),
-                ]),
-            ),
-    );
+    // Which tools are enabled is part of the toolbox's state (see toolboxState.ts), so we
+    // just render from it. That way a tool that gets enabled some other way (e.g. clicking
+    // a video placeholder to get the Sign Language tool) ticks its checkbox here too.
+    const enabledToolIds = useSyncExternalStore(
+        subscribeToToolboxUiState,
+        getToolboxUiState,
+    ).enabledToolIds;
 
-    function updateState(which: string, value: boolean): void {
-        setCheckedState((previous) => ({ ...previous, [which]: value }));
-    }
-
-    useMountEffect(() => {
-        setToolboxSettingsChangeHandler((which, value) =>
-            updateState(which, value),
-        );
-        return () => {
-            setToolboxSettingsChangeHandler(undefined);
-        };
-    });
     return (
-        <ThemeProvider theme={toolboxTheme}>
-            <div
-                css={css`
-                    margin-top: 6px;
-                `}
-            >
-                {toolsOffered.map((tool) => (
-                    <ToolboxCheckbox
-                        key={tool.id()}
-                        toolId={tool.id()}
-                        featureName={tool.featureName}
-                        shouldCheck={!!checkedState[tool.id()]}
-                    />
-                ))}
-            </div>
-        </ThemeProvider>
+        <div
+            css={css`
+                margin-top: 6px;
+            `}
+        >
+            {toolsOffered.map((tool) => (
+                <ToolboxCheckbox
+                    key={tool.id()}
+                    toolId={tool.id()}
+                    featureName={tool.featureName}
+                    shouldCheck={enabledToolIds.has(tool.id())}
+                />
+            ))}
+        </div>
     );
 };
