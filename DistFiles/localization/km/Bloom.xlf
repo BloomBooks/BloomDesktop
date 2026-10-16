@@ -2064,6 +2064,11 @@
         <target xml:lang="km" state="needs-translation">The contributions made by writers, illustrators, editors, etc., in {lang}</target>
         <note>ID: EditTab.FrontMatter.OriginalContributorsPrompt</note>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.OriginalCopyrightAndLicenseHint" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Original copyright &amp; license</source>
+        <target xml:lang="km" state="needs-translation">Original copyright &amp; license</target>
+        <note>ID: EditTab.FrontMatter.OriginalCopyrightAndLicenseHint</note>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence">
         <source xml:lang="en">This book is an adaptation of the original, {0}.</source>
         <target xml:lang="km" state="needs-translation">This book is an adaptation of the original, {0}.</target>
@@ -2478,6 +2483,31 @@
         <source xml:lang="en">Canvas Tool</source>
         <target xml:lang="km" state="needs-translation">Canvas Tool</target>
         <note>ID: EditTab.Toolbox.CanvasTool</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Layer" translate="no">
+        <source xml:lang="en">Layer</source>
+        <target xml:lang="km" state="needs-translation">Layer</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.Layer</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Layer.BringForward" translate="no">
+        <source xml:lang="en">Bring Forward</source>
+        <target xml:lang="km" state="needs-translation">Bring Forward</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.Layer.BringForward</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Layer.BringToFront" translate="no">
+        <source xml:lang="en">Bring to Front</source>
+        <target xml:lang="km" state="needs-translation">Bring to Front</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.Layer.BringToFront</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Layer.SendBackward" translate="no">
+        <source xml:lang="en">Send Backwards</source>
+        <target xml:lang="km" state="needs-translation">Send Backwards</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.Layer.SendBackward</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Layer.SendToBack" translate="no">
+        <source xml:lang="en">Send to Back</source>
+        <target xml:lang="km" state="needs-translation">Send to Back</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.Layer.SendToBack</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.ChangeShape" sil:dynamic="true">
         <source xml:lang="en">Change Shape</source>
