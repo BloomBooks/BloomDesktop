@@ -8,6 +8,7 @@ declare global {
         getTheOneToolbox: unknown;
         scheduleMarkupUpdateAfterPaste: unknown;
         cancelPendingMarkupUpdates: unknown;
+        repaintReaderHighlights: unknown;
         applyToolboxStateToPage: unknown;
         removeToolboxMarkup: unknown;
         showSetupDialog: unknown;

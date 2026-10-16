@@ -77,6 +77,7 @@ export interface IToolboxFrameExports {
 
     scheduleMarkupUpdateAfterPaste(): void;
     cancelPendingMarkupUpdates(): void;
+    repaintReaderHighlights(): void;
 
     /**
      * Resolves once the current tool has run its newPageReady passes for the page in pageDocument,
@@ -133,6 +134,12 @@ export function getTheOneAudioRecorderForExportOnly(): IAudioRecorder {
     return theOneAudioRecorder;
 }
 
+// Paint the reader tools' highlights again from the text on the page, writing nothing to it. The
+// page history calls this after every undo and redo; see ReaderToolsModel.repaintHighlights.
+export function repaintReaderHighlights(): void {
+    getTheOneReaderToolsModel()?.repaintHighlights();
+}
+
 export function copyLeveledReaderStatsToClipboard() {
     const readerToolsModel = getTheOneReaderToolsModel();
     if (readerToolsModel) {
@@ -154,6 +161,7 @@ const toolboxBundle: ToolboxBundleApi = {
     getTheOneToolbox,
     scheduleMarkupUpdateAfterPaste,
     cancelPendingMarkupUpdates,
+    repaintReaderHighlights,
     applyToolboxStateToPage,
     removeToolboxMarkup,
     showSetupDialog,

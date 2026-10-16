@@ -32,7 +32,6 @@ import {
     postData,
     postString,
 } from "../../../utils/bloomApi";
-import { EditableDivUtils } from "../../js/editableDivUtils";
 import {
     mapReaderText,
     theOneReaderHighlightManager,
@@ -114,10 +113,6 @@ export class ReaderToolsModel {
     // BL-599: Speed up the decodable reader tool
     public stageGraphemes: string[] = [];
 
-    public activeElement: HTMLElement | undefined;
-    public undoStack: any[];
-    public redoStack: any[];
-
     public wordListChangedListeners: any = {};
 
     // some things need to wait until the word list has finished loading
@@ -162,9 +157,6 @@ export class ReaderToolsModel {
         this.maxAllowedWords = 10000;
         this.pageIDToText = [];
         this.stageGraphemes = [];
-        this.activeElement = undefined;
-        this.undoStack = [];
-        this.redoStack = [];
         this.wordListChangedListeners = {};
     }
     public getReadableFileExtensions() {
@@ -603,77 +595,6 @@ export class ReaderToolsModel {
         );
     }
 
-    public noteFocus(element: HTMLElement): void {
-        this.activeElement = element;
-        this.undoStack = [];
-        this.redoStack = [];
-        this.undoStack.push({
-            html: element.innerHTML,
-            text: element.textContent,
-            offset: EditableDivUtils.getElementSelectionIndex(
-                this.activeElement,
-            ),
-        });
-    }
-
-    public shouldHandleUndo(): boolean {
-        return this.currentMarkupType !== MarkupType.None;
-    }
-
-    public undo(): void {
-        if (!this.activeElement) return;
-        if (
-            this.activeElement.textContent ==
-                this.undoStack[this.undoStack.length - 1].text &&
-            this.undoStack.length > 1
-        ) {
-            this.redoStack.push(this.undoStack.pop());
-        }
-        this.activeElement.innerHTML =
-            this.undoStack[this.undoStack.length - 1].html;
-        const restoreOffset = this.undoStack[this.undoStack.length - 1].offset;
-        if (restoreOffset < 0) return;
-        EditableDivUtils.makeSelectionIn(
-            this.activeElement,
-            restoreOffset,
-            -1,
-            true,
-        );
-    }
-
-    public canUndo(): boolean {
-        if (!this.activeElement) return false;
-        // The box we last saw focused may have gone from the page since: a table undo rebuilds
-        // its cells, for instance. Undoing typing there would change nothing anyone can see, and
-        // would stop the Undo button reaching whatever comes next.
-        if (!this.activeElement.isConnected) return false;
-        if (
-            this.undoStack &&
-            (this.undoStack.length > 1 ||
-                this.activeElement.textContent !== this.undoStack[0].text)
-        ) {
-            return true;
-        }
-        return false;
-    }
-
-    public redo(): void {
-        if (!this.activeElement) return;
-        if (this.redoStack.length > 0) {
-            this.undoStack.push(this.redoStack.pop());
-        }
-        this.activeElement.innerHTML =
-            this.undoStack[this.undoStack.length - 1].html;
-        const restoreOffset = this.undoStack[this.undoStack.length - 1].offset;
-        if (restoreOffset < 0) return;
-        EditableDivUtils.makeSelectionIn(
-            this.activeElement,
-            restoreOffset,
-            -1,
-            true,
-        );
-    }
-
     public getTopPageWindow(): Window | null {
         const page = top?.document.getElementById("page");
         if (!page) return null;
@@ -681,27 +602,35 @@ export class ReaderToolsModel {
     }
 
     /**
-     * Displays the correct markup for the current page.
+     * Paint the reader highlights again from the text that the boxes hold now. The page history
+     * calls this (through the toolbox) after every undo and redo: the highlights are Ranges over
+     * the boxes' text nodes, which the undo has given back their earlier text. It is doMarkup,
+     * which writes nothing to the page that the history records, so it keeps redo.
      */
-    public doMarkup(createCkEditorBookMarks: boolean = true): void {
+    public repaintHighlights(): void {
+        this.doMarkup();
+    }
+
+    /**
+     * Displays the correct markup for the current page: the reader highlights, the page's
+     * page-too-many-words-or-sentences class, and the statistics in the toolbox. It reads the
+     * boxes and does not rewrite them, so it may run at any time, inside a transaction or
+     * outside one, without making an undo step or ending the page history. The only changes it
+     * makes to a box are the removal of markup that earlier versions of Bloom saved
+     * (removeSynphonyMarkup and removeCkEditorMarkup), which are not recorded.
+     */
+    public doMarkup(): void {
         if (!this.readyToDoMarkup()) return;
         if (this.currentMarkupType === MarkupType.None) {
             this.clearReaderHighlights();
             return;
         }
 
-        let oldSelectionPosition = -1;
-        if (this.activeElement)
-            oldSelectionPosition = EditableDivUtils.getElementSelectionIndex(
-                this.activeElement,
-            );
-
         const editableElements = this.getElementsToCheck();
 
         // console.log("start of doMarkup:");
         // EditableDivUtils.logElementsInnerHtml(editableElements.toArray());
 
-        let bookmarksForEachEditable: object[] = [];
         if (editableElements.length === 0) {
             // e.g. a cover page. There is nothing to mark, so make sure nothing is left
             // highlighted from a page that did have something.
@@ -712,23 +641,12 @@ export class ReaderToolsModel {
             // (and so the mouse can't move off their owning element, and they never go away).
             // BL-2758 But if we're in a source collection we may have valid source bubbles,
             // don't delete them!
+            // The qtips are children of the body, outside the .bloom-page that the page history
+            // observes, so removing them needs no doOutsideHistoryIfAny.
             $(editableElements[0])
                 .closest("body")
                 .children('.qtip:not(".uibloomSourceTextsBubble")')
                 .remove();
-
-            if (
-                this.currentMarkupType === MarkupType.Decodable ||
-                this.currentMarkupType === MarkupType.Leveled
-            )
-                bookmarksForEachEditable = EditableDivUtils.doCkEditorCleanup(
-                    editableElements
-                        .filter(
-                            (index, element) => !!(element as HTMLDivElement),
-                        )
-                        .toArray() as HTMLDivElement[],
-                    createCkEditorBookMarks,
-                );
         }
 
         switch (this.currentMarkupType) {
@@ -797,32 +715,8 @@ export class ReaderToolsModel {
             default:
         }
 
-        // console.log("in doMarkup, before restoreSelection:");
-        // EditableDivUtils.logElementsInnerHtml(editableElements.toArray());
-
-        if (bookmarksForEachEditable.length)
-            EditableDivUtils.restoreSelectionFromCkEditorBookmarks(
-                editableElements
-                    .filter((index, element) => !!(element as HTMLDivElement))
-                    .toArray() as HTMLDivElement[],
-                bookmarksForEachEditable,
-            );
-
         // console.log("end of doMarkup:");
         // EditableDivUtils.logElementsInnerHtml(editableElements.toArray());
-
-        if (
-            this.activeElement &&
-            this.activeElement.textContent !=
-                this.undoStack[this.undoStack.length - 1].text
-        ) {
-            this.undoStack.push({
-                html: this.activeElement.innerHTML,
-                text: this.activeElement.textContent,
-                offset: oldSelectionPosition,
-            });
-            this.redoStack = []; // ok because only referred to by this variable.
-        }
     }
 
     private getValueFromCurrentLevel(
