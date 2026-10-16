@@ -802,14 +802,19 @@ namespace Bloom.ImageProcessing
             // a 4-character code, a little-endian unsigned 32-bit size, and the data padded to an
             // even length. The bytes come from the internet, so a size may be garbage: offset is a
             // long so that no size can make it overflow, wrap around, or stand still.
+            // The spec puts any ALPH chunk before the VP8 chunk, but we don't trust the bytes to
+            // follow it, so we walk every chunk and report a lossy image only if no chunk anywhere
+            // in the file indicates transparency, losslessness, or animation.
+            var sawLossyImageData = false;
             long offset = 12;
             while (offset + 8 <= bytes.Length)
             {
                 var chunkType = Encoding.ASCII.GetString(bytes, (int)offset, 4);
                 switch (chunkType)
                 {
-                    case "VP8 ": // lossy image data (with no ALPH chunk before it)
-                        return true;
+                    case "VP8 ": // lossy image data
+                        sawLossyImageData = true;
+                        break;
                     case "VP8L": // lossless image data
                     case "ALPH": // alpha channel for lossy image data
                     case "ANMF": // animation frame
@@ -826,7 +831,7 @@ namespace Bloom.ImageProcessing
                 long chunkSize = BitConverter.ToUInt32(bytes, (int)offset + 4);
                 offset += 8 + chunkSize + (chunkSize & 1);
             }
-            return false;
+            return sawLossyImageData;
         }
 
         /// <summary>
@@ -837,7 +842,7 @@ namespace Bloom.ImageProcessing
         /// in destFolder with the same base name as the source. Returns the new file's path, or
         /// null if the file needs no conversion. Throws if the conversion fails.
         /// </summary>
-        public static string ConvertToJpegOrPngIfNeeded(string sourcePath, string destFolder)
+        public static string ConvertWebpToJpegOrPngAsNeeded(string sourcePath, string destFolder)
         {
             // Sniff just the header first: this runs for every image the user chooses, and some
             // (e.g. large scans) are far too big to read into memory for nothing.

@@ -224,7 +224,7 @@ namespace Bloom.web.controllers
                 conversionFolder = new TemporaryFolder(
                     "BloomImageGalleryConversion-" + Guid.NewGuid()
                 );
-                var convertedFilePath = ImageUtils.ConvertToJpegOrPngIfNeeded(
+                var convertedFilePath = ImageUtils.ConvertWebpToJpegOrPngAsNeeded(
                     sourceFilePath,
                     conversionFolder.FolderPath
                 );

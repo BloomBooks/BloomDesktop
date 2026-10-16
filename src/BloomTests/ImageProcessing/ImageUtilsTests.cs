@@ -135,10 +135,32 @@ namespace BloomTests.ImageProcessing
             Assert.That(ImageUtils.IsOpaqueLossyWebP(bytes.ToArray()), Is.False);
         }
 
+        [Test]
+        public void IsOpaqueLossyWebP_AlphChunkAfterVp8Chunk_ReturnsFalse()
+        {
+            var bytes = new List<byte>();
+            bytes.AddRange(System.Text.Encoding.ASCII.GetBytes("RIFF"));
+            bytes.AddRange(BitConverter.GetBytes(100u));
+            bytes.AddRange(System.Text.Encoding.ASCII.GetBytes("WEBPVP8 "));
+            bytes.AddRange(BitConverter.GetBytes(4u));
+            bytes.AddRange(new byte[4]);
+            Assert.That(
+                ImageUtils.IsOpaqueLossyWebP(bytes.ToArray()),
+                Is.True,
+                "setup: without the ALPH chunk this should count as an opaque lossy image"
+            );
+            // Out of the order the spec requires, but the bytes come from the internet.
+            bytes.AddRange(System.Text.Encoding.ASCII.GetBytes("ALPH"));
+            bytes.AddRange(BitConverter.GetBytes(2u));
+            bytes.AddRange(new byte[2]);
+
+            Assert.That(ImageUtils.IsOpaqueLossyWebP(bytes.ToArray()), Is.False);
+        }
+
         [TestCase("man-really-webp.jpg", ".jpg", ImageFileFormat.Jpeg)]
         [TestCase("bird-lossless.webp", ".png", ImageFileFormat.Png)]
         [TestCase("bird-lossy-transparent.webp", ".png", ImageFileFormat.Png)]
-        public void ConvertToJpegOrPngIfNeeded_WebP_ConvertsToReadableFormat(
+        public void ConvertWebpToJpegOrPngAsNeeded_WebP_ConvertsToReadableFormat(
             string fileName,
             string expectedExtension,
             ImageFileFormat expectedFormat
@@ -153,9 +175,9 @@ namespace BloomTests.ImageProcessing
                 Is.EqualTo(ImageFileFormat.WebP),
                 "setup: the source should be a WebP file"
             );
-            using (var destFolder = new TemporaryFolder("ConvertToJpegOrPngIfNeeded_WebP"))
+            using (var destFolder = new TemporaryFolder("ConvertWebpToJpegOrPngAsNeeded_WebP"))
             {
-                var convertedPath = ImageUtils.ConvertToJpegOrPngIfNeeded(
+                var convertedPath = ImageUtils.ConvertWebpToJpegOrPngAsNeeded(
                     sourcePath,
                     destFolder.Path
                 );
@@ -183,16 +205,16 @@ namespace BloomTests.ImageProcessing
 
         [TestCase("man.jpg")]
         [TestCase("man.png")]
-        public void ConvertToJpegOrPngIfNeeded_JpegOrPng_ReturnsNull(string fileName)
+        public void ConvertWebpToJpegOrPngAsNeeded_JpegOrPng_ReturnsNull(string fileName)
         {
             var sourcePath = FileLocationUtilities.GetFileDistributedWithApplication(
                 _pathToTestImages,
                 fileName
             );
-            using (var destFolder = new TemporaryFolder("ConvertToJpegOrPngIfNeeded_NoChange"))
+            using (var destFolder = new TemporaryFolder("ConvertWebpToJpegOrPngAsNeeded_NoChange"))
             {
                 Assert.That(
-                    ImageUtils.ConvertToJpegOrPngIfNeeded(sourcePath, destFolder.Path),
+                    ImageUtils.ConvertWebpToJpegOrPngAsNeeded(sourcePath, destFolder.Path),
                     Is.Null
                 );
                 Assert.That(Directory.GetFiles(destFolder.Path), Is.Empty);
