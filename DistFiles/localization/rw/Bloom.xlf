@@ -2484,6 +2484,31 @@
         <target xml:lang="rw" state="needs-translation">Canvas Tool</target>
         <note>ID: EditTab.Toolbox.CanvasTool</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Layer" translate="no">
+        <source xml:lang="en">Layer</source>
+        <target xml:lang="rw" state="needs-translation">Layer</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.Layer</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Layer.BringForward" translate="no">
+        <source xml:lang="en">Bring Forward</source>
+        <target xml:lang="rw" state="needs-translation">Bring Forward</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.Layer.BringForward</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Layer.BringToFront" translate="no">
+        <source xml:lang="en">Bring to Front</source>
+        <target xml:lang="rw" state="needs-translation">Bring to Front</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.Layer.BringToFront</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Layer.SendBackward" translate="no">
+        <source xml:lang="en">Send Backwards</source>
+        <target xml:lang="rw" state="needs-translation">Send Backwards</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.Layer.SendBackward</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Layer.SendToBack" translate="no">
+        <source xml:lang="en">Send to Back</source>
+        <target xml:lang="rw" state="needs-translation">Send to Back</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.Layer.SendToBack</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.ChangeShape" sil:dynamic="true">
         <source xml:lang="en">Change Shape</source>
         <target xml:lang="rw" state="needs-translation">Change Shape</target>
