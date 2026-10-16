@@ -72,7 +72,15 @@ export interface RestoredContent {
  * then the history keeps everything.
  */
 export interface PageHistoryFilter {
-    /** True for a node that the history ignores, together with everything inside it. */
+    /**
+     * True for a node that the history ignores, together with everything inside it. The answer
+     * for a node must not change while the node is in the page, except straight after the code
+     * that inserts it, in the same task and with no call to the history between: the history
+     * skips every record of an ignored node, and nothing records its parent's child list, so a
+     * node that an attribute change makes ignored later stays in the child lists of the steps
+     * that hold it, and their undo is refused. Bloom gives such an element its class (bloom-ui
+     * and the like) before it inserts it, or straight after in the same code.
+     */
     ignoreNode(node: Node): boolean;
 
     /**
@@ -160,7 +168,10 @@ export interface PageHistoryOptions {
     /** The element whose subtree the history observes: the page's `.bloom-page`. */
     root: Element;
     filter?: PageHistoryFilter;
-    /** How many undo steps to keep; the oldest go first. Default 50, as the one stack today. */
+    /**
+     * How many undo steps to keep, a whole number of zero or more; the oldest go first. Default
+     * 50, as the one stack today.
+     */
     maxUndoSteps?: number;
     /**
      * False for a history that starts before the page is ready, while Bloom is still setting the
@@ -278,12 +289,22 @@ export interface PageHistory {
 
     /**
      * Undo the latest step. If the page no longer has the values that the step left (rule 4), the
-     * undo is refused: that step and every older one are discarded, and redo is kept. While a
-     * transaction is open, does nothing.
+     * undo is refused: that step and every older one are discarded, and redo is kept.
+     *
+     * Asked for while a transaction is open, such as a picture change that waits for the picture
+     * to load, the undo waits, and runs as soon as no transaction is open; undo and redo requests
+     * made meanwhile run after it, in the order they were made. It then undoes the step that the
+     * transaction made, or, if that made none, the step before. clearUndoAndRedo() and dispose()
+     * drop the requests that are waiting. The promise settles when the undo has run or been
+     * dropped, so code inside a transaction must not await it.
      */
     undo(): Promise<void>;
 
-    /** Redo the step undone last. A refused redo discards every redo step. */
+    /**
+     * Redo the step undone last. A refused redo discards every redo step. While a transaction is
+     * open, it waits as undo() does; a transaction that makes a step empties the redo steps, so a
+     * redo that waited for it does nothing.
+     */
     redo(): Promise<void>;
 
     /** The description of the step that undo would undo, or undefined when there is none. */

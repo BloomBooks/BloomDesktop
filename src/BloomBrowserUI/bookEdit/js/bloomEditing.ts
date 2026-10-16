@@ -1430,8 +1430,11 @@ let waitersForNoPageContentDelay: (() => void)[] = [];
 /**
  * Resolves once no page content delay is pending (at once if none is), or after kMaxWaitTimeMs,
  * when requestPageContent also stops waiting. Waits that began earlier resolve first.
+ * Called from another frame, it waits for the page frame's delays, where the add put them.
  */
 export function whenNoRequestPageContentDelays(): Promise<void> {
+    const pageExports = pageFrameExportsIfInAnotherFrame();
+    if (pageExports) return pageExports.whenNoRequestPageContentDelays();
     if (activeDelays.length === 0) return Promise.resolve();
     return new Promise<void>((resolve) => {
         const timeout = window.setTimeout(finish, kMaxWaitTimeMs);
@@ -1456,6 +1459,13 @@ let insideChangeThatWaitsForPageToSettle = false;
  * that, such a change would join whatever the user does next. For changes that C# or another
  * frame makes with no click or key press behind them. If change throws, its changes are put back.
  * If the delays never clear, the step closes after kMaxWaitTimeMs, as a save stops waiting then.
+ *
+ * A change made while an earlier one is still waiting, such as a second picture change before the
+ * first picture has loaded, joins the earlier one's step, as anything done while a step is open
+ * does (APPROACHES.md rule 7). The step is an async doTransaction, which waits for transactions
+ * begun inside it, and closes when the last of them does. Two steps would be worse: the page
+ * content delays do not say which change began them, so the first change's fit could land in the
+ * second step, and undoing that would leave the first picture with a box that it never had.
  */
 export function doTransactionUntilPageSettles<T>(
     descriptionL10nKey: string,
@@ -1463,24 +1473,40 @@ export function doTransactionUntilPageSettles<T>(
 ): T {
     // A call made by the change of another joins that step, which waits for the same delays.
     if (insideChangeThatWaitsForPageToSettle) return change();
-    const transaction =
-        currentPageHistory()?.beginTransaction(descriptionL10nKey);
-    let result: T;
+    const history = currentPageHistory();
+    if (!history) return runChangeThatWaitsForPageToSettle(change);
+    // Declared with "as", since TypeScript cannot see the fn below assign it.
+    let outcome = undefined as { value: T } | { error: unknown } | undefined;
+    // doTransaction calls its fn at once, and a fn that throws has its changes put back at once.
+    const step = history.doTransaction(descriptionL10nKey, () => {
+        try {
+            outcome = { value: runChangeThatWaitsForPageToSettle(change) };
+        } catch (error) {
+            outcome = { error };
+            throw error;
+        }
+        // With no delay pending, a plain return value closes the step in this same task.
+        return activeDelays.length === 0
+            ? undefined
+            : whenNoRequestPageContentDelays();
+    });
+    if (!outcome) throw new Error("doTransaction did not call its fn at once.");
+    if ("error" in outcome) {
+        // The step's promise rejects with the same error, which is thrown here instead.
+        step.catch(() => {});
+        throw outcome.error;
+    }
+    return outcome.value;
+}
+
+/** Run change with insideChangeThatWaitsForPageToSettle set. */
+function runChangeThatWaitsForPageToSettle<T>(change: () => T): T {
     insideChangeThatWaitsForPageToSettle = true;
     try {
-        result = change();
-    } catch (error) {
-        transaction?.cancel();
-        throw error;
+        return change();
     } finally {
         insideChangeThatWaitsForPageToSettle = false;
     }
-    if (transaction) {
-        if (activeDelays.length === 0) transaction.end();
-        else
-            void whenNoRequestPageContentDelays().then(() => transaction.end());
-    }
-    return result;
 }
 
 /**

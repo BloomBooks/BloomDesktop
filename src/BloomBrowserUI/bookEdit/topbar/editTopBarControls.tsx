@@ -357,7 +357,7 @@ export const EditingControlButton: React.FunctionComponent<{
     // For the e2e suite (src/BloomE2E), which finds the button by it.
     testId?: string;
     // True for a button that runs undo or redo. The page history must not open a transaction on
-    // its click, because undo does nothing while one is open (kUndoControlSelector in
+    // its click, because undo waits while one is open (kUndoControlSelector in
     // pageHistory/pageHistoryInput.ts finds the button by the attribute this gives it).
     runsUndo?: boolean;
     enabledIcon?: string;
