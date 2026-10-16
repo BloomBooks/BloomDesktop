@@ -13,7 +13,7 @@ import {
     IControlRuntime,
 } from "../../toolbox/canvas/canvasControlTypes";
 import { getCanvasElementManager } from "../../toolbox/canvas/canvasElementPageBridge";
-import { doTransactionIfAny } from "../bloomEditing";
+import { doTransaction } from "../bloomEditing";
 import { kGenericUndoDescriptionL10nKey } from "../../pageHistory/pageHistoryTypes";
 
 // This file renders the menu rows that controlRegistry provides. Two menus use it:
@@ -83,7 +83,7 @@ export const runControlCallback = (
     descriptionL10nKey: string | null | undefined,
     callback: () => void | Promise<void>,
 ): void => {
-    doTransactionIfAny(
+    doTransaction(
         descriptionL10nKey ?? kGenericUndoDescriptionL10nKey,
         callback,
     ).catch((error) => {

@@ -5,7 +5,7 @@ import WebSocketManager, {
 } from "../../utils/WebSocketManager";
 import { postJson } from "../../utils/bloomApi";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
-import { doOutsideHistoryIfAny } from "../pageHistory/pageHistoryAccess";
+import { doOutsideHistory } from "../pageHistory/pageHistoryAccess";
 import { Link } from "../../react_components/BookGridSetup/BookLinkTypes";
 
 function getLanguage1Tag(): string {
@@ -65,7 +65,7 @@ export function editLinkGrid(linkGrid: HTMLElement) {
             // Choosing the books is not undoable, and must not end the page history, as a
             // change made from a dialog with no transaction of its own would
             // (pageHistoryInput.ts).
-            doOutsideHistoryIfAny(() => fillLinkGrid(linkGrid, links)),
+            doOutsideHistory(() => fillLinkGrid(linkGrid, links)),
     );
 }
 
@@ -103,7 +103,7 @@ function fillLinkGrid(linkGrid: HTMLElement, links: Link[]) {
             // listen for a websocket message that the image has been saved
             // and then update the src attribute, outside the page history like the rest
             const setImgSrc = (evt: IBloomWebSocketEvent) => {
-                doOutsideHistoryIfAny(() => {
+                doOutsideHistory(() => {
                     img.setAttribute("src", evt.message as string); // note, img.src = "foo" does something different!
                 });
             };

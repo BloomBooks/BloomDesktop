@@ -16,7 +16,7 @@ const access = vi.hoisted(() => ({
 
 vi.mock("../pageHistory/pageHistoryAccess", () => ({
     currentPageHistory: () => access.history,
-    doOutsideHistoryIfAny: <T>(fn: () => T): T =>
+    doOutsideHistory: <T>(fn: () => T): T =>
         access.history ? access.history.doOutsideHistory(fn) : fn(),
 }));
 

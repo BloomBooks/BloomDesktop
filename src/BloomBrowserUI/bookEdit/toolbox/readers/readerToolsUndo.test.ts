@@ -26,13 +26,13 @@ import {
 const mocks = vi.hoisted(() => ({
     history: undefined as PageHistory | undefined,
 }));
-// The history that the code under test finds, with doOutsideHistoryIfAny doing what the real
+// The history that the code under test finds, with doOutsideHistory doing what the real
 // one does when there is a history.
 vi.mock("../../pageHistory/pageHistoryAccess", () => ({
     currentPageHistory: () => mocks.history,
-    doOutsideHistoryIfAny: <T>(fn: () => T): T =>
+    doOutsideHistory: <T>(fn: () => T): T =>
         mocks.history ? mocks.history.doOutsideHistory(fn) : fn(),
-    clearUndoAndRedoIfAny: () => mocks.history?.clearUndoAndRedo(),
+    clearUndoAndRedo: () => mocks.history?.clearUndoAndRedo(),
 }));
 
 import { MarkupType, ReaderToolsModel } from "./readerToolsModel";

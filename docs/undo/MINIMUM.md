@@ -65,7 +65,12 @@ Talking Book, video, games and book settings have no undo today.
    Besides what the save strips, it leaves out what Bloom works out again or what only marks a
    selection: `data-bloom-active`, `bloom-selected` on a video container, the overflow checker's
    classes and the `min-height` that it writes into a box's `style`, `bloom-imageLoadError`,
-   Comical's generated SVG, and the attributes that CKEditor sets on a box. Section 3.7, "The
+   Comical's generated SVG, and the attributes that CKEditor sets on a box. It leaves a
+   description box (`.bloom-imageDescription`) out of the child lists of the `.bloom-canvas` that
+   holds it, and records what is inside it, so that the box that Image Description and Talking
+   Book add to a picture when they open, outside the history (item 4), does not make undo refuse
+   a step that holds that child list, such as adding a canvas element; nothing takes a
+   description box out of the page. Section 3.7, "The
    module as built", lists where its rules differ from that section's lists. The `padding-bottom`
    that the overflow checker writes into a `bloom-padForOverflow` box's `style` is recorded
    (OPEN-ISSUES.md item 37). On master the save strips the live page and then reloads it, so the
@@ -108,14 +113,15 @@ Talking Book, video, games and book settings have no undo today.
 
    The dialogs and toolbox controls that change the page fall into three groups:
    - **Undo steps with their own description**: Original Title, Set Destination, Set Up Hyperlink,
-     Text Box Properties, Choose Video on a canvas element (with the box fitted to the new video),
+     Choose Video on a canvas element (with the box fitted to the new video),
      the Sign Language tool's Record, Import and Delete, dragging a Motion rectangle, Talking Book's
      playback-order arrows and its recording-mode switch, and the Canvas tool's controls, with a
      colour picker session as one step from opening to OK.
    - **Changes made outside the history** (`doOutsideHistory`): the page settings of Book and Page
      Settings, with its live preview and its Cancel, which puts the page's pictures back too; the
      books chosen for a link grid; Image Description's checkbox and the wrapper that it puts around
-     each picture, which it takes away before each undo and redo and puts back after; the Music
+     each picture, which it takes away before each undo and redo and puts back after; the
+     description box that Image Description and Talking Book add to a picture that has none; the Music
      tool's settings; the Games tool's three options and its sounds; trimming a sign language
      video; the Motion checkbox and preview; Talking Book's playback highlighting and the setup that
      it writes on opening, apart from its sentence split; and, for now, every page change of the
@@ -138,7 +144,9 @@ Talking Book, video, games and book settings have no undo today.
      join the user's next input (issue 1). If the delays never clear, the transaction ends after
      4 s (`kMaxWaitTimeMs`, when a save also stops waiting). This is `doTransactionUntilPageSettles`
      in `bloomEditing.ts`; a call made inside another's change joins it. The AI image editor's swaps
-     in one commit go in one such transaction around them all. Paste Image needs nothing more: C#
+     on the current page in one commit go in one such transaction around them all. The pictures
+     that the same commit replaces on other pages, which C# changes and saves, are outside the
+     history: undo puts back only the current page's. Paste Image needs nothing more: C#
      calls `changeImage` with the result.
    - A `doTransaction` at each canvas command routing point (`runCommandControlAction` in
      `canvasControlRegistry.ts` for menu rows, `runControlCallback` for toolbar buttons and rows
@@ -196,7 +204,9 @@ Talking Book, video, games and book settings have no undo today.
    rewrite a box: their `doMarkup` reads the text and paints CSS highlights, and the only change
    that it makes to a box, removing markup that earlier versions of Bloom saved, is outside the
    history (section 5.3). Origami keeps its own undo inside Change Layout mode, run in
-   `doOutsideHistory`, and entering or leaving the mode ends the history (section 11.6).
+   `doOutsideHistory`, and entering or leaving the mode ends the history (section 11.6). The Text
+   Box Properties dialog opens only in that mode, so the step that it makes, named
+   `EditTab.TextBoxProperties.Title`, can never be undone: leaving the mode ends the history first.
 10. **The keys and the button**: the Undo button keeps its route (C# calls `handleUndo` and polls
     `canUndo`), which now answers from the page history. Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z are taken in
     the capture phase of the page frame's `keydown` (section 8.2), ahead of CKEditor and the reader

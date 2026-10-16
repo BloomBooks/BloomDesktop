@@ -39,7 +39,7 @@ vi.mock("../../../utils/bloomApi", async (importOriginal) => ({
     ) => requests.push({ urlSuffix, successCallback }),
 }));
 
-import { doTransactionIfAny } from "../../js/bloomEditing";
+import { doTransaction } from "../../js/bloomEditing";
 import { buildCanvasElementControlRegistryContext } from "./buildCanvasElementControlRegistryContext";
 import { makeFieldTypeMenuItem } from "./canvasControlTextMenuItems";
 
@@ -84,7 +84,7 @@ afterEach(() => {
 
 /**
  * Choose the field type whose row has l10nId in the Field submenu, as a click on it does:
- * runControlCallback runs the row's onSelect in doTransactionIfAny. Returns the promise of that
+ * runControlCallback runs the row's onSelect in doTransaction. Returns the promise of that
  * step, which settles when the step has closed.
  */
 function chooseFieldType(l10nId: string): Promise<void> {
@@ -93,7 +93,7 @@ function chooseFieldType(l10nId: string): Promise<void> {
         (subMenuRow) => subMenuRow.l10nId === l10nId,
     );
     if (!row) fail(`The Field submenu has no row for ${l10nId}.`);
-    return doTransactionIfAny(l10nId, () =>
+    return doTransaction(l10nId, () =>
         row.onSelect(ctx, { closeMenu: () => {} }),
     );
 }

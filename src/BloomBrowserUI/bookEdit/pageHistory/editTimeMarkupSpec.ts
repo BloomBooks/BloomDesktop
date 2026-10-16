@@ -9,6 +9,7 @@ import {
     createEditTimeMarkupFilter,
     isEditTimeElement,
     isCkEditorFillerBr,
+    isDescriptionBoxOfABloomCanvas,
     isInsideEditTimeElement,
     isTrackedFillingCharNode,
     keptAttributeValue,
@@ -360,6 +361,24 @@ describe("CKEditor's filler br", () => {
         );
         expect(isCkEditorFillerBr(byId("eol"), byId("eolP"))).toBe(false);
         expect(isCkEditorFillerBr(byId("span"), byId("p"))).toBe(false);
+    });
+});
+
+describe("a description box", () => {
+    it("is left out of child lists only as a child of a bloom-canvas", () => {
+        makePage(kEditablePage);
+        const box = document.createElement("div");
+        box.className = "bloom-translationGroup bloom-imageDescription";
+        byId("canvas").appendChild(box);
+        expect(isDescriptionBoxOfABloomCanvas(box, byId("canvas"))).toBe(true);
+        expect(
+            isDescriptionBoxOfABloomCanvas(byId("descGroup"), page!),
+            "one that is not in a bloom-canvas",
+        ).toBe(false);
+        expect(
+            isDescriptionBoxOfABloomCanvas(byId("img"), byId("canvas")),
+            "another child of a bloom-canvas",
+        ).toBe(false);
     });
 });
 
@@ -901,6 +920,67 @@ describe("a page history with the edit-time markup filter", () => {
         await letObserverDeliver();
         expect(unmarked).not.toHaveBeenCalled();
         expect(h.redoDescriptionL10nKey).toBe("Change picture");
+    });
+
+    it("leaves a description box out of its bloom-canvas's child lists, and records what is typed into it", async () => {
+        const { history: h, unmarked } = setUp();
+        const canvas = byId("canvas");
+        const element = document.createElement("div");
+        element.className = "bloom-canvas-element";
+        await h.doTransaction("Add", () => canvas.appendChild(element));
+        await h.undo();
+        expect(h.redoDescriptionL10nKey, "test setup").toBe("Add");
+
+        // Tool setup adds the box with no transaction; it is no change.
+        const box = document.createElement("div");
+        box.className = "bloom-translationGroup bloom-imageDescription";
+        box.innerHTML =
+            '<div class="bloom-editable" lang="en"><p id="descP"></p></div>';
+        canvas.appendChild(box);
+        await letObserverDeliver();
+        expect(unmarked).not.toHaveBeenCalled();
+        expect(h.redoDescriptionL10nKey).toBe("Add");
+
+        await h.redo();
+        expect(element.parentElement).toBe(canvas);
+        expect(box.parentElement).toBe(canvas);
+
+        await h.doTransaction("Type", () => {
+            byId("descP").textContent = "A dog";
+        });
+        await h.undo();
+        expect(byId("descP").textContent).toBe("");
+        await h.redo();
+        expect(byId("descP").textContent).toBe("A dog");
+
+        await h.undo();
+        await h.undo();
+        expect(element.isConnected).toBe(false);
+        expect(box.parentElement).toBe(canvas);
+        expect(byId("descP").textContent).toBe("");
+        expect(h.undoDescriptionL10nKey).toBeUndefined();
+        expect(h.redoDescriptionL10nKey).toBe("Add");
+    });
+
+    it("refuses an undo when the text in a description box changed while its bloom-canvas was out of the page", async () => {
+        const { history: h } = setUp();
+        const canvas = byId("canvas");
+        const box = document.createElement("div");
+        box.className = "bloom-translationGroup bloom-imageDescription";
+        box.innerHTML = '<div class="bloom-editable" lang="en"><p>A</p></div>';
+        h.doOutsideHistory(() => canvas.appendChild(box));
+        await h.doTransaction("Remove", () => canvas.remove());
+        expect(h.undoDescriptionL10nKey, "test setup").toBe("Remove");
+
+        h.doOutsideHistory(() => {
+            box.querySelector("p")!.textContent = "B";
+        });
+        await h.undo();
+        expect(
+            canvas.isConnected,
+            "the check should see the change inside the box",
+        ).toBe(false);
+        expect(h.undoDescriptionL10nKey).toBeUndefined();
     });
 });
 

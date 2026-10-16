@@ -60,13 +60,13 @@ import { EditableDivUtils } from "../../js/editableDivUtils";
 import { createValidXhtmlUniqueId } from "../../js/xhtmlIdUtils";
 import { doesNarrationExist, kAnyRecordingApiUrl } from "./audioUtils";
 import {
-    doTransactionIfAny,
+    doTransaction,
     wrapWithRequestPageContentDelay,
 } from "../../js/bloomEditing";
 import {
-    addToLatestTransactionIfAny,
+    addToLatestTransaction,
     currentPageHistory,
-    doOutsideHistoryIfAny,
+    doOutsideHistory,
 } from "../../pageHistory/pageHistoryAccess";
 import {
     hideImageDescriptions,
@@ -2116,7 +2116,7 @@ export default class AudioRecording implements IAudioRecorder {
             return;
         }
         // A change that a listener makes before an undo would join the latest step.
-        doOutsideHistoryIfAny(() => {
+        doOutsideHistory(() => {
             this.revertFixHighlighting();
             void this.stopPlaybackAsync();
         });
@@ -2497,7 +2497,7 @@ export default class AudioRecording implements IAudioRecorder {
         }
         // Numbering the groups 1, 2, 3... when the arrows appear is not something the user did,
         // so it is not recorded in the page history. Moving a group with the arrows is.
-        doOutsideHistoryIfAny(() => this.sortOutTabindexValues());
+        doOutsideHistory(() => this.sortOutTabindexValues());
         this.renderPlaybackControls();
         this.uiState.inShowPlaybackOrderMode = true;
         this.notifyStateChanged();
@@ -2970,7 +2970,7 @@ export default class AudioRecording implements IAudioRecorder {
 
         // Defensive cleanup: strip any ui-audioCurrent class left by older Bloom versions that used DOM marking.
         // Modern code tracks the highlight via this.highlightedElement instead.
-        doOutsideHistoryIfAny(() =>
+        doOutsideHistory(() =>
             Array.from(
                 docBody?.getElementsByClassName("ui-audioCurrent") ?? [],
             ).forEach((el) => el.classList.remove("ui-audioCurrent")),
@@ -3006,7 +3006,7 @@ export default class AudioRecording implements IAudioRecorder {
             return result;
         } else {
             if (deshroudPhraseDelimiters)
-                doOutsideHistoryIfAny(() =>
+                doOutsideHistory(() =>
                     deshroudPhraseDelimiters(this.getPageDocBody()),
                 );
             await this.setupAndUpdateMarkupAsync();
@@ -3202,7 +3202,7 @@ export default class AudioRecording implements IAudioRecorder {
                 // A write from a listener here would join the latest step and clear redo.
                 // The arrows are bloom-ui, which the history ignores, and the tabindex values
                 // are already numbered 1, 2, 3..., but doOutsideHistory makes sure of it.
-                doOutsideHistoryIfAny(() => {
+                doOutsideHistory(() => {
                     this.removePlaybackOrderUi(docBody, true);
                     this.showPlaybackOrderUi(docBody);
                 });
@@ -3240,7 +3240,7 @@ export default class AudioRecording implements IAudioRecorder {
         this.recordingMode = mode;
         if (!this.splitNeededSinceUndoOrRedo) {
             // Moving the highlight writes nothing that the history records; this makes sure.
-            doOutsideHistoryIfAny(
+            doOutsideHistory(
                 () =>
                     void this.setCurrentAudioElementBasedOnRecordingModeAsync(
                         textBox,
@@ -3486,7 +3486,7 @@ export default class AudioRecording implements IAudioRecorder {
      * undoes the split too, and an earlier step that changed the box can still be undone.
      */
     private applySplits(updateFuncs: (() => void)[]): void {
-        addToLatestTransactionIfAny(() => updateFuncs.forEach((x) => x()));
+        addToLatestTransaction(() => updateFuncs.forEach((x) => x()));
     }
 
     /**
@@ -3663,10 +3663,16 @@ export default class AudioRecording implements IAudioRecorder {
         if (shouldUpdateMarkup) {
             const recordingMode = this.getRecordingModeOfTextBox(textBox);
             const playbackMode = this.getPlaybackMode(textBox);
-            return this.getUpdateMarkupForTextBoxAction(
-                textBox,
-                recordingMode,
-                playbackMode,
+            // Working out the action already writes the box's recording mode, and for a box
+            // recorded whole its audio-sentence class and id (getActionToMakeAudioSentenceElements).
+            // This runs after an await, outside any transaction, so like the split that the action
+            // makes (applySplits), those writes join the latest undo step.
+            return addToLatestTransaction(() =>
+                this.getUpdateMarkupForTextBoxAction(
+                    textBox,
+                    recordingMode,
+                    playbackMode,
+                ),
             );
         } else {
             return () => {
@@ -5104,7 +5110,7 @@ export default class AudioRecording implements IAudioRecorder {
     // click is in the toolbox, where Bloom has opened a transaction with the general description
     // (pageHistoryInput.ts); this one nests inside it and gives the step this description.
     public async setRecordingMode(recordingMode: RecordingMode): Promise<void> {
-        await doTransactionIfAny(kRecordingModeUndoL10nKey, () =>
+        await doTransaction(kRecordingModeUndoL10nKey, () =>
             // So that a save does not take the page while the switch is half done.
             wrapWithRequestPageContentDelay(
                 () => this.setRecordingModeAsync(recordingMode),
@@ -5313,7 +5319,7 @@ export default class AudioRecording implements IAudioRecorder {
      * revertFixHighlighting puts back the very nodes that they replaced.
      */
     public fixHighlighting(currentAudioElement?: HTMLElement) {
-        doOutsideHistoryIfAny(() =>
+        doOutsideHistory(() =>
             this.fixHighlightingOfElements(currentAudioElement),
         );
     }
@@ -5489,7 +5495,7 @@ export default class AudioRecording implements IAudioRecorder {
      * This function will undo in BloomDesktop the modifications made by fixHighlighting()
      */
     public revertFixHighlighting() {
-        doOutsideHistoryIfAny(() => {
+        doOutsideHistory(() => {
             this.childrenToRestoreAfterPlayEnded.forEach((children, parent) =>
                 (parent as ParentNode).replaceChildren(...children),
             );

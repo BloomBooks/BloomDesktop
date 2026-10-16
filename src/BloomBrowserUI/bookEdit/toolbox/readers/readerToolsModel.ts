@@ -642,7 +642,7 @@ export class ReaderToolsModel {
             // BL-2758 But if we're in a source collection we may have valid source bubbles,
             // don't delete them!
             // The qtips are children of the body, outside the .bloom-page that the page history
-            // observes, so removing them needs no doOutsideHistoryIfAny.
+            // observes, so removing them needs no doOutsideHistory.
             $(editableElements[0])
                 .closest("body")
                 .children('.qtip:not(".uibloomSourceTextsBubble")')
