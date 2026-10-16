@@ -62,6 +62,7 @@ import {
     doTransaction,
     GetEditor,
     pasteClipboard,
+    whenNoRequestPageContentDelays,
 } from "../../js/bloomEditing";
 import { CogIcon } from "../../js/CogIcon";
 import { DuplicateIcon } from "../../js/DuplicateIcon";
@@ -268,22 +269,26 @@ const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
  * menu or a toolbar, in the page or in the Canvas tool, is an undo step of its own rather than a
  * change that ends the history. The step is described by the command's label. An async action
  * keeps the step open until it settles, so an action must await any work of its own that
- * changes the page later. If the action fails, the step's changes are put back, and the bubbles
- * are drawn again from the page.
+ * changes the page later. The step then stays open until no page content delay is pending, so
+ * that what the action started without awaiting it, such as fitting a canvas element to a new
+ * picture once the picture has loaded, is part of the step and not of the user's next action.
+ * If the action fails, the step's changes are put back, and the bubbles are drawn again from the
+ * page.
  */
 export const runCommandControlAction = (
     control: ICommandControlDefinition,
     ctx: IControlContext,
     runtime: IControlRuntime,
 ): Promise<void> =>
-    doTransaction(control.l10nId, () => control.action(ctx, runtime)).catch(
-        (error) => {
-            // The rollback put back data-bubble, but Comical draws from its own copy of each
-            // spec.
-            getCanvasElementManager()?.redrawBubblesFromPage();
-            throw error;
-        },
-    );
+    doTransaction(control.l10nId, async () => {
+        await control.action(ctx, runtime);
+        await whenNoRequestPageContentDelays();
+    }).catch((error) => {
+        // The rollback put back data-bubble, but Comical draws from its own copy of each
+        // spec.
+        getCanvasElementManager()?.redrawBubblesFromPage();
+        throw error;
+    });
 
 const buildDynamicMenuItemFromControl = (
     controlId: TopLevelControlId,

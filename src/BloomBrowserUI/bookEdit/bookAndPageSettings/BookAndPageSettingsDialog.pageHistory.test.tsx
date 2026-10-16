@@ -301,4 +301,20 @@ describe("The Book and Page Settings dialog's page settings", () => {
         expect(img.getAttribute("src")).toBe("a.png");
         expectHistoryKept();
     });
+
+    it("keep a picture that something else replaced while the dialog was open, putting back only its transparency", () => {
+        // As when a link grid's thumbnail arrives after the dialog opened (linkGrid.ts).
+        history.doOutsideHistory(() => img.setAttribute("src", "b.png"));
+
+        click("page-change");
+        expect(img.getAttribute("src")).toBe("b.png?transparent=yes");
+        click("page-reset");
+        expect(img.getAttribute("src")).toBe("b.png");
+
+        click("page-change");
+        click("dialog-cancel");
+        expect(backgroundColor()).toBe("");
+        expect(img.getAttribute("src")).toBe("b.png");
+        expectHistoryKept();
+    });
 });
