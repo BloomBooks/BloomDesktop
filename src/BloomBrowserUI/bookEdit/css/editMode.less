@@ -8,6 +8,7 @@
 @import "../sourceBubbles/sourceBubbles.less";
 @import "../../placeHolderImages.less";
 @import "bleedAndCropMarks.less";
+@import "inlineImageEditing.less";
 
 @focusBorderColor: transparent; // #d6eaed; // @bloom-blue; // rgba(82, 168, 236, 0.6);
 @tipLinkColor: #8e3581; // intentionally a bit darker to be legible
@@ -1839,7 +1840,11 @@ canvas.moving {
     }
 }
 
-#canvas-element-context-controls {
+// The control bar under a selected canvas element, and the same bar under a selected inline
+// image (a picture inside a text block). Both hold the same React component, so they need the
+// same box. Each has its own id because different code shows and removes each one.
+#canvas-element-context-controls,
+#inline-image-context-controls {
     position: absolute;
     transform-origin: top left;
     &.moving {
