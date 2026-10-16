@@ -72,7 +72,10 @@ import {
     SendBackwardIcon,
     SendToBackIcon,
 } from "../../js/LayerIcons";
-import type { ZOrderMove } from "../../js/canvasElementManager/CanvasElementZOrder";
+import {
+    kZOrderMoveL10nIds,
+    type ZOrderMove,
+} from "../../js/canvasElementManager/CanvasElementZOrder";
 import { LinkIcon } from "../../js/LinkIcon";
 import { MissingMetadataIcon } from "../../js/MissingMetadataIcon";
 import StyleEditor from "../../StyleEditor/StyleEditor";
@@ -518,10 +521,10 @@ export const makeChooseAudioMenuItemForImage = (
 };
 
 // One command row of the "Layer" submenu. The command itself runs in the page frame's
-// CanvasElementManager, which reorders the DOM and keeps the Comical bubble levels in step.
+// CanvasElementManager, which reorders the DOM and keeps the Comical bubble levels in step,
+// as one undo step described by the row's l10nId.
 const makeLayerCommandRow = (
     id: "bringForward" | "bringToFront" | "sendBackward" | "sendToBack",
-    l10nId: string,
     englishLabel: string,
     icon: React.FunctionComponent<SvgIconProps>,
     shortcutDisplay: string,
@@ -529,7 +532,7 @@ const makeLayerCommandRow = (
     enabled: (ctx: IControlContext) => boolean,
 ): IControlMenuCommandRow => ({
     id,
-    l10nId,
+    l10nId: kZOrderMoveL10nIds[move],
     englishLabel,
     icon: React.createElement(icon, null),
     shortcut: {
@@ -559,7 +562,6 @@ export const makeLayerMenuItem = (
     subMenuItems: [
         makeLayerCommandRow(
             "bringForward",
-            "EditTab.Toolbox.CanvasTool.Layer.BringForward",
             "Bring Forward",
             BringForwardIcon,
             "Ctrl+]",
@@ -568,7 +570,6 @@ export const makeLayerMenuItem = (
         ),
         makeLayerCommandRow(
             "bringToFront",
-            "EditTab.Toolbox.CanvasTool.Layer.BringToFront",
             "Bring to Front",
             BringToFrontIcon,
             "Ctrl+Shift+]",
@@ -577,7 +578,6 @@ export const makeLayerMenuItem = (
         ),
         makeLayerCommandRow(
             "sendBackward",
-            "EditTab.Toolbox.CanvasTool.Layer.SendBackward",
             "Send Backwards",
             SendBackwardIcon,
             "Ctrl+[",
@@ -586,7 +586,6 @@ export const makeLayerMenuItem = (
         ),
         makeLayerCommandRow(
             "sendToBack",
-            "EditTab.Toolbox.CanvasTool.Layer.SendToBack",
             "Send to Back",
             SendToBackIcon,
             "Ctrl+Shift+[",

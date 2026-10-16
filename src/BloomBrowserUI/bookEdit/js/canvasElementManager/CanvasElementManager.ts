@@ -111,6 +111,7 @@ import {
 } from "./CanvasElementDraggableIntegration";
 import { CanvasElementEditingSuspension } from "./CanvasElementEditingSuspension";
 import {
+    kZOrderMoveL10nIds,
     moveCanvasElementInZOrder,
     type ZOrderMove,
 } from "./CanvasElementZOrder";
@@ -3657,14 +3658,24 @@ export class CanvasElementManager {
             return;
         }
         const active = this.getActiveElement();
-        if (!active || !moveCanvasElementInZOrder(active, move)) {
+        if (!active) {
             return;
         }
-        // Moving the element rebuilt Comical's bubbles, so make sure the active one gets its
-        // handles back. Aligning the control frame also re-renders the context controls, so a
-        // reopened menu shows which layer moves are still possible.
-        Comical.activateElement(active);
-        this.alignControlFrameWithActiveElement();
+        // One undo step, described by the command's label. From the Layer menu this nests in the
+        // transaction that runControlCallback opens with the same description; from a shortcut it
+        // nests in the stand-in that the key press opened, and gives that step its description.
+        // Undo and redo put back the DOM order and the data-bubble levels together, and
+        // updateAfterUndoOrRedo redraws the bubbles from them.
+        doAsUndoStep(kZOrderMoveL10nIds[move], () => {
+            if (!moveCanvasElementInZOrder(active, move)) {
+                return;
+            }
+            // Moving the element rebuilt Comical's bubbles, so make sure the active one gets its
+            // handles back. Aligning the control frame also re-renders the context controls, so a
+            // reopened menu shows which layer moves are still possible.
+            Comical.activateElement(active);
+            this.alignControlFrameWithActiveElement();
+        });
     }
 
     public duplicateCanvasElement(): HTMLElement | undefined {
@@ -3834,18 +3845,29 @@ function styleLengthInPx(value: string, measured: number): number {
 function doAddAsUndoStep(
     add: () => HTMLElement | undefined,
 ): HTMLElement | undefined {
+    return doAsUndoStep(kGenericUndoDescriptionL10nKey, add);
+}
+
+/**
+ * Run change, which must not be async, in a transaction of the page history described by
+ * descriptionL10nKey, and return what it returns, as doAddAsUndoStep does for an add. Called while
+ * another transaction is open, it joins that one. If change throws, its changes are put back, the
+ * bubbles are drawn again from the page, and the error is thrown to the caller. With no page
+ * history it just runs change.
+ */
+function doAsUndoStep<T>(descriptionL10nKey: string, change: () => T): T {
     const history = currentPageHistory();
-    if (!history) return add();
-    let added: HTMLElement | undefined;
+    if (!history) return change();
+    let result: T | undefined;
     let threw = false;
     let error: unknown;
     // A function that returns a plain value runs, and its transaction closes, before
-    // doTransaction returns, so added is set by then. If add throws, the transaction puts back
-    // its changes and the promise rejects; the error is thrown to the caller here instead.
+    // doTransaction returns, so result is set by then. If change throws, the transaction puts
+    // back its changes and the promise rejects; the error is thrown to the caller here instead.
     history
-        .doTransaction(kGenericUndoDescriptionL10nKey, () => {
+        .doTransaction(descriptionL10nKey, () => {
             try {
-                added = add();
+                result = change();
             } catch (e) {
                 threw = true;
                 error = e;
@@ -3858,7 +3880,7 @@ function doAddAsUndoStep(
         theOneCanvasElementManager?.redrawBubblesFromPage();
         throw error;
     }
-    return added;
+    return result as T;
 }
 
 /**
