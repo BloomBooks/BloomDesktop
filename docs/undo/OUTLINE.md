@@ -512,8 +512,7 @@ compare with the state after.
 
 ## 13. Moving from today's code (later)
 
-The order of steps is in `APPROACHES.md` section 10 (§1 goal 8). Still needed: an inventory of
-existing undo code to delete.
+The order of steps is in `APPROACHES.md` section 10 (§1 goal 8).
 
 ---
 
@@ -680,8 +679,8 @@ source is already the book's own file, which is overwritten). Re-recording audio
 file and deletes the old one once the new recording succeeds. Unused files are deleted by
 `CleanupUnusedSupportFiles`, which runs when a book is selected and when page orientation
 changes in Edit; not on save or page switch. When the user commits, the AI image editor deletes
-`ai-image*` files displaced from slots on other pages that nothing references any more; files on
-the open page are left for `CleanupUnusedSupportFiles` (`AiImageEditorApi.cs`).
+no file; the files that it displaced are left for `CleanupUnusedSupportFiles`, which also removes
+`.jpeg` and `.webp` (`AiImageEditorApi.cs`, `BookStorage.cs`).
 - **Dialogs that change the page live**: `BookAndPageSettingsDialog` (restores the page's
 attributes on Cancel), `ColorPickerDialog` (restores the initial colour on Cancel), probably
 StyleEditor's colour picker. The StyleEditor format dialog applies changes live and has no

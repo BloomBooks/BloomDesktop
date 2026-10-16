@@ -66,9 +66,9 @@ const kRequestsThatKeepThePageHistory = new Set(
         "editView/pasteImage",
         "audio/copyAudioFile",
         "fileIO/chooseFile",
-        // Safe only once C# no longer runs DeleteSupersededAiImageFiles on a commit, which can delete
-        // a file that undo then puts back a reference to (CODE-WALK issue 4). That C# change is a
-        // separate step of MINIMUM item 7.
+        // A commit writes its pictures under new names and deletes no file that a page may name. If
+        // it ever deletes the picture it replaced, undo would put back a page naming a missing file,
+        // and this request must come off the list.
         "aiImageEditor/commit",
         // Starts an AI image editor session; nothing on the page changes until the commit.
         "aiImageEditor/launch",

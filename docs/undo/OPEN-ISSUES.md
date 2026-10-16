@@ -1,7 +1,7 @@
 # Undo design: issues to pick up next
 
-Where the conversation about the page history API stopped (2026-10-15), and what is still open.
-The design itself is in APPROACHES.md; section numbers below refer to it.
+What is still open in the undo design (2026-10-15), with the first version, MINIMUM.md, built in
+commit `ec71549342`. The design itself is in APPROACHES.md; section numbers below refer to it.
 
 ## Proposed, waiting for a decision
 
@@ -34,17 +34,42 @@ The design itself is in APPROACHES.md; section numbers below refer to it.
    the page. The order in which the action made them, mixed, is not kept. That is safe only if the
    functions of a change outside the page do not depend on the page: item 1.
 
+35. **Where the knowledge of which requests keep the history lives** (John is considering it; not
+    decided). The first version keeps it in the front end, as `kRequestsThatKeepThePageHistory` in
+    `utils/bloomApi.ts`, and ends the history before any other request whose method is not GET,
+    HEAD or OPTIONS (section 11.8.7). Two other places are under consideration:
+    - **A required flag on each C# endpoint registration** (`RegisterEndpointHandler`), which the page
+      frame fetches once per page load. The decision sits beside the code that knows what the
+      endpoint changes, and every new endpoint has to make it. The page frame needs the table before
+      the first request that ends the history, and one endpoint whose effect depends on its data
+      (`fileIO/copyFile`, which copies over an audio file for Import and not for duplication) needs a
+      flag that says more than yes or no, or splitting into one endpoint that writes a new file and
+      one that overwrites, so that each endpoint has one effect to declare.
+    - **The caller**, which says at each call whether the request keeps the history. The caller
+      knows why it sends the request, so it can tell Import from duplication. The knowledge is
+      spread over every call site, two callers can say different things about one endpoint, and a
+      call that says nothing must still end the history.
+    - **The list in `bloomApi.ts`, as built**: one place to review, away from both the endpoint and
+      the caller. A request that nobody has added ends the history, which loses history and damages
+      nothing; an entry that stays after its endpoint starts changing something that the page names
+      is the risk.
+36. **C# taking part in transactions** (a proposal, not decided). C# records its own change to its
+    state and returns a token with its reply; `bloomApi.ts` attaches the token to the open transaction,
+    and undo, redo and discarding a token go to C# through three fixed endpoints. Beside
+    `addChangeOutsidePage` (section 11.8.4), where the front end supplies the values before and after
+    and the functions that set them, the knowledge of what changed stays in C#, which holds state that
+    the front end cannot read whole, and a request inside a transaction needs no code at its call
+    site. Still to work out: what a request outside any transaction does; the order between page
+    changes and C#'s (item 2); a failure partway (item 7); and when C# discards what a token holds
+    (a cleared history, a page unload, a step dropped past the 50 that the history keeps).
+
 ## API questions not yet discussed
 
-3. **What `onAfterUndoOrRedo` passes its listeners.** Section 6.1 says `(roots: Element[])`; 11.8.1
-   says `(restored: RestoredContent)`, that is `{ roots, direction }`. If no listener needs
-   `direction`, plain `roots` is simpler and the name `RestoredContent` goes away.
-4. **`pageHistory` or `pageHistory()`.** The examples mix both. A function works the same in every
-   frame and returns the current page's history; the suggestion is `pageHistory()` everywhere.
 5. **Whether `undo()` and `redo()` report a refusal** (`Promise<boolean>` instead of
    `Promise<void>`), so that the caller can tell the user that older history was discarded.
-6. **The Undo button's read side** (John set this aside). Nothing tells the button when to change.
-   Suggested: one `onUndoRedoChanged(listener)` that hands over `undoDescriptionL10nKey` and
+6. **The Undo button's read side** (John set this aside). Nothing tells the button when to change:
+   C# polls `canUndo` on a timer, and nothing shows the descriptions. Suggested: one
+   `onUndoRedoChanged(listener)` that hands over `undoDescriptionL10nKey` and
    `redoDescriptionL10nKey` (`undefined` means nothing to undo), called on subscribe and after every
    change, replacing the read properties; and the root window subscribes once, with each new page's
    history reporting into it, so the button never has to know about page loads.
@@ -56,13 +81,22 @@ The design itself is in APPROACHES.md; section numbers below refer to it.
    with their other value and refuses the undo with the page unchanged; that repair can fail in turn,
    and what Bloom does then is open (11.8.4, Order).
 8. **A transaction that is never ended.** Code that begins one at pointer down also ends it on
-   pointercancel and loss of focus; a dialog ends or cancels its own however it closes; the history
-   ends any open one when the page unloads. A history-side safety net (an element that the
-   transaction's own input comes from, and ending the transaction on input outside it) was discussed
-   and set aside; not recorded in APPROACHES at John's request.
-9. **What Undo does while a transaction is open** (a drag in progress, a dialog that previews live).
+   pointercancel and loss of focus, as the first version's input transactions do; a dialog ends or
+   cancels its own however it closes; the history ends any open one when the page unloads
+   (`pagehide`). The "Undo edit" transaction waits for transactions begun inside it, so a dialog's
+   transaction that is never ended keeps that one open too, and undo does nothing until the page
+   unloads or something clears the history. A history-side safety net (an element that the transaction's own input comes from, and
+   ending the transaction on input outside it) was discussed and set aside; not recorded in
+   APPROACHES at John's request.
+9. **What Undo does while a transaction is open** (a drag in progress, a dialog that previews live, a
+   picture change waiting for its page content delays). The first version does nothing, a choice
+   marked provisional in `pageHistory.ts`; `canUndo` counts an open transaction, so the Undo button
+   is enabled then and its click does nothing. The alternative is to end the transaction first. The
+   typing step is not affected: the press on the button or the undo key ends it before undo runs.
 10. **Typing during an async transaction** joins it (rule 7), so a slow action can take in the user's
-    typing. A UX cost to weigh.
+    typing. A picture change keeps its transaction open until no page content delay is pending, for
+    up to 4 s (MINIMUM.md item 5), so typing in that time is undone with the picture. A UX cost to
+    weigh.
 
 ## Files and state outside the page
 
@@ -81,14 +115,23 @@ The design itself is in APPROACHES.md; section numbers below refer to it.
     `BookCommandsApi.cs:474`, CollectionModel, SpreadsheetImporter, the publish and upload paths,
     E2eTestingApi. If one can, it must clear the history first or wait.
 14. **The paste route that rewrites a picture's metadata in place** (`editView/pasteImage`) must write
-    a new file before C#'s refusal to overwrite a media file ships, since that request is not on
-    `kRequestsThatEndTheHistory`.
+    a new file before C#'s refusal to overwrite a media file ships, since that request is on
+    `kRequestsThatKeepThePageHistory`.
 15. **The leveled reader level** (answered by CODE-WALK.md): the body attribute is display only and
     never reaches the book from the page, so the level stays outside the history; the reload that
     every level change causes today can become a write in `doOutsideHistory`. APPROACHES case 7.6
     still needs updating to say so.
 16. **Table operation keys.** bloom-table reports operations by English name ("Resize Column");
-    `tableL10nKey(label)` maps them to keys, which must exist in the English XLF.
+    `tableL10nKey(label)` maps them to keys, which must exist in the English XLF. In the first
+    version each table operation is an "Undo edit" step, and `bloom-table` still keeps its own
+    history inside the library, though nothing in Bloom reaches it.
+37. **The overflow checker's inline styles.** It writes `min-height` and `padding-bottom` into a
+    box's `style`, worked out from the content, and the save keeps them. The filter records them like
+    any style property, so a write after an undo is a change outside any transaction, which joins the
+    latest step and clears redo (rule 8). Open: whether to add them to what the save keeps and undo
+    leaves alone, as the overflow checker's classes are (section 3.7).
+38. **Undo while a save is in flight** (`SavePending`, `EditingStateMachine.cs:14`), which the save
+    can overtake (retire-ckeditor PLAN.md:657-663). Still to decide (MINIMUM.md item 8).
 
 ## Found in the code (CODE-WALK.md, 2026-10-15)
 
@@ -105,8 +148,6 @@ Deleting or overwriting a file that a page names:
   Make it work like removing a picture: a transaction removes the `<video>`, the file stays, and
   `CleanupUnusedSupportFiles` removes it when no history exists. The request then no longer needs to
   end the history. (§4)
-- **`DeleteSupersededAiImageFiles`**: remove it, and have `CleanupUnusedSupportFiles` cover `.jpeg`
-  and `.webp` so that those files are still removed later. (§4)
 - **`editView/addImageFromUrl`** writes `bookButton-<bookId>.png` over the old one; write a new name.
   (§4)
 - **The Games tool's built-in sounds**: skip the copy when the file is already there. (§4)
@@ -115,9 +156,6 @@ Deleting or overwriting a file that a page names:
 
 Writes to the page that happen without a click or key press, and that the save keeps:
 
-- Hover buttons (the widget chooser button, `moveButton`, `deleteButton`) get `bloom-ui`.
-- The picture tooltip's `title` and `data-title` are written in `doOutsideHistory` (see image
-  metadata under "Improve the plan").
 - Video selection stops being stored as `bloom-selected` in the saved markup. (§2)
 
 Playback: `fixHighlighting` changes to CSS highlight ranges, as the rest of the highlighting already
@@ -177,24 +215,17 @@ the history, or make the action end the history.
   the Games tool's built-in sound files could be declared outside the history.
 - **`addPage` needs nothing.** It overwrites smart-page scripts, but it goes to the new page, which
   ends the history anyway. (§4)
-- **Page changes after an `await`, a reply or an event are the normal case.** APPROACHES §10 says
-  that the first step of the move wraps nothing. Every action whose page change comes after a reply
-  needs `beginTransaction` at the click and `end()` once the reply is applied, from the first step.
-  (§1)
 - **Rule 1 assumes that Bloom's reactions finish before the next input.** Anything that waits on a
   load breaks that, and an undo can then return to a page that existed for a moment but was broken
-  (BL-16870). The pixel-size change above fixes pictures; the plan must say what happens to any other
-  reaction that lands late. (§1)
-- **Page load has no defined end.** The plan needs a moment when the page is ready (after the
-  toolbox's second `newPageReady`, the placeholder text and the background picture conversion),
-  before which the history accepts no transaction; and a rule for the setup that a tool does when the
-  user opens it: outside the history, or a boundary. The Games tool's random shuffle depends on that
-  rule. (§3)
+  (BL-16870). For pictures, the first version keeps the change's transaction open until no page
+  content delay is pending (MINIMUM.md item 5), and the pixel-size change above would let it close
+  at once. The plan must say what happens to any other reaction that lands late. (§1)
+- **Setup that a tool does when the user opens it.** In the first version, a click in the toolbox
+  that changes the page ends the history (MINIMUM.md item 4). Once input in the toolbox makes undo
+  steps, the plan must say whether that setup is outside the history or a boundary. The Games tool's
+  random shuffle depends on that rule. (§3)
 - **Rule 6's filter** was derived from the save path. It needs an audit of `mouseenter`,
-  `mouseleave` and selection handlers too, and the plan must say which nodes the observer watches
-  (zoom writes the style of `#page-scaling-container`). (§2)
-- **Rule 1 counts only a net change.** `classList.add` of a token that is already there still queues
-  a record, and the quiz and placeholder observers do that after every undo. (§8)
+  `mouseleave` and selection handlers too. (§2)
 - **What listeners of `onAfterUndoOrRedo` may do later.** React renders, `useEffect` writes and
   `ResizeObserver` callbacks run after the restore. The plan must say how a listener that writes the
   page in a later task avoids becoming a new step. (§8)
@@ -203,12 +234,16 @@ the history, or make the action end the history.
   file that the same request created, and a flag that the front end keeps up to date for "a page
   history exists", because many writes run after their request has ended or with no request at all.
   The whole-folder passes (`ProcessBook`, the media level 1 migration) end the history. (§4)
-- **`kRequestsThatEndTheHistory`**: add content languages from the top bar, topic, custom page
-  layout, the leveled reader's reload and `editView/jumpToPage` after a custom layout conversion. Say
-  how the reloads that C# starts (Report a Problem, a UI language change, a video edited in another
-  program) clear the history; how to handle requests that act after replying
-  (`pageList/contextMenuItemClicked`, `editView/duplicatePageMany`) and GETs that change state; and
-  that axios runs request interceptors asynchronously. (§5)
+- **Requests.** Under the first version's rule, the requests that CODE-WALK found missing from
+  `kRequestsThatEndTheHistory` (content languages from the top bar, topic, custom page layout, the
+  leveled reader's reload, `editView/jumpToPage` after a custom layout conversion) end the history
+  already, since none is on `kRequestsThatKeepThePageHistory`; they matter again if the rule turns
+  round (section 11.8.7). Still open: how the reloads that C# starts (Report a Problem, a UI language
+  change, a video edited in another program) clear the history; requests that act after replying
+  (`pageList/contextMenuItemClicked`, `editView/duplicatePageMany`); GETs that change state, and
+  requests sent with jQuery's `$.ajax` or with `fetch`, which pass by the interceptor; and a page
+  change that a caller makes synchronously right after a request that ends the history, which is
+  dropped with the rest, since axios runs the interceptor a microtask after the call. (§5)
 - **Saving.** The plan assumes that the page DOM is what is saved; for the page div only a listed set
   of attributes is saved, and the plan should say so. Whole-book changes need the current page saved
   first, which conflicts with item 1; §11.5 must say who saves, and when.
@@ -219,11 +254,6 @@ the history, or make the action end the history.
 - **The planned change that gives each recording a new id** must allow for elements that share an
   audio id (data-book fields, custom layouts, copies from the data div) and for `_timings.txt`, which
   is named by the id. (§10)
-- **Ending a drag's transaction.** The plan says pointercancel, but Bloom's drags use mouse events
-  and end on `buttons === 0` at the next move, and the Motion tool's jQuery UI drags have only `stop`.
-  The rule should say that the code ends the transaction on whatever ends its drag. (§11)
-- **Which frame's clicks open an "Undo edit" transaction** (toolbox, top bar, root-window dialogs).
-  (§12)
 - **The AI image editor.** Launching it on a book that needs its page layout update is a boundary
   that §3.3 does not list. (§13)
 - **The answers in §14** go into APPROACHES: the leveled reader level stays outside the history,
@@ -239,24 +269,19 @@ the history, or make the action end the history.
 
 ## Documents
 
-33. **MINIMUM.md** proposes a first version that matches today's undo, which replaces APPROACHES
-    §10.1's first step if it is agreed. Its choices to discuss: input outside the page frame that
-    changes the page ends the history; every POST that is not on a short list ends the history; and
-    the page is ready once no page content delay is pending. It also conflicts with work already on
-    master or planned (RETIRE-CKEDITOR-COMPARED.md section 6): it switches off the table entries on
-    the one stack (retire-ckeditor decision 8, merged), keeps redo where decision 6 discards the whole
-    stack, and replaces `UndoStack`, on which PROGRESS.md's next step (Stage 3) and draft PR 8451
-    build. Only one of the two can go next.
+33. **Work that builds on the removed stack.** Draft PR 8451 and retire-ckeditor PROGRESS.md's next
+    step (Stage 3) build on `UndoStack`, which the first version removes, along with the table
+    entries on the one stack of retire-ckeditor decision 8 (RETIRE-CKEDITOR-COMPARED.md section 6).
 34. **RETIRE-CKEDITOR-COMPARED.md section 4** lists facts that our documents should take in: the
     paste filter bypass (case 11.1 says the opposite), Ctrl+Y doing redo in a CKEditor box (EXPERIMENTS
-    §3.2 says it did nothing; one of the two is wrong), same-page reloads missing from §3.3, and the
-    code of PR 8387, which APPROACHES §10.1 says was not read.
+    §3.2 says it did nothing; one of the two is wrong), and same-page reloads missing from §3.3.
 
 17. **The two Claude docs are paused** (John prefers to work in the Markdown). Since they were last
     updated: `doTransaction` (was `run`), `beginTransaction` (was `beginGesture`), descriptions are an
     l10n key only, `addToLatestTransaction` and `doOutsideHistory` (were `untracked`), `Transaction`
     passed to `fn` and returned by `beginTransaction`, `addChangeOutsidePage` with `bidirectional` or
-    `doAndRedo`/`undo` (was `setBackEndState`), `registerOutsideState` dropped, nested transactions.
+    `doAndRedo`/`undo` (was `setBackEndState`), `registerOutsideState` dropped, nested transactions,
+    and the built API of 11.8.1.
 18. **The explainer page** has not been republished since version 12; its local file has the later
     edits.
 19. **OUTLINE §16** still says "A file an undo would need could be gone after it" (the orientation
@@ -265,7 +290,5 @@ the history, or make the action end the history.
 20. **Goal 7** (making a toolbox action undoable cheaply after the fact) reads weaker since
     `registerOutsideState` was dropped: case 7.6's leveled reader button now waits for an API for
     JavaScript state.
-21. **Uncommitted:** dropping `descriptionEnglish`, nested transactions, the closed-transaction rule,
-    this file and CODE-WALK.md.
 32. **APPROACHES.md has not absorbed CODE-WALK.md yet.** The items under "Improve the plan" should
     go into APPROACHES once they are discussed.
