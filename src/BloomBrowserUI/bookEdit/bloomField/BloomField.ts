@@ -908,7 +908,39 @@ export default class BloomField {
     // deliberately deleted one.
     private static PreventRemovalOfSomeElements(field: HTMLElement) {
         BloomField.UpdateProtectedElementCount(field);
+        // Ctrl+Z and Ctrl+Y can remove a protected element on purpose: undoing the insertion of an
+        // inline image takes it out through Bloom's undo stack. That code records the new count,
+        // but an undo entry may finish after the keyup, and then the browser undo below would take
+        // back the person's last typing instead. So the keyup of the undo or redo key itself takes
+        // the count as it is, and so does a modifier's keyup while that key is down. Any other key
+        // pressed meanwhile, such as Delete while Z is still held, is checked as usual.
+        let heldUndoOrRedoKey: string | undefined;
+        $(field).keydown((e) => {
+            const event = e.originalEvent as KeyboardEvent;
+            if (BloomField.isUndoOrRedoKey(event))
+                heldUndoOrRedoKey = BloomField.whichKey(event);
+            // If Ctrl is let go while Z is still held, Z's auto-repeat types the letter, which
+            // can replace a selected picture, so from then on the keystroke is ordinary typing.
+            else if (BloomField.whichKey(event) === heldUndoOrRedoKey)
+                heldUndoOrRedoKey = undefined;
+        });
         $(field).keyup((e) => {
+            const event = e.originalEvent as KeyboardEvent;
+            if (heldUndoOrRedoKey !== undefined) {
+                if (BloomField.whichKey(event) === heldUndoOrRedoKey) {
+                    heldUndoOrRedoKey = undefined;
+                    BloomField.UpdateProtectedElementCount(field);
+                    return;
+                }
+                if (["Control", "Meta", "Shift"].includes(event.key)) return;
+            }
+            // The page takes Ctrl+Z and Ctrl+Y for a picture change before they reach the field
+            // (onUndoOrRedoKeyDown in inlineImageInteractions.ts), so their keydown never comes
+            // here, only their keyup. A keyup that is itself an undo or redo is left alone too.
+            if (BloomField.isUndoOrRedoKey(event)) {
+                BloomField.UpdateProtectedElementCount(field);
+                return;
+            }
             if (
                 $(field).find(".bloom-preventRemoval").length <
                 (BloomField.protectedElementCounts.get(field) ?? 0)
@@ -916,6 +948,13 @@ export default class BloomField {
                 document.execCommand("undo");
                 e.preventDefault();
             }
+        });
+        // If the focus leaves the field between an undo key's keydown and its keyup, the keyup goes
+        // somewhere else, and the next keystroke here must not be skipped.
+        // This uses addEventListener because jQuery 3 makes its focusout events out of focus/blur,
+        // and so it misses a focusout event that code dispatches directly.
+        field.addEventListener("focusout", () => {
+            heldUndoOrRedoKey = undefined;
         });
 
         //OK, now what if the above fails in some scenario? This adds a last-resort way of getting
@@ -932,6 +971,22 @@ export default class BloomField {
                 );
             }
         });
+    }
+
+    // Whether this key event is Ctrl+Z, Ctrl+Y or Ctrl+Shift+Z (Cmd on a Mac), the keys that undo
+    // and redo. The physical key (e.code) is checked too, so it works whatever the keyboard layout.
+    private static isUndoOrRedoKey(e: KeyboardEvent): boolean {
+        if (!(e.ctrlKey || e.metaKey) || e.altKey) return false;
+        const key = e.key?.toLowerCase();
+        return (
+            key === "z" || key === "y" || e.code === "KeyZ" || e.code === "KeyY"
+        );
+    }
+
+    // Identifies the key of a keydown or keyup, so a keyup can be matched to its keydown: the
+    // physical key where the event has one, otherwise the key's value.
+    private static whichKey(e: KeyboardEvent): string {
+        return e.code || e.key?.toLowerCase() || "";
     }
 
     // Work around a bug in geckofx. The effect was that if you clicked in a completely empty text box
