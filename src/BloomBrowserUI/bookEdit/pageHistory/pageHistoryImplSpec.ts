@@ -419,6 +419,27 @@ describe("page history", () => {
 
         expect(box.getAttribute("data-n")).toBe("1");
     });
+
+    it("refuses a maxUndoSteps below zero or not a whole number", () => {
+        // A negative limit would make the loop that drops the oldest steps run forever.
+        expect(() => makeHistory({ maxUndoSteps: -1 })).toThrow(/maxUndoSteps/);
+        expect(() => makeHistory({ maxUndoSteps: 1.5 })).toThrow(
+            /maxUndoSteps/,
+        );
+        expect(() => makeHistory({ maxUndoSteps: Number.NaN })).toThrow(
+            /maxUndoSteps/,
+        );
+    });
+
+    it("keeps no steps with a maxUndoSteps of zero", async () => {
+        const box = addChild(root, "box");
+        const h = makeHistory({ maxUndoSteps: 0 });
+
+        await h.doTransaction("Step", () => box.setAttribute("data-n", "1"));
+
+        expect(h.undoDescriptionL10nKey).toBeUndefined();
+        expect(box.getAttribute("data-n")).toBe("1");
+    });
 });
 
 describe("page history: the check of a detached subtree, with the edit-time markup filter", () => {

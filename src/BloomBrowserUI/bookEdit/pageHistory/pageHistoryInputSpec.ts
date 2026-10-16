@@ -169,7 +169,7 @@ function pressUndoKey(target: Element = byId("box1")): void {
 
 /**
  * Undo every step, and return how many there were, with the page's text after each. The input
- * transaction must be closed first, since undo does nothing while one is open.
+ * transaction must be closed first, since undo waits while one is open.
  */
 async function undoEverything(): Promise<string[]> {
     expect(

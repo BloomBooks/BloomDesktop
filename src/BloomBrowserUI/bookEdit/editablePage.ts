@@ -86,6 +86,7 @@ export interface IPageFrameExports {
 
     addRequestPageContentDelay(id: string): void;
     removeRequestPageContentDelay(id: string): void;
+    whenNoRequestPageContentDelays(): Promise<void>;
 
     e2eSetActiveCanvasElementByIndex(index: number): boolean;
     e2eSetActivePatriarchBubbleOrFirstCanvasElement(): boolean;
@@ -467,6 +468,7 @@ interface EditablePageBundleApi {
     pageHistory: typeof pageHistory;
     addRequestPageContentDelay: typeof addRequestPageContentDelay;
     removeRequestPageContentDelay: typeof removeRequestPageContentDelay;
+    whenNoRequestPageContentDelays: typeof whenNoRequestPageContentDelays;
     e2eSetActiveCanvasElementByIndex: typeof e2eSetActiveCanvasElementByIndex;
     e2eSetActivePatriarchBubbleOrFirstCanvasElement: typeof e2eSetActivePatriarchBubbleOrFirstCanvasElement;
     e2eDeleteLastCanvasElement: typeof e2eDeleteLastCanvasElement;
@@ -549,6 +551,7 @@ window.editablePageBundle = {
     pageHistory,
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
+    whenNoRequestPageContentDelays,
     e2eSetActiveCanvasElementByIndex,
     e2eSetActivePatriarchBubbleOrFirstCanvasElement,
     e2eDeleteLastCanvasElement,
