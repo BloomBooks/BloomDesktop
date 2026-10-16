@@ -11,7 +11,7 @@ import AudioRecording from "../talkingBook/audioRecording";
 import "./music.less";
 import { kMusicToolId } from "../toolIds";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
-import { doOutsideHistoryIfAny } from "../../pageHistory/pageHistoryAccess";
+import { doOutsideHistory } from "../../pageHistory/pageHistoryAccess";
 
 interface IMusicState {
     activeRadioValue: string;
@@ -317,7 +317,7 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
     }
 
     // The music settings of a page are not undoable: setRadio, sliderMoved and chooseMusicFile
-    // change the page inside doOutsideHistoryIfAny, so undo leaves the settings as they are, and
+    // change the page inside doOutsideHistory, so undo leaves the settings as they are, and
     // changing them keeps the page's undo history.
     private setRadio(val: string) {
         const audioEnabled =
@@ -328,7 +328,7 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
         });
         switch (val) {
             case "noMusic":
-                doOutsideHistoryIfAny(() =>
+                doOutsideHistory(() =>
                     ToolboxToolReactAdaptor.encodeAndSetPageAttr(
                         MusicToolControls.musicAttrName,
                         MusicToolControls.noMusicAttrValue,
@@ -340,7 +340,7 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
             case "continueMusic": {
                 const bloomPage = getBloomPageElement();
                 if (bloomPage) {
-                    doOutsideHistoryIfAny(() =>
+                    doOutsideHistory(() =>
                         bloomPage.removeAttribute(
                             MusicToolControls.musicAttrName,
                         ),
@@ -414,7 +414,7 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
     private sliderMoved(position1to100: number): void {
         const volume =
             MusicToolControls.convertSliderPositionToVolume(position1to100);
-        doOutsideHistoryIfAny(() =>
+        doOutsideHistory(() =>
             ToolboxToolReactAdaptor.encodeAndSetPageAttr(
                 MusicToolControls.musicVolumeAttrName,
                 volume.toString(),
@@ -433,8 +433,8 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
                 return;
             }
             // This runs when the GET returns, after the click's task has ended, so without
-            // doOutsideHistoryIfAny the change would join the latest undo step.
-            doOutsideHistoryIfAny(() =>
+            // doOutsideHistory the change would join the latest undo step.
+            doOutsideHistory(() =>
                 ToolboxToolReactAdaptor.encodeAndSetPageAttr(
                     MusicToolControls.musicAttrName,
                     fileName,

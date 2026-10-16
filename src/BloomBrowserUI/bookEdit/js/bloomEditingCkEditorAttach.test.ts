@@ -13,7 +13,7 @@ const access = vi.hoisted(() => ({
 
 vi.mock("../pageHistory/pageHistoryAccess", () => ({
     currentPageHistory: () => access.history,
-    doOutsideHistoryIfAny: <T>(fn: () => T): T => fn(),
+    doOutsideHistory: <T>(fn: () => T): T => fn(),
 }));
 
 import { joinLatestTransactionWhenCkEditorAttaches } from "./bloomEditing";

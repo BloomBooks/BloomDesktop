@@ -18,7 +18,7 @@ import {
 } from "./imageDescriptionUtils";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
-import { doOutsideHistoryIfAny } from "../../pageHistory/pageHistoryAccess";
+import { doOutsideHistory } from "../../pageHistory/pageHistoryAccess";
 interface IImageDescriptionState {
     enabled: boolean;
     descriptionNotNeeded: boolean;
@@ -164,7 +164,7 @@ export class ImageDescriptionToolControls extends React.Component<
             // end the page history (pageHistoryInput.ts); this keeps it. Since no undo step
             // records aria-hidden, no undo or redo changes it, and the checkbox needs no update
             // after one.
-            doOutsideHistoryIfAny(() => {
+            doOutsideHistory(() => {
                 if (checked) {
                     activeEditable.setAttribute("aria-hidden", "true");
                 } else {
@@ -282,7 +282,7 @@ export function setupImageDescriptions(
                     // What a tool adds to the page when it opens is not undoable. This reply
                     // arrives outside any transaction, so without this it would join the user's
                     // latest undo step.
-                    doOutsideHistoryIfAny(() =>
+                    doOutsideHistory(() =>
                         appendTranslationGroup(result.data, container),
                     );
                     doIfContentAdded();

@@ -574,7 +574,9 @@ function scheduleDelayedNewPageReady(tool: ITool): void {
             return;
         }
 
-        Promise.resolve(tool.newPageReady()).finally(() =>
+        // The executor turns an exception from a tool's pass into a rejection, so the page
+        // history stops waiting even when that pass fails; the rejection is still reported.
+        new Promise((resolve) => resolve(tool.newPageReady())).finally(() =>
             noteNewPageReadyPassesHaveRun(pageDocument),
         );
     }, 600);

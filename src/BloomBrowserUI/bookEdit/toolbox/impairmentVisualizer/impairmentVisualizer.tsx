@@ -16,7 +16,7 @@ import { ApiCheckbox } from "../../../react_components/ApiCheckbox";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
 import {
     currentPageHistory,
-    doOutsideHistoryIfAny,
+    doOutsideHistory,
 } from "../../pageHistory/pageHistoryAccess";
 import type { RestoredContent } from "../../pageHistory/pageHistoryTypes";
 
@@ -393,7 +393,7 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
         if (!restored.roots.some(isOrHoldsAPicture)) return;
         // The overlays are .ui-cbOverlay, which the history ignores; this keeps any other write
         // to the page out of the history too.
-        doOutsideHistoryIfAny(() =>
+        doOutsideHistory(() =>
             this.controlsElement?.updateSimulations(undefined),
         );
     }

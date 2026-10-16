@@ -16,7 +16,7 @@ import {
     restoreSelectionAfterMarkup,
     saveSelectionForMarkup,
 } from "./markupSelectionPreservation";
-import { addToLatestTransactionIfAny } from "../pageHistory/pageHistoryAccess";
+import { addToLatestTransaction } from "../pageHistory/pageHistoryAccess";
 import { kModifierKeys } from "../pageHistory/pageHistoryInput";
 import { undoOrRedoCommandOf } from "../pageHistory/pageHistoryKeys";
 
@@ -166,7 +166,7 @@ export function configurePageEditingHandlers(
                 // The split comes from an earlier edit, so the repair joins that edit's undo
                 // step, not the transaction that this key press has just opened, where a key
                 // that changes nothing would make it a step of its own.
-                addToLatestTransactionIfAny(() =>
+                addToLatestTransaction(() =>
                     EditableDivUtils.mergeAdjacentTextNodes(
                         editableBeingTypedIn,
                     ),
@@ -416,11 +416,11 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                     editableMightBeRewritten(editableDiv);
 
                 // Every write below is the pass's reaction to the typing or paste that scheduled
-                // it, so each goes through addToLatestTransactionIfAny: it joins that action's
+                // it, so each goes through addToLatestTransaction: it joins that action's
                 // undo step even when the user's next press has opened a transaction meanwhile,
                 // and so never makes a step of its own, nor ends the history when that press was
                 // in the toolbox (pageHistory/pageHistoryInput.ts).
-                let savedSelection = addToLatestTransactionIfAny(() =>
+                let savedSelection = addToLatestTransaction(() =>
                     saveSelectionForMarkup(editableDiv, boxMightBeRewritten),
                 );
                 if (!savedSelection) {
@@ -429,7 +429,7 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 // For some reason, we have cases, mostly (always?) on paste, where
                 // ckeditor is inserting tons of comments which are messing with our parsing
                 // See http://issues.bloomlibrary.org/youtrack/issue/BL-4775
-                addToLatestTransactionIfAny(() =>
+                addToLatestTransaction(() =>
                     removeCommentsFromEditableHtml(editableDiv),
                 );
                 if (activeTool) {
@@ -446,7 +446,7 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                         // (This is why we don't allow updateMarkupAsync to modify the DOM, except by means of
                         // the function it returns, which is executed synchronously with fixing the selection.)
                         const selectionBeforeAwait = savedSelection;
-                        const resaved = addToLatestTransactionIfAny(() =>
+                        const resaved = addToLatestTransaction(() =>
                             restoreAndResaveSelectionForMarkup(
                                 editableDiv,
                                 selectionBeforeAwait,
@@ -479,12 +479,12 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                             // we got another keystroke, and initiated a new updatemarkup,
                             // while processing this one. We don't want to save the results
                             // of updating for the earlier keystroke.)
-                            addToLatestTransactionIfAny(actualUpdateFunc);
+                            addToLatestTransaction(actualUpdateFunc);
                         }
                     }
                 }
 
-                addToLatestTransactionIfAny(() => cleanUpNbsps(editableDiv));
+                addToLatestTransaction(() => cleanUpNbsps(editableDiv));
 
                 // The synchronous branch is used only by the decodable and leveled reader tools,
                 // and their markup no longer changes the DOM: it paints violations with
@@ -509,9 +509,7 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                     // is recorded around it (boxMightBeRewritten above), so a rewrite here would move
                     // the caret, and it would detach the highlight Ranges just painted. The reader
                     // tools' doMarkup reads each box's text and paints CSS highlights over it.
-                    addToLatestTransactionIfAny(() =>
-                        activeTool.updateMarkup(),
-                    );
+                    addToLatestTransaction(() => activeTool.updateMarkup());
                 }
 
                 //put the caret back where it was before all of the above
@@ -520,7 +518,7 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 // in some way that is still not understood. This was fixed by changing all this to trigger on
                 // a different event (keydown instead of keypress).
                 const selectionToRestore = savedSelection;
-                addToLatestTransactionIfAny(() =>
+                addToLatestTransaction(() =>
                     restoreSelectionAfterMarkup(
                         editableDiv,
                         selectionToRestore,
@@ -537,7 +535,7 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 // handler could not (a paste from the menu, an IME). It costs a walk of
                 // the box's text nodes and does nothing at all unless it finds a split. See
                 // mergeAdjacentTextNodes().
-                addToLatestTransactionIfAny(() =>
+                addToLatestTransaction(() =>
                     EditableDivUtils.mergeAdjacentTextNodes(editableDiv),
                 );
             }

@@ -3,9 +3,13 @@
 // input transactions with this window, where the tool renders, as one of the other windows, and an
 // empty frame as the page's. As in pageHistoryInputSpec.ts, the user's events are the ones in
 // userEvents, and a test says where the browser's task ends by calling finishTask().
+// The description box that the tool adds to a picture is not undoable either, and it must not stop
+// the undo of an earlier step that added a canvas element to that picture. The history uses the
+// real edit-time markup filter, as in Bloom.
 import $ from "jquery";
 import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createEditTimeMarkupFilter } from "../../pageHistory/editTimeMarkup";
 import { createPageHistory } from "../../pageHistory/pageHistory";
 import { attachInputTransactions } from "../../pageHistory/pageHistoryInput";
 import type { PageHistory } from "../../pageHistory/pageHistoryTypes";
@@ -32,9 +36,9 @@ vi.mock("../../js/workspaceFrames", async (importOriginal) => ({
 }));
 vi.mock("../../pageHistory/pageHistoryAccess", () => ({
     currentPageHistory: () => mocks.history,
-    doOutsideHistoryIfAny: <T,>(fn: () => T): T =>
+    doOutsideHistory: <T,>(fn: () => T): T =>
         mocks.history ? mocks.history.doOutsideHistory(fn) : fn(),
-    clearUndoAndRedoIfAny: () => mocks.history?.clearUndoAndRedo(),
+    clearUndoAndRedo: () => mocks.history?.clearUndoAndRedo(),
 }));
 // The page that newPageReady finds; it is in this document, which the tests treat as the page
 // frame's.
@@ -79,7 +83,11 @@ beforeEach(async () => {
     bloomCanvas = page.querySelector(".bloom-canvas")!;
     other = page.querySelector("#other")!;
     onUnmarkedChange = vi.fn();
-    history = createPageHistory({ root: page, onUnmarkedChange });
+    history = createPageHistory({
+        root: page,
+        filter: createEditTimeMarkupFilter(),
+        onUnmarkedChange,
+    });
     mocks.history = history;
     // A step before the checkbox, which must survive it.
     await history.doTransaction(kEarlierKey, () =>
@@ -230,6 +238,109 @@ describe("The image description tool's checkbox", () => {
         await act(async () => history.redo());
         expect(other.getAttribute("data-earlier")).toBe("true");
         expect(bloomCanvas.getAttribute("aria-hidden")).toBe("true");
+        expect(onUnmarkedChange).not.toHaveBeenCalled();
+    });
+});
+
+describe("The description box that the tool adds to a picture", () => {
+    const kAddElementKey = "EditTab.Toolbox.ComicTool.Options.Add";
+    const kTypingKey = "EditTab.Undo.Typing";
+    let canvas: HTMLElement;
+    let element: HTMLElement;
+    let descriptionBox: HTMLElement;
+
+    // A picture with no description box, to which the user adds a canvas element as one step
+    // before the tool gives the picture its description box, outside the history.
+    beforeEach(async () => {
+        canvas = document.createElement("div");
+        canvas.className = "bloom-canvas";
+        canvas.innerHTML = '<img src="b.png">';
+        history.doOutsideHistory(() => mocks.page!.appendChild(canvas));
+        element = document.createElement("div");
+        element.className = "bloom-canvas-element";
+        await history.doTransaction(kAddElementKey, () =>
+            canvas.appendChild(element),
+        );
+        expect(history.undoDescriptionL10nKey, "test setup").toBe(
+            kAddElementKey,
+        );
+
+        act(() => adapter.newPageReady());
+        expect(mocks.pendingPosts.length, "test setup").toBe(1);
+        // The reply arrives later, outside any transaction.
+        act(() =>
+            mocks.pendingPosts[0]({
+                data: '<div class="bloom-editable" lang="en"><p></p></div>',
+            }),
+        );
+        // Let the history's MutationObserver see the change.
+        await Promise.resolve();
+        const added = canvas.querySelector<HTMLElement>(
+            ":scope > .bloom-imageDescription",
+        );
+        if (!added) fail("The tool did not add a description box.");
+        descriptionBox = added;
+        expect(
+            Array.from(canvas.children),
+            "test setup: the box comes after the new canvas element",
+        ).toEqual([canvas.querySelector("img"), element, descriptionBox]);
+        expect(history.undoDescriptionL10nKey).toBe(kAddElementKey);
+        expect(history.redoDescriptionL10nKey).toBeUndefined();
+    });
+
+    it("does not stop the undo and redo of adding a canvas element before it came", async () => {
+        await act(async () => history.undo());
+        expect(
+            element.isConnected,
+            "undo should take the canvas element out",
+        ).toBe(false);
+        expect(descriptionBox.parentElement, "undo should leave the box").toBe(
+            canvas,
+        );
+        expect(history.undoDescriptionL10nKey).toBe(kEarlierKey);
+        expect(history.redoDescriptionL10nKey).toBe(kAddElementKey);
+
+        await act(async () => history.redo());
+        expect(element.parentElement, "redo should put the element back").toBe(
+            canvas,
+        );
+        expect(descriptionBox.parentElement, "redo should leave the box").toBe(
+            canvas,
+        );
+        expect(history.undoDescriptionL10nKey).toBe(kAddElementKey);
+
+        // The older step is still there behind it.
+        await act(async () => history.undo());
+        await act(async () => history.undo());
+        expect(element.isConnected).toBe(false);
+        expect(other.hasAttribute("data-earlier")).toBe(false);
+        expect(descriptionBox.parentElement).toBe(canvas);
+        expect(onUnmarkedChange).not.toHaveBeenCalled();
+    });
+
+    it("records what is typed into it, which undo and redo take out and put back", async () => {
+        const paragraph = descriptionBox.querySelector("p");
+        if (!paragraph) fail("test setup: the box should have a paragraph.");
+        await history.doTransaction(kTypingKey, () => {
+            paragraph.textContent = "A dog";
+        });
+        expect(history.undoDescriptionL10nKey).toBe(kTypingKey);
+
+        await act(async () => history.undo());
+        expect(paragraph.textContent).toBe("");
+        expect(paragraph.parentElement?.parentElement).toBe(descriptionBox);
+        expect(history.undoDescriptionL10nKey).toBe(kAddElementKey);
+
+        await act(async () => history.redo());
+        expect(paragraph.textContent).toBe("A dog");
+
+        // And the box's text does not stop the undo of the canvas element before it.
+        await act(async () => history.undo());
+        await act(async () => history.undo());
+        expect(element.isConnected).toBe(false);
+        expect(paragraph.textContent).toBe("");
+        expect(descriptionBox.parentElement).toBe(canvas);
+        expect(history.undoDescriptionL10nKey).toBe(kEarlierKey);
         expect(onUnmarkedChange).not.toHaveBeenCalled();
     });
 });
