@@ -174,6 +174,11 @@ export function getAudioRecorder(): IAudioRecorder {
 // TODO: Maybe a lot of this code should move to TalkingBook.ts (regarding the tool) instead of AudioRecording.ts (regarding recording/playing the audio files)
 export default class AudioRecording implements IAudioRecorder {
     private recording: boolean;
+    // How many presses of the Speak button startRecordCurrentAsync has seen, and how many of them
+    // endRecordCurrentAsync has seen released, so that a press released before its start has
+    // armed the recording starts none.
+    private speakPressCount = 0;
+    private releasedSpeakPressCount = 0;
     private levelCanvas: HTMLCanvasElement | null = null;
     private currentAudioId: string;
     // When we are playing audio, this holds the segments we haven't yet finished playing, including the one currently playing.
@@ -1335,6 +1340,7 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     public async startRecordCurrentAsync(): Promise<void> {
+        const press = ++this.speakPressCount;
         if (this.splitNeededSinceUndoOrRedo)
             await this.splitAgainIfNeededAsync();
         if (!this.isEnabledOrExpected("record")) {
@@ -1372,6 +1378,11 @@ export default class AudioRecording implements IAudioRecorder {
         });
 
         toastr.clear();
+
+        // The release came while this method awaited, as it can when one of those awaits waits
+        // for a later task (a split after an undo, a request to Bloom). Then endRecordCurrentAsync
+        // found nothing to stop, so this must start nothing.
+        if (this.releasedSpeakPressCount >= press) return;
 
         this.recording = true;
 
@@ -1498,6 +1509,7 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     public async endRecordCurrentAsync(): Promise<void> {
+        this.releasedSpeakPressCount = this.speakPressCount;
         this.clearStartRecordTimeout();
 
         if (!this.recording) {
@@ -2629,6 +2641,17 @@ export default class AudioRecording implements IAudioRecorder {
         }
     }
 
+    /**
+     * Make mode the collection's default recording mode, which a text box with no mode of its own
+     * gets (getRecordingModeOfTextBox). Bloom keeps it as a setting, outside the page and its
+     * history.
+     */
+    private setCollectionDefaultRecordingMode(mode: RecordingMode): void {
+        // Note: We don't actually await the completion of this work.
+        postJson("talkingBook/defaultAudioRecordingMode", mode);
+        this.cachedCollectionDefaultRecordingMode = mode;
+    }
+
     private getVisibleTranslationGroups(
         docBody: HTMLElement,
     ): HTMLDivElement[] {
@@ -2687,9 +2710,7 @@ export default class AudioRecording implements IAudioRecorder {
         }
 
         // Update the collection's default recording span mode to the new value
-        // Note: We don't actually await the completion of this work.
-        postJson("talkingBook/defaultAudioRecordingMode", this.recordingMode);
-        this.cachedCollectionDefaultRecordingMode = this.recordingMode;
+        this.setCollectionDefaultRecordingMode(this.recordingMode);
 
         let result;
         // Update the UI after clicking the checkbox
@@ -3225,19 +3246,40 @@ export default class AudioRecording implements IAudioRecorder {
         // The highlighted element is gone, or the highlight is meant not to show: the repair
         // that the integrity observer does re-points it by id, or leaves it alone.
         const pageBody = this.getPageDocBody();
-        if (pageBody) this.repairCurrentHighlightInPlace(pageBody);
+        if (!pageBody || this.repairCurrentHighlightInPlace(pageBody)) return;
+        // The undo or redo took the highlighted element out of the page, as an undo of the split
+        // that made a sentence does, and no element has its id. Highlight what the tool records
+        // in the box that had the highlight, or else what it highlights first on the page. Like
+        // showRecordingModeAfterUndoOrRedo, this writes nothing that the history records.
+        doOutsideHistory(
+            () => void this.highlightAgainAfterUndoOrRedoAsync(textBoxBefore),
+        );
+    }
+
+    /** See the end of updateAfterUndoOrRedo. */
+    private async highlightAgainAfterUndoOrRedoAsync(
+        textBoxBefore: HTMLElement | null,
+    ): Promise<void> {
+        if (textBoxBefore?.isConnected)
+            await this.setCurrentAudioElementBasedOnRecordingModeAsync(
+                textBoxBefore,
+            );
+        else await this.setCurrentAudioElementToDefaultAsync();
+        await this.changeStateAndSetExpectedAsync("record");
     }
 
     /**
      * After an undo or redo that put back another recording mode on textBox (that of the switch,
-     * with the box's markup), show that mode in the tool and move the highlight to what that mode
-     * records. Returns false, doing nothing, when the box's mode is the one the tool shows.
+     * with the box's markup), show that mode in the tool, make it the collection's default again,
+     * as the switch did, and move the highlight to what that mode records. Returns false, doing
+     * nothing, when the box's mode is the one the tool shows.
      */
     private showRecordingModeAfterUndoOrRedo(textBox: HTMLElement): boolean {
         let mode = this.getRecordingModeOfTextBox(textBox);
         if (mode === RecordingMode.Unknown) mode = RecordingMode.Sentence;
         if (mode === this.recordingMode) return false;
         this.recordingMode = mode;
+        this.setCollectionDefaultRecordingMode(mode);
         if (!this.splitNeededSinceUndoOrRedo) {
             // Moving the highlight writes nothing that the history records; this makes sure.
             doOutsideHistory(

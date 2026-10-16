@@ -232,7 +232,7 @@ async function chooseFromLayerMenu(
     // The handler does not look at the click event.
     layerRow.subMenu![rowIndex].onClick(undefined as never);
     // runControlCallback runs the command in a transaction whose promise it does not return.
-    await Promise.resolve();
+    await vi.waitFor(() => expect(history.hasOpenTransaction).toBe(false));
 }
 
 describe("a layer command is one undo step", () => {

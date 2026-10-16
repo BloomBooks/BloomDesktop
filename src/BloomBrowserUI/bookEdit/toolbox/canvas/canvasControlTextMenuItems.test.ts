@@ -111,20 +111,25 @@ function answer(dataBook: string, content: string, id: string): void {
 }
 
 describe("Choosing a field type", () => {
-    it("keeps its step open, and undo does nothing, while the field's content is pending", async () => {
+    it("keeps its step open while the field's content is pending, and an undo asked for then waits for it", async () => {
         const chosen = chooseFieldType(kBookTitleKey);
 
         expect(editable.getAttribute("data-book")).toBe("bookTitle");
         expect(requests.length).toBe(1);
         expect(history.hasOpenTransaction).toBe(true);
-        await history.undo();
+        const undone = history.undo();
         expect(editable.getAttribute("data-book")).toBe("bookTitle");
         expect(history.undoDescriptionL10nKey).toBe(kEarlierKey);
 
         answer("bookTitle", kTitleContent, "title-id");
         await chosen;
+        await undone;
         expect(history.hasOpenTransaction).toBe(false);
-        expect(history.undoDescriptionL10nKey).toBe(kBookTitleKey);
+        // The undo ran once the step closed, and undid the whole step.
+        expect(editable.hasAttribute("data-book")).toBe(false);
+        expect(editable.innerHTML).toBe(kOldContent);
+        expect(history.redoDescriptionL10nKey).toBe(kBookTitleKey);
+        expect(history.undoDescriptionL10nKey).toBe(kEarlierKey);
     });
 
     it("makes the type and the content one step, which undo and redo reverse", async () => {

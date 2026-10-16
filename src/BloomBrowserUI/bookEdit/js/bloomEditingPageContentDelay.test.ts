@@ -13,11 +13,14 @@ import {
 
 let added: string[];
 let removed: string[];
+// The page frame's waits for no delay to be pending, which the stand-in settles on a remove.
+let pageFrameWaiters: (() => void)[];
 let pageFrame: HTMLIFrameElement | undefined;
 
 beforeEach(() => {
     added = [];
     removed = [];
+    pageFrameWaiters = [];
 });
 
 afterEach(() => {
@@ -34,15 +37,30 @@ function addPageFrameInAnotherWindow(): void {
         pageFrame.contentWindow as unknown as { editablePageBundle: unknown }
     ).editablePageBundle = {
         addRequestPageContentDelay: (id: string) => added.push(id),
-        removeRequestPageContentDelay: (id: string) => removed.push(id),
+        removeRequestPageContentDelay: (id: string) => {
+            removed.push(id);
+            if (added.length === removed.length) {
+                pageFrameWaiters.forEach((resolve) => resolve());
+                pageFrameWaiters = [];
+            }
+        },
+        whenNoRequestPageContentDelays: () =>
+            added.length === removed.length
+                ? Promise.resolve()
+                : new Promise<void>((resolve) =>
+                      pageFrameWaiters.push(resolve),
+                  ),
     };
     expect(pageFrame.contentWindow, "test setup: another window").not.toBe(
         window,
     );
 }
 
-/** True if a delay is pending in this window's copy of bloomEditing.ts. */
-async function hasLocalDelay(): Promise<boolean> {
+/**
+ * True if whenNoRequestPageContentDelays, called in this window, finds a delay pending: in this
+ * window's copy of bloomEditing.ts, or in the page frame's when there is one.
+ */
+async function hasPendingDelay(): Promise<boolean> {
     let settled = false;
     void whenNoRequestPageContentDelays().then(() => (settled = true));
     await Promise.resolve();
@@ -56,12 +74,11 @@ describe("page content delays", () => {
         addRequestPageContentDelay("fromToolbox");
 
         expect(added).toEqual(["fromToolbox"]);
-        expect(
-            await hasLocalDelay(),
-            "the delay must not be held by this frame's copy",
-        ).toBe(false);
+        // Waiting from this frame waits for the page frame's delays.
+        expect(await hasPendingDelay()).toBe(true);
         removeRequestPageContentDelay("fromToolbox");
         expect(removed).toEqual(["fromToolbox"]);
+        expect(await hasPendingDelay()).toBe(false);
     });
 
     it("are held in the page frame around a function wrapped in another frame", async () => {
@@ -83,8 +100,8 @@ describe("page content delays", () => {
         addRequestPageContentDelay("noPageFrame");
 
         expect(added).toEqual([]);
-        expect(await hasLocalDelay()).toBe(true);
+        expect(await hasPendingDelay()).toBe(true);
         removeRequestPageContentDelay("noPageFrame");
-        expect(await hasLocalDelay()).toBe(false);
+        expect(await hasPendingDelay()).toBe(false);
     });
 });

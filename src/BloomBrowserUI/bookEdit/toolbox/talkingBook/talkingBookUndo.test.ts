@@ -480,6 +480,128 @@ describe("Talking Book and the page history", () => {
         expect(stopPlaying).not.toHaveBeenCalled();
     });
 
+    it("an undo or redo of a recording-mode switch puts back the collection's default mode too", async () => {
+        setPage(
+            '<div class="bloom-page"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on" lang="en" data-audiorecordingmode="Sentence"><p>One. Two.</p></div></div><div id="other">before</div></div>',
+        );
+        await startHistoryWithAnEarlierStep();
+        listenAsTheEditTabDoes();
+        useCollectionDefaultRecordingMode(RecordingMode.Sentence);
+        await recording.handleNewPageReady();
+        const defaultMode = () =>
+            (
+                recording as unknown as {
+                    cachedCollectionDefaultRecordingMode: RecordingMode;
+                }
+            ).cachedCollectionDefaultRecordingMode;
+
+        await recording.setRecordingMode(RecordingMode.TextBox);
+        expect(defaultMode()).toBe(RecordingMode.TextBox);
+        expect(history.undoDescriptionL10nKey).toBe(kModeKey);
+
+        await history.undo();
+        expect(byId("box1").getAttribute("data-audiorecordingmode")).toBe(
+            "Sentence",
+        );
+        expect(defaultMode()).toBe(RecordingMode.Sentence);
+        expect(history.redoDescriptionL10nKey).toBe(kModeKey);
+
+        await history.redo();
+        expect(defaultMode()).toBe(RecordingMode.TextBox);
+        expect(onUnmarkedChange).not.toHaveBeenCalled();
+    });
+
+    it("after an undo takes away the highlighted sentence, highlights a sentence of the same box", async () => {
+        setPage(
+            '<div class="bloom-page"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on" lang="en" data-audiorecordingmode="Sentence"><p>One. Two.</p></div></div><div class="bloom-translationGroup"><div id="box2" class="bloom-editable bloom-visibility-code-on" lang="en" data-audiorecordingmode="Sentence"><p>Four.</p></div></div><div id="other">before</div></div>',
+        );
+        await startHistoryWithAnEarlierStep();
+        listenAsTheEditTabDoes();
+        await recording.handleNewPageReady();
+        const box = byId("box1");
+        // The user types a sentence, which Talking Book splits off in the typing's step, and
+        // moves the highlight to it.
+        const lastText = box.getElementsByClassName("audio-sentence")[1]
+            .firstChild as Text;
+        await history.doTransaction(kTypingKey, () => {
+            lastText.data = lastText.data + " Three.";
+        });
+        await recording.handleNewPageReady();
+        const sentences = box.getElementsByClassName("audio-sentence");
+        expect(sentences).toHaveLength(3);
+        const third = sentences[2] as HTMLElement;
+        await recording.setSoundAndHighlightAsync({
+            newElement: third,
+            shouldScrollToElement: false,
+        });
+        expect(recording.getCurrentHighlight()).toBe(third);
+        expect(history.undoDescriptionL10nKey).toBe(kTypingKey);
+
+        await history.undo();
+        await Promise.resolve();
+
+        expect(third.isConnected).toBe(false);
+        expect(sentences).toHaveLength(2);
+        expect(recording.getCurrentHighlight()).toBe(sentences[0]);
+        expect(history.redoDescriptionL10nKey).toBe(kTypingKey);
+        expect(onUnmarkedChange).not.toHaveBeenCalled();
+    });
+
+    it("a release of Speak before the box has been split again starts no recording", async () => {
+        setPage(
+            '<div class="bloom-page"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on" lang="en" data-audiorecordingmode="Sentence"><p>One. Two.</p></div></div><div id="other">before</div></div>',
+        );
+        await startHistoryWithAnEarlierStep();
+        listenAsTheEditTabDoes();
+        const typedText = byId("box1").querySelector("p")!.firstChild as Text;
+        await history.doTransaction(kTypingKey, () => {
+            typedText.data = "One. Two. Three.";
+        });
+        await recording.handleNewPageReady();
+        // Undoing the typing takes away the split, which Speak makes again before recording.
+        await history.undo();
+        expect(
+            byId("box1").getElementsByClassName("audio-sentence"),
+        ).toHaveLength(0);
+        // The split waits for something that only a later task brings, as a request to Bloom
+        // does, so the release comes first.
+        const privateRecording = recording as unknown as {
+            splitAgainIfNeededAsync: () => Promise<void>;
+            recording: boolean;
+        };
+        const split = privateRecording.splitAgainIfNeededAsync.bind(recording);
+        let letSplitFinish: () => void = () => {
+            throw new Error("The press did not start the split.");
+        };
+        const splitCanFinish = new Promise<void>(
+            (resolve) => (letSplitFinish = resolve),
+        );
+        vi.spyOn(
+            privateRecording,
+            "splitAgainIfNeededAsync",
+        ).mockImplementation(async () => {
+            await splitCanFinish;
+            await split();
+        });
+
+        const press = recording.startRecordCurrentAsync();
+        await recording.endRecordCurrentAsync();
+        letSplitFinish();
+        await press;
+
+        expect(
+            byId("box1").getElementsByClassName("audio-sentence"),
+        ).toHaveLength(2);
+        expect(privateRecording.recording).not.toBe(true);
+        expect(
+            vi
+                .mocked(axios.post)
+                .mock.calls.filter(([url]) =>
+                    String(url).includes("audio/startRecord"),
+                ),
+        ).toEqual([]);
+    });
+
     it("playing after a typing step joins nothing, and the step can still be undone afterwards", async () => {
         setPage(
             '<div class="bloom-page"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on audio-sentence" lang="en" data-audiorecordingmode="TextBox"><p><span id="span1" class="bloom-highlightSegment">One    two.</span></p></div></div><div id="other">before</div></div>',
