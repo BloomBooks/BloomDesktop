@@ -1795,8 +1795,11 @@ export const pageUnloading = () => {
  * Register what must happen around each undo and redo of history, the page history that has just
  * started for this page. Before: the toolbox abandons a markup pass it has scheduled, and the
  * canvas element manager notes the canvas elements on the page. After: the canvas element manager
- * re-reads the page and selects the canvas element that the step changed. Call once for each
- * history, right after it starts; the components' own setup may run before the history exists.
+ * re-reads the page and selects the canvas element that the step changed, and Talking Book paints
+ * its highlights again from the restored text, writing nothing that the history records (it also
+ * drops the class changes that its visibility observer would otherwise answer with a markup pass).
+ * Call once for each history, right after it starts; the components' own setup may run before the
+ * history exists.
  */
 export function listenToPageHistory(history: PageHistory): void {
     history.onBeforeUndoOrRedo(() =>
@@ -1808,6 +1811,10 @@ export function listenToPageHistory(history: PageHistory): void {
     history.onAfterUndoOrRedo((restored) =>
         theOneCanvasElementManager?.updateAfterUndoOrRedo(restored, history),
     );
+    history.onAfterUndoOrRedo(() => {
+        const toolbox = getToolboxBundleExports();
+        toolbox?.getTheOneAudioRecorderForExportOnly()?.updateAfterUndoOrRedo();
+    });
 }
 
 export function topBarButtonClick(button: { command: string }) {

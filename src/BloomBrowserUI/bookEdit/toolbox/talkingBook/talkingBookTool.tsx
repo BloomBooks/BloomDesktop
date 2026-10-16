@@ -8,6 +8,10 @@ import * as AudioRecorder from "./audioRecording";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { TalkingBookToolControls } from "./TalkingBookToolControls";
 import { kImageDescriptionToolId, kTalkingBookToolId } from "../toolIds";
+import {
+    currentPageHistory,
+    doOutsideHistoryIfAny,
+} from "../../pageHistory/pageHistoryAccess";
 // Gets these styles into the toolbox document. (The page frame links the compiled
 // audioRecording.css separately; see the styleSheets list in editablePage.ts.)
 import "./audioRecording.less";
@@ -66,8 +70,17 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
         await getAudioRecorder().setupForRecordingAsync();
     }
 
+    private stopListeningToUndoAndRedo: (() => void) | undefined;
+
     // Called when a new page is loaded.
     public async newPageReady(): Promise<void> {
+        // Each page load has its own history. newPageReady() can be called twice for one
+        // page, so stop listening to the history before listening to it again.
+        this.stopListeningToUndoAndRedo?.();
+        this.stopListeningToUndoAndRedo =
+            currentPageHistory()?.onBeforeUndoOrRedo(() =>
+                getAudioRecorder()?.prepareForUndoOrRedo(),
+            );
         this.showImageDescriptionsIfAny();
         const pageReadyPromise = getAudioRecorder().handleNewPageReady(
             TalkingBookTool.deshroudPhraseDelimiters,
@@ -144,17 +157,23 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
-        const audioRecorder = getAudioRecorder();
-        // not quite sure how this can be called when never initialized, but if
-        // we don't have the object we certainly can't use it.
-        if (audioRecorder) {
-            audioRecorder.removeRecordingSetup();
-        }
-        const page = getPageIframeBody();
-        if (page) {
-            hideImageDescriptions(page);
-            TalkingBookTool.enshroudPhraseDelimiters(page);
-        }
+        this.stopListeningToUndoAndRedo?.();
+        this.stopListeningToUndoAndRedo = undefined;
+        // What leaving the tool writes to the page is not something the user did, so it is not
+        // recorded in the page history: undo leaves it in place.
+        doOutsideHistoryIfAny(() => {
+            const audioRecorder = getAudioRecorder();
+            // not quite sure how this can be called when never initialized, but if
+            // we don't have the object we certainly can't use it.
+            if (audioRecorder) {
+                audioRecorder.removeRecordingSetup();
+            }
+            const page = getPageIframeBody();
+            if (page) {
+                hideImageDescriptions(page);
+                TalkingBookTool.enshroudPhraseDelimiters(page);
+            }
+        });
     }
 
     // Called whenever the user edits text.
