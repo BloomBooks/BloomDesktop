@@ -95,9 +95,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Edit with AI...</target>
         <note>ID: EditTab.Image.EditWithAI</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.SlotLabel.CanvasBackground">
+      <trans-unit id="AiImageEditor.SlotLabel.CanvasBackground" approved="yes">
         <source xml:lang="en">Canvas Background</source>
-        <target xml:lang="pt-PT" state="translated">Fundo da tela</target>
+        <target xml:lang="pt-PT" state="final">Fundo da tela</target>
         <note>ID: AiImageEditor.SlotLabel.CanvasBackground</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.UnlockOriginalCopyrightAndLicenseTooltip" sil:dynamic="true" translate="no">
@@ -358,29 +358,29 @@
         <target xml:lang="pt-PT" state="final">Vermelho com fundo branco</target>
         <note>ID: EditTab.Toolbox.Games.Themes.red-on-white</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.pollinator">
+      <trans-unit id="EditTab.Toolbox.Games.Themes.pollinator" approved="yes">
         <source xml:lang="en">Pollinator</source>
-        <target xml:lang="pt-PT" state="translated">Polinizador</target>
+        <target xml:lang="pt-PT" state="final">Polinizador</target>
         <note>ID: EditTab.Toolbox.Games.Themes.pollinator</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.garden-path">
+      <trans-unit id="EditTab.Toolbox.Games.Themes.garden-path" approved="yes">
         <source xml:lang="en">Garden Path</source>
-        <target xml:lang="pt-PT" state="translated">Trilha no Jardim</target>
+        <target xml:lang="pt-PT" state="final">Trilha no jardim</target>
         <note>ID: EditTab.Toolbox.Games.Themes.garden-path</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.cherry-blossom">
+      <trans-unit id="EditTab.Toolbox.Games.Themes.cherry-blossom" approved="yes">
         <source xml:lang="en">Cherry Blossom</source>
-        <target xml:lang="pt-PT" state="translated">Flor de Cerejeira</target>
+        <target xml:lang="pt-PT" state="final">Flor de cerejeira</target>
         <note>ID: EditTab.Toolbox.Games.Themes.cherry-blossom</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.coral-reef">
+      <trans-unit id="EditTab.Toolbox.Games.Themes.coral-reef" approved="yes">
         <source xml:lang="en">Coral Reef</source>
-        <target xml:lang="pt-PT" state="translated">Recife de Coral</target>
+        <target xml:lang="pt-PT" state="final">Recife de coral</target>
         <note>ID: EditTab.Toolbox.Games.Themes.coral-reef</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.arctic-dawn">
+      <trans-unit id="EditTab.Toolbox.Games.Themes.arctic-dawn" approved="yes">
         <source xml:lang="en">Arctic Dawn</source>
-        <target xml:lang="pt-PT" state="translated">Amanhecer ártico</target>
+        <target xml:lang="pt-PT" state="final">Amanhecer ártico</target>
         <note>ID: EditTab.Toolbox.Games.Themes.arctic-dawn</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragLettersInstructions" approved="yes">
@@ -1324,24 +1324,24 @@
         <target xml:lang="pt-PT" state="final">Uma gravação</target>
         <note>ID: ARecording</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.ChooseBooksDialog.Title">
+      <trans-unit id="PublishTab.Apps.ChooseBooksDialog.Title" approved="yes">
         <source xml:lang="en">Choose Books</source>
-        <target xml:lang="pt-PT" state="translated">Selecionar Livros</target>
+        <target xml:lang="pt-PT" state="final">Selecionar livros</target>
         <note>ID: PublishTab.Apps.ChooseBooksDialog.Title</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.CustomizeButton">
+      <trans-unit id="PublishTab.Apps.CustomizeButton" approved="yes">
         <source xml:lang="en">Customize...</source>
-        <target xml:lang="pt-PT" state="translated">Personalizar...</target>
+        <target xml:lang="pt-PT" state="final">Personalizar...</target>
         <note>ID: PublishTab.Apps.CustomizeButton</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.CustomizeButton.ValidationMessage">
+      <trans-unit id="PublishTab.Apps.CustomizeButton.ValidationMessage" approved="yes">
         <source xml:lang="en">Required or invalid settings: %0.</source>
-        <target xml:lang="pt-PT" state="translated">Configurações obrigatórias faltando ou inválidas: %0.</target>
+        <target xml:lang="pt-PT" state="final">Configurações obrigatórias faltando ou inválidas: %0.</target>
         <note>ID: PublishTab.Apps.CustomizeButton.ValidationMessage</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.PrepareButton">
+      <trans-unit id="PublishTab.Apps.PrepareButton" approved="yes">
         <source xml:lang="en">Prepare</source>
-        <target xml:lang="pt-PT" state="translated">Preparar</target>
+        <target xml:lang="pt-PT" state="final">Preparar</target>
         <note>ID: PublishTab.Apps.PrepareButton</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.PrepareStepper.BuildToolsInstalled">
@@ -1354,9 +1354,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Get installer</target>
         <note>ID: PublishTab.Apps.PrepareStepper.InstallerAvailable</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.PrepareStepper.ProjectCreated">
+      <trans-unit id="PublishTab.Apps.PrepareStepper.ProjectCreated" approved="yes">
         <source xml:lang="en">Create project</source>
-        <target xml:lang="pt-PT" state="translated">Criar projeto</target>
+        <target xml:lang="pt-PT" state="final">Criar projeto</target>
         <note>ID: PublishTab.Apps.PrepareStepper.ProjectCreated</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.PrepareStepper.RabInstalled">
@@ -1399,9 +1399,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Actually publishing your app to the Android App Store requires several more steps. In the near future we hope to expand Bloom to help with that part of the process.</target>
         <note>ID: PublishTab.Apps.WhatsNext.Explanation</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.Title">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.Title" approved="yes">
         <source xml:lang="en">App Settings</source>
-        <target xml:lang="pt-PT" state="translated">Configurações do aplicativo</target>
+        <target xml:lang="pt-PT" state="final">Configurações do aplicativo</target>
         <note>ID: PublishTab.Apps.SettingsDialog.Title</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.BasicsGroup">
@@ -1414,9 +1414,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Appearance</target>
         <note>ID: PublishTab.Apps.SettingsDialog.AppearanceGroup</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.AppName">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.AppName" approved="yes">
         <source xml:lang="en">App Name</source>
-        <target xml:lang="pt-PT" state="translated">Nome do Aplicativo</target>
+        <target xml:lang="pt-PT" state="final">Nome do Aplicativo</target>
         <note>ID: PublishTab.Apps.SettingsDialog.AppName</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.ColorScheme">
@@ -1424,9 +1424,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Color Scheme</target>
         <note>ID: PublishTab.Apps.SettingsDialog.ColorScheme</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName" approved="yes">
         <source xml:lang="en">Package Name</source>
-        <target xml:lang="pt-PT" state="translated">Nome do Pacote</target>
+        <target xml:lang="pt-PT" state="final">Nome do Pacote</target>
         <note>ID: PublishTab.Apps.SettingsDialog.PackageName</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.Icon">
@@ -1444,14 +1444,14 @@
         <target xml:lang="pt-PT" state="needs-translation">Copyright</target>
         <note>ID: PublishTab.Apps.SettingsDialog.Copyright</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.About">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.About" approved="yes">
         <source xml:lang="en">About</source>
-        <target xml:lang="pt-PT" state="translated">Sobre</target>
+        <target xml:lang="pt-PT" state="final">Sobre</target>
         <note>ID: PublishTab.Apps.SettingsDialog.About</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.IconChooseTitle">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.IconChooseTitle" approved="yes">
         <source xml:lang="en">Choose App Icon</source>
-        <target xml:lang="pt-PT" state="translated">Escolher Ícone do Aplicativo</target>
+        <target xml:lang="pt-PT" state="final">Escolher Ícone do Aplicativo</target>
         <note>ID: PublishTab.Apps.SettingsDialog.IconChooseTitle</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Description">
@@ -1469,9 +1469,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Reading App Builder</target>
         <note>ID: PublishTab.Apps.SettingsDialog.ReadingAppBuilder</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.MoreSettings">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.MoreSettings" approved="yes">
         <source xml:lang="en">More Settings</source>
-        <target xml:lang="pt-PT" state="translated">Mais Configurações</target>
+        <target xml:lang="pt-PT" state="final">Mais Configurações</target>
         <note>ID: PublishTab.Apps.SettingsDialog.MoreSettings</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.StartingReadingAppBuilder">
@@ -1494,9 +1494,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Build Android Apps</target>
         <note>ID: PublishTab.Apps.BannerTitle</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps">
+      <trans-unit id="PublishTab.Apps" approved="yes">
         <source xml:lang="en">Apps</source>
-        <target xml:lang="pt-PT" state="translated">Aplicativos</target>
+        <target xml:lang="pt-PT" state="final">Aplicativos</target>
         <note>ID: PublishTab.Apps</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps-tooltip" sil:dynamic="true">
@@ -1504,9 +1504,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Create an app that you can install on your Android phone, share with others, and publish on the Google Play Store.</target>
         <note>ID: PublishTab.Apps-tooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Build">
+      <trans-unit id="PublishTab.Apps.Build" approved="yes">
         <source xml:lang="en">Build</source>
-        <target xml:lang="pt-PT" state="translated">Compilar</target>
+        <target xml:lang="pt-PT" state="final">Compilar</target>
         <note>ID: PublishTab.Apps.Build</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Build.DoneTooltip">
@@ -1514,9 +1514,9 @@
         <target xml:lang="pt-PT" state="needs-translation">The APK is current. Try on phone will use the latest build.</target>
         <note>ID: PublishTab.Apps.Build.DoneTooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Build.NeedsPrepareTooltip">
+      <trans-unit id="PublishTab.Apps.Build.NeedsPrepareTooltip" approved="yes">
         <source xml:lang="en">Run Prepare before building the app.</source>
-        <target xml:lang="pt-PT" state="translated">Executar "Preparar" antes de compilar o aplicativo.</target>
+        <target xml:lang="pt-PT" state="final">Executar "Preparar" antes de compilar o aplicativo.</target>
         <note>ID: PublishTab.Apps.Build.NeedsPrepareTooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Build.Tooltip">
@@ -1524,9 +1524,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Build a new APK from the current settings and selected books.</target>
         <note>ID: PublishTab.Apps.Build.Tooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.ChooseBooks">
+      <trans-unit id="PublishTab.Apps.ChooseBooks" approved="yes">
         <source xml:lang="en">Choose Books...</source>
-        <target xml:lang="pt-PT" state="translated">Selecionar Livros...</target>
+        <target xml:lang="pt-PT" state="final">Selecionar Livros...</target>
         <note>ID: PublishTab.Apps.ChooseBooks</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.ChooseBooks.Tooltip">
@@ -1539,9 +1539,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Building Android app</target>
         <note>ID: PublishTab.Apps.Progress.BuildingAndroidApp</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.Complete">
+      <trans-unit id="PublishTab.Apps.Progress.Complete" approved="yes">
         <source xml:lang="en">Done</source>
-        <target xml:lang="pt-PT" state="translated">Concluído</target>
+        <target xml:lang="pt-PT" state="final">Concluído</target>
         <note>ID: PublishTab.Apps.Progress.Complete</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Progress.CreatingProject">
@@ -1589,9 +1589,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Edit the Reading App Builder app settings for this collection.</target>
         <note>ID: PublishTab.Apps.SettingsButton.Tooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.PrepareRequiredTooltip">
+      <trans-unit id="PublishTab.Apps.PrepareRequiredTooltip" approved="yes">
         <source xml:lang="en">Run Prepare before using this step.</source>
-        <target xml:lang="pt-PT" state="translated">Executar "Preparar" antes de seguir para esta etapa.</target>
+        <target xml:lang="pt-PT" state="final">Executar "Preparar" antes de seguir para esta etapa.</target>
         <note>ID: PublishTab.Apps.PrepareRequiredTooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.RabUpdateNeeded" translate="no">
@@ -1609,9 +1609,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Create the Reading App Builder project in this collection's Bloom App Data folder.</target>
         <note>ID: PublishTab.Apps.Prepare.TooltipBloomAppData</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.TryOnPhone">
+      <trans-unit id="PublishTab.Apps.TryOnPhone" approved="yes">
         <source xml:lang="en">Try on phone</source>
-        <target xml:lang="pt-PT" state="translated">Experimentar no celular</target>
+        <target xml:lang="pt-PT" state="final">Experimentar no celular</target>
         <note>ID: PublishTab.Apps.TryOnPhone</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.TryOnPhone.Tooltip">
@@ -1619,9 +1619,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Load and run the app on your phone. First enable USB Debugging on the phone and connect it with a USB cable.</target>
         <note>ID: PublishTab.Apps.TryOnPhone.Tooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.ApkSize.Text">
+      <trans-unit id="PublishTab.Apps.ApkSize.Text" approved="yes">
         <source xml:lang="en">Actual app size is %0.</source>
-        <target xml:lang="pt-PT" state="translated">Tamanho real do aplicativo é %0.</target>
+        <target xml:lang="pt-PT" state="final">Tamanho real do aplicativo é %0.</target>
         <note>ID: PublishTab.Apps.ApkSize.Text</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SizeEstimate.OverheadLabel">
@@ -1736,62 +1736,62 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.AppTitle">
         <source xml:lang="en">Bloom AI Image Tools</source>
-        <target xml:lang="pt-PT" state="translated">Ferramentas de imagem com IA do Bloom</target>
+        <target xml:lang="pt-PT" state="translated">Ferramentas de imagens IA do Bloom</target>
         <note>ID: AiImageEditor.AppTitle</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.ChooseTitle">
+      <trans-unit id="AiImageEditor.ArtStyle.ChooseTitle" approved="yes">
         <source xml:lang="en">Choose an Art Style</source>
-        <target xml:lang="pt-PT" state="translated">Escolha um estilo artístico</target>
+        <target xml:lang="pt-PT" state="final">Escolha um estilo artístico</target>
         <note>ID: AiImageEditor.ArtStyle.ChooseTitle</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.StyleLabel">
+      <trans-unit id="AiImageEditor.ArtStyle.StyleLabel" approved="yes">
         <source xml:lang="en">Style:</source>
-        <target xml:lang="pt-PT" state="translated">Estilo:</target>
+        <target xml:lang="pt-PT" state="final">Estilo:</target>
         <note>ID: AiImageEditor.ArtStyle.StyleLabel</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.abstract-illustration.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.abstract-illustration.Name" approved="yes">
         <source xml:lang="en">Abstract Illustration Style</source>
-        <target xml:lang="pt-PT" state="translated">Ilustração abstrata</target>
+        <target xml:lang="pt-PT" state="final">Ilustração abstrata</target>
         <note>ID: AiImageEditor.ArtStyle.abstract-illustration.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.cartoon-style.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.cartoon-style.Name" approved="yes">
         <source xml:lang="en">Cartoon Style Illustrations</source>
-        <target xml:lang="pt-PT" state="translated">Ilustrações estilo desenho animado</target>
+        <target xml:lang="pt-PT" state="final">Ilustrações estilo desenho animado</target>
         <note>ID: AiImageEditor.ArtStyle.cartoon-style.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.chalkboard-sketch.Name">
         <source xml:lang="en">Chalkboard Sketch</source>
-        <target xml:lang="pt-PT" state="translated">Esboço de giz</target>
+        <target xml:lang="pt-PT" state="translated">Giz em quadro-negro</target>
         <note>ID: AiImageEditor.ArtStyle.chalkboard-sketch.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.classic-ink-wash.Name">
         <source xml:lang="en">Classic Ink &amp; Watercolor</source>
-        <target xml:lang="pt-PT" state="translated">Nanquim e aquarela clássicos</target>
+        <target xml:lang="pt-PT" state="translated">Nanquim &amp; aquarela clássico</target>
         <note>ID: AiImageEditor.ArtStyle.classic-ink-wash.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.clay-stopmotion.Name">
         <source xml:lang="en">Clay Stop-Motion</source>
-        <target xml:lang="pt-PT" state="translated">Massinha em stop motion</target>
+        <target xml:lang="pt-PT" state="translated">Stop motion em plasticina</target>
         <note>ID: AiImageEditor.ArtStyle.clay-stopmotion.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.clear-line-flat-color.Name">
         <source xml:lang="en">Clear Line &amp; Flat Color</source>
-        <target xml:lang="pt-PT" state="translated">Linha clara e cor chapada</target>
+        <target xml:lang="pt-PT" state="translated">Linhas claras &amp; cores sólidas</target>
         <note>ID: AiImageEditor.ArtStyle.clear-line-flat-color.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.coloring-book-page.Name">
         <source xml:lang="en">Coloring Book Outline</source>
-        <target xml:lang="pt-PT" state="translated">Contorno para colorir</target>
+        <target xml:lang="pt-PT" state="translated">Contorno de livro de colorir</target>
         <note>ID: AiImageEditor.ArtStyle.coloring-book-page.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.comic-halftone.Name">
         <source xml:lang="en">Comic Halftone</source>
-        <target xml:lang="pt-PT" state="translated">Retícula de quadrinhos</target>
+        <target xml:lang="pt-PT" state="translated">Retícula de quadrinhos/banda desenhada</target>
         <note>ID: AiImageEditor.ArtStyle.comic-halftone.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.crayon-scribble.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.crayon-scribble.Name" approved="yes">
         <source xml:lang="en">Crayon &amp; Childlike Scribble</source>
-        <target xml:lang="pt-PT" state="translated">Rabisco infantil de giz de cera</target>
+        <target xml:lang="pt-PT" state="final">Rabisco infantil de giz de cera</target>
         <note>ID: AiImageEditor.ArtStyle.crayon-scribble.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.flat-instructional.Name">
