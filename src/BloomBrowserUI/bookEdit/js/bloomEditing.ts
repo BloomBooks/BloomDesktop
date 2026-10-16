@@ -1793,13 +1793,20 @@ export const pageUnloading = () => {
 
 /**
  * Register what must happen around each undo and redo of history, the page history that has just
- * started for this page. Before: the toolbox abandons a markup pass it has scheduled. Call once for
- * each history, right after it starts; the components' own setup may run before the history
- * exists.
+ * started for this page. Before: the toolbox abandons a markup pass it has scheduled, and the
+ * canvas element manager notes the canvas elements on the page. After: the canvas element manager
+ * re-reads the page and selects the canvas element that the step changed. Call once for each
+ * history, right after it starts; the components' own setup may run before the history exists.
  */
 export function listenToPageHistory(history: PageHistory): void {
     history.onBeforeUndoOrRedo(() =>
         getToolboxBundleExports()?.cancelPendingMarkupUpdates(),
+    );
+    history.onBeforeUndoOrRedo(() =>
+        theOneCanvasElementManager?.noteCanvasElementsBeforeUndoOrRedo(),
+    );
+    history.onAfterUndoOrRedo((restored) =>
+        theOneCanvasElementManager?.updateAfterUndoOrRedo(restored, history),
     );
 }
 

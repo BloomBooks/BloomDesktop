@@ -111,6 +111,7 @@ import {
 } from "./CanvasElementDraggableIntegration";
 import { CanvasElementEditingSuspension } from "./CanvasElementEditingSuspension";
 import {
+    kZOrderMoveL10nIds,
     moveCanvasElementInZOrder,
     type ZOrderMove,
 } from "./CanvasElementZOrder";
@@ -123,17 +124,21 @@ import {
     type BackgroundImageManagerState,
 } from "./CanvasElementBackgroundImageManager";
 import {
-    clearImageOperationUndoState,
-    commitPendingImageOperationUndo,
-    IImageCropInfo,
-    initializeImageUndoManager,
-    prepareUndoForImageOperation,
-    pushUndoForImageTransform,
-} from "../ImageUndoManager";
+    kGenericUndoDescriptionL10nKey,
+    type PageHistory,
+    type RestoredContent,
+} from "../../pageHistory/pageHistoryTypes";
+import { currentPageHistory } from "../../pageHistory/pageHistoryAccess";
 
 const kComicalGeneratedClass: string = "comical-generated";
 const kAdjustContainerAspectRatioDelayId =
     "adjustContainerAspectRatioImageLoad";
+const kAdjustContainerAspectRatioVideoDelayId =
+    "adjustContainerAspectRatioVideoMetadata";
+// How long a save waits for a video's metadata before it goes ahead without fitting the canvas
+// element to the video; well under requestPageContent's own limit (kMaxWaitTimeMs in
+// bloomEditing.ts).
+const kVideoMetadataWaitMs = 1000;
 
 const kTransformPropName = "bloom-zoomTransformForInitialFocus";
 // The fewest milliseconds between two realignments of the control frame after zoom changes;
@@ -160,6 +165,21 @@ export class CanvasElementManager {
     public minTextBoxHeightPx = 30;
 
     private activeElement: HTMLElement | undefined;
+    // The canvas elements that were on the page when the current undo or redo began
+    // (noteCanvasElementsBeforeUndoOrRedo), so that updateAfterUndoOrRedo can tell which ones it
+    // put back.
+    private canvasElementsBeforeUndoOrRedo: HTMLElement[] = [];
+    // The active element as the current undo or redo began (noteCanvasElementsBeforeUndoOrRedo),
+    // which updateAfterUndoOrRedo starts from.
+    private activeElementBeforeUndoOrRedo: HTMLElement | undefined;
+    // True while updateAfterUndoOrRedo selects the canvas element that the undo or redo changed
+    // and sets up its control frame. Meanwhile setupControlFrame does not fit the element's box
+    // to its picture or video (adjustContainerAspectRatio), at once or once the picture loads:
+    // the box stays as the undo or redo left it.
+    private isSelectingAfterUndoOrRedo = false;
+    // One function for each fit of a canvas element to its picture or video that is waiting for
+    // the picture to load or the video's metadata; each drops its fit (abandonPendingFits).
+    private abandonersOfPendingFits = new Set<() => void>();
     public isCanvasElementEditingOn: boolean = false;
     private thingsToNotifyOfCanvasElementChange: {
         // identifies the source that requested the notification; allows us to remove the
@@ -190,20 +210,6 @@ export class CanvasElementManager {
     private lastZoomRealignTime = -Infinity;
 
     public constructor() {
-        initializeImageUndoManager({
-            getCurrentPage: () =>
-                document.getElementsByClassName("bloom-page")[0] as
-                    | HTMLElement
-                    | undefined,
-            updateCanvasElementForChangedImage:
-                this.updateCanvasElementForChangedImage.bind(this),
-            updateCanvasElementAfterTransformChange:
-                this.adjustStuffRelatedToImage.bind(this),
-            getActiveElement: this.getActiveElement.bind(this),
-            setActiveElement: this.setActiveElement.bind(this),
-            removeDetachedTargets: this.removeDetachedTargets.bind(this),
-            updateCanvasElementClass,
-        });
         this.snapProvider = new CanvasSnapProvider();
         this.guideProvider = new CanvasGuideProvider();
         this.editingSuspension = new CanvasElementEditingSuspension({
@@ -300,6 +306,8 @@ export class CanvasElementManager {
                     this.alignControlFrameWithActiveElement,
                 adjustBackgroundImageSize:
                     this.adjustBackgroundImageSize.bind(this),
+                adjustContainerAspectRatio: (canvasElement) =>
+                    this.adjustContainerAspectRatio(canvasElement),
                 adjustCanvasElementHeightToContentOrMarkOverflow:
                     this.adjustCanvasElementHeightToContentOrMarkOverflow.bind(
                         this,
@@ -942,8 +950,16 @@ export class CanvasElementManager {
         return GetSettings();
     }
 
-    // This is invoked when the toolbox adds a canvas element that wants source and/or hint bubbles.
-    public addSourceAndHintBubbles(translationGroup: HTMLElement) {
+    // This is invoked when the toolbox adds a canvas element that wants source and/or hint bubbles,
+    // and by updateAfterUndoOrRedo for one that an undo or redo put back into the page, with
+    // isPutBackByUndoOrRedo true. Such an element needs no placeholders set up: the undo or redo
+    // put back their data-placeholder-value, and the element is the same object, still watched by
+    // PlaceholderProvider.blankObserver. Nor does it need setupSizeChangedHandling: the observer
+    // that the page load set up repositions every qtip on the page.
+    public addSourceAndHintBubbles(
+        translationGroup: HTMLElement,
+        isPutBackByUndoOrRedo = false,
+    ) {
         const bubble =
             BloomSourceBubbles.ProduceSourceBubbles(translationGroup);
         const divsThatHaveSourceBubbles: HTMLElement[] = [];
@@ -959,16 +975,20 @@ export class CanvasElementManager {
         );
 
         // at the moment (6.2) we aren't using this for any draggable things, but we could.
-        PlaceholderProvider.addPlaceholders(translationGroup.parentElement!);
+        if (!isPutBackByUndoOrRedo)
+            PlaceholderProvider.addPlaceholders(
+                translationGroup.parentElement!,
+            );
 
         if (divsThatHaveSourceBubbles.length > 0) {
             BloomSourceBubbles.MakeSourceBubblesIntoQtips(
                 divsThatHaveSourceBubbles[0],
                 bubbleDivs[0],
             );
-            BloomSourceBubbles.setupSizeChangedHandling(
-                divsThatHaveSourceBubbles,
-            );
+            if (!isPutBackByUndoOrRedo)
+                BloomSourceBubbles.setupSizeChangedHandling(
+                    divsThatHaveSourceBubbles,
+                );
         }
     }
 
@@ -1096,6 +1116,179 @@ export class CanvasElementManager {
             // has any canvas elements and remove the 'bloom-has-canvas-element' class.
             updateCanvasElementClass(bloomCanvas);
         }
+    }
+
+    /**
+     * Remember which canvas elements are on the page as an undo or redo begins (the page
+     * history's onBeforeUndoOrRedo), so that updateAfterUndoOrRedo can tell which ones the undo
+     * or redo put back into the page, and which one is active, which updateAfterUndoOrRedo
+     * starts from. Also drops the fits to a picture or video that are still waiting
+     * (abandonPendingFits).
+     */
+    public noteCanvasElementsBeforeUndoOrRedo(): void {
+        this.canvasElementsBeforeUndoOrRedo = this.getAllCanvasElementsOnPage();
+        this.activeElementBeforeUndoOrRedo = this.activeElement;
+        this.abandonPendingFits();
+    }
+
+    /**
+     * Bring canvas element editing back in line with the page after an undo or redo has put
+     * back attributes, text or children (the page history's onAfterUndoOrRedo). Undo puts back
+     * the same element objects, with the event listeners and CKEditor instances they had, so
+     * nothing needs wiring again; but the active element may be gone, and Comical draws the
+     * bubbles from data-bubble only when told to. It does not use refreshCanvasElementEditing,
+     * whose SetupElements adds the edit key handlers to the document again on every call.
+     *
+     * It also selects the canvas element that the undo or redo changed, so that the user sees
+     * what was undone or redone; canvasElementChangedByUndoOrRedo says which one that is. When
+     * no canvas element changed, as when the step was typing in a text box that is not a canvas
+     * element, the selection stays as it was as the undo or redo began, except that an active
+     * element that the step took out of the page (undoing an add) is let go, leaving nothing
+     * selected. The starting point is the element active as the undo or redo began, not the
+     * one active now: restoring the selection can put the caret in the text of another canvas
+     * element, and the focus handler (onFocusSetActiveElement) then makes that one active,
+     * though the undo or redo did not change it. Typing cannot go into a canvas element that is
+     * not selected, so such a caret is taken out again (takeFocusOutOfCanvasElementsOtherThanActive).
+     *
+     * Everything this writes to the page must leave redo alone. Most of it is what the history
+     * ignores (data-bloom-active, the control frame, Comical's drawing surfaces). Selecting
+     * goes through setActiveElement, as a click does, so that the control frame, the toolbar
+     * and Comical follow; that can also write the title of a bloom-canvas, so it runs inside
+     * history.doOutsideHistory, where no write joins the latest step or clears redo. A box that
+     * does not fit its picture or video is not fitted here, as a click would fit it: the fit
+     * would write a size and position that the next redo does not expect (see
+     * isSelectingAfterUndoOrRedo).
+     *
+     * A text canvas element that the undo or redo put back into the page gets its source and
+     * hint bubbles again (addBubblesToCanvasElementPutBack).
+     */
+    public updateAfterUndoOrRedo(
+        restored: RestoredContent,
+        history: PageHistory,
+    ): void {
+        const canvasElementsBefore = this.canvasElementsBeforeUndoOrRedo;
+        const activeBefore = this.activeElementBeforeUndoOrRedo;
+        // Hold no removed elements until the next undo or redo.
+        this.canvasElementsBeforeUndoOrRedo = [];
+        this.activeElementBeforeUndoOrRedo = undefined;
+        if (!this.isCanvasElementEditingOn) return;
+        if (this.activeElement && !this.activeElement.isConnected) {
+            this.activeElement = undefined;
+            this.theCanvasElementWeAreTextEditing = undefined;
+        }
+        const startingElement = activeBefore?.isConnected
+            ? activeBefore
+            : undefined;
+        const elementToSelect =
+            canvasElementChangedByUndoOrRedo(
+                restored.roots,
+                canvasElementsBefore,
+                this.getAllCanvasElementsOnPage(),
+                startingElement,
+            ) ?? startingElement;
+        document.querySelectorAll("[data-bloom-active]").forEach((e) => {
+            if (e !== this.activeElement)
+                e.removeAttribute("data-bloom-active");
+        });
+        this.activeElement?.setAttribute("data-bloom-active", "true");
+        this.redrawBubblesFromPage();
+        this.isSelectingAfterUndoOrRedo = true;
+        try {
+            history.doOutsideHistory(() => {
+                if (elementToSelect !== this.activeElement) {
+                    // setActiveElement also activates the element in Comical, sets up the
+                    // control frame and notifies the listeners.
+                    this.setActiveElement(elementToSelect);
+                } else {
+                    this.setupControlFrame();
+                    this.doNotifyChange();
+                }
+            });
+        } finally {
+            this.isSelectingAfterUndoOrRedo = false;
+        }
+        history.doOutsideHistory(() => {
+            this.takeFocusOutOfCanvasElementsOtherThanActive();
+            this.getAllCanvasElementsOnPage()
+                .filter((e) => !canvasElementsBefore.includes(e))
+                .forEach((e) => this.addBubblesToCanvasElementPutBack(e));
+        });
+    }
+
+    /**
+     * Give the translation groups of canvasElement, which an undo or redo put back into the page,
+     * their source and hint bubbles again. Deleting a canvas element destroys its qtips
+     * (BloomSourceBubbles.removeSourceBubbles in deleteCanvasElement), and qtip keeps their
+     * markup outside the page, where the history does not reach. An element that still has its
+     * qtips, as after the redo of an add, gets new ones in their place.
+     */
+    private addBubblesToCanvasElementPutBack(canvasElement: HTMLElement): void {
+        canvasElement
+            .querySelectorAll<HTMLElement>(".bloom-translationGroup")
+            .forEach((translationGroup) => {
+                BloomSourceBubbles.removeSourceBubbles(translationGroup);
+                this.addSourceAndHintBubbles(translationGroup, true);
+            });
+    }
+
+    /**
+     * Make the keyboard focus follow the selection: if the focus, or the caret of the DOM
+     * selection, is in a canvas element other than the active one, blur it and clear the DOM
+     * selection, so that typing cannot go into a canvas element that is not selected. A caret
+     * in the active element stays, as after a click on an element that is already selected. A
+     * first click on an element that was not selected only selects it, so nothing is focused
+     * here; and setActiveElement already takes the focus away from an element with no text.
+     * Focus in a text box that is not in a canvas element stays.
+     */
+    private takeFocusOutOfCanvasElementsOtherThanActive(): void {
+        const isInAnotherCanvasElement = (node: Node | null | undefined) => {
+            const element =
+                node?.nodeType === Node.ELEMENT_NODE
+                    ? (node as Element)
+                    : node?.parentElement;
+            const canvasElement = element?.closest(kCanvasElementSelector);
+            return !!canvasElement && canvasElement !== this.activeElement;
+        };
+        const selection = window.getSelection();
+        if (
+            !isInAnotherCanvasElement(document.activeElement) &&
+            !isInAnotherCanvasElement(selection?.focusNode)
+        )
+            return;
+        if (isInAnotherCanvasElement(document.activeElement)) {
+            (document.activeElement as HTMLElement).blur();
+        }
+        selection?.removeAllRanges();
+    }
+
+    /**
+     * Draw each bloom-canvas's bubbles again from data-bubble, for after something other than
+     * Comical has put back data-bubble: an undo or redo, or the rollback of a transaction, such
+     * as the Canvas tool's colour picker's on Cancel. Comical draws from its own copy of each
+     * spec until told to read them again. Redrawing drops Comical's handles, so this activates
+     * the active element in Comical again; the selection does not change. Does nothing while
+     * canvas element editing is off.
+     */
+    public redrawBubblesFromPage(): void {
+        if (!this.isCanvasElementEditingOn) return;
+        // One without a drawing surface is one that Comical is not editing.
+        this.getAllBloomCanvasesOnPage().forEach((bloomCanvas) => {
+            if (
+                bloomCanvas.querySelector(
+                    `:scope > canvas.${kComicalGeneratedClass}`,
+                )
+            )
+                Comical.update(bloomCanvas);
+            else Comical.startEditing([bloomCanvas]);
+        });
+        Comical.activateElement(this.activeElement);
+    }
+
+    /** Every canvas element on the page, in document order. */
+    private getAllCanvasElementsOnPage(): HTMLElement[] {
+        return Array.from(
+            document.getElementsByClassName(kCanvasElementClass),
+        ) as HTMLElement[];
     }
 
     private migrateOldCanvasElements(canvasElements: HTMLElement[]): void {
@@ -1402,8 +1595,15 @@ export class CanvasElementManager {
         setupCanvasElementControlFrame({
             getActiveElement: () => this.activeElement,
             setActiveElement: (element) => this.setActiveElement(element),
-            adjustContainerAspectRatio:
-                this.adjustContainerAspectRatio.bind(this),
+            adjustContainerAspectRatio: (canvasElement, useSizeOfNewImage) => {
+                if (this.isSelectingAfterUndoOrRedo)
+                    this.alignControlFrameWithActiveElement();
+                else
+                    this.adjustContainerAspectRatio(
+                        canvasElement,
+                        useSizeOfNewImage,
+                    );
+            },
             startResizeDrag: this.handleDragInteractions.startResizeDrag,
             startSideControlDrag:
                 this.handleDragInteractions.startSideControlDrag,
@@ -1449,11 +1649,9 @@ export class CanvasElementManager {
             return false;
         }
         if (canRotateCanvasElement(this.activeElement)) {
-            pushUndoForImageTransform(this.activeElement);
             this.rotateActiveElementRight90Degrees();
             return true;
         }
-        pushUndoForImageTransform(this.activeElement);
         rotateImageContentRight90Degrees(img);
         this.adjustStuffRelatedToImage(this.activeElement, img);
         return true;
@@ -1470,7 +1668,6 @@ export class CanvasElementManager {
         if (!img) {
             return;
         }
-        pushUndoForImageTransform(this.activeElement);
         flipImageContent(img, axis);
         this.adjustStuffRelatedToImage(this.activeElement, img);
     }
@@ -1478,14 +1675,16 @@ export class CanvasElementManager {
     private minWidth = 30; // @MinTextBoxWidth in canvasTool.less
     private minHeight = 30; // @MinTextBoxHeight in canvasTool.less
 
-    private getImageOrVideo(): HTMLElement | undefined {
+    private getImageOrVideo(
+        canvasElement: HTMLElement | undefined = this.activeElement,
+    ): HTMLElement | undefined {
         // It will have one or the other or neither, but not both, so it doesn't much matter
         // which we search for first. But images are probably more common.
         const imgC =
-            this.activeElement?.getElementsByClassName(kImageContainerClass)[0];
+            canvasElement?.getElementsByClassName(kImageContainerClass)[0];
         const img = imgC?.getElementsByTagName("img")[0];
         if (img) return img;
-        const videoC = this.activeElement?.getElementsByClassName(
+        const videoC = canvasElement?.getElementsByClassName(
             "bloom-videoContainer",
         )[0];
         const video = videoC?.getElementsByTagName("video")[0];
@@ -1506,11 +1705,6 @@ export class CanvasElementManager {
     // the picture. The rotation of a canvas element box is left alone, because it belongs to
     // the box, like its size and its position; the rotate handle and Undo are the way back
     // from that.
-    //
-    // This command deliberately puts nothing on the undo stack, as the older reset-crop
-    // command did not either: a reset is itself a way back, so an undo of it would be a way
-    // back from a way back. Rotate right and Flip do record undo, because each of them is a
-    // step forward.
     public resetImage(): void {
         if (!this.activeElement) return;
         const img = getImageFromCanvasElement(this.activeElement);
@@ -1766,15 +1960,27 @@ export class CanvasElementManager {
             this.alignControlFrameWithActiveElement();
             return;
         }
-        const imgOrVideo = this.getImageOrVideo();
+        // The picture or video of the element being fitted, which a fit that waited for the
+        // video's size may reach after another element has been selected.
+        const imgOrVideo = this.getImageOrVideo(canvasElement);
         if (!imgOrVideo || imgOrVideo.style.width) {
             // We don't have an image, or we've already done cropping on it, so we should not force the
             // container back to the original image shape.
             this.alignControlFrameWithActiveElement();
             return;
         }
-        const containerWidth = canvasElement.clientWidth;
-        const containerHeight = canvasElement.clientHeight;
+        // The size and position as the style gives them, rather than clientWidth and offsetLeft,
+        // which the browser rounds to whole pixels. Compared with rounded numbers, a box that
+        // already fits its picture looks as if it does not, and selecting it would write a new
+        // size and position every time.
+        const containerWidth = styleLengthInPx(
+            canvasElement.style.width,
+            canvasElement.clientWidth,
+        );
+        const containerHeight = styleLengthInPx(
+            canvasElement.style.height,
+            canvasElement.clientHeight,
+        );
         let imgWidth = 1;
         let imgHeight = 1;
         if (imgOrVideo instanceof HTMLImageElement) {
@@ -1807,13 +2013,11 @@ export class CanvasElementManager {
             imgWidth = video.videoWidth;
             imgHeight = video.videoHeight;
             if (imgWidth === 0 || imgHeight === 0) {
-                // video not ready yet, try again later.
-                // I'm not sure this has ever been tested; the dimensions seem to be
-                // always available by the time this routine is called.
-                video.addEventListener(
-                    "loadedmetadata",
-                    () => this.adjustContainerAspectRatio(canvasElement),
-                    { once: true },
+                // video not ready yet, try again later. This is the case right after a new
+                // video is put in the element (updateVideoInContainer in bloomVideo.ts).
+                this.waitForVideoAndAdjustContainerAspectRatio(
+                    canvasElement,
+                    video,
                 );
                 return;
             }
@@ -1837,47 +2041,59 @@ export class CanvasElementManager {
                 newHeight = newWidth / imgRatio;
             }
         }
-        const oldHeight = canvasElement.clientHeight;
-        if (Math.abs(oldHeight - newHeight) <= 0.1) {
-            // don't let small rounding errors accumulate
-            newHeight = oldHeight;
-        } else {
-            canvasElement.style.height = `${newHeight}px`;
-        }
-        // and move container down so image does not move
-        const oldTop = canvasElement.offsetTop;
-        let newTop = oldTop + (oldHeight - newHeight) / 2;
-
-        const oldWidth = canvasElement.clientWidth;
-        if (Math.abs(oldWidth - newWidth) <= 0.1) {
-            newWidth = oldWidth;
-        } else {
-            canvasElement.style.width = `${newWidth}px`;
-        }
-        // and move container right so image does not move
-        const oldLeft = canvasElement.offsetLeft;
-        let newLeft = oldLeft + (oldWidth - newWidth) / 2;
-
-        // except, if it was "on the grid" before, such as a newly added placeholder,
-        // or we just changed the image, we want to keep it on the grid.
-        const adjustedOld = this.snapProvider.getPosition(
-            undefined,
-            oldLeft,
-            oldTop,
-        );
-        if (adjustedOld.x === oldLeft && adjustedOld.y === oldTop) {
-            // it was on the grid, so we want to keep it there.
-            const adjustedNew = this.snapProvider.getPosition(
-                undefined,
-                newLeft,
-                newTop,
+        const oldHeight = containerHeight;
+        const oldWidth = containerWidth;
+        // A box within this of the size that fits is left alone, so that small rounding errors
+        // do not accumulate, and so that selecting a box that fits writes nothing: a write
+        // would join the latest undo step.
+        const heightFits = Math.abs(oldHeight - newHeight) <= 0.1;
+        const widthFits = Math.abs(oldWidth - newWidth) <= 0.1;
+        if (!heightFits || !widthFits) {
+            if (heightFits) {
+                newHeight = oldHeight;
+            } else {
+                canvasElement.style.height = `${newHeight}px`;
+            }
+            // and move container down so image does not move
+            const oldTop = styleLengthInPx(
+                canvasElement.style.top,
+                canvasElement.offsetTop,
             );
-            newLeft = adjustedNew.x;
-            newTop = adjustedNew.y;
-        }
+            let newTop = oldTop + (oldHeight - newHeight) / 2;
 
-        canvasElement.style.left = `${newLeft}px`;
-        canvasElement.style.top = `${newTop}px`;
+            if (widthFits) {
+                newWidth = oldWidth;
+            } else {
+                canvasElement.style.width = `${newWidth}px`;
+            }
+            // and move container right so image does not move
+            const oldLeft = styleLengthInPx(
+                canvasElement.style.left,
+                canvasElement.offsetLeft,
+            );
+            let newLeft = oldLeft + (oldWidth - newWidth) / 2;
+
+            // except, if it was "on the grid" before, such as a newly added placeholder,
+            // or we just changed the image, we want to keep it on the grid.
+            const adjustedOld = this.snapProvider.getPosition(
+                undefined,
+                oldLeft,
+                oldTop,
+            );
+            if (adjustedOld.x === oldLeft && adjustedOld.y === oldTop) {
+                // it was on the grid, so we want to keep it there.
+                const adjustedNew = this.snapProvider.getPosition(
+                    undefined,
+                    newLeft,
+                    newTop,
+                );
+                newLeft = adjustedNew.x;
+                newTop = adjustedNew.y;
+            }
+
+            canvasElement.style.left = `${newLeft}px`;
+            canvasElement.style.top = `${newTop}px`;
+        }
         this.alignControlFrameWithActiveElement();
         if (this.doAfterNewImageAdjusted) {
             this.doAfterNewImageAdjusted();
@@ -1904,12 +2120,19 @@ export class CanvasElementManager {
                 return;
             }
             adjustmentResumed = true;
-            try {
+            this.abandonersOfPendingFits.delete(abandon);
+            const adjust = () =>
                 this.adjustContainerAspectRatio(
                     canvasElement,
                     false, // if we've got dimensions just use them
                     timeoutHandler,
                 );
+            try {
+                // The adjustment comes after the action that changed the picture has ended, so
+                // it joins that action's undo step, which is the latest one.
+                const history = currentPageHistory();
+                if (history) history.addToLatestTransaction(adjust);
+                else adjust();
             } finally {
                 removeRequestPageContentDelay(
                     kAdjustContainerAspectRatioDelayId,
@@ -1925,22 +2148,86 @@ export class CanvasElementManager {
             100,
             // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
         ) as unknown as number;
-        image.addEventListener("load", () => resumeAdjustment(handle), {
+        const onLoad = () => resumeAdjustment(handle);
+        image.addEventListener("load", onLoad, {
             once: true,
         });
+        const abandon = () => {
+            adjustmentResumed = true;
+            clearTimeout(handle);
+            image.removeEventListener("load", onLoad);
+            removeRequestPageContentDelay(kAdjustContainerAspectRatioDelayId);
+        };
+        this.abandonersOfPendingFits.add(abandon);
+    }
+
+    /**
+     * Fit canvasElement to the shape of its video once the video's metadata has loaded and its
+     * size is known. Like waitForImageAndAdjustContainerAspectRatio, this holds a page content
+     * delay meanwhile, so that a save waits for the fit (see the SAVE-RACE INVARIANT note on
+     * adjustContainerAspectRatio). A video whose metadata has not loaded within
+     * kVideoMetadataWaitMs stops holding saves then, so that one that never loads does not hold
+     * every save for requestPageContent's whole wait; if its metadata comes later, the box is
+     * still fitted, unless an undo or redo has begun since (abandonPendingFits).
+     */
+    private waitForVideoAndAdjustContainerAspectRatio(
+        canvasElement: HTMLElement,
+        video: HTMLVideoElement,
+    ): void {
+        addRequestPageContentDelay(kAdjustContainerAspectRatioVideoDelayId);
+        let delayRemoved = false;
+        const removeDelay = () => {
+            if (delayRemoved) return;
+            delayRemoved = true;
+            removeRequestPageContentDelay(
+                kAdjustContainerAspectRatioVideoDelayId,
+            );
+        };
+        const timeout = window.setTimeout(removeDelay, kVideoMetadataWaitMs);
+        const onLoadedMetadata = () => {
+            this.abandonersOfPendingFits.delete(abandon);
+            window.clearTimeout(timeout);
+            const adjust = () => this.adjustContainerAspectRatio(canvasElement);
+            try {
+                // The fit comes after the action that changed the video has ended, so it
+                // joins that action's undo step, which is the latest one.
+                const history = currentPageHistory();
+                if (history) history.addToLatestTransaction(adjust);
+                else adjust();
+            } finally {
+                removeDelay();
+            }
+        };
+        video.addEventListener("loadedmetadata", onLoadedMetadata, {
+            once: true,
+        });
+        const abandon = () => {
+            window.clearTimeout(timeout);
+            video.removeEventListener("loadedmetadata", onLoadedMetadata);
+            removeDelay();
+        };
+        this.abandonersOfPendingFits.add(abandon);
+    }
+
+    /**
+     * Drop every fit of a canvas element to its picture or video that is still waiting for the
+     * picture to load or the video's metadata, and release the page content delays they hold.
+     * Called as an undo or redo begins: such a fit would join the latest undo step once the
+     * undo or redo has run, which is no longer the step of the change that wanted it, and clear
+     * redo. A later click on the box fits it as usual.
+     */
+    private abandonPendingFits(): void {
+        const abandoners = Array.from(this.abandonersOfPendingFits);
+        this.abandonersOfPendingFits.clear();
+        abandoners.forEach((abandon) => abandon());
     }
 
     // When the image is changed in a canvas element (e.g., choose or paste image),
     // we remove cropping, adjust the aspect ratio, and move the control frame.
     // The rotation and mirror of the picture (imageContentTransform.ts) belong to the old
-    // picture, so they go too, unless the caller passes imageTransform, as Undo does to put
-    // back the transform the restored picture had. The rotation of the canvas element box
-    // belongs to the box and is left alone.
-    updateCanvasElementForChangedImage(
-        imgOrImageContainer: HTMLElement,
-        cropInfo?: IImageCropInfo,
-        imageTransform = "",
-    ) {
+    // picture, so they go too. The rotation of the canvas element box belongs to the box and
+    // is left alone.
+    updateCanvasElementForChangedImage(imgOrImageContainer: HTMLElement) {
         const canvasElement = imgOrImageContainer.closest(
             kCanvasElementSelector,
         ) as HTMLElement;
@@ -1957,14 +2244,13 @@ export class CanvasElementManager {
         img.style.top = "";
         // With the transform gone, the size code below sees no rotation and fits a background
         // element to the new picture's natural shape.
-        img.style.transform = imageTransform;
+        img.style.transform = "";
         // Get the aspect ratio right (aligns control frame)
         if (canvasElement.classList.contains(kBackgroundImageClass)) {
             this.adjustBackgroundImageSize(
                 canvasElement.closest(kBloomCanvasSelector)!,
                 canvasElement,
                 true,
-                cropInfo,
             );
             SetupMetadataButton(canvasElement);
         } else {
@@ -2832,12 +3118,14 @@ export class CanvasElementManager {
         userDefinedStyleName?: string,
         rightTopOffset?: string,
     ): HTMLElement | undefined {
-        return this.factories.addCanvasElementWithScreenCoords(
-            screenX,
-            screenY,
-            canvasElementType,
-            userDefinedStyleName,
-            rightTopOffset,
+        return doAddAsUndoStep(() =>
+            this.factories.addCanvasElementWithScreenCoords(
+                screenX,
+                screenY,
+                canvasElementType,
+                userDefinedStyleName,
+                rightTopOffset,
+            ),
         );
     }
 
@@ -2884,6 +3172,7 @@ export class CanvasElementManager {
 
     // This method is called when the user "drops" a canvas element from a tool onto an image.
     // It is also called by addChildInternal() and by the Linux version of dropping: "ondragend".
+    // The add is one undo step (doAddAsUndoStep).
     public addCanvasElement(
         mouseX: number,
         mouseY: number,
@@ -2891,12 +3180,14 @@ export class CanvasElementManager {
         userDefinedStyleName?: string,
         rightTopOffset?: string,
     ): HTMLElement | undefined {
-        return this.factories.addCanvasElement(
-            mouseX,
-            mouseY,
-            canvasElementType,
-            userDefinedStyleName,
-            rightTopOffset,
+        return doAddAsUndoStep(() =>
+            this.factories.addCanvasElement(
+                mouseX,
+                mouseY,
+                canvasElementType,
+                userDefinedStyleName,
+                rightTopOffset,
+            ),
         );
     }
 
@@ -3039,7 +3330,6 @@ export class CanvasElementManager {
             // just revert it to a placeholder
             const img = getImageFromCanvasElement(textOverPicDiv);
             if (img) {
-                prepareUndoForImageOperation(img);
                 img.classList.remove("bloom-imageLoadError");
                 img.onerror = HandleImageError;
                 img.src = "placeHolder.png";
@@ -3047,7 +3337,6 @@ export class CanvasElementManager {
                     normalizeCoverImageDesignation(page);
                 }
                 this.updateCanvasElementForChangedImage(img);
-                commitPendingImageOperationUndo(img);
                 notifyToolOfChangedImage(img);
             }
             return;
@@ -3159,8 +3448,6 @@ export class CanvasElementManager {
     }
 
     public initializeCanvasElementEditing(): void {
-        clearImageOperationUndoState();
-
         // This gets called in bloomEditable's SetupElements method. This is how it gets set up on page
         // load, so that canvas element editing works even when the Canvas element tool is not active. So it definitely
         // needs to be called there when we're calling SetupElements during page load. It's possible
@@ -3371,14 +3658,24 @@ export class CanvasElementManager {
             return;
         }
         const active = this.getActiveElement();
-        if (!active || !moveCanvasElementInZOrder(active, move)) {
+        if (!active) {
             return;
         }
-        // Moving the element rebuilt Comical's bubbles, so make sure the active one gets its
-        // handles back. Aligning the control frame also re-renders the context controls, so a
-        // reopened menu shows which layer moves are still possible.
-        Comical.activateElement(active);
-        this.alignControlFrameWithActiveElement();
+        // One undo step, described by the command's label. From the Layer menu this nests in the
+        // transaction that runControlCallback opens with the same description; from a shortcut it
+        // nests in the stand-in that the key press opened, and gives that step its description.
+        // Undo and redo put back the DOM order and the data-bubble levels together, and
+        // updateAfterUndoOrRedo redraws the bubbles from them.
+        doAsUndoStep(kZOrderMoveL10nIds[move], () => {
+            if (!moveCanvasElementInZOrder(active, move)) {
+                return;
+            }
+            // Moving the element rebuilt Comical's bubbles, so make sure the active one gets its
+            // handles back. Aligning the control frame also re-renders the context controls, so a
+            // reopened menu shows which layer moves are still possible.
+            Comical.activateElement(active);
+            this.alignControlFrameWithActiveElement();
+        });
     }
 
     public duplicateCanvasElement(): HTMLElement | undefined {
@@ -3439,7 +3736,6 @@ export class CanvasElementManager {
         bloomCanvas: HTMLElement,
         bgCanvasElement: HTMLElement,
         useSizeOfNewImage: boolean,
-        cropInfo?: IImageCropInfo,
     ) {
         return adjustCanvasBackgroundImageSize(
             this.backgroundImageManagerState,
@@ -3448,7 +3744,6 @@ export class CanvasElementManager {
             useSizeOfNewImage,
             () => this.activeElement,
             this.alignControlFrameWithActiveElement,
-            cropInfo,
         );
     }
 
@@ -3524,6 +3819,103 @@ export class CanvasElementManager {
     public static getLabeledNumberInPx(label: string, source: string): number {
         return Alternates.getLabeledNumberInPx(label, source);
     }
+}
+
+/**
+ * The length in px that a style value such as "12.5px" gives, or measured when the style has no
+ * length in px.
+ */
+function styleLengthInPx(value: string, measured: number): number {
+    if (!value) return measured;
+    const px = pxToNumberFromCssUtils(value);
+    return isNaN(px) ? measured : px;
+}
+
+/**
+ * Run add, which adds a canvas element to the page and returns it, in a transaction of the page
+ * history, so that the add is an undo step of its own: a change made outside any transaction
+ * would join the step before it, or become part of the page as the user found it. Called while
+ * another transaction is open, such as the one that a click opens or the one in which the toolbox
+ * finishes a drag from the Canvas tool's palette, it joins that one instead. With no page history,
+ * as outside the Edit tab and in some unit tests, it just runs add.
+ *
+ * There is no localization id that names adding a canvas element, so the step has
+ * kGenericUndoDescriptionL10nKey.
+ */
+function doAddAsUndoStep(
+    add: () => HTMLElement | undefined,
+): HTMLElement | undefined {
+    return doAsUndoStep(kGenericUndoDescriptionL10nKey, add);
+}
+
+/**
+ * Run change, which must not be async, in a transaction of the page history described by
+ * descriptionL10nKey, and return what it returns, as doAddAsUndoStep does for an add. Called while
+ * another transaction is open, it joins that one. If change throws, its changes are put back, the
+ * bubbles are drawn again from the page, and the error is thrown to the caller. With no page
+ * history it just runs change.
+ */
+function doAsUndoStep<T>(descriptionL10nKey: string, change: () => T): T {
+    const history = currentPageHistory();
+    if (!history) return change();
+    let result: T | undefined;
+    let threw = false;
+    let error: unknown;
+    // A function that returns a plain value runs, and its transaction closes, before
+    // doTransaction returns, so result is set by then. If change throws, the transaction puts
+    // back its changes and the promise rejects; the error is thrown to the caller here instead.
+    history
+        .doTransaction(descriptionL10nKey, () => {
+            try {
+                result = change();
+            } catch (e) {
+                threw = true;
+                error = e;
+                throw e;
+            }
+        })
+        .catch(() => {});
+    if (threw) {
+        // The rollback put back data-bubble, but Comical draws from its own copy of each spec.
+        theOneCanvasElementManager?.redrawBubblesFromPage();
+        throw error;
+    }
+    return result as T;
+}
+
+/**
+ * The canvas element that an undo or redo changed, which updateAfterUndoOrRedo selects, or
+ * undefined when it changed none that is still on the page.
+ *
+ * - A canvas element that the undo or redo put back into the page, such as one whose delete was
+ *   undone, is one that is in canvasElementsNow but not in canvasElementsBefore.
+ * - When it put back none, the canvas elements that it changed are those that are a root, or
+ *   contain one: their position and size (style), data-bubble, text or image.
+ * - A root that contains canvas elements, such as a bloom-canvas whose children changed,
+ *   does not say which of them changed, so it makes none of them count. Undoing an add, or a
+ *   change of the order of the canvas elements, changes only such a root.
+ * - Of several, the active element is the one if it is among them; otherwise the first in
+ *   document order.
+ *
+ * roots are those of the page history's RestoredContent.
+ */
+function canvasElementChangedByUndoOrRedo(
+    roots: Element[],
+    canvasElementsBefore: HTMLElement[],
+    canvasElementsNow: HTMLElement[],
+    activeElement: HTMLElement | undefined,
+): HTMLElement | undefined {
+    const putBack = canvasElementsNow.filter(
+        (canvasElement) => !canvasElementsBefore.includes(canvasElement),
+    );
+    const changed =
+        putBack.length > 0
+            ? putBack
+            : canvasElementsNow.filter((canvasElement) =>
+                  roots.some((root) => canvasElement.contains(root)),
+              );
+    if (activeElement && changed.includes(activeElement)) return activeElement;
+    return changed[0];
 }
 
 // Note: do NOT use this directly in toolbox code; it will import its own copy of
