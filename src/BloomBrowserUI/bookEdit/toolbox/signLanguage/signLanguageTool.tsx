@@ -26,6 +26,10 @@ import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kCanvasElementSelector } from "../canvas/canvasElementConstants";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
+import {
+    currentPageHistory,
+    doOutsideHistoryIfAny,
+} from "../../pageHistory/pageHistoryAccess";
 
 // The recording process can be in one of these states:
 // idle...the initial state, returned to when stopped; red record button shows; stop button and all labels hidden
@@ -578,7 +582,7 @@ export class SignLanguageToolControls extends React.Component<
         );
     }
 
-    private refreshAfterVideoChange() {
+    public refreshAfterVideoChange() {
         this.leaveCurrentVideoContext(() => {
             this.getVideoStatsFromFile();
         });
@@ -595,28 +599,20 @@ export class SignLanguageToolControls extends React.Component<
         });
     }
 
+    // Deleting is one undo step, which only takes the video off the page. The file stays in the
+    // book's video folder, so that undo can put the video back; BookStorage.CleanupUnusedVideoFiles
+    // removes it when the book is next brought up to date, if no page names it then.
     private deleteRecording() {
-        const paramsObj = this.getParamsObjForCurrentVideo();
-        if (!paramsObj) {
+        const container = this.getSelectedVideoContainer();
+        const video = container?.getElementsByTagName("video")[0];
+        if (!container || !video) {
             return;
         }
-        postDataWithConfig(
-            "signLanguage/deleteVideo",
-            "",
-            { params: paramsObj },
-            (result) => {
-                if (result.data == "deleted") {
-                    const elt = this.getSelectedVideoContainer();
-                    if (elt) {
-                        elt.classList.add("bloom-noVideoSelected");
-                        const video = elt.getElementsByTagName("video")[0];
-                        if (video && video.parentElement)
-                            video.parentElement.removeChild(video);
-                    }
-                    this.refreshAfterVideoChange();
-                }
-            },
-        );
+        makeUndoStep("EditTab.Toolbox.SignLanguage.DeleteVideo", () => {
+            container.classList.add("bloom-noVideoSelected");
+            video.remove();
+        });
+        this.refreshAfterVideoChange();
     }
 
     private showInFolder() {
@@ -804,6 +800,7 @@ export class SignLanguageToolControls extends React.Component<
             // raised when the user clicks stop and we call this.mediaRecorder.stop() above.
             const blob = new Blob(this.chunks, { type: "video/webm" });
             this.chunks = []; // enable garbage collection?
+            const containerToFill = this.getSelectedVideoContainer();
             postDataWithConfig(
                 "signLanguage/recordedVideo",
                 blob,
@@ -813,7 +810,21 @@ export class SignLanguageToolControls extends React.Component<
                     },
                 },
                 (result) => {
-                    this.updateVideo(result.data);
+                    // The new recording is one undo step, made when the reply arrives, so that
+                    // what the user does on the page while C# processes the recording is never
+                    // part of it. An undo or a delete meanwhile may have taken the container off
+                    // the page; then the recording goes nowhere, and its file is left for
+                    // BookStorage.CleanupUnusedVideoFiles.
+                    if (containerToFill?.isConnected && result.data) {
+                        makeUndoStep(
+                            "EditTab.Toolbox.SignLanguage.Recording",
+                            () =>
+                                updateVideoInContainer(
+                                    containerToFill,
+                                    result.data,
+                                ),
+                        );
+                    }
                     this.refreshAfterVideoChange();
                 },
             );
@@ -868,6 +879,7 @@ export class SignLanguageToolControls extends React.Component<
 
 export class SignLanguageTool extends ToolboxToolReactAdaptor {
     private reactControls: SignLanguageToolControls;
+    private stopListeningToUndoAndRedo: (() => void) | undefined;
     private readonly kCanvasChangeNotificationId = "signLanguageTool";
 
     private selectedVideoCanBeRecorded(container: Element | null): boolean {
@@ -1022,6 +1034,8 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
+        this.stopListeningToUndoAndRedo?.();
+        this.stopListeningToUndoAndRedo = undefined;
         this.reactControls.leaveCurrentVideoContext();
         // Decided NOT to remove bloom-selected here. It's harmless (only the edit stylesheet
         // does anything with it) and leaving it allows us to keep the same one selected
@@ -1165,6 +1179,17 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     public newPageReady() {
+        // Each page load has its own history. newPageReady() can be called twice for one
+        // page, so stop listening to the history before listening to it again.
+        this.stopListeningToUndoAndRedo?.();
+        // Undo or redo of a recording, an import or a delete puts back another video, or none;
+        // show what the page has now. Not while recording, which a refresh would leave running.
+        this.stopListeningToUndoAndRedo =
+            currentPageHistory()?.onAfterUndoOrRedo(() => {
+                if (this.reactControls.state.stateClass === "idle")
+                    this.reactControls.refreshAfterVideoChange();
+            });
+
         // among other things, this clears us out of "processing"
         // when the page is refreshed with the new video
         this.reactControls.setState({
@@ -1309,6 +1334,8 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         return template.content.firstChild;
     }
 
+    // Trimming is not undoable: the trim slider changes the src inside doOutsideHistoryIfAny, so
+    // undo leaves the trim as it is, and trimming keeps the page's undo history.
     public static setVideoTimingsInSrcAttr(
         newStartString: string,
         newEndString: string,
@@ -1322,10 +1349,8 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         if (!src) src = "";
         const urlTimingObj = SignLanguageTool.parseVideoSrcAttribute(src);
         src = urlTimingObj.url;
-        source.setAttribute(
-            "src",
-            src + "#t=" + newStartString + "," + newEndString,
-        );
+        const trimmedSrc = src + "#t=" + newStartString + "," + newEndString;
+        doOutsideHistoryIfAny(() => source.setAttribute("src", trimmedSrc));
     }
 
     private static getSelectedVideoElement(): HTMLVideoElement | undefined {
@@ -1399,6 +1424,22 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
                 0,
             );
     }
+}
+
+/**
+ * Make change one undo step with the given description, if the page has a history. If change
+ * throws, what it changed is put back.
+ */
+function makeUndoStep(descriptionL10nKey: string, change: () => void): void {
+    const transaction =
+        currentPageHistory()?.beginTransaction(descriptionL10nKey);
+    try {
+        change();
+    } catch (error) {
+        transaction?.cancel();
+        throw error;
+    }
+    transaction?.end();
 }
 
 class UrlTimingObject {
