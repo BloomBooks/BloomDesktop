@@ -1,0 +1,123 @@
+// The page history of the page open in the Edit tab, set up in the page frame: started once the
+// page is ready, with the user's input and the undo and redo keys attached, and ended when the page
+// goes. Also the entry points that the rest of Bloom undoes and redoes through, all exported on the
+// page bundle (editablePage.ts):
+// - the Undo button: C# calls topBarButtonClick("undo") in this frame, which calls handleUndo;
+// - its enabled state: C# polls workspaceBundle.canUndo(), which asks this frame's canUndo;
+// - the keys: pageHistoryKeys.ts runs handleUndo and handleRedo.
+//
+// In Change Layout mode all four answer from origami's own undo, which the mode keeps
+// (docs/undo/MINIMUM.md item 9); otherwise from the page history.
+
+import { createEditTimeMarkupFilter } from "./editTimeMarkup";
+import { startPageHistory } from "./pageHistory";
+import { attachInputTransactions } from "./pageHistoryInput";
+import { attachUndoAndRedoKeys } from "./pageHistoryKeys";
+import type { PageHistory } from "./pageHistoryTypes";
+import { PageReadinessWaits, whenPageIsReady } from "./pageReadiness";
+import {
+    isInChangeLayoutMode,
+    origamiCanRedo,
+    origamiCanUndo,
+    origamiRedo,
+    origamiUndo,
+} from "../js/origami";
+
+// The history of this page, from when the page is ready until it goes.
+let history: PageHistory | undefined;
+// Removes the listeners that feed the history.
+let detachInput: (() => void) | undefined;
+
+/**
+ * Start the page history now, and mark it ready once the page is ready (pageReadiness.ts); end it
+ * when the page goes. Call once per page load, from the page frame, as soon as the page's DOM is
+ * there. Until the page is ready, Bloom is still setting the page up, and a change made outside
+ * any transaction is part of the page as the user found it; the user's own clicks and key presses
+ * open transactions from the start, so what they do is undoable at once.
+ *
+ * otherWindows gives the windows other than the page frame whose input concerns the page: the
+ * toolbox and the root window, with its top bar and dialogs. onStarted gets the new history at
+ * once, before any input reaches it, so that components set up before the history existed can
+ * listen to it.
+ */
+export function startPageHistoryForThisPage(
+    waits: PageReadinessWaits,
+    otherWindows: Window[],
+    onStarted: (history: PageHistory) => void,
+): void {
+    const root = document.querySelector(".bloom-page");
+    if (!root) throw new Error("Page history: the page has no .bloom-page.");
+    const thisHistory = startPageHistory({
+        root,
+        filter: createEditTimeMarkupFilter(),
+        startsReady: false,
+    });
+    history = thisHistory;
+    onStarted(thisHistory);
+    const detachTransactions = attachInputTransactions(
+        thisHistory,
+        window,
+        otherWindows,
+    );
+    // After attachInputTransactions: see attachUndoAndRedoKeys.
+    const detachKeys = attachUndoAndRedoKeys(window, otherWindows, {
+        undo: handleUndo,
+        redo: handleRedo,
+        isInChangeLayoutMode,
+    });
+    detachInput = () => {
+        detachKeys();
+        detachTransactions();
+    };
+    window.addEventListener("pagehide", endPageHistory, { once: true });
+    void whenPageIsReady(window, waits).then(() => {
+        if (!thisHistory.isDisposed) thisHistory.markPageReady();
+    });
+}
+
+/** Stop listening and dispose of the history, for the page unload. */
+function endPageHistory(): void {
+    detachInput?.();
+    detachInput = undefined;
+    history?.dispose();
+    history = undefined;
+}
+
+/** Undo one step: the Undo button and Ctrl+Z. */
+export function handleUndo(): void {
+    if (isInChangeLayoutMode()) {
+        origamiUndo();
+        return;
+    }
+    if (history) void history.undo();
+}
+
+/**
+ * Whether there is anything to undo. Cheap: C# polls it on a timer, through the workspace frame.
+ * An open transaction counts: typing holds one open between key presses, and its step is made only
+ * when something ends it, such as the press on the Undo button itself. Without it, the button
+ * would stay disabled after the first typing on a page.
+ */
+export function canUndo(): boolean {
+    if (isInChangeLayoutMode()) return origamiCanUndo();
+    if (!history) return false;
+    return (
+        history.undoDescriptionL10nKey !== undefined ||
+        history.hasOpenTransaction
+    );
+}
+
+/** Redo one step: Ctrl+Y and Ctrl+Shift+Z. There is no Redo button. */
+export function handleRedo(): void {
+    if (isInChangeLayoutMode()) {
+        origamiRedo();
+        return;
+    }
+    if (history) void history.redo();
+}
+
+/** Whether there is anything to redo. */
+export function canRedo(): boolean {
+    if (isInChangeLayoutMode()) return origamiCanRedo();
+    return history?.redoDescriptionL10nKey !== undefined;
+}
