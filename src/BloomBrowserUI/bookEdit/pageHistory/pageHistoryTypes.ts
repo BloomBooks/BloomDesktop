@@ -65,6 +65,15 @@ export interface PageHistoryFilter {
     ignoreNode(node: Node): boolean;
 
     /**
+     * True for a child that the history leaves out of parent's child list when it is the only
+     * child left in that list once the other rules have left theirs out. The history asks this of
+     * a list as a whole (the children now, the children at the start of a batch, the children of
+     * a subtree out of the page), never of the child where it happens to be. Putting back an
+     * empty child list leaves such a child where it is.
+     */
+    isLeftOutWhenOnlyChild(child: Node, parent: Node): boolean;
+
+    /**
      * True for a text node that the history leaves out of child lists while it has this value,
      * as it does an ignored node: its insertion and removal are no change, and putting back a
      * child list leaves it where it is. Its text is still recorded and put back, and whether it
@@ -211,8 +220,10 @@ export interface PageHistory {
     onBeforeUndoOrRedo(cancelPendingWrites: () => void): () => void;
 
     /**
-     * Called after an undo or redo has put the page back, in the same task. Listeners must
-     * re-read synchronously. A listener that writes the page makes a change outside any
+     * Called after an undo or redo has put the page back and restored the selection, in the same
+     * task, so listeners see the restored caret and focus. Listeners must re-read synchronously.
+     * Writes that the restoring of the selection itself causes (a focusin handler, for instance)
+     * are undo's own and are not recorded. A listener that writes the page makes a change outside any
      * transaction, which joins the latest transaction and clears redo (rule 8). Returns an
      * unsubscribe.
      */

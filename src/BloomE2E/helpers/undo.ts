@@ -17,6 +17,7 @@
 
 import { expect, type Page } from "@playwright/test";
 import { editablePageFrame } from "./bookMaking";
+import { pressKey } from "./keys";
 
 /** What the page history has done since watchUndoAndRedo. */
 export interface IUndoAndRedoCalls {
@@ -218,4 +219,93 @@ export async function undo(page: Page): Promise<void> {
                 "The change you meant to undo may not have registered.",
         );
     await clickUndoButton(page);
+}
+
+/**
+ * Press Ctrl+Z once, the way a person does, into whatever has the focus, and wait until `read`
+ * gives `expected`, the state from before `change`. Fails, naming the change, when the page history
+ * did not run exactly one undo for the press, or when the state never came back.
+ *
+ * `read` is the test's own reading of the state it cares about, such as
+ * getCanvasElementMarkupAndRects (canvasElements.ts). `change` says what the test did, for the
+ * messages, e.g. "moving a speech bubble".
+ */
+export async function undoWithCtrlZAndExpect<T>(
+    page: Page,
+    read: () => Promise<T>,
+    expected: T,
+    change: string,
+): Promise<void> {
+    await watchUndoAndRedo(page);
+    await pressKey(page, "Control+z");
+    await expectUndoAndRedoCalls(
+        page,
+        { historyUndo: 1, historyRedo: 0 },
+        `pressing Ctrl+Z after ${change}`,
+    );
+    await expect
+        .poll(read, {
+            timeout: 15000,
+            message: `Ctrl+Z after ${change} did not put the page back the way it was before ${change}.`,
+        })
+        .toEqual(expected);
+}
+
+/**
+ * Press Ctrl+Y once, the way a person does, into whatever has the focus, and wait until `read`
+ * gives `expected`, the state from after `change`. Fails, naming the change, when the page history
+ * did not run exactly one redo for the press, or when the state never came back. Call it after
+ * undoWithCtrlZAndExpect has undone the change.
+ */
+export async function redoWithCtrlYAndExpect<T>(
+    page: Page,
+    read: () => Promise<T>,
+    expected: T,
+    change: string,
+): Promise<void> {
+    await watchUndoAndRedo(page);
+    await pressKey(page, "Control+y");
+    await expectUndoAndRedoCalls(
+        page,
+        { historyUndo: 0, historyRedo: 1 },
+        `pressing Ctrl+Y after undoing ${change}`,
+    );
+    await expect
+        .poll(read, {
+            timeout: 15000,
+            message: `Ctrl+Y after undoing ${change} did not put back the page as ${change} left it.`,
+        })
+        .toEqual(expected);
+}
+
+/**
+ * Wait until the page history has no transaction open, so that the change made last is a finished
+ * undo step and the next press of the mouse or a key starts a step of its own rather than joining
+ * it. A change such as choosing a picture keeps its transaction open until the page has settled.
+ * Do not call it while typing in a text box: the typing's transaction stays open until the typing
+ * ends, by design.
+ */
+export async function waitForOpenTransactionToEnd(page: Page): Promise<void> {
+    await expect
+        .poll(
+            async () =>
+                editablePageFrame(page).evaluate(
+                    () =>
+                        (
+                            window as unknown as {
+                                editablePageBundle: {
+                                    pageHistory: () => {
+                                        hasOpenTransaction: boolean;
+                                    };
+                                };
+                            }
+                        ).editablePageBundle.pageHistory().hasOpenTransaction,
+                ),
+            {
+                timeout: 30000,
+                message:
+                    "The page history kept a transaction open, so the last change never became an undo step of its own.",
+            },
+        )
+        .toBe(false);
 }

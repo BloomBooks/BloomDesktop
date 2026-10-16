@@ -400,3 +400,48 @@ describe("page history in a real browser: a node made and thrown away within one
         expect(bold.hasAttribute("data-x")).toBe(false);
     });
 });
+
+describe("page history in a real browser: the selection is restored before onAfterUndoOrRedo", () => {
+    it("drops what a focusin handler writes when restoring the selection focuses a box, and lets listeners see that focus", async () => {
+        const unmarked = vi.fn<(whatChanged: string) => void>();
+        const { page, history } = setUp(unmarked);
+        const box1 = byId(page, "box1");
+        placeCaretAtEnd(box1);
+        await history.doTransaction("A", () =>
+            byId(page, "img1").setAttribute("src", "b.png"),
+        );
+
+        // Focus and selection go elsewhere, outside the page.
+        const elsewhere = document.createElement("input");
+        document.body.appendChild(elsewhere);
+        elsewhere.focus();
+        window.getSelection()?.removeAllRanges();
+        expect(
+            document.activeElement,
+            "test setup: the box should have lost the focus",
+        ).toBe(elsewhere);
+
+        let focusinWrites = 0;
+        // As CanvasElementManager.onFocusSetActiveElement does, through setActiveElement.
+        box1.addEventListener("focusin", () => {
+            focusinWrites++;
+            box1.setAttribute("data-focused-by-handler", String(focusinWrites));
+        });
+        let focusSeenByListener: Element | null = null;
+        history.onAfterUndoOrRedo(() => {
+            focusSeenByListener = document.activeElement;
+        });
+
+        await history.undo();
+        await letObserverDeliver();
+
+        expect(
+            focusinWrites,
+            "test setup: restoring the selection should have focused the box",
+        ).toBe(1);
+        expect(unmarked).not.toHaveBeenCalled();
+        expect(history.redoDescriptionL10nKey).toBe("A");
+        expect(focusSeenByListener).toBe(box1);
+        elsewhere.remove();
+    });
+});

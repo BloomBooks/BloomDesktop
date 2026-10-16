@@ -3,6 +3,7 @@
 // and telling a batch with a net change from one without.
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { createEditTimeMarkupFilter } from "./editTimeMarkup";
 import { createPageHistory, kKeepEverythingFilter } from "./pageHistory";
 import { childrenBeforeRecords, putBackChildLists } from "./pageHistoryDom";
 import { PageHistory, PageHistoryOptions } from "./pageHistoryTypes";
@@ -417,5 +418,104 @@ describe("page history", () => {
         await h.undo();
 
         expect(box.getAttribute("data-n")).toBe("1");
+    });
+});
+
+describe("page history: the check of a detached subtree, with the edit-time markup filter", () => {
+    /**
+     * A canvas element holding a translation group with one editable, inside root, and a history
+     * with the real filter. The editable starts with the markup CKEditor gives one that has focus.
+     */
+    function setUpCanvasElement(): {
+        canvas: HTMLElement;
+        element: HTMLElement;
+        editable: HTMLElement;
+        h: PageHistory;
+    } {
+        const canvas = addChild(root, "canvas");
+        canvas.className = "bloom-canvas";
+        canvas.innerHTML =
+            '<div id="element" class="bloom-canvas-element" style="left: 10px; top: 20px">' +
+            '<div class="bloom-translationGroup">' +
+            '<div id="editable" class="bloom-editable cke_focus" lang="en" contenteditable="true">' +
+            "<p>Hello</p></div></div></div>";
+        const element = canvas.querySelector<HTMLElement>("#element")!;
+        const editable = canvas.querySelector<HTMLElement>("#editable")!;
+        const h = makeHistory({ filter: createEditTimeMarkupFilter() });
+        return { canvas, element, editable, h };
+    }
+
+    it("undoes and redoes a delete after the removed element lost cke_focus", async () => {
+        const { canvas, element, editable, h } = setUpCanvasElement();
+        await h.doTransaction("Delete", () => canvas.removeChild(element));
+        // After the step, as CKEditor's blur handler runs: the observer no longer sees the
+        // detached element.
+        await Promise.resolve();
+        editable.classList.remove("cke_focus");
+        expect(editable.className).toBe("bloom-editable");
+
+        await h.undo();
+
+        expect(canvas.firstChild).toBe(element);
+        expect(editable.querySelector("p")!.textContent).toBe("Hello");
+        expect(h.redoDescriptionL10nKey).toBe("Delete");
+        await h.redo();
+        expect(canvas.childNodes).toHaveLength(0);
+        expect(h.undoDescriptionL10nKey).toBe("Delete");
+    });
+
+    it("undoes and redoes a step whose removed group gained CKEditor's markup later", async () => {
+        const { element, editable, h } = setUpCanvasElement();
+        editable.classList.remove("cke_focus");
+        const group = element.firstElementChild as HTMLElement;
+        const replacement = document.createElement("div");
+        replacement.className = "bloom-translationGroup";
+        await h.doTransaction("Duplicate", () =>
+            element.replaceChild(replacement, group),
+        );
+        // CKEditor finishes attaching to the editable after it has left the page.
+        await Promise.resolve();
+        editable.classList.add(
+            "cke_editable",
+            "cke_editable_inline",
+            "cke_contents_ltr",
+        );
+        editable.setAttribute("data-cke-expando", "1");
+        const handle = document.createElement("div");
+        handle.className = "bloom-ui";
+        group.appendChild(handle);
+
+        await h.undo();
+
+        expect(element.firstChild).toBe(group);
+        expect(replacement.isConnected).toBe(false);
+        await h.redo();
+        expect(element.firstChild).toBe(replacement);
+        expect(group.isConnected).toBe(false);
+        expect(h.undoDescriptionL10nKey).toBe("Duplicate");
+    });
+
+    it("still refuses the undo when the removed element's text changed", async () => {
+        const { canvas, element, editable, h } = setUpCanvasElement();
+        await h.doTransaction("Delete", () => canvas.removeChild(element));
+        await Promise.resolve();
+        editable.querySelector("p")!.firstChild!.textContent = "Changed";
+
+        await h.undo();
+
+        expect(canvas.childNodes).toHaveLength(0);
+        expect(h.undoDescriptionL10nKey).toBeUndefined();
+    });
+
+    it("still refuses the undo when an attribute that a save keeps changed", async () => {
+        const { canvas, element, editable, h } = setUpCanvasElement();
+        await h.doTransaction("Delete", () => canvas.removeChild(element));
+        await Promise.resolve();
+        editable.setAttribute("lang", "fr");
+
+        await h.undo();
+
+        expect(canvas.childNodes).toHaveLength(0);
+        expect(h.undoDescriptionL10nKey).toBeUndefined();
     });
 });

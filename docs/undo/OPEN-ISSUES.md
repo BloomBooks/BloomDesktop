@@ -189,8 +189,6 @@ Components:
 
 - The Games tool's toggles read the page when clicked instead of writing the inverse of a cached
   value. (§8)
-- The Canvas tool panel's 250 ms poll compares node objects, so it never sees an undo; it should
-  listen to `onAfterUndoOrRedo`. (§8)
 - The `ResizeObserver`s in the Motion tool and `CanvasElementEditingSuspension` each need their own
   fix. (§8)
 - The colour picker can close through `hideColorPickerDialog`, which runs neither OK nor Cancel; and

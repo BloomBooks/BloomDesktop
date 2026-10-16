@@ -1314,7 +1314,7 @@ flowchart LR
   G -- "yes" --> H["put back before values,<br/>re-inserting the same node objects"]
   G -- "no" --> K["refuse; discard this transaction<br/>and older ones (section 3.6)"]
   H --> T["takeRecords(), discard"]
-  T --> I["clear filtered markup, onAfterUndoOrRedo,<br/>selection from node and offset"]
+  T --> I["clear filtered markup, selection from node and offset,<br/>onAfterUndoOrRedo"]
 ```
 
 **Against the requirements.**
@@ -3975,8 +3975,9 @@ interface PageHistory {
      */
     onBeforeUndoOrRedo(cancelPendingWrites: () => void): () => void;
     /**
-     * After an undo or redo has put back page content and back-end state, in the same task.
-     * Listeners run synchronously and must not await before re-reading: a component's own
+     * After an undo or redo has put back page content, back-end state and the selection, in the
+     * same task, so a listener sees the caret and focus that the user will have. Listeners run
+     * synchronously and must not await before re-reading: a component's own
      * MutationObserver would otherwise act on the restore first (section 11.8.3).
      */
     onAfterUndoOrRedo(listener: (restored: RestoredContent) => void): () => void;
@@ -4179,14 +4180,21 @@ sequenceDiagram
       H->>H: refuse; page unchanged
     end
   end
-  H->>H: put back page values, the same node objects; takeRecords(), discard
+  H->>H: put back page values, the same node objects
+  H->>H: selection; a focusin handler it sets off may write
+  H->>H: takeRecords(), discard
   H->>C: onAfterUndoOrRedo listeners, same task
   H->>H: takeRecords(); a listener's rewrite joins the latest transaction, clears redo (rules 1, 8)
-  H->>H: selection
 ```
 
 Back-end state goes first so that a failure in C# refuses the undo before the page has changed.
-`onAfterUndoOrRedo` goes last, when the page and the back-end state are back.
+`onAfterUndoOrRedo` goes last, when the page, the back-end state and the selection are back. The
+selection comes before it for two reasons. Putting back the selection can focus an editing host and
+fire `focusin` at once, and what a handler of that writes (the canvas element manager's
+`setActiveElement`, for one) is dropped with undo's own records instead of joining the latest
+transaction. And a listener sees the caret and focus that the user will have, so it can act on them,
+as the canvas element manager does when it takes the caret out of a canvas element that is not the
+selected one.
 
 #### 11.8.2 JS memory: no API yet
 

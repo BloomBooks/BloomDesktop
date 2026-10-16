@@ -66,11 +66,11 @@ const kEditTimeClasses = new Set([
 ]);
 
 /**
- * Class tokens that a save keeps but that undo leaves alone: OverflowChecker works them out from
- * the content each time the content changes, on the boxes, the elements that contain an
- * overflowing box, and the .bloom-page (pageOverflows). Undo putting back content makes it work
- * them out again. Layout-Problem-Detected is one that OverflowChecker only removes, left by an
- * earlier version of Bloom.
+ * Class tokens that a save keeps but that undo leaves alone, because Bloom works them out again
+ * from what undo puts back. OverflowChecker works out the first four from the content each time
+ * the content changes, on the boxes, the elements that contain an overflowing box, and the
+ * .bloom-page (pageOverflows). Layout-Problem-Detected is one that OverflowChecker only removes,
+ * left by an earlier version of Bloom.
  */
 const kClassesIgnoredByUndoOnly = new Set([
     "overflow",
@@ -78,6 +78,12 @@ const kClassesIgnoredByUndoOnly = new Set([
     "childOverflowingThis",
     "pageOverflows",
     "Layout-Problem-Detected",
+    // On an img whose src failed to load: the img's error handler adds it and its load handler
+    // takes it off (HandleImageError in bloomImages.ts, or the onerror attribute that C# gives a
+    // cover image), whenever the browser finishes loading a src, which is after the change
+    // that set the src, outside any transaction. Undo putting back a src makes the browser load
+    // it, which adds or removes the class again. C# does not copy it back from the data-div.
+    "bloom-imageLoadError",
 ]);
 
 /** C#: RemoveCkEditorMarkup removes every class token that starts with this. */
@@ -137,6 +143,54 @@ export function isEditTimeElement(node: Node): boolean {
     );
 }
 
+/**
+ * Blocks that CKEditor's data processor fills when they are empty: those of CKEDITOR.dtd.$block
+ * and $blockLimit that can hold text, less the sectioning ones that a box does not use.
+ */
+const kBlocksThatCkEditorFills = new Set([
+    "ADDRESS",
+    "BLOCKQUOTE",
+    "CAPTION",
+    "DD",
+    "DIV",
+    "DT",
+    "FIGCAPTION",
+    "H1",
+    "H2",
+    "H3",
+    "H4",
+    "H5",
+    "H6",
+    "LI",
+    "P",
+    "PRE",
+    "TD",
+    "TH",
+]);
+
+/**
+ * True for a br that is CKEditor's filler in an otherwise empty block of a box, when it is the
+ * only child of parent: a br with no data-cke-eol, in a block inside a .bloom-editable. CKEditor
+ * puts one into an empty block in the browser and takes it out again as the caret comes and goes
+ * (a focus lost, a box written again after it left the page). The save does not keep it as such:
+ * getData() drops the last br of a block and fills an empty block with &nbsp;
+ * (lib/ckeditor/ckeditor.js, config.fillEmptyBlocks left at its default), and doCkEditorCleanup
+ * turns <p>&nbsp;</p> into <p><br></p> (fixUpEmptyishParagraphs), so <p></p> and <p><br></p> save
+ * alike. A br after text (<p>a<br></p>) is dropped by the save too, but it is left to count, as
+ * is every other br: recording it is the safe direction.
+ */
+export function isCkEditorFillerBr(child: Node, parent: Node): boolean {
+    if (child.nodeType !== Node.ELEMENT_NODE) return false;
+    const br = child as Element;
+    if (br.tagName !== "BR" || br.hasAttribute("data-cke-eol")) return false;
+    if (parent.nodeType !== Node.ELEMENT_NODE) return false;
+    const block = parent as Element;
+    return (
+        kBlocksThatCkEditorFills.has(block.tagName) &&
+        !!block.closest(".bloom-editable")
+    );
+}
+
 /** True for a node that is, or is inside, an element that isEditTimeElement is true for. */
 export function isInsideEditTimeElement(node: Node): boolean {
     const element =
@@ -163,6 +217,11 @@ export function keptAttributeValue(
     if (name === "class") return keptClasses(value);
     if (name === "style") return keptStyle(element, value);
     if (isDroppedAttribute(name, value)) return undefined;
+    if (
+        kCkEditorAttributesOfABox.has(name) &&
+        element.classList.contains("bloom-editable")
+    )
+        return undefined;
     if (name === "src" && element.matches("video, video source"))
         return withoutVideoTimestamp(value);
     return value;
@@ -187,8 +246,26 @@ export function attributeValueToPutBack(
 }
 
 /**
- * True for an attribute that a save drops whatever its value, or that undo leaves alone, or, for
- * qtip's describedby attributes, that a save drops with this value.
+ * Attributes of a .bloom-editable that a save keeps but that undo leaves alone: CKEditor 4.5.1's
+ * inline editor sets them when it attaches to the box (CKEDITOR.editable's setup and the
+ * instanceCreated "mode" handler in lib/ckeditor/ckeditor.js), and nothing in Bloom sets them on
+ * a box. With lib/ckeditor/config.js they are tabindex="0", spellcheck="false" (because of
+ * disableNativeSpellChecker), role="textbox" and aria-label="false" (because title is false).
+ * CKEditor may finish attaching after the box has left the page, so they can differ between a
+ * box that an undo step took out and the same box when the step puts it back. C# drops them only
+ * when it copies a box to the data-div (BookData._attributesNotToCopy). A translation group's
+ * tabindex is Bloom's own (the Talking Book playback order), so this applies only to boxes.
+ */
+const kCkEditorAttributesOfABox = new Set([
+    "tabindex",
+    "spellcheck",
+    "role",
+    "aria-label",
+]);
+
+/**
+ * True for an attribute that a save drops whatever its value, or that undo leaves alone wherever
+ * it is, or, for qtip's describedby attributes, that a save drops with this value.
  */
 function isDroppedAttribute(name: string, value: string): boolean {
     switch (name) {
@@ -518,6 +595,11 @@ class EditTimeMarkupFilter implements PageHistoryFilter {
     /** See PageHistoryFilter.ignoreNode. */
     public ignoreNode(node: Node): boolean {
         return isEditTimeElement(node);
+    }
+
+    /** See PageHistoryFilter.isLeftOutWhenOnlyChild. */
+    public isLeftOutWhenOnlyChild(child: Node, parent: Node): boolean {
+        return isCkEditorFillerBr(child, parent);
     }
 
     /** See PageHistoryFilter.keptAttributeValue. */

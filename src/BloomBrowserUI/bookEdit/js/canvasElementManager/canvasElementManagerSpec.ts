@@ -2,6 +2,10 @@ import { describe, it, expect, vi } from "vitest";
 import { getTestRoot, removeTestRoot } from "../../../utils/testHelper";
 import { CanvasElementManager } from "./CanvasElementManager";
 import jQuery from "jquery";
+import type {
+    PageHistory,
+    RestoredContent,
+} from "../../pageHistory/pageHistoryTypes";
 
 // vitest.setup.ts mocks comicaljs without Comical; updateAfterUndoOrRedo needs it.
 const comical = vi.hoisted(() => ({
@@ -208,20 +212,40 @@ describe("CanvasElementManager.rotateActiveImageRight90Degrees", () => {
 });
 
 describe("CanvasElementManager.updateAfterUndoOrRedo", () => {
-    // As above, the method runs against a stand-in with just what it uses.
+    // As above, the method runs against a stand-in with just what it uses. The stand-in's
+    // canvas elements before the undo are those on the page when it is made, and the undo
+    // changed none of them, so the method selects nothing new
+    // (canvasElementUndoSelectionSpec.ts tests what it selects).
     function makeManager(activeElement: HTMLElement | undefined) {
+        const allCanvasElementsOnPage = () =>
+            Array.from(
+                document.querySelectorAll<HTMLElement>(".bloom-canvas-element"),
+            );
         return {
             isCanvasElementEditingOn: true,
             activeElement,
             theCanvasElementWeAreTextEditing: activeElement,
+            canvasElementsBeforeUndoOrRedo: allCanvasElementsOnPage(),
+            getAllCanvasElementsOnPage: allCanvasElementsOnPage,
             getAllBloomCanvasesOnPage: () =>
                 Array.from(
                     document.querySelectorAll<HTMLElement>(".bloom-canvas"),
                 ),
             setupControlFrame: vi.fn(),
             doNotifyChange: vi.fn(),
+            redrawBubblesFromPage:
+                CanvasElementManager.prototype.redrawBubblesFromPage,
+            // A private method; canvasElementUndoFocusSpec.ts tests what it does.
+            takeFocusOutOfCanvasElementsOtherThanActive:
+                CanvasElementManager.prototype[
+                    "takeFocusOutOfCanvasElementsOtherThanActive"
+                ],
         };
     }
+    const nothingRestored: RestoredContent = { roots: [], direction: "undo" };
+    const history = {
+        doOutsideHistory: <T>(fn: () => T) => fn(),
+    } as unknown as PageHistory;
 
     it("lets go of an active element that the undo took out of the page", () => {
         document.body.innerHTML = `<div class="bloom-canvas-element" data-bloom-active="true"></div>`;
@@ -231,7 +255,11 @@ describe("CanvasElementManager.updateAfterUndoOrRedo", () => {
         removed.remove();
         const manager = makeManager(removed);
 
-        CanvasElementManager.prototype.updateAfterUndoOrRedo.call(manager);
+        CanvasElementManager.prototype.updateAfterUndoOrRedo.call(
+            manager,
+            nothingRestored,
+            history,
+        );
 
         expect(manager.activeElement).toBeUndefined();
         expect(manager.theCanvasElementWeAreTextEditing).toBeUndefined();
@@ -246,7 +274,11 @@ describe("CanvasElementManager.updateAfterUndoOrRedo", () => {
         const active = document.getElementById("a") as HTMLElement;
         const manager = makeManager(active);
 
-        CanvasElementManager.prototype.updateAfterUndoOrRedo.call(manager);
+        CanvasElementManager.prototype.updateAfterUndoOrRedo.call(
+            manager,
+            nothingRestored,
+            history,
+        );
 
         expect(manager.activeElement).toBe(active);
         expect(active.getAttribute("data-bloom-active")).toBe("true");
@@ -263,7 +295,11 @@ describe("CanvasElementManager.updateAfterUndoOrRedo", () => {
         comical.startEditing.mockClear();
         const manager = makeManager(undefined);
 
-        CanvasElementManager.prototype.updateAfterUndoOrRedo.call(manager);
+        CanvasElementManager.prototype.updateAfterUndoOrRedo.call(
+            manager,
+            nothingRestored,
+            history,
+        );
 
         expect(comical.update).toHaveBeenCalledWith(
             document.getElementById("edited"),
@@ -281,8 +317,59 @@ describe("CanvasElementManager.updateAfterUndoOrRedo", () => {
             isCanvasElementEditingOn: false,
         };
 
-        CanvasElementManager.prototype.updateAfterUndoOrRedo.call(manager);
+        CanvasElementManager.prototype.updateAfterUndoOrRedo.call(
+            manager,
+            nothingRestored,
+            history,
+        );
 
         expect(manager.setupControlFrame).not.toHaveBeenCalled();
+    });
+});
+
+describe("CanvasElementManager.redrawBubblesFromPage", () => {
+    function makeManager(isCanvasElementEditingOn: boolean) {
+        document.body.innerHTML = `
+            <div class="bloom-canvas"><canvas class="comical-generated"></canvas>
+                <div class="bloom-canvas-element" id="active"></div>
+            </div>`;
+        return {
+            isCanvasElementEditingOn,
+            activeElement: document.getElementById("active") as HTMLElement,
+            getAllBloomCanvasesOnPage: () =>
+                Array.from(
+                    document.querySelectorAll<HTMLElement>(".bloom-canvas"),
+                ),
+        };
+    }
+
+    it("draws the bubbles again, then activates the active element again, since redrawing drops its handles", () => {
+        comical.update.mockClear();
+        comical.activateElement.mockClear();
+        const manager = makeManager(true);
+
+        CanvasElementManager.prototype.redrawBubblesFromPage.call(manager);
+
+        expect(comical.update).toHaveBeenCalledTimes(1);
+        expect(comical.activateElement).toHaveBeenCalledWith(
+            manager.activeElement,
+        );
+        expect(
+            comical.activateElement.mock.invocationCallOrder[0],
+        ).toBeGreaterThan(comical.update.mock.invocationCallOrder[0]);
+    });
+
+    it("does nothing while canvas element editing is off", () => {
+        comical.update.mockClear();
+        comical.startEditing.mockClear();
+        comical.activateElement.mockClear();
+
+        CanvasElementManager.prototype.redrawBubblesFromPage.call(
+            makeManager(false),
+        );
+
+        expect(comical.update).not.toHaveBeenCalled();
+        expect(comical.startEditing).not.toHaveBeenCalled();
+        expect(comical.activateElement).not.toHaveBeenCalled();
     });
 });

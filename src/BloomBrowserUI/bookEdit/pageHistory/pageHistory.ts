@@ -55,7 +55,7 @@ interface AttributeValues {
 interface NodeChange {
     attributes?: Map<string, AttributeValues>;
     text?: { before: string; after: string };
-    // Children for which the filter's ignoreNode is true are left out of both lists.
+    // Children that the filter ignores are left out of both lists (filterChildList).
     children?: { before: Node[]; after: Node[] };
 }
 
@@ -675,7 +675,11 @@ class PageHistoryImpl implements PageHistory {
         };
         childrenAtStart.forEach((children, parent) => {
             if (!mayBeNeeded(parent)) return;
-            const before = children.filter((child) => !wasIgnoredChild(child));
+            const before = this.filterChildList(
+                parent,
+                children,
+                wasIgnoredChild,
+            );
             if (!sameNodes(before, this.filteredChildren(parent)))
                 entryFor(parent).children = before;
         });
@@ -759,9 +763,10 @@ class PageHistoryImpl implements PageHistory {
 
     /**
      * The nodes that moving the page from the `from` values of changes to the `to` values took
-     * out of the page, each serialized: those in a `from` child list, in no `to` child list, and
-     * not in the page now. A node already in earlier keeps the text from there, so that a change
-     * to it made while it was detached, which the observer cannot see, still fails the check.
+     * out of the page, each serialized by serializeKept: those in a `from` child list, in no `to`
+     * child list, and not in the page now. A node already in earlier keeps the text from there, so
+     * that a change to it made while it was detached, which the observer cannot see, still fails
+     * the check.
      */
     private serializeDetachedNodes(
         changes: ChangeSet,
@@ -779,11 +784,40 @@ class PageHistoryImpl implements PageHistory {
                 if (placed.has(child) || this.root.contains(child)) return;
                 detached.set(
                     child,
-                    earlier?.get(child) ?? serializeNode(child),
+                    earlier?.get(child) ?? this.serializeKept(child),
                 );
             }),
         );
         return detached;
+    }
+
+    /**
+     * A subtree as text, as the filter sees it, for the check of rule 4 on a detached subtree:
+     * only the children that the filter does not ignore, the kept part of each attribute in name
+     * order, and the kept part of each text. These are the values that the check compares for a
+     * node in the page, so markup that exists only while editing, such as the classes CKEditor
+     * adds when it finishes attaching to an editable that has already left the page, never fails
+     * the check, while any change that a save keeps does.
+     */
+    private serializeKept(node: Node): string {
+        if (isCharacterData(node)) return JSON.stringify(this.keptText(node));
+        if (node.nodeType !== Node.ELEMENT_NODE) return serializeNode(node);
+        const element = node as Element;
+        const attributes = element
+            .getAttributeNames()
+            .sort()
+            .map((name) => {
+                const kept = this.keptAttributeValue(element, name);
+                return kept === undefined
+                    ? ""
+                    : ` ${name}=${JSON.stringify(kept)}`;
+            })
+            .join("");
+        const children = this.filteredChildren(element)
+            .map((child) => this.serializeKept(child))
+            .join("");
+        const tag = element.tagName.toLowerCase();
+        return `<${tag}${attributes}>${children}</${tag}>`;
     }
 
     /**
@@ -813,7 +847,7 @@ class PageHistoryImpl implements PageHistory {
                 return false;
         }
         for (const [node, text] of step.detachedAsText) {
-            if (this.root.contains(node) || serializeNode(node) !== text)
+            if (this.root.contains(node) || this.serializeKept(node) !== text)
                 return false;
         }
         return true;
@@ -842,7 +876,24 @@ class PageHistoryImpl implements PageHistory {
             if (change.text) this.putBackText(node, change.text[values]);
             if (change.children) childLists.set(node, change.children[values]);
         });
-        putBackChildLists(childLists, (child) => this.isIgnoredChild(child));
+        // A child that the filter leaves out when it is the only one stays where it is when its
+        // parent's list is put back empty, as it would if the list were all ignored children.
+        const leftInPlace = new Set<Node>();
+        childLists.forEach((wanted, parent) => {
+            if (wanted.length > 0) return;
+            const current = Array.from(parent.childNodes).filter(
+                (child) => !this.isIgnoredChild(child),
+            );
+            if (
+                current.length === 1 &&
+                this.filter.isLeftOutWhenOnlyChild(current[0], parent)
+            )
+                leftInPlace.add(current[0]);
+        });
+        putBackChildLists(
+            childLists,
+            (child) => this.isIgnoredChild(child) || leftInPlace.has(child),
+        );
     }
 
     /** Write the kept text `kept` into a text node, in the form that the filter gives it. */
@@ -893,8 +944,10 @@ class PageHistoryImpl implements PageHistory {
 
     /**
      * Undo the latest step or redo the one undone last, in the order of APPROACHES.md section
-     * 11.8.1: the onBeforeUndoOrRedo listeners, the check, putting values back, the
-     * onAfterUndoOrRedo listeners, the selection.
+     * 11.8.1: the onBeforeUndoOrRedo listeners, the check, putting values back, the selection,
+     * the onAfterUndoOrRedo listeners. The selection comes before the listeners so that they see
+     * the final caret and focus, and so that what restoring it writes (a focusin handler that it
+     * fires) is dropped with undo's own records.
      */
     private undoOrRedo(direction: "undo" | "redo"): void {
         this.assertNotDisposed();
@@ -923,7 +976,13 @@ class PageHistoryImpl implements PageHistory {
             return;
         }
         this.putBackValues(step, to);
-        // Undo's own changes are not edits.
+        restoreSelection(
+            this.root.ownerDocument,
+            this.root,
+            isUndo ? step.selectionBefore : step.selectionAfter,
+        );
+        // Undo's own changes are not edits, nor are those of handlers that the restored
+        // selection set off.
         this.discardPendingRecords();
         step.detachedAsText = this.serializeDetachedNodes(
             step.changes,
@@ -943,11 +1002,6 @@ class PageHistoryImpl implements PageHistory {
         );
         // A listener's writes join the latest step and clear redo (rules 1 and 8).
         this.processPendingRecords();
-        restoreSelection(
-            this.root.ownerDocument,
-            this.root,
-            isUndo ? step.selectionBefore : step.selectionAfter,
-        );
     }
 
     /** The newest undo step, or undefined when there is none. */
@@ -993,9 +1047,30 @@ class PageHistoryImpl implements PageHistory {
 
     /** The children of node that the filter does not ignore. */
     private filteredChildren(node: Node): Node[] {
-        return Array.from(node.childNodes).filter(
-            (child) => !this.isIgnoredChild(child),
+        return this.filterChildList(
+            node,
+            Array.from(node.childNodes),
+            (child) => this.isIgnoredChild(child),
         );
+    }
+
+    /**
+     * The children in a child list of parent that the filter does not ignore: those for which
+     * isIgnored is false, less the one that is left if the filter leaves it out when it is the
+     * only child (isLeftOutWhenOnlyChild).
+     */
+    private filterChildList(
+        parent: Node,
+        children: Node[],
+        isIgnored: (child: Node) => boolean,
+    ): Node[] {
+        const kept = children.filter((child) => !isIgnored(child));
+        if (
+            kept.length === 1 &&
+            this.filter.isLeftOutWhenOnlyChild(kept[0], parent)
+        )
+            return [];
+        return kept;
     }
 
     /** Fail fast on a call after dispose(). */
@@ -1021,6 +1096,7 @@ function isCharacterData(node: Node): node is CharacterData {
 /** The filter of a history given none: it ignores nothing and keeps every value whole. */
 export const kKeepEverythingFilter: PageHistoryFilter = {
     ignoreNode: () => false,
+    isLeftOutWhenOnlyChild: () => false,
     isIgnoredText: () => false,
     keptAttributeValue: (_element, _name, value) => value,
     valueToPutBack: (_element, _name, kept) => kept,

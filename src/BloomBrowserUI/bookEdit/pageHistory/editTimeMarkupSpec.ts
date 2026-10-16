@@ -8,6 +8,7 @@ import {
     attributeValueToPutBack,
     createEditTimeMarkupFilter,
     isEditTimeElement,
+    isCkEditorFillerBr,
     isInsideEditTimeElement,
     isTrackedFillingCharNode,
     keptAttributeValue,
@@ -316,6 +317,57 @@ describe("kept style", () => {
     });
 });
 
+describe("CKEditor's filler br", () => {
+    it("is a br with no data-cke-eol in a block inside a box", () => {
+        makePage(
+            '<div class="bloom-editable" id="box"><p id="p"><br id="br"><span id="span"><br id="inSpan"></span></p><br id="inBox"></div>' +
+                '<p id="outside"><br id="brOutside"></p>' +
+                '<div class="bloom-editable"><p id="eolP"><br id="eol" data-cke-eol="1"></p></div>',
+        );
+        expect(isCkEditorFillerBr(byId("br"), byId("p"))).toBe(true);
+        expect(isCkEditorFillerBr(byId("inBox"), byId("box"))).toBe(true);
+        expect(isCkEditorFillerBr(byId("inSpan"), byId("span"))).toBe(false);
+        expect(isCkEditorFillerBr(byId("brOutside"), byId("outside"))).toBe(
+            false,
+        );
+        expect(isCkEditorFillerBr(byId("eol"), byId("eolP"))).toBe(false);
+        expect(isCkEditorFillerBr(byId("span"), byId("p"))).toBe(false);
+    });
+});
+
+describe("the attributes that CKEditor sets on a box when it attaches", () => {
+    it("are kept as nothing on a bloom-editable, and left as they are when put back", () => {
+        const box = document.createElement("div");
+        box.className = "bloom-editable";
+        for (const [name, value] of [
+            ["tabindex", "0"],
+            ["spellcheck", "false"],
+            ["role", "textbox"],
+            ["aria-label", "false"],
+        ]) {
+            expect(keptAttributeValue(box, name, value), name).toBeUndefined();
+            expect(attributeValueToPutBack(box, name, undefined, value)).toBe(
+                value,
+            );
+        }
+    });
+
+    it("are kept everywhere else, and contenteditable is kept on a box too", () => {
+        const group = document.createElement("div");
+        group.className = "bloom-translationGroup";
+        expect(
+            keptAttributeValue(group, "tabindex", "2"),
+            "a translation group's tabindex is the Talking Book playback order",
+        ).toBe("2");
+        const element = document.createElement("div");
+        expect(keptAttributeValue(element, "role", "button")).toBe("button");
+        const box = document.createElement("div");
+        box.className = "bloom-editable";
+        expect(keptAttributeValue(box, "contenteditable", "true")).toBe("true");
+        expect(keptAttributeValue(box, "dir", "rtl")).toBe("rtl");
+    });
+});
+
 describe("attributes that the save drops", () => {
     const element = document.createElement("div");
 
@@ -593,6 +645,168 @@ describe("a page history with the edit-time markup filter", () => {
         await letObserverDeliver();
         expect(unmarked).not.toHaveBeenCalled();
         expect(h.redoDescriptionL10nKey).toBe("A");
+    });
+
+    /** What CKEditor's inline editor does to a box when it finishes attaching. */
+    function attachCkEditor(box: HTMLElement): void {
+        box.classList.add(
+            "cke_editable",
+            "cke_editable_inline",
+            "cke_contents_ltr",
+        );
+        box.setAttribute("tabindex", "0");
+        box.setAttribute("spellcheck", "false");
+        box.setAttribute("contenteditable", "true");
+        box.setAttribute("role", "textbox");
+        box.setAttribute("aria-label", "false");
+    }
+
+    it("ignores CKEditor attaching to a box in the page: no warning, redo kept", async () => {
+        const { history: h, unmarked } = setUp();
+        await stepThenUndo(h);
+        byId("box").setAttribute("contenteditable", "true");
+        await letObserverDeliver();
+        expect(h.redoDescriptionL10nKey, "test setup").toBe("A");
+
+        attachCkEditor(byId("box"));
+        await letObserverDeliver();
+
+        expect(unmarked).not.toHaveBeenCalled();
+        expect(h.redoDescriptionL10nKey).toBe("A");
+    });
+
+    it("does not refuse the undo of a step that took out a box CKEditor attached to afterwards", async () => {
+        const { history: h } = setUp();
+        const group = byId("group");
+        const box = byId("box");
+        box.setAttribute("contenteditable", "true");
+        const parent = group.parentNode!;
+        await h.doTransaction("Duplicate", () => group.remove());
+        await letObserverDeliver();
+
+        // CKEditor finishes attaching to the box after it has left the page, and writes the
+        // box's content again as new nodes.
+        attachCkEditor(box);
+        const content = box.innerHTML;
+        box.innerHTML = content;
+
+        await h.undo();
+        expect(group.parentNode, "the undo should not be refused").toBe(parent);
+        expect(h.redoDescriptionL10nKey).toBe("Duplicate");
+    });
+
+    it("does not refuse the undo of a step that took out a box whose empty paragraph CKEditor filled afterwards", async () => {
+        const { history: h } = setUp(
+            '<div class="bloom-translationGroup" id="group">' +
+                '<div class="bloom-editable" id="box" lang="sw"><p id="empty"></p></div>' +
+                "</div>" +
+                '<img id="img" src="a.png">',
+        );
+        const group = byId("group");
+        const empty = byId("empty");
+        const parent = group.parentNode!;
+        await h.doTransaction("Duplicate", () => group.remove());
+        await letObserverDeliver();
+
+        empty.appendChild(document.createElement("br"));
+
+        await h.undo();
+        expect(group.parentNode, "the undo should not be refused").toBe(parent);
+        await h.redo();
+        expect(group.isConnected).toBe(false);
+    });
+
+    it("keeps CKEditor adding and removing the filler of an empty paragraph out of every step", async () => {
+        const { history: h, unmarked } = setUp(
+            kEditablePage.replace('<p id="p">', '<p id="empty"></p><p id="p">'),
+        );
+        const empty = byId("empty");
+        const filler = document.createElement("br");
+        await stepThenUndo(h);
+
+        // The bubble loses focus: CKEditor fills its empty paragraph, later takes it out again.
+        empty.appendChild(filler);
+        await letObserverDeliver();
+        filler.remove();
+        await letObserverDeliver();
+        expect(unmarked).not.toHaveBeenCalled();
+        expect(h.redoDescriptionL10nKey).toBe("A");
+
+        // The filler arriving in the same batch as the next action does not join it either.
+        const restoredRoots: Element[] = [];
+        h.onAfterUndoOrRedo((restored) =>
+            restoredRoots.push(...restored.roots),
+        );
+        await h.doTransaction("Add bubble", () => {
+            empty.appendChild(filler);
+            byId("img").setAttribute("src", "c.png");
+        });
+        await h.undo();
+        expect(byId("img").getAttribute("src")).toBe("a.png");
+        expect(filler.parentNode, "undo leaves the filler where it is").toBe(
+            empty,
+        );
+        expect(restoredRoots).toEqual([byId("img")]);
+    });
+
+    it("counts a br that is not the filler of an empty paragraph", async () => {
+        const { history: h } = setUp(
+            '<div class="bloom-editable" id="box">' +
+                '<p id="twoLines">a<br id="kept">b</p>' +
+                '<p id="twoBreaks"><br id="first"><br id="second"></p>' +
+                "</div>",
+        );
+        await h.doTransaction("Join lines", () => byId("kept").remove());
+        await h.doTransaction("Delete line", () => byId("second").remove());
+        expect(h.undoDescriptionL10nKey).toBe("Delete line");
+
+        await h.undo();
+        expect(byId("twoBreaks").childNodes.length).toBe(2);
+        await h.undo();
+        expect(byId("twoLines").innerHTML).toBe('a<br id="kept">b');
+    });
+
+    it("lets text typed into a filled empty paragraph be undone and redone", async () => {
+        const { history: h } = setUp(
+            '<div class="bloom-editable" id="box"><p id="empty"><br></p></div>',
+        );
+        const empty = byId("empty");
+        await h.doTransaction("Type", () => {
+            // As the browser does: the filler goes, the text comes.
+            empty.firstChild!.remove();
+            empty.appendChild(document.createTextNode("x"));
+        });
+
+        await h.undo();
+        expect(empty.textContent).toBe("");
+        await h.redo();
+        expect(empty.textContent).toBe("x");
+        await h.undo();
+        expect(empty.textContent, "the second undo should not be refused").toBe(
+            "",
+        );
+    });
+
+    it("ignores bloom-imageLoadError, which the img's own handlers keep in step with its src", async () => {
+        const { history: h, unmarked } = setUp();
+        const img = byId("img");
+        await h.doTransaction("Change picture", () =>
+            img.setAttribute("src", "missing.png"),
+        );
+        img.classList.add("bloom-imageLoadError");
+        await letObserverDeliver();
+        expect(unmarked).not.toHaveBeenCalled();
+
+        await h.undo();
+        expect(img.getAttribute("src")).toBe("a.png");
+        expect(
+            img.classList.contains("bloom-imageLoadError"),
+            "undo leaves the class to the img's load handler",
+        ).toBe(true);
+        img.classList.remove("bloom-imageLoadError");
+        await letObserverDeliver();
+        expect(unmarked).not.toHaveBeenCalled();
+        expect(h.redoDescriptionL10nKey).toBe("Change picture");
     });
 });
 

@@ -21,7 +21,10 @@ import InputLabel from "@mui/material/InputLabel";
 import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
 import { ColorBar } from "./colorBar";
 import { IColorInfo } from "../../../react_components/color-picking/colorSwatch";
-import { IColorPickerDialogProps } from "../../../react_components/color-picking/colorPickerDialog";
+import {
+    DialogResult,
+    IColorPickerDialogProps,
+} from "../../../react_components/color-picking/colorPickerDialog";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
 import { kCanvasToolId } from "../toolIds";
 import {
@@ -63,8 +66,10 @@ import {
 } from "../../../bloomMaterialUITheme";
 import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
-import { CanvasTool } from "./canvasTool";
+import type { CanvasTool } from "./canvasTool";
+import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { useGetFeatureStatus } from "../../../react_components/featureStatus";
+import { currentPageHistory } from "../../pageHistory/pageHistoryAccess";
 
 const kImageFillModePaddedValue = "padded";
 type ImageFillMode =
@@ -95,7 +100,37 @@ const getImageFillModeForElement = (element: HTMLElement): ImageFillMode => {
     return kImageFillModePaddedValue;
 };
 
-const CanvasToolControls: React.FunctionComponent = () => {
+/**
+ * Make change, a change that a control of this panel makes to the page, one undo step of the page
+ * history, described by the control's label. A change made from the toolbox with no transaction
+ * of its own would end the history (pageHistoryInput.ts); this transaction nests inside the one
+ * that the click opened, and gives the step its description. change must be synchronous: the
+ * step closes before this returns. If change throws, its changes are put back.
+ */
+function changePageAsOneStep<T>(
+    descriptionL10nKey: string,
+    change: () => T,
+): T {
+    const transaction =
+        currentPageHistory()?.beginTransaction(descriptionL10nKey);
+    let result: T;
+    try {
+        result = change();
+    } catch (error) {
+        transaction?.cancel();
+        throw error;
+    }
+    transaction?.end();
+    return result;
+}
+
+// canvasTool is the tool whose body this is. This file imports canvasTool.tsx only as a type, and
+// does not use CanvasTool.theOneCanvasTool: canvasTool.tsx imports this file, and when the dev
+// server hot-updates this file, a value import would load canvasTool.tsx again as a new module
+// whose CanvasTool has no theOneCanvasTool, so the panel would never hear of a new page again.
+const CanvasToolControls: React.FunctionComponent<{
+    canvasTool: CanvasTool;
+}> = (props) => {
     const l10nPrefix = "ColorPicker.";
     // Both halves of the table feature's status have to be true to offer one: the
     // Pro tier decides `enabled`, while a feature Bloom is hiding is invisible
@@ -225,8 +260,9 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
         const bubble = canvasElementManager.getPatriarchBubbleOfActiveElement();
 
-        // The callback function is (currently) called when switching between canvas elements, but is not called
-        // if the tail spec changes, or for style and similar changes to the canvas element that are initiated by React.
+        // The callback function is (currently) called when switching between canvas elements, and after an undo or
+        // redo (CanvasElementManager.updateAfterUndoOrRedo), but is not called if the tail spec changes, or for style
+        // and similar changes to the canvas element that are initiated by React.
         canvasElementManager.requestCanvasElementChangeNotification(
             "canvasElement",
             (bubble: Bubble | undefined) => {
@@ -258,49 +294,25 @@ const CanvasToolControls: React.FunctionComponent = () => {
     }, [bubbleSpecInitialization]);
 
     useEffect(() => {
-        // This variable tracks whether we have successfully wired up the CanvasTool
-        // to call our refreshFromCurrentPage callback when a new page is ready.
-        let wiredCanvasTool: CanvasTool | undefined;
-        let retryTimer: number | undefined;
+        // Have the CanvasTool call our refreshFromCurrentPage callback when a new page is ready.
+        const canvasTool = props.canvasTool;
+        canvasTool.callOnNewPageReady = refreshFromCurrentPage;
 
-        const wireCanvasTool = (): boolean => {
-            const canvasTool = CanvasTool.theOneCanvasTool;
-            if (!canvasTool) {
-                return false;
-            }
-
-            canvasTool.callOnNewPageReady = refreshFromCurrentPage;
-            wiredCanvasTool = canvasTool;
-
-            // Make sure the initial mount reflects the current page state even if
-            // newPageReady fired before this component finished mounting.
-            refreshFromCurrentPage();
-            return true;
-        };
-
-        if (!wireCanvasTool()) {
-            retryTimer = window.setInterval(() => {
-                if (wireCanvasTool() && retryTimer !== undefined) {
-                    window.clearInterval(retryTimer);
-                    retryTimer = undefined;
-                }
-            }, 200);
-        }
+        // Make sure the initial mount reflects the current page state even if
+        // newPageReady fired before this component finished mounting.
+        refreshFromCurrentPage();
 
         return () => {
-            if (retryTimer !== undefined) {
-                window.clearInterval(retryTimer);
-            }
-            if (wiredCanvasTool) {
-                wiredCanvasTool.callOnNewPageReady = () => undefined;
-            }
+            canvasTool.callOnNewPageReady = () => undefined;
         };
-    }, [refreshFromCurrentPage]);
+    }, [props.canvasTool, refreshFromCurrentPage]);
 
     // Keep controls synced with current canvas selection, even if a focus/click path
     // fails to trigger the usual canvasElement change notification.
     // This was also added when we went to single-browser; it may have been coincidence
     // that testing that found some corner cases where things did not end up in sync.
+    // It compares elements, so it does not see an undo or redo that changes the data-bubble of the
+    // same element; the change notification registered in bubbleSpecInitialization covers that.
     useEffect(() => {
         const pollTimer = window.setInterval(() => {
             const manager = getCanvasElementManager();
@@ -436,10 +448,13 @@ const CanvasToolControls: React.FunctionComponent = () => {
                 newBubbleProps["backgroundColors"] = backgroundColorArray;
             }
 
-            const bubble =
-                canvasElementManager.updateSelectedFamilyBubbleSpec(
-                    newBubbleProps,
-                );
+            const bubble = changePageAsOneStep(
+                "EditTab.Toolbox.ComicTool.Options.ElementType",
+                () =>
+                    canvasElementManager.updateSelectedFamilyBubbleSpec(
+                        newBubbleProps,
+                    ),
+            );
             // We do this because the new style's spec may affect Show Tail, or background opacity too.
             setCurrentBubble(bubble);
         }
@@ -453,11 +468,17 @@ const CanvasToolControls: React.FunctionComponent = () => {
         // Update the Comical canvas on the page frame
         const canvasElementManager = getCanvasElementManager();
         if (canvasElementManager) {
-            canvasElementManager.updateSelectedFamilyBubbleSpec({
-                tails: value
-                    ? [canvasElementManager.getDefaultTailSpec() as TailSpec]
-                    : [],
-            });
+            changePageAsOneStep(
+                "EditTab.Toolbox.ComicTool.Options.ShowTail",
+                () =>
+                    canvasElementManager.updateSelectedFamilyBubbleSpec({
+                        tails: value
+                            ? [
+                                  canvasElementManager.getDefaultTailSpec() as TailSpec,
+                              ]
+                            : [],
+                    }),
+            );
         }
     };
 
@@ -469,10 +490,14 @@ const CanvasToolControls: React.FunctionComponent = () => {
         const canvasElementManager = getCanvasElementManager();
         if (canvasElementManager) {
             const radius = newValue ? 8 : undefined; // 8 is semi-arbitrary for now. We may add a control in the future to set it.
-            canvasElementManager.updateSelectedFamilyBubbleSpec({
-                cornerRadiusX: radius,
-                cornerRadiusY: radius,
-            });
+            changePageAsOneStep(
+                "EditTab.Toolbox.ComicTool.Options.RoundedCorners",
+                () =>
+                    canvasElementManager.updateSelectedFamilyBubbleSpec({
+                        cornerRadiusX: radius,
+                        cornerRadiusY: radius,
+                    }),
+            );
         }
     };
 
@@ -638,24 +663,26 @@ const CanvasToolControls: React.FunctionComponent = () => {
         if (!activeElement) {
             return;
         }
-        if (newMode === kImageFitModeCoverValue) {
-            activeElement.setAttribute(
-                kImageFitModeAttribute,
-                kImageFitModeCoverValue,
-            );
-        } else if (newMode === kImageFitModeContainValue) {
-            activeElement.setAttribute(
-                kImageFitModeAttribute,
-                kImageFitModeContainValue,
-            );
-        } else {
-            // Why not have a specific "padded" value? Because the absence of the attribute
-            // represents the default state, and if we introduce a fourth equivalent state "padded"
-            // then we either have to do extra work to treat "padded" and missing attribute as equivalent,
-            // or do data migration and other work to make sure that every relevant canvas element
-            // has the attribute set to "padded".
-            activeElement.removeAttribute(kImageFitModeAttribute);
-        }
+        changePageAsOneStep("EditTab.Toolbox.CanvasTool.ImageFit", () => {
+            if (newMode === kImageFitModeCoverValue) {
+                activeElement.setAttribute(
+                    kImageFitModeAttribute,
+                    kImageFitModeCoverValue,
+                );
+            } else if (newMode === kImageFitModeContainValue) {
+                activeElement.setAttribute(
+                    kImageFitModeAttribute,
+                    kImageFitModeContainValue,
+                );
+            } else {
+                // Why not have a specific "padded" value? Because the absence of the attribute
+                // represents the default state, and if we introduce a fourth equivalent state "padded"
+                // then we either have to do extra work to treat "padded" and missing attribute as equivalent,
+                // or do data migration and other work to make sure that every relevant canvas element
+                // has the attribute set to "padded".
+                activeElement.removeAttribute(kImageFitModeAttribute);
+            }
+        });
     };
 
     // Callback when outline color of the bubble is changed
@@ -672,9 +699,13 @@ const CanvasToolControls: React.FunctionComponent = () => {
             setOutlineColor(newValue);
 
             // Update the Comical canvas on the page frame
-            canvasElementManager.updateSelectedFamilyBubbleSpec({
-                outerBorderColor: newValue,
-            });
+            changePageAsOneStep(
+                "EditTab.Toolbox.ComicTool.Options.OuterOutlineColor",
+                () =>
+                    canvasElementManager.updateSelectedFamilyBubbleSpec({
+                        outerBorderColor: newValue,
+                    }),
+            );
         }
     };
 
@@ -704,6 +735,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
     const launchTextColorChooser = () => {
         launchTextStyleChooser(
+            "EditTab.Toolbox.ComicTool.Options.TextColor",
             textColorTitle,
             textColorSwatch,
             updateTextColor,
@@ -713,6 +745,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
     const launchTextOutlineColorChooser = () => {
         launchTextStyleChooser(
+            "EditTab.Toolbox.ComicTool.Options.TextOutlineColor",
             textOutlineColorTitle,
             textOutlineColorIsDefault
                 ? defaultTextColors[0]
@@ -724,6 +757,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
     };
 
     const launchTextStyleChooser = (
+        descriptionL10nKey: string,
         localizedTitle: string,
         initialColor: IColorInfo,
         onChange: (color: IColorInfo) => void,
@@ -744,12 +778,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
             defaultButtonLabel,
             //defaultColor???
         };
-        getWorkspaceBundleExports().showColorPickerDialog(
-            colorPickerDialogProps,
-        );
-        ToolBox.addWhenClosingToolTask(() => {
-            getWorkspaceBundleExports().hideColorPickerDialog();
-        });
+        showColorPickerAsOneStep(colorPickerDialogProps, descriptionL10nKey);
     };
 
     // The background color chooser uses an alpha slider for transparency.
@@ -771,11 +800,46 @@ const CanvasToolControls: React.FunctionComponent = () => {
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-9922.
         if (colorPickerDialogProps.initialColor.opacity === 0)
             colorPickerDialogProps.initialColor.opacity = 100;
-        getWorkspaceBundleExports().showColorPickerDialog(
+        showColorPickerAsOneStep(
             colorPickerDialogProps,
+            "EditTab.Toolbox.ComicTool.Options.BackgroundColor",
         );
+    };
+
+    // Show the colour picker as one undo step of the page history, from opening it to OK. The
+    // picker changes the page as the user tries colours; Cancel puts back every change made since
+    // it opened, and leaves no step.
+    const showColorPickerAsOneStep = (
+        colorPickerDialogProps: IColorPickerDialogProps,
+        descriptionL10nKey: string,
+    ) => {
+        const transaction =
+            currentPageHistory()?.beginTransaction(descriptionL10nKey);
+        getWorkspaceBundleExports().showColorPickerDialog({
+            ...colorPickerDialogProps,
+            close: (result) => {
+                if (result === DialogResult.Cancel) {
+                    transaction?.cancel();
+                    // Nothing tells Comical or the panel what the rollback put back. Comical
+                    // still draws the colour that the picker's Cancel passed to onChange, which
+                    // is not always what the page had (BL-9922 makes a transparent background
+                    // the picker's opaque initial colour).
+                    const canvasElementManager = getCanvasElementManager();
+                    if (canvasElementManager) {
+                        canvasElementManager.redrawBubblesFromPage();
+                        updateReactFromComical(canvasElementManager);
+                    }
+                } else {
+                    transaction?.end();
+                }
+            },
+        });
         ToolBox.addWhenClosingToolTask(() => {
             getWorkspaceBundleExports().hideColorPickerDialog();
+            // hideColorPickerDialog closes the picker without OK or Cancel, so close is not
+            // called. Keep the changes, as hiding the picker does, and end the step: an open
+            // transaction would keep undo from running and take in every later change.
+            transaction?.end();
         });
     };
 
@@ -1135,7 +1199,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
                         // limited to activities, we might introduce a new kind of page type attribute. Also, we may just
                         // want a single message like "This tool is not available on this page type" or something more specific
                         // like the one here.
-                        CanvasTool.isCurrentPageABloomGame() ? (
+                        ToolboxToolReactAdaptor.isCurrentPageABloomGame() ? (
                             <div
                                 css={css`
                                     padding: ${kToolboxContentPadding};

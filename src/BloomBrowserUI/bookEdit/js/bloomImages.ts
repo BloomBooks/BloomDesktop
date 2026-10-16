@@ -278,7 +278,16 @@ export function HandleImageError(event: Event | string) {
     }
     const target = event.target as HTMLImageElement;
     target.classList.add("bloom-imageLoadError");
+    // The class says that the img's current src failed to load. Undo and redo can give the img a
+    // src that loads, and the page history leaves this class alone (editTimeMarkup.ts), so the
+    // img takes the class off itself when it next loads.
+    target.addEventListener("load", removeImageLoadErrorClass);
     // console.error("Image failed to load:", target.src);
+}
+
+/** Take bloom-imageLoadError off an img that has loaded; see HandleImageError. */
+function removeImageLoadErrorClass(event: Event): void {
+    (event.target as HTMLImageElement).classList.remove("bloom-imageLoadError");
 }
 
 function getPasteImageApiErrorMessage(

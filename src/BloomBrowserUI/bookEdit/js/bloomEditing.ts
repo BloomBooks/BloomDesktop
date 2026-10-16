@@ -1763,19 +1763,23 @@ export const pageUnloading = () => {
 
 /**
  * Register what must happen around each undo and redo of history, the page history that has just
- * started for this page. Before: the toolbox abandons a markup pass it has scheduled. After: the
- * canvas element manager re-reads the page, and Talking Book and the reader tools paint their
- * highlights again from the restored text, writing nothing that the history records (Talking
- * Book also drops the class changes that its visibility observer would otherwise answer with a
- * markup pass). Call once for each history, right after it starts; the components' own setup
- * may run before the history exists.
+ * started for this page. Before: the toolbox abandons a markup pass it has scheduled, and the
+ * canvas element manager notes the canvas elements on the page. After: the canvas element manager
+ * re-reads the page and selects the canvas element that the step changed, and Talking Book and
+ * the reader tools paint their highlights again from the restored text, writing nothing that the
+ * history records (Talking Book also drops the class changes that its visibility observer would
+ * otherwise answer with a markup pass). Call once for each history, right after it starts; the
+ * components' own setup may run before the history exists.
  */
 export function listenToPageHistory(history: PageHistory): void {
     history.onBeforeUndoOrRedo(() =>
         getToolboxBundleExports()?.cancelPendingMarkupUpdates(),
     );
-    history.onAfterUndoOrRedo(() =>
-        theOneCanvasElementManager?.updateAfterUndoOrRedo(),
+    history.onBeforeUndoOrRedo(() =>
+        theOneCanvasElementManager?.noteCanvasElementsBeforeUndoOrRedo(),
+    );
+    history.onAfterUndoOrRedo((restored) =>
+        theOneCanvasElementManager?.updateAfterUndoOrRedo(restored, history),
     );
     history.onAfterUndoOrRedo(() => {
         const toolbox = getToolboxBundleExports();
@@ -2105,6 +2109,38 @@ function updateCkEditorButtonStatus(editor: CKEDITOR.editor) {
     // This method is a placeholder for future use.
 }
 
+/**
+ * Make an inline editor with makeEditor, so that what CKEditor writes into the box as it attaches
+ * joins the page history's latest transaction, without the warning for a change made outside any
+ * transaction. CKEditor finishes attaching in its "loaded" event, in the same task as
+ * CKEDITOR.inline() or a later one: it adds its classes and attributes to the box, and writes the
+ * box's content again from its own copy of it (setData), as new nodes. That rewrite is Bloom's
+ * reaction to whatever made the box (a page load, a Duplicate, a table cell), so it belongs with
+ * that action: undoing the action must also put back the nodes it replaced, which older steps
+ * may hold. The classes and attributes are edit-time markup that the history ignores anyway
+ * (pageHistory/editTimeMarkup.ts).
+ */
+export function joinLatestTransactionWhenCkEditorAttaches(
+    makeEditor: () => CKEDITOR.editor,
+): CKEDITOR.editor {
+    const inLatestTransaction = <T>(fn: () => T): T => {
+        const history = currentPageHistory();
+        return history ? history.addToLatestTransaction(fn) : fn();
+    };
+    const editor = inLatestTransaction(makeEditor);
+    // fireOnce("loaded") calls this.fire, so this catches "loaded" when it comes in a later task.
+    const fire = editor.fire.bind(editor);
+    editor.fire = (
+        eventName: string,
+        data?: object,
+        otherEditor?: CKEDITOR.editor,
+    ) =>
+        eventName === "loaded"
+            ? inLatestTransaction(() => fire(eventName, data, otherEditor))
+            : fire(eventName, data, otherEditor);
+    return editor;
+}
+
 export function attachToCkEditor(element) {
     // Map from ckeditor id strings to the div the ckeditor is wrapping.
     const mapCkeditDiv = new Object();
@@ -2141,7 +2177,9 @@ export function attachToCkEditor(element) {
 
     // see bl-12448. Here we add a rule blocking visibility of the toolbar
     $("body").addClass("hideAllCKEditors");
-    const ckedit = CKEDITOR.inline(element);
+    const ckedit = joinLatestTransactionWhenCkEditorAttaches(() =>
+        CKEDITOR.inline(element),
+    );
 
     // Record the div of the edit box for use later in positioning the format bar.
     mapCkeditDiv[ckedit.id] = element;
