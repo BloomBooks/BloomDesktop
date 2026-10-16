@@ -1485,3 +1485,34 @@ describe("the text node that holds CKEditor's filling character", () => {
         expect(h.undoDescriptionL10nKey).toBe("Type");
     });
 });
+
+describe("a picture's transparent query parameter", () => {
+    // The save strips it (HtmlDom.RemoveTransparencyParamFromImages) and the next load adds it
+    // again from the picture's classes and the page's background. While editing, only two things
+    // change it: the Canvas tool's Transparency menu, in the same step as the class it sets, and
+    // the page background colour of Book and Page Settings, outside the history. So the filter
+    // keeps it, and undo puts the class and the src back together.
+    it("comes back with the class on undo and redo of a Transparency choice", async () => {
+        makePage(
+            '<div class="bloom-canvas" id="canvas"><img id="img" src="a.png?transparent=yes" alt=""></div>',
+        );
+        history = createPageHistory({
+            root: page!,
+            filter: createEditTimeMarkupFilter(),
+            onUnmarkedChange: () => {},
+        });
+        const img = byId("img");
+        await history.doTransaction("EditTab.Image.Transparency", () => {
+            img.classList.add("bloom-opaque");
+            img.setAttribute("src", "a.png");
+        });
+
+        await history.undo();
+
+        expect(img.classList.contains("bloom-opaque")).toBe(false);
+        expect(img.getAttribute("src")).toBe("a.png?transparent=yes");
+        await history.redo();
+        expect(img.classList.contains("bloom-opaque")).toBe(true);
+        expect(img.getAttribute("src")).toBe("a.png");
+    });
+});

@@ -73,6 +73,9 @@ beforeEach(() => {
     ckeditorWasDefined = "CKEDITOR" in globalThis;
     (globalThis as unknown as { CKEDITOR: unknown }).CKEDITOR = {
         currentInstance: new StandInEditor(),
+        // No editor has a selection locked for undo to drop (restoreSelection in
+        // pageHistoryDom.ts).
+        instances: {},
     };
 });
 

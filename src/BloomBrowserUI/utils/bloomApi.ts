@@ -7,7 +7,10 @@ import {
     useSubscribeToWebSocketForEvent,
     useSubscribeToWebSocketForObject,
 } from "./WebSocketManager";
-import { clearUndoAndRedo } from "../bookEdit/pageHistory/pageHistoryAccess";
+import {
+    clearUndoAndRedo,
+    currentPageHistory,
+} from "../bookEdit/pageHistory/pageHistoryAccess";
 
 // You can modify mockReplies in order to work on UI components without the Bloom backend...
 // namely, storybook.
@@ -103,6 +106,10 @@ const kRequestsThatKeepThePageHistory = new Set(
         // Files that no page names.
         "fileIO/writeFile",
         "audioSegmentation/getForcedAlignmentTimings",
+        // The reader tools' language data, which goes into the collection's
+        // ReaderToolsWords-<language>.json each time they load the sample texts' words, as opening
+        // Talking Book or a reader tool can make them do (ReadersApi.SaveSynphonyLanguageData).
+        "readers/io/synphonyLanguageData",
         "audioSegmentation/eSpeakPreview",
         // Requests that only read, though they are POSTs.
         "i18n/loadStrings",
@@ -144,6 +151,10 @@ const kRequestsThatKeepThePageHistory = new Set(
         "logger/writeEvent",
         "common/debugMessage",
         "analytics/track",
+        // Reports of a JavaScript error that nothing caught (lib/errorHandler.ts). An error in a
+        // listener can follow an undo that succeeded, and the report must not end the history.
+        "common/preliminaryError",
+        "common/error",
         // Help, links that open in the browser, and showing files.
         "help",
         "link",
@@ -164,16 +175,25 @@ export function requestEndsPageHistory(
     // axios sends a GET when no method is given.
     const verb = (method ?? "get").toLowerCase();
     if (verb === "get" || verb === "head" || verb === "options") return false;
-    if (!url) return false;
+    const path = bloomApiPath(url);
+    if (path === undefined) return false; // not a request to Bloom
+    return !kRequestsThatKeepThePageHistory.has(path);
+}
+
+/**
+ * The path of a request to Bloom's API, after /bloom/api/, with no query string or trailing slash,
+ * in lower case, as kRequestsThatKeepThePageHistory holds it; undefined for any other url.
+ */
+function bloomApiPath(url: string | undefined): string | undefined {
+    if (!url) return undefined;
     const apiMarker = "/bloom/api/";
     const apiStart = url.indexOf(apiMarker);
-    if (apiStart < 0) return false; // not a request to Bloom
-    const path = url
+    if (apiStart < 0) return undefined;
+    return url
         .substring(apiStart + apiMarker.length)
         .split(/[?#]/)[0]
         .replace(/\/+$/, "")
         .toLowerCase();
-    return !kRequestsThatKeepThePageHistory.has(path);
 }
 
 // Every request that this frame sends through axios passes here, including the ones that callers
@@ -181,9 +201,16 @@ export function requestEndsPageHistory(
 // interceptors in a promise chain, so the history ends a microtask after the call, before the
 // request goes out; page changes that the caller makes synchronously right after the call are
 // dropped from the history with the rest (CODE-WALK issue 5). Requests sent with jQuery's $.ajax
-// don't come here.
+// don't come here. Ending a history that exists is logged in every build, since nothing else
+// shows that the history has gone, and the request's path says which one to classify.
 axios.interceptors.request.use((config) => {
-    if (requestEndsPageHistory(config.method, config.url)) clearUndoAndRedo();
+    if (requestEndsPageHistory(config.method, config.url)) {
+        if (currentPageHistory())
+            console.warn(
+                `Page history: ended by request ${bloomApiPath(config.url)}`,
+            );
+        clearUndoAndRedo();
+    }
     return config;
 });
 
