@@ -176,13 +176,16 @@ export function saveSelection(doc: Document): SavedSelection | undefined {
 
 /**
  * Select what saved selected, when both its nodes are inside root and its offsets still fit them;
- * otherwise leave the selection alone.
+ * otherwise leave the selection alone. Either way, first drop the selections that CKEditor saved
+ * when the focus left its boxes (dropCkEditorLockedSelections), which the undo or redo that calls
+ * this may have made stale.
  */
 export function restoreSelection(
     doc: Document,
     root: Node,
     saved: SavedSelection | undefined,
 ): void {
+    dropCkEditorLockedSelections(doc);
     if (!saved) return;
     if (
         !fitsNode(root, saved.anchorNode, saved.anchorOffset) ||
@@ -194,6 +197,31 @@ export function restoreSelection(
         saved.anchorOffset,
         saved.focusNode,
         saved.focusOffset,
+    );
+}
+
+/** The part of CKEditor that dropCkEditorLockedSelections uses. */
+interface WindowWithCkEditor {
+    CKEDITOR?: {
+        instances: Record<string, { unlockSelection(restore?: boolean): void }>;
+    };
+}
+
+/**
+ * Make each CKEditor of doc's window forget the selection that it saved when the focus left its
+ * box, without selecting it. CKEditor 4.5.1 saves it then (editor.lockSelection, from the box's
+ * blur) and selects it again when the focus comes back (editor.unlockSelection(true), from the
+ * box's focus listener). Putting the selection in a box focuses the box, so restoring it would
+ * set that listener off; and the saved selection names text as it was before the undo or redo,
+ * which may now be too short for its offsets, so that selecting it throws an IndexSizeError, or
+ * may put the caret somewhere other than where the step had it. unlockSelection(false) only
+ * unlocks and forgets it. A window with no CKEditor, as in unit tests, has nothing to drop.
+ */
+function dropCkEditorLockedSelections(doc: Document): void {
+    const ckeditor = (doc.defaultView as WindowWithCkEditor | null)?.CKEDITOR;
+    if (!ckeditor) return;
+    Object.values(ckeditor.instances).forEach((editor) =>
+        editor.unlockSelection(false),
     );
 }
 

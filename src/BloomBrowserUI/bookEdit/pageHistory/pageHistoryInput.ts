@@ -41,8 +41,9 @@ export interface InputTransactionOptions {
     afterCurrentTask?: (fn: () => void) => void;
     /**
      * True for an event on a control that runs undo or redo, such as the top bar's Undo button,
-     * which must open no transaction: undo() does nothing while one is open. Default: the event's
-     * target is inside an element matching kUndoControlSelector.
+     * which must open no transaction: undo() waits while one is open, and would wait for the end
+     * of the click's task. Default: the event's target is inside an element matching
+     * kUndoControlSelector.
      */
     isOnUndoOrRedoControl?: (event: Event) => boolean;
 }
@@ -281,7 +282,8 @@ class InputTransactions {
 
     /**
      * A pointer press, pointerdown or the mousedown after it. A press on the Undo button opens
-     * nothing, but still ends the typing step, which would otherwise keep undo from running.
+     * nothing, but still ends the typing step, which would otherwise hold the undo until something
+     * else ended it.
      */
     private onPress(event: Event, fromOtherWindow: boolean): void {
         this.endTypingRun();
@@ -322,7 +324,7 @@ class InputTransactions {
         // keydown writes, make a step of it and clear redo before the Y arrives.
         if (kModifierKeys.has(event.key)) return;
         if (isUndoOrRedoKey(event) || this.isOnUndoOrRedoControl(event)) {
-            // Undo and redo do nothing while a transaction is open.
+            // Undo and redo wait while a transaction is open; the typing step must not hold them.
             this.endTypingRun();
             return;
         }
@@ -442,8 +444,8 @@ class InputTransactions {
  * Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z, and the same with the Mac's Command key. Matched by the
  * character and by the key code (CKEditor's keystrokes CTRL+90, CTRL+89 and CTRL+SHIFT+90), so
  * that a layout whose Z key types another letter still counts. Matching too many keys only ends a
- * typing step; missing one would leave a typing transaction open, and undo does nothing while one
- * is.
+ * typing step; missing one would leave a typing transaction open, and the undo would wait until it
+ * closed.
  */
 function isUndoOrRedoKey(event: KeyboardEvent): boolean {
     if (!(event.ctrlKey || event.metaKey) || event.altKey) return false;

@@ -1,18 +1,22 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
-const history = vi.hoisted(() => ({ clearCount: 0 }));
+// exists: whether the page frame has a history now, as currentPageHistory() answers.
+const history = vi.hoisted(() => ({ clearCount: 0, exists: true }));
 
 vi.mock("../bookEdit/pageHistory/pageHistoryAccess", () => ({
     clearUndoAndRedo: () => {
         history.clearCount++;
     },
+    currentPageHistory: () => (history.exists ? {} : undefined),
 }));
 
 import { requestEndsPageHistory } from "./bloomApi";
 
 afterEach(() => {
     history.clearCount = 0;
+    history.exists = true;
+    vi.restoreAllMocks();
 });
 
 describe("requestEndsPageHistory", () => {
@@ -130,6 +134,17 @@ describe("requestEndsPageHistory", () => {
         ).toBe(false);
     });
 
+    it("keeps the history for the reader tools' language data, which goes into a collection file that no page names", () => {
+        // Posted whenever the reader tools load the sample texts' words, as Talking Book's opening
+        // can make them do.
+        expect(
+            requestEndsPageHistory(
+                "post",
+                "/bloom/api/readers/io/synphonyLanguageData",
+            ),
+        ).toBe(false);
+    });
+
     it("ignores the query string, the host, a trailing slash and case", () => {
         expect(
             requestEndsPageHistory(
@@ -203,6 +218,36 @@ describe("the request interceptor", () => {
             adapter,
         });
         await axios.get("/bloom/api/editView/setTopic", { adapter });
+        expect(clearsWhenSent).toEqual([0, 0]);
+        expect(history.clearCount).toBe(0);
+    });
+
+    it("names the request in a console warning when it ends a history, and only then", async () => {
+        const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+        await axios.post("/bloom/api/editView/setTopic/?topic=Fiction", "x", {
+            adapter,
+        });
+        expect(warn.mock.calls).toEqual([
+            ["Page history: ended by request editview/settopic"],
+        ]);
+
+        // A request on the list, and one sent where there is no history, warn of nothing.
+        warn.mockClear();
+        await axios.post("/bloom/api/editView/isTextSelected", "true", {
+            adapter,
+        });
+        history.exists = false;
+        await axios.post("/bloom/api/editView/setTopic", "x", { adapter });
+        expect(warn).not.toHaveBeenCalled();
+    });
+
+    it("leaves the history alone for the two posts that report an uncaught JavaScript error", async () => {
+        // The posts of lib/errorHandler.ts, which skips them in unit tests.
+        const report = JSON.stringify({ message: "Uncaught Error", stack: "" });
+        await axios.post("/bloom/api/common/preliminaryError", report, {
+            adapter,
+        });
+        await axios.post("/bloom/api/common/error", report, { adapter });
         expect(clearsWhenSent).toEqual([0, 0]);
         expect(history.clearCount).toBe(0);
     });

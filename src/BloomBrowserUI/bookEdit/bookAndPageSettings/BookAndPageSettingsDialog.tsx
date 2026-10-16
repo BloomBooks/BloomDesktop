@@ -41,6 +41,7 @@ import {
     usePageSettingsAreaDefinition,
 } from "./PageSettingsConfigrPages";
 import { isLegacyThemeName } from "./appearanceThemeUtils";
+import { buildSrcWithTransparentParam } from "../js/bloomImages";
 import { useBookSettingsAreaDefinition } from "./BookSettingsConfigrPages";
 
 let isOpenAlready = false;
@@ -537,17 +538,41 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
 };
 
 // Put the page back as the dialog found it: the attributes of the page element, which hold its
-// style, and the src of each picture.
+// style, and the src of each picture. The dialog changes only a picture's transparent query
+// parameter (updateImageTransparencyForPage), so a picture that something else replaced while the
+// dialog was open, such as a link grid's thumbnail arriving, gets back only the parameter.
 function restoreInitialPage(
     pageAttributes: ElementAttributeSnapshot,
     imageSrcs: Array<{ img: HTMLImageElement; src: string | null }>,
 ): void {
     pageAttributes.restoreToElement(getCurrentPageElement());
     for (const imageSrc of imageSrcs) {
-        if (imageSrc.img.getAttribute("src") === imageSrc.src) continue;
-        if (imageSrc.src === null) imageSrc.img.removeAttribute("src");
-        else imageSrc.img.setAttribute("src", imageSrc.src);
+        const src = imageSrc.img.getAttribute("src");
+        if (src === imageSrc.src || src === null || imageSrc.src === null)
+            continue;
+        let srcToPutBack = imageSrc.src;
+        if (
+            buildSrcWithTransparentParam(src, "none") !==
+            buildSrcWithTransparentParam(imageSrc.src, "none")
+        )
+            srcToPutBack = withTransparentParamOf(src, imageSrc.src);
+        if (srcToPutBack !== src)
+            imageSrc.img.setAttribute("src", srcToPutBack);
     }
+}
+
+// src with the transparent query parameter that model has, or with none if model has none, in
+// the form that buildSrcWithTransparentParam writes.
+function withTransparentParamOf(src: string, model: string): string {
+    const query = model.split("?")[1] ?? "";
+    const param = query
+        .split("&")
+        .find((part) => part.startsWith("transparent="));
+    if (!param) return buildSrcWithTransparentParam(src, "none");
+    return buildSrcWithTransparentParam(
+        src,
+        param === "transparent=force" ? "force" : "auto",
+    );
 }
 
 export function showBookSettingsDialog(initiallySelectedPageKey?: string) {

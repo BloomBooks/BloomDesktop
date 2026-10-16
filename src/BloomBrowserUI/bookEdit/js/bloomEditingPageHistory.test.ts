@@ -17,11 +17,13 @@ vi.mock("../pageHistory/pageHistoryAccess", () => ({
 
 import {
     addRequestPageContentDelay,
+    changeImageInfo,
     doTransaction,
     doTransactionUntilPageSettles,
     removeRequestPageContentDelay,
     whenNoRequestPageContentDelays,
 } from "./bloomEditing";
+import { createEditTimeMarkupFilter } from "../pageHistory/editTimeMarkup";
 
 const kKey = "EditTab.Image.ChangeImage";
 let page: HTMLElement;
@@ -134,6 +136,46 @@ describe("doTransactionUntilPageSettles", () => {
             img.setAttribute("src", "new.png"),
         );
         expect(img.getAttribute("src")).toBe("new.png");
+    });
+});
+
+describe("changeImageInfo and bloom-imageLoadError", () => {
+    // C# gives a cover picture an onerror attribute that adds bloom-imageLoadError and never takes
+    // it off. The page history leaves the class alone, so after an undo puts back a src that
+    // loads, only a load listener can take it off; HandleImageError adds one.
+    it("takes the class off a cover picture when undo puts back a src that loads", async () => {
+        img.setAttribute(
+            "onerror",
+            "this.classList.add('bloom-imageLoadError')",
+        );
+        access.history!.dispose();
+        const history = createPageHistory({
+            root: page,
+            filter: createEditTimeMarkupFilter(),
+        });
+        access.history = history;
+
+        await history.doTransaction(kKey, () =>
+            changeImageInfo(img, {
+                imageId: "",
+                src: "missing.png",
+                copyright: "",
+                creator: "",
+                license: "",
+                undoable: "true",
+            }),
+        );
+        // jsdom loads no pictures; this is what the browser does when missing.png fails.
+        img.dispatchEvent(new Event("error"));
+        expect(img.classList.contains("bloom-imageLoadError")).toBe(true);
+
+        await history.undo();
+        expect(img.getAttribute("src")).toBe("old.png");
+        img.dispatchEvent(new Event("load"));
+
+        expect(img.classList.contains("bloom-imageLoadError")).toBe(false);
+        // The class came and went outside the history, and redo is still there.
+        expect(history.redoDescriptionL10nKey).toBe(kKey);
     });
 });
 
