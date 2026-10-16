@@ -139,11 +139,13 @@ Talking Book, video, games and book settings have no undo today.
    Motion and Image Description write on opening is outside the history (issue 3).
 5. **Explicit transactions for the covered actions that rule 2 can't see.**
    - The bodies of `changeImage` and `changeImageByElement`, which C#, the image gallery and the AI
-     image editor call, each in a transaction begun with `beginTransaction` and ended once no page
-     content delay is pending, so that the refit after the picture loads, which holds one, can't
+     image editor call, each in an async `doTransaction` that ends once no page content delay is
+     pending, so that the refit after the picture loads, which holds one, can't
      join the user's next input (issue 1). If the delays never clear, the transaction ends after
-     4 s (`kMaxWaitTimeMs`, when a save also stops waiting). This is `doTransactionUntilPageSettles`
-     in `bloomEditing.ts`; a call made inside another's change joins it. The AI image editor's swaps
+     4 s (`kMaxWaitTimeMs`, when a save also stops waiting); an undo asked for meanwhile waits for
+     it. This is `doTransactionUntilPageSettles`
+     in `bloomEditing.ts`; a call made inside another's change joins it, and a change made while
+     an earlier one is still waiting joins that step, which waits for it (rule 7). The AI image editor's swaps
      on the current page in one commit go in one such transaction around them all. The pictures
      that the same commit replaces on other pages, which C# changes and saves, are outside the
      history: undo puts back only the current page's. Paste Image needs nothing more: C#
@@ -182,8 +184,11 @@ Talking Book, video, games and book settings have no undo today.
    `fileIO/chooseFile`, the Sign Language tool's requests that write a video under a new name or
    only choose or cancel one, the progress dialog's `progress/ready`, `progress/cancel` and
    `progress/closed`, `editView/addImageFromUrl` (a link grid's thumbnail, whose name depends only
-   on the linked book's id), and requests that only read, or that change only the Edit tab's UI,
-   user settings, the clipboard, logs or files that no page names. `aiImageEditor/commit` can be on the list because a commit deletes no file:
+   on the linked book's id), `fileIO/copyBuiltInSound` (which never replaces a file), the error
+   reports `common/preliminaryError` and `common/error`, `readers/io/synphonyLanguageData` (the
+   collection's word list), and requests that only read, or that change only the Edit tab's UI,
+   user settings, the clipboard, logs or files that no page names. A request that ends the history
+   writes "Page history: ended by request" and its path to the console. `aiImageEditor/commit` can be on the list because a commit deletes no file:
    `DeleteSupersededAiImageFiles` is gone, and `CleanupUnusedSupportFiles` covers `.jpeg` and
    `.webp` instead. This inverts `kRequestsThatEndTheHistory`: a request that nobody has classified
    loses history instead of risking a file or C# state that undo can't put back. axios runs the
@@ -291,8 +296,11 @@ below.
 - **Ctrl+Z undoes the latest change on the page**, not the latest change in the box that has the
   focus, as CKEditor's history for each box does today, and a picture change is undone whether or
   not the picture is selected. Users will notice both.
-- **Undo does nothing while a transaction is open**: during a drag, and after a picture change
-  until its page content delays clear, for up to 4 s. The Undo button stays enabled then.
+- **Undo waits while a transaction is open**: during a drag, and after a picture change until its
+  page content delays clear, for up to 4 s. An undo or redo asked for then, by Ctrl+Z, Ctrl+Y or the
+  Undo button, runs as soon as no transaction is open, after any asked for before it, so it undoes
+  the step that the transaction made (`PageHistory.undo`). A page change drops the requests that
+  are still waiting.
 
 Gains over today, without any extra work: canvas element moves, resizes, crops, additions and
 deletions, and every other page-frame action, are undoable as "Undo edit" steps; Ctrl+Z and the

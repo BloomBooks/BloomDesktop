@@ -547,6 +547,14 @@ export function withoutVideoTimestamp(url: string): string {
  * after it becomes a no-break space, so that the space is not lost to whitespace collapsing. This
  * is what EditableDivUtils.removeTrackedCkEditorFillingChar does to the node. Later U+200B are
  * left, because Thai, Khmer and Myanmar text uses U+200B as a word break (BL-16843).
+ *
+ * The first is the filling character because CKEditor makes the node holding only that character
+ * and puts the caret after it, so typing goes after it. The text alone cannot show otherwise: if
+ * the node starts a block and the user clicks before the character and types a word break there,
+ * this takes out that word break and leaves the filling character, which leaves one U+200B in the
+ * wrong place. CKEditor's own removal of the character (at a press of Left, Right, Home, End,
+ * Page Up, Page Down, Enter, Backspace, Insert or Delete, or once the selection moves to another
+ * element) takes out every U+200B in the node, the user's word breaks too.
  */
 export function withoutFillingChar(text: string): string {
     const i = text.indexOf(kFillingChar);
