@@ -37,7 +37,7 @@ import {
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 import {
     currentPageHistory,
-    doOutsideHistoryIfAny,
+    doOutsideHistory,
 } from "../pageHistory/pageHistoryAccess";
 import type { PageHistory } from "../pageHistory/pageHistoryTypes";
 import type { IPageFrameExports } from "../editablePage";
@@ -425,7 +425,7 @@ export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
 // called by C# to remove the id attribute from the image element
 export function removeImageId(imageId: string) {
     const imgOrImageContainer = document.getElementById(imageId);
-    doOutsideHistoryIfAny(() => imgOrImageContainer?.removeAttribute("id"));
+    doOutsideHistory(() => imgOrImageContainer?.removeAttribute("id"));
 }
 
 export interface IImageInfo {
@@ -465,7 +465,7 @@ export function changeImage(imageInfo: IImageInfo) {
         }
         changeImageInfo(imgOrImageContainer, imageInfo);
         // id is just a temporary expedient to find the right image easily in this method.
-        doOutsideHistoryIfAny(() => imgOrImageContainer.removeAttribute("id"));
+        doOutsideHistory(() => imgOrImageContainer.removeAttribute("id"));
         theOneCanvasElementManager.updateCanvasElementForChangedImage(
             imgOrImageContainer,
         );
@@ -1487,7 +1487,7 @@ export function doTransactionUntilPageSettles<T>(
  * Run fn in a doTransaction of the page history, if there is one; otherwise just run it. Either
  * way the result is a promise that settles when fn has.
  */
-export async function doTransactionIfAny<T>(
+export async function doTransaction<T>(
     descriptionL10nKey: string,
     fn: () => T | Promise<T>,
 ): Promise<T> {
@@ -1889,7 +1889,7 @@ async function copyImpl() {
 // See comment on copySelection. C# runs this with no click or key press in this frame, so the cut
 // is a doTransaction of its own: one undo step, not joined to the typing before it.
 export const cutSelection = (): Promise<void> => {
-    return doTransactionIfAny("EditTab.CutButton", cutSelectionImpl);
+    return doTransaction("EditTab.CutButton", cutSelectionImpl);
 };
 
 async function cutSelectionImpl() {
@@ -1921,7 +1921,7 @@ async function cutSelectionImpl() {
 export const pasteClipboard = (imageAvailable: boolean): Promise<void> => {
     return wrapWithRequestPageContentDelay(
         () =>
-            doTransactionIfAny("EditTab.PasteButton", () =>
+            doTransaction("EditTab.PasteButton", () =>
                 pasteImpl(imageAvailable),
             ),
         "pasteImpl",

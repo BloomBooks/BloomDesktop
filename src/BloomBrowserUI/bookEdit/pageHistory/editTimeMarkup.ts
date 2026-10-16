@@ -12,6 +12,7 @@
 // can share them when it stops reloading.
 
 import { kSelectorForPotentialNiceScrollElements } from "bloom-player";
+import { kBloomCanvasClass } from "../toolbox/canvas/canvasElementConstants";
 import type { PageHistoryFilter } from "./pageHistoryTypes";
 
 /** Elements that a save removes with everything inside them. */
@@ -203,6 +204,28 @@ export function isCkEditorFillerBr(child: Node, parent: Node): boolean {
     return (
         kBlocksThatCkEditorFills.has(block.tagName) &&
         !!block.closest(".bloom-editable")
+    );
+}
+
+/**
+ * True for a description box that is a child of a bloom-canvas: a translation group with
+ * bloom-imageDescription. The save keeps it, but the Image Description tool and Talking Book add
+ * one to each bloom-canvas that lacks one when they open (setupImageDescriptions in
+ * imageDescription.tsx), outside the history, as all tool setup is. Recorded in the bloom-canvas's
+ * child lists, its arrival would make the check of rule 4 refuse the undo of every earlier step
+ * that holds such a list, such as adding a canvas element. Nothing in Bloom takes a description
+ * box out of the page, so leaving it out of those lists loses nothing that undo needs; what is
+ * inside it, such as the text typed into it, is recorded as usual.
+ */
+export function isDescriptionBoxOfABloomCanvas(
+    child: Node,
+    parent: Node,
+): boolean {
+    return (
+        child.nodeType === Node.ELEMENT_NODE &&
+        parent.nodeType === Node.ELEMENT_NODE &&
+        (child as Element).classList.contains("bloom-imageDescription") &&
+        (parent as Element).classList.contains(kBloomCanvasClass)
     );
 }
 
@@ -615,6 +638,11 @@ class EditTimeMarkupFilter implements PageHistoryFilter {
     /** See PageHistoryFilter.ignoreNode. */
     public ignoreNode(node: Node): boolean {
         return isEditTimeElement(node);
+    }
+
+    /** See PageHistoryFilter.isLeftOutOfChildList. */
+    public isLeftOutOfChildList(child: Node, parent: Node): boolean {
+        return isDescriptionBoxOfABloomCanvas(child, parent);
     }
 
     /** See PageHistoryFilter.isLeftOutWhenOnlyChild. */
