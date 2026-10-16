@@ -37,6 +37,10 @@ import type {
     IControlRuntime,
 } from "./canvasControlTypes";
 import { runControlCallback } from "../../js/canvasElementManager/canvasControlMenuRendering";
+import {
+    addRequestPageContentDelay,
+    removeRequestPageContentDelay,
+} from "../../js/bloomEditing";
 
 const kOriginalBubble = "{`version`:`1.0`,`style`:`caption`}";
 const kTestDescription = "EditTab.Toolbox.ComicTool.Options.ElementType";
@@ -105,5 +109,72 @@ describe("a canvas command that fails part way", () => {
         expect(element.getAttribute("data-bubble")).toBe(kOriginalBubble);
         expect(frames.dataBubbleWhenRedrawn).toEqual([kOriginalBubble]);
         expect(history.undoDescriptionL10nKey).toBeUndefined();
+    });
+});
+
+// A command can start a change that it does not await, such as fitting a canvas element to a new
+// picture once the picture has loaded, which holds a page content delay until then. The command's
+// step stays open until the delay clears, so that the change is in the step.
+describe("a canvas command that starts a change that waits", () => {
+    const kChangedBubble = "{`version`:`1.0`,`style`:`speech`}";
+    const kDelayId = "testFitToNewPicture";
+    // Makes the change that the command started, and releases its delay.
+    let finishChange: (() => void) | undefined;
+
+    beforeEach(() => {
+        finishChange = undefined;
+    });
+
+    /** What the command does: change the bubble, and start a change that waits. */
+    function changeBubbleAndStartFit(): void {
+        element.setAttribute("data-bubble", kChangedBubble);
+        addRequestPageContentDelay(kDelayId);
+        finishChange = () => {
+            // Like the fit of a background image, this is made outside any call into the
+            // history, after the command's own code has returned.
+            element.style.width = "160px";
+            removeRequestPageContentDelay(kDelayId);
+        };
+    }
+
+    /** Check that the command's change and the change that waited are one undo step. */
+    async function expectOneStepWithTheChangeThatWaited(): Promise<void> {
+        expect(history.hasOpenTransaction).toBe(true);
+        finishChange!();
+        await vi.waitFor(() => expect(history.hasOpenTransaction).toBe(false));
+        expect(history.undoDescriptionL10nKey).toBe(kTestDescription);
+
+        await history.undo();
+
+        expect(element.getAttribute("data-bubble")).toBe(kOriginalBubble);
+        expect(element.style.width).toBe("");
+        expect(history.undoDescriptionL10nKey).toBeUndefined();
+    }
+
+    it("run by runCommandControlAction", async () => {
+        const control = {
+            kind: "command",
+            id: "testCommand",
+            l10nId: kTestDescription,
+            englishLabel: "Test",
+            action: changeBubbleAndStartFit,
+        } as unknown as ICommandControlDefinition;
+
+        const done = runCommandControlAction(
+            control,
+            {} as IControlContext,
+            {} as IControlRuntime,
+        );
+        await vi.waitFor(() => expect(finishChange).toBeDefined());
+
+        await expectOneStepWithTheChangeThatWaited();
+        await done;
+    });
+
+    it("run by runControlCallback", async () => {
+        runControlCallback("test", kTestDescription, changeBubbleAndStartFit);
+        await vi.waitFor(() => expect(finishChange).toBeDefined());
+
+        await expectOneStepWithTheChangeThatWaited();
     });
 });

@@ -150,6 +150,14 @@ class TransactionFrame implements BegunTransaction {
     }
 }
 
+/** An undo or redo asked for while a transaction was open, waiting until none is. */
+interface QueuedRequest {
+    direction: "undo" | "redo";
+    // Settle the promise that undo() or redo() returned.
+    resolve: () => void;
+    reject: (error: unknown) => void;
+}
+
 /**
  * Where the records of a batch go, apart from what an open transaction decides.
  * "addToLatestStep" is addToLatestTransaction while the only transaction open is a stand-in that
@@ -180,6 +188,11 @@ class PageHistoryImpl implements PageHistory {
     private readonly afterUndoOrRedoListeners = new Set<
         (restored: RestoredContent) => void
     >();
+    // Undo and redo requests made while a transaction was open, oldest first.
+    private queuedRequests: QueuedRequest[] = [];
+    // True while runQueuedRequests is running one, so that a transaction that one of undo's
+    // listeners opens and closes does not start the next request in the middle of it.
+    private isRunningQueuedRequest = false;
     private disposed = false;
     // False until markPageReady: a change outside any transaction is then not recorded.
     private pageReady: boolean;
@@ -189,6 +202,10 @@ class PageHistoryImpl implements PageHistory {
         this.pageReady = options.startsReady ?? true;
         this.filter = options.filter ?? kKeepEverythingFilter;
         this.maxUndoSteps = options.maxUndoSteps ?? kDefaultMaxUndoSteps;
+        if (!Number.isInteger(this.maxUndoSteps) || this.maxUndoSteps < 0)
+            throw new Error(
+                `Page history: maxUndoSteps must be a whole number of zero or more, not ${this.maxUndoSteps}.`,
+            );
         this.onUnmarkedChange =
             options.onUnmarkedChange ?? warnInDevelopmentBuilds;
         this.observer = new MutationObserver((records) =>
@@ -295,6 +312,7 @@ class PageHistoryImpl implements PageHistory {
     public clearUndoAndRedo(): void {
         this.assertNotDisposed();
         this.processPendingRecords();
+        this.dropQueuedRequests();
         this.abandonOpenTransactions();
         this.undoSteps = [];
         this.redoSteps = [];
@@ -317,13 +335,57 @@ class PageHistoryImpl implements PageHistory {
     }
 
     /** See PageHistory.undo. */
-    public async undo(): Promise<void> {
-        this.undoOrRedo("undo");
+    public undo(): Promise<void> {
+        return this.requestUndoOrRedo("undo");
     }
 
     /** See PageHistory.redo. */
-    public async redo(): Promise<void> {
-        this.undoOrRedo("redo");
+    public redo(): Promise<void> {
+        return this.requestUndoOrRedo("redo");
+    }
+
+    /**
+     * Queue an undo or redo behind any that are waiting, and run them if no transaction is open.
+     * The promise settles when this one has run or been dropped.
+     */
+    private requestUndoOrRedo(direction: "undo" | "redo"): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.assertNotDisposed();
+            this.queuedRequests.push({ direction, resolve, reject });
+            this.runQueuedRequests();
+        });
+    }
+
+    /**
+     * Run the queued undo and redo requests, oldest first, while no transaction is open. A
+     * transaction that one of undo's listeners leaves open stops them; they go on when it closes.
+     * Called whenever a request is made and whenever a transaction ends.
+     */
+    private runQueuedRequests(): void {
+        if (this.isRunningQueuedRequest) return;
+        while (
+            !this.disposed &&
+            this.frames.length === 0 &&
+            this.queuedRequests.length > 0
+        ) {
+            const request = this.queuedRequests.shift()!;
+            this.isRunningQueuedRequest = true;
+            try {
+                this.undoOrRedo(request.direction);
+                request.resolve();
+            } catch (error) {
+                request.reject(error);
+            } finally {
+                this.isRunningQueuedRequest = false;
+            }
+        }
+    }
+
+    /** Drop the queued undo and redo requests, settling their promises, for a boundary. */
+    private dropQueuedRequests(): void {
+        const dropped = this.queuedRequests;
+        this.queuedRequests = [];
+        dropped.forEach((request) => request.resolve());
     }
 
     /** See PageHistory.undoDescriptionL10nKey. */
@@ -346,6 +408,7 @@ class PageHistoryImpl implements PageHistory {
     /** See PageHistory.dispose. */
     public dispose(): void {
         this.assertNotDisposed();
+        this.dropQueuedRequests();
         this.abandonOpenTransactions();
         this.observer.disconnect();
         this.undoSteps = [];
@@ -369,7 +432,8 @@ class PageHistoryImpl implements PageHistory {
      * one that began while it awaited, since neither awaits the other. Ending any other
      * transaction while one begun inside it is still open, a beginTransaction or a doTransaction
      * whose fn returned a plain value, is a bug in the caller: the inner ones end with it, and in
-     * development it throws. Does nothing if frame has already ended.
+     * development it throws. Does nothing if frame has already ended. Once no transaction is
+     * open, runs the undo and redo requests that waited for that.
      */
     public endFrame(frame: TransactionFrame): boolean {
         if (frame.ended || frame.endRequested) return false;
@@ -388,6 +452,7 @@ class PageHistoryImpl implements PageHistory {
         let madeStep = false;
         if (index === 0) madeStep = this.closeOpenTransaction();
         else madeStep = this.endFramesThatWaitForNoOne();
+        this.runQueuedRequests();
         if (innerStillOpen && import.meta.env.DEV)
             throw new Error(
                 `Page history: the transaction "${frame.descriptionL10nKey}" ended while a transaction begun inside it was still open.`,
@@ -402,7 +467,7 @@ class PageHistoryImpl implements PageHistory {
      * whose fn threw must rethrow fn's error, not a new one. Does nothing if frame has already
      * ended, or is waiting for transactions begun after it (endFrame). Cancelling the last
      * transaction that such a one waits for lets it end, and the outermost close with whatever
-     * else changed.
+     * else changed. Once no transaction is open, runs the undo and redo requests that waited.
      *
      * Every record since frame began is reversed, whichever code made the change. So when frame
      * is an async doTransaction that overlaps another, a cancel also puts back what the other
@@ -437,6 +502,7 @@ class PageHistoryImpl implements PageHistory {
         } else {
             this.endFramesThatWaitForNoOne();
         }
+        this.runQueuedRequests();
     }
 
     /**
@@ -1090,13 +1156,10 @@ class PageHistoryImpl implements PageHistory {
      * 11.8.1: the onBeforeUndoOrRedo listeners, the check, putting values back, the selection,
      * the onAfterUndoOrRedo listeners. The selection comes before the listeners so that they see
      * the final caret and focus, and so that what restoring it writes (a focusin handler that it
-     * fires) is dropped with undo's own records.
+     * fires) is dropped with undo's own records. Only runQueuedRequests calls this, with no
+     * transaction open.
      */
     private undoOrRedo(direction: "undo" | "redo"): void {
-        this.assertNotDisposed();
-        // Undo and redo while a transaction is open do nothing. This choice is provisional: the
-        // design leaves open whether they should end the transaction first instead.
-        if (this.frames.length > 0) return;
         const isUndo = direction === "undo";
         if ((isUndo ? this.undoSteps : this.redoSteps).length === 0) return;
 

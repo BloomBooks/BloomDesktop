@@ -39,6 +39,7 @@ vi.mock("../../utils/bloomMessageBoxSupport", () => ({
 }));
 
 import BloomField from "./BloomField";
+import { whenNoRequestPageContentDelays } from "../js/bloomEditing";
 
 const kLinkKey = "EditTab.SetupHyperlink";
 const kEarlierKey = "EditTab.Toolbox.ComicTool.Options.ElementType";
@@ -139,6 +140,19 @@ function select(
     selection.addRange(range);
 }
 
+/**
+ * Returns a function that says whether a save would have stopped waiting for page content delays
+ * (whenNoRequestPageContentDelays) once the promises then settled have run.
+ */
+function watchForSaveToGoAhead(): () => Promise<boolean> {
+    let goesAhead = false;
+    void whenNoRequestPageContentDelays().then(() => (goesAhead = true));
+    return async () => {
+        for (let i = 0; i < 5; i++) await Promise.resolve();
+        return goesAhead;
+    };
+}
+
 /** Bloom's answer to the request for the book's information. */
 function answerBookInfo(data: unknown): void {
     expect(api.pending.length).toBe(1);
@@ -154,8 +168,10 @@ describe("BloomField.makeSelectionALink", () => {
         select(lastText, 1, lastText, 6);
 
         clickOk();
-        // The click's task is over, but the link waits for the book's id.
-        expect(history.hasOpenTransaction).toBe(true);
+        // The click's task is over, but the link waits for the book's id. No transaction is open
+        // meanwhile, so the click made no step and ended nothing.
+        expect(history.hasOpenTransaction).toBe(false);
+        expect(history.undoDescriptionL10nKey).toBe(kEarlierKey);
         expect(editable.querySelector("a")).toBeNull();
 
         answerBookInfo({ id: "book1" });
@@ -211,19 +227,90 @@ describe("BloomField.makeSelectionALink", () => {
         expect(history.undoDescriptionL10nKey).toBe(kEarlierKey);
     });
 
-    it("closes the transaction when the request for the book fails", () => {
+    it("stops holding saves when the request for the book fails", async () => {
+        const lastText = editable.querySelector("p")!.lastChild!;
+        select(lastText, 1, lastText, 6);
         clickOk();
-        expect(history.hasOpenTransaction).toBe(true);
+        const saveGoesAhead = watchForSaveToGoAhead();
+        expect(await saveGoesAhead()).toBe(false);
         const request = api.pending.shift()!;
         const failure = new Error("no answer");
 
         expect(() => request.error!(failure)).toThrow(failure);
 
+        expect(await saveGoesAhead()).toBe(true);
+        expect(editable.innerHTML).toBe(kStartingHtml);
         expect(history.hasOpenTransaction).toBe(false);
         expect(history.undoDescriptionL10nKey).toBe(kEarlierKey);
     });
 
-    it("begins no transaction for OK with no url", () => {
+    it("links the text selected at OK when the user selects other text before Bloom answers", () => {
+        const p = editable.querySelector("p")!;
+        // "world"
+        select(p.lastChild!, 1, p.lastChild!, 6);
+        clickOk();
+
+        // "Hello"
+        select(p.firstChild!, 0, p.firstChild!, 5);
+        answerBookInfo({ id: "book1" });
+
+        expect(editable.querySelector("a")?.textContent).toBe("world");
+        expect(history.undoDescriptionL10nKey).toBe(kLinkKey);
+    });
+
+    it("keeps an edit made before Bloom answers out of the link's step", async () => {
+        const p = editable.querySelector("p")!;
+        const world = p.lastChild as Text;
+        select(world, 1, world, 6);
+        clickOk();
+
+        const kEditKey = "Test.Edit";
+        await history.doTransaction(kEditKey, () =>
+            p.firstChild!.replaceWith("Goodbye "),
+        );
+        expect(history.undoDescriptionL10nKey).toBe(kEditKey);
+        answerBookInfo({ id: "book1" });
+
+        expect(editable.innerHTML).toBe(
+            '<p>Goodbye <b>big</b> <a href="https://example.com">world</a></p>',
+        );
+        expect(history.undoDescriptionL10nKey).toBe(kLinkKey);
+        await history.undo();
+        expect(editable.innerHTML).toBe("<p>Goodbye <b>big</b> world</p>");
+        expect(history.undoDescriptionL10nKey).toBe(kEditKey);
+        await history.undo();
+        expect(editable.innerHTML).toBe(kStartingHtml);
+        expect(history.undoDescriptionL10nKey).toBe(kEarlierKey);
+        expect(onUnmarkedChange).not.toHaveBeenCalled();
+    });
+
+    it("makes no link when the selected text is deleted before Bloom answers", async () => {
+        const p = editable.querySelector("p")!;
+        const world = p.lastChild as Text;
+        select(world, 0, world, 6);
+        clickOk();
+
+        await history.doTransaction("Test.Delete", () => world.remove());
+        answerBookInfo({ id: "book1" });
+
+        expect(editable.querySelector("a")).toBeNull();
+        expect(history.undoDescriptionL10nKey).toBe("Test.Delete");
+    });
+
+    it("holds a save until the link is on the page", async () => {
+        const lastText = editable.querySelector("p")!.lastChild!;
+        select(lastText, 1, lastText, 6);
+        clickOk();
+        const saveGoesAhead = watchForSaveToGoAhead();
+        expect(await saveGoesAhead()).toBe(false);
+
+        answerBookInfo({ id: "book1" });
+
+        expect(await saveGoesAhead()).toBe(true);
+        expect(editable.querySelector("a")?.textContent).toBe("world");
+    });
+
+    it("asks Bloom nothing for OK with no url", () => {
         okUrl = "";
         clickOk();
 

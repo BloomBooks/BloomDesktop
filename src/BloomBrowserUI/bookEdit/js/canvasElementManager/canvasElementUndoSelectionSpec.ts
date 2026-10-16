@@ -65,6 +65,7 @@ import { createEditTimeMarkupFilter } from "../../pageHistory/editTimeMarkup";
 import type { PageHistory } from "../../pageHistory/pageHistoryTypes";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import $ from "jquery";
+import "../../../lib/jquery.qtip.js"; // puts qtip into $.fn
 
 const kMoveDescription = "EditTab.Undo.Move";
 
@@ -586,5 +587,89 @@ describe("a text canvas element that an undo or redo puts back", () => {
         await history.undo();
         expect(ce2.style.left).toBe("100px");
         expect(makeQtips).not.toHaveBeenCalled();
+    });
+
+    it("loses its bubbles when the undo of its add takes it out", async () => {
+        // Bubbles that this test makes itself; the page's would be made the same way.
+        vi.spyOn(BloomSourceBubbles, "ProduceSourceBubbles").mockReturnValue(
+            $(),
+        );
+        const added = document.createElement("div");
+        added.className = "bloom-canvas-element";
+        added.innerHTML = `<div class="bloom-translationGroup"><div class="bloom-editable bloom-visibility-code-on" lang="en"><p>New</p></div></div>`;
+        await history.doTransaction("EditTab.Undo.Add", () => {
+            byId("canvas").appendChild(added);
+        });
+        const translationGroup = added.querySelector<HTMLElement>(
+            ".bloom-translationGroup",
+        )!;
+        // A source bubble, always showing, which qtip puts outside the element it annotates.
+        $(translationGroup).qtip({
+            content: "source text",
+            show: { ready: true },
+            hide: { event: false },
+        });
+        await vi.waitFor(() =>
+            expect(document.querySelectorAll("div.qtip").length).toBe(1),
+        );
+        const bubble = document.querySelector("div.qtip")!;
+        // Sanity check: the bubble is not inside the element.
+        expect(added.contains(bubble)).toBe(false);
+
+        await history.undo();
+
+        expect(added.isConnected).toBe(false);
+        expect(bubble.isConnected).toBe(false);
+        expect(history.redoDescriptionL10nKey).toBe("EditTab.Undo.Add");
+        await history.redo();
+        expect(added.isConnected).toBe(true);
+        expect(history.undoDescriptionL10nKey).toBe("EditTab.Undo.Add");
+    });
+});
+
+// A background image's fit to its picture waits for the picture to load. An undo or redo that
+// begins meanwhile drops it, as it drops the fits of other canvas elements: made after the undo,
+// the fit would join the latest step and clear redo.
+describe("a background image's fit that is waiting for its picture as an undo begins", () => {
+    it("is dropped, and releases the page content delay that it holds", async () => {
+        const background = byId("background");
+        const image = byId("backgroundImg") as HTMLImageElement;
+        // jsdom lays nothing out and loads no pictures.
+        vi.spyOn(byId("canvas"), "getBoundingClientRect").mockReturnValue(
+            new DOMRect(0, 0, 300, 200),
+        );
+        let pictureSize = { width: 0, height: 0 };
+        Object.defineProperty(image, "naturalWidth", {
+            get: () => pictureSize.width,
+        });
+        Object.defineProperty(image, "naturalHeight", {
+            get: () => pictureSize.height,
+        });
+        await history.doTransaction(kMoveDescription, () => {
+            byId("ce1").style.left = "40px";
+        });
+        // As when a new picture has been put in the background: the fit waits for it to load.
+        history.doOutsideHistory(() =>
+            theOneCanvasElementManager.adjustContainerAspectRatio(
+                background,
+                true,
+            ),
+        );
+        let saveGoesAhead = false;
+        void whenNoRequestPageContentDelays().then(
+            () => (saveGoesAhead = true),
+        );
+        await Promise.resolve();
+        // Sanity check: the fit is waiting, and holds the save.
+        expect(saveGoesAhead).toBe(false);
+
+        await history.undo();
+
+        await vi.waitFor(() => expect(saveGoesAhead).toBe(true));
+        pictureSize = { width: 120, height: 60 };
+        image.dispatchEvent(new Event("load"));
+        await Promise.resolve();
+        expect(background.style.height).toBe("200px");
+        expect(history.redoDescriptionL10nKey).toBe(kMoveDescription);
     });
 });

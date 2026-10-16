@@ -11,6 +11,7 @@ import { getWorkspaceBundleExports } from "../js/workspaceFrames";
 import { getLocalization } from "../../react_components/l10n";
 import { kNoIndentClass } from "../textContextMenu/noIndent";
 import { currentPageHistory } from "../pageHistory/pageHistoryAccess";
+import { wrapWithRequestPageContentDelay } from "../js/bloomEditing";
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
@@ -467,50 +468,72 @@ export default class BloomField {
     /**
      * Make the text selected in the page a link to url, as one undo step of the page history.
      * Called when the user clicks OK in the dialog that Set Up Hyperlink shows. The link needs the
-     * book's id, which comes back from Bloom asynchronously, after the transaction that the click
-     * opened has closed; so a transaction begun here, inside that one, stays open until the link
-     * is made, and gives the step its description.
+     * book's id, which comes back from Bloom asynchronously. Meanwhile the user may select other
+     * text or edit the page: the link goes on the text that was selected at OK, a save waits for
+     * it, and it is a step of its own, made when the id arrives, so the user's edits meanwhile are
+     * not part of it.
      */
     public static makeSelectionALink(url: string): void {
         if (!url) return;
+        const selection = document.getSelection();
+        if (!selection || selection.rangeCount === 0) return;
+        // A Range of our own follows what the user changes on the page meanwhile, as the
+        // selection's would, but not where the user moves the selection.
+        const range = selection.getRangeAt(0).cloneRange();
+        void wrapWithRequestPageContentDelay(
+            () =>
+                new Promise<void>((resolve) =>
+                    get(
+                        "app/selectedBookInfo",
+                        (bookInfo) => {
+                            try {
+                                if (bookInfo.data)
+                                    BloomField.makeRangeALink(
+                                        range,
+                                        tryProcessHyperlink(
+                                            url,
+                                            bookInfo.data.id,
+                                        ),
+                                    );
+                            } finally {
+                                resolve();
+                            }
+                        },
+                        (error) => {
+                            resolve();
+                            throw error;
+                        },
+                    ),
+                ),
+            "makeSelectionALink",
+        );
+    }
+
+    /** Put the contents of range in a link to href, as one undo step; see makeSelectionALink. */
+    private static makeRangeALink(range: Range, href: string): void {
+        // The user deleted the selected text while Bloom looked up the book's id.
+        if (range.collapsed) return;
+        const anchor = document.createElement("a");
+        anchor.href = href;
         const transaction = currentPageHistory()?.beginTransaction(
             "EditTab.SetupHyperlink",
         );
-        get(
-            "app/selectedBookInfo",
-            (bookInfo) => {
-                if (!bookInfo.data) {
-                    transaction?.end();
-                    return;
-                }
-                const anchor = document.createElement("a");
-                anchor.href = tryProcessHyperlink(url, bookInfo.data.id);
-                try {
-                    document
-                        .getSelection()
-                        ?.getRangeAt(0)
-                        ?.surroundContents(anchor);
-                } catch (ex) {
-                    transaction?.cancel();
-                    const englishErrorMessage =
-                        "Bloom was not able to make a link. Try selecting only simple text.";
-                    console.log(`${englishErrorMessage} ${ex}`);
-                    BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
-                        "EditTab.HyperlinkPasteFailure",
-                        englishErrorMessage,
-                        "Shows when a hyperlink cannot be pasted due to invalid selection.",
-                        "CantPasteHyperlink",
-                    );
-                    return;
-                }
-                transaction?.end();
-            },
-            (error) => {
-                // An open transaction would keep undo from running and take in every later change.
-                transaction?.cancel();
-                throw error;
-            },
-        );
+        try {
+            range.surroundContents(anchor);
+        } catch (ex) {
+            transaction?.cancel();
+            const englishErrorMessage =
+                "Bloom was not able to make a link. Try selecting only simple text.";
+            console.log(`${englishErrorMessage} ${ex}`);
+            BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
+                "EditTab.HyperlinkPasteFailure",
+                englishErrorMessage,
+                "Shows when a hyperlink cannot be pasted due to invalid selection.",
+                "CantPasteHyperlink",
+            );
+            return;
+        }
+        transaction?.end();
     }
 
     // Spans are dropped from the clipboard's default data (eventData.dataValue) when the
