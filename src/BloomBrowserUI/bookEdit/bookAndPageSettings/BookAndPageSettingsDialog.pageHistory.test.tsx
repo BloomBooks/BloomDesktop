@@ -176,7 +176,8 @@ let onUnmarkedChange: ReturnType<typeof vi.fn>;
 
 beforeEach(async () => {
     document.body.innerHTML =
-        '<div class="bloom-page"><div class="marginBox"><div class="bloom-canvas"><img src="a.png"></div><div id="other"></div></div></div>';
+        // The second picture is a link grid's thumbnail that has not arrived yet (linkGrid.ts).
+        '<div class="bloom-page"><div class="marginBox"><div class="bloom-canvas"><img src="a.png"></div><div class="bloom-bookButton"><img id="thumbnail"></div><div id="other"></div></div></div>';
     page = document.body.querySelector(".bloom-page")!;
     img = page.querySelector("img")!;
     other = page.querySelector("#other")!;
@@ -315,6 +316,28 @@ describe("The Book and Page Settings dialog's page settings", () => {
         click("dialog-cancel");
         expect(backgroundColor()).toBe("");
         expect(img.getAttribute("src")).toBe("b.png");
+        expectHistoryKept();
+    });
+
+    it("keep a picture that got its first src while the dialog was open, without the transparency of a preview", () => {
+        const thumbnail = page.querySelector("#thumbnail")!;
+        expect(thumbnail.hasAttribute("src")).toBe(false);
+        // The thumbnail arrives, outside the history, as linkGrid.ts writes it.
+        history.doOutsideHistory(() =>
+            thumbnail.setAttribute("src", "bookButton-1.png"),
+        );
+
+        click("page-change");
+        expect(thumbnail.getAttribute("src")).toBe(
+            "bookButton-1.png?transparent=yes",
+        );
+        click("page-reset");
+        expect(thumbnail.getAttribute("src")).toBe("bookButton-1.png");
+
+        click("page-change");
+        click("dialog-cancel");
+        expect(backgroundColor()).toBe("");
+        expect(thumbnail.getAttribute("src")).toBe("bookButton-1.png");
         expectHistoryKept();
     });
 });
