@@ -40,7 +40,7 @@ import {
     isDeviceLayoutPage,
     parseBloomPubImageLimit,
 } from "./imageTargetResolution";
-import { doOutsideHistoryIfAny } from "../pageHistory/pageHistoryAccess";
+import { doOutsideHistory } from "../pageHistory/pageHistoryAccess";
 
 // Declared in canvasElementConstants.ts, which nothing imports anything else from, and
 // re-exported here because most of Bloom names an image slot through this module.
@@ -366,7 +366,7 @@ export function doImageCommand(
         let imageId = img.getAttribute("id");
         if (!imageId) {
             imageId = EditableDivUtils.createUuid();
-            doOutsideHistoryIfAny(() => img.setAttribute("id", imageId!));
+            doOutsideHistory(() => img.setAttribute("id", imageId!));
         }
         const topDiv = img.closest(kCanvasElementSelector);
         const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
@@ -406,7 +406,7 @@ export function doImageCommand(
         let imageId = img.getAttribute("id");
         if (!imageId) {
             imageId = EditableDivUtils.createUuid();
-            doOutsideHistoryIfAny(() => img.setAttribute("id", imageId!));
+            doOutsideHistory(() => img.setAttribute("id", imageId!));
         }
         wrapWithRequestPageContentDelay(
             () => doChangeGifImage(img, imageId!),
@@ -467,7 +467,7 @@ async function doChangeGifImage(
         const { filePath } = pickResponse!.data as { filePath: string };
         if (!filePath) {
             // User cancelled — remove the temporary id.
-            doOutsideHistoryIfAny(() => img.removeAttribute("id"));
+            doOutsideHistory(() => img.removeAttribute("id"));
             return;
         }
         const changeResponse = await postJsonAsync(
@@ -498,7 +498,7 @@ async function doChangeGifImage(
         };
         changeImage(imageInfo);
     } catch {
-        doOutsideHistoryIfAny(() => img.removeAttribute("id"));
+        doOutsideHistory(() => img.removeAttribute("id"));
     }
 }
 
@@ -894,7 +894,7 @@ function DisableImageTooltip(container: HTMLElement | undefined | null) {
         canvasElementManager
             .getAllBloomCanvasesOnPage()
             .forEach((bloomCanvas) => {
-                doOutsideHistoryIfAny(() => {
+                doOutsideHistory(() => {
                     bloomCanvas.title = "";
                 });
             });
@@ -908,7 +908,7 @@ function DisableImageTooltip(container: HTMLElement | undefined | null) {
     const bloomCanvas = container.closest(kBloomCanvasSelector) as HTMLElement; // this is the one we want to clear the title on, if any
 
     if (bloomCanvas) {
-        doOutsideHistoryIfAny(() => {
+        doOutsideHistory(() => {
             bloomCanvas.title = "";
         });
     }
@@ -951,7 +951,7 @@ export function UpdateImageTooltipVisibility(
             ) as HTMLElement;
 
             if (bloomCanvas) {
-                doOutsideHistoryIfAny(() => {
+                doOutsideHistory(() => {
                     bloomCanvas.title = dataTitle;
                 });
             } else {
@@ -967,7 +967,7 @@ async function SetImageTooltip(bloomCanvas: HTMLElement) {
     // We use data-title to store what the tooltip should be, regardless of whether the tooltip should actually be currently visible
     // Use the real title attribute to show the tooltip only when desired
     // (e.g. show when no canvas element selected but hide when a canvas element is selected)
-    doOutsideHistoryIfAny(() => {
+    doOutsideHistory(() => {
         bloomCanvas.setAttribute("data-title", title);
     });
 

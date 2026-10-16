@@ -76,6 +76,16 @@ export interface PageHistoryFilter {
     ignoreNode(node: Node): boolean;
 
     /**
+     * True for a child that the history leaves out of parent's child lists, as it does an ignored
+     * node, while it still records, compares and puts back everything inside the child: its
+     * insertion into parent and its removal are no change, and putting back parent's child list
+     * leaves it where it is. The history asks this only of a child of parent, so the answer may
+     * depend on parent. A subtree out of the page that the check of rule 4 compares as text keeps
+     * such a child, with what is inside it.
+     */
+    isLeftOutOfChildList(child: Node, parent: Node): boolean;
+
+    /**
      * True for a child that the history leaves out of parent's child list when it is the only
      * child left in that list once the other rules have left theirs out. The history asks this of
      * a list as a whole (the children now, the children at the start of a batch, the children of
