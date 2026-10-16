@@ -242,6 +242,21 @@ export async function canUndo(page: Page): Promise<boolean> {
 }
 
 /**
+ * True when the one undo stack has something Ctrl+Y would redo. There is no Redo button, so this
+ * is the only way to see that state; the page bundle's canRedo is what the Ctrl+Y binding asks.
+ */
+export async function canRedo(page: Page): Promise<boolean> {
+    return page.evaluate(() =>
+        (
+            (
+                window as unknown as { workspaceBundle: IWorkspaceForUndo }
+            ).workspaceBundle.getEditablePageBundleExports()
+                .canRedo as () => boolean
+        )(),
+    );
+}
+
+/**
  * Click the top bar's Undo button, the way a person does, once Bloom has enabled it. Returns as
  * soon as the click is made; the undo itself goes through C# and back into the page, so wait for
  * the state you expect (a text, a count, a class) rather than reading the page straight after this.
