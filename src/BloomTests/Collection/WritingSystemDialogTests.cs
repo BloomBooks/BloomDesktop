@@ -393,5 +393,274 @@ namespace BloomTests.Collection
             Assert.AreEqual("es", languages[4].Tag);
             Assert.AreEqual("Andika 3", languages[4].FontName);
         }
+
+        // Plan item 6 (C# half): the per-language Keyboard setting is committed the same way as
+        // FontName, via UpdateLanguageSettings, but (unlike FontName) restart-detection happens here
+        // rather than at POST time, since only at commit do we know the user's final choice.
+
+        [Test]
+        public void UpdateLanguageSettings_UnchangedKeyboards_NoRestart_NoDownload()
+        {
+            var languages = new List<WritingSystem>
+            {
+                new WritingSystem(DefaultLanguageForNames)
+                {
+                    Tag = "en",
+                    FontName = "Andika",
+                    Keyboard = "",
+                },
+                new WritingSystem(DefaultLanguageForNames)
+                {
+                    Tag = "en",
+                    FontName = "Andika",
+                    Keyboard = "",
+                },
+                new WritingSystem(DefaultLanguageForNames)
+                {
+                    Tag = "",
+                    FontName = "Andika",
+                    Keyboard = "",
+                },
+            };
+            var pending = new WritingSystem[3];
+            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
+            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
+            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "" };
+            var fonts = new string[3] { "Andika", "Andika", "Andika" };
+            var keyboards = new string[3] { "", "", "" };
+            var ensureCachedCalls = new List<Tuple<string, string>>();
+
+            // Sanity check the setup before exercising the method under test.
+            Assert.AreEqual(
+                "",
+                languages[0].Keyboard,
+                "test setup: language 0 should start as Automatic"
+            );
+
+            var restartNeeded = CollectionSettingsDialog.UpdateLanguageSettings(
+                languages,
+                pending,
+                fonts,
+                keyboards,
+                (id, tag) => ensureCachedCalls.Add(Tuple.Create(id, tag))
+            );
+
+            Assert.IsFalse(
+                restartNeeded,
+                "no keyboard value changed, so no restart should be flagged"
+            );
+            Assert.AreEqual(
+                0,
+                ensureCachedCalls.Count,
+                "unchanged Automatic settings should never trigger a keyboard download"
+            );
+            Assert.AreEqual("", languages[0].Keyboard);
+        }
+
+        [Test]
+        public void UpdateLanguageSettings_PinSystemKeyboard_TriggersRestart_NoDownload()
+        {
+            var languages = new List<WritingSystem>
+            {
+                new WritingSystem(DefaultLanguageForNames)
+                {
+                    Tag = "en",
+                    FontName = "Andika",
+                    Keyboard = "",
+                },
+                new WritingSystem(DefaultLanguageForNames)
+                {
+                    Tag = "en",
+                    FontName = "Andika",
+                    Keyboard = "",
+                },
+                new WritingSystem(DefaultLanguageForNames)
+                {
+                    Tag = "",
+                    FontName = "Andika",
+                    Keyboard = "",
+                },
+            };
+            var pending = new WritingSystem[3];
+            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
+            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
+            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "" };
+            var fonts = new string[3] { "Andika", "Andika", "Andika" };
+            var keyboards = new string[3] { "system:th-TH_Thai Kedmanee_Thai Kedmanee", "", "" };
+            var ensureCachedCalls = new List<Tuple<string, string>>();
+
+            var restartNeeded = CollectionSettingsDialog.UpdateLanguageSettings(
+                languages,
+                pending,
+                fonts,
+                keyboards,
+                (id, tag) => ensureCachedCalls.Add(Tuple.Create(id, tag))
+            );
+
+            Assert.IsTrue(
+                restartNeeded,
+                "pinning a system keyboard is a value change and should flag a restart"
+            );
+            Assert.AreEqual(
+                0,
+                ensureCachedCalls.Count,
+                "a system: pin should never trigger a KeymanWeb download"
+            );
+            Assert.AreEqual("system:th-TH_Thai Kedmanee_Thai Kedmanee", languages[0].Keyboard);
+        }
+
+        [Test]
+        public void UpdateLanguageSettings_PinKmwKeyboard_TriggersRestartAndBackgroundDownload()
+        {
+            var languages = new List<WritingSystem>
+            {
+                new WritingSystem(DefaultLanguageForNames)
+                {
+                    Tag = "th",
+                    FontName = "Andika",
+                    Keyboard = "",
+                },
+                new WritingSystem(DefaultLanguageForNames)
+                {
+                    Tag = "en",
+                    FontName = "Andika",
+                    Keyboard = "",
+                },
+                new WritingSystem(DefaultLanguageForNames)
+                {
+                    Tag = "",
+                    FontName = "Andika",
+                    Keyboard = "",
+                },
+            };
+            var pending = new WritingSystem[3];
+            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "th" };
+            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
+            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "" };
+            var fonts = new string[3] { "Andika", "Andika", "Andika" };
+            var keyboards = new string[3] { "kmw:thai_kedmanee@th", "", "" };
+            var ensureCachedCalls = new List<Tuple<string, string>>();
+
+            var restartNeeded = CollectionSettingsDialog.UpdateLanguageSettings(
+                languages,
+                pending,
+                fonts,
+                keyboards,
+                (id, tag) => ensureCachedCalls.Add(Tuple.Create(id, tag))
+            );
+
+            Assert.IsTrue(restartNeeded);
+            Assert.AreEqual(
+                1,
+                ensureCachedCalls.Count,
+                "pinning a kmw keyboard should kick exactly one cache-download call"
+            );
+            Assert.AreEqual("thai_kedmanee", ensureCachedCalls[0].Item1);
+            Assert.AreEqual("th", ensureCachedCalls[0].Item2);
+            Assert.AreEqual("kmw:thai_kedmanee@th", languages[0].Keyboard);
+        }
+
+        [Test]
+        public void UpdateLanguageSettings_RevertingToAutomatic_TriggersRestart_RoundTrips()
+        {
+            var languages = new List<WritingSystem>
+            {
+                new WritingSystem(DefaultLanguageForNames)
+                {
+                    Tag = "en",
+                    FontName = "Andika",
+                    Keyboard = "system:some-id",
+                },
+                new WritingSystem(DefaultLanguageForNames)
+                {
+                    Tag = "en",
+                    FontName = "Andika",
+                    Keyboard = "",
+                },
+                new WritingSystem(DefaultLanguageForNames)
+                {
+                    Tag = "",
+                    FontName = "Andika",
+                    Keyboard = "",
+                },
+            };
+            var pending = new WritingSystem[3];
+            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
+            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
+            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "" };
+            var fonts = new string[3] { "Andika", "Andika", "Andika" };
+            // The user picks "Automatic" (raw setting string "") for language 1, undoing the
+            // previous system: pin.
+            var keyboards = new string[3] { "", "", "" };
+
+            Assert.AreEqual(
+                "system:some-id",
+                languages[0].Keyboard,
+                "test setup: language 0 should start pinned"
+            );
+
+            var restartNeeded = CollectionSettingsDialog.UpdateLanguageSettings(
+                languages,
+                pending,
+                fonts,
+                keyboards
+            );
+
+            Assert.IsTrue(
+                restartNeeded,
+                "reverting to Automatic is itself a change and should flag a restart"
+            );
+            Assert.AreEqual(
+                "",
+                languages[0].Keyboard,
+                "Automatic round-trips to the empty raw setting string"
+            );
+        }
+
+        [Test]
+        public void UpdateLanguageSettings_NoKeyboardsPassed_LeavesKeyboardFieldUntouched()
+        {
+            // Callers that predate the keyboard setting (and the tests above this comment) omit
+            // pendingKeyboards; that must remain a safe no-op.
+            var languages = new List<WritingSystem>
+            {
+                new WritingSystem(DefaultLanguageForNames)
+                {
+                    Tag = "en",
+                    FontName = "Andika",
+                    Keyboard = "system:some-id",
+                },
+                new WritingSystem(DefaultLanguageForNames)
+                {
+                    Tag = "en",
+                    FontName = "Andika",
+                    Keyboard = "",
+                },
+                new WritingSystem(DefaultLanguageForNames)
+                {
+                    Tag = "",
+                    FontName = "Andika",
+                    Keyboard = "",
+                },
+            };
+            var pending = new WritingSystem[3];
+            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
+            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
+            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "" };
+            var fonts = new string[3] { "Andika", "Andika", "Andika" };
+
+            var restartNeeded = CollectionSettingsDialog.UpdateLanguageSettings(
+                languages,
+                pending,
+                fonts
+            );
+
+            Assert.IsFalse(restartNeeded);
+            Assert.AreEqual(
+                "system:some-id",
+                languages[0].Keyboard,
+                "Keyboard field should be untouched when pendingKeyboards is omitted"
+            );
+        }
     }
 }

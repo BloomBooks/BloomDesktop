@@ -1,0 +1,36 @@
+{
+    "options": {
+        "context": "keyboard",
+        "dateFormat": "standard",
+        "device": "any",
+        "keyboardBaseUri": "https://s.keyman.com/keyboard/",
+        "fontBaseUri": "https://s.keyman.com/font/deploy/",
+        "keyboardid": "sil_myanmar_my3",
+        "languageid": "my",
+        "keyboardVersion": "current"
+    },
+    "keyboard": {
+        "id": "sil_myanmar_my3",
+        "name": "Myanmar3 (SIL)",
+        "filename": "sil_myanmar_my3/1.7.5/sil_myanmar_my3-1.7.5.js",
+        "version": "1.7.5",
+        "source": "https://github.com/keymanapp/keyboards/tree/master/release/sil/sil_myanmar_my3",
+        "lastModified": "2025-10-14",
+        "devices": { "phone": 2, "tablet": 2, "desktop": 2 },
+        "languages": [
+            {
+                "id": "my",
+                "name": "Burmese",
+                "region": 3,
+                "font": {
+                    "family": "Pyidaungsu",
+                    "source": ["Pyidaungsu-Regular.ttf"]
+                },
+                "oskFont": {
+                    "family": "Pyidaungsu",
+                    "source": ["Pyidaungsu-Regular.ttf"]
+                }
+            }
+        ]
+    }
+}
