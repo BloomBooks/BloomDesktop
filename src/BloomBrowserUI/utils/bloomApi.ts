@@ -7,7 +7,7 @@ import {
     useSubscribeToWebSocketForEvent,
     useSubscribeToWebSocketForObject,
 } from "./WebSocketManager";
-import { clearUndoAndRedoIfAny } from "../bookEdit/pageHistory/pageHistoryAccess";
+import { clearUndoAndRedo } from "../bookEdit/pageHistory/pageHistoryAccess";
 
 // You can modify mockReplies in order to work on UI components without the Bloom backend...
 // namely, storybook.
@@ -66,6 +66,9 @@ const kRequestsThatKeepThePageHistory = new Set(
         "editView/pasteImage",
         "audio/copyAudioFile",
         "fileIO/chooseFile",
+        // Copies one of Bloom's own game sounds into the book's audio folder, and never replaces a
+        // file there (FileIOApi.CopyBuiltInSoundToBook).
+        "fileIO/copyBuiltInSound",
         // A commit writes its pictures under new names and deletes no file that a page may name. If
         // it ever deletes the picture it replaced, undo would put back a page naming a missing file,
         // and this request must come off the list.
@@ -180,8 +183,7 @@ export function requestEndsPageHistory(
 // dropped from the history with the rest (CODE-WALK issue 5). Requests sent with jQuery's $.ajax
 // don't come here.
 axios.interceptors.request.use((config) => {
-    if (requestEndsPageHistory(config.method, config.url))
-        clearUndoAndRedoIfAny();
+    if (requestEndsPageHistory(config.method, config.url)) clearUndoAndRedo();
     return config;
 });
 

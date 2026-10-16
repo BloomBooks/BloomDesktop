@@ -6,9 +6,11 @@
 // browser's own undo of a contenteditable. The one exception is Change Layout mode, which keeps its
 // own undo: there the keys go on to origami's handler on `html` untouched. The toolbox frame and the
 // root window (the top bar and dialogs) pass the same keys on to the same commands, except from a
-// text field or a dialog, where the browser's own undo of that field is the one the user means. The
-// page frame leaves the keys to an input, a textarea or a dialog in the same way, but not to the
-// page's text boxes.
+// text field, a dialog or an open list (isInTextFieldOrDialog), where the browser's own undo of that
+// field is the one the user means. A checkbox, a radio, a button or a select is not a text field:
+// from one of these the keys undo and redo the page. The page frame leaves the keys to a text
+// input, a textarea, a dialog (including the Format dialog) or an open list in the same way, but
+// not to the page's text boxes.
 //
 // Two more things keep the keys from reaching what would undo or redo something else:
 // - `beforeinput` with historyUndo or historyRedo (the browser's undo of a contenteditable, as from
@@ -61,8 +63,10 @@ export function attachUndoAndRedoKeys(
         if (!hasUndoModifier(keyboardEvent)) swallowingKeyUps = false;
         const command = undoOrRedoCommandOf(keyboardEvent);
         if (!command || commands.isInChangeLayoutMode()) return;
-        // An input or textarea on the page, such as a calendar page's, or a dialog shown in the
-        // page frame, has its own undo, as in the other windows. The page's text boxes do not.
+        // A text input or textarea on the page, such as a calendar page's, or a dialog shown in
+        // the page frame, has its own undo, as in the other windows. The page's text boxes do
+        // not. The Format dialog and an open list have no undo of their own, but the page must
+        // not change under them, so the keys are left alone there too.
         if (isInTextFieldOrDialog(event.target, false)) return;
         event.preventDefault();
         event.stopPropagation();
@@ -140,11 +144,33 @@ function hasUndoModifier(event: KeyboardEvent): boolean {
     return event.ctrlKey || event.metaKey || event.shiftKey;
 }
 
+// Input types that edit no text, so have no undo of their own. With the focus on one of these, as
+// after a click on a toolbox checkbox, the undo key is the page's.
+const inputTypesWithoutText = new Set([
+    "checkbox",
+    "radio",
+    "button",
+    "submit",
+    "reset",
+    "range",
+    "color",
+    "file",
+    "image",
+]);
+
 /**
- * True for a target in a field that edits text, or anywhere in a dialog, where the undo key belongs
- * to that field or that dialog and not to the page. A contenteditable element counts only when
- * includeContentEditable is true: in the page frame, the editable elements are the page's own
- * text boxes, whose undo is the page's.
+ * True for a target where the undo key belongs to something other than the page:
+ * - a textarea, or an input that edits text (any input type but a checkbox, a radio, a button,
+ *   a range, a color, a file or an image input);
+ * - anything in a dialog: an element with role="dialog", or the Format dialog (#format-toolbar,
+ *   which has no role);
+ * - anything in an open list or menu (role="listbox" or role="menu"), such as the Format dialog's
+ *   font list, which MUI renders in a portal outside the dialog. While the Format dialog is open,
+ *   CKEditor holds a selection in the box being formatted; undoing the page's typing could cut
+ *   that selection short, and closing the dialog would then fail to restore it;
+ * - a contenteditable element, only when includeContentEditable is true: in the page frame, the
+ *   editable elements are the page's own text boxes, whose undo is the page's.
+ * A select, a button and the other inputs do not count, so the key undoes the page from them.
  */
 function isInTextFieldOrDialog(
     target: EventTarget | null,
@@ -156,8 +182,18 @@ function isInTextFieldOrDialog(
     )
         return false;
     const element = target as Element;
-    const selector = includeContentEditable
-        ? 'input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="dialog"]'
-        : 'input, textarea, select, [role="dialog"]';
-    return !!element.closest(selector);
+    if (
+        element.closest(
+            '[role="dialog"], #format-toolbar, [role="listbox"], [role="menu"]',
+        )
+    )
+        return true;
+    if (element.tagName === "TEXTAREA") return true;
+    // An input's type property is lower case, and "text" for a missing or unknown type attribute.
+    if (element.tagName === "INPUT")
+        return !inputTypesWithoutText.has((element as HTMLInputElement).type);
+    return (
+        includeContentEditable &&
+        !!element.closest('[contenteditable]:not([contenteditable="false"])')
+    );
 }

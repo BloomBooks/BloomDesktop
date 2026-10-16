@@ -35,7 +35,7 @@ export function currentPageHistory(): PageHistory | undefined {
  * not end the history. A later undo or redo that needs a value such a change altered is refused:
  * that stack of steps is emptied and the page is left as it is (PageHistory.doOutsideHistory).
  */
-export function doOutsideHistoryIfAny<T>(fn: () => T): T {
+export function doOutsideHistory<T>(fn: () => T): T {
     const history = currentPageHistory();
     return history ? history.doOutsideHistory(fn) : fn();
 }
@@ -47,12 +47,12 @@ export function doOutsideHistoryIfAny<T>(fn: () => T): T {
  * has changed nothing yet, the changes join the latest step, so the reaction never makes a step
  * of its own (PageHistory.addToLatestTransaction).
  */
-export function addToLatestTransactionIfAny<T>(fn: () => T): T {
+export function addToLatestTransaction<T>(fn: () => T): T {
     const history = currentPageHistory();
     return history ? history.addToLatestTransaction(fn) : fn();
 }
 
 /** End the current page history (drop every undo and redo step), if there is one. */
-export function clearUndoAndRedoIfAny(): void {
+export function clearUndoAndRedo(): void {
     currentPageHistory()?.clearUndoAndRedo();
 }
