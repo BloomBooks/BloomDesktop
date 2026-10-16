@@ -215,7 +215,9 @@ export function isCkEditorFillerBr(child: Node, parent: Node): boolean {
  * child lists, its arrival would make the check of rule 4 refuse the undo of every earlier step
  * that holds such a list, such as adding a canvas element. Nothing in Bloom takes a description
  * box out of the page, so leaving it out of those lists loses nothing that undo needs; what is
- * inside it, such as the text typed into it, is recorded as usual.
+ * inside it, such as the text typed into it, is recorded as usual. Nothing in Bloom gives an
+ * element in the page either class, or takes one away, so the answer for a child never changes
+ * while it is in the page, as PageHistoryFilter.isLeftOutOfChildList requires.
  */
 export function isDescriptionBoxOfABloomCanvas(
     child: Node,
