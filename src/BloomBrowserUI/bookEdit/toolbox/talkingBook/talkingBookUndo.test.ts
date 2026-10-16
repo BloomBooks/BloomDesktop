@@ -547,6 +547,46 @@ describe("Talking Book and the page history", () => {
         expect(onUnmarkedChange).not.toHaveBeenCalled();
     });
 
+    it("after an undo takes away every sentence of the highlighted box, keeps the highlight in that box", async () => {
+        setPage(
+            '<div class="bloom-page"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on" lang="en" data-audiorecordingmode="Sentence"><p>One. Two.</p></div></div><div class="bloom-translationGroup"><div id="box2" class="bloom-editable bloom-visibility-code-on" lang="en" data-audiorecordingmode="Sentence"><p><span id="four" class="audio-sentence">Four.</span></p></div></div><div id="other">before</div></div>',
+        );
+        await startHistoryWithAnEarlierStep();
+        listenAsTheEditTabDoes();
+        const box = byId("box1");
+        const typedText = box.querySelector("p")!.firstChild as Text;
+        await history.doTransaction(kTypingKey, () => {
+            typedText.data = "One. Two. Three.";
+        });
+        // Opening the tool splits the box in the typing's step. The user moves the highlight to
+        // the box's first sentence.
+        await recording.handleNewPageReady();
+        const sentences = box.getElementsByClassName("audio-sentence");
+        expect(sentences).toHaveLength(3);
+        await recording.setSoundAndHighlightAsync({
+            newElement: sentences[0],
+            shouldScrollToElement: false,
+        });
+        expect(recording.getCurrentHighlight()).toBe(sentences[0]);
+        expect(history.undoDescriptionL10nKey).toBe(kTypingKey);
+
+        await history.undo();
+        await Promise.resolve();
+
+        // The split went with the typing. The other box has a sentence, but the highlight stays
+        // in the box that had it, which the tool cannot split again without losing redo.
+        expect(sentences).toHaveLength(0);
+        expect(byId("four").isConnected).toBe(true);
+        expect(recording.getCurrentHighlight()).toBe(box);
+        expect(history.redoDescriptionL10nKey).toBe(kTypingKey);
+
+        // The next action that needs the sentences splits the box and highlights its first one.
+        await recording.moveToNextAudioElement();
+        expect(sentences).toHaveLength(2);
+        expect(recording.getCurrentHighlight()).toBe(sentences[1]);
+        expect(onUnmarkedChange).not.toHaveBeenCalled();
+    });
+
     it("a release of Speak before the box has been split again starts no recording", async () => {
         setPage(
             '<div class="bloom-page"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on" lang="en" data-audiorecordingmode="Sentence"><p>One. Two.</p></div></div><div id="other">before</div></div>',
