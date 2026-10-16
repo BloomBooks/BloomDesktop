@@ -1734,9 +1734,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Please wait while Bloom does some housekeeping on your book...</target>
         <note>ID: BookProcessor.HousekeepingMessage</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.AppTitle">
+      <trans-unit id="AiImageEditor.AppTitle" approved="yes">
         <source xml:lang="en">Bloom AI Image Tools</source>
-        <target xml:lang="pt-PT" state="translated">Ferramentas de imagens IA do Bloom</target>
+        <target xml:lang="pt-PT" state="final">Ferramentas de imagem de IA do Bloom</target>
         <note>ID: AiImageEditor.AppTitle</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.ChooseTitle" approved="yes">
@@ -1881,12 +1881,12 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.wimmelbuch.Name">
         <source xml:lang="en">Wimmelbuch Style</source>
-        <target xml:lang="pt-PT" state="translated">Estilo Wimmelbuch</target>
+        <target xml:lang="pt-PT" state="translated">Estilo Wimmelbuch (busca e encontre)</target>
         <note>ID: AiImageEditor.ArtStyle.wimmelbuch.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Batch.AddToBatch">
+      <trans-unit id="AiImageEditor.Batch.AddToBatch" approved="yes">
         <source xml:lang="en">Add to batch</source>
-        <target xml:lang="pt-PT" state="translated">Adicionar ao lote</target>
+        <target xml:lang="pt-PT" state="final">Adicionar ao lote</target>
         <note>ID: AiImageEditor.Batch.AddToBatch</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Batch.SelectAllPages">
@@ -1899,9 +1899,9 @@
         <target xml:lang="pt-PT" state="translated">As {0} imagens selecionadas serão editadas</target>
         <note>ID: AiImageEditor.Batch.WillEditSelected</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.BookImages.Current">
+      <trans-unit id="AiImageEditor.BookImages.Current" approved="yes">
         <source xml:lang="en">Current</source>
-        <target xml:lang="pt-PT" state="translated">Atual</target>
+        <target xml:lang="pt-PT" state="final">Atual</target>
         <note>ID: AiImageEditor.BookImages.Current</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.BookImages.ReplaceTip">
@@ -1914,14 +1914,14 @@
         <target xml:lang="pt-PT" state="translated">Substituta</target>
         <note>ID: AiImageEditor.BookImages.Replacement</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Characters.NamePlaceholder">
+      <trans-unit id="AiImageEditor.Characters.NamePlaceholder" approved="yes">
         <source xml:lang="en">Name</source>
-        <target xml:lang="pt-PT" state="translated">Nome</target>
+        <target xml:lang="pt-PT" state="final">Nome</target>
         <note>ID: AiImageEditor.Characters.NamePlaceholder</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Characters.PasteToAdd">
         <source xml:lang="en">Paste an image to add a character</source>
-        <target xml:lang="pt-PT" state="translated">Cole uma imagem para adicionar um personagem</target>
+        <target xml:lang="pt-PT" state="translated">Colar uma imagem para adicionar um personagem</target>
         <note>ID: AiImageEditor.Characters.PasteToAdd</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Error.AddReferenceImage">
@@ -1936,17 +1936,17 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Error.NeedsMoreCredits">
         <source xml:lang="en">This request requires more credits.</source>
-        <target xml:lang="pt-PT" state="translated">Esta solicitação exige mais créditos.</target>
+        <target xml:lang="pt-PT" state="translated">Esta solicitação requer mais créditos.</target>
         <note>ID: AiImageEditor.Error.NeedsMoreCredits</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Error.OpenRouterSaid">
         <source xml:lang="en">OpenRouter said "{0}"</source>
-        <target xml:lang="pt-PT" state="translated">O OpenRouter respondeu "{0}"</target>
+        <target xml:lang="pt-PT" state="translated">OpenRouter respondeu "{0}"</target>
         <note>ID: AiImageEditor.Error.OpenRouterSaid</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Error.SelectImageFirst">
+      <trans-unit id="AiImageEditor.Error.SelectImageFirst" approved="yes">
         <source xml:lang="en">Select an image to edit before applying this tool.</source>
-        <target xml:lang="pt-PT" state="translated">Selecione uma imagem para editar antes de aplicar esta ferramenta.</target>
+        <target xml:lang="pt-PT" state="final">Selecione uma imagem para editar antes de aplicar esta ferramenta.</target>
         <note>ID: AiImageEditor.Error.SelectImageFirst</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.LookAroundMode.Message">
@@ -1954,19 +1954,19 @@
         <target xml:lang="pt-PT" state="translated">Esta ferramenta está no modo "apenas explorar". Para realmente editar ou criar imagens, você vai precisar de uma assinatura e de um livro que não seja baseado no modelo "Playground".</target>
         <note>ID: AiImageEditor.LookAroundMode.Message</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Model.AboutPerImage">
+      <trans-unit id="AiImageEditor.Model.AboutPerImage" approved="yes">
         <source xml:lang="en">About {0} per image</source>
-        <target xml:lang="pt-PT" state="translated">Cerca de {0} por imagem</target>
+        <target xml:lang="pt-PT" state="final">Cerca de {0} por imagem</target>
         <note>ID: AiImageEditor.Model.AboutPerImage</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Model.Badge.Great">
+      <trans-unit id="AiImageEditor.Model.Badge.Great" approved="yes">
         <source xml:lang="en">Great</source>
-        <target xml:lang="pt-PT" state="translated">Ótimo</target>
+        <target xml:lang="pt-PT" state="final">Ótimo</target>
         <note>ID: AiImageEditor.Model.Badge.Great</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Model.Badge.GreatButExpensive">
+      <trans-unit id="AiImageEditor.Model.Badge.GreatButExpensive" approved="yes">
         <source xml:lang="en">Great but Expensive</source>
-        <target xml:lang="pt-PT" state="translated">Ótimo, mas caro</target>
+        <target xml:lang="pt-PT" state="final">Ótimo, mas caro</target>
         <note>ID: AiImageEditor.Model.Badge.GreatButExpensive</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.google-gemini-3-1-flash-image.Description">
@@ -2044,29 +2044,29 @@
         <target xml:lang="pt-PT" state="translated">Personagens e outras imagens de referência</target>
         <note>ID: AiImageEditor.Panel.ReferenceImages</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Panel.Result">
+      <trans-unit id="AiImageEditor.Panel.Result" approved="yes">
         <source xml:lang="en">Result</source>
-        <target xml:lang="pt-PT" state="translated">Resultado</target>
+        <target xml:lang="pt-PT" state="final">Resultado</target>
         <note>ID: AiImageEditor.Panel.Result</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Param.AddExtraInstructions">
         <source xml:lang="en">Add any extra instructions...</source>
-        <target xml:lang="pt-PT" state="translated">Acrescente instruções adicionais...</target>
+        <target xml:lang="pt-PT" state="translated">Adicionar qualquer instrução adicional...</target>
         <note>ID: AiImageEditor.Param.AddExtraInstructions</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Param.FurtherInstructions">
+      <trans-unit id="AiImageEditor.Param.FurtherInstructions" approved="yes">
         <source xml:lang="en">Further Instructions</source>
-        <target xml:lang="pt-PT" state="translated">Instruções adicionais</target>
+        <target xml:lang="pt-PT" state="final">Instruções adicionais</target>
         <note>ID: AiImageEditor.Param.FurtherInstructions</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Param.Instructions">
+      <trans-unit id="AiImageEditor.Param.Instructions" approved="yes">
         <source xml:lang="en">Instructions</source>
-        <target xml:lang="pt-PT" state="translated">Instruções</target>
+        <target xml:lang="pt-PT" state="final">Instruções</target>
         <note>ID: AiImageEditor.Param.Instructions</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Param.Shape">
+      <trans-unit id="AiImageEditor.Param.Shape" approved="yes">
         <source xml:lang="en">Shape</source>
-        <target xml:lang="pt-PT" state="translated">Formato</target>
+        <target xml:lang="pt-PT" state="final">Formato</target>
         <note>ID: AiImageEditor.Param.Shape</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Param.Size">
@@ -2089,24 +2089,24 @@
         <target xml:lang="pt-PT" state="translated">Agora no livro</target>
         <note>ID: AiImageEditor.Preview.InTheBookNow</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Preview.Loading">
+      <trans-unit id="AiImageEditor.Preview.Loading" approved="yes">
         <source xml:lang="en">Loading…</source>
-        <target xml:lang="pt-PT" state="translated">Carregando…</target>
+        <target xml:lang="pt-PT" state="final">Carregando…</target>
         <note>ID: AiImageEditor.Preview.Loading</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Result.UseThis">
         <source xml:lang="en">Use this</source>
-        <target xml:lang="pt-PT" state="translated">Usar esta</target>
+        <target xml:lang="pt-PT" state="translated">Usar isto</target>
         <note>ID: AiImageEditor.Result.UseThis</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Result.UseThisImage">
+      <trans-unit id="AiImageEditor.Result.UseThisImage" approved="yes">
         <source xml:lang="en">Use this Image</source>
-        <target xml:lang="pt-PT" state="translated">Usar esta imagem</target>
+        <target xml:lang="pt-PT" state="final">Usar esta imagem</target>
         <note>ID: AiImageEditor.Result.UseThisImage</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.AddAnImageToEdit">
         <source xml:lang="en">Add an image to edit</source>
-        <target xml:lang="pt-PT" state="translated">Adicione uma imagem para editar</target>
+        <target xml:lang="pt-PT" state="translated">Adicionar uma imagem para editar</target>
         <note>ID: AiImageEditor.Run.AddAnImageToEdit</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.AddDescriptionOrReference">
@@ -2119,34 +2119,34 @@
         <target xml:lang="pt-PT" state="translated">Adicione uma imagem de referência</target>
         <note>ID: AiImageEditor.Run.AddReferenceImage</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Run.BatchGo">
+      <trans-unit id="AiImageEditor.Run.BatchGo" approved="yes">
         <source xml:lang="en">Go ({0} Images)</source>
-        <target xml:lang="pt-PT" state="translated">Executar ({0} imagens)</target>
+        <target xml:lang="pt-PT" state="final">Executar ({0} imagens)</target>
         <note>ID: AiImageEditor.Run.BatchGo</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Run.BatchGoOne">
+      <trans-unit id="AiImageEditor.Run.BatchGoOne" approved="yes">
         <source xml:lang="en">Go (1 Image)</source>
-        <target xml:lang="pt-PT" state="translated">Executar (1 imagem)</target>
+        <target xml:lang="pt-PT" state="final">Executar (1 imagem)</target>
         <note>ID: AiImageEditor.Run.BatchGoOne</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Run.BatchProgress">
+      <trans-unit id="AiImageEditor.Run.BatchProgress" approved="yes">
         <source xml:lang="en">Processed {0} of {1}</source>
-        <target xml:lang="pt-PT" state="translated">{0} de {1} processadas</target>
+        <target xml:lang="pt-PT" state="final">{0} de {1} processadas</target>
         <note>ID: AiImageEditor.Run.BatchProgress</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Run.ClickToCancel">
+      <trans-unit id="AiImageEditor.Run.ClickToCancel" approved="yes">
         <source xml:lang="en">Click to Cancel</source>
-        <target xml:lang="pt-PT" state="translated">Clique para cancelar</target>
+        <target xml:lang="pt-PT" state="final">Clique para cancelar</target>
         <note>ID: AiImageEditor.Run.ClickToCancel</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Run.FillInRequiredFields">
+      <trans-unit id="AiImageEditor.Run.FillInRequiredFields" approved="yes">
         <source xml:lang="en">Fill in required fields</source>
-        <target xml:lang="pt-PT" state="translated">Preencha os campos obrigatórios</target>
+        <target xml:lang="pt-PT" state="final">Preencha os campos obrigatórios</target>
         <note>ID: AiImageEditor.Run.FillInRequiredFields</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Run.Go">
+      <trans-unit id="AiImageEditor.Run.Go" approved="yes">
         <source xml:lang="en">Go</source>
-        <target xml:lang="pt-PT" state="translated">Executar</target>
+        <target xml:lang="pt-PT" state="final">Executar</target>
         <note>ID: AiImageEditor.Run.Go</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.NotAvailableInLookAround">
