@@ -29,7 +29,12 @@ beforeEach(() => {
     otherWindow = otherFrame.contentWindow!;
     otherWindow.document.body.innerHTML =
         '<button id="toolButton">Tool</button><input id="field" type="text">' +
-        '<div role="dialog"><button id="dialogButton">OK</button></div>';
+        '<input id="untypedField"><input id="numberField" type="number">' +
+        '<input id="checkbox" type="checkbox"><input id="radio" type="radio">' +
+        '<select id="choice"><option>One</option></select>' +
+        '<div role="dialog"><button id="dialogButton">OK</button></div>' +
+        '<ul role="listbox"><li id="listOption" role="option">Andika</li></ul>' +
+        '<ul role="menu"><li id="menuItem" role="menuitem">Copy</li></ul>';
     inChangeLayoutMode = false;
     commands = {
         undo: vi.fn<() => void>(),
@@ -200,6 +205,53 @@ describe("the undo and redo keys in the page frame", () => {
         expect(inBox.defaultPrevented).toBe(true);
     });
 
+    it("leaves the keys alone in the Format dialog and in its font list, which is outside the dialog", () => {
+        // The Format dialog (StyleEditor.pug) is #format-toolbar with no role. MUI renders the
+        // open font list in a portal at the end of the body, and the focus is on an option.
+        page.insertAdjacentHTML(
+            "beforeend",
+            '<div id="format-toolbar" class="bloom-ui bloomDialogContainer">' +
+                '<div id="fontSelectComponent"><div id="fontSelect" role="combobox" tabindex="0">Andika</div></div>' +
+                '<select id="size-select"><option>12</option></select></div>',
+        );
+        document.body.insertAdjacentHTML(
+            "beforeend",
+            '<div id="fontPopover" role="presentation"><ul role="listbox">' +
+                '<li id="fontOption" role="option" tabindex="0">Andika</li></ul></div>',
+        );
+        attach();
+        try {
+            // A select counts as no text field elsewhere; here the dialog around it counts.
+            for (const id of ["fontSelect", "size-select", "fontOption"]) {
+                const event = key(document.getElementById(id)!, "keydown", {
+                    key: "z",
+                    ctrlKey: true,
+                });
+                expect(event.defaultPrevented, `in #${id}`).toBe(false);
+            }
+            expect(
+                commands.undo,
+                "undoing the page under the Format dialog breaks CKEditor's locked selection",
+            ).not.toHaveBeenCalled();
+        } finally {
+            document.getElementById("fontPopover")!.remove();
+        }
+    });
+
+    it("undoes the page from a checkbox on the page", () => {
+        page.insertAdjacentHTML(
+            "beforeend",
+            '<input id="pageCheckbox" type="checkbox">',
+        );
+        attach();
+        const event = key(page.querySelector("#pageCheckbox")!, "keydown", {
+            key: "z",
+            ctrlKey: true,
+        });
+        expect(event.defaultPrevented).toBe(true);
+        expect(commands.undo).toHaveBeenCalledTimes(1);
+    });
+
     it("leaves the browser's own undo of an input or textarea in the page alone", () => {
         page.insertAdjacentHTML(
             "beforeend",
@@ -267,6 +319,49 @@ describe("the undo and redo keys in another frame", () => {
         expect(commands.undo).not.toHaveBeenCalled();
         expect(inField.defaultPrevented).toBe(false);
         expect(inDialog.defaultPrevented).toBe(false);
+    });
+
+    it("leave the keys to any input that edits text", () => {
+        attach();
+        for (const id of ["untypedField", "numberField"]) {
+            const event = key(otherById(id), "keydown", {
+                key: "z",
+                ctrlKey: true,
+            });
+            expect(event.defaultPrevented, `in #${id}`).toBe(false);
+        }
+        expect(commands.undo).not.toHaveBeenCalled();
+    });
+
+    it("undo the page from a checkbox, a radio or a select, which have no undo of their own", () => {
+        // After a click on a toolbox checkbox such as Rounded Corners, the focus stays on it.
+        attach();
+        for (const id of ["checkbox", "radio", "choice"]) {
+            const event = key(otherById(id), "keydown", {
+                key: "z",
+                ctrlKey: true,
+            });
+            expect(event.defaultPrevented, `in #${id}`).toBe(true);
+        }
+        expect(commands.undo).toHaveBeenCalledTimes(3);
+        key(otherById("checkbox"), "keydown", { key: "y", ctrlKey: true });
+        expect(commands.redo).toHaveBeenCalledTimes(1);
+    });
+
+    it("leave the keys to an open list or menu", () => {
+        attach();
+        const inList = key(otherById("listOption"), "keydown", {
+            key: "z",
+            ctrlKey: true,
+        });
+        const inMenu = key(otherById("menuItem"), "keydown", {
+            key: "y",
+            ctrlKey: true,
+        });
+        expect(commands.undo).not.toHaveBeenCalled();
+        expect(commands.redo).not.toHaveBeenCalled();
+        expect(inList.defaultPrevented).toBe(false);
+        expect(inMenu.defaultPrevented).toBe(false);
     });
 });
 

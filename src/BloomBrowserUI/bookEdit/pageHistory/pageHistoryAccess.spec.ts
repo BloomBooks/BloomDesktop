@@ -12,9 +12,9 @@ vi.mock("../js/workspaceFrames", () => ({
 }));
 
 import {
-    clearUndoAndRedoIfAny,
+    clearUndoAndRedo,
     currentPageHistory,
-    doOutsideHistoryIfAny,
+    doOutsideHistory,
 } from "./pageHistoryAccess";
 
 // Just the members that pageHistoryAccess uses; the rest throw if anything calls them.
@@ -67,7 +67,7 @@ describe("pageHistoryAccess", () => {
     it("runs fn directly and returns its value when there is no history", () => {
         setPageFrame("none");
         const fn = vi.fn(() => 42);
-        expect(doOutsideHistoryIfAny(fn)).toBe(42);
+        expect(doOutsideHistory(fn)).toBe(42);
         expect(fn).toHaveBeenCalledTimes(1);
     });
 
@@ -75,26 +75,26 @@ describe("pageHistoryAccess", () => {
         const fake = makeFakeHistory();
         setPageFrame(fake);
         const fn = vi.fn(() => "result");
-        expect(doOutsideHistoryIfAny(fn)).toBe("result");
+        expect(doOutsideHistory(fn)).toBe("result");
         expect(fake.doOutsideHistory).toHaveBeenCalledTimes(1);
         expect(fake.doOutsideHistory).toHaveBeenCalledWith(fn);
         expect(fn).toHaveBeenCalledTimes(1);
     });
 
     it("does nothing on clear when there is no history", () => {
-        expect(() => clearUndoAndRedoIfAny()).not.toThrow();
+        expect(() => clearUndoAndRedo()).not.toThrow();
         setPageFrame("none");
-        expect(() => clearUndoAndRedoIfAny()).not.toThrow();
+        expect(() => clearUndoAndRedo()).not.toThrow();
         const disposed = makeFakeHistory(true);
         setPageFrame(disposed);
-        clearUndoAndRedoIfAny();
+        clearUndoAndRedo();
         expect(disposed.clearUndoAndRedo).not.toHaveBeenCalled();
     });
 
     it("clears the history when there is one", () => {
         const fake = makeFakeHistory();
         setPageFrame(fake);
-        clearUndoAndRedoIfAny();
+        clearUndoAndRedo();
         expect(fake.clearUndoAndRedo).toHaveBeenCalledTimes(1);
     });
 });
