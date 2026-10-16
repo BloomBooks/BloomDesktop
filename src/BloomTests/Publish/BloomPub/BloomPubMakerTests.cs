@@ -2559,6 +2559,13 @@ namespace BloomTests.Publish.BloomPub
                     + $"<div class='bloom-imageContainer'><img class='{overlayImgClasses}' src='overlay.png'/></div></div>"
                     + "</div></div>"
             );
+            // As in publishing, the background canvas element is simplified away first.
+            PublishHelper.SimplifyBackgroundImages(dom);
+            Assert.That(
+                dom.SafeSelectNodes("//div[contains(@class,'bloom-backgroundImage')]").Length,
+                Is.EqualTo(0),
+                "test setup: background canvas element should be simplified away"
+            );
             BloomPubMaker.ConvertImagesToBackground(dom);
             Assert.That(
                 dom.SafeSelectNodes("//img").Length,

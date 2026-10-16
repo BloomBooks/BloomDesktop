@@ -329,10 +329,10 @@ namespace Bloom.Publish.BloomPub
         }
 
         /// <summary>
-        /// Determine what transparency processing an image element needs, based on its CSS
-        /// classes, whether its page has a colored background, and whether it is a canvas overlay
-        /// on a real background image. This should stay consistent with
-        /// HtmlDom.GetImageTransparencyMode.
+        /// Determine what transparency processing an image element needs: none at all on a
+        /// motion book's all-black backdrop, otherwise whatever HtmlDom.GetImageTransparencyMode
+        /// decides from its CSS classes, its page's background, and whether it is a canvas overlay
+        /// on a real background image.
         /// </summary>
         internal static ImageTransparencyMode GetElementTransparencyMode(
             SafeXmlElement element,
@@ -341,18 +341,10 @@ namespace Bloom.Publish.BloomPub
         )
         {
             // Motion-book all-black backdrop: transparency makes images invisible.
+            // This must win even over bloom-transparent.
             if (fullScreenBlack)
                 return ImageTransparencyMode.None;
-            // bloom-opaque: explicit user override "never make transparent".
-            if (element.HasClass("bloom-opaque"))
-                return ImageTransparencyMode.None;
-            // bloom-transparent: explicit user override "always force transparent".
-            if (element.HasClass("bloom-transparent"))
-                return ImageTransparencyMode.Force;
-            // Canvas overlays on a real background image would hide it, so they need Auto even on a white page.
-            if (!pageNeedsTransparent && !HtmlDom.IsInCanvasOverlayOnBackgroundImage(element))
-                return ImageTransparencyMode.None;
-            return ImageTransparencyMode.Auto;
+            return HtmlDom.GetImageTransparencyMode(element, pageNeedsTransparent);
         }
 
         /// <summary>

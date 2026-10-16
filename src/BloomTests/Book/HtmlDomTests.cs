@@ -388,9 +388,10 @@ namespace BloomTests.Book
             );
         }
 
-        // A legacy canvas, not yet converted to have a background canvas element, keeps its
-        // background image as an img directly in the bloom-canvas; BloomPubMaker may already have
-        // turned that into a background-image style on the bloom-canvas itself.
+        // A legacy canvas, not yet converted to have a background canvas element (or converted back
+        // by PublishHelper.SimplifyBackgroundImages), keeps its background image as an img directly
+        // in the bloom-canvas; BloomPubMaker may already have turned that into a background-image
+        // style on the bloom-canvas itself.
         [TestCase("<img src='background.jpg'/>", "", ExpectedResult = true)]
         [TestCase("<img src='placeHolder.png'/>", "", ExpectedResult = false)]
         [TestCase("", "background-image:url('background.jpg')", ExpectedResult = true)]
@@ -418,12 +419,33 @@ namespace BloomTests.Book
         [Test]
         public void IsInCanvasOverlayOnBackgroundImage_BloomPubConvertedBackground_ReadsStyle()
         {
-            // After BloomPubMaker.ConvertImagesToBackground, imgs are gone and their image
-            // containers carry background-image styles instead.
+            // After PublishHelper.SimplifyBackgroundImages and BloomPubMaker.ConvertImagesToBackground,
+            // imgs are gone: the bloom-canvas and the overlay's image container carry
+            // background-image styles instead.
             var dom = new HtmlDom(
                 @"<html><body><div class='bloom-page'>
-                    <div class='bloom-canvas'>
-                        <div class='bloom-canvas-element bloom-backgroundImage'>
+                    <div class='bloom-canvas bloom-background-image-in-style-attr' style=""background-image:url('background.jpg')"">
+                        <div class='bloom-canvas-element'>
+                            <div id='overlay' class='bloom-imageContainer bloom-background-image-in-style-attr' style=""background-image:url('overlay.png')""></div>
+                        </div>
+                    </div>
+                </div></body></html>"
+            );
+            var overlay = dom.SelectSingleNode("//div[@id='overlay']");
+
+            Assert.That(HtmlDom.IsInCanvasOverlayOnBackgroundImage(overlay), Is.True);
+        }
+
+        [Test]
+        public void IsInCanvasOverlayOnBackgroundImage_BloomPubConvertedInterruptedConversion_ReadsStyle()
+        {
+            // A page saved part-way through converting its background to a canvas element (BL-16870)
+            // still has its old-style img, so SimplifyBackgroundImages leaves the background canvas
+            // element alone, and ConvertImagesToBackground then gives both a background-image style.
+            var dom = new HtmlDom(
+                @"<html><body><div class='bloom-page'>
+                    <div class='bloom-canvas bloom-background-image-in-style-attr' style=""background-image:url('background.jpg')"">
+                        <div class='bloom-canvas-element bloom-backgroundImage' style='visibility:hidden'>
                             <div class='bloom-imageContainer bloom-background-image-in-style-attr' style=""background-image:url('background.jpg')""></div>
                         </div>
                         <div class='bloom-canvas-element'>
@@ -431,6 +453,11 @@ namespace BloomTests.Book
                         </div>
                     </div>
                 </div></body></html>"
+            );
+            Assert.That(
+                dom.RawDom.SafeSelectNodes("//img").Length,
+                Is.EqualTo(0),
+                "test setup: imgs should be converted"
             );
             var overlay = dom.SelectSingleNode("//div[@id='overlay']");
 

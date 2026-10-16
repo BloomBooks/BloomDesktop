@@ -521,21 +521,16 @@ export function getOwningPageBackgroundColor(element: HTMLElement): string {
 // "force" = transparent=force (bloom-transparent: always apply, skip line-art check)
 type TransparencyMode = "none" | "auto" | "force";
 
-// Returns true when `bloomCanvas` has a real (not placeholder) background image. Normally that
-// is the image in its background canvas element; in a legacy canvas that has not been converted
-// to have one, it is an img directly inside the bloom-canvas.
-// Mirrors the C# HtmlDom.BloomCanvasHasRealBackgroundImage.
+// Returns true when `bloomCanvas` has a real (not placeholder) background image, i.e., the image
+// in its background canvas element. (Every bloom-canvas on a page being edited has one, since
+// the canvas element manager converts any legacy background img when the page is set up.)
+// Mirrors the C# HtmlDom.BloomCanvasHasRealBackgroundImage, which must also handle the legacy
+// form because publishing converts back to it.
 export function bloomCanvasHasRealBackgroundImage(
     bloomCanvas: HTMLElement,
 ): boolean {
-    const bgCanvasElement =
-        getBackgroundCanvasElementFromBloomCanvas(bloomCanvas);
-    const bgImg = bgCanvasElement
-        ? getImageFromCanvasElement(bgCanvasElement)
-        : Array.from(bloomCanvas.children).find(
-              (child) => child.tagName === "IMG",
-          );
-    const src = bgImg?.getAttribute("src");
+    const src =
+        getBackgroundImageFromBloomCanvas(bloomCanvas)?.getAttribute("src");
     return !!src && !isPlaceHolderImage(src);
 }
 

@@ -234,22 +234,6 @@ function makeTransparencyTestPage(
     return page;
 }
 
-// A legacy canvas that has not been converted to have a background canvas element: the
-// background image is an img directly inside the bloom-canvas.
-function makeLegacyCanvasTestPage(backgroundSrc: string): HTMLElement {
-    const page = document.createElement("div");
-    page.className = "bloom-page";
-    page.innerHTML = `
-        <div class="bloom-canvas bloom-has-canvas-element">
-            <img id="background" src="${backgroundSrc}" />
-            <div class="bloom-canvas-element">
-                <div class="bloom-imageContainer"><img id="overlay" src="overlay.png" /></div>
-            </div>
-        </div>`;
-    document.body.appendChild(page);
-    return page;
-}
-
 function getTestImg(page: HTMLElement, id: string): HTMLElement {
     const img = page.querySelector(`#${id}`) as HTMLElement | null;
     if (!img) {
@@ -306,21 +290,6 @@ describe("isOverlayOnBackgroundImage", () => {
         );
         page.remove();
     });
-
-    it.each([
-        ["background.jpg", true],
-        ["placeHolder.png", false],
-    ])(
-        "in a legacy canvas whose background img is %s, gives %s",
-        (backgroundSrc, expected) => {
-            const page = makeLegacyCanvasTestPage(backgroundSrc);
-
-            expect(
-                isOverlayOnBackgroundImage(getTestImg(page, "overlay")),
-            ).toBe(expected);
-            page.remove();
-        },
-    );
 });
 
 describe("getImageTransparencyMode", () => {

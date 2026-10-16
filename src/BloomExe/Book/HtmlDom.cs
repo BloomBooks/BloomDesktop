@@ -2106,10 +2106,13 @@ namespace Bloom.Book
 
         /// <summary>
         /// Returns true when <paramref name="bloomCanvas"/> has a real (not placeholder) background
-        /// image. Normally that is the image in its background canvas element; in a legacy canvas
-        /// that has not been converted to have one, it is an img directly inside the bloom-canvas.
-        /// Either may already have been converted to a background-image style (as BloomPubMaker
-        /// does). Mirrors bloomCanvasHasRealBackgroundImage() in bloomImages.ts.
+        /// image. In the book itself that is normally the image in its background canvas element.
+        /// But a page that has not yet been opened in Edit or put through the page layout update
+        /// still has the legacy form, an img directly inside the bloom-canvas, and so does every
+        /// page after PublishHelper.SimplifyBackgroundImages (ePUB, BloomPUB). BloomPubMaker's
+        /// ConvertImagesToBackground then turns that img into a background-image style on the
+        /// bloom-canvas itself. Mirrors bloomCanvasHasRealBackgroundImage() in bloomImages.ts,
+        /// which needs only the first case.
         /// </summary>
         internal static bool BloomCanvasHasRealBackgroundImage(SafeXmlElement bloomCanvas)
         {
@@ -2120,6 +2123,9 @@ namespace Bloom.Book
             SafeXmlElement imageHolder;
             if (bgCanvasElement != null)
             {
+                // SimplifyBackgroundImages leaves the background canvas element in place on a page
+                // that also still has a real old-style img (the interrupted conversion of BL-16870),
+                // so ConvertImagesToBackground may have given its image container a style, too.
                 imageHolder = bgCanvasElement
                     .SafeSelectNodes(".//img[@src] | .//div[contains(@style,'background-image')]")
                     .Cast<SafeXmlElement>()
