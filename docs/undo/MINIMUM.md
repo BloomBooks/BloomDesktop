@@ -4,9 +4,11 @@ The smallest version of the page history (APPROACHES.md, recorded mutations with
 11.8) that undoes everything that today's undo undoes. Later steps add to it one at a time. Section
 numbers refer to APPROACHES.md, and "issue N" to Part 1 of CODE-WALK.md.
 
-It is built, in commit `ec71549342` (`src/BloomBrowserUI/bookEdit/pageHistory/`, with the changes
-that the items name elsewhere), and the items below describe it as built. "Today" and "today's
-undo" mean Bloom before that commit.
+It is built (`src/BloomBrowserUI/bookEdit/pageHistory/`, with the changes that the items name
+elsewhere), first in commit `ec71549342`, and the items below describe the code on this branch,
+which also takes some of the later steps: dialogs and toolbox controls that make undo steps of their
+own or change the page outside the history (item 4). "Today" and "today's undo" mean Bloom before
+commit `ec71549342`.
 
 "Matches" means three things:
 
@@ -60,10 +62,13 @@ Talking Book, video, games and book settings have no undo today.
    declarative rules of section 3.7 in one module (`editTimeMarkup.ts`), tested value by value
    (class token by token, style property by property), and CKEditor's tracked filling character
    taken out of text values; a text node that holds only that character is left out of child lists.
-   Besides what the save strips, it leaves out `data-bloom-active` and the overflow checker's
-   classes, which Bloom works out again. Section 3.7, "The module as built", lists where its rules
-   differ from that section's lists. The `min-height` and `padding-bottom` that the overflow checker
-   writes are not covered. On master the save strips the live page and then reloads it, so the
+   Besides what the save strips, it leaves out what Bloom works out again or what only marks a
+   selection: `data-bloom-active`, `bloom-selected` on a video container, the overflow checker's
+   classes and the `min-height` that it writes into a box's `style`, `bloom-imageLoadError`,
+   Comical's generated SVG, and the attributes that CKEditor sets on a box. Section 3.7, "The
+   module as built", lists where its rules differ from that section's lists. The `padding-bottom`
+   that the overflow checker writes into a `bloom-padForOverflow` box's `style` is recorded
+   (OPEN-ISSUES.md item 37). On master the save strips the live page and then reloads it, so the
    history never meets what the save strips; the save path takes up the same module when PR 8209
    stops the reloads, and until then the module's rules are checked against master's save path.
 3. **Rule 2 for input in the page frame.** A real click or key press in the page frame that changes
@@ -80,18 +85,52 @@ Talking Book, video, games and book settings have no undo today.
    nothing, so that the Ctrl of a Ctrl+Y can't make a step and clear redo. With rule 2, table
    operations and canvas element rotation are undoable without wrapping, and so are canvas element
    moves and other page-frame actions that today's undo leaves alone.
-4. **Input elsewhere that changes the page ends the history.** A click or key press in the toolbox
-   frame, the top bar or a root-window dialog opens an "Undo edit" transaction as in the page frame,
-   and if that makes a step that still has the general description, the history is cleared. A
+4. **Input elsewhere that changes the page with no transaction of its own ends the history.** A
+   click or key press in the toolbox frame, the top bar or a root-window dialog opens an "Undo edit"
+   transaction as in the page frame. When that transaction closes, if it made a step that still has
+   the general description, the history is cleared (`endHeld` in `pageHistoryInput.ts`). A
    `doTransaction` or `beginTransaction` begun inside it, such as a canvas command's or a dialog's,
-   gives the step its own description, so the step stays; the "Undo edit" transaction waits for one
-   that is still open, which then makes the step. The Undo button is exempt: it carries
-   `data-runs-undo`, and its press opens nothing, since its click changes the page by undoing. This
-   takes the place of the open question of which frame's clicks count (issue 12), and it makes the
-   components whose
-   state the minimum doesn't restore (Talking Book, sign language, music, Games, Motion, the reader
-   tools' controls) boundaries without touching them. Opening a tool that changes the page (Talking
-   Book's spans, Motion's rectangles, issue 3) ends the history the same way.
+   gives the step its own description, so the step stays. The "Undo edit" transaction waits for
+   one that is still open, and closes when that one ends; if that one is cancelled while something
+   else in the "Undo edit" transaction changed the page, the step keeps the general description and
+   the history is cleared. A change that the action makes after an `await`, once the task of the
+   press has ended, is made outside any input and joins the latest step (rule 1). The Undo button
+   is exempt: it carries `data-runs-undo`, and its press opens nothing, since its click changes the
+   page by undoing. This takes the place of the open question of which frame's clicks count (issue
+   12).
+
+   Bloom's delayed reactions that go through `addToLatestTransaction` (the toolbox's markup pass,
+   the fit of a canvas element to a new picture or video, Talking Book's sentence split) join the
+   latest step even when a press has opened an "Undo edit" transaction that has changed nothing
+   yet (`isStandInThatHasChangedNothing` in `pageHistory.ts`). So such a reaction never makes a
+   step of its own, and a press in another window that it happens to follow does not end the
+   history because of it.
+
+   The dialogs and toolbox controls that change the page fall into three groups:
+   - **Undo steps with their own description**: Original Title, Set Destination, Set Up Hyperlink,
+     Text Box Properties, Choose Video on a canvas element (with the box fitted to the new video),
+     the Sign Language tool's Record, Import and Delete, dragging a Motion rectangle, Talking Book's
+     playback-order arrows and its recording-mode switch, and the Canvas tool's controls, with a
+     colour picker session as one step from opening to OK.
+   - **Changes made outside the history** (`doOutsideHistory`): the page settings of Book and Page
+     Settings, with its live preview and its Cancel, which puts the page's pictures back too; the
+     books chosen for a link grid; Image Description's checkbox and the wrapper that it puts around
+     each picture, which it takes away before each undo and redo and puts back after; the Music
+     tool's settings; the Games tool's three options and its sounds; trimming a sign language
+     video; the Motion checkbox and preview; Talking Book's playback highlighting and the setup that
+     it writes on opening, apart from its sentence split; and, for now, every page change of the
+     Format dialog, until one session of the dialog becomes one undo step. None of these is
+     undoable, and none ends the history. The cost: a later undo whose step holds a value that one
+     of them changed, or names a node that one of them took out of the page, is refused by the
+     check of rule 4, and the refusal empties that stack.
+   - **Ends the history**: what still sends a request that is not on item 7's list (Talking Book's
+     Record, Clear and Import; posting book settings; copying a Games built-in sound into the book),
+     or reloads the page (changing the Leveled Reader's level, through
+     `EditingModel.EnsureLevelAttrCorrect`; Set Image Information; the book's Copyright and
+     license), and any press elsewhere whose change has no transaction of its own.
+
+   Opening a tool is no boundary: Talking Book's sentence split joins the latest step, and what
+   Motion and Image Description write on opening is outside the history (issue 3).
 5. **Explicit transactions for the covered actions that rule 2 can't see.**
    - The bodies of `changeImage` and `changeImageByElement`, which C#, the image gallery and the AI
      image editor call, each in a transaction begun with `beginTransaction` and ended once no page
@@ -132,8 +171,11 @@ Talking Book, video, games and book settings have no undo today.
    change nothing that the page names, or only write a file under a new name. The list holds the
    class a requests of CODE-WALK Part 3, `imageGallery/imageGalleryResult`, `editView/pasteImage`,
    `editView/paste`, `editView/topBarButtonClick`, `aiImageEditor/commit`, `audio/copyAudioFile`,
-   `fileIO/chooseFile`, and requests that only read, or that change only the Edit tab's UI, user
-   settings, the clipboard, logs or files that no page names. `aiImageEditor/commit` can be on the list because a commit deletes no file:
+   `fileIO/chooseFile`, the Sign Language tool's requests that write a video under a new name or
+   only choose or cancel one, the progress dialog's `progress/ready`, `progress/cancel` and
+   `progress/closed`, `editView/addImageFromUrl` (a link grid's thumbnail, whose name depends only
+   on the linked book's id), and requests that only read, or that change only the Edit tab's UI,
+   user settings, the clipboard, logs or files that no page names. `aiImageEditor/commit` can be on the list because a commit deletes no file:
    `DeleteSupersededAiImageFiles` is gone, and `CleanupUnusedSupportFiles` covers `.jpeg` and
    `.webp` instead. This inverts `kRequestsThatEndTheHistory`: a request that nobody has classified
    loses history instead of risking a file or C# state that undo can't put back. axios runs the
@@ -150,25 +192,30 @@ Talking Book, video, games and book settings have no undo today.
    providers and change counter (`bookEdit/undo/`), all removed. `bloom-table` still keeps its
    history inside the library, but nothing in Bloom reaches it: the page frame takes the keys first,
    and nothing calls it. With the undo plugin gone, CKEditor fires no `change` event, so Bloom fires
-   it from each box's `input` events for the listeners that need it. The reader tools' rewrite of a
-   box is recorded like any other change and joins the typing that caused it (section 5.3). Origami
-   keeps its own undo inside Change Layout mode, run in `doOutsideHistory`, and entering or leaving
-   the mode ends the history (section 11.6).
+   it from each box's `input` events for the listeners that need it. The reader tools do not
+   rewrite a box: their `doMarkup` reads the text and paints CSS highlights, and the only change
+   that it makes to a box, removing markup that earlier versions of Bloom saved, is outside the
+   history (section 5.3). Origami keeps its own undo inside Change Layout mode, run in
+   `doOutsideHistory`, and entering or leaving the mode ends the history (section 11.6).
 10. **The keys and the button**: the Undo button keeps its route (C# calls `handleUndo` and polls
     `canUndo`), which now answers from the page history. Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z are taken in
     the capture phase of the page frame's `keydown` (section 8.2), ahead of CKEditor and the reader
     tools, and the other frames forward them. In Change Layout mode the handler leaves the keys to
     origami, as `undo/redoKeyBinding.ts:66` did. The other frames don't forward a key pressed in a
-    text field or a dialog, whose own undo the user means. `beforeinput` with `historyUndo` or
-    `historyRedo` is cancelled, and `PreventRemovalOfSomeElements` becomes a `beforeinput` handler
-    that refuses an edit whose range covers a `.bloom-preventRemoval` element instead of calling the
-    browser's undo (`pageHistoryKeys.ts`, `BloomField.ts`). The keys that undo and redo don't
+    text field or a dialog, whose own undo the user means, and the page frame leaves the keys to an
+    `input`, a `textarea`, a `select` or a dialog in it too, but not to the page's text boxes.
+    `beforeinput` with `historyUndo` or `historyRedo` is cancelled, except in those fields, and
+    `PreventRemovalOfSomeElements` becomes a `beforeinput` handler that refuses an edit whose range
+    covers a `.bloom-preventRemoval` element instead of calling the browser's undo
+    (`pageHistoryKeys.ts`, `BloomField.ts`). The keys that undo and redo don't
     schedule the markup pass (section 5.3): the keyups that follow them stop at the page window, so
     the toolbox's keyup handler in the page never sees them, and the toolbox abandons a pass that is
     already scheduled in `onBeforeUndoOrRedo`. `canUndo` counts an open transaction, because typing holds one open
     between key presses and its step is made only when something ends it, such as the press on the
-    Undo button. The steps of item 5 carry their own descriptions, and every other step the general
-    one; nothing shows them yet.
+    Undo button. The steps of items 4 and 5 carry their own descriptions, and every other step the
+    general one. Nothing shows them yet, so a description key that no control's label already uses,
+    such as the general one, `EditTab.Undo.Edit`, has no entry in the XLF files until the Undo button
+    shows the descriptions.
 11. **`onAfterUndoOrRedo` for the components that the covered actions touch**
     (`listenToPageHistory` in `bloomEditing.ts`): the canvas element manager's
     `updateAfterUndoOrRedo` (active element, `data-bloom-active`, comicaljs, handles; not through
@@ -176,8 +223,19 @@ Talking Book, video, games and book settings have no undo today.
     edit key handlers to `document` again each time); the reader highlights, painted again from the
     restored text without rewriting the box; and Talking Book, whose `updateAfterUndoOrRedo` drops
     the records that its visibility observer has not handled yet, so that a restore starts no markup
-    pass (issue 8), and paints its highlight again. `bloom-table`'s selection UI (case 7.8) has no
-    listener; the e2e table tests pass without one.
+    pass (issue 8), and paints its highlight again. The Motion tool draws its rectangles again, and
+    Image Description takes its wrapper away in `onBeforeUndoOrRedo` and puts it back after (item
+    4). `bloom-table`'s selection UI (case 7.8) has no listener; the e2e table tests pass without
+    one.
+
+    Undo and redo restore the caret and selection before these listeners run, with recording off,
+    so what a focus handler writes then is undo's own and is not recorded (`undoOrRedo` in
+    `pageHistory.ts`). In `onBeforeUndoOrRedo` the canvas element manager notes the canvas elements
+    on the page and the active one, and drops the fits to a picture or video that are still waiting;
+    after the undo it selects the canvas element that the step changed, or else starts from the
+    element that was active as the undo began, not from one that restoring the caret made active.
+    In `onBeforeUndoOrRedo` Talking Book also stops playback and puts back what its playback
+    highlighting replaced.
 12. **Code that writes the page with no click or key press** (issue 2), changed so that moving the
     mouse or selecting doesn't clear redo: the hover buttons get `bloom-ui`, and the picture tooltip's
     `title` and `data-title` are written in `doOutsideHistory`.
@@ -191,25 +249,35 @@ below.
 - `addChangeOutsidePage` and the C# side of section 11.8.4; moving requests off item 7's rule one at
   a time, as each is recorded or shown to be harmless.
 - The file rules of section 11.8.5 and the code fixes of issue 4.
-- Input in the toolbox and dialogs as undo steps, one component at a time, each with its
-  `onAfterUndoOrRedo` work (issue 8): Talking Book, sign language, music, Games (with a way to stop
-  recording during Play, issue 9), Motion, the reader tools' controls.
-- StyleEditor writing `<style>` text (rule 5, case 7.5), which makes format changes undoable.
+- The input in the toolbox and dialogs that still ends the history (item 4) as undo steps, one
+  component at a time, each with its `onAfterUndoOrRedo` work (issue 8): Talking Book's Record,
+  Clear and Import, which need recordings under new file names (issue 10); the Leveled Reader's
+  level, whose change saves and reloads the page; and the changes that item 4 makes outside the
+  history, wherever one should become undoable.
+- The Games tool's Play tab: decided, recording stops, with Undo disabled, from entering Play to
+  leaving it (issue 9); not built.
+- StyleEditor writing `<style>` text (rule 5, case 7.5), and one session of the Format dialog as
+  one undo step, which makes format changes undoable.
 - Descriptions for the actions that still get the general one, by wrapping them at their routing
   points.
-- `doOutsideHistory` and `addToLatestTransaction` beyond item 12, and the development log of
-  section 10.7.
+- Marking the rest of Bloom's reactions with `addToLatestTransaction` or `doOutsideHistory`, and
+  the development log of section 10.7.
 - CSS highlight ranges for playback (issue 7).
 
 ## Where the minimum is worse than today
 
-- **History is lost on any page change from the toolbox, the top bar or a dialog**: opening Talking
-  Book, Motion or Games, recording, Play, the Canvas tool's controls other than its commands. Today
-  CKEditor's history of a box survives these.
-- **History is lost on every request that isn't on item 7's list**, including canvas element
-  duplication with audio (`fileIO/copyFile`, which the interceptor can't tell apart from Import).
-- **Playback still writes the page** (issue 7): Play ends the history (item 4), and typing during a
-  paused playback is erased, as it is today.
+- **History is lost on a page change from the toolbox, the top bar or a dialog that item 4 neither
+  makes an undo step nor keeps outside the history**: recording, changing the Leveled Reader's
+  level, and any control that has no transaction of its own. Today CKEditor's history of a box
+  survives these.
+- **History is lost on every request that isn't on item 7's list**, including copying one of the
+  Games tool's built-in sounds into the book (`fileIO/copyFile`, which the interceptor can't tell
+  apart from Talking Book's Import).
+- **History is lost when an undo is refused** because a change made outside the history (item 4)
+  altered a value that the step holds, or took out of the page a node that the step names, such as
+  undoing a sign language recording after trimming it. The refusal empties the undo stack.
+- **Playback still writes the page** (issue 7), outside the history, and typing during a paused
+  playback is erased, as it is today.
 - **Ctrl+Z undoes the latest change on the page**, not the latest change in the box that has the
   focus, as CKEditor's history for each box does today, and a picture change is undone whether or
   not the picture is selected. Users will notice both.

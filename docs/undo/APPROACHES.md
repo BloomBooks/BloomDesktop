@@ -319,12 +319,12 @@ flowchart TD
   W["a writer changes the page"] --> F["MutationObserver record, kept by<br/>the filter shared with the save (rule 6)"]
   F --> Q{"what was open<br/>when it was written?"}
   Q -- "doTransaction or beginTransaction" --> T["joins that transaction,<br/>the user's typing included (rule 7)"]
-  Q -- "doOutsideHistory:<br/>a value that Bloom recomputes" --> S["no transaction (rule 3)"]
+  Q -- "doOutsideHistory:<br/>a value that Bloom recomputes,<br/>or a change kept out on purpose" --> S["no transaction (rule 3)"]
   Q -- "nothing, during a real click<br/>or key press" --> N["a new transaction, Undo edit (rule 2):<br/>a drag until pointerup; key presses<br/>in one box merged"]
   Q -- "addToLatestTransaction, or nothing,<br/>outside any input" --> L{"is there a<br/>latest transaction?"}
   L -- "yes" --> J["joins it and clears redo;<br/>warns in development if unmarked (rule 1)"]
   L -- "no: straight after a boundary" --> P["part of the starting state"]
-  U["Undo, or redo"] --> C{"every value in the transaction still at its<br/>after value (before value, for a redo), and<br/>every removed subtree serializes as when removed?"}
+  U["Undo, or redo"] --> C{"every value in the transaction still at its<br/>after value (before value, for a redo), every<br/>node it names still in the page or put back by it,<br/>and every removed subtree serializes as when removed?"}
   C -- "yes" --> A["put back the before values<br/>(after values, for a redo)"]
   C -- "no" --> R["refuse; discard this transaction and every<br/>older one, or the redo stack (rule 4)"]
 ```
@@ -356,11 +356,16 @@ flowchart TD
    Joining the latest transaction is always consistent: the change happened
    after every change that transaction holds, and undo takes it out first (section 3.1). Joining the
    next transaction instead would leave the change nowhere to go if the user pressed Undo before any
-   next transaction existed. `addToLatestTransaction` changes nothing about where a change goes; it
-   says in the code that a reviewer has thought about the change and that the joining is meant, and
-   keeps the development warning quiet. While its function runs, the history knows that it is inside a
-   marked call; at the end it takes the pending records with `takeRecords()` and treats them as
-   accounted for.
+   next transaction existed. `addToLatestTransaction` says in the code that a reviewer has thought
+   about the change and that the joining is meant, and keeps the development warning quiet. While its
+   function runs, the history knows that it is inside a marked call; at the end it takes the pending
+   records with `takeRecords()` and treats them as accounted for. It changes where a change goes in
+   one case: when the only transaction open is the "Undo edit" transaction of a press (rule 2) and
+   nothing in it has changed yet, the marked change joins the latest step and not that transaction,
+   so a reaction that runs just after the user's next press never makes a step of its own, and,
+   when the press came from another window, does not end the history (`addToLatestTransaction` in
+   `pageHistory.ts`). The choice is made at the call, so a reaction that runs in two calls with an
+   `await` between them may land in two steps.
    *Prevents:* a change left in no transaction, and the second undo of the case above that leaves
    content whose parts do not fit. *Settles:* what happens to a change Bloom makes that nobody has
    marked: it joins the action that caused it, and the development warning names what changed (the
@@ -381,8 +386,10 @@ flowchart TD
    its own transaction empty, so that transaction is dropped and rule 1 joins the changes to the
    transaction before it, until the action is wrapped; the development warning names what changed.
    Input events in the toolbox frame and the root window change the page too, so the history
-   listens in those frames as well; in the first version, a step with the general description that
-   input there makes ends the history instead (MINIMUM.md item 4). The Undo button and the undo and
+   listens in those frames as well; as built, a step with the general description that input there
+   makes ends the history instead, so a dialog or toolbox control that changes the page either
+   gives its step a description of its own or makes its change outside the history (MINIMUM.md
+   item 4). The Undo button and the undo and
    redo keys open no transaction: undo and redo file their own changes, and undo does nothing while
    a transaction is open. The button carries `data-runs-undo` so that the history can tell it from
    other controls. A modifier or lock key pressed alone opens nothing either, so that the Ctrl of a
@@ -394,28 +401,37 @@ flowchart TD
    *Settles:* the job of each mechanism. Real input gives every user action its own step; rule 1
    puts Bloom's reactions with the action that caused them; explicit wrapping gives an action its
    own description and step boundaries. Safety rests on rules 1 and 4, not on this rule.
-3. **Only values that Bloom recomputes from other content survive.** `doOutsideHistory` is for a
-   value that is a function of other content, such as a link-grid thumbnail's `src`: it is the
-   thumbnail of the book the button links to, and can be asked for again from that link (section
-   5.2, case 7.4). Whatever state undo returns to, such a value either still fits it or is
-   recomputed to fit it. Nothing else is declared to survive: each `doOutsideHistory` call is a
-   point that a reviewer checks against this rule, and the development warning still names every
-   change that joined the latest transaction without a marking. The table picture refit is not such a value, because
-   it scales from the stored `data-imgsizebasedon`, not from the cell's size alone (section 5.1,
-   §17.3); Talking Book's sentence spans are not, because new sentences get new ids (section 5.3).
-   Bloom makes no other background changes to page content (§3, Asynchronous): a job that changes
-   page content while the user keeps working is a bug to fix, by making it block or finish before
-   the next input is handled.
-   *Prevents:* a value left in place in a state it does not fit. *Settles:* which untracked changes
-   survive (§4.4 item 3).
+3. **Only values that Bloom recomputes, and changes kept out of the history on purpose,
+   survive.** `doOutsideHistory` is for a value that is a function of other content, such as a
+   link-grid thumbnail's `src`: it is the thumbnail of the book the button links to, and can be
+   asked for again from that link (section 5.2, case 7.4). Whatever state undo returns to, such a
+   value either still fits it or is recomputed to fit it. It is also for a change that is
+   deliberately not undoable but must not end the history: a setting that the user changes from a
+   dialog or a tool, or what a tool writes to show the page while it is open. MINIMUM.md item 4
+   lists the decided ones. Undo leaves such a change in place, and the check of rule 4 guards what
+   it cannot fit: an undo whose step holds a value that such a change altered, or names a node that
+   it took out of the page, is refused, and the refusal empties that stack. Each `doOutsideHistory`
+   call is a point that a reviewer checks against this rule, and the development warning still
+   names every change that joined the latest transaction without a marking. The table picture refit
+   is not such a value, because it scales from the stored `data-imgsizebasedon`, not from the
+   cell's size alone (section 5.1, §17.3); Talking Book's sentence spans are not, because new
+   sentences get new ids (section 5.3). Bloom makes no other background changes to page content
+   (§3, Asynchronous): a job that changes page content while the user keeps working is a bug to
+   fix, by making it block or finish before the next input is handled.
+   *Prevents:* a value left in place in a state it does not fit, and a change kept out of the
+   history being overwritten by an undo. *Settles:* which untracked changes survive (§4.4 item 3),
+   and how a change can stay out of the history without ending it.
 4. **The check covers what rule 1 cannot see.** Before an undo, every value the transaction holds
-   must still have its after value, and every subtree the transaction removed must still serialize as
-   it did when it was removed, because the observer cannot see changes to a detached node; before a
-   redo, the same with before values. Otherwise the undo is refused, and that transaction and every
-   older one are discarded; a refused redo discards the redo stack, whose newer transactions were
-   recorded on top of the one refused. Losing history is never corruption; applying part of a
-   transaction is. Under snapshot diffs the values are the parts' cleaned text. Page snapshots need
-   no check, since they put back a whole copy.
+   must still have its after value, every node that it names must be in the page or inside a node
+   that the undo puts back into it, and every subtree the transaction removed must still serialize
+   as it did when it was removed, because the observer cannot see changes to a detached node;
+   before a redo, the same with before values. A node that a change outside the history took out of
+   the page fails the check, since putting back its values would change nothing that the user can
+   see (`pageHasValues` in `pageHistory.ts`). Otherwise the undo is refused, and that transaction
+   and every older one are discarded; a refused redo discards the redo stack, whose newer
+   transactions were recorded on top of the one refused. Losing history is never corruption;
+   applying part of a transaction is. Under snapshot diffs the values are the parts' cleaned text.
+   Page snapshots need no check, since they put back a whole copy.
    *Prevents:* applying a transaction over a change rule 1 could not see: a node changed while
    detached (Duplicate, section 4.4), a component's own undo, if one were kept, rebuilding nodes
    that a central transaction holds (section 10.2), a value declared to survive that a transaction
@@ -456,12 +472,20 @@ flowchart TD
 7. **Overlap.** While a transaction is open, as an async `doTransaction` is until its `fn` settles, every
    change joins it, the user's typing included, and a `doTransaction` or `beginTransaction` that begins meanwhile joins it
    too. Two transactions are never open at once, so undo never splits interleaved changes into a
-   state that did not exist. The cost, typing undone together with the async action, is to be tried
-   with users. *Prevents:* interleaved transactions undone one at a time. *Settles:* what an async
-   transaction holds while the user keeps working (section 3.6): everything.
+   state that did not exist. Two async `doTransaction` calls can overlap in time, when the second
+   begins while the first awaits and neither awaits the other: the second nests in the first, the
+   first waits for it if it settles first, and the step is made when the last of them ends. If the
+   second fails, every change since it began is put back, including what the first wrote after that
+   point, since the history cannot tell which of two interleaved async functions made a change. The
+   cost, typing undone together with the async action, is to be tried with users. *Prevents:*
+   interleaved transactions undone one at a time. *Settles:* what an async transaction holds while
+   the user keeps working (section 3.6): everything.
 8. **Undo's own reactions**, such as a markup pass after an undo or a flow-text refit, are changes
    outside any transaction: rule 1 joins them to the latest transaction and clears redo, and one
    that rule 1 cannot see is caught by the redo check (rule 4). Safe either way; the cost is redo.
+   What restoring the caret sets off at once, such as a focus handler's writes, is undo's own: the
+   history restores the selection with recording off and drops those records (`undoOrRedo` in
+   `pageHistory.ts`).
    *Prevents:* a redo applied over content a reaction rewrote. *Settles:* keeping the undo and redo
    keys from scheduling the markup pass (section 5.3) keeps redo available; safety does not depend
    on it.
@@ -536,8 +560,9 @@ its inverse.
 A user action that no code has wrapped gets a transaction of its own from the real click or key
 press that started it (rule 2 of section 3.0). A change made outside any transaction and wrapped in
 neither `addToLatestTransaction` nor `doOutsideHistory`, which with rule 2 means a change made outside any input, joins the latest transaction
-(rule 1), and in development the system warns about it. Only a value that Bloom recomputes from other content
-is left in place, and its writer says so with `doOutsideHistory` (rule 3). Excalidraw's
+(rule 1), and in development the system warns about it. Only a value that Bloom recomputes from other content,
+or a change that is deliberately not undoable, is left in place, and its writer says so with
+`doOutsideHistory` (rule 3). Excalidraw's
 `NEVER`, tldraw's `ignore` and Yjs's untracked origins leave any such change in place, as long as
 the undone step did not touch the same property (Excalidraw), record (tldraw) or item (Yjs); where it
 did, Excalidraw and tldraw overwrite the change
@@ -545,7 +570,9 @@ did, Excalidraw and tldraw overwrite the change
 [Store.ts#L1108-L1140](https://github.com/tldraw/tldraw/blob/main/packages/store/src/lib/Store.ts#L1108-L1140))
 and Yjs declines to restore the value. Leaving a change in place is safe only when it cannot stop
 fitting the content undo puts back around it; on a Bloom page that holds for values that Bloom recomputes,
-and not in general (the case in section 3.0). So the default for a change undo knows nothing about
+and not in general (the case in section 3.0). A change kept out of the history on purpose is a
+decision made for that one change, and the check of rule 4 refuses any undo that would write over
+it. So the default for a change undo knows nothing about
 is to join the latest transaction. The warning is the guardrail §10 asks for: a component that
 changes the page outside any input, without `addToLatestTransaction` or `doOutsideHistory`, shows up
 the first time a developer runs it, and until its change is wrapped its changes join the latest transaction, which costs at most coarser undo
@@ -654,12 +681,11 @@ reload also flashes the page and loses the caret for users with or without undo.
 | Opening the AI image editor | C# saves the page, which reloads it, then opens the overlay (`bookEdit/aiImageEditor/aiImageEditorPageCommands.ts:39-41`; `src/BloomExe/web/controllers/AiImageEditorApi.cs:305-318`). Committing does not reload (`aiImageEditorPageCommands.ts:129-131`). | Nothing beyond PR 8209, whose save leaves the page in place; to confirm on its branch |
 | OK in Set Image Information | `SaveThen` (`src/BloomExe/web/controllers/CopyrightAndLicenseApi.cs:206`); the dialog is launched from the root window because that save reloads the page iframe (`canvasControlRegistry.ts:557-558`) | C# returns what it changed on the page; the front end writes it inside the transaction |
 | OK in the book's Copyright and license dialog | `ChangeBookLicenseMetaData`, `SaveThen` returning the current page (`src/BloomExe/Edit/EditingModel.cs:2317-2336`) | C# returns the new values of the page's fields; the book metadata goes in the transaction through `addChangeOutsidePage` (section 11.8.4) |
-| Choosing a video | `postThatMightNavigate("common/saveChangesAndRethinkPageEvent")` (`bookEdit/js/bloomVideo.ts:204`) | The front end sets up the new video element in place, as it does for other elements added after load |
-| Leaving origami's Change Layout mode | the same call (`bookEdit/js/origami.ts:212`) | The front end runs the page setup the reload ran, on the changed panes |
+| Leaving origami's Change Layout mode | `postThatMightNavigate("common/saveChangesAndRethinkPageEvent")` (`bookEdit/js/origami.ts:212`) | The front end runs the page setup the reload ran, on the changed panes |
 | Changing a canvas text field's type to a read-only field | the same call (`canvasControlTextMenuItems.ts:391`) | C# returns the field's content |
 | Choosing a topic | `SetTopic` calls `SavePageAndReloadIt` (`EditingModel.cs:1895-1902`) | C# returns the topic field's content; it stays a boundary (§2.4) |
 | Unlocking or relocking the original copyright sentence on the credits page | `editableDivUtils.ts:285-296`; `UnlockOriginalCopyrightNotice` (`EditingModel.cs:1877`) | C# returns the sentence |
-| Changing the leveled reader level (inferred) | the tool state is saved, then `EnsureLevelAttrCorrect` (`EditingModel.cs:1814-1833`) saves and reloads when the body's `data-leveledreaderlevel` no longer matches `LeveledReaderLevel`, which reads the tool state (`src/BloomExe/Book/BookInfo.cs:1473`) | The front end sets the attribute itself (case 7.6) |
+| Changing the leveled reader level | the tool state is saved, then `EnsureLevelAttrCorrect` (`EditingModel.cs:1814-1833`) saves and reloads when the body's `data-leveledreaderlevel` no longer matches `LeveledReaderLevel`, which reads the tool state (`src/BloomExe/Book/BookInfo.cs:1473`) | The front end sets the attribute itself (case 7.6) |
 | Copy Page, when the copied page is the current one | `CopyPage` (`EditingModel.cs:2377-2392`) | Nothing beyond PR 8209; to confirm |
 
 This list comes from searching for `saveChangesAndRethinkPageEvent`, `SavePageAndReloadIt` and the
@@ -670,11 +696,13 @@ boundaries.
 **Size of the prerequisite work.** PR 8209 is open and large (122 files, 7,669 lines added, 2,706
 removed). By its description it keeps the reload for Change Layout, importing a video, and
 unlocking and relocking the original copyright sentence, sending the page to C# first. The removal
-follows it: about ten call sites, two of which should need nothing more. Estimated from the table,
+follows it: nine call sites, two of which should need nothing more. Estimated from the table,
 not from a design: each of the others needs an endpoint that returns changed content or a
 front-end update in place, from tens of lines to about a hundred on both sides together; Change
-Layout and choosing a video are the largest, because the reload also ran page setup that then has
-to run in place. In total one or two PRs, a fraction of 8209. A save that leaves the page loaded
+Layout is the largest, because the reload also ran page setup that then has to run in place.
+Choosing a video for a canvas element does not reload the page: the new video goes into the page
+in place, as one undo step, and the page is saved in the usual way (`doVideoCommand` in
+`bloomVideo.ts`). In total one or two PRs, a fraction of 8209. A save that leaves the page loaded
 must also leave the live DOM unchanged, which 8209 does by cleaning a clone; otherwise every save
 is an untracked change to nodes that transactions hold.
 
@@ -744,9 +772,10 @@ notice is a safety obligation and must be handled in the same task as the restor
   §17.2 counts history lost without a boundary against goal 4. Losing history damages no book, so
   under this policy the question becomes how often it happens, and whether the user is told, which
   is a UX question. With rule 1 every change the observer sees joins some transaction, so the check
-  fails only for what rule 1 cannot see: a node changed while detached, a value declared to survive
-  that a transaction also holds, or a component's own undo, if one were kept, rebuilding nodes
-  (section 10.2). The experiments found no change to a detached node apart from CKEditor's focus
+  fails only for what rule 1 cannot see: a node changed while detached, a change made outside the
+  history (rule 3) to a value that a transaction also holds, or that took out of the page a node
+  that a transaction names, or a component's own undo, if one were kept, rebuilding nodes (section
+  10.2). The experiments found no change to a detached node apart from CKEditor's focus
   class, which the filter drops, and Duplicate's work on a group it had removed within one action
   (section 4.4).
 - **A transaction stays open while the user keeps working.** `doTransaction` accepts an async `fn` and keeps
@@ -902,9 +931,12 @@ niceScroll's own. The save drops that width too, so the two agree, but this rule
   children. That rule is declarative, and the save could use it in place of `unwrapDescribedImages`,
   but opening the tool is then a no-op for the recorder only if the wrapper keeps the children's
   order, which today it does not (`imageDescriptionUtils.ts:21-26`); changing that is goal 6 work.
-  Otherwise, opening and closing these tools are boundaries when they change the page, as section
-  5.4 decided for Talking Book's sentence spans. The "|" text has no declarative form; it is one
-  more way opening Talking Book changes content.
+  Otherwise, opening and closing these tools are boundaries when they change the page, or they make
+  the change outside the history (rule 3) and the check refuses an undo that it gets in the way of.
+  The "|" text has no declarative form; it is one more way opening Talking Book changes content. As
+  built, both tools write these changes outside the history, and Image Description also takes its
+  wrapper away before each undo and redo and puts it back after, so that the check does not refuse
+  a step that holds a `.bloom-canvas` child list (`imageDescriptionUtils.ts`).
 
 **Under snapshot diffs** a part's cleaned text hides all four kinds, procedural ones included. Two
 costs follow that section 4.2 does not state. Since three steps throw on anything less than the
@@ -1006,9 +1038,14 @@ mirrors. It differs from the lists above, which were read on PR 8209's branch:
 - What the save keeps and undo leaves alone also holds the overflow checker's classes: `overflow`,
   `thisOverflowingParent`, `childOverflowingThis` and `pageOverflows`, which it works out again from
   the content that an undo puts back, and `Layout-Problem-Detected`, which an earlier version of
-  Bloom left and which it only removes. The `min-height` and
-  `padding-bottom` that the overflow checker writes into a box's inline style are not covered
-  (OPEN-ISSUES.md).
+  Bloom left and which it only removes; the `min-height` that the overflow checker writes into a
+  box's inline style; `bloom-imageLoadError`, which the browser's load of a picture adds or takes
+  off; `bloom-selected` on the selected video container, which is view state, as
+  `data-bloom-active` is; Comical's `svg.comical-generated`, which the save draws again from
+  Comical's state, and `onAfterUndoOrRedo` rebuilds that state from `data-bubble`; and the
+  `tabindex`, `spellcheck`, `role` and `aria-label` that CKEditor sets on a box. The
+  `padding-bottom` that the overflow checker writes into a `bloom-padForOverflow` box's inline style
+  is recorded (OPEN-ISSUES.md).
 
 **Verdict.** Yes, for every rule the recorder needs as a filter. All of them are of kinds 1 and 2,
 and those can be the one module above, called by the save on its clone and by the recorder on each
@@ -1018,10 +1055,12 @@ three obligations instead of a second copy of the cleanup: the filling character
 recorder's alone and damages a book if wrong, so it needs a test; Comical's state through
 `onAfterUndoOrRedo`, already required; and tool changes that move content (Image Description's wrapper,
 Talking Book's "|", the Games Play tab) treated as boundaries, or, for the wrapper, made to keep the
-children's order. Missing either of the last two refuses undos and damages nothing. The condition
-under which section 9.2 would prefer snapshot diffs is not met, so the order in section 9.1 stands.
-Two points move toward snapshot diffs without reversing it: snapshot diffs need no boundary when Image
-Description opens, and recorded mutations carry one CKEditor rule of their own.
+children's order. As built, Image Description makes its wrapper outside the history,
+takes it away in `onBeforeUndoOrRedo` and puts it back after each undo and redo
+(`imageDescriptionUtils.ts`). Missing either of the last two refuses undos and damages nothing. The
+condition under which section 9.2 would prefer snapshot diffs is not met, so the order in section
+9.1 stands. Two points move toward snapshot diffs without reversing it: snapshot diffs need nothing
+when Image Description opens, and recorded mutations carry one CKEditor rule of their own.
 
 ---
 
@@ -1308,13 +1347,13 @@ flowchart LR
   D --> O["MutationObserver records, filtered"]
   O --> C["per node: value before the first change,<br/>value after the last"]
   C --> F[("transaction: changed nodes, back-end state changes,<br/>selection before and after")]
-  U["change outside any transaction"] --> O2["joins the latest transaction (rule 1),<br/>unless it is a value that Bloom recomputes (rule 3)"]
+  U["change outside any transaction"] --> O2["joins the latest transaction (rule 1),<br/>unless doOutsideHistory keeps it out (rule 3)"]
   O2 --> F
   F -- "Undo" --> G{"every node still<br/>has its after value?"}
   G -- "yes" --> H["put back before values,<br/>re-inserting the same node objects"]
   G -- "no" --> K["refuse; discard this transaction<br/>and older ones (section 3.6)"]
   H --> T["takeRecords(), discard"]
-  T --> I["clear filtered markup, selection from node and offset,<br/>onAfterUndoOrRedo"]
+  T --> I["clear filtered markup, selection from node and offset<br/>(recording off), onAfterUndoOrRedo"]
 ```
 
 **Against the requirements.**
@@ -1607,13 +1646,14 @@ result is applied only if no keystroke came in the meantime (`:478-489`), then `
   Talking Book's highlighting of the current sentence is separate from them and already paints
   through the CSS Custom Highlight API in the Edit tab (comments at
   `talkingBook/audioHighlightManager.ts:17-24` and `talkingBook/audioRecording.ts:3153`).
-- **Decided: the reader tools stop changing the DOM.** They already paint their highlights through
+- **The reader tools do not change the DOM that undo sees.** They paint their highlights through
   the CSS Custom Highlight API, with `::highlight()` over live ranges, which writes no DOM (comment
-  at `readers/readerHighlights.ts:9-18`). What remains is `doMarkup` (`readers/readerToolsModel.ts:686`)
-  setting `innerHTML` of the whole box through CKEditor (`EditableDivUtils.doCkEditorCleanup`,
-  `safelyReplaceContentWithCkEditorData`), which replaces every node of the box and leaves what a
-  save keeps unchanged. That rewrite is to be removed (goal 6), a small change. After it, the reader
-  tools change nothing that undo sees, under any approach, and the rest of this document treats them so.
+  at `readers/readerHighlights.ts:9-18`). Their `doMarkup` (`readers/readerToolsModel.ts`) reads the
+  boxes and does not rewrite them; the only change that it makes to a box is removing the markup
+  that earlier versions of Bloom saved (`removeSynphonyMarkup` and `removeCkEditorMarkup` in
+  `readers/libSynphony/jquery.text-markup.ts`), outside the history. The class
+  `page-too-many-words-or-sentences` on the page is markup that the save strips. So the reader tools
+  change nothing that undo sees, under any approach, and the rest of this document treats them so.
 - The pass is not registered with `wrapWithRequestPageContentDelay`. Its comment (`:313-319`) says
   its changes are stripped by the save, which holds for the reader tools and not for Talking Book's
   spans.
@@ -1702,7 +1742,11 @@ Two ways to treat it, each safe and each cheap to change later (goal 7):
 2. A boundary when the pass changes content: `clearUndoAndRedo()` after it. Undo is disabled after opening the
    tool, and the history before it is lost.
 
-Decided as a starting point: option 2, a boundary when the pass changes content (OUTLINE §4.0). The
+Built: option 1. Talking Book writes the split with `addToLatestTransaction` (`applySplits` in
+`audioRecording.ts`), and the rest of what it writes on opening outside the history
+(`handleNewPageReady`). After an undo or redo that takes a split away, Talking Book splits those
+boxes again when the user next types there or uses one of its actions that needs the spans
+(`splitAgainIfNeededAsync`), not in `onAfterUndoOrRedo`, where a split would clear redo. The
 choice is about what the user sees; neither damages the book.
 
 ---
@@ -1744,12 +1788,15 @@ interface PageHistory {
      * that moment, through which it can also record a change to state held in C# (Transaction,
      * section 11.8.1). The transaction is available only inside fn, so no code can keep it and add
      * to it after newer transactions exist. With no latest transaction (straight after a boundary
-     * or a page load), fn still runs and gets a transaction that records nothing.
+     * or a page load), fn still runs and gets a transaction that records nothing. While the only
+     * transaction open is the "Undo edit" transaction of a press that has changed nothing yet,
+     * fn's changes join the latest step instead (section 3.0, rule 1).
      */
     addToLatestTransaction<T>(fn: (transaction: Transaction) => T): T;
     /**
-     * Bloom's own change, not recorded: undo leaves it in place. Only for a value that Bloom
-     * recomputes from other content, such as data-duration or a link-grid thumbnail (rule 3).
+     * A change that is not recorded: undo leaves it in place. For a value that Bloom recomputes
+     * from other content, such as data-duration or a link-grid thumbnail, and for a change that
+     * is deliberately not undoable but must not end the history (rule 3).
      */
     doOutsideHistory<T>(fn: () => T): T;
     /** A boundary (§4.0). */
@@ -2390,9 +2437,13 @@ public changeFont(fontname: string) {
 `GetRuleForStyle` (`:572`) finds the rule, adding it with `insertRule` (`:619`) if needed. Saving
 reads every rule through `userStylesheetContent` (`bloomEditing.ts:1688`). Neither the page's HTML
 text nor a `MutationObserver` sees these changes. The dialog applies each change live and has no
-Cancel; provisionally each change is a transaction (§3). Each change method gets the same wrapper as
-`changeFont` below; a small private helper in StyleEditor can hold the `ignoreControlChanges` check
-and the `doTransaction` for all of them.
+Cancel. One session of the dialog is to be one transaction; until then, StyleEditor makes the
+dialog's page changes (the style class of the boxes, the refit after a style change, the canvas
+elements that a padding change moves) outside the history, so a style change is neither undoable
+nor a boundary, and undo never puts back the boxes' sizes without the style that gave them those
+sizes (`cleanupAfterStyleChange`). The examples below wrap one change method, which shows how each
+approach records a change whichever grouping is used; for a session, the transaction is begun when
+the dialog opens and ended when it closes.
 
 Decided under every approach (rule 5 of section 3.0): StyleEditor writes the `<style>` element's
 text after every rule write, so the CSS is ordinary page DOM that the observer sees (the end of this
@@ -2548,7 +2599,8 @@ calls `incrementLevel` or `decrementLevel` (`readerToolsModel.ts:258`), which ca
 
 `EditingModel.SaveToolboxSettings` then calls `EnsureLevelAttrCorrect` (`:1814`), which saves and
 reloads the page when the body's `data-leveledreaderlevel` no longer matches the new level
-(inferred, section 3.3). Removing that reload is part of the prerequisite work of section 3.3.
+(`SaveThen` returning the current page). So, as the code stands, changing the level ends the
+history. Removing that reload is part of the prerequisite work of section 3.3.
 
 Whether this is undoable or a view change is open (§9).
 
@@ -2839,7 +2891,7 @@ wrapper, the thing changed is selected from the transaction's selection (§2.7),
 | Swept up, and changes that no transaction claims (rule 1) | By the nature of copies; marking updates the last after copy | Extend the latest transaction's after text | In each command; unclaimed changes are invisible | Merge records into the latest transaction | n/a |
 | Values Bloom recomputes (rule 3) | Reverted, then recomputed by the feature (case 7.4) | Survive in another part; in the same part, joined to a named transaction (case 7.4) | Survive, if each command touches only its own | Survive, if another node, attribute, class or style property | Yes |
 | Markup pass half a second after typing (5.3) | Joined to the latest transaction; one wrapper in `mainTask` says so | Same | Per author | Same | Yes |
-| Opening Talking Book after typing (5.4) | Spans reverted by the next undo | Joined to the latest transaction, or a boundary (decided) | Per author | Same as snapshot diffs | Yes |
+| Opening Talking Book after typing (5.4) | Spans reverted by the next undo | Joined to the latest transaction (built), or a boundary | Per author | Same as snapshot diffs | Yes |
 | One cleanup shared with the save path (rule 6) | Calls it on the copy | Calls it on each part | n/a | One module of declarative rules, called by the save on its clone and by the recorder on each record (3.7) | n/a |
 | StyleEditor's CSS rules (rule 5) | `<style>` text in the copy | One part, seen through the `<style>` text | In the command | `<style>` text, observed | n/a |
 | Toolbox, book, user state (rule 5) | Interface, for state that the page refers to or must match; other state may stay outside the history | Same | In the command | Same as page snapshots | n/a |
@@ -2934,7 +2986,8 @@ What still counts against recorded mutations:
   call, and the save's procedural steps are not needed as a filter (section 3.7). What remains is
   one rule of the recorder's own, for CKEditor's tracked filling character, which damages a book if
   wrong; and opening Image Description, which moves every picture's children into a wrapper, is a
-  boundary unless the wrapper is made to keep their order.
+  boundary unless the wrapper is made to keep their order or is taken away around each undo and
+  redo, as built.
 - Bloom code that keeps changing nodes it has removed, as Duplicate does (section 4.4), breaks the
   assumption that removed nodes wait unchanged. The check on removed subtrees turns that into a
   refused undo, not a damaged page.
@@ -2967,8 +3020,7 @@ pull text back after a restore of the page. Nothing yet shows that it does (§17
 remains a requirement on the `flowText` branch, not a property of any approach here.
 
 Prerequisite for either finalist: removing Bloom's reloads of the current page, after PR 8209
-(section 3.3). About ten call sites, one or two PRs; Change Layout and choosing a video are the
-largest.
+(section 3.3). Nine call sites, one or two PRs; Change Layout is the largest.
 
 ### 9.2 Questions that decide between them
 
@@ -2985,12 +3037,13 @@ Most important first:
    - a rule for CKEditor's tracked filling character in recorded text, the recorder's own, with a
      test, since a mistake there saves a stray U+200B into the book (BL-16490);
    - opening and closing Image Description as boundaries, or its wrapper changed to keep the order
-     of each picture's children (goal 6); the Games Play tab is a boundary under either finalist;
+     of each picture's children (goal 6), or taken away around each undo and redo, as built; the
+     Games Play tab is a boundary under either finalist;
    - moving the save's declarative steps into the shared module, as a follow-on to PR 8209.
-2. **Opening Talking Book after typing** (section 5.4): decided as a starting point, a boundary
-   when it changes content. The same under both finalists, and cheap to change later.
-3. **The reader tools' rewrite of the box** (section 5.3): decided, it is removed (goal 6). The
-   reader tools then change nothing that undo sees, under either finalist.
+2. **Opening Talking Book after typing** (section 5.4): built, its sentence split joins the latest
+   step. The same under both finalists, and cheap to change later.
+3. **The reader tools' rewrite of the box** (section 5.3): removed (goal 6). The reader tools change
+   nothing that undo sees, under either finalist.
 4. **Does a real Ctrl+Z reach the page, or does C# take it first?** Answered (EXPERIMENTS §4): C#
    does not take it. A real Ctrl+Z, Ctrl+Y or Ctrl+Shift+Z reaches the JavaScript of whichever frame
    has focus (page, toolbox, page list, top bar) as a trusted `keydown`; nothing in `src/BloomExe`
@@ -3131,7 +3184,9 @@ everything that Bloom's earlier undo undid. It is built (commit `ec71549342`, in
 - **Input elsewhere that changes the page ends the history.** A click or key press in the toolbox
   frame or the root window whose step keeps the general description clears the history instead
   (MINIMUM.md item 4), and so does every request to C# that is not known to be harmless (MINIMUM.md
-  item 7, section 11.8.7).
+  item 7, section 11.8.7). Bloom's reactions marked with `addToLatestTransaction` join the latest
+  step even when such a press has opened its transaction and changed nothing yet, so they do not
+  end the history.
 - **The old histories are switched off**: CKEditor's undo plugin, the image undo
   (`ImageUndoManager`), the reader tools' undo, and PR 8387's one stack with its providers
   (`bookEdit/undo/`). `bloom-table` still keeps its own history inside the library, but nothing in
@@ -3140,9 +3195,9 @@ everything that Bloom's earlier undo undid. It is built (commit `ec71549342`, in
   Ctrl+Shift+Z go to the central history alone, through the page's capture-phase `keydown` handler (section 8.2), with
   the other frames forwarding the keys (question 4 of section 9.2).
 - **Components that keep their own copy of page content re-read it in `onAfterUndoOrRedo`**, or abandon
-  the work that would write from it in `onBeforeUndoOrRedo` (section 11.8.3): in the first version,
-  the canvas element manager, Talking Book, the reader highlights, and the toolbox's pending markup
-  pass.
+  the work that would write from it in `onBeforeUndoOrRedo` (section 11.8.3): the canvas element
+  manager, Talking Book, the reader highlights, the toolbox's pending markup pass, the Motion tool's
+  rectangles, and Image Description's wrapper.
 - **Known boundaries are marked**: the requests of section 11.8.7, the `clearUndoAndRedo()` calls
   there, and the marking of rule 2 for actions that are boundaries.
 - With these come the cleanup module of rule 6, used by the history alone until the reloads go
@@ -3150,7 +3205,10 @@ everything that Bloom's earlier undo undid. It is built (commit `ec71549342`, in
   keys that do not schedule the markup pass (section 5.3).
 
 StyleEditor writing its rules as `<style>` text (rule 5, case 7.5) is left for a later step, as is
-the development log of section 10.7; MINIMUM.md lists what is left out.
+the development log of section 10.7; MINIMUM.md lists what is left out. Some later steps are built
+on this branch: dialogs and toolbox controls that make undo steps with their own descriptions, and
+others whose changes are kept out of the history on purpose (rule 3), so that they do not end it
+(MINIMUM.md item 4).
 
 Removing the reloads (section 3.3) is a few PRs that can run beside the rest. Under recorded
 mutations, an action that still reloads the page is a boundary until its reload is gone. Under the
@@ -3281,7 +3339,8 @@ move:
   outside any input that joined the latest transaction without a marking: the node and attribute,
   or the child list. A `MutationObserver` record carries no call stack, so finding the code that
   made the change is the developer's job. A reaction of Bloom's needs `addToLatestTransaction`, or
-  `doOutsideHistory` if it writes a value that Bloom recomputes from other content (rule 3); a user action whose changes all land after an `await`
+  `doOutsideHistory` if it writes a value that Bloom recomputes from other content or a change kept
+  out of the history on purpose (rule 3); a user action whose changes all land after an `await`
   needs a `doTransaction`. Each "Undo edit" transaction names the action that is still to wrap
   (10.7).
 - **Under commands** the move has no such floor: B is invisible, and A's inverse later runs over it
@@ -3331,7 +3390,8 @@ The inline image code is not on this branch, so inline images appear only throug
 The rules of section 3.0 apply throughout. "Rule 1" is that a change that no transaction claimed,
 which means one made outside any input, joins the latest transaction; "rule 2" is that a real click
 or key press that changes the page with no transaction open opens one, "Undo edit"; "rule 3" is
-that only values that Bloom recomputes may survive (`doOutsideHistory`); "rule 4" is the check
+that only values that Bloom recomputes, and changes kept out of the history on purpose, may survive
+(`doOutsideHistory`); "rule 4" is the check
 before every undo and redo; "rule 5" is that everything undo restores is visible to it, and that
 an action that changes state outside the page that the page refers to or must match records that
 state through `addChangeOutsidePage` or is a boundary. The code in this section is written against the API of
@@ -3712,6 +3772,11 @@ of case 7.5. Nothing for the refit. The class that opening the dialog adds is wr
 that opens it, with no wrapper, so it lands in an "Undo edit" transaction of its own (rule 2). That
 is safe; a read that writes is goal 6 work, best fixed by adding the class when the box is created.
 
+As built, StyleEditor writes through the CSSOM, and the dialog's page changes (the style
+class of the boxes, the refit, the canvas elements that a padding change moves) are made outside
+the history (rule 3), so a style change is neither undoable nor a boundary. One session of the
+dialog is to become one undo step (case 7.5).
+
 **Undo and redo.** Undo sets the `<style>` element's text back, the browser parses it again, and
 the next `GetRuleForStyle` finds the new rule objects (case 7.5). The refitted sizes and the inline
 font sizes go back in the same step, so they fit the restored rules. `onAfterUndoOrRedo`: if the format
@@ -3739,9 +3804,8 @@ the book's theme, and clicks OK.
   applied at `:357-375`); a background change also rewrites the `src` of pictures on the page for
   transparency (`:212`, `bookEdit/js/bloomImages.ts:595-612`). The dialog previews them live: it
   takes a copy of the page's attributes when it opens (`BookAndPageSettingsDialog.tsx:272-282`,
-  `utils/ElementAttributeSnapshot.ts`) and puts the copy back on Cancel (`:328-338`). That copy is
-  of the page element's attributes only, so Cancel leaves the pictures' `src` changes in place
-  (inferred from the code, not tried). Book settings are not previewed.
+  `utils/ElementAttributeSnapshot.ts`), with the `src` of each picture on the page, and puts both
+  back on Cancel (`restoreInitialPage`). Book settings are not previewed.
 - "Delete customBookStyles" deletes that file at once, before OK (`:313-318`,
   `BookSettingsApi.cs:89-102`).
 - OK applies the page settings to the page (`:351-353`) and, only if book settings changed, posts
@@ -3783,6 +3847,11 @@ if (bookSettingsChanged) {
 changes stay on the page and belong to no transaction, which is right, since there is no history
 left for them to belong to. With only page settings changed, undo puts back the page's
 `style` and the pictures' `src`, and nothing else is involved.
+
+As built, the page settings are not undoable: the live preview, Cancel and OK write them inside
+`doOutsideHistory` (rule 3), so changing them neither makes a step nor ends the history. A later
+undo whose step holds a picture's `src` that a background change rewrote is refused. Posting book
+settings ends the history through the API wrapper, as above.
 
 **What making book settings undoable later would take.**
 
@@ -3895,7 +3964,8 @@ origami's history moves to the central one (section 10).
 - **A toolbox control whose state lives outside the page**: the leveled reader level, case 7.6. Its
   state is a JS model in the toolbox frame whose setter posts the new value to C#. It stays outside
   the history, because state in JavaScript memory has no API yet (section 11.8.2); whether the
-  page depends on it is still to check.
+  page depends on it is still to check. As the code stands, changing the level reloads the page,
+  which ends the history.
 - **A recomputed value**: the link-grid thumbnail, case 7.4 and section 5.2.
 
 ### 11.8 The API for what the observer cannot see
@@ -3913,7 +3983,9 @@ state (section 11.8.7).
 
 The first version builds this interface in `bookEdit/pageHistory/pageHistoryTypes.ts`, all but
 `addChangeOutsidePage`: its `Transaction` holds only `descriptionL10nKey`. Undo and redo do nothing
-while a transaction is open; that choice is provisional (OPEN-ISSUES.md).
+while a transaction is open; that choice is provisional (OPEN-ISSUES.md). Nothing shows the
+descriptions yet, so a description key that no control's label already uses has no XLF entry until
+the Undo button shows the descriptions.
 
 ```ts
 /** One per page load, in the page frame (section 3.3). Other frames reach it as below. */
@@ -3938,10 +4010,15 @@ interface PageHistory {
     beginTransaction(descriptionL10nKey: string): BegunTransaction;
     /**
      * Bloom's own change, joined to the latest transaction (section 6.1, rule 1). fn gets that
-     * transaction, available only inside fn; with none, one that records nothing.
+     * transaction, available only inside fn; with none, one that records nothing. While the only
+     * transaction open is the stand-in of a press (below) that has changed nothing yet, the
+     * latest transaction is the latest step, not the stand-in.
      */
     addToLatestTransaction<T>(fn: (transaction: Transaction) => T): T;
-    /** Bloom's own change, not recorded; only for a value that Bloom recomputes (section 6.1, rule 3). */
+    /**
+     * A change that is not recorded: a value that Bloom recomputes, or a change that is
+     * deliberately not undoable but must not end the history (section 6.1, rule 3).
+     */
     doOutsideHistory<T>(fn: () => T): T;
 
     /**
@@ -4148,12 +4225,17 @@ nest the same way, with no declaration.
   (rule 2), is a stand-in, so the first `doTransaction` or `beginTransaction` inside it with a
   description of its own gives the step that description, unless it is cancelled or fails, and the
   step reads, say, "Undo Delete".
-- **An inner transaction must end before the outer one**, with one exception. The stand-in may be
+- **An inner transaction must end before the outer one**, with two exceptions. The stand-in may be
   ended while transactions begun inside it are still open, such as a dialog's that a click opened:
   it then stays open, and closes, making its step, when the last of them ends or is cancelled, as
-  if `end()` were called then. Ending any other outer transaction while an inner one is still open
-  (an inner `beginTransaction` not yet ended, or an inner async `fn` still running) is a bug in the
-  code that began them: the inner ones end with it, and it throws in development.
+  if `end()` were called then. An async `doTransaction` whose `fn` settles while a transaction
+  begun after it is still open waits the same way: two async calls can overlap, when the second
+  begins while the first awaits, and neither awaits the other. If the second then fails, every
+  change since it began is put back, including what the first wrote after that point, since the
+  history cannot tell which of two interleaved async functions made a change. Ending any other
+  outer transaction while an inner one is still open (an inner `beginTransaction` not yet ended,
+  or an inner async `fn` still running inside a `doTransaction` whose `fn` returned a plain value)
+  is a bug in the code that began them: the inner ones end with it, and it throws in development.
 - **A transaction that has closed accepts nothing more.** `addChangeOutsidePage` on it throws,
   whether it closed as an inner one or an outermost one; see `Transaction` above. Only a transaction
   that `clearUndoAndRedo()` ended still makes the change and records nothing.
@@ -4304,12 +4386,12 @@ otherwise; `comicaljs` is `node_modules/comicaljs/dist/index.js`, `bloom-table` 
 | `CanvasElementManager.activeElement`, `theCanvasElementWeAreTextEditing` | references to elements (`:158`, `:1351`, `:2571`) | `moveActiveCanvasElement` writes position into it (`:363-411`); after an undo of Add, the element is detached and a later redo would bring it back carrying that change | Re-read: clear them if no longer in the page, else keep | Suspect |
 | Canvas element drag, resize, crop and rotate state | start geometry (`js/canvasElementManager/CanvasElementHandleDragInteractions.ts:194-236`; `CanvasElementPointerInteractions.ts:62-72`) | each pointer move during the drag | Nothing, if Undo does nothing while a gesture is open (below) | Suspect |
 | Picture load listeners | closures over the element and the new picture (`CanvasElementManager.ts:1883-1924`; `js/canvasElementManager/CanvasElementBackgroundImageManager.ts:656-673`) | the canvas element's geometry when the picture loads | Abandon (section 11.2) | Suspect |
-| Games tool (`toolbox/games/GameTool.tsx`) | toggles and sound ids in React state, from `getStateFromPage` (`:827-836`, `:973-1005`) | each toggle writes the inverse of its cached value (`:1117-1121`, `:1151-1170`); the sound chooser compares with the cached id (`:1071-1077`) | Re-read: call `getStateFromPage` | Confirmed |
+| Games tool (`toolbox/games/GameTool.tsx`) | toggles and sound ids in React state, from `getStateFromPage` | none for the toggles, which read the page when clicked and write outside the history (`toggleAllSameSizeOnPage` and the two after it); the sound chooser compares with the cached id | Nothing for the toggles; the sounds also change outside the history (rule 3) | Confirmed |
 | Games tool, draggable to target | the target's copy of the active draggable (`:930-971`; `js/dragActivityRuntimeUtils.ts:17-21`) | its observer rewrites the target when the draggable changes, undo included | Nothing for the active draggable, whose target is in the same transaction; re-read for the others | Suspect |
 | bloom-player's drag runtime on the Play tab | positions by draggable (`node_modules/bloom-player/src/shared/dragActivityRuntime.ts:45-56`, `:156-179`) | `restorePositions` and `stopDrag` (`:64-74`, `:803-829`) | Nothing: entering and leaving the Play tab are boundaries (section 3.7) | Confirmed |
 | Game prompt dialog (`toolbox/games/GamePromptDialog.tsx`) | the prompt group and the draggables' content (`:151-156`, `:291-315`) | its observer copies the dialog's text over the page's prompt on every keystroke (`:339-343`); Cancel writes the saved prompt (`:453`) | Modal; whether Ctrl+Z can reach the page while it is open was not traced | Confirmed |
-| Talking Book playback (`toolbox/talkingBook/audioRecording.ts`) | `innerHTML` of elements changed for playback highlighting (`nodesToRestoreAfterPlayEnded`, `:5255`, filled at `:5114-5122`) | `revertFixHighlighting` writes it back when playback ends (`:5260-5272`) | Abandon: stop playback and revert before the check, so the revert joins the latest transaction | Confirmed |
-| Talking Book playback order | each group's `tabindex` (`playbackOrderCache`, `:199`, `:2414-2452`) | the order buttons rewrite every group's `tabindex` from it (`:2463-2536`) | Re-read: drop the cache | Confirmed |
+| Talking Book playback (`toolbox/talkingBook/audioRecording.ts`) | the children of elements changed for playback highlighting (`childrenToRestoreAfterPlayEnded`) | `revertFixHighlighting` puts back the same nodes when playback ends; both it and `fixHighlighting` write outside the history | Abandon: `prepareForUndoOrRedo`, from `onBeforeUndoOrRedo`, stops playback and reverts before the check | Confirmed |
+| Talking Book playback order | each group's `tabindex` (`playbackOrderCache`) | the order buttons rewrite every group's `tabindex` from it, one undo step per click | Re-read: `updateAfterUndoOrRedo` draws the buttons again outside the history, which fills the cache again (`showPlaybackOrderUi`) | Confirmed |
 | Talking Book ids for splitting | sentence text to new ids (`sentenceToIdListMap`, `:196`, `:4540-4544`), never cleared | the ids are put on new spans (`:4051-4060`) | Re-read: clear the map | Suspect |
 | Talking Book current element and id | `highlightedElement`, `currentAudioId` (`:176`, `:164`) | recording names the file by it (`:1466-1478`); `durationChanged` writes `data-duration` (`:1542-1550`) | Re-read: `handleNewPageReady`-like refresh (`:2877-2933`) | Suspect |
 | Talking Book button states | whether the current selection has a recording (`:4299-4352`, `:2344-2346`) | none; shown, and used to decide whether to ask before Import | Display | Confirmed |
@@ -4325,7 +4407,7 @@ otherwise; `comicaljs` is `node_modules/comicaljs/dist/index.js`, `bloom-table` 
 | Sign language tool (`toolbox/signLanguage/signLanguageTool.tsx`) | the video's start and end seconds (`:1214-1217`, `:427-428`) | the range slider writes both ends, the untouched one from the copy (`:417-436`, `:1312-1328`) | Re-read | Confirmed |
 | Motion tool (`toolbox/motion/motionTool.tsx`) | start and end rectangles on the page, drawn from `data-initialrect` and `data-finalrect` (`:94-208`) | a rectangle drag writes both attributes from the rectangles (`:188`, `:641-659`) | Re-read: draw the rectangles again | Suspect |
 | Music tool (`toolbox/music/musicToolControls.tsx`) | `data-backgroundaudio` and its volume in React state (`:52-54`, `:67-104`) | writes only the newly chosen value (`:318-345`) | Display | Confirmed |
-| Image description tool (`toolbox/imageDescription/imageDescription.tsx`) | "not needed", from `aria-hidden` (`:176-190`) | the checkbox writes the inverse of its cached value (`:156-167`) | Re-read | Confirmed |
+| Image description tool (`toolbox/imageDescription/imageDescription.tsx`) | "not needed", from `aria-hidden` | the checkbox writes `aria-hidden` outside the history (`onCheckChanged`) | Nothing: no undo step records `aria-hidden` | Confirmed |
 | Impairment visualizer (`toolbox/impairmentVisualizer/impairmentVisualizer.tsx`) | a pixel copy of each picture in an overlay (`:223-299`) | writes `object-position` on pictures (`:273-277`) | Re-read: draw the overlay again | Suspect |
 | Book and page settings dialog | the page's settings when it opens (`bookAndPageSettings/BookAndPageSettingsDialog.tsx:274`) | only what changed (`:345-352`) | Modal (section 11.5) | Suspect |
 | Comprehension quiz (`js/simpleComprehensionQuiz.ts`) | each checkbox's `checked` property, set from the `correct-answer` class at load (`:46-56`) | a click toggles the property and writes the class from it (`:63-74`) | Re-read: set `checked` from the class; a property is not in the DOM the observer sees | Confirmed |
@@ -4620,7 +4702,7 @@ from a call to `pageHistory().clearUndoAndRedo()`. There are three ways it is ma
   const kRequestsThatEndTheHistory: Array<(urlSuffix: string, data: unknown) => boolean> = [
       (u) => u.startsWith("audio/startRecord"), // section 11.3
       (u) => u.startsWith("audio/deleteSegment"),
-      (u, d) => u === "fileIO/copyFile" && copiesOverAudioFile(d), // Import; not duplication's copy
+      (u, d) => u === "fileIO/copyFile" && copiesOverAudioFile(d), // Import; not a Games sound's copy
       (u) => u === "book/settings" || u === "book/settings/deleteCustomBookStyles", // 11.5
       (u) => u === "editView/topBar/layoutChoiceChange" || u === "changeLayout", // 11.6
       (u) => u.startsWith("copyrightAndLicense/"), // POSTs only; 11.7
@@ -4643,8 +4725,9 @@ from a call to `pageHistory().clearUndoAndRedo()`. There are three ways it is ma
   could reach a state whose file or C# value C# has already changed; if C# then fails, the history
   is lost and the book is unchanged. The endpoint names are as they appear in the code cited in
   sections 11.3 to 11.7; the topic endpoint was not looked up.
-- **Everything else**: the code that makes the change calls `clearUndoAndRedo()` itself (Talking Book's markup
-  on opening, the Games Play tab, Image Description), from whichever frame it runs in.
+- **Everything else**: the code that makes the change calls `clearUndoAndRedo()` itself, from
+  whichever frame it runs in. As built, origami does, as Change Layout mode starts and ends
+  (section 11.6).
 
 If a `clearUndoAndRedo()` is missing, the page still returns only to states that it was in: the observer records
 every page change, and undo writes back only recorded values. What is at risk is state outside the
@@ -4658,23 +4741,24 @@ on the page depends on needs no `clearUndoAndRedo()` (rule 5). Under the rule as
 missing from `kRequestsThatKeepThePageHistory` loses history and damages nothing; the review point
 is each entry on that list.
 
-In the first version, a click or key press in the toolbox frame or the root window that changes
-the page with no explicit transaction ends the history (MINIMUM.md item 4). That covers the rows
-below that name a tool, such as opening Talking Book or entering the Games Play tab, without a call
-in the tool, for the changes that the tool makes in the task of the click; a change that it makes
-after an `await` joins the latest step instead (rule 1).
+As built, a click or key press in the toolbox frame or the root window that changes the page with
+no explicit transaction ends the history (MINIMUM.md item 4), for the changes that the tool makes
+in the task of the click; a change that it makes after an `await` joins the latest step instead
+(rule 1). Opening a tool is not a boundary: Talking Book's sentence split joins the latest step
+(section 5.4), and what Motion and Image Description write on opening is outside the history
+(rule 3).
 
 | Boundary | Where `clearUndoAndRedo()` is called |
 |---|---|
 | Switching page, adding, deleting, moving or duplicating a page, leaving the Edit tab | no call: the page frame is replaced, and its history with it (section 3.3) |
-| Opening Talking Book when its markup changes content | Talking Book, after the markup, if it recorded anything (section 5.4) |
 | Recording, importing or clearing audio | the API wrapper (section 11.3) |
 | Book settings OK with book settings changed, which includes changing content languages; Delete customBookStyles | the API wrapper (section 11.5) |
 | Page size or orientation; Choose Different Layout | the API wrapper (section 11.6) |
 | Entering and leaving origami's Change Layout mode | origami (section 11.6) |
 | Set Image Information OK; the book's Copyright and license OK, until its reload is removed | the API wrapper (section 11.7) |
 | Choosing a topic | the API wrapper, once its endpoint is on the list (section 3.3) |
-| Entering and leaving the Games Play tab; opening and closing Image Description when it moves content | the tool, on the tab or tool change (section 3.7) |
+| Entering and leaving the Games Play tab | the tool, on the tab change (section 3.7); with it, decided, recording stops, with Undo disabled, from entering Play to leaving it; neither is built (OPEN-ISSUES.md) |
+| Changing the leveled reader level | no call: the page reloads (case 7.6) |
 | Each action that still reloads the page, until its reload is removed | no call needed for the reload itself; the API wrapper for `common/saveChangesAndRethinkPageEvent`, so the history is gone before C# saves (sections 3.3, 10.1) |
 
 ### 11.9 Kinds of state at a glance
@@ -4684,6 +4768,7 @@ after an `await` joins the latest step instead (rule 1).
 | Text and formatting | page DOM, inside `.bloom-editable` | every text and child-list change | typing steps (case 7.7); `addToLatestTransaction` on reactions | 11.1 |
 | Page structure and attributes | page DOM | every attribute and child-list change | `doTransaction` or `beginTransaction` at the routing point | 11.2, 11.7, case 7.1 |
 | Values Bloom recomputes | page DOM | the change | `doOutsideHistory` | case 7.4, `data-duration` (11.3) |
+| Page changes kept out of the history on purpose | page DOM | the change | `doOutsideHistory`; a later undo whose step holds a value that the change altered is refused (rule 3) | the Music tool's settings, a sign language trim (MINIMUM.md item 4) |
 | CSS rules | `<style>` text in the page's head | the text node, through a second `observe` | `writeRule` in StyleEditor | 11.4, 11.8.6, case 7.5 |
 | JS memory, page or toolbox frame | a tool's model, a control's setting | nothing | nothing, if nothing on the page depends on it (its change is then not undoable); otherwise the action is a boundary; no API yet (11.8.2) | case 7.6, 11.8.2 |
 | Copies of page content in components | comicaljs, tools' React state, caches | nothing; their stale writes, if they happen | `onAfterUndoOrRedo` (re-read) or `onBeforeUndoOrRedo` (abandon) | 11.8.3 |

@@ -213,8 +213,8 @@ A classification of user actions, because the central system has to handle each 
 has a recording). One transaction, never several (agreed).
 - **Made inside a dialog**: one transaction per OK (§2.11); changes a dialog previews live while open
 are not recorded.
-  - StyleEditor format dialog: applies each change live and has no Cancel. Provisionally, each
-  change is its own transaction.
+  - StyleEditor format dialog: applies each change live and has no Cancel. Provisionally, one
+  session of the dialog is one transaction.
 - **Asynchronous**: an operation that runs in the background while the user can keep working on
 the page, and changes state when it finishes. Not undoable. An operation that blocks the page
 until it finishes (behind a progress dialog, say) is not in this category; it is an ordinary
@@ -251,8 +251,7 @@ of four kinds:
     navigate (§17.1). These clear the history like any boundary; acceptable under §4.4 item 2
     (undo may work poorly with flow text, but must not damage the book).
    - Agreed: switching to another page, adding a page, deleting a page (Bloom already asks the
-    user to confirm in a dialog), moving a page, duplicating a page, leaving the Edit tab,
-   opening Talking Book when it splits text into sentence spans (a starting point; §4.4 item 3).
+    user to confirm in a dialog), moving a page, duplicating a page, leaving the Edit tab.
    - Agreed as the minimum, with undo as a nice-to-have (4.2):
      - changing book settings. It can re-lay out the current page, so it can't be a view
       change. A user may reasonably click OK, see the result, and want it back.
@@ -370,8 +369,7 @@ either undoable as a whole, with the state recorded, or a boundary (APPROACHES �
    for again from the button's link.
    - Talking Book spans added when the tool opens are caused by opening the tool, not by an
    edit, but they rewrite text that earlier transactions hold, so they can't simply survive.
-   Agreed as a starting point: opening Talking Book is a boundary when it changes content
-   (§4.0).
+   They join the latest transaction, so undoing it takes them away too (APPROACHES §5.4).
    Where an untracked change follows from a user's change on another page (flow text), Bloom's
    own reactions restore consistency, not undo (item 2).
 4. After undo or redo, every feature on the page works as it did before the change (tables
@@ -659,9 +657,8 @@ elements change saved DOM: table image cells are refit (`tableEditing.ts`),
 - **Zoom**: changes only `#page-scaling-container`, outside the saved page. A view change.
 - **Toolbox tools**: on save, the current tool strips its markup from the copy being saved.
 Reader tools, Image Description, Games and Impairment Visualizer strip everything they add. The
-reader tools paint their highlights with the CSS Custom Highlight API, which writes no DOM; their
-rewrite of the text box after typing is to be removed, after which they change nothing that undo sees
-(APPROACHES §5.3).
+reader tools paint their highlights with the CSS Custom Highlight API, which writes no DOM, and
+do not rewrite the text box, so they change nothing that undo sees (APPROACHES §5.3).
 Talking Book keeps the `audio-sentence` spans and ids it adds when it opens on a page, so
 opening it can change saved content (`audioRecording.ts`).
 - **Changes Bloom makes after a page loads**, saved: reordering editables in translation
@@ -701,7 +698,7 @@ changes use direct JS calls instead (`changeImage`).
 changes (Talking Book spans, auto-fit, `data-bloom-active`).
 - **Actions that save and reload the open page**: opening the AI image editor
 (`aiImageEditorPageCommands.ts`, `AiImageEditorApi.cs`), Set Image Information
-(`canvasControlRegistry.ts`), choosing a video (`bloomVideo.ts`), leaving origami layout mode
+(`canvasControlRegistry.ts`), leaving origami layout mode
 (`origami.ts`), changing a canvas text field's type (`canvasControlTextMenuItems.ts`), topic
 choice (`EditingModel.cs`), unlocking or relocking the original credits (`editableDivUtils.ts`),
 OK in the book's Copyright and license dialog, Copy Page, and (inferred, not traced) changing the

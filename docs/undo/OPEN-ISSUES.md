@@ -1,7 +1,7 @@
 # Undo design: issues to pick up next
 
-What is still open in the undo design (2026-10-15), with the first version, MINIMUM.md, built in
-commit `ec71549342`. The design itself is in APPROACHES.md; section numbers below refer to it.
+What is still open in the undo design (2026-10-16), with the page history built on this branch as
+MINIMUM.md describes it. The design itself is in APPROACHES.md; section numbers below refer to it.
 
 ## Proposed, waiting for a decision
 
@@ -42,11 +42,12 @@ commit `ec71549342`. The design itself is in APPROACHES.md; section numbers belo
       frame fetches once per page load. The decision sits beside the code that knows what the
       endpoint changes, and every new endpoint has to make it. The page frame needs the table before
       the first request that ends the history, and one endpoint whose effect depends on its data
-      (`fileIO/copyFile`, which copies over an audio file for Import and not for duplication) needs a
-      flag that says more than yes or no, or splitting into one endpoint that writes a new file and
-      one that overwrites, so that each endpoint has one effect to declare.
+      (`fileIO/copyFile`, which copies over an audio file for Talking Book's Import, and copies one
+      of the Games tool's built-in sounds into the book) needs a flag that says more than yes or no,
+      or splitting into one endpoint that writes a new file and one that overwrites, so that each
+      endpoint has one effect to declare.
     - **The caller**, which says at each call whether the request keeps the history. The caller
-      knows why it sends the request, so it can tell Import from duplication. The knowledge is
+      knows why it sends the request, so it can tell Import from the copy of a sound. The knowledge is
       spread over every call site, two callers can say different things about one endpoint, and a
       call that says nothing must still end the history.
     - **The list in `bloomApi.ts`, as built**: one place to review, away from both the endpoint and
@@ -72,7 +73,9 @@ commit `ec71549342`. The design itself is in APPROACHES.md; section numbers belo
    `onUndoRedoChanged(listener)` that hands over `undoDescriptionL10nKey` and
    `redoDescriptionL10nKey` (`undefined` means nothing to undo), called on subscribe and after every
    change, replacing the read properties; and the root window subscribes once, with each new page's
-   history reporting into it, so the button never has to know about page loads.
+   history reporting into it, so the button never has to know about page loads. A description key
+   that no control's label already uses, such as `EditTab.Undo.Edit`, gets its XLF entry when the
+   button shows the descriptions.
 
 ## Failure modes (John: "we will need to work on these at some point")
 
@@ -96,7 +99,11 @@ commit `ec71549342`. The design itself is in APPROACHES.md; section numbers belo
 10. **Typing during an async transaction** joins it (rule 7), so a slow action can take in the user's
     typing. A picture change keeps its transaction open until no page content delay is pending, for
     up to 4 s (MINIMUM.md item 5), so typing in that time is undone with the picture. A UX cost to
-    weigh.
+    weigh. Two async `doTransaction` calls can overlap, when the second begins while the first
+    awaits: the second nests in the first, the first waits for it if it settles first, and the step
+    is made when the last of them ends. If the second then fails, every change since it began is
+    put back, the first one's writes after that point included, since the history cannot tell which
+    of two interleaved async functions made a change.
 
 ## Files and state outside the page
 
@@ -125,11 +132,13 @@ commit `ec71549342`. The design itself is in APPROACHES.md; section numbers belo
     `tableL10nKey(label)` maps them to keys, which must exist in the English XLF. In the first
     version each table operation is an "Undo edit" step, and `bloom-table` still keeps its own
     history inside the library, though nothing in Bloom reaches it.
-37. **The overflow checker's inline styles.** It writes `min-height` and `padding-bottom` into a
-    box's `style`, worked out from the content, and the save keeps them. The filter records them like
-    any style property, so a write after an undo is a change outside any transaction, which joins the
-    latest step and clears redo (rule 8). Open: whether to add them to what the save keeps and undo
-    leaves alone, as the overflow checker's classes are (section 3.7).
+37. **The overflow checker's `padding-bottom`.** It writes `padding-bottom` into the `style` of a
+    `bloom-padForOverflow` box (for the book title, only on the front cover), worked out from how
+    far the text's descenders reach, and the save keeps it. The filter records it like any style
+    property, so a write after an undo is a change outside any transaction, which joins the latest
+    step and clears redo (rule 8). Undo leaves alone the `min-height` that the overflow checker
+    writes into a box's `style` (`kBoxStylePropertiesIgnoredByUndoOnly` in `editTimeMarkup.ts`).
+    Open: whether to treat `padding-bottom` the same.
 38. **Undo while a save is in flight** (`SavePending`, `EditingStateMachine.cs:14`), which the save
     can overtake (retire-ckeditor PLAN.md:657-663). Still to decide (MINIMUM.md item 8).
 
@@ -144,19 +153,9 @@ lists. A few more are product decisions.
 
 Deleting or overwriting a file that a page names:
 
-- **Sign language Delete** (`signLanguage/deleteVideo`) moves the video file to the Recycle Bin.
-  Make it work like removing a picture: a transaction removes the `<video>`, the file stays, and
-  `CleanupUnusedSupportFiles` removes it when no history exists. The request then no longer needs to
-  end the history. (§4)
-- **`editView/addImageFromUrl`** writes `bookButton-<bookId>.png` over the old one; write a new name.
-  (§4)
 - **The Games tool's built-in sounds**: skip the copy when the file is already there. (§4)
 - **File names**: `GetUnusedFilename` should never give out a name that a file had earlier in the
   session, so that a path in C#'s picture caches always means one picture. (§4)
-
-Writes to the page that happen without a click or key press, and that the save keeps:
-
-- Video selection stops being stored as `bloom-selected` in the saved markup. (§2)
 
 Playback: `fixHighlighting` changes to CSS highlight ranges, as the rest of the highlighting already
 does. This also fixes two bugs that users can hit today: typing during a paused playback is erased,
@@ -187,8 +186,6 @@ Talking Book:
 
 Components:
 
-- The Games tool's toggles read the page when clicked instead of writing the inverse of a cached
-  value. (§8)
 - The `ResizeObserver`s in the Motion tool and `CanvasElementEditingSuspension` each need their own
   fix. (§8)
 - The colour picker can close through `hideColorPickerDialog`, which runs neither OK nor Cancel; and
@@ -207,10 +204,13 @@ the history, or make the action end the history.
   to overwrite a picture file must allow a metadata write, and §11.8.5's rule that a picture file
   is never overwritten gets that exception. A metadata edit keeps changing the credits on every page
   that shows the picture, as it does today. (§4, §13, §14)
-- **Not decided:** three items under "Change Bloom's code" could take one of those ways out instead.
-  `editView/addImageFromUrl` could end the history; video selection (`bloom-selected`) could be
-  written outside the history, if `doOutsideHistory` is allowed for more than recomputed values; and
-  the Games tool's built-in sound files could be declared outside the history.
+- **Ways out taken:** `editView/addImageFromUrl` keeps the history, since the thumbnail's name
+  depends only on the linked book's id, so every page that names it shows that book's cover; and
+  undo leaves `bloom-selected` alone, as view state (`kClassesIgnoredByUndoOnly` in
+  `editTimeMarkup.ts`).
+- **Not decided:** the Games tool's built-in sound files could be declared outside the history
+  instead of skipping the copy. The sound attributes on the page change outside the history; the
+  copy, through `fileIO/copyFile`, ends it.
 - **`addPage` needs nothing.** It overwrites smart-page scripts, but it goes to the new page, which
   ends the history anyway. (§4)
 - **Rule 1 assumes that Bloom's reactions finish before the next input.** Anything that waits on a
@@ -218,10 +218,10 @@ the history, or make the action end the history.
   (BL-16870). For pictures, the first version keeps the change's transaction open until no page
   content delay is pending (MINIMUM.md item 5), and the pixel-size change above would let it close
   at once. The plan must say what happens to any other reaction that lands late. (§1)
-- **Setup that a tool does when the user opens it.** In the first version, a click in the toolbox
-  that changes the page ends the history (MINIMUM.md item 4). Once input in the toolbox makes undo
-  steps, the plan must say whether that setup is outside the history or a boundary. The Games tool's
-  random shuffle depends on that rule. (§3)
+- **Setup that a tool does when the user opens it** is outside the history (Motion's rectangles,
+  Image Description's wrapper and the description box that it adds, what Talking Book writes on
+  opening), except Talking Book's sentence split, which is saved content and joins the latest step
+  (MINIMUM.md item 4). Still open: the Games tool's random shuffle. (§3)
 - **Rule 6's filter** was derived from the save path. It needs an audit of `mouseenter`,
   `mouseleave` and selection handlers too. (§2)
 - **What listeners of `onAfterUndoOrRedo` may do later.** React renders, `useEffect` writes and
@@ -246,9 +246,9 @@ the history, or make the action end the history.
   of attributes is saved, and the plan should say so. Whole-book changes need the current page saved
   first, which conflicts with item 1; §11.5 must say who saves, and when.
   `_featureRequirementsBeforeEdits` must be retaken with `SaveStateForFullSaveDecision`. (§6)
-- **The Games tool's Play tab** needs a way to stop recording, with Undo disabled, from entering Play
-  to leaving it. The plan must also say what `clearUndoAndRedo()` in the middle of a click means for
-  the rest of that event. (§9)
+- **The Games tool's Play tab**: decided, recording stops, with Undo disabled, from entering Play to
+  leaving it; not built. The plan must also say what `clearUndoAndRedo()` in the middle of a click
+  means for the rest of that event. (§9)
 - **The planned change that gives each recording a new id** must allow for elements that share an
   audio id (data-book fields, custom layouts, copies from the data div) and for `_timings.txt`, which
   is named by the id. (§10)
