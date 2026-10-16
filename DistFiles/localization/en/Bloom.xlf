@@ -2756,6 +2756,7 @@
         <source xml:lang="en">The selected video</source>
         <note>ID: EditTab.Toolbox.SignLanguage.SelectedVideo</note>
         <note>Appears in the context "X will be moved to the recycle bin"</note>
+        <note>Obsolete as of 6.6. Deleting a video in the sign language tool no longer asks for confirmation; undo puts the video back.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.SelectSignLanguageBox" sil:dynamic="true">
         <source xml:lang="en">To use this tool, select a sign language box on the page.</source>

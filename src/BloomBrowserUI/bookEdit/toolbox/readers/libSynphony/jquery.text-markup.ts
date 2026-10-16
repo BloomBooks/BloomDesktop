@@ -12,8 +12,9 @@ import * as _ from "underscore";
 import { theOneLibSynphony, LibSynphony } from "./synphony_lib";
 import "./bloomSynphonyExtensions"; //add several functions to LanguageData
 import { ReaderToolsModel } from "../readerToolsModel";
-import { TextOffsetMap } from "../../../js/textHighlightManager";
+import { doOutsideHistoryIfAny } from "../../../pageHistory/pageHistoryAccess";
 import {
+    ReaderTextMap,
     kSentenceTooLongHighlight,
     kSightWordHighlight,
     kWordNotDecodableHighlight,
@@ -79,7 +80,7 @@ import {
         // cumulative over the whole page, so we can't decide which words to highlight in the
         // first leaf until we have analyzed the last one.
         const leafResults: {
-            map: TextOffsetMap;
+            map: ReaderTextMap;
             sentenceTooLongSpans: TextSpan[];
         }[] = [];
 
@@ -199,6 +200,8 @@ import {
                 "div.bloom-page",
             );
         }
+        // The page history neither records nor puts back this class (kEditTimeClasses in
+        // pageHistory/editTimeMarkup.ts), so changing it needs no doOutsideHistoryIfAny.
         if (
             totalWordCount > opts.maxWordsPerPage ||
             totalSentenceCount > opts.maxSentencesPerPage
@@ -259,7 +262,7 @@ import {
         this.removeCkEditorMarkup();
 
         // Snapshot the text of each element as the reader sees it, and get all the page's text.
-        const maps: TextOffsetMap[] = [];
+        const maps: ReaderTextMap[] = [];
         this.each(function () {
             const map = mapReaderText(this);
             maps.push(map);
@@ -372,32 +375,40 @@ import {
 
     /**
      * Removes all the markup that was inserted by this addin
+     *
+     * Only earlier versions of Bloom inserted these spans, so this changes a box only the first
+     * time the reader tools see a book that such a version saved. The page history does not record
+     * the change: it is not something the user did, and an undo that put the spans back would only
+     * have them removed again by the next markup pass, outside any transaction, which would lose
+     * redo. The page-too-many-words-or-sentences class is one the history ignores anyway.
      */
     $.fn.removeSynphonyMarkup = function () {
-        this.each(function () {
-            // remove markup for deleted text
-            $(this).find("span[data-segment=sentence]:empty").remove();
-            $(this).find("span[data-segment=word]:empty").remove();
-            $(this).find("span[data-segment=grapheme]:empty").remove();
+        doOutsideHistoryIfAny(() => {
+            this.each(function () {
+                // remove markup for deleted text
+                $(this).find("span[data-segment=sentence]:empty").remove();
+                $(this).find("span[data-segment=word]:empty").remove();
+                $(this).find("span[data-segment=grapheme]:empty").remove();
 
-            // remove previous sentence markup
-            $(this).find("span[data-segment=sentence]").contents().unwrap();
-            $(this).find("span[data-segment=word]").contents().unwrap();
-            $(this).find("span[data-segment=grapheme]").contents().unwrap();
+                // remove previous sentence markup
+                $(this).find("span[data-segment=sentence]").contents().unwrap();
+                $(this).find("span[data-segment=word]").contents().unwrap();
+                $(this).find("span[data-segment=grapheme]").contents().unwrap();
+            });
+
+            // remove page markup
+            const page = parent.window.document.getElementById(
+                "page",
+            ) as HTMLIFrameElement;
+            if (!page || !page.contentWindow)
+                $("body")
+                    .find("div." + cssTooMuchStuffOnPage)
+                    .removeClass(cssTooMuchStuffOnPage);
+            else
+                $("body", page.contentWindow.document)
+                    .find("div." + cssTooMuchStuffOnPage)
+                    .removeClass(cssTooMuchStuffOnPage);
         });
-
-        // remove page markup
-        const page = parent.window.document.getElementById(
-            "page",
-        ) as HTMLIFrameElement;
-        if (!page || !page.contentWindow)
-            $("body")
-                .find("div." + cssTooMuchStuffOnPage)
-                .removeClass(cssTooMuchStuffOnPage);
-        else
-            $("body", page.contentWindow.document)
-                .find("div." + cssTooMuchStuffOnPage)
-                .removeClass(cssTooMuchStuffOnPage);
     };
 
     /**
@@ -405,28 +416,35 @@ import {
      * had marked, CKEditor copied the marking span's computed background-color into an inline
      * style of its own, which got saved into the book. We no longer give it anything to copy,
      * but books edited by earlier versions still contain these spans.
+     *
+     * Like removeSynphonyMarkup, this changes a box only the first time the reader tools see such
+     * a book, and for the same reasons the page history does not record the change.
      */
     $.fn.removeCkEditorMarkup = function () {
-        this.each(function () {
-            $(this)
-                .find("span[style]")
-                .filter((_index, element) => {
-                    const style = (element as HTMLElement).getAttribute(
-                        "style",
-                    );
-                    // CKeditor copies the highlight style as a barebones inline style containing
-                    // only the background-color property.
-                    return !!style && /^background-color: [^;]*;$/.test(style);
-                })
-                .contents()
-                .unwrap();
-            // NB: do NOT remove CKEditor's hidden cke_* spans here. We used to, so that they
-            // could not skew the word markup, but mapReaderText() now simply skips them, and
-            // removing them moved the insertion point to the start of the text box after every
-            // typing pause: the hidden spans include the selection bookmarks that
-            // readerToolsModel.doMarkup() has EditableDivUtils.doCkEditorCleanup() insert before
-            // it calls us, and that it passes to restoreSelectionFromCkEditorBookmarks()
-            // afterwards to put the caret back. See also (BL-16490)
+        doOutsideHistoryIfAny(() => {
+            this.each(function () {
+                $(this)
+                    .find("span[style]")
+                    .filter((_index, element) => {
+                        const style = (element as HTMLElement).getAttribute(
+                            "style",
+                        );
+                        // CKeditor copies the highlight style as a barebones inline style
+                        // containing only the background-color property.
+                        return (
+                            !!style && /^background-color: [^;]*;$/.test(style)
+                        );
+                    })
+                    .contents()
+                    .unwrap();
+                // NB: do NOT remove CKEditor's hidden cke_* spans here. We used to, so that they
+                // could not skew the word markup, but mapReaderText() now simply skips them, and
+                // removing them moved the insertion point to the start of the text box after
+                // every typing pause: the hidden spans include the selection bookmarks that the
+                // toolbox's markup pass after typing (pageEditingMarkup.ts) inserts before it
+                // calls the reader tools, and removes afterwards to put the caret back. See also
+                // (BL-16490)
+            });
         });
     };
 

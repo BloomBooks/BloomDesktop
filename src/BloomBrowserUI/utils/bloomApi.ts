@@ -72,9 +72,31 @@ const kRequestsThatKeepThePageHistory = new Set(
         "aiImageEditor/commit",
         // Starts an AI image editor session; nothing on the page changes until the commit.
         "aiImageEditor/launch",
+        // A sign language video, recorded or imported, is written under a new name
+        // (SignLanguageApi.GetNewVideoFileName). Neither request overwrites or deletes a file that a
+        // page names: an import deletes only its own new file, when it is cancelled or fails. If
+        // either ever replaces the video it was given, undo would put back a page naming a changed
+        // or missing file, and the request must come off the list.
+        "signLanguage/recordedVideo",
+        "signLanguage/processVideo",
+        // Choosing a video to import only shows a file dialog; cancelling an import only stops it.
+        "signLanguage/chooseVideo",
+        "signLanguage/cancelImportVideo",
+        // Requests from a progress dialog, such as the one that a video import shows, which posts
+        // progress/closed after the import made its undo step. progress/ready only sets a flag, and
+        // progress/cancel only calls the running job's cancel handler. progress/closed runs the job's
+        // follow-up (BrowserProgressDialog.HandleProgressDialogClosed). C# cannot change the open page,
+        // so a follow-up that changes the book must save and reload the page, and the reload ends the
+        // history.
+        "progress/ready",
+        "progress/cancel",
+        "progress/closed",
         // Make sure a placeholder file that is never deleted is in the book folder.
         "edit/pageControls/requestVideoPlaceHolder",
         "edit/pageControls/requestWidgetPlaceHolder",
+        // A link grid's thumbnail of a linked book's cover. It never deletes a file, and its name
+        // depends only on that book's id, so every page that names it shows that book's cover.
+        "editView/addImageFromUrl",
         // Files that no page names.
         "fileIO/writeFile",
         "audioSegmentation/getForcedAlignmentTimings",

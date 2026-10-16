@@ -37,7 +37,7 @@ moving `master`. Its state lives in `docs/retire-ckeditor/`, not in any session'
 
 ## Ground rules for this project
 
-- **New code goes in new files** (`bookEdit/undo/`, `bookEdit/textEditor/`). Edits to existing
+- **New code goes in new files** (`bookEdit/pageHistory/`, `bookEdit/textEditor/`). Edits to existing
   files should be one-line dispatches wherever possible, and as late in the plan as possible.
   This is the project's whole defence against rebase pain.
 - **Don't keep a long-lived branch.** Each stage is designed to be its own small, green,

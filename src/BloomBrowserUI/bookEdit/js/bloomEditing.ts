@@ -40,6 +40,7 @@ import {
     doOutsideHistoryIfAny,
 } from "../pageHistory/pageHistoryAccess";
 import type { PageHistory } from "../pageHistory/pageHistoryTypes";
+import type { IPageFrameExports } from "../editablePage";
 import {
     kCanvasElementClass,
     kCanvasElementSelector,
@@ -51,6 +52,7 @@ import "../../lib/jquery.qtipSecondary.js";
 import "../../lib/long-press/jquery.longpress.js";
 import {
     doWhenWorkspaceBundleLoaded,
+    getEditablePageBundleExports,
     getToolboxBundleExports,
 } from "./workspaceFrames";
 import { handleUndo } from "../pageHistory/pageHistorySetup";
@@ -590,14 +592,24 @@ export function SetupElements(
                 "Edit Original Title",
                 "EditTab.FrontMatter.EditOriginalTitleLabel",
                 "Original Title",
-                (newTitle) => {
-                    titleElement.innerText = newTitle ?? "";
-                    if (titleElement.innerText.trim()) {
-                        titleElement.classList.remove("missingOriginalTitle");
-                    } else {
-                        titleElement.classList.add("missingOriginalTitle");
-                    }
-                },
+                (newTitle) =>
+                    // Without its own transaction, the change would be a step with only the
+                    // generic description, from the click on OK.
+                    void doTransactionIfAny(
+                        "EditTab.FrontMatter.EditOriginalTitleCaption",
+                        () => {
+                            titleElement.innerText = newTitle ?? "";
+                            if (titleElement.innerText.trim()) {
+                                titleElement.classList.remove(
+                                    "missingOriginalTitle",
+                                );
+                            } else {
+                                titleElement.classList.add(
+                                    "missingOriginalTitle",
+                                );
+                            }
+                        },
+                    ),
             );
         };
         SetupCustomMissingTitleStylesheet();
@@ -1362,16 +1374,44 @@ const activeDelays: string[] = [];
 const kMaxWaitTimeMs = 4000;
 let requestPageContentTimeout: number | null = null;
 
+/**
+ * The page frame's exports, when this module is running in another frame. Each frame (the
+ * toolbox, the root window) loads its own copy of this module, with its own activeDelays, so a
+ * delay that toolbox code registers here would never hold the page frame's save. Undefined in the
+ * page frame itself, and when there is no page frame, as in the off-screen page capture. The page
+ * frame is the iframe with id "page" in the root window, as getEditablePageBundleExports finds it.
+ */
+function pageFrameExportsIfInAnotherFrame(): IPageFrameExports | undefined {
+    const pageFrame = (window.parent || window).document.getElementById(
+        "page",
+    ) as HTMLIFrameElement | null;
+    if (!pageFrame?.contentWindow || pageFrame.contentWindow === window)
+        return undefined;
+    return getEditablePageBundleExports() ?? undefined;
+}
+
 // Add a delay notification that will prevent requestPageContent from running immediately.
 // The caller must provide a string ID and pass it to removeRequestPageContentDelay when done.
 // IDs do not need to be unique; the same ID can be added multiple times.
+// Called from another frame, it adds the delay in the page frame, whose save it must hold.
 export function addRequestPageContentDelay(id: string): void {
+    const pageExports = pageFrameExportsIfInAnotherFrame();
+    if (pageExports) {
+        pageExports.addRequestPageContentDelay(id);
+        return;
+    }
     activeDelays.push(id);
 }
 
 // Remove a delay notification, allowing requestPageContent to proceed if no other delays are active.
 // If this was the last delay, proceed with requesting page content.
+// Called from another frame, it removes the delay from the page frame, as the add put it there.
 export function removeRequestPageContentDelay(id: string): void {
+    const pageExports = pageFrameExportsIfInAnotherFrame();
+    if (pageExports) {
+        pageExports.removeRequestPageContentDelay(id);
+        return;
+    }
     const index = activeDelays.indexOf(id);
     if (index === -1) {
         console.error(
@@ -1874,9 +1914,24 @@ async function cutSelectionImpl() {
     const sel = document.getSelection();
     if (!sel) return;
     await navigator.clipboard.writeText(sel.toString());
-    const range = CKEDITOR.currentInstance.getSelection().getRanges()[0];
+    const editor = CKEDITOR.currentInstance;
+    // As Ctrl+X does (BloomField.PreventRemovalOfSomeElements), copy but delete nothing when the
+    // cut would remove an element that has the bloom-preventRemoval class.
+    if (
+        sel.rangeCount > 0 &&
+        BloomField.rangeWouldRemoveProtectedElement(
+            editor.element.$ as HTMLElement,
+            sel.getRangeAt(0),
+        )
+    ) {
+        return;
+    }
+    const range = editor.getSelection().getRanges()[0];
     range.deleteContents();
     range.select(); // Select emptied range to place the caret in its place.
+    // Deleting a range raises no input event, so fire the "change" that attachToCkEditor fires
+    // for one. BloomField.MarkWhenUserDeletesEverything listens for it (BL-13779).
+    editor.fire("change");
 }
 
 // See comment on copySelection. As with cutSelection, the paste is a doTransaction of its own.

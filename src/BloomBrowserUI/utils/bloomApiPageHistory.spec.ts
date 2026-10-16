@@ -73,17 +73,49 @@ describe("requestEndsPageHistory", () => {
             "editView/setCustomPageLayout",
             "copyrightAndLicense/imageCopyrightAndLicense",
             "toolbox/leveled",
-            "editView/addImageFromUrl",
             "audio/startRecord",
             "audio/deleteSegment",
             "fileIO/copyFile",
-            "signLanguage/deleteVideo",
             "readers/io/readerToolSettings",
         ]) {
             expect(requestEndsPageHistory("post", "/bloom/api/" + path)).toBe(
                 true,
             );
         }
+    });
+
+    it("keeps the history for recording and importing a sign language video, which write new files", () => {
+        for (const path of [
+            "signLanguage/recordedVideo",
+            "signLanguage/chooseVideo",
+            "signLanguage/processVideo",
+            "signLanguage/cancelImportVideo",
+        ]) {
+            expect(requestEndsPageHistory("post", "/bloom/api/" + path)).toBe(
+                false,
+            );
+        }
+    });
+
+    it("keeps the history for the progress dialog that closes after a sign language video is imported", () => {
+        for (const path of [
+            "progress/ready",
+            "progress/cancel",
+            "progress/closed",
+        ]) {
+            expect(requestEndsPageHistory("post", "/bloom/api/" + path)).toBe(
+                false,
+            );
+        }
+    });
+
+    it("keeps the history for a link grid's thumbnail, which only rewrites a linked book's cover", () => {
+        expect(
+            requestEndsPageHistory(
+                "post",
+                "/bloom/api/editView/addImageFromUrl",
+            ),
+        ).toBe(false);
     });
 
     it("ignores the query string, the host, a trailing slash and case", () => {

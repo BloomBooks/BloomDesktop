@@ -1369,7 +1369,11 @@ export interface ICanvasElementMarkupAndRect {
      * write the same thing.
      */
     markup: string;
-    /** Where the element is drawn, in the page frame's pixels, to a tenth of a pixel. */
+    /**
+     * Where the element is drawn, in the page frame's pixels, to a tenth of a pixel, measured from
+     * the canvas's top-left corner, so that scrolling the page frame between two readings, as
+     * clicking an element can, does not change it.
+     */
     rect: IRect;
 }
 
@@ -1381,8 +1385,10 @@ export interface ICanvasElementMarkupAndRect {
  *
  * What editing adds is left out by the rules that the page history itself follows
  * (bookEdit/pageHistory/editTimeMarkup.ts): Bloom's editing controls, Comical's drawing surfaces,
- * CKEditor's classes, attributes and filling characters, which element is active, and the classes
- * that the overflow check works out afresh. A change to those rules may need the same change here.
+ * CKEditor's classes, attributes, filling characters and the br that fills an empty block, which
+ * element and video container are selected, the class that marks a picture that failed to load,
+ * and the classes and the min-height of a box that the overflow check works out afresh. A change to
+ * those rules may need the same change here.
  *
  * Reads until two readings in a row agree, so that a change still settling, such as Comical
  * redrawing a tail or a picture finishing loading, is not caught half done.
@@ -1420,6 +1426,8 @@ export async function getCanvasElementMarkupAndRects(
                 "childOverflowingThis",
                 "pageOverflows",
                 "Layout-Problem-Detected",
+                "bloom-imageLoadError",
+                "bloom-selected",
             ]);
             const isEditTimeAttribute = (name: string, value: string) =>
                 name === "data-bloom-active" ||
@@ -1441,14 +1449,68 @@ export async function getCanvasElementMarkupAndRects(
                     )
                     .sort()
                     .join(" ");
-            const sortedStyle = (value: string) =>
+            // OverflowChecker works out a box's min-height afresh, so the page history leaves
+            // it alone on a .bloom-editable (kBoxStylePropertiesIgnoredByUndoOnly).
+            const isEditTimeStyleProperty = (
+                element: Element,
+                property: string,
+            ) =>
+                element.classList.contains("bloom-editable") &&
+                property.split(":")[0].trim().toLowerCase() === "min-height";
+            const sortedStyle = (value: string, element: Element) =>
                 value
                     .split(";")
                     .map((property) => property.trim())
-                    .filter((property) => property)
+                    .filter(
+                        (property) =>
+                            property &&
+                            !isEditTimeStyleProperty(element, property),
+                    )
                     .sort()
                     .join("; ");
             const zeroWidthSpace = String.fromCharCode(0x200b);
+            // The blocks that CKEditor fills with a br when they are empty (kBlocksThatCkEditorFills).
+            const blocksThatCkEditorFills = new Set([
+                "ADDRESS",
+                "BLOCKQUOTE",
+                "CAPTION",
+                "DD",
+                "DIV",
+                "DT",
+                "FIGCAPTION",
+                "H1",
+                "H2",
+                "H3",
+                "H4",
+                "H5",
+                "H6",
+                "LI",
+                "P",
+                "PRE",
+                "TD",
+                "TH",
+            ]);
+            // CKEditor's filler br in an otherwise empty block of a box, which it puts in and takes
+            // out as the caret comes and goes, and which a save writes alike either way
+            // (isCkEditorFillerBr).
+            const isCkEditorFillerBr = (element: Element): boolean => {
+                if (
+                    element.tagName !== "BR" ||
+                    element.hasAttribute("data-cke-eol")
+                )
+                    return false;
+                const block = element.parentElement;
+                if (
+                    !block ||
+                    !blocksThatCkEditorFills.has(block.tagName) ||
+                    !block.closest(".bloom-editable")
+                )
+                    return false;
+                return Array.from(block.childNodes).every(
+                    (sibling) =>
+                        sibling === element || serialize(sibling) === "",
+                );
+            };
             const serialize = (node: Node): string => {
                 if (node.nodeType === Node.TEXT_NODE)
                     return (node.textContent ?? "")
@@ -1457,13 +1519,14 @@ export async function getCanvasElementMarkupAndRects(
                 if (node.nodeType !== Node.ELEMENT_NODE) return "";
                 const element = node as Element;
                 if (element.matches(editTimeElements)) return "";
+                if (isCkEditorFillerBr(element)) return "";
                 const attributes = Array.from(element.attributes)
                     .filter((a) => !isEditTimeAttribute(a.name, a.value))
                     .map((a) => {
                         if (a.name === "class")
                             return [a.name, sortedClasses(a.value)];
                         if (a.name === "style")
-                            return [a.name, sortedStyle(a.value)];
+                            return [a.name, sortedStyle(a.value, element)];
                         return [a.name, a.value];
                     })
                     .filter(([, value]) => value !== "")
@@ -1480,6 +1543,7 @@ export async function getCanvasElementMarkupAndRects(
             const canvasOnPage = document.querySelector(canvasSelector);
             if (!canvasOnPage)
                 throw new Error("The page being edited has no canvas.");
+            const canvasRect = canvasOnPage.getBoundingClientRect();
             return Array.from(
                 canvasOnPage.querySelectorAll(":scope > .bloom-canvas-element"),
             ).map((element) => {
@@ -1487,8 +1551,8 @@ export async function getCanvasElementMarkupAndRects(
                 return {
                     markup: serialize(element),
                     rect: {
-                        x: tenth(r.x),
-                        y: tenth(r.y),
+                        x: tenth(r.x - canvasRect.x),
+                        y: tenth(r.y - canvasRect.y),
                         width: tenth(r.width),
                         height: tenth(r.height),
                     },

@@ -142,6 +142,79 @@ describe("the undo and redo keys in the page frame", () => {
         expect(heardByPage).toEqual([nextKeyUp]);
     });
 
+    it("keeps no keyup from the page after the page window loses the focus with Ctrl still down", () => {
+        attach();
+        const heardByPage = listenInBubblePhase(document, "keyup");
+        key(box, "keydown", { key: "z", ctrlKey: true });
+        // The user moves to the toolbox and lets go of Ctrl there: the page hears no keyup.
+        window.dispatchEvent(new FocusEvent("blur"));
+
+        const nextKeyUp = key(box, "keyup", { key: "A", shiftKey: true });
+        expect(heardByPage).toEqual([nextKeyUp]);
+    });
+
+    it("keeps no keyup from the page after a keydown with no modifier down", () => {
+        attach();
+        const heardByPage = listenInBubblePhase(document, "keyup");
+        key(box, "keydown", { key: "z", ctrlKey: true });
+        key(box, "keydown", { key: "a" });
+        const nextKeyUp = key(box, "keyup", { key: "a" });
+        expect(heardByPage).toEqual([nextKeyUp]);
+    });
+
+    it("still keeps the keyups of an undo key from the page when the focus leaves only an element", () => {
+        attach();
+        const heardByPage = listenInBubblePhase(document, "keyup");
+        key(box, "keydown", { key: "z", ctrlKey: true });
+        box.dispatchEvent(new FocusEvent("blur"));
+        key(box, "keyup", { key: "z", ctrlKey: true });
+        expect(heardByPage).toEqual([]);
+    });
+
+    it("leaves the keys to an input, a textarea or a dialog in the page, but not to a text box", () => {
+        page.insertAdjacentHTML(
+            "beforeend",
+            '<textarea id="calendarText"></textarea>' +
+                '<div role="dialog"><input id="titleField" type="text"></div>',
+        );
+        attach();
+        const inTextarea = key(
+            page.querySelector("#calendarText")!,
+            "keydown",
+            {
+                key: "z",
+                ctrlKey: true,
+            },
+        );
+        const inDialog = key(page.querySelector("#titleField")!, "keydown", {
+            key: "y",
+            ctrlKey: true,
+        });
+        expect(commands.undo).not.toHaveBeenCalled();
+        expect(commands.redo).not.toHaveBeenCalled();
+        expect(inTextarea.defaultPrevented).toBe(false);
+        expect(inDialog.defaultPrevented).toBe(false);
+
+        const inBox = key(box, "keydown", { key: "z", ctrlKey: true });
+        expect(commands.undo).toHaveBeenCalledTimes(1);
+        expect(inBox.defaultPrevented).toBe(true);
+    });
+
+    it("leaves the browser's own undo of an input or textarea in the page alone", () => {
+        page.insertAdjacentHTML(
+            "beforeend",
+            '<textarea id="calendarText"></textarea>',
+        );
+        attach();
+        const event = new InputEvent("beforeinput", {
+            bubbles: true,
+            cancelable: true,
+            inputType: "historyUndo",
+        });
+        page.querySelector("#calendarText")!.dispatchEvent(event);
+        expect(event.defaultPrevented).toBe(false);
+    });
+
     it("cancels the browser's own undo and redo of a text box", () => {
         attach();
         const cancelled = (inputType: string) => {

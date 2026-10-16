@@ -128,6 +128,14 @@ describe("kept classes", () => {
         ).toBe("bloom-cell");
     });
 
+    it("leave out bloom-selected, which marks the selected video container", () => {
+        expect(
+            keptClasses(
+                "bloom-videoContainer bloom-leadingElement bloom-selected",
+            ),
+        ).toBe("bloom-leadingElement bloom-videoContainer");
+    });
+
     it("are undefined when the save keeps no class", () => {
         expect(keptClasses("cke_focus cell--selected")).toBeUndefined();
         expect(keptClasses("")).toBeUndefined();
@@ -267,6 +275,26 @@ describe("kept style", () => {
         expect(keptAttributeValue(byId("img"), "style", "width: 50px")).toBe(
             "width: 50px;",
         );
+    });
+
+    it("leaves out min-height only on a box, where OverflowChecker works it out", () => {
+        makePage(kEditablePage);
+        expect(
+            keptAttributeValue(
+                byId("box"),
+                "style",
+                "min-height: 24px; color: red",
+            ),
+        ).toBe("color: red;");
+        expect(
+            keptAttributeValue(byId("descBox"), "style", "min-height: 24px"),
+        ).toBeUndefined();
+        expect(
+            keptAttributeValue(byId("img"), "style", "min-height: 24px"),
+        ).toBe("min-height: 24px;");
+        expect(
+            keptAttributeValue(byId("group"), "style", "min-height: 24px"),
+        ).toBe("min-height: 24px;");
     });
 
     it("does not depend on spacing, trailing semicolons or the case of names", () => {
@@ -618,6 +646,39 @@ describe("a page history with the edit-time markup filter", () => {
         );
     });
 
+    it("keeps redo when OverflowChecker first gives a box its min-height after a quick undo of typing", async () => {
+        const { history: h, unmarked } = setUp(
+            '<div class="bloom-editable bloom-visibility-code-on" id="box" lang="en" contenteditable="true"><p id="p"><br></p></div>',
+        );
+        const box = byId("box");
+        const paragraph = byId("p");
+        expect(box.hasAttribute("style"), "test setup").toBe(false);
+        await h.doTransaction("Type", () => {
+            // As the browser does: the filler goes, the text comes.
+            paragraph.firstChild!.remove();
+            paragraph.appendChild(document.createTextNode("sun"));
+        });
+        await h.undo();
+        expect(paragraph.textContent).toBe("");
+        expect(h.redoDescriptionL10nKey, "test setup").toBe("Type");
+
+        // OverflowChecker.CheckOnMinHeight's timer, set when the page loaded, fires now.
+        box.style.minHeight = "";
+        box.style.minHeight = "24px";
+        await letObserverDeliver();
+
+        expect(unmarked).not.toHaveBeenCalled();
+        expect(h.redoDescriptionL10nKey).toBe("Type");
+        await h.redo();
+        expect(paragraph.textContent).toBe("sun");
+        expect(box.style.minHeight, "undo and redo leave it alone").toBe(
+            "24px",
+        );
+        await h.undo();
+        expect(paragraph.textContent).toBe("");
+        expect(box.style.minHeight).toBe("24px");
+    });
+
     it("records and puts back a change that the save keeps next to edit-time ones", async () => {
         const { history: h } = setUp();
         const source = byId("source");
@@ -785,6 +846,39 @@ describe("a page history with the edit-time markup filter", () => {
         expect(empty.textContent, "the second undo should not be refused").toBe(
             "",
         );
+    });
+
+    it("ignores bloom-selected: selecting a video container after an undo keeps redo, and undo leaves the selection as it is", async () => {
+        const { history: h, unmarked } = setUp(
+            '<div class="bloom-videoContainer bloom-leadingElement bloom-selected" id="first"></div>' +
+                '<div class="bloom-videoContainer bloom-leadingElement" id="second"></div>' +
+                '<img id="img" src="a.png">',
+        );
+        const first = byId("first");
+        const second = byId("second");
+        await h.doTransaction("Change picture", () =>
+            byId("img").setAttribute("src", "b.png"),
+        );
+        await h.undo();
+        expect(h.redoDescriptionL10nKey, "test setup").toBe("Change picture");
+
+        // As selectVideoContainer does.
+        first.classList.remove("bloom-selected");
+        second.classList.add("bloom-selected");
+        await letObserverDeliver();
+        expect(unmarked).not.toHaveBeenCalled();
+        expect(h.redoDescriptionL10nKey).toBe("Change picture");
+
+        // Inside a step, the selection's move is not recorded either.
+        await h.doTransaction("Change picture again", () => {
+            second.classList.remove("bloom-selected");
+            first.classList.add("bloom-selected");
+            byId("img").setAttribute("src", "c.png");
+        });
+        await h.undo();
+        expect(byId("img").getAttribute("src")).toBe("a.png");
+        expect(first.classList.contains("bloom-selected")).toBe(true);
+        expect(second.classList.contains("bloom-selected")).toBe(false);
     });
 
     it("ignores bloom-imageLoadError, which the img's own handlers keep in step with its src", async () => {
@@ -1202,6 +1296,94 @@ describe("the text node that holds CKEditor's filling character", () => {
         );
         expect(bold.parentNode).toBe(emptyParagraph);
         expect(node.data).toBe("x");
+    });
+
+    /**
+     * Type text into the node that holds the filling character, one input at a time in a typing
+     * transaction, each just before the character, where the caret is, as the browser does; then
+     * CKEditor takes the character out, still inside the transaction, and the transaction ends.
+     */
+    async function typeIntoFillingCharNode(
+        h: PageHistory,
+        editor: StandInCkEditor,
+        node: Text,
+        text: string,
+    ): Promise<void> {
+        const typing = h.beginTransaction(kGenericUndoDescriptionL10nKey);
+        for (const character of text) {
+            node.insertData(node.data.length - 1, character);
+            await letObserverDeliver();
+        }
+        expect(node.data, "test setup").toBe(text + "​");
+        editor.removeFillingChar();
+        await letObserverDeliver();
+        typing.end();
+    }
+
+    it("is put back by redo after merging empty text nodes took it out while it was empty, in a paragraph that held only CKEditor's filler br", async () => {
+        const { history: h, editor, unmarked, emptyParagraph } = setUp();
+        const filler = emptyParagraph.firstChild!;
+        expect(filler.nodeName, "test setup").toBe("BR");
+        // The click: CKEditor puts the filling character in front of the filler br.
+        const node = editor.insertFillingChar(emptyParagraph, filler);
+        await letObserverDeliver();
+        // Typing into the node changes only its text: the br stays.
+        await typeIntoFillingCharNode(h, editor, node, "sun");
+        expect(emptyParagraph.childNodes.length, "test setup").toBe(2);
+        expect(h.undoDescriptionL10nKey).toBe(kGenericUndoDescriptionL10nKey);
+
+        await h.undo();
+        expect(node.data).toBe("");
+        expect(node.parentNode).toBe(emptyParagraph);
+        // Bloom merges adjacent text nodes (EditableDivUtils), which removes empty ones; the
+        // history sees no change, since an empty node that held the filling character is ignored.
+        emptyParagraph.normalize();
+        await letObserverDeliver();
+        expect(node.parentNode, "test setup").toBeNull();
+        expect(unmarked).not.toHaveBeenCalled();
+
+        await h.redo();
+        expect(node.parentNode).toBe(emptyParagraph);
+        expect(emptyParagraph.textContent).toBe("sun");
+        expect(emptyParagraph.firstChild).toBe(node);
+        await h.undo();
+        expect(emptyParagraph.textContent).toBe("");
+        expect(zeroWidthSpacesIn(page!)).toBe(0);
+        await h.redo();
+        expect(emptyParagraph.textContent).toBe("sun");
+        expect(emptyParagraph.firstChild).toBe(node);
+        expect(zeroWidthSpacesIn(page!)).toBe(0);
+    });
+
+    it("is put back by redo after merging empty text nodes took it out while it was empty, in a paragraph that held a space", async () => {
+        // What an e2e run saw in a speech bubble: <p> </p>, the filling character in a new node
+        // in front of the space, "hello" typed in front of the character.
+        const { history: h, editor, unmarked } = setUp();
+        byId("box").insertAdjacentHTML("beforeend", '<p id="space"> </p>');
+        await letObserverDeliver();
+        const paragraph = byId("space");
+        const space = paragraph.firstChild as Text;
+        const node = editor.insertFillingChar(paragraph, space);
+        await letObserverDeliver();
+        await typeIntoFillingCharNode(h, editor, node, "hello");
+        expect(paragraph.textContent, "test setup").toBe("hello ");
+
+        await h.undo();
+        expect(node.data).toBe("");
+        expect(paragraph.textContent).toBe(" ");
+        paragraph.normalize();
+        await letObserverDeliver();
+        expect(node.parentNode, "test setup").toBeNull();
+        expect(unmarked).not.toHaveBeenCalled();
+
+        await h.redo();
+        expect(paragraph.textContent).toBe("hello ");
+        expect(Array.from(paragraph.childNodes)).toEqual([node, space]);
+        await h.undo();
+        expect(paragraph.textContent).toBe(" ");
+        await h.redo();
+        expect(Array.from(paragraph.childNodes)).toEqual([node, space]);
+        expect(paragraph.textContent).toBe("hello ");
     });
 
     it("is an ordinary text node once it holds text: removing it is recorded and undone", async () => {

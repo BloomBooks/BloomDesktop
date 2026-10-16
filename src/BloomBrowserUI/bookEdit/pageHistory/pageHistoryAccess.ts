@@ -30,11 +30,26 @@ export function currentPageHistory(): PageHistory | undefined {
 
 /**
  * Run fn in the current page history's doOutsideHistory, so that the changes it makes are not
- * recorded; with no history, just run fn. Only for values that Bloom recomputes from other content.
+ * recorded and keep the history as it is; with no history, just run fn. Use it for a value that
+ * Bloom recomputes from other content, and for a change that is deliberately not undoable but must
+ * not end the history. A later undo or redo that needs a value such a change altered is refused:
+ * that stack of steps is emptied and the page is left as it is (PageHistory.doOutsideHistory).
  */
 export function doOutsideHistoryIfAny<T>(fn: () => T): T {
     const history = currentPageHistory();
     return history ? history.doOutsideHistory(fn) : fn();
+}
+
+/**
+ * Run fn in the current page history's addToLatestTransaction, so that its changes join the
+ * latest transaction without a warning; with no history, just run fn. Use it for Bloom's delayed
+ * reaction to an earlier action: while the only transaction open is the stand-in of a press that
+ * has changed nothing yet, the changes join the latest step, so the reaction never makes a step
+ * of its own (PageHistory.addToLatestTransaction).
+ */
+export function addToLatestTransactionIfAny<T>(fn: () => T): T {
+    const history = currentPageHistory();
+    return history ? history.addToLatestTransaction(fn) : fn();
 }
 
 /** End the current page history (drop every undo and redo step), if there is one. */

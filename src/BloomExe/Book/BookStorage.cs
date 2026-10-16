@@ -1340,9 +1340,20 @@ namespace Bloom.Book
                 // Protecting both is safe precisely because this is a list of files NOT to delete:
                 // a surplus entry at worst leaves an unused file in the folder, whereas a missing
                 // one deletes a file the book is using.
+                // The extension is matched ignoring case, as it is for the files above, so that a
+                // camera's IMG_1234.JPEG is protected too. XPath 1.0 has no lower-case(); translate()
+                // lowers ASCII letters only, which is all an extension needs.
+                const string lowerCaseText =
+                    "translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')";
+                var looksLikeAnImage = string.Join(
+                    " or ",
+                    imageExtentions.Select(extension =>
+                        "contains(" + lowerCaseText + ",'" + extension + "')"
+                    )
+                );
                 foreach (
                     SafeXmlElement dataDivImage in Dom.RawDom.SafeSelectNodes(
-                        "//div[@id='bloomDataDiv']//div[contains(text(),'.png') or contains(text(),'.jpg') or contains(text(),'.jpeg') or contains(text(),'.svg') or contains(text(),'.webp')]"
+                        "//div[@id='bloomDataDiv']//div[" + looksLikeAnImage + "]"
                     )
                 )
                 {

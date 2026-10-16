@@ -97,6 +97,7 @@ describe("joinLatestTransactionWhenCkEditorAttaches", () => {
 
     it("joins a rewrite made inside CKEDITOR.inline() too", async () => {
         const history = access.history!;
+        const oldParagraph = box.firstChild;
         await history.doTransaction("Add box", () =>
             page.querySelector("#img")!.setAttribute("src", "b.png"),
         );
@@ -106,7 +107,17 @@ describe("joinLatestTransactionWhenCkEditorAttaches", () => {
         });
         await Promise.resolve();
         expect(warnings).toEqual([]);
+        expect(
+            box.firstChild,
+            "test setup: the rewrite made new nodes",
+        ).not.toBe(oldParagraph);
         expect(history.undoDescriptionL10nKey).toBe("Add box");
+        await history.undo();
+        expect(
+            box.firstChild,
+            "undoing the step puts back the nodes that the rewrite replaced",
+        ).toBe(oldParagraph);
+        expect(page.querySelector("#img")!.getAttribute("src")).toBe("a.png");
     });
 
     it("leaves other events alone", async () => {

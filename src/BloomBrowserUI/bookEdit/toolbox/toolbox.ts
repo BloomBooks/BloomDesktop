@@ -89,7 +89,11 @@ export interface ITool {
     configureElements(container: HTMLElement);
     showTool(); // called when a new tool is chosen, but not necessarily when a new page is displayed.
     hideTool(); // called when changing tools or hiding the toolbox.
-    // Note, new implementations of updateMarkup may need to call EditableDivUtils.doCkEditorCleanup() like readerToolsModel.doMarkup() does.
+    // Note, new implementations of updateMarkup should read the boxes rather than rewrite them, as readerToolsModel.doMarkup() does.
+    // A rewrite replaces the box's nodes, which moves the caret and invalidates highlight Ranges over the text; if one is
+    // unavoidable, see EditableDivUtils.doCkEditorCleanup() for how to keep CKEditor's filling character out of what it writes.
+    // The markup pass (pageEditingMarkup.ts) records the caret only around an async tool's markup, so a tool whose markup
+    // must rewrite a box implements updateMarkupAsync and returns true from isUpdateMarkupAsync.
     updateMarkup(); // called on most keypresses (but notably, not on arrow navigation, also not Ctrl+C). It is called on typing letters (obviously), Ctrl+X, Ctrl+V, Ctrl+Z, Ctrl+Y etc... or even just pressing and releasing Ctrl or Shift.
     // like updateMarkup, but expected to be async. Implement instead of updateMarkup if you need to use async functions.
     // Because it is async, it is not guaranteed that all the async processing will complete before another keystroke is received.

@@ -16,6 +16,9 @@ import {
     restoreSelectionAfterMarkup,
     saveSelectionForMarkup,
 } from "./markupSelectionPreservation";
+import { addToLatestTransactionIfAny } from "../pageHistory/pageHistoryAccess";
+import { kModifierKeys } from "../pageHistory/pageHistoryInput";
+import { undoOrRedoCommandOf } from "../pageHistory/pageHistoryKeys";
 
 // The one toolbox, whose current tool we ask to update its markup. toolbox.ts hands it to
 // us in configurePageEditingHandlers rather than us importing it, because toolbox.ts
@@ -31,7 +34,8 @@ let keypressTimer: ReturnType<typeof setTimeout> | null = null;
 // redo keys are taken before any box sees their keydown (pageHistory/pageHistoryKeys.ts), and a
 // pass after an undo would write the page and lose redo. pageHistoryKeys also stops the keyups
 // that come while a modifier is still down, but not the letter's keyup when the modifier is
-// released first.
+// released first. A modifier key on its own is never added (see the keydown handler), so its
+// keyup, as when Ctrl is let go after Ctrl+Z, schedules no pass either.
 const keysWhoseKeyDownABoxSaw = new Set<string>();
 
 /**
@@ -103,7 +107,22 @@ export function configurePageEditingHandlers(
     $(container)
         .find(".bloom-editable")
         .keydown((event) => {
-            const keyDownCode = (event.originalEvent as KeyboardEvent)?.code;
+            const keyDownEvent = event.originalEvent as
+                | KeyboardEvent
+                | undefined;
+            // A modifier key on its own (the Ctrl of a Ctrl+Y, which reaches the box while
+            // pageHistoryKeys takes only the Y) neither types nor moves the caret, and the undo
+            // and redo keys reach a box only in Change Layout mode, where origami undoes. Doing
+            // anything here for them would write the page or schedule a markup pass, and either
+            // would join the latest step and clear redo, so that the redo key that follows
+            // would find nothing to redo.
+            if (
+                keyDownEvent &&
+                (kModifierKeys.has(keyDownEvent.key) ||
+                    undoOrRedoCommandOf(keyDownEvent))
+            )
+                return;
+            const keyDownCode = keyDownEvent?.code;
             if (keyDownCode) keysWhoseKeyDownABoxSaw.add(keyDownCode);
             // Repair a split paragraph BEFORE this keystroke lands in it. Chromium drops
             // glyphs from a ligature when the paragraph's text is in two adjacent text
@@ -126,7 +145,9 @@ export function configurePageEditingHandlers(
             // that character out again if they choose another one. Its own test for "the
             // popup is showing" is the presence of .long-press-popup in the page, so we use
             // that. An IME composition is the same kind of hazard, hence isComposing.
-            // This deliberately runs for EVERY key, not just the ones that insert text.
+            // This deliberately runs for every key but the modifiers on their own and the undo
+            // and redo keys (see above), not just the ones that insert text: a modifier alone
+            // neither inserts text nor moves the caret, so skipping it gives back nothing here.
             // Skipping the arrow keys the way the keyup handler below does would look like
             // a free saving and would quietly give back half the bug: a split paragraph is
             // also what makes the caret stop moving, so it is the arrow key's own keydown
@@ -142,7 +163,14 @@ export function configurePageEditingHandlers(
                 !longPressPopupIsUp &&
                 !(event.originalEvent as KeyboardEvent)?.isComposing
             ) {
-                EditableDivUtils.mergeAdjacentTextNodes(editableBeingTypedIn);
+                // The split comes from an earlier edit, so the repair joins that edit's undo
+                // step, not the transaction that this key press has just opened, where a key
+                // that changes nothing would make it a step of its own.
+                addToLatestTransactionIfAny(() =>
+                    EditableDivUtils.mergeAdjacentTextNodes(
+                        editableBeingTypedIn,
+                    ),
+                );
             }
 
             // Ctrl/Cmd+V doesn't always produce a keyup we can rely on in all environments.
@@ -376,17 +404,24 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 // rejoining the text leaves the DOM exactly as it was, Chromium goes on painting
                 // the paragraph's old glyphs where a ligature straddled the split, so letters the
                 // user typed stop being drawn until something else forces a repaint (BL-16717).
-                // Nothing below rewrites this box unless a tool is active, or there is actually
-                // a comment or an nbsp to clean up - and if nothing rewrites the box, there is no
-                // selection to preserve. So only record the caret when one of those is true,
+                // Nothing below rewrites this box unless the active tool's markup is async (only
+                // Talking Book's, which wraps the text in sentence spans; a synchronous updateMarkup
+                // reads the boxes and does not rewrite them, see ITool in toolbox.ts), or there is
+                // actually a comment or an nbsp to clean up - and if nothing rewrites the box, there
+                // is no selection to preserve. So only record the caret when one of those is true,
                 // which for ordinary typing is never. (Decided BEFORE the record is made: a
                 // bookmark span itself contains an nbsp, so the test would answer yes after it.)
                 const boxMightBeRewritten =
-                    !!activeTool || editableMightBeRewritten(editableDiv);
+                    !!activeTool?.isUpdateMarkupAsync() ||
+                    editableMightBeRewritten(editableDiv);
 
-                let savedSelection = saveSelectionForMarkup(
-                    editableDiv,
-                    boxMightBeRewritten,
+                // Every write below is the pass's reaction to the typing or paste that scheduled
+                // it, so each goes through addToLatestTransactionIfAny: it joins that action's
+                // undo step even when the user's next press has opened a transaction meanwhile,
+                // and so never makes a step of its own, nor ends the history when that press was
+                // in the toolbox (pageHistory/pageHistoryInput.ts).
+                let savedSelection = addToLatestTransactionIfAny(() =>
+                    saveSelectionForMarkup(editableDiv, boxMightBeRewritten),
                 );
                 if (!savedSelection) {
                     return; // may be changing pages?
@@ -394,7 +429,9 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 // For some reason, we have cases, mostly (always?) on paste, where
                 // ckeditor is inserting tons of comments which are messing with our parsing
                 // See http://issues.bloomlibrary.org/youtrack/issue/BL-4775
-                removeCommentsFromEditableHtml(editableDiv);
+                addToLatestTransactionIfAny(() =>
+                    removeCommentsFromEditableHtml(editableDiv),
+                );
                 if (activeTool) {
                     if (activeTool.isUpdateMarkupAsync()) {
                         // It's possible that removeCommentsFromEditableHtml moved the selection, typically
@@ -408,9 +445,12 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                         // it now, and then again after actually changing the markup, which might move the selection again.
                         // (This is why we don't allow updateMarkupAsync to modify the DOM, except by means of
                         // the function it returns, which is executed synchronously with fixing the selection.)
-                        const resaved = restoreAndResaveSelectionForMarkup(
-                            editableDiv,
-                            savedSelection,
+                        const selectionBeforeAwait = savedSelection;
+                        const resaved = addToLatestTransactionIfAny(() =>
+                            restoreAndResaveSelectionForMarkup(
+                                editableDiv,
+                                selectionBeforeAwait,
+                            ),
                         );
                         // One of two deliberate differences from the pre-extraction code (the other
                         // is noted on restoreSelectionAfterMarkup), and it is a narrow one. That
@@ -439,12 +479,12 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                             // we got another keystroke, and initiated a new updatemarkup,
                             // while processing this one. We don't want to save the results
                             // of updating for the earlier keystroke.)
-                            actualUpdateFunc();
+                            addToLatestTransactionIfAny(actualUpdateFunc);
                         }
                     }
                 }
 
-                cleanUpNbsps(editableDiv);
+                addToLatestTransactionIfAny(() => cleanUpNbsps(editableDiv));
 
                 // The synchronous branch is used only by the decodable and leveled reader tools,
                 // and their markup no longer changes the DOM: it paints violations with
@@ -465,13 +505,13 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 // jsdom. So if you reorder anything in here, test it by typing in a Leveled
                 // Reader book and watching the over-long sentences stay highlighted.
                 if (activeTool && !activeTool.isUpdateMarkupAsync()) {
-                    // Note, the updateMarkup routine must be sure to use the result of
-                    // ckEditor's getData() method, not the raw HTML of the editableDivs.
-                    // See EditableDivUtils.doCkEditorCleanup() and .restoreSelectionFromCkEditorBookmarks().
-                    // Unfortunately, we can't easily do that in a top-level (general for all tools) way because of
-                    // our current architecture. Namely, the reader tools have a lower-level
-                    // doMarkup() which gets called more than just from here.
-                    activeTool.updateMarkup();
+                    // A synchronous updateMarkup reads the boxes and must not rewrite them: no caret
+                    // is recorded around it (boxMightBeRewritten above), so a rewrite here would move
+                    // the caret, and it would detach the highlight Ranges just painted. The reader
+                    // tools' doMarkup reads each box's text and paints CSS highlights over it.
+                    addToLatestTransactionIfAny(() =>
+                        activeTool.updateMarkup(),
+                    );
                 }
 
                 //put the caret back where it was before all of the above
@@ -479,7 +519,13 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 //restoring the selection, that we got interference with longpress's replacePreviousLetterWithText(),
                 // in some way that is still not understood. This was fixed by changing all this to trigger on
                 // a different event (keydown instead of keypress).
-                restoreSelectionAfterMarkup(editableDiv, savedSelection);
+                const selectionToRestore = savedSelection;
+                addToLatestTransactionIfAny(() =>
+                    restoreSelectionAfterMarkup(
+                        editableDiv,
+                        selectionToRestore,
+                    ),
+                );
 
                 // Restoring the caret from a bookmark leaves the text that was on either side of
                 // it as two adjacent text nodes, which makes Chromium drop glyphs from ligatures
@@ -491,7 +537,9 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 // handler could not (a paste from the menu, an IME). It costs a walk of
                 // the box's text nodes and does nothing at all unless it finds a split. See
                 // mergeAdjacentTextNodes().
-                EditableDivUtils.mergeAdjacentTextNodes(editableDiv);
+                addToLatestTransactionIfAny(() =>
+                    EditableDivUtils.mergeAdjacentTextNodes(editableDiv),
+                );
             }
         }
         // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.

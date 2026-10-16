@@ -18,6 +18,7 @@ export interface IAudioRecorder {
     setupForRecordingAsync: () => Promise<void>;
     handleToolHiding: () => void;
     updateAfterUndoOrRedo(): void;
+    prepareForUndoOrRedo(): void;
     handleNewPageReady: (
         deshroudPhraseDelimiters?:
             | ((page: HTMLElement | null) => void)

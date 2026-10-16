@@ -19,6 +19,10 @@ import {
     isPlaceHolderImage,
 } from "../../js/bloomImages";
 import { kMotionToolId } from "../toolIds";
+import {
+    currentPageHistory,
+    doOutsideHistoryIfAny,
+} from "../../pageHistory/pageHistoryAccess";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
 import { getFeatureStatusAsync } from "../../../react_components/featureStatus";
 import { TransformBasedAnimator } from "bloom-player";
@@ -31,6 +35,9 @@ import { toolboxTheme } from "../../../bloomMaterialUITheme";
 // The toolbox is included in the list of tools because of this line of code
 // in tooboxBootstrap.ts:
 // ToolBox.registerTool(new MotionTool());
+
+// The description of the undo step that dragging or resizing a rectangle makes.
+const kDragUndoL10nKey = "EditTab.Toolbox.Motion.Drag";
 
 /// The motion tool lets you define two rectangles; Bloom Reader will pan & zoom from one to the other
 export class MotionTool extends ToolboxToolReactAdaptor {
@@ -61,7 +68,28 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     public newPageReady() {
+        // Each page load has its own history. newPageReady() can be called twice for one
+        // page, so stop listening to the history before listening to it again.
+        this.stopListeningToUndoAndRedo?.();
+        this.stopListeningToUndoAndRedo =
+            currentPageHistory()?.onAfterUndoOrRedo(() =>
+                this.updateAfterUndoOrRedo(),
+            );
         this.makeRectsVisible();
+    }
+
+    private stopListeningToUndoAndRedo: (() => void) | undefined;
+
+    // Undoing or redoing a drag puts back data-initialrect and data-finalrect, but not the
+    // rectangles, which are bloom-ui; draw them again from the attributes. An undo or redo can
+    // also change the picture's src, which the image observer would report later, adding what it
+    // does to the latest step and clearing redo. So drop those records, and do here, outside the
+    // history, what follows from the picture that the undo or redo left.
+    private updateAfterUndoOrRedo() {
+        this.observer?.takeRecords();
+        this.updateMotionRectanglesState(() =>
+            doOutsideHistoryIfAny(() => this.hideRectangles()),
+        );
     }
 
     public showTool() {
@@ -87,7 +115,18 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         }
         if (!this.subscriptionAllowsMotion) {
             return;
-        } // First, abort any preview that's in progress.
+        }
+        // Showing the rectangles, and saving the default ones, is how the tool shows the page,
+        // not something the user did, so the page history does not record it: undo leaves it
+        // in place. Dragging a rectangle is recorded (saveDraggedRectangles in the drag and resize
+        // handlers, which run later, outside this).
+        doOutsideHistoryIfAny(() => this.drawRectangles());
+    }
+
+    // Draw the rectangles from data-initialrect and data-finalrect, and save default ones when
+    // those are missing or do not fit the image.
+    private drawRectangles() {
+        // First, abort any preview that's in progress.
         if (this.rootControl.state.playing) {
             this.toggleMotionPreviewPlaying();
         }
@@ -185,7 +224,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             // behind jpeg images.
             const argsForDraggable = {
                 handle: ".bloom-dragHandleAnimation",
-                stop: (event, ui) => this.updateDataAttributes(),
+                stop: (event, ui) => this.saveDraggedRectangles(),
                 // This bizarre kludge works around a bug that jquery have decided not to fix in their jquery draggable
                 // code (https://bugs.jqueryui.com/ticket/6844). Basically without this the dragging happens as if
                 // the view were not scaled. In particular there's a sudden jump when dragging starts.
@@ -216,7 +255,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 },
                 containment: "parent",
                 aspectRatio: true,
-                stop: (event, ui) => this.updateDataAttributes(),
+                stop: (event, ui) => this.saveDraggedRectangles(),
             };
             // Unless the element is created and made draggable and resizable in the page iframe's execution context,
             // the dragging and resizing just don't work.
@@ -271,6 +310,14 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
+        this.stopListeningToUndoAndRedo?.();
+        this.stopListeningToUndoAndRedo = undefined;
+        // Like showing the rectangles, taking them off is not recorded in the page history.
+        doOutsideHistoryIfAny(() => this.removeRectsFromPage());
+    }
+
+    // Stop any preview, take the rectangles off the page, and let the user edit the image again.
+    private removeRectsFromPage() {
         if (this.rootControl.state.playing) {
             this.rootControl.setState({ playing: false });
             window.clearTimeout(this.stopPreviewTimeout);
@@ -461,45 +508,53 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         }
     }
 
+    // What the checkbox writes to the page is not recorded in the page history: checking or
+    // unchecking it makes no undo step, and undo leaves it as it is.
     private motionChanged(checked: boolean) {
-        const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
-        if (!bloomCanvasToAnimate) {
-            return;
-        }
-        if (checked) {
-            if (!bloomCanvasToAnimate.getAttribute("data-initialrect")) {
-                // see if we can restore a backup state
-                bloomCanvasToAnimate.setAttribute(
-                    "data-initialrect",
-                    bloomCanvasToAnimate.getAttribute(
-                        "data-disabled-initialrect",
-                    ) as string,
-                );
-                bloomCanvasToAnimate.removeAttribute(
-                    "data-disabled-initialrect",
-                );
-                this.makeRectsVisible(); // ensures start/stop rectangles visible
+        doOutsideHistoryIfAny(() => {
+            const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
+            if (!bloomCanvasToAnimate) {
+                return;
             }
-        } else {
-            if (bloomCanvasToAnimate.getAttribute("data-initialrect")) {
-                // always?
-                // save old state, thus recording that we're in the off state, not just uninitialized.
-                bloomCanvasToAnimate.setAttribute(
-                    "data-disabled-initialrect",
-                    bloomCanvasToAnimate.getAttribute(
+            if (checked) {
+                if (!bloomCanvasToAnimate.getAttribute("data-initialrect")) {
+                    // see if we can restore a backup state
+                    bloomCanvasToAnimate.setAttribute(
                         "data-initialrect",
-                    ) as string,
-                );
-                bloomCanvasToAnimate.removeAttribute("data-initialrect");
+                        bloomCanvasToAnimate.getAttribute(
+                            "data-disabled-initialrect",
+                        ) as string,
+                    );
+                    bloomCanvasToAnimate.removeAttribute(
+                        "data-disabled-initialrect",
+                    );
+                    this.makeRectsVisible(); // ensures start/stop rectangles visible
+                }
+            } else {
+                if (bloomCanvasToAnimate.getAttribute("data-initialrect")) {
+                    // always?
+                    // save old state, thus recording that we're in the off state, not just uninitialized.
+                    bloomCanvasToAnimate.setAttribute(
+                        "data-disabled-initialrect",
+                        bloomCanvasToAnimate.getAttribute(
+                            "data-initialrect",
+                        ) as string,
+                    );
+                    bloomCanvasToAnimate.removeAttribute("data-initialrect");
+                }
+                // Not detachFromPage(), which would also stop redrawing the rectangles after an
+                // undo or redo, and the tool is still open on this page.
+                this.removeRectsFromPage();
             }
-            this.detachFromPage();
-        }
+        });
     }
 
     private observer: MutationObserver;
     private sizeObserver: ResizeObserver;
 
-    private updateMotionRectanglesState(): void {
+    // Update the control, and show the rectangles or take them away with hide, to match whether
+    // the picture to animate is a real one or a placeholder.
+    private updateMotionRectanglesState(hide: () => void): void {
         let haveBgImage = false;
         const bgImage = this.getBackgroundImage();
         if (bgImage) {
@@ -516,8 +571,22 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             newState.haveBloomCanvasButNoBgImage = true;
             newState.motionPossible = false;
             this.rootControl.setState(newState);
-            this.hideRectangles();
+            hide();
         }
+    }
+
+    // Take the rectangles away when the user has removed the picture. Removing data-initialrect
+    // and data-finalrect belongs to the step that removed the picture: undoing that step then
+    // puts back the user's rectangles with the picture, where a removal outside the history would
+    // leave the restored picture to get default rectangles. The image observer reports the removal
+    // only after a synchronous transaction has closed, so this adds to the latest step rather
+    // than making a change outside any transaction, which would warn. (An undo or redo that
+    // changes the picture is handled in updateAfterUndoOrRedo instead.)
+    private hideRectanglesWithPicture(): void {
+        const history = currentPageHistory();
+        if (history)
+            history.addToLatestTransaction(() => this.hideRectangles());
+        else this.hideRectangles();
     }
 
     private hideRectangles(): void {
@@ -566,9 +635,16 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private setupImageObserver(): void {
+        // makeRectsVisible calls this each time it draws the rectangles, after an undo or redo
+        // among others, so stop the observer that an earlier call made.
+        if (this.observer) {
+            this.observer.disconnect();
+        }
         // Arrange to update things when the user chooses or deletes an image.
         this.observer = new MutationObserver(() =>
-            this.updateMotionRectanglesState(),
+            this.updateMotionRectanglesState(() =>
+                this.hideRectanglesWithPicture(),
+            ),
         );
         // The specific thing we want to observe is the src attr of the img element embedded
         // in the background image of the first bloom-canvas. We want to update our UI if this changes from
@@ -577,7 +653,8 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         if (bgImage) {
             const src = bgImage.getAttribute("src");
             if (!src || isPlaceHolderImage(src)) {
-                this.hideRectangles();
+                // Not recorded in the page history, like showing the rectangles.
+                doOutsideHistoryIfAny(() => this.hideRectangles());
             }
             this.observer.observe(bgImage, {
                 attributes: true,
@@ -638,6 +715,23 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         );
     }
 
+    // The drag and resize handlers' stop: save where the user left the rectangles as one undo
+    // step. Bloom opens a transaction with the general description on the press that begins the
+    // drag and closes it after the release (pageHistoryInput.ts), so the whole drag is one step;
+    // this transaction nests inside that one and gives the step its description.
+    private saveDraggedRectangles(): void {
+        const transaction =
+            currentPageHistory()?.beginTransaction(kDragUndoL10nKey);
+        try {
+            this.updateDataAttributes();
+        } catch (error) {
+            transaction?.cancel();
+            throw error;
+        }
+        transaction?.end();
+    }
+
+    // Write the rectangles' positions to data-initialrect and data-finalrect.
     private updateDataAttributes(): void {
         //alert("updating data attributes " + new Error().stack);
         const page = this.getPage();
@@ -670,6 +764,12 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     //hide everything on the page, make a copy of the canvas, and move it using the TransformBasedAnimator class from bloom-player
     //Enhance: refactor this method and bloom-player's Animation.setupAnimation() to share more of the code that sets up the HTML structure around the canvas
     private toggleMotionPreviewPlaying() {
+        // A preview changes the page only while it plays, so the page history does not record
+        // what starting or stopping it writes.
+        doOutsideHistoryIfAny(() => this.startOrStopPreview());
+    }
+
+    private startOrStopPreview() {
         const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
         if (
             !bloomCanvasToAnimate ||
@@ -856,6 +956,10 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private cleanupAnimation() {
+        doOutsideHistoryIfAny(() => this.removePreviewFromPage());
+    }
+
+    private removePreviewFromPage() {
         const page = this.getPage();
         if (!page) return;
         const contentWindow = this.getPageFrame().contentWindow;
@@ -871,7 +975,6 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         const bloomPage = page.getElementsByClassName(
             "bloom-page",
         )[0] as HTMLElement;
-        bloomPage.classList.remove("Landscape");
 
         const editorBody = bloomPage.closest("body")!;
         editorBody.classList.remove(this.hiddenStyleName);

@@ -261,6 +261,24 @@ describe("a press in the page frame", () => {
         expect(await undoEverything()).toHaveLength(1);
     });
 
+    it("makes no step of its own for Bloom's reaction to an earlier action that lands during it", async () => {
+        makeStepWithClick("1");
+        const canvas = byId("canvas");
+
+        press(canvas);
+        history.addToLatestTransaction(() =>
+            byId("img1").setAttribute("src", "b.png"),
+        );
+        release(canvas);
+
+        expect(
+            await undoEverything(),
+            "the reaction joined the step before, which one undo takes back",
+        ).toHaveLength(1);
+        expect(byId("img1").getAttribute("src")).toBe("a.png");
+        expect(canvas.getAttribute("data-x")).toBe("0");
+    });
+
     it("is separate from the press before it, even if that one's task has not ended", async () => {
         const canvas = byId("canvas");
         let value = 0;
@@ -798,6 +816,65 @@ describe("input in another frame", () => {
         expect(history.undoDescriptionL10nKey).toBe("Test.Dialog");
         expect(await undoEverything()).toHaveLength(2);
         expect(byId("img1").getAttribute("src")).toBe("a.png");
+    });
+
+    it("ends the history when a dialog that a click there opened is cancelled, after the click changed the page", () => {
+        makeStepWithClick("1");
+        const button = otherById("toolButton");
+        let dialog: BegunTransaction | undefined;
+        onBloomEvent(button, "pointerdown", () =>
+            byId("img1").setAttribute("src", "b.png"),
+        );
+        onBloomEvent(button, "click", () => {
+            dialog = history.beginTransaction("Test.Dialog");
+            byId("box2").setAttribute("lang", "es");
+        });
+
+        click(button);
+        expect(
+            history.hasOpenTransaction,
+            "test setup: the click's transaction waits for the dialog's",
+        ).toBe(true);
+        expect(
+            history.undoDescriptionL10nKey,
+            "test setup: the step from before is still there",
+        ).toBe(kGenericUndoDescriptionL10nKey);
+        dialog!.cancel();
+
+        expect(byId("box2").getAttribute("lang")).toBe("fr");
+        expect(
+            byId("img1").getAttribute("src"),
+            "the click's own change stays on the page",
+        ).toBe("b.png");
+        expect(history.hasOpenTransaction).toBe(false);
+        expect(history.undoDescriptionL10nKey).toBeUndefined();
+        expect(history.redoDescriptionL10nKey).toBeUndefined();
+    });
+
+    it("keeps the history when Bloom's reaction to an earlier action lands during a press there that changes nothing", async () => {
+        makeStepWithClick("1");
+        const button = otherById("toolButton");
+
+        press(button);
+        expect(
+            history.hasOpenTransaction,
+            "test setup: the press holds a transaction open",
+        ).toBe(true);
+        history.addToLatestTransaction(() =>
+            byId("img1").setAttribute("src", "b.png"),
+        );
+        release(button);
+
+        expect(history.hasOpenTransaction).toBe(false);
+        expect(history.undoDescriptionL10nKey).toBe(
+            kGenericUndoDescriptionL10nKey,
+        );
+        expect(
+            await undoEverything(),
+            "the reaction joined the step before, which one undo takes back",
+        ).toHaveLength(1);
+        expect(byId("img1").getAttribute("src")).toBe("a.png");
+        expect(byId("canvas").getAttribute("data-x")).toBe("0");
     });
 
     it("keeps the history when a click there changes nothing in the page", () => {

@@ -54,6 +54,8 @@ const frames = vi.hoisted(() => ({
     manager: undefined as unknown,
     history: undefined as PageHistory | undefined,
     colorPickerProps: undefined as IColorPickerDialogProps | undefined,
+    // When set, showing the colour picker throws this.
+    colorPickerError: undefined as Error | undefined,
 }));
 vi.mock("./canvasElementPageBridge", async (importOriginal) => ({
     ...(await importOriginal<object>()),
@@ -66,8 +68,10 @@ vi.mock("../../js/workspaceFrames", async (importOriginal) => ({
     getEditablePageBundleExports: () =>
         frames.history ? { pageHistory: () => frames.history } : null,
     getWorkspaceBundleExports: () => ({
-        showColorPickerDialog: (props: IColorPickerDialogProps) =>
-            (frames.colorPickerProps = props),
+        showColorPickerDialog: (props: IColorPickerDialogProps) => {
+            if (frames.colorPickerError) throw frames.colorPickerError;
+            frames.colorPickerProps = props;
+        },
         hideColorPickerDialog: () => undefined,
     }),
 }));
@@ -114,8 +118,30 @@ afterEach(() => {
     }
     frames.manager = undefined;
     frames.colorPickerProps = undefined;
+    frames.colorPickerError = undefined;
+    stopCatchingErrorsReportedOnWindow?.();
+    stopCatchingErrorsReportedOnWindow = undefined;
     document.body.innerHTML = "";
 });
+
+let stopCatchingErrorsReportedOnWindow: (() => void) | undefined;
+
+/**
+ * An error thrown by a handler of the user's event reaches no caller: jsdom reports it on the
+ * window. Returns the messages of the errors reported from now until the end of the test, and keeps
+ * the reports out of the console.
+ */
+function catchErrorsReportedOnWindow(): string[] {
+    const messages: string[] = [];
+    const listener = (event: ErrorEvent) => {
+        messages.push(event.error?.message ?? event.message);
+        event.preventDefault();
+    };
+    window.addEventListener("error", listener);
+    stopCatchingErrorsReportedOnWindow = () =>
+        window.removeEventListener("error", listener);
+    return messages;
+}
 
 // A stand-in for the page frame's CanvasElementManager. The methods that matter here (finding
 // the active element's bubble, registering for change notifications, and notifying) are the
@@ -570,6 +596,45 @@ describe("CanvasToolControls changes as undo steps", () => {
 
         expect(element.getAttribute("data-bubble")).toBe(original);
         // Drawn again once, after the rollback had put the transparent background back.
+        expect(manager.dataBubbleWhenRedrawn).toEqual([original]);
+        expect(history.hasOpenTransaction).toBe(false);
+        expect(history.undoDescriptionL10nKey).toBeUndefined();
+    });
+
+    it("cancels the colour picker's step when the picker cannot be shown", () => {
+        const errors = catchErrorsReportedOnWindow();
+        frames.colorPickerError = new Error("Test: the picker failed");
+        const bar = container
+            .querySelector(`label[for="text-color-bar"]`)
+            ?.parentElement?.querySelector(".MuiInput-formControl");
+        if (!bar) fail("The panel did not render the text-color-bar.");
+
+        click(bar);
+
+        expect(errors).toContain("Test: the picker failed");
+        expect(history.hasOpenTransaction).toBe(false);
+        expect(history.undoDescriptionL10nKey).toBeUndefined();
+        // Nothing is left open to take in later changes: the next change is a step of its own.
+        chooseStyle("speech");
+        expect(history.undoDescriptionL10nKey).toBe(
+            "EditTab.Toolbox.ComicTool.Options.ElementType",
+        );
+    });
+
+    it("draws the bubbles again from the page when a change fails part way and is put back", () => {
+        const errors = catchErrorsReportedOnWindow();
+        const manager = frames.manager as ReturnType<typeof makeManager>;
+        const original = element.getAttribute("data-bubble");
+        manager.updateSelectedFamilyBubbleSpec = (props: object) => {
+            setBubbleSpec(element, { ...getBubbleSpec(element), ...props });
+            throw new Error("Test: the change failed part way");
+        };
+
+        chooseStyle("speech");
+
+        expect(errors).toContain("Test: the change failed part way");
+        expect(element.getAttribute("data-bubble")).toBe(original);
+        // Drawn again once, after the rollback had put the old data-bubble back.
         expect(manager.dataBubbleWhenRedrawn).toEqual([original]);
         expect(history.hasOpenTransaction).toBe(false);
         expect(history.undoDescriptionL10nKey).toBeUndefined();

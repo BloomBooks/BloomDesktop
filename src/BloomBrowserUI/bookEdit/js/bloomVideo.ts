@@ -1,5 +1,3 @@
-import { postThatMightNavigate } from "../../utils/bloomApi";
-
 // The code in this file supports operations on video panels in custom pages (and potentially elsewhere).
 // It sets things up for the button (plural eventually) to appear when hovering over the video.
 // Currently the button actions are entirely in C#.
@@ -15,7 +13,10 @@ import { selectVideoContainer } from "./videoUtils";
 import { getPlayIcon } from "../img/playIcon";
 import { getPauseIcon } from "../img/pauseIcon";
 import { getReplayIcon } from "../img/replayIcon";
-import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementPageBridge";
+import {
+    getCanvasElementManager,
+    kCanvasElementSelector,
+} from "../toolbox/canvas/canvasElementPageBridge";
 import { chooseAndProcessVideo } from "./ChooseAndProcessVideo";
 import $ from "jquery";
 
@@ -195,15 +196,14 @@ export function doVideoCommand(
     command: "choose" | "record" | "playEarlier" | "playLater",
 ) {
     if (command === "choose" && videoContainer) {
+        // chooseAndProcessVideo makes putting the new video on the page one undo step. Saving and
+        // reloading the page here would end the page history; the page is saved with the new
+        // video in the usual way.
         chooseAndProcessVideo((importedPath) => {
             if (importedPath) {
                 updateVideoInContainer(videoContainer, importedPath);
-                // Makes sure the page gets saved with a reference to the new video,
-                // and incidentally that everything gets updated to be consistent with the
-                // new state of things.
-                postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
             }
-        });
+        }, "EditTab.Toolbox.ComicTool.Options.ChooseVideo");
     } else if (command === "record") {
         // There may be more than one video container on the page.  Make sure the
         // one we want to record into is selected.  See comments in BL-13930.
@@ -306,6 +306,18 @@ export function updateVideoInContainer(container: Element, url: string): void {
             setupVideoElement(video);
             // Transparent background videos allow the placeholder to show.  See BL-13918.
             container.classList.remove("bloom-noVideoSelected");
+            // Fit a canvas element to the new video's shape now, so that the fit belongs to the
+            // change that put the video in. Left to the next selection, the fit would be a write
+            // that a click makes, or that follows an undo, outside the change's undo step. The
+            // video's size is known only once its metadata loads; the fit then joins the latest
+            // undo step, which is this change's.
+            const canvasElement = container.closest<HTMLElement>(
+                kCanvasElementSelector,
+            );
+            if (canvasElement)
+                getCanvasElementManager()?.adjustContainerAspectRatio(
+                    canvasElement,
+                );
         }
     }
 }

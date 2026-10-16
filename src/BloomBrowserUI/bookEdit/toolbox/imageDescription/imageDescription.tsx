@@ -18,6 +18,7 @@ import {
 } from "./imageDescriptionUtils";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
+import { doOutsideHistoryIfAny } from "../../pageHistory/pageHistoryAccess";
 interface IImageDescriptionState {
     enabled: boolean;
     descriptionNotNeeded: boolean;
@@ -157,12 +158,19 @@ export class ImageDescriptionToolControls extends React.Component<
         this.setState((prevState, props) => {
             return { descriptionNotNeeded: checked };
         });
-        if (this.activeEditable) {
-            if (checked) {
-                this.activeEditable.setAttribute("aria-hidden", "true");
-            } else {
-                this.activeEditable.removeAttribute("aria-hidden");
-            }
+        const activeEditable = this.activeEditable;
+        if (activeEditable) {
+            // Not undoable. A change made from the toolbox with no transaction of its own would
+            // end the page history (pageHistoryInput.ts); this keeps it. Since no undo step
+            // records aria-hidden, no undo or redo changes it, and the checkbox needs no update
+            // after one.
+            doOutsideHistoryIfAny(() => {
+                if (checked) {
+                    activeEditable.setAttribute("aria-hidden", "true");
+                } else {
+                    activeEditable.removeAttribute("aria-hidden");
+                }
+            });
         }
     }
 
@@ -271,7 +279,12 @@ export function setupImageDescriptions(
                     "bloom-imageDescription",
                 );
                 if (result && imageDescriptions.length === 0) {
-                    appendTranslationGroup(result.data, container);
+                    // What a tool adds to the page when it opens is not undoable. This reply
+                    // arrives outside any transaction, so without this it would join the user's
+                    // latest undo step.
+                    doOutsideHistoryIfAny(() =>
+                        appendTranslationGroup(result.data, container),
+                    );
                     doIfContentAdded();
                     imageDescriptions = container.getElementsByClassName(
                         "bloom-imageDescription",

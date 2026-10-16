@@ -32,7 +32,6 @@ import {
     postData,
     postString,
 } from "../../../utils/bloomApi";
-import { EditableDivUtils } from "../../js/editableDivUtils";
 import {
     mapReaderText,
     theOneReaderHighlightManager,
@@ -603,24 +602,24 @@ export class ReaderToolsModel {
     }
 
     /**
-     * Paint the reader highlights again from the text that the boxes hold now, without the
-     * CKEditor cleanup that doMarkup does first, which can rewrite a box. The page history calls
-     * this (through the toolbox) after every undo and redo: the highlights are Ranges over the
-     * boxes' text nodes, which the undo has given back their earlier text, and a page write at
-     * that point would lose redo. Painting writes nothing to the page that the history records.
+     * Paint the reader highlights again from the text that the boxes hold now. The page history
+     * calls this (through the toolbox) after every undo and redo: the highlights are Ranges over
+     * the boxes' text nodes, which the undo has given back their earlier text. It is doMarkup,
+     * which writes nothing to the page that the history records, so it keeps redo.
      */
     public repaintHighlights(): void {
-        this.doMarkup(false, false);
+        this.doMarkup();
     }
 
     /**
-     * Displays the correct markup for the current page. cleanUpBoxes false leaves out the
-     * CKEditor cleanup of the boxes (see repaintHighlights).
+     * Displays the correct markup for the current page: the reader highlights, the page's
+     * page-too-many-words-or-sentences class, and the statistics in the toolbox. It reads the
+     * boxes and does not rewrite them, so it may run at any time, inside a transaction or
+     * outside one, without making an undo step or ending the page history. The only changes it
+     * makes to a box are the removal of markup that earlier versions of Bloom saved
+     * (removeSynphonyMarkup and removeCkEditorMarkup), which are not recorded.
      */
-    public doMarkup(
-        createCkEditorBookMarks: boolean = true,
-        cleanUpBoxes: boolean = true,
-    ): void {
+    public doMarkup(): void {
         if (!this.readyToDoMarkup()) return;
         if (this.currentMarkupType === MarkupType.None) {
             this.clearReaderHighlights();
@@ -632,7 +631,6 @@ export class ReaderToolsModel {
         // console.log("start of doMarkup:");
         // EditableDivUtils.logElementsInnerHtml(editableElements.toArray());
 
-        let bookmarksForEachEditable: object[] = [];
         if (editableElements.length === 0) {
             // e.g. a cover page. There is nothing to mark, so make sure nothing is left
             // highlighted from a page that did have something.
@@ -643,24 +641,12 @@ export class ReaderToolsModel {
             // (and so the mouse can't move off their owning element, and they never go away).
             // BL-2758 But if we're in a source collection we may have valid source bubbles,
             // don't delete them!
+            // The qtips are children of the body, outside the .bloom-page that the page history
+            // observes, so removing them needs no doOutsideHistoryIfAny.
             $(editableElements[0])
                 .closest("body")
                 .children('.qtip:not(".uibloomSourceTextsBubble")')
                 .remove();
-
-            if (
-                cleanUpBoxes &&
-                (this.currentMarkupType === MarkupType.Decodable ||
-                    this.currentMarkupType === MarkupType.Leveled)
-            )
-                bookmarksForEachEditable = EditableDivUtils.doCkEditorCleanup(
-                    editableElements
-                        .filter(
-                            (index, element) => !!(element as HTMLDivElement),
-                        )
-                        .toArray() as HTMLDivElement[],
-                    createCkEditorBookMarks,
-                );
         }
 
         switch (this.currentMarkupType) {
@@ -728,17 +714,6 @@ export class ReaderToolsModel {
 
             default:
         }
-
-        // console.log("in doMarkup, before restoreSelection:");
-        // EditableDivUtils.logElementsInnerHtml(editableElements.toArray());
-
-        if (bookmarksForEachEditable.length)
-            EditableDivUtils.restoreSelectionFromCkEditorBookmarks(
-                editableElements
-                    .filter((index, element) => !!(element as HTMLDivElement))
-                    .toArray() as HTMLDivElement[],
-                bookmarksForEachEditable,
-            );
 
         // console.log("end of doMarkup:");
         // EditableDivUtils.logElementsInnerHtml(editableElements.toArray());

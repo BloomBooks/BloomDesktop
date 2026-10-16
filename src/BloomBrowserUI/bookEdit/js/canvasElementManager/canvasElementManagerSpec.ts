@@ -226,6 +226,8 @@ describe("CanvasElementManager.updateAfterUndoOrRedo", () => {
             activeElement,
             theCanvasElementWeAreTextEditing: activeElement,
             canvasElementsBeforeUndoOrRedo: allCanvasElementsOnPage(),
+            // As noteCanvasElementsBeforeUndoOrRedo records it: the active element before the undo.
+            activeElementBeforeUndoOrRedo: activeElement,
             getAllCanvasElementsOnPage: allCanvasElementsOnPage,
             getAllBloomCanvasesOnPage: () =>
                 Array.from(

@@ -1,7 +1,10 @@
 // Tests of which canvas element an undo or redo selects (CanvasElementManager.updateAfterUndoOrRedo),
 // with a real page history and the real edit-time markup filter, wired to the manager by
 // listenToPageHistory as in the Edit tab. Each test also checks that selecting leaves redo
-// available and working: what selecting writes to the page must not join the latest step.
+// available and working: what selecting writes to the page must not join the latest step. Also
+// tests that selecting after an undo or redo leaves a box that does not fit its picture or video as
+// the undo or redo left it, and that a text canvas element that an undo puts back gets its source
+// bubbles again.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Comical wants paper.js and a real <canvas>, which jsdom doesn't give us. Selecting an element
@@ -49,13 +52,19 @@ vi.mock("../workspaceFrames", async (importOriginal) => ({
 // These imports deliberately come after the vi.mock calls above, so that the module graph they
 // pull in gets the stubbed modules.
 import {
+    CanvasElementManager,
     initializeCanvasElementManager,
     theOneCanvasElementManager,
 } from "./CanvasElementManager";
-import { listenToPageHistory } from "../bloomEditing";
+import {
+    listenToPageHistory,
+    whenNoRequestPageContentDelays,
+} from "../bloomEditing";
 import { createPageHistory } from "../../pageHistory/pageHistory";
 import { createEditTimeMarkupFilter } from "../../pageHistory/editTimeMarkup";
 import type { PageHistory } from "../../pageHistory/pageHistoryTypes";
+import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
+import $ from "jquery";
 
 const kMoveDescription = "EditTab.Undo.Move";
 
@@ -104,6 +113,7 @@ afterEach(() => {
     pageFrame.history = undefined;
     history.dispose();
     document.body.innerHTML = "";
+    vi.restoreAllMocks();
 });
 
 function byId(id: string): HTMLElement {
@@ -214,6 +224,61 @@ describe("selecting the canvas element that an undo or redo changed", () => {
         expect(history.redoDescriptionL10nKey).toBeUndefined();
     });
 
+    // Restoring the selection can put the caret in the text of a canvas element that the step
+    // did not change, and the browser then focuses that text, whose focus handler makes that
+    // element active. jsdom does not focus on setting the selection, so the test does it as the
+    // browser would.
+    it("undoing an add selects nothing, even when the restored caret is in another canvas element", async () => {
+        const ce2 = byId("ce2");
+        const ce2Text = ce2.querySelector<HTMLElement>(".bloom-editable")!;
+        history.doOutsideHistory(() =>
+            ce2Text.setAttribute("contenteditable", "true"),
+        );
+        ce2Text.addEventListener(
+            "focusin",
+            CanvasElementManager.onFocusSetActiveElement,
+        );
+        const selection = document.getSelection()!;
+        selection.collapse(ce2Text.querySelector("p")!.firstChild, 1);
+        const added = document.createElement("div");
+        added.className = "bloom-canvas-element";
+        added.setAttribute(
+            "style",
+            "left: 200px; top: 10px; width: 50px; height: 30px;",
+        );
+        await history.doTransaction("EditTab.Undo.Add", () => {
+            byId("canvas").appendChild(added);
+            theOneCanvasElementManager.setActiveElement(added);
+        });
+        selection.removeAllRanges();
+        const setBaseAndExtent = selection.setBaseAndExtent.bind(selection);
+        let activeAfterRestoringCaret: HTMLElement | undefined;
+        const restoring = vi
+            .spyOn(selection, "setBaseAndExtent")
+            .mockImplementation((...args) => {
+                setBaseAndExtent(...args);
+                (args[0] as Node).parentElement
+                    ?.closest<HTMLElement>(".bloom-editable")
+                    ?.focus();
+                activeAfterRestoringCaret = activeElement();
+            });
+
+        await history.undo();
+
+        // Sanity check: the restored caret made ce2 active before the canvas element manager
+        // brought the selection in line with the undo.
+        expect(restoring).toHaveBeenCalledTimes(1);
+        expect(activeAfterRestoringCaret).toBe(ce2);
+        expect(added.isConnected).toBe(false);
+        expect(activeElement()).toBeUndefined();
+        expect(activeMarkedElements()).toEqual([]);
+        expect(ce2.classList.contains("bloom-focusedCanvasElement")).toBe(
+            false,
+        );
+        expect(ce2.contains(document.activeElement)).toBe(false);
+        expect(history.redoDescriptionL10nKey).toBe("EditTab.Undo.Add");
+    });
+
     it("undoing typing outside any canvas element keeps the selection", async () => {
         const ce2 = byId("ce2");
         const paragraph = byId("para");
@@ -253,9 +318,12 @@ describe("selecting the canvas element that an undo or redo changed", () => {
     });
 
     // Selecting a canvas element that holds a video gives its video container the class
-    // bloom-selected, which the history records; this checks that the write does not clear redo.
+    // bloom-selected; this checks that selecting it after an undo does not clear redo. jsdom
+    // loads no video, so the video's size is unknown while the undo selects it; a click would fit
+    // the box to the video once its metadata loads, but the undo must not.
     it("undoing a move of a video selects it, and redo still works", async () => {
         const videoElement = byId("videoElement");
+        const video = videoElement.querySelector("video")!;
         const videoContainer = videoElement.querySelector(
             ".bloom-videoContainer",
         )!;
@@ -271,6 +339,12 @@ describe("selecting the canvas element that an undo or redo changed", () => {
         expect(videoElement.style.left).toBe("200px");
         expect(activeElement()).toBe(videoElement);
         expect(videoContainer.classList.contains("bloom-selected")).toBe(true);
+        expect(history.redoDescriptionL10nKey).toBe(kMoveDescription);
+        // The 80 by 60 box does not fit a 16:9 video.
+        Object.defineProperty(video, "videoWidth", { get: () => 160 });
+        Object.defineProperty(video, "videoHeight", { get: () => 90 });
+        video.dispatchEvent(new Event("loadedmetadata"));
+        expect(videoElement.style.height).toBe("60px");
         expect(history.redoDescriptionL10nKey).toBe(kMoveDescription);
 
         await history.redo();
@@ -328,5 +402,189 @@ describe("selecting the canvas element that an undo or redo changed", () => {
         // With none of them active, the first in document order.
         expect(activeElement()).toBe(ce1);
         expect(history.undoDescriptionL10nKey).toBe(kMoveDescription);
+    });
+});
+
+// A click on a canvas element whose box does not have its picture's shape fits the box to the
+// picture (adjustContainerAspectRatio). Selecting the element after an undo or redo must not: the
+// fit would write a size and position that the next redo does not expect.
+describe("selecting after an undo or redo leaves a box that does not fit its picture", () => {
+    let pictureElement: HTMLElement;
+    let picture: HTMLImageElement;
+    // The picture's natural size, which jsdom does not load; zero until it has loaded.
+    let pictureSize: { width: number; height: number };
+
+    // A square box holding a picture.
+    beforeEach(() => {
+        pictureElement = document.createElement("div");
+        pictureElement.className = "bloom-canvas-element";
+        pictureElement.id = "pictureElement";
+        pictureElement.setAttribute(
+            "style",
+            "left: 10px; top: 100px; width: 60px; height: 60px;",
+        );
+        pictureElement.innerHTML =
+            '<div class="bloom-imageContainer"><img src="c.png" alt=""></div>';
+        picture = pictureElement.querySelector("img")!;
+        Object.defineProperty(picture, "naturalWidth", {
+            get: () => pictureSize.width,
+        });
+        Object.defineProperty(picture, "naturalHeight", {
+            get: () => pictureSize.height,
+        });
+        history.doOutsideHistory(() =>
+            byId("canvas").appendChild(pictureElement),
+        );
+    });
+
+    /** The box's position and size, as its style gives them. */
+    function box(): string {
+        const style = pictureElement.style;
+        return `${style.left} ${style.top} ${style.width} ${style.height}`;
+    }
+
+    it("when the undo and the redo select the element", async () => {
+        // A picture twice as wide as it is high, which the square box does not fit.
+        pictureSize = { width: 120, height: 60 };
+        await history.doTransaction(kMoveDescription, () => {
+            pictureElement.style.left = "40px";
+        });
+        select(byId("ce1"));
+        expect(box()).toBe("40px 100px 60px 60px");
+
+        await history.undo();
+
+        expect(activeElement()).toBe(pictureElement);
+        expect(box()).toBe("10px 100px 60px 60px");
+        expect(history.redoDescriptionL10nKey).toBe(kMoveDescription);
+
+        select(byId("ce1"));
+        await history.redo();
+
+        expect(activeElement()).toBe(pictureElement);
+        expect(box()).toBe("40px 100px 60px 60px");
+        expect(history.undoDescriptionL10nKey).toBe(kMoveDescription);
+        expect(history.redoDescriptionL10nKey).toBeUndefined();
+
+        // A click on the element still fits it.
+        select(pictureElement);
+        expect(pictureElement.style.width).toBe("60px");
+        expect(pictureElement.style.height).toBe("30px");
+    });
+
+    it("when the element the undo changed is already selected", async () => {
+        // A square picture, which the box fits when the element is selected.
+        pictureSize = { width: 60, height: 60 };
+        select(pictureElement);
+        expect(box()).toBe("10px 100px 60px 60px");
+        await history.doTransaction(kMoveDescription, () => {
+            pictureElement.style.left = "40px";
+        });
+        // The picture's file is now one twice as wide as it is high.
+        pictureSize = { width: 120, height: 60 };
+
+        await history.undo();
+
+        expect(activeElement()).toBe(pictureElement);
+        expect(box()).toBe("10px 100px 60px 60px");
+        expect(history.redoDescriptionL10nKey).toBe(kMoveDescription);
+
+        await history.redo();
+
+        expect(box()).toBe("40px 100px 60px 60px");
+        expect(history.undoDescriptionL10nKey).toBe(kMoveDescription);
+        expect(history.redoDescriptionL10nKey).toBeUndefined();
+    });
+
+    it("when a click's fit is still waiting for the picture as an undo begins", async () => {
+        pictureSize = { width: 0, height: 0 };
+        // The click's fit waits for the picture to load.
+        select(pictureElement);
+        let saveGoesAhead = false;
+        void whenNoRequestPageContentDelays().then(
+            () => (saveGoesAhead = true),
+        );
+        await Promise.resolve();
+        expect(saveGoesAhead).toBe(false);
+        await history.doTransaction(kMoveDescription, () => {
+            byId("ce1").style.left = "40px";
+        });
+
+        await history.undo();
+
+        await Promise.resolve();
+        await Promise.resolve();
+        expect(saveGoesAhead).toBe(true);
+        pictureSize = { width: 120, height: 60 };
+        picture.dispatchEvent(new Event("load"));
+        expect(box()).toBe("10px 100px 60px 60px");
+        expect(history.redoDescriptionL10nKey).toBe(kMoveDescription);
+
+        // A click on the element still fits it.
+        select(pictureElement);
+        expect(pictureElement.style.height).toBe("30px");
+    });
+
+    it("when the picture loads after the undo", async () => {
+        pictureSize = { width: 0, height: 0 };
+        await history.doTransaction(kMoveDescription, () => {
+            pictureElement.style.left = "40px";
+        });
+        select(byId("ce1"));
+
+        await history.undo();
+
+        expect(activeElement()).toBe(pictureElement);
+        pictureSize = { width: 120, height: 60 };
+        picture.dispatchEvent(new Event("load"));
+        expect(box()).toBe("10px 100px 60px 60px");
+        expect(history.redoDescriptionL10nKey).toBe(kMoveDescription);
+
+        await history.redo();
+
+        expect(box()).toBe("40px 100px 60px 60px");
+        expect(history.undoDescriptionL10nKey).toBe(kMoveDescription);
+    });
+});
+
+describe("a text canvas element that an undo or redo puts back", () => {
+    it("gets its source bubbles again when the undo of its delete puts it back", async () => {
+        // jsdom has no qtip; record what would become the bubbles instead.
+        const sourceBubbleContents = $("<div>source text</div>");
+        vi.spyOn(BloomSourceBubbles, "ProduceSourceBubbles").mockReturnValue(
+            sourceBubbleContents,
+        );
+        const makeQtips = vi
+            .spyOn(BloomSourceBubbles, "MakeSourceBubblesIntoQtips")
+            .mockImplementation(() => {});
+        const ce1 = byId("ce1");
+        const ce2 = byId("ce2");
+        const translationGroup = ce1.querySelector(".bloom-translationGroup");
+        select(ce1);
+        await history.doTransaction("EditTab.Undo.Delete", () => {
+            ce1.remove();
+            theOneCanvasElementManager.setActiveElement(ce2);
+        });
+        // Sanity check: the delete itself made no bubbles.
+        expect(makeQtips).not.toHaveBeenCalled();
+
+        await history.undo();
+
+        expect(ce1.isConnected).toBe(true);
+        expect(makeQtips.mock.calls).toEqual([
+            [translationGroup, sourceBubbleContents],
+        ]);
+        expect(history.redoDescriptionL10nKey).toBe("EditTab.Undo.Delete");
+
+        // A redo that takes it out again, and an undo that puts back no canvas element, make none.
+        makeQtips.mockClear();
+        await history.redo();
+        expect(ce1.isConnected).toBe(false);
+        await history.doTransaction(kMoveDescription, () => {
+            ce2.style.left = "120px";
+        });
+        await history.undo();
+        expect(ce2.style.left).toBe("100px");
+        expect(makeQtips).not.toHaveBeenCalled();
     });
 });

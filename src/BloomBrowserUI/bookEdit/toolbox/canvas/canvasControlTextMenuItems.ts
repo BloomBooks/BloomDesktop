@@ -358,7 +358,7 @@ export function makeFieldTypeMenuItem(
                 activeType === fieldType.dataBook
                     ? React.createElement(CheckIcon, null)
                     : undefined,
-            onSelect: () => {
+            onSelect: async () => {
                 if (!translationGroup) {
                     return;
                 }
@@ -396,7 +396,9 @@ export function makeFieldTypeMenuItem(
 
                 // Wrap to prevent saving an incompletely modified page
                 // while the async getDataBookValue request is in flight.
-                void wrapWithRequestPageContentDelay(async () => {
+                // Awaiting it keeps the command's undo step open until the
+                // answer has been applied, so the content joins that step.
+                await wrapWithRequestPageContentDelay(async () => {
                     translationGroup.classList.add(...fieldType.classes);
                     for (const editable of editables) {
                         editable.classList.add(...fieldType.editableClasses);
@@ -412,6 +414,17 @@ export function makeFieldTypeMenuItem(
                                 get(
                                     `editView/getDataBookValue?lang=${editable.getAttribute("lang")}&dataBook=${fieldType.dataBook}`,
                                     (result) => {
+                                        // While we waited, the box may have been
+                                        // deleted or given another field type.
+                                        if (
+                                            !editable.isConnected ||
+                                            editable.getAttribute(
+                                                "data-book",
+                                            ) !== fieldType.dataBook
+                                        ) {
+                                            resolve();
+                                            return;
+                                        }
                                         const response = result.data;
                                         const content = response.content;
                                         const temp =

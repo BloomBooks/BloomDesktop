@@ -67,7 +67,8 @@ const kEditTimeClasses = new Set([
 
 /**
  * Class tokens that a save keeps but that undo leaves alone, because Bloom works them out again
- * from what undo puts back. OverflowChecker works out the first four from the content each time
+ * from what undo puts back, or because they mark what is selected, which is view state, as
+ * data-bloom-active does. OverflowChecker works out the first four from the content each time
  * the content changes, on the boxes, the elements that contain an overflowing box, and the
  * .bloom-page (pageOverflows). Layout-Problem-Detected is one that OverflowChecker only removes,
  * left by an earlier version of Bloom.
@@ -84,6 +85,11 @@ const kClassesIgnoredByUndoOnly = new Set([
     // that set the src, outside any transaction. Undo putting back a src makes the browser load
     // it, which adds or removes the class again. C# does not copy it back from the data-div.
     "bloom-imageLoadError",
+    // On the video container that is selected: selectVideoContainer in videoUtils.ts moves it
+    // whenever a container is chosen, as selecting a canvas element that holds a video does, which
+    // can happen after an undo. The edit stylesheet draws it, and the Sign Language tool reads it
+    // to find the selected container. Which container is selected is view state, not content.
+    "bloom-selected",
 ]);
 
 /** C#: RemoveCkEditorMarkup removes every class token that starts with this. */
@@ -123,6 +129,15 @@ const kNiceScrollStyleProperties = new Set([
     "outline-width",
     "width",
 ]);
+
+/**
+ * Inline style properties of a .bloom-editable that a save keeps but that undo leaves alone.
+ * OverflowChecker.CheckOnMinHeight clears a box's min-height and works it out again from the
+ * box's line height each time it checks the box, which it first does a second after the page
+ * loads, on a timer. Recorded, that first write lands after a quick undo, outside any
+ * transaction, and clears redo.
+ */
+const kBoxStylePropertiesIgnoredByUndoOnly = new Set(["min-height"]);
 
 /** The query parameter that bloomVideo.ts adds to a video's src so that the browser reloads it. */
 const kVideoTimestampParam = "bloomVideoTransientTimestamp";
@@ -443,9 +458,14 @@ function normalizedStyleValue(
     return important ? `${normalized} !important` : normalized;
 }
 
-/** True for an inline style property of element that a save removes. */
+/** True for an inline style property of element that a save removes, or that undo leaves alone. */
 function isEditTimeStyleProperty(element: Element, name: string): boolean {
     if (kEditTimeStyleProperties.has(name)) return true;
+    if (
+        kBoxStylePropertiesIgnoredByUndoOnly.has(name) &&
+        element.classList.contains("bloom-editable")
+    )
+        return true;
     return (
         kNiceScrollStyleProperties.has(name) &&
         element.matches(kSelectorForPotentialNiceScrollElements)

@@ -28,15 +28,16 @@ export interface BegunTransaction extends Transaction {
      * An outermost transaction with kGenericUndoDescriptionL10nKey, the stand-in that Bloom opens
      * on a real click or key press (rule 2), may be ended while transactions begun inside it are
      * still open, such as a dialog's: it then stays open, and closes, making its step, when the
-     * last of them ends or is cancelled, as if end() were called then. Ending any other
-     * transaction while one begun inside it is open is a bug in the caller: the inner ones end
-     * with it, and in development it throws.
+     * last of them ends or is cancelled, as if end() were called then. (An async doTransaction
+     * waits the same way; see doTransaction.) Ending any other transaction while one begun inside
+     * it is open is a bug in the caller: the inner ones end with it, and in development it
+     * throws.
      *
      * Returns true when this call made an undo step, false otherwise: nothing changed, an
      * outermost transaction is still open around this one, the stand-in waits for transactions
      * begun inside it, or the transaction had already ended. Only the call that closes the
      * outermost transaction can make a step, and that is the stand-in's own end() or the end() of
-     * the last transaction that it waited for.
+     * the last transaction that it waited for. onClose says what happened in every case.
      */
     end(): boolean;
     /**
@@ -44,6 +45,16 @@ export interface BegunTransaction extends Transaction {
      * the transaction has already ended, or if it is the stand-in and its end() has been called.
      */
     cancel(): void;
+    /**
+     * Call listener once, when the outermost transaction that this one is part of closes, with
+     * the description of the undo step that closing it made, or undefined when it made none:
+     * nothing changed, it was cancelled, or clearUndoAndRedo() or dispose() ended it. If it has
+     * closed already, calls listener at once. For the stand-in that waits for transactions begun
+     * inside it, this is the one way to learn what its end() led to.
+     */
+    onClose(
+        listener: (stepDescriptionL10nKey: string | undefined) => void,
+    ): void;
 }
 
 /** What onAfterUndoOrRedo passes its listeners. */
@@ -168,6 +179,12 @@ export interface PageHistory {
      * one exception: when the outermost transaction has kGenericUndoDescriptionL10nKey, the first
      * nested transaction with a different description gives the step that description, unless
      * it is cancelled or fails.
+     *
+     * Two async calls may overlap in time, when the second begins while the first awaits and
+     * the first settles before the second: the second nests in the first, the first settles
+     * without error, and the step is made when the last of them ends. If the second then fails,
+     * every change since it began is put back, including what the first wrote after the second
+     * began, since the history cannot tell which of two interleaved async functions made a change.
      */
     doTransaction<T>(
         descriptionL10nKey: string,
@@ -185,12 +202,30 @@ export interface PageHistory {
      * any transaction goes anyway (rule 1), but without the warning. fn gets that transaction,
      * available only inside fn; with no latest transaction, fn still runs, gets a transaction
      * that records nothing, and its changes become part of the starting state.
+     *
+     * The latest transaction is the open one, with one exception: when the only transaction open
+     * is the stand-in with kGenericUndoDescriptionL10nKey and nothing has changed in it yet, fn's
+     * changes join the latest step, as if no transaction were open, and the stand-in still makes
+     * no step if nothing else changes in it. So Bloom's delayed reaction to an earlier action,
+     * such as the toolbox's markup pass after typing, never makes a step of its own, nor ends the
+     * history when the stand-in is one that a press in another window opened. Limits:
+     * - the choice is made when addToLatestTransaction is called, so a reaction that runs in two
+     *   calls with an await between them may have its two parts in different steps;
+     * - when the stand-in has changed something already, fn's changes join the stand-in, and
+     *   undoing its step undoes the reaction too;
+     * - a reaction that does not use addToLatestTransaction joins whatever transaction is open;
+     * - if the stand-in is later cancelled, reversing its records can overwrite what fn wrote to
+     *   the same values; the stand-ins that pageHistoryInput.ts opens are never cancelled.
      */
     addToLatestTransaction<T>(fn: (transaction: Transaction) => T): T;
 
     /**
-     * Bloom's own change, not recorded: undo leaves it in place. Only for a value that Bloom
-     * recomputes from other content (rule 3).
+     * Run fn without recording what it changes: its changes make no undo step, join none, give no
+     * warning and keep redo, and undo leaves them in place. Use it for a value that Bloom
+     * recomputes from other content (rule 3), and for a change that is deliberately not undoable
+     * but must not end the history. If a later undo or redo needs a value that such a change
+     * altered, the check of rule 4 refuses it: that stack of steps is emptied and the page is left
+     * as it is.
      */
     doOutsideHistory<T>(fn: () => T): T;
 

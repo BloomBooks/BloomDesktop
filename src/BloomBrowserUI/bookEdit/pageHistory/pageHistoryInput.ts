@@ -75,8 +75,9 @@ const kNavigationKeys = new Set([
 const kDeletingKeys = new Set(["Backspace", "Delete"]);
 
 // The values of KeyboardEvent.key for a modifier or lock key. A keydown of one of these alone
-// opens no transaction, ends no typing step and counts for nothing.
-const kModifierKeys = new Set([
+// opens no transaction, ends no typing step and counts for nothing. The toolbox's markup handlers
+// on each box (pageEditingMarkup.ts) leave these keys alone too.
+export const kModifierKeys = new Set([
     "Shift",
     "Control",
     "Alt",
@@ -221,25 +222,24 @@ class InputTransactions {
 
     /**
      * End the transaction that this opened and still holds, if any. One from another window that
-     * made an undo step ends the history.
+     * made an undo step with the general description ends the history, whenever it closes.
      */
     public endHeld(): void {
         const held = this.held;
         if (!held) return;
         this.held = undefined;
-        const madeStep = held.transaction.end();
         // A step that kept the general description changed the page with no explicit transaction
         // inside it; a nested doTransaction or beginTransaction gives the step its own description
-        // and makes it an undo step like any other (MINIMUM.md items 4 and 5). When end() returns
-        // false because the transaction waits for one begun inside it, such as a dialog's, that
-        // one makes the step later, with its own description, so nothing ends the history.
-        if (
-            held.fromOtherWindow &&
-            madeStep &&
-            this.history.undoDescriptionL10nKey ===
-                kGenericUndoDescriptionL10nKey
-        )
-            this.history.clearUndoAndRedo();
+        // and makes it an undo step like any other (MINIMUM.md items 4 and 5). When the
+        // transaction waits for one begun inside it, such as a dialog's, it closes only when that
+        // one ends, and the step keeps the general description if that one is cancelled; onClose
+        // reports the close in either case.
+        if (held.fromOtherWindow)
+            held.transaction.onClose((stepDescriptionL10nKey) => {
+                if (stepDescriptionL10nKey === kGenericUndoDescriptionL10nKey)
+                    this.history.clearUndoAndRedo();
+            });
+        held.transaction.end();
     }
 
     /**

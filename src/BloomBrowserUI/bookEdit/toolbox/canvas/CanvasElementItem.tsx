@@ -72,9 +72,16 @@ const ondragend = (
         addCanvasElementAtDragEnd(...args);
         return;
     }
-    void history.doTransaction(kGenericUndoDescriptionL10nKey, () =>
-        addCanvasElementAtDragEnd(...args),
-    );
+    void history
+        .doTransaction(kGenericUndoDescriptionL10nKey, () =>
+            addCanvasElementAtDragEnd(...args),
+        )
+        .catch((error) => {
+            // The rollback took the new element out again, but Comical draws from its own copy
+            // of each bubble's spec.
+            getCanvasElementManager()?.redrawBubblesFromPage();
+            throw error;
+        });
 };
 
 const addCanvasElementAtDragEnd = (

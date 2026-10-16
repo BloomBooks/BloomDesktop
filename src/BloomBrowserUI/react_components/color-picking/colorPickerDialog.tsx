@@ -473,11 +473,9 @@ const doRender = (
     let modalContainer;
     if (container) modalContainer = container;
     else modalContainer = getWorkspaceBundleExports().getModalDialogContainer();
-    try {
-        renderRootSync(<ColorPickerDialog {...props} />, modalContainer);
-    } catch (error) {
-        console.error(error);
-    }
+    // A failure to render reaches the caller of showColorPickerDialog, which may have begun an
+    // undo step that only the picker's close would otherwise end.
+    renderRootSync(<ColorPickerDialog {...props} />, modalContainer);
 };
 
 // The following interface and function provide a simpler interface to the color

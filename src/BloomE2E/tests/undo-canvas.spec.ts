@@ -7,9 +7,10 @@
 // change made: the elements' markup, less what editing adds, and where each is drawn
 // (getCanvasElementMarkupAndRects in helpers/canvasElements.ts). Each press must run one undo or
 // one redo of the page history. After the undo, the element the change was made to must be
-// selected, so that the user sees what was undone; after undoing an add, nothing is. Last, the test
-// selects an element and drags it, to show that Bloom still handles canvas elements after the undo
-// and redo.
+// selected, so that the user sees what was undone; after undoing an add, nothing is. Some tests
+// also check what the redo selects, and the first selects another element before each key press,
+// so that its checks fail if the undo or redo selects nothing. Last, the test selects an element
+// and drags it, to show that Bloom still handles canvas elements after the undo and redo.
 //
 // Changing a bubble's Element Type in the Canvas tool's panel is an undo step too, although the
 // change is made from the toolbox, which otherwise ends the history (MINIMUM.md item 4). Its test
@@ -94,6 +95,18 @@ interface ICanvasChange {
      * canvasElement takes; undefined when nothing must be, as after undoing an add.
      */
     selectedAfterUndo: () => number | undefined;
+    /**
+     * An element other than the one changed, to select after the change and again after Ctrl+Z,
+     * before each key press. Without it the changed element is still selected when Ctrl+Z is
+     * pressed, so the check of what is selected afterwards passes even if the undo selects
+     * nothing.
+     */
+    selectBeforeUndoAndRedo?: () => number;
+    /**
+     * The element that must be selected once Ctrl+Y has redone the change, as for
+     * selectedAfterUndo. When this is absent, what Ctrl+Y selects is not checked.
+     */
+    selectedAfterRedo?: () => number | undefined;
     /** Anything more to check once Ctrl+Z has undone the change. */
     alsoAfterUndo?: () => Promise<void>;
     /** Anything more to check, or to do, once Ctrl+Y has redone the change, before the drag. */
@@ -121,24 +134,49 @@ async function expectCtrlZAndCtrlYToReverse(
         `${check.change} changed nothing on the canvas, so there is nothing to undo.`,
     ).not.toEqual(before);
 
+    if (check.selectBeforeUndoAndRedo)
+        await selectCanvasElement(page, check.selectBeforeUndoAndRedo());
     await undoWithCtrlZAndExpect(page, read, before, check.change);
-    const expectedSelection = check.selectedAfterUndo();
-    await expect
-        .poll(async () => getSelectedCanvasElementIndex(page), {
-            timeout: 15000,
-            message:
-                expectedSelection === undefined
-                    ? `After Ctrl+Z undid ${check.change}, a canvas element is selected, where none should be.`
-                    : `After Ctrl+Z undid ${check.change}, canvas element ${expectedSelection}, ` +
-                      `which the change was made to, is not the one selected.`,
-        })
-        .toBe(expectedSelection);
+    await expectSelected(
+        page,
+        check.selectedAfterUndo(),
+        `After Ctrl+Z undid ${check.change}`,
+    );
     await check.alsoAfterUndo?.();
+    if (check.selectBeforeUndoAndRedo)
+        await selectCanvasElement(page, check.selectBeforeUndoAndRedo());
     await redoWithCtrlYAndExpect(page, read, after, check.change);
+    if (check.selectedAfterRedo)
+        await expectSelected(
+            page,
+            check.selectedAfterRedo(),
+            `After Ctrl+Y redid ${check.change}`,
+        );
     await check.alsoAfterRedo?.();
 
     await selectCanvasElement(page, check.elementToDragAfterwards());
     await dragCanvasElement(page, 15, 10);
+}
+
+/**
+ * Wait for the canvas element at index expected to be the one selected, or for none to be when
+ * expected is undefined. when says what has just happened, for the failure message.
+ */
+async function expectSelected(
+    page: Page,
+    expected: number | undefined,
+    when: string,
+): Promise<void> {
+    await expect
+        .poll(async () => getSelectedCanvasElementIndex(page), {
+            timeout: 15000,
+            message:
+                expected === undefined
+                    ? `${when}, a canvas element is selected, where none should be.`
+                    : `${when}, canvas element ${expected}, which the change was made to, ` +
+                      `is not the one selected.`,
+        })
+        .toBe(expected);
 }
 
 test.describe("Ctrl+Z and Ctrl+Y undo and redo changes to canvas elements", () => {
@@ -165,7 +203,11 @@ test.describe("Ctrl+Z and Ctrl+Y undo and redo changes to canvas elements", () =
         await expectCtrlZAndCtrlYToReverse(page, {
             change: "moving a speech bubble",
             makeChange: () => dragCanvasElement(page, 40, 30),
+            // With the picture selected when each key is pressed, the bubble is selected
+            // afterwards only if the undo and the redo select it.
+            selectBeforeUndoAndRedo: () => picture,
             selectedAfterUndo: () => bubble,
+            selectedAfterRedo: () => bubble,
             elementToDragAfterwards: () => bubble,
         });
     });
@@ -310,6 +352,7 @@ test.describe("Ctrl+Z and Ctrl+Y undo and redo changes to canvas elements", () =
                 );
             },
             selectedAfterUndo: () => undefined,
+            selectedAfterRedo: () => added,
             elementToDragAfterwards: () => added,
         });
     });
@@ -332,6 +375,8 @@ test.describe("Ctrl+Z and Ctrl+Y undo and redo changes to canvas elements", () =
             makeChange: () => deleteCanvasElement(page),
             // Undoing the delete puts the bubble back where it was, and selects it.
             selectedAfterUndo: () => bubble,
+            // The redo takes the selected bubble out of the page and puts nothing back.
+            selectedAfterRedo: () => undefined,
             // The bubble is gone again after the redo, and the picture, added after it, moved up one.
             elementToDragAfterwards: () => picture - 1,
         });

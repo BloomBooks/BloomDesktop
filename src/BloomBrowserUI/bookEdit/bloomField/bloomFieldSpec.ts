@@ -1,6 +1,6 @@
 ///<reference path="BloomField.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
-import { describe, it, expect, beforeEach, afterAll } from "vitest";
+import { describe, it, expect, beforeEach, afterAll, afterEach } from "vitest";
 import { getTestRoot, removeTestRoot } from "../../utils/testHelper";
 import BloomField from "./BloomField";
 import $ from "jquery";
@@ -911,5 +911,175 @@ describe("BloomField.wouldRemoveProtectedElement", () => {
                 editOver(field, 1, field, 1),
             ),
         ).toBe(false);
+    });
+});
+
+// A stand-in for a CKEditor instance with the parts that WireToCKEditor uses. fire calls the
+// listeners in order and stops at one that cancels, as CKEDITOR.event does, and returns false if
+// one did.
+class StandInEditor {
+    public config = {};
+    public ui = { addButton: () => {} };
+    private listeners = new Map<string, ((event: unknown) => unknown)[]>();
+    public on(eventName: string, listener: (event: unknown) => unknown) {
+        this.listeners.set(eventName, [
+            ...(this.listeners.get(eventName) ?? []),
+            listener,
+        ]);
+    }
+    public addCommand() {
+        // Set Up Hyperlink's command, which these tests never run.
+    }
+    public fire(eventName: string, data?: unknown): boolean {
+        let cancelled = false;
+        const event = { data, cancel: () => (cancelled = true) };
+        for (const listener of this.listeners.get(eventName) ?? []) {
+            if (listener(event) === false) cancelled = true;
+            if (cancelled) break;
+        }
+        return !cancelled;
+    }
+    public asEditor(): CKEDITOR.editor {
+        return this as unknown as CKEDITOR.editor;
+    }
+}
+
+// Select from offset start in the text of the element with id startId to offset end in the text
+// of the element with id endId.
+function selectText(
+    startId: string,
+    start: number,
+    endId: string,
+    end: number,
+) {
+    const range = document.createRange();
+    range.setStart(document.getElementById(startId)!.firstChild!, start);
+    range.setEnd(document.getElementById(endId)!.firstChild!, end);
+    const selection = window.getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
+    return range;
+}
+
+describe("BloomField.MarkWhenUserDeletesEverything (BL-13779)", () => {
+    let box: HTMLElement;
+    let editor: StandInEditor;
+    beforeEach(() => {
+        const root = getTestRoot();
+        root.innerHTML =
+            '<div id="box" contenteditable="true" class="bloom-editable bloom-copyFromOtherLanguageIfNecessary">' +
+            '<p id="p1">One</p><p id="p2">Two</p></div>';
+        box = root.querySelector<HTMLElement>("#box")!;
+        editor = new StandInEditor();
+        BloomField.MarkWhenUserDeletesEverything(box, editor.asEditor());
+    });
+
+    // What CKEditor's WebKit "key" listener does to a selection that spans two blocks: delete it
+    // with no input event.
+    function deleteBothParagraphsWithNoInputEvent() {
+        selectText("p1", 0, "p2", 3).deleteContents();
+        expect(box.textContent, "test setup: the box is empty").toBe("");
+    }
+
+    it("marks the box when Delete comes up after a deletion that raised no input event", () => {
+        deleteBothParagraphsWithNoInputEvent();
+        expect(
+            box.getAttribute("data-user-deleted"),
+            "nothing told the box about the deletion yet",
+        ).toBeNull();
+        box.dispatchEvent(new KeyboardEvent("keyup", { key: "Delete" }));
+        expect(box.getAttribute("data-user-deleted")).toBe("true");
+    });
+
+    it("marks the box when Backspace comes up too", () => {
+        deleteBothParagraphsWithNoInputEvent();
+        box.dispatchEvent(new KeyboardEvent("keyup", { key: "Backspace" }));
+        expect(box.getAttribute("data-user-deleted")).toBe("true");
+    });
+
+    it("marks the box when the editor fires change, as the top bar's Cut makes it do", () => {
+        deleteBothParagraphsWithNoInputEvent();
+        editor.fire("change");
+        expect(box.getAttribute("data-user-deleted")).toBe("true");
+    });
+
+    it("leaves the box unmarked while it has text, or at another key", () => {
+        selectText("p1", 0, "p2", 1).deleteContents();
+        box.dispatchEvent(new KeyboardEvent("keyup", { key: "Delete" }));
+        editor.fire("change");
+        expect(box.textContent, "test setup: some text is left").toBe("wo");
+        expect(box.getAttribute("data-user-deleted")).toBeNull();
+
+        selectText("p2", 0, "p2", 2).deleteContents();
+        expect(box.textContent, "test setup: the box is empty").toBe("");
+        box.dispatchEvent(new KeyboardEvent("keyup", { key: "a" }));
+        expect(box.getAttribute("data-user-deleted")).toBeNull();
+    });
+
+    it("does nothing for a box without bloom-copyFromOtherLanguageIfNecessary", () => {
+        const other = document.createElement("div");
+        other.className = "bloom-editable";
+        other.innerHTML = '<p id="p3">Three</p>';
+        getTestRoot().appendChild(other);
+        const otherEditor = new StandInEditor();
+        BloomField.MarkWhenUserDeletesEverything(other, otherEditor.asEditor());
+        other.innerHTML = "<p></p>";
+        other.dispatchEvent(new KeyboardEvent("keyup", { key: "Delete" }));
+        otherEditor.fire("change");
+        expect(other.getAttribute("data-user-deleted")).toBeNull();
+    });
+});
+
+describe("BloomField.WireToCKEditor refusing Delete over a protected element", () => {
+    let field: HTMLElement;
+    let editor: StandInEditor;
+    let ckeditorWasDefined: boolean;
+    beforeEach(() => {
+        const root = getTestRoot();
+        root.innerHTML =
+            '<div id="field" contenteditable="true" class="bloom-editable">' +
+            '<div id="picture" class="bloom-preventRemoval"><p id="caption">Caption</p></div>' +
+            '<p id="p1">One</p><p id="p2">Two</p></div>';
+        field = root.querySelector<HTMLElement>("#field")!;
+        ckeditorWasDefined = "CKEDITOR" in globalThis;
+        // CKEditor is loaded into the real editing page by a script tag. A palette of its own
+        // keeps WireToCKEditor from asking Bloom's server for one.
+        (globalThis as unknown as { CKEDITOR: unknown }).CKEDITOR = {
+            config: { colorButton_colors: "FFFFFF,FF0000" },
+            SHIFT: 2228224,
+        };
+        editor = new StandInEditor();
+        BloomField.WireToCKEditor(field, editor.asEditor());
+    });
+
+    afterEach(() => {
+        if (!ckeditorWasDefined)
+            delete (globalThis as unknown as { CKEDITOR?: unknown }).CKEDITOR;
+    });
+
+    // Fire CKEditor's key event for a key with no modifiers. Returns false if a listener cancelled
+    // it, which makes CKEditor cancel the keydown and stops its own WebKit "key" listener.
+    function pressKey(keyCode: number): boolean {
+        return editor.fire("key", {
+            keyCode,
+            domEvent: { getKey: () => keyCode },
+        });
+    }
+
+    it("cancels Delete and Backspace over a selection that runs into the protected element", () => {
+        selectText("caption", 2, "p2", 1);
+        expect(pressKey(46)).toBe(false);
+        expect(pressKey(8)).toBe(false);
+    });
+
+    it("lets Delete through over a selection beside the protected element, and other keys", () => {
+        selectText("p1", 0, "p2", 1);
+        expect(pressKey(46)).toBe(true);
+        selectText("caption", 0, "p2", 1);
+        expect(pressKey(65)).toBe(true);
+        expect(
+            document.getElementById("picture"),
+            "test setup: the protected element should be on the page",
+        ).not.toBeNull();
     });
 });

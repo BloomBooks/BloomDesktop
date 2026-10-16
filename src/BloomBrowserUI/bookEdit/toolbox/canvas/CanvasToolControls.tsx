@@ -105,7 +105,8 @@ const getImageFillModeForElement = (element: HTMLElement): ImageFillMode => {
  * history, described by the control's label. A change made from the toolbox with no transaction
  * of its own would end the history (pageHistoryInput.ts); this transaction nests inside the one
  * that the click opened, and gives the step its description. change must be synchronous: the
- * step closes before this returns. If change throws, its changes are put back.
+ * step closes before this returns. If change throws, its changes are put back, and the bubbles
+ * are drawn again from the page.
  */
 function changePageAsOneStep<T>(
     descriptionL10nKey: string,
@@ -118,6 +119,8 @@ function changePageAsOneStep<T>(
         result = change();
     } catch (error) {
         transaction?.cancel();
+        // The rollback put back data-bubble, but Comical draws from its own copy of each spec.
+        getCanvasElementManager()?.redrawBubblesFromPage();
         throw error;
     }
     transaction?.end();
@@ -808,32 +811,41 @@ const CanvasToolControls: React.FunctionComponent<{
 
     // Show the colour picker as one undo step of the page history, from opening it to OK. The
     // picker changes the page as the user tries colours; Cancel puts back every change made since
-    // it opened, and leaves no step.
+    // it opened, and leaves no step. If showing the picker throws, nothing will call close, so the
+    // step is cancelled as on Cancel.
     const showColorPickerAsOneStep = (
         colorPickerDialogProps: IColorPickerDialogProps,
         descriptionL10nKey: string,
     ) => {
         const transaction =
             currentPageHistory()?.beginTransaction(descriptionL10nKey);
-        getWorkspaceBundleExports().showColorPickerDialog({
-            ...colorPickerDialogProps,
-            close: (result) => {
-                if (result === DialogResult.Cancel) {
-                    transaction?.cancel();
-                    // Nothing tells Comical or the panel what the rollback put back. Comical
-                    // still draws the colour that the picker's Cancel passed to onChange, which
-                    // is not always what the page had (BL-9922 makes a transparent background
-                    // the picker's opaque initial colour).
-                    const canvasElementManager = getCanvasElementManager();
-                    if (canvasElementManager) {
-                        canvasElementManager.redrawBubblesFromPage();
-                        updateReactFromComical(canvasElementManager);
+        const cancelStep = () => {
+            transaction?.cancel();
+            // Nothing tells Comical or the panel what the rollback put back. Comical still draws
+            // the colour that the picker's Cancel passed to onChange, which is not always what
+            // the page had (BL-9922 makes a transparent background the picker's opaque initial
+            // colour).
+            const canvasElementManager = getCanvasElementManager();
+            if (canvasElementManager) {
+                canvasElementManager.redrawBubblesFromPage();
+                updateReactFromComical(canvasElementManager);
+            }
+        };
+        try {
+            getWorkspaceBundleExports().showColorPickerDialog({
+                ...colorPickerDialogProps,
+                close: (result) => {
+                    if (result === DialogResult.Cancel) {
+                        cancelStep();
+                    } else {
+                        transaction?.end();
                     }
-                } else {
-                    transaction?.end();
-                }
-            },
-        });
+                },
+            });
+        } catch (error) {
+            cancelStep();
+            throw error;
+        }
         ToolBox.addWhenClosingToolTask(() => {
             getWorkspaceBundleExports().hideColorPickerDialog();
             // hideColorPickerDialog closes the picker without OK or Cancel, so close is not

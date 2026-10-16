@@ -256,14 +256,22 @@ const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
  * menu or a toolbar, in the page or in the Canvas tool, is an undo step of its own rather than a
  * change that ends the history. The step is described by the command's label. An async action
  * keeps the step open until it settles, so an action must await any work of its own that
- * changes the page later.
+ * changes the page later. If the action fails, the step's changes are put back, and the bubbles
+ * are drawn again from the page.
  */
 export const runCommandControlAction = (
     control: ICommandControlDefinition,
     ctx: IControlContext,
     runtime: IControlRuntime,
 ): Promise<void> =>
-    doTransactionIfAny(control.l10nId, () => control.action(ctx, runtime));
+    doTransactionIfAny(control.l10nId, () =>
+        control.action(ctx, runtime),
+    ).catch((error) => {
+        // The rollback put back data-bubble, but Comical draws from its own copy of each
+        // spec.
+        getCanvasElementManager()?.redrawBubblesFromPage();
+        throw error;
+    });
 
 const buildDynamicMenuItemFromControl = (
     controlId: TopLevelControlId,
@@ -1232,12 +1240,19 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             // Shown from the workspace root so its backdrop covers the page list too.
             const showLinkTargetChooserDialog =
                 getWorkspaceBundleExports().showLinkTargetChooserDialog;
+            // The command's own step closed when the dialog opened, so OK makes a step of its
+            // own, inside the transaction that the click on OK opened.
             showLinkTargetChooserDialog(currentUrl, (newUrl) => {
-                if (newUrl) {
-                    ctx.canvasElement.setAttribute("data-href", newUrl);
-                } else {
-                    ctx.canvasElement.removeAttribute("data-href");
-                }
+                void doTransactionIfAny(
+                    "EditTab.Toolbox.CanvasTool.SetDest",
+                    () => {
+                        if (newUrl) {
+                            ctx.canvasElement.setAttribute("data-href", newUrl);
+                        } else {
+                            ctx.canvasElement.removeAttribute("data-href");
+                        }
+                    },
+                );
             });
         },
     },
