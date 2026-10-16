@@ -28,7 +28,7 @@ import {
 import { whenBloomPageIsReady } from "../../utils/shared";
 import { useL10n } from "../../react_components/l10nHooks";
 import { getWorkspaceBundleExports } from "../js/workspaceFrames";
-import { doOutsideHistoryIfAny } from "../pageHistory/pageHistoryAccess";
+import { doOutsideHistory } from "../pageHistory/pageHistoryAccess";
 import { ElementAttributeSnapshot } from "../../utils/ElementAttributeSnapshot";
 import { useGetFeatureStatus } from "../../react_components/featureStatus";
 import {
@@ -340,7 +340,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
             const pageAttributes = initialPageAttributeSnapshot.current;
             if (pageAttributes) {
                 // Like the preview it undoes, this is not an undo step.
-                doOutsideHistoryIfAny(() =>
+                doOutsideHistory(() =>
                     restoreInitialPage(
                         pageAttributes,
                         initialImageSrcs.current,
@@ -367,7 +367,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                     // The page settings are not undoable, and changing them must not end the
                     // page history, as a change made from a dialog with no transaction of its
                     // own would (pageHistoryInput.ts).
-                    doOutsideHistoryIfAny(() =>
+                    doOutsideHistory(() =>
                         applyChangedPageSettings(changedPageSettings),
                     );
                 }
@@ -504,7 +504,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
 
                             // The live preview is not an undo step, and must not end the page
                             // history either.
-                            doOutsideHistoryIfAny(() => {
+                            doOutsideHistory(() => {
                                 restoreInitialPage(
                                     pageAttributes,
                                     initialImageSrcs.current,

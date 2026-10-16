@@ -5,22 +5,27 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPageHistory } from "../../pageHistory/pageHistory";
 import { createEditTimeMarkupFilter } from "../../pageHistory/editTimeMarkup";
-import type { PageHistory } from "../../pageHistory/pageHistoryTypes";
+import {
+    kGenericUndoDescriptionL10nKey,
+    type PageHistory,
+} from "../../pageHistory/pageHistoryTypes";
 
 const mocks = vi.hoisted(() => ({
     history: undefined as PageHistory | undefined,
+    // What the canvas element manager's suspendComicEditing writes to the page in a test.
+    suspendComicEditing: undefined as (() => void) | undefined,
 }));
-// The history that the code under test finds, with doOutsideHistoryIfAny doing what the real
+// The history that the code under test finds, with doOutsideHistory doing what the real
 // one does when there is a history.
 vi.mock("../../pageHistory/pageHistoryAccess", () => ({
     currentPageHistory: () => mocks.history,
-    doOutsideHistoryIfAny: <T>(fn: () => T): T =>
+    doOutsideHistory: <T>(fn: () => T): T =>
         mocks.history ? mocks.history.doOutsideHistory(fn) : fn(),
-    clearUndoAndRedoIfAny: () => mocks.history?.clearUndoAndRedo(),
+    clearUndoAndRedo: () => mocks.history?.clearUndoAndRedo(),
 }));
 vi.mock("../canvas/canvasElementPageBridge", () => ({
     getCanvasElementManager: () => ({
-        suspendComicEditing: () => undefined,
+        suspendComicEditing: () => mocks.suspendComicEditing?.(),
         resumeComicEditing: () => undefined,
     }),
 }));
@@ -56,6 +61,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+    mocks.suspendComicEditing = undefined;
     hideImageDescriptions(body);
     history.dispose();
     mocks.history = undefined;
@@ -102,6 +108,43 @@ describe("Showing image descriptions and the page history", () => {
 
         hideImageDescriptions(body);
         expect(Array.from(bloomCanvas.childNodes)).toEqual(nodesBefore);
+    });
+
+    it("does not record what turning canvas editing off writes, even inside the click that opens the tool", async () => {
+        await history.doTransaction(kAddKey, () => {
+            const added = document.createElement("div");
+            added.id = "added";
+            added.className = "bloom-canvas-element";
+            added.innerHTML =
+                '<div class="bloom-translationGroup"><div class="bloom-editable" lang="en">Hi</div></div>';
+            bloomCanvas.appendChild(added);
+        });
+        const addedEditable = body.querySelector("#added .bloom-editable")!;
+        // As CanvasElementManager.turnOffCanvasElementEditing saves each element's place.
+        mocks.suspendComicEditing = () =>
+            addedEditable.setAttribute(
+                "data-bubble-alternate",
+                "{`lang`:`en`}",
+            );
+        // The click on the tool's header in the toolbox opens a transaction with the general
+        // description (pageHistoryInput.ts); a step made in it would end the history.
+        const click = history.beginTransaction(kGenericUndoDescriptionL10nKey);
+
+        showImageDescriptions(body);
+
+        expect(addedEditable.getAttribute("data-bubble-alternate")).toBe(
+            "{`lang`:`en`}",
+        );
+        expect(click.end()).toBe(false);
+        expect(history.undoDescriptionL10nKey).toBe(kAddKey);
+        expect(onUnmarkedChange).not.toHaveBeenCalled();
+
+        await history.undo();
+        expect(body.querySelector("#added")).toBeNull();
+        expect(history.redoDescriptionL10nKey).toBe(kAddKey);
+        await history.redo();
+        expect(describedImage()!.querySelector("#added")).not.toBeNull();
+        expect(onUnmarkedChange).not.toHaveBeenCalled();
     });
 
     it("puts the children back in their order when they are hidden", () => {

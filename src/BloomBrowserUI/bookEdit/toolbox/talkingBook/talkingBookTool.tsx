@@ -10,7 +10,7 @@ import { TalkingBookToolControls } from "./TalkingBookToolControls";
 import { kImageDescriptionToolId, kTalkingBookToolId } from "../toolIds";
 import {
     currentPageHistory,
-    doOutsideHistoryIfAny,
+    doOutsideHistory,
 } from "../../pageHistory/pageHistoryAccess";
 // Gets these styles into the toolbox document. (The page frame links the compiled
 // audioRecording.css separately; see the styleSheets list in editablePage.ts.)
@@ -161,7 +161,7 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
         this.stopListeningToUndoAndRedo = undefined;
         // What leaving the tool writes to the page is not something the user did, so it is not
         // recorded in the page history: undo leaves it in place.
-        doOutsideHistoryIfAny(() => {
+        doOutsideHistory(() => {
             const audioRecorder = getAudioRecorder();
             // not quite sure how this can be called when never initialized, but if
             // we don't have the object we certainly can't use it.

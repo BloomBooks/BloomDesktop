@@ -12,7 +12,7 @@ import * as _ from "underscore";
 import { theOneLibSynphony, LibSynphony } from "./synphony_lib";
 import "./bloomSynphonyExtensions"; //add several functions to LanguageData
 import { ReaderToolsModel } from "../readerToolsModel";
-import { doOutsideHistoryIfAny } from "../../../pageHistory/pageHistoryAccess";
+import { doOutsideHistory } from "../../../pageHistory/pageHistoryAccess";
 import {
     ReaderTextMap,
     kSentenceTooLongHighlight,
@@ -201,7 +201,7 @@ import {
             );
         }
         // The page history neither records nor puts back this class (kEditTimeClasses in
-        // pageHistory/editTimeMarkup.ts), so changing it needs no doOutsideHistoryIfAny.
+        // pageHistory/editTimeMarkup.ts), so changing it needs no doOutsideHistory.
         if (
             totalWordCount > opts.maxWordsPerPage ||
             totalSentenceCount > opts.maxSentencesPerPage
@@ -383,7 +383,7 @@ import {
      * redo. The page-too-many-words-or-sentences class is one the history ignores anyway.
      */
     $.fn.removeSynphonyMarkup = function () {
-        doOutsideHistoryIfAny(() => {
+        doOutsideHistory(() => {
             this.each(function () {
                 // remove markup for deleted text
                 $(this).find("span[data-segment=sentence]:empty").remove();
@@ -421,7 +421,7 @@ import {
      * a book, and for the same reasons the page history does not record the change.
      */
     $.fn.removeCkEditorMarkup = function () {
-        doOutsideHistoryIfAny(() => {
+        doOutsideHistory(() => {
             this.each(function () {
                 $(this)
                     .find("span[style]")

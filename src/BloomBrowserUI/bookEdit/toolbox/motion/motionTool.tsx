@@ -21,7 +21,7 @@ import {
 import { kMotionToolId } from "../toolIds";
 import {
     currentPageHistory,
-    doOutsideHistoryIfAny,
+    doOutsideHistory,
 } from "../../pageHistory/pageHistoryAccess";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
 import { getFeatureStatusAsync } from "../../../react_components/featureStatus";
@@ -88,7 +88,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     private updateAfterUndoOrRedo() {
         this.observer?.takeRecords();
         this.updateMotionRectanglesState(() =>
-            doOutsideHistoryIfAny(() => this.hideRectangles()),
+            doOutsideHistory(() => this.hideRectangles()),
         );
     }
 
@@ -120,7 +120,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         // not something the user did, so the page history does not record it: undo leaves it
         // in place. Dragging a rectangle is recorded (saveDraggedRectangles in the drag and resize
         // handlers, which run later, outside this).
-        doOutsideHistoryIfAny(() => this.drawRectangles());
+        doOutsideHistory(() => this.drawRectangles());
     }
 
     // Draw the rectangles from data-initialrect and data-finalrect, and save default ones when
@@ -313,7 +313,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         this.stopListeningToUndoAndRedo?.();
         this.stopListeningToUndoAndRedo = undefined;
         // Like showing the rectangles, taking them off is not recorded in the page history.
-        doOutsideHistoryIfAny(() => this.removeRectsFromPage());
+        doOutsideHistory(() => this.removeRectsFromPage());
     }
 
     // Stop any preview, take the rectangles off the page, and let the user edit the image again.
@@ -511,7 +511,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     // What the checkbox writes to the page is not recorded in the page history: checking or
     // unchecking it makes no undo step, and undo leaves it as it is.
     private motionChanged(checked: boolean) {
-        doOutsideHistoryIfAny(() => {
+        doOutsideHistory(() => {
             const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
             if (!bloomCanvasToAnimate) {
                 return;
@@ -654,7 +654,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             const src = bgImage.getAttribute("src");
             if (!src || isPlaceHolderImage(src)) {
                 // Not recorded in the page history, like showing the rectangles.
-                doOutsideHistoryIfAny(() => this.hideRectangles());
+                doOutsideHistory(() => this.hideRectangles());
             }
             this.observer.observe(bgImage, {
                 attributes: true,
@@ -766,7 +766,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     private toggleMotionPreviewPlaying() {
         // A preview changes the page only while it plays, so the page history does not record
         // what starting or stopping it writes.
-        doOutsideHistoryIfAny(() => this.startOrStopPreview());
+        doOutsideHistory(() => this.startOrStopPreview());
     }
 
     private startOrStopPreview() {
@@ -956,7 +956,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private cleanupAnimation() {
-        doOutsideHistoryIfAny(() => this.removePreviewFromPage());
+        doOutsideHistory(() => this.removePreviewFromPage());
     }
 
     private removePreviewFromPage() {

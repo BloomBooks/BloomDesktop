@@ -2,7 +2,7 @@ import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
 import {
     currentPageHistory,
-    doOutsideHistoryIfAny,
+    doOutsideHistory,
 } from "../../pageHistory/pageHistoryAccess";
 
 // This file is intended to expose some image description functions that other parts of the
@@ -20,12 +20,18 @@ let stopUnwrappingForUndoAndRedo: (() => void) | undefined;
 
 export function showImageDescriptions(bodyOfPageIframe: HTMLElement) {
     const canvasElementManager = getCanvasElementManager();
-    canvasElementManager?.suspendComicEditing("forTool");
+    // Turning canvas editing off saves each canvas element's place as its current-language
+    // alternate and takes away editing markup. That is how the tool shows the page, not something
+    // the user did, so none of it is recorded: inside the click that opens the tool, a change that
+    // is recorded would end the page history.
+    doOutsideHistory(() =>
+        canvasElementManager?.suspendComicEditing("forTool"),
+    );
     // turn on special layout to make image descriptions visible (might already be on, so check first)
     if (!bodyOfPageIframe.classList.contains("bloom-showImageDescriptions")) {
         // The wrapping is how a tool shows the page, not something the user did, so it is not
         // recorded in the page history: undo leaves it in place.
-        doOutsideHistoryIfAny(() => {
+        doOutsideHistory(() => {
             bodyOfPageIframe.classList.add("bloom-showImageDescriptions");
             wrapDescribedImages(bodyOfPageIframe);
         });
@@ -40,7 +46,7 @@ export function hideImageDescriptions(bodyOfPageIframe: HTMLElement) {
     // right while the extra wrapper is present.
     // Like the wrapping in showImageDescriptions, the unwrapping is not recorded in the page
     // history.
-    doOutsideHistoryIfAny(() => {
+    doOutsideHistory(() => {
         bodyOfPageIframe.classList.remove("bloom-showImageDescriptions");
         unwrapDescribedImages(bodyOfPageIframe);
     });

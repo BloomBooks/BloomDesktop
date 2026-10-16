@@ -26,15 +26,15 @@ import { installHighlightPolyfill } from "../../test/highlightTestSupport";
 const mocks = vi.hoisted(() => ({
     history: undefined as PageHistory | undefined,
 }));
-// The history that the code under test finds, with doOutsideHistoryIfAny doing what the real
+// The history that the code under test finds, with doOutsideHistory doing what the real
 // one does when there is a history.
 vi.mock("../../pageHistory/pageHistoryAccess", () => ({
     currentPageHistory: () => mocks.history,
-    doOutsideHistoryIfAny: <T>(fn: () => T): T =>
+    doOutsideHistory: <T>(fn: () => T): T =>
         mocks.history ? mocks.history.doOutsideHistory(fn) : fn(),
-    addToLatestTransactionIfAny: <T>(fn: () => T): T =>
+    addToLatestTransaction: <T>(fn: () => T): T =>
         mocks.history ? mocks.history.addToLatestTransaction(fn) : fn(),
-    clearUndoAndRedoIfAny: () => mocks.history?.clearUndoAndRedo(),
+    clearUndoAndRedo: () => mocks.history?.clearUndoAndRedo(),
 }));
 
 import AudioRecording, {
@@ -114,6 +114,19 @@ async function startHistoryWithAnEarlierStep(): Promise<void> {
 function listenAsTheEditTabDoes(): void {
     history.onBeforeUndoOrRedo(() => recording.prepareForUndoOrRedo());
     history.onAfterUndoOrRedo(() => recording.updateAfterUndoOrRedo());
+}
+
+/**
+ * Give the AudioRecording that a test made the collection's default recording mode, which the one
+ * that Bloom makes reads from the collection when it initializes. A box with no recording mode of
+ * its own, and no audio-sentence markup, gets it.
+ */
+function useCollectionDefaultRecordingMode(mode: RecordingMode): void {
+    (
+        recording as unknown as {
+            cachedCollectionDefaultRecordingMode: RecordingMode;
+        }
+    ).cachedCollectionDefaultRecordingMode = mode;
 }
 
 beforeAll(async () => {
@@ -202,6 +215,99 @@ describe("Talking Book and the page history", () => {
         await history.undo();
         expect(byId("other").textContent).toBe("before");
         expect(Array.from(paragraph.childNodes)).toEqual([typedText]);
+    });
+
+    it("opening on a box with no recording mode writes the mode in the typing's step too", async () => {
+        setPage(
+            '<div class="bloom-page"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on" lang="en"><p>One. Two.</p></div></div><div id="other">before</div></div>',
+        );
+        await startHistoryWithAnEarlierStep();
+        listenAsTheEditTabDoes();
+        useCollectionDefaultRecordingMode(RecordingMode.Sentence);
+        const box = byId("box1");
+        const paragraph = box.querySelector("p")!;
+        const typedText = paragraph.firstChild as Text;
+        await history.doTransaction(kTypingKey, () => {
+            typedText.data = "One. Two. Three.";
+        });
+        expect(box.hasAttribute("data-audiorecordingmode")).toBe(false);
+
+        await recording.handleNewPageReady();
+
+        expect(box.getAttribute("data-audiorecordingmode")).toBe("Sentence");
+        expect(box.getElementsByClassName("audio-sentence")).toHaveLength(3);
+        expect(history.undoDescriptionL10nKey).toBe(kTypingKey);
+        expect(onUnmarkedChange).not.toHaveBeenCalled();
+
+        // One undo takes back the typing, the split and the mode together.
+        await history.undo();
+        expect(Array.from(paragraph.childNodes)).toEqual([typedText]);
+        expect(typedText.data).toBe("One. Two.");
+        expect(box.hasAttribute("data-audiorecordingmode")).toBe(false);
+        expect(history.undoDescriptionL10nKey).toBe(kEarlierKey);
+        await Promise.resolve();
+        expect(history.redoDescriptionL10nKey).toBe(kTypingKey);
+
+        await history.redo();
+        expect(typedText.data).toBe("One. Two. Three.");
+        expect(box.getAttribute("data-audiorecordingmode")).toBe("Sentence");
+        expect(box.getElementsByClassName("audio-sentence")).toHaveLength(3);
+        expect(history.undoDescriptionL10nKey).toBe(kTypingKey);
+        expect(onUnmarkedChange).not.toHaveBeenCalled();
+    });
+
+    it("opening after a text block is added writes its markup in the adding step, which undo and redo take back and put back", async () => {
+        setPage(
+            '<div class="bloom-page"><div class="bloom-canvas"><img src="a.png"></div><div id="other">before</div></div>',
+        );
+        await startHistoryWithAnEarlierStep();
+        listenAsTheEditTabDoes();
+        // Recording whole text boxes, so opening gives the box the audio-sentence class and an id.
+        useCollectionDefaultRecordingMode(RecordingMode.TextBox);
+        const bloomCanvas = pageDocument().querySelector(".bloom-canvas")!;
+        const kAddKey = "EditTab.Toolbox.ComicTool.Options.AddTextBlock";
+        await history.doTransaction(kAddKey, () => {
+            const textBlock = pageDocument().createElement("div");
+            textBlock.className = "bloom-canvas-element";
+            textBlock.innerHTML =
+                '<div class="bloom-translationGroup"><div class="bloom-editable bloom-visibility-code-on" lang="en"><p>Hello there.</p></div></div>';
+            bloomCanvas.appendChild(textBlock);
+        });
+        const box = bloomCanvas.querySelector<HTMLElement>(".bloom-editable")!;
+        const textBlock = box.closest(".bloom-canvas-element")!;
+        const classesBefore = box.className;
+        expect(box.hasAttribute("data-audiorecordingmode")).toBe(false);
+        expect(box.id).toBe("");
+
+        await recording.handleNewPageReady();
+
+        expect(box.getAttribute("data-audiorecordingmode")).toBe("TextBox");
+        expect(box.classList.contains("audio-sentence")).toBe(true);
+        const idGiven = box.id;
+        expect(idGiven).not.toBe("");
+        expect(history.undoDescriptionL10nKey).toBe(kAddKey);
+        expect(onUnmarkedChange).not.toHaveBeenCalled();
+
+        await history.undo();
+        expect(textBlock.isConnected).toBe(false);
+        expect(box.hasAttribute("data-audiorecordingmode")).toBe(false);
+        expect(box.className).toBe(classesBefore);
+        expect(box.id).toBe("");
+        expect(history.undoDescriptionL10nKey).toBe(kEarlierKey);
+        await Promise.resolve();
+        expect(history.redoDescriptionL10nKey).toBe(kAddKey);
+
+        await history.redo();
+        expect(textBlock.parentElement).toBe(bloomCanvas);
+        expect(box.getAttribute("data-audiorecordingmode")).toBe("TextBox");
+        expect(box.classList.contains("audio-sentence")).toBe(true);
+        expect(box.id).toBe(idGiven);
+        expect(history.undoDescriptionL10nKey).toBe(kAddKey);
+
+        await history.undo();
+        await history.undo();
+        expect(byId("other").textContent).toBe("before");
+        expect(onUnmarkedChange).not.toHaveBeenCalled();
     });
 
     it("leaving the page makes no step", async () => {

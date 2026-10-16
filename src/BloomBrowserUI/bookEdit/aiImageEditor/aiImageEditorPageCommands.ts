@@ -129,8 +129,10 @@ function asMessage(e: unknown): string {
 // use Bloom's changeImageByElement() here. Returns how many swaps landed and how many were
 // asked for, so the caller can report a partial failure honestly.
 //
-// All the swaps of one commit are one step of the page history, which stays open until each
-// canvas element has been fitted to its new picture, so one Undo puts back every old picture.
+// All the swaps of one commit on this page are one step of the page history, which stays open
+// until each canvas element has been fitted to its new picture, so one Undo puts back every old
+// picture on this page. The replacements that the same commit made on other pages, which C#
+// made and saved (AiImageEditorApi.HandleCommit), stay: the page history covers only this page.
 // That works because nothing here saves the page: the save's reload would throw the page
 // history away (the same reasoning as BL-16330 for ordinary image changes). The page is saved
 // by the normal mechanisms when the user moves on, and every editor launch saves first (see

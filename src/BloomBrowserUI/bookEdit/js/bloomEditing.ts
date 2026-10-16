@@ -37,7 +37,7 @@ import {
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 import {
     currentPageHistory,
-    doOutsideHistoryIfAny,
+    doOutsideHistory,
 } from "../pageHistory/pageHistoryAccess";
 import type { PageHistory } from "../pageHistory/pageHistoryTypes";
 import type { IPageFrameExports } from "../editablePage";
@@ -76,7 +76,10 @@ import {
     externalCaptureErrorForPendingWork,
     kExternalCaptureMaxWaitMs,
 } from "./pageContentCapturePolicy";
-import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
+import {
+    copyContentToTargetsAfterUndoOrRedo,
+    setupDragActivityTabControl,
+} from "../toolbox/games/GameTool";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { setupBookLinkGrids } from "./linkGrid";
 import { fitImageOverTextSplits } from "./autoFitImageOverTextSplits";
@@ -425,7 +428,7 @@ export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
 // called by C# to remove the id attribute from the image element
 export function removeImageId(imageId: string) {
     const imgOrImageContainer = document.getElementById(imageId);
-    doOutsideHistoryIfAny(() => imgOrImageContainer?.removeAttribute("id"));
+    doOutsideHistory(() => imgOrImageContainer?.removeAttribute("id"));
 }
 
 export interface IImageInfo {
@@ -465,7 +468,7 @@ export function changeImage(imageInfo: IImageInfo) {
         }
         changeImageInfo(imgOrImageContainer, imageInfo);
         // id is just a temporary expedient to find the right image easily in this method.
-        doOutsideHistoryIfAny(() => imgOrImageContainer.removeAttribute("id"));
+        doOutsideHistory(() => imgOrImageContainer.removeAttribute("id"));
         theOneCanvasElementManager.updateCanvasElementForChangedImage(
             imgOrImageContainer,
         );
@@ -595,7 +598,7 @@ export function SetupElements(
                 (newTitle) =>
                     // Without its own transaction, the change would be a step with only the
                     // generic description, from the click on OK.
-                    void doTransactionIfAny(
+                    void doTransaction(
                         "EditTab.FrontMatter.EditOriginalTitleCaption",
                         () => {
                             titleElement.innerText = newTitle ?? "";
@@ -1497,7 +1500,7 @@ export function doTransactionUntilPageSettles<T>(
  * Run fn in a doTransaction of the page history, if there is one; otherwise just run it. Either
  * way the result is a promise that settles when fn has.
  */
-export async function doTransactionIfAny<T>(
+export async function doTransaction<T>(
     descriptionL10nKey: string,
     fn: () => T | Promise<T>,
 ): Promise<T> {
@@ -1808,8 +1811,9 @@ export const pageUnloading = () => {
  * re-reads the page and selects the canvas element that the step changed, and Talking Book and
  * the reader tools paint their highlights again from the restored text, writing nothing that the
  * history records (Talking Book also drops the class changes that its visibility observer would
- * otherwise answer with a markup pass). Call once for each history, right after it starts; the
- * components' own setup may run before the history exists.
+ * otherwise answer with a markup pass), and each game target gets its draggable's content again,
+ * which the history leaves out, whichever tool is current. Call once for each history, right
+ * after it starts; the components' own setup may run before the history exists.
  */
 export function listenToPageHistory(history: PageHistory): void {
     history.onBeforeUndoOrRedo(() =>
@@ -1826,6 +1830,11 @@ export function listenToPageHistory(history: PageHistory): void {
         toolbox?.getTheOneAudioRecorderForExportOnly()?.updateAfterUndoOrRedo();
         toolbox?.repaintReaderHighlights();
     });
+    history.onAfterUndoOrRedo(() =>
+        copyContentToTargetsAfterUndoOrRedo(
+            document.querySelector<HTMLElement>(".bloom-page")!,
+        ),
+    );
 }
 
 export function topBarButtonClick(button: { command: string }) {
@@ -1907,7 +1916,7 @@ async function copyImpl() {
 // See comment on copySelection. C# runs this with no click or key press in this frame, so the cut
 // is a doTransaction of its own: one undo step, not joined to the typing before it.
 export const cutSelection = (): Promise<void> => {
-    return doTransactionIfAny("EditTab.CutButton", cutSelectionImpl);
+    return doTransaction("EditTab.CutButton", cutSelectionImpl);
 };
 
 async function cutSelectionImpl() {
@@ -1939,7 +1948,7 @@ async function cutSelectionImpl() {
 export const pasteClipboard = (imageAvailable: boolean): Promise<void> => {
     return wrapWithRequestPageContentDelay(
         () =>
-            doTransactionIfAny("EditTab.PasteButton", () =>
+            doTransaction("EditTab.PasteButton", () =>
                 pasteImpl(imageAvailable),
             ),
         "pasteImpl",

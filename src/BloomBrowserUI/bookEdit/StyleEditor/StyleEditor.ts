@@ -29,7 +29,7 @@ import "../../lib/jquery.alphanum";
 import axios from "axios";
 import { get, wrapAxios } from "../../utils/bloomApi";
 import { EditableDivUtils } from "../js/editableDivUtils";
-import { doOutsideHistoryIfAny } from "../pageHistory/pageHistoryAccess";
+import { doOutsideHistory } from "../pageHistory/pageHistoryAccess";
 import { ensureFieldFitsOnCustomPage } from "../toolbox/canvas/derivedFieldFitting";
 import { renderRoot } from "../../utils/reactRender";
 import FontSelectComponent, { IFontMetaData } from "./fontSelectComponent";
@@ -206,7 +206,7 @@ export default class StyleEditor {
     ): string | null {
         if ($(target).hasClass(oldCoverTitleClass)) {
             const newStyleName: string = "Title-On-Cover-style";
-            doOutsideHistoryIfAny(() =>
+            doOutsideHistory(() =>
                 $(target)
                     .removeClass(oldCoverTitleClass)
                     .addClass(newStyleName),
@@ -226,7 +226,7 @@ export default class StyleEditor {
         const pageLineage = $(parentPage).attr("data-pagelineage");
         if (pageLineage && pageLineage.substring(0, 8) === "5dcd48df") {
             const styleName: string = "normal-style";
-            doOutsideHistoryIfAny(() => $(target).addClass(styleName));
+            doOutsideHistory(() => $(target).addClass(styleName));
             return styleName;
         }
         return null;
@@ -244,9 +244,7 @@ export default class StyleEditor {
                 if (styleName) {
                     const groupStyleName = styleName;
                     // add style to bloom-editable div
-                    doOutsideHistoryIfAny(() =>
-                        $(target).addClass(groupStyleName),
-                    );
+                    doOutsideHistory(() => $(target).addClass(groupStyleName));
                 } else {
                     return this.MigratePreStyleBook(target);
                 }
@@ -259,7 +257,7 @@ export default class StyleEditor {
         // In case this is one of those books, we'll replace it with 'normal-style'
         if (styleName === "default-style") {
             styleName = "normal-style"; // This will be capitalized before presenting it to the user.
-            doOutsideHistoryIfAny(() =>
+            doOutsideHistory(() =>
                 $(target).removeClass("default-style").addClass("normal-style"),
             );
         }
@@ -286,7 +284,7 @@ export default class StyleEditor {
         target: HTMLElement,
         newStyle: string,
     ) {
-        doOutsideHistoryIfAny(() => {
+        doOutsideHistory(() => {
             this.SetStyleNameForLeaf(target, newStyle);
             // If this is a translation group, we need to set the style on all the siblings
             // that are bloom-editable
@@ -1326,7 +1324,7 @@ export default class StyleEditor {
         ).paddingLeft;
         // Outside the page history, as every page change of the Format dialog is (see
         // cleanupAfterStyleChange).
-        doOutsideHistoryIfAny(() =>
+        doOutsideHistory(() =>
             CanvasElementManager.adjustCanvasElementsForPaddingChange(
                 this.boxBeingEdited.ownerDocument.body,
                 StyleEditor.GetStyleNameForElement(this.boxBeingEdited) ?? "",
@@ -2391,7 +2389,7 @@ export default class StyleEditor {
         // padding change moves). So a style change is neither undoable nor clears the history, and
         // undo never puts back the sizes of the boxes without the style that gave them those
         // sizes. This is for now: a Format dialog session is to become one undo step.
-        doOutsideHistoryIfAny(() =>
+        doOutsideHistory(() =>
             this.adjustPageAfterStyleChange(editable, styleName, doNotShrink),
         );
 

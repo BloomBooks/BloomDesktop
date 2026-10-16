@@ -5,12 +5,18 @@ import { createEditTimeMarkupFilter } from "../../pageHistory/editTimeMarkup";
 import { createPageHistory } from "../../pageHistory/pageHistory";
 import { attachInputTransactions } from "../../pageHistory/pageHistoryInput";
 import { PageHistory } from "../../pageHistory/pageHistoryTypes";
-import { GameTool } from "./GameTool";
+import { requestEndsPageHistory } from "../../../utils/bloomApi";
+import { copyContentToTargetAndCleanup } from "../../js/dragActivityRuntimeUtils";
+import { copyContentToTargetsAfterUndoOrRedo, GameTool } from "./GameTool";
 
-// What the tests put in the page frame, and the calls the tool made to Bloom's API.
+// What the tests put in the page frame, the calls the tool made to Bloom's API (posts holds the
+// POSTs among them), and the canvas element manager with its active element.
 const frames = vi.hoisted(() => ({
     history: undefined as PageHistory | undefined,
     apiCalls: [] as string[],
+    posts: [] as string[],
+    manager: undefined as object | undefined,
+    activeElement: undefined as HTMLElement | undefined,
 }));
 // The tool reaches the page history through the page frame's exports (pageHistoryAccess.ts).
 vi.mock("../../js/workspaceFrames", async (importOriginal) => ({
@@ -18,10 +24,10 @@ vi.mock("../../js/workspaceFrames", async (importOriginal) => ({
     getEditablePageBundleExports: () =>
         frames.history ? { pageHistory: () => frames.history } : null,
 }));
-// No canvas element is active, and there are none on the test pages.
+// Unless a test gives one, there is no canvas element manager, so no canvas element is active.
 vi.mock("../canvas/canvasElementPageBridge", async (importOriginal) => ({
     ...(await importOriginal<object>()),
-    getCanvasElementManager: () => undefined,
+    getCanvasElementManager: () => frames.manager,
 }));
 // Bloom's answers: one built-in sound of each kind, and "mine.mp3" from the Choose dialog.
 vi.mock("../../../utils/bloomApi", async (importOriginal) => ({
@@ -33,13 +39,17 @@ vi.mock("../../../utils/bloomApi", async (importOriginal) => ({
     },
     postJson: async (url: string) => {
         frames.apiCalls.push(url);
+        frames.posts.push(url);
         if (url === "fileIO/chooseFile") return { data: "mine.mp3" };
-        if (url === "fileIO/getSpecialLocation")
-            return { data: "C:/book/audio" };
         return undefined;
     },
     postData: async (url: string) => {
         frames.apiCalls.push(url);
+        frames.posts.push(url);
+    },
+    postString: async (url: string) => {
+        frames.apiCalls.push(url);
+        frames.posts.push(url);
     },
 }));
 // Undefined is "no information yet, so not blocked", which keeps the tool's controls live.
@@ -57,6 +67,7 @@ describe("GameTool options and sounds and the page history", () => {
     let history: PageHistory;
     let page: HTMLElement;
     let root: HTMLDivElement;
+    let tool: GameTool;
     let detach: () => void;
     let userEvents: WeakSet<Event>;
     let endOfTask: (() => void)[];
@@ -64,6 +75,7 @@ describe("GameTool options and sounds and the page history", () => {
 
     beforeEach(() => {
         frames.apiCalls = [];
+        frames.posts = [];
         const pageFrame = document.createElement("iframe");
         pageFrame.id = "page";
         document.body.appendChild(pageFrame);
@@ -96,6 +108,8 @@ describe("GameTool options and sounds and the page history", () => {
         detach();
         history.dispose();
         frames.history = undefined;
+        frames.manager = undefined;
+        frames.activeElement = undefined;
         document.body.innerHTML = "";
     });
 
@@ -106,9 +120,23 @@ describe("GameTool options and sounds and the page history", () => {
                 page.setAttribute(name, attributes[name]);
         });
         await act(async () => {
-            root = new GameTool().makeRootElement();
+            tool = new GameTool();
+            root = tool.makeRootElement();
             document.body.appendChild(root);
         });
+    }
+
+    /**
+     * The tool sent no POST that ends the page history. The tests mock the functions that send
+     * requests, so the request interceptor in bloomApi.ts never sees them; this asks it instead.
+     */
+    function expectPostsKeepTheHistory(): void {
+        expect(frames.posts.length).toBeGreaterThan(0);
+        for (const url of frames.posts)
+            expect(
+                requestEndsPageHistory("post", "/bloom/api/" + url),
+                `the tool posted ${url}, which ends the page history`,
+            ).toBe(false);
     }
 
     function finishTask(): void {
@@ -297,7 +325,8 @@ describe("GameTool options and sounds and the page history", () => {
         // The tool copies the sound into the book, then plays it, after the click.
         await act(async () => {});
 
-        expect(frames.apiCalls).toContain("fileIO/copyFile");
+        expect(frames.apiCalls).toContain("fileIO/copyBuiltInSound");
+        expectPostsKeepTheHistory();
         await expectEarlierStepSurvives(
             "data-correct-sound",
             "correct_bell.mp3",
@@ -314,6 +343,211 @@ describe("GameTool options and sounds and the page history", () => {
         await act(async () => {});
 
         expect(frames.apiCalls).toContain("fileIO/chooseFile");
+        expectPostsKeepTheHistory();
         await expectEarlierStepSurvives("data-correct-sound", "mine.mp3");
+    });
+
+    /**
+     * Put a draggable word and its target on the page, as page setup that no step holds, and make
+     * a canvas element manager whose active element is the draggable. The target holds the copy
+     * that copyContentToTarget made before the user clicked into the draggable: the box has
+     * CKEditor's class for a focused editor, which the copy lacks. That class exists only while
+     * editing, so the next copy differs from the target only in it.
+     */
+    function addDraggableWord(): {
+        draggable: HTMLElement;
+        target: HTMLElement;
+        word: HTMLElement;
+    } {
+        history.doOutsideHistory(() => {
+            page.innerHTML = `<div class="bloom-canvas">
+                <div class="bloom-canvas-element" data-draggable-id="d1"
+                    style="left: 10px; top: 10px; width: 100px; height: 50px"
+                    ><div class="bloom-translationGroup"
+                        ><div class="bloom-editable cke_focus" lang="en" contenteditable="true"
+                            ><p>cat</p></div></div></div>
+                <div data-target-of="d1"
+                    style="left: 10px; top: 100px; width: 100px; height: 50px"
+                    ><div class="bloom-translationGroup"
+                        ><div class="bloom-editable" lang="en"><p>cat</p></div></div></div>
+            </div>`;
+        });
+        const draggable = page.querySelector<HTMLElement>(
+            "[data-draggable-id]",
+        )!;
+        frames.activeElement = draggable;
+        frames.manager = {
+            getActiveElement: () => frames.activeElement,
+            requestCanvasElementChangeNotification: () => {},
+            removeDetachedTargets: () => {},
+            adjustCanvasElementOrdering: () => {},
+        };
+        return {
+            draggable,
+            target: page.querySelector<HTMLElement>("[data-target-of]")!,
+            word: draggable.querySelector("p")!,
+        };
+    }
+
+    /** What listenToPageHistory in bloomEditing.ts does for the targets, whichever tool is current. */
+    function listenAsThePageFrameDoes(): void {
+        history.onAfterUndoOrRedo(() =>
+            copyContentToTargetsAfterUndoOrRedo(page),
+        );
+    }
+
+    /**
+     * The user types an s at the end of the word: one undo step, as a key press makes. The tool's
+     * observer watches child lists and attributes, not text, so this replaces the paragraph's
+     * text node.
+     */
+    async function typeS(word: HTMLElement): Promise<void> {
+        const typing = history.beginTransaction("Test.Typing");
+        word.textContent = "cats";
+        // The tool's observer copies the draggable to its target before the key press ends.
+        await act(async () => {});
+        typing.end();
+        expect(history.undoDescriptionL10nKey).toBe("Test.Typing");
+    }
+
+    it("keeps redo after undoing typing in a draggable, whose target copies it", async () => {
+        const { target, word } = addDraggableWord();
+        await renderTool(kDragGame);
+        expect(target.textContent).toBe("cat");
+
+        await typeS(word);
+        expect(target.textContent).toBe("cats");
+
+        await act(async () => {
+            await history.undo();
+        });
+        expect(word.textContent).toBe("cat");
+        expect(target.textContent).toBe("cat");
+        // The copy that followed the undo made no change that joins a step or clears redo.
+        expect(history.redoDescriptionL10nKey).toBe("Test.Typing");
+        expect(onUnmarkedChange.mock.calls).toEqual([]);
+
+        await act(async () => {
+            await history.redo();
+        });
+        expect(word.textContent).toBe("cats");
+        expect(target.textContent).toBe("cats");
+        expect(history.undoDescriptionL10nKey).toBe("Test.Typing");
+        expect(onUnmarkedChange.mock.calls).toEqual([]);
+    });
+
+    it("copies a draggable that is no longer selected to its target after undo and redo", async () => {
+        const { target, word } = addDraggableWord();
+        await renderTool(kDragGame);
+        listenAsThePageFrameDoes();
+        await typeS(word);
+        expect(target.textContent).toBe("cats");
+
+        // The user selects nothing, so the tool stops watching the draggable.
+        frames.activeElement = undefined;
+        history.doOutsideHistory(() => act(() => tool.setActiveTab(0)));
+
+        await act(async () => {
+            await history.undo();
+        });
+        expect(word.textContent).toBe("cat");
+        expect(target.textContent).toBe("cat");
+        expect(history.redoDescriptionL10nKey).toBe("Test.Typing");
+
+        await act(async () => {
+            await history.redo();
+        });
+        expect(target.textContent).toBe("cats");
+        expect(onUnmarkedChange.mock.calls).toEqual([]);
+    });
+
+    it("copies every draggable to its target after an undo that did not change it", async () => {
+        const { target } = addDraggableWord();
+        // A target that does not show what its draggable has, as after a copy that was missed.
+        history.doOutsideHistory(() => {
+            target.querySelector("p")!.textContent = "dog";
+        });
+        frames.activeElement = undefined;
+        await renderTool(kDragGame);
+        listenAsThePageFrameDoes();
+        await makeEarlierStep();
+        expect(target.textContent).toBe("dog");
+
+        await act(async () => {
+            await history.undo();
+        });
+        expect(page.hasAttribute("data-earlier")).toBe(false);
+        expect(target.textContent).toBe("cat");
+
+        history.doOutsideHistory(() => {
+            target.querySelector("p")!.textContent = "dog";
+        });
+        await act(async () => {
+            await history.redo();
+        });
+        expect(page.getAttribute("data-earlier")).toBe("true");
+        expect(target.textContent).toBe("cat");
+    });
+
+    it("undoes and redoes a step that copied to a target, after a later copy replaced the target's children", async () => {
+        const { draggable, target, word } = addDraggableWord();
+        await renderTool(kDragGame);
+        const childrenAtStart = Array.from(target.childNodes);
+        // A step that copies the draggable to its target as part of what it does, as
+        // CanvasElementManager does when it fits a box to its picture.
+        await history.doTransaction("Test.Resize", () => {
+            draggable.style.width = "120px";
+            copyContentToTargetAndCleanup(draggable);
+        });
+        expect(history.undoDescriptionL10nKey).toBe("Test.Resize");
+        // The copy did replace the target's children: the draggable's box has a class that the
+        // target lacked.
+        expect(target.childNodes[0]).not.toBe(childrenAtStart[0]);
+        const childrenAfterResize = Array.from(target.childNodes);
+
+        // The copy that typing makes replaces them again.
+        await typeS(word);
+        expect(target.childNodes[0]).not.toBe(childrenAfterResize[0]);
+        expect(target.textContent).toBe("cats");
+
+        await act(async () => {
+            await history.undo();
+        });
+        await act(async () => {
+            await history.undo();
+        });
+        // Neither undo was refused.
+        expect(history.undoDescriptionL10nKey).toBeUndefined();
+        expect(history.redoDescriptionL10nKey).toBe("Test.Resize");
+        expect(draggable.style.width).toBe("100px");
+        expect(word.textContent).toBe("cat");
+        expect(target.textContent).toBe("cat");
+
+        await act(async () => {
+            await history.redo();
+        });
+        await act(async () => {
+            await history.redo();
+        });
+        expect(history.undoDescriptionL10nKey).toBe("Test.Typing");
+        expect(history.redoDescriptionL10nKey).toBeUndefined();
+        expect(draggable.style.width).toBe("120px");
+        expect(target.textContent).toBe("cats");
+        expect(onUnmarkedChange.mock.calls).toEqual([]);
+    });
+});
+
+describe("GameTool.newPageReady", () => {
+    it("waits for a page when the page frame has none", () => {
+        // The toolbox runs newPageReady again 600 ms after the first time
+        // (scheduleDelayedNewPageReady in toolbox.ts), and the page frame may then have no page.
+        expect(document.getElementById("page")).toBeNull();
+        vi.useFakeTimers();
+        try {
+            expect(() => new GameTool().newPageReady()).not.toThrow();
+        } finally {
+            vi.clearAllTimers();
+            vi.useRealTimers();
+        }
     });
 });

@@ -18,8 +18,8 @@ import { getWorkspaceBundleExports } from "./workspaceFrames";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import { AttachNewTable } from "./tableEditing";
 import {
-    clearUndoAndRedoIfAny,
-    doOutsideHistoryIfAny,
+    clearUndoAndRedo,
+    doOutsideHistory,
 } from "../pageHistory/pageHistoryAccess";
 
 $(() => {
@@ -227,7 +227,7 @@ function handleChangeLayoutModeToggle() {
     getWorkspaceBundleExports().setToolboxEnabled(!isChangeLayoutMode);
     // Change Layout mode keeps its own undo (origamiUndo), so entering it and leaving it each end
     // the page's undo history (docs/undo/MINIMUM.md item 9).
-    clearUndoAndRedoIfAny();
+    clearUndoAndRedo();
 }
 
 /** True while the page is in Change Layout mode, where origami's own undo answers Undo and the keys. */
@@ -312,7 +312,7 @@ export function origamiCanUndo() {
 // Origami's undo and redo replace the whole .marginBox, and the page history does not record
 // them: the history is not used in Change Layout mode, and leaving the mode ends it.
 export function origamiUndo() {
-    doOutsideHistoryIfAny(undoOneLayoutChange);
+    doOutsideHistory(undoOneLayoutChange);
 }
 
 function undoOneLayoutChange() {
@@ -335,7 +335,7 @@ export function origamiCanRedo() {
 }
 
 export function origamiRedo() {
-    doOutsideHistoryIfAny(redoOneLayoutChange);
+    doOutsideHistory(redoOneLayoutChange);
 }
 
 function redoOneLayoutChange() {
