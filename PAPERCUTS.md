@@ -19,6 +19,11 @@ House rules:
 
 ---
 
+## 2026-10-16 — A Playwright screenshot of the Edit tab writes to the page and clears redo
+- **Cut:** `page.screenshot()` hides the caret by default by writing `caret-color: transparent !important` into each contenteditable's inline style and taking it out again. The page history records that as a change outside any transaction ("Page history: attribute "style" ... changed outside any transaction"), which clears redo, so a check that screenshots between Ctrl+Z and Ctrl+Y reports a redo bug that is not there.
+- **Idea:** say in the run-bloom skill's reference.md and src/BloomE2E/README.md to pass `caret: "initial"` to every screenshot of the Edit tab, or make the e2e and run-bloom screenshot helpers do it.
+- **Context:** undo live checks on more-undo-exploration; the false "redo lost" results went away with `caret: "initial"`.
+
 ## 2026-10-14 — The e2e fixture's freshness check passed a bundle built from other source
 - **Cut:** In the `more-undo-exploration` worktree, `output/browser` (written 13:07, newer than every source file) posted `editView/pageSnapshot` and a `pageDomLoaded` without `text/plain`; this worktree's C# has neither, so the Edit tab never reached Editing and `makeBookFromTemplate` timed out. The fixture compares only modification times, so it called the bundle fresh.
 - **Idea:** stamp the bundle with the commit it was built from (or a hash of `src/BloomBrowserUI`) and have the fixture compare that; until then, say in `src/BloomE2E/README.md` that a launch stuck before Editing can mean a bundle from another branch, and that `BLOOM_E2E_VITE_PORT=5173` with a local Vite avoids it.

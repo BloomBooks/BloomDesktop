@@ -4,7 +4,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 const history = vi.hoisted(() => ({ clearCount: 0 }));
 
 vi.mock("../bookEdit/pageHistory/pageHistoryAccess", () => ({
-    clearUndoAndRedoIfAny: () => {
+    clearUndoAndRedo: () => {
         history.clearCount++;
     },
 }));
@@ -107,6 +107,18 @@ describe("requestEndsPageHistory", () => {
                 false,
             );
         }
+    });
+
+    it("keeps the history for copying a built-in game sound, which replaces no file, but not for the general copy", () => {
+        expect(
+            requestEndsPageHistory(
+                "post",
+                "/bloom/api/fileIO/copyBuiltInSound",
+            ),
+        ).toBe(false);
+        expect(
+            requestEndsPageHistory("post", "/bloom/api/fileIO/copyFile"),
+        ).toBe(true);
     });
 
     it("keeps the history for a link grid's thumbnail, which only rewrites a linked book's cover", () => {
