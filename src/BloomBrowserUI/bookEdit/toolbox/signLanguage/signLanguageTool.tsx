@@ -28,7 +28,7 @@ import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import {
     currentPageHistory,
-    doOutsideHistoryIfAny,
+    doOutsideHistory,
 } from "../../pageHistory/pageHistoryAccess";
 
 // The recording process can be in one of these states:
@@ -1334,7 +1334,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         return template.content.firstChild;
     }
 
-    // Trimming is not undoable: the trim slider changes the src inside doOutsideHistoryIfAny, so
+    // Trimming is not undoable: the trim slider changes the src inside doOutsideHistory, so
     // undo leaves the trim as it is, and trimming keeps the page's undo history.
     public static setVideoTimingsInSrcAttr(
         newStartString: string,
@@ -1350,7 +1350,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         const urlTimingObj = SignLanguageTool.parseVideoSrcAttribute(src);
         src = urlTimingObj.url;
         const trimmedSrc = src + "#t=" + newStartString + "," + newEndString;
-        doOutsideHistoryIfAny(() => source.setAttribute("src", trimmedSrc));
+        doOutsideHistory(() => source.setAttribute("src", trimmedSrc));
     }
 
     private static getSelectedVideoElement(): HTMLVideoElement | undefined {

@@ -1,6 +1,6 @@
 // The page history steps that bloomEditing.ts makes for changes with no click or key press behind
 // them (docs/undo/MINIMUM.md item 5): doTransactionUntilPageSettles, which keeps a picture change
-// open until the asynchronous refit that it started has finished, and doTransactionIfAny. They run
+// open until the asynchronous refit that it started has finished, and doTransaction. They run
 // against a real page history on a small page.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPageHistory } from "../pageHistory/pageHistory";
@@ -12,12 +12,12 @@ const access = vi.hoisted(() => ({
 
 vi.mock("../pageHistory/pageHistoryAccess", () => ({
     currentPageHistory: () => access.history,
-    doOutsideHistoryIfAny: <T>(fn: () => T): T => fn(),
+    doOutsideHistory: <T>(fn: () => T): T => fn(),
 }));
 
 import {
     addRequestPageContentDelay,
-    doTransactionIfAny,
+    doTransaction,
     doTransactionUntilPageSettles,
     removeRequestPageContentDelay,
     whenNoRequestPageContentDelays,
@@ -137,10 +137,10 @@ describe("doTransactionUntilPageSettles", () => {
     });
 });
 
-describe("doTransactionIfAny", () => {
+describe("doTransaction", () => {
     it("makes one step of an async change", async () => {
         const history = access.history!;
-        await doTransactionIfAny("EditTab.PasteButton", async () => {
+        await doTransaction("EditTab.PasteButton", async () => {
             img.setAttribute("src", "a.png");
             await Promise.resolve();
             img.setAttribute("src", "b.png");
@@ -154,6 +154,6 @@ describe("doTransactionIfAny", () => {
     it("just runs fn when there is no history", async () => {
         access.history!.dispose();
         access.history = undefined;
-        expect(await doTransactionIfAny("EditTab.CutButton", () => 3)).toBe(3);
+        expect(await doTransaction("EditTab.CutButton", () => 3)).toBe(3);
     });
 });

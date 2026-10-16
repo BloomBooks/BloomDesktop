@@ -910,7 +910,9 @@ class PageHistoryImpl implements PageHistory {
      * order, and the kept part of each text. These are the values that the check compares for a
      * node in the page, so markup that exists only while editing, such as the classes CKEditor
      * adds when it finishes attaching to an editable that has already left the page, never fails
-     * the check, while any change that a save keeps does.
+     * the check, while any change that a save keeps does. A child that the filter leaves out of
+     * child lists alone (isLeftOutOfChildList) is in the text, since the history records what is
+     * inside it.
      */
     private serializeKept(node: Node): string {
         if (isCharacterData(node)) return JSON.stringify(this.keptText(node));
@@ -926,7 +928,14 @@ class PageHistoryImpl implements PageHistory {
                     : ` ${name}=${JSON.stringify(kept)}`;
             })
             .join("");
-        const children = this.filteredChildren(element)
+        const listed = new Set(this.filteredChildren(element));
+        const children = Array.from(element.childNodes)
+            .filter(
+                (child) =>
+                    listed.has(child) ||
+                    (!this.isIgnoredChild(child) &&
+                        this.filter.isLeftOutOfChildList(child, element)),
+            )
             .map((child) => this.serializeKept(child))
             .join("");
         const tag = element.tagName.toLowerCase();
@@ -1013,7 +1022,7 @@ class PageHistoryImpl implements PageHistory {
         childLists.forEach((wanted, parent) => {
             if (wanted.length > 0) return;
             const current = Array.from(parent.childNodes).filter(
-                (child) => !this.isIgnoredChild(child),
+                (child) => !this.isLeftOutChildOf(child, parent),
             );
             if (
                 current.length === 1 &&
@@ -1021,9 +1030,12 @@ class PageHistoryImpl implements PageHistory {
             )
                 leftInPlace.add(current[0]);
         });
+        // putBackChildLists asks only about a child of a parent in childLists, where it is now.
         putBackChildLists(
             childLists,
-            (child) => this.isIgnoredChild(child) || leftInPlace.has(child),
+            (child) =>
+                this.isLeftOutChildOf(child, child.parentNode!) ||
+                leftInPlace.has(child),
         );
     }
 
@@ -1181,6 +1193,17 @@ class PageHistoryImpl implements PageHistory {
         );
     }
 
+    /**
+     * True for a child of parent that the filter leaves out of parent's child lists now: one
+     * that it ignores, or one that it leaves out of the lists alone (isLeftOutOfChildList).
+     */
+    private isLeftOutChildOf(child: Node, parent: Node): boolean {
+        return (
+            this.isIgnoredChild(child) ||
+            this.filter.isLeftOutOfChildList(child, parent)
+        );
+    }
+
     /** The children of node that the filter does not ignore. */
     private filteredChildren(node: Node): Node[] {
         return this.filterChildList(
@@ -1192,15 +1215,20 @@ class PageHistoryImpl implements PageHistory {
 
     /**
      * The children in a child list of parent that the filter does not ignore: those for which
-     * isIgnored is false, less the one that is left if the filter leaves it out when it is the
-     * only child (isLeftOutWhenOnlyChild).
+     * isIgnored is false and that the filter does not leave out of parent's child lists
+     * (isLeftOutOfChildList), less the one that is left if the filter leaves it out when it is
+     * the only child (isLeftOutWhenOnlyChild).
      */
     private filterChildList(
         parent: Node,
         children: Node[],
         isIgnored: (child: Node) => boolean,
     ): Node[] {
-        const kept = children.filter((child) => !isIgnored(child));
+        const kept = children.filter(
+            (child) =>
+                !isIgnored(child) &&
+                !this.filter.isLeftOutOfChildList(child, parent),
+        );
         if (
             kept.length === 1 &&
             this.filter.isLeftOutWhenOnlyChild(kept[0], parent)
@@ -1232,6 +1260,7 @@ function isCharacterData(node: Node): node is CharacterData {
 /** The filter of a history given none: it ignores nothing and keeps every value whole. */
 export const kKeepEverythingFilter: PageHistoryFilter = {
     ignoreNode: () => false,
+    isLeftOutOfChildList: () => false,
     isLeftOutWhenOnlyChild: () => false,
     isIgnoredText: () => false,
     keptAttributeValue: (_element, _name, value) => value,

@@ -59,7 +59,7 @@ import {
 import { doVideoCommand } from "../../js/bloomVideo";
 import {
     copySelection,
-    doTransactionIfAny,
+    doTransaction,
     GetEditor,
     pasteClipboard,
 } from "../../js/bloomEditing";
@@ -276,14 +276,14 @@ export const runCommandControlAction = (
     ctx: IControlContext,
     runtime: IControlRuntime,
 ): Promise<void> =>
-    doTransactionIfAny(control.l10nId, () =>
-        control.action(ctx, runtime),
-    ).catch((error) => {
-        // The rollback put back data-bubble, but Comical draws from its own copy of each
-        // spec.
-        getCanvasElementManager()?.redrawBubblesFromPage();
-        throw error;
-    });
+    doTransaction(control.l10nId, () => control.action(ctx, runtime)).catch(
+        (error) => {
+            // The rollback put back data-bubble, but Comical draws from its own copy of each
+            // spec.
+            getCanvasElementManager()?.redrawBubblesFromPage();
+            throw error;
+        },
+    );
 
 const buildDynamicMenuItemFromControl = (
     controlId: TopLevelControlId,
@@ -1342,16 +1342,13 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             // The command's own step closed when the dialog opened, so OK makes a step of its
             // own, inside the transaction that the click on OK opened.
             showLinkTargetChooserDialog(currentUrl, (newUrl) => {
-                void doTransactionIfAny(
-                    "EditTab.Toolbox.CanvasTool.SetDest",
-                    () => {
-                        if (newUrl) {
-                            ctx.canvasElement.setAttribute("data-href", newUrl);
-                        } else {
-                            ctx.canvasElement.removeAttribute("data-href");
-                        }
-                    },
-                );
+                void doTransaction("EditTab.Toolbox.CanvasTool.SetDest", () => {
+                    if (newUrl) {
+                        ctx.canvasElement.setAttribute("data-href", newUrl);
+                    } else {
+                        ctx.canvasElement.removeAttribute("data-href");
+                    }
+                });
             });
         },
     },
