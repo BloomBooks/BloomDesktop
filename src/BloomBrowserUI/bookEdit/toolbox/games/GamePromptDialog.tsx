@@ -292,11 +292,13 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         );
         originalStyles.push(originalDraggables[i].getAttribute("style") ?? "");
         originalContents.push(originalDraggables[i].innerHTML);
+        const target = getTarget(originalDraggables[i]);
+        // cancel() finds this by the draggable's index, so every draggable needs one.
+        originalTargetStyles.push(target?.getAttribute("style") ?? "");
         if (originalDraggables[i]?.classList.contains("bloom-unused-in-lang")) {
             // it won't have a meaningful position, so it would throw our calculations off.
             continue;
         }
-        const target = getTarget(originalDraggables[i]);
         if (target && target.offsetLeft < targetX) {
             // capture a starting place for new rows of targets from the left-most target.
             // This allows just one to be dragged to control them all; otherwise, moving the
@@ -304,7 +306,6 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
             targetX = target.offsetLeft;
             targetY = target.offsetTop;
         }
-        originalTargetStyles.push(target?.getAttribute("style") ?? "");
         if (originalDraggables[i].offsetLeft < draggableX) {
             draggableX = originalDraggables[i].offsetLeft;
             draggableY = originalDraggables[i].offsetTop;
