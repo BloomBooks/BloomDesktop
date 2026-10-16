@@ -962,6 +962,26 @@ describe("a page history with the edit-time markup filter", () => {
         expect(h.redoDescriptionL10nKey).toBe("Add");
     });
 
+    it("records no change when a description box leaves its bloom-canvas, so no undo puts it back", async () => {
+        const { history: h } = setUp();
+        const canvas = byId("canvas");
+        const box = document.createElement("div");
+        box.className = "bloom-translationGroup bloom-imageDescription";
+        h.doOutsideHistory(() => canvas.appendChild(box));
+        const element = document.createElement("div");
+        element.className = "bloom-canvas-element";
+        await h.doTransaction("Add", () => canvas.appendChild(element));
+        expect(h.undoDescriptionL10nKey, "test setup").toBe("Add");
+
+        await h.doTransaction("Remove box", () => box.remove());
+        expect(h.undoDescriptionL10nKey).toBe("Add");
+
+        await h.undo();
+        expect(element.isConnected).toBe(false);
+        expect(box.isConnected).toBe(false);
+        expect(h.redoDescriptionL10nKey).toBe("Add");
+    });
+
     it("refuses an undo when the text in a description box changed while its bloom-canvas was out of the page", async () => {
         const { history: h } = setUp();
         const canvas = byId("canvas");

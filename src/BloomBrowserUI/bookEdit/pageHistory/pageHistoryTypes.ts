@@ -87,9 +87,13 @@ export interface PageHistoryFilter {
      * True for a child that the history leaves out of parent's child lists, as it does an ignored
      * node, while it still records, compares and puts back everything inside the child: its
      * insertion into parent and its removal are no change, and putting back parent's child list
-     * leaves it where it is. The history asks this only of a child of parent, so the answer may
-     * depend on parent. A subtree out of the page that the check of rule 4 compares as text keeps
-     * such a child, with what is inside it.
+     * leaves it where it is. The history asks this of a child of parent, or of a node that was one
+     * at the start of a batch of records and may have left parent since, so the answer may depend
+     * on parent but not on where the child is now (its parentNode). As with ignoreNode, the answer
+     * for a child must not change while it is a child of parent: nothing records parent's child
+     * list when it does, so the child lists of the steps that hold parent no longer match the
+     * page, and their undo is refused. A subtree out of the page that the check of rule 4
+     * compares as text keeps such a child, with what is inside it.
      */
     isLeftOutOfChildList(child: Node, parent: Node): boolean;
 

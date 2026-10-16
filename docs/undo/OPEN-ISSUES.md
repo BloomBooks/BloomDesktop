@@ -149,6 +149,12 @@ lists. A few more are product decisions.
 Deleting or overwriting a file that a page names:
 
 - **The Games tool's built-in sounds**: skip the copy when the file is already there. (§4)
+  `fileIO/copyBuiltInSound` does this, so a different file that the book has under a built-in's
+  name stays, and choosing that built-in plays the book's file. Only a file put into the audio
+  folder outside Bloom can have such a name: Choose... offers only MP3 files, and every built-in
+  sound is a `.webm` file whose name no Bloom version has given other content. Copying the
+  built-in under an unused name, and writing that name into the page, would cover it, if a user
+  ever meets it.
 - **File names**: `GetUnusedFilename` should never give out a name that a file had earlier in the
   session, so that a path in C#'s picture caches always means one picture. (§4)
 

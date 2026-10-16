@@ -1192,6 +1192,7 @@ class PageHistoryImpl implements PageHistory {
                 this.root.ownerDocument,
                 this.root,
                 isUndo ? step.selectionBefore : step.selectionAfter,
+                Array.from(step.changes.keys()),
             ),
         );
         this.discardPendingRecords();

@@ -1,8 +1,9 @@
 // Turning canvas editing off (opening a tool, or saving the page) saves each canvas element's place
 // as the alternate for the current language. That is worked out from the element, so it is not
-// recorded in the page history, and it is written only when it changes. Turning editing on again
-// applies an element's alternate only the first time after the page loads, so that the alternate
-// written when editing was turned off does not overwrite what an undo put back meanwhile.
+// recorded in the page history, and it is written only when it changes; a resize of the
+// bloom-canvas writes it the same way. Turning editing on again applies an element's alternate
+// only the first time after the page loads, and never to an element added since, so that the
+// alternate written when editing was turned off does not overwrite what an undo put back meanwhile.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPageHistory } from "../../pageHistory/pageHistory";
 import { createEditTimeMarkupFilter } from "../../pageHistory/editTimeMarkup";
@@ -30,14 +31,18 @@ vi.mock("../../pageHistory/pageHistoryAccess", () => ({
 }));
 
 import {
+    adjustCanvasElementAlternates,
     adjustCanvasElementsForCurrentLanguage,
     saveCurrentCanvasElementStateAsCurrentLangAlternate,
 } from "./CanvasElementAlternates";
 
 const kAddKey = "EditTab.Toolbox.ComicTool.Options.AddSpeechBubble";
 const kMoveKey = "EditTab.Toolbox.ComicTool.Options.Move";
+const kResizeKey = "TestResizeOfTheBloomCanvas";
 const kStyleOnAdding = "left: 10px; top: 20px; width: 100px; height: 50px;";
 const kStyleAfterMoving = "left: 60px; top: 20px; width: 100px; height: 50px;";
+const kStyleAfterResizing =
+    "left: 20px; top: 40px; width: 100px; height: 50px;";
 
 let history: PageHistory;
 let onUnmarkedChange: ReturnType<typeof vi.fn>;
@@ -156,6 +161,73 @@ describe("The current language's alternate and the page history", () => {
 
         expect(bubble.getAttribute("style")).toBe(kStyleOnAdding);
         expect(history.redoDescriptionL10nKey).toBe(kMoveKey);
+        expect(onUnmarkedChange).not.toHaveBeenCalled();
+    });
+
+    it("turning editing on again leaves the place that an undo put back for a bubble added since it was first on", async () => {
+        // The page loads with no bubble, and canvas editing is turned on for the first time.
+        adjustCanvasElementsForCurrentLanguage(bloomCanvas);
+        const bubble = await addBubble();
+        await history.doTransaction(kMoveKey, () =>
+            bubble.setAttribute("style", kStyleAfterMoving),
+        );
+        // A tool such as Image Description opens, turning canvas editing off, and the user
+        // undoes the move.
+        saveCurrentCanvasElementStateAsCurrentLangAlternate(bloomCanvas);
+        expect(alternateOf(bubble)).toContain(kStyleAfterMoving);
+        await history.undo();
+        expect(bubble.getAttribute("style")).toBe(kStyleOnAdding);
+
+        // The tool closes, turning canvas editing on.
+        adjustCanvasElementsForCurrentLanguage(bloomCanvas);
+
+        expect(bubble.getAttribute("style")).toBe(kStyleOnAdding);
+        expect(history.redoDescriptionL10nKey).toBe(kMoveKey);
+        expect(onUnmarkedChange).not.toHaveBeenCalled();
+    });
+
+    it("a resize of the bloom-canvas stays undoable after editing is turned off", async () => {
+        const bubble = await addBubble();
+        adjustCanvasElementsForCurrentLanguage(bloomCanvas);
+        const french = document.createElement("div");
+        french.className = "bloom-editable";
+        french.setAttribute("lang", "fr");
+        french.setAttribute(
+            "data-bubble-alternate",
+            `{\`lang\`:\`fr\`,\`style\`:\`${kStyleOnAdding}\`,\`tails\`:[]}`,
+        );
+        history.doOutsideHistory(() =>
+            bubble
+                .querySelector(".bloom-translationGroup")!
+                .appendChild(french),
+        );
+        // A splitter drag resizes the bloom-canvas, which moves the bubble and its alternates
+        // (adjustCanvasElementChildrenIfSizeChanged).
+        await history.doTransaction(kResizeKey, () => {
+            bubble.setAttribute("style", kStyleAfterResizing);
+            adjustCanvasElementAlternates(bubble, 1, 0, 0, 10, 20);
+        });
+        expect(alternateOf(bubble)).toContain(kStyleAfterResizing);
+        const frenchAlternateAfterResizing = french.getAttribute(
+            "data-bubble-alternate",
+        );
+        expect(frenchAlternateAfterResizing).toContain("left: 20px");
+
+        // A tool opens, turning canvas editing off.
+        saveCurrentCanvasElementStateAsCurrentLangAlternate(bloomCanvas);
+        await history.undo();
+
+        expect(bubble.getAttribute("style")).toBe(kStyleOnAdding);
+        expect(french.getAttribute("data-bubble-alternate")).toContain(
+            kStyleOnAdding,
+        );
+        expect(history.redoDescriptionL10nKey).toBe(kResizeKey);
+        expect(history.undoDescriptionL10nKey).toBe(kAddKey);
+        await history.redo();
+        expect(bubble.getAttribute("style")).toBe(kStyleAfterResizing);
+        expect(french.getAttribute("data-bubble-alternate")).toBe(
+            frenchAlternateAfterResizing,
+        );
         expect(onUnmarkedChange).not.toHaveBeenCalled();
     });
 
