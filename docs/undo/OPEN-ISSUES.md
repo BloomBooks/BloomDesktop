@@ -87,19 +87,14 @@ MINIMUM.md describes it. The design itself is in APPROACHES.md; section numbers 
    pointercancel and loss of focus, as the first version's input transactions do; a dialog ends or
    cancels its own however it closes; the history ends any open one when the page unloads
    (`pagehide`). The "Undo edit" transaction waits for transactions begun inside it, so a dialog's
-   transaction that is never ended keeps that one open too, and undo does nothing until the page
-   unloads or something clears the history. A history-side safety net (an element that the transaction's own input comes from, and
+   transaction that is never ended keeps that one open too, and an undo asked for meanwhile waits
+   until the page unloads or something clears the history, which drops it. A history-side safety net (an element that the transaction's own input comes from, and
    ending the transaction on input outside it) was discussed and set aside; not recorded in
    APPROACHES at John's request.
-9. **What Undo does while a transaction is open** (a drag in progress, a dialog that previews live, a
-   picture change waiting for its page content delays). The first version does nothing, a choice
-   marked provisional in `pageHistory.ts`; `canUndo` counts an open transaction, so the Undo button
-   is enabled then and its click does nothing. The alternative is to end the transaction first. The
-   typing step is not affected: the press on the button or the undo key ends it before undo runs.
 10. **Typing during an async transaction** joins it (rule 7), so a slow action can take in the user's
     typing. A picture change keeps its transaction open until no page content delay is pending, for
-    up to 4 s (MINIMUM.md item 5), so typing in that time is undone with the picture. A UX cost to
-    weigh. Two async `doTransaction` calls can overlap, when the second begins while the first
+    up to 4 s (MINIMUM.md item 5), so typing in that time is undone with the picture, and so is a
+    second picture change or a canvas command made in that time. A UX cost to weigh. Two async `doTransaction` calls can overlap, when the second begins while the first
     awaits: the second nests in the first, the first waits for it if it settles first, and the step
     is made when the last of them ends. If the second then fails, every change since it began is
     put back, the first one's writes after that point included, since the history cannot tell which
@@ -183,6 +178,15 @@ Talking Book:
   `.bloom-wordChoice`; its markup pass should write nothing when the markup is already right. (§8)
 - The toolbox's records of which files exist (`haveAudio`, the video stats) refresh after undo and
   redo. That can be asynchronous, because it doesn't write the page. (§8)
+- While the playback-order arrows show, there is no current box, so an undo of a recording-mode
+  switch leaves the mode's radio buttons and the collection's default mode as they were until the
+  arrows are hidden. Fixing it needs the tool to remember which box was current when the arrows
+  came on.
+
+Reader tools: `removeSynphonyMarkup` takes out the markup of older versions of Bloom outside the
+history, in every markup pass. On a page that has such markup, an edit recorded before the first
+pass (Enter or a paste in the first moments), or a paste that brings such markup back, makes that
+step's undo refused. The page is never damaged.
 
 Components:
 

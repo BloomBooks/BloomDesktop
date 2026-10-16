@@ -544,8 +544,23 @@ export function applyToolboxStateToUpdatedPage() {
                                 currentTool === activeTool &&
                                 isToolInitialized(activeTool)
                             ) {
-                                activeTool.newPageReady();
-                                scheduleDelayedNewPageReady(activeTool);
+                                const pageDocument =
+                                    getPageIframeBody()?.ownerDocument;
+                                // The second pass, and the page frame's undo history, wait
+                                // until this pass has finished, as in activateToolInternalAsync.
+                                // Talking Book's pass writes its sentence split after awaiting
+                                // the server; written once the history has started, the split
+                                // would join the user's first undo step, or clear redo. The
+                                // executor turns an exception from the pass into a rejection,
+                                // which is still reported.
+                                return new Promise((resolve) =>
+                                    resolve(activeTool.newPageReady()),
+                                ).finally(() =>
+                                    scheduleDelayedNewPageReady(
+                                        activeTool,
+                                        pageDocument,
+                                    ),
+                                );
                             }
                         });
                     });
@@ -558,8 +573,15 @@ export function applyToolboxStateToUpdatedPage() {
     });
 }
 
-function scheduleDelayedNewPageReady(tool: ITool): void {
-    const pageDocument = getPageIframeBody()?.ownerDocument;
+/**
+ * Run tool's second newPageReady pass for the page in pageDocument 600 ms from now, and then tell
+ * the page frame that the passes have run (whenNewPageReadyPassesHaveRun). Call it once the first
+ * pass has finished, with the document of the page that the first pass ran on.
+ */
+function scheduleDelayedNewPageReady(
+    tool: ITool,
+    pageDocument: Document | undefined,
+): void {
     window.setTimeout(() => {
         if (
             currentTool !== tool ||
@@ -834,8 +856,9 @@ async function activateToolInternalAsync(newTool: ITool): Promise<void> {
 
     // Note: Allowed to begin some async work too, and we will await its result.
     // (This apparently solves the single flash mentioned in BL-10471.)
+    const pageDocument = getPageIframeBody()?.ownerDocument;
     await newTool.newPageReady();
-    scheduleDelayedNewPageReady(newTool);
+    scheduleDelayedNewPageReady(newTool, pageDocument);
 }
 
 /**

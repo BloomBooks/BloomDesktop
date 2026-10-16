@@ -34,8 +34,8 @@ export interface UndoAndRedoCommands {
  *
  * Attach this after attachInputTransactions (pageHistoryInput.ts) for the same windows. Listeners
  * on one target run in the order they were added, and the input module's keydown listener ends the
- * typing step that an undo or redo key follows; the history's undo() does nothing while that step's
- * transaction is open.
+ * typing step that an undo or redo key follows; the history's undo() would otherwise wait until
+ * that step's transaction closed.
  */
 export function attachUndoAndRedoKeys(
     pageWindow: Window,
@@ -120,7 +120,7 @@ function runCommand(
  * pageHistoryInput.ts matches: by the character and by the key code, so that a layout whose Z key
  * types another letter still counts, and never with Alt, so that AltGr, which reports Ctrl and Alt
  * both, types its characters. A key that this took and that module did not would leave a typing
- * step open, and undo does nothing while one is.
+ * step open, and the undo would wait until it closed.
  */
 export function undoOrRedoCommandOf(
     event: KeyboardEvent,

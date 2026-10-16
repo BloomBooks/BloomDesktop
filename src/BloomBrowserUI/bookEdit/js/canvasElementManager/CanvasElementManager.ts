@@ -178,7 +178,8 @@ export class CanvasElementManager {
     // the box stays as the undo or redo left it.
     private isSelectingAfterUndoOrRedo = false;
     // One function for each fit of a canvas element to its picture or video that is waiting for
-    // the picture to load or the video's metadata; each drops its fit (abandonPendingFits).
+    // the picture to load or the video's metadata; each drops its fit (abandonPendingFits). The
+    // fits of background images add theirs too, through backgroundImageManagerState.
     private abandonersOfPendingFits = new Set<() => void>();
     public isCanvasElementEditingOn: boolean = false;
     private thingsToNotifyOfCanvasElementChange: {
@@ -199,6 +200,7 @@ export class CanvasElementManager {
     private editingSuspension: CanvasElementEditingSuspension;
     private backgroundImageManagerState: BackgroundImageManagerState = {
         bgImageLoadListeners: new WeakMap(),
+        abandonersOfPendingFits: this.abandonersOfPendingFits,
     };
     private thingToFocusAfterSettingColor: HTMLElement | undefined;
 
@@ -1160,7 +1162,7 @@ export class CanvasElementManager {
      * isSelectingAfterUndoOrRedo).
      *
      * A text canvas element that the undo or redo put back into the page gets its source and
-     * hint bubbles again (addBubblesToCanvasElementPutBack).
+     * hint bubbles again (addBubblesToCanvasElementPutBack), and one that it took out loses them.
      */
     public updateAfterUndoOrRedo(
         restored: RestoredContent,
@@ -1209,9 +1211,16 @@ export class CanvasElementManager {
         }
         history.doOutsideHistory(() => {
             this.takeFocusOutOfCanvasElementsOtherThanActive();
-            this.getAllCanvasElementsOnPage()
+            const canvasElementsNow = this.getAllCanvasElementsOnPage();
+            canvasElementsNow
                 .filter((e) => !canvasElementsBefore.includes(e))
                 .forEach((e) => this.addBubblesToCanvasElementPutBack(e));
+            // A canvas element that the undo or redo took out of the page, as the undo of an add
+            // does, takes its source and hint bubbles with it, as deleteCanvasElement does: they
+            // live outside the element, and would otherwise stay on the page.
+            canvasElementsBefore
+                .filter((e) => !canvasElementsNow.includes(e))
+                .forEach((e) => BloomSourceBubbles.removeSourceBubbles(e));
         });
     }
 
@@ -2210,8 +2219,9 @@ export class CanvasElementManager {
     }
 
     /**
-     * Drop every fit of a canvas element to its picture or video that is still waiting for the
-     * picture to load or the video's metadata, and release the page content delays they hold.
+     * Drop every fit of a canvas element, the background image's included, to its picture or
+     * video that is still waiting for the picture to load or the video's metadata, and release
+     * the page content delays they hold.
      * Called as an undo or redo begins: such a fit would join the latest undo step once the
      * undo or redo has run, which is no longer the step of the change that wanted it, and clear
      * redo. A later click on the box fits it as usual.

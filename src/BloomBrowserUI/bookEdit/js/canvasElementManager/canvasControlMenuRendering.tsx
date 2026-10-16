@@ -13,7 +13,7 @@ import {
     IControlRuntime,
 } from "../../toolbox/canvas/canvasControlTypes";
 import { getCanvasElementManager } from "../../toolbox/canvas/canvasElementPageBridge";
-import { doTransaction } from "../bloomEditing";
+import { doTransaction, whenNoRequestPageContentDelays } from "../bloomEditing";
 import { kGenericUndoDescriptionL10nKey } from "../../pageHistory/pageHistoryTypes";
 
 // This file renders the menu rows that controlRegistry provides. Two menus use it:
@@ -76,8 +76,10 @@ export const contextMenuCss = css`
 // rejections are handled consistently from UI event handlers.
 // The callback is one step of the page history, described by descriptionL10nKey (the row's or
 // control's label), so that a command is an undo step of its own; an async callback keeps the
-// step open until it settles. A row with no label gets the general description. If the callback
-// fails, the step's changes are put back, and the bubbles are drawn again from the page.
+// step open until it settles, and the step then stays open until no page content delay is
+// pending, as in runCommandControlAction. A row with no label gets the general description. If
+// the callback fails, the step's changes are put back, and the bubbles are drawn again from the
+// page.
 export const runControlCallback = (
     callbackLabel: string,
     descriptionL10nKey: string | null | undefined,
@@ -85,7 +87,10 @@ export const runControlCallback = (
 ): void => {
     doTransaction(
         descriptionL10nKey ?? kGenericUndoDescriptionL10nKey,
-        callback,
+        async () => {
+            await callback();
+            await whenNoRequestPageContentDelays();
+        },
     ).catch((error) => {
         // The rollback put back data-bubble, but Comical draws from its own copy of each spec.
         getCanvasElementManager()?.redrawBubblesFromPage();

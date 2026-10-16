@@ -96,7 +96,9 @@ export function handleUndo(): void {
  * Whether there is anything to undo. Cheap: C# polls it on a timer, through the workspace frame.
  * An open transaction counts: typing holds one open between key presses, and its step is made only
  * when something ends it, such as the press on the Undo button itself. Without it, the button
- * would stay disabled after the first typing on a page.
+ * would stay disabled after the first typing on a page. A transaction that the press does not end,
+ * such as a picture change waiting for the picture to load, holds the undo until it closes
+ * (PageHistory.undo).
  */
 export function canUndo(): boolean {
     if (isInChangeLayoutMode()) return origamiCanUndo();
