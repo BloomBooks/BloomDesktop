@@ -1247,44 +1247,172 @@ describe("page history: clearUndoAndRedo", () => {
     });
 });
 
-describe("page history: undo and redo while a transaction is open", () => {
-    it("does nothing on undo() or redo() while a beginTransaction is open", async () => {
+describe("page history: undo and redo asked for while a transaction is open", () => {
+    it("waits, and runs the undo as soon as the transaction ends, undoing its step", async () => {
         const f = setUp();
         await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
-        await stepSettingAttribute(f, "B", byId(f, "box2"), "lang", "es");
-        await f.history.undo();
-        expect(f.history.redoDescriptionL10nKey).toBe("B");
 
         const t = f.history.beginTransaction("Drag");
         byId(f, "box1").setAttribute("lang", "de");
         const openHtml = f.page.outerHTML;
-        await f.history.undo();
+        let undoHasSettled = false;
+        const undone = f.history.undo().then(() => (undoHasSettled = true));
+        await Promise.resolve();
         expect(f.page.outerHTML, "undo while open").toBe(openHtml);
-        await f.history.redo();
-        expect(f.page.outerHTML, "redo while open").toBe(openHtml);
+        expect(undoHasSettled, "undo's promise while open").toBe(false);
         expect(f.history.hasOpenTransaction).toBe(true);
+
         t.end();
 
-        expect(f.history.undoDescriptionL10nKey).toBe("Drag");
-        await f.history.undo();
         expect(byId(f, "box1").getAttribute("lang")).toBe("en");
         expect(
             byId(f, "img1").getAttribute("src"),
             "step A should be untouched",
         ).toBe("b.png");
         expect(f.history.undoDescriptionL10nKey).toBe("A");
+        expect(f.history.redoDescriptionL10nKey).toBe("Drag");
+        await undone;
+        expect(undoHasSettled).toBe(true);
     });
 
-    it("does nothing on undo() called from inside an async doTransaction", async () => {
+    it("runs every request made while the transaction was open, in the order made", async () => {
         const f = setUp();
         await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        await stepSettingAttribute(f, "B", byId(f, "box2"), "lang", "es");
+
+        const t = f.history.beginTransaction("Drag");
+        byId(f, "box1").setAttribute("lang", "de");
+        const requests = [
+            f.history.undo(),
+            f.history.undo(),
+            f.history.undo(),
+            f.history.redo(),
+        ];
+        expect(byId(f, "box2").getAttribute("lang")).toBe("es");
+        t.end();
+        await Promise.all(requests);
+
+        // Drag, B and A undone, then A redone.
+        expect(byId(f, "box1").getAttribute("lang")).toBe("en");
+        expect(byId(f, "box2").getAttribute("lang")).toBe("fr");
+        expect(byId(f, "img1").getAttribute("src")).toBe("b.png");
+        expect(f.history.undoDescriptionL10nKey).toBe("A");
+        expect(f.history.redoDescriptionL10nKey).toBe("B");
+    });
+
+    it("runs an undo asked for inside an async doTransaction once that closes", async () => {
+        const f = setUp();
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        let undone: Promise<void> | undefined;
         await f.history.doTransaction("Async", async () => {
             byId(f, "box1").setAttribute("lang", "de");
-            await f.history.undo();
+            // Not awaited: it waits for this transaction.
+            undone = f.history.undo();
+            await Promise.resolve();
             expect(byId(f, "box1").getAttribute("lang")).toBe("de");
-            expect(byId(f, "img1").getAttribute("src")).toBe("b.png");
         });
-        expect(f.history.undoDescriptionL10nKey).toBe("Async");
+        expect(byId(f, "box1").getAttribute("lang")).toBe("en");
+        expect(byId(f, "img1").getAttribute("src")).toBe("b.png");
+        expect(f.history.redoDescriptionL10nKey).toBe("Async");
+        await undone;
+    });
+
+    it("undoes the step before when the transaction it waited for made no step", async () => {
+        const f = setUp();
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        const t = f.history.beginTransaction("Nothing");
+        const undone = f.history.undo();
+        expect(byId(f, "img1").getAttribute("src")).toBe("b.png");
+        expect(t.end(), "test setup: the transaction makes no step").toBe(
+            false,
+        );
+        await undone;
+        expect(byId(f, "img1").getAttribute("src")).toBe("a.png");
+        expect(f.history.redoDescriptionL10nKey).toBe("A");
+    });
+
+    it("runs the waiting undo after a cancel, against the step before", async () => {
+        const f = setUp();
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        const t = f.history.beginTransaction("Cancelled");
+        byId(f, "box1").setAttribute("lang", "de");
+        const undone = f.history.undo();
+        t.cancel();
+        await undone;
+        expect(byId(f, "box1").getAttribute("lang")).toBe("en");
+        expect(byId(f, "img1").getAttribute("src")).toBe("a.png");
+        expect(f.history.undoDescriptionL10nKey).toBeUndefined();
+    });
+
+    it("does nothing on a redo that waited for a transaction that made a step", async () => {
+        const f = setUp();
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        await f.history.undo();
+        expect(f.history.redoDescriptionL10nKey).toBe("A");
+
+        const t = f.history.beginTransaction("New");
+        byId(f, "box1").setAttribute("lang", "de");
+        const redone = f.history.redo();
+        t.end();
+        await redone;
+
+        expect(byId(f, "img1").getAttribute("src")).toBe("a.png");
+        expect(byId(f, "box1").getAttribute("lang")).toBe("de");
+        expect(f.history.undoDescriptionL10nKey).toBe("New");
+        expect(f.history.redoDescriptionL10nKey).toBeUndefined();
+    });
+
+    it("drops the waiting requests on dispose, settling their promises", async () => {
+        const f = setUp();
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        f.history.beginTransaction("Drag");
+        byId(f, "box1").setAttribute("lang", "de");
+        const undone = f.history.undo();
+
+        disposeHistory(f);
+
+        await undone;
+        expect(byId(f, "box1").getAttribute("lang")).toBe("de");
+        expect(byId(f, "img1").getAttribute("src")).toBe("b.png");
+    });
+
+    it("drops the waiting requests on clearUndoAndRedo, so a later step is not undone", async () => {
+        const f = setUp();
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        const t = f.history.beginTransaction("Drag");
+        byId(f, "box1").setAttribute("lang", "de");
+        const undone = f.history.undo();
+
+        f.history.clearUndoAndRedo();
+        await undone;
+        t.end();
+        await stepSettingAttribute(f, "B", byId(f, "box2"), "lang", "es");
+
+        expect(byId(f, "box2").getAttribute("lang")).toBe("es");
+        expect(byId(f, "box1").getAttribute("lang")).toBe("de");
+        expect(f.history.undoDescriptionL10nKey).toBe("B");
+    });
+
+    it("finishes one waiting request before starting the next, even if a listener ends a transaction", async () => {
+        const f = setUp();
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        await stepSettingAttribute(f, "B", byId(f, "box2"), "lang", "es");
+        const afterCalls: string[] = [];
+        f.history.onAfterUndoOrRedo(() => {
+            // A listener's own transaction, which changes nothing.
+            f.history.beginTransaction("Listener").end();
+            afterCalls.push(
+                `${byId(f, "img1").getAttribute("src")} ${byId(f, "box2").getAttribute("lang")}`,
+            );
+        });
+        const t = f.history.beginTransaction("Drag");
+        const requests = [f.history.undo(), f.history.undo()];
+        t.end();
+        await Promise.all(requests);
+
+        // Had the listener's end started the second undo inside the first, the first call would
+        // have seen A undone too.
+        expect(afterCalls).toEqual(["b.png fr", "a.png fr"]);
     });
 });
 
@@ -1890,6 +2018,35 @@ describe("page history: the filter (rule 6)", () => {
             handle.isConnected,
             "redo should not put back the ignored node",
         ).toBe(false);
+    });
+
+    it("ignores a node that is given its ignored class straight after it is inserted", async () => {
+        // As the Motion tool does with its rectangles (makeElement, then bloom-ui), and as
+        // PageHistoryFilter.ignoreNode requires: no call to the history comes between.
+        const f = setUp(kPageWithUi, { filter });
+        const canvas = byId(f, "canvas");
+        const childrenBefore = Array.from(canvas.childNodes);
+        const handle = document.createElement("div");
+        await f.history.doTransaction("A", () => {
+            byId(f, "img1").setAttribute("src", "b.png");
+            canvas.appendChild(handle);
+            handle.className = "bloom-ui";
+        });
+
+        await f.history.undo();
+
+        expect(byId(f, "img1").getAttribute("src")).toBe("a.png");
+        expect(
+            handle.parentElement,
+            "undo should leave the ignored node in place",
+        ).toBe(canvas);
+        expect(Array.from(canvas.childNodes)).toEqual([
+            ...childrenBefore,
+            handle,
+        ]);
+        await f.history.redo();
+        expect(byId(f, "img1").getAttribute("src")).toBe("b.png");
+        expect(f.history.undoDescriptionL10nKey).toBe("A");
     });
 
     it("neither records nor puts back an ignored attribute", async () => {
