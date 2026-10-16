@@ -38,8 +38,9 @@ Each result is marked **Observed** (seen in the running Bloom, with the evidence
   (Playwright `addInitScript`), so they ran before Bloom's own scripts in each new page frame.
 - **Stopped.** The throwaway Bloom, the launcher stack and Vite were stopped at the end.
 
-All scripts, logs and screenshots are in
-`C:\Users\hatto\AppData\Local\Temp\claude\D--undo\1045b7d2-744d-4b89-a8fe-bade67a89e0f\scratchpad\experiments\`:
+The experiments used the scripts, logs and screenshots below. They were working files in a
+temporary folder on the machine that ran the experiments, and they were not kept. The results
+recorded in this document are the record of the experiments.
 
 | File | What it is |
 |---|---|
@@ -52,11 +53,11 @@ All scripts, logs and screenshots are in
 | `exp1-reinsert.run.log`, `exp1-clone.run.log`, `exp1e.json`, `shots\*.png` | Their results and screenshots |
 | `drive\exp3.spec.ts`, `exp3.json` | Ctrl+Z / Ctrl+Y event order (experiment 3) |
 
-To repeat: start Vite on 5173 in `src/BloomBrowserUI`, run
-`BLOOM_E2E_VITE_PORT=5173 pnpm -C src/BloomE2E exec playwright test --config <scratchpad>\experiments\setup\pw.config.ts`
-in the background, wait for `setup\info.json` to say `"ready"`, then run a driver with
-`pnpm -C src/BloomE2E exec playwright test --config <scratchpad>\experiments\drive\pw.config.ts exp2`
-(or `exp1`, `exp1e`, `exp3`). Create `setup\STOP` to end the host and its Bloom.
+They were run this way, with paths relative to that folder: Vite on 5173 in `src/BloomBrowserUI`,
+then `BLOOM_E2E_VITE_PORT=5173 pnpm -C src/BloomE2E exec playwright test --config setup\pw.config.ts`
+in the background; once `setup\info.json` said `"ready"`, each driver ran with
+`pnpm -C src/BloomE2E exec playwright test --config drive\pw.config.ts exp2`
+(or `exp1`, `exp1e`, `exp3`). Creating `setup\STOP` ended the host and its Bloom.
 
 ---
 
@@ -530,12 +531,12 @@ frame, or does C# take it first (WinForms accelerator handling, WebView2's
   the `Chrome_RenderWidgetHostHWND` window's rectangle and the element's rectangle from CDP. One
   drag of the image on the canvas page was a CDP mouse drag, to give Ctrl+Z something to undo.
 
-All files are in
-`C:\Users\hatto\AppData\Local\Temp\claude\D--undo\1045b7d2-744d-4b89-a8fe-bade67a89e0f\scratchpad\ctrlz\`:
-`setup\host.spec.ts` (launch and test book), `setup\drive.mjs` (the cases), `listeners.js`,
-`keys.ps1`, `focusinfo.ps1` (which window has keyboard focus), `il.ps1` (reads the WebView2
-WinForms control's handler), and the logs `text.json`, `canvas.json`, `toolbox.json`,
-`pageList.json`, `cross.json`, with screenshots in `shots\`.
+The cases used these files, which, like those of section 0, were working files in a temporary
+folder and were not kept: `setup\host.spec.ts` (launch and test book), `setup\drive.mjs` (the
+cases), `listeners.js`, `keys.ps1`, `focusinfo.ps1` (which window has keyboard focus), `il.ps1`
+(reads the WebView2 WinForms control's handler), and the logs `text.json`, `canvas.json`,
+`toolbox.json`, `pageList.json`, `cross.json`, with screenshots in `shots\`. The results below
+are the record of these experiments.
 
 ### 4.2 A CDP click does not give the browser keyboard focus
 
