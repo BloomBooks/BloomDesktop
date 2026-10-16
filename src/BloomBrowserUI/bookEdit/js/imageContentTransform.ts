@@ -27,6 +27,11 @@ import {
     kBloomCanvasSelector,
     kCanvasElementSelector,
 } from "../toolbox/canvas/canvasElementConstants";
+import {
+    getBackgroundImageSizeWithBleed,
+    kBackgroundImageBleedPx,
+} from "./canvasElementManager/CanvasElementBackgroundImageManager";
+import { getExactClientSize } from "../../utils/elementUtils";
 
 export type FlipAxis = "horizontal" | "vertical";
 
@@ -144,6 +149,10 @@ export interface BackgroundPictureLayout {
 // The caller passes the picture's drawn rectangle, not its layout box. For a cropped picture the
 // two are the same, but an uncropped picture is drawn inside its box by object-fit, and it is
 // the drawn rectangle that has to land in the right place.
+//
+// A background picture that reaches an edge of the page overhangs it by kBackgroundImageBleedPx,
+// so that no white line shows along that edge (adjustBackgroundImageSizeToFit gives it that
+// overhang). The rotated element gets the same overhang, scaling its content with it.
 export function computeRotatedBackgroundLayout(
     // The bloom-canvas: the page's picture area.
     pageWidth: number,
@@ -160,16 +169,44 @@ export function computeRotatedBackgroundLayout(
     // adds the class bloom-imageObjectFit-cover). Such a picture keeps the whole page and has
     // its ends clipped, instead of fitting inside the page with blank bands.
     fillsPage: boolean,
+    // True for a page background picture, which overhangs the edges of the page it reaches.
+    // False for an element that keeps its own size, whose "page" is that element with its two
+    // dimensions swapped.
+    addBleed: boolean,
 ): BackgroundPictureLayout {
     // The rotated element measures elementHeight by elementWidth. Scale it to the page.
-    const widthRatio = pageWidth / elementHeight;
-    const heightRatio = pageHeight / elementWidth;
-    const scale = fillsPage
-        ? Math.max(widthRatio, heightRatio)
-        : Math.min(widthRatio, heightRatio);
-
-    const newElementWidth = fillsPage ? pageWidth : scale * elementHeight;
-    const newElementHeight = fillsPage ? pageHeight : scale * elementWidth;
+    let scale: number;
+    let newElementWidth: number;
+    let newElementHeight: number;
+    if (fillsPage) {
+        // Cover the page, and the bleed on every side of it.
+        const bleed = addBleed ? kBackgroundImageBleedPx : 0;
+        newElementWidth = pageWidth + 2 * bleed;
+        newElementHeight = pageHeight + 2 * bleed;
+        scale = Math.max(
+            newElementWidth / elementHeight,
+            newElementHeight / elementWidth,
+        );
+    } else {
+        const fitScale = Math.min(
+            pageWidth / elementHeight,
+            pageHeight / elementWidth,
+        );
+        const fittedWidth = fitScale * elementHeight;
+        const fittedHeight = fitScale * elementWidth;
+        const size = addBleed
+            ? getBackgroundImageSizeWithBleed(
+                  fittedWidth,
+                  fittedHeight,
+                  pageWidth,
+                  pageHeight,
+              )
+            : { width: fittedWidth, height: fittedHeight };
+        // The bleed keeps the element's shape, so it scales both dimensions by the same amount.
+        scale = (fitScale * size.width) / fittedWidth;
+        newElementWidth = size.width;
+        newElementHeight = size.height;
+    }
 
     // Where the rotated content sits inside the new element. When the element fits the page, the
     // two are the same size and this is zero. When the element fills the page, the content is
@@ -208,7 +245,16 @@ function roundPx(value: number): number {
     return Math.round(value * 100) / 100;
 }
 
-// The picture's drawn rectangle inside its layout box, in the container's coordinates.
+// A length as written in pixels, or the measured one when none was written in pixels. Bloom
+// writes fractional sizes, and clientWidth and clientHeight round them to whole pixels. Rotating
+// from rounded sizes changes the picture's shape a little each time, and once the background's
+// overhang is added the change grows from one rotation to the next.
+function writtenPxOr(styleValue: string, measured: number): number {
+    return styleValue.endsWith("px") ? parseFloat(styleValue) : measured;
+}
+
+// The picture's drawn rectangle inside its layout box, in the container's coordinates. The
+// container is the size of the canvas element, which the caller passes.
 //
 // A cropped picture has an explicit width, and then its box and its drawn rectangle are the
 // same thing. An uncropped picture has a box the size of its container and is drawn inside that
@@ -217,20 +263,35 @@ function roundPx(value: number): number {
 // drawn rectangle out rather than assume it.
 function getDrawnPictureRectangle(
     img: HTMLImageElement,
+    containerWidth: number,
+    containerHeight: number,
 ): { width: number; height: number; left: number; top: number } | undefined {
-    const boxWidth = img.clientWidth;
-    const boxHeight = img.clientHeight;
-    if (!boxWidth || !boxHeight) {
-        return undefined;
-    }
+    const naturalWidth = img.naturalWidth;
+    const naturalHeight = img.naturalHeight;
     const left = pxOrZero(img.style.left);
     const top = pxOrZero(img.style.top);
     if (img.style.width) {
-        return { width: boxWidth, height: boxHeight, left, top };
+        // A cropped picture's height follows its width and its own shape.
+        const width = writtenPxOr(img.style.width, img.clientWidth);
+        const height =
+            naturalWidth && naturalHeight
+                ? (width * naturalHeight) / naturalWidth
+                : img.clientHeight;
+        if (!width || !height) {
+            return undefined;
+        }
+        // Bloom writes no height on a cropped picture, but one can still be there (Undo puts back
+        // whatever height was saved), and the box is shown at that height. The rotation removes it (see
+        // setRotatedBackgroundLayout), so we keep the centre of the box as shown and give the
+        // box the height its width and shape make, which is the box the rotation leaves.
+        const shownHeight = img.style.height
+            ? writtenPxOr(img.style.height, img.clientHeight)
+            : height;
+        return { width, height, left, top: top + (shownHeight - height) / 2 };
     }
-    const naturalWidth = img.naturalWidth;
-    const naturalHeight = img.naturalHeight;
-    if (!naturalWidth || !naturalHeight) {
+    const boxWidth = containerWidth;
+    const boxHeight = containerHeight;
+    if (!boxWidth || !boxHeight || !naturalWidth || !naturalHeight) {
         return undefined;
     }
     const containScale = Math.min(
@@ -269,12 +330,19 @@ function setRotatedBackgroundLayout(img: HTMLImageElement): boolean {
         return false;
     }
     const isBackground = element.classList.contains(kBackgroundImageClass);
-    const elementWidth = element.clientWidth;
-    const elementHeight = element.clientHeight;
-    // The area the rotated element has to land in.
-    const areaWidth = isBackground ? page.clientWidth : elementHeight;
-    const areaHeight = isBackground ? page.clientHeight : elementWidth;
-    const picture = getDrawnPictureRectangle(img);
+    const elementWidth = writtenPxOr(element.style.width, element.clientWidth);
+    const elementHeight = writtenPxOr(
+        element.style.height,
+        element.clientHeight,
+    );
+    // The area the rotated element has to land in. A background's area is the bloom-canvas,
+    // measured exactly, as adjustBackgroundImageSizeToFit measures it. clientWidth would round it
+    // to whole pixels, and on a page whose picture area is a fraction of a pixel wider the
+    // overhang at the far edge would be that much short.
+    const pageSize = isBackground ? getExactClientSize(page) : undefined;
+    const areaWidth = pageSize ? pageSize.width : elementHeight;
+    const areaHeight = pageSize ? pageSize.height : elementWidth;
+    const picture = getDrawnPictureRectangle(img, elementWidth, elementHeight);
     if (
         !areaWidth ||
         !areaHeight ||
@@ -297,6 +365,7 @@ function setRotatedBackgroundLayout(img: HTMLImageElement): boolean {
         picture.left,
         picture.top,
         img.classList.contains("bloom-imageObjectFit-cover"),
+        isBackground,
     );
 
     element.style.width = `${roundPx(layout.elementWidth)}px`;
