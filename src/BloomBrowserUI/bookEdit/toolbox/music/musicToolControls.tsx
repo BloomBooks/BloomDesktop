@@ -11,6 +11,7 @@ import AudioRecording from "../talkingBook/audioRecording";
 import "./music.less";
 import { kMusicToolId } from "../toolIds";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
+import { doOutsideHistoryIfAny } from "../../pageHistory/pageHistoryAccess";
 
 interface IMusicState {
     activeRadioValue: string;
@@ -315,6 +316,9 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
         this.setState({ playing: false });
     }
 
+    // The music settings of a page are not undoable: setRadio, sliderMoved and chooseMusicFile
+    // change the page inside doOutsideHistoryIfAny, so undo leaves the settings as they are, and
+    // changing them keeps the page's undo history.
     private setRadio(val: string) {
         const audioEnabled =
             val === "newMusic" && this.state.musicName.length > 0;
@@ -324,9 +328,11 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
         });
         switch (val) {
             case "noMusic":
-                ToolboxToolReactAdaptor.encodeAndSetPageAttr(
-                    MusicToolControls.musicAttrName,
-                    MusicToolControls.noMusicAttrValue,
+                doOutsideHistoryIfAny(() =>
+                    ToolboxToolReactAdaptor.encodeAndSetPageAttr(
+                        MusicToolControls.musicAttrName,
+                        MusicToolControls.noMusicAttrValue,
+                    ),
                 );
                 this.setState({ musicName: "" });
                 this.pausePlaying(); // pauses player and sets playing state to false
@@ -334,7 +340,11 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
             case "continueMusic": {
                 const bloomPage = getBloomPageElement();
                 if (bloomPage) {
-                    bloomPage.removeAttribute(MusicToolControls.musicAttrName);
+                    doOutsideHistoryIfAny(() =>
+                        bloomPage.removeAttribute(
+                            MusicToolControls.musicAttrName,
+                        ),
+                    );
                 }
                 this.setState({ musicName: "" });
                 // In any case don't change the state of playing/not playing
@@ -404,9 +414,11 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
     private sliderMoved(position1to100: number): void {
         const volume =
             MusicToolControls.convertSliderPositionToVolume(position1to100);
-        ToolboxToolReactAdaptor.encodeAndSetPageAttr(
-            MusicToolControls.musicVolumeAttrName,
-            volume.toString(),
+        doOutsideHistoryIfAny(() =>
+            ToolboxToolReactAdaptor.encodeAndSetPageAttr(
+                MusicToolControls.musicVolumeAttrName,
+                volume.toString(),
+            ),
         );
         this.getPlayer().volume = volume;
         this.setState((prevState, props) => {
@@ -420,9 +432,13 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
             if (!fileName) {
                 return;
             }
-            ToolboxToolReactAdaptor.encodeAndSetPageAttr(
-                MusicToolControls.musicAttrName,
-                fileName,
+            // This runs when the GET returns, after the click's task has ended, so without
+            // doOutsideHistoryIfAny the change would join the latest undo step.
+            doOutsideHistoryIfAny(() =>
+                ToolboxToolReactAdaptor.encodeAndSetPageAttr(
+                    MusicToolControls.musicAttrName,
+                    fileName,
+                ),
             );
             this.setState({
                 activeRadioValue: "newMusic",

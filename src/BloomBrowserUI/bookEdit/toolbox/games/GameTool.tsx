@@ -74,6 +74,7 @@ import { CanvasSnapProvider } from "../../js/canvasElementManager/CanvasSnapProv
 import { CanvasGuideProvider } from "../../js/canvasElementManager/CanvasGuideProvider";
 import { kIdForDragActivityTabControl } from "./DragActivityTabControl";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
+import { doOutsideHistoryIfAny } from "../../pageHistory/pageHistoryAccess";
 
 // This is the main code that manages the Bloom Games, including Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
@@ -1090,12 +1091,17 @@ const DragActivityControls: React.FunctionComponent<{
         // The sound attributes hold the plain file name, deliberately NOT URL-encoded (unlike
         // data-backgroundaudio, which the toolbox does encode). C# reads these straight back as
         // file names. See the encoding conventions note on UrlPathString.cs.
+        // The sounds are not undoable: undo leaves them as they are, and choosing one keeps the
+        // page's undo history. A sound from "Choose..." arrives after the dialog, outside the
+        // click's task, where without doOutsideHistoryIfAny it would join the latest undo step.
         const setSoundAttr = (soundAttr: string, newSoundId: string) => {
-            if (newSoundId === "default") {
-                page.removeAttribute(soundAttr);
-            } else {
-                page.setAttribute(soundAttr, newSoundId);
-            }
+            doOutsideHistoryIfAny(() => {
+                if (newSoundId === "default") {
+                    page.removeAttribute(soundAttr);
+                } else {
+                    page.setAttribute(soundAttr, newSoundId);
+                }
+            });
         };
         switch (soundType) {
             case "correct":
@@ -1114,10 +1120,17 @@ const DragActivityControls: React.FunctionComponent<{
         }
     };
 
+    // The three options below are not undoable: each toggle changes the page inside
+    // doOutsideHistoryIfAny, so undo leaves the option as it is, and toggling it keeps the page's
+    // undo history. Each reads the option from the page rather than from React state, so it
+    // toggles what the page has even if that state has not caught up with the page.
     const toggleAllSameSize = () => {
-        const newAllSameSize = !allItemsSameSize;
-        setAllItemsSameSize(newAllSameSize);
+        doOutsideHistoryIfAny(toggleAllSameSizeOnPage);
+    };
+    const toggleAllSameSizeOnPage = () => {
         const page = getPage();
+        const newAllSameSize = !doesContainingPageHaveSameSizeMode(page);
+        setAllItemsSameSize(newAllSameSize);
         page.setAttribute("data-same-size", newAllSameSize ? "true" : "false");
         if (newAllSameSize) {
             const canvasElementManager = getCanvasElementManager();
@@ -1125,7 +1138,7 @@ const DragActivityControls: React.FunctionComponent<{
             if (!someDraggable || !isDraggable(someDraggable)) {
                 // find something
                 someDraggable = page.querySelector(
-                    kDraggableIdAttribute,
+                    `[${kDraggableIdAttribute}]`,
                 ) as HTMLElement;
             }
             if (!someDraggable) {
@@ -1149,24 +1162,30 @@ const DragActivityControls: React.FunctionComponent<{
     };
 
     const toggleShowAnswersInTargets = () => {
-        const newShowAnswersInTargets = !showAnswersInTargets;
+        const page = getPage();
+        const newShowAnswersInTargets =
+            page.getAttribute("data-show-answers-in-targets") !== "true";
         // This will trigger a new render that sets up the observer if needed.
         setShowAnswersInTargets(newShowAnswersInTargets);
-        const page = getPage();
-        page.setAttribute(
-            "data-show-answers-in-targets",
-            newShowAnswersInTargets ? "true" : "false",
+        doOutsideHistoryIfAny(() =>
+            page.setAttribute(
+                "data-show-answers-in-targets",
+                newShowAnswersInTargets ? "true" : "false",
+            ),
         );
         // Don't actually change it. Answers always show in Start mode.
     };
 
     const toggleShowTargetsDuringPlay = () => {
-        const newShowTargetsDuringPlay = !showTargetsDuringPlay;
-        setShowTargetsDuringPlay(newShowTargetsDuringPlay);
         const page = getPage();
-        page.setAttribute(
-            "data-show-targets-during-play",
-            newShowTargetsDuringPlay ? "true" : "false",
+        const newShowTargetsDuringPlay =
+            page.getAttribute("data-show-targets-during-play") === "false";
+        setShowTargetsDuringPlay(newShowTargetsDuringPlay);
+        doOutsideHistoryIfAny(() =>
+            page.setAttribute(
+                "data-show-targets-during-play",
+                newShowTargetsDuringPlay ? "true" : "false",
+            ),
         );
     };
 

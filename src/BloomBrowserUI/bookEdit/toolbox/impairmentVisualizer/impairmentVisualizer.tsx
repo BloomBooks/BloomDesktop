@@ -14,6 +14,11 @@ import { pxToNumber } from "../canvas/canvasElementCssUtils";
 import { ThemeProvider } from "@mui/material";
 import { ApiCheckbox } from "../../../react_components/ApiCheckbox";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
+import {
+    currentPageHistory,
+    doOutsideHistoryIfAny,
+} from "../../pageHistory/pageHistoryAccess";
+import type { RestoredContent } from "../../pageHistory/pageHistoryTypes";
 
 interface IState {
     kindOfColorBlindness: string;
@@ -269,9 +274,10 @@ export class ImpairmentVisualizerControls extends React.Component<
         canvas.style.top = "0";
         canvas.style.height = "100%";
         canvas.style.width = "100%";
-        // And position it within the container the same as the img.
+        // And position it within the container the same as the img. This must not write the
+        // img's own style: the page history records that, and would then refuse to undo a crop.
         if (img && img.ownerDocument && img.ownerDocument.defaultView) {
-            img.style.objectPosition = img.ownerDocument.defaultView // the window that the img is in (not ours!)
+            canvas.style.objectPosition = img.ownerDocument.defaultView // the window that the img is in (not ours!)
                 .getComputedStyle(img)
                 .getPropertyValue("object-position");
         }
@@ -330,6 +336,7 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
     // but the type of 'controlsElement' has to match the 'ref' attribute below
     // which has "| null".
     private controlsElement: ImpairmentVisualizerControls | null;
+    private stopListeningToUndoAndRedo: (() => void) | undefined;
 
     public makeRootElement(): HTMLDivElement {
         return super.adaptReactElement(
@@ -361,11 +368,39 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
     }
 
     public newPageReady() {
+        // Each page load has its own history. newPageReady() can be called twice for one
+        // page, so stop listening to the history before listening to it again.
+        this.stopListeningToUndoAndRedo?.();
+        this.stopListeningToUndoAndRedo =
+            currentPageHistory()?.onAfterUndoOrRedo((restored) =>
+                this.updateAfterUndoOrRedo(restored),
+            );
         if (!this.controlsElement) return;
         this.controlsElement.updateSimulations(undefined);
     }
 
     public detachFromPage() {
+        this.stopListeningToUndoAndRedo?.();
+        this.stopListeningToUndoAndRedo = undefined;
         ImpairmentVisualizerControls.removeImpairmentVisualizerMarkup();
     }
+
+    // An undo or redo of a picture change, a crop or a rotation leaves the color-blindness
+    // overlays showing what the pictures were before it, so make them again from the pictures
+    // that the page has now. Making them is slow, so not after an undo or redo that touched no
+    // picture, such as one of typing.
+    private updateAfterUndoOrRedo(restored: RestoredContent): void {
+        if (!restored.roots.some(isOrHoldsAPicture)) return;
+        // The overlays are .ui-cbOverlay, which the history ignores; this keeps any other write
+        // to the page out of the history too.
+        doOutsideHistoryIfAny(() =>
+            this.controlsElement?.updateSimulations(undefined),
+        );
+    }
+}
+
+/** True when element is in a picture's image container, or holds one. */
+function isOrHoldsAPicture(element: Element): boolean {
+    const selector = "." + kImageContainerClass;
+    return !!element.closest(selector) || !!element.querySelector(selector);
 }
