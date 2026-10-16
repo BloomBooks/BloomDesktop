@@ -592,14 +592,24 @@ export function SetupElements(
                 "Edit Original Title",
                 "EditTab.FrontMatter.EditOriginalTitleLabel",
                 "Original Title",
-                (newTitle) => {
-                    titleElement.innerText = newTitle ?? "";
-                    if (titleElement.innerText.trim()) {
-                        titleElement.classList.remove("missingOriginalTitle");
-                    } else {
-                        titleElement.classList.add("missingOriginalTitle");
-                    }
-                },
+                (newTitle) =>
+                    // Without its own transaction, the change would be a step with only the
+                    // generic description, from the click on OK.
+                    void doTransactionIfAny(
+                        "EditTab.FrontMatter.EditOriginalTitleCaption",
+                        () => {
+                            titleElement.innerText = newTitle ?? "";
+                            if (titleElement.innerText.trim()) {
+                                titleElement.classList.remove(
+                                    "missingOriginalTitle",
+                                );
+                            } else {
+                                titleElement.classList.add(
+                                    "missingOriginalTitle",
+                                );
+                            }
+                        },
+                    ),
             );
         };
         SetupCustomMissingTitleStylesheet();

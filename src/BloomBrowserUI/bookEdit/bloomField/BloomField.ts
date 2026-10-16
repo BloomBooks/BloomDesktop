@@ -10,6 +10,7 @@ import $ from "jquery";
 import { getWorkspaceBundleExports } from "../js/workspaceFrames";
 import { getLocalization } from "../../react_components/l10n";
 import { kNoIndentClass } from "../textContextMenu/noIndent";
+import { currentPageHistory } from "../pageHistory/pageHistoryAccess";
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
@@ -396,35 +397,9 @@ export default class BloomField {
                 // Shown from the workspace root so its backdrop covers the page list too.
                 const showLinkTargetChooserDialog =
                     getWorkspaceBundleExports().showLinkTargetChooserDialog;
-                showLinkTargetChooserDialog("", (url) => {
-                    if (!url) return;
-                    get("app/selectedBookInfo", (bookInfo) => {
-                        if (!bookInfo.data) {
-                            return;
-                        }
-                        const anchor = document.createElement("a");
-                        anchor.href = tryProcessHyperlink(
-                            url,
-                            bookInfo.data.id,
-                        );
-                        try {
-                            document
-                                .getSelection()
-                                ?.getRangeAt(0)
-                                ?.surroundContents(anchor);
-                        } catch (ex) {
-                            const englishErrorMessage =
-                                "Bloom was not able to make a link. Try selecting only simple text.";
-                            console.log(`${englishErrorMessage} ${ex}`);
-                            BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
-                                "EditTab.HyperlinkPasteFailure",
-                                englishErrorMessage,
-                                "Shows when a hyperlink cannot be pasted due to invalid selection.",
-                                "CantPasteHyperlink",
-                            );
-                        }
-                    });
-                });
+                showLinkTargetChooserDialog("", (url) =>
+                    BloomField.makeSelectionALink(url),
+                );
                 return true; // probaby means success, but I'm not sure. Typescript says this function has to return a boolean.
             },
         });
@@ -487,6 +462,55 @@ export default class BloomField {
                 markIfEmpty();
             }
         });
+    }
+
+    /**
+     * Make the text selected in the page a link to url, as one undo step of the page history.
+     * Called when the user clicks OK in the dialog that Set Up Hyperlink shows. The link needs the
+     * book's id, which comes back from Bloom asynchronously, after the transaction that the click
+     * opened has closed; so a transaction begun here, inside that one, stays open until the link
+     * is made, and gives the step its description.
+     */
+    public static makeSelectionALink(url: string): void {
+        if (!url) return;
+        const transaction = currentPageHistory()?.beginTransaction(
+            "EditTab.SetupHyperlink",
+        );
+        get(
+            "app/selectedBookInfo",
+            (bookInfo) => {
+                if (!bookInfo.data) {
+                    transaction?.end();
+                    return;
+                }
+                const anchor = document.createElement("a");
+                anchor.href = tryProcessHyperlink(url, bookInfo.data.id);
+                try {
+                    document
+                        .getSelection()
+                        ?.getRangeAt(0)
+                        ?.surroundContents(anchor);
+                } catch (ex) {
+                    transaction?.cancel();
+                    const englishErrorMessage =
+                        "Bloom was not able to make a link. Try selecting only simple text.";
+                    console.log(`${englishErrorMessage} ${ex}`);
+                    BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
+                        "EditTab.HyperlinkPasteFailure",
+                        englishErrorMessage,
+                        "Shows when a hyperlink cannot be pasted due to invalid selection.",
+                        "CantPasteHyperlink",
+                    );
+                    return;
+                }
+                transaction?.end();
+            },
+            (error) => {
+                // An open transaction would keep undo from running and take in every later change.
+                transaction?.cancel();
+                throw error;
+            },
+        );
     }
 
     // Spans are dropped from the clipboard's default data (eventData.dataValue) when the

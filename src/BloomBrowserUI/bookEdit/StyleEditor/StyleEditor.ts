@@ -29,6 +29,7 @@ import "../../lib/jquery.alphanum";
 import axios from "axios";
 import { get, wrapAxios } from "../../utils/bloomApi";
 import { EditableDivUtils } from "../js/editableDivUtils";
+import { doOutsideHistoryIfAny } from "../pageHistory/pageHistoryAccess";
 import { ensureFieldFitsOnCustomPage } from "../toolbox/canvas/derivedFieldFitting";
 import { renderRoot } from "../../utils/reactRender";
 import FontSelectComponent, { IFontMetaData } from "./fontSelectComponent";
@@ -205,7 +206,11 @@ export default class StyleEditor {
     ): string | null {
         if ($(target).hasClass(oldCoverTitleClass)) {
             const newStyleName: string = "Title-On-Cover-style";
-            $(target).removeClass(oldCoverTitleClass).addClass(newStyleName);
+            doOutsideHistoryIfAny(() =>
+                $(target)
+                    .removeClass(oldCoverTitleClass)
+                    .addClass(newStyleName),
+            );
             return newStyleName;
         }
 
@@ -221,7 +226,7 @@ export default class StyleEditor {
         const pageLineage = $(parentPage).attr("data-pagelineage");
         if (pageLineage && pageLineage.substring(0, 8) === "5dcd48df") {
             const styleName: string = "normal-style";
-            $(target).addClass(styleName);
+            doOutsideHistoryIfAny(() => $(target).addClass(styleName));
             return styleName;
         }
         return null;
@@ -237,7 +242,11 @@ export default class StyleEditor {
             if (parentGroup) {
                 styleName = this.GetStyleClassFromElement(parentGroup);
                 if (styleName) {
-                    $(target).addClass(styleName); // add style to bloom-editable div
+                    const groupStyleName = styleName;
+                    // add style to bloom-editable div
+                    doOutsideHistoryIfAny(() =>
+                        $(target).addClass(groupStyleName),
+                    );
                 } else {
                     return this.MigratePreStyleBook(target);
                 }
@@ -249,9 +258,10 @@ export default class StyleEditor {
         // For awhile between v1 and v2 we used 'default-style' in Basic Book
         // In case this is one of those books, we'll replace it with 'normal-style'
         if (styleName === "default-style") {
-            $(target).removeClass(styleName);
             styleName = "normal-style"; // This will be capitalized before presenting it to the user.
-            $(target).addClass(styleName);
+            doOutsideHistoryIfAny(() =>
+                $(target).removeClass("default-style").addClass("normal-style"),
+            );
         }
         return styleName;
     }
@@ -270,23 +280,27 @@ export default class StyleEditor {
 
     // Make the specified style (which should include the trailing '-style') the style for the target element,
     // and if it's in a translation group, for all the siblings that are bloom-editable.
+    // Outside the page history, as every page change of the Format dialog is (see
+    // cleanupAfterStyleChange): undo must not put back a box's style class without the style's rules.
     private static SetStyleNameForElement(
         target: HTMLElement,
         newStyle: string,
     ) {
-        this.SetStyleNameForLeaf(target, newStyle);
-        // If this is a translation group, we need to set the style on all the siblings
-        // that are bloom-editable
-        const group = target.closest(".bloom-translationGroup");
-        if (!group) return;
-        // This will typically include the target itself, but it's not very costly to do
-        // it twice to that one element.
-        const siblings = Array.from(
-            group.getElementsByClassName("bloom-editable"),
-        );
-        siblings.forEach((sibling) =>
-            this.SetStyleNameForLeaf(sibling as HTMLElement, newStyle),
-        );
+        doOutsideHistoryIfAny(() => {
+            this.SetStyleNameForLeaf(target, newStyle);
+            // If this is a translation group, we need to set the style on all the siblings
+            // that are bloom-editable
+            const group = target.closest(".bloom-translationGroup");
+            if (!group) return;
+            // This will typically include the target itself, but it's not very costly to do
+            // it twice to that one element.
+            const siblings = Array.from(
+                group.getElementsByClassName("bloom-editable"),
+            );
+            siblings.forEach((sibling) =>
+                this.SetStyleNameForLeaf(sibling as HTMLElement, newStyle),
+            );
+        });
     }
 
     private static SetStyleNameForLeaf(target: HTMLElement, newStyle: string) {
@@ -1310,11 +1324,15 @@ export default class StyleEditor {
         const oldPaddingStr = window.getComputedStyle(
             this.boxBeingEdited,
         ).paddingLeft;
-        CanvasElementManager.adjustCanvasElementsForPaddingChange(
-            this.boxBeingEdited.ownerDocument.body,
-            StyleEditor.GetStyleNameForElement(this.boxBeingEdited) ?? "",
-            oldPaddingStr,
-            padding,
+        // Outside the page history, as every page change of the Format dialog is (see
+        // cleanupAfterStyleChange).
+        doOutsideHistoryIfAny(() =>
+            CanvasElementManager.adjustCanvasElementsForPaddingChange(
+                this.boxBeingEdited.ownerDocument.body,
+                StyleEditor.GetStyleNameForElement(this.boxBeingEdited) ?? "",
+                oldPaddingStr,
+                padding,
+            ),
         );
         const rule = this.getStyleRule(true, false);
         if (rule !== null) {
@@ -2368,6 +2386,28 @@ export default class StyleEditor {
             return; // bizarre, since we put up the dialog
         }
 
+        // The page changes that follow a style change are made outside the page history, as are
+        // the dialog's other page changes (the style class of the boxes, the canvas elements that a
+        // padding change moves). So a style change is neither undoable nor clears the history, and
+        // undo never puts back the sizes of the boxes without the style that gave them those
+        // sizes. This is for now: a Format dialog session is to become one undo step.
+        doOutsideHistoryIfAny(() =>
+            this.adjustPageAfterStyleChange(editable, styleName, doNotShrink),
+        );
+
+        this.updateLabelsWithStyleName();
+        this.getParagraphTabDescription();
+    }
+
+    /**
+     * Refit every box on the page that has the style styleName, and the other elements with it,
+     * mark overflow, and update what depends on the boxes' font size.
+     */
+    private adjustPageAfterStyleChange(
+        editable: HTMLElement,
+        styleName: string,
+        doNotShrink: boolean | undefined,
+    ) {
         // When a style is changed, resize every element on the page with that style class
         // except invisible ones. (Well, ones set not to auto-adjust won't, either).
         const page = $(editable).closest(".bloom-page")[0];
@@ -2394,11 +2434,8 @@ export default class StyleEditor {
         // rather than redundantly once per element.
         OverflowChecker.CheckPageAncestorOverflow(editable);
 
-        this.updateLabelsWithStyleName();
-        this.getParagraphTabDescription();
-
         SetupThingsSensitiveToStyleChanges(
-            $(this.boxBeingEdited).closest(".bloom-page")[0],
+            $(editable).closest(".bloom-page")[0],
         );
     }
 

@@ -28,6 +28,7 @@ import {
 import { whenBloomPageIsReady } from "../../utils/shared";
 import { useL10n } from "../../react_components/l10nHooks";
 import { getWorkspaceBundleExports } from "../js/workspaceFrames";
+import { doOutsideHistoryIfAny } from "../pageHistory/pageHistoryAccess";
 import { ElementAttributeSnapshot } from "../../utils/ElementAttributeSnapshot";
 import { useGetFeatureStatus } from "../../react_components/featureStatus";
 import {
@@ -265,6 +266,12 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
     const initialPageAttributeSnapshot = React.useRef<
         ElementAttributeSnapshot | undefined
     >(undefined);
+    // The src of each picture on the page when the dialog opened. Changing the background color
+    // rewrites these (updateImageTransparencyForPage), so Cancel and the live preview put them back
+    // along with the page's attributes.
+    const initialImageSrcs = React.useRef<
+        Array<{ img: HTMLImageElement; src: string | null }>
+    >([]);
 
     // This effect synchronizes dialog state with the editable page iframe, which is outside React.
     // The iframe body can exist slightly before .bloom-page is inserted, so wait for that element
@@ -274,6 +281,9 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
             setPageSettings(getCurrentPageSettings());
             initialPageAttributeSnapshot.current =
                 ElementAttributeSnapshot.fromElement(currentPageElement);
+            initialImageSrcs.current = Array.from(
+                currentPageElement.querySelectorAll("img"),
+            ).map((img) => ({ img, src: img.getAttribute("src") }));
             setCurrentPageIsXMatter(
                 currentPageElement.classList.contains("bloom-frontMatter") ||
                     currentPageElement.classList.contains("bloom-backMatter"),
@@ -327,9 +337,14 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
 
     const cancelAndCloseDialog = React.useCallback(() => {
         try {
-            if (initialPageAttributeSnapshot.current) {
-                initialPageAttributeSnapshot.current.restoreToElement(
-                    getCurrentPageElement(),
+            const pageAttributes = initialPageAttributeSnapshot.current;
+            if (pageAttributes) {
+                // Like the preview it undoes, this is not an undo step.
+                doOutsideHistoryIfAny(() =>
+                    restoreInitialPage(
+                        pageAttributes,
+                        initialImageSrcs.current,
+                    ),
                 );
             }
         } finally {
@@ -349,9 +364,17 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                     : undefined;
 
                 if (changedPageSettings) {
-                    applyChangedPageSettings(changedPageSettings);
+                    // The page settings are not undoable, and changing them must not end the
+                    // page history, as a change made from a dialog with no transaction of its
+                    // own would (pageHistoryInput.ts).
+                    doOutsideHistoryIfAny(() =>
+                        applyChangedPageSettings(changedPageSettings),
+                    );
                 }
 
+                // Posting book settings ends the page history (bloomApi.ts,
+                // kRequestsThatKeepThePageHistory), even when this OK changed the page settings
+                // as well. That is accepted.
                 if (haveBookSettingsChanged(latestSettings)) {
                     const settingsToPost =
                         removePageSettingsFromConfigrSettings(latestSettings);
@@ -473,22 +496,26 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                                 setSettingsToReturnLater(s);
                             }, 0);
 
-                            if (
-                                !pageSettings ||
-                                !initialPageAttributeSnapshot.current
-                            ) {
+                            const pageAttributes =
+                                initialPageAttributeSnapshot.current;
+                            if (!pageSettings || !pageAttributes) {
                                 return;
                             }
 
-                            initialPageAttributeSnapshot.current.restoreToElement(
-                                getCurrentPageElement(),
-                            );
+                            // The live preview is not an undo step, and must not end the page
+                            // history either.
+                            doOutsideHistoryIfAny(() => {
+                                restoreInitialPage(
+                                    pageAttributes,
+                                    initialImageSrcs.current,
+                                );
 
-                            if (!changedPageSettings) {
-                                return;
-                            }
+                                if (!changedPageSettings) {
+                                    return;
+                                }
 
-                            applyChangedPageSettings(changedPageSettings);
+                                applyChangedPageSettings(changedPageSettings);
+                            });
                         }}
                         initiallySelectedTopLevelPageKey={
                             selectedConfigrPageKey
@@ -508,6 +535,20 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         </BloomDialog>
     );
 };
+
+// Put the page back as the dialog found it: the attributes of the page element, which hold its
+// style, and the src of each picture.
+function restoreInitialPage(
+    pageAttributes: ElementAttributeSnapshot,
+    imageSrcs: Array<{ img: HTMLImageElement; src: string | null }>,
+): void {
+    pageAttributes.restoreToElement(getCurrentPageElement());
+    for (const imageSrc of imageSrcs) {
+        if (imageSrc.img.getAttribute("src") === imageSrc.src) continue;
+        if (imageSrc.src === null) imageSrc.img.removeAttribute("src");
+        else imageSrc.img.setAttribute("src", imageSrc.src);
+    }
+}
 
 export function showBookSettingsDialog(initiallySelectedPageKey?: string) {
     // once Bloom's tab bar is also in react, it won't be possible
