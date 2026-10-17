@@ -3,7 +3,8 @@
 // and docs/undo/TYPING-STEPS.md):
 // - each line typed is a step, with the Enter or Shift+Enter that ends it; an Enter in the middle
 //   of a line joins the typing around it;
-// - a step has no limit on its length;
+// - a step has no limit on its length, but a pause of a second ends it (Bloom's rule; the
+//   browser has none);
 // - deleting right after typing starts a step, which typing after the deleting joins; a delete
 //   that changes nothing does not count;
 // - a step ends at a key that moves the caret, such as an arrow key, and at a click that moves
@@ -194,6 +195,23 @@ test.describe("typing that Ctrl+Z undoes at a time", () => {
             "splitting a line with Enter and typing",
             ["ab", "XYcd"],
             [["abcd"], EMPTY_BOX],
+        );
+    });
+
+    test("a pause of over a second between key presses ends the step", async ({
+        page,
+    }) => {
+        await emptyTheBox(page);
+        await typeWithKeys(page, "ab");
+        // The pause is what this test is about: kPauseThatEndsTypingStepMs is 1000 ms.
+        await page.waitForTimeout(1500);
+        await typeWithKeys(page, "cd");
+
+        await expectUndoStepsAndRedo(
+            page,
+            "typing, pausing and typing again",
+            ["abcd"],
+            [["ab"], EMPTY_BOX],
         );
     });
 

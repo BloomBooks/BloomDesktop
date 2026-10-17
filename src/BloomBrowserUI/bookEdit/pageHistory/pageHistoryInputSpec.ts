@@ -13,6 +13,7 @@ import {
     kDeleteTextUndoDescriptionL10nKey,
     kDropUndoDescriptionL10nKey,
     kIgnoredByPageHistoryInputSelector,
+    kPauseThatEndsTypingStepMs,
     kTypingUndoDescriptionL10nKey,
 } from "./pageHistoryInput";
 import {
@@ -35,6 +36,8 @@ let otherFrame: HTMLIFrameElement;
 let otherWindow: Window;
 let userEvents: WeakSet<Event>;
 let endOfTask: (() => void)[];
+// The time, in milliseconds, that the input transactions see; a test moves it on to make a pause.
+let clock: number;
 // Listeners that tests add for Bloom's handlers, removed after each test.
 let removers: (() => void)[];
 
@@ -55,9 +58,11 @@ beforeEach(() => {
     userEvents = new WeakSet();
     endOfTask = [];
     removers = [];
+    clock = 0;
     detach = attachInputTransactions(history, window, [otherWindow], {
         isFromUser: (event) => userEvents.has(event),
         afterCurrentTask: (fn) => endOfTask.push(fn),
+        now: () => clock,
     });
 });
 
@@ -489,6 +494,67 @@ describe("typing", () => {
 
         expect(await undoEverything()).toHaveLength(1);
         expect(box.hasAttribute("data-reacted")).toBe(false);
+    });
+
+    it("ends at a pause of kPauseThatEndsTypingStepMs between key presses", async () => {
+        const box = byId("box1");
+        typeText(box, "ab");
+        clock += kPauseThatEndsTypingStepMs;
+        typeText(box, "cd");
+        pressUndoKey();
+
+        expect(await undoEverything()).toEqual([
+            "HelloabBonjour",
+            "HelloBonjour",
+        ]);
+    });
+
+    it("does not end at a shorter pause", async () => {
+        const box = byId("box1");
+        typeText(box, "ab");
+        clock += kPauseThatEndsTypingStepMs - 1;
+        typeText(box, "cd");
+        pressUndoKey();
+
+        expect(await undoEverything()).toEqual(["HelloBonjour"]);
+    });
+
+    it("counts the pause from the latest key press, not the first", async () => {
+        const box = byId("box1");
+        for (const character of "abcde") {
+            clock += kPauseThatEndsTypingStepMs / 2;
+            typeCharacter(box, character);
+        }
+        pressUndoKey();
+
+        expect(await undoEverything()).toEqual(["HelloBonjour"]);
+    });
+
+    it("does not end inside an IME composition at a pause", async () => {
+        const box = byId("box1");
+        keyDown(box, { key: "Process", keyCode: 229 });
+        box.lastElementChild!.append("k");
+        input(box, "insertCompositionText");
+        finishTask();
+        clock += kPauseThatEndsTypingStepMs * 3;
+        keyDown(box, { key: "Process", keyCode: 229, isComposing: true });
+        box.lastElementChild!.append("a");
+        input(box, "insertCompositionText");
+        finishTask();
+        expect(history.hasOpenTransaction).toBe(true);
+        pressUndoKey();
+
+        expect(await undoEverything()).toEqual(["HelloBonjour"]);
+    });
+
+    it("starts a step of deleting after a pause too", async () => {
+        const box = byId("box1");
+        deleteCharacter(box);
+        clock += kPauseThatEndsTypingStepMs;
+        deleteCharacter(box);
+        pressUndoKey();
+
+        expect(await undoEverything()).toEqual(["HellBonjour", "HelloBonjour"]);
     });
 
     it("has no limit on its length", async () => {
