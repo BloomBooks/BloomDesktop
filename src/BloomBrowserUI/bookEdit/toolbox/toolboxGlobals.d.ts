@@ -7,7 +7,7 @@ declare global {
     interface ToolboxBundleApi {
         getTheOneToolbox: unknown;
         scheduleMarkupUpdateAfterPaste: unknown;
-        updateMarkupAfterUndoOrRedo: unknown;
+        cancelPendingMarkupUpdates: unknown;
         applyToolboxStateToPage: unknown;
         removeToolboxMarkup: unknown;
         showSetupDialog: unknown;
@@ -25,8 +25,7 @@ declare global {
         removeWordListChangedListener: unknown;
         activateLongPressFor: unknown;
         TalkingBookTool: unknown;
-        canUndo: unknown;
-        undo: unknown;
+        whenNewPageReadyPassesHaveRun: unknown;
         setActiveDragActivityTab: unknown;
         getTheOneAudioRecorderForExportOnly: unknown;
         copyLeveledReaderStatsToClipboard: unknown;

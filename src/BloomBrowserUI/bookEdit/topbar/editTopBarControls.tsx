@@ -333,6 +333,7 @@ export const UndoButton: React.FunctionComponent<{
             disabledTooltipL10nKey="EditTab.UndoButton.ToolTipWhenDisabled"
             onClickAction="undo"
             testId="undo-button"
+            runsUndo={true}
             enabledIcon={enabledIcon}
             disabledIcon={disabledIcon}
             iconBeforeText={true}
@@ -355,6 +356,10 @@ export const EditingControlButton: React.FunctionComponent<{
         | "layoutChoices";
     // For the e2e suite (src/BloomE2E), which finds the button by it.
     testId?: string;
+    // True for a button that runs undo or redo. The page history must not open a transaction on
+    // its click, because undo waits while one is open (kUndoControlSelector in
+    // pageHistory/pageHistoryInput.ts finds the button by the attribute this gives it).
+    runsUndo?: boolean;
     enabledIcon?: string;
     disabledIcon?: string;
     iconBeforeText?: boolean;
@@ -378,6 +383,7 @@ export const EditingControlButton: React.FunctionComponent<{
                 enabled={props.enabled}
                 l10nKey={props.l10nKey}
                 data-testid={props.testId}
+                data-runs-undo={props.runsUndo ? "" : undefined}
                 onMouseDown={(e) => {
                     // Keep focus in the main editable browser; otherwise this button takes focus
                     // first and copy/cut/paste/undo may run against the wrong context.

@@ -4,10 +4,11 @@ import {
     getTheOneToolbox,
     applyToolboxStateToUpdatedPage,
     removeToolboxMarkup,
+    whenNewPageReadyPassesHaveRun,
 } from "./toolbox";
 import {
+    cancelPendingMarkupUpdates,
     scheduleMarkupUpdateAfterPaste,
-    updateMarkupAfterUndoOrRedo,
 } from "./pageEditingMarkup";
 import { simulateBlurOnPageFrameMouseDown } from "../../utils/menuCloseOnBlur";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
@@ -75,10 +76,13 @@ export interface IToolboxFrameExports {
     getTheOneToolbox(): ToolBox;
 
     scheduleMarkupUpdateAfterPaste(): void;
-    updateMarkupAfterUndoOrRedo(): void;
+    cancelPendingMarkupUpdates(): void;
 
-    canUndo(): boolean;
-    undo(): void;
+    /**
+     * Resolves once the current tool has run its newPageReady passes for the page in pageDocument,
+     * or at once if no tool will. The page frame waits for it before starting its undo history.
+     */
+    whenNewPageReadyPassesHaveRun(pageDocument: Document): Promise<void>;
 
     applyToolboxStateToPage(): void;
 
@@ -110,8 +114,8 @@ export {
 export { activateLongPressFor } from "../js/bloomEditing";
 export { TalkingBookTool }; // one function is called by CSharp.
 
-export { getTheOneToolbox };
-export { scheduleMarkupUpdateAfterPaste, updateMarkupAfterUndoOrRedo };
+export { getTheOneToolbox, whenNewPageReadyPassesHaveRun };
+export { cancelPendingMarkupUpdates, scheduleMarkupUpdateAfterPaste };
 
 // Import the functions we're re-exporting so we can use them in the bundle
 import {
@@ -119,23 +123,6 @@ import {
     initializeReaderSetupDialog,
     closeSetupDialog,
 } from "./readers/readerSetup/readerSetupDialog";
-
-export function canUndo(): boolean {
-    const readerToolsModel = getTheOneReaderToolsModel();
-
-    return (
-        readerToolsModel &&
-        readerToolsModel.shouldHandleUndo() &&
-        readerToolsModel.canUndo()
-    );
-}
-
-export function undo() {
-    const readerToolsModel = getTheOneReaderToolsModel();
-    if (readerToolsModel) {
-        readerToolsModel.undo();
-    }
-}
 
 export function applyToolboxStateToPage() {
     applyToolboxStateToUpdatedPage();
@@ -166,7 +153,7 @@ registerAllToolboxTools();
 const toolboxBundle: ToolboxBundleApi = {
     getTheOneToolbox,
     scheduleMarkupUpdateAfterPaste,
-    updateMarkupAfterUndoOrRedo,
+    cancelPendingMarkupUpdates,
     applyToolboxStateToPage,
     removeToolboxMarkup,
     showSetupDialog,
@@ -184,8 +171,7 @@ const toolboxBundle: ToolboxBundleApi = {
     removeWordListChangedListener,
     activateLongPressFor,
     TalkingBookTool,
-    canUndo,
-    undo,
+    whenNewPageReadyPassesHaveRun,
     setActiveDragActivityTab,
     getTheOneAudioRecorderForExportOnly,
     copyLeveledReaderStatsToClipboard,

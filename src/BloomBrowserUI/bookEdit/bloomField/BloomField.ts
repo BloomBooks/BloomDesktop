@@ -239,26 +239,7 @@ export default class BloomField {
         ckeditor: CKEDITOR.editor,
     ) {
         ckeditor.config.colorButton_colors = CKEDITOR.config.colorButton_colors;
-        if (
-            bloomEditableDiv.classList.contains(
-                "bloom-copyFromOtherLanguageIfNecessary",
-            ) &&
-            bloomEditableDiv.innerText &&
-            bloomEditableDiv.innerText !== "\n" &&
-            bloomEditableDiv.getAttribute("data-user-deleted") !== "true"
-        ) {
-            // See BL-13779. If the user deletes all the text in a div, we don't want to copy
-            // the text from another language in the future. We set the data-user-deleted attribute
-            // to keep this from happening.
-            ckeditor.on("change", (event) => {
-                if (
-                    bloomEditableDiv.innerText === "" ||
-                    bloomEditableDiv.innerText === "\n"
-                ) {
-                    bloomEditableDiv.setAttribute("data-user-deleted", "true");
-                }
-            });
-        }
+        BloomField.MarkWhenUserDeletesEverything(bloomEditableDiv, ckeditor);
         // BL-16649: "Do Not Indent This Paragraph" (see the text context menu)
         // marks one paragraph as the continuation of a paragraph on the previous page. Pressing Enter
         // in such a paragraph makes a genuinely new paragraph, which should indent normally
@@ -275,6 +256,17 @@ export default class BloomField {
                 paragraphsBeforeEnter = Array.from(
                     bloomEditableDiv.getElementsByTagName("p"),
                 );
+            } else if (
+                BloomField.IsDeletingKey(event.data.domEvent.getKey()) &&
+                BloomField.selectionWouldRemoveProtectedElement(
+                    bloomEditableDiv,
+                )
+            ) {
+                // CKEditor's WebKit "key" listener, which runs after this one, deletes a
+                // selection that spans two blocks itself, so no beforeinput comes for the
+                // listener in PreventRemovalOfSomeElements to refuse. Cancelling the key event
+                // stops that listener and the browser's own deletion alike.
+                event.cancel();
             }
         });
         ckeditor.on("afterCommandExec", (event) => {
@@ -454,6 +446,47 @@ export default class BloomField {
         // This makes it easy to find the right editor instance. There may be some ckeditor built-in way, but
         // I wasn't able to find one.
         (<any>bloomEditableDiv).bloomCkEditor = ckeditor;
+    }
+
+    /**
+     * See BL-13779. If the user deletes all the text in a box that has the
+     * bloom-copyFromOtherLanguageIfNecessary class, we don't want to copy the text from another
+     * language into it in the future. We set the data-user-deleted attribute to keep this from
+     * happening. Public for unit tests.
+     */
+    public static MarkWhenUserDeletesEverything(
+        bloomEditableDiv: HTMLElement,
+        ckeditor: CKEDITOR.editor,
+    ) {
+        if (
+            !bloomEditableDiv.classList.contains(
+                "bloom-copyFromOtherLanguageIfNecessary",
+            ) ||
+            !bloomEditableDiv.innerText ||
+            bloomEditableDiv.innerText === "\n" ||
+            bloomEditableDiv.getAttribute("data-user-deleted") === "true"
+        ) {
+            return;
+        }
+        const markIfEmpty = () => {
+            if (
+                bloomEditableDiv.innerText === "" ||
+                bloomEditableDiv.innerText === "\n"
+            ) {
+                bloomEditableDiv.setAttribute("data-user-deleted", "true");
+            }
+        };
+        ckeditor.on("change", markIfEmpty);
+        // CKEditor's WebKit "key" listener deletes a selection that spans two blocks itself
+        // (range.deleteContents()) and cancels the key press, so that deletion raises no input
+        // event, and therefore no "change" (see attachToCkEditor). Look again when the key comes
+        // up. A key press in a box opens a page history transaction that stays open between key
+        // presses (pageHistoryInput.ts), so the attribute joins the deletion's undo step.
+        bloomEditableDiv.addEventListener("keyup", (event) => {
+            if (event.key === "Delete" || event.key === "Backspace") {
+                markIfEmpty();
+            }
+        });
     }
 
     // Spans are dropped from the clipboard's default data (eventData.dataValue) when the
@@ -889,12 +922,14 @@ export default class BloomField {
             ".bloom-preventRemoval",
         ).length;
         if (numberThatShouldBeThere > 0) {
-            $(field).keyup((e) => {
-                if (
-                    $(field).find(".bloom-preventRemoval").length <
-                    numberThatShouldBeThere
-                ) {
-                    document.execCommand("undo");
+            // Refuse an edit that the browser makes whose range covers a protected element, which
+            // would remove it, whether the edit deletes (Delete, Backspace, Ctrl+X) or replaces a
+            // selection (typing or pasting over Ctrl+A). The deletions that Bloom and CKEditor
+            // make themselves raise no beforeinput: WireToCKEditor refuses Delete and Backspace
+            // over a selection that covers a protected element, which CKEditor may delete itself,
+            // and cutSelectionImpl in bloomEditing.ts refuses the top bar's Cut of one.
+            field.addEventListener("beforeinput", (e) => {
+                if (BloomField.wouldRemoveProtectedElement(field, e)) {
                     e.preventDefault();
                 }
             });
@@ -914,6 +949,66 @@ export default class BloomField {
                 );
             }
         });
+    }
+
+    /**
+     * True if the edit that this beforeinput announces covers an element of field that has the
+     * bloom-preventRemoval class, wholly or in part. An edit inside such an element leaves it in
+     * place.
+     */
+    public static wouldRemoveProtectedElement(
+        field: HTMLElement,
+        event: InputEvent,
+    ): boolean {
+        return event
+            .getTargetRanges()
+            .some((staticRange) =>
+                BloomField.rangeWouldRemoveProtectedElement(field, staticRange),
+            );
+    }
+
+    /**
+     * True if deleting what lies between the ends of someRange would remove an element of field
+     * that has the bloom-preventRemoval class, wholly or in part. A range inside such an element
+     * leaves it in place.
+     */
+    public static rangeWouldRemoveProtectedElement(
+        field: HTMLElement,
+        someRange: AbstractRange,
+    ): boolean {
+        if (someRange.collapsed) return false;
+        const protectedElements = Array.from(
+            field.querySelectorAll(".bloom-preventRemoval"),
+        );
+        if (protectedElements.length === 0) return false;
+        const range = field.ownerDocument.createRange();
+        range.setStart(someRange.startContainer, someRange.startOffset);
+        range.setEnd(someRange.endContainer, someRange.endOffset);
+        return protectedElements.some(
+            (element) =>
+                range.intersectsNode(element) &&
+                !element.contains(range.commonAncestorContainer),
+        );
+    }
+
+    /**
+     * True if Delete or Backspace with the document's selection as it is now would remove an
+     * element of field that has the bloom-preventRemoval class. Public for unit tests.
+     */
+    public static selectionWouldRemoveProtectedElement(
+        field: HTMLElement,
+    ): boolean {
+        const selection = field.ownerDocument.getSelection();
+        if (!selection || selection.rangeCount === 0) return false;
+        return BloomField.rangeWouldRemoveProtectedElement(
+            field,
+            selection.getRangeAt(0),
+        );
+    }
+
+    // True for the key code (without modifiers) of Backspace or Delete.
+    private static IsDeletingKey(keyCode: number): boolean {
+        return keyCode === 8 || keyCode === 46;
     }
 
     // Work around a bug in geckofx. The effect was that if you clicked in a completely empty text box

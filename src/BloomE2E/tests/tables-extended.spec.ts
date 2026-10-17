@@ -100,7 +100,12 @@ import {
     getVideoSource,
     SHORT_VIDEO,
 } from "../helpers/videos";
-import { canUndo, clickUndoButton, undo } from "../helpers/undo";
+import {
+    canUndo,
+    clickUndoButton,
+    undo,
+    waitForPageHistory,
+} from "../helpers/undo";
 import { getZoom, setZoom, switchTab } from "../helpers/workspace";
 
 test.use({
@@ -373,9 +378,9 @@ test.describe("more ways to use a table", () => {
     });
 
     // Change Layout keeps its own undo history of the page's layout (addUndoPoint in origami.ts),
-    // and choosing Table for a section is one step of it. Bloom's Undo asks the table library
-    // first (handleUndo in workspaceRoot.ts), so this checks that the layout step is the one
-    // undone.
+    // and choosing Table for a section is one step of it. In the mode, Bloom's Undo goes to that
+    // history and not to the page history (handleUndo in pageHistory/pageHistorySetup.ts), so this
+    // checks that the layout step is the one undone.
     test("undoes choosing Table for a section, in Change Layout [Test Case ID 826]", async ({
         page,
         step,
@@ -462,20 +467,13 @@ test.describe("more ways to use a table", () => {
     // In Change Layout a table is background, like a text box's faded text. The table stays
     // attached to the table library the whole time, and the library notices the mouse by distance
     // rather than by what is under it, so it is Bloom's stylesheet (tableEditing.less) that keeps
-    // its buttons out of sight, and tableCanUndo() that keeps the table's history out of Undo.
+    // its buttons out of sight. Entering the mode ends the page history, and in the mode Undo goes
+    // to the mode's own history, so nothing done to the table before can be undone there.
     test("keeps a table inert in Change Layout", async ({ page, step }) => {
-        // The table half of the Undo decision, asked in the page's own frame, where it lives.
-        const tableCanUndo = () =>
-            editablePageFrame(page).evaluate(() =>
-                (
-                    window as unknown as {
-                        editablePageBundle: { tableCanUndo: () => boolean };
-                    }
-                ).editablePageBundle.tableCanUndo(),
-            );
         const rowsAdded = await step(
-            "Add a row, so the table's history has something to undo",
+            "Add a row, so the page history has something to undo",
             async () => {
+                await waitForPageHistory(page);
                 const rowsBefore = (await getTableShape(page)).rows;
                 await clickCell(page, 0, 0);
                 await openTableMenu(page, "row", 0);
@@ -486,8 +484,8 @@ test.describe("more ways to use a table", () => {
                     })
                     .toBe(rowsBefore + 1);
                 expect(
-                    await tableCanUndo(),
-                    "Sanity check: the table's history should hold the row just added.",
+                    await canUndo(page),
+                    "Sanity check: the page history should hold the row just added.",
                 ).toBe(true);
                 return rowsBefore + 1;
             },
@@ -519,11 +517,12 @@ test.describe("more ways to use a table", () => {
 
         await step("Undo in Change Layout leaves the table alone", async () => {
             expect(
-                await tableCanUndo(),
-                "In Change Layout the table's history should not offer an Undo.",
+                await canUndo(page),
+                "In Change Layout, with no layout change made, Undo should have nothing to undo.",
             ).toBe(false);
-            // handleUndo is the code the toolbar button and Ctrl+Z run. A table undo happens
-            // before it returns, so the row count can be read straight after.
+            // handleUndo is the code the toolbar button and Ctrl+Z run. In Change Layout mode it
+            // runs origami's undo, which happens before it returns, so the row count can be read
+            // straight after.
             await page.evaluate(() =>
                 (
                     window as unknown as {
@@ -743,11 +742,8 @@ test.describe("more ways to use a table", () => {
         );
     });
 
-    // The other order, and the one that used to go wrong. The table library's history keeps every
-    // structural operation until that operation is undone, so once a row has been added the table
-    // always has something to undo; a caller that asks the table first therefore took the row back
-    // off however long ago it was added, and the typing that came after it could never be reached
-    // at all. Undo now goes to whichever of the two stacks was written to last (undo/changeOrder.ts).
+    // The other order. Typing in a cell after adding a row, and the row itself, are steps of the
+    // one page history, so Undo takes back the typing first and then the row.
     test("undoes the typing that came after the row, and then the row", async ({
         page,
         step,
@@ -764,11 +760,9 @@ test.describe("more ways to use a table", () => {
         });
 
         await step("Type in the new row, key by key", async () => {
-            // Key by key because CKEditor's undo stack is built from key events, and the quick
-            // way of filling a box in raises none. The new row's own cell, because it is empty:
-            // emptying a box that already holds something is select-all and Delete, which
-            // CKEditor answers by rebuilding the paragraph, and the box it hands back reports
-            // nothing undoable however much is then typed into it.
+            // Key by key because the page history makes a typing step from key presses, and the
+            // quick way of filling a box in raises none. The new row's own cell, because it is
+            // empty, so that undoing the typing leaves it empty.
             await typeInCellKeyByKey(page, 2, 0, "en", "Cherry");
         });
 
@@ -790,20 +784,16 @@ test.describe("more ways to use a table", () => {
             },
         );
 
-        await step("Keep undoing, and check the row goes too", async () => {
-            // Not exactly one more press: CKEditor decides for itself how many snapshots six
-            // keystrokes are worth, and every one of them is text the person typed after the row
-            // and is entitled to get back first. What matters is that the row is still reachable
-            // once the typing is exhausted, rather than stranded behind it.
-            for (let press = 0; press < 10; press++) {
-                if ((await getTableShape(page)).rows === 2) break;
-                if (!(await canUndo(page))) break;
-                await undo(page);
-            }
-            expect(
-                (await getTableShape(page)).rows,
-                "Undoing past the typing should have reached the row that was added before it.",
-            ).toBe(2);
+        await step("Undo again, and check the row goes too", async () => {
+            // The typing in one box, fewer than 25 key presses, is one step.
+            await undo(page);
+            await expect
+                .poll(async () => (await getTableShape(page)).rows, {
+                    message:
+                        "The second undo should have taken back the row that was added before " +
+                        "the typing.",
+                })
+                .toBe(2);
         });
     });
 
@@ -813,8 +803,8 @@ test.describe("more ways to use a table", () => {
     }) => {
         await step("Type in a cell, key by key", async () => {
             // Key by key, because undoing typing is the subject of the case that follows this
-            // one: CKEditor's undo stack is built from key events, and the quick way of filling a
-            // box in raises none.
+            // one: the page history makes a typing step from key presses, and the quick way of
+            // filling a box in raises none.
             await typeInCellKeyByKey(page, 1, 0, "en", "Banana");
         });
 

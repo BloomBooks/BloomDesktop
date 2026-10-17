@@ -28,7 +28,7 @@ function SetupWidget(w: Element): void {
     w.addEventListener("mouseenter", () => {
         const wrapper = document.createElement("div");
         wrapper.innerHTML =
-            '<button class="chooseWidgetButton imageButton imageOverlayButton ' +
+            '<button class="chooseWidgetButton imageButton imageOverlayButton bloom-ui' +
             '" title="' +
             theOneLocalizationManager.getText(
                 "EditTab.Widget.ChooseWidget",
