@@ -1,12 +1,14 @@
 // Which typing Ctrl+Z undoes at a time. Typing in a text box is undone in steps, and the steps
-// end where they ended in Bloom before the page history, when CKEditor 4.5.1's undo plugin made
-// them (pageHistoryInput.ts, TypingRun):
-// - Enter, a new paragraph, is a step of its own, so the typing before it and after it are
-//   separate steps too;
-// - a step ends at the 25th character typed;
-// - a step ends when the user goes from typing to deleting, or back;
-// - a step ends at a key that moves the caret, such as an arrow key;
-// - Shift+Enter, a line break, is typing like any other key.
+// end where the browser's own undo ends them, as measured in Edge (pageHistoryInput.ts, TypingRun,
+// and docs/undo/TYPING-STEPS.md):
+// - each line typed is a step, with the Enter or Shift+Enter that ends it; an Enter in the middle
+//   of a line joins the typing around it;
+// - a step has no limit on its length;
+// - deleting right after typing starts a step, which typing after the deleting joins; a delete
+//   that changes nothing does not count;
+// - a step ends at a key that moves the caret, such as an arrow key, and at a click that moves
+//   the caret, but not at a click that leaves it where it was;
+// - an IME composition joins the step, and its end ends the step.
 // The last two tests type with the Talking Book tool open, which puts each sentence into a marker
 // span while the typing step is open; Ctrl+Z must still undo each step. After an undo, a click in
 // the box makes the tool split the box again, which empties redo; the page history must say so.
@@ -149,7 +151,7 @@ async function expectUndoStepsAndRedo(
 }
 
 test.describe("typing that Ctrl+Z undoes at a time", () => {
-    test("three lines, each its own paragraph: the typing of each line and each Enter are separate steps", async ({
+    test("three lines, each its own paragraph: each line with its Enter is a step", async ({
         page,
     }) => {
         test.setTimeout(300000);
@@ -170,31 +172,41 @@ test.describe("typing that Ctrl+Z undoes at a time", () => {
             page,
             "typing three lines",
             ["one", "two", "three"],
-            [
-                ["one", "two", ""],
-                ["one", "two"],
-                ["one", ""],
-                ["one"],
-                EMPTY_BOX,
-            ],
+            [["one", "two", ""], ["one", ""], EMPTY_BOX],
         );
     });
 
-    test("30 characters: the first 25 are one step and the last 5 another", async ({
+    test("an Enter in the middle of a line joins the typing after it", async ({
         page,
     }) => {
         await emptyTheBox(page);
-        await typeWithKeys(page, "abcdefghijklmnopqrstuvwxyz1234");
+        await typeWithKeys(page, "abcd");
+        await pressKey(page, "ArrowLeft");
+        await pressKey(page, "ArrowLeft");
+        await pressKey(page, "Enter");
+        await typeWithKeys(page, "XY");
 
         await expectUndoStepsAndRedo(
             page,
-            "typing 30 characters",
-            ["abcdefghijklmnopqrstuvwxyz1234"],
-            [["abcdefghijklmnopqrstuvwxy"], EMPTY_BOX],
+            "splitting a line with Enter and typing",
+            ["ab", "XYcd"],
+            [["abcd"], EMPTY_BOX],
         );
     });
 
-    test("typing, then Backspace twice, then typing: three steps", async ({
+    test("60 characters are one step", async ({ page }) => {
+        await emptyTheBox(page);
+        await typeWithKeys(page, "abcdefghij".repeat(6));
+
+        await expectUndoStepsAndRedo(
+            page,
+            "typing 60 characters",
+            ["abcdefghij".repeat(6)],
+            [EMPTY_BOX],
+        );
+    });
+
+    test("typing, Backspace twice, typing, Backspace: deleting after typing starts a step, which the typing after it joins", async ({
         page,
     }) => {
         await emptyTheBox(page);
@@ -202,12 +214,57 @@ test.describe("typing that Ctrl+Z undoes at a time", () => {
         await pressKey(page, "Backspace");
         await pressKey(page, "Backspace");
         await typeWithKeys(page, "xy");
+        await pressKey(page, "Backspace");
 
         await expectUndoStepsAndRedo(
             page,
-            "typing, deleting and typing again",
-            ["axy"],
-            [["a"], ["abc"], EMPTY_BOX],
+            "typing, deleting, typing and deleting again",
+            ["ax"],
+            [["axy"], ["abc"], EMPTY_BOX],
+        );
+    });
+
+    test("a Delete at the end of the text, which changes nothing, leaves the typing one step", async ({
+        page,
+    }) => {
+        await emptyTheBox(page);
+        await typeWithKeys(page, "abc");
+        await pressKey(page, "Delete");
+        await typeWithKeys(page, "xy");
+
+        await expectUndoStepsAndRedo(
+            page,
+            "typing on both sides of a Delete that changed nothing",
+            ["abcxy"],
+            [EMPTY_BOX],
+        );
+    });
+
+    test("a click in the box that leaves the caret where it was keeps the step; one that moves it ends the step", async ({
+        page,
+    }) => {
+        await emptyTheBox(page);
+        await typeWithKeys(page, "abcd");
+        // To the right of the text on its line: the caret stays at the end of the line.
+        const line = box.locator("p").last();
+        const lineBox = await line.boundingBox();
+        expect(
+            lineBox,
+            "test setup: the line should be showing",
+        ).not.toBeNull();
+        await line.click({
+            position: { x: lineBox!.width - 2, y: lineBox!.height / 2 },
+        });
+        await typeWithKeys(page, "e");
+        // At the start of the line: the caret moves.
+        await line.click({ position: { x: 1, y: lineBox!.height / 2 } });
+        await typeWithKeys(page, "Z");
+
+        await expectUndoStepsAndRedo(
+            page,
+            "typing, clicking where the caret was, typing, clicking elsewhere and typing",
+            ["Zabcde"],
+            [["abcde"], EMPTY_BOX],
         );
     });
 
@@ -227,7 +284,7 @@ test.describe("typing that Ctrl+Z undoes at a time", () => {
         );
     });
 
-    test("a line break (Shift+Enter) is typing, in the same step as the typing around it", async ({
+    test("a line break (Shift+Enter) at the end of a line ends the step with it", async ({
         page,
     }) => {
         await emptyTheBox(page);
@@ -243,11 +300,41 @@ test.describe("typing that Ctrl+Z undoes at a time", () => {
             page,
             "typing two lines with a line break between them",
             ["onetwo"],
-            [EMPTY_BOX],
+            [["one"], EMPTY_BOX],
         );
     });
 
-    test("with the Talking Book tool open, which marks each sentence as the user types, the typing of each line and each Enter are still separate steps", async ({
+    test("an IME composition joins the typing before it, and its end ends the step", async ({
+        page,
+    }) => {
+        await emptyTheBox(page);
+        await typeWithKeys(page, "ab");
+        // What an input method sends while the user composes, and when they choose the text. It
+        // sends no key presses here, so the second composition starts a step of its own.
+        const cdp = await page.context().newCDPSession(page);
+        for (const [keys, chosen] of [
+            ["ka", "か"],
+            ["sa", "さ"],
+        ]) {
+            for (let i = 1; i <= keys.length; i++)
+                await cdp.send("Input.imeSetComposition", {
+                    text: keys.slice(0, i),
+                    selectionStart: i,
+                    selectionEnd: i,
+                });
+            await cdp.send("Input.insertText", { text: chosen });
+        }
+        await typeWithKeys(page, "c");
+
+        await expectUndoStepsAndRedo(
+            page,
+            "typing, composing two characters with an input method, and typing",
+            ["abかさc"],
+            [["abかさ"], ["abか"], EMPTY_BOX],
+        );
+    });
+
+    test("with the Talking Book tool open, which marks each sentence as the user types, each line with its Enter is still a step", async ({
         page,
     }) => {
         test.setTimeout(300000);
@@ -269,7 +356,7 @@ test.describe("typing that Ctrl+Z undoes at a time", () => {
             page,
             "typing two lines with the Talking Book tool open",
             ["One.", "Two."],
-            [["One.", ""], ["One."], EMPTY_BOX],
+            [["One.", ""], EMPTY_BOX],
         );
     });
 

@@ -119,15 +119,73 @@ it("keeps real typing in one step until an undo key ends it", async () => {
     expect(box.textContent).toBe("Hello");
 });
 
-it("closes a step of real typing at the 25th input", async () => {
+/** Click at the end of box's text, so that the caret is there, and wait for the click's step. */
+async function clickAtEnd(
+    box: HTMLElement,
+    history: PageHistory,
+): Promise<void> {
+    await userEvent.click(box);
+    const range = document.createRange();
+    range.selectNodeContents(box.lastElementChild!);
+    range.collapse(false);
+    document.getSelection()!.removeAllRanges();
+    document.getSelection()!.addRange(range);
+    await expect.poll(() => history.hasOpenTransaction).toBe(false);
+}
+
+it("puts no limit on the length of a step of real typing", async () => {
     const { page, history } = setUp();
     const box = byId(page, "box1");
-    await userEvent.click(box);
-    await expect.poll(() => history.hasOpenTransaction).toBe(false);
+    await clickAtEnd(box, history);
 
-    await userEvent.keyboard("abcdefghijklmnopqrstuvwxyz1234");
+    await userEvent.keyboard("abcdefghij".repeat(6));
     await userEvent.keyboard("{Control>}z{/Control}");
 
-    expect(await undoEverything(history)).toBe(2);
+    expect(await undoEverything(history)).toBe(1);
     expect(box.textContent).toBe("Hello");
+});
+
+it("starts a new step at a real Backspace after typing, which the typing after it joins", async () => {
+    const { page, history } = setUp();
+    const box = byId(page, "box1");
+    await clickAtEnd(box, history);
+
+    await userEvent.keyboard("abc{Backspace}{Backspace}xy");
+    expect(box.textContent).toBe("Helloaxy");
+    await userEvent.keyboard("{Control>}z{/Control}");
+
+    await history.undo();
+    expect(box.textContent).toBe("Helloabc");
+    await history.undo();
+    expect(box.textContent).toBe("Hello");
+    expect(history.undoDescriptionL10nKey).toBeUndefined();
+});
+
+it("keeps the step at a real Delete at the end of the text, which changes nothing", async () => {
+    const { page, history } = setUp();
+    const box = byId(page, "box1");
+    await clickAtEnd(box, history);
+
+    await userEvent.keyboard("abc{Delete}xy");
+    expect(box.textContent).toBe("Helloabcxy");
+    await userEvent.keyboard("{Control>}z{/Control}");
+
+    expect(await undoEverything(history)).toBe(1);
+    expect(box.textContent).toBe("Hello");
+});
+
+it("makes each line of real typing a step, with the Enter that ends it", async () => {
+    const { page, history } = setUp();
+    const box = byId(page, "box1");
+    await clickAtEnd(box, history);
+
+    await userEvent.keyboard("one{Enter}two");
+    expect(box.querySelectorAll("p")).toHaveLength(2);
+    await userEvent.keyboard("{Control>}z{/Control}");
+
+    await history.undo();
+    expect(box.lastElementChild!.textContent).toBe("");
+    await history.undo();
+    expect(box.innerHTML).toBe("<p>Hello</p>");
+    expect(history.undoDescriptionL10nKey).toBeUndefined();
 });
