@@ -6,7 +6,7 @@ import {
     kImageFitModeAttribute,
 } from "../../toolbox/canvas/canvasElementConstants";
 import { createValidXhtmlUniqueId } from "../xhtmlIdUtils";
-import { postData, postJson } from "../../../utils/bloomApi";
+import { post } from "../../../utils/bloomApi";
 import { cloneCanvasElementHtmlStructure } from "./canvasElementCloneCleanup";
 import {
     getCanvasElementRotation,
@@ -384,7 +384,7 @@ export class CanvasElementDuplication {
     ): void {
         const newId = createValidXhtmlUniqueId();
         copiedElement.setAttribute("id", newId);
-        void copyAudioFileAsync(sourceId, newId); // we don't need to wait for this to finish
+        copyAudioFile(sourceId, newId);
         const duration = sourceElement.getAttribute("data-duration");
         if (duration) {
             copiedElement.setAttribute("data-duration", duration);
@@ -523,21 +523,13 @@ export class CanvasElementDuplication {
     }
 }
 
-async function copyAudioFileAsync(
-    sourceId: string,
-    newId: string,
-): Promise<void> {
-    const folderInfo = await postJson(
-        "fileIO/getSpecialLocation",
-        "CurrentBookAudioDirectory",
+// Copy the recording of sourceId, if it has one, to a new file for newId in the book's audio
+// folder. We don't need to wait for this to finish. audio/copyAudioFile only writes a file under
+// the new id, so it keeps the page history, which a request to fileIO would end.
+function copyAudioFile(sourceId: string, newId: string): void {
+    post(
+        `audio/copyAudioFile?oldId=${encodeURIComponent(
+            sourceId,
+        )}&newId=${encodeURIComponent(newId)}`,
     );
-    if (!folderInfo || !folderInfo.data) {
-        return; // huh??
-    }
-    const sourcePath = `${folderInfo.data}/${sourceId}.mp3`;
-    const targetPath = `${folderInfo.data}/${newId}.mp3`;
-    await postData("fileIO/copyFile", {
-        from: encodeURIComponent(sourcePath),
-        to: encodeURIComponent(targetPath),
-    });
 }

@@ -32,6 +32,15 @@ import { isDraggable } from "../../toolbox/canvas/canvasElementDraggables";
 // all the way.
 export type ZOrderMove = "forward" | "backward" | "front" | "back";
 
+// The localization id of each layer command. It labels the command in the Layer submenu and
+// describes the undo step that the command makes, whether it comes from the menu or a shortcut.
+export const kZOrderMoveL10nIds: Record<ZOrderMove, string> = {
+    forward: "EditTab.Toolbox.CanvasTool.Layer.BringForward",
+    front: "EditTab.Toolbox.CanvasTool.Layer.BringToFront",
+    backward: "EditTab.Toolbox.CanvasTool.Layer.SendBackward",
+    back: "EditTab.Toolbox.CanvasTool.Layer.SendToBack",
+};
+
 const isBackgroundImage = (canvasElement: HTMLElement): boolean =>
     canvasElement.classList.contains(kBackgroundImageClass);
 
