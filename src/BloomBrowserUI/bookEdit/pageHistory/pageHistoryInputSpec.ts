@@ -809,6 +809,28 @@ describe("input in another frame", () => {
         expect(history.redoDescriptionL10nKey).toBeUndefined();
     });
 
+    it("names the event that ended the history in the reason it gives", () => {
+        const clear = vi.spyOn(history, "clearUndoAndRedo");
+        const button = otherById("toolButton");
+        onBloomEvent(button, "click", () =>
+            byId("img1").setAttribute("src", "b.png"),
+        );
+
+        click(button);
+
+        expect(clear).toHaveBeenCalledTimes(1);
+        const reason = clear.mock.calls[0][0];
+        expect(reason).toMatch(
+            /^a change with no description, after this input: /,
+        );
+        expect(reason, "the reason should name the press").toContain(
+            "pointerdown",
+        );
+        expect(reason, "the reason should name what was clicked").toContain(
+            "toolButton",
+        );
+    });
+
     it("ends the history when the latest step has the same description and there is no redo", () => {
         makeStepWithClick("1");
         expect(history.undoDescriptionL10nKey).toBe(

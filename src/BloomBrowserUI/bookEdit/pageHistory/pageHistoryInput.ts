@@ -26,6 +26,7 @@
 // microtask would not do: after a trusted event, microtasks run as each listener returns, so it
 // would close the transaction before Bloom's own listeners for the event had run.
 
+import { describeInputOpening } from "./pageHistoryDetails";
 import {
     BegunTransaction,
     kCutUndoDescriptionL10nKey,
@@ -147,6 +148,9 @@ interface HeldTransaction {
     typing?: TypingRun;
     // True when the event came from one of the other windows: a step made then ends the history.
     fromOtherWindow: boolean;
+    // For a transaction from another window: the event that opened it, as the reason that the
+    // history gives Bloom's log and the Show Page History window when the step ends the history.
+    openedBy?: string;
     // What the user did, for input in the page window that no code of Bloom's describes: a paste,
     // a cut or a drop. The step gets this description when the transaction ends, unless a
     // transaction nested in it gave it one. A typing step gets its description from its TypingRun.
@@ -283,7 +287,7 @@ class InputTransactions {
             held.transaction.onClose((stepDescriptionL10nKey) => {
                 if (stepDescriptionL10nKey === kGenericUndoDescriptionL10nKey)
                     this.history.clearUndoAndRedo(
-                        "a change from the toolbox or the root window with no description",
+                        `a change with no description, after this input: ${held.openedBy}`,
                     );
             });
         held.transaction.end();
@@ -485,6 +489,9 @@ class InputTransactions {
             kind,
             endScheduled: false,
             fromOtherWindow,
+            openedBy: fromOtherWindow
+                ? describeInputOpening(event, kind).text
+                : undefined,
         };
         this.onOpened?.(event, kind);
         return true;

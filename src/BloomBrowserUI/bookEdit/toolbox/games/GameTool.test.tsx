@@ -12,6 +12,7 @@ import {
     enableDraggingTargets,
     GameTool,
 } from "./GameTool";
+import { kGameThemeUndoL10nKey } from "./ThemeChooser";
 
 // What the tests put in the page frame, the calls the tool made to Bloom's API (posts holds the
 // POSTs among them), and the canvas element manager with its active element.
@@ -268,6 +269,51 @@ describe("GameTool options and sounds and the page history", () => {
         expect(history.undoDescriptionL10nKey).toBe(
             "EditTab.Undo.Game.MoveTarget",
         );
+    });
+
+    it("makes choosing a theme an undo step, and shows the earlier theme after Undo", async () => {
+        // The themes that the chooser offers come from the page's stylesheets.
+        const style = page.ownerDocument.createElement("style");
+        style.textContent =
+            ".game-theme-blue-on-white { color: blue; } .game-theme-white-on-black { color: white; }";
+        page.ownerDocument.head.appendChild(style);
+        history.doOutsideHistory(() =>
+            page.classList.add("game-theme-blue-on-white"),
+        );
+        await renderTool(kDragGame);
+        await makeEarlierStep();
+        const chooser = root.querySelector('[aria-haspopup="listbox"]');
+        if (!chooser)
+            throw new Error("test setup: the theme chooser is missing");
+        expect(chooser.textContent).toContain("blue-on-white");
+
+        // MUI opens the menu on the press, then the user clicks a theme in it.
+        act(() => mouse(chooser, "mousedown", 1));
+        const option = document.querySelector(
+            'li[data-value="white-on-black"]',
+        );
+        if (!option) throw new Error("test setup: the menu has no such theme");
+        click(option);
+
+        expect(page.classList.contains("game-theme-white-on-black")).toBe(true);
+        expect(
+            history.undoDescriptionL10nKey,
+            "choosing a theme should make a step, not end the history",
+        ).toBe(kGameThemeUndoL10nKey);
+
+        await act(async () => {
+            await history.undo();
+        });
+
+        expect(page.classList.contains("game-theme-blue-on-white")).toBe(true);
+        expect(page.classList.contains("game-theme-white-on-black")).toBe(
+            false,
+        );
+        expect(
+            chooser.textContent,
+            "the chooser should show the theme that Undo put back",
+        ).toContain("blue-on-white");
+        expect(history.undoDescriptionL10nKey).toBe("Test.EarlierStep");
     });
 
     it("makes no step for the same size option", async () => {
