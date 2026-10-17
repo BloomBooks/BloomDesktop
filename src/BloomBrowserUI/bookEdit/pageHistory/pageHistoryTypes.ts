@@ -11,6 +11,15 @@
 export const kGenericUndoDescriptionL10nKey = "EditTab.Undo.Edit";
 
 /**
+ * The l10n key of the description of a paste: the top bar's Paste button (pasteClipboard in
+ * bloomEditing.ts), Ctrl+V, or the browser's own paste in a text box (pageHistoryInput.ts).
+ */
+export const kPasteUndoDescriptionL10nKey = "EditTab.PasteButton";
+
+/** The l10n key of the description of a cut: the top bar's Cut button, or Ctrl+X in a text box. */
+export const kCutUndoDescriptionL10nKey = "EditTab.CutButton";
+
+/**
  * One transaction, as doTransaction and addToLatestTransaction pass it to their function and
  * beginTransaction returns it. Section 11.8.1 adds `addChangeOutsidePage` here, for state that the
  * observer cannot see; the first version has none (MINIMUM.md, "Left out of the minimum").

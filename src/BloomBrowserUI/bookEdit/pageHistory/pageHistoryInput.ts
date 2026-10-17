@@ -8,6 +8,10 @@
 // - Key presses in one text box are one transaction, which stays open between key presses, so
 //   that Bloom's reactions to the typing join it (rule 7). It ends where CKEditor 4's undo plugin
 //   ends a typing step (see TypingRun).
+// - A typing step, and the step of a paste, a cut or a drop in the page frame, is described by
+//   that input (EditTab.Undo.Typing and the rest below) unless a transaction nested in it has
+//   described it. Every other step keeps the general description unless the action's own code
+//   describes it.
 // - The undo and redo keys open nothing: undo and redo file their own changes.
 // - A press in another frame (the toolbox, the root window with its top bar and dialogs) that
 //   changes the page ends the history instead of making a step (MINIMUM.md item 4).
@@ -24,9 +28,27 @@
 
 import {
     BegunTransaction,
+    kCutUndoDescriptionL10nKey,
     kGenericUndoDescriptionL10nKey,
+    kPasteUndoDescriptionL10nKey,
     PageHistory,
 } from "./pageHistoryTypes";
+
+/** The l10n key of the description of a typing step: key presses in one text box that type. */
+export const kTypingUndoDescriptionL10nKey = "EditTab.Undo.Typing";
+
+/** The l10n key of the description of a typing step of Backspace and Delete presses. */
+export const kDeleteTextUndoDescriptionL10nKey = "EditTab.Undo.DeleteText";
+
+/** The l10n key of the description of a drop in the page, such as text dragged between boxes. */
+export const kDropUndoDescriptionL10nKey = "EditTab.Undo.Drop";
+
+// The description of a step that a paste, a cut or a drop in the page window made, by event type.
+const kDescriptionOfEvent: Record<string, string> = {
+    paste: kPasteUndoDescriptionL10nKey,
+    cut: kCutUndoDescriptionL10nKey,
+    drop: kDropUndoDescriptionL10nKey,
+};
 
 export interface InputTransactionOptions {
     /**
@@ -125,6 +147,10 @@ interface HeldTransaction {
     typing?: TypingRun;
     // True when the event came from one of the other windows: a step made then ends the history.
     fromOtherWindow: boolean;
+    // What the user did, for input in the page window that no code of Bloom's describes: a paste,
+    // a cut or a drop. The step gets this description when the transaction ends, unless a
+    // transaction nested in it gave it one. A typing step gets its description from its TypingRun.
+    descriptionOfInput?: string;
 }
 
 /**
@@ -246,6 +272,7 @@ class InputTransactions {
         const held = this.held;
         if (!held) return;
         this.held = undefined;
+        this.describeHeldByInput(held);
         // A step that kept the general description changed the page with no explicit transaction
         // inside it; a nested doTransaction or beginTransaction gives the step its own description
         // and makes it an undo step like any other (MINIMUM.md items 4 and 5). When the
@@ -260,6 +287,28 @@ class InputTransactions {
                     );
             });
         held.transaction.end();
+    }
+
+    /**
+     * Give the step of held, which is about to end, the description of what the user did, for
+     * input that no code of Bloom's describes: typing, deleting text, a paste, a cut or a drop. An
+     * empty transaction nested in held does it, so the step keeps a description that a transaction
+     * nested in it gave it earlier (PageHistory.doTransaction). Does nothing if held has closed
+     * already, as when clearUndoAndRedo() ended it.
+     */
+    private describeHeldByInput(held: HeldTransaction): void {
+        let description = held.descriptionOfInput;
+        if (held.typing) {
+            description =
+                held.typing.inputKind === "deleting"
+                    ? kDeleteTextUndoDescriptionL10nKey
+                    : kTypingUndoDescriptionL10nKey;
+        }
+        if (!description) return;
+        let closed = false;
+        held.transaction.onClose(() => (closed = true));
+        if (closed) return;
+        void this.history.doTransaction(description, () => {});
     }
 
     /**
@@ -399,6 +448,8 @@ class InputTransactions {
     private onPasteOrDrop(event: Event): void {
         this.endTypingRun();
         if (this.openUnlessOneIsOpen(event, "event", false)) this.scheduleEnd();
+        if (this.held && !this.held.fromOtherWindow)
+            this.held.descriptionOfInput ??= kDescriptionOfEvent[event.type];
     }
 
     /** The focus leaving a box ends its typing step. */

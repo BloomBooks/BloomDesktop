@@ -10,7 +10,10 @@ import $ from "jquery";
 import { getWorkspaceBundleExports } from "../js/workspaceFrames";
 import { getLocalization } from "../../react_components/l10n";
 import { kNoIndentClass } from "../textContextMenu/noIndent";
-import { currentPageHistory } from "../pageHistory/pageHistoryAccess";
+import {
+    currentPageHistory,
+    describeOpenStep,
+} from "../pageHistory/pageHistoryAccess";
 import { wrapWithRequestPageContentDelay } from "../js/bloomEditing";
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
@@ -38,6 +41,17 @@ import { wrapWithRequestPageContentDelay } from "../js/bloomEditing";
 // block am I in?" or "does this box have any blocks yet?"; they all consult this rather than
 // looking for a <p> specifically, so a heading counts as a block everywhere or nowhere.
 const kBlockElementSelector = "p,h1,h2,h3,h4,h5,h6";
+
+// The descriptions of the undo steps of the CKEditor commands that format text, from the
+// selection toolbar's buttons or their keys (Ctrl+B, Ctrl+I, Ctrl+U, and Ctrl+Space, which
+// AddEditKeyHandlers in bloomEditing.ts sends to removeFormat), by command name.
+const kFormatCommandUndoL10nKeys: Record<string, string> = {
+    bold: "EditTab.Undo.Text.Bold",
+    italic: "EditTab.Undo.Text.Italic",
+    underline: "EditTab.Undo.Text.Underline",
+    superscript: "EditTab.Undo.Text.Superscript",
+    removeFormat: "EditTab.Undo.Text.RemoveFormatting",
+};
 
 export default class BloomField {
     public static ManageField(bloomEditableDiv: HTMLElement) {
@@ -270,6 +284,10 @@ export default class BloomField {
                 // stops that listener and the browser's own deletion alike.
                 event.cancel();
             }
+        });
+        ckeditor.on("beforeCommandExec", (event) => {
+            const description = kFormatCommandUndoL10nKeys[event.data.name];
+            if (description) describeOpenStep(description);
         });
         ckeditor.on("afterCommandExec", (event) => {
             if (event.data.name !== "enter") return;

@@ -5,6 +5,12 @@
 import { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstants";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
 import { ZOrderMove } from "./CanvasElementZOrder";
+import { describeOpenStep } from "../../pageHistory/pageHistoryAccess";
+
+// The descriptions of the undo steps of the keys that delete and move the active canvas element.
+// The Layer shortcuts' steps are described by moveActiveCanvasElementInZOrder.
+const kDeleteUndoL10nKey = "EditTab.Undo.CanvasElement.Delete";
+const kNudgeUndoL10nKey = "EditTab.Undo.CanvasElement.Nudge";
 
 const kArrowMoveByKey: Record<string, { dx: number; dy: number }> = {
     ArrowUp: { dx: 0, dy: -1 },
@@ -102,6 +108,7 @@ export class CanvasElementKeyboardProvider {
             return;
         }
         if (event.key === "Delete" || event.key === "Backspace") {
+            describeOpenStep(kDeleteUndoL10nKey);
             this.actions.deleteCurrentCanvasElement();
             event.preventDefault(); // Prevent default browser back navigation on Backspace
             return;
@@ -121,6 +128,7 @@ export class CanvasElementKeyboardProvider {
             return;
         }
 
+        describeOpenStep(kNudgeUndoL10nKey);
         this.actions.moveActiveCanvasElement(
             movement.dx * stepSize,
             movement.dy * stepSize,

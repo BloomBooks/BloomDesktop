@@ -1,9 +1,33 @@
 ///<reference path="BloomField.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
-import { describe, it, expect, beforeEach, afterAll, afterEach } from "vitest";
+import {
+    describe,
+    it,
+    expect,
+    beforeEach,
+    afterAll,
+    afterEach,
+    vi,
+} from "vitest";
 import { getTestRoot, removeTestRoot } from "../../utils/testHelper";
 import BloomField from "./BloomField";
 import $ from "jquery";
+import { createPageHistory } from "../pageHistory/pageHistory";
+import {
+    kGenericUndoDescriptionL10nKey,
+    type PageHistory,
+} from "../pageHistory/pageHistoryTypes";
+
+// Code in the page frame finds the page history through the page frame's bundle exports; give it
+// the history of the test that has one.
+const pageFrame = vi.hoisted(() => ({
+    history: undefined as PageHistory | undefined,
+}));
+vi.mock("../js/workspaceFrames", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../js/workspaceFrames")>()),
+    getEditablePageBundleExports: () =>
+        pageFrame.history ? { pageHistory: () => pageFrame.history } : null,
+}));
 
 function WireUp() {
     $(".bloom-editable").each(function () {
@@ -1081,5 +1105,64 @@ describe("BloomField.WireToCKEditor refusing Delete over a protected element", (
             document.getElementById("picture"),
             "test setup: the protected element should be on the page",
         ).not.toBeNull();
+    });
+});
+
+describe("BloomField.WireToCKEditor describing the undo step of a formatting command", () => {
+    let page: HTMLElement;
+    let editor: StandInEditor;
+    let history: PageHistory;
+    let ckeditorWasDefined: boolean;
+    beforeEach(() => {
+        const root = getTestRoot();
+        root.innerHTML =
+            '<div class="bloom-page" id="page"><div id="field" contenteditable="true" class="bloom-editable">' +
+            '<p id="p1">One</p></div></div>';
+        page = root.querySelector<HTMLElement>("#page")!;
+        ckeditorWasDefined = "CKEDITOR" in globalThis;
+        // As in the tests above: CKEditor's palette, so that WireToCKEditor asks no server.
+        (globalThis as unknown as { CKEDITOR: unknown }).CKEDITOR = {
+            config: { colorButton_colors: "FFFFFF,FF0000" },
+            SHIFT: 2228224,
+        };
+        editor = new StandInEditor();
+        BloomField.WireToCKEditor(
+            root.querySelector<HTMLElement>("#field")!,
+            editor.asEditor(),
+        );
+        history = createPageHistory({ root: page });
+        pageFrame.history = history;
+    });
+
+    afterEach(() => {
+        pageFrame.history = undefined;
+        history.dispose();
+        if (!ckeditorWasDefined)
+            delete (globalThis as unknown as { CKEDITOR?: unknown }).CKEDITOR;
+    });
+
+    // Run the command named name, as CKEditor does from a toolbar button or its key, inside the
+    // transaction with the general description that the click or key press opens.
+    async function runCommand(name: string): Promise<void> {
+        const standIn = history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        editor.fire("beforeCommandExec", { name });
+        // What the command does to the selected text.
+        document.getElementById("p1")!.innerHTML = "<b>One</b>";
+        await Promise.resolve();
+        standIn.end();
+    }
+
+    it("describes the step of Bold", async () => {
+        await runCommand("bold");
+        expect(history.undoDescriptionL10nKey).toBe("EditTab.Undo.Text.Bold");
+    });
+
+    it("leaves Enter, which is typing, to the typing step", async () => {
+        await runCommand("enter");
+        expect(history.undoDescriptionL10nKey).toBe(
+            kGenericUndoDescriptionL10nKey,
+        );
     });
 });

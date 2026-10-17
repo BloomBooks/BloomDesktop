@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { PageHistory } from "./pageHistoryTypes";
 
 const frames = vi.hoisted(() => ({
@@ -14,8 +14,11 @@ vi.mock("../js/workspaceFrames", () => ({
 import {
     clearUndoAndRedo,
     currentPageHistory,
+    describeOpenStep,
     doOutsideHistory,
 } from "./pageHistoryAccess";
+import { createPageHistory } from "./pageHistory";
+import { kGenericUndoDescriptionL10nKey } from "./pageHistoryTypes";
 
 // Just the members that pageHistoryAccess uses; the rest throw if anything calls them.
 function makeFakeHistory(isDisposed = false) {
@@ -96,5 +99,54 @@ describe("pageHistoryAccess", () => {
         setPageFrame(fake);
         clearUndoAndRedo("a test");
         expect(fake.clearUndoAndRedo).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe("describeOpenStep", () => {
+    let page: HTMLElement;
+    let history: PageHistory;
+
+    beforeEach(() => {
+        page = document.createElement("div");
+        page.className = "bloom-page";
+        page.innerHTML = '<p id="p1">Hello</p>';
+        document.body.appendChild(page);
+        history = createPageHistory({ root: page });
+        setPageFrame(history);
+    });
+
+    afterEach(() => {
+        history.dispose();
+        page.remove();
+    });
+
+    // A change that the stand-in which a click opens records, made by an action with no
+    // transaction of its own.
+    function changeInStandIn(action: () => void): void {
+        const standIn = history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        action();
+        page.setAttribute("data-x", "1");
+        standIn.end();
+    }
+
+    it("gives the step of the open stand-in its description", () => {
+        changeInStandIn(() => describeOpenStep("Test.Action"));
+        expect(history.undoDescriptionL10nKey).toBe("Test.Action");
+    });
+
+    it("keeps the description that a transaction nested earlier gave the step", () => {
+        changeInStandIn(() => {
+            void history.doTransaction("Test.First", () => {});
+            describeOpenStep("Test.Second");
+        });
+        expect(history.undoDescriptionL10nKey).toBe("Test.First");
+    });
+
+    it("opens nothing and makes no step when no transaction is open", () => {
+        describeOpenStep("Test.Action");
+        expect(history.hasOpenTransaction).toBe(false);
+        expect(history.undoDescriptionL10nKey).toBeUndefined();
     });
 });

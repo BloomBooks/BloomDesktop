@@ -47,6 +47,7 @@ import {
     kBloomCanvasSelector,
     kCanvasElementClass,
     kCanvasElementSelector,
+    kAddCanvasElementUndoL10nKey,
 } from "../../toolbox/canvas/canvasElementConstants";
 import { pxToNumber as pxToNumberFromCssUtils } from "../../toolbox/canvas/canvasElementCssUtils";
 import { updateCanvasElementClass } from "../../toolbox/canvas/canvasElementDomUtils";
@@ -123,10 +124,9 @@ import {
     setupBackgroundImageAttributes,
     type BackgroundImageManagerState,
 } from "./CanvasElementBackgroundImageManager";
-import {
-    kGenericUndoDescriptionL10nKey,
-    type PageHistory,
-    type RestoredContent,
+import type {
+    PageHistory,
+    RestoredContent,
 } from "../../pageHistory/pageHistoryTypes";
 import { currentPageHistory } from "../../pageHistory/pageHistoryAccess";
 
@@ -3846,16 +3846,14 @@ function styleLengthInPx(value: string, measured: number): number {
  * history, so that the add is an undo step of its own: a change made outside any transaction
  * would join the step before it, or become part of the page as the user found it. Called while
  * another transaction is open, such as the one that a click opens or the one in which the toolbox
- * finishes a drag from the Canvas tool's palette, it joins that one instead. With no page history,
- * as outside the Edit tab and in some unit tests, it just runs add.
- *
- * There is no localization id that names adding a canvas element, so the step has
- * kGenericUndoDescriptionL10nKey.
+ * finishes a drag from the Canvas tool's palette, it joins that one instead, and describes its
+ * step if nothing has yet. With no page history, as outside the Edit tab and in some unit tests,
+ * it just runs add.
  */
 function doAddAsUndoStep(
     add: () => HTMLElement | undefined,
 ): HTMLElement | undefined {
-    return doAsUndoStep(kGenericUndoDescriptionL10nKey, add);
+    return doAsUndoStep(kAddCanvasElementUndoL10nKey, add);
 }
 
 /**
