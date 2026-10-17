@@ -945,7 +945,7 @@ describe("page history: changes outside any transaction (rule 1)", () => {
     it("makes a change straight after clearUndoAndRedo part of the starting state", async () => {
         const f = setUp();
         await stepSettingAttribute(f, "A", byId(f, "box1"), "lang", "de");
-        f.history.clearUndoAndRedo();
+        f.history.clearUndoAndRedo("a test");
         byId(f, "img1").setAttribute("src", "start.png");
         await letObserverDeliver();
         expect(f.history.undoDescriptionL10nKey).toBeUndefined();
@@ -1201,7 +1201,7 @@ describe("page history: clearUndoAndRedo", () => {
         await stepSettingAttribute(f, "B", byId(f, "box2"), "lang", "es");
         await f.history.undo();
         const beforeHtml = f.page.outerHTML;
-        f.history.clearUndoAndRedo();
+        f.history.clearUndoAndRedo("a test");
         expect(f.page.outerHTML).toBe(beforeHtml);
         expect(f.history.undoDescriptionL10nKey).toBeUndefined();
         expect(f.history.redoDescriptionL10nKey).toBeUndefined();
@@ -1215,7 +1215,7 @@ describe("page history: clearUndoAndRedo", () => {
         await stepSettingAttribute(f, "A", byId(f, "box2"), "lang", "es");
         const t = f.history.beginTransaction("Drag");
         byId(f, "img1").setAttribute("src", "b.png");
-        f.history.clearUndoAndRedo();
+        f.history.clearUndoAndRedo("a test");
         expect(f.history.hasOpenTransaction).toBe(false);
         expect(byId(f, "img1").getAttribute("src")).toBe("b.png");
         t.cancel();
@@ -1238,7 +1238,7 @@ describe("page history: clearUndoAndRedo", () => {
             await gate.promise;
             return 5;
         });
-        f.history.clearUndoAndRedo();
+        f.history.clearUndoAndRedo("a test");
         expect(f.history.hasOpenTransaction).toBe(false);
         gate.open();
         expect(await done).toBe(5);
@@ -1383,7 +1383,7 @@ describe("page history: undo and redo asked for while a transaction is open", ()
         byId(f, "box1").setAttribute("lang", "de");
         const undone = f.history.undo();
 
-        f.history.clearUndoAndRedo();
+        f.history.clearUndoAndRedo("a test");
         await undone;
         t.end();
         await stepSettingAttribute(f, "B", byId(f, "box2"), "lang", "es");
@@ -1776,7 +1776,7 @@ describe("page history: what end() returns", () => {
 
         const cleared = f.history.beginTransaction("Cleared");
         byId(f, "box2").setAttribute("lang", "es");
-        f.history.clearUndoAndRedo();
+        f.history.clearUndoAndRedo("a test");
         expect(cleared.end(), "clearUndoAndRedo ended it").toBe(false);
     });
 });
@@ -2177,7 +2177,7 @@ describe("page history: dispose", () => {
         expect(() => f.history.beginTransaction("X")).toThrow();
         expect(() => f.history.addToLatestTransaction(() => 1)).toThrow();
         expect(() => f.history.doOutsideHistory(() => 1)).toThrow();
-        expect(() => f.history.clearUndoAndRedo()).toThrow();
+        expect(() => f.history.clearUndoAndRedo("a test")).toThrow();
         expect(() => f.history.onBeforeUndoOrRedo(() => undefined)).toThrow();
         expect(() => f.history.onAfterUndoOrRedo(() => undefined)).toThrow();
         expect(() => f.history.dispose()).toThrow();
@@ -2581,7 +2581,7 @@ describe("page history: onClose", () => {
         const cleared = f.history.beginTransaction("Test.Cleared");
         cleared.onClose((description) => reported.push(description));
         byId(f, "img1").setAttribute("src", "c.png");
-        f.history.clearUndoAndRedo();
+        f.history.clearUndoAndRedo("a test");
         expect(reported).toEqual([undefined, undefined, undefined]);
     });
 
@@ -2597,5 +2597,53 @@ describe("page history: onClose", () => {
         );
         click.end();
         expect(reported).toEqual(["Test.Command"]);
+    });
+});
+
+describe("page history: log", () => {
+    it("logs each step made, undone and redone, by its description", async () => {
+        const log = vi.fn<(line: string) => void>();
+        const f = setUp(kStandardPage, { log });
+        expect(
+            log,
+            "nothing should be logged before any change",
+        ).not.toHaveBeenCalled();
+
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        await f.history.doTransaction("Nothing", () => {});
+        await f.history.undo();
+        await f.history.redo();
+
+        expect(log.mock.calls.map((call) => call[0])).toEqual([
+            "Page history: step A",
+            "Page history: undo A",
+            "Page history: redo A",
+        ]);
+    });
+
+    it("logs clearUndoAndRedo with its reason", () => {
+        const log = vi.fn<(line: string) => void>();
+        const f = setUp(kStandardPage, { log });
+        f.history.clearUndoAndRedo("request some/endpoint");
+        expect(log).toHaveBeenCalledWith(
+            "Page history: cleared by request some/endpoint",
+        );
+    });
+
+    it("logs an undo that found the page changed since its step", async () => {
+        const log = vi.fn<(line: string) => void>();
+        const f = setUp(kStandardPage, { log });
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        f.history.doOutsideHistory(() => {
+            byId(f, "img1").setAttribute("src", "recomputed.png");
+        });
+        log.mockClear();
+
+        await f.history.undo();
+
+        expect(byId(f, "img1").getAttribute("src")).toBe("recomputed.png");
+        expect(log.mock.calls.map((call) => call[0])).toEqual([
+            "Page history: undo of A found the page changed since, and dropped the undo steps",
+        ]);
     });
 });

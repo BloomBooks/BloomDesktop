@@ -1,21 +1,21 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
-// exists: whether the page frame has a history now, as currentPageHistory() answers.
-const history = vi.hoisted(() => ({ clearCount: 0, exists: true }));
+// reasons: the reason given to each clearUndoAndRedo, for Bloom's log.
+const history = vi.hoisted(() => ({ clearCount: 0, reasons: [] as string[] }));
 
 vi.mock("../bookEdit/pageHistory/pageHistoryAccess", () => ({
-    clearUndoAndRedo: () => {
+    clearUndoAndRedo: (reason: string) => {
         history.clearCount++;
+        history.reasons.push(reason);
     },
-    currentPageHistory: () => (history.exists ? {} : undefined),
 }));
 
 import { requestEndsPageHistory } from "./bloomApi";
 
 afterEach(() => {
     history.clearCount = 0;
-    history.exists = true;
+    history.reasons = [];
     vi.restoreAllMocks();
 });
 
@@ -222,23 +222,14 @@ describe("the request interceptor", () => {
         expect(history.clearCount).toBe(0);
     });
 
-    it("names the request in a console warning when it ends a history, and only then", async () => {
-        const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    it("names the request as the reason that it ends the history, for Bloom's log", async () => {
         await axios.post("/bloom/api/editView/setTopic/?topic=Fiction", "x", {
             adapter,
         });
-        expect(warn.mock.calls).toEqual([
-            ["Page history: ended by request editview/settopic"],
-        ]);
-
-        // A request on the list, and one sent where there is no history, warn of nothing.
-        warn.mockClear();
         await axios.post("/bloom/api/editView/isTextSelected", "true", {
             adapter,
         });
-        history.exists = false;
-        await axios.post("/bloom/api/editView/setTopic", "x", { adapter });
-        expect(warn).not.toHaveBeenCalled();
+        expect(history.reasons).toEqual(["request editview/settopic"]);
     });
 
     it("leaves the history alone for the two posts that report an uncaught JavaScript error", async () => {

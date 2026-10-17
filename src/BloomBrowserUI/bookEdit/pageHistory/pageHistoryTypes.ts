@@ -190,6 +190,12 @@ export interface PageHistoryOptions {
      * nothing otherwise.
      */
     onUnmarkedChange?: (whatChanged: string) => void;
+    /**
+     * Called with one line for Bloom's log when an undo step is made, undone or redone, and when
+     * the history is cleared, with its reason. The lines name steps by their description's l10n
+     * key and never hold the page's text. Default: nothing.
+     */
+    log?: (line: string) => void;
 }
 
 /** One per page load, in the page frame. */
@@ -268,9 +274,9 @@ export interface PageHistory {
     /**
      * A boundary: drop every undo and redo step. A transaction open at the time ends with them:
      * its changes stay on the page and belong to no transaction, and its end() and cancel() do
-     * nothing.
+     * nothing. reason says why, for Bloom's log (PageHistoryOptions.log).
      */
-    clearUndoAndRedo(): void;
+    clearUndoAndRedo(reason: string): void;
 
     /**
      * Called at the start of every undo and redo, before the check. A component ends or abandons

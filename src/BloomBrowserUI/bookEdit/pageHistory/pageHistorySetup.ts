@@ -13,7 +13,11 @@ import { createEditTimeMarkupFilter } from "./editTimeMarkup";
 import { startPageHistory } from "./pageHistory";
 import { attachInputTransactions } from "./pageHistoryInput";
 import { attachUndoAndRedoKeys } from "./pageHistoryKeys";
-import type { PageHistory } from "./pageHistoryTypes";
+import {
+    kGenericUndoDescriptionL10nKey,
+    type PageHistory,
+} from "./pageHistoryTypes";
+import { postString } from "../../utils/bloomApi";
 import { PageReadinessWaits, whenPageIsReady } from "./pageReadiness";
 import {
     isInChangeLayoutMode,
@@ -51,6 +55,7 @@ export function startPageHistoryForThisPage(
         root,
         filter: createEditTimeMarkupFilter(),
         startsReady: false,
+        log: writeToBloomLog,
     });
     history = thisHistory;
     onStarted(thisHistory);
@@ -73,6 +78,22 @@ export function startPageHistoryForThisPage(
     void whenPageIsReady(window, waits).then(() => {
         if (!thisHistory.isDisposed) thisHistory.markPageReady();
     });
+}
+
+// The line that the page history logs when it makes a step with the general description.
+const kGenericStepLogLine = `Page history: step ${kGenericUndoDescriptionL10nKey}`;
+// The line that writeToBloomLog was given last.
+let lastLogLine: string | undefined;
+
+/**
+ * Write a line of the page history to Bloom's log. Typing makes a step with the general
+ * description at each pause, so such a step's line that comes straight after another is left out.
+ */
+export function writeToBloomLog(line: string): void {
+    const repeated =
+        line === kGenericStepLogLine && lastLogLine === kGenericStepLogLine;
+    lastLogLine = line;
+    if (!repeated) postString("common/logger/writeEvent", line);
 }
 
 /** Stop listening and dispose of the history, for the page unload. */

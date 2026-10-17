@@ -238,7 +238,9 @@ class InputTransactions {
         if (held.fromOtherWindow)
             held.transaction.onClose((stepDescriptionL10nKey) => {
                 if (stepDescriptionL10nKey === kGenericUndoDescriptionL10nKey)
-                    this.history.clearUndoAndRedo();
+                    this.history.clearUndoAndRedo(
+                        "a change from the toolbox or the root window with no description",
+                    );
             });
         held.transaction.end();
     }

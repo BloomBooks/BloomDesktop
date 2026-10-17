@@ -175,6 +175,7 @@ class PageHistoryImpl implements PageHistory {
     private readonly filter: PageHistoryFilter;
     private readonly maxUndoSteps: number;
     private readonly onUnmarkedChange: (whatChanged: string) => void;
+    private readonly log: (line: string) => void;
     private readonly observer: MutationObserver;
     private undoSteps: Step[] = [];
     private redoSteps: Step[] = [];
@@ -208,6 +209,7 @@ class PageHistoryImpl implements PageHistory {
             );
         this.onUnmarkedChange =
             options.onUnmarkedChange ?? warnInDevelopmentBuilds;
+        this.log = options.log ?? (() => {});
         this.observer = new MutationObserver((records) =>
             this.noteRecords(records),
         );
@@ -309,8 +311,9 @@ class PageHistoryImpl implements PageHistory {
     }
 
     /** See PageHistory.clearUndoAndRedo. */
-    public clearUndoAndRedo(): void {
+    public clearUndoAndRedo(reason: string): void {
         this.assertNotDisposed();
+        this.log(`Page history: cleared by ${reason}`);
         this.processPendingRecords();
         this.dropQueuedRequests();
         this.abandonOpenTransactions();
@@ -618,6 +621,7 @@ class PageHistoryImpl implements PageHistory {
         while (this.undoSteps.length > this.maxUndoSteps)
             this.undoSteps.shift();
         this.redoSteps = [];
+        this.log(`Page history: step ${open.descriptionL10nKey}`);
         this.noteClosed(open, open.descriptionL10nKey);
         return true;
     }
@@ -1176,6 +1180,9 @@ class PageHistoryImpl implements PageHistory {
         const from: Values = isUndo ? "after" : "before";
         const to: Values = isUndo ? "before" : "after";
         if (!this.pageHasValues(step, from)) {
+            this.log(
+                `Page history: ${direction} of ${step.descriptionL10nKey} found the page changed since, and dropped the ${direction} steps`,
+            );
             // The step is the newest on its stack, so it and every older one is the whole stack.
             if (isUndo) this.undoSteps = [];
             else this.redoSteps = [];
@@ -1204,6 +1211,7 @@ class PageHistoryImpl implements PageHistory {
         steps.pop();
         if (isUndo) this.redoSteps.push(step);
         else this.undoSteps.push(step);
+        this.log(`Page history: ${direction} ${step.descriptionL10nKey}`);
 
         const restored: RestoredContent = {
             roots: this.restoredRoots(step),

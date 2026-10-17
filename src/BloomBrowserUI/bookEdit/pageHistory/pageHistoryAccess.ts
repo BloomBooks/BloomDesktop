@@ -52,7 +52,10 @@ export function addToLatestTransaction<T>(fn: () => T): T {
     return history ? history.addToLatestTransaction(fn) : fn();
 }
 
-/** End the current page history (drop every undo and redo step), if there is one. */
-export function clearUndoAndRedo(): void {
-    currentPageHistory()?.clearUndoAndRedo();
+/**
+ * End the current page history (drop every undo and redo step), if there is one. reason says why,
+ * for Bloom's log.
+ */
+export function clearUndoAndRedo(reason: string): void {
+    currentPageHistory()?.clearUndoAndRedo(reason);
 }

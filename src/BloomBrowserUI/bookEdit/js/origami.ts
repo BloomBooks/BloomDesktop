@@ -227,7 +227,11 @@ function handleChangeLayoutModeToggle() {
     getWorkspaceBundleExports().setToolboxEnabled(!isChangeLayoutMode);
     // Change Layout mode keeps its own undo (origamiUndo), so entering it and leaving it each end
     // the page's undo history (docs/undo/MINIMUM.md item 9).
-    clearUndoAndRedo();
+    clearUndoAndRedo(
+        isChangeLayoutMode
+            ? "entering Change Layout mode"
+            : "leaving Change Layout mode",
+    );
 }
 
 /** True while the page is in Change Layout mode, where origami's own undo answers Undo and the keys. */

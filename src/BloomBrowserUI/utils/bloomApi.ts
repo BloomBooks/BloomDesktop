@@ -7,10 +7,7 @@ import {
     useSubscribeToWebSocketForEvent,
     useSubscribeToWebSocketForObject,
 } from "./WebSocketManager";
-import {
-    clearUndoAndRedo,
-    currentPageHistory,
-} from "../bookEdit/pageHistory/pageHistoryAccess";
+import { clearUndoAndRedo } from "../bookEdit/pageHistory/pageHistoryAccess";
 
 // You can modify mockReplies in order to work on UI components without the Bloom backend...
 // namely, storybook.
@@ -201,16 +198,11 @@ function bloomApiPath(url: string | undefined): string | undefined {
 // interceptors in a promise chain, so the history ends a microtask after the call, before the
 // request goes out; page changes that the caller makes synchronously right after the call are
 // dropped from the history with the rest (CODE-WALK issue 5). Requests sent with jQuery's $.ajax
-// don't come here. Ending a history that exists is logged in every build, since nothing else
-// shows that the history has gone, and the request's path says which one to classify.
+// don't come here. The request's path goes to Bloom's log, since nothing else shows that the
+// history has gone, and it says which request to classify.
 axios.interceptors.request.use((config) => {
-    if (requestEndsPageHistory(config.method, config.url)) {
-        if (currentPageHistory())
-            console.warn(
-                `Page history: ended by request ${bloomApiPath(config.url)}`,
-            );
-        clearUndoAndRedo();
-    }
+    if (requestEndsPageHistory(config.method, config.url))
+        clearUndoAndRedo(`request ${bloomApiPath(config.url)}`);
     return config;
 });
 

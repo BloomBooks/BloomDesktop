@@ -191,7 +191,8 @@ Talking Book, video, games and book settings have no undo today.
    reports `common/preliminaryError` and `common/error`, `readers/io/synphonyLanguageData` (the
    collection's word list), and requests that only read, or that change only the Edit tab's UI,
    user settings, the clipboard, logs or files that no page names. A request that ends the history
-   writes "Page history: ended by request" and its path to the console. `aiImageEditor/commit` can be on the list because a commit deletes no file:
+   writes "Page history: cleared by request" and its path to Bloom's log, where the page history
+   also logs each step that it makes, undoes or redoes, by its description's l10n key. `aiImageEditor/commit` can be on the list because a commit deletes no file:
    `DeleteSupersededAiImageFiles` is gone, and `CleanupUnusedSupportFiles` covers `.jpeg` and
    `.webp` instead. This inverts `kRequestsThatEndTheHistory`: a request that nobody has classified
    loses history instead of risking a file or C# state that undo can't put back. axios runs the
