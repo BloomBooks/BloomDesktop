@@ -6,9 +6,8 @@
 //   general description. A transaction in which nothing changed makes no undo step.
 // - A drag is one transaction, from the press to the event that ends it.
 // - Key presses in one text box are one transaction, which stays open between key presses, so
-//   that Bloom's reactions to the typing join it (rule 7). It ends where CKEditor 4's undo plugin
-//   ends a typing step (see TypingRun), and Enter, which starts a new paragraph, is a step of its
-//   own.
+//   that Bloom's reactions to the typing join it (rule 7). It ends where the browser's own undo
+//   of typing ends a step (see TypingRun).
 // - A typing step, and the step of a paste, a cut or a drop in the page frame, is described by
 //   that input (EditTab.Undo.Typing and the rest below) unless a transaction nested in it has
 //   described it. Every other step keeps the general description unless the action's own code
@@ -41,9 +40,6 @@ export const kTypingUndoDescriptionL10nKey = "EditTab.Undo.Typing";
 
 /** The l10n key of the description of a typing step of Backspace and Delete presses. */
 export const kDeleteTextUndoDescriptionL10nKey = "EditTab.Undo.DeleteText";
-
-/** The l10n key of the description of the step of an Enter in a text box, a new paragraph. */
-export const kNewParagraphUndoDescriptionL10nKey = "EditTab.Undo.NewParagraph";
 
 /** The l10n key of the description of a drop in the page, such as text dragged between boxes. */
 export const kDropUndoDescriptionL10nKey = "EditTab.Undo.Drop";
@@ -94,12 +90,8 @@ export const kUndoControlSelector = "[data-runs-undo]";
 export const kIgnoredByPageHistoryInputSelector =
     "[data-ignored-by-page-history-input]";
 
-// From CKEditor 4.5.1's undo plugin (lib/ckeditor/ckeditor.js, CKEDITOR.plugins.undo): a typing
-// step closes once it holds this many inputs (UndoManager.strokesLimit).
-const kInputsPerTypingStep = 25;
-
-// The keys that end a typing step without being typing (UndoManager.navigationKeyCodes: the
-// arrows, Home, End, Page Up and Page Down).
+// The keys that end a typing step without being typing: the browser's undo ends the step at each,
+// even one that leaves the caret where it was.
 const kNavigationKeys = new Set([
     "ArrowLeft",
     "ArrowRight",
@@ -111,8 +103,12 @@ const kNavigationKeys = new Set([
     "PageDown",
 ]);
 
-// The keys that delete, which CKEditor groups apart from the keys that type
-// (UndoManager.keyGroups: FUNCTIONAL is Backspace and Delete, PRINTABLE is every other key).
+// The inputType of a beforeinput that types or deletes, as the browser's undo groups into typing
+// steps: not a paste, a drop, a format command or an undo.
+const kTypingInputTypes =
+    /^(insertText|insertCompositionText|insertReplacementText|insertParagraph|insertLineBreak|delete(Content|Word|SoftLine|HardLine)(Backward|Forward)?)$/;
+
+// The keys that delete, which the browser's undo groups apart from the keys that type.
 const kDeletingKeys = new Set(["Backspace", "Delete"]);
 
 // The values of KeyboardEvent.key for a modifier or lock key. A keydown of one of these alone
@@ -162,33 +158,46 @@ interface HeldTransaction {
 }
 
 /**
- * The state of a typing step, which follows CKEditor 4.5.1's undo plugin
- * (CKEDITOR.plugins.undo.NativeEditingHandler and UndoManager in lib/ckeditor/ckeditor.js):
- * - it counts `input` events, not key presses, so a key that changes nothing does not count
- *   (onInput); it closes at the 25th (strokesLimit);
- * - it closes when the user goes from typing to deleting or back (keyGroupChanged), at a
- *   navigation key (isNavigationKey), and at a click in the box (the click listener that calls
- *   onNavigationKey);
- * - key presses during IME composition (keyCode 229) neither count nor change the kind (onKeydown
- *   ignores them), but one can start a step, since the composition writes into the box;
- * - only a key whose KeyboardEvent.key is one character, or Shift+Enter, types, and only Backspace
- *   and Delete delete; any other key that reaches the box, a modifier on its own, a function key
- *   or Escape, neither starts nor ends a step;
- * - the input that a paste or a drop makes is not typing (ignoreInputEventListener);
- * - a command is a step of its own (the saveSnapshot before and after it, from beforeCommandExec
- *   and afterCommandExec). CKEditor runs one from a key press with Ctrl or Alt, and from Enter,
- *   whose keystroke runs the enterkey plugin's "enter" command, so each new paragraph is a step.
- *   Shift+Enter would run "shiftEnter", but BloomField cancels that keystroke and puts in the line
- *   break itself (BloomField.InsertLineBreak), so a line break is typing.
- * Beyond the plugin: it closes when the focus leaves the box and at any press of a pointer in any
- * frame; and input during an IME composition does not count either, so that the limit never
- * closes a step inside a composition (APPROACHES.md case 7.7).
+ * The state of a typing step. Its rules are those of the undo of the browser that Bloom runs in,
+ * as measured in Edge (Chromium 155) by typing into a contenteditable box with real key presses
+ * (docs/undo/TYPING-STEPS.md):
+ * - it has no limit on its length, and a pause does not end it;
+ * - deleting (Backspace or Delete) right after typing starts a new step, which typing after the
+ *   deleting joins; a delete that changes nothing, such as Backspace at the start of the box, does
+ *   not count (onBeforeInput);
+ * - Enter and Shift+Enter join it. After one that leaves no text after the caret on its line, the
+ *   next key that types starts a new step, so that each line typed is a step, with the Enter that
+ *   ends it. (Chromium ends that step one character later, a by-product of its replacing the
+ *   placeholder of the empty line; the step ends at the Enter here instead.)
+ * - it ends at a navigation key, at a press of a pointer outside the box, and when a press in the
+ *   box moves the caret; a click that leaves the caret where it was does not end it;
+ * - it ends when the focus leaves the box or the window;
+ * - an IME composition joins it, and the end of the composition ends it;
+ * - a key press with Ctrl, Alt or Cmd is a step of its own, a command; so are a paste, a cut and
+ *   a drop;
+ * - only a key whose KeyboardEvent.key is one character, or Enter, types, and only Backspace and
+ *   Delete delete; any other key that reaches the box, a modifier on its own, a function key or
+ *   Escape, neither starts nor ends a step.
  */
 interface TypingRun {
     box: Element;
-    // undefined until the first key that types or deletes
-    inputKind: InputKind | undefined;
-    inputs: number;
+    // What the step began with, for its description; undefined until the first key that types or
+    // deletes.
+    firstKind: InputKind | undefined;
+    // What the latest change to the box did: typing or deleting.
+    latestKind: InputKind | undefined;
+    // True from an Enter or Shift+Enter until the next key that types or deletes.
+    afterLineBreak: boolean;
+    // The selection when a press of the pointer in the box began, until the press has ended.
+    selectionAtPress?: SelectionPoints;
+}
+
+/** Where a selection starts and ends, to tell whether a click moved the caret. */
+interface SelectionPoints {
+    anchorNode: Node | null;
+    anchorOffset: number;
+    focusNode: Node | null;
+    focusOffset: number;
 }
 
 /**
@@ -246,7 +255,9 @@ class InputTransactions {
             mousemove: (e) => this.onMouseMove(e as MouseEvent),
             click: (e) => this.onClick(e, false),
             keydown: (e) => this.onKeyDown(e as KeyboardEvent, false),
-            input: (e) => this.onInput(e),
+            beforeinput: (e) => this.onBeforeInput(e as InputEvent),
+            input: (e) => this.onInput(e as InputEvent),
+            compositionend: (e) => this.onCompositionEnd(e),
             paste: (e) => this.onPasteOrDrop(e),
             cut: (e) => this.onPasteOrDrop(e),
             drop: (e) => this.onPasteOrDrop(e),
@@ -311,7 +322,7 @@ class InputTransactions {
         let description = held.descriptionOfInput;
         if (held.typing) {
             description =
-                held.typing.inputKind === "deleting"
+                held.typing.firstKind === "deleting"
                     ? kDeleteTextUndoDescriptionL10nKey
                     : kTypingUndoDescriptionL10nKey;
         }
@@ -335,7 +346,14 @@ class InputTransactions {
                 [
                     type,
                     (event: Event) => {
-                        if (!this.isFromUser(event)) return;
+                        // Chromium dispatches the compositionend of a committed composition
+                        // as untrusted (seen in Edge 155), and no code of Bloom's dispatches
+                        // one, so it counts as the user's.
+                        if (
+                            !this.isFromUser(event) &&
+                            event.type !== "compositionend"
+                        )
+                            return;
                         if (isInsideIgnoredElement(event)) return;
                         this.forgetHeldIfEnded();
                         listener(event);
@@ -363,9 +381,20 @@ class InputTransactions {
     /**
      * A pointer press, pointerdown or the mousedown after it. A press on the Undo button opens
      * nothing, but still ends the typing step, which would otherwise hold the undo until something
-     * else ended it.
+     * else ended it. A press in the box of the typing step leaves the step open until the press
+     * has ended, and ends it then only if the caret moved (onRelease).
      */
     private onPress(event: Event, fromOtherWindow: boolean): void {
+        const run = this.held?.typing;
+        if (
+            run &&
+            !fromOtherWindow &&
+            isNode(event.target) &&
+            run.box.contains(event.target)
+        ) {
+            run.selectionAtPress ??= readSelection(run.box);
+            return;
+        }
         this.endTypingRun();
         this.endHeldIfScheduled();
         if (this.isOnUndoOrRedoControl(event)) return;
@@ -374,8 +403,24 @@ class InputTransactions {
         this.openUnlessOneIsOpen(event, "pointer", fromOtherWindow);
     }
 
-    /** pointerup, mouseup, pointercancel: the drag, if any, ends with this event's task. */
+    /**
+     * pointerup, mouseup, pointercancel: the drag, if any, ends with this event's task. A press in
+     * the box of the typing step ends the step with this event's task if it moved the caret.
+     */
     private onRelease(): void {
+        const run = this.held?.typing;
+        if (run?.selectionAtPress) {
+            const atPress = run.selectionAtPress;
+            run.selectionAtPress = undefined;
+            this.afterCurrentTask(() => {
+                if (
+                    this.held?.typing === run &&
+                    !sameSelection(atPress, readSelection(run.box))
+                )
+                    this.endTypingRun();
+            });
+            return;
+        }
         if (this.held?.kind === "pointer") this.scheduleEnd();
     }
 
@@ -409,26 +454,19 @@ class InputTransactions {
             return;
         }
         const box = fromOtherWindow ? undefined : textBoxContaining(event);
-        const isNewParagraph = !!box && isNewParagraphKey(event);
-        if (
-            box &&
-            !isCommandKey(event) &&
-            !kNavigationKeys.has(event.key) &&
-            !isNewParagraph
-        ) {
+        if (box && !isCommandKey(event) && !kNavigationKeys.has(event.key)) {
             this.onKeyDownInBox(event, box);
             return;
         }
         this.endTypingRun();
-        if (this.openUnlessOneIsOpen(event, "event", fromOtherWindow)) {
-            if (isNewParagraph)
-                this.held!.descriptionOfInput =
-                    kNewParagraphUndoDescriptionL10nKey;
+        if (this.openUnlessOneIsOpen(event, "event", fromOtherWindow))
             this.scheduleEnd();
-        }
     }
 
-    /** A key press in a text box that may type: see TypingRun. */
+    /**
+     * A key press in a text box that may type: see TypingRun. Whether a delete starts a new step
+     * waits for its beforeinput, which says whether it will change anything (onBeforeInput).
+     */
     private onKeyDownInBox(event: KeyboardEvent, box: Element): void {
         const isIme = event.keyCode === kImeKeyCode || event.isComposing;
         let inputKind: InputKind | undefined;
@@ -437,29 +475,94 @@ class InputTransactions {
             else if (isTypingKey(event.key)) inputKind = "typing";
             else return;
         }
+        const isLineBreak = !isIme && event.key === "Enter";
         const run = this.held?.typing;
-        if (
-            run &&
-            (run.box !== box ||
-                (inputKind && run.inputKind && inputKind !== run.inputKind))
+        if (run && run.box !== box) this.endTypingRun();
+        else if (
+            run?.afterLineBreak &&
+            inputKind !== "deleting" &&
+            !isLineBreak &&
+            !hasTextAfterCaret(box)
         )
             this.endTypingRun();
-        if (this.held?.typing) {
-            this.held.typing.inputKind ??= inputKind;
-            return;
+        let current = this.held?.typing;
+        if (!current) {
+            if (!this.openUnlessOneIsOpen(event, "typing", false)) return;
+            current = {
+                box,
+                firstKind: undefined,
+                latestKind: undefined,
+                afterLineBreak: false,
+            };
+            this.held!.typing = current;
         }
-        if (this.openUnlessOneIsOpen(event, "typing", false))
-            this.held!.typing = { box, inputKind, inputs: 0 };
+        current.firstKind ??= inputKind;
+        current.afterLineBreak = isLineBreak;
+        // Bloom and CKEditor make the line break themselves, with no input event.
+        if (isLineBreak) current.latestKind = "typing";
     }
 
-    /** An input event: counts toward the 25 of a typing step (TypingRun). */
-    private onInput(event: Event): void {
+    /**
+     * Before the browser changes the box: a delete right after typing starts a new step, unless
+     * it will change nothing, as Backspace at the start of the box does, whose target ranges are
+     * all collapsed (TypingRun). Input that types or deletes with no key press before it, such
+     * as a spelling suggestion, dictation, or an input method that sends no keydown, starts a
+     * typing step if nothing is open.
+     */
+    private onBeforeInput(event: InputEvent): void {
+        const run = this.held?.typing;
+        if (!run) {
+            this.onInputWithNoKeyPress(event);
+            return;
+        }
+        if (!isNode(event.target) || !run.box.contains(event.target)) return;
+        if (!event.inputType.startsWith("delete")) return;
+        if (run.latestKind !== "typing") return;
+        const ranges = event.getTargetRanges();
+        if (ranges.length > 0 && ranges.every((range) => range.collapsed))
+            return;
+        this.endTypingRun();
+        if (this.openUnlessOneIsOpen(event, "typing", false))
+            this.held!.typing = {
+                box: run.box,
+                firstKind: "deleting",
+                latestKind: undefined,
+                afterLineBreak: false,
+            };
+    }
+
+    /** The beforeinput of typing or deleting in a box with nothing open: see onBeforeInput. */
+    private onInputWithNoKeyPress(event: InputEvent): void {
+        if (this.held) return;
+        if (!kTypingInputTypes.test(event.inputType)) return;
+        const box = textBoxContaining(event);
+        if (!box) return;
+        if (this.openUnlessOneIsOpen(event, "typing", false))
+            this.held!.typing = {
+                box,
+                firstKind: event.inputType.startsWith("delete")
+                    ? "deleting"
+                    : "typing",
+                latestKind: undefined,
+                afterLineBreak: false,
+            };
+    }
+
+    /** An input event in the box of the typing step: notes whether it typed or deleted. */
+    private onInput(event: InputEvent): void {
         const run = this.held?.typing;
         if (!run || !isNode(event.target)) return;
         if (!run.box.contains(event.target)) return;
-        if ((event as InputEvent).isComposing) return;
-        run.inputs++;
-        if (run.inputs >= kInputsPerTypingStep) this.endTypingRun();
+        if (event.inputType.startsWith("delete")) run.latestKind = "deleting";
+        else if (event.inputType.startsWith("insert"))
+            run.latestKind = "typing";
+    }
+
+    /** The end of an IME composition in the box of the typing step ends the step. */
+    private onCompositionEnd(event: Event): void {
+        const run = this.held?.typing;
+        if (!run || !isNode(event.target)) return;
+        if (run.box.contains(event.target)) this.endTypingRun();
     }
 
     /**
@@ -557,28 +660,11 @@ function isUndoOrRedoKey(event: KeyboardEvent): boolean {
 
 /**
  * True for the value of KeyboardEvent.key of a key that types: a single character (one code
- * point, which may be outside the BMP), or Enter, which types only with Shift, since Enter alone
- * is a step of its own (isNewParagraphKey). Named keys such as "Escape", "F2", "Tab", "Dead" and
- * "Unidentified" are longer.
+ * point, which may be outside the BMP), or Enter. Named keys such as "Escape", "F2", "Tab", "Dead"
+ * and "Unidentified" are longer.
  */
 function isTypingKey(key: string): boolean {
     return Array.from(key).length === 1 || key === "Enter";
-}
-
-/**
- * Enter on its own, which CKEditor's enterkey plugin turns into a new paragraph: a command, so a
- * step of its own (TypingRun). Not Shift+Enter, a line break that is typing, not an Enter with
- * Ctrl or Alt, a command like any other, and not an Enter that ends an IME composition, which
- * belongs to the composition.
- */
-function isNewParagraphKey(event: KeyboardEvent): boolean {
-    return (
-        event.key === "Enter" &&
-        !event.shiftKey &&
-        !isCommandKey(event) &&
-        !event.isComposing &&
-        event.keyCode !== kImeKeyCode
-    );
 }
 
 /**
@@ -593,8 +679,8 @@ function isCommandKey(event: KeyboardEvent): boolean {
     return event.ctrlKey || event.altKey || event.metaKey;
 }
 
-/** The editable text box, the editing host, that the key press went to, if any. */
-function textBoxContaining(event: KeyboardEvent): Element | undefined {
+/** The editable text box, the editing host, that the key press or input went to, if any. */
+function textBoxContaining(event: Event): Element | undefined {
     const target = event.target;
     if (!isNode(target) || target.nodeType !== Node.ELEMENT_NODE)
         return undefined;
@@ -610,6 +696,54 @@ function isInsideIgnoredElement(event: Event): boolean {
     const target = event.target;
     if (!isNode(target) || target.nodeType !== Node.ELEMENT_NODE) return false;
     return !!(target as Element).closest(kIgnoredByPageHistoryInputSelector);
+}
+
+// The characters that take up no space, which a line holds for the caret's sake: the zero width
+// space of CKEditor's filling character, the zero width non-joiner that Bloom puts after a line
+// break (BloomField.InsertLineBreak), and the byte order mark.
+const kZeroWidthCharacters = /[\u200b\u200c\ufeff]/g;
+
+/**
+ * True when the line that the caret is on has text after the caret, as after an Enter in the
+ * middle of a paragraph, or when there is no caret in the document. The line is the block that
+ * holds the caret: the nearest paragraph, heading, list item or div inside box, or box itself.
+ */
+function hasTextAfterCaret(box: Element): boolean {
+    const selection = box.ownerDocument.getSelection();
+    if (!selection || selection.rangeCount === 0) return true;
+    const caret = selection.getRangeAt(0);
+    const container = caret.endContainer;
+    const element =
+        container.nodeType === Node.ELEMENT_NODE
+            ? (container as Element)
+            : container.parentElement;
+    const block = element?.closest("p, h1, h2, h3, h4, h5, h6, li, div");
+    const line = block && box.contains(block) ? block : box;
+    const after = box.ownerDocument.createRange();
+    after.selectNodeContents(line);
+    after.setStart(container, caret.endOffset);
+    return after.toString().replace(kZeroWidthCharacters, "") !== "";
+}
+
+/** The selection of box's document, to compare with sameSelection. */
+function readSelection(box: Element): SelectionPoints {
+    const selection = box.ownerDocument.getSelection();
+    return {
+        anchorNode: selection?.anchorNode ?? null,
+        anchorOffset: selection?.anchorOffset ?? 0,
+        focusNode: selection?.focusNode ?? null,
+        focusOffset: selection?.focusOffset ?? 0,
+    };
+}
+
+/** True when a and b are the same selection. */
+function sameSelection(a: SelectionPoints, b: SelectionPoints): boolean {
+    return (
+        a.anchorNode === b.anchorNode &&
+        a.anchorOffset === b.anchorOffset &&
+        a.focusNode === b.focusNode &&
+        a.focusOffset === b.focusOffset
+    );
 }
 
 /** The default isOnUndoOrRedoControl: the event's target is inside kUndoControlSelector. */

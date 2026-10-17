@@ -13,7 +13,6 @@ import {
     kDeleteTextUndoDescriptionL10nKey,
     kDropUndoDescriptionL10nKey,
     kIgnoredByPageHistoryInputSelector,
-    kNewParagraphUndoDescriptionL10nKey,
     kTypingUndoDescriptionL10nKey,
 } from "./pageHistoryInput";
 import {
@@ -147,13 +146,40 @@ function keyDown(target: Element, init: KeyboardEventInit): KeyboardEvent {
 }
 
 /**
- * A key press that types one character at the end of box, as the browser would: keydown, the
- * change, then input. The task ends, but a typing transaction stays open.
+ * A beforeinput of inputType on target, as the browser sends it before it changes the box, whose
+ * getTargetRanges() gives ranges that are collapsed or not, as `collapsed` says. jsdom has no
+ * getTargetRanges.
+ */
+function beforeInput(
+    target: Element,
+    inputType: string,
+    collapsed: boolean,
+): void {
+    const event = new InputEvent("beforeinput", {
+        bubbles: true,
+        cancelable: true,
+        inputType,
+    });
+    Object.defineProperty(event, "getTargetRanges", {
+        value: () => [{ collapsed }],
+    });
+    asUser(target, event);
+}
+
+/** The input event that the browser sends after it changed the box. */
+function input(target: Element, inputType: string): void {
+    asUser(target, new InputEvent("input", { bubbles: true, inputType }));
+}
+
+/**
+ * A key press that types one character at the end of box, as the browser would: keydown,
+ * beforeinput, the change, then input. The task ends, but a typing transaction stays open.
  */
 function typeCharacter(box: HTMLElement, character: string): void {
     keyDown(box, { key: character });
+    beforeInput(box, "insertText", true);
     box.lastElementChild!.append(character);
-    asUser(box, new InputEvent("input", { bubbles: true }));
+    input(box, "insertText");
     finishTask();
 }
 
@@ -164,20 +190,41 @@ function typeText(box: HTMLElement, text: string): void {
 /** A Backspace that deletes the last character of box. */
 function deleteCharacter(box: HTMLElement): void {
     keyDown(box, { key: "Backspace" });
+    beforeInput(box, "deleteContentBackward", false);
     const paragraph = box.lastElementChild!;
     paragraph.textContent = paragraph.textContent!.slice(0, -1);
-    asUser(box, new InputEvent("input", { bubbles: true }));
+    input(box, "deleteContentBackward");
     finishTask();
 }
 
 /**
- * An Enter that starts a new, empty paragraph at the end of box, as CKEditor's "enter" command
- * does in the keydown's task.
+ * A Delete with the caret at the end of the text, which changes nothing: the browser sends
+ * beforeinput with collapsed target ranges, and no input.
+ */
+function deleteNothing(box: HTMLElement): void {
+    keyDown(box, { key: "Delete" });
+    beforeInput(box, "deleteContentForward", true);
+    finishTask();
+}
+
+/** Put the caret in node at offset. */
+function putCaret(node: Node, offset: number): void {
+    const range = document.createRange();
+    range.setStart(node, offset);
+    range.collapse(true);
+    document.getSelection()!.removeAllRanges();
+    document.getSelection()!.addRange(range);
+}
+
+/**
+ * An Enter that starts a new, empty paragraph at the end of box, with the caret in it, as
+ * CKEditor's "enter" command does in the keydown's task, with no input event.
  */
 function pressEnter(box: HTMLElement): void {
     keyDown(box, { key: "Enter" });
-    box.append(document.createElement("p"));
-    asUser(box, new InputEvent("input", { bubbles: true }));
+    const paragraph = document.createElement("p");
+    box.append(paragraph);
+    putCaret(paragraph, 0);
     finishTask();
 }
 
@@ -444,32 +491,40 @@ describe("typing", () => {
         expect(box.hasAttribute("data-reacted")).toBe(false);
     });
 
-    it("closes a step at the 25th input", async () => {
+    it("has no limit on its length", async () => {
         const box = byId("box1");
-        typeText(box, "abcdefghijklmnopqrstuvwxy");
-        expect(history.hasOpenTransaction).toBe(false);
-        typeText(box, "z1234");
+        typeText(box, "x".repeat(200));
+        expect(history.hasOpenTransaction).toBe(true);
         pressUndoKey();
 
-        expect(await undoEverything()).toEqual([
-            "Helloabcdefghijklmnopqrstuvwxy" + "Bonjour",
-            "HelloBonjour",
-        ]);
+        expect(await undoEverything()).toEqual(["HelloBonjour"]);
     });
 
-    it("closes a step when it goes from typing to deleting and back", async () => {
+    it("starts a new step when deleting follows typing, which the typing after the deleting joins", async () => {
         const box = byId("box1");
         typeText(box, "abc");
         deleteCharacter(box);
         deleteCharacter(box);
         typeText(box, "xy");
+        deleteCharacter(box);
         pressUndoKey();
+        expect(page.textContent, "test setup").toBe("HelloaxBonjour");
 
         expect(await undoEverything()).toEqual([
-            "HelloaBonjour",
+            "HelloaxyBonjour",
             "HelloabcBonjour",
             "HelloBonjour",
         ]);
+    });
+
+    it("does not start a new step for a delete that changes nothing", async () => {
+        const box = byId("box1");
+        typeText(box, "abc");
+        deleteNothing(box);
+        typeText(box, "xy");
+        pressUndoKey();
+
+        expect(await undoEverything()).toEqual(["HelloBonjour"]);
     });
 
     it("keeps a modifier on its own, such as Shift, in the run", async () => {
@@ -587,7 +642,7 @@ describe("typing", () => {
         expect(await undoEverything()).toHaveLength(2);
     });
 
-    it("makes each Enter, a new paragraph, a step of its own, so three typed lines are five steps", async () => {
+    it("makes each line typed a step, with the Enter that ends it", async () => {
         const box = byId("box1");
         typeText(box, "one");
         pressEnter(box);
@@ -613,16 +668,8 @@ describe("typing", () => {
                 paragraphs: ["Helloone", "two", ""],
             },
             {
-                description: kNewParagraphUndoDescriptionL10nKey,
-                paragraphs: ["Helloone", "two"],
-            },
-            {
                 description: kTypingUndoDescriptionL10nKey,
                 paragraphs: ["Helloone", ""],
-            },
-            {
-                description: kNewParagraphUndoDescriptionL10nKey,
-                paragraphs: ["Helloone"],
             },
             {
                 description: kTypingUndoDescriptionL10nKey,
@@ -631,19 +678,43 @@ describe("typing", () => {
         ]);
     });
 
-    it("keeps a line break (Shift+Enter) in the typing step", async () => {
+    it("keeps an Enter in the middle of a line, and the typing after it, in the step", async () => {
+        const box = byId("box1");
+        typeText(box, "ab");
+        // CKEditor splits the paragraph at the caret, which goes to the start of the new one.
+        keyDown(box, { key: "Enter" });
+        const rest = document.createElement("p");
+        rest.textContent = "llo";
+        byId("p1").textContent = "He";
+        box.append(rest);
+        putCaret(rest.firstChild!, 0);
+        finishTask();
+        typeText(box, "xy");
+        pressUndoKey();
+
+        expect(await undoEverything()).toEqual(["HelloBonjour"]);
+    });
+
+    it("makes the typing after a line break (Shift+Enter) at the end of a line a new step", async () => {
         const box = byId("box1");
         typeText(box, "one");
+        // Bloom puts in the line break itself (BloomField.InsertLineBreak), with no input event.
         keyDown(box, { key: "Enter", shiftKey: true });
-        box.lastElementChild!.append(document.createElement("br"));
-        asUser(box, new InputEvent("input", { bubbles: true }));
+        const lineBreak = document.createElement("span");
+        lineBreak.className = "bloom-linebreak";
+        const paragraph = box.lastElementChild!;
+        paragraph.append(lineBreak, "\u200c");
+        putCaret(paragraph.lastChild!, 1);
         finishTask();
         expect(history.hasOpenTransaction).toBe(true);
         typeText(box, "two");
         pressUndoKey();
 
-        expect(await undoEverything()).toEqual(["HelloBonjour"]);
-        expect(box.querySelector("br")).toBeNull();
+        expect(await undoEverything()).toEqual([
+            "Helloone\u200cBonjour",
+            "HelloBonjour",
+        ]);
+        expect(box.querySelector(".bloom-linebreak")).toBeNull();
     });
 
     it("keeps an Enter that ends an IME composition in the composition's step", async () => {
@@ -663,7 +734,7 @@ describe("typing", () => {
         expect(await undoEverything()).toEqual(["HelloBonjour"]);
     });
 
-    it("makes Ctrl+Enter a command, with no new paragraph description", async () => {
+    it("makes Ctrl+Enter a command, a step of its own", async () => {
         const box = byId("box1");
         onBloomEvent(box, "keydown", (e) => {
             if ((e as KeyboardEvent).key === "Enter")
@@ -721,9 +792,37 @@ describe("typing", () => {
         ]);
     });
 
-    it("closes a step at a press of the pointer", async () => {
+    it("closes a step at a press of the pointer outside the box", async () => {
         const box = byId("box1");
         typeText(box, "ab");
+        click(byId("canvas"));
+        expect(history.hasOpenTransaction).toBe(false);
+        typeText(box, "c");
+        pressUndoKey();
+
+        expect(await undoEverything()).toHaveLength(2);
+    });
+
+    it("keeps the step open at a click in the box that leaves the caret where it was", async () => {
+        const box = byId("box1");
+        putCaret(byId("p1").firstChild!, 5);
+        typeText(box, "ab");
+        click(box);
+        expect(history.hasOpenTransaction).toBe(true);
+        typeText(box, "c");
+        pressUndoKey();
+
+        expect(await undoEverything()).toEqual(["HelloBonjour"]);
+    });
+
+    it("closes a step at a click in the box that moves the caret", async () => {
+        const box = byId("box1");
+        putCaret(byId("p1").firstChild!, 5);
+        typeText(box, "ab");
+        // The browser moves the caret as the press's default action.
+        onBloomEvent(box, "mousedown", () =>
+            putCaret(byId("p1").firstChild!, 0),
+        );
         click(box);
         expect(history.hasOpenTransaction).toBe(false);
         typeText(box, "c");
@@ -732,21 +831,75 @@ describe("typing", () => {
         expect(await undoEverything()).toHaveLength(2);
     });
 
-    it("does not count IME input, so a composition stays in one step", async () => {
+    it("puts a composition in the typing step, and ends the step at the composition's end", async () => {
         const box = byId("box1");
-        for (let i = 0; i < 30; i++) {
+        typeText(box, "ab");
+        for (let i = 0; i < 3; i++) {
             keyDown(box, { key: "Process", keyCode: 229 });
             box.lastElementChild!.append("か");
             asUser(
                 box,
-                new InputEvent("input", { bubbles: true, isComposing: true }),
+                new InputEvent("input", {
+                    bubbles: true,
+                    isComposing: true,
+                    inputType: "insertCompositionText",
+                }),
             );
+            finishTask();
+        }
+        expect(history.hasOpenTransaction).toBe(true);
+        asUser(box, new CompositionEvent("compositionend", { bubbles: true }));
+        expect(history.hasOpenTransaction).toBe(false);
+        typeText(box, "c");
+        pressUndoKey();
+
+        expect(await undoEverything()).toEqual([
+            "HelloabかかかBonjour",
+            "HelloBonjour",
+        ]);
+    });
+
+    it("starts a typing step for input with no key press, such as a spelling suggestion, and goes on with it", async () => {
+        const box = byId("box1");
+        expect(history.hasOpenTransaction, "test setup").toBe(false);
+        for (const text of ["a", "b"]) {
+            beforeInput(box, "insertReplacementText", false);
+            box.lastElementChild!.append(text);
+            input(box, "insertReplacementText");
             finishTask();
         }
         expect(history.hasOpenTransaction).toBe(true);
         pressUndoKey();
 
-        expect(await undoEverything()).toHaveLength(1);
+        expect(history.undoDescriptionL10nKey).toBe(
+            kTypingUndoDescriptionL10nKey,
+        );
+        expect(await undoEverything()).toEqual(["HelloBonjour"]);
+    });
+
+    it("starts no typing step for the input of a paste, which is a step of its own", () => {
+        const box = byId("box1");
+        asUser(box, new Event("paste", { bubbles: true }));
+        beforeInput(box, "insertFromPaste", false);
+        box.lastElementChild!.append("pasted");
+        input(box, "insertFromPaste");
+        finishTask();
+
+        expect(history.hasOpenTransaction).toBe(false);
+        expect(history.undoDescriptionL10nKey).toBe(
+            kPasteUndoDescriptionL10nKey,
+        );
+    });
+
+    it("ends the step at a compositionend that is not trusted, as Chromium sends at a commit", () => {
+        const box = byId("box1");
+        typeText(box, "ab");
+        expect(history.hasOpenTransaction, "test setup").toBe(true);
+        // Not through asUser: isFromUser says no.
+        box.dispatchEvent(
+            new CompositionEvent("compositionend", { bubbles: true }),
+        );
+        expect(history.hasOpenTransaction).toBe(false);
     });
 
     it("makes a paste a step of its own", async () => {
