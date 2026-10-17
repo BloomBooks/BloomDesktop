@@ -188,6 +188,7 @@ const buildDefaultMenuRow = (
     id: control.id,
     l10nId: control.l10nId,
     englishLabel: control.englishLabel,
+    undoDescription: control.undoDescription,
     helpRowL10nId: control.helpRowL10nId,
     helpRowEnglish: control.helpRowEnglish,
     helpRowSeparatorAbove: control.helpRowSeparatorAbove,

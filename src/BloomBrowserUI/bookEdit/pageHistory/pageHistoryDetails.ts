@@ -4,9 +4,10 @@
 // as strings, so the record keeps no node of the page.
 
 import type { PageHistoryEventKind } from "./pageHistoryRecorder";
-import type {
-    PageHistoryChangeContext,
-    PageHistoryDetail,
+import {
+    formatUndoDescription,
+    type PageHistoryChangeContext,
+    type PageHistoryDetail,
 } from "./pageHistoryTypes";
 
 export interface PageHistoryDetailRow {
@@ -31,31 +32,31 @@ export function describePageHistoryDetail(
         case "opened":
             return [
                 transactionRow(
-                    `opened ${detail.descriptionL10nKey} (depth ${detail.depth})`,
+                    `opened ${formatUndoDescription(detail.descriptionL10nKey, detail.descriptionArgs)} (depth ${detail.depth})`,
                 ),
             ];
         case "ended":
             return [
                 transactionRow(
-                    `ended ${detail.descriptionL10nKey} (depth ${detail.depth})`,
+                    `ended ${formatUndoDescription(detail.descriptionL10nKey, detail.descriptionArgs)} (depth ${detail.depth})`,
                 ),
             ];
         case "endWaits":
             return [
                 transactionRow(
-                    `end of ${detail.descriptionL10nKey} (depth ${detail.depth}) waits for ${detail.innerOpen} transaction(s) begun inside it`,
+                    `end of ${formatUndoDescription(detail.descriptionL10nKey, detail.descriptionArgs)} (depth ${detail.depth}) waits for ${detail.innerOpen} transaction(s) begun inside it`,
                 ),
             ];
         case "closedWithNoStep":
             return [
                 transactionRow(
-                    `closed ${detail.descriptionL10nKey} with no net change, so no step`,
+                    `closed ${formatUndoDescription(detail.descriptionL10nKey, detail.descriptionArgs)} with no net change, so no step`,
                 ),
             ];
         case "cancelled":
             return [
                 transactionRow(
-                    `cancelled ${detail.descriptionL10nKey} (depth ${detail.depth}), reversing ${detail.recordsReversed} records`,
+                    `cancelled ${formatUndoDescription(detail.descriptionL10nKey, detail.descriptionArgs)} (depth ${detail.depth}), reversing ${detail.recordsReversed} records`,
                 ),
             ];
         case "changes":
@@ -99,7 +100,7 @@ function describeChanges(
 export function describeContext(context: PageHistoryChangeContext): string {
     switch (context.kind) {
         case "transaction":
-            return `in ${context.descriptionL10nKey} (depth ${context.depth})`;
+            return `in ${formatUndoDescription(context.descriptionL10nKey, context.descriptionArgs)} (depth ${context.depth})`;
         case "addToLatestTransaction":
         case "unmarked": {
             const how =
@@ -112,7 +113,7 @@ export function describeContext(context: PageHistoryChangeContext): string {
                 context.joins === "openTransaction"
                     ? "open transaction"
                     : "latest step";
-            return `${how}, joins ${joins} ${context.descriptionL10nKey}`;
+            return `${how}, joins ${joins} ${formatUndoDescription(context.descriptionL10nKey, context.descriptionArgs)}`;
         }
         case "outsideHistory":
             return "outside history";
@@ -121,7 +122,7 @@ export function describeContext(context: PageHistoryChangeContext): string {
         case "undo":
         case "redo":
         case "rollback":
-            return `${context.kind} of ${context.descriptionL10nKey} put back`;
+            return `${context.kind} of ${formatUndoDescription(context.descriptionL10nKey, context.descriptionArgs)} put back`;
     }
 }
 

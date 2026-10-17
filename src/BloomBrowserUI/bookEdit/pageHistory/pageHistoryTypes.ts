@@ -312,7 +312,9 @@ export type PageHistoryChangeContext =
  * - closedWithNoStep: the outermost transaction closed with no net change, and made no step.
  * - cancelled: a transaction was cancelled; recordsReversed is how many records it reverses.
  * - changes: a batch of records, in the order the observer gave them, and where they went.
- *   ignored[i] is true when the history's filter ignores the node of records[i].
+ *   ignored[i] is true when the history's filter ignores the node of records[i], or when
+ *   records[i] changes an attribute only in a part that the filter does not keep (an edit-time
+ *   class, for instance).
  */
 export type PageHistoryDetail =
     | {

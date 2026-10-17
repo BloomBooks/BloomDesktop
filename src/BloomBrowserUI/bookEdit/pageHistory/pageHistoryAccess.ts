@@ -6,7 +6,7 @@
 // startPageHistory is called, and in unit tests.
 
 import { getEditablePageBundleExports } from "../js/workspaceFrames";
-import type { PageHistory } from "./pageHistoryTypes";
+import type { PageHistory, UndoDescriptionInput } from "./pageHistoryTypes";
 
 /**
  * The history of the page open in the Edit tab, or undefined when there is no page frame, no
@@ -53,8 +53,8 @@ export function addToLatestTransaction<T>(fn: () => T): T {
 }
 
 /**
- * Give the undo step that the open transaction will make the description descriptionL10nKey,
- * unless something has described it already, for an action that runs inside the transaction that
+ * Give the undo step that the open transaction will make the description given, a plain l10n id
+ * or an UndoDescription, unless something has described it already, for an action that runs inside the transaction that
  * the user's click, drag or key press opened, and that has no transaction of its own. It opens
  * and closes an empty transaction inside the open one, and the first transaction nested in the
  * stand-in with the general description gives the step its description
@@ -65,10 +65,10 @@ export function addToLatestTransaction<T>(fn: () => T): T {
  * step keeps the general description ends the history (pageHistoryInput.ts), and describing that
  * step would make it an undo step instead.
  */
-export function describeOpenStep(descriptionL10nKey: string): void {
+export function describeOpenStep(description: UndoDescriptionInput): void {
     const history = currentPageHistory();
     if (!history?.hasOpenTransaction) return;
-    void history.doTransaction(descriptionL10nKey, () => {});
+    void history.doTransaction(description, () => {});
 }
 
 /**

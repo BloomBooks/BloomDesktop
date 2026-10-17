@@ -25,11 +25,10 @@ import { inPlayMode } from "./CanvasElementPositioning";
 import { dragToResize } from "bloom-table";
 import { tablesMayBeRestructured } from "../tableFeature";
 import { describeOpenStep } from "../../pageHistory/pageHistoryAccess";
+import { describeCanvasElementStep } from "../../toolbox/canvas/canvasElementUndoDescriptions";
 
-// The descriptions of the undo steps of the drags that start here.
-const kMoveUndoL10nKey = "EditTab.Undo.CanvasElement.Move";
-const kDuplicateByDraggingUndoL10nKey =
-    "EditTab.Undo.CanvasElement.DuplicateByDragging";
+// The descriptions of the undo steps of the drags that start here. Moving the element as a
+// whole, and duplicating it by dragging, are described with describeCanvasElementStep.
 const kMoveTailUndoL10nKey = "EditTab.Undo.CanvasElement.MoveTail";
 const kResizeTableRowOrColumnUndoL10nKey =
     "EditTab.Undo.Table.ResizeRowOrColumn";
@@ -518,7 +517,9 @@ export class CanvasElementPointerInteractions {
                 event.preventDefault();
                 event.stopPropagation();
                 if (Comical.findRelatives(bubble).length === 0) {
-                    describeOpenStep(kDuplicateByDraggingUndoL10nKey);
+                    describeOpenStep(
+                        describeCanvasElementStep("duplicate", bubble.content),
+                    );
                     this.host.setActiveElement(bubble.content);
                     const newCanvasElement =
                         this.host.duplicateCanvasElementBox(
@@ -598,7 +599,9 @@ export class CanvasElementPointerInteractions {
             Math.sqrt(deltaX * deltaX + deltaY * deltaY) > 3
         ) {
             this.gotAMoveWhileMouseDown = true;
-            describeOpenStep(kMoveUndoL10nKey);
+            describeOpenStep(
+                describeCanvasElementStep("move", this.bubbleToDrag.content),
+            );
             this.host.startMoving();
         }
         if (!this.gotAMoveWhileMouseDown) {

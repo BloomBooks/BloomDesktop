@@ -266,9 +266,12 @@ describe("GameTool options and sounds and the page history", () => {
         finishTask();
 
         expect(target.style.left).toBe("0px");
-        expect(history.undoDescriptionL10nKey).toBe(
-            "EditTab.Undo.Game.MoveTarget",
-        );
+        expect(history.getStepDescriptions().undo).toEqual([
+            {
+                l10nId: "EditTab.Undo.Move",
+                args: ["EditTab.Undo.Object.GameTarget"],
+            },
+        ]);
     });
 
     it("makes choosing a theme an undo step, and shows the earlier theme after Undo", async () => {

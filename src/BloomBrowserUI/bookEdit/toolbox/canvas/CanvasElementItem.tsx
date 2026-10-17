@@ -26,7 +26,7 @@ import {
 } from "./canvasElementDraggables";
 import { CanvasElementType } from "./canvasElementTypes";
 import { currentPageHistory } from "../../pageHistory/pageHistoryAccess";
-import { kAddCanvasElementUndoL10nKey } from "./canvasElementConstants";
+import { describeCanvasElementStep } from "./canvasElementUndoDescriptions";
 
 export type { CanvasElementType } from "./canvasElementTypes";
 
@@ -73,7 +73,7 @@ const ondragend = (
         return;
     }
     void history
-        .doTransaction(kAddCanvasElementUndoL10nKey, () =>
+        .doTransaction(describeCanvasElementStep("add", args[1]), () =>
             addCanvasElementAtDragEnd(...args),
         )
         .catch((error) => {

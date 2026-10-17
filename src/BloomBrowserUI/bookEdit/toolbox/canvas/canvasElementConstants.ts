@@ -28,7 +28,3 @@ export const kImageFitModeCoverValue = "cover";
 // name as HtmlDom.kImageContainerClass.
 export const kImageContainerClass = "bloom-imageContainer";
 export const kImageContainerSelector = `.${kImageContainerClass}`;
-
-// The description of the undo step that adds a canvas element: a drop from the Canvas tool's
-// palette (CanvasElementItem.tsx) or an add in the page (CanvasElementManager.addCanvasElement).
-export const kAddCanvasElementUndoL10nKey = "EditTab.Undo.CanvasElement.Add";

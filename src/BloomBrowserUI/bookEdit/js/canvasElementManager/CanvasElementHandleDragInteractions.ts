@@ -21,10 +21,10 @@ import {
 import { getImageContentTransform } from "../imageContentTransform";
 import { EditableDivUtils } from "../editableDivUtils";
 import { describeOpenStep } from "../../pageHistory/pageHistoryAccess";
+import { describeCanvasElementStep } from "../../toolbox/canvas/canvasElementUndoDescriptions";
 
-// The descriptions of the undo steps of the drags of the handles that start here.
-const kResizeUndoL10nKey = "EditTab.Undo.CanvasElement.Resize";
-const kRotateUndoL10nKey = "EditTab.Undo.CanvasElement.Rotate";
+// The descriptions of the undo steps of the drags of the handles that start here. Resizing
+// and rotating the element as a whole are described with describeCanvasElementStep.
 const kCropUndoL10nKey = "EditTab.Undo.Image.Crop";
 const kMoveImageInFrameUndoL10nKey = "EditTab.Undo.Image.MoveInFrame";
 
@@ -330,7 +330,7 @@ export class CanvasElementHandleDragInteractions {
         this.rotateCenterY = bounds.top + bounds.height / 2;
         this.startRotation = getCanvasElementRotation(activeElement);
         this.startRotatePointerAngle = this.getPointerAngle(event);
-        describeOpenStep(kRotateUndoL10nKey);
+        describeOpenStep(describeCanvasElementStep("rotate", activeElement));
         document.addEventListener("mousemove", this.continueRotateDrag, {
             capture: true,
         });
@@ -500,7 +500,7 @@ export class CanvasElementHandleDragInteractions {
                 document.querySelectorAll(kCanvasElementSelector),
             ) as HTMLElement[],
         );
-        describeOpenStep(kResizeUndoL10nKey);
+        describeOpenStep(describeCanvasElementStep("resize", activeElement));
         document.addEventListener("mousemove", this.continueResizeDrag, {
             capture: true,
         });
@@ -797,7 +797,11 @@ export class CanvasElementHandleDragInteractions {
             ) as HTMLElement[],
         );
         // A side handle resizes a text box, and crops a picture (continueSideDrag).
-        describeOpenStep(textBox ? kResizeUndoL10nKey : kCropUndoL10nKey);
+        describeOpenStep(
+            textBox
+                ? describeCanvasElementStep("resize", activeElement)
+                : kCropUndoL10nKey,
+        );
         document.addEventListener("mousemove", this.continueSideDrag, {
             capture: true,
         });

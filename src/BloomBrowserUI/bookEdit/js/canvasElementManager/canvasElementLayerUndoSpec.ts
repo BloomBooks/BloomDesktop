@@ -84,10 +84,15 @@ import { listenToPageHistory } from "../bloomEditing";
 import { createPageHistory } from "../../pageHistory/pageHistory";
 import { createEditTimeMarkupFilter } from "../../pageHistory/editTimeMarkup";
 import {
+    formatUndoDescription,
     kGenericUndoDescriptionL10nKey,
     type PageHistory,
 } from "../../pageHistory/pageHistoryTypes";
-import { kZOrderMoveL10nIds } from "./CanvasElementZOrder";
+import {
+    kZOrderMoveUndoTemplates,
+    type ZOrderMove,
+} from "./CanvasElementZOrder";
+import { kCanvasElementUndoTemplates } from "../../toolbox/canvas/canvasElementUndoDescriptions";
 import { makeLayerMenuItem } from "../../toolbox/canvas/canvasControlRegistry";
 import { convertControlMenuRows } from "./canvasControlMenuRendering";
 import type {
@@ -173,6 +178,18 @@ function select(element: HTMLElement | undefined): void {
     );
 }
 
+/** The l10n id of the template of a layer command's step. */
+function layerStepId(move: ZOrderMove): string {
+    return kCanvasElementUndoTemplates[kZOrderMoveUndoTemplates[move]];
+}
+
+/** The description of the newest undo step, as the log writes it. */
+function latestStep(): string {
+    const undo = history.getStepDescriptions().undo;
+    const latest = undo[undo.length - 1];
+    return formatUndoDescription(latest.l10nId, latest.args);
+}
+
 function activeElement(): HTMLElement | undefined {
     return theOneCanvasElementManager.getActiveElement();
 }
@@ -217,7 +234,7 @@ async function chooseFromLayerMenu(
     rowId: "bringForward" | "bringToFront" | "sendBackward" | "sendToBack",
 ): Promise<void> {
     const runtime = { closeMenu: vi.fn() } as unknown as IControlRuntime;
-    const ctx = {} as IControlContext;
+    const ctx = { canvasElement: activeElement() } as IControlContext;
     const [layerRow] = convertControlMenuRows(
         [makeLayerMenuItem(ctx, runtime)],
         ctx,
@@ -247,7 +264,10 @@ describe("a layer command is one undo step", () => {
 
         expect(stackingOrder()).toEqual(["background", "b", "a", "c"]);
         expect(levels()).toEqual({ background: 1, b: 2, a: 3, c: 4 });
-        expect(history.undoDescriptionL10nKey).toBe(kZOrderMoveL10nIds.forward);
+        expect(history.undoDescriptionL10nKey).toBe(layerStepId("forward"));
+        expect(latestStep()).toBe(
+            "EditTab.Undo.BringForward(EditTab.Undo.Object.TextBox)",
+        );
         vi.mocked(Comical.update).mockClear();
 
         await history.undo();
@@ -257,7 +277,7 @@ describe("a layer command is one undo step", () => {
         expect(Comical.update).toHaveBeenCalledWith(byId("canvas"));
         expect(activeElement()).toBe(a);
         expect(history.undoDescriptionL10nKey).toBeUndefined();
-        expect(history.redoDescriptionL10nKey).toBe(kZOrderMoveL10nIds.forward);
+        expect(history.redoDescriptionL10nKey).toBe(layerStepId("forward"));
         vi.mocked(Comical.update).mockClear();
 
         await history.redo();
@@ -266,7 +286,7 @@ describe("a layer command is one undo step", () => {
         expect(levels()).toEqual({ background: 1, b: 2, a: 3, c: 4 });
         expect(Comical.update).toHaveBeenCalledWith(byId("canvas"));
         expect(activeElement()).toBe(a);
-        expect(history.undoDescriptionL10nKey).toBe(kZOrderMoveL10nIds.forward);
+        expect(history.undoDescriptionL10nKey).toBe(layerStepId("forward"));
         expect(history.redoDescriptionL10nKey).toBeUndefined();
         expect(onUnmarkedChange).not.toHaveBeenCalled();
     });
@@ -279,7 +299,7 @@ describe("a layer command is one undo step", () => {
 
         expect(stackingOrder()).toEqual(["background", "c", "a", "b"]);
         expect(levels()).toEqual({ background: 1, c: 2, a: 3, b: 4 });
-        expect(history.undoDescriptionL10nKey).toBe(kZOrderMoveL10nIds.back);
+        expect(history.undoDescriptionL10nKey).toBe(layerStepId("back"));
 
         await history.undo();
 
@@ -295,7 +315,7 @@ describe("a layer command is one undo step", () => {
         expect(onUnmarkedChange).not.toHaveBeenCalled();
     });
 
-    it("Bring to Front from the Layer menu: one step with the command's name, which undo and redo reverse", async () => {
+    it("Bring to Front from the Layer menu: one step described as the command acting on this kind of element, which undo and redo reverse", async () => {
         const a = byId("a");
         select(a);
 
@@ -303,7 +323,10 @@ describe("a layer command is one undo step", () => {
 
         expect(stackingOrder()).toEqual(["background", "b", "c", "a"]);
         expect(levels()).toEqual({ background: 1, b: 2, c: 3, a: 4 });
-        expect(history.undoDescriptionL10nKey).toBe(kZOrderMoveL10nIds.front);
+        expect(history.undoDescriptionL10nKey).toBe(layerStepId("front"));
+        expect(latestStep()).toBe(
+            "EditTab.Undo.BringToFront(EditTab.Undo.Object.TextBox)",
+        );
 
         await history.undo();
 
@@ -320,16 +343,14 @@ describe("a layer command is one undo step", () => {
         expect(onUnmarkedChange).not.toHaveBeenCalled();
     });
 
-    it("Send Backward from the Layer menu: one step with the command's name", async () => {
+    it("Send Backward from the Layer menu: one step described as the command acting on this kind of element", async () => {
         const b = byId("b");
         select(b);
 
         await chooseFromLayerMenu("sendBackward");
 
         expect(stackingOrder()).toEqual(["background", "b", "a", "c"]);
-        expect(history.undoDescriptionL10nKey).toBe(
-            kZOrderMoveL10nIds.backward,
-        );
+        expect(history.undoDescriptionL10nKey).toBe(layerStepId("backward"));
 
         await history.undo();
 
@@ -349,7 +370,7 @@ describe("a layer command is one undo step", () => {
 
         expect(stackingOrder()).toEqual(["background", "b", "a", "c"]);
         expect(levels()).toEqual({ background: 1, b: 2, a: 3, c: 4 });
-        expect(history.undoDescriptionL10nKey).toBe(kZOrderMoveL10nIds.forward);
+        expect(history.undoDescriptionL10nKey).toBe(layerStepId("forward"));
 
         await history.undo();
 
@@ -388,9 +409,7 @@ describe("moving past a ComicalJS family", () => {
 
         expect(stackingOrder()).toEqual(["background", "x", "p", "q"]);
         expect(levels()).toEqual({ background: 1, x: 2, p: 3, q: 3 });
-        expect(history.undoDescriptionL10nKey).toBe(
-            kZOrderMoveL10nIds.backward,
-        );
+        expect(history.undoDescriptionL10nKey).toBe(layerStepId("backward"));
 
         await history.undo();
 

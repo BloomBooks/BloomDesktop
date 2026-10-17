@@ -17,6 +17,7 @@ import {
     quote,
 } from "./pageHistoryDetails";
 import { createPageHistory } from "./pageHistory";
+import { createEditTimeMarkupFilter } from "./editTimeMarkup";
 import type { PageHistory } from "./pageHistoryTypes";
 
 // A recorder whose clock the test sets, in milliseconds.
@@ -388,6 +389,49 @@ describe("the rows of detailed logging, from a real history", () => {
             "TXN\tcancelled Background (depth 1), reversing 1 records",
             "ROLLBACK\trollback of Background reversed 1 records",
             'ROLLBACK\trollback of Background put back: text of editable[lang=en] > p#p1[0] > #text[0]: was "Hello world", now "Hello"',
+        ]);
+    });
+
+    it("marks a class change that only the filter's edit-time classes make as ignored by the filter", async () => {
+        const { recorder } = makeRecorder();
+        page = document.createElement("div");
+        page.className = "bloom-page";
+        page.innerHTML =
+            '<div class="bloom-editable" lang="en"><p id="p1" class="real">Hello</p></div>';
+        document.body.appendChild(page);
+        const p = page.querySelector("#p1")!;
+        const thisHistory = createPageHistory({
+            root: page,
+            filter: createEditTimeMarkupFilter(),
+            onUnmarkedChange: () => {},
+        });
+        history = thisHistory;
+        thisHistory.setDetailListener((detail) =>
+            describePageHistoryDetail(detail).forEach((row) =>
+                recorder.add(row.kind, row.text),
+            ),
+        );
+
+        await thisHistory.doTransaction("A", () => {
+            p.classList.add("bloom-pointer-near");
+        });
+        await thisHistory.doTransaction("B", () => {
+            p.classList.add("other");
+        });
+        await thisHistory.doTransaction("C", () => {
+            p.classList.add("x");
+            p.classList.remove("x");
+        });
+
+        const changeRows = recorder
+            .getEvents()
+            .filter((event) => event.kind === "change")
+            .map((event) => event.text);
+        expect(changeRows).toEqual([
+            'in A (depth 1): [ignored by the filter] attribute class of editable[lang=en] > p#p1.real[0]: was "real", now "real bloom-pointer-near"',
+            'in B (depth 1): attribute class of editable[lang=en] > p#p1.real[0]: was "real bloom-pointer-near", now "real bloom-pointer-near other"',
+            'in C (depth 1): attribute class of editable[lang=en] > p#p1.real[0]: was "real bloom-pointer-near other", now "real bloom-pointer-near other"',
+            'in C (depth 1): attribute class of editable[lang=en] > p#p1.real[0]: was "real bloom-pointer-near other x", now "real bloom-pointer-near other"',
         ]);
     });
 

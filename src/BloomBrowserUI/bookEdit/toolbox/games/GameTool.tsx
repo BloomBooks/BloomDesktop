@@ -53,6 +53,7 @@ import {
     kDraggableIdAttribute,
 } from "../canvas/canvasElementDraggables";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
+import { describeCanvasElementStep } from "../canvas/canvasElementUndoDescriptions";
 import { kCanvasElementSelector } from "../canvas/canvasElementConstants";
 import { copyContentToTargetAndCleanup } from "../../js/dragActivityRuntimeUtils";
 import { ThemeChooser } from "./ThemeChooser";
@@ -79,9 +80,6 @@ import {
 // and DragActivityTool, which is the ToolboxToolReactAdaptor subclass that represents
 // the tool to the toolbox code. See also the summary in Games.less of important classes
 // and attributes which are used for these games in both template pages and the code here.
-
-// The description of the undo step of dragging a target in the page (startDraggingTarget).
-const kMoveTargetUndoL10nKey = "EditTab.Undo.Game.MoveTarget";
 
 // Make the targets draggable (in Start mode).
 export const enableDraggingTargets = (startingPoint: HTMLElement) => {
@@ -480,9 +478,9 @@ const startDraggingTarget = (e: MouseEvent) => {
     if (!canvasElementManager) {
         return;
     }
-    describeOpenStep(kMoveTargetUndoL10nKey);
     // get the mouse cursor position at startup:
     const target = e.currentTarget as HTMLElement;
+    describeOpenStep(describeCanvasElementStep("move", target));
     targetBeingDragged = target;
     const page = target.closest(".bloom-page") as HTMLElement;
     const targets = Array.from(

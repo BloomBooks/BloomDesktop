@@ -14,9 +14,11 @@ import { startPageHistory } from "./pageHistory";
 import { attachInputTransactions } from "./pageHistoryInput";
 import { attachUndoAndRedoKeys } from "./pageHistoryKeys";
 import {
+    formatUndoDescription,
     kGenericUndoDescriptionL10nKey,
     type PageHistory,
     type PageHistoryLogKind,
+    type UndoDescription,
 } from "./pageHistoryTypes";
 import type { PageHistoryRecorder } from "./pageHistoryRecorder";
 import {
@@ -187,13 +189,18 @@ export function makeStackSender(
             if (history.isDisposed) return;
             const steps = history.getStepDescriptions();
             recorder.setStack(pageLoadNumber, {
-                undo: steps.undo,
-                redo: steps.redo,
+                undo: steps.undo.map(formatStepDescription),
+                redo: steps.redo.map(formatStepDescription),
                 hasOpenTransaction: history.hasOpenTransaction,
                 isInChangeLayoutMode: isInChangeLayoutMode(),
             });
         });
     };
+}
+
+/** A step's description as the Show Page History dialog shows it. */
+function formatStepDescription(description: UndoDescription): string {
+    return formatUndoDescription(description.l10nId, description.args);
 }
 
 /** Stop listening and dispose of the history, for the page unload. */

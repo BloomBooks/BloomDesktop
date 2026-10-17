@@ -361,7 +361,7 @@ export const CanvasElementContextControls: React.FunctionComponent<{
         const onClick = () => {
             runControlCallback(
                 `toolbar:${control.id}`,
-                control.l10nId,
+                control.undoDescription?.(controlContext) ?? control.l10nId,
                 async () => {
                     await control.action(controlContext, {
                         closeMenu: () => {},

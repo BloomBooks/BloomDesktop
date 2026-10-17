@@ -75,8 +75,10 @@ import {
 } from "../../js/LayerIcons";
 import {
     kZOrderMoveL10nIds,
+    kZOrderMoveUndoTemplates,
     type ZOrderMove,
 } from "../../js/canvasElementManager/CanvasElementZOrder";
+import { describeCanvasElementStep } from "./canvasElementUndoDescriptions";
 import { LinkIcon } from "../../js/LinkIcon";
 import { MissingMetadataIcon } from "../../js/MissingMetadataIcon";
 import StyleEditor from "../../StyleEditor/StyleEditor";
@@ -267,7 +269,8 @@ const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
 /**
  * Run a command control's action as one step of the page history, so that a command from a
  * menu or a toolbar, in the page or in the Canvas tool, is an undo step of its own rather than a
- * change that ends the history. The step is described by the command's label. An async action
+ * change that ends the history. The step is described by the command's undoDescription, or else
+ * by its label. An async action
  * keeps the step open until it settles, so an action must await any work of its own that
  * changes the page later. The step then stays open until no page content delay is pending, so
  * that what the action started without awaiting it, such as fitting a canvas element to a new
@@ -280,10 +283,13 @@ export const runCommandControlAction = (
     ctx: IControlContext,
     runtime: IControlRuntime,
 ): Promise<void> =>
-    doTransaction(control.l10nId, async () => {
-        await control.action(ctx, runtime);
-        await whenNoRequestPageContentDelays();
-    }).catch((error) => {
+    doTransaction(
+        control.undoDescription?.(ctx) ?? control.l10nId,
+        async () => {
+            await control.action(ctx, runtime);
+            await whenNoRequestPageContentDelays();
+        },
+    ).catch((error) => {
         // The rollback put back data-bubble, but Comical draws from its own copy of each
         // spec.
         getCanvasElementManager()?.redrawBubblesFromPage();
@@ -306,6 +312,7 @@ const buildDynamicMenuItemFromControl = (
         id: control.id,
         l10nId: control.l10nId,
         englishLabel: control.englishLabel,
+        undoDescription: control.undoDescription,
         ...overrides,
         onSelect:
             overrides.onSelect ??
@@ -527,7 +534,7 @@ export const makeChooseAudioMenuItemForImage = (
 
 // One command row of the "Layer" submenu. The command itself runs in the page frame's
 // CanvasElementManager, which reorders the DOM and keeps the Comical bubble levels in step,
-// as one undo step described by the row's l10nId.
+// as one undo step described as the command acting on this kind of element.
 const makeLayerCommandRow = (
     id: "bringForward" | "bringToFront" | "sendBackward" | "sendToBack",
     englishLabel: string,
@@ -539,6 +546,11 @@ const makeLayerCommandRow = (
     id,
     l10nId: kZOrderMoveL10nIds[move],
     englishLabel,
+    undoDescription: (ctx) =>
+        describeCanvasElementStep(
+            kZOrderMoveUndoTemplates[move],
+            ctx.canvasElement,
+        ),
     icon: React.createElement(icon, null),
     shortcut: {
         id: `${id}.defaultShortcut`,
@@ -1437,6 +1449,8 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         id: "duplicate",
         l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
         englishLabel: "Duplicate",
+        undoDescription: (ctx) =>
+            describeCanvasElementStep("duplicate", ctx.canvasElement),
         icon: DuplicateIcon,
         menu: {
             shortcutDisplay: "Ctrl+D",
@@ -1450,6 +1464,8 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         id: "delete",
         l10nId: "Common.Delete",
         englishLabel: "Delete",
+        undoDescription: (ctx) =>
+            describeCanvasElementStep("delete", ctx.canvasElement),
         icon: DeleteIcon,
         menu: {
             iconScale: 1.2,
