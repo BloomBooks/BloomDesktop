@@ -340,4 +340,32 @@ describe("The Book and Page Settings dialog's page settings", () => {
         expect(thumbnail.getAttribute("src")).toBe("bookButton-1.png");
         expectHistoryKept();
     });
+
+    it("keep the transparency that a picture's first src came with, when it arrived while the dialog was open", () => {
+        const thumbnail = page.querySelector("#thumbnail")!;
+        expect(thumbnail.hasAttribute("src")).toBe(false);
+        // A picture that is always transparent, whose src arrives with that parameter, as
+        // changeImageInfo writes it.
+        history.doOutsideHistory(() => {
+            thumbnail.classList.add("bloom-transparent");
+            thumbnail.setAttribute("src", "bookButton-1.png?transparent=force");
+        });
+
+        click("page-change");
+        expect(thumbnail.getAttribute("src")).toBe(
+            "bookButton-1.png?transparent=force",
+        );
+        click("page-reset");
+        expect(thumbnail.getAttribute("src")).toBe(
+            "bookButton-1.png?transparent=force",
+        );
+
+        click("page-change");
+        click("dialog-cancel");
+        expect(backgroundColor()).toBe("");
+        expect(thumbnail.getAttribute("src")).toBe(
+            "bookButton-1.png?transparent=force",
+        );
+        expectHistoryKept();
+    });
 });
