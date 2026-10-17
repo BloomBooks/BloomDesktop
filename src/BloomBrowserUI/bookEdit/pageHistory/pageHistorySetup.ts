@@ -38,8 +38,10 @@ import {
 let history: PageHistory | undefined;
 // Removes the listeners that feed the history.
 let detachInput: (() => void) | undefined;
-// Stops following the Show Page History dialog's "Detailed logging" box.
+// Stops following whether the Show Page History dialog is open, which turns detailed logging on.
 let stopFollowingDetailedLogging: (() => void) | undefined;
+// Tells the Show Page History dialog's recorder that this page has gone.
+let notePageGone: (() => void) | undefined;
 
 /**
  * Start the page history now, and mark it ready once the page is ready (pageReadiness.ts); end it
@@ -62,26 +64,47 @@ export function startPageHistoryForThisPage(
     if (!root) throw new Error("Page history: the page has no .bloom-page.");
     // In the root window, which outlives this frame; none for a page with no workspace around it.
     const recorder = tryGetWorkspaceBundleExports()?.pageHistoryRecorder;
-    recorder?.notePageLoad(root.getAttribute("id") ?? "(no id)");
+    const pageLoadNumber = recorder?.notePageLoad(
+        root.getAttribute("id") ?? "(no id)",
+    );
+    // Sends the recorder this page's undo and redo steps; set once the history exists.
+    let sendStackSoon = () => {};
     const thisHistory = startPageHistory({
         root,
         filter: createEditTimeMarkupFilter(),
         startsReady: false,
-        log: (line, kind) => logLine(line, kind, recorder),
+        log: (line, kind) => {
+            logLine(line, kind, recorder);
+            // The history logs each step it makes, each undo, redo and refusal, and each clear.
+            sendStackSoon();
+        },
     });
     history = thisHistory;
+    if (recorder && pageLoadNumber !== undefined) {
+        sendStackSoon = makeStackSender(thisHistory, recorder, pageLoadNumber);
+        notePageGone = () => recorder.notePageGone(pageLoadNumber);
+    }
+    sendStackSoon();
     onStarted(thisHistory);
     if (recorder)
         stopFollowingDetailedLogging = recorder.onDetailedChange((detailed) => {
             if (thisHistory.isDisposed) return;
             thisHistory.setDetailListener(
                 detailed
-                    ? (detail) =>
+                    ? (detail) => {
                           describePageHistoryDetail(detail).forEach((row) =>
                               recorder.add(row.kind, row.text),
-                          )
+                          );
+                          // A transaction opening or ending changes whether a step is in
+                          // progress, and a change outside any transaction can clear redo or
+                          // take away the latest step, none of which the history logs.
+                          sendStackSoon();
+                      }
                     : undefined,
             );
+            // The dialog has just opened: whether a step is in progress may have changed while
+            // it was closed, when transactions were not reported.
+            sendStackSoon();
         });
     const detachTransactions = attachInputTransactions(
         thisHistory,
@@ -143,8 +166,40 @@ export function writeToBloomLog(line: string): void {
     if (!repeated) postString("common/logger/writeEvent", line);
 }
 
+/**
+ * A function that sends recorder a copy of history's undo and redo steps, for the Show Page History
+ * dialog's Stack tab: once, in a microtask, however often it is called before then. The history
+ * logs and reports its details from the middle of its work, before its steps are in their new
+ * order (a clear logs before it drops them), so the copy waits until that work is done. Nothing
+ * is sent once the history is disposed.
+ */
+export function makeStackSender(
+    history: PageHistory,
+    recorder: PageHistoryRecorder,
+    pageLoadNumber: number,
+): () => void {
+    let isQueued = false;
+    return () => {
+        if (isQueued) return;
+        isQueued = true;
+        queueMicrotask(() => {
+            isQueued = false;
+            if (history.isDisposed) return;
+            const steps = history.getStepDescriptions();
+            recorder.setStack(pageLoadNumber, {
+                undo: steps.undo,
+                redo: steps.redo,
+                hasOpenTransaction: history.hasOpenTransaction,
+                isInChangeLayoutMode: isInChangeLayoutMode(),
+            });
+        });
+    };
+}
+
 /** Stop listening and dispose of the history, for the page unload. */
 function endPageHistory(): void {
+    notePageGone?.();
+    notePageGone = undefined;
     stopFollowingDetailedLogging?.();
     stopFollowingDetailedLogging = undefined;
     detachInput?.();
