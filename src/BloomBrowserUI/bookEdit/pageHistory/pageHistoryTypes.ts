@@ -191,12 +191,93 @@ export interface PageHistoryOptions {
      */
     onUnmarkedChange?: (whatChanged: string) => void;
     /**
-     * Called with one line for Bloom's log when an undo step is made, undone or redone, and when
-     * the history is cleared, with its reason. The lines name steps by their description's l10n
-     * key and never hold the page's text. Default: nothing.
+     * Called with one line for Bloom's log when an undo step is made, undone or redone, when an
+     * undo or redo is refused, when the history is cleared, with its reason, and when cancelling
+     * a transaction reverses changes. kind says which. The lines name steps by their
+     * description's l10n key and never hold the page's text. Default: nothing.
      */
-    log?: (line: string) => void;
+    log?: (line: string, kind: PageHistoryLogKind) => void;
 }
+
+/** What a line that PageHistoryOptions.log gets is about. */
+export type PageHistoryLogKind =
+    | "step"
+    | "undo"
+    | "redo"
+    // An undo or redo that found the page changed since its step, and dropped that stack.
+    | "refused"
+    | "cleared"
+    // A cancelled transaction reversed the changes made since it began.
+    | "rollback";
+
+/**
+ * Where the history sent a batch of changes that its observer saw, for PageHistoryDetail.
+ * - transaction: into the open transaction; descriptionL10nKey and depth (1 for the outermost)
+ *   are those of the innermost transaction open.
+ * - addToLatestTransaction: made inside addToLatestTransaction, joining the open transaction or
+ *   the latest step, whose description is given; undefined when there is no step, and the
+ *   changes become starting state.
+ * - unmarked: made outside any transaction and outside every call (rule 1), joining the latest
+ *   step, as for addToLatestTransaction, and reported to onUnmarkedChange.
+ * - outsideHistory: made inside doOutsideHistory, or by restoring the selection after an undo or
+ *   redo; not recorded.
+ * - beforeReady: made outside any transaction before markPageReady; not recorded.
+ * - undo, redo: the history's own changes, putting back a step.
+ * - rollback: the history's own changes, reversing what was changed since a cancelled
+ *   transaction began.
+ */
+export type PageHistoryChangeContext =
+    | { kind: "transaction"; descriptionL10nKey: string; depth: number }
+    | {
+          kind: "addToLatestTransaction" | "unmarked";
+          joins: "openTransaction" | "latestStep";
+          descriptionL10nKey: string | undefined;
+      }
+    | { kind: "outsideHistory" }
+    | { kind: "beforeReady" }
+    | { kind: "undo" | "redo" | "rollback"; descriptionL10nKey: string };
+
+/**
+ * One thing that the history did, for a developer's tool that shows everything (the Show Page
+ * History dialog). depth is 1 for an outermost transaction, 2 for one begun inside it, and so on.
+ * - opened: a transaction began.
+ * - ended: a transaction ended (end(), or doTransaction's fn settling, or the end of the last
+ *   transaction that it waited for).
+ * - endWaits: end() of a transaction that waits for innerOpen transactions begun inside it.
+ * - closedWithNoStep: the outermost transaction closed with no net change, and made no step.
+ * - cancelled: a transaction was cancelled; recordsReversed is how many records it reverses.
+ * - changes: a batch of records, in the order the observer gave them, and where they went.
+ *   ignored[i] is true when the history's filter ignores the node of records[i].
+ */
+export type PageHistoryDetail =
+    | { kind: "opened"; descriptionL10nKey: string; depth: number }
+    | { kind: "ended"; descriptionL10nKey: string; depth: number }
+    | {
+          kind: "endWaits";
+          descriptionL10nKey: string;
+          depth: number;
+          innerOpen: number;
+      }
+    | { kind: "closedWithNoStep"; descriptionL10nKey: string }
+    | {
+          kind: "cancelled";
+          descriptionL10nKey: string;
+          depth: number;
+          recordsReversed: number;
+      }
+    | {
+          kind: "changes";
+          records: MutationRecord[];
+          ignored: boolean[];
+          context: PageHistoryChangeContext;
+      };
+
+/**
+ * Called synchronously with each PageHistoryDetail, while the history is in the middle of the
+ * work that it reports. It must not change the page or call the history, and must not keep the
+ * records: it reads what it needs from them, and from the page, before it returns.
+ */
+export type PageHistoryDetailListener = (detail: PageHistoryDetail) => void;
 
 /** One per page load, in the page frame. */
 export interface PageHistory {
@@ -325,6 +406,13 @@ export interface PageHistory {
     readonly hasOpenTransaction: boolean;
     /** True once dispose() has run; every other call then throws. */
     readonly isDisposed: boolean;
+
+    /**
+     * Report everything the history does to listener, or stop reporting when listener is
+     * undefined; for the Show Page History dialog. Reporting changes nothing in what the history
+     * does, and with no listener it costs nothing beyond a check.
+     */
+    setDetailListener(listener: PageHistoryDetailListener | undefined): void;
 
     /**
      * Stop observing, for the page unload. An open transaction ends; every step is dropped. Any

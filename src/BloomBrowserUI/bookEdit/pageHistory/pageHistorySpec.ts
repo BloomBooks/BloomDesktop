@@ -12,7 +12,10 @@ import { kGenericUndoDescriptionL10nKey } from "./pageHistoryTypes";
 import type {
     BegunTransaction,
     PageHistory,
+    PageHistoryChangeContext,
+    PageHistoryDetail,
     PageHistoryFilter,
+    PageHistoryLogKind,
     PageHistoryOptions,
     RestoredContent,
     Transaction,
@@ -2621,13 +2624,50 @@ describe("page history: log", () => {
         ]);
     });
 
+    it("says what kind of line each is", async () => {
+        const log = vi.fn<(line: string, kind: PageHistoryLogKind) => void>();
+        const f = setUp(kStandardPage, { log });
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        await f.history.undo();
+        await f.history.redo();
+        f.history.clearUndoAndRedo("a test");
+
+        expect(log.mock.calls.map((call) => call[1])).toEqual([
+            "step",
+            "undo",
+            "redo",
+            "cleared",
+        ]);
+    });
+
     it("logs clearUndoAndRedo with its reason", () => {
-        const log = vi.fn<(line: string) => void>();
+        const log = vi.fn<(line: string, kind: PageHistoryLogKind) => void>();
         const f = setUp(kStandardPage, { log });
         f.history.clearUndoAndRedo("request some/endpoint");
         expect(log).toHaveBeenCalledWith(
             "Page history: cleared by request some/endpoint",
+            "cleared",
         );
+    });
+
+    it("logs a cancel that reversed changes as a rollback, and one that reversed none not at all", () => {
+        const log = vi.fn<(line: string, kind: PageHistoryLogKind) => void>();
+        const f = setUp(kStandardPage, { log });
+        f.history.beginTransaction("Nothing").cancel();
+        expect(
+            log,
+            "a cancel with nothing to reverse should log nothing",
+        ).not.toHaveBeenCalled();
+
+        const t = f.history.beginTransaction("Typing");
+        byId(f, "img1").setAttribute("src", "b.png");
+        byId(f, "img1").setAttribute("alt", "a picture");
+        t.cancel();
+
+        expect(byId(f, "img1").getAttribute("src")).toBe("a.png");
+        expect(log.mock.calls).toEqual([
+            ["Page history: rollback of Typing reversed 2 records", "rollback"],
+        ]);
     });
 
     it("logs an undo that found the page changed since its step", async () => {
@@ -2644,6 +2684,371 @@ describe("page history: log", () => {
         expect(byId(f, "img1").getAttribute("src")).toBe("recomputed.png");
         expect(log.mock.calls.map((call) => call[0])).toEqual([
             "Page history: undo of A found the page changed since, and dropped the undo steps",
+        ]);
+    });
+});
+
+describe("page history: setDetailListener", () => {
+    // What a detail said, read while the listener ran, as the contract asks: a record's node may
+    // change later.
+    type Seen =
+        | Exclude<PageHistoryDetail, { kind: "changes" }>
+        | {
+              kind: "changes";
+              context: PageHistoryChangeContext;
+              records: {
+                  type: string;
+                  oldValue: string | null;
+                  target: Node;
+              }[];
+              ignored: boolean[];
+          };
+
+    // Listens to f's history and returns what it hears.
+    function listen(f: IFixture): Seen[] {
+        const seen: Seen[] = [];
+        f.history.setDetailListener((detail) => {
+            if (detail.kind !== "changes") {
+                seen.push(detail);
+                return;
+            }
+            seen.push({
+                kind: "changes",
+                context: detail.context,
+                records: detail.records.map((record) => ({
+                    type: record.type,
+                    oldValue: record.oldValue,
+                    target: record.target,
+                })),
+                ignored: detail.ignored,
+            });
+        });
+        return seen;
+    }
+
+    // The contexts of the batches of changes seen, in order.
+    function contexts(seen: Seen[]): PageHistoryChangeContext[] {
+        return seen.flatMap((detail) =>
+            detail.kind === "changes" ? [detail.context] : [],
+        );
+    }
+
+    function firstText(f: IFixture, id: string): Text {
+        const text = byId(f, id).firstChild;
+        expect(
+            text?.nodeType,
+            `test setup: #${id} should start with a text node`,
+        ).toBe(Node.TEXT_NODE);
+        return text as Text;
+    }
+
+    it("reports nothing once the listener is removed, and changes nothing the history does", async () => {
+        const f = setUp();
+        const seen = listen(f);
+        f.history.setDetailListener(undefined);
+
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        const t = f.history.beginTransaction("B");
+        firstText(f, "p1").data = "typed";
+        t.cancel();
+        f.history.doOutsideHistory(() =>
+            byId(f, "img1").setAttribute("alt", "x"),
+        );
+        await f.history.undo();
+        await f.history.redo();
+
+        expect(seen).toEqual([]);
+        expect(byId(f, "img1").getAttribute("src")).toBe("b.png");
+        expect(firstText(f, "p1").data).toBe("Hello ");
+        expect(f.history.undoDescriptionL10nKey).toBe("A");
+    });
+
+    it("reports a transaction opening, its changes, and its end", async () => {
+        const f = setUp();
+        const seen = listen(f);
+        const text = firstText(f, "p1");
+
+        await f.history.doTransaction("A", () => {
+            text.data = "Hello there ";
+        });
+
+        expect(seen).toEqual([
+            { kind: "opened", descriptionL10nKey: "A", depth: 1 },
+            {
+                kind: "changes",
+                context: {
+                    kind: "transaction",
+                    descriptionL10nKey: "A",
+                    depth: 1,
+                },
+                records: [
+                    { type: "characterData", oldValue: "Hello ", target: text },
+                ],
+                ignored: [false],
+            },
+            { kind: "ended", descriptionL10nKey: "A", depth: 1 },
+        ]);
+    });
+
+    it("names the innermost open transaction as the context of a change", () => {
+        const f = setUp();
+        const seen = listen(f);
+        const outer = f.history.beginTransaction("Outer");
+        const inner = f.history.beginTransaction("Inner");
+        byId(f, "img1").setAttribute("src", "b.png");
+        inner.end();
+        outer.end();
+
+        expect(contexts(seen)).toEqual([
+            { kind: "transaction", descriptionL10nKey: "Inner", depth: 2 },
+        ]);
+        expect(seen.map((detail) => detail.kind)).toEqual([
+            "opened",
+            "opened",
+            "changes",
+            "ended",
+            "ended",
+        ]);
+    });
+
+    it("reports a transaction that closes with no net change", async () => {
+        const f = setUp();
+        const seen = listen(f);
+        await f.history.doTransaction("A", () => {
+            byId(f, "img1").setAttribute("src", "b.png");
+            byId(f, "img1").setAttribute("src", "a.png");
+        });
+        expect(seen[seen.length - 1]).toEqual({
+            kind: "closedWithNoStep",
+            descriptionL10nKey: "A",
+        });
+        expect(f.history.undoDescriptionL10nKey).toBeUndefined();
+    });
+
+    it("reports the general transaction waiting for one begun inside it, and both ending", () => {
+        const f = setUp();
+        const seen = listen(f);
+        const general = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        const dialog = f.history.beginTransaction("Dialog");
+        expect(general.end()).toBe(false);
+        byId(f, "img1").setAttribute("src", "b.png");
+        expect(dialog.end()).toBe(true);
+
+        expect(seen.filter((detail) => detail.kind !== "changes")).toEqual([
+            {
+                kind: "opened",
+                descriptionL10nKey: kGenericUndoDescriptionL10nKey,
+                depth: 1,
+            },
+            { kind: "opened", descriptionL10nKey: "Dialog", depth: 2 },
+            {
+                kind: "endWaits",
+                descriptionL10nKey: kGenericUndoDescriptionL10nKey,
+                depth: 1,
+                innerOpen: 1,
+            },
+            { kind: "ended", descriptionL10nKey: "Dialog", depth: 2 },
+            {
+                kind: "ended",
+                descriptionL10nKey: kGenericUndoDescriptionL10nKey,
+                depth: 1,
+            },
+        ]);
+    });
+
+    it("reports a cancelled transaction and the rollback that puts back typing made in it", () => {
+        const f = setUp();
+        const seen = listen(f);
+        const text = firstText(f, "p1");
+        const t = f.history.beginTransaction("Background");
+        text.data = "Hello t";
+        text.data = "Hello ty";
+        t.cancel();
+
+        expect(text.data, "the rollback should put back the text").toBe(
+            "Hello ",
+        );
+        const afterOpen = seen.slice(1);
+        expect(afterOpen[0]).toEqual({
+            kind: "changes",
+            context: {
+                kind: "transaction",
+                descriptionL10nKey: "Background",
+                depth: 1,
+            },
+            records: [
+                { type: "characterData", oldValue: "Hello ", target: text },
+                { type: "characterData", oldValue: "Hello t", target: text },
+            ],
+            ignored: [false, false],
+        });
+        expect(afterOpen[1]).toEqual({
+            kind: "cancelled",
+            descriptionL10nKey: "Background",
+            depth: 1,
+            recordsReversed: 2,
+        });
+        const rollback = afterOpen[2];
+        expect(rollback.kind).toBe("changes");
+        if (rollback.kind !== "changes") return;
+        expect(rollback.context).toEqual({
+            kind: "rollback",
+            descriptionL10nKey: "Background",
+        });
+        expect(
+            rollback.records[0],
+            "the rollback's first record should hold the typed text it took away",
+        ).toEqual({
+            type: "characterData",
+            oldValue: "Hello ty",
+            target: text,
+        });
+        expect(afterOpen.length).toBe(3);
+    });
+
+    it("reports a change inside doOutsideHistory", () => {
+        const f = setUp();
+        const seen = listen(f);
+        f.history.doOutsideHistory(() =>
+            byId(f, "img1").setAttribute("src", "b.png"),
+        );
+        expect(contexts(seen)).toEqual([{ kind: "outsideHistory" }]);
+    });
+
+    it("reports a change before the page is ready, and an unmarked one after it", async () => {
+        const f = setUp(kStandardPage, { startsReady: false });
+        const seen = listen(f);
+        byId(f, "img1").setAttribute("src", "b.png");
+        await letObserverDeliver();
+        f.history.markPageReady();
+        byId(f, "img1").setAttribute("src", "c.png");
+        await letObserverDeliver();
+
+        expect(contexts(seen)).toEqual([
+            { kind: "beforeReady" },
+            {
+                kind: "unmarked",
+                joins: "latestStep",
+                descriptionL10nKey: undefined,
+            },
+        ]);
+    });
+
+    it("reports an unmarked change joining the latest step", async () => {
+        const f = setUp();
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        const seen = listen(f);
+        byId(f, "img1").setAttribute("alt", "x");
+        await letObserverDeliver();
+
+        expect(contexts(seen)).toEqual([
+            { kind: "unmarked", joins: "latestStep", descriptionL10nKey: "A" },
+        ]);
+        expect(
+            f.unmarked,
+            "the warning should still be given",
+        ).toHaveBeenCalled();
+    });
+
+    it("reports addToLatestTransaction joining the latest step, or the open transaction", async () => {
+        const f = setUp();
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        const seen = listen(f);
+        f.history.addToLatestTransaction(() =>
+            byId(f, "img1").setAttribute("alt", "x"),
+        );
+        const t = f.history.beginTransaction("B");
+        byId(f, "box2").setAttribute("lang", "de");
+        f.history.addToLatestTransaction(() =>
+            byId(f, "img1").setAttribute("alt", "y"),
+        );
+        t.end();
+
+        expect(contexts(seen)).toEqual([
+            {
+                kind: "addToLatestTransaction",
+                joins: "latestStep",
+                descriptionL10nKey: "A",
+            },
+            { kind: "transaction", descriptionL10nKey: "B", depth: 1 },
+            {
+                kind: "addToLatestTransaction",
+                joins: "openTransaction",
+                descriptionL10nKey: "B",
+            },
+        ]);
+    });
+
+    it("reports addToLatestTransaction inside a general transaction that has changed nothing as joining the latest step", async () => {
+        const f = setUp();
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        const seen = listen(f);
+        const general = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        f.history.addToLatestTransaction(() =>
+            byId(f, "img1").setAttribute("alt", "x"),
+        );
+        general.end();
+
+        expect(contexts(seen)).toEqual([
+            {
+                kind: "addToLatestTransaction",
+                joins: "latestStep",
+                descriptionL10nKey: "A",
+            },
+        ]);
+    });
+
+    it("reports what undo and redo put back", async () => {
+        const f = setUp();
+        const img = byId(f, "img1");
+        await stepSettingAttribute(f, "A", img, "src", "b.png");
+        const seen = listen(f);
+        await f.history.undo();
+        await f.history.redo();
+
+        const putBack = seen.filter(
+            (detail) =>
+                detail.kind === "changes" &&
+                (detail.context.kind === "undo" ||
+                    detail.context.kind === "redo"),
+        );
+        expect(
+            putBack.map((detail) =>
+                detail.kind === "changes"
+                    ? [detail.context, detail.records.map((r) => r.oldValue)]
+                    : [],
+            ),
+        ).toEqual([
+            [{ kind: "undo", descriptionL10nKey: "A" }, ["b.png"]],
+            [{ kind: "redo", descriptionL10nKey: "A" }, ["a.png"]],
+        ]);
+    });
+
+    it("marks the records of a node that the filter ignores", async () => {
+        const filter: PageHistoryFilter = {
+            ...kKeepEverythingFilter,
+            ignoreNode: (node) =>
+                node instanceof Element && node.classList.contains("bloom-ui"),
+        };
+        const f = setUp(
+            kStandardPage +
+                '<div class="bloom-ui" id="ui" data-state="a"></div>',
+            { filter },
+        );
+        const seen = listen(f);
+        await f.history.doTransaction("A", () => {
+            byId(f, "ui").setAttribute("data-state", "b");
+            byId(f, "img1").setAttribute("src", "b.png");
+        });
+
+        const changes = seen.find((detail) => detail.kind === "changes");
+        expect(changes?.kind === "changes" && changes.ignored).toEqual([
+            true,
+            false,
         ]);
     });
 });

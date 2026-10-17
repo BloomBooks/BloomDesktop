@@ -6,7 +6,15 @@
 // imageDescriptionUndo.test.tsx.
 import * as React from "react";
 import { act } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    vi,
+    type Mock,
+} from "vitest";
 import { renderRoot, unmountRoot } from "../../utils/reactRender";
 import { createPageHistory } from "../pageHistory/pageHistory";
 import { attachInputTransactions } from "../pageHistory/pageHistoryInput";
@@ -172,7 +180,7 @@ let container: HTMLDivElement;
 let detach: () => void;
 let userEvents: WeakSet<Event>;
 let endOfTask: (() => void)[];
-let onUnmarkedChange: ReturnType<typeof vi.fn>;
+let onUnmarkedChange: Mock<(whatChanged: string) => void>;
 
 beforeEach(async () => {
     document.body.innerHTML =
@@ -181,7 +189,7 @@ beforeEach(async () => {
     page = document.body.querySelector(".bloom-page")!;
     img = page.querySelector("img")!;
     other = page.querySelector("#other")!;
-    onUnmarkedChange = vi.fn();
+    onUnmarkedChange = vi.fn<(whatChanged: string) => void>();
     history = createPageHistory({ root: page, onUnmarkedChange });
     mocks.history = history;
     mocks.postJson.mockReset();

@@ -16,8 +16,15 @@ import { attachUndoAndRedoKeys } from "./pageHistoryKeys";
 import {
     kGenericUndoDescriptionL10nKey,
     type PageHistory,
+    type PageHistoryLogKind,
 } from "./pageHistoryTypes";
+import type { PageHistoryRecorder } from "./pageHistoryRecorder";
+import {
+    describeInputOpening,
+    describePageHistoryDetail,
+} from "./pageHistoryDetails";
 import { postString } from "../../utils/bloomApi";
+import { tryGetWorkspaceBundleExports } from "../js/workspaceFrames";
 import { PageReadinessWaits, whenPageIsReady } from "./pageReadiness";
 import {
     isInChangeLayoutMode,
@@ -31,6 +38,8 @@ import {
 let history: PageHistory | undefined;
 // Removes the listeners that feed the history.
 let detachInput: (() => void) | undefined;
+// Stops following the Show Page History dialog's "Detailed logging" box.
+let stopFollowingDetailedLogging: (() => void) | undefined;
 
 /**
  * Start the page history now, and mark it ready once the page is ready (pageReadiness.ts); end it
@@ -51,18 +60,40 @@ export function startPageHistoryForThisPage(
 ): void {
     const root = document.querySelector(".bloom-page");
     if (!root) throw new Error("Page history: the page has no .bloom-page.");
+    // In the root window, which outlives this frame; none for a page with no workspace around it.
+    const recorder = tryGetWorkspaceBundleExports()?.pageHistoryRecorder;
+    recorder?.notePageLoad(root.getAttribute("id") ?? "(no id)");
     const thisHistory = startPageHistory({
         root,
         filter: createEditTimeMarkupFilter(),
         startsReady: false,
-        log: writeToBloomLog,
+        log: (line, kind) => logLine(line, kind, recorder),
     });
     history = thisHistory;
     onStarted(thisHistory);
+    if (recorder)
+        stopFollowingDetailedLogging = recorder.onDetailedChange((detailed) => {
+            if (thisHistory.isDisposed) return;
+            thisHistory.setDetailListener(
+                detailed
+                    ? (detail) =>
+                          describePageHistoryDetail(detail).forEach((row) =>
+                              recorder.add(row.kind, row.text),
+                          )
+                    : undefined,
+            );
+        });
     const detachTransactions = attachInputTransactions(
         thisHistory,
         window,
         otherWindows,
+        {
+            onOpened: (event, kind) => {
+                if (!recorder?.isDetailed) return;
+                const row = describeInputOpening(event, kind);
+                recorder.add(row.kind, row.text);
+            },
+        },
     );
     // After attachInputTransactions: see attachUndoAndRedoKeys.
     const detachKeys = attachUndoAndRedoKeys(window, otherWindows, {
@@ -76,8 +107,24 @@ export function startPageHistoryForThisPage(
     };
     window.addEventListener("pagehide", endPageHistory, { once: true });
     void whenPageIsReady(window, waits).then(() => {
-        if (!thisHistory.isDisposed) thisHistory.markPageReady();
+        if (thisHistory.isDisposed) return;
+        thisHistory.markPageReady();
+        recorder?.notePageReady();
     });
+}
+
+/**
+ * Send a line that the page history logged to Bloom's log and to the Show Page History dialog's
+ * recorder, if there is one. A rollback goes to Bloom's log too: it takes changes off the page,
+ * which a problem report needs to show.
+ */
+function logLine(
+    line: string,
+    kind: PageHistoryLogKind,
+    recorder: PageHistoryRecorder | undefined,
+): void {
+    writeToBloomLog(line);
+    recorder?.addLogLine(line, kind);
 }
 
 // The line that the page history logs when it makes a step with the general description.
@@ -98,6 +145,8 @@ export function writeToBloomLog(line: string): void {
 
 /** Stop listening and dispose of the history, for the page unload. */
 function endPageHistory(): void {
+    stopFollowingDetailedLogging?.();
+    stopFollowingDetailedLogging = undefined;
     detachInput?.();
     detachInput = undefined;
     history?.dispose();

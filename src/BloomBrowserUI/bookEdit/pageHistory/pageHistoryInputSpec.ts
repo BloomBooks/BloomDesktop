@@ -8,7 +8,10 @@
 // ends. pageHistoryInput.browser.spec.ts covers the real defaults in a browser.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPageHistory } from "./pageHistory";
-import { attachInputTransactions } from "./pageHistoryInput";
+import {
+    attachInputTransactions,
+    kIgnoredByPageHistoryInputSelector,
+} from "./pageHistoryInput";
 import {
     BegunTransaction,
     kGenericUndoDescriptionL10nKey,
@@ -937,5 +940,82 @@ describe("detaching", () => {
         keyDown(box, { key: "c" });
         expect(history.hasOpenTransaction).toBe(false);
         expect(await undoEverything()).toEqual(["HelloBonjour"]);
+    });
+});
+
+describe("a tool that watches the history (kIgnoredByPageHistoryInputSelector)", () => {
+    // A button inside such a tool, in the other frame, as the Show Page History dialog is in the
+    // root window.
+    function toolButton(): HTMLElement {
+        const tool = otherWindow.document.createElement("div");
+        tool.setAttribute(kIgnoredByPageHistoryInputSelector.slice(1, -1), "");
+        tool.innerHTML = '<button id="watcherButton">Copy</button>';
+        otherWindow.document.body.appendChild(tool);
+        expect(
+            otherById("watcherButton").closest(
+                kIgnoredByPageHistoryInputSelector,
+            ),
+            "test setup: the button should be inside the tool",
+        ).not.toBeNull();
+        return otherById("watcherButton");
+    }
+
+    it("neither ends the typing step nor opens a transaction when clicked", async () => {
+        const box = byId("box1");
+        typeText(box, "ab");
+        const button = toolButton();
+        click(button);
+        expect(
+            history.hasOpenTransaction,
+            "the typing step should still be open",
+        ).toBe(true);
+        typeText(box, "c");
+        click(byId("canvas"));
+
+        expect(await undoEverything()).toEqual(["HelloBonjour"]);
+    });
+
+    it("does not end the history when the page changes while it is clicked", () => {
+        makeStepWithClick("1");
+        const button = toolButton();
+        onBloomEvent(button, "pointerdown", () =>
+            byId("img1").setAttribute("src", "b.png"),
+        );
+
+        click(button);
+
+        expect(
+            history.undoDescriptionL10nKey,
+            "the change joins the latest step (rule 1) instead of ending the history",
+        ).toBe(kGenericUndoDescriptionL10nKey);
+    });
+});
+
+describe("onOpened", () => {
+    it("gets the event and the kind of each transaction that input opens, and nothing for input that opens none", () => {
+        detach!();
+        const opened =
+            vi.fn<
+                (event: Event, kind: "pointer" | "event" | "typing") => void
+            >();
+        detach = attachInputTransactions(history, window, [otherWindow], {
+            isFromUser: (event) => userEvents.has(event),
+            afterCurrentTask: (fn) => endOfTask.push(fn),
+            onOpened: opened,
+        });
+        const box = byId("box1");
+        const firstKey = keyDown(box, { key: "a" });
+        keyDown(box, { key: "b" });
+        finishTask();
+        click(byId("canvas"));
+
+        expect(
+            opened.mock.calls.map((call) => [call[0].type, call[1]]),
+            "the second key joins the typing step that the first opened",
+        ).toEqual([
+            ["keydown", "typing"],
+            ["pointerdown", "pointer"],
+        ]);
+        expect(opened.mock.calls[0][0]).toBe(firstKey);
     });
 });
