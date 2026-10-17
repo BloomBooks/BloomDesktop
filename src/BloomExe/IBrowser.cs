@@ -334,11 +334,10 @@ namespace Bloom
         public abstract void SetEditingCommands(
             CutCommand cutCommand,
             CopyCommand copyCommand,
-            PasteCommand pasteCommand,
-            UndoCommand undoCommand
+            PasteCommand pasteCommand
         );
         public abstract void ShowHtml(string html);
-        public abstract void UpdateEditButtonsAsync();
+        public abstract void UpdateEditButtons();
 
         protected void AdjustContextMenu(IMenuItemAdder adder)
         {

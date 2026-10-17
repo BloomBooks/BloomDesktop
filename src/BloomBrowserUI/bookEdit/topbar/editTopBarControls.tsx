@@ -2,6 +2,7 @@ import { css } from "@emotion/react";
 import BloomButton from "../../react_components/bloomButton";
 import { get, getBloomApiPrefix, post, postJson } from "../../utils/bloomApi";
 import { useEffect, useState } from "react";
+import { getEditablePageBundleExports } from "../js/workspaceFrames";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
 import {
@@ -129,18 +130,17 @@ export const EditTopBarControls: React.FunctionComponent = () => {
         copy: true,
         cut: true,
         paste: true,
-        undo: true,
     });
     useSubscribeToWebSocketForObject<{
         enabled: {
             copy: boolean;
             cut: boolean;
             paste: boolean;
-            undo: boolean;
         };
     }>("editTopBarControls", "updateEditButtons", (results) => {
         setButtonsEnabled(results.enabled);
     });
+    const undoAndRedoEnabled = useUndoAndRedoEnabled();
 
     // Start Dropdowns
     const [contentLanguagesEnabled, setContentLanguagesEnabled] =
@@ -209,7 +209,28 @@ export const EditTopBarControls: React.FunctionComponent = () => {
                         `}
                     />
                 </div>
-                <UndoButton enabled={buttonsEnabled.undo ?? true} />
+                <UndoButton enabled={undoAndRedoEnabled.undo} />
+                <div
+                    css={css`
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-evenly;
+                        width: 60px;
+                    `}
+                >
+                    <RedoButton enabled={undoAndRedoEnabled.redo} />
+                    {/* Empty rows, as below Cut, so that Redo is at Cut's height. */}
+                    <div
+                        css={css`
+                            height: 18px;
+                        `}
+                    />
+                    <div
+                        css={css`
+                            height: 6px;
+                        `}
+                    />
+                </div>
                 <div
                     css={css`
                         width: 18px;
@@ -240,6 +261,27 @@ export const EditTopBarControls: React.FunctionComponent = () => {
         </div>
     );
 };
+
+/**
+ * Whether the page open in the Edit tab has anything to undo and to redo. The page frame is in
+ * this document, so this asks its page history directly.
+ */
+function useUndoAndRedoEnabled(): { undo: boolean; redo: boolean } {
+    const [undo, setUndo] = useState(false);
+    const [redo, setRedo] = useState(false);
+    // An effect because the answer lives outside React: in the page frame's history, which is
+    // replaced on every page load and has no event for every way the answer changes (an open
+    // transaction counts as something to undo). So poll it, as C# used to for the Undo button.
+    useEffect(() => {
+        const timer = window.setInterval(() => {
+            const page = getEditablePageBundleExports();
+            setUndo(page?.canUndo() ?? false);
+            setRedo(page?.canRedo() ?? false);
+        }, 150);
+        return () => window.clearInterval(timer);
+    }, []);
+    return { undo, redo };
+}
 
 const imagesPrefix = getBloomApiPrefix(false);
 
@@ -290,6 +332,34 @@ export const CutButton: React.FunctionComponent<{
     );
 };
 
+export const RedoButton: React.FunctionComponent<{
+    enabled: boolean;
+}> = (props) => {
+    // There is no redo icon, so this is the undo icon, mirrored and at the size of Cut's.
+    const enabledIcon = imagesPrefix + "images/undo32x32.png";
+    const disabledIcon = imagesPrefix + "images/undoDisabled32x32.png";
+    return (
+        <EditingControlButton
+            enabled={props.enabled}
+            l10nKey="EditTab.RedoButton"
+            tooltipL10nKey="EditTab.RedoButton.ToolTip"
+            disabledTooltipL10nKey="EditTab.RedoButton.ToolTipWhenDisabled"
+            onClick={() => getEditablePageBundleExports()?.handleRedo()}
+            testId="redo-button"
+            runsUndo={true}
+            enabledIcon={enabledIcon}
+            disabledIcon={disabledIcon}
+            iconBeforeText={false}
+            cssAttributes={`${smallButtonCSSAttributes}
+                img {
+                    width: 16px;
+                    height: 16px;
+                    transform: scaleX(-1);
+                }`}
+        />
+    );
+};
+
 const largeButtonCSSAttributes = `width: 54px;
     height: 60px;
     display: grid;
@@ -331,7 +401,7 @@ export const UndoButton: React.FunctionComponent<{
             l10nKey="EditTab.UndoButton"
             tooltipL10nKey="EditTab.UndoButton.ToolTip"
             disabledTooltipL10nKey="EditTab.UndoButton.ToolTipWhenDisabled"
-            onClickAction="undo"
+            onClick={() => getEditablePageBundleExports()?.handleUndo()}
             testId="undo-button"
             runsUndo={true}
             enabledIcon={enabledIcon}
@@ -347,13 +417,15 @@ export const EditingControlButton: React.FunctionComponent<{
     l10nKey: string;
     tooltipL10nKey: string;
     disabledTooltipL10nKey?: string;
-    onClickAction:
+    // The command that C# runs (EditingViewApi.HandleTopBarButtonClick), unless onClick is given.
+    onClickAction?:
         | "copy"
         | "cut"
         | "paste"
-        | "undo"
         | "contentLanguages"
         | "layoutChoices";
+    // What a click does, for a button that the front end handles itself.
+    onClick?: () => void;
     // For the e2e suite (src/BloomE2E), which finds the button by it.
     testId?: string;
     // True for a button that runs undo or redo. The page history must not open a transaction on
@@ -390,9 +462,11 @@ export const EditingControlButton: React.FunctionComponent<{
                     e.preventDefault();
                 }}
                 onClick={() => {
-                    postJson("editView/topBarButtonClick", {
-                        command: props.onClickAction,
-                    });
+                    if (props.onClick) props.onClick();
+                    else
+                        postJson("editView/topBarButtonClick", {
+                            command: props.onClickAction,
+                        });
                 }}
                 enabledImageFile={props.enabledIcon}
                 disabledImageFile={props.disabledIcon}

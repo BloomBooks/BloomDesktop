@@ -250,13 +250,6 @@ export function doWhenToolboxLoaded(
     }
 }
 
-//Called by c# using workspaceBundle.canUndo(), polled on a timer to set the Undo button's
-// enabled state (WebView2Browser.CanUndoAsync). "yes"/"fail" is that contract; keep it. The
-// answer comes from the page frame's history; no page frame means nothing to undo.
-export function canUndo(): string {
-    return getEditablePageBundleExports()?.canUndo() ? "yes" : "fail";
-}
-
 //noinspection JSUnusedGlobalSymbols
 // method called from EditingModel.cs
 // for "templatesJSON", see property EditingModel.GetJsonTemplatePageObject
@@ -426,7 +419,6 @@ interface WorkspaceBundleApi {
     setToolboxEnabled: typeof setToolboxEnabled;
     toolboxIsShowing: typeof toolboxIsShowing;
     doWhenToolboxLoaded: typeof doWhenToolboxLoaded;
-    canUndo: typeof canUndo;
     getModalDialogContainer: typeof getModalDialogContainer;
     ShowEditViewDialog: typeof ShowEditViewDialog;
     processVideoAndShowProgressDialog: typeof processVideoAndShowProgressDialog;
@@ -474,7 +466,6 @@ window.workspaceBundle = {
     setToolboxEnabled,
     toolboxIsShowing,
     doWhenToolboxLoaded,
-    canUndo,
     getModalDialogContainer,
     ShowEditViewDialog,
     processVideoAndShowProgressDialog: processVideoAndShowProgressDialog,

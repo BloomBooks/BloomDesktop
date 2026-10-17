@@ -155,7 +155,6 @@ namespace Bloom
                 typeof(CutCommand),
                 typeof(CopyCommand),
                 typeof(PasteCommand),
-                typeof(UndoCommand),
             };
 
             var editableCollectionDirectory = Path.GetDirectoryName(projectSettingsPath);

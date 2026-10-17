@@ -2,8 +2,8 @@
 // page is ready, with the user's input and the undo and redo keys attached, and ended when the page
 // goes. Also the entry points that the rest of Bloom undoes and redoes through, all exported on the
 // page bundle (editablePage.ts):
-// - the Undo button: C# calls topBarButtonClick("undo") in this frame, which calls handleUndo;
-// - its enabled state: C# polls workspaceBundle.canUndo(), which asks this frame's canUndo;
+// - the Undo and Redo buttons: the top bar, in the root window, calls handleUndo and handleRedo;
+// - their enabled state: the top bar polls canUndo and canRedo (editTopBarControls.tsx);
 // - the keys: pageHistoryKeys.ts runs handleUndo and handleRedo.
 //
 // In Change Layout mode all four answer from origami's own undo, which the mode keeps
