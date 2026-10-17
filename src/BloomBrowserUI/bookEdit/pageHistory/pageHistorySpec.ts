@@ -1767,18 +1767,9 @@ describe("page history: descriptions made of a template and its arguments", () =
         expect(f.history.getStepDescriptions().undo).toEqual([kDeleteTable]);
 
         expect(log.mock.calls).toEqual([
-            [
-                "Page history: step EditTab.Undo.Delete(EditTab.Undo.Object.Table)",
-                "step",
-            ],
-            [
-                "Page history: undo EditTab.Undo.Delete(EditTab.Undo.Object.Table)",
-                "undo",
-            ],
-            [
-                "Page history: redo EditTab.Undo.Delete(EditTab.Undo.Object.Table)",
-                "redo",
-            ],
+            ["Page history: did Delete(Table)", "step"],
+            ["Page history: undid Delete(Table)", "undo"],
+            ["Page history: redid Delete(Table)", "redo"],
         ]);
     });
 
@@ -1802,7 +1793,7 @@ describe("page history: descriptions made of a template and its arguments", () =
         const f = setUp(kStandardPage, { log });
         await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
         expect(f.history.getStepDescriptions().undo[0].args).toBeUndefined();
-        expect(log).toHaveBeenCalledWith("Page history: step A", "step");
+        expect(log).toHaveBeenCalledWith("Page history: did A", "step");
         expect(formatUndoDescription("A", undefined)).toBe("A");
         expect(formatUndoDescription("A", [])).toBe("A");
     });
@@ -1820,9 +1811,7 @@ describe("page history: descriptions made of a template and its arguments", () =
             () => byId(f, "box2").setAttribute("lang", "es"),
         );
         click.end();
-        expect(listedSteps(f).undo).toEqual([
-            "EditTab.Undo.Delete(EditTab.Undo.Object.Table)",
-        ]);
+        expect(listedSteps(f).undo).toEqual(["Delete(Table)"]);
 
         // A general description with arguments is still the general one.
         const press = f.history.beginTransaction({
@@ -1833,10 +1822,7 @@ describe("page history: descriptions made of a template and its arguments", () =
             byId(f, "box1").setAttribute("lang", "de"),
         );
         press.end();
-        expect(listedSteps(f).undo).toEqual([
-            "EditTab.Undo.Delete(EditTab.Undo.Object.Table)",
-            "EditTab.Undo.Plain",
-        ]);
+        expect(listedSteps(f).undo).toEqual(["Delete(Table)", "Plain"]);
     });
 
     it("drops the arguments with the description when the nested transaction that gave them is cancelled", () => {
@@ -2845,9 +2831,9 @@ describe("page history: log", () => {
         await f.history.redo();
 
         expect(log.mock.calls.map((call) => call[0])).toEqual([
-            "Page history: step A",
-            "Page history: undo A",
-            "Page history: redo A",
+            "Page history: did A",
+            "Page history: undid A",
+            "Page history: redid A",
         ]);
     });
 

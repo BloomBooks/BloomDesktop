@@ -734,7 +734,7 @@ class PageHistoryImpl implements PageHistory {
             this.undoSteps.shift();
         this.redoSteps = [];
         this.log(
-            `Page history: step ${formatUndoDescription(open.descriptionL10nKey, open.descriptionArgs)}`,
+            `Page history: did ${formatUndoDescription(open.descriptionL10nKey, open.descriptionArgs)}`,
             "step",
         );
         this.noteClosed(open, open.descriptionL10nKey, open.descriptionArgs);
@@ -1551,7 +1551,7 @@ class PageHistoryImpl implements PageHistory {
         if (isUndo) this.redoSteps.push(step);
         else this.undoSteps.push(step);
         this.log(
-            `Page history: ${direction} ${formatUndoDescription(step.descriptionL10nKey, step.descriptionArgs)}`,
+            `Page history: ${isUndo ? "undid" : "redid"} ${formatUndoDescription(step.descriptionL10nKey, step.descriptionArgs)}`,
             direction,
         );
 

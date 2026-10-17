@@ -45,16 +45,32 @@ export function toUndoDescription(
         : description;
 }
 
+// The start of the l10n id of most step descriptions, which formatUndoDescription leaves out.
+const kUndoDescriptionL10nPrefix = "EditTab.Undo.";
+// The start of the l10n id of most things that fill a description's template, also left out.
+const kUndoObjectL10nPrefix = "EditTab.Undo.Object.";
+
 /**
  * A description as Bloom's log and the Show Page History dialog show it: the l10n id alone, or
- * with the ids that fill its template in brackets, e.g.
- * "EditTab.Undo.Delete(EditTab.Undo.Object.Table)".
+ * with the ids that fill its template in brackets. It stays the same whatever the UI language, so
+ * a program can read it. To keep it short, "EditTab.Undo." is left off the front of the id and
+ * "EditTab.Undo.Object." off the front of each id in the brackets, so
+ * "EditTab.Undo.Delete" filled with "EditTab.Undo.Object.Table" is "Delete(Table)". An id that
+ * starts some other way, such as "EditTab.CutButton", is written whole.
  */
 export function formatUndoDescription(
     l10nId: string,
     args: readonly string[] | undefined,
 ): string {
-    return args && args.length > 0 ? `${l10nId}(${args.join(",")})` : l10nId;
+    const name = withoutPrefix(l10nId, kUndoDescriptionL10nPrefix);
+    return args && args.length > 0
+        ? `${name}(${args.map((arg) => withoutPrefix(arg, kUndoObjectL10nPrefix)).join(",")})`
+        : name;
+}
+
+/** The id with prefix taken off its front, or the whole id if it does not start with prefix. */
+function withoutPrefix(id: string, prefix: string): string {
+    return id.startsWith(prefix) ? id.substring(prefix.length) : id;
 }
 
 /**
