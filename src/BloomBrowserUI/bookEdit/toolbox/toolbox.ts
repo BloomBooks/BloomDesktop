@@ -47,6 +47,11 @@ export interface IToolboxSettings {
 
 let savedSettings: IToolboxSettings = {};
 
+// True once the toolbox has been opened or shut since this toolbox loaded. The book's saved
+// visibility is applied only when the page is ready (restoreToolboxSettingsWhenPageReady), which
+// can be after the person has already clicked the toggle; their choice then stands.
+let toolboxVisibilityChangedSinceLoad = false;
+
 // This variable stores the canonical ids of all the enabled tools, so
 // that the React toolbox settings can initially check the
 // checkboxes that correspond to the enabled tools
@@ -253,6 +258,7 @@ export class ToolBox {
             $(parent.window.document)
                 .find("#pure-toggle-right")
                 .change(function () {
+                    toolboxVisibilityChangedSinceLoad = true;
                     showToolboxChanged(!this.checked);
                 });
         });
@@ -777,7 +783,10 @@ function restoreToolboxSettingsWhenPageReady(settings: IToolboxSettings) {
         const currentTool = opts["current"] || kTalkingBookToolId;
         const shouldBeVisible = !!opts["visibility"];
 
-        if (toolbox.toolboxIsShowing() !== shouldBeVisible) {
+        if (
+            !toolboxVisibilityChangedSinceLoad &&
+            toolbox.toolboxIsShowing() !== shouldBeVisible
+        ) {
             toolbox.toggleToolbox();
         }
 
