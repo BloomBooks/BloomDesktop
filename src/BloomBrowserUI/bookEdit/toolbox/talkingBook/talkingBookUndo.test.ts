@@ -547,7 +547,17 @@ describe("Talking Book and the page history", () => {
         expect(onUnmarkedChange).not.toHaveBeenCalled();
     });
 
-    it("after an undo takes away every sentence of the highlighted box, keeps the highlight in that box", async () => {
+    /**
+     * A box that opening the tool split in the typing's step, with the highlight on its second
+     * sentence, and another box with a saved sentence. Then an undo of the typing, which takes
+     * away every sentence of the first box. Returns the first box, its live list of sentences,
+     * and the sentence that had the highlight.
+     */
+    async function undoTheSplitOfTheHighlightedBox(): Promise<{
+        box: HTMLElement;
+        sentences: HTMLCollectionOf<Element>;
+        highlightedSentence: HTMLElement;
+    }> {
         setPage(
             '<div class="bloom-page"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on" lang="en" data-audiorecordingmode="Sentence"><p>One. Two.</p></div></div><div class="bloom-translationGroup"><div id="box2" class="bloom-editable bloom-visibility-code-on" lang="en" data-audiorecordingmode="Sentence"><p><span id="four" class="audio-sentence">Four.</span></p></div></div><div id="other">before</div></div>',
         );
@@ -558,33 +568,85 @@ describe("Talking Book and the page history", () => {
         await history.doTransaction(kTypingKey, () => {
             typedText.data = "One. Two. Three.";
         });
-        // Opening the tool splits the box in the typing's step. The user moves the highlight to
-        // the box's first sentence.
         await recording.handleNewPageReady();
         const sentences = box.getElementsByClassName("audio-sentence");
         expect(sentences).toHaveLength(3);
+        const highlightedSentence = sentences[1] as HTMLElement;
         await recording.setSoundAndHighlightAsync({
-            newElement: sentences[0],
+            newElement: highlightedSentence,
             shouldScrollToElement: false,
         });
-        expect(recording.getCurrentHighlight()).toBe(sentences[0]);
+        expect(recording.getCurrentHighlight()).toBe(highlightedSentence);
         expect(history.undoDescriptionL10nKey).toBe(kTypingKey);
 
         await history.undo();
         await Promise.resolve();
 
-        // The split went with the typing. The other box has a sentence, but the highlight stays
-        // in the box that had it, which the tool cannot split again without losing redo.
         expect(sentences).toHaveLength(0);
         expect(byId("four").isConnected).toBe(true);
-        expect(recording.getCurrentHighlight()).toBe(box);
         expect(history.redoDescriptionL10nKey).toBe(kTypingKey);
+        return { box, sentences, highlightedSentence };
+    }
+
+    it("after an undo takes away every sentence of the highlighted box, keeps the highlight in that box", async () => {
+        const { box, sentences } = await undoTheSplitOfTheHighlightedBox();
+
+        // The other box has a sentence, but the highlight stays in the box that had it, which the
+        // tool cannot split again without losing redo.
+        expect(recording.getCurrentHighlight()).toBe(box);
 
         // The next action that needs the sentences splits the box and highlights its first one.
         await recording.moveToNextAudioElement();
         expect(sentences).toHaveLength(2);
         expect(recording.getCurrentHighlight()).toBe(sentences[1]);
         expect(onUnmarkedChange).not.toHaveBeenCalled();
+    });
+
+    it("a redo that puts back the sentences of the highlighted box highlights the sentence that had it", async () => {
+        const { box, sentences, highlightedSentence } =
+            await undoTheSplitOfTheHighlightedBox();
+        expect(recording.getCurrentHighlight()).toBe(box);
+
+        await history.redo();
+        await Promise.resolve();
+
+        expect(sentences).toHaveLength(3);
+        expect(highlightedSentence.isConnected).toBe(true);
+        expect(recording.getCurrentHighlight()).toBe(highlightedSentence);
+        expect(history.undoDescriptionL10nKey).toBe(kTypingKey);
+        expect(onUnmarkedChange).not.toHaveBeenCalled();
+    });
+
+    it("an import after an undo takes away every sentence of the highlighted box splits the box first and files the audio under a sentence", async () => {
+        const { box, sentences } = await undoTheSplitOfTheHighlightedBox();
+        vi.mocked(axios.post).mockImplementation((url: string) => {
+            if (url.endsWith("fileIO/chooseFile"))
+                return Promise.resolve({ data: "C:/chosen.mp3" });
+            if (url.endsWith("fileIO/getSpecialLocation"))
+                return Promise.resolve({ data: "C:/book/audio" });
+            return Promise.resolve({});
+        });
+        vi.spyOn(
+            recording as unknown as {
+                finishNewRecordingOrImportAsync: () => Promise<void>;
+            },
+            "finishNewRecordingOrImportAsync",
+        ).mockResolvedValue();
+
+        await recording.importRecordingAsync();
+
+        expect(sentences).toHaveLength(2);
+        const copies = vi
+            .mocked(axios.post)
+            .mock.calls.filter(([url]) =>
+                String(url).endsWith("fileIO/copyFile"),
+            );
+        expect(copies).toHaveLength(1);
+        const copy = copies[0][1] as { to: string };
+        expect(decodeURIComponent(copy.to)).toBe(
+            `C:/book/audio/${sentences[0].id}.mp3`,
+        );
+        expect(box.id).not.toBe(sentences[0].id);
     });
 
     it("a release of Speak before the box has been split again starts no recording", async () => {
