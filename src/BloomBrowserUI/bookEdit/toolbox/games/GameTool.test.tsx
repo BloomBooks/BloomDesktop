@@ -7,7 +7,11 @@ import { attachInputTransactions } from "../../pageHistory/pageHistoryInput";
 import { PageHistory } from "../../pageHistory/pageHistoryTypes";
 import { requestEndsPageHistory } from "../../../utils/bloomApi";
 import { copyContentToTargetAndCleanup } from "../../js/dragActivityRuntimeUtils";
-import { copyContentToTargetsAfterUndoOrRedo, GameTool } from "./GameTool";
+import {
+    copyContentToTargetsAfterUndoOrRedo,
+    enableDraggingTargets,
+    GameTool,
+} from "./GameTool";
 
 // What the tests put in the page frame, the calls the tool made to Bloom's API (posts holds the
 // POSTs among them), and the canvas element manager with its active element.
@@ -240,6 +244,30 @@ describe("GameTool options and sounds and the page history", () => {
 
         expect(page.getAttribute("data-same-size")).toBe("false");
         expect(history.undoDescriptionL10nKey).toBeUndefined();
+    });
+
+    it("describes the step of dragging a target in the page", async () => {
+        await renderTool(kDragGame);
+        frames.manager = { setActiveElement: () => {} };
+        const target = page.ownerDocument.createElement("div");
+        target.setAttribute("data-target-of", "d1");
+        target.style.left = "5px";
+        target.style.top = "5px";
+        history.doOutsideHistory(() => page.appendChild(target));
+        // jsdom does no layout: the page is drawn at its own size.
+        Object.defineProperty(page, "offsetWidth", { value: 100 });
+        page.getBoundingClientRect = () => ({ width: 100 }) as DOMRect;
+        enableDraggingTargets(target);
+
+        // The press puts the target where the pointer holds it, at the page's corner here.
+        mouse(target, "mousedown", 1);
+        mouse(target, "mouseup", 0);
+        finishTask();
+
+        expect(target.style.left).toBe("0px");
+        expect(history.undoDescriptionL10nKey).toBe(
+            "EditTab.Undo.Game.MoveTarget",
+        );
     });
 
     it("makes no step for the same size option", async () => {

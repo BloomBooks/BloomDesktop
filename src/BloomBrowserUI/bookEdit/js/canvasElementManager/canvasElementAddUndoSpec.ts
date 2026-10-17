@@ -75,6 +75,7 @@ import {
     kGenericUndoDescriptionL10nKey,
     type PageHistory,
 } from "../../pageHistory/pageHistoryTypes";
+import { kAddCanvasElementUndoL10nKey } from "../../toolbox/canvas/canvasElementConstants";
 
 const kMoveDescription = "EditTab.Undo.Move";
 
@@ -158,7 +159,7 @@ describe("adding a canvas element", () => {
         expect(added.isConnected).toBe(true);
         expect(canvasElementIds()).toEqual(["(new)", "background", "ce1"]);
         expect(history.undoDescriptionL10nKey).toBe(
-            kGenericUndoDescriptionL10nKey,
+            kAddCanvasElementUndoL10nKey,
         );
 
         await history.undo();
@@ -169,7 +170,7 @@ describe("adding a canvas element", () => {
         expect(history.undoDescriptionL10nKey).toBeUndefined();
         expect(theOneCanvasElementManager.getActiveElement()).toBeUndefined();
         expect(history.redoDescriptionL10nKey).toBe(
-            kGenericUndoDescriptionL10nKey,
+            kAddCanvasElementUndoL10nKey,
         );
 
         await history.redo();
@@ -271,7 +272,7 @@ describe("adding a canvas element", () => {
 
             // The move is still there to undo after the add: the history was not ended.
             expect(history.undoDescriptionL10nKey).toBe(
-                kGenericUndoDescriptionL10nKey,
+                kAddCanvasElementUndoL10nKey,
             );
             await history.undo();
             expect(added.isConnected).toBe(false);

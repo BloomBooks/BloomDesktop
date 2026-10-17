@@ -8,11 +8,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../../lib/jquery.qtip.js"; // puts qtip into $.fn
 import { createPageHistory } from "../pageHistory/pageHistory";
 import { createEditTimeMarkupFilter } from "../pageHistory/editTimeMarkup";
-import { attachInputTransactions } from "../pageHistory/pageHistoryInput";
 import {
-    kGenericUndoDescriptionL10nKey,
-    PageHistory,
-} from "../pageHistory/pageHistoryTypes";
+    attachInputTransactions,
+    kTypingUndoDescriptionL10nKey,
+} from "../pageHistory/pageHistoryInput";
+import { PageHistory } from "../pageHistory/pageHistoryTypes";
 
 const access = vi.hoisted(() => ({
     history: undefined as PageHistory | undefined,
@@ -216,7 +216,7 @@ describe("Show Invisibles and the page history", () => {
 
         expect(secondText.data).toBe(`${kSecondText}xyz`);
         expect(history.undoDescriptionL10nKey).toBe(
-            kGenericUndoDescriptionL10nKey,
+            kTypingUndoDescriptionL10nKey,
         );
         await history.undo();
         expect(secondText.data).toBe(kSecondText);
@@ -234,18 +234,18 @@ describe("Show Invisibles and the page history", () => {
         await history.undo();
         expect(secondText.data).toBe(kSecondText);
         expect(history.redoDescriptionL10nKey).toBe(
-            kGenericUndoDescriptionL10nKey,
+            kTypingUndoDescriptionL10nKey,
         );
 
         const nodesBefore = allNodesIn(editable);
         holdShowInvisibles();
         expect(history.redoDescriptionL10nKey).toBe(
-            kGenericUndoDescriptionL10nKey,
+            kTypingUndoDescriptionL10nKey,
         );
         releaseShowInvisibles();
         expectSameNodes(nodesBefore);
         expect(history.redoDescriptionL10nKey).toBe(
-            kGenericUndoDescriptionL10nKey,
+            kTypingUndoDescriptionL10nKey,
         );
 
         await history.redo();

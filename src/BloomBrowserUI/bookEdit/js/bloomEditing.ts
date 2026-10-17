@@ -37,9 +37,14 @@ import {
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 import {
     currentPageHistory,
+    describeOpenStep,
     doOutsideHistory,
 } from "../pageHistory/pageHistoryAccess";
-import type { PageHistory } from "../pageHistory/pageHistoryTypes";
+import {
+    kCutUndoDescriptionL10nKey,
+    kPasteUndoDescriptionL10nKey,
+    type PageHistory,
+} from "../pageHistory/pageHistoryTypes";
 import type { IPageFrameExports } from "../editablePage";
 import {
     kCanvasElementClass,
@@ -201,6 +206,11 @@ function SetupDeletable(containerDiv) {
     return $(containerDiv);
 }
 
+// The descriptions of the undo steps of the alignment keys in AddEditKeyHandlers.
+const kAlignRightUndoL10nKey = "EditTab.Undo.Text.AlignRight";
+const kAlignLeftUndoL10nKey = "EditTab.Undo.Text.AlignLeft";
+const kAlignCenterUndoL10nKey = "EditTab.Undo.Text.AlignCenter";
+
 // Add various editing key handlers
 function AddEditKeyHandlers(container) {
     //Make F6 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain.
@@ -295,12 +305,14 @@ function AddEditKeyHandlers(container) {
         // Ctrl+R: right justify
         if (e.ctrlKey && !e.altKey && !e.shiftKey && e.key === "r") {
             e.preventDefault();
+            describeOpenStep(kAlignRightUndoL10nKey);
             document.execCommand("justifyright", false);
             return;
         }
         // Ctrl+L: left justify
         if (e.ctrlKey && !e.altKey && !e.shiftKey && e.key === "l") {
             e.preventDefault();
+            describeOpenStep(kAlignLeftUndoL10nKey);
             document.execCommand("justifyleft", false);
             return;
         }
@@ -313,6 +325,7 @@ function AddEditKeyHandlers(container) {
             e.key.toLowerCase() === "e"
         ) {
             e.preventDefault();
+            describeOpenStep(kAlignCenterUndoL10nKey);
             document.execCommand("justifycenter", false);
             return;
         }
@@ -1925,7 +1938,7 @@ async function copyImpl() {
 // See comment on copySelection. C# runs this with no click or key press in this frame, so the cut
 // is a doTransaction of its own: one undo step, not joined to the typing before it.
 export const cutSelection = (): Promise<void> => {
-    return doTransaction("EditTab.CutButton", cutSelectionImpl);
+    return doTransaction(kCutUndoDescriptionL10nKey, cutSelectionImpl);
 };
 
 async function cutSelectionImpl() {
@@ -1957,7 +1970,7 @@ async function cutSelectionImpl() {
 export const pasteClipboard = (imageAvailable: boolean): Promise<void> => {
     return wrapWithRequestPageContentDelay(
         () =>
-            doTransaction("EditTab.PasteButton", () =>
+            doTransaction(kPasteUndoDescriptionL10nKey, () =>
                 pasteImpl(imageAvailable),
             ),
         "pasteImpl",

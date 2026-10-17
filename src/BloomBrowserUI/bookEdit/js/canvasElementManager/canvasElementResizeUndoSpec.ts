@@ -251,3 +251,54 @@ describe("resizing a picture by a corner", () => {
         expect(resizedRatio).toBeCloseTo(kNaturalWidth / kNaturalHeight, 6);
     });
 });
+
+describe("the description of a drag of one of the control frame's handles", () => {
+    it.each([
+        [
+            "picture",
+            ".bloom-ui-canvas-element-resize-handle-se",
+            "EditTab.Undo.CanvasElement.Resize",
+        ],
+        [
+            "picture",
+            ".bloom-ui-canvas-element-rotate-handle",
+            "EditTab.Undo.CanvasElement.Rotate",
+        ],
+        [
+            "picture",
+            ".bloom-ui-canvas-element-side-handle-e",
+            "EditTab.Undo.Image.Crop",
+        ],
+        [
+            "ce1",
+            ".bloom-ui-canvas-element-side-handle-e",
+            "EditTab.Undo.CanvasElement.Resize",
+        ],
+        [
+            "picture",
+            ".bloom-ui-canvas-element-move-crop-handle",
+            "EditTab.Undo.Image.MoveInFrame",
+        ],
+    ])(
+        "on %s, from %s, is %s",
+        async (elementId, handleSelector, description) => {
+            const element = document.getElementById(elementId)!;
+            await clickToSelect(element);
+            const handle = document.querySelector(handleSelector);
+            if (!handle) throw new Error(`Test setup: no ${handleSelector}`);
+
+            await asUserAction(() => {
+                handle.dispatchEvent(
+                    new MouseEvent("mousedown", { bubbles: true, buttons: 1 }),
+                );
+                // What the drag writes as the pointer moves; jsdom does no layout to drive it.
+                element.style.top = "77px";
+                document.dispatchEvent(
+                    new MouseEvent("mouseup", { bubbles: true }),
+                );
+            });
+
+            expect(history.undoDescriptionL10nKey).toBe(description);
+        },
+    );
+});

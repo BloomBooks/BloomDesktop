@@ -53,6 +53,25 @@ export function addToLatestTransaction<T>(fn: () => T): T {
 }
 
 /**
+ * Give the undo step that the open transaction will make the description descriptionL10nKey,
+ * unless something has described it already, for an action that runs inside the transaction that
+ * the user's click, drag or key press opened, and that has no transaction of its own. It opens
+ * and closes an empty transaction inside the open one, and the first transaction nested in the
+ * stand-in with the general description gives the step its description
+ * (PageHistory.doTransaction). It records nothing and makes no step of its own. Does nothing when
+ * no transaction is open, or when there is no history.
+ *
+ * Call it only from an action in the page frame: a press in the toolbox or the root window whose
+ * step keeps the general description ends the history (pageHistoryInput.ts), and describing that
+ * step would make it an undo step instead.
+ */
+export function describeOpenStep(descriptionL10nKey: string): void {
+    const history = currentPageHistory();
+    if (!history?.hasOpenTransaction) return;
+    void history.doTransaction(descriptionL10nKey, () => {});
+}
+
+/**
  * End the current page history (drop every undo and redo step), if there is one. reason says why,
  * for Bloom's log.
  */

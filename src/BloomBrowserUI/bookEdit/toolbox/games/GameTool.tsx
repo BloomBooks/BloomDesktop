@@ -69,13 +69,19 @@ import { CanvasSnapProvider } from "../../js/canvasElementManager/CanvasSnapProv
 import { CanvasGuideProvider } from "../../js/canvasElementManager/CanvasGuideProvider";
 import { kIdForDragActivityTabControl } from "./DragActivityTabControl";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
-import { doOutsideHistory } from "../../pageHistory/pageHistoryAccess";
+import {
+    describeOpenStep,
+    doOutsideHistory,
+} from "../../pageHistory/pageHistoryAccess";
 
 // This is the main code that manages the Bloom Games, including Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
 // and DragActivityTool, which is the ToolboxToolReactAdaptor subclass that represents
 // the tool to the toolbox code. See also the summary in Games.less of important classes
 // and attributes which are used for these games in both template pages and the code here.
+
+// The description of the undo step of dragging a target in the page (startDraggingTarget).
+const kMoveTargetUndoL10nKey = "EditTab.Undo.Game.MoveTarget";
 
 // Make the targets draggable (in Start mode).
 export const enableDraggingTargets = (startingPoint: HTMLElement) => {
@@ -474,6 +480,7 @@ const startDraggingTarget = (e: MouseEvent) => {
     if (!canvasElementManager) {
         return;
     }
+    describeOpenStep(kMoveTargetUndoL10nKey);
     // get the mouse cursor position at startup:
     const target = e.currentTarget as HTMLElement;
     targetBeingDragged = target;

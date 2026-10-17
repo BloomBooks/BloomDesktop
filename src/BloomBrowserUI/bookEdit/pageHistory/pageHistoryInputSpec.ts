@@ -10,11 +10,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPageHistory } from "./pageHistory";
 import {
     attachInputTransactions,
+    kDeleteTextUndoDescriptionL10nKey,
+    kDropUndoDescriptionL10nKey,
     kIgnoredByPageHistoryInputSelector,
+    kTypingUndoDescriptionL10nKey,
 } from "./pageHistoryInput";
 import {
     BegunTransaction,
+    kCutUndoDescriptionL10nKey,
     kGenericUndoDescriptionL10nKey,
+    kPasteUndoDescriptionL10nKey,
     PageHistory,
 } from "./pageHistoryTypes";
 
@@ -496,7 +501,7 @@ describe("typing", () => {
         await history.undo();
         expect(page.textContent).toBe("HelloBonjour");
         expect(history.redoDescriptionL10nKey).toBe(
-            kGenericUndoDescriptionL10nKey,
+            kTypingUndoDescriptionL10nKey,
         );
 
         keyDown(box, { key: "Control", ctrlKey: true });
@@ -506,7 +511,7 @@ describe("typing", () => {
 
         expect(history.hasOpenTransaction).toBe(false);
         expect(history.redoDescriptionL10nKey).toBe(
-            kGenericUndoDescriptionL10nKey,
+            kTypingUndoDescriptionL10nKey,
         );
         await history.redo();
         expect(page.textContent).toBe("HelloabBonjour");
@@ -695,6 +700,61 @@ describe("typing", () => {
     });
 });
 
+describe("the description of a step that no code describes", () => {
+    it("is typing for a typing step, and deleting text for a step of Backspace presses", async () => {
+        const box = byId("box1");
+        typeText(box, "abc");
+        // Going from typing to deleting ends the typing step.
+        deleteCharacter(box);
+        expect(history.undoDescriptionL10nKey).toBe(
+            kTypingUndoDescriptionL10nKey,
+        );
+        pressUndoKey();
+
+        expect(history.undoDescriptionL10nKey).toBe(
+            kDeleteTextUndoDescriptionL10nKey,
+        );
+        expect(await undoEverything()).toEqual([
+            "HelloabcBonjour",
+            "HelloBonjour",
+        ]);
+    });
+
+    it.each([
+        ["paste", kPasteUndoDescriptionL10nKey],
+        ["cut", kCutUndoDescriptionL10nKey],
+        ["drop", kDropUndoDescriptionL10nKey],
+    ])("is what the user did for a %s", (type, description) => {
+        const box = byId("box1");
+        onBloomEvent(box, type, () => box.lastElementChild!.append("CHANGED"));
+        asUser(box, new Event(type, { bubbles: true }));
+        finishTask();
+
+        expect(history.hasOpenTransaction).toBe(false);
+        expect(history.undoDescriptionL10nKey).toBe(description);
+    });
+
+    it("stays the description that a transaction nested in the step gave it", () => {
+        const box = byId("box1");
+        typeText(box, "a");
+        void history.doTransaction("Test.Reaction", () =>
+            box.lastElementChild!.append("b"),
+        );
+        typeText(box, "c");
+        pressUndoKey();
+
+        expect(page.textContent).toBe("HelloabcBonjour");
+        expect(history.undoDescriptionL10nKey).toBe("Test.Reaction");
+    });
+
+    it("stays the general one for a press with no description", () => {
+        makeStepWithClick("1");
+        expect(history.undoDescriptionL10nKey).toBe(
+            kGenericUndoDescriptionL10nKey,
+        );
+    });
+});
+
 describe("the undo and redo keys", () => {
     it.each([
         ["Ctrl+Z", { key: "z", ctrlKey: true }],
@@ -717,7 +777,7 @@ describe("the undo and redo keys", () => {
 
         expect(openInHandler).toBe(false);
         expect(history.undoDescriptionL10nKey).toBe(
-            kGenericUndoDescriptionL10nKey,
+            kTypingUndoDescriptionL10nKey,
         );
     });
 
@@ -915,7 +975,7 @@ describe("input in another frame", () => {
         expect(page.textContent).toBe("HelloBonjour");
         expect(history.undoDescriptionL10nKey).toBeUndefined();
         expect(history.redoDescriptionL10nKey).toBe(
-            kGenericUndoDescriptionL10nKey,
+            kTypingUndoDescriptionL10nKey,
         );
     });
 
