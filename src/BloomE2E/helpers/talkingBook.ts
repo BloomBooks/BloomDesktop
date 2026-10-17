@@ -296,6 +296,37 @@ export async function setRecordingMode(
 }
 
 /**
+ * The recording mode twice over: the one whose radio the tool shows checked, and the one that the
+ * first text box in languageTag on the page holds in data-audiorecordingmode ("Sentence" or
+ * "TextBox"). The tool should show the box's mode.
+ */
+export async function getRecordingMode(
+    page: Page,
+    languageTag: string,
+): Promise<{
+    inTool: "By Sentence" | "By Whole Text Box" | undefined;
+    onBox: string | null;
+}> {
+    await openAdvancedSection(page);
+    let inTool: "By Sentence" | "By Whole Text Box" | undefined;
+    for (const mode of ["By Sentence", "By Whole Text Box"] as const) {
+        const radio = toolboxFrame(page)
+            .locator("label")
+            .filter({ hasText: mode })
+            .first()
+            .locator('input[type="radio"]');
+        if (await radio.isChecked()) inTool = mode;
+    }
+    const onBox = await editablePageFrame(page)
+        .locator(
+            `.bloom-translationGroup .bloom-editable[lang="${languageTag}"]`,
+        )
+        .first()
+        .getAttribute("data-audiorecordingmode");
+    return { inTool, onBox };
+}
+
+/**
  * Whether the tool is offering Import Recording. Bloom enables it only in whole-text-box
  * recording mode, only for a Pro subscription, and only on a page with a recordable text box, so
  * a caller checking for `false` should make sure it has ruled out the reasons it did not mean.
