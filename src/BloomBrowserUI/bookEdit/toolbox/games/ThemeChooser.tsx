@@ -11,6 +11,7 @@ import MenuItem from "@mui/material/MenuItem";
 import { Div } from "../../../react_components/l10nComponents";
 import { InfoIconUrl } from "../../../react_components/icons/InfoIconUrl";
 import BloomSelect from "../../../react_components/bloomSelect";
+import { currentPageHistory } from "../../pageHistory/pageHistoryAccess";
 
 const getPage = () => {
     const pageBody = getPageIframeBody();
@@ -19,6 +20,24 @@ const getPage = () => {
 
 const kMissingThemeDataAttribute = "data-missing-game-theme";
 const kDefaultTheme = "blue-on-white";
+const kGameThemePrefix = "game-theme-";
+
+/** The l10n key of the description of the undo step that choosing a game theme makes. */
+export const kGameThemeUndoL10nKey = "EditTab.Undo.Game.Theme";
+
+/**
+ * The theme that the page shows in the chooser: a missing theme that the page asked for, else the
+ * theme of its game-theme class, else kDefaultTheme.
+ */
+function themeOfPage(page: HTMLElement): string {
+    return (
+        page.getAttribute(kMissingThemeDataAttribute) ||
+        Array.from(page.classList)
+            .find((c) => c.startsWith(kGameThemePrefix))
+            ?.substring(kGameThemePrefix.length) ||
+        kDefaultTheme
+    );
+}
 
 const isMissingTheme = (themeName: string): boolean => {
     const page = getPage();
@@ -39,7 +58,7 @@ export const ThemeChooser: React.FunctionComponent<{
     // The set of possible themes, derived from stylesheet rules that start with a dot
     // followed by gameThemePrefix
     const [themes, setThemes] = useState<string[]>([]);
-    const gameThemePrefix = "game-theme-";
+    const gameThemePrefix = kGameThemePrefix;
     // The theme of the current page, derived from any class on the .bloom-page that starts with
     // gameThemePrefix, or "default" if there is none (but migration code and this tool makes sure
     // that game pages always do).
@@ -50,27 +69,37 @@ export const ThemeChooser: React.FunctionComponent<{
             return;
         }
         const page = getPage();
-        if (page) {
-            // When all goes well, it should be enough to just remove the theme class that
-            // corresponds to the current theme. But when things go wrong, some other theme
-            // class might be hanging around, and having two of them produces unpredictable
-            // results. So play safe and remove any game theme class.
-            for (const className of Array.from(page.classList)) {
-                if (className.startsWith(gameThemePrefix)) {
-                    page.classList.remove(className);
-                }
+        if (!page) return;
+        // An undo step of its own, though the choice is made in the toolbox, whose changes to
+        // the page otherwise end the page's undo history (pageHistory/pageHistoryInput.ts).
+        const history = currentPageHistory();
+        if (history)
+            void history.doTransaction(kGameThemeUndoL10nKey, () =>
+                applyTheme(page, newTheme),
+            );
+        else applyTheme(page, newTheme);
+    };
+    /** Give page the class of newTheme, and show newTheme as chosen. */
+    const applyTheme = (page: HTMLElement, newTheme: string): void => {
+        // When all goes well, it should be enough to just remove the theme class that
+        // corresponds to the current theme. But when things go wrong, some other theme
+        // class might be hanging around, and having two of them produces unpredictable
+        // results. So play safe and remove any game theme class.
+        for (const className of Array.from(page.classList)) {
+            if (className.startsWith(gameThemePrefix)) {
+                page.classList.remove(className);
             }
+        }
 
-            if (isMissingTheme(newTheme)) {
-                // If selecting a missing theme, actually apply kDefaultTheme but show the missing theme as selected
-                page.classList.add(`${gameThemePrefix}${kDefaultTheme}`);
-                setCurrentTheme(newTheme);
-            } else {
-                // Clear any missing theme data when selecting an available theme
-                page.removeAttribute(kMissingThemeDataAttribute);
-                page.classList.add(`${gameThemePrefix}${newTheme}`);
-                setCurrentTheme(newTheme);
-            }
+        if (isMissingTheme(newTheme)) {
+            // If selecting a missing theme, actually apply kDefaultTheme but show the missing theme as selected
+            page.classList.add(`${gameThemePrefix}${kDefaultTheme}`);
+            setCurrentTheme(newTheme);
+        } else {
+            // Clear any missing theme data when selecting an available theme
+            page.removeAttribute(kMissingThemeDataAttribute);
+            page.classList.add(`${gameThemePrefix}${newTheme}`);
+            setCurrentTheme(newTheme);
         }
     };
     useEffect(() => {
@@ -144,6 +173,14 @@ export const ThemeChooser: React.FunctionComponent<{
 
         // We don't need to run again if currentTheme changes, since it can only change to something
         // that's already in the list (except just possibly when pageGeneration changes).
+    }, [props.pageGeneration]);
+    // An effect because the page history, in the page frame, is outside React: an undo or redo
+    // can put back an earlier theme class, and the chooser must then show that theme.
+    useEffect(() => {
+        return currentPageHistory()?.onAfterUndoOrRedo(() => {
+            const page = getPage();
+            if (page) setCurrentTheme(themeOfPage(page));
+        });
     }, [props.pageGeneration]);
     return (
         <ThemeProvider theme={toolboxMenuPopupTheme}>
