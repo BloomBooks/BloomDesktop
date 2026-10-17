@@ -1663,6 +1663,71 @@ describe("page history: descriptions", () => {
         await f.history.redo();
         expect(f.page.outerHTML).toBe(startHtml);
     });
+
+    it("lists every undo step oldest first, and every redo step in the order redo takes them", async () => {
+        const f = setUp();
+        expect(f.history.getStepDescriptions()).toEqual({
+            undo: [],
+            redo: [],
+        });
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        await stepSettingAttribute(f, "B", byId(f, "box2"), "lang", "es");
+        await stepSettingAttribute(f, "C", byId(f, "box1"), "lang", "de");
+        expect(f.history.getStepDescriptions()).toEqual({
+            undo: ["A", "B", "C"],
+            redo: [],
+        });
+
+        await f.history.undo();
+        await f.history.undo();
+
+        expect(f.history.getStepDescriptions()).toEqual({
+            undo: ["A"],
+            redo: ["B", "C"],
+        });
+        expect(
+            f.history.undoDescriptionL10nKey,
+            "the last undo step should be the one undo would undo",
+        ).toBe("A");
+        expect(
+            f.history.redoDescriptionL10nKey,
+            "the first redo step should be the one redo would redo",
+        ).toBe("B");
+        f.history.clearUndoAndRedo("a test");
+        expect(f.history.getStepDescriptions()).toEqual({
+            undo: [],
+            redo: [],
+        });
+    });
+
+    it("lists the steps without taking in a change that the observer has not delivered", async () => {
+        const f = setUp();
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        await stepSettingAttribute(f, "B", byId(f, "box2"), "lang", "es");
+        await f.history.undo();
+        expect(
+            f.history.getStepDescriptions(),
+            "test setup: B can be redone",
+        ).toEqual({ undo: ["A"], redo: ["B"] });
+
+        // Outside any transaction: once the history takes it in, it joins A and clears redo.
+        byId(f, "box1").setAttribute("lang", "de");
+        expect(f.history.getStepDescriptions()).toEqual({
+            undo: ["A"],
+            redo: ["B"],
+        });
+        expect(
+            f.unmarked,
+            "listing the steps should not have taken in the change",
+        ).not.toHaveBeenCalled();
+
+        await letObserverDeliver();
+        expect(f.unmarked).toHaveBeenCalled();
+        expect(f.history.getStepDescriptions()).toEqual({
+            undo: ["A"],
+            redo: [],
+        });
+    });
 });
 
 describe("page history: a transaction nested in a general one describes the step", () => {
@@ -2682,9 +2747,32 @@ describe("page history: log", () => {
         await f.history.undo();
 
         expect(byId(f, "img1").getAttribute("src")).toBe("recomputed.png");
-        expect(log.mock.calls.map((call) => call[0])).toEqual([
-            "Page history: undo of A found the page changed since, and dropped the undo steps",
-        ]);
+        const lines = log.mock.calls.map((call) => call[0]);
+        expect(lines.length).toBe(1);
+        expect(lines[0]).toMatch(
+            /^Page history: undo of A found the page changed since, and dropped the undo steps: attribute src of .*img1.* is "recomputed\.png", not "b\.png"$/,
+        );
+    });
+
+    it("logs which child list differs when an undo finds the page changed", async () => {
+        const log = vi.fn<(line: string) => void>();
+        const f = setUp(kStandardPage, { log });
+        const p2 = byId(f, "p2");
+        await f.history.doTransaction("A", () => {
+            p2.appendChild(p2.ownerDocument.createElement("br"));
+        });
+        f.history.doOutsideHistory(() => {
+            p2.appendChild(p2.ownerDocument.createElement("hr"));
+        });
+        log.mockClear();
+
+        await f.history.undo();
+
+        const lines = log.mock.calls.map((call) => call[0]);
+        expect(lines.length).toBe(1);
+        expect(lines[0]).toMatch(
+            /: the children of .*p2.* are not the ones that the step left$/,
+        );
     });
 });
 

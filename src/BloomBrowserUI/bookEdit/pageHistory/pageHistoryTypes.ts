@@ -20,12 +20,53 @@ export const kPasteUndoDescriptionL10nKey = "EditTab.PasteButton";
 export const kCutUndoDescriptionL10nKey = "EditTab.CutButton";
 
 /**
+ * A step's description made of parts: the l10n id of a template with {0}, {1} and so on in it,
+ * and the l10n ids that fill them, in order. For example, { l10nId: "EditTab.Undo.Delete", args:
+ * ["EditTab.Undo.Object.Table"] } is "Delete {0}" filled with "Table". Every rule that looks at a
+ * description (kGenericUndoDescriptionL10nKey above all) looks at l10nId alone.
+ */
+export interface UndoDescription {
+    readonly l10nId: string;
+    readonly args?: readonly string[];
+}
+
+/**
+ * A description as doTransaction, beginTransaction and describeOpenStep take it: a plain l10n id,
+ * or an UndoDescription.
+ */
+export type UndoDescriptionInput = string | UndoDescription;
+
+/** The UndoDescription of a description given either way. */
+export function toUndoDescription(
+    description: UndoDescriptionInput,
+): UndoDescription {
+    return typeof description === "string"
+        ? { l10nId: description }
+        : description;
+}
+
+/**
+ * A description as Bloom's log and the Show Page History dialog show it: the l10n id alone, or
+ * with the ids that fill its template in brackets, e.g.
+ * "EditTab.Undo.Delete(EditTab.Undo.Object.Table)".
+ */
+export function formatUndoDescription(
+    l10nId: string,
+    args: readonly string[] | undefined,
+): string {
+    return args && args.length > 0 ? `${l10nId}(${args.join(",")})` : l10nId;
+}
+
+/**
  * One transaction, as doTransaction and addToLatestTransaction pass it to their function and
  * beginTransaction returns it. Section 11.8.1 adds `addChangeOutsidePage` here, for state that the
  * observer cannot see; the first version has none (MINIMUM.md, "Left out of the minimum").
  */
 export interface Transaction {
+    /** The l10n id of the description, or of its template (UndoDescription). */
     readonly descriptionL10nKey: string;
+    /** The l10n ids that fill the description's template, if it has one (UndoDescription). */
+    readonly descriptionArgs?: readonly string[];
 }
 
 /** What beginTransaction returns: only the code that holds it can end or cancel it. */
@@ -56,13 +97,17 @@ export interface BegunTransaction extends Transaction {
     cancel(): void;
     /**
      * Call listener once, when the outermost transaction that this one is part of closes, with
-     * the description of the undo step that closing it made, or undefined when it made none:
-     * nothing changed, it was cancelled, or clearUndoAndRedo() or dispose() ended it. If it has
-     * closed already, calls listener at once. For the stand-in that waits for transactions begun
-     * inside it, this is the one way to learn what its end() led to.
+     * the description of the undo step that closing it made (its l10n id, and the ids that fill
+     * its template, if any), or undefined when it made none: nothing changed, it was cancelled, or
+     * clearUndoAndRedo() or dispose() ended it. If it has closed already, calls listener at once.
+     * For the stand-in that waits for transactions begun inside it, this is the one way to learn
+     * what its end() led to.
      */
     onClose(
-        listener: (stepDescriptionL10nKey: string | undefined) => void,
+        listener: (
+            stepDescriptionL10nKey: string | undefined,
+            stepDescriptionArgs?: readonly string[],
+        ) => void,
     ): void;
 }
 
@@ -203,7 +248,8 @@ export interface PageHistoryOptions {
      * Called with one line for Bloom's log when an undo step is made, undone or redone, when an
      * undo or redo is refused, when the history is cleared, with its reason, and when cancelling
      * a transaction reverses changes. kind says which. The lines name steps by their
-     * description's l10n key and never hold the page's text. Default: nothing.
+     * description, as formatUndoDescription writes it, and never hold the page's text. Default:
+     * nothing.
      */
     log?: (line: string, kind: PageHistoryLogKind) => void;
 }
@@ -236,15 +282,25 @@ export type PageHistoryLogKind =
  *   transaction began.
  */
 export type PageHistoryChangeContext =
-    | { kind: "transaction"; descriptionL10nKey: string; depth: number }
+    | {
+          kind: "transaction";
+          descriptionL10nKey: string;
+          descriptionArgs?: readonly string[];
+          depth: number;
+      }
     | {
           kind: "addToLatestTransaction" | "unmarked";
           joins: "openTransaction" | "latestStep";
           descriptionL10nKey: string | undefined;
+          descriptionArgs?: readonly string[];
       }
     | { kind: "outsideHistory" }
     | { kind: "beforeReady" }
-    | { kind: "undo" | "redo" | "rollback"; descriptionL10nKey: string };
+    | {
+          kind: "undo" | "redo" | "rollback";
+          descriptionL10nKey: string;
+          descriptionArgs?: readonly string[];
+      };
 
 /**
  * One thing that the history did, for a developer's tool that shows everything (the Show Page
@@ -259,18 +315,28 @@ export type PageHistoryChangeContext =
  *   ignored[i] is true when the history's filter ignores the node of records[i].
  */
 export type PageHistoryDetail =
-    | { kind: "opened"; descriptionL10nKey: string; depth: number }
-    | { kind: "ended"; descriptionL10nKey: string; depth: number }
+    | {
+          kind: "opened" | "ended";
+          descriptionL10nKey: string;
+          descriptionArgs?: readonly string[];
+          depth: number;
+      }
     | {
           kind: "endWaits";
           descriptionL10nKey: string;
+          descriptionArgs?: readonly string[];
           depth: number;
           innerOpen: number;
       }
-    | { kind: "closedWithNoStep"; descriptionL10nKey: string }
+    | {
+          kind: "closedWithNoStep";
+          descriptionL10nKey: string;
+          descriptionArgs?: readonly string[];
+      }
     | {
           kind: "cancelled";
           descriptionL10nKey: string;
+          descriptionArgs?: readonly string[];
           depth: number;
           recordsReversed: number;
       }
@@ -288,6 +354,14 @@ export type PageHistoryDetail =
  */
 export type PageHistoryDetailListener = (detail: PageHistoryDetail) => void;
 
+/** What PageHistory.getStepDescriptions returns. */
+export interface PageHistoryStepDescriptions {
+    /** The undo steps, oldest first: the last is the one that undo would undo. */
+    readonly undo: readonly UndoDescription[];
+    /** The redo steps in the order that redo would take them: the first is the one it would redo. */
+    readonly redo: readonly UndoDescription[];
+}
+
 /** One per page load, in the page frame. */
 export interface PageHistory {
     /**
@@ -299,7 +373,7 @@ export interface PageHistory {
      * (APPROACHES 11.8.1, "Transactions inside transactions"). Its description is not used, with
      * one exception: when the outermost transaction has kGenericUndoDescriptionL10nKey, the first
      * nested transaction with a different description gives the step that description, unless
-     * it is cancelled or fails.
+     * it is cancelled or fails. The description is a plain l10n id or an UndoDescription.
      *
      * Two async calls may overlap in time, when the second begins while the first awaits and
      * the first settles before the second: the second nests in the first, the first settles
@@ -308,7 +382,7 @@ export interface PageHistory {
      * began, since the history cannot tell which of two interleaved async functions made a change.
      */
     doTransaction<T>(
-        descriptionL10nKey: string,
+        description: UndoDescriptionInput,
         fn: (transaction: Transaction) => T | Promise<T>,
     ): Promise<T>;
 
@@ -316,7 +390,7 @@ export interface PageHistory {
      * For a drag, a slider or a dialog that previews live. The caller keeps the returned object
      * and later calls end() or cancel(). Nests inside an open transaction, as doTransaction does.
      */
-    beginTransaction(descriptionL10nKey: string): BegunTransaction;
+    beginTransaction(description: UndoDescriptionInput): BegunTransaction;
 
     /**
      * Bloom's own change, joined to the latest transaction, where an unmarked change made outside
@@ -407,10 +481,22 @@ export interface PageHistory {
      */
     redo(): Promise<void>;
 
-    /** The description of the step that undo would undo, or undefined when there is none. */
+    /**
+     * The l10n id of the description of the step that undo would undo (of its template, for an
+     * UndoDescription with args), or undefined when there is none.
+     */
     readonly undoDescriptionL10nKey: string | undefined;
-    /** The description of the step that redo would redo, or undefined when there is none. */
+    /**
+     * The l10n id of the description of the step that redo would redo (of its template, for an
+     * UndoDescription with args), or undefined when there is none.
+     */
     readonly redoDescriptionL10nKey: string | undefined;
+    /**
+     * The descriptions of every undo and redo step, for the Show Page History dialog. Unlike
+     * undoDescriptionL10nKey, it does not first take in the changes that the observer has not yet
+     * delivered, so it reads the steps as they are and changes nothing.
+     */
+    getStepDescriptions(): PageHistoryStepDescriptions;
     /** True while a transaction is open, including one that began inside another. */
     readonly hasOpenTransaction: boolean;
     /** True once dispose() has run; every other call then throws. */

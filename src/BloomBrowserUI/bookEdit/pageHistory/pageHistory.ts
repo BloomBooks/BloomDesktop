@@ -19,6 +19,7 @@ import {
     PageHistoryFilter,
     PageHistoryLogKind,
     PageHistoryOptions,
+    PageHistoryStepDescriptions,
     RestoredContent,
     Transaction,
 } from "./pageHistoryTypes";
@@ -33,6 +34,7 @@ import {
     SavedSelection,
     serializeNode,
 } from "./pageHistoryDom";
+import { describePath, quote } from "./pageHistoryDetails";
 
 const kDefaultMaxUndoSteps = 50;
 
@@ -296,7 +298,7 @@ class PageHistoryImpl implements PageHistory {
             this.frames[0].descriptionL10nKey !== kGenericUndoDescriptionL10nKey
         )
             return false;
-        return this.pageHasValuesOf(open.changes, "before");
+        return this.whyPageLacksValuesOf(open.changes, "before") === undefined;
     }
 
     /** See PageHistory.doOutsideHistory. */
@@ -406,6 +408,17 @@ class PageHistoryImpl implements PageHistory {
     public get redoDescriptionL10nKey(): string | undefined {
         this.processPendingRecords();
         return this.redoSteps[this.redoSteps.length - 1]?.descriptionL10nKey;
+    }
+
+    /** See PageHistory.getStepDescriptions. */
+    public getStepDescriptions(): PageHistoryStepDescriptions {
+        this.assertNotDisposed();
+        return {
+            undo: this.undoSteps.map((step) => step.descriptionL10nKey),
+            redo: this.redoSteps
+                .map((step) => step.descriptionL10nKey)
+                .reverse(),
+        };
     }
 
     /** See PageHistory.hasOpenTransaction. */
@@ -1127,7 +1140,14 @@ class PageHistoryImpl implements PageHistory {
      * then. A node that a change outside the history took out of the page fails the check, since
      * putting back its values would change nothing that the user can see.
      */
-    private pageHasValues(step: Step, expected: Values): boolean {
+    /**
+     * Undefined when the page has the `expected` values of step (rule 4); otherwise what the page
+     * has instead, for the log: the first value found that differs.
+     */
+    private whyPageLacksValues(
+        step: Step,
+        expected: Values,
+    ): string | undefined {
         const toPutBack: Values = expected === "after" ? "before" : "after";
         const putBack = new Set<Node>();
         step.changes.forEach((change) =>
@@ -1135,30 +1155,40 @@ class PageHistoryImpl implements PageHistory {
         );
         for (const node of step.changes.keys()) {
             if (!this.root.contains(node) && !isInsideOneOf(node, putBack))
-                return false;
+                return `${describePath(node)} is no longer in the page`;
         }
-        if (!this.pageHasValuesOf(step.changes, expected)) return false;
+        const why = this.whyPageLacksValuesOf(step.changes, expected);
+        if (why) return why;
         for (const [node, text] of step.detachedAsText) {
-            if (this.root.contains(node) || this.serializeKept(node) !== text)
-                return false;
+            if (this.root.contains(node))
+                return `${describePath(node)}, which the step took out, is in the page again`;
+            if (this.serializeKept(node) !== text)
+                return `${describePath(node)}, which the step took out, has changed since`;
         }
-        return true;
+        return undefined;
     }
 
-    /** True when the page has the `expected` value of every entry of changes. */
-    private pageHasValuesOf(changes: ChangeSet, expected: Values): boolean {
+    /**
+     * Undefined when the page has the `expected` value of every entry of changes; otherwise the
+     * first value that differs, for the log.
+     */
+    private whyPageLacksValuesOf(
+        changes: ChangeSet,
+        expected: Values,
+    ): string | undefined {
         for (const [node, change] of changes) {
             if (change.attributes) {
                 for (const [name, values] of change.attributes) {
-                    if (
-                        this.keptAttributeValue(node as Element, name) !==
-                        values[expected]
-                    )
-                        return false;
+                    const now = this.keptAttributeValue(node as Element, name);
+                    if (now !== values[expected])
+                        return `attribute ${name} of ${describePath(node)} is ${quote(now)}, not ${quote(values[expected])}`;
                 }
             }
-            if (change.text && this.keptText(node) !== change.text[expected])
-                return false;
+            if (change.text) {
+                const now = this.keptText(node);
+                if (now !== change.text[expected])
+                    return `the text of ${describePath(node)} is ${quote(now)}, not ${quote(change.text[expected])}`;
+            }
             if (
                 change.children &&
                 !sameNodes(
@@ -1166,9 +1196,9 @@ class PageHistoryImpl implements PageHistory {
                     change.children[expected],
                 )
             )
-                return false;
+                return `the children of ${describePath(node)} are not the ones that the step left`;
         }
-        return true;
+        return undefined;
     }
 
     /**
@@ -1287,9 +1317,10 @@ class PageHistoryImpl implements PageHistory {
 
         const from: Values = isUndo ? "after" : "before";
         const to: Values = isUndo ? "before" : "after";
-        if (!this.pageHasValues(step, from)) {
+        const whyRefused = this.whyPageLacksValues(step, from);
+        if (whyRefused) {
             this.log(
-                `Page history: ${direction} of ${step.descriptionL10nKey} found the page changed since, and dropped the ${direction} steps`,
+                `Page history: ${direction} of ${step.descriptionL10nKey} found the page changed since, and dropped the ${direction} steps: ${whyRefused}`,
                 "refused",
             );
             // The step is the newest on its stack, so it and every older one is the whole stack.

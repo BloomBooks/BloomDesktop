@@ -1,9 +1,13 @@
-// Tests of the record that the Show Page History dialog shows (pageHistoryRecorder.ts), and of the
-// rows that the page frame makes for it from the history's details (pageHistoryDetails.ts).
+// Tests of the record that the Show Page History dialog shows (pageHistoryRecorder.ts), with the
+// stack of the page open now, and of the rows that the page frame makes for it from the history's
+// details (pageHistoryDetails.ts).
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+    formatPageHistoryClear,
     formatPageHistoryEvent,
+    formatPageHistoryStack,
     kMaxPageHistoryEvents,
+    kPageHistoryChangeLayoutModeNote,
     PageHistoryRecorder,
 } from "./pageHistoryRecorder";
 import {
@@ -126,6 +130,165 @@ describe("PageHistoryRecorder", () => {
             "a repeat of the same value and a change after stop() should not be heard",
         ).toEqual([[false], [true], [false]]);
         expect(recorder.isDetailed).toBe(true);
+    });
+
+    it("keeps a copy of the stack that the page frame sends, under the id of the page loaded", () => {
+        const { recorder } = makeRecorder();
+        expect(recorder.getStack(), "no page has loaded yet").toBeUndefined();
+        const load = recorder.notePageLoad("page-1");
+        expect(
+            recorder.getStack(),
+            "the page frame has sent no stack yet",
+        ).toBeUndefined();
+        const undo = ["A", "B"];
+        const redo = ["C"];
+        recorder.setStack(load, {
+            undo,
+            redo,
+            hasOpenTransaction: true,
+            isInChangeLayoutMode: false,
+        });
+        undo.push("changed after sending");
+        redo.length = 0;
+
+        expect(recorder.getStack()).toEqual({
+            undo: ["A", "B"],
+            redo: ["C"],
+            hasOpenTransaction: true,
+            isInChangeLayoutMode: false,
+        });
+        expect(
+            recorder.getStack()!.undo,
+            "the recorder should hold its own array, not the page frame's",
+        ).not.toBe(undo);
+    });
+
+    it("drops the stack when its page goes or another loads, and ignores a page that has gone", () => {
+        const { recorder } = makeRecorder();
+        const steps = {
+            undo: ["A"],
+            redo: [],
+            hasOpenTransaction: false,
+            isInChangeLayoutMode: false,
+        };
+        const first = recorder.notePageLoad("page-1");
+        recorder.setStack(first, steps);
+        expect(recorder.getStack()?.undo, "test setup").toEqual(["A"]);
+
+        const second = recorder.notePageLoad("page-2");
+        expect(recorder.getStack()).toBeUndefined();
+        recorder.setStack(first, steps);
+        recorder.notePageGone(first);
+        recorder.setStack(second, { ...steps, undo: ["B"] });
+        recorder.notePageGone(first);
+        expect(
+            recorder.getStack(),
+            "the first page, gone, should neither set nor remove the second's stack",
+        ).toEqual({ ...steps, undo: ["B"] });
+
+        recorder.notePageGone(second);
+        expect(recorder.getStack()).toBeUndefined();
+        recorder.setStack(second, steps);
+        expect(
+            recorder.getStack(),
+            "a page that has gone should not set a stack",
+        ).toBeUndefined();
+    });
+
+    it("keeps the latest clear, with what cleared the history and when, until the next page load", () => {
+        const { recorder, clock } = makeRecorder();
+        recorder.notePageLoad("page-1");
+        expect(recorder.getLatestClear()).toBeUndefined();
+        clock.ms = 2000;
+        recorder.addLogLine("Page history: cleared by a test", "cleared");
+        clock.ms = 13345;
+        recorder.addLogLine(
+            "Page history: cleared by request editview/settopic",
+            "cleared",
+        );
+        recorder.addLogLine("Page history: step A", "step");
+        recorder.clear();
+
+        const clear = recorder.getLatestClear();
+        expect(
+            clear,
+            "the log's Clear button should leave the latest clear",
+        ).toBeDefined();
+        expect(formatPageHistoryClear(clear!)).toBe(
+            "History cleared at 12.345 s by request editview/settopic",
+        );
+
+        recorder.notePageLoad("page-2");
+        expect(recorder.getLatestClear()).toBeUndefined();
+    });
+
+    it("tells subscribers when the stack changes, but not when the same stack comes again", () => {
+        const { recorder } = makeRecorder();
+        const load = recorder.notePageLoad("page-1");
+        const listener = vi.fn();
+        recorder.subscribe(listener);
+        const steps = {
+            undo: ["A"],
+            redo: ["B"],
+            hasOpenTransaction: false,
+            isInChangeLayoutMode: false,
+        };
+        recorder.setStack(load, steps);
+        recorder.setStack(load, { ...steps, undo: ["A"] });
+        expect(listener).toHaveBeenCalledTimes(1);
+        recorder.setStack(load, { ...steps, hasOpenTransaction: true });
+        recorder.setStack(load, { ...steps, redo: [] });
+        expect(listener).toHaveBeenCalledTimes(3);
+    });
+
+    it("writes a stack as text: the undo steps oldest first, the step in progress, the marker, then the redo steps", () => {
+        expect(
+            formatPageHistoryStack({
+                undo: ["A", "B"],
+                redo: ["C", "D"],
+                hasOpenTransaction: true,
+                isInChangeLayoutMode: false,
+            }).split("\n"),
+        ).toEqual([
+            "UNDO\tA",
+            "UNDO\tB",
+            "\t(a step is in progress)",
+            "-------- you are here --------",
+            "REDO\tC",
+            "REDO\tD",
+        ]);
+        expect(
+            formatPageHistoryStack({
+                undo: [],
+                redo: [],
+                hasOpenTransaction: false,
+                isInChangeLayoutMode: true,
+            }).split("\n"),
+        ).toEqual([
+            kPageHistoryChangeLayoutModeNote,
+            "-------- you are here --------",
+        ]);
+        expect(formatPageHistoryStack(undefined)).toBe("(no page history)");
+
+        const { recorder, clock } = makeRecorder();
+        recorder.notePageLoad("page-1");
+        clock.ms = 1500;
+        recorder.addLogLine("Page history: cleared by a test", "cleared");
+        expect(
+            formatPageHistoryStack(
+                {
+                    undo: ["A"],
+                    redo: [],
+                    hasOpenTransaction: false,
+                    isInChangeLayoutMode: false,
+                },
+                recorder.getLatestClear(),
+            ).split("\n"),
+        ).toEqual([
+            "History cleared at 0.500 s by a test",
+            "UNDO\tA",
+            "-------- you are here --------",
+        ]);
     });
 
     it("changes its change count, and tells subscribers, on each change; clear empties it", () => {
