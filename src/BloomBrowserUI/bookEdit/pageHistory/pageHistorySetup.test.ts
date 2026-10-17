@@ -12,14 +12,11 @@ vi.mock("../../utils/bloomApi", async (importOriginal) => ({
 }));
 
 import { makeStackSender, writeToBloomLog } from "./pageHistorySetup";
-import {
-    kGenericUndoDescriptionL10nKey,
-    type PageHistory,
-} from "./pageHistoryTypes";
+import { type PageHistory } from "./pageHistoryTypes";
 import { createPageHistory } from "./pageHistory";
 import { PageHistoryRecorder } from "./pageHistoryRecorder";
 
-const kGenericStep = `Page history: step ${kGenericUndoDescriptionL10nKey}`;
+const kGenericStep = "Page history: did Edit";
 
 function loggedLines(): string[] {
     return mocks.postString.mock.calls.map((call) => {
@@ -39,25 +36,25 @@ describe("writeToBloomLog", () => {
         writeToBloomLog(kGenericStep);
         writeToBloomLog(kGenericStep);
         writeToBloomLog(kGenericStep);
-        writeToBloomLog("Page history: undo EditTab.CutButton");
+        writeToBloomLog("Page history: undid EditTab.CutButton");
         writeToBloomLog(kGenericStep);
         expect(loggedLines()).toEqual([
             kGenericStep,
-            "Page history: undo EditTab.CutButton",
+            "Page history: undid EditTab.CutButton",
             kGenericStep,
         ]);
     });
 
     it("keeps repeated lines that name other steps", () => {
-        writeToBloomLog("Page history: step EditTab.CutButton");
-        writeToBloomLog("Page history: step EditTab.CutButton");
-        writeToBloomLog(`Page history: undo ${kGenericUndoDescriptionL10nKey}`);
-        writeToBloomLog(`Page history: undo ${kGenericUndoDescriptionL10nKey}`);
+        writeToBloomLog("Page history: did EditTab.CutButton");
+        writeToBloomLog("Page history: did EditTab.CutButton");
+        writeToBloomLog("Page history: undid Edit");
+        writeToBloomLog("Page history: undid Edit");
         expect(loggedLines()).toEqual([
-            "Page history: step EditTab.CutButton",
-            "Page history: step EditTab.CutButton",
-            `Page history: undo ${kGenericUndoDescriptionL10nKey}`,
-            `Page history: undo ${kGenericUndoDescriptionL10nKey}`,
+            "Page history: did EditTab.CutButton",
+            "Page history: did EditTab.CutButton",
+            "Page history: undid Edit",
+            "Page history: undid Edit",
         ]);
     });
 });

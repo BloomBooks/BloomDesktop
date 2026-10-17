@@ -258,27 +258,19 @@ describe("the description of a drag of one of the control frame's handles", () =
         [
             "picture",
             ".bloom-ui-canvas-element-resize-handle-se",
-            "EditTab.Undo.Resize(EditTab.Undo.Object.Image)",
+            "Resize(Image)",
         ],
-        [
-            "picture",
-            ".bloom-ui-canvas-element-rotate-handle",
-            "EditTab.Undo.Rotate(EditTab.Undo.Object.Image)",
-        ],
-        [
-            "picture",
-            ".bloom-ui-canvas-element-side-handle-e",
-            "EditTab.Undo.Image.Crop",
-        ],
+        ["picture", ".bloom-ui-canvas-element-rotate-handle", "Rotate(Image)"],
+        ["picture", ".bloom-ui-canvas-element-side-handle-e", "Image.Crop"],
         [
             "ce1",
             ".bloom-ui-canvas-element-side-handle-e",
-            "EditTab.Undo.Resize(EditTab.Undo.Object.SpeechBubble)",
+            "Resize(SpeechBubble)",
         ],
         [
             "picture",
             ".bloom-ui-canvas-element-move-crop-handle",
-            "EditTab.Undo.Image.MoveInFrame",
+            "Image.MoveInFrame",
         ],
     ])(
         "on %s, from %s, is %s",

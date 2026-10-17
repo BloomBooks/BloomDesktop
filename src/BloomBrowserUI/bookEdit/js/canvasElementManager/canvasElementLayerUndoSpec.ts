@@ -265,9 +265,7 @@ describe("a layer command is one undo step", () => {
         expect(stackingOrder()).toEqual(["background", "b", "a", "c"]);
         expect(levels()).toEqual({ background: 1, b: 2, a: 3, c: 4 });
         expect(history.undoDescriptionL10nKey).toBe(layerStepId("forward"));
-        expect(latestStep()).toBe(
-            "EditTab.Undo.BringForward(EditTab.Undo.Object.TextBox)",
-        );
+        expect(latestStep()).toBe("BringForward(TextBox)");
         vi.mocked(Comical.update).mockClear();
 
         await history.undo();
@@ -324,9 +322,7 @@ describe("a layer command is one undo step", () => {
         expect(stackingOrder()).toEqual(["background", "b", "c", "a"]);
         expect(levels()).toEqual({ background: 1, b: 2, c: 3, a: 4 });
         expect(history.undoDescriptionL10nKey).toBe(layerStepId("front"));
-        expect(latestStep()).toBe(
-            "EditTab.Undo.BringToFront(EditTab.Undo.Object.TextBox)",
-        );
+        expect(latestStep()).toBe("BringToFront(TextBox)");
 
         await history.undo();
 

@@ -153,7 +153,7 @@ function logLine(
 }
 
 // The line that the page history logs when it makes a step with the general description.
-const kGenericStepLogLine = `Page history: step ${kGenericUndoDescriptionL10nKey}`;
+const kGenericStepLogLine = `Page history: did ${formatUndoDescription(kGenericUndoDescriptionL10nKey, undefined)}`;
 // The line that writeToBloomLog was given last.
 let lastLogLine: string | undefined;
 

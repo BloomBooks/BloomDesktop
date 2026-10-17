@@ -180,9 +180,7 @@ describe("the description of a press or a drag on a canvas element", () => {
             ce1.style.left = "30px";
             mouse("mouseup", { clientX: 20, clientY: 20 });
         });
-        expect(latestStep()).toBe(
-            "EditTab.Undo.Move(EditTab.Undo.Object.SpeechBubble)",
-        );
+        expect(latestStep()).toBe("Move(SpeechBubble)");
     });
 
     it("is duplicating for an Alt+drag, which drags a copy", async () => {
@@ -193,9 +191,7 @@ describe("the description of a press or a drag on a canvas element", () => {
             mouse("mouseup", { clientX: 20, clientY: 20 });
         });
         expect(page.querySelectorAll(".bloom-canvas-element")).toHaveLength(2);
-        expect(latestStep()).toBe(
-            "EditTab.Undo.Duplicate(EditTab.Undo.Object.SpeechBubble)",
-        );
+        expect(latestStep()).toBe("Duplicate(SpeechBubble)");
     });
 
     it("is moving a tail for a drag that starts on a tail handle", async () => {
@@ -243,8 +239,8 @@ describe("the description of a key press on the active canvas element", () => {
     afterEach(() => provider.dispose());
 
     it.each([
-        ["Delete", "EditTab.Undo.Delete(EditTab.Undo.Object.SpeechBubble)"],
-        ["ArrowRight", "EditTab.Undo.Nudge(EditTab.Undo.Object.SpeechBubble)"],
+        ["Delete", "Delete(SpeechBubble)"],
+        ["ArrowRight", "Nudge(SpeechBubble)"],
     ])("is what %s does", async (key, description) => {
         await asUserAction(() =>
             ce1.dispatchEvent(

@@ -51,7 +51,7 @@ describe("PageHistoryRecorder", () => {
         clock.ms = 5000;
         recorder.notePageLoad("page-1");
         clock.ms = 6234.5;
-        recorder.addLogLine("Page history: undo EditTab.Undo.Edit", "undo");
+        recorder.addLogLine("Page history: undid Edit", "undo");
         clock.ms = 9000;
         recorder.notePageLoad("page-2");
         clock.ms = 9001;
@@ -59,7 +59,7 @@ describe("PageHistoryRecorder", () => {
 
         expect(recorder.asText().split("\n")).toEqual([
             "0.000\tPAGE\tPage loaded: page-1",
-            "1.234\tUNDO\tundo EditTab.Undo.Edit",
+            "1.234\tUNDO\tundid Edit",
             "0.000\tPAGE\tPage loaded: page-2",
             "0.001\tREADY\tPage ready (markPageReady)",
         ]);
@@ -75,9 +75,9 @@ describe("PageHistoryRecorder", () => {
         recorder.notePageLoad("page-1");
         recorder.notePageReady();
         clock.ms = 5500;
-        recorder.addLogLine("Page history: step A", "step");
-        recorder.addLogLine("Page history: undo A", "undo");
-        recorder.addLogLine("Page history: redo A", "redo");
+        recorder.addLogLine("Page history: did A", "step");
+        recorder.addLogLine("Page history: undid A", "undo");
+        recorder.addLogLine("Page history: redid A", "redo");
         recorder.addLogLine(
             "Page history: undo of A found the page changed since, and dropped the undo steps",
             "refused",
@@ -89,9 +89,9 @@ describe("PageHistoryRecorder", () => {
         recorder.addLogLine("Page history: cleared by a test", "cleared");
 
         expect(recorder.asText().split("\n")).toEqual([
-            "0.500\tSTEP\tstep A",
-            "0.500\tUNDO\tundo A",
-            "0.500\tREDO\tredo A",
+            "0.500\tSTEP\tdid A",
+            "0.500\tUNDO\tundid A",
+            "0.500\tREDO\tredid A",
             "0.500\tREFUSED\tundo of A found the page changed since, and dropped the undo steps",
             "0.500\tCLEARED\tcleared by a test",
         ]);
@@ -100,9 +100,9 @@ describe("PageHistoryRecorder", () => {
     it("labels undo, redo and rollback differently from a step", () => {
         const { recorder } = makeRecorder();
         recorder.setDetailed(true);
-        recorder.addLogLine("Page history: step A", "step");
-        recorder.addLogLine("Page history: undo A", "undo");
-        recorder.addLogLine("Page history: redo A", "redo");
+        recorder.addLogLine("Page history: did A", "step");
+        recorder.addLogLine("Page history: undid A", "undo");
+        recorder.addLogLine("Page history: redid A", "redo");
         recorder.addLogLine(
             "Page history: rollback of B reversed 2 records",
             "rollback",
@@ -207,7 +207,7 @@ describe("PageHistoryRecorder", () => {
             "Page history: cleared by request editview/settopic",
             "cleared",
         );
-        recorder.addLogLine("Page history: step A", "step");
+        recorder.addLogLine("Page history: did A", "step");
         recorder.clear();
 
         const clear = recorder.getLatestClear();
@@ -366,12 +366,12 @@ describe("the rows of detailed logging, from a real history", () => {
         });
 
         expect(recorder.asText().split("\n").map(withoutTime)).toEqual([
-            "STEP\tstep A",
+            "STEP\tdid A",
             "TXN\topened B (depth 1)",
             'CHANGE\tin B (depth 1): text of editable[lang=en] > p#p1[0] > #text[0]: was "Hello!", now "Hello!!"',
             "TXN\tended B (depth 1)",
-            "STEP\tstep B",
-            "STEP\tstep C",
+            "STEP\tdid B",
+            "STEP\tdid C",
         ]);
     });
 

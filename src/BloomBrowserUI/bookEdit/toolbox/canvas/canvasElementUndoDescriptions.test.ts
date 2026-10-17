@@ -199,15 +199,11 @@ describe("a command chosen from the canvas element menu", () => {
 
     it("Delete, on a table, is Delete with the table's noun", async () => {
         const table = byId("table");
-        expect(await choose("delete", table)).toBe(
-            "EditTab.Undo.Delete(EditTab.Undo.Object.Table)",
-        );
+        expect(await choose("delete", table)).toBe("Delete(Table)");
         expect(table.isConnected, "the table should be gone").toBe(false);
     });
 
     it("Delete, on a picture, is Delete with the picture's noun", async () => {
-        expect(await choose("delete", byId("image"))).toBe(
-            "EditTab.Undo.Delete(EditTab.Undo.Object.Image)",
-        );
+        expect(await choose("delete", byId("image"))).toBe("Delete(Image)");
     });
 });
