@@ -56,7 +56,7 @@ import {
     getToolboxBundleExports,
 } from "./workspaceFrames";
 import { handleUndo } from "../pageHistory/pageHistorySetup";
-import { showInvisibles, hideInvisibles } from "./showInvisibles";
+import { listenForShowInvisiblesKeys } from "./showInvisibles";
 
 //promise may be needed to run tests with phantomjs
 //import promise = require('es6-promise');
@@ -274,19 +274,7 @@ function AddEditKeyHandlers(container) {
         });
 
     // for testing only: show invisibles
-    $(container)
-        .find("div.bloom-editable")
-        .on("keydown", (e) => {
-            const isCtrlShiftSpace =
-                e.ctrlKey && e.shiftKey && !e.altKey && e.key === " ";
-            if (!isCtrlShiftSpace) return;
-            showInvisibles(e);
-        })
-        // when user releases any key or clicks away from the editable
-        // (if we only listen for keyup of the CTL+SHIFT+SPACE, it doesn't trigger if user lifts keys in wrong order)
-        .on("keyup blur", (e) => {
-            hideInvisibles(e);
-        });
+    listenForShowInvisiblesKeys(container);
 
     // Ctrl+Space: "clear formatting" on the current selection. We route this through the CKEditor
     // instance that currently has focus (rather than the browser's document.execCommand) so that
