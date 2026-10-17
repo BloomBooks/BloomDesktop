@@ -8,7 +8,8 @@ The rules are the browser's own. Bloom runs in WebView2, which is Chromium. The 
 typing in a contenteditable box was measured in Edge 155 (Chromium 155.0.4283.45): real key presses
 through Playwright, then Ctrl+Z pressed until nothing more changed, with the box recorded after
 each press. The page history follows what that measured, except in the places listed under
-[Where Bloom differs from the browser](#where-bloom-differs-from-the-browser).
+[Where Bloom differs from the browser](#where-bloom-differs-from-the-browser). The one that people
+will notice most is that in Bloom a pause of a second ends a step.
 
 ## What a typing step is
 
@@ -28,6 +29,7 @@ Backspace or Delete is described as `EditTab.Undo.DeleteText`.
 
 | What happens | What it does |
 | --- | --- |
+| **A pause of a second or more between key presses** | The key after the pause starts a new step, whether it types or deletes. The pause counts from the latest key press, so slow, steady typing stays one step. A pause in the middle of an IME composition doesn't end the step. The browser has no such rule; it is Bloom's own (`kPauseThatEndsTypingStepMs`). |
 | **Backspace or Delete right after typing** | Ends the step, and the deleting starts a new one. Typing after the deleting joins the deleting's step. So "abc", Backspace twice, "xy", Backspace is three steps: "abc"; the two Backspaces with "xy"; the last Backspace. A delete that changes nothing, such as Delete at the end of the text, doesn't count. |
 | **An Enter or Shift+Enter that leaves nothing after the caret on its line** | The Enter joins the step that is open. The next key that types starts a new step. So typing three lines makes three steps, each a line with the Enter that ends it. An Enter in the middle of a line joins the typing before and after it. |
 | **A key that moves the caret** | The arrow keys, Home, End, Page Up and Page Down. The browser ends the step at these even when the caret doesn't move, as with End when the caret is already at the end. |
@@ -44,8 +46,7 @@ Backspace or Delete is described as `EditTab.Undo.DeleteText`.
 
 | What happens | Notes |
 | --- | --- |
-| **The length of the typing** | There is no limit. 200 characters typed without a break are one step. |
-| **A pause** | There is no time limit. |
+| **The length of the typing** | There is no limit. 200 characters typed without a pause are one step. |
 | **Spaces and the ends of sentences** | Words and sentences don't end a step. |
 | **Deleting, then typing** | The typing joins the deleting's step. |
 | **A delete that changes nothing** | Backspace at the start of the box, Delete at the end. |
@@ -70,7 +71,7 @@ Each row is a case from the experiment. "Steps" lists what each Ctrl+Z took back
 | Backspace, ← ←, Delete | Delete; Backspace | same |
 | "ab", ←, "c" (and with End, Home, ↑) | "c"; "ab" | same |
 | "ab", ← →, "c" | "c"; "ab" | same |
-| "ab", 3-second pause, "cd" | one step | same |
+| "ab", 3-second pause, "cd" | one step | "cd"; "ab" |
 | "ab", click where the caret is, "cd" | one step | same |
 | "ab", click elsewhere in the box, "cd" | "cd"; "ab" | same |
 | "ab", click another field and back, "cd" | "cd"; "ab" | same |
@@ -89,6 +90,9 @@ Each row is a case from the experiment. "Steps" lists what each Ctrl+Z took back
 
 ## Where Bloom differs from the browser
 
+- **A pause.** The browser's undo has no time limit: typing, a pause of any length, and more
+  typing are one step. In Bloom, a pause of a second or more ends the step, so the typing after it
+  can be undone alone.
 - **The first character of a new line.** The browser ends the step one character after an Enter at
   the end of a line, so Ctrl+Z after typing three lines leaves the first letter of each line
   behind ("three" goes back to "t"). This happens only when the typing goes on into an empty line;
@@ -117,6 +121,6 @@ Bloom. That has not been checked with Keyman.
 - Real key presses in a browser: `pageHistoryInput.browser.spec.ts` (no limit on length, Backspace
   after typing, a Delete that changes nothing, Enter at the end of a line).
 - Real key presses in Bloom: `src/BloomE2E/tests/undo-typing.spec.ts`. It covers three lines,
-  Enter mid-line, 60 characters, typing and deleting, a Delete that changes nothing, clicks that
+  Enter mid-line, a pause, 60 characters, typing and deleting, a Delete that changes nothing, clicks that
   keep and move the caret, an arrow key, Shift+Enter, an IME composition, and typing with Talking
   Book open.

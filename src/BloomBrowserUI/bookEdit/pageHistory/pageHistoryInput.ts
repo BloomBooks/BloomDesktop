@@ -63,6 +63,11 @@ export interface InputTransactionOptions {
      */
     afterCurrentTask?: (fn: () => void) => void;
     /**
+     * The time now in milliseconds, for the pause that ends a typing step
+     * (kPauseThatEndsTypingStepMs). Default: performance.now(). Tests supply their own clock.
+     */
+    now?: () => number;
+    /**
      * True for an event on a control that runs undo or redo, such as the top bar's Undo button,
      * which must open no transaction: undo() waits while one is open, and would wait for the end
      * of the click's task. Default: the event's target is inside an element matching
@@ -158,10 +163,18 @@ interface HeldTransaction {
 }
 
 /**
+ * A pause of this long between two key presses in a text box ends the typing step: the key after
+ * the pause starts a new one. The browser's own undo has no such rule; Bloom has it so that a
+ * person who stops typing for a moment and starts again can undo the second burst alone.
+ */
+export const kPauseThatEndsTypingStepMs = 1000;
+
+/**
  * The state of a typing step. Its rules are those of the undo of the browser that Bloom runs in,
  * as measured in Edge (Chromium 155) by typing into a contenteditable box with real key presses
- * (docs/undo/TYPING-STEPS.md):
- * - it has no limit on its length, and a pause does not end it;
+ * (docs/undo/TYPING-STEPS.md), with one rule added:
+ * - it has no limit on its length, but a pause (kPauseThatEndsTypingStepMs) ends it, except inside
+ *   an IME composition, whose end ends it anyway;
  * - deleting (Backspace or Delete) right after typing starts a new step, which typing after the
  *   deleting joins; a delete that changes nothing, such as Backspace at the start of the box, does
  *   not count (onBeforeInput);
@@ -188,6 +201,8 @@ interface TypingRun {
     latestKind: InputKind | undefined;
     // True from an Enter or Shift+Enter until the next key that types or deletes.
     afterLineBreak: boolean;
+    // When the latest key press or input of the step came, by InputTransactionOptions.now.
+    latestInputTime: number;
     // The selection when a press of the pointer in the box began, until the press has ended.
     selectionAtPress?: SelectionPoints;
 }
@@ -227,6 +242,7 @@ class InputTransactions {
     private held: HeldTransaction | undefined;
     private readonly isFromUser: (event: Event) => boolean;
     private readonly afterCurrentTask: (fn: () => void) => void;
+    private readonly now: () => number;
     private readonly isOnUndoOrRedoControl: (event: Event) => boolean;
     private readonly onOpened:
         | ((event: Event, kind: HeldTransaction["kind"]) => void)
@@ -239,6 +255,7 @@ class InputTransactions {
         this.isFromUser = options?.isFromUser ?? ((event) => event.isTrusted);
         this.afterCurrentTask =
             options?.afterCurrentTask ?? ((fn) => window.setTimeout(fn, 0));
+        this.now = options?.now ?? (() => performance.now());
         this.isOnUndoOrRedoControl =
             options?.isOnUndoOrRedoControl ?? isInsideUndoControl;
         this.onOpened = options?.onOpened;
@@ -476,8 +493,15 @@ class InputTransactions {
             else return;
         }
         const isLineBreak = !isIme && event.key === "Enter";
+        const now = this.now();
         const run = this.held?.typing;
         if (run && run.box !== box) this.endTypingRun();
+        else if (
+            run &&
+            !event.isComposing &&
+            now - run.latestInputTime >= kPauseThatEndsTypingStepMs
+        )
+            this.endTypingRun();
         else if (
             run?.afterLineBreak &&
             inputKind !== "deleting" &&
@@ -493,9 +517,11 @@ class InputTransactions {
                 firstKind: undefined,
                 latestKind: undefined,
                 afterLineBreak: false,
+                latestInputTime: now,
             };
             this.held!.typing = current;
         }
+        current.latestInputTime = now;
         current.firstKind ??= inputKind;
         current.afterLineBreak = isLineBreak;
         // Bloom and CKEditor make the line break themselves, with no input event.
@@ -528,6 +554,7 @@ class InputTransactions {
                 firstKind: "deleting",
                 latestKind: undefined,
                 afterLineBreak: false,
+                latestInputTime: this.now(),
             };
     }
 
@@ -545,6 +572,7 @@ class InputTransactions {
                     : "typing",
                 latestKind: undefined,
                 afterLineBreak: false,
+                latestInputTime: this.now(),
             };
     }
 
