@@ -543,9 +543,9 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                                 // (BL-16330). Later sessions still read a fresh book DOM,
                                 // because every launch saves first (HandleSaveThenLaunch);
                                 // a retry from THIS still-open overlay reads stale oldSrc
-                                // for the slots that landed, which the page frame handles
-                                // by remembering the elements it already swapped (see
-                                // applyAiImageEditorReplacements).
+                                // for the slots that landed, which does not matter because
+                                // the page frame finds each slot by its ordinal, not by
+                                // its file name (see applyAiImageEditorReplacements).
                                 // Now, and only now, is the applied count a fact. Counted from
                                 // C#'s own results for the other pages, plus what the page frame
                                 // reported for this one (0 if we never got that far).

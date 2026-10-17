@@ -310,8 +310,7 @@ namespace Bloom.web.controllers
         /// added exists only in the live page (Bloom deliberately doesn't save on an image change;
         /// see EditingModel.UpdateImageInBrowser and BL-16330). Launching against the unsaved DOM
         /// opened the AI Image Editor with an empty "Image to Edit" slot (BL-16682); it would also have
-        /// made the current page's commit results describe an image the live page no longer shows,
-        /// and left <see cref="DeleteSupersededAiImageFiles"/> blind to a file the live page uses.
+        /// made the current page's commit results describe an image the live page no longer shows.
         ///
         /// Two separate things follow from the fact that saving always ends in a navigation.
         ///
@@ -1745,9 +1744,9 @@ namespace Bloom.web.controllers
         /// Applies the AI image editor's chosen replacements to the book. Each replacement
         /// names a slot (pageId:ordinal) anywhere in the book and an AI image editor result
         /// whose bytes we read from the per-book history folder — so no image bytes cross the
-        /// bridge.
+        /// bridge. Internal for testing.
         /// </summary>
-        private void HandleCommit(ApiRequest request)
+        internal void HandleCommit(ApiRequest request)
         {
             if (!HasValidSession(request))
                 return;
@@ -1788,10 +1787,6 @@ namespace Bloom.web.controllers
             var replacements = payload?.replacements ?? new List<CommitReplacement>();
             var results = new List<object>();
             var pagesToSyncToDataDiv = new HashSet<SafeXmlElement>();
-            // The old image files displaced by off-page replacements. After the book is saved
-            // we delete the ones we generated ("ai-image*") that nothing references any more,
-            // so repeated AI edits of the same slot don't pile up orphaned files (BL-16523/G1).
-            var supersededOffPageFiles = new List<string>();
             var appliedCount = 0;
             var savedAnyOffPage = false;
             // Reused across replacements so a page's whole-document lookup happens only once.
@@ -1836,10 +1831,6 @@ namespace Bloom.web.controllers
                         savedAnyOffPage = true;
                         if (pageNeedingDataDivSync != null)
                             pagesToSyncToDataDiv.Add(pageNeedingDataDivSync);
-                        // Remember the file this off-page slot used to point at; it may now be
-                        // orphaned. (Current-page slots are repointed by the front-end via
-                        // changeImage(), so their old files are not ours to delete here.)
-                        supersededOffPageFiles.Add(oldSrc);
                     }
                 }
             }
@@ -1855,12 +1846,10 @@ namespace Bloom.web.controllers
                 book.Save();
             }
 
-            // The off-page slots now point at their new files (and the book is saved), so any
-            // ai-image file we generated earlier that nothing references any more is safe to
-            // remove. This runs against the current book DOM, so a file still used by another
-            // slot — or by the current page (which the front-end has yet to repoint) —
-            // survives.
-            DeleteSupersededAiImageFiles(book.FolderPath, book.OurHtmlDom, supersededOffPageFiles);
+            // The files that the replaced slots pointed at stay in the book folder: the page's
+            // undo history may still name them, and an undo must find them there.
+            // BookStorage.CleanupUnusedSupportFiles removes the unused ones when the book is next
+            // brought up to date, at which point no page history exists.
 
             // The "Change Picture" events are reported by
             // aiImageEditorOverlay.ts when it gets this reply, not here. For a slot on the page the user
@@ -2074,8 +2063,8 @@ namespace Bloom.web.controllers
             // image editor, and the front end rebuilds a target's copy only when its draggable
             // becomes the selected canvas element — which, this not being the page the user has
             // open, it never does. Left alone, the target would go on showing the replaced
-            // picture, and its reference to the old file would also stop
-            // DeleteSupersededAiImageFiles reclaiming it (BL-16793).
+            // picture, and its reference to the old file would also keep
+            // BookStorage.CleanupUnusedSupportFiles from removing it (BL-16793).
             //
             // This repoints the copy, re-derives its credit attributes, and drops the crop the
             // copy inherited from the draggable — for the same reason the draggable's own crop
@@ -2112,10 +2101,10 @@ namespace Bloom.web.controllers
         /// this used to do (BL-16645). AI services can return very large PNGs, and an
         /// unprocessed one bloats the book folder for every sync, upload and backup.
         ///
-        /// The NAME matters as much as the bytes: <see cref="DeleteSupersededAiImageFiles"/>
-        /// reclaims our old files by their "ai-image" prefix, but ProcessAndSaveImageIntoFolder
-        /// names its output after the SOURCE file, which for us is an opaque history id. So we
-        /// let it write, then rename onto the name we reserved. Passing isSameFile:false
+        /// The NAME matters as much as the bytes: ProcessAndSaveImageIntoFolder names its output
+        /// after the SOURCE file, which for us is an opaque history id, and that id should not
+        /// become the name of a picture in the user's book. So we let it write, then rename onto
+        /// the name we reserved. Passing isSameFile:false
         /// guarantees it wrote a brand-new file (GetUnusedFilename picked that name), so the
         /// rename can never disturb a file another slot shares. Processing may change the
         /// extension (a non-web format becomes .png, .jpeg becomes .jpg), so the reserved name
@@ -2424,66 +2413,6 @@ namespace Bloom.web.controllers
             {
                 return false;
             }
-        }
-
-        /// <summary>
-        /// Deletes the now-superseded image files we generated ("ai-image*") that no image
-        /// element anywhere in <paramref name="dom"/> still references. Bloom's built-in
-        /// garbage collector (BookStorage.CleanupUnusedImageFiles, run when the book is next
-        /// brought up to date) would eventually remove unreferenced images anyway, so these
-        /// don't accumulate forever; but it only handles .jpg/.png/.svg/.gif. This prunes our
-        /// files promptly at commit time and also covers the other formats we can generate
-        /// (.jpeg/.webp), so a re-edited slot's old ai-image file doesn't linger in the book
-        /// folder between edits. Only our own generated files are considered, and only when
-        /// nothing references them, so a file shared by another slot (or a user's original
-        /// image) is never removed. Internal for testing; callers pass the book's folder path
-        /// and its (already-edited, already-saved) DOM.
-        /// </summary>
-        internal static void DeleteSupersededAiImageFiles(
-            string bookFolderPath,
-            HtmlDom dom,
-            IEnumerable<string> candidateFileNames
-        )
-        {
-            var candidates = candidateFileNames
-                .Where(name => !string.IsNullOrEmpty(name))
-                .Select(Path.GetFileName)
-                .Where(name => name.StartsWith("ai-image", StringComparison.OrdinalIgnoreCase))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
-            if (candidates.Count == 0)
-                return;
-
-            var stillReferenced = CollectReferencedImageFileNames(dom);
-
-            foreach (var fileName in candidates)
-            {
-                if (stillReferenced.Contains(fileName))
-                    continue;
-                var fullPath = Path.Combine(bookFolderPath, fileName);
-                if (RobustFile.Exists(fullPath))
-                    RobustFile.Delete(fullPath);
-            }
-        }
-
-        /// <summary>
-        /// The set of image file names (no path) referenced by any &lt;img&gt; or
-        /// background-image element anywhere in the DOM, including the data-div. Used to
-        /// decide whether a superseded file is safe to delete. Internal for testing.
-        /// </summary>
-        internal static HashSet<string> CollectReferencedImageFileNames(HtmlDom dom)
-        {
-            var referenced = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var holders = HtmlDom.SelectChildImgAndBackgroundImageElements(
-                dom.RawDom.DocumentElement
-            );
-            foreach (var holder in holders.OfType<SafeXmlElement>())
-            {
-                var url = HtmlDom.GetImageElementUrl(holder).PathOnly.NotEncoded;
-                if (!string.IsNullOrEmpty(url))
-                    referenced.Add(Path.GetFileName(url));
-            }
-            return referenced;
         }
 
         /// <summary>
