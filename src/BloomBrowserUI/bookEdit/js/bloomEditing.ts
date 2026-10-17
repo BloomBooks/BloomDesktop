@@ -76,7 +76,10 @@ import {
     externalCaptureErrorForPendingWork,
     kExternalCaptureMaxWaitMs,
 } from "./pageContentCapturePolicy";
-import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
+import {
+    copyContentToTargetsAfterUndoOrRedo,
+    setupDragActivityTabControl,
+} from "../toolbox/games/GameTool";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { setupBookLinkGrids } from "./linkGrid";
 import { fitImageOverTextSplits } from "./autoFitImageOverTextSplits";
@@ -1834,8 +1837,9 @@ export const pageUnloading = () => {
  * re-reads the page and selects the canvas element that the step changed, and Talking Book and
  * the reader tools paint their highlights again from the restored text, writing nothing that the
  * history records (Talking Book also drops the class changes that its visibility observer would
- * otherwise answer with a markup pass). Call once for each history, right after it starts; the
- * components' own setup may run before the history exists.
+ * otherwise answer with a markup pass), and each game target gets its draggable's content again,
+ * which the history leaves out, whichever tool is current. Call once for each history, right
+ * after it starts; the components' own setup may run before the history exists.
  */
 export function listenToPageHistory(history: PageHistory): void {
     history.onBeforeUndoOrRedo(() =>
@@ -1852,6 +1856,11 @@ export function listenToPageHistory(history: PageHistory): void {
         toolbox?.getTheOneAudioRecorderForExportOnly()?.updateAfterUndoOrRedo();
         toolbox?.repaintReaderHighlights();
     });
+    history.onAfterUndoOrRedo(() =>
+        copyContentToTargetsAfterUndoOrRedo(
+            document.querySelector<HTMLElement>(".bloom-page")!,
+        ),
+    );
 }
 
 export function topBarButtonClick(button: { command: string }) {
