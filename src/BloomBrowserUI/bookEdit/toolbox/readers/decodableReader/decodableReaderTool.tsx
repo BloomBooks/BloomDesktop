@@ -6,7 +6,6 @@ import { get } from "../../../../utils/bloomApi";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { renderRoot } from "../../../../utils/reactRender";
 import { isLongPressEvaluating, IToolboxSettings } from "../../toolbox";
-import StyleEditor from "../../../StyleEditor/StyleEditor";
 import $ from "jquery";
 
 // This class renders the DecodableReaderToolControls React component
@@ -40,11 +39,9 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
     public detachFromPage(): void {
         getTheOneReaderToolsModel().setMarkupType(0);
     }
+    /** Mark up the page again after typing; the toolbox's markup pass calls this. */
     public updateMarkup() {
-        // Don't let this lower-level code create ckeditor bookmarks in this case.
-        // We've already created them in toolbox.ts which calls this.
-        const createCkEditorBookMarks = false;
-        getTheOneReaderToolsModel().doMarkup(createCkEditorBookMarks);
+        getTheOneReaderToolsModel().doMarkup();
     }
     public showTool() {
         // change markup based on visible options
@@ -119,44 +116,26 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
             );
         });
     }
+    /**
+     * Mark up the page again when a box loses focus, so that the highlights match its text even
+     * when the focus left before the markup pass that follows typing. doMarkup only reads the
+     * boxes, so this writes nothing that the page history records, wherever the focus goes,
+     * the toolbox included.
+     */
     public setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
         // invoke function when a bloom-editable element loses focus.
         $(container)
             .find(".bloom-editable")
-            .focusout((event) => {
-                let createCkEditorBookMarks = true;
-                // We don't want to create bookmarks if we are switching from one text box on the page to another.
-                // Otherwise, we prevent switching text boxes altogether because the restoration of the bookmark
-                // will put focus back into the text box we are trying to leave.
-                // relatedTarget is what we are switching to, if anything.
-                if (
-                    event.relatedTarget &&
-                    event.relatedTarget !== event.target &&
-                    event.relatedTarget.matches(".bloom-editable")
-                )
-                    createCkEditorBookMarks = false;
-                // If the Format (Styles) dialog is showing, then we don't want to create
-                // bookmarks.  The div#format-toolbar is instantiated only when the dialog
-                // is showing.  See BL-13043.
-                else if (StyleEditor.isStyleDialogOpen())
-                    createCkEditorBookMarks = false;
+            .focusout(() => {
                 if (window?.top?.[isLongPressEvaluating]) {
                     // This gets raised, for no reason I can see, when you click on one
                     // of the longpress buttons. The bloom-editable is the target. It makes no
                     // sense that it should be losing focus at this point, but it happens.
-                    // Markup will be sorted out when the long press is done (at keyup).
-                    // Letting it happen now seems to contribute to the insertion point jumping
-                    // back to previous locations (BL-12889), possibly because the call here
-                    // creates a bookmark but doesn't use and remove it.
+                    // Markup will be sorted out when the long press is done (at keyup), so
+                    // there is nothing to gain from doing it now.
                     return;
                 }
-                getTheOneReaderToolsModel().doMarkup(createCkEditorBookMarks);
-            });
-
-        $(container)
-            .find(".bloom-editable")
-            .focusin(function () {
-                getTheOneReaderToolsModel().noteFocus(this); // 'This' is the element that just got focus.
+                getTheOneReaderToolsModel().doMarkup();
             });
     }
     public configureElements(container: HTMLElement) {

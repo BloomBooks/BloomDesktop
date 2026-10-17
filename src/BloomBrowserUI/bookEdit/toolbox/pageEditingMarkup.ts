@@ -404,13 +404,16 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 // rejoining the text leaves the DOM exactly as it was, Chromium goes on painting
                 // the paragraph's old glyphs where a ligature straddled the split, so letters the
                 // user typed stop being drawn until something else forces a repaint (BL-16717).
-                // Nothing below rewrites this box unless a tool is active, or there is actually
-                // a comment or an nbsp to clean up - and if nothing rewrites the box, there is no
-                // selection to preserve. So only record the caret when one of those is true,
+                // Nothing below rewrites this box unless the active tool's markup is async (only
+                // Talking Book's, which wraps the text in sentence spans; a synchronous updateMarkup
+                // reads the boxes and does not rewrite them, see ITool in toolbox.ts), or there is
+                // actually a comment or an nbsp to clean up - and if nothing rewrites the box, there
+                // is no selection to preserve. So only record the caret when one of those is true,
                 // which for ordinary typing is never. (Decided BEFORE the record is made: a
                 // bookmark span itself contains an nbsp, so the test would answer yes after it.)
                 const boxMightBeRewritten =
-                    !!activeTool || editableMightBeRewritten(editableDiv);
+                    !!activeTool?.isUpdateMarkupAsync() ||
+                    editableMightBeRewritten(editableDiv);
 
                 // Every write below is the pass's reaction to the typing or paste that scheduled
                 // it, so each goes through addToLatestTransaction: it joins that action's
@@ -502,12 +505,10 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 // jsdom. So if you reorder anything in here, test it by typing in a Leveled
                 // Reader book and watching the over-long sentences stay highlighted.
                 if (activeTool && !activeTool.isUpdateMarkupAsync()) {
-                    // Note, the updateMarkup routine must be sure to use the result of
-                    // ckEditor's getData() method, not the raw HTML of the editableDivs.
-                    // See EditableDivUtils.doCkEditorCleanup() and .restoreSelectionFromCkEditorBookmarks().
-                    // Unfortunately, we can't easily do that in a top-level (general for all tools) way because of
-                    // our current architecture. Namely, the reader tools have a lower-level
-                    // doMarkup() which gets called more than just from here.
+                    // A synchronous updateMarkup reads the boxes and must not rewrite them: no caret
+                    // is recorded around it (boxMightBeRewritten above), so a rewrite here would move
+                    // the caret, and it would detach the highlight Ranges just painted. The reader
+                    // tools' doMarkup reads each box's text and paints CSS highlights over it.
                     addToLatestTransaction(() => activeTool.updateMarkup());
                 }
 
