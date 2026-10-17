@@ -82,19 +82,19 @@ describe("pageHistoryAccess", () => {
     });
 
     it("does nothing on clear when there is no history", () => {
-        expect(() => clearUndoAndRedo()).not.toThrow();
+        expect(() => clearUndoAndRedo("a test")).not.toThrow();
         setPageFrame("none");
-        expect(() => clearUndoAndRedo()).not.toThrow();
+        expect(() => clearUndoAndRedo("a test")).not.toThrow();
         const disposed = makeFakeHistory(true);
         setPageFrame(disposed);
-        clearUndoAndRedo();
+        clearUndoAndRedo("a test");
         expect(disposed.clearUndoAndRedo).not.toHaveBeenCalled();
     });
 
     it("clears the history when there is one", () => {
         const fake = makeFakeHistory();
         setPageFrame(fake);
-        clearUndoAndRedo();
+        clearUndoAndRedo("a test");
         expect(fake.clearUndoAndRedo).toHaveBeenCalledTimes(1);
     });
 });

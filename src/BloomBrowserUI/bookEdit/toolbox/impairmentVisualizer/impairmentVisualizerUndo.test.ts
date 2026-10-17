@@ -14,7 +14,8 @@ vi.mock("../../pageHistory/pageHistoryAccess", () => ({
     currentPageHistory: () => mocks.history,
     doOutsideHistory: <T>(fn: () => T): T =>
         mocks.history ? mocks.history.doOutsideHistory(fn) : fn(),
-    clearUndoAndRedo: () => mocks.history?.clearUndoAndRedo(),
+    clearUndoAndRedo: (reason: string) =>
+        mocks.history?.clearUndoAndRedo(reason),
 }));
 
 import { ImpairmentVisualizerAdaptor } from "./impairmentVisualizer";

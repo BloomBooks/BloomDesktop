@@ -682,7 +682,7 @@ describe("typing", () => {
     it("starts again after something else ends its transaction", async () => {
         const box = byId("box1");
         typeText(box, "ab");
-        history.clearUndoAndRedo();
+        history.clearUndoAndRedo("a test");
         expect(history.hasOpenTransaction).toBe(false);
         typeText(box, "c");
         expect(history.hasOpenTransaction).toBe(true);

@@ -34,7 +34,8 @@ vi.mock("../../pageHistory/pageHistoryAccess", () => ({
         mocks.history ? mocks.history.doOutsideHistory(fn) : fn(),
     addToLatestTransaction: <T>(fn: () => T): T =>
         mocks.history ? mocks.history.addToLatestTransaction(fn) : fn(),
-    clearUndoAndRedo: () => mocks.history?.clearUndoAndRedo(),
+    clearUndoAndRedo: (reason: string) =>
+        mocks.history?.clearUndoAndRedo(reason),
 }));
 
 import AudioRecording, {

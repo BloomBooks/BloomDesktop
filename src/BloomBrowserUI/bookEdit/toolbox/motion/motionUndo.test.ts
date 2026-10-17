@@ -37,7 +37,8 @@ vi.mock("../../pageHistory/pageHistoryAccess", () => ({
     currentPageHistory: () => mocks.history,
     doOutsideHistory: <T>(fn: () => T): T =>
         mocks.history ? mocks.history.doOutsideHistory(fn) : fn(),
-    clearUndoAndRedo: () => mocks.history?.clearUndoAndRedo(),
+    clearUndoAndRedo: (reason: string) =>
+        mocks.history?.clearUndoAndRedo(reason),
 }));
 // The page frame's makeElement, without jQuery UI's draggable and resizable; the tests call the
 // handlers that the tool passed for them.

@@ -32,7 +32,8 @@ vi.mock("../../pageHistory/pageHistoryAccess", () => ({
     currentPageHistory: () => mocks.history,
     doOutsideHistory: <T>(fn: () => T): T =>
         mocks.history ? mocks.history.doOutsideHistory(fn) : fn(),
-    clearUndoAndRedo: () => mocks.history?.clearUndoAndRedo(),
+    clearUndoAndRedo: (reason: string) =>
+        mocks.history?.clearUndoAndRedo(reason),
 }));
 
 import { MarkupType, ReaderToolsModel } from "./readerToolsModel";
@@ -282,7 +283,7 @@ describe("The reader tools' markup and the page history", () => {
         paragraph.innerHTML =
             '<span data-segment="sentence"><span data-segment="word">One</span> two three.</span>';
         // That change is not the user's either.
-        history.clearUndoAndRedo();
+        history.clearUndoAndRedo("a test");
         onUnmarkedChange.mockClear();
         await history.doTransaction(kEarlierKey, () => {
             document.getElementById("other")!.textContent = "again";
