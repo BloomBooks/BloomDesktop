@@ -14,7 +14,11 @@ import {
     IResolvedControl,
     TopLevelControlId,
 } from "./canvasControlTypes";
-import { controlRegistry, controlSections } from "./canvasControlRegistry";
+import {
+    controlRegistry,
+    controlSections,
+    runCommandControlAction,
+} from "./canvasControlRegistry";
 
 type ResolvedToolbarItem = {
     control: ICommandControlDefinition;
@@ -198,7 +202,7 @@ const buildDefaultMenuRow = (
           }
         : undefined,
     onSelect: async (rowCtx: IControlContext, rowRuntime: IControlRuntime) => {
-        await control.action(rowCtx, rowRuntime);
+        await runCommandControlAction(control, rowCtx, rowRuntime);
     },
 });
 

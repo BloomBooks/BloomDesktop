@@ -59,8 +59,10 @@ import {
 import { doVideoCommand } from "../../js/bloomVideo";
 import {
     copySelection,
+    doTransaction,
     GetEditor,
     pasteClipboard,
+    whenNoRequestPageContentDelays,
 } from "../../js/bloomEditing";
 import { CogIcon } from "../../js/CogIcon";
 import { DuplicateIcon } from "../../js/DuplicateIcon";
@@ -71,7 +73,10 @@ import {
     SendBackwardIcon,
     SendToBackIcon,
 } from "../../js/LayerIcons";
-import type { ZOrderMove } from "../../js/canvasElementManager/CanvasElementZOrder";
+import {
+    kZOrderMoveL10nIds,
+    type ZOrderMove,
+} from "../../js/canvasElementManager/CanvasElementZOrder";
 import { LinkIcon } from "../../js/LinkIcon";
 import { MissingMetadataIcon } from "../../js/MissingMetadataIcon";
 import StyleEditor from "../../StyleEditor/StyleEditor";
@@ -87,6 +92,7 @@ import { showTalkingBookTool } from "../talkingBook/showTalkingBookTool";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
 import { trackEvent } from "../../../utils/bloomApi";
 import {
+    ICommandControlDefinition,
     IControlContext,
     IControlDefinition,
     IControlRuntime,
@@ -258,6 +264,32 @@ const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
     return true;
 };
 
+/**
+ * Run a command control's action as one step of the page history, so that a command from a
+ * menu or a toolbar, in the page or in the Canvas tool, is an undo step of its own rather than a
+ * change that ends the history. The step is described by the command's label. An async action
+ * keeps the step open until it settles, so an action must await any work of its own that
+ * changes the page later. The step then stays open until no page content delay is pending, so
+ * that what the action started without awaiting it, such as fitting a canvas element to a new
+ * picture once the picture has loaded, is part of the step and not of the user's next action.
+ * If the action fails, the step's changes are put back, and the bubbles are drawn again from the
+ * page.
+ */
+export const runCommandControlAction = (
+    control: ICommandControlDefinition,
+    ctx: IControlContext,
+    runtime: IControlRuntime,
+): Promise<void> =>
+    doTransaction(control.l10nId, async () => {
+        await control.action(ctx, runtime);
+        await whenNoRequestPageContentDelays();
+    }).catch((error) => {
+        // The rollback put back data-bubble, but Comical draws from its own copy of each
+        // spec.
+        getCanvasElementManager()?.redrawBubblesFromPage();
+        throw error;
+    });
+
 const buildDynamicMenuItemFromControl = (
     controlId: TopLevelControlId,
     runtime: IControlRuntime,
@@ -278,7 +310,7 @@ const buildDynamicMenuItemFromControl = (
         onSelect:
             overrides.onSelect ??
             (async (rowCtx) => {
-                await control.action(rowCtx, runtime);
+                await runCommandControlAction(control, rowCtx, runtime);
             }),
     };
 };
@@ -494,10 +526,10 @@ export const makeChooseAudioMenuItemForImage = (
 };
 
 // One command row of the "Layer" submenu. The command itself runs in the page frame's
-// CanvasElementManager, which reorders the DOM and keeps the Comical bubble levels in step.
+// CanvasElementManager, which reorders the DOM and keeps the Comical bubble levels in step,
+// as one undo step described by the row's l10nId.
 const makeLayerCommandRow = (
     id: "bringForward" | "bringToFront" | "sendBackward" | "sendToBack",
-    l10nId: string,
     englishLabel: string,
     icon: React.FunctionComponent<SvgIconProps>,
     shortcutDisplay: string,
@@ -505,7 +537,7 @@ const makeLayerCommandRow = (
     enabled: (ctx: IControlContext) => boolean,
 ): IControlMenuCommandRow => ({
     id,
-    l10nId,
+    l10nId: kZOrderMoveL10nIds[move],
     englishLabel,
     icon: React.createElement(icon, null),
     shortcut: {
@@ -535,7 +567,6 @@ export const makeLayerMenuItem = (
     subMenuItems: [
         makeLayerCommandRow(
             "bringForward",
-            "EditTab.Toolbox.CanvasTool.Layer.BringForward",
             "Bring Forward",
             BringForwardIcon,
             "Ctrl+]",
@@ -544,7 +575,6 @@ export const makeLayerMenuItem = (
         ),
         makeLayerCommandRow(
             "bringToFront",
-            "EditTab.Toolbox.CanvasTool.Layer.BringToFront",
             "Bring to Front",
             BringToFrontIcon,
             "Ctrl+Shift+]",
@@ -553,7 +583,6 @@ export const makeLayerMenuItem = (
         ),
         makeLayerCommandRow(
             "sendBackward",
-            "EditTab.Toolbox.CanvasTool.Layer.SendBackward",
             "Send Backwards",
             SendBackwardIcon,
             "Ctrl+[",
@@ -562,7 +591,6 @@ export const makeLayerMenuItem = (
         ),
         makeLayerCommandRow(
             "sendToBack",
-            "EditTab.Toolbox.CanvasTool.Layer.SendToBack",
             "Send to Back",
             SendToBackIcon,
             "Ctrl+Shift+[",
@@ -1176,9 +1204,8 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Toolbox.ComicTool.Options.PasteText",
         englishLabel: "Paste Text",
         icon: PasteIcon,
-        action: () => {
-            pasteClipboard(false);
-        },
+        // Returning the paste keeps this command's step open until the paste has finished.
+        action: () => pasteClipboard(false),
     },
     autoHeight: {
         kind: "command",
@@ -1317,12 +1344,16 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             // Shown from the workspace root so its backdrop covers the page list too.
             const showLinkTargetChooserDialog =
                 getWorkspaceBundleExports().showLinkTargetChooserDialog;
+            // The command's own step closed when the dialog opened, so OK makes a step of its
+            // own, inside the transaction that the click on OK opened.
             showLinkTargetChooserDialog(currentUrl, (newUrl) => {
-                if (newUrl) {
-                    ctx.canvasElement.setAttribute("data-href", newUrl);
-                } else {
-                    ctx.canvasElement.removeAttribute("data-href");
-                }
+                void doTransaction("EditTab.Toolbox.CanvasTool.SetDest", () => {
+                    if (newUrl) {
+                        ctx.canvasElement.setAttribute("data-href", newUrl);
+                    } else {
+                        ctx.canvasElement.removeAttribute("data-href");
+                    }
+                });
             });
         },
     },

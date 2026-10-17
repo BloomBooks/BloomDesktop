@@ -3,7 +3,8 @@
 // (BL-15992). Notion test case "Canvas element Layer order" (Test Case ID 840).
 //
 // The page holds two speech bubbles that overlap a little, so a click where they overlap shows
-// which one is in front, and a picture placeholder away from both. The last test gives one bubble
+// which one is in front, and a picture placeholder away from both. Each move is one undo step,
+// which Ctrl+Z and Ctrl+Y reverse with the moved element selected. The last test gives one bubble
 // a child bubble, because a family must move as one, and moving one used to throw inside ComicalJS.
 //
 // The tests are serial because each one starts from the page the one before it left behind.
@@ -33,6 +34,11 @@ import {
     selectStackedCanvasElement,
 } from "../helpers/canvasLayers";
 import { watchForScriptErrors } from "../helpers/scriptErrors";
+import {
+    redoWithCtrlYAndExpect,
+    undoWithCtrlZAndExpect,
+    waitForOpenTransactionToEnd,
+} from "../helpers/undo";
 
 test.use({
     collectionSpec: { name: "canvas-layer-order", languages: ["en"] },
@@ -166,6 +172,55 @@ test.describe("canvas element Layer order [Test Case ID 840]", () => {
 
         await pressLayerShortcut(page, "Bring to Front");
         await expectStack(page, [bubbleA, bubbleB, picture]);
+    });
+
+    test("Ctrl+Z and Ctrl+Y reverse a move, from a shortcut or the menu", async ({
+        page,
+    }) => {
+        // The stack, with each element's level and whether it is selected, which undo and redo
+        // must put back exactly, the moved element selected.
+        const read = () => getCanvasElementStack(page);
+        await selectStackedCanvasElement(page, bubbleA);
+        const start = await read();
+        // Sanity check: the order the test before this one left, with bubbleA selected.
+        expect(start.map((e) => e.id)).toEqual([bubbleA, bubbleB, picture]);
+        expect(start.find((e) => e.selected)?.id).toBe(bubbleA);
+
+        await pressLayerShortcut(page, "Bring to Front");
+        await expectStack(page, [bubbleB, picture, bubbleA]);
+        await waitForOpenTransactionToEnd(page);
+        const afterShortcut = await read();
+        await undoWithCtrlZAndExpect(
+            page,
+            read,
+            start,
+            "bringing a bubble to the front with Ctrl+Shift+]",
+        );
+        await redoWithCtrlYAndExpect(
+            page,
+            read,
+            afterShortcut,
+            "bringing a bubble to the front with Ctrl+Shift+]",
+        );
+
+        await chooseLayerCommand(page, "Send to Back");
+        await expectStack(page, [bubbleA, bubbleB, picture]);
+        await waitForOpenTransactionToEnd(page);
+        const afterMenu = await read();
+        await undoWithCtrlZAndExpect(
+            page,
+            read,
+            afterShortcut,
+            "sending a bubble to the back from the Layer menu",
+        );
+        await redoWithCtrlYAndExpect(
+            page,
+            read,
+            afterMenu,
+            "sending a bubble to the back from the Layer menu",
+        );
+        // The page is as this test found it, for the tests after it.
+        expect(afterMenu).toEqual(start);
     });
 
     test("a click where two bubbles overlap picks the one in front", async ({
