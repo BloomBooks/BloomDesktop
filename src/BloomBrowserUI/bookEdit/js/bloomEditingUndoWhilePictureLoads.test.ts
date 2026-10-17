@@ -2,8 +2,8 @@
 // the step open until the picture has loaded and its canvas element has been fitted, which holds a
 // page content delay; an undo asked for meanwhile waits and runs as soon as the step closes
 // (PageHistory.undo). Each test goes through one of the routes that the user has: Ctrl+Z, which
-// pageHistoryKeys.ts takes, and the top bar's Undo button, for which C# calls
-// topBarButtonClick("undo") in the page frame. Both reach handleUndo in pageHistorySetup.ts. Also
+// pageHistoryKeys.ts takes, and the top bar's Undo button, which calls the page frame's handleUndo
+// directly. Both reach handleUndo in pageHistorySetup.ts. Also
 // what happens to a second change made while the first still waits for its fit: it joins that
 // step.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -26,12 +26,12 @@ import {
     doTransactionUntilPageSettles,
     kChangePictureUndoL10nKey,
     removeRequestPageContentDelay,
-    topBarButtonClick,
     whenNoRequestPageContentDelays,
 } from "./bloomEditing";
 import {
     canUndo,
     handleRedo,
+    handleUndo,
     startPageHistoryForThisPage,
 } from "../pageHistory/pageHistorySetup";
 
@@ -147,8 +147,8 @@ describe("undo asked for while a picture change waits for its fit", () => {
             "second.png",
         );
 
-        topBarButtonClick({ command: "undo" });
-        topBarButtonClick({ command: "undo" });
+        handleUndo();
+        handleUndo();
 
         expect(img.getAttribute("src")).toBe(secondSrc);
         expect(canUndo()).toBe(true);

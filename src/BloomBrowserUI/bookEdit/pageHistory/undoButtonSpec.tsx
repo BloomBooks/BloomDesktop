@@ -1,7 +1,6 @@
 // The top bar's real Undo button (UndoButton in topbar/editTopBarControls.tsx) and the input
 // transactions of pageHistoryInput.ts: a press on the button must open no transaction, since
-// undo() waits while one is open, and the click reaches the undo through C# at some time that
-// nothing here controls.
+// undo() waits while one is open.
 import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderRoot, unmountRoot } from "../../utils/reactRender";
@@ -10,8 +9,9 @@ import { createPageHistory } from "./pageHistory";
 import { attachInputTransactions } from "./pageHistoryInput";
 import { PageHistory } from "./pageHistoryTypes";
 
-// The button posts editView/topBarButtonClick, which C# answers by running handleUndo in the
-// page frame; the test runs the undo itself.
+// The button calls handleUndo in the page frame, which this test has none of
+// (getEditablePageBundleExports finds no frame), so the test runs the undo itself. The other top
+// bar buttons post to C#.
 vi.mock("../../utils/bloomApi", async (importOriginal) => ({
     ...(await importOriginal<object>()),
     postJson: () => {},

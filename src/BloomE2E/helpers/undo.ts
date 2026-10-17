@@ -191,7 +191,7 @@ export async function canUndo(page: Page): Promise<boolean> {
 
 /**
  * Click the top bar's Undo button, the way a person does, once Bloom has enabled it. Returns as
- * soon as the click is made; the undo itself goes through C# and back into the page, so wait for
+ * soon as the click is made, and the undo may wait for a transaction that is open, so wait for
  * the state you expect (a text, a count, a class) rather than reading the page straight after this.
  *
  * Bloom enables the button from canUndo on a timer, so waiting for it to be enabled is also a check

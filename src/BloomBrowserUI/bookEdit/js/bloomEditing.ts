@@ -55,7 +55,6 @@ import {
     getEditablePageBundleExports,
     getToolboxBundleExports,
 } from "./workspaceFrames";
-import { handleUndo } from "../pageHistory/pageHistorySetup";
 import { listenForShowInvisiblesKeys } from "./showInvisibles";
 
 //promise may be needed to run tests with phantomjs
@@ -1858,10 +1857,6 @@ export function topBarButtonClick(button: { command: string }) {
             break;
         case "cut":
             void cutSelection();
-            break;
-        case "undo":
-            // The page history lives in this, the page frame (pageHistory/pageHistorySetup.ts).
-            handleUndo();
             break;
         // We don't handle paste this way. We need code on the C# side to decide if we have
         // an image on the clipboard. So we shortcut a roundtrip to client and server by just
