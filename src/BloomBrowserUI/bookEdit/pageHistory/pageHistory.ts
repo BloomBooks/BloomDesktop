@@ -12,6 +12,7 @@
 /// <reference types="vite/client" />
 import {
     BegunTransaction,
+    formatUndoDescription,
     kGenericUndoDescriptionL10nKey,
     PageHistory,
     PageHistoryChangeContext,
@@ -21,7 +22,10 @@ import {
     PageHistoryOptions,
     PageHistoryStepDescriptions,
     RestoredContent,
+    toUndoDescription,
     Transaction,
+    UndoDescription,
+    UndoDescriptionInput,
 } from "./pageHistoryTypes";
 import {
     childrenBeforeRecords,
@@ -69,6 +73,8 @@ type ChangeSet = Map<Node, NodeChange>;
 /** One undo step: the changes of one outermost transaction, with what rule 1 joined to them. */
 interface Step {
     descriptionL10nKey: string;
+    // The l10n ids that fill the description's template (UndoDescription).
+    descriptionArgs?: readonly string[];
     changes: ChangeSet;
     // The subtrees that the step's last move (doing it, undoing it or redoing it) took out of the
     // page, each serialized when it was taken out. The observer cannot see a change to a detached
@@ -91,9 +97,16 @@ interface BatchChange {
 
 type BatchChanges = Map<Node, BatchChange>;
 
+/** A listener of BegunTransaction.onClose. */
+type CloseListener = (
+    stepDescriptionL10nKey: string | undefined,
+    stepDescriptionArgs?: readonly string[],
+) => void;
+
 /** The outermost open transaction, and every transaction nested inside it, together. */
 interface OpenTransaction {
     descriptionL10nKey: string;
+    descriptionArgs?: readonly string[];
     // The nested transaction that gave the step its description, in place of the general one.
     descriptionGivenBy?: TransactionFrame;
     changes: ChangeSet;
@@ -106,9 +119,12 @@ interface OpenTransaction {
     keptOldTexts: Map<MutationRecord, string>;
     selectionBefore?: SavedSelection;
     // The listeners of BegunTransaction.onClose, called once when this closes.
-    closeListeners: ((stepDescriptionL10nKey: string | undefined) => void)[];
+    closeListeners: CloseListener[];
     // Set when this closes: the description of the undo step that it made, if it made one.
-    closedWith?: { stepDescriptionL10nKey: string | undefined };
+    closedWith?: {
+        stepDescriptionL10nKey: string | undefined;
+        stepDescriptionArgs?: readonly string[];
+    };
 }
 
 /**
@@ -128,6 +144,7 @@ class TransactionFrame implements BegunTransaction {
     public constructor(
         private readonly history: PageHistoryImpl,
         public readonly descriptionL10nKey: string,
+        public readonly descriptionArgs: readonly string[] | undefined,
         // The outermost open transaction that this one is part of.
         public readonly openTransaction: OpenTransaction,
         // How many records the open transaction held when this one began: a rollback of this
@@ -146,11 +163,13 @@ class TransactionFrame implements BegunTransaction {
     }
 
     /** See BegunTransaction.onClose. */
-    public onClose(
-        listener: (stepDescriptionL10nKey: string | undefined) => void,
-    ): void {
+    public onClose(listener: CloseListener): void {
         const closedWith = this.openTransaction.closedWith;
-        if (closedWith) listener(closedWith.stepDescriptionL10nKey);
+        if (closedWith)
+            listener(
+                closedWith.stepDescriptionL10nKey,
+                closedWith.stepDescriptionArgs,
+            );
         else this.openTransaction.closeListeners.push(listener);
     }
 }
@@ -226,11 +245,11 @@ class PageHistoryImpl implements PageHistory {
 
     /** See PageHistory.doTransaction. */
     public async doTransaction<T>(
-        descriptionL10nKey: string,
+        description: UndoDescriptionInput,
         fn: (transaction: Transaction) => T | Promise<T>,
     ): Promise<T> {
         this.assertNotDisposed();
-        const frame = this.openFrame(descriptionL10nKey);
+        const frame = this.openFrame(toUndoDescription(description));
         let value: T;
         try {
             const result = fn(frame);
@@ -249,9 +268,11 @@ class PageHistoryImpl implements PageHistory {
     }
 
     /** See PageHistory.beginTransaction. */
-    public beginTransaction(descriptionL10nKey: string): BegunTransaction {
+    public beginTransaction(
+        description: UndoDescriptionInput,
+    ): BegunTransaction {
         this.assertNotDisposed();
-        return this.openFrame(descriptionL10nKey);
+        return this.openFrame(toUndoDescription(description));
     }
 
     /** See PageHistory.addToLatestTransaction. */
@@ -270,15 +291,15 @@ class PageHistoryImpl implements PageHistory {
             // give their before values afresh.
             this.openTransaction!.changes.clear();
         }
-        const latestDescription = joinsLatestStep
-            ? this.latestStep()?.descriptionL10nKey
-            : (this.openTransaction?.descriptionL10nKey ??
-              this.latestStep()?.descriptionL10nKey);
+        const latest = joinsLatestStep
+            ? this.latestStep()
+            : (this.openTransaction ?? this.latestStep());
         // With no latest transaction, fn's changes become starting state, and its transaction
         // records nothing: there is nothing in it to record yet.
         const transaction: Transaction = {
             descriptionL10nKey:
-                latestDescription ?? kGenericUndoDescriptionL10nKey,
+                latest?.descriptionL10nKey ?? kGenericUndoDescriptionL10nKey,
+            descriptionArgs: latest?.descriptionArgs,
         };
         return this.runInContext(
             joinsLatestStep ? "addToLatestStep" : "addToLatestTransaction",
@@ -414,10 +435,8 @@ class PageHistoryImpl implements PageHistory {
     public getStepDescriptions(): PageHistoryStepDescriptions {
         this.assertNotDisposed();
         return {
-            undo: this.undoSteps.map((step) => step.descriptionL10nKey),
-            redo: this.redoSteps
-                .map((step) => step.descriptionL10nKey)
-                .reverse(),
+            undo: this.undoSteps.map(describeStep),
+            redo: this.redoSteps.map(describeStep).reverse(),
         };
     }
 
@@ -478,6 +497,7 @@ class PageHistoryImpl implements PageHistory {
             this.detailListener?.({
                 kind: "endWaits",
                 descriptionL10nKey: frame.descriptionL10nKey,
+                descriptionArgs: frame.descriptionArgs,
                 depth: index + 1,
                 innerOpen: this.frames.length - 1 - index,
             });
@@ -486,6 +506,7 @@ class PageHistoryImpl implements PageHistory {
         this.detailListener?.({
             kind: "ended",
             descriptionL10nKey: frame.descriptionL10nKey,
+            descriptionArgs: frame.descriptionArgs,
             depth: index + 1,
         });
         this.endFramesFrom(index);
@@ -495,7 +516,7 @@ class PageHistoryImpl implements PageHistory {
         this.runQueuedRequests();
         if (innerStillOpen && import.meta.env.DEV)
             throw new Error(
-                `Page history: the transaction "${frame.descriptionL10nKey}" ended while a transaction begun inside it was still open.`,
+                `Page history: the transaction "${formatUndoDescription(frame.descriptionL10nKey, frame.descriptionArgs)}" ended while a transaction begun inside it was still open.`,
             );
         return madeStep;
     }
@@ -525,11 +546,13 @@ class PageHistoryImpl implements PageHistory {
         ) {
             // The nested transaction that described the step is putting back all its changes.
             open.descriptionL10nKey = kGenericUndoDescriptionL10nKey;
+            open.descriptionArgs = undefined;
             open.descriptionGivenBy = undefined;
         }
         this.detailListener?.({
             kind: "cancelled",
             descriptionL10nKey: frame.descriptionL10nKey,
+            descriptionArgs: frame.descriptionArgs,
             depth: index + 1,
             recordsReversed: open.records.length - frame.firstRecordIndex,
         });
@@ -539,11 +562,11 @@ class PageHistoryImpl implements PageHistory {
         this.putBackKeptOldTexts(records, open.keptOldTexts);
         if (records.length > 0)
             this.log(
-                `Page history: rollback of ${frame.descriptionL10nKey} reversed ${records.length} records`,
+                `Page history: rollback of ${formatUndoDescription(frame.descriptionL10nKey, frame.descriptionArgs)} reversed ${records.length} records`,
                 "rollback",
             );
         // The rollback's own changes are not edits.
-        this.discardPendingRecords("rollback", frame.descriptionL10nKey);
+        this.discardPendingRecords("rollback", frame);
         // The open transaction's changes may still name values that the rollback put back; they
         // have no net change now and go when the outermost transaction closes.
         if (index === 0) {
@@ -570,6 +593,7 @@ class PageHistoryImpl implements PageHistory {
                 this.detailListener({
                     kind: "ended",
                     descriptionL10nKey: this.frames[i].descriptionL10nKey,
+                    descriptionArgs: this.frames[i].descriptionArgs,
                     depth: i + 1,
                 });
         }
@@ -585,11 +609,14 @@ class PageHistoryImpl implements PageHistory {
     private noteClosed(
         open: OpenTransaction,
         stepDescriptionL10nKey: string | undefined,
+        stepDescriptionArgs?: readonly string[],
     ): void {
-        open.closedWith = { stepDescriptionL10nKey };
+        open.closedWith = { stepDescriptionL10nKey, stepDescriptionArgs };
         const listeners = open.closeListeners;
         open.closeListeners = [];
-        listeners.forEach((listener) => listener(stepDescriptionL10nKey));
+        listeners.forEach((listener) =>
+            listener(stepDescriptionL10nKey, stepDescriptionArgs),
+        );
     }
 
     /**
@@ -599,11 +626,14 @@ class PageHistoryImpl implements PageHistory {
      * own gives the step that description (APPROACHES 11.8.1, "Transactions inside
      * transactions").
      */
-    private openFrame(descriptionL10nKey: string): TransactionFrame {
+    private openFrame(description: UndoDescription): TransactionFrame {
+        const descriptionL10nKey = description.l10nId;
+        const descriptionArgs = description.args;
         this.processPendingRecords();
         if (!this.openTransaction) {
             this.openTransaction = {
                 descriptionL10nKey,
+                descriptionArgs,
                 changes: new Map(),
                 records: [],
                 keptOldTexts: new Map(),
@@ -615,6 +645,7 @@ class PageHistoryImpl implements PageHistory {
         const frame = new TransactionFrame(
             this,
             descriptionL10nKey,
+            descriptionArgs,
             open,
             open.records.length,
         );
@@ -624,12 +655,14 @@ class PageHistoryImpl implements PageHistory {
             descriptionL10nKey !== kGenericUndoDescriptionL10nKey
         ) {
             open.descriptionL10nKey = descriptionL10nKey;
+            open.descriptionArgs = descriptionArgs;
             open.descriptionGivenBy = frame;
         }
         this.frames.push(frame);
         this.detailListener?.({
             kind: "opened",
             descriptionL10nKey,
+            descriptionArgs,
             depth: this.frames.length,
         });
         return frame;
@@ -668,12 +701,14 @@ class PageHistoryImpl implements PageHistory {
             this.detailListener?.({
                 kind: "closedWithNoStep",
                 descriptionL10nKey: open.descriptionL10nKey,
+                descriptionArgs: open.descriptionArgs,
             });
             this.noteClosed(open, undefined);
             return false;
         }
         this.undoSteps.push({
             descriptionL10nKey: open.descriptionL10nKey,
+            descriptionArgs: open.descriptionArgs,
             changes: open.changes,
             detachedAsText: this.serializeDetachedNodes(
                 open.changes,
@@ -686,8 +721,11 @@ class PageHistoryImpl implements PageHistory {
         while (this.undoSteps.length > this.maxUndoSteps)
             this.undoSteps.shift();
         this.redoSteps = [];
-        this.log(`Page history: step ${open.descriptionL10nKey}`, "step");
-        this.noteClosed(open, open.descriptionL10nKey);
+        this.log(
+            `Page history: step ${formatUndoDescription(open.descriptionL10nKey, open.descriptionArgs)}`,
+            "step",
+        );
+        this.noteClosed(open, open.descriptionL10nKey, open.descriptionArgs);
         return true;
     }
 
@@ -711,12 +749,12 @@ class PageHistoryImpl implements PageHistory {
 
     /**
      * Take the records that the observer holds and drop them: they are not edits, but the
-     * history's own changes, putting back the step described by descriptionL10nKey (undo, redo)
-     * or reversing the changes of the cancelled transaction that it describes (rollback).
+     * history's own changes, putting back the step that described describes (undo, redo) or
+     * reversing the changes of the cancelled transaction that it describes (rollback).
      */
     private discardPendingRecords(
         madeBy: "undo" | "redo" | "rollback",
-        descriptionL10nKey: string,
+        described: Transaction,
     ): void {
         const records = this.observer.takeRecords();
         if (records.length === 0) return;
@@ -725,8 +763,12 @@ class PageHistoryImpl implements PageHistory {
         this.detailListener?.({
             kind: "changes",
             records,
-            ignored: records.map((record) => this.isIgnored(record.target)),
-            context: { kind: madeBy, descriptionL10nKey },
+            ignored: records.map((record) => this.isLeftOutByFilter(record)),
+            context: {
+                kind: madeBy,
+                descriptionL10nKey: described.descriptionL10nKey,
+                descriptionArgs: described.descriptionArgs,
+            },
         });
     }
 
@@ -780,7 +822,7 @@ class PageHistoryImpl implements PageHistory {
         this.detailListener?.({
             kind: "changes",
             records,
-            ignored: records.map((record) => this.isIgnored(record.target)),
+            ignored: records.map((record) => this.isLeftOutByFilter(record)),
             context: this.changeContext(),
         });
         if (this.callContext === "doOutsideHistory") return;
@@ -841,12 +883,13 @@ class PageHistoryImpl implements PageHistory {
                     kind: "addToLatestTransaction",
                     joins: "openTransaction",
                     descriptionL10nKey: open.descriptionL10nKey,
+                    descriptionArgs: open.descriptionArgs,
                 };
-            const innermost = this.frames[this.frames.length - 1];
+            const described = this.frames[this.frames.length - 1] ?? open;
             return {
                 kind: "transaction",
-                descriptionL10nKey:
-                    innermost?.descriptionL10nKey ?? open.descriptionL10nKey,
+                descriptionL10nKey: described.descriptionL10nKey,
+                descriptionArgs: described.descriptionArgs,
                 depth: this.frames.length,
             };
         }
@@ -858,6 +901,7 @@ class PageHistoryImpl implements PageHistory {
                     : "addToLatestTransaction",
             joins: "latestStep",
             descriptionL10nKey: this.latestStep()?.descriptionL10nKey,
+            descriptionArgs: this.latestStep()?.descriptionArgs,
         };
     }
 
@@ -1320,7 +1364,7 @@ class PageHistoryImpl implements PageHistory {
         const whyRefused = this.whyPageLacksValues(step, from);
         if (whyRefused) {
             this.log(
-                `Page history: ${direction} of ${step.descriptionL10nKey} found the page changed since, and dropped the ${direction} steps: ${whyRefused}`,
+                `Page history: ${direction} of ${formatUndoDescription(step.descriptionL10nKey, step.descriptionArgs)} found the page changed since, and dropped the ${direction} steps: ${whyRefused}`,
                 "refused",
             );
             // The step is the newest on its stack, so it and every older one is the whole stack.
@@ -1333,7 +1377,7 @@ class PageHistoryImpl implements PageHistory {
         // selection set off. Restoring the selection can focus a box, and a focus handler may
         // call into the history, which takes the pending records first; so the put-back's
         // records go before that, and the restore runs as if inside doOutsideHistory.
-        this.discardPendingRecords(direction, step.descriptionL10nKey);
+        this.discardPendingRecords(direction, step);
         this.runInContext("doOutsideHistory", () =>
             restoreSelection(
                 this.root.ownerDocument,
@@ -1342,7 +1386,7 @@ class PageHistoryImpl implements PageHistory {
                 Array.from(step.changes.keys()),
             ),
         );
-        this.discardPendingRecords(direction, step.descriptionL10nKey);
+        this.discardPendingRecords(direction, step);
         step.detachedAsText = this.serializeDetachedNodes(
             step.changes,
             from,
@@ -1352,7 +1396,7 @@ class PageHistoryImpl implements PageHistory {
         if (isUndo) this.redoSteps.push(step);
         else this.undoSteps.push(step);
         this.log(
-            `Page history: ${direction} ${step.descriptionL10nKey}`,
+            `Page history: ${direction} ${formatUndoDescription(step.descriptionL10nKey, step.descriptionArgs)}`,
             direction,
         );
 
@@ -1388,6 +1432,28 @@ class PageHistoryImpl implements PageHistory {
     private keptText(node: Node): string {
         const textNode = node as CharacterData;
         return this.filter.keptText(textNode, textNode.data, "now");
+    }
+
+    /**
+     * For PageHistoryDetail: true when the filter leaves record out, because it ignores the
+     * record's node, or because the record changes an attribute only in a part that the filter
+     * does not keep, such as an edit-time class: the kept part of its old value is the kept part
+     * of its value now.
+     */
+    private isLeftOutByFilter(record: MutationRecord): boolean {
+        if (this.isIgnored(record.target)) return true;
+        if (record.type !== "attributes") return false;
+        const element = record.target as Element;
+        const name = record.attributeName!;
+        // A value that is back where it was is no change at all, not one that the filter left out.
+        if (record.oldValue === element.getAttribute(name)) return false;
+        return (
+            this.filter.keptAttributeValue(
+                element,
+                name,
+                record.oldValue ?? undefined,
+            ) === this.keptAttributeValue(element, name)
+        );
     }
 
     /** True for a node that the filter ignores, or that is inside one, up to the root. */
@@ -1569,6 +1635,11 @@ function isThenable<T>(value: T | Promise<T>): value is Promise<T> {
         value !== null &&
         typeof (value as { then?: unknown }).then === "function"
     );
+}
+
+/** A step's description, as getStepDescriptions gives it. */
+function describeStep(step: Step): UndoDescription {
+    return { l10nId: step.descriptionL10nKey, args: step.descriptionArgs };
 }
 
 let currentHistory: PageHistoryImpl | undefined;

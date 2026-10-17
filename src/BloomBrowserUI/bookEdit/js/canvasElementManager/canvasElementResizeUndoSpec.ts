@@ -57,6 +57,7 @@ import { listenToPageHistory } from "../bloomEditing";
 import { createPageHistory } from "../../pageHistory/pageHistory";
 import { createEditTimeMarkupFilter } from "../../pageHistory/editTimeMarkup";
 import {
+    formatUndoDescription,
     kGenericUndoDescriptionL10nKey,
     type PageHistory,
 } from "../../pageHistory/pageHistoryTypes";
@@ -257,12 +258,12 @@ describe("the description of a drag of one of the control frame's handles", () =
         [
             "picture",
             ".bloom-ui-canvas-element-resize-handle-se",
-            "EditTab.Undo.CanvasElement.Resize",
+            "EditTab.Undo.Resize(EditTab.Undo.Object.Image)",
         ],
         [
             "picture",
             ".bloom-ui-canvas-element-rotate-handle",
-            "EditTab.Undo.CanvasElement.Rotate",
+            "EditTab.Undo.Rotate(EditTab.Undo.Object.Image)",
         ],
         [
             "picture",
@@ -272,7 +273,7 @@ describe("the description of a drag of one of the control frame's handles", () =
         [
             "ce1",
             ".bloom-ui-canvas-element-side-handle-e",
-            "EditTab.Undo.CanvasElement.Resize",
+            "EditTab.Undo.Resize(EditTab.Undo.Object.SpeechBubble)",
         ],
         [
             "picture",
@@ -298,7 +299,11 @@ describe("the description of a drag of one of the control frame's handles", () =
                 );
             });
 
-            expect(history.undoDescriptionL10nKey).toBe(description);
+            const undo = history.getStepDescriptions().undo;
+            const latest = undo[undo.length - 1];
+            expect(formatUndoDescription(latest.l10nId, latest.args)).toBe(
+                description,
+            );
         },
     );
 });

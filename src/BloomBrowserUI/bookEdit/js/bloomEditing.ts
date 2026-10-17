@@ -44,6 +44,7 @@ import {
     kCutUndoDescriptionL10nKey,
     kPasteUndoDescriptionL10nKey,
     type PageHistory,
+    type UndoDescriptionInput,
 } from "../pageHistory/pageHistoryTypes";
 import type { IPageFrameExports } from "../editablePage";
 import {
@@ -1527,11 +1528,11 @@ function runChangeThatWaitsForPageToSettle<T>(change: () => T): T {
  * way the result is a promise that settles when fn has.
  */
 export async function doTransaction<T>(
-    descriptionL10nKey: string,
+    description: UndoDescriptionInput,
     fn: () => T | Promise<T>,
 ): Promise<T> {
     const history = currentPageHistory();
-    return history ? history.doTransaction(descriptionL10nKey, fn) : fn();
+    return history ? history.doTransaction(description, fn) : fn();
 }
 
 // Wrap a function that returns a promise with delay management.

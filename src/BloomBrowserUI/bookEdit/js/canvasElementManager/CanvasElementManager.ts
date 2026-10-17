@@ -47,8 +47,8 @@ import {
     kBloomCanvasSelector,
     kCanvasElementClass,
     kCanvasElementSelector,
-    kAddCanvasElementUndoL10nKey,
 } from "../../toolbox/canvas/canvasElementConstants";
+import { describeCanvasElementStep } from "../../toolbox/canvas/canvasElementUndoDescriptions";
 import { pxToNumber as pxToNumberFromCssUtils } from "../../toolbox/canvas/canvasElementCssUtils";
 import { updateCanvasElementClass } from "../../toolbox/canvas/canvasElementDomUtils";
 import OverflowChecker from "../../OverflowChecker/OverflowChecker";
@@ -112,7 +112,7 @@ import {
 } from "./CanvasElementDraggableIntegration";
 import { CanvasElementEditingSuspension } from "./CanvasElementEditingSuspension";
 import {
-    kZOrderMoveL10nIds,
+    kZOrderMoveUndoTemplates,
     moveCanvasElementInZOrder,
     type ZOrderMove,
 } from "./CanvasElementZOrder";
@@ -127,6 +127,7 @@ import {
 import type {
     PageHistory,
     RestoredContent,
+    UndoDescriptionInput,
 } from "../../pageHistory/pageHistoryTypes";
 import { currentPageHistory } from "../../pageHistory/pageHistoryAccess";
 
@@ -3128,7 +3129,7 @@ export class CanvasElementManager {
         userDefinedStyleName?: string,
         rightTopOffset?: string,
     ): HTMLElement | undefined {
-        return doAddAsUndoStep(() =>
+        return doAddAsUndoStep(canvasElementType, () =>
             this.factories.addCanvasElementWithScreenCoords(
                 screenX,
                 screenY,
@@ -3190,7 +3191,7 @@ export class CanvasElementManager {
         userDefinedStyleName?: string,
         rightTopOffset?: string,
     ): HTMLElement | undefined {
-        return doAddAsUndoStep(() =>
+        return doAddAsUndoStep(canvasElementType, () =>
             this.factories.addCanvasElement(
                 mouseX,
                 mouseY,
@@ -3671,21 +3672,25 @@ export class CanvasElementManager {
         if (!active) {
             return;
         }
-        // One undo step, described by the command's label. From the Layer menu this nests in the
-        // transaction that runControlCallback opens with the same description; from a shortcut it
-        // nests in the stand-in that the key press opened, and gives that step its description.
+        // One undo step, described as the command acting on this kind of element. From the
+        // Layer menu this nests in the transaction that runControlCallback opens with the same
+        // description; from a shortcut it nests in the stand-in that the key press opened, and
+        // gives that step its description.
         // Undo and redo put back the DOM order and the data-bubble levels together, and
         // updateAfterUndoOrRedo redraws the bubbles from them.
-        doAsUndoStep(kZOrderMoveL10nIds[move], () => {
-            if (!moveCanvasElementInZOrder(active, move)) {
-                return;
-            }
-            // Moving the element rebuilt Comical's bubbles, so make sure the active one gets its
-            // handles back. Aligning the control frame also re-renders the context controls, so a
-            // reopened menu shows which layer moves are still possible.
-            Comical.activateElement(active);
-            this.alignControlFrameWithActiveElement();
-        });
+        doAsUndoStep(
+            describeCanvasElementStep(kZOrderMoveUndoTemplates[move], active),
+            () => {
+                if (!moveCanvasElementInZOrder(active, move)) {
+                    return;
+                }
+                // Moving the element rebuilt Comical's bubbles, so make sure the active one gets its
+                // handles back. Aligning the control frame also re-renders the context controls, so a
+                // reopened menu shows which layer moves are still possible.
+                Comical.activateElement(active);
+                this.alignControlFrameWithActiveElement();
+            },
+        );
     }
 
     public duplicateCanvasElement(): HTMLElement | undefined {
@@ -3847,23 +3852,30 @@ function styleLengthInPx(value: string, measured: number): number {
  * would join the step before it, or become part of the page as the user found it. Called while
  * another transaction is open, such as the one that a click opens or the one in which the toolbox
  * finishes a drag from the Canvas tool's palette, it joins that one instead, and describes its
- * step if nothing has yet. With no page history, as outside the Edit tab and in some unit tests,
- * it just runs add.
+ * step if nothing has yet. The step is described as adding an element of the given type. With no
+ * page history, as outside the Edit tab and in some unit tests, it just runs add.
  */
 function doAddAsUndoStep(
+    canvasElementType: CanvasElementType | undefined,
     add: () => HTMLElement | undefined,
 ): HTMLElement | undefined {
-    return doAsUndoStep(kAddCanvasElementUndoL10nKey, add);
+    return doAsUndoStep(
+        describeCanvasElementStep("add", canvasElementType),
+        add,
+    );
 }
 
 /**
- * Run change, which must not be async, in a transaction of the page history described by
- * descriptionL10nKey, and return what it returns, as doAddAsUndoStep does for an add. Called while
+ * Run change, which must not be async, in a transaction of the page history with the description
+ * given, and return what it returns, as doAddAsUndoStep does for an add. Called while
  * another transaction is open, it joins that one. If change throws, its changes are put back, the
  * bubbles are drawn again from the page, and the error is thrown to the caller. With no page
  * history it just runs change.
  */
-function doAsUndoStep<T>(descriptionL10nKey: string, change: () => T): T {
+function doAsUndoStep<T>(
+    description: UndoDescriptionInput,
+    change: () => T,
+): T {
     const history = currentPageHistory();
     if (!history) return change();
     let result: T | undefined;
@@ -3873,7 +3885,7 @@ function doAsUndoStep<T>(descriptionL10nKey: string, change: () => T): T {
     // doTransaction returns, so result is set by then. If change throws, the transaction puts
     // back its changes and the promise rejects; the error is thrown to the caller here instead.
     history
-        .doTransaction(descriptionL10nKey, () => {
+        .doTransaction(description, () => {
             try {
                 result = change();
             } catch (e) {

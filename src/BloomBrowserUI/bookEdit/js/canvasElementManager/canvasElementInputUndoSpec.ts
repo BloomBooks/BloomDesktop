@@ -69,6 +69,7 @@ import { CanvasSnapProvider } from "./CanvasSnapProvider";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { createPageHistory } from "../../pageHistory/pageHistory";
 import {
+    formatUndoDescription,
     kGenericUndoDescriptionL10nKey,
     type PageHistory,
 } from "../../pageHistory/pageHistoryTypes";
@@ -105,6 +106,14 @@ afterEach(() => {
     history.dispose();
     document.body.innerHTML = "";
 });
+
+// The description of the newest undo step, as the log writes it.
+function latestStep(): string {
+    const undo = history.getStepDescriptions().undo;
+    expect(undo.length, "there should be an undo step").toBeGreaterThan(0);
+    const latest = undo[undo.length - 1];
+    return formatUndoDescription(latest.l10nId, latest.args);
+}
 
 // Run fn as Bloom runs the handlers of a press or a key press: inside the transaction with the
 // general description that it opens (pageHistoryInput.ts), which makes a step only if something
@@ -171,8 +180,8 @@ describe("the description of a press or a drag on a canvas element", () => {
             ce1.style.left = "30px";
             mouse("mouseup", { clientX: 20, clientY: 20 });
         });
-        expect(history.undoDescriptionL10nKey).toBe(
-            "EditTab.Undo.CanvasElement.Move",
+        expect(latestStep()).toBe(
+            "EditTab.Undo.Move(EditTab.Undo.Object.SpeechBubble)",
         );
     });
 
@@ -184,8 +193,8 @@ describe("the description of a press or a drag on a canvas element", () => {
             mouse("mouseup", { clientX: 20, clientY: 20 });
         });
         expect(page.querySelectorAll(".bloom-canvas-element")).toHaveLength(2);
-        expect(history.undoDescriptionL10nKey).toBe(
-            "EditTab.Undo.CanvasElement.DuplicateByDragging",
+        expect(latestStep()).toBe(
+            "EditTab.Undo.Duplicate(EditTab.Undo.Object.SpeechBubble)",
         );
     });
 
@@ -234,8 +243,8 @@ describe("the description of a key press on the active canvas element", () => {
     afterEach(() => provider.dispose());
 
     it.each([
-        ["Delete", "EditTab.Undo.CanvasElement.Delete"],
-        ["ArrowRight", "EditTab.Undo.CanvasElement.Nudge"],
+        ["Delete", "EditTab.Undo.Delete(EditTab.Undo.Object.SpeechBubble)"],
+        ["ArrowRight", "EditTab.Undo.Nudge(EditTab.Undo.Object.SpeechBubble)"],
     ])("is what %s does", async (key, description) => {
         await asUserAction(() =>
             ce1.dispatchEvent(
@@ -246,6 +255,6 @@ describe("the description of a key press on the active canvas element", () => {
                 }),
             ),
         );
-        expect(history.undoDescriptionL10nKey).toBe(description);
+        expect(latestStep()).toBe(description);
     });
 });

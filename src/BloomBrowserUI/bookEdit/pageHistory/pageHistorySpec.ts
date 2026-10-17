@@ -8,7 +8,11 @@
 // changes made outside any transaction use letObserverDeliver() for that.
 import { afterEach, describe, expect, it, vi, type Mock } from "vitest";
 import { createPageHistory, kKeepEverythingFilter } from "./pageHistory";
-import { kGenericUndoDescriptionL10nKey } from "./pageHistoryTypes";
+import {
+    formatUndoDescription,
+    kGenericUndoDescriptionL10nKey,
+    type UndoDescription,
+} from "./pageHistoryTypes";
 import type {
     BegunTransaction,
     PageHistory,
@@ -1666,14 +1670,14 @@ describe("page history: descriptions", () => {
 
     it("lists every undo step oldest first, and every redo step in the order redo takes them", async () => {
         const f = setUp();
-        expect(f.history.getStepDescriptions()).toEqual({
+        expect(listedSteps(f)).toEqual({
             undo: [],
             redo: [],
         });
         await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
         await stepSettingAttribute(f, "B", byId(f, "box2"), "lang", "es");
         await stepSettingAttribute(f, "C", byId(f, "box1"), "lang", "de");
-        expect(f.history.getStepDescriptions()).toEqual({
+        expect(listedSteps(f)).toEqual({
             undo: ["A", "B", "C"],
             redo: [],
         });
@@ -1681,7 +1685,7 @@ describe("page history: descriptions", () => {
         await f.history.undo();
         await f.history.undo();
 
-        expect(f.history.getStepDescriptions()).toEqual({
+        expect(listedSteps(f)).toEqual({
             undo: ["A"],
             redo: ["B", "C"],
         });
@@ -1694,7 +1698,7 @@ describe("page history: descriptions", () => {
             "the first redo step should be the one redo would redo",
         ).toBe("B");
         f.history.clearUndoAndRedo("a test");
-        expect(f.history.getStepDescriptions()).toEqual({
+        expect(listedSteps(f)).toEqual({
             undo: [],
             redo: [],
         });
@@ -1705,14 +1709,14 @@ describe("page history: descriptions", () => {
         await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
         await stepSettingAttribute(f, "B", byId(f, "box2"), "lang", "es");
         await f.history.undo();
-        expect(
-            f.history.getStepDescriptions(),
-            "test setup: B can be redone",
-        ).toEqual({ undo: ["A"], redo: ["B"] });
+        expect(listedSteps(f), "test setup: B can be redone").toEqual({
+            undo: ["A"],
+            redo: ["B"],
+        });
 
         // Outside any transaction: once the history takes it in, it joins A and clears redo.
         byId(f, "box1").setAttribute("lang", "de");
-        expect(f.history.getStepDescriptions()).toEqual({
+        expect(listedSteps(f)).toEqual({
             undo: ["A"],
             redo: ["B"],
         });
@@ -1723,10 +1727,156 @@ describe("page history: descriptions", () => {
 
         await letObserverDeliver();
         expect(f.unmarked).toHaveBeenCalled();
-        expect(f.history.getStepDescriptions()).toEqual({
+        expect(listedSteps(f)).toEqual({
             undo: ["A"],
             redo: [],
         });
+    });
+});
+
+// The steps that getStepDescriptions lists, each as formatUndoDescription writes it.
+function listedSteps(f: IFixture): { undo: string[]; redo: string[] } {
+    const steps = f.history.getStepDescriptions();
+    const format = (description: UndoDescription) =>
+        formatUndoDescription(description.l10nId, description.args);
+    return { undo: steps.undo.map(format), redo: steps.redo.map(format) };
+}
+
+describe("page history: descriptions made of a template and its arguments", () => {
+    const kDeleteTable: UndoDescription = {
+        l10nId: "EditTab.Undo.Delete",
+        args: ["EditTab.Undo.Object.Table"],
+    };
+
+    it("keeps the arguments with the step through undo and redo, and names the step with them in the log", async () => {
+        const log = vi.fn<(line: string, kind: PageHistoryLogKind) => void>();
+        const f = setUp(kStandardPage, { log });
+        await f.history.doTransaction(kDeleteTable, () =>
+            byId(f, "img1").setAttribute("src", "b.png"),
+        );
+        expect(
+            f.history.undoDescriptionL10nKey,
+            "the step's l10n id is the template's",
+        ).toBe("EditTab.Undo.Delete");
+        expect(f.history.getStepDescriptions().undo).toEqual([kDeleteTable]);
+
+        await f.history.undo();
+        expect(f.history.redoDescriptionL10nKey).toBe("EditTab.Undo.Delete");
+        expect(f.history.getStepDescriptions().redo).toEqual([kDeleteTable]);
+        await f.history.redo();
+        expect(f.history.getStepDescriptions().undo).toEqual([kDeleteTable]);
+
+        expect(log.mock.calls).toEqual([
+            [
+                "Page history: step EditTab.Undo.Delete(EditTab.Undo.Object.Table)",
+                "step",
+            ],
+            [
+                "Page history: undo EditTab.Undo.Delete(EditTab.Undo.Object.Table)",
+                "undo",
+            ],
+            [
+                "Page history: redo EditTab.Undo.Delete(EditTab.Undo.Object.Table)",
+                "redo",
+            ],
+        ]);
+    });
+
+    it("gives beginTransaction's transaction and onClose the arguments", () => {
+        const f = setUp();
+        const t = f.history.beginTransaction(kDeleteTable);
+        expect(t.descriptionL10nKey).toBe("EditTab.Undo.Delete");
+        expect(t.descriptionArgs).toEqual(["EditTab.Undo.Object.Table"]);
+        const closed =
+            vi.fn<(key?: string, args?: readonly string[]) => void>();
+        t.onClose(closed);
+        byId(f, "img1").setAttribute("src", "b.png");
+        t.end();
+        expect(closed).toHaveBeenCalledWith("EditTab.Undo.Delete", [
+            "EditTab.Undo.Object.Table",
+        ]);
+    });
+
+    it("gives a plain l10n id no arguments, and shows it as before", async () => {
+        const log = vi.fn<(line: string, kind: PageHistoryLogKind) => void>();
+        const f = setUp(kStandardPage, { log });
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        expect(f.history.getStepDescriptions().undo[0].args).toBeUndefined();
+        expect(log).toHaveBeenCalledWith("Page history: step A", "step");
+        expect(formatUndoDescription("A", undefined)).toBe("A");
+        expect(formatUndoDescription("A", [])).toBe("A");
+    });
+
+    it("lets a nested description with arguments describe the stand-in's step, comparing the template's id with the general one", async () => {
+        const f = setUp();
+        const click = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        await f.history.doTransaction(kDeleteTable, () =>
+            byId(f, "img1").setAttribute("src", "b.png"),
+        );
+        await f.history.doTransaction(
+            { l10nId: "EditTab.Undo.Later", args: ["X"] },
+            () => byId(f, "box2").setAttribute("lang", "es"),
+        );
+        click.end();
+        expect(listedSteps(f).undo).toEqual([
+            "EditTab.Undo.Delete(EditTab.Undo.Object.Table)",
+        ]);
+
+        // A general description with arguments is still the general one.
+        const press = f.history.beginTransaction({
+            l10nId: kGenericUndoDescriptionL10nKey,
+            args: ["X"],
+        });
+        await f.history.doTransaction("EditTab.Undo.Plain", () =>
+            byId(f, "box1").setAttribute("lang", "de"),
+        );
+        press.end();
+        expect(listedSteps(f).undo).toEqual([
+            "EditTab.Undo.Delete(EditTab.Undo.Object.Table)",
+            "EditTab.Undo.Plain",
+        ]);
+    });
+
+    it("drops the arguments with the description when the nested transaction that gave them is cancelled", () => {
+        const f = setUp();
+        const click = f.history.beginTransaction(
+            kGenericUndoDescriptionL10nKey,
+        );
+        const inner = f.history.beginTransaction(kDeleteTable);
+        byId(f, "img1").setAttribute("src", "b.png");
+        inner.cancel();
+        byId(f, "box2").setAttribute("lang", "es");
+        click.end();
+        expect(f.history.getStepDescriptions().undo).toEqual([
+            { l10nId: kGenericUndoDescriptionL10nKey },
+        ]);
+    });
+
+    it("reports the arguments in the details", async () => {
+        const f = setUp();
+        const seen: PageHistoryDetail[] = [];
+        f.history.setDetailListener((detail) => {
+            if (detail.kind !== "changes") seen.push(detail);
+        });
+        await f.history.doTransaction(kDeleteTable, () =>
+            byId(f, "img1").setAttribute("src", "b.png"),
+        );
+        expect(seen).toEqual([
+            {
+                kind: "opened",
+                descriptionL10nKey: "EditTab.Undo.Delete",
+                descriptionArgs: ["EditTab.Undo.Object.Table"],
+                depth: 1,
+            },
+            {
+                kind: "ended",
+                descriptionL10nKey: "EditTab.Undo.Delete",
+                descriptionArgs: ["EditTab.Undo.Object.Table"],
+                depth: 1,
+            },
+        ]);
     });
 });
 

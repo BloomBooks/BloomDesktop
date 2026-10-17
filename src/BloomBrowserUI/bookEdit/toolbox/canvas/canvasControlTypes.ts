@@ -21,6 +21,7 @@ import {
     kImageFitModeCoverValue,
 } from "./canvasElementConstants";
 import { CanvasElementType } from "./canvasElementTypes";
+import type { UndoDescriptionInput } from "../../pageHistory/pageHistoryTypes";
 
 export const kImageFitModePaddedValue = "padded";
 
@@ -243,6 +244,10 @@ export interface IControlMenuCommandRow {
     availability?: IControlSurfaceRule;
     separatorAbove?: boolean;
     subMenuItems?: IControlMenuRow[];
+    // The description of the undo step that choosing this row makes, when it is not the row's
+    // label (l10nId): a command that acts on the element as a whole names the kind of element
+    // (describeCanvasElementStep).
+    undoDescription?: (ctx: IControlContext) => UndoDescriptionInput;
     // Menu handlers may be sync or async.
     // Sync example: toggling a class or opening an in-process dialog launcher.
     // Async example: awaiting `showDialogToChooseSoundFileAsync` before
@@ -267,6 +272,9 @@ export interface IBaseControlDefinition {
     icon?: IControlIcon;
     iconScale?: number;
     tooltipL10nId?: string;
+    // The description of the undo step that the control makes, when it is not its label
+    // (l10nId); see IControlMenuCommandRow.undoDescription.
+    undoDescription?: (ctx: IControlContext) => UndoDescriptionInput;
 }
 
 export interface ICommandControlDefinition extends IBaseControlDefinition {
