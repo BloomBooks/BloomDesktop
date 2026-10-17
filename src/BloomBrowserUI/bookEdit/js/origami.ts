@@ -17,6 +17,10 @@ import { updateAbovePageControls } from "./AbovePageControls";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import { AttachNewTable } from "./tableEditing";
+import {
+    clearUndoAndRedo,
+    doOutsideHistory,
+} from "../pageHistory/pageHistoryAccess";
 
 $(() => {
     splitPane($("div.split-pane"));
@@ -221,6 +225,14 @@ function handleChangeLayoutModeToggle() {
         isChangeLayoutMode,
     });
     getWorkspaceBundleExports().setToolboxEnabled(!isChangeLayoutMode);
+    // Change Layout mode keeps its own undo (origamiUndo), so entering it and leaving it each end
+    // the page's undo history (docs/undo/MINIMUM.md item 9).
+    clearUndoAndRedo();
+}
+
+/** True while the page is in Change Layout mode, where origami's own undo answers Undo and the keys. */
+export function isInChangeLayoutMode(): boolean {
+    return !!document.querySelector(".marginBox.origami-layout-mode");
 }
 
 function GetTextBoxPropertiesDialog() {
@@ -297,7 +309,13 @@ export function origamiCanUndo() {
     return origamiUndoIndex > 0;
 }
 
+// Origami's undo and redo replace the whole .marginBox, and the page history does not record
+// them: the history is not used in Change Layout mode, and leaving the mode ends it.
 export function origamiUndo() {
+    doOutsideHistory(undoOneLayoutChange);
+}
+
+function undoOneLayoutChange() {
     if (origamiCanUndo()) {
         const origamiRoot = $(".marginBox");
         // index may be 'out of range' but JS doesn't care
@@ -312,11 +330,15 @@ export function origamiUndo() {
     }
 }
 
-function origamiCanRedo() {
+export function origamiCanRedo() {
     return origamiUndoStack.length > origamiUndoIndex;
 }
 
-function origamiRedo() {
+export function origamiRedo() {
+    doOutsideHistory(redoOneLayoutChange);
+}
+
+function redoOneLayoutChange() {
     if (origamiCanRedo()) {
         origamiUndoIndex++;
         $(".marginBox").replaceWith(
@@ -671,9 +693,9 @@ function makeTableFieldClickHandler(e) {
     // AttachNewTable registers Bloom-specific content types and calls attachTable,
     // which creates the initial 2×2 structure. The page-level event listener
     // installed by SetupTableEditing on the body handles kTableCellContentChangedEvent.
-    // In layout mode the table does not respond; tableEditing.ts,
-    // tableEditing.less and tableCanUndo() see to that while the marginBox has
-    // the origami-layout-mode class.
+    // In layout mode the table does not respond; tableEditing.ts and
+    // tableEditing.less see to that while the marginBox has the
+    // origami-layout-mode class, and Undo goes to origami's own history.
     AttachNewTable(tableContainer[0] as HTMLElement);
     container.append(getTableIdentifier());
     $(this).closest(".selector-links").remove();
