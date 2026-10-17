@@ -697,6 +697,7 @@ class PageHistoryImpl implements PageHistory {
         this.stopObservingRemovedNodes();
         this.readAfterValues(open.changes, open.changes);
         removeEntriesWithNoNetChange(open.changes);
+        this.removeEntriesOfNodesAtNeitherEnd(open.changes);
         if (open.changes.size === 0) {
             this.detailListener?.({
                 kind: "closedWithNoStep",
@@ -727,6 +728,24 @@ class PageHistoryImpl implements PageHistory {
         );
         this.noteClosed(open, open.descriptionL10nKey, open.descriptionArgs);
         return true;
+    }
+
+    /**
+     * Drop the entries of nodes that the step both added and took out again, such as a text node
+     * that typing made and Talking Book's sentence markup then replaced. Such a node is in the
+     * page at neither end of the step, so undo and redo have nothing to put back in it, and the
+     * check of rule 4 would find it missing from the page and refuse the step. A node that was in
+     * the page at the start and that the step took out is in, or inside, a `before` child list.
+     */
+    private removeEntriesOfNodesAtNeitherEnd(changes: ChangeSet): void {
+        const takenOut = new Set<Node>();
+        changes.forEach((change) =>
+            change.children?.before.forEach((child) => takenOut.add(child)),
+        );
+        for (const node of Array.from(changes.keys())) {
+            if (!this.root.contains(node) && !isInsideOneOf(node, takenOut))
+                changes.delete(node);
+        }
     }
 
     /** Run fn with the records of its changes going where context says. */
@@ -848,6 +867,7 @@ class PageHistoryImpl implements PageHistory {
         addBeforeValues(latest.changes, batch);
         this.readAfterValues(latest.changes, batch);
         removeEntriesWithNoNetChange(latest.changes);
+        this.removeEntriesOfNodesAtNeitherEnd(latest.changes);
         if (latest.changes.size === 0) {
             // What joined undid everything the step did, so the step has nothing left to undo.
             this.undoSteps.pop();

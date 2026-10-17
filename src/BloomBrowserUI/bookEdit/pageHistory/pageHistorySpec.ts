@@ -2904,6 +2904,38 @@ describe("page history: log", () => {
         );
     });
 
+    // What Talking Book's sentence markup does to typing: the typing makes a text node and types
+    // into it, then the markup, in the same step, replaces that node with a span holding new text.
+    it("undoes a step that added a text node, typed into it and took it out again", async () => {
+        const f = setUp();
+        const p2 = byId(f, "p2");
+        const doc = p2.ownerDocument;
+        expect(p2.textContent, "test setup").toBe("Bonjour");
+        const t = f.history.beginTransaction("Typing");
+        const typed = doc.createTextNode(" d");
+        p2.appendChild(typed);
+        await letObserverDeliver();
+        typed.data = " dd";
+        await letObserverDeliver();
+        const span = doc.createElement("span");
+        span.className = "audio-sentence";
+        span.textContent = " dd";
+        p2.replaceChild(span, typed);
+        await letObserverDeliver();
+        t.end();
+        expect(f.history.undoDescriptionL10nKey).toBe("Typing");
+
+        await f.history.undo();
+
+        expect(p2.textContent, "the undo should not be refused").toBe(
+            "Bonjour",
+        );
+        expect(f.history.redoDescriptionL10nKey).toBe("Typing");
+        await f.history.redo();
+        expect(p2.lastChild).toBe(span);
+        expect(p2.textContent).toBe("Bonjour dd");
+    });
+
     it("logs which child list differs when an undo finds the page changed", async () => {
         const log = vi.fn<(line: string) => void>();
         const f = setUp(kStandardPage, { log });
