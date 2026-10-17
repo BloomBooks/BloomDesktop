@@ -13,6 +13,7 @@
 
 import type { Locator } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
+import { checkUndoRoundTripAfterEachTest } from "../helpers/undoRoundTrip";
 import {
     addPage,
     clickInGroup,
@@ -44,6 +45,8 @@ import { canUndo, waitForPageHistory } from "../helpers/undo";
 test.use({
     collectionSpec: { name: "undo-reader-tools", languages: ["en"] },
 });
+
+checkUndoRoundTripAfterEachTest(test);
 
 test.describe.configure({ mode: "serial" });
 

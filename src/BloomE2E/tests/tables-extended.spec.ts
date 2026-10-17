@@ -19,6 +19,7 @@
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "../fixtures/bloomTest";
+import { checkUndoRoundTripAfterEachTest } from "../helpers/undoRoundTrip";
 import { readBook, waitForBookWithPageCount } from "../helpers/bookHtml";
 import {
     addPage,
@@ -117,6 +118,8 @@ test.use({
     },
     experimentalFeatures: ["tables"],
 });
+
+checkUndoRoundTripAfterEachTest(test);
 
 test.describe.configure({ mode: "serial" });
 

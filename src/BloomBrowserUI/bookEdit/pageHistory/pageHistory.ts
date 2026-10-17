@@ -444,6 +444,12 @@ class PageHistoryImpl implements PageHistory {
         };
     }
 
+    /** See PageHistory.keptMarkupOfPage. */
+    public keptMarkupOfPage(): string {
+        this.assertNotDisposed();
+        return this.serializeKept(this.root);
+    }
+
     /** See PageHistory.hasOpenTransaction. */
     public get hasOpenTransaction(): boolean {
         return this.frames.length > 0;

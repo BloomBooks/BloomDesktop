@@ -2209,6 +2209,18 @@ describe("page history: the filter (rule 6)", () => {
         kStandardPage +
         '<div class="bloom-ui" id="ui"><span id="uiChild" data-state="a">handle</span></div>';
 
+    it("gives the page without what it leaves out, in keptMarkupOfPage", () => {
+        const f = setUp(kPageWithUi, { filter });
+        const before = f.history.keptMarkupOfPage();
+        expect(before, "test setup").toContain('id="img1"');
+        expect(before).not.toContain("uiChild");
+
+        byId(f, "img1").setAttribute("data-hover", "yes");
+        expect(f.history.keptMarkupOfPage()).toBe(before);
+        byId(f, "img1").setAttribute("alt", "a picture");
+        expect(f.history.keptMarkupOfPage()).not.toBe(before);
+    });
+
     it("neither records nor puts back an ignored node", async () => {
         const f = setUp(kPageWithUi, { filter });
         const canvas = byId(f, "canvas");

@@ -502,6 +502,12 @@ export interface PageHistory {
      * delivered, so it reads the steps as they are and changes nothing.
      */
     getStepDescriptions(): PageHistoryStepDescriptions;
+    /**
+     * The page as the history compares it: every attribute and text as far as the filter keeps
+     * it, without the children that the filter leaves out. Two pages with the same kept markup
+     * are the same to undo and redo; for tests that check that a redo put the page back.
+     */
+    keptMarkupOfPage(): string;
     /** True while a transaction is open, including one that began inside another. */
     readonly hasOpenTransaction: boolean;
     /** True once dispose() has run; every other call then throws. */

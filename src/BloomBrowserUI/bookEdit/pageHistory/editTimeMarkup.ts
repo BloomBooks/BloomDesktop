@@ -262,6 +262,11 @@ export function keptAttributeValue(
         element.classList.contains("bloom-editable")
     )
         return undefined;
+    if (
+        kTooltipAttributesOfABloomCanvas.has(name) &&
+        element.classList.contains("bloom-canvas")
+    )
+        return undefined;
     if (name === "src" && element.matches("video, video source"))
         return withoutVideoTimestamp(value);
     return value;
@@ -284,6 +289,14 @@ export function attributeValueToPutBack(
     if (name === "style") return styleToPutBack(element, kept, current);
     return kept;
 }
+
+/**
+ * Attributes of a .bloom-canvas that a save keeps but that undo leaves alone: the picture's
+ * tooltip. bloomImages.ts works out data-title from the picture and the paper size, and copies it
+ * into title, or empties title, as the selection changes, all outside the history. So they can
+ * differ between the page an undo step left and the same page after an undo and a redo.
+ */
+const kTooltipAttributesOfABloomCanvas = new Set(["title", "data-title"]);
 
 /**
  * Attributes of a .bloom-editable that a save keeps but that undo leaves alone: CKEditor 4.5.1's

@@ -19,6 +19,7 @@
 
 import * as fs from "node:fs";
 import { expect, test } from "../fixtures/bloomTest";
+import { checkUndoRoundTripAfterEachTest } from "../helpers/undoRoundTrip";
 import {
     getPages,
     goToPage,
@@ -48,6 +49,8 @@ import { switchTab } from "../helpers/workspace";
 test.use({
     collectionSpec: { name: "original-copyright-sentence", languages: ["en"] },
 });
+
+checkUndoRoundTripAfterEachTest(test);
 
 test.describe.configure({ mode: "serial" });
 
