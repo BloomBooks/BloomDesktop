@@ -14,8 +14,15 @@
 // Then it undoes back to the start and redoes to the end, checking each time that the page is the
 // one recorded, with the same node objects, and that no undo or redo was refused.
 //
-// A failure names its seed and lists the actions of the sequence. To replay one, run this file
-// with `-t "seed <n>"` (adding the seed to kSeeds if it is not there).
+// The sequences run with the default limit on the number of undo steps (maxUndoSteps) and with
+// small ones, 0 to 3, long enough to pass the limit many times. When a new step drops the oldest,
+// the page after the dropped step becomes the page that undoing everything comes back to. With a
+// limit of 0 nothing is ever undoable, and an undo or redo with nothing to undo or redo must
+// change nothing.
+//
+// A failure names its limit and seed and lists the actions of the sequence. To replay one, run
+// this file with `-t "<limit>, seed <n>"`, such as `-t "maxUndoSteps 2, seed 7"` (adding the
+// seed to the list of its limit in kRuns if it is not there).
 import { afterEach, describe, expect, it } from "vitest";
 import { createPageHistory } from "./pageHistory";
 import {
@@ -25,8 +32,57 @@ import {
 } from "./pageHistoryTypes";
 import { createEditTimeMarkupFilter } from "./editTimeMarkup";
 
-// Enough sequences to run in a few seconds. A longer list searches further.
-const kSeeds = Array.from({ length: 200 }, (_, i) => i + 1);
+// The default of maxUndoSteps in pageHistory.ts, which these sequences must pass to drop a step.
+const kDefaultMaxUndoSteps = 50;
+
+/** The sequences to run with one limit on the number of undo steps. */
+interface RandomRun {
+    // What the tests are called after, such as "maxUndoSteps 2".
+    name: string;
+    // The maxUndoSteps to give the history; undefined leaves it at its default.
+    maxUndoSteps: number | undefined;
+    seeds: number[];
+    // The number of actions in a sequence is at least minActions and less than minActions plus
+    // actionRange.
+    minActions: number;
+    actionRange: number;
+    // True when every sequence must pass the limit, so that a run that never dropped a step is a
+    // bug in the test.
+    mustDropSteps: boolean;
+}
+
+/** The whole numbers from first up to and including last. */
+function range(first: number, last: number): number[] {
+    return Array.from({ length: last - first + 1 }, (_, i) => first + i);
+}
+
+// Enough sequences to run in about ten seconds. Longer lists search further.
+const kRuns: RandomRun[] = [
+    {
+        name: "default maxUndoSteps",
+        maxUndoSteps: undefined,
+        seeds: range(1, 60),
+        minActions: 6,
+        actionRange: 12,
+        mustDropSteps: false,
+    },
+    {
+        name: "default maxUndoSteps, long",
+        maxUndoSteps: undefined,
+        seeds: range(1, 3),
+        minActions: 150,
+        actionRange: 30,
+        mustDropSteps: true,
+    },
+    ...[0, 1, 2, 3].map((limit) => ({
+        name: `maxUndoSteps ${limit}`,
+        maxUndoSteps: limit,
+        seeds: range(1, 20),
+        minActions: 20,
+        actionRange: 25,
+        mustDropSteps: true,
+    })),
+];
 
 const kStartPage =
     '<div class="bloom-translationGroup" id="group">' +
@@ -259,14 +315,26 @@ class Sequence {
     private readonly refusals: string[] = [];
     private nextId = 1;
     private nextStep = 1;
-    // The model: the page at the start, and after each step that undo would undo, oldest first,
-    // with each step's description; and the steps that redo would redo, the next one last.
+    private readonly limit: number;
+    // The steps that the history has logged making, and those that the model has taken in.
+    private stepsLogged = 0;
+    private stepsNoted = 0;
+    // The steps that the model dropped for the limit.
+    public droppedSteps = 0;
+    // The model: the page that undoing everything comes back to, which is the page at the start
+    // or after the last step dropped for the limit; and the page after each step that undo would
+    // undo, oldest first, with each step's description; and the steps that redo would redo, the
+    // next one last.
     private start: Snapshot;
     private undoModel: { description: string; after: Snapshot }[] = [];
     private redoModel: { description: string; after: Snapshot }[] = [];
 
-    public constructor(public readonly seed: number) {
+    public constructor(
+        public readonly seed: number,
+        private readonly runInfo: RandomRun,
+    ) {
         this.rng = new Random(seed);
+        this.limit = runInfo.maxUndoSteps ?? kDefaultMaxUndoSteps;
         this.page = document.createElement("div");
         this.page.className = "bloom-page";
         this.page.id = "page";
@@ -275,10 +343,11 @@ class Sequence {
         this.history = createPageHistory({
             root: this.page,
             filter: createEditTimeMarkupFilter(),
-            maxUndoSteps: 100000,
+            maxUndoSteps: runInfo.maxUndoSteps,
             onUnmarkedChange: () => {},
             log: (line, kind) => {
                 if (kind === "refused") this.refusals.push(line);
+                if (kind === "step") this.stepsLogged++;
             },
         });
         this.start = this.snapshot();
@@ -308,7 +377,7 @@ class Sequence {
     /** Fail with message, the seed and the list of what the sequence did. */
     private fail(message: string): never {
         throw new Error(
-            `Randomized page history, seed ${this.seed}: ${message}\nWhat the sequence did:\n${this.lines.join("\n")}`,
+            `Randomized page history, ${this.runInfo.name}, seed ${this.seed}: ${message}\nWhat the sequence did:\n${this.lines.join("\n")}`,
         );
     }
 
@@ -318,10 +387,17 @@ class Sequence {
         if (difference) this.fail(`${when}, ${difference}`);
     }
 
-    /** Fail unless the history's undo and redo steps are those of the model, and none was refused. */
+    /**
+     * Fail unless the history's undo and redo steps are those of the model, none was refused, and
+     * the history has made no step that the model has not taken in.
+     */
     private checkSteps(when: string): void {
         if (this.refusals.length > 0)
             this.fail(`${when}, the history refused: ${this.refusals[0]}`);
+        if (this.stepsLogged !== this.stepsNoted)
+            this.fail(
+                `${when}, the history logged making ${this.stepsLogged} steps, where the model has ${this.stepsNoted}`,
+            );
         const descriptions = this.history.getStepDescriptions();
         const undo = descriptions.undo.map((d) => d.l10nId).join(", ");
         const redo = descriptions.redo.map((d) => d.l10nId).join(", ");
@@ -336,15 +412,31 @@ class Sequence {
             this.fail(
                 `${when}, the history has undo steps [${undo}] and redo steps [${redo}], not [${expectedUndo}] and [${expectedRedo}]`,
             );
+        const undoKey = this.history.undoDescriptionL10nKey;
+        const redoKey = this.history.redoDescriptionL10nKey;
+        const expectedUndoKey =
+            this.undoModel[this.undoModel.length - 1]?.description;
+        const expectedRedoKey =
+            this.redoModel[this.redoModel.length - 1]?.description;
+        if (undoKey !== expectedUndoKey || redoKey !== expectedRedoKey)
+            this.fail(
+                `${when}, the history's undoDescriptionL10nKey is ${undoKey} and its redoDescriptionL10nKey ${redoKey}, not ${expectedUndoKey} and ${expectedRedoKey}`,
+            );
     }
 
-    /** Make the random sequence, then undo all of it and redo all of it, checking each step. */
+    /**
+     * Make the random sequence, then undo all of it and redo all of it, checking each step, and
+     * that one more undo or redo past the end changes nothing.
+     */
     public async run(): Promise<void> {
-        const actions = 6 + this.rng.int(12);
+        const actions =
+            this.runInfo.minActions + this.rng.int(this.runInfo.actionRange);
         for (let i = 1; i <= actions; i++) await this.randomAction(i);
         this.note("Undo everything, redo everything, undo everything:");
         while (this.undoModel.length > 0) await this.undo();
+        await this.undo();
         while (this.redoModel.length > 0) await this.redo();
+        await this.redo();
         while (this.undoModel.length > 0) await this.undo();
     }
 
@@ -358,8 +450,9 @@ class Sequence {
             ["unmarked", 2],
             ["addToLatest", 1],
             ["outsideHistory", 1],
-            ["undo", this.undoModel.length > 0 ? 2 : 0],
-            ["redo", this.redoModel.length > 0 ? 2 : 0],
+            // Now and then an undo or redo with nothing to undo or redo, which must change nothing.
+            ["undo", this.undoModel.length > 0 ? 2 : 0.3],
+            ["redo", this.redoModel.length > 0 ? 2 : 0.3],
         ]);
         switch (kind) {
             case "begun":
@@ -377,10 +470,14 @@ class Sequence {
             case "outsideHistory":
                 return this.changesOutsideHistory(index);
             case "undo":
-                this.note(`${index}. undo`);
+                this.note(
+                    `${index}. undo${this.undoModel.length === 0 ? " (nothing to undo)" : ""}`,
+                );
                 return this.undo();
             case "redo":
-                this.note(`${index}. redo`);
+                this.note(
+                    `${index}. redo${this.redoModel.length === 0 ? " (nothing to redo)" : ""}`,
+                );
                 return this.redo();
         }
     }
@@ -453,6 +550,9 @@ class Sequence {
         this.note(`${index}. beginTransaction "${outerDescription}" (outer)`);
         let outerBefore = this.snapshot();
         const outer = this.history.beginTransaction(outerDescription);
+        // The description of the step: a stand-in's step takes that of the first transaction
+        // inside it with one of its own, unless that one is cancelled, when the next one gives it.
+        let stepDescription = outerDescription;
         const parts = 1 + this.rng.int(4);
         const inTransaction: OpContext = {
             canDeliver: true,
@@ -493,6 +593,9 @@ class Sequence {
             } else {
                 const description = this.newDescription();
                 const before = this.snapshot();
+                const givesDescription =
+                    stepDescription === kGenericUndoDescriptionL10nKey;
+                if (givesDescription) stepDescription = description;
                 if (what === "sync") {
                     this.note(
                         `   doTransaction "${description}" (sync, inner)`,
@@ -511,6 +614,8 @@ class Sequence {
                     if (this.rng.chance(0.3)) {
                         this.note(`   cancel "${description}"`);
                         inner.cancel();
+                        if (givesDescription)
+                            stepDescription = kGenericUndoDescriptionL10nKey;
                         this.checkPage(
                             before,
                             `after cancelling the inner "${description}"`,
@@ -534,7 +639,7 @@ class Sequence {
         }
         this.note(`   end "${outerDescription}" (outer)`);
         outer.end();
-        this.noteTransactionClosed(outerDescription);
+        this.noteTransactionClosed(stepDescription);
     }
 
     /** Changes outside any transaction, which join the latest step (rule 1). */
@@ -588,17 +693,27 @@ class Sequence {
     }
 
     /**
-     * Bring the model up to date after an outermost transaction closed: a new step if the history
-     * made one, else no change to the page.
+     * Bring the model up to date after an outermost transaction closed whose step, if it makes
+     * one, has description: a new step if the history logged making one,
+     * which must change the page, dropping the oldest steps past the limit; else no change to the
+     * page.
      */
     private noteTransactionClosed(description: string): void {
-        const steps = this.history.getStepDescriptions().undo;
-        if (steps.length === this.undoModel.length + 1) {
-            this.undoModel.push({
-                description: steps[steps.length - 1].l10nId,
-                after: this.snapshot(),
-            });
+        const newSteps = this.stepsLogged - this.stepsNoted;
+        if (newSteps > 1)
+            this.fail(
+                `after "${description}" closed, the history logged making ${newSteps} steps`,
+            );
+        if (newSteps === 1) {
+            const after = this.snapshot();
+            if (differenceBetween(after, this.expectedNow()) === undefined)
+                this.fail(
+                    `"${description}" made a step though it changed nothing that is kept`,
+                );
+            this.stepsNoted++;
+            this.undoModel.push({ description, after });
             this.redoModel = [];
+            this.dropStepsPastLimit();
         } else {
             this.checkPage(
                 this.expectedNow(),
@@ -606,6 +721,21 @@ class Sequence {
             );
         }
         this.checkSteps(`after "${description}" closed`);
+    }
+
+    /**
+     * Drop the oldest steps of the model past the limit. The page after the last one dropped is
+     * the page that undoing everything comes back to.
+     */
+    private dropStepsPastLimit(): void {
+        while (this.undoModel.length > this.limit) {
+            const dropped = this.undoModel.shift()!;
+            this.start = dropped.after;
+            this.droppedSteps++;
+            this.note(
+                `   (the limit of ${this.limit} steps drops the oldest, "${dropped.description}")`,
+            );
+        }
     }
 
     /**
@@ -639,10 +769,21 @@ class Sequence {
         this.checkSteps(`after ${what}`);
     }
 
-    /** Undo, and check that the page is as it was before the step. */
+    /**
+     * Undo, and check that the page is as it was before the step; or, with nothing to undo, that
+     * the undo changed nothing.
+     */
     private async undo(): Promise<void> {
-        const step = this.undoModel.pop()!;
+        const step = this.undoModel.pop();
         await this.history.undo();
+        if (!step) {
+            this.checkSteps("after an undo with nothing to undo");
+            this.checkPage(
+                this.expectedNow(),
+                "after an undo with nothing to undo",
+            );
+            return;
+        }
         this.redoModel.push(step);
         this.checkSteps(`after undoing "${step.description}"`);
         this.checkPage(
@@ -651,10 +792,21 @@ class Sequence {
         );
     }
 
-    /** Redo, and check that the page is as it was after the step. */
+    /**
+     * Redo, and check that the page is as it was after the step; or, with nothing to redo, that
+     * the redo changed nothing.
+     */
     private async redo(): Promise<void> {
-        const step = this.redoModel.pop()!;
+        const step = this.redoModel.pop();
         await this.history.redo();
+        if (!step) {
+            this.checkSteps("after a redo with nothing to redo");
+            this.checkPage(
+                this.expectedNow(),
+                "after a redo with nothing to redo",
+            );
+            return;
+        }
         this.undoModel.push(step);
         this.checkSteps(`after redoing "${step.description}"`);
         this.checkPage(step.after, `after redoing "${step.description}"`);
@@ -1421,16 +1573,23 @@ afterEach(() => {
     current = undefined;
 });
 
-describe("page history: random sequences of steps undo and redo exactly", () => {
-    it.each(kSeeds)("seed %i", async (seed) => {
-        current = new Sequence(seed);
-        expect(
-            current.page.querySelector("#desc"),
-            "test setup: the page should have its description box",
-        ).not.toBeNull();
-        await current.run();
+for (const runInfo of kRuns) {
+    describe(`page history: random sequences of steps undo and redo exactly, ${runInfo.name}`, () => {
+        it.each(runInfo.seeds)(`${runInfo.name}, seed %i`, async (seed) => {
+            current = new Sequence(seed, runInfo);
+            expect(
+                current.page.querySelector("#desc"),
+                "test setup: the page should have its description box",
+            ).not.toBeNull();
+            await current.run();
+            if (runInfo.mustDropSteps)
+                expect(
+                    current.droppedSteps,
+                    "test setup: the sequence should be long enough to pass the limit",
+                ).toBeGreaterThan(0);
+        });
     });
-});
+}
 
 // The smallest cases of the failures that the random sequences found, kept as fixed tests.
 describe("page history: cases found by the random sequences", () => {

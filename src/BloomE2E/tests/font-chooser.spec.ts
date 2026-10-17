@@ -17,6 +17,7 @@
 // The tests are serial: each starts from the state the one before it left behind.
 
 import { expect, test } from "../fixtures/bloomTest";
+import { checkUndoRoundTripAfterEachTest } from "../helpers/undoRoundTrip";
 import {
     addPage,
     clickInGroup,
@@ -51,6 +52,8 @@ import {
 test.use({
     collectionSpec: { name: "font-chooser", languages: ["en"] },
 });
+
+checkUndoRoundTripAfterEachTest(test);
 
 test.describe.configure({ mode: "serial" });
 

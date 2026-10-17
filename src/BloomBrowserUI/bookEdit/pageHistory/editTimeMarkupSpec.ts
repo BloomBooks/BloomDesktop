@@ -382,6 +382,30 @@ describe("a description box", () => {
     });
 });
 
+describe("the picture tooltip of a bloom-canvas", () => {
+    it("is kept as nothing, and left as it is when put back", () => {
+        const canvas = document.createElement("div");
+        canvas.className = "bloom-canvas";
+        for (const [name, value] of [
+            ["title", "The image container is 469 x 703 dots."],
+            ["data-title", "The image container is 469 x 703 dots."],
+        ]) {
+            expect(
+                keptAttributeValue(canvas, name, value),
+                name,
+            ).toBeUndefined();
+            expect(
+                attributeValueToPutBack(canvas, name, undefined, value),
+            ).toBe(value);
+        }
+    });
+
+    it("is kept on other elements", () => {
+        const element = document.createElement("div");
+        expect(keptAttributeValue(element, "title", "a tip")).toBe("a tip");
+    });
+});
+
 describe("the attributes that CKEditor sets on a box when it attaches", () => {
     it("are kept as nothing on a bloom-editable, and left as they are when put back", () => {
         const box = document.createElement("div");

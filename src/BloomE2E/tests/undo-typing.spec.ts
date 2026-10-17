@@ -22,6 +22,7 @@
 
 import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
+import { checkUndoRoundTripAfterEachTest } from "../helpers/undoRoundTrip";
 import {
     addPage,
     clickInGroup,
@@ -45,6 +46,8 @@ import {
 test.use({
     collectionSpec: { name: "undo-typing", languages: ["en"] },
 });
+
+checkUndoRoundTripAfterEachTest(test);
 
 test.describe.configure({ mode: "serial" });
 

@@ -17,6 +17,7 @@
 // and where page numbers land. The Edit tab draws the page with the same rules the PDF is made from.
 
 import { expect, test } from "../fixtures/bloomTest";
+import { checkUndoRoundTripAfterEachTest } from "../helpers/undoRoundTrip";
 import {
     addPage,
     getContentPages,
@@ -47,6 +48,8 @@ test.use({
         subscriptionCode: kEnterpriseSubscriptionCode,
     },
 });
+
+checkUndoRoundTripAfterEachTest(test);
 
 test.describe.configure({ mode: "serial" });
 

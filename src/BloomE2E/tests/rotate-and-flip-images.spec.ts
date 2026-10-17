@@ -17,6 +17,7 @@ import type { Page } from "@playwright/test";
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "../fixtures/bloomTest";
+import { checkUndoRoundTripAfterEachTest } from "../helpers/undoRoundTrip";
 import {
     addPage,
     getContentPages,
@@ -71,6 +72,8 @@ test.use({
         subscriptionCode: kEnterpriseSubscriptionCode,
     },
 });
+
+checkUndoRoundTripAfterEachTest(test);
 
 test.describe.configure({ mode: "serial" });
 

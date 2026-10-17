@@ -11,6 +11,7 @@
 
 import { type Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
+import { checkUndoRoundTripAfterEachTest } from "../helpers/undoRoundTrip";
 import {
     addPage,
     getContentPages,
@@ -43,6 +44,8 @@ import {
 test.use({
     collectionSpec: { name: "canvas-layer-order", languages: ["en"] },
 });
+
+checkUndoRoundTripAfterEachTest(test);
 
 test.describe.configure({ mode: "serial" });
 
