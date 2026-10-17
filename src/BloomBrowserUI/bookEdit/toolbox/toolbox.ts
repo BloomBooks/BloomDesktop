@@ -562,6 +562,7 @@ export function applyToolboxStateToUpdatedPage() {
                                     ),
                                 );
                             }
+                            return undefined;
                         });
                     });
                     // We used to call updateMarkup() here
