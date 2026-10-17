@@ -3235,6 +3235,25 @@ export default class AudioRecording implements IAudioRecorder {
             this.showRecordingModeAfterUndoOrRedo(textBoxBefore)
         )
             return;
+        const boxWaiting = this.boxHighlightedUntilSplit;
+        if (
+            boxWaiting &&
+            this.highlightedElement === boxWaiting.box &&
+            boxWaiting.box.isConnected &&
+            !new Recordable(boxWaiting.box).checkForMissingAudioMarkup()
+        ) {
+            // The box has the highlight only because an earlier undo took away its sentences,
+            // and it needs no split now: a redo has put them back, or it has no text left.
+            // Speak and Import must not record under the box.
+            doOutsideHistory(
+                () =>
+                    void this.highlightAgainAfterUndoOrRedoAsync(
+                        boxWaiting.box,
+                        boxWaiting.sentence,
+                    ),
+            );
+            return;
+        }
         if (
             this.highlightedElement?.isConnected &&
             !this.currentHighlightSuppressed &&
@@ -3251,22 +3270,40 @@ export default class AudioRecording implements IAudioRecorder {
         // that made a sentence does, and no element has its id. Highlight what the tool records
         // in the box that had the highlight, or else what it highlights first on the page. Like
         // showRecordingModeAfterUndoOrRedo, this writes nothing that the history records.
+        const sentenceBefore = this.highlightedElement;
         doOutsideHistory(
-            () => void this.highlightAgainAfterUndoOrRedoAsync(textBoxBefore),
+            () =>
+                void this.highlightAgainAfterUndoOrRedoAsync(
+                    textBoxBefore,
+                    sentenceBefore,
+                ),
         );
     }
 
     /**
-     * See the end of updateAfterUndoOrRedo. When the undo or redo took away every sentence of
-     * textBoxBefore, which the tool cannot split again until the user's next action
-     * (splitAgainIfNeededAsync), the whole box has the highlight until then. Looking for a
-     * sentence would find one in another box, which Speak would then record.
+     * See the end of updateAfterUndoOrRedo. sentenceBefore is the element that had the highlight
+     * before the undo or redo; when it is back in textBoxBefore, as after a redo, it gets the
+     * highlight again. When the undo or redo took away every sentence of textBoxBefore, which the
+     * tool cannot split again until the user's next action (splitAgainIfNeededAsync), the whole
+     * box has the highlight until then (boxHighlightedUntilSplit). Looking for a sentence would
+     * find one in another box, which Speak would then record.
      */
     private async highlightAgainAfterUndoOrRedoAsync(
         textBoxBefore: HTMLElement | null,
+        sentenceBefore: HTMLElement | null,
     ): Promise<void> {
+        this.boxHighlightedUntilSplit = undefined;
         if (!textBoxBefore?.isConnected)
             await this.setCurrentAudioElementToDefaultAsync();
+        else if (
+            sentenceBefore?.isConnected &&
+            sentenceBefore.classList.contains(kAudioSentence) &&
+            textBoxBefore.contains(sentenceBefore)
+        )
+            await this.setSoundAndHighlightAsync({
+                newElement: sentenceBefore,
+                shouldScrollToElement: false,
+            });
         else if (
             this.recordingMode === RecordingMode.Sentence &&
             this.getFirstAudioSentenceWithinElement(textBoxBefore) === null &&
@@ -3274,7 +3311,12 @@ export default class AudioRecording implements IAudioRecorder {
         ) {
             // The next action splits the box first, then moves the highlight to the first
             // sentence of the box that has it (resetCurrentAudioElementAsync). Until then
-            // the sound stays that of the sentence that the undo took away.
+            // the sound stays that of the sentence that the undo took away. A redo that puts
+            // the sentences back moves the highlight to sentenceBefore (updateAfterUndoOrRedo).
+            this.boxHighlightedUntilSplit = {
+                box: textBoxBefore,
+                sentence: sentenceBefore,
+            };
             await this.setHighlightToAsync({
                 newElement: textBoxBefore,
                 shouldScrollToElement: false,
@@ -3334,6 +3376,11 @@ export default class AudioRecording implements IAudioRecorder {
     // True when an undo or redo left a box without the audio-sentence markup that it needs; see
     // updateAfterUndoOrRedo and splitAgainIfNeededAsync.
     private splitNeededSinceUndoOrRedo = false;
+    // The box that has the highlight because an undo took away all its sentences, and the
+    // sentence that had the highlight before that undo; see highlightAgainAfterUndoOrRedoAsync.
+    private boxHighlightedUntilSplit:
+        | { box: HTMLElement; sentence: HTMLElement | null }
+        | undefined;
 
     private ensureHighlightToken?: ReturnType<typeof setTimeout>;
     private subElementHighlightTimeoutToken?: ReturnType<typeof setTimeout>;
@@ -3559,6 +3606,7 @@ export default class AudioRecording implements IAudioRecorder {
      */
     private async splitAgainIfNeededAsync(): Promise<void> {
         this.splitNeededSinceUndoOrRedo = false;
+        this.boxHighlightedUntilSplit = undefined;
         const boxes = this.getRecordableDivs(true, false).filter((box) =>
             new Recordable(box).checkForMissingAudioMarkup(),
         );
@@ -5292,6 +5340,9 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     public async importRecordingAsync(): Promise<void> {
+        // The file is named after the current sentence, which an undo may have taken away.
+        if (this.splitNeededSinceUndoOrRedo)
+            await this.splitAgainIfNeededAsync();
         const result = await postJson("fileIO/chooseFile", {
             title: "Choose Audio File",
             fileTypes: [{ name: "MP3 File", extensions: ["mp3"] }],

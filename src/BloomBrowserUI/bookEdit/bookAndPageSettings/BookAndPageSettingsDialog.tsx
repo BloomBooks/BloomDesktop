@@ -267,9 +267,10 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
     const initialPageAttributeSnapshot = React.useRef<
         ElementAttributeSnapshot | undefined
     >(undefined);
-    // The src of each picture on the page when the dialog opened. Changing the background color
-    // rewrites these (updateImageTransparencyForPage), so Cancel and the live preview put them back
-    // along with the page's attributes.
+    // The src of each picture on the page when the dialog opened, or for a picture that had none,
+    // the src that it got later (restoreInitialPage). Changing the background color rewrites
+    // these (updateImageTransparencyForPage), so Cancel and the live preview put them back along
+    // with the page's attributes.
     const initialImageSrcs = React.useRef<
         Array<{ img: HTMLImageElement; src: string | null }>
     >([]);
@@ -542,7 +543,8 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
 // parameter (updateImageTransparencyForPage), so a picture that something else replaced while the
 // dialog was open, such as a link grid's thumbnail arriving, gets back only the parameter. A
 // picture that had no src when the dialog opened, such as a thumbnail that had not arrived yet,
-// gets back no parameter, since none comes with the src that arrives.
+// gets back the src that it arrived with: the first one that this finds on it is that src,
+// since a restore comes before each preview, and a preview leaves a picture with no src alone.
 function restoreInitialPage(
     pageAttributes: ElementAttributeSnapshot,
     imageSrcs: Array<{ img: HTMLImageElement; src: string | null }>,
@@ -551,15 +553,16 @@ function restoreInitialPage(
     for (const imageSrc of imageSrcs) {
         const src = imageSrc.img.getAttribute("src");
         if (src === imageSrc.src || src === null) continue;
-        let srcToPutBack: string;
-        if (imageSrc.src === null)
-            srcToPutBack = buildSrcWithTransparentParam(src, "none");
-        else if (
+        if (imageSrc.src === null) {
+            imageSrc.src = src;
+            continue;
+        }
+        let srcToPutBack = imageSrc.src;
+        if (
             buildSrcWithTransparentParam(src, "none") !==
             buildSrcWithTransparentParam(imageSrc.src, "none")
         )
             srcToPutBack = withTransparentParamOf(src, imageSrc.src);
-        else srcToPutBack = imageSrc.src;
         if (srcToPutBack !== src)
             imageSrc.img.setAttribute("src", srcToPutBack);
     }
