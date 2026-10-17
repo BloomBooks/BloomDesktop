@@ -7,7 +7,8 @@
 // - A drag is one transaction, from the press to the event that ends it.
 // - Key presses in one text box are one transaction, which stays open between key presses, so
 //   that Bloom's reactions to the typing join it (rule 7). It ends where CKEditor 4's undo plugin
-//   ends a typing step (see TypingRun).
+//   ends a typing step (see TypingRun), and Enter, which starts a new paragraph, is a step of its
+//   own.
 // - A typing step, and the step of a paste, a cut or a drop in the page frame, is described by
 //   that input (EditTab.Undo.Typing and the rest below) unless a transaction nested in it has
 //   described it. Every other step keeps the general description unless the action's own code
@@ -40,6 +41,9 @@ export const kTypingUndoDescriptionL10nKey = "EditTab.Undo.Typing";
 
 /** The l10n key of the description of a typing step of Backspace and Delete presses. */
 export const kDeleteTextUndoDescriptionL10nKey = "EditTab.Undo.DeleteText";
+
+/** The l10n key of the description of the step of an Enter in a text box, a new paragraph. */
+export const kNewParagraphUndoDescriptionL10nKey = "EditTab.Undo.NewParagraph";
 
 /** The l10n key of the description of a drop in the page, such as text dragged between boxes. */
 export const kDropUndoDescriptionL10nKey = "EditTab.Undo.Drop";
@@ -167,12 +171,15 @@ interface HeldTransaction {
  *   onNavigationKey);
  * - key presses during IME composition (keyCode 229) neither count nor change the kind (onKeydown
  *   ignores them), but one can start a step, since the composition writes into the box;
- * - only a key whose KeyboardEvent.key is one character, or Enter, types, and only Backspace and
- *   Delete delete; any other key that reaches the box, a modifier on its own, a function key or
- *   Escape, neither starts nor ends a step;
+ * - only a key whose KeyboardEvent.key is one character, or Shift+Enter, types, and only Backspace
+ *   and Delete delete; any other key that reaches the box, a modifier on its own, a function key
+ *   or Escape, neither starts nor ends a step;
  * - the input that a paste or a drop makes is not typing (ignoreInputEventListener);
- * - a command, which CKEditor runs from a key press with Ctrl or Alt, is a step of its own
- *   (the saveSnapshot before and after it, from beforeCommandExec and afterCommandExec).
+ * - a command is a step of its own (the saveSnapshot before and after it, from beforeCommandExec
+ *   and afterCommandExec). CKEditor runs one from a key press with Ctrl or Alt, and from Enter,
+ *   whose keystroke runs the enterkey plugin's "enter" command, so each new paragraph is a step.
+ *   Shift+Enter would run "shiftEnter", but BloomField cancels that keystroke and puts in the line
+ *   break itself (BloomField.InsertLineBreak), so a line break is typing.
  * Beyond the plugin: it closes when the focus leaves the box and at any press of a pointer in any
  * frame; and input during an IME composition does not count either, so that the limit never
  * closes a step inside a composition (APPROACHES.md case 7.7).
@@ -402,13 +409,23 @@ class InputTransactions {
             return;
         }
         const box = fromOtherWindow ? undefined : textBoxContaining(event);
-        if (box && !isCommandKey(event) && !kNavigationKeys.has(event.key)) {
+        const isNewParagraph = !!box && isNewParagraphKey(event);
+        if (
+            box &&
+            !isCommandKey(event) &&
+            !kNavigationKeys.has(event.key) &&
+            !isNewParagraph
+        ) {
             this.onKeyDownInBox(event, box);
             return;
         }
         this.endTypingRun();
-        if (this.openUnlessOneIsOpen(event, "event", fromOtherWindow))
+        if (this.openUnlessOneIsOpen(event, "event", fromOtherWindow)) {
+            if (isNewParagraph)
+                this.held!.descriptionOfInput =
+                    kNewParagraphUndoDescriptionL10nKey;
             this.scheduleEnd();
+        }
     }
 
     /** A key press in a text box that may type: see TypingRun. */
@@ -540,11 +557,28 @@ function isUndoOrRedoKey(event: KeyboardEvent): boolean {
 
 /**
  * True for the value of KeyboardEvent.key of a key that types: a single character (one code
- * point, which may be outside the BMP), or Enter. Named keys such as "Escape", "F2", "Tab",
- * "Dead" and "Unidentified" are longer.
+ * point, which may be outside the BMP), or Enter, which types only with Shift, since Enter alone
+ * is a step of its own (isNewParagraphKey). Named keys such as "Escape", "F2", "Tab", "Dead" and
+ * "Unidentified" are longer.
  */
 function isTypingKey(key: string): boolean {
     return Array.from(key).length === 1 || key === "Enter";
+}
+
+/**
+ * Enter on its own, which CKEditor's enterkey plugin turns into a new paragraph: a command, so a
+ * step of its own (TypingRun). Not Shift+Enter, a line break that is typing, not an Enter with
+ * Ctrl or Alt, a command like any other, and not an Enter that ends an IME composition, which
+ * belongs to the composition.
+ */
+function isNewParagraphKey(event: KeyboardEvent): boolean {
+    return (
+        event.key === "Enter" &&
+        !event.shiftKey &&
+        !isCommandKey(event) &&
+        !event.isComposing &&
+        event.keyCode !== kImeKeyCode
+    );
 }
 
 /**

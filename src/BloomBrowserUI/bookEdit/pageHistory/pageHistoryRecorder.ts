@@ -2,7 +2,7 @@
 // root window, which outlives the page frames. Each page load makes a new page frame and a new
 // history (pageHistorySetup.ts); each sends its events here, through the workspace bundle's
 // pageHistoryRecorder, so the record runs on across page changes. Steps, undos, redos, refused
-// undos and redos, and clears are kept at all times, so that opening the dialog after a problem
+// undos and redos, clears and the emptying of redo are kept at all times, so that opening the dialog after a problem
 // still shows them. The rest (rollbacks, page loads, the page becoming ready, every transaction and
 // every change that the history sees) is recorded only while the dialog is open, which turns
 // detailed logging on.
@@ -72,6 +72,7 @@ export const kPageHistoryEventLabels: Record<PageHistoryEventKind, string> = {
     redo: "REDO",
     refused: "REFUSED",
     cleared: "CLEARED",
+    redoDropped: "REDO DROPPED",
     rollback: "ROLLBACK",
     transaction: "TXN",
     input: "INPUT",

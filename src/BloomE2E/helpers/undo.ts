@@ -42,11 +42,7 @@ interface IPageHistoryForUndo {
 /** The page bundle, as far as this module uses it. */
 interface IPageBundleForUndo {
     pageHistory: () => IPageHistoryForUndo;
-}
-
-/** The workspace bundle, as far as this module uses it. */
-interface IWorkspaceForUndo {
-    canUndo: () => string;
+    canUndo: () => boolean;
 }
 
 /**
@@ -175,18 +171,15 @@ export async function expectUndoAndRedoCalls(
 }
 
 /**
- * True when Bloom has something it could undo. This is the question the C# side asks on a timer to
- * decide whether the top bar's Undo button is enabled.
+ * True when Bloom has something it could undo. This is the question the top bar asks on a timer
+ * to decide whether its Undo button is enabled (useUndoAndRedoEnabled in editTopBarControls.tsx).
  */
 export async function canUndo(page: Page): Promise<boolean> {
-    // canUndo() answers "yes" when the front end has something to undo and "fail" when it has
-    // not (see workspaceRoot.ts); the C# side makes the same comparison.
-    const answer = await page.evaluate(() =>
+    return editablePageFrame(page).evaluate(() =>
         (
-            window as unknown as { workspaceBundle: IWorkspaceForUndo }
-        ).workspaceBundle.canUndo(),
+            window as unknown as { editablePageBundle: IPageBundleForUndo }
+        ).editablePageBundle.canUndo(),
     );
-    return answer === "yes";
 }
 
 /**
@@ -194,7 +187,7 @@ export async function canUndo(page: Page): Promise<boolean> {
  * soon as the click is made, and the undo may wait for a transaction that is open, so wait for
  * the state you expect (a text, a count, a class) rather than reading the page straight after this.
  *
- * Bloom enables the button from canUndo on a timer, so waiting for it to be enabled is also a check
+ * The top bar enables the button from canUndo on a timer, so waiting for it to be enabled is also a check
  * that Bloom knows there is something to undo.
  */
 export async function clickUndoButton(page: Page): Promise<void> {

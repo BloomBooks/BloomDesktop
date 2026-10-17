@@ -246,8 +246,8 @@ export interface PageHistoryOptions {
     onUnmarkedChange?: (whatChanged: string) => void;
     /**
      * Called with one line for Bloom's log when an undo step is made, undone or redone, when an
-     * undo or redo is refused, when the history is cleared, with its reason, and when cancelling
-     * a transaction reverses changes. kind says which. The lines name steps by their
+     * undo or redo is refused, when the history is cleared, with its reason, when a change that
+     * no user action made empties redo, and when cancelling a transaction reverses changes. kind says which. The lines name steps by their
      * description, as formatUndoDescription writes it, and never hold the page's text. Default:
      * nothing.
      */
@@ -262,6 +262,9 @@ export type PageHistoryLogKind =
     // An undo or redo that found the page changed since its step, and dropped that stack.
     | "refused"
     | "cleared"
+    // A change made outside any transaction, which no user action made, joined the latest step
+    // and so emptied redo (rule 1).
+    | "redoDropped"
     // A cancelled transaction reversed the changes made since it began.
     | "rollback";
 
