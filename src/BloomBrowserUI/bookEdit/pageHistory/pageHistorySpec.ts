@@ -2855,6 +2855,41 @@ describe("page history: log", () => {
         ]);
     });
 
+    it("logs no drop of redo for a change outside any transaction when there is nothing to redo", async () => {
+        const log = vi.fn<(line: string, kind: PageHistoryLogKind) => void>();
+        const f = setUp(kStandardPage, { log });
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        expect(f.history.redoDescriptionL10nKey, "test setup").toBeUndefined();
+
+        byId(f, "img1").setAttribute("alt", "a picture");
+        await letObserverDeliver();
+
+        expect(
+            log.mock.calls.filter((call) => call[1] === "redoDropped"),
+        ).toEqual([]);
+    });
+
+    it("logs a change outside any transaction that dropped the redo steps, naming what changed", async () => {
+        const log = vi.fn<(line: string, kind: PageHistoryLogKind) => void>();
+        const f = setUp(kStandardPage, { log });
+        await stepSettingAttribute(f, "A", byId(f, "img1"), "src", "b.png");
+        await f.history.undo();
+        log.mockClear();
+
+        byId(f, "img1").setAttribute("alt", "a picture");
+        await letObserverDeliver();
+
+        expect(f.history.redoDescriptionL10nKey).toBeUndefined();
+        expect(log.mock.calls).toEqual([
+            [
+                expect.stringMatching(
+                    /^Page history: a change outside any transaction joined the latest undo step, and dropped the redo steps: attribute "alt" of .*img/,
+                ),
+                "redoDropped",
+            ],
+        ]);
+    });
+
     it("logs clearUndoAndRedo with its reason", () => {
         const log = vi.fn<(line: string, kind: PageHistoryLogKind) => void>();
         const f = setUp(kStandardPage, { log });

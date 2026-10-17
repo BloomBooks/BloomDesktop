@@ -319,7 +319,11 @@ class PageHistoryImpl implements PageHistory {
             this.frames[0].descriptionL10nKey !== kGenericUndoDescriptionL10nKey
         )
             return false;
-        return this.whyPageLacksValuesOf(open.changes, "before") === undefined;
+        // A node that the stand-in added and took out again, changing it while it was in, is
+        // not a change: undo would have nothing to put back in it.
+        const changes = new Map(open.changes);
+        this.removeEntriesOfNodesAtNeitherEnd(changes);
+        return this.whyPageLacksValuesOf(changes, "before") === undefined;
     }
 
     /** See PageHistory.doOutsideHistory. */
@@ -696,6 +700,7 @@ class PageHistoryImpl implements PageHistory {
         this.openTransaction = undefined;
         this.stopObservingRemovedNodes();
         this.readAfterValues(open.changes, open.changes);
+        this.fixChildListsOfNodesNewToStep(open.changes);
         removeEntriesWithNoNetChange(open.changes);
         this.removeEntriesOfNodesAtNeitherEnd(open.changes);
         if (open.changes.size === 0) {
@@ -734,18 +739,135 @@ class PageHistoryImpl implements PageHistory {
      * Drop the entries of nodes that the step both added and took out again, such as a text node
      * that typing made and Talking Book's sentence markup then replaced. Such a node is in the
      * page at neither end of the step, so undo and redo have nothing to put back in it, and the
-     * check of rule 4 would find it missing from the page and refuse the step. A node that was in
-     * the page at the start and that the step took out is in, or inside, a `before` child list.
+     * check of rule 4 would find it missing from the page and refuse the step. Being in, or
+     * inside, a `before` child list does not show that a node was in the page at the start, since
+     * the list may be that of a node that the step added (testOfBeingInPageAtStart).
      */
     private removeEntriesOfNodesAtNeitherEnd(changes: ChangeSet): void {
-        const takenOut = new Set<Node>();
-        changes.forEach((change) =>
-            change.children?.before.forEach((child) => takenOut.add(child)),
-        );
+        const wasInPageAtStart = this.testOfBeingInPageAtStart(changes);
         for (const node of Array.from(changes.keys())) {
-            if (!this.root.contains(node) && !isInsideOneOf(node, takenOut))
+            if (!this.root.contains(node) && !wasInPageAtStart(node))
                 changes.delete(node);
         }
+    }
+
+    /**
+     * Fix the child lists of the nodes that were not in the page when the step began, such as a
+     * span that wraps a run of nodes, as Talking Book's sentence markup does. A record of such a
+     * node's children may come after other nodes moved into it, so its list from before can hold
+     * a node that undo puts into another list too: the list of the node that held it at the
+     * start, or that of another new node. Undo must put each node into one list only, or the
+     * last list wins, and a node of the page can end up out of it. And a node that was filled
+     * before it went into the page has no record of its children at all, so redo would put it
+     * back without the nodes that undo took out of it. So when two lists from before the step
+     * hold the same node, it stays only in the list of the node that was in the page at the
+     * start, or else in the first list; and each new node in the page now that holds a node that
+     * undo puts into another node's list gets its children now as its children after the step.
+     */
+    private fixChildListsOfNodesNewToStep(changes: ChangeSet): void {
+        const wasInPageAtStart = this.testOfBeingInPageAtStart(changes);
+        // For each node in a list from before the step, the node whose list it stays in.
+        const listedIn = new Map<Node, Node>();
+        const withLists = Array.from(changes.keys()).filter(
+            (node) => changes.get(node)!.children,
+        );
+        withLists
+            .filter((node) => wasInPageAtStart(node))
+            .forEach((node) =>
+                changes
+                    .get(node)!
+                    .children!.before.forEach((child) =>
+                        listedIn.set(child, node),
+                    ),
+            );
+        withLists
+            .filter((node) => !wasInPageAtStart(node))
+            .forEach((node) => {
+                const children = changes.get(node)!.children!;
+                children.before = children.before.filter((child) => {
+                    if (listedIn.has(child)) return false;
+                    listedIn.set(child, node);
+                    return true;
+                });
+            });
+
+        const newNodes = new Set<Node>();
+        changes.forEach((change) =>
+            change.children?.after.forEach((child) => {
+                if (this.root.contains(child) && !wasInPageAtStart(child))
+                    newNodes.add(child);
+            }),
+        );
+        const fixed = new Set<Node>();
+        // Fix a new node, and each node inside it that is new too.
+        const fix = (node: Node): void => {
+            if (fixed.has(node)) return;
+            fixed.add(node);
+            const children = this.filteredChildren(node);
+            const holdsNodeListedElsewhere = children.some((child) => {
+                const owner = listedIn.get(child);
+                return owner !== undefined && owner !== node;
+            });
+            if (holdsNodeListedElsewhere) {
+                let change = changes.get(node);
+                if (!change) {
+                    change = {};
+                    changes.set(node, change);
+                }
+                if (change.children) change.children.after = children;
+                else {
+                    const before = children.filter(
+                        (child) => !listedIn.has(child),
+                    );
+                    before.forEach((child) => listedIn.set(child, node));
+                    change.children = { before, after: children };
+                }
+            }
+            children.forEach((child) => {
+                if (!wasInPageAtStart(child)) fix(child);
+            });
+        };
+        newNodes.forEach(fix);
+    }
+
+    /**
+     * A test of whether a node was in the page when the step whose changes these are began,
+     * worked out from the step's child lists from before it: a node was if it was then a child of
+     * a node that was. A node in no such list was then a child of its parent now, unless that
+     * parent's children changed in the step, which means that the step put it there.
+     */
+    private testOfBeingInPageAtStart(
+        changes: ChangeSet,
+    ): (node: Node) => boolean {
+        const parentsAtStart = new Map<Node, Node[]>();
+        changes.forEach((change, parent) =>
+            change.children?.before.forEach((child) => {
+                let parents = parentsAtStart.get(child);
+                if (!parents) {
+                    parents = [];
+                    parentsAtStart.set(child, parents);
+                }
+                parents.push(parent);
+            }),
+        );
+        const known = new Map<Node, boolean>();
+        const test = (node: Node): boolean => {
+            if (node === this.root) return true;
+            const answer = known.get(node);
+            if (answer !== undefined) return answer;
+            // Guards against a loop among the lists while this answer is worked out.
+            known.set(node, false);
+            const parent = node.parentNode;
+            const result =
+                (parentsAtStart.get(node) ?? []).some(test) ||
+                (parent !== null &&
+                    (!changes.get(parent)?.children ||
+                        this.filter.isLeftOutOfChildList(node, parent)) &&
+                    test(parent));
+            known.set(node, result);
+            return result;
+        };
+        return test;
     }
 
     /** Run fn with the records of its changes going where context says. */
@@ -830,8 +952,8 @@ class PageHistoryImpl implements PageHistory {
      * Send one batch of records where it belongs: nowhere inside doOutsideHistory, or outside any
      * transaction before markPageReady; to the open transaction if there is one, unless
      * addToLatestTransaction found only a stand-in that has changed nothing ("addToLatestStep");
-     * otherwise to the latest step (rule 1), which clears redo, warning unless inside
-     * addToLatestTransaction. With no latest step, the changes become starting state. A batch
+     * otherwise to the latest step (rule 1), which clears redo and logs that it did, warning
+     * unless inside addToLatestTransaction. With no latest step, the changes become starting state. A batch
      * with no net change changes nothing here.
      */
     private noteRecords(records: MutationRecord[]): void {
@@ -861,11 +983,18 @@ class PageHistoryImpl implements PageHistory {
             return;
         }
         if (batch.size === 0) return;
-        this.redoSteps = [];
+        if (this.redoSteps.length > 0) {
+            this.log(
+                `Page history: a change outside any transaction joined the latest undo step, and dropped the redo steps: ${describeBatch(batch).join("; ")}`,
+                "redoDropped",
+            );
+            this.redoSteps = [];
+        }
         const latest = this.latestStep();
         if (!latest) return;
         addBeforeValues(latest.changes, batch);
         this.readAfterValues(latest.changes, batch);
+        this.fixChildListsOfNodesNewToStep(latest.changes);
         removeEntriesWithNoNetChange(latest.changes);
         this.removeEntriesOfNodesAtNeitherEnd(latest.changes);
         if (latest.changes.size === 0) {

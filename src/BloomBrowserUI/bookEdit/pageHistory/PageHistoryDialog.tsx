@@ -75,6 +75,7 @@ const kLabelColors: Partial<Record<PageHistoryEventKind, string>> = {
     rollback: "#a0574f",
     refused: "#9a7a3c",
     cleared: "#9a7a3c",
+    redoDropped: "#9a7a3c",
 };
 
 // The kinds that are recorded only while the dialog is open, and the page becoming ready, which

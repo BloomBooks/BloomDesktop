@@ -13,6 +13,7 @@ import {
     kDeleteTextUndoDescriptionL10nKey,
     kDropUndoDescriptionL10nKey,
     kIgnoredByPageHistoryInputSelector,
+    kNewParagraphUndoDescriptionL10nKey,
     kTypingUndoDescriptionL10nKey,
 } from "./pageHistoryInput";
 import {
@@ -167,6 +168,22 @@ function deleteCharacter(box: HTMLElement): void {
     paragraph.textContent = paragraph.textContent!.slice(0, -1);
     asUser(box, new InputEvent("input", { bubbles: true }));
     finishTask();
+}
+
+/**
+ * An Enter that starts a new, empty paragraph at the end of box, as CKEditor's "enter" command
+ * does in the keydown's task.
+ */
+function pressEnter(box: HTMLElement): void {
+    keyDown(box, { key: "Enter" });
+    box.append(document.createElement("p"));
+    asUser(box, new InputEvent("input", { bubbles: true }));
+    finishTask();
+}
+
+/** The text of each paragraph of box. */
+function paragraphTexts(box: HTMLElement): string[] {
+    return Array.from(box.querySelectorAll("p")).map((p) => p.textContent!);
 }
 
 /** Ctrl+Z as the user presses it; the handler that runs undo is not in this module. */
@@ -568,6 +585,102 @@ describe("typing", () => {
         pressUndoKey();
 
         expect(await undoEverything()).toHaveLength(2);
+    });
+
+    it("makes each Enter, a new paragraph, a step of its own, so three typed lines are five steps", async () => {
+        const box = byId("box1");
+        typeText(box, "one");
+        pressEnter(box);
+        typeText(box, "two");
+        pressEnter(box);
+        typeText(box, "three");
+        pressUndoKey();
+        expect(
+            paragraphTexts(box),
+            "test setup: the typing should have made three paragraphs after Hello's",
+        ).toEqual(["Helloone", "two", "three"]);
+
+        const undone: { description: string; paragraphs: string[] }[] = [];
+        while (history.undoDescriptionL10nKey) {
+            const description = history.undoDescriptionL10nKey;
+            await history.undo();
+            undone.push({ description, paragraphs: paragraphTexts(box) });
+        }
+
+        expect(undone).toEqual([
+            {
+                description: kTypingUndoDescriptionL10nKey,
+                paragraphs: ["Helloone", "two", ""],
+            },
+            {
+                description: kNewParagraphUndoDescriptionL10nKey,
+                paragraphs: ["Helloone", "two"],
+            },
+            {
+                description: kTypingUndoDescriptionL10nKey,
+                paragraphs: ["Helloone", ""],
+            },
+            {
+                description: kNewParagraphUndoDescriptionL10nKey,
+                paragraphs: ["Helloone"],
+            },
+            {
+                description: kTypingUndoDescriptionL10nKey,
+                paragraphs: ["Hello"],
+            },
+        ]);
+    });
+
+    it("keeps a line break (Shift+Enter) in the typing step", async () => {
+        const box = byId("box1");
+        typeText(box, "one");
+        keyDown(box, { key: "Enter", shiftKey: true });
+        box.lastElementChild!.append(document.createElement("br"));
+        asUser(box, new InputEvent("input", { bubbles: true }));
+        finishTask();
+        expect(history.hasOpenTransaction).toBe(true);
+        typeText(box, "two");
+        pressUndoKey();
+
+        expect(await undoEverything()).toEqual(["HelloBonjour"]);
+        expect(box.querySelector("br")).toBeNull();
+    });
+
+    it("keeps an Enter that ends an IME composition in the composition's step", async () => {
+        const box = byId("box1");
+        keyDown(box, { key: "Process", keyCode: 229 });
+        box.lastElementChild!.append("か");
+        asUser(
+            box,
+            new InputEvent("input", { bubbles: true, isComposing: true }),
+        );
+        finishTask();
+        keyDown(box, { key: "Enter", keyCode: 229, isComposing: true });
+        finishTask();
+        expect(history.hasOpenTransaction).toBe(true);
+        pressUndoKey();
+
+        expect(await undoEverything()).toEqual(["HelloBonjour"]);
+    });
+
+    it("makes Ctrl+Enter a command, with no new paragraph description", async () => {
+        const box = byId("box1");
+        onBloomEvent(box, "keydown", (e) => {
+            if ((e as KeyboardEvent).key === "Enter")
+                box.firstElementChild!.setAttribute("data-command", "yes");
+        });
+        typeText(box, "ab");
+        keyDown(box, { key: "Enter", ctrlKey: true });
+        finishTask();
+        pressUndoKey();
+
+        expect(history.undoDescriptionL10nKey).toBe(
+            kGenericUndoDescriptionL10nKey,
+        );
+        expect(await undoEverything()).toEqual([
+            "HelloabBonjour",
+            "HelloBonjour",
+        ]);
     });
 
     it("closes a step when the focus leaves the box", async () => {
