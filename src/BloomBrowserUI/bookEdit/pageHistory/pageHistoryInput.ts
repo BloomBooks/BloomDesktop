@@ -46,6 +46,11 @@ export interface InputTransactionOptions {
      * kUndoControlSelector.
      */
     isOnUndoOrRedoControl?: (event: Event) => boolean;
+    /**
+     * Called just after a user event opens a transaction, with the event and what kind of
+     * transaction it opened; for the Show Page History dialog. Default: nothing.
+     */
+    onOpened?: (event: Event, kind: "pointer" | "event" | "typing") => void;
 }
 
 /**
@@ -53,6 +58,14 @@ export interface InputTransactionOptions {
  * editTopBarControls.tsx), which has this attribute for the purpose.
  */
 export const kUndoControlSelector = "[data-runs-undo]";
+
+/**
+ * Elements whose events this module leaves alone, as if they never happened: a developer's tool
+ * that watches the history, such as the Show Page History dialog, which must neither open a
+ * transaction nor end the typing step.
+ */
+export const kIgnoredByPageHistoryInputSelector =
+    "[data-ignored-by-page-history-input]";
 
 // From CKEditor 4.5.1's undo plugin (lib/ckeditor/ckeditor.js, CKEDITOR.plugins.undo): a typing
 // step closes once it holds this many inputs (UndoManager.strokesLimit).
@@ -169,6 +182,9 @@ class InputTransactions {
     private readonly isFromUser: (event: Event) => boolean;
     private readonly afterCurrentTask: (fn: () => void) => void;
     private readonly isOnUndoOrRedoControl: (event: Event) => boolean;
+    private readonly onOpened:
+        | ((event: Event, kind: HeldTransaction["kind"]) => void)
+        | undefined;
 
     public constructor(
         private readonly history: PageHistory,
@@ -179,6 +195,7 @@ class InputTransactions {
             options?.afterCurrentTask ?? ((fn) => window.setTimeout(fn, 0));
         this.isOnUndoOrRedoControl =
             options?.isOnUndoOrRedoControl ?? isInsideUndoControl;
+        this.onOpened = options?.onOpened;
     }
 
     /** Listen in the frame that holds the page. Returns a function that stops listening. */
@@ -193,9 +210,9 @@ class InputTransactions {
             click: (e) => this.onClick(e, false),
             keydown: (e) => this.onKeyDown(e as KeyboardEvent, false),
             input: (e) => this.onInput(e),
-            paste: () => this.onPasteOrDrop(),
-            cut: () => this.onPasteOrDrop(),
-            drop: () => this.onPasteOrDrop(),
+            paste: (e) => this.onPasteOrDrop(e),
+            cut: (e) => this.onPasteOrDrop(e),
+            drop: (e) => this.onPasteOrDrop(e),
             focusout: (e) => this.onFocusOut(e as FocusEvent),
             blur: (e) => {
                 // An element's blur reaches here too; the window's own has no node as its target.
@@ -259,6 +276,7 @@ class InputTransactions {
                     type,
                     (event: Event) => {
                         if (!this.isFromUser(event)) return;
+                        if (isInsideIgnoredElement(event)) return;
                         this.forgetHeldIfEnded();
                         listener(event);
                     },
@@ -293,7 +311,7 @@ class InputTransactions {
         if (this.isOnUndoOrRedoControl(event)) return;
         // The mousedown after a pointerdown, or a second button during a drag.
         if (this.held?.kind === "pointer") return;
-        this.openUnlessOneIsOpen("pointer", fromOtherWindow);
+        this.openUnlessOneIsOpen(event, "pointer", fromOtherWindow);
     }
 
     /** pointerup, mouseup, pointercancel: the drag, if any, ends with this event's task. */
@@ -316,7 +334,7 @@ class InputTransactions {
      */
     private onClick(event: Event, fromOtherWindow: boolean): void {
         if (this.isOnUndoOrRedoControl(event)) return;
-        if (this.openUnlessOneIsOpen("event", fromOtherWindow))
+        if (this.openUnlessOneIsOpen(event, "event", fromOtherWindow))
             this.scheduleEnd();
     }
 
@@ -336,7 +354,7 @@ class InputTransactions {
             return;
         }
         this.endTypingRun();
-        if (this.openUnlessOneIsOpen("event", fromOtherWindow))
+        if (this.openUnlessOneIsOpen(event, "event", fromOtherWindow))
             this.scheduleEnd();
     }
 
@@ -360,7 +378,7 @@ class InputTransactions {
             this.held.typing.inputKind ??= inputKind;
             return;
         }
-        if (this.openUnlessOneIsOpen("typing", false))
+        if (this.openUnlessOneIsOpen(event, "typing", false))
             this.held!.typing = { box, inputKind, inputs: 0 };
     }
 
@@ -378,9 +396,9 @@ class InputTransactions {
      * A paste, cut or drop is a step of its own, not typing. One that a key press (Ctrl+V)
      * started joins that key press's transaction.
      */
-    private onPasteOrDrop(): void {
+    private onPasteOrDrop(event: Event): void {
         this.endTypingRun();
-        if (this.openUnlessOneIsOpen("event", false)) this.scheduleEnd();
+        if (this.openUnlessOneIsOpen(event, "event", false)) this.scheduleEnd();
     }
 
     /** The focus leaving a box ends its typing step. */
@@ -400,10 +418,11 @@ class InputTransactions {
     }
 
     /**
-     * Open a transaction with the general description and hold it, unless one is open already,
-     * which then takes this input (rule 7). Returns true if it opened one.
+     * Open a transaction with the general description for event and hold it, unless one is open
+     * already, which then takes this input (rule 7). Returns true if it opened one.
      */
     private openUnlessOneIsOpen(
+        event: Event,
         kind: HeldTransaction["kind"],
         fromOtherWindow: boolean,
     ): boolean {
@@ -416,6 +435,7 @@ class InputTransactions {
             endScheduled: false,
             fromOtherWindow,
         };
+        this.onOpened?.(event, kind);
         return true;
     }
 
@@ -491,6 +511,13 @@ function textBoxContaining(event: KeyboardEvent): Element | undefined {
             '[contenteditable]:not([contenteditable="false"])',
         ) ?? undefined
     );
+}
+
+/** True when the event's target is inside kIgnoredByPageHistoryInputSelector. */
+function isInsideIgnoredElement(event: Event): boolean {
+    const target = event.target;
+    if (!isNode(target) || target.nodeType !== Node.ELEMENT_NODE) return false;
+    return !!(target as Element).closest(kIgnoredByPageHistoryInputSelector);
 }
 
 /** The default isOnUndoOrRedoControl: the event's target is inside kUndoControlSelector. */

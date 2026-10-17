@@ -8,6 +8,7 @@ import {
     LocalizableSelectableMenuItem,
 } from "../localizableMenuItem";
 import { useMountEffect } from "../../utils/useMountEffect";
+import { PageHistoryDialog } from "../../bookEdit/pageHistory/PageHistoryDialog";
 
 interface ITopBarContextMenuPoint {
     clientX: number;
@@ -36,6 +37,7 @@ export const TopBarContextMenu: React.FunctionComponent<{
     const [useDevBloomLibrary, setUseDevBloomLibrary] = React.useState(false);
     const [canRestartViaDevLauncher, setCanRestartViaDevLauncher] =
         React.useState(false);
+    const [showPageHistory, setShowPageHistory] = React.useState(false);
 
     const onClose = React.useCallback(() => {
         setMenuPoint(undefined);
@@ -167,6 +169,14 @@ export const TopBarContextMenu: React.FunctionComponent<{
                 },
             },
             {
+                // A floating window listing what the Edit tab's undo history does, for chasing
+                // undo bugs; it stays open while you go on editing.
+                label: "Show Page History",
+                onClick: () => {
+                    setShowPageHistory(true);
+                },
+            },
+            {
                 label: isMeddlingWithNewFiles
                     ? "Stop Meddling with New Files"
                     : "Meddle with New Files",
@@ -227,56 +237,61 @@ export const TopBarContextMenu: React.FunctionComponent<{
     ]);
 
     return (
-        <Menu
-            keepMounted={true}
-            open={!!menuPoint}
-            onClose={onClose}
-            anchorReference="anchorPosition"
-            anchorPosition={
-                menuPoint
-                    ? {
-                          top: menuPoint.clientY,
-                          left: menuPoint.clientX,
-                      }
-                    : undefined
-            }
-            slotProps={{
-                paper: {
-                    css: css`
-                        min-width: 220px;
-                        max-width: 440px;
-                    `,
-                },
-            }}
-        >
-            {menuItems.map((item, index) => {
-                if (item.label === "-") {
-                    return <Divider key={`separator-${index}`} />;
+        <>
+            {showPageHistory && (
+                <PageHistoryDialog onClose={() => setShowPageHistory(false)} />
+            )}
+            <Menu
+                keepMounted={true}
+                open={!!menuPoint}
+                onClose={onClose}
+                anchorReference="anchorPosition"
+                anchorPosition={
+                    menuPoint
+                        ? {
+                              top: menuPoint.clientY,
+                              left: menuPoint.clientX,
+                          }
+                        : undefined
                 }
-
-                const commonProps = {
-                    key: `${item.label ?? index}`,
-                    english: item.label,
-                    l10nId: null,
-                    onClick: () => {
-                        item.onClick?.();
-                        onClose();
+                slotProps={{
+                    paper: {
+                        css: css`
+                            min-width: 220px;
+                            max-width: 440px;
+                        `,
                     },
-                    disabled: item.enabled === false,
-                };
+                }}
+            >
+                {menuItems.map((item, index) => {
+                    if (item.label === "-") {
+                        return <Divider key={`separator-${index}`} />;
+                    }
 
-                return item.selected !== undefined ? (
-                    <LocalizableSelectableMenuItem
-                        {...commonProps}
-                        selected={item.selected}
-                    />
-                ) : (
-                    <LocalizableMenuItem
-                        {...commonProps}
-                        hasLeadingIconSpace={true}
-                    />
-                );
-            })}
-        </Menu>
+                    const commonProps = {
+                        key: `${item.label ?? index}`,
+                        english: item.label,
+                        l10nId: null,
+                        onClick: () => {
+                            item.onClick?.();
+                            onClose();
+                        },
+                        disabled: item.enabled === false,
+                    };
+
+                    return item.selected !== undefined ? (
+                        <LocalizableSelectableMenuItem
+                            {...commonProps}
+                            selected={item.selected}
+                        />
+                    ) : (
+                        <LocalizableMenuItem
+                            {...commonProps}
+                            hasLeadingIconSpace={true}
+                        />
+                    );
+                })}
+            </Menu>
+        </>
     );
 };
