@@ -48,7 +48,7 @@ const kFitDelayId = "fitToNewPicture";
 
 let page: HTMLElement;
 let history: PageHistory;
-let onUnmarkedChange: ReturnType<typeof vi.fn>;
+let onUnmarkedChange: ReturnType<typeof vi.fn<(whatChanged: string) => void>>;
 // The fits that the canvas element manager is holding until "the picture loads".
 let pendingFits: (() => void)[];
 // False for pictures whose canvas elements need no fit, as when the real manager finds nothing
@@ -95,7 +95,7 @@ beforeEach(async () => {
         theOneCanvasElementManager,
         "setActiveElementToClosest",
     ).mockImplementation(() => undefined);
-    onUnmarkedChange = vi.fn();
+    onUnmarkedChange = vi.fn<(whatChanged: string) => void>();
     history = createPageHistory({
         root: page,
         filter: createEditTimeMarkupFilter(),
