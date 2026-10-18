@@ -47,10 +47,11 @@ export interface IToolboxSettings {
 
 let savedSettings: IToolboxSettings = {};
 
-// True once the toolbox has been opened or shut since this toolbox loaded. The book's saved
+// True once the toolbox has been opened or shut since the latest restore of the book's toolbox
+// settings began (restoreToolboxSettings, applyToolboxStateToUpdatedPage). The book's saved
 // visibility is applied only when the page is ready (restoreToolboxSettingsWhenPageReady), which
 // can be after the person has already clicked the toggle; their choice then stands.
-let toolboxVisibilityChangedSinceLoad = false;
+let toolboxVisibilityChangedSinceRestoreBegan = false;
 
 // This variable stores the canonical ids of all the enabled tools, so
 // that the React toolbox settings can initially check the
@@ -258,7 +259,7 @@ export class ToolBox {
             $(parent.window.document)
                 .find("#pure-toggle-right")
                 .change(function () {
-                    toolboxVisibilityChangedSinceLoad = true;
+                    toolboxVisibilityChangedSinceRestoreBegan = true;
                     showToolboxChanged(!this.checked);
                 });
         });
@@ -499,6 +500,7 @@ function showOrHideTool(
 }
 
 export function restoreToolboxSettings() {
+    toolboxVisibilityChangedSinceRestoreBegan = false;
     get("toolbox/settings", (result) => {
         savedSettings = result.data;
         const pageFrame = getPageIFrame();
@@ -515,6 +517,7 @@ export function restoreToolboxSettings() {
 }
 
 export function applyToolboxStateToUpdatedPage() {
+    toolboxVisibilityChangedSinceRestoreBegan = false;
     get("toolbox/settings", (result) => {
         savedSettings = result.data;
         // savedSettings["current"] is always set to the last active tool for the book,
@@ -784,7 +787,7 @@ function restoreToolboxSettingsWhenPageReady(settings: IToolboxSettings) {
         const shouldBeVisible = !!opts["visibility"];
 
         if (
-            !toolboxVisibilityChangedSinceLoad &&
+            !toolboxVisibilityChangedSinceRestoreBegan &&
             toolbox.toolboxIsShowing() !== shouldBeVisible
         ) {
             toolbox.toggleToolbox();
