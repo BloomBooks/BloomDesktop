@@ -5,6 +5,7 @@ import WebSocketManager, {
 } from "../../utils/WebSocketManager";
 import { postJson } from "../../utils/bloomApi";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
+import { doOutsideHistory } from "../pageHistory/pageHistoryAccess";
 import { Link } from "../../react_components/BookGridSetup/BookLinkTypes";
 
 function getLanguage1Tag(): string {
@@ -60,60 +61,69 @@ export function editLinkGrid(linkGrid: HTMLElement) {
     getWorkspaceBundleExports().showBookGridSetupDialog(
         currentLinks,
         // callback if they press OK
-        (links: Link[]) => {
-            linkGrid.innerHTML = "";
-
-            if (links.length === 0) {
-                // No books selected, show skeleton
-                addSkeletonIfEmpty(linkGrid);
-            } else {
-                // Add real book buttons
-                linkGrid.lang = getLanguage1Tag();
-                links.forEach((link) => {
-                    const button = document.createElement("div");
-                    button.className = "bloom-bookButton";
-                    button.setAttribute("data-href", `/book/${link.book.id}`);
-                    button.setAttribute("data-bloom-book-id", link.book.id);
-                    if (link.page) {
-                        button.setAttribute(
-                            "data-bloom-page-id",
-                            link.page.pageId.toString(),
-                        );
-                    }
-                    // create img for the thumbnail
-                    const img = document.createElement("img");
-                    button.appendChild(img);
-
-                    const desiredFileNameWithoutExtension = `bookButton-${link.book.id}`;
-
-                    const messageContext =
-                        "makeThumbnailFile-" + desiredFileNameWithoutExtension;
-
-                    // listen for a websocket message that the image has been saved
-                    // and then update the src attribute
-                    const setImgSrc = (evt: IBloomWebSocketEvent) => {
-                        img.setAttribute("src", evt.message as string); // note, img.src = "foo" does something different!
-                    };
-                    WebSocketManager.notifyReady(messageContext, () => {
-                        postJson("editView/addImageFromUrl", {
-                            desiredFileNameWithoutExtension:
-                                desiredFileNameWithoutExtension,
-                            url: link.book.thumbnail,
-                        });
-                    });
-
-                    WebSocketManager.once(messageContext, setImgSrc);
-
-                    const p = document.createElement("p");
-                    p.textContent =
-                        link.book.title || link.book.folderName || "";
-                    button.appendChild(p);
-
-                    linkGrid.appendChild(button);
-                });
-            }
-        },
+        (links: Link[]) =>
+            // Choosing the books is not undoable, and must not end the page history, as a
+            // change made from a dialog with no transaction of its own would
+            // (pageHistoryInput.ts).
+            doOutsideHistory(() => fillLinkGrid(linkGrid, links)),
     );
+}
+
+// Replace the contents of linkGrid with a button for each of links, or with the skeleton if there
+// are none.
+function fillLinkGrid(linkGrid: HTMLElement, links: Link[]) {
+    linkGrid.innerHTML = "";
+
+    if (links.length === 0) {
+        // No books selected, show skeleton
+        addSkeletonIfEmpty(linkGrid);
+    } else {
+        // Add real book buttons
+        linkGrid.lang = getLanguage1Tag();
+        links.forEach((link) => {
+            const button = document.createElement("div");
+            button.className = "bloom-bookButton";
+            button.setAttribute("data-href", `/book/${link.book.id}`);
+            button.setAttribute("data-bloom-book-id", link.book.id);
+            if (link.page) {
+                button.setAttribute(
+                    "data-bloom-page-id",
+                    link.page.pageId.toString(),
+                );
+            }
+            // create img for the thumbnail
+            const img = document.createElement("img");
+            button.appendChild(img);
+
+            const desiredFileNameWithoutExtension = `bookButton-${link.book.id}`;
+
+            const messageContext =
+                "makeThumbnailFile-" + desiredFileNameWithoutExtension;
+
+            // listen for a websocket message that the image has been saved
+            // and then update the src attribute, outside the page history like the rest
+            const setImgSrc = (evt: IBloomWebSocketEvent) => {
+                doOutsideHistory(() => {
+                    img.setAttribute("src", evt.message as string); // note, img.src = "foo" does something different!
+                });
+            };
+            WebSocketManager.notifyReady(messageContext, () => {
+                postJson("editView/addImageFromUrl", {
+                    desiredFileNameWithoutExtension:
+                        desiredFileNameWithoutExtension,
+                    url: link.book.thumbnail,
+                });
+            });
+
+            WebSocketManager.once(messageContext, setImgSrc);
+
+            const p = document.createElement("p");
+            p.textContent = link.book.title || link.book.folderName || "";
+            button.appendChild(p);
+
+            linkGrid.appendChild(button);
+        });
+    }
 }
 
 export function addSkeletonIfEmpty(linkGrid: HTMLElement) {

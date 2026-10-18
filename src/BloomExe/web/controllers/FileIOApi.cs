@@ -59,6 +59,11 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler("fileIO/copyFile", CopyFile, true);
+            apiHandler.RegisterEndpointHandler(
+                "fileIO/copyBuiltInSound",
+                HandleCopyBuiltInSound,
+                true
+            );
             apiHandler.RegisterEndpointHandler("fileIO/chooseFolder", HandleChooseFolder, true);
             apiHandler.RegisterEndpointHandler(
                 "fileIO/showInFolder",
@@ -312,6 +317,63 @@ namespace Bloom.web.controllers
             }
 
             request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// The folder of the sounds that ship with Bloom, which the Games tool offers for right
+        /// and wrong answers. A test points it at a folder of its own.
+        /// </summary>
+        internal string BuiltInSoundsFolder { get; set; } =
+            Path.Combine(BloomFileLocator.AbsoluteBrowserRoot, "sounds");
+
+        /// <summary>
+        /// Copy one of the sounds that ship with Bloom into the current book's audio folder. The
+        /// post is the sound's file name, which the page then names in data-correct-sound or
+        /// data-wrong-sound. Unlike fileIO/copyFile, this writes only into the book's audio folder
+        /// and never replaces a file there, so it changes no file that a page already names. That
+        /// is what lets the front end send it without ending the page's undo history
+        /// (kRequestsThatKeepThePageHistory in bloomApi.ts); keep it that way.
+        /// </summary>
+        private void HandleCopyBuiltInSound(ApiRequest request)
+        {
+            CopyBuiltInSoundToBook(
+                request.RequiredPostString(),
+                BuiltInSoundsFolder,
+                CurrentBook.FolderPath
+            );
+            request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// Copy the sound fileName from soundsFolder into the audio folder of the book in
+        /// bookFolderPath, under the same name, unless the book already has a file of that name.
+        /// Throws if fileName is not a plain file name or soundsFolder has no such file.
+        /// </summary>
+        internal static void CopyBuiltInSoundToBook(
+            string fileName,
+            string soundsFolder,
+            string bookFolderPath
+        )
+        {
+            if (string.IsNullOrWhiteSpace(fileName) || fileName != Path.GetFileName(fileName))
+                throw new ArgumentException(
+                    $"\"{fileName}\" is not the file name of a built-in sound.",
+                    nameof(fileName)
+                );
+            var source = Path.Combine(soundsFolder, fileName);
+            if (!RobustFile.Exists(source))
+                throw new FileNotFoundException(
+                    $"Bloom has no built-in sound called \"{fileName}\".",
+                    source
+                );
+            var audioFolder = AudioProcessor.GetAudioFolderPath(bookFolderPath);
+            Directory.CreateDirectory(audioFolder);
+            var dest = Path.Combine(audioFolder, fileName);
+            // The book may have the sound already, from an earlier choice; and a file of the same
+            // name that the user chose themselves must not be replaced, since a page may name it.
+            if (RobustFile.Exists(dest))
+                return;
+            RobustFile.Copy(source, dest);
         }
 
         public void HandleChooseFolder(ApiRequest request)

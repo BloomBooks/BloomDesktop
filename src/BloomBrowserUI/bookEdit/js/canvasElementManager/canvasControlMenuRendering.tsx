@@ -12,6 +12,12 @@ import {
     IControlMenuRow,
     IControlRuntime,
 } from "../../toolbox/canvas/canvasControlTypes";
+import { getCanvasElementManager } from "../../toolbox/canvas/canvasElementPageBridge";
+import { doTransaction, whenNoRequestPageContentDelays } from "../bloomEditing";
+import {
+    kGenericUndoDescriptionL10nKey,
+    type UndoDescriptionInput,
+} from "../../pageHistory/pageHistoryTypes";
 
 // This file renders the menu rows that controlRegistry provides. Two menus use it:
 // CanvasElementContextControls (a canvas element's "..." menu and its right-click menu) and
@@ -71,26 +77,28 @@ export const contextMenuCss = css`
 // Control callbacks can be either sync or async by contract.
 // We always call through this helper so sync exceptions and async
 // rejections are handled consistently from UI event handlers.
+// The callback is one step of the page history, with the description given (the row's or
+// control's undoDescription, or else its label), so that a command is an undo step of its own; an async callback keeps the
+// step open until it settles, and the step then stays open until no page content delay is
+// pending, as in runCommandControlAction. A row with no label gets the general description. If
+// the callback fails, the step's changes are put back, and the bubbles are drawn again from the
+// page.
 export const runControlCallback = (
     callbackLabel: string,
+    description: UndoDescriptionInput | null | undefined,
     callback: () => void | Promise<void>,
 ): void => {
-    try {
-        const result = callback();
-        if (result) {
-            void result.catch((error) => {
-                console.error(
-                    `Canvas control callback failed (${callbackLabel})`,
-                    error,
-                );
-            });
-        }
-    } catch (error) {
+    doTransaction(description ?? kGenericUndoDescriptionL10nKey, async () => {
+        await callback();
+        await whenNoRequestPageContentDelays();
+    }).catch((error) => {
+        // The rollback put back data-bubble, but Comical draws from its own copy of each spec.
+        getCanvasElementManager()?.redrawBubblesFromPage();
         console.error(
             `Canvas control callback failed (${callbackLabel})`,
             error,
         );
-    }
+    });
 };
 
 export const scaleIconNode = (
@@ -156,6 +164,7 @@ export const convertControlMenuRows = (
                 }
                 runControlCallback(
                     `menu:${row.id ?? row.englishLabel ?? "unknown"}`,
+                    row.undoDescription?.(controlContext) ?? row.l10nId,
                     () => row.onSelect(controlContext, controlRuntime),
                 );
             },

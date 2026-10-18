@@ -54,7 +54,6 @@ namespace Bloom
         internal Exception InitializationError => _initializationError;
         private PasteCommand _pasteCommand;
         private CopyCommand _copyCommand;
-        private UndoCommand _undoCommand;
         private CutCommand _cutCommand;
         private bool _inDisposeMethod;
         private bool _isBuiltInBrowserZoomEnabled = true;
@@ -1206,21 +1205,18 @@ namespace Bloom
         public override void SetEditingCommands(
             CutCommand cutCommand,
             CopyCommand copyCommand,
-            PasteCommand pasteCommand,
-            UndoCommand undoCommand
+            PasteCommand pasteCommand
         )
         {
             _cutCommand = cutCommand;
             _copyCommand = copyCommand;
             _pasteCommand = pasteCommand;
-            _undoCommand = undoCommand;
 
             // Once these buttons are in the same browser as the page and we don't have to go through C#,
             // we can get rid of the commands completely. Until then, if we don't set an Implementer,
             // Enabled will always be false.
             _cutCommand.Implementer = () => { };
             _copyCommand.Implementer = () => { };
-            _undoCommand.Implementer = () => { };
 
             // This implementation is specific to our Edit tab. This is currently the only place
             // we show the paste button that uses this command, but we will have to generalize somehow if
@@ -1264,11 +1260,11 @@ namespace Bloom
 
         bool _currentlyInUpdateButtons = false;
 
-        // This is 'async void' rather than 'async Task' because it overrides the void
-        // IBrowser.UpdateEditButtonsAsync() and is invoked as a fire-and-forget UI update (e.g. from
-        // the edit-buttons timer). That is acceptable here only because the body wraps its awaited
-        // work in a try/catch, so an exception can't escape into the void and crash the process.
-        public override async void UpdateEditButtonsAsync()
+        /// <summary>
+        /// Enable Cut and Copy when text is selected, and Paste when the clipboard has text or an
+        /// image. The front end enables Undo and Redo itself (editTopBarControls.tsx).
+        /// </summary>
+        public override void UpdateEditButtons()
         {
             if (_currentlyInUpdateButtons)
                 return;
@@ -1281,7 +1277,7 @@ namespace Bloom
 
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(UpdateEditButtonsAsync));
+                    Invoke(new Action(UpdateEditButtons));
                     return;
                 }
 
@@ -1292,8 +1288,6 @@ namespace Bloom
                     _copyCommand.Enabled = isTextSelection;
                     _pasteCommand.Enabled =
                         PortableClipboard.ContainsText() || PortableClipboard.CanGetImage();
-
-                    _undoCommand.Enabled = await CanUndoAsync();
                 }
                 catch (Exception)
                 {
@@ -1307,24 +1301,6 @@ namespace Bloom
             finally
             {
                 _currentlyInUpdateButtons = false;
-            }
-        }
-
-        bool _currentlyRunningCanUndo = false;
-
-        private async Task<bool> CanUndoAsync()
-        {
-            // once we got a stackoverflow exception here, when, apparently, JS took longer to complete this than the timer interval
-            if (_currentlyRunningCanUndo)
-                return true;
-            try
-            {
-                _currentlyRunningCanUndo = true;
-                return "yes" == await GetStringFromJavascriptAsync("workspaceBundle?.canUndo?.()");
-            }
-            finally
-            {
-                _currentlyRunningCanUndo = false;
             }
         }
 

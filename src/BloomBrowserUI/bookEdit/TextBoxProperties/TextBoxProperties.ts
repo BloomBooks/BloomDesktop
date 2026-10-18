@@ -5,12 +5,25 @@ import { EditableDivUtils } from "../js/editableDivUtils";
 import BloomHintBubbles from "../js/BloomHintBubbles";
 import $ from "jquery";
 import axios from "axios";
+import { currentPageHistory } from "../pageHistory/pageHistoryAccess";
 
 declare function WebFxTabPane(
     element: HTMLElement,
     useCookie: boolean,
     callback: any,
 ): any; // from tabpane, from a <script> tag
+
+// The description of the undo step that a change made with this dialog makes: the dialog's title.
+const kUndoDescriptionL10nKey = "EditTab.TextBoxProperties.Title";
+
+// Stops the open dialog from following the undo and redo of the page history. There is one dialog
+// at a time, whichever TextBoxProperties opened it.
+let stopFollowingUndoAndRedo: (() => void) | undefined;
+
+function stopFollowingUndoAndRedoIfAny() {
+    stopFollowingUndoAndRedo?.();
+    stopFollowingUndoAndRedo = undefined;
+}
 
 export default class TextBoxProperties {
     private _previousBox: Element;
@@ -56,6 +69,7 @@ export default class TextBoxProperties {
                         const languageGroup =
                             propDlg.getTextBoxLanguage(targetBox);
 
+                        stopFollowingUndoAndRedoIfAny();
                         $("#text-properties-dialog").remove(); // in case there's still one somewhere else
                         $("body").append(html);
 
@@ -128,6 +142,7 @@ export default class TextBoxProperties {
                                         0 &&
                                     dialogElement.is(":visible")
                                 ) {
+                                    stopFollowingUndoAndRedoIfAny();
                                     dialogElement.remove();
                                     event.stopPropagation();
                                     event.preventDefault();
@@ -145,11 +160,66 @@ export default class TextBoxProperties {
                             this.makeLanguageSelect();
                             this.initializeHintTab();
                             this.fillInLanguageNames();
+                            if (!noFormatChange) {
+                                this.followUndoAndRedo(dialogElement.get(0)!);
+                            }
                         }, 0); // just push this to the end of the event queue
                     }),
             );
         });
     }
+    // After each undo or redo of the page history, show the box's properties as the page now has
+    // them, until the dialog closes.
+    private followUndoAndRedo(dialog: HTMLElement) {
+        stopFollowingUndoAndRedoIfAny();
+        stopFollowingUndoAndRedo = currentPageHistory()?.onAfterUndoOrRedo(
+            () => {
+                // Something other than this dialog's own closing may have removed it.
+                if (!dialog.isConnected) {
+                    stopFollowingUndoAndRedoIfAny();
+                    return;
+                }
+                this.showPropertiesOfBox();
+            },
+        );
+    }
+
+    // Set the dialog's controls from the box's properties as the page has them now. This must
+    // only read the page: a change made here, after an undo or redo, would join the latest undo
+    // step and clear redo.
+    private showPropertiesOfBox() {
+        this.removeButtonSelection();
+        this.initializeAlignment();
+        this.initializeBorderStyle();
+        this.initializeBackground();
+        $(
+            ":radio[name=languageRadioGroup][value=" +
+                this.getTextBoxLanguage(this.boxBeingEdited) +
+                "]",
+        ).prop("checked", true);
+        if ($(this.boxBeingEdited).closest(".bloom-templateMode").length > 0) {
+            this.updateHintTabControls(true);
+            this.setHintTextForLang($("#lang-select").val());
+        }
+    }
+
+    // Make change, a change that this dialog makes to the page, part of one undo step described by
+    // the dialog's title. The dialog is in the page frame, where each click or key press opens a
+    // transaction with the general description; this one nests inside it and gives the step its
+    // description. If change throws, its changes are put back.
+    private changePage(change: () => void) {
+        const transaction = currentPageHistory()?.beginTransaction(
+            kUndoDescriptionL10nKey,
+        );
+        try {
+            change();
+        } catch (error) {
+            transaction?.cancel();
+            throw error;
+        }
+        transaction?.end();
+    }
+
     fillInLanguageNames() {
         get("editView/getBookLangs", (result) => {
             // This is an async callback: by the time getBookLangs returns, the dialog may
@@ -232,41 +302,47 @@ export default class TextBoxProperties {
         if (uiChangeOnly) return;
 
         // Now make it so
-        if (id.startsWith("align")) {
-            this.changeAlignment();
-        } else if (id.startsWith("borderstyle-")) {
-            this.changeBorder(
-                $(this.getAffectedTranslationGroup(this.boxBeingEdited)),
-                true,
-            );
-        } else if (id.startsWith("border")) {
-            this.changeBorder(
-                $(this.getAffectedTranslationGroup(this.boxBeingEdited)),
-                false,
-            );
-        } else if (id.startsWith("background")) {
-            this.changeBackground(
-                $(this.getAffectedTranslationGroup(this.boxBeingEdited)),
-            );
-        }
+        this.changePage(() => {
+            if (id.startsWith("align")) {
+                this.changeAlignment();
+            } else if (id.startsWith("borderstyle-")) {
+                this.changeBorder(
+                    $(this.getAffectedTranslationGroup(this.boxBeingEdited)),
+                    true,
+                );
+            } else if (id.startsWith("border")) {
+                this.changeBorder(
+                    $(this.getAffectedTranslationGroup(this.boxBeingEdited)),
+                    false,
+                );
+            } else if (id.startsWith("background")) {
+                this.changeBackground(
+                    $(this.getAffectedTranslationGroup(this.boxBeingEdited)),
+                );
+            }
+        });
     }
 
     private changeLanguageGroup() {
-        // get radio button value and set 'data-default-languages' attribute
-        const radioValue = $('input[name="languageRadioGroup"]:checked').val();
-        const targetGroup = $(
-            this.getAffectedTranslationGroup(this.boxBeingEdited),
-        );
-        // currently 'radioValue' should be one of: 'Auto', 'N1', 'N2', or 'V'
-        if (targetGroup) {
-            targetGroup.attr("data-default-languages", radioValue);
-        }
-        // If not Auto, remove style to show hint on all
-        if (radioValue != "Auto") {
-            targetGroup.removeClass(this.classNameForHintOnEach());
-        }
-        // Update visibility of hint bubbles controls based on whether Auto
-        this.updateHintTabControls();
+        this.changePage(() => {
+            // get radio button value and set 'data-default-languages' attribute
+            const radioValue = $(
+                'input[name="languageRadioGroup"]:checked',
+            ).val();
+            const targetGroup = $(
+                this.getAffectedTranslationGroup(this.boxBeingEdited),
+            );
+            // currently 'radioValue' should be one of: 'Auto', 'N1', 'N2', or 'V'
+            if (targetGroup) {
+                targetGroup.attr("data-default-languages", radioValue);
+            }
+            // If not Auto, remove style to show hint on all
+            if (radioValue != "Auto") {
+                targetGroup.removeClass(this.classNameForHintOnEach());
+            }
+            // Update visibility of hint bubbles controls based on whether Auto
+            this.updateHintTabControls();
+        });
     }
 
     private initializeAlignment() {
@@ -544,7 +620,8 @@ export default class TextBoxProperties {
         });
     }
 
-    private updateHintTabControls() {
+    // afterUndoOrRedo: set the hint scope control to match the box without changing the page.
+    private updateHintTabControls(afterUndoOrRedo = false) {
         const groupCanHaveMoreThanOneLanguage =
             $('input[name="languageRadioGroup"]:checked').val() == "Auto";
         const showHintOnEachGroupDiv = $("#show-hint-on-each-group");
@@ -554,8 +631,17 @@ export default class TextBoxProperties {
             const showHintOnEach = $(
                 this.getAffectedTranslationGroup(this.boxBeingEdited),
             ).hasClass(this.classNameForHintOnEach());
+            if (afterUndoOrRedo) {
+                // The select2 namespace updates only what select2 shows; our own change
+                // handler, which writes the page, does not run.
+                $("#hint-scope")
+                    .val(showHintOnEach ? "show-on-each" : "show-on-group")
+                    .trigger("change.select2");
+            }
             if (showHintOnEach) {
-                $("#hint-scope").val("show-on-each").trigger("change");
+                if (!afterUndoOrRedo) {
+                    $("#hint-scope").val("show-on-each").trigger("change");
+                }
                 includeLangLabel.show();
             } else {
                 // first item will be selected by default
@@ -573,22 +659,24 @@ export default class TextBoxProperties {
     }
 
     private changeShowHintOnEach() {
-        const targetGroup = $(
-            this.getAffectedTranslationGroup(this.boxBeingEdited),
-        );
-        const showOnEach = this.showHintOnEachIsSelected();
-        const includeLangLabel = $("#include-lang");
-        if (showOnEach) {
-            targetGroup.addClass(this.classNameForHintOnEach());
-            includeLangLabel.show();
-        } else {
-            targetGroup.removeClass(this.classNameForHintOnEach());
-            includeLangLabel.hide();
-        }
-        BloomHintBubbles.updateQtipPlacement(
-            targetGroup,
-            $("#hint-content").text(),
-        );
+        this.changePage(() => {
+            const targetGroup = $(
+                this.getAffectedTranslationGroup(this.boxBeingEdited),
+            );
+            const showOnEach = this.showHintOnEachIsSelected();
+            const includeLangLabel = $("#include-lang");
+            if (showOnEach) {
+                targetGroup.addClass(this.classNameForHintOnEach());
+                includeLangLabel.show();
+            } else {
+                targetGroup.removeClass(this.classNameForHintOnEach());
+                includeLangLabel.hide();
+            }
+            BloomHintBubbles.updateQtipPlacement(
+                targetGroup,
+                $("#hint-content").text(),
+            );
+        });
     }
 
     private initializeHintText() {
@@ -598,24 +686,30 @@ export default class TextBoxProperties {
         // common interchange language among Bloom users.
         this.setHintTextForLang("en");
         $("#hint-content").on("input", (e) => {
-            const lang = $("#lang-select").val();
-            const text = $("#hint-content").text();
-            const targetGroup = $(
-                this.getAffectedTranslationGroup(this.boxBeingEdited),
-            );
-            let langLabel = targetGroup.find("label[lang=" + lang + "]");
-            if (!text) {
-                langLabel.remove(); // don't let empty ones hang around
-            } else {
-                if (langLabel.length === 0) {
-                    targetGroup.prepend(
-                        '<label class="bubble" lang="' + lang + '"></label>',
-                    );
-                    langLabel = targetGroup.find("label[lang=" + lang + "]");
+            this.changePage(() => {
+                const lang = $("#lang-select").val();
+                const text = $("#hint-content").text();
+                const targetGroup = $(
+                    this.getAffectedTranslationGroup(this.boxBeingEdited),
+                );
+                let langLabel = targetGroup.find("label[lang=" + lang + "]");
+                if (!text) {
+                    langLabel.remove(); // don't let empty ones hang around
+                } else {
+                    if (langLabel.length === 0) {
+                        targetGroup.prepend(
+                            '<label class="bubble" lang="' +
+                                lang +
+                                '"></label>',
+                        );
+                        langLabel = targetGroup.find(
+                            "label[lang=" + lang + "]",
+                        );
+                    }
+                    langLabel.text(text);
                 }
-                langLabel.text(text);
-            }
-            BloomHintBubbles.updateQtipPlacement(targetGroup, text);
+                BloomHintBubbles.updateQtipPlacement(targetGroup, text);
+            });
         });
     }
 

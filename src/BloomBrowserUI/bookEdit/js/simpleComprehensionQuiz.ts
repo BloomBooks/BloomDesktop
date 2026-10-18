@@ -9,6 +9,12 @@
 // and installs click handlers which manipulate the classes of .checkbox-and-textbox-choice elements
 // to produce the desired checking of right and wrong answers.
 
+import { describeOpenStep } from "../pageHistory/pageHistoryAccess";
+
+// The description of the undo step of a click on a choice's checkbox, which marks or unmarks it as
+// a correct answer.
+const kMarkCorrectAnswerUndoL10nKey = "EditTab.Undo.Quiz.MarkCorrectAnswer";
+
 //------------ Code for editing the choice widgets -------
 
 function inEditMode(): boolean {
@@ -66,6 +72,7 @@ function handleEditModeClick(evt: Event): void {
         return;
     }
     const wrapper = (evt.currentTarget as HTMLElement).parentElement;
+    describeOpenStep(kMarkCorrectAnswerUndoL10nKey);
     if (target.checked) {
         wrapper!.classList.add("correct-answer");
     } else {

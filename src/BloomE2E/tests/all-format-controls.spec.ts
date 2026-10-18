@@ -11,6 +11,7 @@
 // The tests are serial: each starts from the state the one before it left behind.
 
 import { expect, test } from "../fixtures/bloomTest";
+import { checkUndoRoundTripAfterEachTest } from "../helpers/undoRoundTrip";
 import {
     addPage,
     clickInGroup,
@@ -53,6 +54,8 @@ import { getOpenToolName, hideToolbox, showToolbox } from "../helpers/toolbox";
 test.use({
     collectionSpec: { name: "all-format-controls", languages: ["en", "fr"] },
 });
+
+checkUndoRoundTripAfterEachTest(test);
 
 test.describe.configure({ mode: "serial" });
 

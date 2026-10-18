@@ -24,6 +24,14 @@ import {
 import { inPlayMode } from "./CanvasElementPositioning";
 import { dragToResize } from "bloom-table";
 import { tablesMayBeRestructured } from "../tableFeature";
+import { describeOpenStep } from "../../pageHistory/pageHistoryAccess";
+import { describeCanvasElementStep } from "../../toolbox/canvas/canvasElementUndoDescriptions";
+
+// The descriptions of the undo steps of the drags that start here. Moving the element as a
+// whole, and duplicating it by dragging, are described with describeCanvasElementStep.
+const kMoveTailUndoL10nKey = "EditTab.Undo.CanvasElement.MoveTail";
+const kResizeTableRowOrColumnUndoL10nKey =
+    "EditTab.Undo.Table.ResizeRowOrColumn";
 
 export interface ICanvasElementPointerInteractionsHost {
     getActiveElement: () => HTMLElement | undefined;
@@ -386,6 +394,7 @@ export class CanvasElementPointerInteractions {
             tablesMayBeRestructured() &&
             dragToResize.beginResizeAtPoint(event)
         ) {
+            describeOpenStep(kResizeTableRowOrColumnUndoL10nKey);
             event.preventDefault();
             event.stopPropagation();
             return;
@@ -452,6 +461,7 @@ export class CanvasElementPointerInteractions {
         ) {
             // If we're starting to drag something, typically a tail handle, in Comical,
             // don't do any other mouse activity.
+            describeOpenStep(kMoveTailUndoL10nKey);
             return;
         }
 
@@ -507,6 +517,9 @@ export class CanvasElementPointerInteractions {
                 event.preventDefault();
                 event.stopPropagation();
                 if (Comical.findRelatives(bubble).length === 0) {
+                    describeOpenStep(
+                        describeCanvasElementStep("duplicate", bubble.content),
+                    );
                     this.host.setActiveElement(bubble.content);
                     const newCanvasElement =
                         this.host.duplicateCanvasElementBox(
@@ -586,6 +599,9 @@ export class CanvasElementPointerInteractions {
             Math.sqrt(deltaX * deltaX + deltaY * deltaY) > 3
         ) {
             this.gotAMoveWhileMouseDown = true;
+            describeOpenStep(
+                describeCanvasElementStep("move", this.bubbleToDrag.content),
+            );
             this.host.startMoving();
         }
         if (!this.gotAMoveWhileMouseDown) {

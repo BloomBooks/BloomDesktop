@@ -359,12 +359,16 @@ export const CanvasElementContextControls: React.FunctionComponent<{
         const icon = control.toolbar?.icon ?? control.icon;
         const iconScale = control.toolbar?.iconScale ?? control.iconScale;
         const onClick = () => {
-            runControlCallback(`toolbar:${control.id}`, async () => {
-                await control.action(controlContext, {
-                    closeMenu: () => {},
-                });
-                props.controlsForNonCanvasObject?.afterToolbarCommand?.();
-            });
+            runControlCallback(
+                `toolbar:${control.id}`,
+                control.undoDescription?.(controlContext) ?? control.l10nId,
+                async () => {
+                    await control.action(controlContext, {
+                        closeMenu: () => {},
+                    });
+                    props.controlsForNonCanvasObject?.afterToolbarCommand?.();
+                },
+            );
         };
 
         if (typeof icon === "function") {

@@ -22,7 +22,7 @@ export class CanvasTool extends ToolboxToolReactAdaptor {
         const root = document.createElement("div");
         root.setAttribute("class", "CanvasBody");
 
-        renderRoot(<CanvasToolControls />, root);
+        renderRoot(<CanvasToolControls canvasTool={this} />, root);
         return root as HTMLDivElement;
     }
 

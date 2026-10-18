@@ -15,23 +15,19 @@ so the right place is still findable.
 
 ## Stage 1 — activate the one undo stack
 
-**New code:** `src/BloomBrowserUI/bookEdit/undo/` — `undoTypes.ts`, `UndoStack.ts`,
-`legacyUndoProviders.ts`, `runUndoable.ts`, `pageFrameUndoHooks.ts`, `redoKeyBinding.ts` and their
-specs.
+**New code:** `src/BloomBrowserUI/bookEdit/pageHistory/` and its specs.
 
-**Entries 1a–1e landed 2026-09-07** (commit `f92383031` on `BL-6681-stage1-undostack`). What they
-did, briefly, so this file still explains the shape of `workspaceRoot.ts`:
+**Entries 1a–1e landed 2026-09-07** (commit `f92383031` on `BL-6681-stage1-undostack`). The shape
+of `workspaceRoot.ts` and the page frame's undo now:
 
-- `registerLegacyUndoProviders()` is called once at module level in `workspaceRoot.ts`.
-- `handleUndo()` and `canUndo()` are delegations to `theOneUndoStack`; the four-way if-chain, its
-  order, and the BL-16558 markup-update calls now live in `undo/legacyUndoProviders.ts`. The stale
-  "*See also Browser.Undo*" comment is gone.
-- `switchContentPage()` calls `pageFrameNavigating()` before touching the old frame and
-  `pageFrameLoaded()` in its load handler (`undo/pageFrameUndoHooks.ts`). One hook covers same-page
-  reloads too, because every page-frame navigation C# makes goes through `switchContentPage`.
-- `handleRedo()` / `canRedo()` are exported on the workspace bundle; Ctrl+Y is bound in the page frame
-  by `undo/redoKeyBinding.ts`, installed from `editablePage.ts`'s ready handler, as the last resort
-  behind origami's and the reader tools' handlers and CKEditor's own redo.
+- `handleUndo()` and `canUndo()` are delegations to the page frame's, in
+  `pageHistory/pageHistorySetup.ts`, which answer from origami's undo in Change Layout mode and from
+  the page history otherwise. The stale "*See also Browser.Undo*" comment is gone.
+- The page history starts in the page frame when the page loads (`startPageHistoryForThisPage`,
+  called from `editablePage.ts`) and ends on the frame's `pagehide`. That covers same-page reloads
+  too.
+- `handleRedo()` / `canRedo()` are exported on the page bundle; the undo and redo keys are bound in
+  the page frame by `pageHistory/pageHistoryKeys.ts`.
 
 Three things differed from the entries as originally written — recorded in PROGRESS.md
 (2026-09-07): master's BL-16558 had changed `handleUndo`; `data-page-id` is never set, so the page id

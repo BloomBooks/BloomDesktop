@@ -4,7 +4,11 @@ import {
     kBloomButtonClass,
 } from "./canvasElementConstants";
 
-const getBubbleStyle = (canvasElement: HTMLElement): string | undefined => {
+// The bubble style of a canvas element that holds text, in lower case: from its data-bubble, or
+// else from its editable's "-style" class.
+export const getBubbleStyle = (
+    canvasElement: HTMLElement,
+): string | undefined => {
     const bubbleSpecJson = canvasElement.getAttribute("data-bubble");
     if (bubbleSpecJson) {
         try {

@@ -1,10 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import $ from "jquery";
 import {
     isPointOverRange,
     kWordNotDecodableHighlight,
+    makeRangesForSpans,
+    mapReaderText,
     theOneReaderHighlightManager,
     trimSpan,
 } from "./readerHighlights";
+import "./libSynphony/jquery.text-markup";
 import { installHighlightPolyfill } from "../../test/highlightTestSupport";
 
 describe("readerHighlights", () => {
@@ -125,6 +129,79 @@ describe("readerHighlights", () => {
             theOneReaderHighlightManager.beginPass();
             theOneReaderHighlightManager.endPass(root);
             expect(added).not.toContain("mousemove");
+        });
+    });
+
+    // CKEditor's filling character (U+200B) sits in the box while the user types next to an inline
+    // element. The reader tools no longer rewrite the box from CKEditor's getData(), which left it
+    // out, so mapReaderText leaves it out of the text instead, and makeRangesForSpans still finds
+    // the right characters in the box.
+    describe("mapReaderText and CKEditor's filling character", () => {
+        const kZeroWidthSpace = String.fromCharCode(0x200b);
+        let box: HTMLDivElement;
+        let boldText: Text;
+        let typedText: Text;
+        let trackedNode: Node | undefined;
+
+        beforeEach(() => {
+            document.body.innerHTML = "";
+            // As after the user put the caret after a bold "big" and typed "ger ran".
+            box = document.createElement("div");
+            box.className = "bloom-editable";
+            box.innerHTML = "<p><strong>big</strong></p>";
+            boldText = box.querySelector("strong")!.firstChild as Text;
+            typedText = document.createTextNode(`${kZeroWidthSpace}ger ran`);
+            box.querySelector("p")!.appendChild(typedText);
+            document.body.appendChild(box);
+            trackedNode = typedText;
+            // A stand-in for the box's CKEditor, which remembers the node of its filling character.
+            (box as unknown as { bloomCkEditor: object }).bloomCkEditor = {
+                editable: () => ({
+                    getCustomData: (key: string) =>
+                        key === "cke-fillingChar" && trackedNode
+                            ? { $: trackedNode }
+                            : undefined,
+                    removeCustomData: () => undefined,
+                }),
+            };
+            // sanity check: the character really is in the box
+            expect(box.textContent).toBe(`big${kZeroWidthSpace}ger ran`);
+        });
+
+        it("leaves the tracked filling character out of the text, so it does not split a word", () => {
+            const map = mapReaderText(box);
+            // The paragraph's end makes the newline.
+            expect(map.text).toBe("bigger ran\n");
+            expect($(box).getTotalWordCount()).toBe(2);
+        });
+
+        it("keeps a U+200B that CKEditor does not track, which may be a real word break", () => {
+            trackedNode = undefined;
+            const map = mapReaderText(box);
+            expect(map.text).toBe(`big${kZeroWidthSpace}ger ran\n`);
+            expect($(box).getTotalWordCount()).toBe(3);
+        });
+
+        it("makes Ranges over the right characters on either side of the filling character", () => {
+            const map = mapReaderText(box);
+            const [bigger, ran, big] = makeRangesForSpans(map, [
+                { start: 0, end: 6 },
+                { start: 7, end: 10 },
+                { start: 0, end: 3 },
+            ]);
+
+            expect(bigger.startContainer).toBe(boldText);
+            expect(bigger.startOffset).toBe(0);
+            expect(bigger.endContainer).toBe(typedText);
+            expect(bigger.endOffset).toBe(4);
+            expect(bigger.toString()).toBe(`big${kZeroWidthSpace}ger`);
+
+            expect(ran.toString()).toBe("ran");
+            expect(ran.startContainer).toBe(typedText);
+
+            // A span that ends just before the filling character does not run on over it.
+            expect(big.endContainer).toBe(boldText);
+            expect(big.toString()).toBe("big");
         });
     });
 

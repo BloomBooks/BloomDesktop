@@ -14,7 +14,11 @@ import {
     IResolvedControl,
     TopLevelControlId,
 } from "./canvasControlTypes";
-import { controlRegistry, controlSections } from "./canvasControlRegistry";
+import {
+    controlRegistry,
+    controlSections,
+    runCommandControlAction,
+} from "./canvasControlRegistry";
 
 type ResolvedToolbarItem = {
     control: ICommandControlDefinition;
@@ -184,6 +188,7 @@ const buildDefaultMenuRow = (
     id: control.id,
     l10nId: control.l10nId,
     englishLabel: control.englishLabel,
+    undoDescription: control.undoDescription,
     helpRowL10nId: control.helpRowL10nId,
     helpRowEnglish: control.helpRowEnglish,
     helpRowSeparatorAbove: control.helpRowSeparatorAbove,
@@ -198,7 +203,7 @@ const buildDefaultMenuRow = (
           }
         : undefined,
     onSelect: async (rowCtx: IControlContext, rowRuntime: IControlRuntime) => {
-        await control.action(rowCtx, rowRuntime);
+        await runCommandControlAction(control, rowCtx, rowRuntime);
     },
 });
 

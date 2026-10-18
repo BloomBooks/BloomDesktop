@@ -1,7 +1,9 @@
-﻿using System.IO;
+using System;
+using System.IO;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.web.controllers;
+using Moq;
 using NUnit.Framework;
 using SIL.TestUtilities;
 
@@ -11,7 +13,11 @@ namespace BloomTests.web.controllers
     class FileIOApiTests
     {
         private BloomServer _server;
+        private FileIOApi _controller;
         private TemporaryFolder _testFolder;
+
+        // The folder of the book that the server's current book reports, set by a test.
+        private string _bookFolderPath;
 
         private string GetTestFolderName() => "FileIOApiTests";
 
@@ -19,11 +25,13 @@ namespace BloomTests.web.controllers
         public void InitialSetup()
         {
             var bookSelection = new BookSelection();
-            bookSelection.SelectBook(new Bloom.Book.Book());
+            var book = new Mock<Bloom.Book.Book>();
+            book.Setup(b => b.FolderPath).Returns(() => _bookFolderPath);
+            bookSelection.SelectBook(book.Object);
             _server = new BloomServer(bookSelection);
 
-            var controller = new FileIOApi(bookSelection, new BloomWebSocketServer());
-            controller.RegisterWithApiHandler(_server.ApiHandler);
+            _controller = new FileIOApi(bookSelection, new BloomWebSocketServer());
+            _controller.RegisterWithApiHandler(_server.ApiHandler);
         }
 
         [OneTimeTearDown]
@@ -138,6 +146,79 @@ namespace BloomTests.web.controllers
                 File.ReadAllText(destFilePath),
                 Is.EqualTo("fakeSourceFileContents"),
                 "Contents of copied file were not as expected."
+            );
+        }
+
+        /// <summary>
+        /// A folder of built-in sounds holding one sound, and an empty book folder, which the
+        /// server's current book reports.
+        /// </summary>
+        private (string soundsFolder, string bookFolder) SetupBuiltInSoundTests(
+            string soundFileName
+        )
+        {
+            var soundsFolder = new TemporaryFolder(_testFolder, "sounds").Path;
+            File.WriteAllText(Path.Combine(soundsFolder, soundFileName), "builtInSound");
+            _bookFolderPath = new TemporaryFolder(_testFolder, "Book").Path;
+            return (soundsFolder, _bookFolderPath);
+        }
+
+        [Test]
+        public void CopyBuiltInSound_CopiesTheSoundIntoTheBooksAudioFolder()
+        {
+            var (soundsFolder, bookFolder) = SetupBuiltInSoundTests("correct_yay.webm");
+            _controller.BuiltInSoundsFolder = soundsFolder;
+            var audioFolder = Path.Combine(bookFolder, "audio");
+            Assert.That(Directory.Exists(audioFolder), Is.False, "test setup");
+
+            var result = ApiTest.PostString(
+                _server,
+                "fileIO/copyBuiltInSound",
+                "correct_yay.webm",
+                ApiTest.ContentType.Text
+            );
+
+            Assert.That(result, Is.EqualTo("OK"));
+            Assert.That(
+                File.ReadAllText(Path.Combine(audioFolder, "correct_yay.webm")),
+                Is.EqualTo("builtInSound")
+            );
+        }
+
+        [Test]
+        public void CopyBuiltInSoundToBook_LeavesAFileOfTheSameNameInTheBookAsItIs()
+        {
+            var (soundsFolder, bookFolder) = SetupBuiltInSoundTests("correct_yay.webm");
+            var audioFolder = Directory.CreateDirectory(Path.Combine(bookFolder, "audio")).FullName;
+            var existing = Path.Combine(audioFolder, "correct_yay.webm");
+            File.WriteAllText(existing, "theUsersOwnSound");
+
+            FileIOApi.CopyBuiltInSoundToBook("correct_yay.webm", soundsFolder, bookFolder);
+
+            Assert.That(File.ReadAllText(existing), Is.EqualTo("theUsersOwnSound"));
+        }
+
+        [TestCase("../correct_yay.webm")]
+        [TestCase(@"sounds\correct_yay.webm")]
+        [TestCase(@"C:\Windows\win.ini")]
+        [TestCase("")]
+        public void CopyBuiltInSoundToBook_RefusesAnythingButAFileName(string fileName)
+        {
+            var (soundsFolder, bookFolder) = SetupBuiltInSoundTests("correct_yay.webm");
+
+            Assert.Throws<ArgumentException>(() =>
+                FileIOApi.CopyBuiltInSoundToBook(fileName, soundsFolder, bookFolder)
+            );
+            Assert.That(Directory.Exists(Path.Combine(bookFolder, "audio")), Is.False);
+        }
+
+        [Test]
+        public void CopyBuiltInSoundToBook_RefusesASoundThatBloomDoesNotHave()
+        {
+            var (soundsFolder, bookFolder) = SetupBuiltInSoundTests("correct_yay.webm");
+
+            Assert.Throws<FileNotFoundException>(() =>
+                FileIOApi.CopyBuiltInSoundToBook("wrong_boo.webm", soundsFolder, bookFolder)
             );
         }
 

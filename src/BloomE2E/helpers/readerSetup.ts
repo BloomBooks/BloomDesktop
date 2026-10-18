@@ -73,6 +73,18 @@ export interface IReaderStage {
     allowedWordsFile?: string;
 }
 
+/**
+ * One Leveled Reader level as the collection's reader settings file stores it. Only the limits
+ * this suite sets are modeled; a limit left out, or 0, is no limit.
+ */
+export interface IReaderLevel {
+    maxWordsPerSentence?: number;
+    maxWordsPerPage?: number;
+    maxGlyphsPerWord?: number;
+    maxSentencesPerPage?: number;
+    thingsToRemember: string[];
+}
+
 /** The collection's reader settings, as Bloom reads them back from disk. */
 export interface IReaderSettings {
     letters: string;
@@ -80,6 +92,7 @@ export interface IReaderSettings {
     /** 1 when stages are defined by allowed-word lists rather than by letters. */
     useAllowedWords?: number;
     stages: IReaderStage[];
+    levels?: IReaderLevel[];
 }
 
 /**
@@ -651,6 +664,21 @@ export async function useKnownReaderStages(page: Page): Promise<void> {
             { name: "2", letters: "i o", sightWords: "is you that he" },
             { name: "3", letters: "n t", sightWords: "was for as with" },
             { name: "4", letters: "l s", sightWords: "his they I" },
+        ];
+    });
+}
+
+/**
+ * Give the collection two known Leveled Reader levels: level 1 allows three words in a sentence and
+ * level 2 allows eight, with no other limit that marks the page. This is SETUP, not a path under
+ * test, and like useKnownReaderStages it must run after the book exists. A new collection's levels
+ * depend on the machine it runs on, as its stages do.
+ */
+export async function useKnownReaderLevels(page: Page): Promise<void> {
+    await changeSavedReaderSettings(page, (settings) => {
+        settings.levels = [
+            { maxWordsPerSentence: 3, thingsToRemember: [] },
+            { maxWordsPerSentence: 8, thingsToRemember: [] },
         ];
     });
 }

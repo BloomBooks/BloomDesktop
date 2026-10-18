@@ -119,13 +119,12 @@ let draggableX = 0;
 let draggableY = 0;
 let targetX = 0;
 let targetY = 0;
-const originalDraggables: HTMLElement[] = [];
+let originalDraggables: HTMLElement[] = [];
 let originalClassLists: string[] = [];
 let originalStyles: string[] = [];
 let originalContents: string[] = [];
 let createdBubbles: HTMLElement[] = [];
 let originalTargetStyles: string[] = [];
-let originalTargetContents: string[] = [];
 let promptEditable: HTMLElement | null = null;
 let originalPromptHtml = "";
 
@@ -261,9 +260,8 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
     originalStyles = [];
     originalTargetStyles = [];
     originalContents = [];
-    originalTargetContents = [];
     draggableX = draggableY = targetX = targetY = 1000000; // will get reduced to minimums
-    const originalDraggables = getAllDraggables(page) as HTMLElement[];
+    originalDraggables = getAllDraggables(page) as HTMLElement[];
     const draggables = [...originalDraggables];
     const first = draggables[0];
     if (!promptEditable.textContent?.trim()) {
@@ -294,11 +292,13 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         );
         originalStyles.push(originalDraggables[i].getAttribute("style") ?? "");
         originalContents.push(originalDraggables[i].innerHTML);
+        const target = getTarget(originalDraggables[i]);
+        // cancel() finds this by the draggable's index, so every draggable needs one.
+        originalTargetStyles.push(target?.getAttribute("style") ?? "");
         if (originalDraggables[i]?.classList.contains("bloom-unused-in-lang")) {
             // it won't have a meaningful position, so it would throw our calculations off.
             continue;
         }
-        const target = getTarget(originalDraggables[i]);
         if (target && target.offsetLeft < targetX) {
             // capture a starting place for new rows of targets from the left-most target.
             // This allows just one to be dragged to control them all; otherwise, moving the
@@ -306,8 +306,6 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
             targetX = target.offsetLeft;
             targetY = target.offsetTop;
         }
-        originalTargetStyles.push(target?.getAttribute("style") ?? "");
-        originalTargetContents.push(target?.innerHTML ?? "");
         if (originalDraggables[i].offsetLeft < draggableX) {
             draggableX = originalDraggables[i].offsetLeft;
             draggableY = originalDraggables[i].offsetTop;
@@ -464,7 +462,9 @@ function cancel() {
                     "bloom-unused-in-lang",
                 ),
             );
-            target.innerHTML = originalTargetContents[i];
+            // The target's content is a copy of its draggable's, which the page history leaves
+            // out; copyContentToTargetAndCleanup makes it again from the draggable put back above.
+            copyContentToTargetAndCleanup(originalDraggables[i]);
         }
     }
     createdBubbles.forEach((b) => {

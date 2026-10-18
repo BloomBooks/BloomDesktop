@@ -12,14 +12,16 @@
 // offers it only in whole-text-box recording mode, and only to a Pro subscription.
 //
 // The tests are serial, and the order is load-bearing: "By Sentence" mode can only be chosen
-// while the box has no whole-text-box recording, so the test that checks that mode has to run
+// while the box has no whole-text-box recording, so the tests that choose that mode have to run
 // before the one that imports.
 
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, test } from "../fixtures/bloomTest";
+import { checkUndoRoundTripAfterEachTest } from "../helpers/undoRoundTrip";
 import {
     addPage,
+    clickInGroup,
     getContentPages,
     goToPage,
     makeBookFromTemplate,
@@ -29,16 +31,24 @@ import {
 import { setBranding } from "../helpers/collectionSettings";
 import {
     getNarrationSentences,
+    getRecordingMode,
     importNarration,
     isImportRecordingEnabled,
     openToolboxWithTalkingBook,
     sampleNarrationFile,
     setRecordingMode,
 } from "../helpers/talkingBook";
+import {
+    redoWithCtrlYAndExpect,
+    undoWithCtrlZAndExpect,
+    waitForOpenTransactionToEnd,
+} from "../helpers/undo";
 
 test.use({
     collectionSpec: { name: "import-recording", languages: ["en"] },
 });
+
+checkUndoRoundTripAfterEachTest(test);
 
 test.describe.configure({ mode: "serial" });
 
@@ -112,6 +122,49 @@ test.describe("importing a recording made outside Bloom", () => {
             await isImportRecordingEnabled(page),
             "Import Recording stayed disabled even in whole-text-box mode, so the check above proved nothing.",
         ).toBe(true);
+    });
+
+    // Here because switching to whole-text-box mode needs the subscription that this file grants,
+    // and By Sentence only while the box has no whole-text-box recording, so before the import.
+    test("undo and redo take back and put back a switch of the recording mode", async ({
+        bloomApp,
+    }) => {
+        const page = bloomApp.page;
+        const readMode = () => getRecordingMode(page, "en");
+        const change = "switching the recording mode to By Sentence";
+        // Sanity check: the test above left the box recording the whole text box.
+        expect(await readMode()).toEqual({
+            inTool: "By Whole Text Box",
+            onBox: "TextBox",
+        });
+
+        await setRecordingMode(page, "By Sentence");
+        await expect
+            .poll(readMode, { timeout: 15000 })
+            .toEqual({ inTool: "By Sentence", onBox: "Sentence" });
+        await waitForOpenTransactionToEnd(page);
+        // The undo and redo keys go to the page; put the focus there.
+        await clickInGroup(page, ".bloom-translationGroup", "en");
+
+        await undoWithCtrlZAndExpect(
+            page,
+            readMode,
+            { inTool: "By Whole Text Box", onBox: "TextBox" },
+            change,
+        );
+        await redoWithCtrlYAndExpect(
+            page,
+            readMode,
+            { inTool: "By Sentence", onBox: "Sentence" },
+            change,
+        );
+        // Leave the box recording the whole text box, which the import below needs.
+        await undoWithCtrlZAndExpect(
+            page,
+            readMode,
+            { inTool: "By Whole Text Box", onBox: "TextBox" },
+            change,
+        );
     });
 
     test("imports the chosen mp3 as the narration of the text box", async ({

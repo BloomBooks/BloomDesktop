@@ -25,6 +25,8 @@ import {
     kDraggableIdAttribute,
 } from "./canvasElementDraggables";
 import { CanvasElementType } from "./canvasElementTypes";
+import { currentPageHistory } from "../../pageHistory/pageHistoryAccess";
+import { describeCanvasElementStep } from "./canvasElementUndoDescriptions";
 
 export type { CanvasElementType } from "./canvasElementTypes";
 
@@ -58,8 +60,31 @@ const ondragstart = (
     ev.dataTransfer.setData(`text/x-right-top-offset:${right},${top}`, "");
 };
 
-// When a template canvas element is dropped on the image, we create a new canvas element
+// When a template canvas element is dropped on the image, we create a new canvas element.
+// The add, and what this then does to the new element, are one undo step. By the time the drag
+// ends, the transaction that the press on the palette item opened has closed, so a change made
+// here outside a transaction would join the step before it.
 const ondragend = (
+    ...args: Parameters<typeof addCanvasElementAtDragEnd>
+): void => {
+    const history = currentPageHistory();
+    if (!history) {
+        addCanvasElementAtDragEnd(...args);
+        return;
+    }
+    void history
+        .doTransaction(describeCanvasElementStep("add", args[1]), () =>
+            addCanvasElementAtDragEnd(...args),
+        )
+        .catch((error) => {
+            // The rollback took the new element out again, but Comical draws from its own copy
+            // of each bubble's spec.
+            getCanvasElementManager()?.redrawBubblesFromPage();
+            throw error;
+        });
+};
+
+const addCanvasElementAtDragEnd = (
     ev: React.DragEvent<HTMLElement> | React.DragEvent<SVGSVGElement>,
     canvasElementType: CanvasElementType,
     makeTarget: boolean,

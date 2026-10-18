@@ -112,12 +112,6 @@ namespace Bloom
             : base("paste") { }
     }
 
-    public class UndoCommand : Command
-    {
-        public UndoCommand()
-            : base("undo") { }
-    }
-
     public class TemplateInsertionCommand
     {
         public event EventHandler<PageInsertEventArgs> InsertPage;

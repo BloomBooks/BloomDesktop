@@ -8,6 +8,7 @@
 // Ctrl+V, so Bloom's own paste handling on the text box runs as it does for a person.
 
 import { expect, test } from "../fixtures/bloomTest";
+import { checkUndoRoundTripAfterEachTest } from "../helpers/undoRoundTrip";
 import {
     addPage,
     clickInGroup,
@@ -30,6 +31,8 @@ const SENTENCE = "Hi.";
 test.use({
     collectionSpec: { name: "talking-book-paste", languages: ["en"] },
 });
+
+checkUndoRoundTripAfterEachTest(test);
 
 test("pasting a marked sentence with Talking Book open does not nest its markers [Test Case ID 517]", async ({
     page,

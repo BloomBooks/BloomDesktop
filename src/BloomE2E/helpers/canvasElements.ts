@@ -118,6 +118,29 @@ export function activeCanvasElement(page: Page): Locator {
 }
 
 /**
+ * Which canvas element is selected, as the index canvasElement takes, or undefined when none is.
+ * Throws when Bloom marks more than one as selected, which it never should.
+ */
+export async function getSelectedCanvasElementIndex(
+    page: Page,
+): Promise<number | undefined> {
+    const selected = await canvasElements(page).evaluateAll((elements) =>
+        elements
+            .map((element, index) =>
+                element.getAttribute("data-bloom-active") === "true"
+                    ? index
+                    : -1,
+            )
+            .filter((index) => index >= 0),
+    );
+    if (selected.length > 1)
+        throw new Error(
+            `Bloom marks ${selected.length} canvas elements as selected (${selected.join(", ")}).`,
+        );
+    return selected[0];
+}
+
+/**
  * Raise the drag-and-drop events a person's drag from the palette to the canvas raises: dragstart
  * on the palette item, dragover and drop on the canvas, dragend back on the palette item. One
  * DataTransfer is shared by all four, as the browser does, because the product's handlers read
@@ -265,13 +288,145 @@ export async function dragPaletteItemOntoCanvas(
         yFraction: 0.5,
     },
 ): Promise<number> {
+    await waitForPaletteItem(page, item);
+    await canvas(page).waitFor({ state: "visible", timeout: 30000 });
+    const countBefore = await getCanvasElementCount(page);
+    await dispatchPaletteDrag(page, item, at);
+    await waitForOneMoreCanvasElement(page, item, countBefore);
+    return countBefore;
+}
+
+/**
+ * Drag one palette item onto the canvas of the page being edited with the mouse, and wait until the
+ * page has one more canvas element than it did. Returns the new element's index, which is the count
+ * before the drag, because Bloom appends. `at` is as for dragPaletteItemOntoCanvas.
+ *
+ * Use this when the test is about what the page history makes of the add, such as undoing it.
+ * dragPaletteItemOntoCanvas raises the drag events with dispatchEvent, so the browser marks them
+ * untrusted, and the page history's input handling (pageHistoryInput.ts) ignores every event that
+ * is not trusted: the press on the palette item, which opens a transaction in the toolbox's window,
+ * and the drop on the page never reach it. That helper therefore tests a path no person takes.
+ *
+ * This one presses, moves and releases the mouse through CDP, so every event is trusted. It cannot
+ * let the drag itself go to Windows, which runs a drag in a modal loop that stops the renderer
+ * answering (see dispatchPaletteDrag and AUTOMATION-DEBT.md). So it asks Chromium to hand the drag
+ * to the automation instead (Input.setInterceptDrags), and plays the drag onto the canvas with
+ * Input.dispatchDragEvent, which raises dragenter, dragover and drop on the page and dragend on the
+ * palette item as a real drag does.
+ */
+export async function dragPaletteItemOntoCanvasWithMouse(
+    page: Page,
+    item: PaletteItem,
+    at: { xFraction: number; yFraction: number } = {
+        xFraction: 0.5,
+        yFraction: 0.5,
+    },
+): Promise<number> {
+    const source = await waitForPaletteItem(page, item);
+    await canvas(page).waitFor({ state: "visible", timeout: 30000 });
+    const countBefore = await getCanvasElementCount(page);
+    const from = await requireBox(source, `the ${item} palette item`);
+    const startX = from.x + from.width / 2;
+    const startY = from.y + from.height / 2;
+    const dropPoint = await canvasPointInView(page, at);
+
+    const session = await page.context().newCDPSession(page);
+    try {
+        await session.send("Input.setInterceptDrags", { enabled: true });
+        // Once Chromium hands over the drag, play it onto the canvas. This runs in the listener so
+        // that the drag's data keeps the type the protocol gives it.
+        const dropped = new Promise<void>((resolve, reject) =>
+            session.once("Input.dragIntercepted", (event) => {
+                const play = async () => {
+                    for (const type of [
+                        "dragEnter",
+                        "dragOver",
+                        "drop",
+                    ] as const)
+                        await session.send("Input.dispatchDragEvent", {
+                            type,
+                            x: dropPoint.x,
+                            y: dropPoint.y,
+                            data: event.data,
+                        });
+                };
+                play().then(resolve, reject);
+            }),
+        );
+        const mouse = (
+            type: "mouseMoved" | "mousePressed" | "mouseReleased",
+            x: number,
+            y: number,
+        ) =>
+            session.send("Input.dispatchMouseEvent", {
+                type,
+                x,
+                y,
+                button: "left",
+                buttons: type === "mouseReleased" ? 0 : 1,
+                clickCount: type === "mouseMoved" ? 0 : 1,
+            });
+        await session.send("Input.dispatchMouseEvent", {
+            type: "mouseMoved",
+            x: startX,
+            y: startY,
+        });
+        await mouse("mousePressed", startX, startY);
+        // A drag starts once the pointer has moved a few pixels with the button down. Away from the
+        // canvas, so the drag begins over the palette.
+        for (let step = 1; step <= 5; step++)
+            await mouse("mouseMoved", startX - step * 10, startY);
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        try {
+            await Promise.race([
+                dropped,
+                new Promise<never>((_, reject) => {
+                    timer = setTimeout(
+                        () =>
+                            reject(
+                                new Error(
+                                    `Pressing the ${item} palette item and moving the mouse ` +
+                                        `did not start a drag.`,
+                                ),
+                            ),
+                        15000,
+                    );
+                }),
+            ]);
+        } finally {
+            clearTimeout(timer);
+        }
+        await mouse("mouseReleased", dropPoint.x, dropPoint.y);
+    } finally {
+        await session
+            .send("Input.setInterceptDrags", { enabled: false })
+            .catch(() => undefined);
+        await session.detach().catch(() => undefined);
+    }
+    await waitForOneMoreCanvasElement(page, item, countBefore);
+    return countBefore;
+}
+
+/**
+ * Open the Canvas tool and wait until its palette shows `item`, and return the item. Throws, listing
+ * what the palette does offer, when it never shows it.
+ */
+async function waitForPaletteItem(
+    page: Page,
+    item: PaletteItem,
+): Promise<Locator> {
     const toolbox = await openCanvasTool(page);
-    const source = toolbox.locator(`[data-testid="palette-${item}"]:visible`);
+    // The Canvas tool's own item: the Games tool's panel carries palette items with the same test
+    // ids (see dispatchPaletteDrag).
+    const source = toolbox
+        .locator(
+            `${CANVAS_TOOL_CONTROLS} [data-testid="palette-${item}"]:visible`,
+        )
+        .first();
     // Wait rather than count once: an item that is behind a subscription tier or an experiment
     // appears only once the palette has heard back from features/status, so it is missing for a
     // moment every time the tool opens.
     const appeared = await source
-        .first()
         .waitFor({ state: "visible", timeout: 20000 })
         .then(() => true)
         .catch(() => false);
@@ -287,10 +442,38 @@ export async function dragPaletteItemOntoCanvas(
                 `subscription tier the collection does not have, is simply absent.`,
         );
     }
-    await canvas(page).waitFor({ state: "visible", timeout: 30000 });
-    const countBefore = await getCanvasElementCount(page);
-    await dispatchPaletteDrag(page, item, at);
+    return source;
+}
 
+/**
+ * The point at `at` within the canvas of the page being edited, as fractions of its width and
+ * height, in the coordinates the mouse uses. Scrolls the page frame first when the point is off
+ * screen, as a person would, because a drop there lands on nothing.
+ */
+async function canvasPointInView(
+    page: Page,
+    at: { xFraction: number; yFraction: number },
+): Promise<{ x: number; y: number }> {
+    await canvas(page).evaluate((target, yFraction) => {
+        const rect = target.getBoundingClientRect();
+        const view = target.ownerDocument.defaultView!;
+        const wantedY = rect.top + rect.height * yFraction;
+        if (wantedY < 0 || wantedY >= view.innerHeight)
+            view.scrollBy(0, wantedY - view.innerHeight / 2);
+    }, at.yFraction);
+    const box = await getCanvasRect(page);
+    return {
+        x: box.x + box.width * at.xFraction,
+        y: box.y + box.height * at.yFraction,
+    };
+}
+
+/** Wait until the page has one more canvas element than `countBefore`, after a drag of `item`. */
+async function waitForOneMoreCanvasElement(
+    page: Page,
+    item: PaletteItem,
+    countBefore: number,
+): Promise<void> {
     await expect
         .poll(async () => getCanvasElementCount(page), {
             timeout: 30000,
@@ -299,7 +482,69 @@ export async function dragPaletteItemOntoCanvas(
                 `(there are still ${countBefore}).`,
         })
         .toBe(countBefore + 1);
-    return countBefore;
+}
+
+/**
+ * The choices of the Canvas tool's Element Type control, by the value each one gives the style in
+ * the selected bubble's data-bubble ("none" is Just Text, "pointedArcs" is Exclamation).
+ */
+export type BubbleStyle =
+    | "caption"
+    | "pointedArcs"
+    | "none"
+    | "speech"
+    | "ellipse"
+    | "thought"
+    | "circle"
+    | "rectangle";
+
+/** The Canvas tool's Element Type control: the part a person clicks to open its list. */
+const ELEMENT_TYPE_CONTROL = `${CANVAS_TOOL_CONTROLS} #mui-component-select-style`;
+/** The input behind the Element Type control, which holds the value it shows. */
+const ELEMENT_TYPE_VALUE = `${CANVAS_TOOL_CONTROLS} #canvasElement-style-dropdown`;
+
+/**
+ * Choose `style` in the Canvas tool's Element Type control for the selected speech bubble or text
+ * block, with the mouse, the way a person does, and wait until the selected element's data-bubble
+ * has that style.
+ */
+export async function chooseElementTypeInCanvasTool(
+    page: Page,
+    style: BubbleStyle,
+): Promise<void> {
+    const toolbox = await openCanvasTool(page);
+    const element = activeCanvasElement(page);
+    await toolbox.locator(ELEMENT_TYPE_CONTROL).first().click();
+    const choice = toolbox
+        .locator(
+            `.canvasElement-options-dropdown-menu li[data-value="${style}"]`,
+        )
+        .last();
+    await choice.waitFor({ state: "visible", timeout: 15000 });
+    await choice.click();
+    await expect
+        .poll(async () => getBubbleStyle(element), {
+            timeout: 15000,
+            message: `Choosing "${style}" as the Element Type did not give the selected element that style.`,
+        })
+        .toBe(style);
+}
+
+/** The value the Canvas tool's Element Type control shows, such as "speech". */
+export async function getElementTypeInCanvasTool(page: Page): Promise<string> {
+    const toolbox = await openCanvasTool(page);
+    return toolbox.locator(ELEMENT_TYPE_VALUE).first().inputValue();
+}
+
+/** The style of a speech bubble or text block, as its data-bubble attribute records it. */
+export async function getBubbleStyle(element: Locator): Promise<string> {
+    return element.evaluate((el) => {
+        // Bloom writes the bubble's spec as JSON with backquotes in place of double quotes.
+        const spec = JSON.parse(
+            (el.getAttribute("data-bubble") ?? "{}").replace(/`/g, '"'),
+        ) as { style?: string };
+        return spec.style ?? "";
+    });
 }
 
 /**
@@ -1032,6 +1277,386 @@ export async function dragCanvasElementSide(
         )
         .toBeGreaterThan(2);
     return { before, after: await getActiveCanvasElementRect(page) };
+}
+
+/**
+ * Move the selected canvas element by dragging it, the way a person does, and wait until it has
+ * moved. `dx` and `dy` are how far the pointer goes, in the page's own pixels.
+ *
+ * Where the drag starts matters. A press on an element's text puts the caret there instead of
+ * moving it, and a press in the middle of a cropped picture pans the picture inside its frame. So
+ * for an element holding text the press is in the strip between the text box and the element's
+ * edge, and for anything else it is a quarter of the way in from the top-left corner, clear of the
+ * handles on the sides and in the middle.
+ */
+export async function dragCanvasElement(
+    page: Page,
+    dx: number,
+    dy: number,
+): Promise<void> {
+    const element = activeCanvasElement(page);
+    const before = await getCanvasElementPlacement(element);
+    const box = await requireBox(element, "the selected canvas element");
+    let startX = box.x + box.width / 4;
+    let startY = box.y + box.height / 4;
+    const text = element.locator(".bloom-editable:visible").first();
+    if ((await text.count()) > 0) {
+        const textBox = await requireBox(text, "the selected element's text");
+        startX = textBox.x + textBox.width / 2;
+        // Just above the text if there is room inside the element, otherwise just below it.
+        startY =
+            textBox.y - 2 >= box.y + 1
+                ? textBox.y - 2
+                : textBox.y + textBox.height + 2;
+    }
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    await page.mouse.move(startX + dx, startY + dy, { steps: 10 });
+    await page.mouse.up();
+    await expect
+        .poll(
+            async () => {
+                const now = await getCanvasElementPlacement(element);
+                return (
+                    Math.abs(now.left - before.left) +
+                    Math.abs(now.top - before.top)
+                );
+            },
+            {
+                timeout: 15000,
+                message: `Dragging the selected canvas element by ${dx},${dy} did not move it.`,
+            },
+        )
+        .toBeGreaterThan(2);
+}
+
+/**
+ * Drag the tip of the selected speech bubble's tail, the way a person does, and wait until the
+ * bubble records the new tip. `dx` and `dy` are how far the tip moves, in the page's own pixels.
+ *
+ * The tail's handles are drawn by Comical on a canvas of its own, so they have no element to find.
+ * The press goes where the bubble says its tip is: the first tail's tipX and tipY in its
+ * data-bubble attribute, which are in the unscaled pixels of the canvas the bubble sits on.
+ *
+ * The tip stays where it is on the canvas when the bubble is moved or resized, so a bubble can come
+ * to cover its own tip. Comical then draws no tail, and a press at the tip lands on the bubble. This
+ * throws, saying so, rather than drag there.
+ */
+export async function dragSpeechBubbleTail(
+    page: Page,
+    dx: number,
+    dy: number,
+): Promise<void> {
+    const element = activeCanvasElement(page);
+    const tipBefore = await getSpeechBubbleTailTip(element);
+    if (!tipBefore)
+        throw new Error(
+            "The selected canvas element has no tail to drag: its data-bubble lists no tails.",
+        );
+    const placement = await getCanvasElementPlacement(element);
+    if (
+        tipBefore.tipX >= placement.left &&
+        tipBefore.tipX <= placement.left + placement.width &&
+        tipBefore.tipY >= placement.top &&
+        tipBefore.tipY <= placement.top + placement.height
+    )
+        throw new Error(
+            `The tip of the selected bubble's tail, at ${tipBefore.tipX},${tipBefore.tipY}, lies ` +
+                `inside the bubble (left ${placement.left}, top ${placement.top}, width ` +
+                `${placement.width}, height ${placement.height}), so Comical draws no tail and ` +
+                `there is no tip to drag. Drag the tail of a bubble that has not been moved or ` +
+                `resized over its tip.`,
+        );
+    const elementBox = await requireBox(element, "the selected speech bubble");
+    const where = await element.evaluate((el) => {
+        const canvasOfBubble = el.closest(".bloom-canvas") as HTMLElement;
+        const canvasRect = canvasOfBubble.getBoundingClientRect();
+        const elementRect = el.getBoundingClientRect();
+        return {
+            // The page can be zoomed, which scales everything on it.
+            scale: canvasRect.width / canvasOfBubble.offsetWidth,
+            // The canvas's top-left corner, measured from the element's, in the frame's pixels.
+            canvasX: canvasRect.x - elementRect.x,
+            canvasY: canvasRect.y - elementRect.y,
+        };
+    });
+    const x = elementBox.x + where.canvasX + tipBefore.tipX * where.scale;
+    const y = elementBox.y + where.canvasY + tipBefore.tipY * where.scale;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + dx, y + dy, { steps: 10 });
+    await page.mouse.up();
+    await expect
+        .poll(
+            async () => {
+                const now = await getSpeechBubbleTailTip(element);
+                return now
+                    ? Math.abs(now.tipX - tipBefore.tipX) +
+                          Math.abs(now.tipY - tipBefore.tipY)
+                    : 0;
+            },
+            {
+                timeout: 15000,
+                message:
+                    `Dragging the tip of the selected bubble's tail by ${dx},${dy} did not move ` +
+                    `the tip.`,
+            },
+        )
+        .toBeGreaterThan(2);
+}
+
+/**
+ * Where the tip of a speech bubble's first tail is, as its data-bubble attribute records it, in the
+ * unscaled pixels of the canvas the bubble sits on. Undefined when the bubble has no tail.
+ */
+async function getSpeechBubbleTailTip(
+    element: Locator,
+): Promise<{ tipX: number; tipY: number } | undefined> {
+    return element.evaluate((el) => {
+        // Bloom writes the bubble's spec as JSON with backquotes in place of double quotes.
+        const spec = JSON.parse(
+            (el.getAttribute("data-bubble") ?? "{}").replace(/`/g, '"'),
+        ) as { tails?: { tipX: number; tipY: number }[] };
+        const tail = spec.tails?.[0];
+        return tail ? { tipX: tail.tipX, tipY: tail.tipY } : undefined;
+    });
+}
+
+/**
+ * Put the caret in the text of the canvas element at `index` by clicking it, the way a person does
+ * before typing in a speech bubble or a text block, and wait until the text has the focus. Returns
+ * the text box.
+ */
+export async function clickInCanvasElementText(
+    page: Page,
+    index: number,
+): Promise<Locator> {
+    const text = canvasElement(page, index)
+        .locator(".bloom-editable:visible")
+        .first();
+    await realClick(text);
+    await expect(
+        text,
+        `Clicking the text of canvas element ${index} did not give it the focus.`,
+    ).toBeFocused({ timeout: 15000 });
+    return text;
+}
+
+/** One canvas element as getCanvasElementMarkupAndRects reads it. */
+export interface ICanvasElementMarkupAndRect {
+    /**
+     * The element's markup, less what editing adds and a save removes, with attributes, classes
+     * and style properties sorted, so that two readings compare equal exactly when a save would
+     * write the same thing.
+     */
+    markup: string;
+    /**
+     * Where the element is drawn, in the page frame's pixels, to a tenth of a pixel, measured from
+     * the canvas's top-left corner, so that scrolling the page frame between two readings, as
+     * clicking an element can, does not change it.
+     */
+    rect: IRect;
+}
+
+/**
+ * Every canvas element on the canvas of the page being edited, in document order, as a save would
+ * write it and where it is drawn. Two readings are equal exactly when nothing that a person or a
+ * save could tell apart has changed, so a test can read this before a change and compare it with a
+ * reading after an undo.
+ *
+ * What editing adds is left out by the rules that the page history itself follows
+ * (bookEdit/pageHistory/editTimeMarkup.ts): Bloom's editing controls, Comical's drawing surfaces,
+ * CKEditor's classes, attributes, filling characters and the br that fills an empty block, which
+ * element and video container are selected, the class that marks a picture that failed to load,
+ * and the classes and the min-height of a box that the overflow check works out afresh. A change to
+ * those rules may need the same change here.
+ *
+ * Reads until two readings in a row agree, so that a change still settling, such as Comical
+ * redrawing a tail or a picture finishing loading, is not caught half done.
+ */
+export async function getCanvasElementMarkupAndRects(
+    page: Page,
+): Promise<ICanvasElementMarkupAndRect[]> {
+    const read = () =>
+        editablePageFrame(page).evaluate((canvasSelector) => {
+            const editTimeElements = [
+                ".bloom-ui",
+                ".ui-resizable-handle",
+                "[data-table-overlay]",
+                "canvas.comical-generated",
+                "svg.comical-generated",
+                ".nicescroll-rails",
+                ".nicescroll-cursors",
+                ".ui-cbOverlay",
+                "[data-cke-bookmark]",
+                "#cke_pastebin",
+                "[data-cke-hidden-sel]",
+            ].join(", ");
+            const editTimeClasses = new Set([
+                "cell--selected",
+                "bloom-pulse-fill",
+                "bloom-pulse-border",
+                "table--selected",
+                "bloom-pointer-near",
+                "bloom-current-table",
+                "bloom-focusedCanvasElement",
+                "bloom-hideImageButtons",
+                "scrolling-bubble",
+                "overflow",
+                "thisOverflowingParent",
+                "childOverflowingThis",
+                "pageOverflows",
+                "Layout-Problem-Detected",
+                "bloom-imageLoadError",
+                "bloom-selected",
+            ]);
+            const isEditTimeAttribute = (name: string, value: string) =>
+                name === "data-bloom-active" ||
+                name === "data-hasqtip" ||
+                name === "data-table-attached" ||
+                name === "data-btable-anchor-name" ||
+                name.startsWith("data-cke-") ||
+                ((name === "aria-describedby" ||
+                    name === "ariasecondary-describedby") &&
+                    value.startsWith("qtip-"));
+            const sortedClasses = (value: string) =>
+                value
+                    .split(/\s+/)
+                    .filter(
+                        (token) =>
+                            token &&
+                            !editTimeClasses.has(token) &&
+                            !token.startsWith("cke_"),
+                    )
+                    .sort()
+                    .join(" ");
+            // OverflowChecker works out a box's min-height afresh, so the page history leaves
+            // it alone on a .bloom-editable (kBoxStylePropertiesIgnoredByUndoOnly).
+            const isEditTimeStyleProperty = (
+                element: Element,
+                property: string,
+            ) =>
+                element.classList.contains("bloom-editable") &&
+                property.split(":")[0].trim().toLowerCase() === "min-height";
+            const sortedStyle = (value: string, element: Element) =>
+                value
+                    .split(";")
+                    .map((property) => property.trim())
+                    .filter(
+                        (property) =>
+                            property &&
+                            !isEditTimeStyleProperty(element, property),
+                    )
+                    .sort()
+                    .join("; ");
+            const zeroWidthSpace = String.fromCharCode(0x200b);
+            // The blocks that CKEditor fills with a br when they are empty (kBlocksThatCkEditorFills).
+            const blocksThatCkEditorFills = new Set([
+                "ADDRESS",
+                "BLOCKQUOTE",
+                "CAPTION",
+                "DD",
+                "DIV",
+                "DT",
+                "FIGCAPTION",
+                "H1",
+                "H2",
+                "H3",
+                "H4",
+                "H5",
+                "H6",
+                "LI",
+                "P",
+                "PRE",
+                "TD",
+                "TH",
+            ]);
+            // CKEditor's filler br in an otherwise empty block of a box, which it puts in and takes
+            // out as the caret comes and goes, and which a save writes alike either way
+            // (isCkEditorFillerBr).
+            const isCkEditorFillerBr = (element: Element): boolean => {
+                if (
+                    element.tagName !== "BR" ||
+                    element.hasAttribute("data-cke-eol")
+                )
+                    return false;
+                const block = element.parentElement;
+                if (
+                    !block ||
+                    !blocksThatCkEditorFills.has(block.tagName) ||
+                    !block.closest(".bloom-editable")
+                )
+                    return false;
+                return Array.from(block.childNodes).every(
+                    (sibling) =>
+                        sibling === element || serialize(sibling) === "",
+                );
+            };
+            const serialize = (node: Node): string => {
+                if (node.nodeType === Node.TEXT_NODE)
+                    return (node.textContent ?? "")
+                        .split(zeroWidthSpace)
+                        .join("");
+                if (node.nodeType !== Node.ELEMENT_NODE) return "";
+                const element = node as Element;
+                if (element.matches(editTimeElements)) return "";
+                if (isCkEditorFillerBr(element)) return "";
+                const attributes = Array.from(element.attributes)
+                    .filter((a) => !isEditTimeAttribute(a.name, a.value))
+                    .map((a) => {
+                        if (a.name === "class")
+                            return [a.name, sortedClasses(a.value)];
+                        if (a.name === "style")
+                            return [a.name, sortedStyle(a.value, element)];
+                        return [a.name, a.value];
+                    })
+                    .filter(([, value]) => value !== "")
+                    .sort(([a], [b]) => (a < b ? -1 : 1))
+                    .map(([name, value]) => ` ${name}="${value}"`)
+                    .join("");
+                const tag = element.tagName.toLowerCase();
+                const inner = Array.from(element.childNodes)
+                    .map(serialize)
+                    .join("");
+                return `<${tag}${attributes}>${inner}</${tag}>`;
+            };
+            const tenth = (n: number) => Math.round(n * 10) / 10;
+            const canvasOnPage = document.querySelector(canvasSelector);
+            if (!canvasOnPage)
+                throw new Error("The page being edited has no canvas.");
+            const canvasRect = canvasOnPage.getBoundingClientRect();
+            return Array.from(
+                canvasOnPage.querySelectorAll(":scope > .bloom-canvas-element"),
+            ).map((element) => {
+                const r = element.getBoundingClientRect();
+                return {
+                    markup: serialize(element),
+                    rect: {
+                        x: tenth(r.x - canvasRect.x),
+                        y: tenth(r.y - canvasRect.y),
+                        width: tenth(r.width),
+                        height: tenth(r.height),
+                    },
+                };
+            });
+        }, CANVAS_SELECTOR);
+    let last = await read();
+    await expect
+        .poll(
+            async () => {
+                const now = await read();
+                const same = JSON.stringify(now) === JSON.stringify(last);
+                last = now;
+                return same;
+            },
+            {
+                timeout: 15000,
+                message:
+                    "The canvas elements never stopped changing long enough to be read twice alike.",
+            },
+        )
+        .toBe(true);
+    return last;
 }
 
 /**

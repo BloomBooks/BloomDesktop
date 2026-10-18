@@ -6,10 +6,19 @@
 
 /// <reference path="../collectionSettings.d.ts" />
 
-import { Bubble } from "comicaljs";
 import { kCanvasElementClass } from "../../toolbox/canvas/canvasElementConstants";
+import { doOutsideHistory } from "../../pageHistory/pageHistoryAccess";
 
 const kComicalGeneratedClass: string = "comical-generated";
+
+// The canvas elements whose current-language alternate adjustCanvasElementsForCurrentLanguage has
+// already applied since the page loaded, or which turning canvas editing off has already saved as
+// that alternate (saveCurrentCanvasElementStateAsCurrentLangAlternate). From then on the element's
+// style and tails are what the alternate for the current language is worked out from, never the
+// other way round. The second case covers a canvas element added after editing was turned on,
+// which no adjustment has seen: an undo while editing is off can put back its style, and the
+// alternate saved when editing was turned off must not overwrite that when it is turned on again.
+const canvasElementsAdjustedForCurrentLanguage = new WeakSet<Element>();
 
 // This is a definition of the object we store as JSON in data-bubble-alternate.
 // Tails has further structure but CanvasElementManager doesn't care about it.
@@ -45,15 +54,30 @@ export const saveStateOfCanvasElementAsCurrentLangAlternate = (
             style: canvasElement.getAttribute("style") ?? "",
             tails: bubbleDataObj.tails as object[],
         };
-        editable.setAttribute(
-            "data-bubble-alternate",
-            JSON.stringify(alternate).replace(/"/g, "`"),
+        const alternateString = JSON.stringify(alternate).replace(/"/g, "`");
+        if (editable.getAttribute("data-bubble-alternate") === alternateString)
+            return;
+        // The current language's alternate is worked out again from the element's style and
+        // tails each time canvas editing is turned off, which opening a tool or saving the page
+        // does, so it is not recorded in the page history: undo leaves it in place, and a later
+        // turn-off brings it up to date. Joining the latest undo step instead would clear redo
+        // when a tool opens after an undo, and inside the click that opens a tool it would end
+        // the history.
+        doOutsideHistory(() =>
+            editable.setAttribute("data-bubble-alternate", alternateString),
         );
     }
 };
 
 // If there is a bloom-editable in the canvas element that has a data-bubble-alternate,
 // use it to set the data-bubble of the canvas element.
+// This happens once for each canvas element after the page loads, when canvas editing is first
+// turned on, and never for one that turning editing off has already saved from (one added since
+// editing was turned on). After that the alternate for the current language only ever holds what
+// saveStateOfCanvasElementAsCurrentLangAlternate worked out from the element, or what an undo put
+// back, and the element itself is right: an undo or redo while canvas editing is off (with a tool
+// open) puts back the element's style, which the alternate written when editing was turned off
+// would otherwise overwrite when it is turned on again.
 export const adjustCanvasElementsForCurrentLanguage = (
     container: HTMLElement,
 ): void => {
@@ -61,6 +85,9 @@ export const adjustCanvasElementsForCurrentLanguage = (
         .languageForNewTextBoxes;
     Array.from(container.getElementsByClassName(kCanvasElementClass)).forEach(
         (canvasElement) => {
+            if (canvasElementsAdjustedForCurrentLanguage.has(canvasElement))
+                return;
+            canvasElementsAdjustedForCurrentLanguage.add(canvasElement);
             const editable = Array.from(
                 canvasElement.getElementsByClassName("bloom-editable"),
             ).find((e) => e.getAttribute("lang") === canvasElementLang);
@@ -122,11 +149,13 @@ export const saveCurrentCanvasElementStateAsCurrentLangAlternate = (
     const canvasElementLang = (GetSettings() as ICollectionSettings)
         .languageForNewTextBoxes;
     Array.from(container.getElementsByClassName(kCanvasElementClass)).forEach(
-        (top) =>
+        (top) => {
             saveStateOfCanvasElementAsCurrentLangAlternate(
                 top as HTMLElement,
                 canvasElementLang,
-            ),
+            );
+            canvasElementsAdjustedForCurrentLanguage.add(top);
+        },
     );
 
     const currentSvg = container.getElementsByClassName(
@@ -182,13 +211,12 @@ export const adjustCanvasElementAlternates = (
         (editable) => {
             const lang = editable.getAttribute("lang");
             if (lang === canvasElementLang) {
-                const alternate = {
-                    style: canvasElement.getAttribute("style"),
-                    tails: Bubble.getBubbleSpec(canvasElement).tails,
-                };
-                editable.setAttribute(
-                    "data-bubble-alternate",
-                    JSON.stringify(alternate).replace(/"/g, "`"),
+                // Written as turning canvas editing off writes it, outside the page history. If
+                // the resize's undo step held it, the next turn-off would rewrite it outside the
+                // history, and that undo would be refused.
+                saveStateOfCanvasElementAsCurrentLangAlternate(
+                    canvasElement,
+                    canvasElementLang,
                 );
             } else {
                 const alternatesString = editable.getAttribute(
