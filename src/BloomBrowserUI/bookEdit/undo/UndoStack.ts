@@ -89,11 +89,43 @@ export class UndoStack {
         this.record(entry);
     }
 
+    /**
+     * Forget everything that could be redone, because the user has made a change the stack did
+     * not record, such as typing, which CKEditor keeps (see ckeditorChanges.ts). Does nothing
+     * while an undo or redo of ours, or a legacy provider's undo, is being applied: a change that
+     * causes is not a new edit. (The Undo button undoes typing through the CKEditor provider,
+     * which restores CKEditor's snapshot directly and so reports a change.)
+     */
+    public discardRedo(): void {
+        if (this.applying || this.runningLegacyUndo) {
+            return;
+        }
+        this.truncateRedoBranch();
+    }
+
+    /** True while a legacy provider's undo runs; see {@link discardRedo}. */
+    private runningLegacyUndo = false;
+
+    /** Run a legacy provider's undo, marking it as running for {@link discardRedo}. */
+    private runLegacyUndo(provider: ILegacyUndoProvider): boolean {
+        this.runningLegacyUndo = true;
+        try {
+            return provider.undo();
+        } finally {
+            this.runningLegacyUndo = false;
+        }
+    }
+
+    /** Drop the entries above the current index. */
+    private truncateRedoBranch(): void {
+        this.entries.length = this.currentIndex + 1;
+        this.entryOrders.length = this.currentIndex + 1;
+    }
+
     /** Actually add an entry, truncating any redo branch. */
     private record(entry: IUndoEntry): void {
         // Anything the user had undone is now unreachable: they have taken a different branch.
-        this.entries.length = this.currentIndex + 1;
-        this.entryOrders.length = this.currentIndex + 1;
+        this.truncateRedoBranch();
 
         this.entries.push(entry);
         this.entryOrders.push(nextChangeOrder());
@@ -133,6 +165,24 @@ export class UndoStack {
             return true;
         }
         return this.entryOrders[this.currentIndex] < provider.lastChangeOrder();
+    }
+
+    /**
+     * The entry of ours that the next undo would apply, or undefined when a legacy provider has
+     * the next undo or our newest entry is not available just now.
+     *
+     * For a key handler that has to decide, before CKEditor acts on Ctrl+Z, whether the keystroke
+     * belongs to an entry on this stack (inline images do this; see inlineImageCanUndo). Like
+     * {@link canUndo}, it believes a provider that says it can undo, so it answers undefined when
+     * CKEditor claims an undo it then finds nothing for.
+     */
+    public getEntryForNextUndo(): IUndoEntry | undefined {
+        if (this.legacyProviders.some((p) => this.providerHasTheNextUndo(p))) {
+            return undefined;
+        }
+        return this.ownEntryCanUndo()
+            ? this.entries[this.currentIndex]
+            : undefined;
     }
 
     /** Whether our own newest entry can be undone just now. */
@@ -178,7 +228,10 @@ export class UndoStack {
         for (const provider of this.legacyProviders) {
             // A provider that turns out to have nothing to undo passes the turn on, so the
             // person's Undo still reaches whatever is next.
-            if (this.providerHasTheNextUndo(provider) && provider.undo()) {
+            if (
+                this.providerHasTheNextUndo(provider) &&
+                this.runLegacyUndo(provider)
+            ) {
                 return;
             }
         }
