@@ -2781,6 +2781,7 @@
         <source xml:lang="en">The selected video</source>
         <note>ID: EditTab.Toolbox.SignLanguage.SelectedVideo</note>
         <note>Appears in the context "X will be moved to the recycle bin"</note>
+        <note>Obsolete as of 6.6. Deleting a video in the sign language tool no longer asks for confirmation; undo puts the video back.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.SelectSignLanguageBox" sil:dynamic="true">
         <source xml:lang="en">To use this tool, select a sign language box on the page.</source>
@@ -2883,6 +2884,19 @@
         <source xml:lang="en">Three Languages</source>
         <note>ID: EditTab.Trilingual</note>
         <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
+      </trans-unit>
+      <trans-unit id="EditTab.RedoButton" translate="no">
+        <source xml:lang="en">Redo</source>
+        <note>ID: EditTab.RedoButton</note>
+        <note>The button in the Edit tab's top bar, beside Undo, that does again the change that Undo just took back.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.RedoButton.ToolTip" translate="no">
+        <source xml:lang="en">Redo (Ctrl+Y)</source>
+        <note>ID: EditTab.RedoButton.ToolTip</note>
+      </trans-unit>
+      <trans-unit id="EditTab.RedoButton.ToolTipWhenDisabled" translate="no">
+        <source xml:lang="en">There is nothing to redo</source>
+        <note>ID: EditTab.RedoButton.ToolTipWhenDisabled</note>
       </trans-unit>
       <trans-unit id="EditTab.UndoButton">
         <source xml:lang="en">Undo</source>

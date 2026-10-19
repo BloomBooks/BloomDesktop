@@ -20,7 +20,11 @@ import {
     IPageMetrics,
     kGameTargetSelector,
 } from "../js/imageTargetResolution";
-import { changeImageByElement } from "../js/bloomEditing";
+import {
+    changeImageByElement,
+    doTransactionUntilPageSettles,
+    kChangePictureUndoL10nKey,
+} from "../js/bloomEditing";
 import { theOneCanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
 import {
     IAiImageEditorApplyOutcome,
@@ -125,12 +129,14 @@ function asMessage(e: unknown): string {
 // use Bloom's changeImageByElement() here. Returns how many swaps landed and how many were
 // asked for, so the caller can report a partial failure honestly.
 //
-// Each swap registers an image undo, like a pasted image or a picture chosen from the
-// gallery, so Ctrl+Z puts the old image back. That works because nothing here saves the
-// page: the save's reload would throw the live undo stack away (the same reasoning as
-// BL-16330 for ordinary image changes). The page is saved by the normal mechanisms when the
-// user moves on, and every editor launch saves first (see HandleSaveThenLaunch), so later
-// sessions still read a fresh book DOM.
+// All the swaps of one commit on this page are one step of the page history, which stays open
+// until each canvas element has been fitted to its new picture, so one Undo puts back every old
+// picture on this page. The replacements that the same commit made on other pages, which C#
+// made and saved (AiImageEditorApi.HandleCommit), stay: the page history covers only this page.
+// That works because nothing here saves the page: the save's reload would throw the page
+// history away (the same reasoning as BL-16330 for ordinary image changes). The page is saved
+// by the normal mechanisms when the user moves on, and every editor launch saves first (see
+// HandleSaveThenLaunch), so later sessions still read a fresh book DOM.
 //
 // Called from the top window, so it must not assume anything about who is calling: `results`
 // has crossed a frame boundary but is plain data, and everything it touches is this
@@ -140,6 +146,15 @@ export function applyAiImageEditorReplacements(
 ): IAiImageEditorApplyOutcome {
     const toApply = (results ?? []).filter(isCurrentPageSwap);
     if (toApply.length === 0) return { applied: 0, expected: 0 };
+    return doTransactionUntilPageSettles(kChangePictureUndoL10nKey, () =>
+        applySwaps(toApply),
+    );
+}
+
+// The body of applyAiImageEditorReplacements, which runs it as one step of the page history.
+function applySwaps(
+    toApply: IAiImageEditorCommitResult[],
+): IAiImageEditorApplyOutcome {
     const pageRoot =
         (document.querySelector(".bloom-page") as HTMLElement) || document;
     // The page's slots, numbered as slotIndexOnPage numbers them and as C# numbers them
@@ -173,21 +188,15 @@ export function applyAiImageEditorReplacements(
                 creator: r.creator ?? "",
                 copyright: r.copyright ?? "",
                 license: r.license ?? "",
-                // Register an image undo for each swap, like any other image change
-                // (see the header comment).
                 undoable: "true",
             });
-            // Make the swapped slot the active element. canUndoImageOperation only
-            // offers the undo while an image container is active, and after the launch
-            // saved and reloaded this page nothing is — so without this, Ctrl+Z right
-            // after the editor closes would do nothing until the user clicked the image.
-            //
-            // It does a second job, which matters on a Bloom Games page: a draggable's
-            // target holds a copy of the draggable's content, and activating the draggable
-            // is what makes Bloom rebuild that copy. changeImageByElement above does NOT
-            // (verified against a running Bloom: without this line the target went on
-            // showing the replaced picture), so the target would otherwise keep a picture
-            // we no longer offer any way to edit (BL-16793). An off-page slot has no
+            // Make the swapped slot the active element, which matters on a Bloom Games
+            // page: a draggable's target holds a copy of the draggable's content, and
+            // activating the draggable is what makes Bloom rebuild that copy.
+            // changeImageByElement above does NOT (verified against a running Bloom:
+            // without this line the target went on showing the replaced picture), so the
+            // target would otherwise keep a picture we no longer offer any way to edit
+            // (BL-16793). An off-page slot has no
             // active element to rely on, so C# repoints those copies itself — see
             // GetGameTargetImageCopiesOfSlot in AiImageEditorApi.cs.
             theOneCanvasElementManager.setActiveElementToClosest(target);

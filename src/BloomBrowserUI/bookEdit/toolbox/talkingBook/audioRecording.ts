@@ -59,7 +59,15 @@ import { setupImageDescriptions } from "../imageDescription/imageDescription";
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { createValidXhtmlUniqueId } from "../../js/xhtmlIdUtils";
 import { doesNarrationExist, kAnyRecordingApiUrl } from "./audioUtils";
-import { wrapWithRequestPageContentDelay } from "../../js/bloomEditing";
+import {
+    doTransaction,
+    wrapWithRequestPageContentDelay,
+} from "../../js/bloomEditing";
+import {
+    addToLatestTransaction,
+    currentPageHistory,
+    doOutsideHistory,
+} from "../../pageHistory/pageHistoryAccess";
 import {
     hideImageDescriptions,
     showImageDescriptions,
@@ -119,6 +127,12 @@ const kImportRecordingDelayId = "importRecording";
 const kEndTimeAttributeName: string = "data-audioRecordingEndTimes";
 const kPlaybackOrderContainerClass: string =
     "bloom-playbackOrderControlsContainer";
+// The description of the undo step that a click of a playback-order arrow makes.
+const kPlaybackOrderUndoL10nKey =
+    "EditTab.Toolbox.TalkingBookTool.PlaybackOrder";
+// The description of the undo step that switching the recording mode makes.
+const kRecordingModeUndoL10nKey =
+    "EditTab.Toolbox.TalkingBookTool.RecordingMode";
 
 interface IPlaybackOrderInfo {
     containerDiv: HTMLDivElement;
@@ -160,6 +174,11 @@ export function getAudioRecorder(): IAudioRecorder {
 // TODO: Maybe a lot of this code should move to TalkingBook.ts (regarding the tool) instead of AudioRecording.ts (regarding recording/playing the audio files)
 export default class AudioRecording implements IAudioRecorder {
     private recording: boolean;
+    // How many presses of the Speak button startRecordCurrentAsync has seen, and how many of them
+    // endRecordCurrentAsync has seen released, so that a press released before its start has
+    // armed the recording starts none.
+    private speakPressCount = 0;
+    private releasedSpeakPressCount = 0;
     private levelCanvas: HTMLCanvasElement | null = null;
     private currentAudioId: string;
     // When we are playing audio, this holds the segments we haven't yet finished playing, including the one currently playing.
@@ -741,6 +760,8 @@ export default class AudioRecording implements IAudioRecorder {
 
     public async moveToNextAudioElement(): Promise<void> {
         toastr.clear();
+        if (this.splitNeededSinceUndoOrRedo)
+            await this.splitAgainIfNeededAsync();
 
         const next = this.getNextAudioElement();
         if (!next) return;
@@ -756,6 +777,8 @@ export default class AudioRecording implements IAudioRecorder {
 
     public async moveToPrevAudioElementAsync(): Promise<void> {
         toastr.clear();
+        if (this.splitNeededSinceUndoOrRedo)
+            await this.splitAgainIfNeededAsync();
         const prev = this.getPreviousAudioElement();
         if (prev == null) return;
 
@@ -1317,6 +1340,9 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     public async startRecordCurrentAsync(): Promise<void> {
+        const press = ++this.speakPressCount;
+        if (this.splitNeededSinceUndoOrRedo)
+            await this.splitAgainIfNeededAsync();
         if (!this.isEnabledOrExpected("record")) {
             return;
         }
@@ -1352,6 +1378,11 @@ export default class AudioRecording implements IAudioRecorder {
         });
 
         toastr.clear();
+
+        // The release came while this method awaited, as it can when one of those awaits waits
+        // for a later task (a split after an undo, a request to Bloom). Then endRecordCurrentAsync
+        // found nothing to stop, so this must start nothing.
+        if (this.releasedSpeakPressCount >= press) return;
 
         this.recording = true;
 
@@ -1478,6 +1509,7 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     public async endRecordCurrentAsync(): Promise<void> {
+        this.releasedSpeakPressCount = this.speakPressCount;
         this.clearStartRecordTimeout();
 
         if (!this.recording) {
@@ -1639,6 +1671,8 @@ export default class AudioRecording implements IAudioRecorder {
             return this.changeStateAndSetExpectedAsync("split");
         }
 
+        if (this.splitNeededSinceUndoOrRedo)
+            await this.splitAgainIfNeededAsync();
         if (!this.isEnabledOrExpected("play")) {
             return;
         }
@@ -1966,6 +2000,8 @@ export default class AudioRecording implements IAudioRecorder {
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
     // Returns a promise that is fulfilled when the play has been STARTED (not completed).
     public async listenAsync(canvasToExclude?: HTMLElement): Promise<void> {
+        if (this.splitNeededSinceUndoOrRedo)
+            await this.splitAgainIfNeededAsync();
         this.resetAudioIfPaused();
 
         this.fixHighlighting();
@@ -2071,6 +2107,31 @@ export default class AudioRecording implements IAudioRecorder {
         // the click would appear to do nothing. Firing it un-awaited is also what the other
         // callers in this file do, including this method's own caller in the #audio-split handler.
         this.changeStateAndSetExpectedAsync("split");
+    }
+
+    /**
+     * Called before every undo and redo while the tool is on the page. Notes the text box that
+     * has the highlight, for updateAfterUndoOrRedo. Playing, and pausing, split the text of the
+     * boxes being played into spans (fixHighlighting), and an undo or redo of typing needs the
+     * text nodes that the typing changed. So stop playing, and put those nodes back now, before
+     * the history checks the page. Moving the highlight back to the element we record, and
+     * refreshing the buttons, finish after the undo or redo, as they do for stopPlaybackAsync's
+     * other callers.
+     */
+    public prepareForUndoOrRedo(): void {
+        this.textBoxBeforeUndoOrRedo = this.getCurrentTextBoxSync();
+        if (
+            !this.playingAudio() &&
+            this.childrenToRestoreAfterPlayEnded.size === 0 &&
+            this.spansToRestoreAfterPlayEnded.size === 0
+        ) {
+            return;
+        }
+        // A change that a listener makes before an undo would join the latest step.
+        doOutsideHistory(() => {
+            this.revertFixHighlighting();
+            void this.stopPlaybackAsync();
+        });
     }
 
     private async playEndedAsync(): Promise<void> {
@@ -2260,6 +2321,8 @@ export default class AudioRecording implements IAudioRecorder {
     // Clear the recording for this sentence
     public async clearRecordingAsync(): Promise<void> {
         toastr.clear();
+        if (this.splitNeededSinceUndoOrRedo)
+            await this.splitAgainIfNeededAsync();
 
         this.resetAudioIfPaused();
 
@@ -2444,7 +2507,9 @@ export default class AudioRecording implements IAudioRecorder {
                 myPosition: existingTabindex ? Number(existingTabindex) : 999,
             });
         }
-        this.sortOutTabindexValues();
+        // Numbering the groups 1, 2, 3... when the arrows appear is not something the user did,
+        // so it is not recorded in the page history. Moving a group with the arrows is.
+        doOutsideHistory(() => this.sortOutTabindexValues());
         this.renderPlaybackControls();
         this.uiState.inShowPlaybackOrderMode = true;
         this.notifyStateChanged();
@@ -2506,14 +2571,16 @@ export default class AudioRecording implements IAudioRecorder {
         ) {
             return; // The React controls should ensure this anyway.
         }
-        const srcInfo = this.playbackOrderCache[whichPositionToBump - 1];
-        const destInfo = this.playbackOrderCache[whichPositionToBump];
-        this.setTabindexInCacheAndHtml(srcInfo, whichPositionToBump + 1);
-        this.setTabindexInCacheAndHtml(destInfo, whichPositionToBump);
+        this.makePlaybackOrderUndoStep(() => {
+            const srcInfo = this.playbackOrderCache[whichPositionToBump - 1];
+            const destInfo = this.playbackOrderCache[whichPositionToBump];
+            this.setTabindexInCacheAndHtml(srcInfo, whichPositionToBump + 1);
+            this.setTabindexInCacheAndHtml(destInfo, whichPositionToBump);
 
-        // re-sort
-        this.sortOutTabindexValues();
-        this.renderPlaybackControls();
+            // re-sort
+            this.sortOutTabindexValues();
+            this.renderPlaybackControls();
+        });
     }
 
     // 'bumpDown' means decrease 'myOrderNum' (Remove button), or move this translationGroup
@@ -2525,14 +2592,32 @@ export default class AudioRecording implements IAudioRecorder {
         ) {
             return; // The React controls should ensure this anyway.
         }
-        const srcInfo = this.playbackOrderCache[whichPositionToBump - 1];
-        const destInfo = this.playbackOrderCache[whichPositionToBump - 2];
-        this.setTabindexInCacheAndHtml(srcInfo, whichPositionToBump - 1);
-        this.setTabindexInCacheAndHtml(destInfo, whichPositionToBump);
+        this.makePlaybackOrderUndoStep(() => {
+            const srcInfo = this.playbackOrderCache[whichPositionToBump - 1];
+            const destInfo = this.playbackOrderCache[whichPositionToBump - 2];
+            this.setTabindexInCacheAndHtml(srcInfo, whichPositionToBump - 1);
+            this.setTabindexInCacheAndHtml(destInfo, whichPositionToBump);
 
-        // re-sort
-        this.sortOutTabindexValues();
-        this.renderPlaybackControls();
+            // re-sort
+            this.sortOutTabindexValues();
+            this.renderPlaybackControls();
+        });
+    }
+
+    // Make one click of a playback-order arrow one undo step with its own description. The click
+    // is in the page, where Bloom has opened a transaction with the general description
+    // (pageHistoryInput.ts); this one nests inside it and gives that step this description.
+    private makePlaybackOrderUndoStep(change: () => void) {
+        const transaction = currentPageHistory()?.beginTransaction(
+            kPlaybackOrderUndoL10nKey,
+        );
+        try {
+            change();
+        } catch (error) {
+            transaction?.cancel();
+            throw error;
+        }
+        transaction?.end();
     }
 
     // NOTE: This function kicks off some async work, but doesn't await them. (yet?)
@@ -2554,6 +2639,17 @@ export default class AudioRecording implements IAudioRecorder {
             // This leads to an unterminated recursion that freezes Bloom.  See BL-14898.
             this.setCurrentAudioElementToDefaultAsync();
         }
+    }
+
+    /**
+     * Make mode the collection's default recording mode, which a text box with no mode of its own
+     * gets (getRecordingModeOfTextBox). Bloom keeps it as a setting, outside the page and its
+     * history.
+     */
+    private setCollectionDefaultRecordingMode(mode: RecordingMode): void {
+        // Note: We don't actually await the completion of this work.
+        postJson("talkingBook/defaultAudioRecordingMode", mode);
+        this.cachedCollectionDefaultRecordingMode = mode;
     }
 
     private getVisibleTranslationGroups(
@@ -2594,6 +2690,9 @@ export default class AudioRecording implements IAudioRecorder {
         // clearing a whole-text-box recording and switching to Record by Sentence, the whole
         // box was highlighted instead of the first sentence, because the box was never split
         // into per-sentence spans.
+        // What a switch writes to the page (the box's recording mode and its audio-sentence
+        // markup) belongs to the transaction that the caller has open: setRecordingMode's, which
+        // makes the switch one undo step.
         const modeBeforeSwitch = this.recordingMode;
         this.recordingMode = recordingMode;
 
@@ -2611,9 +2710,7 @@ export default class AudioRecording implements IAudioRecorder {
         }
 
         // Update the collection's default recording span mode to the new value
-        // Note: We don't actually await the completion of this work.
-        postJson("talkingBook/defaultAudioRecordingMode", this.recordingMode);
-        this.cachedCollectionDefaultRecordingMode = this.recordingMode;
+        this.setCollectionDefaultRecordingMode(this.recordingMode);
 
         let result;
         // Update the UI after clicking the checkbox
@@ -2886,11 +2983,19 @@ export default class AudioRecording implements IAudioRecorder {
         this.initializeAudioRecordingMode();
         const docBody = this.getPageDocBody();
 
+        // What this method writes to the page sets the page up for the tool; it is not something
+        // the user did. The audio-sentence split is saved content, so it joins the latest undo
+        // step (applySplits). The rest is not recorded in the page history, and undo leaves it in
+        // place. Each write is wrapped where it happens, because the history can leave out only
+        // what is written synchronously inside doOutsideHistory, not what comes after an await.
+
         // Defensive cleanup: strip any ui-audioCurrent class left by older Bloom versions that used DOM marking.
         // Modern code tracks the highlight via this.highlightedElement instead.
-        Array.from(
-            docBody?.getElementsByClassName("ui-audioCurrent") ?? [],
-        ).forEach((el) => el.classList.remove("ui-audioCurrent"));
+        doOutsideHistory(() =>
+            Array.from(
+                docBody?.getElementsByClassName("ui-audioCurrent") ?? [],
+            ).forEach((el) => el.classList.remove("ui-audioCurrent")),
+        );
 
         // This check needs to be before the check for recordable divs below (which may return immediately), because sometimes
         // we may have empty textboxes that should nevertheless show the playback order UI.
@@ -2922,7 +3027,9 @@ export default class AudioRecording implements IAudioRecorder {
             return result;
         } else {
             if (deshroudPhraseDelimiters)
-                deshroudPhraseDelimiters(this.getPageDocBody());
+                doOutsideHistory(() =>
+                    deshroudPhraseDelimiters(this.getPageDocBody()),
+                );
             await this.setupAndUpdateMarkupAsync();
 
             // See comment on this method.
@@ -2965,6 +3072,8 @@ export default class AudioRecording implements IAudioRecorder {
         // when setSoundAndHighlightAsync() didn't actually set the highlight because we're in another tool.
         // This makes things a little safer.
         if (!this.doesCurrentToolPlayAudio()) return false;
+        if (this.splitNeededSinceUndoOrRedo)
+            await this.splitAgainIfNeededAsync();
         let boxToSelect = target.closest(kAudioSentenceClassSelector);
         if (!boxToSelect) {
             // if it isn't one and isn't inside one, see if it contains one
@@ -3083,6 +3192,168 @@ export default class AudioRecording implements IAudioRecorder {
         }
     }
 
+    /**
+     * The page history calls this after each undo and redo, in the same task. It drops the
+     * changes that the visibility observer has seen but not yet handled, so that a class that the
+     * undo put back does not start a markup pass, which would write the page and lose redo. And
+     * it paints the current highlight again, whose Ranges cover text that the undo has changed;
+     * that writes only the highlight registry and the microphone marker, which is bloom-ui.
+     * While the playback-order arrows show, it builds them again instead, because the undo may
+     * have put back the translation groups' earlier tabindex values, which give their order.
+     */
+    public updateAfterUndoOrRedo(): void {
+        this.visibilityObserver?.takeRecords();
+        const textBoxBefore = this.textBoxBeforeUndoOrRedo;
+        this.textBoxBeforeUndoOrRedo = null;
+        if (!this.isShowing) return;
+        // An undo can take away the audio-sentence markup that opening the tool made, along with
+        // the typing that it followed. Splitting the box again here, outside the history, would
+        // replace the very nodes that redo puts its changes back into, so redo would be refused;
+        // adding the split to the latest step would clear redo. So the split waits until the
+        // user next types in the box (the toolbox's markup pass) or asks Talking Book for
+        // something that needs it (splitAgainIfNeededAsync). An undo or redo itself needs none:
+        // whatever it puts back comes with its own markup.
+        this.splitNeededSinceUndoOrRedo = this.getRecordableDivs(
+            true,
+            false,
+        ).some((box) => new Recordable(box).checkForMissingAudioMarkup());
+        if (this.inShowPlaybackOrderMode) {
+            const docBody = this.getPageDocBody();
+            if (docBody) {
+                // A write from a listener here would join the latest step and clear redo.
+                // The arrows are bloom-ui, which the history ignores, and the tabindex values
+                // are already numbered 1, 2, 3..., but doOutsideHistory makes sure of it.
+                doOutsideHistory(() => {
+                    this.removePlaybackOrderUi(docBody, true);
+                    this.showPlaybackOrderUi(docBody);
+                });
+            }
+            return;
+        }
+        if (
+            textBoxBefore?.isConnected &&
+            this.showRecordingModeAfterUndoOrRedo(textBoxBefore)
+        )
+            return;
+        const boxWaiting = this.boxHighlightedUntilSplit;
+        if (
+            boxWaiting &&
+            this.highlightedElement === boxWaiting.box &&
+            boxWaiting.box.isConnected &&
+            !new Recordable(boxWaiting.box).checkForMissingAudioMarkup()
+        ) {
+            // The box has the highlight only because an earlier undo took away its sentences,
+            // and it needs no split now: a redo has put them back, or it has no text left.
+            // Speak and Import must not record under the box.
+            doOutsideHistory(
+                () =>
+                    void this.highlightAgainAfterUndoOrRedoAsync(
+                        boxWaiting.box,
+                        boxWaiting.sentence,
+                    ),
+            );
+            return;
+        }
+        if (
+            this.highlightedElement?.isConnected &&
+            !this.currentHighlightSuppressed &&
+            !this.inShowPlaybackOrderMode
+        ) {
+            this.refreshAudioTextHighlights(this.highlightedElement);
+            return;
+        }
+        // The highlighted element is gone, or the highlight is meant not to show: the repair
+        // that the integrity observer does re-points it by id, or leaves it alone.
+        const pageBody = this.getPageDocBody();
+        if (!pageBody || this.repairCurrentHighlightInPlace(pageBody)) return;
+        // The undo or redo took the highlighted element out of the page, as an undo of the split
+        // that made a sentence does, and no element has its id. Highlight what the tool records
+        // in the box that had the highlight, or else what it highlights first on the page. Like
+        // showRecordingModeAfterUndoOrRedo, this writes nothing that the history records.
+        const sentenceBefore = this.highlightedElement;
+        doOutsideHistory(
+            () =>
+                void this.highlightAgainAfterUndoOrRedoAsync(
+                    textBoxBefore,
+                    sentenceBefore,
+                ),
+        );
+    }
+
+    /**
+     * See the end of updateAfterUndoOrRedo. sentenceBefore is the element that had the highlight
+     * before the undo or redo; when it is back in textBoxBefore, as after a redo, it gets the
+     * highlight again. When the undo or redo took away every sentence of textBoxBefore, which the
+     * tool cannot split again until the user's next action (splitAgainIfNeededAsync), the whole
+     * box has the highlight until then (boxHighlightedUntilSplit). Looking for a sentence would
+     * find one in another box, which Speak would then record.
+     */
+    private async highlightAgainAfterUndoOrRedoAsync(
+        textBoxBefore: HTMLElement | null,
+        sentenceBefore: HTMLElement | null,
+    ): Promise<void> {
+        this.boxHighlightedUntilSplit = undefined;
+        if (!textBoxBefore?.isConnected)
+            await this.setCurrentAudioElementToDefaultAsync();
+        else if (
+            sentenceBefore?.isConnected &&
+            sentenceBefore.classList.contains(kAudioSentence) &&
+            textBoxBefore.contains(sentenceBefore)
+        )
+            await this.setSoundAndHighlightAsync({
+                newElement: sentenceBefore,
+                shouldScrollToElement: false,
+            });
+        else if (
+            this.recordingMode === RecordingMode.Sentence &&
+            this.getFirstAudioSentenceWithinElement(textBoxBefore) === null &&
+            new Recordable(textBoxBefore).checkForMissingAudioMarkup()
+        ) {
+            // The next action splits the box first, then moves the highlight to the first
+            // sentence of the box that has it (resetCurrentAudioElementAsync). Until then
+            // the sound stays that of the sentence that the undo took away. A redo that puts
+            // the sentences back moves the highlight to sentenceBefore (updateAfterUndoOrRedo).
+            this.boxHighlightedUntilSplit = {
+                box: textBoxBefore,
+                sentence: sentenceBefore,
+            };
+            await this.setHighlightToAsync({
+                newElement: textBoxBefore,
+                shouldScrollToElement: false,
+            });
+        } else
+            await this.setCurrentAudioElementBasedOnRecordingModeAsync(
+                textBoxBefore,
+            );
+        await this.changeStateAndSetExpectedAsync("record");
+    }
+
+    /**
+     * After an undo or redo that put back another recording mode on textBox (that of the switch,
+     * with the box's markup), show that mode in the tool, make it the collection's default again,
+     * as the switch did, and move the highlight to what that mode records. Returns false, doing
+     * nothing, when the box's mode is the one the tool shows.
+     */
+    private showRecordingModeAfterUndoOrRedo(textBox: HTMLElement): boolean {
+        let mode = this.getRecordingModeOfTextBox(textBox);
+        if (mode === RecordingMode.Unknown) mode = RecordingMode.Sentence;
+        if (mode === this.recordingMode) return false;
+        this.recordingMode = mode;
+        this.setCollectionDefaultRecordingMode(mode);
+        if (!this.splitNeededSinceUndoOrRedo) {
+            // Moving the highlight writes nothing that the history records; this makes sure.
+            doOutsideHistory(
+                () =>
+                    void this.setCurrentAudioElementBasedOnRecordingModeAsync(
+                        textBox,
+                    ),
+            );
+        }
+        this.updateDisplay(false);
+        void this.changeStateAndSetExpectedAsync("record");
+        return true;
+    }
+
     private getDivsThatMightChangeAffectingVisibility() {
         const pageBody = this.getPageDocBody();
         if (!pageBody) {
@@ -3099,6 +3370,17 @@ export default class AudioRecording implements IAudioRecorder {
         result.push(pageBody.parentElement!);
         return result;
     }
+
+    // The text box that had the highlight when the current undo or redo began.
+    private textBoxBeforeUndoOrRedo: HTMLElement | null = null;
+    // True when an undo or redo left a box without the audio-sentence markup that it needs; see
+    // updateAfterUndoOrRedo and splitAgainIfNeededAsync.
+    private splitNeededSinceUndoOrRedo = false;
+    // The box that has the highlight because an undo took away all its sentences, and the
+    // sentence that had the highlight before that undo; see highlightAgainAfterUndoOrRedoAsync.
+    private boxHighlightedUntilSplit:
+        | { box: HTMLElement; sentence: HTMLElement | null }
+        | undefined;
 
     private ensureHighlightToken?: ReturnType<typeof setTimeout>;
     private subElementHighlightTimeoutToken?: ReturnType<typeof setTimeout>;
@@ -3294,7 +3576,7 @@ export default class AudioRecording implements IAudioRecorder {
             },
         );
         const updateFuncs = await Promise.all(asyncTasks);
-        updateFuncs.forEach((x) => x());
+        this.applySplits(updateFuncs);
 
         // seting the current audio element right now is optional - we could also just wait around
         // for the first thing that calls getCurrentTextbox.
@@ -3302,6 +3584,40 @@ export default class AudioRecording implements IAudioRecorder {
         await this.resetCurrentAudioElementAsync();
 
         return this.changeStateAndSetExpectedAsync("record");
+    }
+
+    /**
+     * Write the audio-sentence markup, ids and recording modes that the tool sets up when it
+     * opens on a page or comes to a box that has none. That is saved content, but not something
+     * the user did, so it joins the latest undo step: undoing the typing that the split follows
+     * undoes the split too, and an earlier step that changed the box can still be undone.
+     */
+    private applySplits(updateFuncs: (() => void)[]): void {
+        addToLatestTransaction(() => updateFuncs.forEach((x) => x()));
+    }
+
+    /**
+     * Called at the start of each of the user's Talking Book actions that need the boxes'
+     * audio-sentence markup. An undo or redo can take away the split that opening the tool made,
+     * together with the typing that it followed (updateAfterUndoOrRedo). Split those boxes again
+     * now, before the action uses the markup. Callers test splitNeededSinceUndoOrRedo first, so
+     * that an action that needs no split does not wait for even a microtask: what
+     * startRecordCurrentAsync does before its first await must stay synchronous with the press.
+     */
+    private async splitAgainIfNeededAsync(): Promise<void> {
+        this.splitNeededSinceUndoOrRedo = false;
+        this.boxHighlightedUntilSplit = undefined;
+        const boxes = this.getRecordableDivs(true, false).filter((box) =>
+            new Recordable(box).checkForMissingAudioMarkup(),
+        );
+        if (boxes.length === 0) return;
+        const updateFuncs = await Promise.all(
+            boxes.map((box) =>
+                this.tryGetUpdateMarkupForTextBoxActionAsync(box),
+            ),
+        );
+        this.applySplits(updateFuncs);
+        await this.resetCurrentAudioElementAsync();
     }
 
     // Entry point for TalkingBookTool's updateMarkupAsync() function. Does similar but less work than setupAndUpdateMarkupAsync.
@@ -3455,10 +3771,16 @@ export default class AudioRecording implements IAudioRecorder {
         if (shouldUpdateMarkup) {
             const recordingMode = this.getRecordingModeOfTextBox(textBox);
             const playbackMode = this.getPlaybackMode(textBox);
-            return this.getUpdateMarkupForTextBoxAction(
-                textBox,
-                recordingMode,
-                playbackMode,
+            // Working out the action already writes the box's recording mode, and for a box
+            // recorded whole its audio-sentence class and id (getActionToMakeAudioSentenceElements).
+            // This runs after an await, outside any transaction, so like the split that the action
+            // makes (applySplits), those writes join the latest undo step.
+            return addToLatestTransaction(() =>
+                this.getUpdateMarkupForTextBoxAction(
+                    textBox,
+                    recordingMode,
+                    playbackMode,
+                ),
             );
         } else {
             return () => {
@@ -4890,8 +5212,19 @@ export default class AudioRecording implements IAudioRecorder {
         }
     }
 
+    // The recording-mode checkbox. Switching the mode is one undo step, which puts back the
+    // box's earlier mode and audio-sentence markup. setRecordingModeAsync awaits between its
+    // writes; the transaction stays open until it has finished, so they all join the step. The
+    // click is in the toolbox, where Bloom has opened a transaction with the general description
+    // (pageHistoryInput.ts); this one nests inside it and gives the step this description.
     public async setRecordingMode(recordingMode: RecordingMode): Promise<void> {
-        await this.setRecordingModeAsync(recordingMode);
+        await doTransaction(kRecordingModeUndoL10nKey, () =>
+            // So that a save does not take the page while the switch is half done.
+            wrapWithRequestPageContentDelay(
+                () => this.setRecordingModeAsync(recordingMode),
+                "talkingBookRecordingMode",
+            ),
+        );
         this.updateDisplay();
     }
 
@@ -5007,6 +5340,9 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     public async importRecordingAsync(): Promise<void> {
+        // The file is named after the current sentence, which an undo may have taken away.
+        if (this.splitNeededSinceUndoOrRedo)
+            await this.splitAgainIfNeededAsync();
         const result = await postJson("fileIO/chooseFile", {
             title: "Choose Audio File",
             fileTypes: [{ name: "MP3 File", extensions: ["mp3"] }],
@@ -5090,8 +5426,16 @@ export default class AudioRecording implements IAudioRecorder {
 
     /**
      * Finds and fixes any elements on the page that should have their audio-highlighting disabled.
+     * The changes last only while audio plays, so the page history does not record them, and
+     * revertFixHighlighting puts back the very nodes that they replaced.
      */
     public fixHighlighting(currentAudioElement?: HTMLElement) {
+        doOutsideHistory(() =>
+            this.fixHighlightingOfElements(currentAudioElement),
+        );
+    }
+
+    private fixHighlightingOfElements(currentAudioElement?: HTMLElement) {
         const audioElements = currentAudioElement
             ? [currentAudioElement]
             : this.getAudioElements();
@@ -5111,17 +5455,7 @@ export default class AudioRecording implements IAudioRecorder {
                 );
 
                 if (containsNonHighlightText) {
-                    if (!this.nodesToRestoreAfterPlayEnded.has(element.id)) {
-                        // Note: The map could already have the id if you do Play -> Pause -> Play
-                        // We want the modifications to exist during the Pause period,
-                        // and we want the original innerHTML to win, so that's why we need to check
-                        // if the ID exists already and avoid overwriting it.
-                        this.nodesToRestoreAfterPlayEnded.set(
-                            element.id,
-                            element.innerHTML,
-                        );
-                    }
-
+                    this.spansToRestoreAfterPlayEnded.add(element);
                     this.fixHighlightingInNode(element, element);
                 }
             });
@@ -5229,6 +5563,15 @@ export default class AudioRecording implements IAudioRecorder {
         // Next, replace the old DOM element with the new DOM elements
         const oldNode = textNode;
         if (oldNode.parentNode && newNodes && newNodes.length > 0) {
+            // Note: The map could already have the parent if you do Play -> Pause -> Play.
+            // We want the modifications to exist during the Pause period, and we want the
+            // original children to win, so we keep the first ones we saw.
+            if (!this.childrenToRestoreAfterPlayEnded.has(oldNode.parentNode)) {
+                this.childrenToRestoreAfterPlayEnded.set(
+                    oldNode.parentNode,
+                    Array.from(oldNode.parentNode.childNodes),
+                );
+            }
             for (let i = 0; i < newNodes.length; ++i) {
                 const nodeToInsert = newNodes[i];
                 oldNode.parentNode.insertBefore(nodeToInsert, oldNode);
@@ -5252,23 +5595,27 @@ export default class AudioRecording implements IAudioRecorder {
         return newSpan;
     }
 
-    private nodesToRestoreAfterPlayEnded = new Map<string, string>();
+    // The children that each node had before fixHighlighting first replaced one of its text
+    // nodes, and the spans that it worked on, which lose kDisableHighlightClass at the end.
+    // Putting back the same node objects, rather than html, matters to the page history: a step
+    // that changed one of those text nodes can still be undone after playback ends.
+    private childrenToRestoreAfterPlayEnded = new Map<Node, Node[]>();
+    private spansToRestoreAfterPlayEnded = new Set<Element>();
 
     /**
      * This function will undo in BloomDesktop the modifications made by fixHighlighting()
      */
     public revertFixHighlighting() {
-        this.nodesToRestoreAfterPlayEnded.forEach((htmlToRestore, id) => {
-            const pageDocBody = this.getPageDocBody();
-            const element = pageDocBody?.querySelector(`#${id}`);
-            if (element) {
-                element.innerHTML = htmlToRestore;
-                element.classList.remove(kDisableHighlightClass);
-            } else {
-                console.warn("Can't find element " + id);
-            }
+        doOutsideHistory(() => {
+            this.childrenToRestoreAfterPlayEnded.forEach((children, parent) =>
+                (parent as ParentNode).replaceChildren(...children),
+            );
+            this.spansToRestoreAfterPlayEnded.forEach((span) =>
+                span.classList.remove(kDisableHighlightClass),
+            );
         });
-        this.nodesToRestoreAfterPlayEnded.clear();
+        this.childrenToRestoreAfterPlayEnded.clear();
+        this.spansToRestoreAfterPlayEnded.clear();
         this.refreshAudioTextHighlights();
     }
 }

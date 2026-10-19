@@ -17,7 +17,6 @@ using SIL.Code;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
-using SIL.Windows.Forms.FileSystem;
 
 namespace Bloom.web.controllers
 {
@@ -56,10 +55,6 @@ namespace Bloom.web.controllers
                     true
                 )
                 .Measureable("Process recorded video");
-            apiHandler
-                .RegisterEndpointHandler("signLanguage/deleteVideo", HandleDeleteVideoRequest, true)
-                .Measureable("Delete video");
-            ;
             apiHandler.RegisterEndpointHandler(
                 "signLanguage/chooseVideo",
                 HandleChooseVideoRequest,
@@ -686,32 +681,6 @@ namespace Bloom.web.controllers
             }
         }
 
-        // Request from sign language tool to delete the selected video.
-        private void HandleDeleteVideoRequest(ApiRequest request)
-        {
-            lock (request)
-            {
-                string videoPath;
-                decimal[] dummy;
-                if (!GetVideoDetailsFromRequest(request, true, out videoPath, out dummy))
-                    return; // request.Failed was called inside the above method
-
-                var label = LocalizationManager.GetString(
-                    "EditTab.Toolbox.SignLanguage.SelectedVideo",
-                    "The selected video",
-                    "Appears in the context \"X will be moved to the recycle bin\""
-                );
-                if (!ConfirmRecycleDialog.JustConfirm(label))
-                {
-                    request.ReplyWithText("canceled");
-                    return;
-                }
-
-                ConfirmRecycleDialog.Recycle(videoPath);
-                request.ReplyWithText("deleted");
-            }
-        }
-
         private void HandleVideoStatisticsRequest(ApiRequest request)
         {
             if (request.HttpMethod != HttpMethods.Get)
@@ -720,8 +689,7 @@ namespace Bloom.web.controllers
             {
                 string videoFilePath;
                 decimal[] timings;
-                if (!GetVideoDetailsFromRequest(request, false, out videoFilePath, out timings))
-                    return; // request.Failed was called inside the above method
+                GetVideoDetailsFromRequest(request, out videoFilePath, out timings);
 
                 if (!RobustFile.Exists(videoFilePath))
                 {
@@ -907,16 +875,8 @@ namespace Bloom.web.controllers
             );
         }
 
-        internal bool WarnIfVideoCantChange(string videoFilePath)
-        {
-            if (!View.CheckIfLockedAndWarn(videoFilePath))
-                return true;
-            return false;
-        }
-
-        private bool GetVideoDetailsFromRequest(
+        private void GetVideoDetailsFromRequest(
             ApiRequest request,
-            bool forEditing,
             out string videoFilePath,
             out decimal[] timings
         )
@@ -929,7 +889,7 @@ namespace Bloom.web.controllers
                 .NotEncoded; // UrlPathString used only for decoding
 
             videoFilePath = Path.Combine(CurrentBook.FolderPath, fileName);
-            // Some callers need this file to exist, others don't, but decoding is required for all.
+            // The name may be URL-encoded: if no file has the name as given, use it decoded.
             if (
                 !RobustFile.Exists(videoFilePath)
                 && Regex.IsMatch(fileName, "%[0-9A-Fa-f][0-9A-Fa-f]")
@@ -941,14 +901,7 @@ namespace Bloom.web.controllers
                 ); // UrlPathString used only for decoding
             }
 
-            if (forEditing && WarnIfVideoCantChange(videoFilePath))
-            {
-                request?.Failed("editing not allowed");
-                return false;
-            }
-
             ConvertRawTimingsToDecimalArray(rawTimings, timings);
-            return true;
         }
 
         private static void ConvertRawTimingsToDecimalArray(string rawTimings, decimal[] timings)

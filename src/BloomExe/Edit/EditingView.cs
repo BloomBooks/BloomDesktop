@@ -40,7 +40,6 @@ namespace Bloom.Edit
         private readonly CutCommand _cutCommand;
         private readonly CopyCommand _copyCommand;
         private readonly PasteCommand _pasteCommand;
-        private readonly UndoCommand _undoCommand;
         private readonly ControlKeyEvent _controlKeyEvent;
         private readonly SignLanguageApi _signLanguageApi;
         private readonly CopyrightAndLicenseApi _copyrightAndLicenseApi;
@@ -107,7 +106,6 @@ namespace Bloom.Edit
             CutCommand cutCommand,
             CopyCommand copyCommand,
             PasteCommand pasteCommand,
-            UndoCommand undoCommand,
             ControlKeyEvent controlKeyEvent,
             SignLanguageApi signLanguageApi,
             CommonApi commonApi,
@@ -125,7 +123,6 @@ namespace Bloom.Edit
             _cutCommand = cutCommand;
             _copyCommand = copyCommand;
             _pasteCommand = pasteCommand;
-            _undoCommand = undoCommand;
             _controlKeyEvent = controlKeyEvent;
             _webSocketServer = model.EditModelSocketServer;
             _pageListApi = pageListApi;
@@ -265,7 +262,7 @@ namespace Bloom.Edit
             if (Program.RunningHarvesterMode || _mainBrowser == null)
                 return;
 
-            _mainBrowser.SetEditingCommands(_cutCommand, _copyCommand, _pasteCommand, _undoCommand);
+            _mainBrowser.SetEditingCommands(_cutCommand, _copyCommand, _pasteCommand);
             _mainBrowser.ControlKeyEvent = _controlKeyEvent;
         }
 
@@ -1465,7 +1462,7 @@ namespace Bloom.Edit
             // Note that this method is called by a timer (probably about 110msec cycle).
             if (_mainBrowser == null || !_mainBrowser.Visible)
                 return;
-            _mainBrowser.UpdateEditButtonsAsync();
+            _mainBrowser.UpdateEditButtons();
 
             // update javascript with the new information
             dynamic eventBundle = new DynamicJson();
@@ -1474,7 +1471,6 @@ namespace Bloom.Edit
                 copy = _copyCommand?.Enabled ?? false,
                 cut = _cutCommand?.Enabled ?? false,
                 paste = _pasteCommand?.Enabled ?? false,
-                undo = _undoCommand?.Enabled ?? false,
             };
             _webSocketServer.SendBundle("editTopBarControls", "updateEditButtons", eventBundle);
         }

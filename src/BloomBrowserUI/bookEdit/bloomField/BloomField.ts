@@ -10,6 +10,11 @@ import $ from "jquery";
 import { getWorkspaceBundleExports } from "../js/workspaceFrames";
 import { getLocalization } from "../../react_components/l10n";
 import { kNoIndentClass } from "../textContextMenu/noIndent";
+import {
+    currentPageHistory,
+    describeOpenStep,
+} from "../pageHistory/pageHistoryAccess";
+import { wrapWithRequestPageContentDelay } from "../js/bloomEditing";
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
@@ -36,6 +41,17 @@ import { kNoIndentClass } from "../textContextMenu/noIndent";
 // block am I in?" or "does this box have any blocks yet?"; they all consult this rather than
 // looking for a <p> specifically, so a heading counts as a block everywhere or nowhere.
 const kBlockElementSelector = "p,h1,h2,h3,h4,h5,h6";
+
+// The descriptions of the undo steps of the CKEditor commands that format text, from the
+// selection toolbar's buttons or their keys (Ctrl+B, Ctrl+I, Ctrl+U, and Ctrl+Space, which
+// AddEditKeyHandlers in bloomEditing.ts sends to removeFormat), by command name.
+const kFormatCommandUndoL10nKeys: Record<string, string> = {
+    bold: "EditTab.Undo.Text.Bold",
+    italic: "EditTab.Undo.Text.Italic",
+    underline: "EditTab.Undo.Text.Underline",
+    superscript: "EditTab.Undo.Text.Superscript",
+    removeFormat: "EditTab.Undo.Text.RemoveFormatting",
+};
 
 export default class BloomField {
     public static ManageField(bloomEditableDiv: HTMLElement) {
@@ -239,26 +255,7 @@ export default class BloomField {
         ckeditor: CKEDITOR.editor,
     ) {
         ckeditor.config.colorButton_colors = CKEDITOR.config.colorButton_colors;
-        if (
-            bloomEditableDiv.classList.contains(
-                "bloom-copyFromOtherLanguageIfNecessary",
-            ) &&
-            bloomEditableDiv.innerText &&
-            bloomEditableDiv.innerText !== "\n" &&
-            bloomEditableDiv.getAttribute("data-user-deleted") !== "true"
-        ) {
-            // See BL-13779. If the user deletes all the text in a div, we don't want to copy
-            // the text from another language in the future. We set the data-user-deleted attribute
-            // to keep this from happening.
-            ckeditor.on("change", (event) => {
-                if (
-                    bloomEditableDiv.innerText === "" ||
-                    bloomEditableDiv.innerText === "\n"
-                ) {
-                    bloomEditableDiv.setAttribute("data-user-deleted", "true");
-                }
-            });
-        }
+        BloomField.MarkWhenUserDeletesEverything(bloomEditableDiv, ckeditor);
         // BL-16649: "Do Not Indent This Paragraph" (see the text context menu)
         // marks one paragraph as the continuation of a paragraph on the previous page. Pressing Enter
         // in such a paragraph makes a genuinely new paragraph, which should indent normally
@@ -275,7 +272,22 @@ export default class BloomField {
                 paragraphsBeforeEnter = Array.from(
                     bloomEditableDiv.getElementsByTagName("p"),
                 );
+            } else if (
+                BloomField.IsDeletingKey(event.data.domEvent.getKey()) &&
+                BloomField.selectionWouldRemoveProtectedElement(
+                    bloomEditableDiv,
+                )
+            ) {
+                // CKEditor's WebKit "key" listener, which runs after this one, deletes a
+                // selection that spans two blocks itself, so no beforeinput comes for the
+                // listener in PreventRemovalOfSomeElements to refuse. Cancelling the key event
+                // stops that listener and the browser's own deletion alike.
+                event.cancel();
             }
+        });
+        ckeditor.on("beforeCommandExec", (event) => {
+            const description = kFormatCommandUndoL10nKeys[event.data.name];
+            if (description) describeOpenStep(description);
         });
         ckeditor.on("afterCommandExec", (event) => {
             if (event.data.name !== "enter") return;
@@ -404,35 +416,9 @@ export default class BloomField {
                 // Shown from the workspace root so its backdrop covers the page list too.
                 const showLinkTargetChooserDialog =
                     getWorkspaceBundleExports().showLinkTargetChooserDialog;
-                showLinkTargetChooserDialog("", (url) => {
-                    if (!url) return;
-                    get("app/selectedBookInfo", (bookInfo) => {
-                        if (!bookInfo.data) {
-                            return;
-                        }
-                        const anchor = document.createElement("a");
-                        anchor.href = tryProcessHyperlink(
-                            url,
-                            bookInfo.data.id,
-                        );
-                        try {
-                            document
-                                .getSelection()
-                                ?.getRangeAt(0)
-                                ?.surroundContents(anchor);
-                        } catch (ex) {
-                            const englishErrorMessage =
-                                "Bloom was not able to make a link. Try selecting only simple text.";
-                            console.log(`${englishErrorMessage} ${ex}`);
-                            BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
-                                "EditTab.HyperlinkPasteFailure",
-                                englishErrorMessage,
-                                "Shows when a hyperlink cannot be pasted due to invalid selection.",
-                                "CantPasteHyperlink",
-                            );
-                        }
-                    });
-                });
+                showLinkTargetChooserDialog("", (url) =>
+                    BloomField.makeSelectionALink(url),
+                );
                 return true; // probaby means success, but I'm not sure. Typescript says this function has to return a boolean.
             },
         });
@@ -454,6 +440,118 @@ export default class BloomField {
         // This makes it easy to find the right editor instance. There may be some ckeditor built-in way, but
         // I wasn't able to find one.
         (<any>bloomEditableDiv).bloomCkEditor = ckeditor;
+    }
+
+    /**
+     * See BL-13779. If the user deletes all the text in a box that has the
+     * bloom-copyFromOtherLanguageIfNecessary class, we don't want to copy the text from another
+     * language into it in the future. We set the data-user-deleted attribute to keep this from
+     * happening. Public for unit tests.
+     */
+    public static MarkWhenUserDeletesEverything(
+        bloomEditableDiv: HTMLElement,
+        ckeditor: CKEDITOR.editor,
+    ) {
+        if (
+            !bloomEditableDiv.classList.contains(
+                "bloom-copyFromOtherLanguageIfNecessary",
+            ) ||
+            !bloomEditableDiv.innerText ||
+            bloomEditableDiv.innerText === "\n" ||
+            bloomEditableDiv.getAttribute("data-user-deleted") === "true"
+        ) {
+            return;
+        }
+        const markIfEmpty = () => {
+            if (
+                bloomEditableDiv.innerText === "" ||
+                bloomEditableDiv.innerText === "\n"
+            ) {
+                bloomEditableDiv.setAttribute("data-user-deleted", "true");
+            }
+        };
+        ckeditor.on("change", markIfEmpty);
+        // CKEditor's WebKit "key" listener deletes a selection that spans two blocks itself
+        // (range.deleteContents()) and cancels the key press, so that deletion raises no input
+        // event, and therefore no "change" (see attachToCkEditor). Look again when the key comes
+        // up. A key press in a box opens a page history transaction that stays open between key
+        // presses (pageHistoryInput.ts), so the attribute joins the deletion's undo step.
+        bloomEditableDiv.addEventListener("keyup", (event) => {
+            if (event.key === "Delete" || event.key === "Backspace") {
+                markIfEmpty();
+            }
+        });
+    }
+
+    /**
+     * Make the text selected in the page a link to url, as one undo step of the page history.
+     * Called when the user clicks OK in the dialog that Set Up Hyperlink shows. The link needs the
+     * book's id, which comes back from Bloom asynchronously. Meanwhile the user may select other
+     * text or edit the page: the link goes on the text that was selected at OK, a save waits for
+     * it, and it is a step of its own, made when the id arrives, so the user's edits meanwhile are
+     * not part of it.
+     */
+    public static makeSelectionALink(url: string): void {
+        if (!url) return;
+        const selection = document.getSelection();
+        if (!selection || selection.rangeCount === 0) return;
+        // A Range of our own follows what the user changes on the page meanwhile, as the
+        // selection's would, but not where the user moves the selection.
+        const range = selection.getRangeAt(0).cloneRange();
+        void wrapWithRequestPageContentDelay(
+            () =>
+                new Promise<void>((resolve) =>
+                    get(
+                        "app/selectedBookInfo",
+                        (bookInfo) => {
+                            try {
+                                if (bookInfo.data)
+                                    BloomField.makeRangeALink(
+                                        range,
+                                        tryProcessHyperlink(
+                                            url,
+                                            bookInfo.data.id,
+                                        ),
+                                    );
+                            } finally {
+                                resolve();
+                            }
+                        },
+                        (error) => {
+                            resolve();
+                            throw error;
+                        },
+                    ),
+                ),
+            "makeSelectionALink",
+        );
+    }
+
+    /** Put the contents of range in a link to href, as one undo step; see makeSelectionALink. */
+    private static makeRangeALink(range: Range, href: string): void {
+        // The user deleted the selected text while Bloom looked up the book's id.
+        if (range.collapsed) return;
+        const anchor = document.createElement("a");
+        anchor.href = href;
+        const transaction = currentPageHistory()?.beginTransaction(
+            "EditTab.SetupHyperlink",
+        );
+        try {
+            range.surroundContents(anchor);
+        } catch (ex) {
+            transaction?.cancel();
+            const englishErrorMessage =
+                "Bloom was not able to make a link. Try selecting only simple text.";
+            console.log(`${englishErrorMessage} ${ex}`);
+            BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
+                "EditTab.HyperlinkPasteFailure",
+                englishErrorMessage,
+                "Shows when a hyperlink cannot be pasted due to invalid selection.",
+                "CantPasteHyperlink",
+            );
+            return;
+        }
+        transaction?.end();
     }
 
     // Spans are dropped from the clipboard's default data (eventData.dataValue) when the
@@ -889,12 +987,14 @@ export default class BloomField {
             ".bloom-preventRemoval",
         ).length;
         if (numberThatShouldBeThere > 0) {
-            $(field).keyup((e) => {
-                if (
-                    $(field).find(".bloom-preventRemoval").length <
-                    numberThatShouldBeThere
-                ) {
-                    document.execCommand("undo");
+            // Refuse an edit that the browser makes whose range covers a protected element, which
+            // would remove it, whether the edit deletes (Delete, Backspace, Ctrl+X) or replaces a
+            // selection (typing or pasting over Ctrl+A). The deletions that Bloom and CKEditor
+            // make themselves raise no beforeinput: WireToCKEditor refuses Delete and Backspace
+            // over a selection that covers a protected element, which CKEditor may delete itself,
+            // and cutSelectionImpl in bloomEditing.ts refuses the top bar's Cut of one.
+            field.addEventListener("beforeinput", (e) => {
+                if (BloomField.wouldRemoveProtectedElement(field, e)) {
                     e.preventDefault();
                 }
             });
@@ -914,6 +1014,66 @@ export default class BloomField {
                 );
             }
         });
+    }
+
+    /**
+     * True if the edit that this beforeinput announces covers an element of field that has the
+     * bloom-preventRemoval class, wholly or in part. An edit inside such an element leaves it in
+     * place.
+     */
+    public static wouldRemoveProtectedElement(
+        field: HTMLElement,
+        event: InputEvent,
+    ): boolean {
+        return event
+            .getTargetRanges()
+            .some((staticRange) =>
+                BloomField.rangeWouldRemoveProtectedElement(field, staticRange),
+            );
+    }
+
+    /**
+     * True if deleting what lies between the ends of someRange would remove an element of field
+     * that has the bloom-preventRemoval class, wholly or in part. A range inside such an element
+     * leaves it in place.
+     */
+    public static rangeWouldRemoveProtectedElement(
+        field: HTMLElement,
+        someRange: AbstractRange,
+    ): boolean {
+        if (someRange.collapsed) return false;
+        const protectedElements = Array.from(
+            field.querySelectorAll(".bloom-preventRemoval"),
+        );
+        if (protectedElements.length === 0) return false;
+        const range = field.ownerDocument.createRange();
+        range.setStart(someRange.startContainer, someRange.startOffset);
+        range.setEnd(someRange.endContainer, someRange.endOffset);
+        return protectedElements.some(
+            (element) =>
+                range.intersectsNode(element) &&
+                !element.contains(range.commonAncestorContainer),
+        );
+    }
+
+    /**
+     * True if Delete or Backspace with the document's selection as it is now would remove an
+     * element of field that has the bloom-preventRemoval class. Public for unit tests.
+     */
+    public static selectionWouldRemoveProtectedElement(
+        field: HTMLElement,
+    ): boolean {
+        const selection = field.ownerDocument.getSelection();
+        if (!selection || selection.rangeCount === 0) return false;
+        return BloomField.rangeWouldRemoveProtectedElement(
+            field,
+            selection.getRangeAt(0),
+        );
+    }
+
+    // True for the key code (without modifiers) of Backspace or Delete.
+    private static IsDeletingKey(keyCode: number): boolean {
+        return keyCode === 8 || keyCode === 46;
     }
 
     // Work around a bug in geckofx. The effect was that if you clicked in a completely empty text box

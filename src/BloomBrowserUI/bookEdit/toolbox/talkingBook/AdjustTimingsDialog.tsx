@@ -34,6 +34,7 @@ import theOneLocalizationManager from "../../../lib/localizationManager/localiza
 import { PWithLink } from "../../../react_components/pWithLink";
 import { Icon, Menu } from "@mui/material";
 import { getAudioRecorder } from "./audioRecording";
+import { currentPageHistory } from "../../pageHistory/pageHistoryAccess";
 
 const timingsMenuId = "timingsMenuAnchor";
 
@@ -390,13 +391,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
                     onClick={() => {
                         // Update the data-audiorecordingendtimes attribute in the props.currentTextBox div to match
                         // the current state of the adjustments.
-                        const bloomEditable = props.currentTextBox;
-                        bloomEditable.setAttribute(
-                            "data-audiorecordingendtimes",
-                            endTimes.join(" "),
-                        );
-                        // We have confirmed split times, display it as split.
-                        getAudioRecorder()?.markAudioSplit();
+                        applyAdjustedTimings(props.currentTextBox, endTimes);
                         props.closing(false);
                         closeDialog();
                     }}
@@ -407,6 +402,33 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
         </BloomDialog>
     );
 };
+
+/** The l10n key of the description of the undo step that OK in this dialog makes. */
+export const kAdjustTimingsUndoL10nKey =
+    "EditTab.Undo.TalkingBook.AdjustTimings";
+
+/**
+ * What OK does: give the text box the adjusted end times, and show it as split. An undo step of
+ * its own, though OK is pressed in the root window, whose changes to the page otherwise end the
+ * page's undo history (pageHistory/pageHistoryInput.ts).
+ */
+export function applyAdjustedTimings(
+    bloomEditable: HTMLElement,
+    endTimes: number[],
+): void {
+    const applyTimings = () => {
+        bloomEditable.setAttribute(
+            "data-audiorecordingendtimes",
+            endTimes.join(" "),
+        );
+        // We have confirmed split times, display it as split.
+        getAudioRecorder()?.markAudioSplit();
+    };
+    const history = currentPageHistory();
+    if (history)
+        void history.doTransaction(kAdjustTimingsUndoL10nKey, applyTimings);
+    else applyTimings();
+}
 
 let show: () => void = () => {
     window.alert("AdjustTimingsDialog is not set up yet.");

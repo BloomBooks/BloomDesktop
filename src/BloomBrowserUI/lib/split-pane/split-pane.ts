@@ -25,6 +25,11 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 import jQuery from "jquery";
 import { kBloomCanvasClass } from "../../bookEdit/toolbox/canvas/canvasElementConstants";
 import { shouldHideToolsOverImages } from "../../bookEdit/js/editablePageUtils";
+import { describeOpenStep } from "../../bookEdit/pageHistory/pageHistoryAccess";
+import { kCanvasElementUndoTemplates } from "../../bookEdit/toolbox/canvas/canvasElementUndoDescriptions";
+
+// The l10n id of the thing that a drag of a divider moves, for the undo step's description.
+export const kSplitterUndoNoun = "EditTab.Undo.Object.Splitter";
 
 var SPLITPANERESIZE_HANDLER = "_splitpaneparentresizeHandler";
 
@@ -134,6 +139,11 @@ export function splitPane($splitPanes: JQuery): void {
             return; // Don't allow dragging when motion tool is active
         }
         event.preventDefault();
+        // The press opened the undo step that the drag makes; this names it.
+        describeOpenStep({
+            l10nId: kCanvasElementUndoTemplates.move,
+            args: [kSplitterUndoNoun],
+        });
         $divider = jQuery(this);
         var isTouchEvent = event.type.match(/^touch/),
             endEvent = isTouchEvent ? "touchend" : "mouseup",

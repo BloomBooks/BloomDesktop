@@ -13,6 +13,11 @@ import {
     toggleNoIndent,
 } from "./noIndent";
 import { tablesMayBeRestructured } from "../js/tableFeature";
+import { describeOpenStep } from "../pageHistory/pageHistoryAccess";
+
+// The label of "Do Not Indent This Paragraph", which also describes the undo step of choosing it,
+// as a canvas element menu's labels describe theirs.
+const kNoIndentL10nId = "EditTab.TextContextMenu.NoIndent";
 
 // The context menu for a right-click on the text of an ordinary text box in the edit view
 // (BL-16649). Text inside a canvas element gets CanvasElementContextControls' menu instead;
@@ -31,6 +36,7 @@ const TextContextMenu: React.FunctionComponent<{
     const noIndentIsOn = isNoIndentOn(props.paragraph);
 
     const handleNoIndentClick = () => {
+        describeOpenStep(kNoIndentL10nId);
         toggleNoIndent(props.paragraph);
         props.setOpen(false);
     };
@@ -57,7 +63,7 @@ const TextContextMenu: React.FunctionComponent<{
             >
                 <LocalizableSelectableMenuItem
                     english="Do Not Indent This Paragraph"
-                    l10nId="EditTab.TextContextMenu.NoIndent"
+                    l10nId={kNoIndentL10nId}
                     selected={noIndentIsOn}
                     disabled={!canToggleNoIndent(props.paragraph)}
                     onClick={handleNoIndentClick}

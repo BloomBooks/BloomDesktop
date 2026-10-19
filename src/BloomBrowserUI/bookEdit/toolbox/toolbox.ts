@@ -47,6 +47,12 @@ export interface IToolboxSettings {
 
 let savedSettings: IToolboxSettings = {};
 
+// True once the toolbox has been opened or shut since the latest restore of the book's toolbox
+// settings began (restoreToolboxSettings, applyToolboxStateToUpdatedPage). The book's saved
+// visibility is applied only when the page is ready (restoreToolboxSettingsWhenPageReady), which
+// can be after the person has already clicked the toggle; their choice then stands.
+let toolboxVisibilityChangedSinceRestoreBegan = false;
+
 // This variable stores the canonical ids of all the enabled tools, so
 // that the React toolbox settings can initially check the
 // checkboxes that correspond to the enabled tools
@@ -89,7 +95,11 @@ export interface ITool {
     configureElements(container: HTMLElement);
     showTool(); // called when a new tool is chosen, but not necessarily when a new page is displayed.
     hideTool(); // called when changing tools or hiding the toolbox.
-    // Note, new implementations of updateMarkup may need to call EditableDivUtils.doCkEditorCleanup() like readerToolsModel.doMarkup() does.
+    // Note, new implementations of updateMarkup should read the boxes rather than rewrite them, as readerToolsModel.doMarkup() does.
+    // A rewrite replaces the box's nodes, which moves the caret and invalidates highlight Ranges over the text; if one is
+    // unavoidable, see EditableDivUtils.doCkEditorCleanup() for how to keep CKEditor's filling character out of what it writes.
+    // The markup pass (pageEditingMarkup.ts) records the caret only around an async tool's markup, so a tool whose markup
+    // must rewrite a box implements updateMarkupAsync and returns true from isUpdateMarkupAsync.
     updateMarkup(); // called on most keypresses (but notably, not on arrow navigation, also not Ctrl+C). It is called on typing letters (obviously), Ctrl+X, Ctrl+V, Ctrl+Z, Ctrl+Y etc... or even just pressing and releasing Ctrl or Shift.
     // like updateMarkup, but expected to be async. Implement instead of updateMarkup if you need to use async functions.
     // Because it is async, it is not guaranteed that all the async processing will complete before another keystroke is received.
@@ -249,6 +259,7 @@ export class ToolBox {
             $(parent.window.document)
                 .find("#pure-toggle-right")
                 .change(function () {
+                    toolboxVisibilityChangedSinceRestoreBegan = true;
                     showToolboxChanged(!this.checked);
                 });
         });
@@ -489,6 +500,7 @@ function showOrHideTool(
 }
 
 export function restoreToolboxSettings() {
+    toolboxVisibilityChangedSinceRestoreBegan = false;
     get("toolbox/settings", (result) => {
         savedSettings = result.data;
         const pageFrame = getPageIFrame();
@@ -505,6 +517,7 @@ export function restoreToolboxSettings() {
 }
 
 export function applyToolboxStateToUpdatedPage() {
+    toolboxVisibilityChangedSinceRestoreBegan = false;
     get("toolbox/settings", (result) => {
         savedSettings = result.data;
         // savedSettings["current"] is always set to the last active tool for the book,
@@ -544,9 +557,25 @@ export function applyToolboxStateToUpdatedPage() {
                                 currentTool === activeTool &&
                                 isToolInitialized(activeTool)
                             ) {
-                                activeTool.newPageReady();
-                                scheduleDelayedNewPageReady(activeTool);
+                                const pageDocument =
+                                    getPageIframeBody()?.ownerDocument;
+                                // The second pass, and the page frame's undo history, wait
+                                // until this pass has finished, as in activateToolInternalAsync.
+                                // Talking Book's pass writes its sentence split after awaiting
+                                // the server; written once the history has started, the split
+                                // would join the user's first undo step, or clear redo. The
+                                // executor turns an exception from the pass into a rejection,
+                                // which is still reported.
+                                return new Promise((resolve) =>
+                                    resolve(activeTool.newPageReady()),
+                                ).finally(() =>
+                                    scheduleDelayedNewPageReady(
+                                        activeTool,
+                                        pageDocument,
+                                    ),
+                                );
                             }
+                            return undefined;
                         });
                     });
                     // We used to call updateMarkup() here
@@ -558,18 +587,85 @@ export function applyToolboxStateToUpdatedPage() {
     });
 }
 
-function scheduleDelayedNewPageReady(tool: ITool): void {
+/**
+ * Run tool's second newPageReady pass for the page in pageDocument 600 ms from now, and then tell
+ * the page frame that the passes have run (whenNewPageReadyPassesHaveRun). Call it once the first
+ * pass has finished, with the document of the page that the first pass ran on.
+ */
+function scheduleDelayedNewPageReady(
+    tool: ITool,
+    pageDocument: Document | undefined,
+): void {
     window.setTimeout(() => {
         if (
             currentTool !== tool ||
             !toolbox.toolboxIsShowing() ||
             !isToolInitialized(tool)
         ) {
+            noteNewPageReadyPassesHaveRun(pageDocument);
             return;
         }
 
-        Promise.resolve(tool.newPageReady());
+        // The executor turns an exception from a tool's pass into a rejection, so the page
+        // history stops waiting even when that pass fails; the rejection is still reported.
+        new Promise((resolve) => resolve(tool.newPageReady())).finally(() =>
+            noteNewPageReadyPassesHaveRun(pageDocument),
+        );
     }, 600);
+}
+
+// The page frame starts its undo history only after the tools' newPageReady passes for its page
+// have run, so that what they change is part of the page as the user found it (whenPageIsReady
+// in pageHistory/pageReadiness.ts). These are the page documents whose second pass has run, and
+// the page frames waiting for theirs.
+const pagesWhoseNewPageReadyPassesHaveRun = new WeakSet<Document>();
+const waitersForNewPageReadyPasses: {
+    pageDocument: Document;
+    resolve: () => void;
+}[] = [];
+
+// How long a page frame waits for passes that the toolbox expected to run but that never came: a
+// tool switched while its page was loading, for instance, abandons them.
+const kMaxWaitForNewPageReadyPassesMs = 3000;
+
+function noteNewPageReadyPassesHaveRun(pageDocument: Document | undefined) {
+    if (!pageDocument) return;
+    pagesWhoseNewPageReadyPassesHaveRun.add(pageDocument);
+    for (let i = waitersForNewPageReadyPasses.length - 1; i >= 0; i--) {
+        const waiter = waitersForNewPageReadyPasses[i];
+        if (waiter.pageDocument !== pageDocument) continue;
+        waitersForNewPageReadyPasses.splice(i, 1);
+        waiter.resolve();
+    }
+}
+
+/**
+ * Resolves once the current tool has run its two newPageReady passes for the page in
+ * pageDocument: at once if it has, or if there is no tool that will (the toolbox is hidden, or no
+ * tool is current), and otherwise when the second pass has finished, or after
+ * kMaxWaitForNewPageReadyPassesMs if it never comes. Called from the page frame.
+ */
+export function whenNewPageReadyPassesHaveRun(
+    pageDocument: Document,
+): Promise<void> {
+    if (pagesWhoseNewPageReadyPassesHaveRun.has(pageDocument))
+        return Promise.resolve();
+    if (
+        !currentTool ||
+        !toolbox.toolboxIsShowing() ||
+        !isToolInitialized(currentTool)
+    )
+        return Promise.resolve();
+    return new Promise((resolve) => {
+        const waiter = { pageDocument, resolve };
+        waitersForNewPageReadyPasses.push(waiter);
+        window.setTimeout(() => {
+            const index = waitersForNewPageReadyPasses.indexOf(waiter);
+            if (index < 0) return;
+            waitersForNewPageReadyPasses.splice(index, 1);
+            resolve();
+        }, kMaxWaitForNewPageReadyPassesMs);
+    });
 }
 
 function doWhenPageReady(action: () => void) {
@@ -690,7 +786,10 @@ function restoreToolboxSettingsWhenPageReady(settings: IToolboxSettings) {
         const currentTool = opts["current"] || kTalkingBookToolId;
         const shouldBeVisible = !!opts["visibility"];
 
-        if (toolbox.toolboxIsShowing() !== shouldBeVisible) {
+        if (
+            !toolboxVisibilityChangedSinceRestoreBegan &&
+            toolbox.toolboxIsShowing() !== shouldBeVisible
+        ) {
             toolbox.toggleToolbox();
         }
 
@@ -774,8 +873,9 @@ async function activateToolInternalAsync(newTool: ITool): Promise<void> {
 
     // Note: Allowed to begin some async work too, and we will await its result.
     // (This apparently solves the single flash mentioned in BL-10471.)
+    const pageDocument = getPageIframeBody()?.ownerDocument;
     await newTool.newPageReady();
-    scheduleDelayedNewPageReady(newTool);
+    scheduleDelayedNewPageReady(newTool, pageDocument);
 }
 
 /**

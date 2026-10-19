@@ -27,10 +27,31 @@ import {
     kCanvasElementClass,
 } from "../../toolbox/canvas/canvasElementConstants";
 import { isDraggable } from "../../toolbox/canvas/canvasElementDraggables";
+import type { CanvasElementUndoTemplate } from "../../toolbox/canvas/canvasElementUndoDescriptions";
 
 // The four layer commands. "forward" and "backward" move one step; "front" and "back" move
 // all the way.
 export type ZOrderMove = "forward" | "backward" | "front" | "back";
+
+// The localization id of each layer command, which labels the command in the Layer submenu.
+export const kZOrderMoveL10nIds: Record<ZOrderMove, string> = {
+    forward: "EditTab.Toolbox.CanvasTool.Layer.BringForward",
+    front: "EditTab.Toolbox.CanvasTool.Layer.BringToFront",
+    backward: "EditTab.Toolbox.CanvasTool.Layer.SendBackward",
+    back: "EditTab.Toolbox.CanvasTool.Layer.SendToBack",
+};
+
+// The template of the description of the undo step that each layer command makes, whether it
+// comes from the menu or a shortcut (describeCanvasElementStep).
+export const kZOrderMoveUndoTemplates: Record<
+    ZOrderMove,
+    CanvasElementUndoTemplate
+> = {
+    forward: "bringForward",
+    front: "bringToFront",
+    backward: "sendBackward",
+    back: "sendToBack",
+};
 
 const isBackgroundImage = (canvasElement: HTMLElement): boolean =>
     canvasElement.classList.contains(kBackgroundImageClass);

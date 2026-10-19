@@ -144,7 +144,7 @@ export const TopBar: React.FunctionComponent = () => {
                 <BloomTabs tabStates={tabStates} selectTab={handleSelectTab} />
                 <div
                     css={css`
-                        flex: 0 1 100px;
+                        flex: 0 1 40px;
                     `}
                 />
                 <TopBarControls activeTab={activeTab} />

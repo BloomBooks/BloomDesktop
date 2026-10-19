@@ -789,6 +789,64 @@ namespace BloomTests.Book
             Assert.IsFalse(File.Exists(dropmeTemp.Path));
         }
 
+        [TestCase(".jpeg")]
+        [TestCase(".webp")]
+        public void CleanupUnusedImageFiles_UnusedJpegOrWebp_Removed_UsedOnesKept(string extension)
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                XmlHtmlConverter.CreateHtmlString(
+                    $"<div id='bloomDataDiv'><div data-book='coverImage'>cover{extension}</div></div>"
+                        + "<div class='bloom-page'><div class='marginBox'>"
+                        + $"<img src='keepme{extension}'></img>"
+                        + "</div></div>"
+                )
+            );
+            // The content does not matter to the cleanup, only the name.
+            var keepOnPage = MakeSamplePngImage(Path.Combine(_folder.Path, "keepme" + extension));
+            var keepInDataDiv = MakeSamplePngImage(Path.Combine(_folder.Path, "cover" + extension));
+            var dropme = MakeSamplePngImage(Path.Combine(_folder.Path, "dropme" + extension));
+            Assert.IsTrue(File.Exists(dropme.Path), "setup: the unused file should exist");
+
+            storage.CleanupUnusedImageFiles();
+
+            Assert.IsTrue(File.Exists(keepOnPage.Path), "a picture a page uses must be kept");
+            Assert.IsTrue(
+                File.Exists(keepInDataDiv.Path),
+                "a picture the data-div names must be kept"
+            );
+            Assert.IsFalse(File.Exists(dropme.Path), "an unused picture should be removed");
+        }
+
+        [TestCase("IMG_1234.JPEG")]
+        [TestCase("Photo.Jpg")]
+        [TestCase("anim.GIF")]
+        [TestCase("anim.gif")]
+        public void CleanupUnusedImageFiles_DataDivNamesImageWithAnyCaseOfExtension_ImageNotRemoved(
+            string fileName
+        )
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                XmlHtmlConverter.CreateHtmlString(
+                    $"<div id='bloomDataDiv'><div data-book='coverImage'>{fileName}</div></div>"
+                        + "<div class='bloom-page'><div class='marginBox'></div></div>"
+                )
+            );
+            // The content does not matter to the cleanup, only the name.
+            var keepInDataDiv = MakeSamplePngImage(Path.Combine(_folder.Path, fileName));
+            var dropme = MakeSamplePngImage(
+                Path.Combine(_folder.Path, "dropme" + Path.GetExtension(fileName))
+            );
+            Assert.IsTrue(File.Exists(dropme.Path), "setup: the unused file should exist");
+
+            storage.CleanupUnusedImageFiles();
+
+            Assert.IsTrue(
+                File.Exists(keepInDataDiv.Path),
+                "a picture the data-div names must be kept, whatever the case of its extension"
+            );
+            Assert.IsFalse(File.Exists(dropme.Path), "an unused picture should be removed");
+        }
+
         [Test]
         public void CleanupUnusedImageFiles_ImageHasQuery_ImagesNotRemoved()
         {

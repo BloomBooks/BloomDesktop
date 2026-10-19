@@ -34,12 +34,7 @@ import {
     undoPrepareActivity,
 } from "bloom-player";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
-import {
-    getWithPromise,
-    postData,
-    postJson,
-    postString,
-} from "../../../utils/bloomApi";
+import { getWithPromise, postJson, postString } from "../../../utils/bloomApi";
 import {
     getEditablePageBundleExports,
     getToolboxBundleExports,
@@ -58,6 +53,7 @@ import {
     kDraggableIdAttribute,
 } from "../canvas/canvasElementDraggables";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
+import { describeCanvasElementStep } from "../canvas/canvasElementUndoDescriptions";
 import { kCanvasElementSelector } from "../canvas/canvasElementConstants";
 import { copyContentToTargetAndCleanup } from "../../js/dragActivityRuntimeUtils";
 import { ThemeChooser } from "./ThemeChooser";
@@ -74,6 +70,10 @@ import { CanvasSnapProvider } from "../../js/canvasElementManager/CanvasSnapProv
 import { CanvasGuideProvider } from "../../js/canvasElementManager/CanvasGuideProvider";
 import { kIdForDragActivityTabControl } from "./DragActivityTabControl";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
+import {
+    describeOpenStep,
+    doOutsideHistory,
+} from "../../pageHistory/pageHistoryAccess";
 
 // This is the main code that manages the Bloom Games, including Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
@@ -480,6 +480,7 @@ const startDraggingTarget = (e: MouseEvent) => {
     }
     // get the mouse cursor position at startup:
     const target = e.currentTarget as HTMLElement;
+    describeOpenStep(describeCanvasElementStep("move", target));
     targetBeingDragged = target;
     const page = target.closest(".bloom-page") as HTMLElement;
     const targets = Array.from(
@@ -773,24 +774,14 @@ export const copyAndPlaySoundAsync = async (
     playSound(newSoundId, page, soundType);
 };
 
+// Copy one of Bloom's own sounds into the book's audio folder. fileIO/copyBuiltInSound can do
+// only that, and replaces no file, so it keeps the page's undo history, as the general
+// fileIO/copyFile could not.
 const copyBuiltInSoundAsync = async (newSoundId: string) => {
     if (!newSoundId) {
         return;
     }
-    const resultAudioDir = await postJson(
-        "fileIO/getSpecialLocation",
-        "CurrentBookAudioDirectory",
-    );
-
-    if (!resultAudioDir) {
-        return; // huh??
-    }
-
-    const targetPath = resultAudioDir.data + "/" + newSoundId;
-    await postData("fileIO/copyFile", {
-        from: encodeURIComponent(newSoundId),
-        to: encodeURIComponent(targetPath),
-    });
+    await postString("fileIO/copyBuiltInSound", newSoundId);
 };
 
 export const showDialogToChooseSoundFileAsync = async () => {
@@ -949,6 +940,8 @@ const DragActivityControls: React.FunctionComponent<{
                 // innerHTML before making any DOM change, so it's safe to call even
                 // when the mutation doesn't actually affect the copy (e.g. position
                 // changes during a canvas element drag).
+                // The copy is not recorded in the page history; see
+                // copyContentToTargetAndCleanup.
                 copyContentToTargetAndCleanup(currentCanvasElement);
             });
             draggableToTargetObserver.current.observe(currentCanvasElement, {
@@ -1090,12 +1083,17 @@ const DragActivityControls: React.FunctionComponent<{
         // The sound attributes hold the plain file name, deliberately NOT URL-encoded (unlike
         // data-backgroundaudio, which the toolbox does encode). C# reads these straight back as
         // file names. See the encoding conventions note on UrlPathString.cs.
+        // The sounds are not undoable: undo leaves them as they are, and choosing one keeps the
+        // page's undo history. A sound from "Choose..." arrives after the dialog, outside the
+        // click's task, where without doOutsideHistory it would join the latest undo step.
         const setSoundAttr = (soundAttr: string, newSoundId: string) => {
-            if (newSoundId === "default") {
-                page.removeAttribute(soundAttr);
-            } else {
-                page.setAttribute(soundAttr, newSoundId);
-            }
+            doOutsideHistory(() => {
+                if (newSoundId === "default") {
+                    page.removeAttribute(soundAttr);
+                } else {
+                    page.setAttribute(soundAttr, newSoundId);
+                }
+            });
         };
         switch (soundType) {
             case "correct":
@@ -1114,10 +1112,17 @@ const DragActivityControls: React.FunctionComponent<{
         }
     };
 
+    // The three options below are not undoable: each toggle changes the page inside
+    // doOutsideHistory, so undo leaves the option as it is, and toggling it keeps the page's
+    // undo history. Each reads the option from the page rather than from React state, so it
+    // toggles what the page has even if that state has not caught up with the page.
     const toggleAllSameSize = () => {
-        const newAllSameSize = !allItemsSameSize;
-        setAllItemsSameSize(newAllSameSize);
+        doOutsideHistory(toggleAllSameSizeOnPage);
+    };
+    const toggleAllSameSizeOnPage = () => {
         const page = getPage();
+        const newAllSameSize = !doesContainingPageHaveSameSizeMode(page);
+        setAllItemsSameSize(newAllSameSize);
         page.setAttribute("data-same-size", newAllSameSize ? "true" : "false");
         if (newAllSameSize) {
             const canvasElementManager = getCanvasElementManager();
@@ -1125,7 +1130,7 @@ const DragActivityControls: React.FunctionComponent<{
             if (!someDraggable || !isDraggable(someDraggable)) {
                 // find something
                 someDraggable = page.querySelector(
-                    kDraggableIdAttribute,
+                    `[${kDraggableIdAttribute}]`,
                 ) as HTMLElement;
             }
             if (!someDraggable) {
@@ -1149,24 +1154,30 @@ const DragActivityControls: React.FunctionComponent<{
     };
 
     const toggleShowAnswersInTargets = () => {
-        const newShowAnswersInTargets = !showAnswersInTargets;
+        const page = getPage();
+        const newShowAnswersInTargets =
+            page.getAttribute("data-show-answers-in-targets") !== "true";
         // This will trigger a new render that sets up the observer if needed.
         setShowAnswersInTargets(newShowAnswersInTargets);
-        const page = getPage();
-        page.setAttribute(
-            "data-show-answers-in-targets",
-            newShowAnswersInTargets ? "true" : "false",
+        doOutsideHistory(() =>
+            page.setAttribute(
+                "data-show-answers-in-targets",
+                newShowAnswersInTargets ? "true" : "false",
+            ),
         );
         // Don't actually change it. Answers always show in Start mode.
     };
 
     const toggleShowTargetsDuringPlay = () => {
-        const newShowTargetsDuringPlay = !showTargetsDuringPlay;
-        setShowTargetsDuringPlay(newShowTargetsDuringPlay);
         const page = getPage();
-        page.setAttribute(
-            "data-show-targets-during-play",
-            newShowTargetsDuringPlay ? "true" : "false",
+        const newShowTargetsDuringPlay =
+            page.getAttribute("data-show-targets-during-play") === "false";
+        setShowTargetsDuringPlay(newShowTargetsDuringPlay);
+        doOutsideHistory(() =>
+            page.setAttribute(
+                "data-show-targets-during-play",
+                newShowTargetsDuringPlay ? "true" : "false",
+            ),
         );
     };
 
@@ -1781,9 +1792,9 @@ export class GameTool extends ToolboxToolReactAdaptor {
         // This really only needs to be done once, but I haven't found a good place to do that,
         // and it's not expensive.
         setDefaultSoundUrls(defaultCorrectSoundUrl, defaultWrongSoundUrl);
+        // The page frame may have no page at this moment, as when the toolbox runs this pass
+        // while the page frame is loading a page, so nothing may touch the page before the check.
         const page = getBloomPageElement();
-        randomlyAssignTargetsIfNeeded(page);
-
         const pageFrameExports = getEditablePageBundleExports();
         if (!getCanvasElementManager() || !page || !pageFrameExports) {
             // probably the toolbox just finished loading before the page.
@@ -1791,6 +1802,7 @@ export class GameTool extends ToolboxToolReactAdaptor {
             window.setTimeout(() => this.newPageReady(), 100);
             return;
         }
+        randomlyAssignTargetsIfNeeded(page);
         adjustDraggablesForLanguage(page);
 
         setPlayerUrlPrefixFromWindowLocationHref(
@@ -2104,7 +2116,23 @@ export const makeTargetForDraggable = (
     return target;
 };
 
-function randomlyAssignTargetsIfNeeded(page): void {
+/**
+ * After every undo or redo, copy each draggable on the page to its target again. The page history
+ * leaves the targets' content out (see copyContentToTargetAndCleanup), so the undo or redo put
+ * back a draggable without its target, and it may have been a draggable that is not the selected
+ * one, which the draggable-to-target observer in DragActivityControls does not watch, or the Game
+ * tool may not be the current tool. The page frame calls this from its own listener
+ * (listenToPageHistory in bloomEditing.ts), whichever tool is current. Not in Play, where
+ * prepareActivity decides what the targets show.
+ */
+export function copyContentToTargetsAfterUndoOrRedo(page: HTMLElement): void {
+    if (getActiveDragActivityTab() === playTabIndex) return;
+    getAllDraggables(page).forEach((draggable) =>
+        copyContentToTargetAndCleanup(draggable as HTMLElement),
+    );
+}
+
+function randomlyAssignTargetsIfNeeded(page: HTMLElement): void {
     if (page.classList.contains("draggables-need-shuffling")) {
         const draggables = getAllDraggables(page) as HTMLElement[];
         const origDraggableIdOrder = draggables.map((d) =>
