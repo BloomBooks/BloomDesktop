@@ -1734,6 +1734,16 @@
         <target xml:lang="kw" state="needs-translation">this page</target>
         <note>ID: ImageLibrary.ThisPage</note>
       </trans-unit>
+      <trans-unit id="Common.Dimensions" translate="no">
+        <source xml:lang="en">Dimensions</source>
+        <target xml:lang="kw" state="needs-translation">Dimensions</target>
+        <note>ID: Common.Dimensions</note>
+      </trans-unit>
+      <trans-unit id="Common.FileSize" translate="no">
+        <source xml:lang="en">File size</source>
+        <target xml:lang="kw" state="needs-translation">File size</target>
+        <note>ID: Common.FileSize</note>
+      </trans-unit>
       <trans-unit id="BookProcessor.HousekeepingMessage">
         <source xml:lang="en">Please wait while Bloom does some housekeeping on your book...</source>
         <target xml:lang="kw" state="needs-translation">Please wait while Bloom does some housekeeping on your book...</target>
