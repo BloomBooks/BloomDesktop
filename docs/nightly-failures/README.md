@@ -26,7 +26,7 @@ use the `nightly-triage` skill.
   `imageContentTransform.ts`) refits the picture to its area exactly and never adds that overhang,
   so after any rotation the bleed is gone (and the white line can come back), and after four the
   left is 0. The fix gives the rotated layout the same bleed.
-- **Status:** fixed on branch `rotate-four-rotations-off-by-one` (PR pending).
+- **Status:** fix in [#8485](https://github.com/BloomBooks/BloomDesktop/pull/8485).
 
 ## Bulk upload test: two different failures against dev.bloomlibrary.org
 
