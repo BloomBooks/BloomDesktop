@@ -110,6 +110,11 @@
         <target xml:lang="pt-PT" state="needs-translation">Do Not Indent This Paragraph</target>
         <note>ID: EditTab.TextContextMenu.NoIndent</note>
       </trans-unit>
+      <trans-unit id="EditTab.InlineImage.InsertImage" translate="no">
+        <source xml:lang="en">Insert Image</source>
+        <target xml:lang="pt-PT" state="needs-translation">Insert Image</target>
+        <note>ID: EditTab.InlineImage.InsertImage</note>
+      </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound" approved="yes">
         <source xml:lang="en">Choose...</source>
@@ -1809,14 +1814,14 @@
         <target xml:lang="pt-PT" state="translated">Rabisco kawaii</target>
         <note>ID: AiImageEditor.ArtStyle.kawaii-doodle.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.line-art-colored-pencil.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.line-art-colored-pencil.Name" approved="yes">
         <source xml:lang="en">Colored Pencil Detail</source>
-        <target xml:lang="pt-PT" state="translated">Detalhe em lápis de cor</target>
+        <target xml:lang="pt-PT" state="final">Detalhe em lápis de cor</target>
         <note>ID: AiImageEditor.ArtStyle.line-art-colored-pencil.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.line-art-crayon.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.line-art-crayon.Name" approved="yes">
         <source xml:lang="en">Crayon Line Overlay</source>
-        <target xml:lang="pt-PT" state="translated">Traço realçado com giz de cera</target>
+        <target xml:lang="pt-PT" state="final">Traço realçado com giz de cera</target>
         <note>ID: AiImageEditor.ArtStyle.line-art-crayon.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.line-art-watercolor.Name">
@@ -1829,9 +1834,9 @@
         <target xml:lang="pt-PT" state="translated">Desenho a traço e esboço</target>
         <note>ID: AiImageEditor.ArtStyle.line-drawing-sketch.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.manga-style.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.manga-style.Name" approved="yes">
         <source xml:lang="en">Manga Style Illustrations</source>
-        <target xml:lang="pt-PT" state="translated">Ilustrações estilo mangá</target>
+        <target xml:lang="pt-PT" state="final">Ilustrações estilo mangá</target>
         <note>ID: AiImageEditor.ArtStyle.manga-style.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.moody-illustrations.Name">
@@ -1849,14 +1854,14 @@
         <target xml:lang="pt-PT" state="translated">Brinquedo de pixels</target>
         <note>ID: AiImageEditor.ArtStyle.pixel-toy.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.realistic-illustration.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.realistic-illustration.Name" approved="yes">
         <source xml:lang="en">Realistic Illustration Style</source>
-        <target xml:lang="pt-PT" state="translated">Ilustração realista</target>
+        <target xml:lang="pt-PT" state="final">Ilustração realista</target>
         <note>ID: AiImageEditor.ArtStyle.realistic-illustration.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.retro-futurism.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.retro-futurism.Name" approved="yes">
         <source xml:lang="en">Retro Futurism</source>
-        <target xml:lang="pt-PT" state="translated">Retrofuturismo</target>
+        <target xml:lang="pt-PT" state="final">Retrofuturismo</target>
         <note>ID: AiImageEditor.ArtStyle.retro-futurism.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.vintage-engraving.Name">
@@ -1869,9 +1874,9 @@
         <target xml:lang="pt-PT" state="translated">Ilustrações de estilo antigo</target>
         <note>ID: AiImageEditor.ArtStyle.vintage-illustrations.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.watercolor-dream.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.watercolor-dream.Name" approved="yes">
         <source xml:lang="en">Watercolor Dream</source>
-        <target xml:lang="pt-PT" state="translated">Sonho em aquarela</target>
+        <target xml:lang="pt-PT" state="final">Sonho em aquarela</target>
         <note>ID: AiImageEditor.ArtStyle.watercolor-dream.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.whimsical-illustrations.Name">
@@ -1911,7 +1916,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.BookImages.Replacement">
         <source xml:lang="en">Replacement</source>
-        <target xml:lang="pt-PT" state="translated">Substituta</target>
+        <target xml:lang="pt-PT" state="translated">Substituir por</target>
         <note>ID: AiImageEditor.BookImages.Replacement</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Characters.NamePlaceholder" approved="yes">
@@ -1931,7 +1936,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Error.CouldNotStartAuthentication">
         <source xml:lang="en">Could not start OpenRouter authentication. Please try again.</source>
-        <target xml:lang="pt-PT" state="translated">Não foi possível iniciar a autenticação com o OpenRouter. Tente novamente.</target>
+        <target xml:lang="pt-PT" state="translated">Não foi possível iniciar a autenticação do OpenRouter. Tente novamente.</target>
         <note>ID: AiImageEditor.Error.CouldNotStartAuthentication</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Error.NeedsMoreCredits">
@@ -1979,24 +1984,24 @@
         <target xml:lang="pt-PT" state="translated">Bom para alterar uma imagem. Deixa intactas as partes que não pediu para mudar. Segue as suas instruções melhor do que os outros aqui, mas custa mais.</target>
         <note>ID: AiImageEditor.Model.google-gemini-3-pro-image.Description</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Model.openai-gpt-image-2-5-sunburst.Description">
+      <trans-unit id="AiImageEditor.Model.openai-gpt-image-2-5-sunburst.Description" approved="yes">
         <source xml:lang="en">Good with small details. Slower than the Gemini models.</source>
-        <target xml:lang="pt-PT" state="translated">Bom com os detalhes pequenos. Mais lento do que os modelos Gemini.</target>
+        <target xml:lang="pt-PT" state="final">Bom com os detalhes pequenos. Mais lento do que os modelos Gemini.</target>
         <note>ID: AiImageEditor.Model.openai-gpt-image-2-5-sunburst.Description</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.AccountLink">
+      <trans-unit id="AiImageEditor.OpenRouter.AccountLink" approved="yes">
         <source xml:lang="en">OpenRouter account</source>
-        <target xml:lang="pt-PT" state="translated">a conta do OpenRouter</target>
+        <target xml:lang="pt-PT" state="final">A conta do OpenRouter</target>
         <note>ID: AiImageEditor.OpenRouter.AccountLink</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.ConnectWithKey">
+      <trans-unit id="AiImageEditor.OpenRouter.ConnectWithKey" approved="yes">
         <source xml:lang="en">Connect with OpenRouter API key</source>
-        <target xml:lang="pt-PT" state="translated">Conectar com uma chave de API do OpenRouter</target>
+        <target xml:lang="pt-PT" state="final">Conectar com uma chave API do OpenRouter</target>
         <note>ID: AiImageEditor.OpenRouter.ConnectWithKey</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.ConnectedWithKey">
+      <trans-unit id="AiImageEditor.OpenRouter.ConnectedWithKey" approved="yes">
         <source xml:lang="en">Connected with OpenRouter API key</source>
-        <target xml:lang="pt-PT" state="translated">Conectado com uma chave de API do OpenRouter</target>
+        <target xml:lang="pt-PT" state="final">Conectado com uma chave API do OpenRouter</target>
         <note>ID: AiImageEditor.OpenRouter.ConnectedWithKey</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.OpenRouter.CreditsExplanation">
@@ -2014,9 +2019,9 @@
         <target xml:lang="pt-PT" state="translated">Cole a chave do OpenRouter</target>
         <note>ID: AiImageEditor.OpenRouter.PasteKeyPlaceholder</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.TestKey">
+      <trans-unit id="AiImageEditor.OpenRouter.TestKey" approved="yes">
         <source xml:lang="en">Test Key</source>
-        <target xml:lang="pt-PT" state="translated">Testar a chave</target>
+        <target xml:lang="pt-PT" state="final">Testar a chave</target>
         <note>ID: AiImageEditor.OpenRouter.TestKey</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Panel.CharacterGridOrScene">
@@ -2024,24 +2029,24 @@
         <target xml:lang="pt-PT" state="translated">Grade de personagens ou cena a mudar</target>
         <note>ID: AiImageEditor.Panel.CharacterGridOrScene</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Panel.ImageToEdit">
+      <trans-unit id="AiImageEditor.Panel.ImageToEdit" approved="yes">
         <source xml:lang="en">Image to Edit</source>
-        <target xml:lang="pt-PT" state="translated">Imagem a editar</target>
+        <target xml:lang="pt-PT" state="final">Imagem a editar</target>
         <note>ID: AiImageEditor.Panel.ImageToEdit</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Panel.ImagesShowingCharacters">
         <source xml:lang="en">Images from the book that show all the characters</source>
-        <target xml:lang="pt-PT" state="translated">Imagens do livro que mostram todos os personagens</target>
+        <target xml:lang="pt-PT" state="translated">Imagens do livro que mostram todas as personagens</target>
         <note>ID: AiImageEditor.Panel.ImagesShowingCharacters</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Panel.Pieces">
         <source xml:lang="en">Pieces</source>
-        <target xml:lang="pt-PT" state="translated">Recortes</target>
+        <target xml:lang="pt-PT" state="translated">Peças</target>
         <note>ID: AiImageEditor.Panel.Pieces</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Panel.ReferenceImages">
+      <trans-unit id="AiImageEditor.Panel.ReferenceImages" approved="yes">
         <source xml:lang="en">Characters and other Reference Images</source>
-        <target xml:lang="pt-PT" state="translated">Personagens e outras imagens de referência</target>
+        <target xml:lang="pt-PT" state="final">Personagens e outras imagens de referência</target>
         <note>ID: AiImageEditor.Panel.ReferenceImages</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Panel.Result" approved="yes">
@@ -2069,24 +2074,24 @@
         <target xml:lang="pt-PT" state="final">Formato</target>
         <note>ID: AiImageEditor.Param.Shape</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Param.Size">
+      <trans-unit id="AiImageEditor.Param.Size" approved="yes">
         <source xml:lang="en">Size</source>
-        <target xml:lang="pt-PT" state="translated">Tamanho</target>
+        <target xml:lang="pt-PT" state="final">Tamanho</target>
         <note>ID: AiImageEditor.Param.Size</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Param.Style">
+      <trans-unit id="AiImageEditor.Param.Style" approved="yes">
         <source xml:lang="en">Style</source>
-        <target xml:lang="pt-PT" state="translated">Estilo</target>
+        <target xml:lang="pt-PT" state="final">Estilo</target>
         <note>ID: AiImageEditor.Param.Style</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Preview.Gallery">
+      <trans-unit id="AiImageEditor.Preview.Gallery" approved="yes">
         <source xml:lang="en">Gallery</source>
-        <target xml:lang="pt-PT" state="translated">Galeria</target>
+        <target xml:lang="pt-PT" state="final">Galeria</target>
         <note>ID: AiImageEditor.Preview.Gallery</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Preview.InTheBookNow">
+      <trans-unit id="AiImageEditor.Preview.InTheBookNow" approved="yes">
         <source xml:lang="en">In the book now</source>
-        <target xml:lang="pt-PT" state="translated">Agora no livro</target>
+        <target xml:lang="pt-PT" state="final">Atualmente no livro</target>
         <note>ID: AiImageEditor.Preview.InTheBookNow</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Preview.Loading" approved="yes">
@@ -2164,9 +2169,9 @@
         <target xml:lang="pt-PT" state="translated">Melhorar</target>
         <note>ID: AiImageEditor.Section.Enhance</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Section.Games">
+      <trans-unit id="AiImageEditor.Section.Games" approved="yes">
         <source xml:lang="en">Games</source>
-        <target xml:lang="pt-PT" state="translated">Jogos</target>
+        <target xml:lang="pt-PT" state="final">Jogos</target>
         <note>ID: AiImageEditor.Section.Games</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Section.Localize">
@@ -2174,19 +2179,19 @@
         <target xml:lang="pt-PT" state="translated">Adaptar</target>
         <note>ID: AiImageEditor.Section.Localize</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Section.More">
+      <trans-unit id="AiImageEditor.Section.More" approved="yes">
         <source xml:lang="en">More</source>
-        <target xml:lang="pt-PT" state="translated">Mais</target>
+        <target xml:lang="pt-PT" state="final">Mais</target>
         <note>ID: AiImageEditor.Section.More</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Section.Text">
+      <trans-unit id="AiImageEditor.Section.Text" approved="yes">
         <source xml:lang="en">Text</source>
-        <target xml:lang="pt-PT" state="translated">Texto</target>
+        <target xml:lang="pt-PT" state="final">Texto</target>
         <note>ID: AiImageEditor.Section.Text</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Settings.ChooseFolder">
         <source xml:lang="en">Choose folder</source>
-        <target xml:lang="pt-PT" state="translated">Escolher pasta</target>
+        <target xml:lang="pt-PT" state="translated">Selecionar pasta</target>
         <note>ID: AiImageEditor.Settings.ChooseFolder</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Settings.ConnectionSection">
@@ -2219,39 +2224,39 @@
         <target xml:lang="pt-PT" state="translated">Esta imagem tem {0} x {1}</target>
         <note>ID: AiImageEditor.Shape.MatchImageTooltip</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Slot.DropOrPasteToEdit">
+      <trans-unit id="AiImageEditor.Slot.DropOrPasteToEdit" approved="yes">
         <source xml:lang="en">Drop or paste an image to edit</source>
-        <target xml:lang="pt-PT" state="translated">Solte ou cole uma imagem para editar</target>
+        <target xml:lang="pt-PT" state="final">Soltar ou colar uma imagem para editar</target>
         <note>ID: AiImageEditor.Slot.DropOrPasteToEdit</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Slot.Empty">
+      <trans-unit id="AiImageEditor.Slot.Empty" approved="yes">
         <source xml:lang="en">Empty</source>
-        <target xml:lang="pt-PT" state="translated">Vazio</target>
+        <target xml:lang="pt-PT" state="final">Vazio</target>
         <note>ID: AiImageEditor.Slot.Empty</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.SlotAction.Download">
+      <trans-unit id="AiImageEditor.SlotAction.Download" approved="yes">
         <source xml:lang="en">Download</source>
-        <target xml:lang="pt-PT" state="translated">Baixar</target>
+        <target xml:lang="pt-PT" state="final">Baixar</target>
         <note>ID: AiImageEditor.SlotAction.Download</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.SlotAction.MoreActions">
+      <trans-unit id="AiImageEditor.SlotAction.MoreActions" approved="yes">
         <source xml:lang="en">More actions</source>
-        <target xml:lang="pt-PT" state="translated">Mais ações</target>
+        <target xml:lang="pt-PT" state="final">Mais ações</target>
         <note>ID: AiImageEditor.SlotAction.MoreActions</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.SlotAction.PasteFromClipboard">
+      <trans-unit id="AiImageEditor.SlotAction.PasteFromClipboard" approved="yes">
         <source xml:lang="en">Paste from Clipboard</source>
-        <target xml:lang="pt-PT" state="translated">Colar da Área de Transferência</target>
+        <target xml:lang="pt-PT" state="final">Colar da Área de Transferência</target>
         <note>ID: AiImageEditor.SlotAction.PasteFromClipboard</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.SlotAction.RemoveImage">
+      <trans-unit id="AiImageEditor.SlotAction.RemoveImage" approved="yes">
         <source xml:lang="en">Remove image</source>
-        <target xml:lang="pt-PT" state="translated">Remover a imagem</target>
+        <target xml:lang="pt-PT" state="final">Remover a imagem</target>
         <note>ID: AiImageEditor.SlotAction.RemoveImage</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Strip.bookImages.Label">
+      <trans-unit id="AiImageEditor.Strip.bookImages.Label" approved="yes">
         <source xml:lang="en">Book Images</source>
-        <target xml:lang="pt-PT" state="translated">Imagens do livro</target>
+        <target xml:lang="pt-PT" state="final">Imagens do livro</target>
         <note>ID: AiImageEditor.Strip.bookImages.Label</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Strip.bookImages.Tip">
@@ -2259,24 +2264,24 @@
         <target xml:lang="pt-PT" state="translated">Imagens que vêm do livro atual.</target>
         <note>ID: AiImageEditor.Strip.bookImages.Tip</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Strip.characters.Label">
+      <trans-unit id="AiImageEditor.Strip.characters.Label" approved="yes">
         <source xml:lang="en">Characters</source>
-        <target xml:lang="pt-PT" state="translated">Personagens</target>
+        <target xml:lang="pt-PT" state="final">Personagens</target>
         <note>ID: AiImageEditor.Strip.characters.Label</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Strip.characters.Tip">
+      <trans-unit id="AiImageEditor.Strip.characters.Tip" approved="yes">
         <source xml:lang="en">Use this area to keep your cast of characters.</source>
-        <target xml:lang="pt-PT" state="translated">Use este espaço para guardar o elenco de personagens.</target>
+        <target xml:lang="pt-PT" state="final">Use este espaço para guardar o elenco de personagens.</target>
         <note>ID: AiImageEditor.Strip.characters.Tip</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Strip.history.Label">
+      <trans-unit id="AiImageEditor.Strip.history.Label" approved="yes">
         <source xml:lang="en">History</source>
-        <target xml:lang="pt-PT" state="translated">Histórico</target>
+        <target xml:lang="pt-PT" state="final">Histórico</target>
         <note>ID: AiImageEditor.Strip.history.Label</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Strip.reference.Label">
+      <trans-unit id="AiImageEditor.Strip.reference.Label" approved="yes">
         <source xml:lang="en">Reference Images</source>
-        <target xml:lang="pt-PT" state="translated">Imagens de referência</target>
+        <target xml:lang="pt-PT" state="final">Imagens de referência</target>
         <note>ID: AiImageEditor.Strip.reference.Label</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Strip.reference.Tip">
@@ -2284,9 +2289,9 @@
         <target xml:lang="pt-PT" state="translated">Use este espaço para guardar imagens de referência que servem em mais de um livro. Por exemplo, como as pessoas se vestem ou como são as árvores.</target>
         <note>ID: AiImageEditor.Strip.reference.Tip</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Strip.starred.Label">
+      <trans-unit id="AiImageEditor.Strip.starred.Label" approved="yes">
         <source xml:lang="en">Starred</source>
-        <target xml:lang="pt-PT" state="translated">Favoritas</target>
+        <target xml:lang="pt-PT" state="final">Favoritas</target>
         <note>ID: AiImageEditor.Strip.starred.Label</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Strip.starred.Tip">
@@ -2304,59 +2309,59 @@
         <target xml:lang="pt-PT" state="translated">Aplicar os personagens adaptados</target>
         <note>ID: AiImageEditor.Tool.apply_localized_characters.Title</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.change_style.Param.extraInstructions">
+      <trans-unit id="AiImageEditor.Tool.change_style.Param.extraInstructions" approved="yes">
         <source xml:lang="en">Extra Instructions</source>
-        <target xml:lang="pt-PT" state="translated">Instruções adicionais</target>
+        <target xml:lang="pt-PT" state="final">Instruções adicionais</target>
         <note>ID: AiImageEditor.Tool.change_style.Param.extraInstructions</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.change_style.Title">
+      <trans-unit id="AiImageEditor.Tool.change_style.Title" approved="yes">
         <source xml:lang="en">Change Style</source>
-        <target xml:lang="pt-PT" state="translated">Mudar o estilo</target>
+        <target xml:lang="pt-PT" state="final">Mudar o estilo</target>
         <note>ID: AiImageEditor.Tool.change_style.Title</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.change_text.Param.match">
+      <trans-unit id="AiImageEditor.Tool.change_text.Param.match" approved="yes">
         <source xml:lang="en">Text to Match</source>
-        <target xml:lang="pt-PT" state="translated">Texto a procurar</target>
+        <target xml:lang="pt-PT" state="final">Texto a procurar</target>
         <note>ID: AiImageEditor.Tool.change_text.Param.match</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.change_text.Param.match.Placeholder">
+      <trans-unit id="AiImageEditor.Tool.change_text.Param.match.Placeholder" approved="yes">
         <source xml:lang="en">e.g. "Once upon a time"</source>
-        <target xml:lang="pt-PT" state="translated">por ex. "Era uma vez"</target>
+        <target xml:lang="pt-PT" state="final">ex: "Era uma vez"</target>
         <note>ID: AiImageEditor.Tool.change_text.Param.match.Placeholder</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.change_text.Param.replace">
+      <trans-unit id="AiImageEditor.Tool.change_text.Param.replace" approved="yes">
         <source xml:lang="en">New Text</source>
-        <target xml:lang="pt-PT" state="translated">Texto novo</target>
+        <target xml:lang="pt-PT" state="final">Texto novo</target>
         <note>ID: AiImageEditor.Tool.change_text.Param.replace</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.change_text.Param.replace.Placeholder">
         <source xml:lang="en">e.g. "In a galaxy far away"</source>
-        <target xml:lang="pt-PT" state="translated">por ex. "Numa galáxia muito distante"</target>
+        <target xml:lang="pt-PT" state="translated">ex: "Em uma galáxia muito distante"</target>
         <note>ID: AiImageEditor.Tool.change_text.Param.replace.Placeholder</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.change_text.Title">
+      <trans-unit id="AiImageEditor.Tool.change_text.Title" approved="yes">
         <source xml:lang="en">Change Text</source>
-        <target xml:lang="pt-PT" state="translated">Mudar o texto</target>
+        <target xml:lang="pt-PT" state="final">Mudar o texto</target>
         <note>ID: AiImageEditor.Tool.change_text.Title</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.coloring_book.Param.difficulty">
+      <trans-unit id="AiImageEditor.Tool.coloring_book.Param.difficulty" approved="yes">
         <source xml:lang="en">Difficulty</source>
-        <target xml:lang="pt-PT" state="translated">Dificuldade</target>
+        <target xml:lang="pt-PT" state="final">Dificuldade</target>
         <note>ID: AiImageEditor.Tool.coloring_book.Param.difficulty</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.coloring_book.Param.difficulty.Option.Complex">
+      <trans-unit id="AiImageEditor.Tool.coloring_book.Param.difficulty.Option.Complex" approved="yes">
         <source xml:lang="en">Complex</source>
-        <target xml:lang="pt-PT" state="translated">Complexa</target>
+        <target xml:lang="pt-PT" state="final">Complexa</target>
         <note>ID: AiImageEditor.Tool.coloring_book.Param.difficulty.Option.Complex</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.coloring_book.Param.difficulty.Option.Moderate">
+      <trans-unit id="AiImageEditor.Tool.coloring_book.Param.difficulty.Option.Moderate" approved="yes">
         <source xml:lang="en">Moderate</source>
-        <target xml:lang="pt-PT" state="translated">Média</target>
+        <target xml:lang="pt-PT" state="final">Média</target>
         <note>ID: AiImageEditor.Tool.coloring_book.Param.difficulty.Option.Moderate</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.coloring_book.Param.difficulty.Option.Simple">
+      <trans-unit id="AiImageEditor.Tool.coloring_book.Param.difficulty.Option.Simple" approved="yes">
         <source xml:lang="en">Simple</source>
-        <target xml:lang="pt-PT" state="translated">Simples</target>
+        <target xml:lang="pt-PT" state="final">Simples</target>
         <note>ID: AiImageEditor.Tool.coloring_book.Param.difficulty.Option.Simple</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.coloring_book.Title">
@@ -2366,12 +2371,12 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.custom.Description">
         <source xml:lang="en">Edit the image, optionally with additional reference images.</source>
-        <target xml:lang="pt-PT" state="translated">Edita a imagem, com imagens de referência adicionais se você quiser.</target>
+        <target xml:lang="pt-PT" state="translated">Editar a imagem (opcionalmente, com imagens de referência adicionais).</target>
         <note>ID: AiImageEditor.Tool.custom.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.custom.Param.prompt.Placeholder">
         <source xml:lang="en">Describe how to change the image...</source>
-        <target xml:lang="pt-PT" state="translated">Descreva como mudar a imagem...</target>
+        <target xml:lang="pt-PT" state="translated">Descreva como modificar a imagem...</target>
         <note>ID: AiImageEditor.Tool.custom.Param.prompt.Placeholder</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.custom.Title">
@@ -2384,19 +2389,19 @@
         <target xml:lang="pt-PT" state="translated">Personagem a alterar (opcional; deixe em branco para todos)</target>
         <note>ID: AiImageEditor.Tool.ethnicity.Param.character</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.ethnicity.Param.ethnicity">
+      <trans-unit id="AiImageEditor.Tool.ethnicity.Param.ethnicity" approved="yes">
         <source xml:lang="en">Ethnicity</source>
-        <target xml:lang="pt-PT" state="translated">Etnia</target>
+        <target xml:lang="pt-PT" state="final">Etnia</target>
         <note>ID: AiImageEditor.Tool.ethnicity.Param.ethnicity</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.ethnicity.Title">
+      <trans-unit id="AiImageEditor.Tool.ethnicity.Title" approved="yes">
         <source xml:lang="en">Change Ethnicity</source>
-        <target xml:lang="pt-PT" state="translated">Mudar a etnia</target>
+        <target xml:lang="pt-PT" state="final">Mudar a etnia</target>
         <note>ID: AiImageEditor.Tool.ethnicity.Title</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.extract_cast_of_characters.Param.splitIntoSeparateFiles">
         <source xml:lang="en">Split into separate files</source>
-        <target xml:lang="pt-PT" state="translated">Separar em arquivos distintos</target>
+        <target xml:lang="pt-PT" state="translated">Dividir em arquivos distintos</target>
         <note>ID: AiImageEditor.Tool.extract_cast_of_characters.Param.splitIntoSeparateFiles</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.extract_cast_of_characters.Title">
@@ -2404,24 +2409,24 @@
         <target xml:lang="pt-PT" state="translated">Extrair o elenco de personagens</target>
         <note>ID: AiImageEditor.Tool.extract_cast_of_characters.Title</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.generate_image.Param.prompt">
+      <trans-unit id="AiImageEditor.Tool.generate_image.Param.prompt" approved="yes">
         <source xml:lang="en">Image Description</source>
-        <target xml:lang="pt-PT" state="translated">Descrição da imagem</target>
+        <target xml:lang="pt-PT" state="final">Descrição da imagem</target>
         <note>ID: AiImageEditor.Tool.generate_image.Param.prompt</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.generate_image.Param.prompt.Placeholder">
         <source xml:lang="en">A cute robot playing chess in a park, children's book style</source>
-        <target xml:lang="pt-PT" state="translated">Um robô fofo jogando xadrez num parque, estilo livro infantil</target>
+        <target xml:lang="pt-PT" state="translated">Um robô fofo jogando xadrez num parque, no estilo de um livro infantil</target>
         <note>ID: AiImageEditor.Tool.generate_image.Param.prompt.Placeholder</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.generate_image.Title">
+      <trans-unit id="AiImageEditor.Tool.generate_image.Title" approved="yes">
         <source xml:lang="en">Create an Image</source>
-        <target xml:lang="pt-PT" state="translated">Criar uma imagem</target>
+        <target xml:lang="pt-PT" state="final">Criar uma imagem</target>
         <note>ID: AiImageEditor.Tool.generate_image.Title</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.generate_pallet.Param.numberOfColors">
+      <trans-unit id="AiImageEditor.Tool.generate_pallet.Param.numberOfColors" approved="yes">
         <source xml:lang="en">Number of Colors</source>
-        <target xml:lang="pt-PT" state="translated">Número de cores</target>
+        <target xml:lang="pt-PT" state="final">Número de cores</target>
         <note>ID: AiImageEditor.Tool.generate_pallet.Param.numberOfColors</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.generate_pallet.Title">
@@ -2434,14 +2439,14 @@
         <target xml:lang="pt-PT" state="translated">Deixa a imagem nítida, limpa e com tamanho suficiente para esta página.</target>
         <note>ID: AiImageEditor.Tool.improve_quality.Description</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind">
+      <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind" approved="yes">
         <source xml:lang="en">Image Kind</source>
-        <target xml:lang="pt-PT" state="translated">Tipo de imagem</target>
+        <target xml:lang="pt-PT" state="final">Tipo de imagem</target>
         <note>ID: AiImageEditor.Tool.improve_quality.Param.imageKind</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Illustration">
+      <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Illustration" approved="yes">
         <source xml:lang="en">Illustration</source>
-        <target xml:lang="pt-PT" state="translated">Ilustração</target>
+        <target xml:lang="pt-PT" state="final">Ilustração</target>
         <note>ID: AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Illustration</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Line Drawing">
@@ -2449,69 +2454,69 @@
         <target xml:lang="pt-PT" state="translated">Desenho a traço</target>
         <note>ID: AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Line Drawing</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Photo">
+      <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Photo" approved="yes">
         <source xml:lang="en">Photo</source>
-        <target xml:lang="pt-PT" state="translated">Fotografia</target>
+        <target xml:lang="pt-PT" state="final">Foto</target>
         <note>ID: AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Photo</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.improve_quality.Title">
+      <trans-unit id="AiImageEditor.Tool.improve_quality.Title" approved="yes">
         <source xml:lang="en">Improve Quality</source>
-        <target xml:lang="pt-PT" state="translated">Melhorar a qualidade</target>
+        <target xml:lang="pt-PT" state="final">Melhorar a qualidade</target>
         <note>ID: AiImageEditor.Tool.improve_quality.Title</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.make_gif.Param.animationDescription">
+      <trans-unit id="AiImageEditor.Tool.make_gif.Param.animationDescription" approved="yes">
         <source xml:lang="en">Describe the Animation</source>
-        <target xml:lang="pt-PT" state="translated">Descreva a animação</target>
+        <target xml:lang="pt-PT" state="final">Descreva a animação</target>
         <note>ID: AiImageEditor.Tool.make_gif.Param.animationDescription</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.make_gif.Param.animationDescription.Placeholder">
         <source xml:lang="en">Optional: describe the motion, such as blinking, waving, hopping, or turning around.</source>
-        <target xml:lang="pt-PT" state="translated">Opcional: descreva o movimento, como piscar os olhos, acenar, saltitar ou virar-se.</target>
+        <target xml:lang="pt-PT" state="translated">Opcional: descreva o movimento. Por exemplo: piscar os olhos, acenar, saltitar ou virar-se.</target>
         <note>ID: AiImageEditor.Tool.make_gif.Param.animationDescription.Placeholder</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Gothic">
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Gothic" approved="yes">
         <source xml:lang="en">Gothic</source>
-        <target xml:lang="pt-PT" state="translated">Gótico</target>
+        <target xml:lang="pt-PT" state="final">Gótico</target>
         <note>ID: AiImageEditor.Tool.stylized_title.Param.style.Option.Gothic</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Handwritten">
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Handwritten" approved="yes">
         <source xml:lang="en">Handwritten</source>
-        <target xml:lang="pt-PT" state="translated">Manuscrito</target>
+        <target xml:lang="pt-PT" state="final">Manuscrito</target>
         <note>ID: AiImageEditor.Tool.stylized_title.Param.style.Option.Handwritten</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Neon">
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Neon" approved="yes">
         <source xml:lang="en">Neon</source>
-        <target xml:lang="pt-PT" state="translated">Néon</target>
+        <target xml:lang="pt-PT" state="final">Néon</target>
         <note>ID: AiImageEditor.Tool.stylized_title.Param.style.Option.Neon</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Playful">
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Playful" approved="yes">
         <source xml:lang="en">Playful</source>
-        <target xml:lang="pt-PT" state="translated">Divertido</target>
+        <target xml:lang="pt-PT" state="final">Divertido</target>
         <note>ID: AiImageEditor.Tool.stylized_title.Param.style.Option.Playful</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Storybook">
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Storybook" approved="yes">
         <source xml:lang="en">Storybook</source>
-        <target xml:lang="pt-PT" state="translated">Livro de histórias</target>
+        <target xml:lang="pt-PT" state="final">Livro de histórias</target>
         <note>ID: AiImageEditor.Tool.stylized_title.Param.style.Option.Storybook</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.title">
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.title" approved="yes">
         <source xml:lang="en">Title Text</source>
-        <target xml:lang="pt-PT" state="translated">Texto do título</target>
+        <target xml:lang="pt-PT" state="final">Texto do título</target>
         <note>ID: AiImageEditor.Tool.stylized_title.Param.title</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.title.Placeholder">
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.title.Placeholder" approved="yes">
         <source xml:lang="en">The Big Adventure</source>
-        <target xml:lang="pt-PT" state="translated">A grande aventura</target>
+        <target xml:lang="pt-PT" state="final">A grande aventura</target>
         <note>ID: AiImageEditor.Tool.stylized_title.Param.title.Placeholder</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.stylized_title.Title">
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Title" approved="yes">
         <source xml:lang="en">Add Stylized Title</source>
-        <target xml:lang="pt-PT" state="translated">Adicionar um título estilizado</target>
+        <target xml:lang="pt-PT" state="final">Adicionar um título estilizado</target>
         <note>ID: AiImageEditor.Tool.stylized_title.Title</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Welcome.Connect">
+      <trans-unit id="AiImageEditor.Welcome.Connect" approved="yes">
         <source xml:lang="en">Connect to AI Image Generators</source>
-        <target xml:lang="pt-PT" state="translated">Conectar aos geradores de imagem com IA</target>
+        <target xml:lang="pt-PT" state="final">Conectar aos geradores de imagem com IA</target>
         <note>ID: AiImageEditor.Welcome.Connect</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Welcome.CreditsNote">
@@ -2524,14 +2529,14 @@
         <target xml:lang="pt-PT" state="translated">As Ferramentas de imagem com IA do Bloom criam imagens usando modelos de IA do Google e de outros fornecedores. Esses modelos cobram por imagem: você paga por eles através do {0}, um serviço que permite carregar créditos antecipadamente e usá-los com vários fornecedores. Os créditos começam em US$ 5, o suficiente para cerca de 25 a 50 imagens, e só são gastos quando você gera imagens. Não há assinatura.</target>
         <note>ID: AiImageEditor.Welcome.Explanation</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Welcome.JustLookAround">
+      <trans-unit id="AiImageEditor.Welcome.JustLookAround" approved="yes">
         <source xml:lang="en">I just want to look around</source>
-        <target xml:lang="pt-PT" state="translated">Só quero explorar</target>
+        <target xml:lang="pt-PT" state="final">Só quero explorar</target>
         <note>ID: AiImageEditor.Welcome.JustLookAround</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Welcome.Title">
+      <trans-unit id="AiImageEditor.Welcome.Title" approved="yes">
         <source xml:lang="en">Connect to generate images</source>
-        <target xml:lang="pt-PT" state="translated">Conecte-se para gerar imagens</target>
+        <target xml:lang="pt-PT" state="final">Conecte-se para gerar imagens</target>
         <note>ID: AiImageEditor.Welcome.Title</note>
       </trans-unit>
     </body>
