@@ -110,6 +110,11 @@
         <target xml:lang="qaa-x-test" state="needs-translation">Do Not Indent This Paragraph</target>
         <note>ID: EditTab.TextContextMenu.NoIndent</note>
       </trans-unit>
+      <trans-unit id="EditTab.InlineImage.InsertImage" translate="no">
+        <source xml:lang="en">Insert Image</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Insert Image</target>
+        <note>ID: EditTab.InlineImage.InsertImage</note>
+      </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
         <source xml:lang="en">Choose...</source>
