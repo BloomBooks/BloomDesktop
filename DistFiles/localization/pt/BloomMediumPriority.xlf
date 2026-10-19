@@ -60,9 +60,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Tables</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.Tables</note>
       </trans-unit>
-      <trans-unit id="Feature.AiImageEditing">
+      <trans-unit id="Feature.AiImageEditing" approved="yes">
         <source xml:lang="en">Edit Images with AI</source>
-        <target xml:lang="pt-PT" state="needs-translation">Edit Images with AI</target>
+        <target xml:lang="pt-PT" state="final">Editar imagens com IA</target>
         <note>ID: Feature.AiImageEditing</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.RotateRight" translate="no">
@@ -90,9 +90,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Rotate</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Rotate</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditWithAI">
+      <trans-unit id="EditTab.Image.EditWithAI" approved="yes">
         <source xml:lang="en">Edit with AI...</source>
-        <target xml:lang="pt-PT" state="needs-translation">Edit with AI...</target>
+        <target xml:lang="pt-PT" state="final">Editar com IA...</target>
         <note>ID: EditTab.Image.EditWithAI</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.SlotLabel.CanvasBackground" approved="yes">
@@ -2006,17 +2006,17 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.OpenRouter.CreditsExplanation">
         <source xml:lang="en">OpenRouter credits are how you pre-pay for use of the AI Image Tools from Google and others. Once you have an OpenRouter account, paste in an API key below.</source>
-        <target xml:lang="pt-PT" state="translated">Os créditos do OpenRouter são a forma de pagar antecipadamente pelo uso das Ferramentas de imagem com IA do Google e de outros fornecedores. Depois de criar uma conta no OpenRouter, cole abaixo uma chave de API.</target>
+        <target xml:lang="pt-PT" state="translated">Os créditos do OpenRouter permitem o pagamento antecipado pelo uso das Ferramentas de imagem com IA do Google e de outros fornecedores. Após criar uma conta no OpenRouter, cole abaixo uma chave API.</target>
         <note>ID: AiImageEditor.OpenRouter.CreditsExplanation</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.NoSpendingLimit">
+      <trans-unit id="AiImageEditor.OpenRouter.NoSpendingLimit" approved="yes">
         <source xml:lang="en">This key has no spending limit. Make sure that {0} does not have 'Auto Top-Up' on</source>
-        <target xml:lang="pt-PT" state="translated">Esta chave não tem limite de gastos. Verifique se {0} não está com 'Auto Top-Up' ativado</target>
+        <target xml:lang="pt-PT" state="final">Esta chave não tem limite de gastos. Verifique se {0} não está com 'Auto Top-Up' ativado</target>
         <note>ID: AiImageEditor.OpenRouter.NoSpendingLimit</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.PasteKeyPlaceholder">
+      <trans-unit id="AiImageEditor.OpenRouter.PasteKeyPlaceholder" approved="yes">
         <source xml:lang="en">Paste OpenRouter key</source>
-        <target xml:lang="pt-PT" state="translated">Cole a chave do OpenRouter</target>
+        <target xml:lang="pt-PT" state="final">Colar a chave do OpenRouter</target>
         <note>ID: AiImageEditor.OpenRouter.PasteKeyPlaceholder</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.OpenRouter.TestKey" approved="yes">
@@ -2164,9 +2164,9 @@
         <target xml:lang="pt-PT" state="translated">Ampliar até onde este modelo consegue, cerca de {0}% do tamanho de que esta página precisa.</target>
         <note>ID: AiImageEditor.ScaleUp.ModelLimit</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Section.Enhance">
+      <trans-unit id="AiImageEditor.Section.Enhance" approved="yes">
         <source xml:lang="en">Enhance</source>
-        <target xml:lang="pt-PT" state="translated">Melhorar</target>
+        <target xml:lang="pt-PT" state="final">Melhorar</target>
         <note>ID: AiImageEditor.Section.Enhance</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Section.Games" approved="yes">
@@ -2196,12 +2196,12 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Settings.ConnectionSection">
         <source xml:lang="en">Connection to AI Image Generators</source>
-        <target xml:lang="pt-PT" state="translated">Conexão com os geradores de imagem com IA</target>
+        <target xml:lang="pt-PT" state="translated">Conectar aos geradores de imagem com IA</target>
         <note>ID: AiImageEditor.Settings.ConnectionSection</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Settings.Title">
+      <trans-unit id="AiImageEditor.Settings.Title" approved="yes">
         <source xml:lang="en">AI Image Tools settings</source>
-        <target xml:lang="pt-PT" state="translated">Configurações das Ferramentas de imagem com IA</target>
+        <target xml:lang="pt-PT" state="final">Configurações das Ferramentas de imagem com IA</target>
         <note>ID: AiImageEditor.Settings.Title</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Shape.MatchContainer">
