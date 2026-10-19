@@ -20,9 +20,13 @@ use the `nightly-triage` skill.
   never reached the e2e suite, and it has failed every night since 2026-10-15 (`73c05442b6`). Two
   PRs landed in between: [#8459](https://github.com/BloomBooks/BloomDesktop/pull/8459) (BL-17009,
   stop white lines along the edges of full-page pictures) and #8387 (BL-16900, one undo stack).
-  #8459 changes where a full-page picture's edges sit, which fits a one-pixel difference, but that
-  is not confirmed.
-- **Status:** no card or PR for the failure.
+- **Cause (confirmed):** a real Bloom bug from #8459; reverting its commit (`b4024cccbc`) alone
+  makes the spec pass. #8459 makes a fitted background picture overhang each edge it fills by 1px,
+  so the test starts at left -1. Rotate right (`setRotatedBackgroundLayout` in
+  `imageContentTransform.ts`) refits the picture to its area exactly and never adds that overhang,
+  so after any rotation the bleed is gone (and the white line can come back), and after four the
+  left is 0. The fix gives the rotated layout the same bleed.
+- **Status:** fix in [#8485](https://github.com/BloomBooks/BloomDesktop/pull/8485), on BL-17009.
 
 ## Bulk upload test: two different failures against dev.bloomlibrary.org
 

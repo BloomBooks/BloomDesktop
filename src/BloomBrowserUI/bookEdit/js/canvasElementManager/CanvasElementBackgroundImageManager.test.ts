@@ -112,11 +112,13 @@ import {
     adjustBackgroundImageSize,
     backgroundImageAlreadyFillsCanvas,
     BackgroundImageManagerState,
-    getBackgroundImageSizeWithBleed,
     handleResizeAdjustments,
-    kBackgroundImageBleedPx,
     repairInterruptedBackgroundConversion,
 } from "./CanvasElementBackgroundImageManager";
+import {
+    getBackgroundImageSizeWithBleed,
+    kBackgroundImageBleedPx,
+} from "./backgroundImageBleed";
 
 // Old-style page markup (Bloom 6.2 and earlier): the img sits directly in the bloom-canvas, with
 // no bloom-backgroundImage canvas element yet. handleResizeAdjustments converts it on page load.
