@@ -2,7 +2,7 @@
 // that editable wrapping around them. A picture can be docked on the left, on the right, as a
 // full-width band across the middle, or at the bottom. The layout rules are in
 // content/bookLayout/inlineImages.less, and the handles and outlines shown while editing are
-// in bookEdit/css/editMode.less.
+// in bookEdit/css/inlineImageEditing.less.
 //
 // Two things about the design explain most of the code in this file:
 //
@@ -395,8 +395,14 @@ export function insertInlineImage(translationGroup: HTMLElement): HTMLElement {
  * block has several images, a function given only the group could only guess which one was
  * meant. It throws if given something that is not an inline image, so that it can't quietly
  * delete the wrong thing.
+ *
+ * `afterRemoving` runs after the copies are gone and before the undo entry is recorded, for
+ * changes to the other images that belong to the same step, so that one Undo takes back both.
  */
-export function removeInlineImage(wrapper: HTMLElement): void {
+export function removeInlineImage(
+    wrapper: HTMLElement,
+    afterRemoving?: () => void,
+): void {
     const id = getInlineImageId(wrapper);
     const translationGroup = getTranslationGroupOf(wrapper);
     if (!wrapper.classList.contains(kInlineImageClass) || !translationGroup) {
@@ -411,6 +417,7 @@ export function removeInlineImage(wrapper: HTMLElement): void {
         if (id) getInlineImageById(editable, id)?.remove();
     });
     if (!id) wrapper.remove();
+    afterRemoving?.();
     commitPendingInlineImageUndo(translationGroup);
 }
 
@@ -616,14 +623,16 @@ export function prepareInlineImageUndo(
  * where it was, so a drag into a full side, or past the level of another image, ends exactly
  * where it began. An entry for that would give the person an Undo that visibly does nothing,
  * and the Undo after it would take back a change they had stopped thinking about.
+ *
+ * Returns whether it pushed an entry, that is, whether the operation changed anything.
  */
-export function commitPendingInlineImageUndo(element: HTMLElement): void {
+export function commitPendingInlineImageUndo(element: HTMLElement): boolean {
     const pending = pendingInlineImageUndo;
     pendingInlineImageUndo = undefined;
     const translationGroup = getTranslationGroupOf(element);
-    if (!pending || pending.translationGroup !== translationGroup) return;
+    if (!pending || pending.translationGroup !== translationGroup) return false;
     const after = getInlineImageGroupState(translationGroup);
-    if (inlineImageGroupStatesMatch(pending.before, after)) return;
+    if (inlineImageGroupStatesMatch(pending.before, after)) return false;
     const entry = makeInlineImageUndoEntry(
         pending.label,
         translationGroup,
@@ -632,6 +641,7 @@ export function commitPendingInlineImageUndo(element: HTMLElement): void {
     );
     inlineImageUndoEntries.add(entry);
     theOneUndoStack.push(entry);
+    return true;
 }
 
 /** Throws away a prepared operation, for one that turned out not to happen. */
