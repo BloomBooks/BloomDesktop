@@ -27,6 +27,7 @@ import {
     kBloomCanvasSelector,
     kCanvasElementSelector,
 } from "../toolbox/canvas/canvasElementConstants";
+import { getBackgroundImageSizeWithBleed } from "./canvasElementManager/backgroundImageBleed";
 
 export type FlipAxis = "horizontal" | "vertical";
 
@@ -196,6 +197,36 @@ export function computeRotatedBackgroundLayout(
     };
 }
 
+// Enlarge a background picture's layout so that it overhangs each edge of the page's picture area
+// it fills by kBackgroundImageBleedPx, the way adjustBackgroundImageSizeToFit fits a background
+// picture; without that, a rotated picture shows a thin white line along those edges. Everything
+// is scaled together, so the picture keeps its shape and any crop, and the element stays centred.
+export function withBackgroundImageBleed(
+    layout: BackgroundPictureLayout,
+    pageWidth: number,
+    pageHeight: number,
+): BackgroundPictureLayout {
+    const scale =
+        getBackgroundImageSizeWithBleed(
+            layout.elementWidth,
+            layout.elementHeight,
+            pageWidth,
+            pageHeight,
+        ).width / layout.elementWidth;
+    const elementWidth = scale * layout.elementWidth;
+    const elementHeight = scale * layout.elementHeight;
+    return {
+        elementWidth,
+        elementHeight,
+        elementLeft: (pageWidth - elementWidth) / 2,
+        elementTop: (pageHeight - elementHeight) / 2,
+        imageWidth: scale * layout.imageWidth,
+        imageHeight: scale * layout.imageHeight,
+        imageLeft: scale * layout.imageLeft,
+        imageTop: scale * layout.imageTop,
+    };
+}
+
 // Read a length we wrote ourselves. Anything we did not write counts as zero.
 function pxOrZero(value: string): number {
     const parsed = parseFloat(value);
@@ -257,7 +288,8 @@ function getDrawnPictureRectangle(
 //
 // There are two kinds of element to place the rotated content in, and one formula covers both.
 // A background picture has to fit the page's picture area, so its element is scaled to that
-// area and centred in it. Any other element keeps the size it has, so the area is that element
+// area and centred in it, then enlarged a little to overhang the edges it fills (see
+// withBackgroundImageBleed). Any other element keeps the size it has, so the area is that element
 // with its own two dimensions swapped, the scale comes out as one, and the element rotates about
 // its own centre and stays where the author put it. The Rotate Right command reaches an element
 // of the second kind when its box cannot rotate on the page for some other reason, which is the
@@ -287,7 +319,7 @@ function setRotatedBackgroundLayout(img: HTMLImageElement): boolean {
         return false;
     }
 
-    const layout = computeRotatedBackgroundLayout(
+    const fittedLayout = computeRotatedBackgroundLayout(
         areaWidth,
         areaHeight,
         elementWidth,
@@ -298,6 +330,9 @@ function setRotatedBackgroundLayout(img: HTMLImageElement): boolean {
         picture.top,
         img.classList.contains("bloom-imageObjectFit-cover"),
     );
+    const layout = isBackground
+        ? withBackgroundImageBleed(fittedLayout, areaWidth, areaHeight)
+        : fittedLayout;
 
     element.style.width = `${roundPx(layout.elementWidth)}px`;
     element.style.height = `${roundPx(layout.elementHeight)}px`;
