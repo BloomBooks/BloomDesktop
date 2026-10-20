@@ -30,7 +30,7 @@ test.use({
     collectionSpec: { name: "settings-help", languages: ["en"] },
 });
 
-test("Help in the Collection Settings dialog opens the topic for the page showing", async ({
+test("Help in the Collection Settings dialog opens the topic for the page showing [Test Case ID 850]", async ({
     page,
 }) => {
     await openCollectionSettings(page);
