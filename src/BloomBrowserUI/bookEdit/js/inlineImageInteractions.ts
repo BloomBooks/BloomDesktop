@@ -578,7 +578,9 @@ export function getInlineImageCroppedSides(crop: IInlineImageCrop): {
         box.width,
         box.height,
         0,
-        // The crop is rounded to a hundredth, so anything bigger is a real crop.
+        // These are percentages of the picture, and a stored crop is rounded to a hundredth
+        // of a percent, so a side that is cut at all is cut by at least 0.01. A slop well
+        // below that still ignores floating-point error in the arithmetic.
         0.001,
     );
 }
