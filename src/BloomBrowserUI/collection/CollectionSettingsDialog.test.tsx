@@ -198,14 +198,33 @@ vi.mock("../react_components/BloomDialog/commonDialogComponents", () => ({
     ),
 }));
 
-const { MockConfigrGroup, MockConfigrStatic } = vi.hoisted(() => ({
-    MockConfigrGroup: (props: React.PropsWithChildren<object>) => (
-        <div>{props.children}</div>
-    ),
-    MockConfigrStatic: (props: React.PropsWithChildren<object>) => (
-        <div>{props.children}</div>
-    ),
-}));
+const { MockConfigrGroup, MockConfigrStatic, MockMountedWith } = vi.hoisted(
+    () => ({
+        // What the pane was given as it mounted; later renders do not change it, as in Config-r.
+        MockMountedWith: (props: {
+            collectionName: string;
+            pageKey?: string;
+        }) => {
+            const [mountedWith] = React.useState(props);
+            return (
+                <>
+                    <div data-testid="initial-collection-name">
+                        {mountedWith.collectionName}
+                    </div>
+                    <div data-testid="initial-page-key">
+                        {mountedWith.pageKey}
+                    </div>
+                </>
+            );
+        },
+        MockConfigrGroup: (props: React.PropsWithChildren<object>) => (
+            <div>{props.children}</div>
+        ),
+        MockConfigrStatic: (props: React.PropsWithChildren<object>) => (
+            <div>{props.children}</div>
+        ),
+    }),
+);
 
 vi.mock("@sillsdev/config-r", () => ({
     ConfigrPane: (props: {
@@ -213,95 +232,88 @@ vi.mock("@sillsdev/config-r", () => ({
         initialValues: ICollectionSettingsValues;
         initiallySelectedTopLevelPageKey?: string;
         onChange: (values: unknown) => void;
-    }) => {
-        // Config-r reads initialValues and the page to show only as it mounts, so this does too,
-        // and tests check what it was given.
-        const [mountedWith] = React.useState({
-            collectionName: props.initialValues.advanced.collectionName,
-            pageKey: props.initiallySelectedTopLevelPageKey,
-        });
-        return (
-            <div>
-                <div data-testid="initial-collection-name">
-                    {mountedWith.collectionName}
-                </div>
-                <div data-testid="initial-page-key">{mountedWith.pageKey}</div>
-                <button
-                    data-testid="change-restart-value"
-                    onClick={() =>
-                        props.onChange({
-                            ...props.initialValues,
-                            frontBackMatter: {
-                                ...props.initialValues.frontBackMatter,
-                                xmatter: "Device",
+    }) => (
+        <div>
+            {/* Config-r reads initialValues and the page to show only as it mounts, so tests check what it was given. */}
+            <MockMountedWith
+                collectionName={props.initialValues.advanced.collectionName}
+                pageKey={props.initiallySelectedTopLevelPageKey}
+            />
+            <button
+                data-testid="change-restart-value"
+                onClick={() =>
+                    props.onChange({
+                        ...props.initialValues,
+                        frontBackMatter: {
+                            ...props.initialValues.frontBackMatter,
+                            xmatter: "Device",
+                        },
+                    })
+                }
+            />
+            <button
+                data-testid="add-third-language"
+                onClick={() =>
+                    props.onChange({
+                        ...props.initialValues,
+                        languages: {
+                            ...props.initialValues.languages,
+                            language3: {
+                                ...props.initialValues.languages.language1,
+                                tag: "es",
                             },
-                        })
-                    }
-                />
-                <button
-                    data-testid="add-third-language"
-                    onClick={() =>
-                        props.onChange({
-                            ...props.initialValues,
-                            languages: {
-                                ...props.initialValues.languages,
-                                language3: {
-                                    ...props.initialValues.languages.language1,
-                                    tag: "es",
-                                },
-                            },
-                        })
-                    }
-                />{" "}
-                <button
-                    data-testid="change-other-value"
-                    onClick={() =>
-                        props.onChange({
-                            ...props.initialValues,
-                            advanced: {
-                                ...props.initialValues.advanced,
-                                collectionName: "Renamed",
-                            },
-                        })
-                    }
-                />
-                <button
-                    data-testid="pad-country"
-                    onClick={() =>
-                        props.onChange({
-                            ...props.initialValues,
-                            frontBackMatter: {
-                                ...props.initialValues.frontBackMatter,
-                                country: "  Kenya ",
-                            },
-                        })
-                    }
-                />
-                <button
-                    data-testid="pad-collection-name"
-                    onClick={() =>
-                        props.onChange({
-                            ...props.initialValues,
-                            advanced: {
-                                ...props.initialValues.advanced,
-                                collectionName: ` ${props.initialValues.advanced.collectionName}  `,
-                            },
-                        })
-                    }
-                />
-                <button
-                    data-testid="choose-no-bookshelf"
-                    onClick={() =>
-                        props.onChange({
-                            ...props.initialValues,
-                            bloomLibrary: { defaultBookshelf: "" },
-                        })
-                    }
-                />
-                {props.children}
-            </div>
-        );
-    },
+                        },
+                    })
+                }
+            />{" "}
+            <button
+                data-testid="change-other-value"
+                onClick={() =>
+                    props.onChange({
+                        ...props.initialValues,
+                        advanced: {
+                            ...props.initialValues.advanced,
+                            collectionName: "Renamed",
+                        },
+                    })
+                }
+            />
+            <button
+                data-testid="pad-country"
+                onClick={() =>
+                    props.onChange({
+                        ...props.initialValues,
+                        frontBackMatter: {
+                            ...props.initialValues.frontBackMatter,
+                            country: "  Kenya ",
+                        },
+                    })
+                }
+            />
+            <button
+                data-testid="pad-collection-name"
+                onClick={() =>
+                    props.onChange({
+                        ...props.initialValues,
+                        advanced: {
+                            ...props.initialValues.advanced,
+                            collectionName: ` ${props.initialValues.advanced.collectionName}  `,
+                        },
+                    })
+                }
+            />
+            <button
+                data-testid="choose-no-bookshelf"
+                onClick={() =>
+                    props.onChange({
+                        ...props.initialValues,
+                        bloomLibrary: { defaultBookshelf: "" },
+                    })
+                }
+            />
+            {props.children}
+        </div>
+    ),
     ConfigrPage: (props: React.PropsWithChildren<{ pageKey: string }>) => {
         // The real ConfigrPage throws (and blanks the whole UI) unless every child is a group or
         // a static block.
