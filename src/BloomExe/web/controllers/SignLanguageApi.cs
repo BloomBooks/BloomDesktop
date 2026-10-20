@@ -834,7 +834,8 @@ namespace Bloom.web.controllers
         {
             const decimal mbConversion = 1048576M; // 1024 x 1024
             var sizeInMb = sizeInBytes / mbConversion;
-            return sizeInMb.ToString("F1", CultureInfo.CurrentUICulture);
+            // Shown to the user as-is, so it uses their number format.
+            return sizeInMb.ToString("F1", UserCulture.Current);
         }
 
         private static void ParseFrameSize(string output, IDictionary<string, object> statistics)
@@ -883,7 +884,11 @@ namespace Bloom.web.controllers
             }
             var kbps = match.Groups[1].Value;
             var fmbps = double.Parse(kbps, CultureInfo.InvariantCulture) / 1000.0;
-            statistics.Add("megabitsPerSecond", $"{fmbps:F2} Mb/s");
+            // Shown to the user as-is, so it uses their number format.
+            statistics.Add(
+                "megabitsPerSecond",
+                fmbps.ToString("F2", UserCulture.Current) + " Mb/s"
+            );
         }
 
         private static void ParseForAudioStream(
