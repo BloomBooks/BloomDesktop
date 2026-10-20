@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-10-19 (nightlies through the 2026-10-19 run have been triaged)
+**Last updated:** 2026-10-20 (nightlies through the 2026-10-20 run have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -11,7 +11,7 @@ use the `nightly-triage` skill.
 
 ## Rotate and flip: four rotations leave the background one pixel off
 
-- **Failed:** every night from 2026-10-15 to 2026-10-19.
+- **Failed:** every night from 2026-10-15 to 2026-10-20.
   `BloomE2E/tests/rotate-and-flip-images.spec.ts:322` "Rotate right rotates the page's background
   picture inside its area, … and four rotations put it back" (Test Case 827): "After four
   rotations the background's left is 0, not -1." The file runs in serial mode, so the tests after
@@ -22,7 +22,26 @@ use the `nightly-triage` skill.
   stop white lines along the edges of full-page pictures) and #8387 (BL-16900, one undo stack).
   #8459 changes where a full-page picture's edges sit, which fits a one-pixel difference, but that
   is not confirmed.
-- **Status:** no card or PR for the failure.
+- **Status:** fix in review: [PR #8485](https://github.com/BloomBooks/BloomDesktop/pull/8485)
+  (BL-17009), "Rotate right keeps a background picture's bleed".
+
+## C# YouTrack test: adding a comment to the test issue fails
+
+- **Failed:** 2026-10-20. `YouTrackIssueSubmitterTests.CanSubmitToYouTrack` (line 106):
+  `AddCommentToIssue` returned false.
+- **What the trace shows (first look):** the test talks to the live YouTrack server. Creating the
+  test issue and attaching both files had already passed; only the comment failed.
+- **Local run (2026-10-20):** fails the same way, so it is not CI's environment. Neither
+  `YouTrackIssueSubmission.cs` nor the test has changed since August, and the C# suite passed on
+  2026-10-19, so the likely trigger is a change on the YouTrack server. The comment is posted
+  visible only to group `25-3` (`developersGroupId`); asking YouTrack for that group as the Bot
+  returns 404, which suggests it is gone or renumbered, but the Bot cannot list groups (403), so
+  that is not confirmed. `AddCommentToIssue` discards the HTTP status, so the reason is not
+  recorded.
+- **User impact:** Bloom uses the same call in `ProblemReportApi` to add "Problem book uploaded to
+  <url>" to a user's problem report, and ignores the result. While this fails, problem reports
+  that include a book reach YouTrack without the link to the uploaded book, silently.
+- **Status:** no card or PR.
 
 ## Bulk upload test: two different failures against dev.bloomlibrary.org
 
