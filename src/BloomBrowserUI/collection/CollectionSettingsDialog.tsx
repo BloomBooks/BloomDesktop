@@ -114,12 +114,16 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     // The subscription code as the user is typing it. It is kept here rather than in Config-R's
     // values because its editor is not a Config-R control; withSubscriptionCode puts it in.
     const [subscriptionCode, setSubscriptionCode] = React.useState<string>();
-    // Set when the pane has to be mounted again on another page: a new key, and the values to
-    // start from (the user's changes so far).
-    const [paneRemount, setPaneRemount] = React.useState<{
-        key: number;
-        values: ICollectionSettingsValues;
-    }>();
+    // The page the pane shows. A launch can name one, including a launch while the dialog is
+    // already open (a subscription badge on one of its own pages asks for the Subscription page);
+    // the user moving to another page is reported back by Config-R, so that asking again for a
+    // page the user has left still shows it.
+    const [shownPageKey, setShownPageKey] = React.useState<string>();
+    const [launchSeen, setLaunchSeen] = React.useState(openingEvent);
+    if (openingEvent !== launchSeen) {
+        setLaunchSeen(openingEvent);
+        if (initialPageKey) setShownPageKey(initialPageKey);
+    }
 
     // Config-r can call onChange while rendering, so state updates from it are deferred; the OK
     // handler reads this ref to be sure it has the newest values.
@@ -135,7 +139,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             setLoadedSettings(undefined);
             setCurrentValues(undefined);
             setSubscriptionCode(undefined);
-            setPaneRemount(undefined);
+            setShownPageKey(undefined);
             setSaving(false);
             return;
         }
@@ -150,21 +154,6 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             setSubscriptionCode(response.values?.subscription.code);
         });
     }, [propsForBloomDialog.open]);
-
-    // A launch that arrives while the dialog is already open comes from a subscription badge on
-    // one of its own pages, asking for the Subscription page. Config-R chooses its page only as
-    // the pane mounts, so this effect, which responds to that launch, mounts the pane again on
-    // the page asked for. On the launch that opens the dialog the settings have not loaded yet,
-    // so it does nothing.
-    React.useEffect(() => {
-        if (!loadedSettings || !initialPageKey) return;
-        setPaneRemount((previous) => ({
-            key: (previous?.key ?? 0) + 1,
-            values: latestValuesRef.current!,
-        }));
-        // Only a new launch should do this, not the settings arriving.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [openingEvent]);
 
     const dialogTitle = useL10n(
         "Collection Settings",
@@ -321,17 +310,17 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                 )}
                 {loadedSettings && !notAllowedMessage && (
                     <ConfigrPane
-                        key={paneRemount?.key ?? 0}
                         className={kConfigrPaneClassName}
                         label={dialogTitle}
                         showAppBar={false}
                         showSearch={false}
                         initialValues={
-                            (paneRemount?.values ??
-                                loadedSettings.values) as unknown as ConfigrValues
+                            loadedSettings.values as unknown as ConfigrValues
                         }
                         themeOverrides={kConfigrThemeOverrides}
-                        initiallySelectedTopLevelPageKey={initialPageKey}
+                        initiallySelectedTopLevelPageKey={shownPageKey}
+                        selectedTopLevelPageKey={shownPageKey}
+                        onTopLevelPageChange={setShownPageKey}
                         onChange={(newValues) => {
                             const values =
                                 newValues as unknown as ICollectionSettingsValues;

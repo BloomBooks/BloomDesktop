@@ -142,7 +142,8 @@ menu items call `showCollectionSettingsDialog` in the browser (from an iframe, t
 workspace bundle's exports); `common/showSettingsDialog` remains for the comic book ReadMe links
 and for badges outside the workspace, and `CheckForInvalidBranding` (which never fires: nothing
 sets `InvalidBranding`) launches it from C#. A badge on one of
-the dialog's own pages remounts the pane on the Subscription page, keeping the edits so far.
+the dialog's own pages switches the open pane to the Subscription page, keeping the edits so far,
+through the page control Config-R gains in BL-17032.
 The other pages' gating still follows the saved subscription, not a code typed but not saved.
 
 **BL-16735 Team Collection.** Reuse `TeamCollectionSettingsPanel` with its overlay and warning.

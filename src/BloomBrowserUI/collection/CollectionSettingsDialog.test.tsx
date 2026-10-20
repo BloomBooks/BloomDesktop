@@ -231,6 +231,8 @@ vi.mock("@sillsdev/config-r", () => ({
         children: React.ReactNode;
         initialValues: ICollectionSettingsValues;
         initiallySelectedTopLevelPageKey?: string;
+        selectedTopLevelPageKey?: string;
+        onTopLevelPageChange?: (pageKey: string | undefined) => void;
         onChange: (values: unknown) => void;
     }) => (
         <div>
@@ -238,6 +240,12 @@ vi.mock("@sillsdev/config-r", () => ({
             <MockMountedWith
                 collectionName={props.initialValues.advanced.collectionName}
                 pageKey={props.initiallySelectedTopLevelPageKey}
+            />
+            {/* The page shown, which the dialog controls while the pane stays mounted. */}
+            <div data-testid="shown-page">{props.selectedTopLevelPageKey}</div>
+            <button
+                data-testid="user-shows-bloom-library"
+                onClick={() => props.onTopLevelPageChange?.("bloomLibrary")}
             />
             <button
                 data-testid="change-restart-value"
@@ -1014,20 +1022,32 @@ describe("CollectionSettingsDialog", () => {
             const textOf = (testId: string) =>
                 container.querySelector(`[data-testid="${testId}"]`)
                     ?.textContent;
-            expect(textOf("initial-page-key")).toBe("");
+            expect(textOf("shown-page")).toBe("");
             click("change-other-value");
             click("type-subscription-code");
             await flushDeferredChange();
 
-            // What a subscription badge's click becomes: C# launches the dialog again.
+            // What a subscription badge's click becomes: the dialog is launched again.
             dialogState.openingEvent = { initialPageKey: "subscription" };
             await renderDialog();
+            expect(textOf("shown-page")).toBe("subscription");
 
-            expect(textOf("initial-page-key")).toBe("subscription");
-            expect(textOf("initial-collection-name")).toBe("Renamed");
+            // The user goes back to another page, and a badge there asks again.
+            click("user-shows-bloom-library");
+            expect(textOf("shown-page")).toBe("bloomLibrary");
+            dialogState.openingEvent = { initialPageKey: "subscription" };
+            await renderDialog();
+            expect(textOf("shown-page")).toBe("subscription");
+
+            // The pane was never mounted again, so it is still editing the changed values.
+            expect(textOf("initial-collection-name")).toBe("Test Collection");
+            click("dialog-ok");
             expect(
-                subscriptionPageElement("subscription-code")?.textContent,
-            ).toBe(" New-Code-654321-0987 ");
+                mockPostJson.mock.calls[0][1].values.advanced.collectionName,
+            ).toBe("Renamed");
+            expect(mockPostJson.mock.calls[0][1].values.subscription).toEqual({
+                code: "New-Code-654321-0987",
+            });
         });
 
         it("starts a later open from the saved code, not the one typed and cancelled", async () => {
