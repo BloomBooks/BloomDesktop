@@ -439,59 +439,59 @@
         <target xml:lang="pt-PT" state="translated">{0} usados dos {1} de crédito da conta</target>
         <note>ID: AiImageEditor.Credits.AccountCreditsUsed</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Credits.AmountLeft">
+      <trans-unit id="AiImageEditor.Credits.AmountLeft" approved="yes">
         <source xml:lang="en">{0} left</source>
-        <target xml:lang="pt-PT" state="translated">{0} restantes</target>
+        <target xml:lang="pt-PT" state="final">{0} restantes</target>
         <note>ID: AiImageEditor.Credits.AmountLeft</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Credits.AmountOfAmount">
+      <trans-unit id="AiImageEditor.Credits.AmountOfAmount" approved="yes">
         <source xml:lang="en">{0} of {1}</source>
-        <target xml:lang="pt-PT" state="translated">{0} de {1}</target>
+        <target xml:lang="pt-PT" state="final">{0} de {1}</target>
         <note>ID: AiImageEditor.Credits.AmountOfAmount</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Credits.AmountTotal">
+      <trans-unit id="AiImageEditor.Credits.AmountTotal" approved="yes">
         <source xml:lang="en">{0} total</source>
-        <target xml:lang="pt-PT" state="translated">{0} no total</target>
+        <target xml:lang="pt-PT" state="final">{0} no total</target>
         <note>ID: AiImageEditor.Credits.AmountTotal</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Credits.AmountUsed">
+      <trans-unit id="AiImageEditor.Credits.AmountUsed" approved="yes">
         <source xml:lang="en">{0} used</source>
-        <target xml:lang="pt-PT" state="translated">{0} usados</target>
+        <target xml:lang="pt-PT" state="final">{0} usados</target>
         <note>ID: AiImageEditor.Credits.AmountUsed</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Credits.Label">
+      <trans-unit id="AiImageEditor.Credits.Label" approved="yes">
         <source xml:lang="en">AI image generator credits</source>
-        <target xml:lang="pt-PT" state="translated">Créditos do gerador de imagens com IA</target>
+        <target xml:lang="pt-PT" state="final">Créditos do gerador de imagens com IA</target>
         <note>ID: AiImageEditor.Credits.Label</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Error.CouldNotLoadImage">
+      <trans-unit id="AiImageEditor.Error.CouldNotLoadImage" approved="yes">
         <source xml:lang="en">Could not load image. Please try again.</source>
-        <target xml:lang="pt-PT" state="translated">Não foi possível carregar a imagem. Tente novamente.</target>
+        <target xml:lang="pt-PT" state="final">Não foi possível carregar a imagem. Tente novamente.</target>
         <note>ID: AiImageEditor.Error.CouldNotLoadImage</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Error.FailedToProcess">
+      <trans-unit id="AiImageEditor.Error.FailedToProcess" approved="yes">
         <source xml:lang="en">Failed to process image.</source>
-        <target xml:lang="pt-PT" state="translated">Não foi possível processar a imagem.</target>
+        <target xml:lang="pt-PT" state="final">Não foi possível processar a imagem.</target>
         <note>ID: AiImageEditor.Error.FailedToProcess</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.History.DeleteFromHistory">
+      <trans-unit id="AiImageEditor.History.DeleteFromHistory" approved="yes">
         <source xml:lang="en">Delete from history</source>
-        <target xml:lang="pt-PT" state="translated">Excluir do histórico</target>
+        <target xml:lang="pt-PT" state="final">Excluir do histórico</target>
         <note>ID: AiImageEditor.History.DeleteFromHistory</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Level.ExtraHigh">
+      <trans-unit id="AiImageEditor.Level.ExtraHigh" approved="yes">
         <source xml:lang="en">Extra high</source>
-        <target xml:lang="pt-PT" state="translated">Muito alto</target>
+        <target xml:lang="pt-PT" state="final">Muito alta</target>
         <note>ID: AiImageEditor.Level.ExtraHigh</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Level.High">
+      <trans-unit id="AiImageEditor.Level.High" approved="yes">
         <source xml:lang="en">High</source>
-        <target xml:lang="pt-PT" state="translated">Alto</target>
+        <target xml:lang="pt-PT" state="final">Alta</target>
         <note>ID: AiImageEditor.Level.High</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Level.Low">
         <source xml:lang="en">Low</source>
-        <target xml:lang="pt-PT" state="translated">Mínimo</target>
+        <target xml:lang="pt-PT" state="translated">Baixa</target>
         <note>ID: AiImageEditor.Level.Low</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Level.Max">
