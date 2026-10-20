@@ -185,8 +185,9 @@ or with the rest of the file), always reported at 0ms. Run on its own eight time
 file's cancel test (no book, never leaves the Collections tab) and
 `collection-settings-bloom-library.spec.ts` never crashed. With `DEBUG=pw:*` the book test passed
 eight runs in a row, so the extra logging hides it, and `NODE_OPTIONS=--report-on-fatalerror`
-wrote no report: the worker dies by a fail-fast that skips Node's own reporting. The earlier
-sightings (`import-recording`, `xmatter-packs`) also make books, so the next thing to try is a
+wrote no report: the worker dies by a fail-fast that skips Node's own reporting. Later the same
+day it struck `collection-settings-bloom-library.spec.ts`'s first test, which makes no book and
+had passed eight times alone, so making a book is not the trigger. The next thing to try is a
 Windows crash dump of the worker (WER LocalDumps for node.exe needs an administrator).
 
 ## An api that captures CollectionSettings.Subscription cannot see a subscription change
