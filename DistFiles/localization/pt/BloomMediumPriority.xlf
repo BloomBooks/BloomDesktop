@@ -1814,14 +1814,14 @@
         <target xml:lang="pt-PT" state="translated">Ilustração didática em estilo flat</target>
         <note>ID: AiImageEditor.ArtStyle.flat-instructional.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.high-contrast-block.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.high-contrast-block.Name" approved="yes">
         <source xml:lang="en">High-Contrast Block/Woodcut</source>
-        <target xml:lang="pt-PT" state="translated">Xilogravura de alto contraste</target>
+        <target xml:lang="pt-PT" state="final">Xilogravura de alto contraste</target>
         <note>ID: AiImageEditor.ArtStyle.high-contrast-block.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.kawaii-doodle.Name">
         <source xml:lang="en">Kawaii Doodle</source>
-        <target xml:lang="pt-PT" state="translated">Rabisco kawaii</target>
+        <target xml:lang="pt-PT" state="translated">Desenhos fofos (Kawaii)</target>
         <note>ID: AiImageEditor.ArtStyle.kawaii-doodle.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.line-art-colored-pencil.Name" approved="yes">
@@ -1881,7 +1881,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.vintage-illustrations.Name">
         <source xml:lang="en">Vintage Style Illustrations</source>
-        <target xml:lang="pt-PT" state="translated">Ilustrações de estilo antigo</target>
+        <target xml:lang="pt-PT" state="translated">Ilustrações em estilo antigo</target>
         <note>ID: AiImageEditor.ArtStyle.vintage-illustrations.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.watercolor-dream.Name" approved="yes">
@@ -2306,7 +2306,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Strip.starred.Tip">
         <source xml:lang="en">Star images to keep them handy.</source>
-        <target xml:lang="pt-PT" state="translated">Marque imagens com uma estrela para deixá-las à mão.</target>
+        <target xml:lang="pt-PT" state="translated">Marque imagens com uma estrela para deixá-las em destaque.</target>
         <note>ID: AiImageEditor.Strip.starred.Tip</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.apply_localized_characters.Param.furtherInstructions.Placeholder">
@@ -2374,9 +2374,9 @@
         <target xml:lang="pt-PT" state="final">Simples</target>
         <note>ID: AiImageEditor.Tool.coloring_book.Param.difficulty.Option.Simple</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.coloring_book.Title">
+      <trans-unit id="AiImageEditor.Tool.coloring_book.Title" approved="yes">
         <source xml:lang="en">Coloring Book</source>
-        <target xml:lang="pt-PT" state="translated">Livro de colorir</target>
+        <target xml:lang="pt-PT" state="final">Livro de colorir</target>
         <note>ID: AiImageEditor.Tool.coloring_book.Title</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.custom.Description">
@@ -2389,9 +2389,9 @@
         <target xml:lang="pt-PT" state="translated">Descreva como modificar a imagem...</target>
         <note>ID: AiImageEditor.Tool.custom.Param.prompt.Placeholder</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.custom.Title">
+      <trans-unit id="AiImageEditor.Tool.custom.Title" approved="yes">
         <source xml:lang="en">Custom Edit</source>
-        <target xml:lang="pt-PT" state="translated">Edição personalizada</target>
+        <target xml:lang="pt-PT" state="final">Edição personalizada</target>
         <note>ID: AiImageEditor.Tool.custom.Title</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.ethnicity.Param.character">
@@ -2531,7 +2531,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Welcome.CreditsNote">
         <source xml:lang="en">Your credits are purchased directly from OpenRouter. Bloom doesn't receive any part of what you spend.</source>
-        <target xml:lang="pt-PT" state="translated">Seus créditos são comprados diretamente do OpenRouter. O Bloom não recebe nada do que você gasta.</target>
+        <target xml:lang="pt-PT" state="translated">Seus créditos são comprados diretamente do OpenRouter. O Bloom não recebe nenhuma parte do valor gasto.</target>
         <note>ID: AiImageEditor.Welcome.CreditsNote</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Welcome.Explanation">
