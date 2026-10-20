@@ -2185,7 +2185,7 @@ namespace Bloom.ImageProcessing
                     try
                     {
                         var arguments = "identify -format %P \"" + safePath + "\"";
-                        var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                        var result = CommandLineRunner.Run(
                             GetGraphicsMagickPath(),
                             arguments,
                             "",
@@ -2368,7 +2368,7 @@ namespace Bloom.ImageProcessing
                             argsBldr.AppendFormat(" \"{0}\"", safeDestPath);
                             var arguments = argsBldr.ToString();
 
-                            var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                            var result = CommandLineRunner.Run(
                                 GetGraphicsMagickPath(),
                                 arguments,
                                 "",

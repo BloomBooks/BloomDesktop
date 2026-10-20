@@ -13,6 +13,7 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
 using L10NSharp;
+using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -228,7 +229,7 @@ namespace Bloom.TeamCollection
             string command =
                 $"Set-Content -Path {powerShellPath} -Stream com.dropbox.ignored -Value 1";
 
-            var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+            var result = CommandLineRunner.Run(
                 "powershell.exe",
                 $"-Command \"{command}\"",
                 "", // working directory

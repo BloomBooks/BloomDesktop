@@ -116,11 +116,11 @@ namespace Bloom.Collection
                 if (string.IsNullOrEmpty(Tag))
                     return string.Empty;
 
-                var name = IetfLanguageTagExtra.GetLocalizedLanguageName(Tag, inLanguage);
+                var name = IetfLanguageTag.GetLocalizedLanguageName(Tag, inLanguage);
                 if (name == Tag)
                 {
                     string match;
-                    if (!IetfLanguageTagExtra.GetBestLanguageName(Tag, out match))
+                    if (!IetfLanguageTag.GetBestLanguageName(Tag, out match))
                     {
                         return $"Unknown-{Tag}";
                     }
