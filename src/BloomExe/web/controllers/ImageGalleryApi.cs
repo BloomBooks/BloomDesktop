@@ -428,6 +428,9 @@ namespace Bloom.web.controllers
             }
         }
 
+        // The FilePathMemory tag under which we remember the folder of the last image picked from disk.
+        private const string kLocalImageDirectoryTag = "ChooseImage";
+
         /// <summary>
         /// Opens a native file-picker dialog and returns the selected path as JSON.
         /// Pass gifOnly:true to restrict the filter to GIF files.
@@ -447,12 +450,17 @@ namespace Bloom.web.controllers
                 (Action)(
                     () =>
                     {
+                        // Start where the user last chose an image (BL-17026). If there is no
+                        // remembered folder, initialDirectory will be null, and the FileDialog will
+                        // use whatever location it remembers (default windows behavior).
+                        FilePathMemory.TryGetRememberedFolderPath(
+                            kLocalImageDirectoryTag,
+                            out string initialDirectory
+                        );
                         using (
                             var dlg = new BloomOpenFileDialog
                             {
-                                InitialDirectory = Environment.GetFolderPath(
-                                    Environment.SpecialFolder.MyPictures
-                                ),
+                                InitialDirectory = initialDirectory,
                                 Filter = filter,
                             }
                         )
@@ -463,7 +471,13 @@ namespace Bloom.web.controllers
                                 using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
                                 {
                                     if (dlg.ShowDialog() == DialogResult.OK)
+                                    {
                                         selectedPath = dlg.FileName;
+                                        FilePathMemory.RememberFolderPath(
+                                            kLocalImageDirectoryTag,
+                                            Path.GetDirectoryName(selectedPath)
+                                        );
+                                    }
                                 }
                             }
                             finally
