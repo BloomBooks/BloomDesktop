@@ -55,6 +55,7 @@ import {
     kInlineImageWidthVar,
     prepareInlineImageUndo,
     setInlineImageDock,
+    setupInlineImages,
     syncInlineImagesFromEditable,
 } from "./inlineImages";
 import {
@@ -70,7 +71,14 @@ import {
     computeInlineImageClusterIndex,
     computeInlineImageDock,
     computeInlineImageWidthPercent,
+    computeInlineImageMovedCrop,
+    computeInlineImageSideCrop,
     deselectAllInlineImages,
+    getInlineImageCroppedSides,
+    kCurrentlyCroppedClass,
+    kInlineImageFrameCroppedClass,
+    kInlineImageMoveCropHandleClass,
+    kInlineImageSideHandleClass,
     getInlineImageActionTarget,
     getInlineImageDock,
     getInlineImageHandleHorizontalSign,
@@ -86,6 +94,12 @@ import {
     selectInlineImage,
     setupInlineImageInteractions,
 } from "./inlineImageInteractions";
+import {
+    getInlineImageCrop,
+    IInlineImageCrop,
+    kNoInlineImageCrop,
+    setInlineImageCrop,
+} from "./inlineImageCrop";
 import { resetChangeOrderForTests } from "../undo/changeOrder";
 import BloomField from "../bloomField/BloomField";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
@@ -2216,6 +2230,387 @@ describe("inlineImageInteractions", () => {
                 true,
             );
             french.stop();
+        });
+    });
+
+    describe("cropping", () => {
+        const crop = (
+            top: number,
+            right: number,
+            bottom: number,
+            left: number,
+        ) => ({ top, right, bottom, left }) as IInlineImageCrop;
+
+        describe("computeInlineImageSideCrop", () => {
+            it("cropping the top cuts that share of the picture's height and leaves the width alone", () => {
+                const result = computeInlineImageSideCrop(
+                    kNoInlineImageCrop,
+                    "n",
+                    20,
+                    100,
+                    40,
+                );
+                expect(result.crop).toEqual(crop(20, 0, 0, 0));
+                expect(result.widthPercent).toBe(40);
+            });
+
+            it("cropping the right makes the image narrower on the page by the same share", () => {
+                const result = computeInlineImageSideCrop(
+                    kNoInlineImageCrop,
+                    "e",
+                    50,
+                    200,
+                    40,
+                );
+                expect(result.crop).toEqual(crop(0, 25, 0, 0));
+                expect(result.widthPercent).toBe(30);
+            });
+
+            it("measures against the whole picture when part of it is already cut away", () => {
+                // 50% of the width shows, 100px of it, so the picture is 200px wide and
+                // another 20px is another 10%.
+                const result = computeInlineImageSideCrop(
+                    crop(0, 25, 0, 25),
+                    "w",
+                    20,
+                    100,
+                    40,
+                );
+                expect(result.crop).toEqual(crop(0, 25, 0, 35));
+                expect(result.widthPercent).toBe(32);
+            });
+
+            it("cannot uncrop past the edge of the picture", () => {
+                const result = computeInlineImageSideCrop(
+                    crop(0, 0, 0, 10),
+                    "w",
+                    -100,
+                    180,
+                    36,
+                );
+                expect(result.crop.left).toBe(0);
+                expect(result.widthPercent).toBe(40);
+            });
+
+            it("leaves at least a tenth of the picture showing", () => {
+                const result = computeInlineImageSideCrop(
+                    crop(20, 0, 0, 0),
+                    "s",
+                    10000,
+                    80,
+                    40,
+                );
+                expect(result.crop).toEqual(crop(20, 0, 70, 0));
+            });
+
+            it("keeps the width within the limits a corner resize keeps to", () => {
+                const result = computeInlineImageSideCrop(
+                    crop(0, 0, 0, 20),
+                    "w",
+                    -10000,
+                    800,
+                    90,
+                );
+                expect(result.widthPercent).toBe(kMaxInlineImageWidthPercent);
+                // 80% of the picture was 90% of the block; 95% of the block is 84.44% of it.
+                expect(result.crop.left).toBeCloseTo(15.56, 2);
+            });
+        });
+
+        describe("computeInlineImageMovedCrop", () => {
+            it("moving the picture right shows more of its left side, keeping the part that shows the same size", () => {
+                // 60% of the width shows in 120px, so the picture is 200px wide, and 30px is 15%.
+                expect(
+                    computeInlineImageMovedCrop(
+                        crop(10, 20, 30, 20),
+                        30,
+                        0,
+                        120,
+                        60,
+                    ),
+                ).toEqual(crop(10, 35, 30, 5));
+            });
+
+            it("stops at the edges of the picture, as on a canvas", () => {
+                expect(
+                    computeInlineImageMovedCrop(
+                        crop(10, 20, 30, 20),
+                        1000,
+                        -1000,
+                        120,
+                        60,
+                    ),
+                    // Moving it up shows more of its bottom.
+                ).toEqual(crop(40, 40, 0, 0));
+            });
+
+            it("keeps the part that shows the same size when a cut has to be rounded", () => {
+                // 50% of the width shows in 120px, so the picture is 240px wide, and 14.7px is
+                // 6.125%: the left cut becomes 26.125%, stored as 26.13%.
+                const moved = computeInlineImageMovedCrop(
+                    crop(0, 30, 0, 20),
+                    -14.7,
+                    0,
+                    120,
+                    100,
+                );
+                expect(moved.left).toBe(26.13);
+                expect(moved.right).toBe(23.87);
+                expect(100 - moved.left - moved.right).toBeCloseTo(50, 10);
+            });
+        });
+
+        it("getInlineImageCroppedSides names the sides that are cut", () => {
+            expect(getInlineImageCroppedSides(crop(5, 0, 0, 7))).toEqual({
+                n: true,
+                e: false,
+                s: false,
+                w: true,
+            });
+            expect(getInlineImageCroppedSides(kNoInlineImageCrop)).toEqual({
+                n: false,
+                e: false,
+                s: false,
+                w: false,
+            });
+        });
+
+        it("a selected image gets four crop handles and a move-crop handle, marked when cropped", () => {
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            setInlineImageCrop(wrapper, crop(10, 0, 0, 0));
+
+            selectInlineImage(wrapper);
+
+            const frame = wrapper.querySelector(
+                "." + kInlineImageHandleFrameClass,
+            ) as HTMLElement;
+            const sides = Array.from(
+                frame.querySelectorAll("." + kInlineImageSideHandleClass),
+            );
+            expect(sides.length).toBe(4);
+            expect(
+                frame.querySelectorAll("." + kInlineImageMoveCropHandleClass)
+                    .length,
+            ).toBe(1);
+            // The corner handles are still the only resize handles.
+            expect(
+                frame.querySelectorAll("." + kInlineImageHandleClass).length,
+            ).toBe(4);
+            expect(
+                frame.classList.contains(kInlineImageFrameCroppedClass),
+            ).toBe(true);
+            const marked = sides.filter((h) =>
+                h.classList.contains(kCurrentlyCroppedClass),
+            );
+            expect(
+                marked.map((h) => h.getAttribute("data-inline-image-side")),
+            ).toEqual(["n"]);
+        });
+
+        it("the other languages' copies get the crop", () => {
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            setInlineImageCrop(wrapper, crop(10, 20, 30, 5));
+
+            syncInlineImagesFromEditable(editableFor(group, "en"));
+
+            expect(
+                getInlineImageCrop(
+                    getInlineImageInEditable(editableFor(group, "fr"))!,
+                ),
+            ).toEqual(crop(10, 20, 30, 5));
+        });
+
+        function menuItemFor(wrapper: HTMLElement, id: string) {
+            return buildInlineImageMenuItems(
+                getInlineImageActionTarget(wrapper),
+            ).find((i) => i.l10nId === id)!;
+        }
+
+        it("Flip on a cropped picture mirrors the crop in every language, and Undo puts it back", async () => {
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            wrapper.querySelector("img")!.setAttribute("src", "flower.jpg");
+            setInlineImageCrop(wrapper, crop(10, 20, 30, 5));
+            syncInlineImagesFromEditable(editableFor(group, "en"));
+            const flipHorizontal = menuItemFor(
+                wrapper,
+                "EditTab.Image.Flip",
+            ).subMenu!.find(
+                (s) => s.l10nId === "EditTab.Image.FlipHorizontal",
+            )!;
+
+            (flipHorizontal.onClick as () => void)();
+
+            await vi.waitFor(() =>
+                expect(wrapper.querySelector("img")!.style.transform).toBe(
+                    "scale(-1, 1)",
+                ),
+            );
+            // The same part of the picture shows, mirrored: left and right swap.
+            expect(getInlineImageCrop(wrapper)).toEqual(crop(10, 5, 30, 20));
+            expect(
+                getInlineImageCrop(
+                    getInlineImageInEditable(editableFor(group, "fr"))!,
+                ),
+            ).toEqual(crop(10, 5, 30, 20));
+
+            expect(inlineImageUndo()).toBe(true);
+
+            expect(getInlineImageCrop(getInlineImage(group)!)).toEqual(
+                crop(10, 20, 30, 5),
+            );
+        });
+
+        it("Reset Image is offered for a cropped picture, and takes the crop away in every language", async () => {
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            wrapper.querySelector("img")!.setAttribute("src", "flower.jpg");
+            // Sanity check: nothing to reset yet.
+            expect(menuItemFor(wrapper, "EditTab.Image.Reset").disabled).toBe(
+                true,
+            );
+            setInlineImageCrop(wrapper, crop(10, 20, 30, 5));
+            syncInlineImagesFromEditable(editableFor(group, "en"));
+            expect(menuItemFor(wrapper, "EditTab.Image.Reset").disabled).toBe(
+                false,
+            );
+
+            (
+                menuItemFor(wrapper, "EditTab.Image.Reset")
+                    .onClick as () => void
+            )();
+
+            await vi.waitFor(() =>
+                expect(getInlineImageCrop(wrapper)).toEqual(kNoInlineImageCrop),
+            );
+            expect(
+                getInlineImageCrop(
+                    getInlineImageInEditable(editableFor(group, "fr"))!,
+                ),
+            ).toEqual(kNoInlineImageCrop);
+        });
+
+        // While a crop handle is dragged, only the copy being dragged has the new crop. Another
+        // language's copy of the picture can finish loading in the meantime, and it must not write
+        // the shape of its own, older crop onto the copy being dragged (found by Devin on #8467).
+        it("a copy whose picture loads during a crop keeps each copy's shape to its own crop", () => {
+            const group = makeSimpleGroup();
+            const english = insertInlineImage(group);
+            english.querySelector("img")!.setAttribute("src", "flower.jpg");
+            syncInlineImagesFromEditable(editableFor(group, "en"));
+            setupInlineImages(getTestRoot());
+            const french = getInlineImageInEditable(editableFor(group, "fr"))!;
+            const frenchPicture = french.querySelector(
+                "img",
+            ) as HTMLImageElement;
+            Object.defineProperty(frenchPicture, "naturalWidth", {
+                value: 800,
+            });
+            Object.defineProperty(frenchPicture, "naturalHeight", {
+                value: 600,
+            });
+            // The drag has cut the top half off the English copy and not yet reached French.
+            setInlineImageCrop(english, crop(50, 0, 0, 0));
+            english.style.setProperty(
+                "--inline-image-aspect-ratio",
+                "800 / 300",
+            );
+            // Sanity check: the French copy has no crop yet.
+            expect(getInlineImageCrop(french)).toEqual(kNoInlineImageCrop);
+
+            frenchPicture.dispatchEvent(new Event("load"));
+
+            expect(
+                french.style.getPropertyValue("--inline-image-aspect-ratio"),
+            ).toBe("800 / 600");
+            expect(
+                english.style.getPropertyValue("--inline-image-aspect-ratio"),
+            ).toBe("800 / 300");
+        });
+
+        it("choosing a new picture takes the crop away, as on a canvas", () => {
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            setInlineImageCrop(wrapper, crop(10, 20, 30, 5));
+            const img = wrapper.querySelector("img") as HTMLElement;
+            img.setAttribute("src", "another.jpg");
+
+            inlineImagePictureChanged(img);
+
+            expect(getInlineImageCrop(wrapper)).toEqual(kNoInlineImageCrop);
+            expect(
+                getInlineImageCrop(
+                    getInlineImageInEditable(editableFor(group, "fr"))!,
+                ),
+            ).toEqual(kNoInlineImageCrop);
+        });
+
+        // jsdom lays nothing out and loads no pictures, so this gives the picture a size and a
+        // box by hand. That is enough for the whole gesture: press, move, release.
+        it("dragging a crop handle crops every language's copy, and one Undo takes it back", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            const img = wrapper.querySelector("img") as HTMLImageElement;
+            img.setAttribute("src", "flower.jpg");
+            Object.defineProperty(img, "naturalWidth", { value: 800 });
+            Object.defineProperty(img, "naturalHeight", { value: 600 });
+            img.getBoundingClientRect = () =>
+                ({ left: 0, top: 0, width: 200, height: 150 }) as DOMRect;
+            selectInlineImage(wrapper);
+            const eastHandle = wrapper.querySelector(
+                `.${kInlineImageSideHandleClass}-e`,
+            ) as HTMLElement;
+            // Sanity check: the starting width.
+            expect(wrapper.style.getPropertyValue(kInlineImageWidthVar)).toBe(
+                "40%",
+            );
+
+            eastHandle.dispatchEvent(pointerEvent("pointerdown", 200, 75));
+            document.dispatchEvent(pointerEvent("pointermove", 150, 75));
+            document.dispatchEvent(pointerEvent("pointerup", 150, 75));
+
+            // 50px of a 200px picture is a quarter of it.
+            expect(getInlineImageCrop(wrapper)).toEqual(crop(0, 25, 0, 0));
+            expect(wrapper.style.getPropertyValue(kInlineImageWidthVar)).toBe(
+                "30%",
+            );
+            // The text wraps around the part that shows: 600 by 600 of the 800 by 600 picture.
+            expect(
+                wrapper.style.getPropertyValue("--inline-image-aspect-ratio"),
+            ).toBe("600 / 600");
+            const french = getInlineImageInEditable(editableFor(group, "fr"))!;
+            expect(getInlineImageCrop(french)).toEqual(crop(0, 25, 0, 0));
+
+            expect(inlineImageUndo()).toBe(true);
+
+            const restored = getInlineImage(group)!;
+            expect(getInlineImageCrop(restored)).toEqual(kNoInlineImageCrop);
+            expect(restored.style.getPropertyValue(kInlineImageWidthVar)).toBe(
+                "40%",
+            );
+        });
+
+        it("a crop handle does nothing on a picture that has not loaded", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            selectInlineImage(wrapper);
+            const northHandle = wrapper.querySelector(
+                `.${kInlineImageSideHandleClass}-n`,
+            ) as HTMLElement;
+
+            northHandle.dispatchEvent(pointerEvent("pointerdown", 100, 0));
+            document.dispatchEvent(pointerEvent("pointermove", 100, 40));
+            document.dispatchEvent(pointerEvent("pointerup", 100, 40));
+
+            expect(getInlineImageCrop(wrapper)).toEqual(kNoInlineImageCrop);
+            // Nor does the press start a drag of the image.
+            expect(inlineImageCanUndo()).toBe(true); // the insert
+            expect(inlineImageUndo()).toBe(true);
+            expect(getInlineImage(group)).toBeNull();
         });
     });
 });

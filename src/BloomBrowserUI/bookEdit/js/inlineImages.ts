@@ -22,8 +22,9 @@
 //    120px down" looks the same in all of them. That is why the wrapper always stays at the
 //    start of the editable, or at the end when docked at the bottom; moving it between
 //    those two places is the only time it moves. Everything else about the picture is one
-//    of the dock classes plus the three custom properties defined below, so the wrapper's
-//    class list and style attribute together hold everything needed to copy it.
+//    of the dock classes plus the custom properties defined below and the crop ones in
+//    inlineImageCrop.ts, so the wrapper's class list and style attribute together hold
+//    everything needed to copy it.
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { kBlockElementSelector } from "../bloomField/BloomField";
 import {
@@ -33,6 +34,11 @@ import {
 import { createValidXhtmlUniqueId } from "./xhtmlIdUtils";
 import { theOneUndoStack } from "../undo/UndoStack";
 import { IUndoEntry } from "../undo/undoTypes";
+import {
+    clearInlineImageCrop,
+    computeCroppedInlineImageAspectRatio,
+    getInlineImageCrop,
+} from "./inlineImageCrop";
 
 export const kInlineImageClass = "bloom-inlineImage";
 
@@ -530,7 +536,9 @@ export function setupInlineImages(container: HTMLElement): void {
 /**
  * Call this when the image inside an inline image wrapper has been replaced because the user
  * chose a different picture. The old picture's shape no longer applies, so we remove the
- * recorded aspect ratio and let the new picture set one when it loads. The new src also has
+ * recorded aspect ratio and let the new picture set one when it loads. The crop was a part of
+ * the old picture, so it goes too, as it does when a picture on a canvas is changed. The new
+ * src also has
  * to be copied to the other languages. bloomEditing.ts's changeImageInfo calls this for any
  * img that is inside an inline image.
  */
@@ -542,6 +550,7 @@ export function handleInlineImageChanged(img: HTMLElement): void {
     ) as HTMLElement | null;
     if (!editable) return;
     wrapper.style.removeProperty(kInlineImageAspectRatioVar);
+    clearInlineImageCrop(wrapper);
     wireUpImage(wrapper);
     syncInlineImagesFromEditable(editable);
     OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
@@ -917,8 +926,18 @@ function wireUpImage(wrapper: HTMLElement): void {
 }
 
 /**
- * Writes the picture's real shape onto the wrapper, and onto this picture's copies in the
- * group's other editables.
+ * Sets --inline-image-aspect-ratio again from the picture's natural size and the wrapper's crop,
+ * on this wrapper and its copies in the other languages. Call it after changing the crop. It
+ * does nothing until the picture has loaded.
+ */
+export function refreshInlineImageAspectRatio(wrapper: HTMLElement): void {
+    const img = wrapper.querySelector("img") as HTMLImageElement | null;
+    if (img) setAspectRatioFromNaturalSize(wrapper, img);
+}
+
+/**
+ * Writes the picture's shape onto the wrapper, and onto this picture's copies in the group's
+ * other editables. For a cropped picture that is the shape of the part that shows.
  *
  * Each copy has its own img and could set its own ratio when it loads, but only the copy in
  * the language being shown does so reliably. A copy's load can happen before the src changed,
@@ -933,17 +952,27 @@ function setAspectRatioFromNaturalSize(
     img: HTMLImageElement,
 ): void {
     if (!img.naturalWidth || !img.naturalHeight) return; // not loaded (or a placeholder)
-    const ratio = `${img.naturalWidth} / ${img.naturalHeight}`;
-    wrapper.style.setProperty(kInlineImageAspectRatioVar, ratio);
+    // Each copy's shape comes from its own crop. While a crop handle is being dragged, only
+    // the copy being dragged has the new crop; the others get it when the drag ends. A copy
+    // whose picture loads in the meantime must not write the shape of its old crop onto the
+    // copy being dragged, or onto the copy that is about to be synced from it.
+    const setRatio = (each: HTMLElement) =>
+        each.style.setProperty(
+            kInlineImageAspectRatioVar,
+            computeCroppedInlineImageAspectRatio(
+                img.naturalWidth,
+                img.naturalHeight,
+                getInlineImageCrop(each),
+            ),
+        );
+    setRatio(wrapper);
     const id = getInlineImageId(wrapper);
     const group = getTranslationGroupOf(wrapper);
     if (!id || !group) return;
     getEditables(group).forEach((editable) => {
         getInlineImagesInEditable(editable)
             .filter((each) => getInlineImageId(each) === id)
-            .forEach((each) =>
-                each.style.setProperty(kInlineImageAspectRatioVar, ratio),
-            );
+            .forEach(setRatio);
     });
 }
 

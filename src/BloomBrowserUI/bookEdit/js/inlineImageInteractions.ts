@@ -64,6 +64,17 @@ import {
     FlipAxis,
     flipImageContent,
 } from "./imageContentTransform";
+import { clampCropPosition, cropOneSide, getCroppedSides } from "./imageCrop";
+import {
+    clearInlineImageCrop,
+    getInlineImageCrop,
+    IInlineImageCrop,
+    inlineImageCropFromBox,
+    inlineImageCropToBox,
+    inlineImageIsCropped,
+    mirrorInlineImageCrop,
+    setInlineImageCrop,
+} from "./inlineImageCrop";
 import {
     commitPendingInlineImageUndo,
     getEditables,
@@ -88,6 +99,7 @@ import {
     kInlineImageWidthVar,
     prepareInlineImageUndo,
     recordInlineImageOffsetBasedOn,
+    refreshInlineImageAspectRatio,
     removeInlineImage,
     setInlineImageDock,
     syncInlineImagesFromEditable,
@@ -109,6 +121,27 @@ const kInlineImageHandleCorners = ["nw", "ne", "sw", "se"] as const;
 export type InlineImageHandleCorner =
     (typeof kInlineImageHandleCorners)[number];
 const kInlineImageCornerAttribute = "data-inline-image-corner";
+
+// The four crop handles, one in the middle of each side of the picture, and the handle in the
+// middle of the picture that moves the picture inside its crop. They work as the side handles
+// and the move-crop handle of a picture on a canvas do. All of them are inside the handle frame.
+export const kInlineImageSideHandleClass = "bloom-ui-inlineImage-side-handle";
+export const kInlineImageMoveCropHandleClass =
+    "bloom-ui-inlineImage-move-crop-handle";
+const kInlineImageCropSides = ["n", "e", "s", "w"] as const;
+export type InlineImageCropSide = (typeof kInlineImageCropSides)[number];
+const kInlineImageSideAttribute = "data-inline-image-side";
+// On a side handle whose side of the picture is cropped, as on a canvas. It changes the
+// handle's look.
+export const kCurrentlyCroppedClass = "bloom-currently-cropped";
+// On the handle frame while the picture is cropped. Only then is the move-crop handle shown,
+// because an uncropped picture has nowhere to move to.
+export const kInlineImageFrameCroppedClass = "bloom-ui-inlineImage-cropped";
+
+// A crop must leave at least this much of the picture showing, as a percentage of its height
+// (for the top and bottom handles) or width (for the left and right ones). The width limits
+// below also apply to a crop from the left or right.
+const kMinInlineImageCropKeptPercent = 10;
 
 // Limits on an image's width, as percentages of the editable's width. A wider image leaves no
 // room for text to wrap beside it, and a narrower one is too small to be worth wrapping around.
@@ -426,6 +459,132 @@ export function getInlineImageHandleHorizontalSign(
     return corner === "ne" || corner === "se" ? 1 : -1;
 }
 
+// The side of the crop each handle changes, and the side opposite it.
+const kCropSideOf: Record<
+    InlineImageCropSide,
+    { side: keyof IInlineImageCrop; opposite: keyof IInlineImageCrop }
+> = {
+    n: { side: "top", opposite: "bottom" },
+    e: { side: "right", opposite: "left" },
+    s: { side: "bottom", opposite: "top" },
+    w: { side: "left", opposite: "right" },
+};
+
+/**
+ * The crop, and the width as a percentage of the editable, that dragging one side handle has
+ * reached. inwardViewportPx is how far the pointer has moved toward the middle of the picture
+ * from where the drag began; a negative value uncrops. shownSizeViewportPx is the size, across
+ * the handle's side, of the part of the picture that showed when the drag began: its height for
+ * the top and bottom handles, its width for the others.
+ *
+ * As on a canvas, the picture does not change size: only the part that shows does. So cropping
+ * from the left or right makes the image narrower on the page, and its width is worked out here.
+ * cropOneSide, which a canvas picture's side handles use, does the cropping, in percentages of
+ * the picture. A crop cannot go past the edge of the picture, or leave less than
+ * kMinInlineImageCropKeptPercent of it, and the width stays within the limits a corner resize
+ * keeps to.
+ */
+export function computeInlineImageSideCrop(
+    startCrop: IInlineImageCrop,
+    handle: InlineImageCropSide,
+    inwardViewportPx: number,
+    shownSizeViewportPx: number,
+    startWidthPercent: number,
+): { crop: IInlineImageCrop; widthPercent: number } {
+    const { side, opposite } = kCropSideOf[handle];
+    const keptAtStart = 100 - startCrop[side] - startCrop[opposite];
+    const inward = (inwardViewportPx * keptAtStart) / shownSizeViewportPx;
+    const horizontal = handle === "e" || handle === "w";
+    // How wide the image is on the page, as a percentage of the editable, for each percent of
+    // the picture's width that shows.
+    const widthPerKept = startWidthPercent / keptAtStart;
+    const { elementWidth, elementHeight, box } =
+        inlineImageCropToBox(startCrop);
+    const result = cropOneSide(
+        handle,
+        // cropOneSide measures right and down; the top and left handles move inward that way.
+        handle === "n" || handle === "w" ? inward : -inward,
+        elementWidth,
+        elementHeight,
+        box,
+        horizontal
+            ? Math.max(
+                  kMinInlineImageCropKeptPercent,
+                  kMinInlineImageWidthPercent / widthPerKept,
+              )
+            : kMinInlineImageCropKeptPercent,
+        horizontal ? kMaxInlineImageWidthPercent / widthPerKept : undefined,
+    );
+    const kept = horizontal ? result.width : result.height;
+    // Adding zero turns -0 into 0, which would otherwise be written as "-0".
+    const cut = Math.round((100 - startCrop[opposite] - kept) * 100) / 100 + 0;
+    const widthPercent = horizontal
+        ? Math.round(widthPerKept * (100 - startCrop[opposite] - cut) * 10) / 10
+        : startWidthPercent;
+    return { crop: { ...startCrop, [side]: cut }, widthPercent };
+}
+
+/**
+ * The crop after the move-crop handle has moved the picture by (deltaX, deltaY) inside the part
+ * that shows. The part that shows keeps its size, so the image does not change on the page. The
+ * picture stops at its edges, as on a canvas: clampCropPosition is the rule a canvas picture
+ * uses.
+ */
+export function computeInlineImageMovedCrop(
+    startCrop: IInlineImageCrop,
+    deltaXViewportPx: number,
+    deltaYViewportPx: number,
+    shownWidthViewportPx: number,
+    shownHeightViewportPx: number,
+): IInlineImageCrop {
+    const { box } = inlineImageCropToBox(
+        startCrop,
+        (shownWidthViewportPx * 100) / (100 - startCrop.left - startCrop.right),
+        (shownHeightViewportPx * 100) /
+            (100 - startCrop.top - startCrop.bottom),
+    );
+    const position = clampCropPosition(
+        shownWidthViewportPx,
+        shownHeightViewportPx,
+        box.left + deltaXViewportPx,
+        box.top + deltaYViewportPx,
+        box.width,
+        box.height,
+        // Rotate Right is not offered for an inline image.
+        0,
+    );
+    return inlineImageCropFromBox(shownWidthViewportPx, shownHeightViewportPx, {
+        ...box,
+        ...position,
+    });
+}
+
+/**
+ * Which sides of the picture are cropped, for marking the side handles. It asks getCroppedSides,
+ * the same function the canvas uses.
+ */
+export function getInlineImageCroppedSides(crop: IInlineImageCrop): {
+    n: boolean;
+    e: boolean;
+    s: boolean;
+    w: boolean;
+} {
+    const { elementWidth, elementHeight, box } = inlineImageCropToBox(crop);
+    return getCroppedSides(
+        elementWidth,
+        elementHeight,
+        box.left,
+        box.top,
+        box.width,
+        box.height,
+        0,
+        // These are percentages of the picture, and a stored crop is rounded to a hundredth
+        // of a percent, so a side that is cut at all is cut by at least 0.01. A slop well
+        // below that still ignores floating-point error in the arithmetic.
+        0.001,
+    );
+}
+
 /** The dock an existing wrapper is in. */
 export function getInlineImageDock(wrapper: HTMLElement): InlineImageDock {
     const found = kInlineImageDockClasses.find((dockClass) =>
@@ -595,9 +754,10 @@ export function setupInlineImageInteractions(container: HTMLElement): void {
     // Setting up again ends any drag or resize, because its state may point at elements that
     // are no longer in the page.
     stopEdgeScrollTimer(dragState);
-    releaseGesturePointer(resizeState ?? dragState);
+    releaseGesturePointer(getGestureState());
     dragState = undefined;
     resizeState = undefined;
+    cropState = undefined;
     const doc = container.ownerDocument;
     if (documentsWithInlineImageListeners.has(doc)) return;
     documentsWithInlineImageListeners.add(doc);
@@ -769,9 +929,10 @@ function focusedCkeditorCanRedo(doc: Document): boolean {
  */
 export function cleanupInlineImageInteractions(): void {
     stopEdgeScrollTimer(dragState);
-    releaseGesturePointer(resizeState ?? dragState);
+    releaseGesturePointer(getGestureState());
     dragState = undefined;
     resizeState = undefined;
+    cropState = undefined;
     document.body.classList.remove(kInlineImageDraggingClass);
     deselectAllInlineImages(document);
 }
@@ -854,6 +1015,8 @@ export function buildInlineImageMenuItems(
         const ctx: IControlContext = {
             ...buildCanvasElementControlRegistryContext(target.wrapper),
             aiImageEditingAvailable: aiImageEditingIsAvailable,
+            // That looks for a crop on the img, where a canvas picture keeps it.
+            isCropped: inlineImageIsCropped(target.wrapper),
         };
         const imageSections = getMenuSections(
             inlineImageControlConfiguration,
@@ -920,14 +1083,25 @@ function withInlineImageTransforms(
                 ...row,
                 subMenuItems: row.subMenuItems!.map((subRow) => ({
                     ...subRow,
-                    onSelect: () =>
-                        flipImageContent(picture(), flipAxisOf(subRow)),
+                    onSelect: () => {
+                        flipImageContent(picture(), flipAxisOf(subRow));
+                        // The crop describes the picture as it is seen, so a mirror swaps
+                        // two of its sides; see inlineImageCrop.ts.
+                        mirrorInlineImageCrop(wrapper, flipAxisOf(subRow));
+                        updateInlineImageCropHandles(wrapper);
+                    },
                 })),
             };
         case "resetImage":
+            // As on a canvas, Reset Image takes away the crop as well as the flip.
             return {
                 ...row,
-                onSelect: () => clearImageContentTransform(picture()),
+                onSelect: () => {
+                    clearImageContentTransform(picture());
+                    clearInlineImageCrop(wrapper);
+                    refreshInlineImageAspectRatio(wrapper);
+                    updateInlineImageCropHandles(wrapper);
+                },
             };
         default:
             return row;
@@ -1278,6 +1452,7 @@ function buildInlineImageControls(
         ),
         contextAdditions: {
             aiImageEditingAvailable: aiImageEditingIsAvailable,
+            isCropped: inlineImageIsCropped(wrapper),
             deleteThisObject: () => removeInlineImageCommand(wrapper),
         },
         afterToolbarCommand: () => {
@@ -1455,8 +1630,31 @@ interface IInlineImageResizeState {
     pointerId: number;
 }
 
+// A drag of one of the crop handles, or of the move-crop handle.
+interface IInlineImageCropState {
+    wrapper: HTMLElement;
+    editable: HTMLElement;
+    handle: InlineImageCropSide | "move";
+    startXViewportPx: number;
+    startYViewportPx: number;
+    // Everything below is as it was when the drag began. Each move works out the crop again
+    // from these, so rounding does not build up over a long drag.
+    startCrop: IInlineImageCrop;
+    startWidthPercent: number;
+    startOffsetLayoutPx: number;
+    // The part of the picture that showed.
+    shownWidthViewportPx: number;
+    shownHeightViewportPx: number;
+    // Viewport pixels per layout pixel; see getViewportPxPerLayoutPx.
+    viewportPxPerLayoutPx: number;
+    started: boolean;
+    // The pointer this gesture captured; see captureGesturePointer.
+    pointerId: number;
+}
+
 let dragState: IInlineImageDragState | undefined;
 let resizeState: IInlineImageResizeState | undefined;
+let cropState: IInlineImageCropState | undefined;
 let documentWithPointerListeners: Document | undefined;
 const documentsWithInlineImageListeners = new WeakSet<Document>();
 
@@ -1468,6 +1666,13 @@ function onPointerDown(event: PointerEvent): void {
     // editing controls around the page, must not deselect the image. Otherwise choosing a
     // command would deselect the image the command is for.
     if (!target.closest(".bloom-page")) return;
+    const cropHandle = target.closest(
+        `.${kInlineImageSideHandleClass}, .${kInlineImageMoveCropHandleClass}`,
+    ) as HTMLElement | null;
+    if (cropHandle) {
+        startCrop(event, cropHandle);
+        return;
+    }
     const handle = target.closest(
         "." + kInlineImageHandleClass,
     ) as HTMLElement | null;
@@ -1926,6 +2131,117 @@ function continueResize(
     state.wrapper.style.setProperty(kInlineImageWidthVar, `${percent}%`);
 }
 
+function startCrop(event: PointerEvent, handle: HTMLElement): void {
+    const wrapper = handle.closest(
+        "." + kInlineImageClass,
+    ) as HTMLElement | null;
+    const editable = wrapper?.closest(".bloom-editable") as HTMLElement | null;
+    if (!wrapper || !editable) return;
+    // Grabbing a handle is not the start of a text selection.
+    event.preventDefault();
+    // A placeholder, or a picture that has not loaded, has no shape to crop to. CSS hides the
+    // handles on a placeholder; this is for a picture that is still loading.
+    const img = getImageOf(wrapper) as HTMLImageElement | undefined;
+    if (!img?.naturalWidth || !img.naturalHeight) return;
+    const shown = getImageBox(wrapper);
+    if (!(shown.width > 0) || !(shown.height > 0)) return;
+    const viewportPxPerLayoutPx = getViewportPxPerLayoutPx(editable);
+    const widthVar = parseFloat(
+        wrapper.style.getPropertyValue(kInlineImageWidthVar),
+    );
+    cropState = {
+        wrapper,
+        editable,
+        handle: (handle.getAttribute(kInlineImageSideAttribute) ?? "move") as
+            | InlineImageCropSide
+            | "move",
+        startXViewportPx: event.clientX,
+        startYViewportPx: event.clientY,
+        startCrop: getInlineImageCrop(wrapper),
+        startWidthPercent: Number.isNaN(widthVar)
+            ? (shown.width / (editable.clientWidth * viewportPxPerLayoutPx)) *
+              100
+            : widthVar,
+        startOffsetLayoutPx: getInlineImageOffsetLayoutPx(wrapper),
+        shownWidthViewportPx: shown.width,
+        shownHeightViewportPx: shown.height,
+        viewportPxPerLayoutPx,
+        started: false,
+        pointerId: event.pointerId,
+    };
+    addPointerListeners(editable.ownerDocument);
+    captureGesturePointer(wrapper, event.pointerId);
+}
+
+function continueCrop(state: IInlineImageCropState, event: PointerEvent): void {
+    const deltaXViewportPx = event.clientX - state.startXViewportPx;
+    const deltaYViewportPx = event.clientY - state.startYViewportPx;
+    if (
+        !beginGestureIfMoved(
+            state,
+            Math.abs(deltaXViewportPx),
+            Math.abs(deltaYViewportPx),
+        )
+    )
+        return;
+    if (state.handle === "move") {
+        setInlineImageCrop(
+            state.wrapper,
+            computeInlineImageMovedCrop(
+                state.startCrop,
+                deltaXViewportPx,
+                deltaYViewportPx,
+                state.shownWidthViewportPx,
+                state.shownHeightViewportPx,
+            ),
+        );
+    } else {
+        const vertical = state.handle === "n" || state.handle === "s";
+        const inwardViewportPx = {
+            n: deltaYViewportPx,
+            s: -deltaYViewportPx,
+            w: deltaXViewportPx,
+            e: -deltaXViewportPx,
+        }[state.handle];
+        const { crop, widthPercent } = computeInlineImageSideCrop(
+            state.startCrop,
+            state.handle,
+            inwardViewportPx,
+            vertical ? state.shownHeightViewportPx : state.shownWidthViewportPx,
+            state.startWidthPercent,
+        );
+        setInlineImageCrop(state.wrapper, crop);
+        if (!vertical)
+            state.wrapper.style.setProperty(
+                kInlineImageWidthVar,
+                `${widthPercent}%`,
+            );
+        // On a canvas, cropping the top leaves the rest of the picture where it was. Here the
+        // image's top is where its offset puts it, so the offset grows by as much as was cut
+        // away. The bottom dock has no offset; there, and when the offset is already zero and
+        // the top is uncropped, the picture moves instead.
+        if (
+            state.handle === "n" &&
+            getInlineImageDock(state.wrapper) !== kInlineImageBottomClass
+        ) {
+            const pictureHeightViewportPx =
+                (state.shownHeightViewportPx * 100) /
+                (100 - state.startCrop.top - state.startCrop.bottom);
+            setInlineImageOffset(
+                state.wrapper,
+                clampInlineImageOffset(
+                    state.startOffsetLayoutPx +
+                        ((crop.top - state.startCrop.top) / 100) *
+                            (pictureHeightViewportPx /
+                                state.viewportPxPerLayoutPx),
+                ),
+            );
+        }
+    }
+    refreshInlineImageAspectRatio(state.wrapper);
+    updateInlineImageCropHandles(state.wrapper);
+}
+
 // A press that has not moved far enough is still a click, so nothing changes and no undo entry
 // is recorded until it has. The undo is prepared here, and onPointerEnd commits it
 // through commitInlineImageChange, since even a real drag may end up changing nothing. Returns
@@ -1953,13 +2269,23 @@ function beginGestureIfMoved(
 // check, a second finger on a touch screen, or a brush of a trackpad during a mouse drag,
 // would move the picture to wherever that pointer is and end the drag there.
 function isThisGesturesPointer(event: PointerEvent): boolean {
-    const state = resizeState ?? dragState;
+    const state = getGestureState();
     return !!state && state.pointerId === event.pointerId;
+}
+
+// The drag, resize or crop in progress, if there is one. Only one can be in progress at a time.
+function getGestureState():
+    | IInlineImageDragState
+    | IInlineImageResizeState
+    | IInlineImageCropState
+    | undefined {
+    return resizeState ?? cropState ?? dragState;
 }
 
 function onPointerMove(event: PointerEvent): void {
     if (!isThisGesturesPointer(event)) return;
     if (resizeState) continueResize(resizeState, event);
+    else if (cropState) continueCrop(cropState, event);
     else if (dragState)
         continueDrag(dragState, { x: event.clientX, y: event.clientY });
 }
@@ -1970,8 +2296,9 @@ function onPointerMove(event: PointerEvent): void {
 function onPointerEnd(event: PointerEvent): void {
     if (!isThisGesturesPointer(event)) return;
     const drag = dragState;
-    const state = resizeState ?? dragState;
+    const state = getGestureState();
     resizeState = undefined;
+    cropState = undefined;
     dragState = undefined;
     stopEdgeScrollTimer(drag);
     releaseGesturePointer(state);
@@ -2103,7 +2430,43 @@ function addHandles(wrapper: HTMLElement): void {
         handle.setAttribute(kInlineImageCornerAttribute, corner);
         frame.appendChild(handle);
     });
+    kInlineImageCropSides.forEach((side) => {
+        const handle = doc.createElement("div");
+        handle.className = `bloom-ui ${kInlineImageSideHandleClass} ${kInlineImageSideHandleClass}-${side}`;
+        handle.setAttribute(kInlineImageSideAttribute, side);
+        frame.appendChild(handle);
+    });
+    const moveCropHandle = doc.createElement("div");
+    moveCropHandle.className = `bloom-ui ${kInlineImageMoveCropHandleClass}`;
+    frame.appendChild(moveCropHandle);
     wrapper.appendChild(frame);
+    updateInlineImageCropHandles(wrapper);
+}
+
+/**
+ * Shows on the selected image's handles which sides are cropped, and shows the move-crop handle
+ * only while the picture is cropped, as a canvas does. Call it after anything that changes the
+ * crop. It does nothing for an image that has no handles.
+ */
+export function updateInlineImageCropHandles(wrapper: HTMLElement): void {
+    const frame = wrapper.querySelector(
+        ":scope > ." + kInlineImageHandleFrameClass,
+    );
+    if (!frame) return;
+    const crop = getInlineImageCrop(wrapper);
+    frame.classList.toggle(
+        kInlineImageFrameCroppedClass,
+        inlineImageIsCropped(wrapper),
+    );
+    const cropped = getInlineImageCroppedSides(crop);
+    frame
+        .querySelectorAll("." + kInlineImageSideHandleClass)
+        .forEach((handle) => {
+            const side = handle.getAttribute(
+                kInlineImageSideAttribute,
+            ) as InlineImageCropSide;
+            handle.classList.toggle(kCurrentlyCroppedClass, cropped[side]);
+        });
 }
 
 const getImageOf = (wrapper: HTMLElement): HTMLElement | undefined =>
@@ -2112,8 +2475,26 @@ const getImageOf = (wrapper: HTMLElement): HTMLElement | undefined =>
 // The image's box. It is smaller than the wrapper's box, because the vertical offset is
 // transparent padding at the top of the wrapper, and in the middle band a full-width wrapper
 // holds a narrower image.
+//
+// For a cropped picture it is the part that shows. The img's own rectangle would include the
+// scale and translate that draw the whole picture (see the crop rules in inlineImages.less), so
+// this takes the img's layout box instead, which those leave alone. The img is positioned inside
+// the wrapper (inlineImageEditing.less), and the wrapper is not transformed, so the wrapper's
+// rectangle and the img's offsets give it.
 function getImageBox(wrapper: HTMLElement): IBox {
-    return getBox(getImageOf(wrapper) ?? wrapper);
+    const img = getImageOf(wrapper);
+    if (!img) return getBox(wrapper);
+    if (!inlineImageIsCropped(wrapper)) return getBox(img);
+    const wrapperBox = getBox(wrapper);
+    // The page's zoom: offsets are in layout pixels and the rectangle is in viewport pixels.
+    const scale =
+        wrapper.offsetWidth > 0 ? wrapperBox.width / wrapper.offsetWidth : 1;
+    return {
+        left: wrapperBox.left + img.offsetLeft * scale,
+        top: wrapperBox.top + img.offsetTop * scale,
+        width: img.offsetWidth * scale,
+        height: img.offsetHeight * scale,
+    };
 }
 
 function getBox(element: HTMLElement): IBox {
