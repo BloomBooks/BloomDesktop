@@ -162,6 +162,9 @@ vi.mock("../react_components/BloomDialog/commonDialogComponents", () => ({
     DialogCloseButton: (props: { onClick: () => void }) => (
         <button data-testid="dialog-close" onClick={props.onClick} />
     ),
+    DialogHelpButton: (props: { helpId: string }) => (
+        <button data-testid="dialog-help" data-help-id={props.helpId} />
+    ),
 }));
 
 const { MockConfigrGroup } = vi.hoisted(() => ({
@@ -175,8 +178,18 @@ vi.mock("@sillsdev/config-r", () => ({
         children: React.ReactNode;
         initialValues: ICollectionSettingsValues;
         onChange: (values: unknown) => void;
+        onTopLevelPageChange: (pageKey: string | undefined) => void;
     }) => (
         <div>
+            {/* Config-R reports the page it shows; these stand for the user choosing one. */}
+            <button
+                data-testid="show-subscription-page"
+                onClick={() => props.onTopLevelPageChange("subscription")}
+            />
+            <button
+                data-testid="show-advanced-page"
+                onClick={() => props.onTopLevelPageChange("advanced")}
+            />
             {/* Config-r captures initialValues at mount, so tests check what it was given. */}
             <div data-testid="initial-collection-name">
                 {props.initialValues.advanced.collectionName}
@@ -698,6 +711,41 @@ describe("CollectionSettingsDialog", () => {
             mockPostJson.mock.calls[0][1].values.advanced.collectionName,
         ).toBe("Spaced Books");
         expect(mockPostJson.mock.calls[0][1].restartRequired).toBe(true);
+    });
+
+    it("asks Help for the topic of the page Config-R says is showing", async () => {
+        const helpTopic = () =>
+            container
+                .querySelector('[data-testid="dialog-help"]')
+                ?.getAttribute("data-help-id");
+        await renderDialog();
+        expect(helpTopic()).toBe(
+            "User_Interface/Dialog_boxes/Settings_dialog_box.htm",
+        );
+
+        click("show-subscription-page");
+        expect(helpTopic()).toBe(
+            "Tasks/Basic_tasks/Enter_Subscription_Code.htm",
+        );
+
+        click("show-advanced-page");
+        expect(helpTopic()).toBe(
+            "User_Interface/Dialog_boxes/Settings_dialog_box.htm",
+        );
+    });
+
+    it("offers Help even when the user may not edit the settings", async () => {
+        respondWith({
+            ...settingsResponse,
+            notAllowedMessage: "You must be an administrator",
+        });
+        await renderDialog();
+
+        expect(
+            container
+                .querySelector('[data-testid="dialog-help"]')
+                ?.getAttribute("data-help-id"),
+        ).toBe("User_Interface/Dialog_boxes/Settings_dialog_box.htm");
     });
 
     describe("Advanced page", () => {

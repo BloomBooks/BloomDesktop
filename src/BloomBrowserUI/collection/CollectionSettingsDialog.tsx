@@ -23,6 +23,7 @@ import { useEventLaunchedBloomDialog } from "../react_components/BloomDialog/Blo
 import {
     DialogCancelButton,
     DialogCloseButton,
+    DialogHelpButton,
     DialogOkButton,
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../react_components/l10nHooks";
@@ -31,6 +32,7 @@ import {
     ICollectionSettingsResponse,
     ICollectionSettingsValues,
 } from "./collectionSettingsTypes";
+import { collectionSettingsHelpTopic } from "./collectionSettingsHelpTopic";
 import { useAdvancedPage } from "./settingsPages/AdvancedPage";
 import { useBloomLibraryPage } from "./settingsPages/BloomLibraryPage";
 import { useExperimentalPage } from "./settingsPages/ExperimentalPage";
@@ -110,6 +112,8 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const [currentValues, setCurrentValues] =
         React.useState<ICollectionSettingsValues>();
     const [saving, setSaving] = React.useState(false);
+    // The top-level page Config-R is showing, so Help can open that page's topic.
+    const [shownPageKey, setShownPageKey] = React.useState<string>();
 
     // Config-r can call onChange while rendering, so state updates from it are deferred; the OK
     // handler reads this ref to be sure it has the newest values.
@@ -125,6 +129,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             setLoadedSettings(undefined);
             setCurrentValues(undefined);
             setSaving(false);
+            setShownPageKey(undefined);
             return;
         }
         // We don't guard against this reply arriving after a quick close and reopen: it comes from
@@ -281,6 +286,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         }
                         themeOverrides={kConfigrThemeOverrides}
                         initiallySelectedTopLevelPageKey={initialPageKey}
+                        onTopLevelPageChange={setShownPageKey}
                         onChange={(newValues) => {
                             const values =
                                 newValues as unknown as ICollectionSettingsValues;
@@ -312,8 +318,12 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                 )}
             </ConfigrDialogMiddle>
             <DialogBottomButtons>
-                {needsRestart && (
-                    <DialogBottomLeftButtons>
+                <DialogBottomLeftButtons>
+                    <DialogHelpButton
+                        id="collectionSettingsHelpButton"
+                        helpId={collectionSettingsHelpTopic(shownPageKey)}
+                    />
+                    {needsRestart && (
                         <div
                             css={css`
                                 align-self: center;
@@ -321,8 +331,8 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         >
                             {restartMessage}
                         </div>
-                    </DialogBottomLeftButtons>
-                )}
+                    )}
+                </DialogBottomLeftButtons>
                 {notAllowedMessage ? (
                     <DialogCloseButton onClick={closeDialog} />
                 ) : (
