@@ -29,19 +29,23 @@ use the `nightly-triage` skill.
 
 - **Failed:** 2026-10-20. `YouTrackIssueSubmitterTests.CanSubmitToYouTrack` (line 106):
   `AddCommentToIssue` returned false.
-- **What the trace shows (first look):** the test talks to the live YouTrack server. Creating the
-  test issue and attaching both files had already passed; only the comment failed.
-- **Local run (2026-10-20):** fails the same way, so it is not CI's environment. Neither
-  `YouTrackIssueSubmission.cs` nor the test has changed since August, and the C# suite passed on
-  2026-10-19, so the likely trigger is a change on the YouTrack server. The comment is posted
-  visible only to group `25-3` (`developersGroupId`); asking YouTrack for that group as the Bot
-  returns 404, which suggests it is gone or renumbered, but the Bot cannot list groups (403), so
-  that is not confirmed. `AddCommentToIssue` discards the HTTP status, so the reason is not
-  recorded.
-- **User impact:** Bloom uses the same call in `ProblemReportApi` to add "Problem book uploaded to
-  <url>" to a user's problem report, and ignores the result. While this fails, problem reports
-  that include a book reach YouTrack without the link to the uploaded book, silently.
-- **Status:** no card or PR.
+- **Cause:** the YouTrack server was upgraded on 2026-10-20 at about 08:20 UTC (2026.2.19197 to
+  2026.2.19636), between the green 10-19 nightly and the failing 10-20 one. YouTrack then refused
+  the comment with 400 "An UserGroup-type entity with the specified ID (25-3) was not found". The
+  group exists; the account Bloom posts problem reports as ("auto report creator") could no
+  longer see it, and under YouTrack's 2026 permission model an account can only restrict a
+  comment to a group it can see. The comment is restricted to the Developer group, `25-3`,
+  hard-coded as `developersGroupId` in `YouTrackIssueSubmission.cs`. `AddCommentToIssue`
+  discards YouTrack's reply, so the reason was recorded nowhere.
+- **User impact:** `ProblemReportApi` uses the same call to add "Problem book uploaded to <url>"
+  to a user's problem report, and ignores the result, so a report with a book would have lost
+  its book link silently. No real report was affected: the reporting account filed none between
+  the upgrade and the fix.
+- **Status:** fixed on 2026-10-20 in YouTrack's settings, not in Bloom: "auto report creator" is
+  in a new "Report submitters" group with the optional Read Groups feature turned on, and is on
+  the Developer group's "Visible to" list. It can now see the group without being a member, so
+  its token, which is public in Bloom's source, still cannot read developer-only comments.
+  `CanSubmitToYouTrack` passes locally since. Remove this entry once a nightly has passed on it.
 
 ## Bulk upload test: two different failures against dev.bloomlibrary.org
 
