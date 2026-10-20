@@ -56,7 +56,8 @@ export function useSubscriptionPage(props: {
                     `}
                 >
                     <SubscriptionControls
-                        code={props.code}
+                        // The dialog shows its pages only once the settings have loaded.
+                        code={props.code!}
                         onCodeChange={props.onCodeChange}
                         beforeBrandingSummary={<RowDivider />}
                     />

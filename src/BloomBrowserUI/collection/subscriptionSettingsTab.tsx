@@ -9,21 +9,28 @@ import { SubscriptionStatus } from "../collectionsTab/SubscriptionStatus";
 import { NoteBox } from "../react_components/boxes";
 import { SubscriptionControls } from "./subscriptionCodeControl";
 import { useSubscriptionInfo } from "./useSubscriptionInfo";
+import { get, postString } from "../utils/bloomApi";
+import { useMountEffect } from "../utils/useMountEffect";
 
-// This component implements the Bloom Subscription tab of the Settings dialog.
-// The React Collection Settings dialog passes the code being typed and a function to change it
-// (see SubscriptionControls); the WinForms dialog passes neither.
-export const SubscriptionSettings: React.FunctionComponent<{
-    code?: string;
-    onCodeChange?: (code: string) => void;
-}> = (props) => {
-    const { subscriptionCodeIntegrity, haveData } = useSubscriptionInfo(
-        props.code,
-    );
+// This component implements the Bloom Subscription tab of the WinForms Settings dialog. (The React
+// Collection Settings dialog has its own page, settingsPages/SubscriptionPage.tsx, built from the
+// pieces below.) The code being typed lives in C#, which that dialog saves on OK, so each change
+// is posted to it.
+export const SubscriptionSettings: React.FunctionComponent = () => {
+    const [code, setCode] = React.useState<string>();
+    // This effect fetches, once, the code the WinForms dialog is editing.
+    useMountEffect(() => {
+        get("settings/subscriptionCode", (result) => setCode(result.data));
+    });
+    const { subscriptionCodeIntegrity, haveData } = useSubscriptionInfo(code);
 
-    if (!haveData) {
+    if (code === undefined || !haveData) {
         return null;
     }
+    const changeCode = (newCode: string) => {
+        postString("settings/subscriptionCode", newCode);
+        setCode(newCode);
+    };
 
     return (
         <div
@@ -41,12 +48,9 @@ export const SubscriptionSettings: React.FunctionComponent<{
             <>
                 <SubscriptionIntro />
 
-                <SubscriptionControls
-                    code={props.code}
-                    onCodeChange={props.onCodeChange}
-                />
+                <SubscriptionControls code={code} onCodeChange={changeCode} />
                 <br />
-                <SubscriptionStatus minimalUI code={props.code} />
+                <SubscriptionStatus minimalUI code={code} />
                 {subscriptionCodeIntegrity === "none" && (
                     <CommunitySubscriptionInvitation />
                 )}

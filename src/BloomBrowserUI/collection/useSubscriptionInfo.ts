@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { get } from "../utils/bloomApi";
 import { useL10n2 } from "../react_components/l10nHooks";
 
@@ -20,11 +20,9 @@ interface SubscriptionData {
     EditingBlorgBook: boolean;
 }
 
-// This hook supplies information about the Subscription as it is in the Collection Settings Dialog.
-// Given a code, it describes that code, and asks again whenever the code changes; the React
-// Collection Settings dialog uses this for the code being typed, which C# does not know until OK.
-// Without one, it describes the code the WinForms dialog is editing, and refreshes when anything
-// raises the "subscriptionCodeChanged" event.
+// This hook supplies information about a subscription. Given a code, it describes that code, and
+// asks again whenever the code changes; the Collection Settings dialogs use this for the code being
+// typed. Without one, it describes the collection's subscription.
 export const useSubscriptionInfo = (code?: string) => {
     const [subscriptionData, setSubscriptionData] = useState<SubscriptionData>({
         Code: "",
@@ -38,23 +36,14 @@ export const useSubscriptionInfo = (code?: string) => {
     });
     const [haveData, setHaveData] = useState(false);
 
-    // This is called once initially, then each time the user types in the subscription code field or does a paste
-    const querySubscriptionInfo = useCallback(() => {
-        get("settings/subscription", (result) => {
-            setSubscriptionData(result.data);
-            setHaveData(true);
-        });
-    }, [setSubscriptionData]);
-
-    const followsGivenCode = code !== undefined;
-
-    // Describe the given code, if there is one. Each keystroke asks again, so an answer that
-    // arrives after a newer question was asked is dropped.
+    // This effect fetches from Bloom: once, then again for each change of the code (each keystroke
+    // or paste). An answer that arrives after a newer question was asked is dropped.
     useEffect(() => {
-        if (code === undefined) return;
         let isCurrent = true;
         get(
-            `settings/subscription?code=${encodeURIComponent(code)}`,
+            code === undefined
+                ? "settings/subscription"
+                : `settings/subscription?code=${encodeURIComponent(code)}`,
             (result) => {
                 if (!isCurrent) return;
                 setSubscriptionData(result.data);
@@ -65,28 +54,6 @@ export const useSubscriptionInfo = (code?: string) => {
             isCurrent = false;
         };
     }, [code]);
-
-    // refresh when the subscription code changes
-    useEffect(() => {
-        if (followsGivenCode) return;
-        document.addEventListener(
-            "subscriptionCodeChanged",
-            querySubscriptionInfo,
-        );
-
-        return () => {
-            document.removeEventListener(
-                "subscriptionCodeChanged",
-                querySubscriptionInfo,
-            );
-        };
-    }, [querySubscriptionInfo, followsGivenCode]);
-
-    // get initial info once at startup
-    useEffect(() => {
-        if (followsGivenCode) return;
-        querySubscriptionInfo();
-    }, [querySubscriptionInfo, followsGivenCode]);
 
     return {
         code: subscriptionData.Code,

@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import * as React from "react";
 import { Label } from "../react_components/l10nComponents";
-import { get, post, postJson, useApiStringState } from "../utils/bloomApi";
+import { get, post, postJson } from "../utils/bloomApi";
 import CheckIcon from "@mui/icons-material/Check";
 import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
 import ErrorIcon from "@mui/icons-material/Error";
@@ -50,11 +50,10 @@ type Status =
 //      downloading a book for editing from BloomLibrary. We show a special message.
 
 // Component for managing subscription code input and display.
-// The React Collection Settings dialog keeps the code being typed itself, and passes it in with a
-// function to change it; the WinForms dialog passes neither, and the code lives in C#.
+// The dialog showing it keeps the code being typed, and passes it in with a function to change it.
 export const SubscriptionControls: React.FC<{
-    code?: string;
-    onCodeChange?: (code: string) => void;
+    code: string;
+    onCodeChange: (code: string) => void;
     // Shown just before the branding summary, when there is one.
     beforeBrandingSummary?: React.ReactNode;
 }> = (props) => {
@@ -108,15 +107,11 @@ export const SubscriptionControls: React.FC<{
                 </NoteBox>
             )}
 
-            {props.onCodeChange ? (
-                <Editor
-                    status={status}
-                    subscriptionCode={props.code!}
-                    onCodeChange={props.onCodeChange}
-                />
-            ) : (
-                <WinFormsDialogEditor status={status} />
-            )}
+            <Editor
+                status={status}
+                subscriptionCode={props.code}
+                onCodeChange={props.onCodeChange}
+            />
 
             <StatusText
                 tier={tier}
@@ -308,24 +303,6 @@ export const BrandingSummary: React.FC<{ summaryHtml: string }> = (props) => {
             `}
             dangerouslySetInnerHTML={{
                 __html: props.summaryHtml,
-            }}
-        />
-    );
-};
-
-// The WinForms dialog's editor: the code being typed lives in C#, which is told each change.
-const WinFormsDialogEditor: React.FC<{ status: Status }> = (props) => {
-    const [subscriptionCode, setSubscriptionCode] = useApiStringState(
-        "settings/subscriptionCode",
-        "",
-    );
-    return (
-        <Editor
-            status={props.status}
-            subscriptionCode={subscriptionCode}
-            onCodeChange={(code) => {
-                setSubscriptionCode(code);
-                document.dispatchEvent(new Event("subscriptionCodeChanged"));
             }}
         />
     );
