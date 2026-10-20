@@ -33,7 +33,7 @@ Where the mockup and current code disagree and the code is newer, keep the code.
 | Project Information: Country, Province, District, Collection Name | Places group on Front & Back Matter; Collection Name on **Advanced** (disabled in a Team Collection) | Intent. |
 | Advanced: auto update, QR codes, experimental features | Advanced: auto update, collection name. QR codes move to Front & Back Matter with a new live badge preview. Experimental features get their own page. | Intent; the QR preview is new UI. |
 | Subscription, Team Collection tabs (React) | Same content | Reuse. |
-| Restart reminder, OK becomes "Restart"; Help button per tab | Not shown (mockups have no buttons) | Unspecified; see Q7, Q8. |
+| Restart reminder, OK becomes "Restart"; Help button per tab | Not shown (mockups have no buttons) | Built anyway; see Q7, Q8. |
 | Older Notion design: Appearance tab (collection defaults for Book Settings), AI tab | Absent | Dropped from this project (Q2). |
 
 The 2023 cards BL-12408, BL-12416, BL-12417, BL-12418 are superseded by BL-16733 to BL-16739.
@@ -75,6 +75,11 @@ What a page card builds on:
 - **Chrome.** Both Config-R settings dialogs (this and Book Settings) use the usual `BloomDialog`
   shape and share `ConfigrDialogMiddle` and the 900×720 size (`react_components/ConfigrDialogMiddle.tsx`).
   Search is off.
+- **Which page shows.** Config-R reports the showing top-level page (`onTopLevelPageChange`) and
+  switches to one while the pane stays open, keeping the user's edits, whenever
+  `selectedTopLevelPageKey` changes (sillsdev/config-r#29, needs `@sillsdev/config-r` 1.0.0-alpha.30).
+  Help uses the report; going to a page from inside the dialog (a subscription badge) uses the
+  switch, not a remount of the pane.
 - **The WinForms dialog is untouched**, including `DialogBeingEdited` and the `settings/*` endpoints
   its React tabs post to. The two save paths share nothing.
 - **Strings.** The new page labels are `translate="no"` until the pages are real; reuse existing
@@ -102,8 +107,10 @@ reuses one decides how its edits reach the React POST.
   per language in `ReaderToolsSettings-<tag>.json` under app data, not in the collection, so
   moving them is a data change. Ask Hatton whether these were meant for 6.6.
 - **Q7 Restart reminder and OK→Restart:** keep (built).
-- **Q8 Help:** one Help button for the selected page. Config-R does not report the current page,
-  so this needs a way to know it (track nav clicks, or add `onPageChange` to Config-R).
+- **Q8 Help:** one Help button for the selected page (built, BL-17032), using Config-R's new
+  page report. Languages, Front & Back Matter and Subscription keep the old tabs' topics; Team
+  Collection, Bloom Library, Advanced and Experimental open the general Settings topic until the
+  help gains pages of their own (`collection/collectionSettingsHelpTopic.ts`).
 - **Q9 Experimental page:** a list of the features that exist (only Team Collections today);
   each unmerged feature adds itself when it lands. Experimental book sources is dead (turned off
   at every startup, never shown) and stays out.
