@@ -496,27 +496,27 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Level.Max">
         <source xml:lang="en">Max</source>
-        <target xml:lang="pt-PT" state="translated">Máximo</target>
+        <target xml:lang="pt-PT" state="translated">Máxima</target>
         <note>ID: AiImageEditor.Level.Max</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Level.Medium">
         <source xml:lang="en">Medium</source>
-        <target xml:lang="pt-PT" state="translated">Intermediário</target>
+        <target xml:lang="pt-PT" state="translated">Média</target>
         <note>ID: AiImageEditor.Level.Medium</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Level.None">
         <source xml:lang="en">None</source>
-        <target xml:lang="pt-PT" state="translated">Nada</target>
+        <target xml:lang="pt-PT" state="translated">Nenhum</target>
         <note>ID: AiImageEditor.Level.None</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.Estimate">
         <source xml:lang="en">Estimate {0}{1}</source>
-        <target xml:lang="pt-PT" state="translated">Estimativa {0}{1}</target>
+        <target xml:lang="pt-PT" state="translated">Custo estimado {0}{1}</target>
         <note>ID: AiImageEditor.Model.Estimate</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.LastMeasured">
         <source xml:lang="en">Last measured: {0}</source>
-        <target xml:lang="pt-PT" state="translated">Última medição: {0}</target>
+        <target xml:lang="pt-PT" state="translated">Último custo: {0}</target>
         <note>ID: AiImageEditor.Model.LastMeasured</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.PickerTooltip">
@@ -524,39 +524,39 @@
         <target xml:lang="pt-PT" state="translated">Escolha qual motor de imagem com IA usar</target>
         <note>ID: AiImageEditor.Model.PickerTooltip</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Model.RecommendedChip">
+      <trans-unit id="AiImageEditor.Model.RecommendedChip" approved="yes">
         <source xml:lang="en">recommended for this tool</source>
-        <target xml:lang="pt-PT" state="translated">recomendado para esta ferramenta</target>
+        <target xml:lang="pt-PT" state="final">recomendado para esta ferramenta</target>
         <note>ID: AiImageEditor.Model.RecommendedChip</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.ForgetKey">
+      <trans-unit id="AiImageEditor.OpenRouter.ForgetKey" approved="yes">
         <source xml:lang="en">Forget Key</source>
-        <target xml:lang="pt-PT" state="translated">Esquecer a chave</target>
+        <target xml:lang="pt-PT" state="final">Esquecer a chave</target>
         <note>ID: AiImageEditor.OpenRouter.ForgetKey</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.KeyVerificationFailed">
+      <trans-unit id="AiImageEditor.OpenRouter.KeyVerificationFailed" approved="yes">
         <source xml:lang="en">Key verification failed</source>
-        <target xml:lang="pt-PT" state="translated">Não foi possível verificar a chave</target>
+        <target xml:lang="pt-PT" state="final">Não foi possível verificar a chave</target>
         <note>ID: AiImageEditor.OpenRouter.KeyVerificationFailed</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.KeyVerified">
+      <trans-unit id="AiImageEditor.OpenRouter.KeyVerified" approved="yes">
         <source xml:lang="en">Key verified{0}</source>
-        <target xml:lang="pt-PT" state="translated">Chave verificada{0}</target>
+        <target xml:lang="pt-PT" state="final">Chave verificada{0}</target>
         <note>ID: AiImageEditor.OpenRouter.KeyVerified</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.Testing">
+      <trans-unit id="AiImageEditor.OpenRouter.Testing" approved="yes">
         <source xml:lang="en">Testing…</source>
-        <target xml:lang="pt-PT" state="translated">Testando…</target>
+        <target xml:lang="pt-PT" state="final">Testando…</target>
         <note>ID: AiImageEditor.OpenRouter.Testing</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Panel.OriginalComic">
         <source xml:lang="en">Original Comic</source>
-        <target xml:lang="pt-PT" state="translated">Quadrinho original</target>
+        <target xml:lang="pt-PT" state="translated">Quadrinho/BD original</target>
         <note>ID: AiImageEditor.Panel.OriginalComic</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Preview.ResetZoom">
+      <trans-unit id="AiImageEditor.Preview.ResetZoom" approved="yes">
         <source xml:lang="en">Reset zoom</source>
-        <target xml:lang="pt-PT" state="translated">Restaurar o zoom</target>
+        <target xml:lang="pt-PT" state="final">Restaurar o zoom</target>
         <note>ID: AiImageEditor.Preview.ResetZoom</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Preview.ZoomHint">
@@ -564,14 +564,14 @@
         <target xml:lang="pt-PT" state="translated">Ctrl + roda do mouse para aproximar ou afastar</target>
         <note>ID: AiImageEditor.Preview.ZoomHint</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Quality.Label">
+      <trans-unit id="AiImageEditor.Quality.Label" approved="yes">
         <source xml:lang="en">Quality</source>
-        <target xml:lang="pt-PT" state="translated">Qualidade</target>
+        <target xml:lang="pt-PT" state="final">Qualidade</target>
         <note>ID: AiImageEditor.Quality.Label</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Settings.Working">
+      <trans-unit id="AiImageEditor.Settings.Working" approved="yes">
         <source xml:lang="en">Working...</source>
-        <target xml:lang="pt-PT" state="translated">Processando...</target>
+        <target xml:lang="pt-PT" state="final">Processando...</target>
         <note>ID: AiImageEditor.Settings.Working</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Slot.ClearImage">
@@ -589,9 +589,9 @@
         <target xml:lang="pt-PT" state="translated">Uma imagem deste livro</target>
         <note>ID: AiImageEditor.Source.BookImage</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Source.ImagesToEdit">
+      <trans-unit id="AiImageEditor.Source.ImagesToEdit" approved="yes">
         <source xml:lang="en">Images to edit: {0}</source>
-        <target xml:lang="pt-PT" state="translated">Imagens a editar: {0}</target>
+        <target xml:lang="pt-PT" state="final">Imagens a editar: {0}</target>
         <note>ID: AiImageEditor.Source.ImagesToEdit</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Source.OriginalBookImage">
@@ -599,39 +599,39 @@
         <target xml:lang="pt-PT" state="translated">A imagem com que este espaço do livro começou</target>
         <note>ID: AiImageEditor.Source.OriginalBookImage</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Source.PdfFile">
+      <trans-unit id="AiImageEditor.Source.PdfFile" approved="yes">
         <source xml:lang="en">From {0}</source>
-        <target xml:lang="pt-PT" state="translated">De {0}</target>
+        <target xml:lang="pt-PT" state="final">De {0}</target>
         <note>ID: AiImageEditor.Source.PdfFile</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Source.PdfPage">
+      <trans-unit id="AiImageEditor.Source.PdfPage" approved="yes">
         <source xml:lang="en">Page {0} of {1}</source>
-        <target xml:lang="pt-PT" state="translated">Página {0} de {1}</target>
+        <target xml:lang="pt-PT" state="final">Página {0} de {1}</target>
         <note>ID: AiImageEditor.Source.PdfPage</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Source.RecoveredFromFolder">
+      <trans-unit id="AiImageEditor.Source.RecoveredFromFolder" approved="yes">
         <source xml:lang="en">Found in the history folder</source>
-        <target xml:lang="pt-PT" state="translated">Encontrada na pasta do histórico</target>
+        <target xml:lang="pt-PT" state="final">Encontrada na pasta do histórico</target>
         <note>ID: AiImageEditor.Source.RecoveredFromFolder</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Source.ReferenceImages">
+      <trans-unit id="AiImageEditor.Source.ReferenceImages" approved="yes">
         <source xml:lang="en">Reference images: {0}</source>
-        <target xml:lang="pt-PT" state="translated">Imagens de referência: {0}</target>
+        <target xml:lang="pt-PT" state="final">Imagens de referência: {0}</target>
         <note>ID: AiImageEditor.Source.ReferenceImages</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Status.NotConnected">
+      <trans-unit id="AiImageEditor.Status.NotConnected" approved="yes">
         <source xml:lang="en">OpenRouter not connected</source>
-        <target xml:lang="pt-PT" state="translated">OpenRouter não conectado</target>
+        <target xml:lang="pt-PT" state="final">OpenRouter não conectado</target>
         <note>ID: AiImageEditor.Status.NotConnected</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Strip.Pin">
         <source xml:lang="en">Pin strip</source>
-        <target xml:lang="pt-PT" state="translated">Fixar a faixa</target>
+        <target xml:lang="pt-PT" state="translated">Fixar esta faixa</target>
         <note>ID: AiImageEditor.Strip.Pin</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Strip.ShowInGallery">
         <source xml:lang="en">Show in full-screen gallery</source>
-        <target xml:lang="pt-PT" state="translated">Ver na galeria em tela cheia</target>
+        <target xml:lang="pt-PT" state="translated">Visualizar na galeria de tela cheia</target>
         <note>ID: AiImageEditor.Strip.ShowInGallery</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Strip.Unpin">
@@ -689,14 +689,14 @@
         <target xml:lang="pt-PT" state="translated">Quadros</target>
         <note>ID: AiImageEditor.Tool.make_gif.Param.frameCount</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.make_gif.Title">
+      <trans-unit id="AiImageEditor.Tool.make_gif.Title" approved="yes">
         <source xml:lang="en">Make GIF</source>
-        <target xml:lang="pt-PT" state="translated">Criar um GIF</target>
+        <target xml:lang="pt-PT" state="final">Criar um GIF</target>
         <note>ID: AiImageEditor.Tool.make_gif.Title</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.pdf_to_images.ActionButton">
+      <trans-unit id="AiImageEditor.Tool.pdf_to_images.ActionButton" approved="yes">
         <source xml:lang="en">Choose PDF…</source>
-        <target xml:lang="pt-PT" state="translated">Escolher um PDF…</target>
+        <target xml:lang="pt-PT" state="final">Escolher um PDF…</target>
         <note>ID: AiImageEditor.Tool.pdf_to_images.ActionButton</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.pdf_to_images.Title">
@@ -709,9 +709,9 @@
         <target xml:lang="pt-PT" state="translated">Deixa o fundo transparente.</target>
         <note>ID: AiImageEditor.Tool.remove_background.Description</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.remove_background.Title">
+      <trans-unit id="AiImageEditor.Tool.remove_background.Title" approved="yes">
         <source xml:lang="en">Remove Background</source>
-        <target xml:lang="pt-PT" state="translated">Remover o fundo</target>
+        <target xml:lang="pt-PT" state="final">Remover o fundo</target>
         <note>ID: AiImageEditor.Tool.remove_background.Title</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_object.Description">
@@ -719,14 +719,14 @@
         <target xml:lang="pt-PT" state="translated">Remove objetos ou defeitos indesejados.</target>
         <note>ID: AiImageEditor.Tool.remove_object.Description</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.remove_object.Param.target">
+      <trans-unit id="AiImageEditor.Tool.remove_object.Param.target" approved="yes">
         <source xml:lang="en">Object to Remove</source>
-        <target xml:lang="pt-PT" state="translated">Objeto a remover</target>
+        <target xml:lang="pt-PT" state="final">Objeto a remover</target>
         <note>ID: AiImageEditor.Tool.remove_object.Param.target</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_object.Param.target.Placeholder">
         <source xml:lang="en">e.g. the red ball, background clutter</source>
-        <target xml:lang="pt-PT" state="translated">p. ex., a bola vermelha, a confusão no fundo</target>
+        <target xml:lang="pt-PT" state="translated">ex: a bola vermelha, a bagunça no fundo</target>
         <note>ID: AiImageEditor.Tool.remove_object.Param.target.Placeholder</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_object.Title">
