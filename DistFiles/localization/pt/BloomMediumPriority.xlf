@@ -1809,9 +1809,9 @@
         <target xml:lang="pt-PT" state="final">Rabisco infantil de giz de cera</target>
         <note>ID: AiImageEditor.ArtStyle.crayon-scribble.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.flat-instructional.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.flat-instructional.Name" approved="yes">
         <source xml:lang="en">Flat Instructional</source>
-        <target xml:lang="pt-PT" state="translated">Ilustração didática em estilo flat</target>
+        <target xml:lang="pt-PT" state="final">Ilustração didática em estilo flat</target>
         <note>ID: AiImageEditor.ArtStyle.flat-instructional.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.high-contrast-block.Name" approved="yes">
@@ -1834,14 +1834,14 @@
         <target xml:lang="pt-PT" state="final">Traço realçado com giz de cera</target>
         <note>ID: AiImageEditor.ArtStyle.line-art-crayon.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.line-art-watercolor.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.line-art-watercolor.Name" approved="yes">
         <source xml:lang="en">Watercolor Line Wash</source>
-        <target xml:lang="pt-PT" state="translated">Traço com aguada de aquarela</target>
+        <target xml:lang="pt-PT" state="final">Traço com aguada de aquarela</target>
         <note>ID: AiImageEditor.ArtStyle.line-art-watercolor.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.line-drawing-sketch.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.line-drawing-sketch.Name" approved="yes">
         <source xml:lang="en">Line Drawing and Sketch Style</source>
-        <target xml:lang="pt-PT" state="translated">Desenho a traço e esboço</target>
+        <target xml:lang="pt-PT" state="final">Desenho a traço e esboço</target>
         <note>ID: AiImageEditor.ArtStyle.line-drawing-sketch.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.manga-style.Name" approved="yes">
@@ -1849,19 +1849,19 @@
         <target xml:lang="pt-PT" state="final">Ilustrações estilo mangá</target>
         <note>ID: AiImageEditor.ArtStyle.manga-style.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.moody-illustrations.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.moody-illustrations.Name" approved="yes">
         <source xml:lang="en">Moody Illustrations</source>
-        <target xml:lang="pt-PT" state="translated">Ilustrações de atmosfera marcante</target>
+        <target xml:lang="pt-PT" state="final">Ilustrações de atmosfera marcante</target>
         <note>ID: AiImageEditor.ArtStyle.moody-illustrations.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.paper-cutout-collage.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.paper-cutout-collage.Name" approved="yes">
         <source xml:lang="en">Paper Cutout &amp; Collage</source>
-        <target xml:lang="pt-PT" state="translated">Papel recortado e colagem</target>
+        <target xml:lang="pt-PT" state="final">Papel recortado &amp; colagem</target>
         <note>ID: AiImageEditor.ArtStyle.paper-cutout-collage.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.pixel-toy.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.pixel-toy.Name" approved="yes">
         <source xml:lang="en">Pixel Toy</source>
-        <target xml:lang="pt-PT" state="translated">Brinquedo de pixels</target>
+        <target xml:lang="pt-PT" state="final">Pixel Art</target>
         <note>ID: AiImageEditor.ArtStyle.pixel-toy.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.realistic-illustration.Name" approved="yes">
@@ -1876,7 +1876,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.vintage-engraving.Name">
         <source xml:lang="en">Vintage Engraving &amp; Etching</source>
-        <target xml:lang="pt-PT" state="translated">Gravura e água-forte antigas</target>
+        <target xml:lang="pt-PT" state="translated">Gravura antiga &amp; água-forte</target>
         <note>ID: AiImageEditor.ArtStyle.vintage-engraving.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.vintage-illustrations.Name">
@@ -1889,9 +1889,9 @@
         <target xml:lang="pt-PT" state="final">Sonho em aquarela</target>
         <note>ID: AiImageEditor.ArtStyle.watercolor-dream.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.whimsical-illustrations.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.whimsical-illustrations.Name" approved="yes">
         <source xml:lang="en">Whimsical Illustrations Style</source>
-        <target xml:lang="pt-PT" state="translated">Ilustrações lúdicas</target>
+        <target xml:lang="pt-PT" state="final">Ilustrações lúdicas</target>
         <note>ID: AiImageEditor.ArtStyle.whimsical-illustrations.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.wimmelbuch.Name">
@@ -2534,9 +2534,9 @@
         <target xml:lang="pt-PT" state="translated">Seus créditos são comprados diretamente do OpenRouter. O Bloom não recebe nenhuma parte do valor gasto.</target>
         <note>ID: AiImageEditor.Welcome.CreditsNote</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Welcome.Explanation">
+      <trans-unit id="AiImageEditor.Welcome.Explanation" approved="yes">
         <source xml:lang="en">Bloom AI Image Tools creates images using AI models from Google and other providers. These models charge per image — you pay for them through {0}, a service that lets you pre-load credits and use them across providers. Credits start at $5 — enough for roughly 25–50 images — and are only spent when you generate images. There's no subscription.</source>
-        <target xml:lang="pt-PT" state="translated">As Ferramentas de imagem com IA do Bloom criam imagens usando modelos de IA do Google e de outros fornecedores. Esses modelos cobram por imagem: você paga por eles através do {0}, um serviço que permite carregar créditos antecipadamente e usá-los com vários fornecedores. Os créditos começam em US$ 5, o suficiente para cerca de 25 a 50 imagens, e só são gastos quando você gera imagens. Não há assinatura.</target>
+        <target xml:lang="pt-PT" state="final">As Ferramentas de imagem com IA do Bloom criam imagens usando modelos de IA do Google e de outros fornecedores. Esses modelos cobram por imagem: você paga por eles através do {0}, um serviço que permite carregar créditos antecipadamente e usá-los com vários fornecedores. Os créditos começam em US$ 5, o suficiente para cerca de 25 a 50 imagens, e só são gastos quando você gera imagens. Não há assinatura.</target>
         <note>ID: AiImageEditor.Welcome.Explanation</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Welcome.JustLookAround" approved="yes">
