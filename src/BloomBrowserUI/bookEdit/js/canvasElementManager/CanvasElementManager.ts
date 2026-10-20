@@ -35,6 +35,7 @@ import {
     UpdateImageTooltipVisibility,
     HandleImageError,
     isPlaceHolderImage,
+    refreshTransparencyIfBackgroundImage,
 } from "../bloomImages";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "../BloomHintBubbles";
@@ -110,9 +111,14 @@ import {
     removeDetachedTargets,
 } from "./CanvasElementDraggableIntegration";
 import { CanvasElementEditingSuspension } from "./CanvasElementEditingSuspension";
+import {
+    moveCanvasElementInZOrder,
+    type ZOrderMove,
+} from "./CanvasElementZOrder";
 import { adjustCanvasElementChildrenIfSizeChanged } from "./CanvasElementResizeAdjustments";
 import {
     adjustBackgroundImageSize as adjustCanvasBackgroundImageSize,
+    backgroundImageAlreadyFillsCanvas,
     handleResizeAdjustments as handleBackgroundResizeAdjustments,
     setupBackgroundImageAttributes,
     type BackgroundImageManagerState,
@@ -341,6 +347,8 @@ export class CanvasElementManager {
                     this.deleteCurrentCanvasElement.bind(this),
                 moveActiveCanvasElement:
                     this.moveActiveCanvasElement.bind(this),
+                moveActiveCanvasElementInZOrder:
+                    this.moveActiveCanvasElementInZOrder.bind(this),
                 getActiveCanvasElement: this.getActiveElement.bind(this),
             },
             this.snapProvider,
@@ -1548,6 +1556,17 @@ export class CanvasElementManager {
             kBloomCanvasSelector,
         ) as HTMLElement;
         if (!bloomCanvas) return null;
+        // adjustBackgroundImageSize makes a picture that fills its bloom-canvas overhang the
+        // edges slightly, which the size comparisons below would read as "not yet expanded".
+        if (
+            backgroundImageAlreadyFillsCanvas(
+                bloomCanvas,
+                this.activeElement,
+                img,
+            )
+        ) {
+            return null;
+        }
 
         const imgAspectRatio = img.naturalWidth / img.naturalHeight;
         const containerAspectRatio =
@@ -3025,6 +3044,8 @@ export class CanvasElementManager {
                 img.classList.remove("bloom-imageLoadError");
                 img.onerror = HandleImageError;
                 img.src = "placeHolder.png";
+                // Overlays no longer sit on a real background image.
+                refreshTransparencyIfBackgroundImage(img);
                 if (page) {
                     normalizeCoverImageDesignation(page);
                 }
@@ -3340,6 +3361,27 @@ export class CanvasElementManager {
         if (active) {
             this.deleteCanvasElement(active);
         }
+    }
+
+    // The Layer menu commands (and their keyboard shortcuts): move the active canvas element,
+    // together with any child bubbles in its family, one step forward or backward in the
+    // stacking order, or all the way to the front or back. Does nothing for the background
+    // image, or when the element is already as far as it can go. See CanvasElementZOrder.ts.
+    public moveActiveCanvasElementInZOrder(move: ZOrderMove): void {
+        // "this" might be a menu item that was clicked.  Calling explicitly again fixes that.  See BL-13928.
+        if (this !== theOneCanvasElementManager) {
+            theOneCanvasElementManager.moveActiveCanvasElementInZOrder(move);
+            return;
+        }
+        const active = this.getActiveElement();
+        if (!active || !moveCanvasElementInZOrder(active, move)) {
+            return;
+        }
+        // Moving the element rebuilt Comical's bubbles, so make sure the active one gets its
+        // handles back. Aligning the control frame also re-renders the context controls, so a
+        // reopened menu shows which layer moves are still possible.
+        Comical.activateElement(active);
+        this.alignControlFrameWithActiveElement();
     }
 
     public duplicateCanvasElement(): HTMLElement | undefined {

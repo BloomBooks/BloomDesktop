@@ -706,6 +706,24 @@ that refuses to start while a foreign e2e Bloom is up, would turn a slow flake i
 message. Worth doing if agents keep running two worktrees at once.
 (Found 2026-09-05, gating the table specs.)
 
+## A launched Bloom sometimes exposes no debugging target at all
+
+Once in a nine-file run on 2026-09-07, `inline-images-zoom.spec.ts` failed before any test code
+ran: `Bloom's WebView2 never exposed the shell document it is driving within 90s`, with
+`Targets seen: none` -- so it is not the wrong-document case above (that one lists the documents
+it found), and not the worker crash either (the worker was alive and reported the failure). The
+spec passed on its own immediately afterwards, and the other eight files in the same run were
+green.
+
+`Targets seen: none` says the debugging listener answered but had nothing on it, which points at
+Bloom still starting rather than at anything the test did. Whether the 90 seconds is simply too
+short on a loaded machine is not known; nobody has caught it with Bloom's own log alongside.
+
+How to react, until it is understood: **re-run the file**, and treat a failure that follows one
+file across runs as a real problem in that file rather than this entry. Fix direction: have
+`findShellPage` say what Bloom's process was doing when it gave up (it has the pid), so the next
+occurrence distinguishes a slow start from a Bloom that never got there.
+
 ## A title typed on the cover of a new book can fail to reach the collection
 
 `import-recording.spec.ts` made a book under the Sample-Pro branding (`e2e/setBranding`,
