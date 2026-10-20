@@ -37,15 +37,25 @@ namespace Bloom.Collection
             // rename) before anything is saved, so if a save below fails, the in-memory settings
             // are left partly changed. We accept that, as the WinForms OK handler always has: the
             // failure is reported, and the collection is read from disk again when it reopens.
+            var values = new CollectionSettingsValues(settings, queueRenameOfCollection);
             using (var reader = postedValues.CreateReader())
             {
                 JsonSerializer
                     .Create(CollectionSettingsApi.kCamelCaseSettings)
-                    .Populate(
-                        reader,
-                        new CollectionSettingsValues(settings, queueRenameOfCollection)
-                    );
+                    .Populate(reader, values);
             }
+
+            // The posted bookshelf is already in settings.DefaultBookshelf, which is what a null
+            // newBookshelf means. This runs on every save, even with the subscription unchanged:
+            // it is what keeps an expired subscription's bookshelf in the file (BL-15056). It
+            // comes before the xmatter check because the new subscription's branding may
+            // specify the pack.
+            var clearDefaultBookshelfAfterSaving = ApplySubscriptionAndBookshelf(
+                GetChangedSubscription(settings, values.Subscription.Code),
+                null,
+                settings,
+                currentCollectionIsTeamCollection
+            );
 
             // A pack that is no longer available, or one the branding overrides, is replaced.
             settings.XMatterPackName = xmatterPackFinder.GetValidXmatter(
@@ -55,21 +65,24 @@ namespace Bloom.Collection
 
             Settings.Default.Save(); // AutoUpdate is a user-level setting
 
-            // The dialog does not post the administrators or the subscription yet (their tab cards
-            // will), so these rules run with "unchanged". The posted bookshelf is already in
-            // settings.DefaultBookshelf, which is what a null newBookshelf means. That still
-            // matters: it is what keeps an expired subscription's bookshelf in the file (BL-15056).
+            // The dialog does not post the administrators yet (their tab card will), so this
+            // runs with "unchanged".
             ApplyAdministrators(null, settings, currentCollectionIsTeamCollection);
-            var clearDefaultBookshelfAfterSaving = ApplySubscriptionAndBookshelf(
-                null,
-                null,
-                settings,
-                currentCollectionIsTeamCollection
-            );
             settings.Save();
 
             if (clearDefaultBookshelfAfterSaving)
                 settings.DefaultBookshelf = "";
+        }
+
+        /// <summary>
+        /// The subscription a code the user entered stands for, or null if it is the code the
+        /// collection already has. Keeping the collection's own object for an unchanged code
+        /// matters: it can carry more than the code says (a book downloaded for editing has a
+        /// redacted code, and is allowed its branding even when expired).
+        /// </summary>
+        public static Subscription GetChangedSubscription(CollectionSettings settings, string code)
+        {
+            return settings.Subscription.IsDifferent(code) ? new Subscription(code) : null;
         }
 
         /// <summary>

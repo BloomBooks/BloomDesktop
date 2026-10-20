@@ -21,8 +21,11 @@ interface SubscriptionData {
 }
 
 // This hook supplies information about the Subscription as it is in the Collection Settings Dialog.
-// It automatically refreshes the values when it anything raises the "subscriptionCodeChanged" event.
-export const useSubscriptionInfo = () => {
+// Given a code, it describes that code, and asks again whenever the code changes; the React
+// Collection Settings dialog uses this for the code being typed, which C# does not know until OK.
+// Without one, it describes the code the WinForms dialog is editing, and refreshes when anything
+// raises the "subscriptionCodeChanged" event.
+export const useSubscriptionInfo = (code?: string) => {
     const [subscriptionData, setSubscriptionData] = useState<SubscriptionData>({
         Code: "",
         Tier: "",
@@ -43,8 +46,29 @@ export const useSubscriptionInfo = () => {
         });
     }, [setSubscriptionData]);
 
+    const followsGivenCode = code !== undefined;
+
+    // Describe the given code, if there is one. Each keystroke asks again, so an answer that
+    // arrives after a newer question was asked is dropped.
+    useEffect(() => {
+        if (code === undefined) return;
+        let isCurrent = true;
+        get(
+            `settings/subscription?code=${encodeURIComponent(code)}`,
+            (result) => {
+                if (!isCurrent) return;
+                setSubscriptionData(result.data);
+                setHaveData(true);
+            },
+        );
+        return () => {
+            isCurrent = false;
+        };
+    }, [code]);
+
     // refresh when the subscription code changes
     useEffect(() => {
+        if (followsGivenCode) return;
         document.addEventListener(
             "subscriptionCodeChanged",
             querySubscriptionInfo,
@@ -56,12 +80,13 @@ export const useSubscriptionInfo = () => {
                 querySubscriptionInfo,
             );
         };
-    }, [querySubscriptionInfo]);
+    }, [querySubscriptionInfo, followsGivenCode]);
 
     // get initial info once at startup
     useEffect(() => {
+        if (followsGivenCode) return;
         querySubscriptionInfo();
-    }, [querySubscriptionInfo]);
+    }, [querySubscriptionInfo, followsGivenCode]);
 
     return {
         code: subscriptionData.Code,

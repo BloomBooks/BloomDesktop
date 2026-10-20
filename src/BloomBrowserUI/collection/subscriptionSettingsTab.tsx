@@ -11,8 +11,15 @@ import { SubscriptionControls } from "./subscriptionCodeControl";
 import { useSubscriptionInfo } from "./useSubscriptionInfo";
 
 // This component implements the Bloom Subscription tab of the Settings dialog.
-export const SubscriptionSettings: React.FunctionComponent = () => {
-    const { subscriptionCodeIntegrity, haveData } = useSubscriptionInfo();
+// The React Collection Settings dialog passes the code being typed and a function to change it
+// (see SubscriptionControls); the WinForms dialog passes neither.
+export const SubscriptionSettings: React.FunctionComponent<{
+    code?: string;
+    onCodeChange?: (code: string) => void;
+}> = (props) => {
+    const { subscriptionCodeIntegrity, haveData } = useSubscriptionInfo(
+        props.code,
+    );
 
     if (!haveData) {
         return null;
@@ -32,52 +39,66 @@ export const SubscriptionSettings: React.FunctionComponent = () => {
             `}
         >
             <>
-                <Markdown
-                    l10nKey="Settings.Subscription.IntroText"
-                    l10nParam0={"https://bloomlibrary.org/feature-matrix"} // redirected by cloudflare
-                >
-                    To help cover a portion of the costs associated with
-                    providing Bloom, we offer [advanced features](%0) and
-                    customizations as a subscription service.
-                </Markdown>
-                <Markdown
-                    l10nKey="Settings.Subscription.RequestSubscription"
-                    l10nParam0={"subscriptions@bloomlibrary.org"}
-                    l10nParam1={"mailto:subscriptions@bloomlibrary.org"}
-                >
-                    Please contact [%0](%1) to purchase your subscription code.
-                </Markdown>
+                <SubscriptionIntro />
 
-                <SubscriptionControls />
+                <SubscriptionControls
+                    code={props.code}
+                    onCodeChange={props.onCodeChange}
+                />
                 <br />
-                <SubscriptionStatus minimalUI />
+                <SubscriptionStatus minimalUI code={props.code} />
                 {subscriptionCodeIntegrity === "none" && (
-                    <NoteBox
-                        css={css`
-                            margin-top: auto; // push to bottom
-                            p {
-                                margin: 0; // markdown wraps everything in a p tag which adds a big margin we don't need
-                            }
-                        `}
-                    >
-                        {/* wrap in a div with display inline */}
-                        <div
-                            css={css`
-                                display: inline;
-                            `}
-                        >
-                            <Markdown l10nKey="Settings.Subscription.Community.Invitation">
-                                If your project is fully funded and managed by
-                                your local language community, you may qualify
-                                for a free [Bloom Community
-                                Subscription](https://bloomlibrary.org/subscriptions).
-                            </Markdown>
-                        </div>
-                    </NoteBox>
+                    <CommunitySubscriptionInvitation />
                 )}
             </>
         </div>
     );
 };
+
+// What a subscription is for, and how to get one.
+export const SubscriptionIntro: React.FunctionComponent = () => (
+    <>
+        <Markdown
+            l10nKey="Settings.Subscription.IntroText"
+            l10nParam0={"https://bloomlibrary.org/feature-matrix"} // redirected by cloudflare
+        >
+            To help cover a portion of the costs associated with providing
+            Bloom, we offer [advanced features](%0) and customizations as a
+            subscription service.
+        </Markdown>
+        <Markdown
+            l10nKey="Settings.Subscription.RequestSubscription"
+            l10nParam0={"subscriptions@bloomlibrary.org"}
+            l10nParam1={"mailto:subscriptions@bloomlibrary.org"}
+        >
+            Please contact [%0](%1) to purchase your subscription code.
+        </Markdown>
+    </>
+);
+
+// Shown when no subscription code has been entered.
+export const CommunitySubscriptionInvitation: React.FunctionComponent = () => (
+    <NoteBox
+        css={css`
+            margin-top: auto; // push to bottom of the WinForms tab
+            p {
+                margin: 0; // markdown wraps everything in a p tag which adds a big margin we don't need
+            }
+        `}
+    >
+        {/* wrap in a div with display inline */}
+        <div
+            css={css`
+                display: inline;
+            `}
+        >
+            <Markdown l10nKey="Settings.Subscription.Community.Invitation">
+                If your project is fully funded and managed by your local
+                language community, you may qualify for a free [Bloom Community
+                Subscription](https://bloomlibrary.org/subscriptions).
+            </Markdown>
+        </div>
+    </NoteBox>
+);
 
 WireUpForWinforms(() => <SubscriptionSettings />);

@@ -41,6 +41,7 @@ const initialValues: ICollectionSettingsValues = {
         province: "",
         district: "",
     },
+    subscription: { code: "Saved-Code-123456-7890" },
     bloomLibrary: { defaultBookshelf: "" },
     advanced: { autoUpdate: true, collectionName: "Test Collection" },
     experimental: { "team-collections": false, tables: false },
@@ -65,8 +66,9 @@ const {
     mockGet: vi.fn(),
     mockPostJson: vi.fn(),
     mockCloseDialog: vi.fn(),
-    // Lets a test close and re-open the dialog, which is what the real launch plumbing does.
-    dialogState: { open: true },
+    // Lets a test close and re-open the dialog, which is what the real launch plumbing does, and
+    // launch it again (a new event) while it is open.
+    dialogState: { open: true, openingEvent: {} as Record<string, unknown> },
     // Whether Bloom has answered the subscription check yet, and whether the collection's tier
     // includes Team Collections.
     teamCollectionFeature: { loaded: true, enabled: true },
@@ -106,6 +108,38 @@ vi.mock("../react_components/requiresSubscription", () => ({
     ),
 }));
 
+// The Subscription page's pieces come from the WinForms tab and talk to Bloom themselves. These
+// stand-ins show the code they were given, and let a test type a new one.
+vi.mock("./subscriptionCodeControl", () => ({
+    SubscriptionControls: (props: {
+        code: string;
+        onCodeChange: (code: string) => void;
+    }) => (
+        <div>
+            <div data-testid="subscription-code">{props.code}</div>
+            <button
+                data-testid="type-subscription-code"
+                onClick={() => props.onCodeChange(" New-Code-654321-0987 ")}
+            />
+            <button
+                data-testid="clear-subscription-code"
+                onClick={() => props.onCodeChange("")}
+            />
+        </div>
+    ),
+}));
+
+vi.mock("../collectionsTab/SubscriptionStatus", () => ({
+    SubscriptionStatus: () => null,
+}));
+
+vi.mock("./subscriptionSettingsTab", () => ({
+    SubscriptionIntro: () => null,
+    CommunitySubscriptionInvitation: () => (
+        <div data-testid="community-invitation" />
+    ),
+}));
+
 vi.mock("../utils/bloomApi", () => ({
     get: mockGet,
     postJson: mockPostJson,
@@ -117,7 +151,7 @@ vi.mock("../react_components/l10nHooks", () => ({
 
 vi.mock("../react_components/BloomDialog/BloomDialogPlumbing", () => ({
     useEventLaunchedBloomDialog: () => ({
-        openingEvent: {},
+        openingEvent: dialogState.openingEvent,
         closeDialog: mockCloseDialog,
         propsForBloomDialog: { open: dialogState.open },
     }),
@@ -164,8 +198,11 @@ vi.mock("../react_components/BloomDialog/commonDialogComponents", () => ({
     ),
 }));
 
-const { MockConfigrGroup } = vi.hoisted(() => ({
+const { MockConfigrGroup, MockConfigrStatic } = vi.hoisted(() => ({
     MockConfigrGroup: (props: React.PropsWithChildren<object>) => (
+        <div>{props.children}</div>
+    ),
+    MockConfigrStatic: (props: React.PropsWithChildren<object>) => (
         <div>{props.children}</div>
     ),
 }));
@@ -174,97 +211,108 @@ vi.mock("@sillsdev/config-r", () => ({
     ConfigrPane: (props: {
         children: React.ReactNode;
         initialValues: ICollectionSettingsValues;
+        initiallySelectedTopLevelPageKey?: string;
         onChange: (values: unknown) => void;
-    }) => (
-        <div>
-            {/* Config-r captures initialValues at mount, so tests check what it was given. */}
-            <div data-testid="initial-collection-name">
-                {props.initialValues.advanced.collectionName}
-            </div>
-            <button
-                data-testid="change-restart-value"
-                onClick={() =>
-                    props.onChange({
-                        ...props.initialValues,
-                        frontBackMatter: {
-                            ...props.initialValues.frontBackMatter,
-                            xmatter: "Device",
-                        },
-                    })
-                }
-            />
-            <button
-                data-testid="add-third-language"
-                onClick={() =>
-                    props.onChange({
-                        ...props.initialValues,
-                        languages: {
-                            ...props.initialValues.languages,
-                            language3: {
-                                ...props.initialValues.languages.language1,
-                                tag: "es",
+    }) => {
+        // Config-r reads initialValues and the page to show only as it mounts, so this does too,
+        // and tests check what it was given.
+        const [mountedWith] = React.useState({
+            collectionName: props.initialValues.advanced.collectionName,
+            pageKey: props.initiallySelectedTopLevelPageKey,
+        });
+        return (
+            <div>
+                <div data-testid="initial-collection-name">
+                    {mountedWith.collectionName}
+                </div>
+                <div data-testid="initial-page-key">{mountedWith.pageKey}</div>
+                <button
+                    data-testid="change-restart-value"
+                    onClick={() =>
+                        props.onChange({
+                            ...props.initialValues,
+                            frontBackMatter: {
+                                ...props.initialValues.frontBackMatter,
+                                xmatter: "Device",
                             },
-                        },
-                    })
-                }
-            />{" "}
-            <button
-                data-testid="change-other-value"
-                onClick={() =>
-                    props.onChange({
-                        ...props.initialValues,
-                        advanced: {
-                            ...props.initialValues.advanced,
-                            collectionName: "Renamed",
-                        },
-                    })
-                }
-            />
-            <button
-                data-testid="pad-country"
-                onClick={() =>
-                    props.onChange({
-                        ...props.initialValues,
-                        frontBackMatter: {
-                            ...props.initialValues.frontBackMatter,
-                            country: "  Kenya ",
-                        },
-                    })
-                }
-            />
-            <button
-                data-testid="pad-collection-name"
-                onClick={() =>
-                    props.onChange({
-                        ...props.initialValues,
-                        advanced: {
-                            ...props.initialValues.advanced,
-                            collectionName: ` ${props.initialValues.advanced.collectionName}  `,
-                        },
-                    })
-                }
-            />
-            <button
-                data-testid="choose-no-bookshelf"
-                onClick={() =>
-                    props.onChange({
-                        ...props.initialValues,
-                        bloomLibrary: { defaultBookshelf: "" },
-                    })
-                }
-            />
-            {props.children}
-        </div>
-    ),
+                        })
+                    }
+                />
+                <button
+                    data-testid="add-third-language"
+                    onClick={() =>
+                        props.onChange({
+                            ...props.initialValues,
+                            languages: {
+                                ...props.initialValues.languages,
+                                language3: {
+                                    ...props.initialValues.languages.language1,
+                                    tag: "es",
+                                },
+                            },
+                        })
+                    }
+                />{" "}
+                <button
+                    data-testid="change-other-value"
+                    onClick={() =>
+                        props.onChange({
+                            ...props.initialValues,
+                            advanced: {
+                                ...props.initialValues.advanced,
+                                collectionName: "Renamed",
+                            },
+                        })
+                    }
+                />
+                <button
+                    data-testid="pad-country"
+                    onClick={() =>
+                        props.onChange({
+                            ...props.initialValues,
+                            frontBackMatter: {
+                                ...props.initialValues.frontBackMatter,
+                                country: "  Kenya ",
+                            },
+                        })
+                    }
+                />
+                <button
+                    data-testid="pad-collection-name"
+                    onClick={() =>
+                        props.onChange({
+                            ...props.initialValues,
+                            advanced: {
+                                ...props.initialValues.advanced,
+                                collectionName: ` ${props.initialValues.advanced.collectionName}  `,
+                            },
+                        })
+                    }
+                />
+                <button
+                    data-testid="choose-no-bookshelf"
+                    onClick={() =>
+                        props.onChange({
+                            ...props.initialValues,
+                            bloomLibrary: { defaultBookshelf: "" },
+                        })
+                    }
+                />
+                {props.children}
+            </div>
+        );
+    },
     ConfigrPage: (props: React.PropsWithChildren<{ pageKey: string }>) => {
-        // The real ConfigrPage throws (and blanks the whole UI) unless every child is a group.
+        // The real ConfigrPage throws (and blanks the whole UI) unless every child is a group or
+        // a static block.
         React.Children.forEach(props.children, (child) => {
             if (
                 !React.isValidElement(child) ||
-                child.type !== MockConfigrGroup
+                (child.type !== MockConfigrGroup &&
+                    child.type !== MockConfigrStatic)
             ) {
                 throw new Error(
-                    `ConfigrPage "${props.pageKey}" has a child that is not a ConfigrGroup`,
+                    `ConfigrPage "${props.pageKey}" has a child that is neither a ConfigrGroup nor a ConfigrStatic`,
                 );
             }
         });
@@ -275,9 +323,7 @@ vi.mock("@sillsdev/config-r", () => ({
         );
     },
     ConfigrGroup: MockConfigrGroup,
-    ConfigrStatic: (props: React.PropsWithChildren<object>) => (
-        <div>{props.children}</div>
-    ),
+    ConfigrStatic: MockConfigrStatic,
     ConfigrBoolean: (props: { path: string; disabled?: boolean }) => (
         <input
             type="checkbox"
@@ -382,6 +428,7 @@ describe("CollectionSettingsDialog", () => {
         container = document.createElement("div");
         document.body.appendChild(container);
         dialogState.open = true;
+        dialogState.openingEvent = {};
         teamCollectionFeature.loaded = true;
         teamCollectionFeature.enabled = true;
         enterpriseBookshelves.shelves = [];
@@ -872,6 +919,119 @@ describe("CollectionSettingsDialog", () => {
                 },
                 restartRequired: false,
             });
+        });
+    });
+
+    describe("Subscription page", () => {
+        const subscriptionPageElement = (testId: string) =>
+            container.querySelector(
+                `[data-testid="configr-page"][data-page-key="subscription"] [data-testid="${testId}"]`,
+            );
+
+        const respondWithSubscriptionRestart = (code: string) => {
+            respondWith({
+                ...settingsResponse,
+                values: { ...initialValues, subscription: { code } },
+                restartPaths: [
+                    ...settingsResponse.restartPaths,
+                    "subscription.code",
+                ],
+            });
+        };
+
+        it("shows the saved code, and no community invitation", async () => {
+            await renderDialog();
+
+            expect(
+                subscriptionPageElement("subscription-code")?.textContent,
+            ).toBe("Saved-Code-123456-7890");
+            expect(subscriptionPageElement("community-invitation")).toBeNull();
+        });
+
+        it("invites a collection with no code to a community subscription", async () => {
+            respondWithSubscriptionRestart("");
+
+            await renderDialog();
+
+            expect(
+                subscriptionPageElement("community-invitation"),
+            ).not.toBeNull();
+        });
+
+        it("saves the code as typed, trimmed, and restarts", async () => {
+            respondWithSubscriptionRestart("Saved-Code-123456-7890");
+            await renderDialog();
+            expect(okButtonLabel()).toBe("OK");
+
+            click("type-subscription-code");
+            expect(
+                subscriptionPageElement("subscription-code")?.textContent,
+            ).toBe(" New-Code-654321-0987 ");
+            expect(okButtonLabel()).toBe("Restart");
+            click("dialog-ok");
+
+            expect(mockPostJson.mock.calls[0][1]).toEqual({
+                values: {
+                    ...initialValues,
+                    subscription: { code: "New-Code-654321-0987" },
+                },
+                restartRequired: true,
+            });
+        });
+
+        it("keeps a typed code when another page's value changes", async () => {
+            respondWithSubscriptionRestart("Saved-Code-123456-7890");
+            await renderDialog();
+
+            click("clear-subscription-code");
+            // Config-R's values still carry the code it was given when the dialog opened.
+            click("change-other-value");
+            await flushDeferredChange();
+            click("dialog-ok");
+
+            expect(mockPostJson.mock.calls[0][1].values.subscription).toEqual({
+                code: "",
+            });
+            expect(
+                mockPostJson.mock.calls[0][1].values.advanced.collectionName,
+            ).toBe("Renamed");
+        });
+
+        it("goes to the Subscription page, keeping the user's changes, when a badge in the open dialog asks for it", async () => {
+            await renderDialog();
+            const textOf = (testId: string) =>
+                container.querySelector(`[data-testid="${testId}"]`)
+                    ?.textContent;
+            expect(textOf("initial-page-key")).toBe("");
+            click("change-other-value");
+            click("type-subscription-code");
+            await flushDeferredChange();
+
+            // What a subscription badge's click becomes: C# launches the dialog again.
+            dialogState.openingEvent = { initialPageKey: "subscription" };
+            await renderDialog();
+
+            expect(textOf("initial-page-key")).toBe("subscription");
+            expect(textOf("initial-collection-name")).toBe("Renamed");
+            expect(
+                subscriptionPageElement("subscription-code")?.textContent,
+            ).toBe(" New-Code-654321-0987 ");
+        });
+
+        it("starts a later open from the saved code, not the one typed and cancelled", async () => {
+            await renderDialog();
+            click("type-subscription-code");
+            click("dialog-cancel");
+            expect(mockPostJson).not.toHaveBeenCalled();
+
+            dialogState.open = false;
+            await renderDialog();
+            dialogState.open = true;
+            await renderDialog();
+
+            expect(
+                subscriptionPageElement("subscription-code")?.textContent,
+            ).toBe("Saved-Code-123456-7890");
         });
     });
 

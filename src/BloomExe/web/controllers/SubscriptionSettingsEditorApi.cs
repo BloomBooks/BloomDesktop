@@ -40,22 +40,34 @@ namespace Bloom.web.controllers
                 {
                     if (request.HttpMethod == HttpMethods.Get)
                     {
+                        // The React Collection Settings dialog keeps the code being typed itself
+                        // and asks about it with ?code=; it is weighed against the code the
+                        // collection has saved. Without it, this describes the WinForms dialog's
+                        // pending code.
+                        var code = request.GetParamOrNull("code");
+                        var subscription =
+                            code == null
+                                ? _subscription
+                                : CollectionSettingsUpdater.GetChangedSubscription(
+                                    _collectionSettings,
+                                    code
+                                ) ?? _collectionSettings.Subscription;
                         var subscriptionData = new
                         {
-                            Code = _subscription.Code ?? "",
-                            Tier = _subscription.Tier.ToString(),
-                            Summary = BrandingSettings.GetSummaryHtml(_subscription.Descriptor),
-                            Expiration = _subscription.ExpirationDate.ToString(
+                            Code = subscription.Code ?? "",
+                            Tier = subscription.Tier.ToString(),
+                            Summary = BrandingSettings.GetSummaryHtml(subscription.Descriptor),
+                            Expiration = subscription.ExpirationDate.ToString(
                                 "yyyy-MM-dd",
                                 CultureInfo.InvariantCulture
                             ),
-                            CodeIntegrity = _subscription.GetIntegrityLabel(),
-                            SubscriptionDescriptor = _subscription.Descriptor,
+                            CodeIntegrity = subscription.GetIntegrityLabel(),
+                            SubscriptionDescriptor = subscription.Descriptor,
                             MissingBrandingFiles = (
-                                _subscription.Tier == SubscriptionTier.Enterprise
-                                && !BrandingProject.HaveFilesForBranding(_subscription.BrandingKey)
+                                subscription.Tier == SubscriptionTier.Enterprise
+                                && !BrandingProject.HaveFilesForBranding(subscription.BrandingKey)
                             ),
-                            EditingBlorgBook = _subscription.EditingBlorgBook,
+                            EditingBlorgBook = subscription.EditingBlorgBook,
                         };
 
                         request.ReplyWithJson(JsonConvert.SerializeObject(subscriptionData));

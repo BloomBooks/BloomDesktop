@@ -94,9 +94,10 @@ export async function restartWithCollectionSettings(
 
 /**
  * Put the collection under this branding, e.g. "Story-Producer-App", and bring the selected book up
- * to date with it. This stands for entering a subscription code in the Settings dialog, which a
- * test cannot do: the dialog is WinForms, and a real code carries a checksum. The e2e/setBranding
- * hook exists for exactly this.
+ * to date with it. This stands for entering that branding's subscription code on the Subscription
+ * page of the Settings dialog, which a test cannot do: a real code carries a checksum, and the
+ * only code tests may use is kEnterpriseSubscriptionCode. The e2e/setBranding hook exists for
+ * exactly this.
  *
  * The change lives in memory only. A restart puts the collection back under the branding its
  * .bloomCollection names.
@@ -235,6 +236,107 @@ export async function showCollectionSettingsPage(
     }
     await realClick(tab);
     await expect(tab).toHaveAttribute("aria-selected", "true");
+}
+
+/**
+ * The name of the page the Collection Settings dialog is showing, e.g. "Subscription", or
+ * undefined while the dialog is not open. A test that expects some action to open the dialog on a
+ * page polls this.
+ */
+export async function getShowingCollectionSettingsPage(
+    page: Page,
+): Promise<string | undefined> {
+    const selected = collectionSettingsDialog(page).locator(
+        '[role="tab"][aria-selected="true"]',
+    );
+    if ((await selected.count()) !== 1) return undefined;
+    return (await selected.innerText()).trim();
+}
+
+/** What the Subscription page of the Collection Settings dialog shows. */
+export interface ISubscriptionPageState {
+    /** The text in the Subscription Code box. */
+    code: string;
+    /**
+     * The tier the code gives, e.g. "Enterprise", shown only for a valid, current code; otherwise
+     * undefined.
+     */
+    tier: string | undefined;
+    /** Whether the page invites the user to apply for a free community subscription. */
+    communityInvitation: boolean;
+}
+
+/** The Subscription Code box on the Subscription page of the dialog. */
+function subscriptionCodeBox(page: Page): Locator {
+    return collectionSettingsDialog(page).locator("#subscriptionCodeInput");
+}
+
+/**
+ * Read the Subscription page of the Collection Settings dialog, which must be showing. Bloom works
+ * out the tier from the code after the code changes, so poll this for a tier that is expected to
+ * appear.
+ */
+export async function getSubscriptionPage(
+    page: Page,
+): Promise<ISubscriptionPageState> {
+    const dialog = collectionSettingsDialog(page);
+    const box = subscriptionCodeBox(page);
+    await expect(
+        box,
+        "the Collection Settings dialog is not showing its Subscription page",
+    ).toHaveCount(1);
+    const tier = dialog.getByTestId("subscription-tier");
+    return {
+        code: await box.inputValue(),
+        tier:
+            (await tier.count()) === 1
+                ? (await tier.innerText()).trim()
+                : undefined,
+        communityInvitation:
+            (await dialog
+                .locator('a[href="https://bloomlibrary.org/subscriptions"]')
+                .count()) > 0,
+    };
+}
+
+/**
+ * Type a subscription code into the Subscription page of the Collection Settings dialog, replacing
+ * what the box held, as a person does by typing or pasting one. Returns once the box shows it.
+ * Nothing is saved until OK.
+ */
+export async function typeSubscriptionCode(
+    page: Page,
+    code: string,
+): Promise<void> {
+    const box = subscriptionCodeBox(page);
+    await box.fill(code);
+    await expect(box).toHaveValue(code);
+}
+
+/**
+ * The subscription code the collection's settings file holds, or undefined when it holds none.
+ * Read from the .bloomCollection on disk, which is where a save puts it.
+ */
+export function readSavedSubscriptionCode(
+    collectionDir: string,
+): string | undefined {
+    const settingsFile = fs
+        .readdirSync(collectionDir)
+        .find((name) => name.endsWith(".bloomCollection"));
+    if (!settingsFile)
+        throw new Error(`There is no .bloomCollection in ${collectionDir}.`);
+    const xml = fs.readFileSync(Path.join(collectionDir, settingsFile), "utf8");
+    return /<SubscriptionCode>([^<]+)<\/SubscriptionCode>/.exec(xml)?.[1];
+}
+
+/**
+ * Click the subscription badge on the showing page of the Collection Settings dialog, as a person
+ * does whose tier lacks the feature beside it. That asks Bloom to show the Subscription page.
+ */
+export async function clickCollectionSettingsSubscriptionBadge(
+    page: Page,
+): Promise<void> {
+    await realClick(collectionSettingsSubscriptionBadge(page));
 }
 
 /** The checkbox of the setting with this label on the showing page of the dialog. */
@@ -456,6 +558,13 @@ export async function chooseCollectionSettingsListChoice(
         .toBe(choice);
 }
 
+/** The subscription badge on the showing page of the dialog: its icon and its words. */
+function collectionSettingsSubscriptionBadge(page: Page): Locator {
+    return collectionSettingsDialog(page)
+        .locator('img[src*="bloom-enterprise-badge"]')
+        .locator("xpath=..");
+}
+
 /**
  * What the subscription badge on the showing page of the Collection Settings dialog says:
  * "Available with your Bloom Subscription" when the collection's tier includes the feature, or
@@ -465,9 +574,7 @@ export async function chooseCollectionSettingsListChoice(
 export async function getCollectionSettingsSubscriptionBadge(
     page: Page,
 ): Promise<string> {
-    const badge = collectionSettingsDialog(page)
-        .locator('img[src*="bloom-enterprise-badge"]')
-        .locator("xpath=..");
+    const badge = collectionSettingsSubscriptionBadge(page);
     await expect(
         badge,
         "the showing Collection Settings page has no subscription badge",

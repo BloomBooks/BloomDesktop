@@ -533,28 +533,19 @@ namespace Bloom.web.controllers
         /// <summary>
         /// The tab which should display first when the settings dialog opens.
         /// </summary>
-        private string SettingsDialogTab;
-
         /// <summary>
-        /// Handle showing the settings dialog, opening it to the desired tab.
+        /// Handle showing the settings dialog, opening it on the page named by "tab" (the
+        /// subscription badges and menu items, and links in the comic book templates' ReadMe
+        /// files, ask for "subscription").
         /// </summary>
         /// <remarks>
         /// This is here instead of CollectionSettingsApi because we have easier access to
-        /// showing the dialog via the WorkspaceView object.  Starting the dialog on the idle
-        /// loop allows the full functionality without locking up the API.
+        /// showing the dialog via the WorkspaceView object.
         /// </remarks>
         private void HandleShowSettingsDialog(ApiRequest request)
         {
-            SettingsDialogTab = request.Parameters["tab"];
-            Application.Idle += ShowSettingsDialogOnIdle;
+            WorkspaceView.OpenSettingsDialog(request.Parameters["tab"]);
             request.PostSucceeded();
-        }
-
-        private void ShowSettingsDialogOnIdle(object sender, EventArgs e)
-        {
-            Application.Idle -= ShowSettingsDialogOnIdle;
-            WorkspaceView.OpenLegacySettingsDialog(SettingsDialogTab);
-            SettingsDialogTab = null;
         }
 
         private void HandleLogEvent(ApiRequest request)

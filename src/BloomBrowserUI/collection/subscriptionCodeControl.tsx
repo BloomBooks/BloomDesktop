@@ -49,8 +49,15 @@ type Status =
 //      because we are using a branding permitted in a special collection made by
 //      downloading a book for editing from BloomLibrary. We show a special message.
 
-// Component for managing subscription code input and display
-export const SubscriptionControls: React.FC = () => {
+// Component for managing subscription code input and display.
+// The React Collection Settings dialog keeps the code being typed itself, and passes it in with a
+// function to change it; the WinForms dialog passes neither, and the code lives in C#.
+export const SubscriptionControls: React.FC<{
+    code?: string;
+    onCodeChange?: (code: string) => void;
+    // Shown just before the branding summary, when there is one.
+    beforeBrandingSummary?: React.ReactNode;
+}> = (props) => {
     const {
         code,
         tier,
@@ -60,7 +67,7 @@ export const SubscriptionControls: React.FC = () => {
         missingBrandingFiles,
         editingBlorgBook,
         haveData,
-    } = useSubscriptionInfo();
+    } = useSubscriptionInfo(props.code);
 
     const [status, setStatus] = useState<Status>("None");
 
@@ -101,7 +108,15 @@ export const SubscriptionControls: React.FC = () => {
                 </NoteBox>
             )}
 
-            <Editor status={status} />
+            {props.onCodeChange ? (
+                <Editor
+                    status={status}
+                    subscriptionCode={props.code!}
+                    onCodeChange={props.onCodeChange}
+                />
+            ) : (
+                <WinFormsDialogEditor status={status} />
+            )}
 
             <StatusText
                 tier={tier}
@@ -111,7 +126,10 @@ export const SubscriptionControls: React.FC = () => {
 
             {["SubscriptionGood", "EditingBlorgBook"].includes(status) &&
                 subscriptionSummary && (
-                    <BrandingSummary summaryHtml={subscriptionSummary} />
+                    <>
+                        {props.beforeBrandingSummary}
+                        <BrandingSummary summaryHtml={subscriptionSummary} />
+                    </>
                 )}
         </div>
     );
@@ -184,6 +202,7 @@ const StatusText: React.FC<{
                 >
                     <Label l10nKey="Subscription.TierWithColon">Tier:</Label>{" "}
                     <span
+                        data-testid="subscription-tier"
                         css={css`
                             margin-right: 20px;
                         `}
@@ -294,11 +313,31 @@ export const BrandingSummary: React.FC<{ summaryHtml: string }> = (props) => {
     );
 };
 
-const Editor: React.FC<{ status: Status }> = ({ status }) => {
+// The WinForms dialog's editor: the code being typed lives in C#, which is told each change.
+const WinFormsDialogEditor: React.FC<{ status: Status }> = (props) => {
     const [subscriptionCode, setSubscriptionCode] = useApiStringState(
         "settings/subscriptionCode",
         "",
     );
+    return (
+        <Editor
+            status={props.status}
+            subscriptionCode={subscriptionCode}
+            onCodeChange={(code) => {
+                setSubscriptionCode(code);
+                document.dispatchEvent(new Event("subscriptionCodeChanged"));
+            }}
+        />
+    );
+};
+
+const Editor: React.FC<{
+    status: Status;
+    subscriptionCode: string;
+    onCodeChange: (code: string) => void;
+}> = (props) => {
+    const status = props.status;
+    const subscriptionCode = props.subscriptionCode;
 
     // Handle copy/paste operations
     const handleCopy = () => {
@@ -314,8 +353,7 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
             let resultText = result.data as string;
             if (resultText) {
                 resultText = resultText.trim();
-                setSubscriptionCode(resultText);
-                document.dispatchEvent(new Event("subscriptionCodeChanged"));
+                props.onCodeChange(resultText);
             }
         });
     };
@@ -358,8 +396,7 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
             )?.selectionStart,
         );
 
-        setSubscriptionCode(event.target.value);
-        document.dispatchEvent(new Event("subscriptionCodeChanged"));
+        props.onCodeChange(event.target.value);
     };
 
     return (
