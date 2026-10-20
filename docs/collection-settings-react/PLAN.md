@@ -75,11 +75,11 @@ What a page card builds on:
 - **Chrome.** Both Config-R settings dialogs (this and Book Settings) use the usual `BloomDialog`
   shape and share `ConfigrDialogMiddle` and the 900×720 size (`react_components/ConfigrDialogMiddle.tsx`).
   Search is off.
-- **Which page shows.** Config-R reports the showing top-level page (`onTopLevelPageChange`) and
-  switches to one while the pane stays open, keeping the user's edits, whenever
-  `selectedTopLevelPageKey` changes (sillsdev/config-r#29, needs `@sillsdev/config-r` 1.0.0-alpha.30).
-  Help uses the report; going to a page from inside the dialog (a subscription badge) uses the
-  switch, not a remount of the pane.
+- **Which page shows.** Config-R reports the showing top-level page (`onTopLevelPageChange`), and
+  a ref on the pane switches to one while it stays open, keeping the user's edits
+  (`selectTopLevelPage(pageKey)`, as clicking its tab does; sillsdev/config-r#29, needs
+  `@sillsdev/config-r` 1.0.0-alpha.30). Help uses the report; going to a page from inside the
+  dialog (a subscription badge) uses the ref, not a remount of the pane.
 - **The WinForms dialog is untouched**, including `DialogBeingEdited` and the `settings/*` endpoints
   its React tabs post to. The two save paths share nothing.
 - **Strings.** The new page labels are `translate="no"` until the pages are real; reuse existing
