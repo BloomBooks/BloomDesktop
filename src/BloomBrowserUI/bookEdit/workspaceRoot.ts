@@ -60,6 +60,7 @@ export interface IWorkspaceExports {
     ): void;
     showAboutDialogFromWorkspaceRoot(): void;
     showBookSettingsDialog(initiallySelectedPageKey?: string): void;
+    showCollectionSettingsDialog(initialPageKey?: string): void;
     showDecodableReaderSetupDialog(): void;
     closeDecodableReaderSetupDialog(): void;
     showImageGalleryDialog(img: HTMLElement, searchLang: string): void;
@@ -92,6 +93,8 @@ export { showBookGridSetupDialog };
 import "../lib/errorHandler";
 import { showBookSettingsDialog } from "./bookAndPageSettings/BookAndPageSettingsDialog";
 export { showBookSettingsDialog };
+import { showCollectionSettingsDialog } from "../collection/CollectionSettingsDialog";
+export { showCollectionSettingsDialog };
 import {
     closeDecodableReaderSetupDialog,
     showDecodableReaderSetupDialog,
@@ -515,6 +518,7 @@ interface WorkspaceBundleApi {
     showLinkTargetChooserDialog: typeof showLinkTargetChooserDialog;
     showBookGridSetupDialog: typeof showBookGridSetupDialog;
     showBookSettingsDialog: typeof showBookSettingsDialog;
+    showCollectionSettingsDialog: typeof showCollectionSettingsDialog;
     showDecodableReaderSetupDialog: typeof showDecodableReaderSetupDialog;
     closeDecodableReaderSetupDialog: typeof closeDecodableReaderSetupDialog;
     showRegistrationDialog: typeof showRegistrationDialogForEditTab;
@@ -565,6 +569,7 @@ window.workspaceBundle = {
     showLinkTargetChooserDialog,
     showBookGridSetupDialog,
     showBookSettingsDialog,
+    showCollectionSettingsDialog,
     showDecodableReaderSetupDialog,
     closeDecodableReaderSetupDialog,
     showRegistrationDialog: showRegistrationDialogForEditTab,

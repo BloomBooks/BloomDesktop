@@ -534,9 +534,10 @@ namespace Bloom.web.controllers
         /// The tab which should display first when the settings dialog opens.
         /// </summary>
         /// <summary>
-        /// Handle showing the settings dialog, opening it on the page named by "tab" (the
-        /// subscription badges and menu items, and links in the comic book templates' ReadMe
-        /// files, ask for "subscription").
+        /// Handle showing the settings dialog, opening it on the page named by "tab". The callers
+        /// that cannot open it in the browser themselves ask for "subscription": links in the comic
+        /// book templates' ReadMe files, and subscription badges outside the workspace (the WinForms
+        /// Settings dialog's own tabs). Badges in the workspace open it directly.
         /// </summary>
         /// <remarks>
         /// This is here instead of CollectionSettingsApi because we have easier access to

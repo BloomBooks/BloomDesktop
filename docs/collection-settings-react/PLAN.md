@@ -137,9 +137,11 @@ client), Page Numbering Style (Q5). Values for xmatter, QR and places already ex
 **BL-16734 Subscription.** Built. Reuses the `SubscriptionSettings` pieces; the entered code goes
 to `ApplySubscriptionAndBookshelf` (its descriptor-change bookshelf clearing never fires;
 BL-16904), before the xmatter check, since the branding can choose the pack. It also moved the
-"open settings on the Subscription page" callers to the new dialog: `common/showSettingsDialog`
-(every subscription badge and gated menu item, and the comic book ReadMe links) and
-`CheckForInvalidBranding` (which never fires: nothing sets `InvalidBranding`). A badge on one of
+"open settings on the Subscription page" callers to the new dialog. Subscription badges and gated
+menu items call `showCollectionSettingsDialog` in the browser (from an iframe, through the
+workspace bundle's exports); `common/showSettingsDialog` remains for the comic book ReadMe links
+and for badges outside the workspace, and `CheckForInvalidBranding` (which never fires: nothing
+sets `InvalidBranding`) launches it from C#. A badge on one of
 the dialog's own pages remounts the pane on the Subscription page, keeping the edits so far.
 The other pages' gating still follows the saved subscription, not a code typed but not saved.
 

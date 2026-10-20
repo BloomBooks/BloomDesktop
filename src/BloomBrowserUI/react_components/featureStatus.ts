@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { post, useApiObject, get } from "../utils/bloomApi";
 import { useL10n2 } from "./l10nHooks";
+import { tryGetWorkspaceBundleExports } from "../bookEdit/js/workspaceFrames";
 
 // NB: this must match c# enum SubscriptionTier in Subscription.cs
 export type SubscriptionTier =
@@ -58,8 +59,14 @@ export function useGetFeatureStatus(
     return featureName ? featureStatus : undefined;
 }
 
+// Opens the Collection Settings dialog on its Subscription page. Every subscription badge and gated
+// command calls this. The dialog lives in the workspace's top document, which an iframe (the
+// toolbox, the page) reaches through the workspace bundle. Outside the workspace (the WinForms
+// Settings dialog's own tabs) there is no workspace bundle, so C# is asked to do it instead.
 export function openBloomSubscriptionSettings() {
-    post("common/showSettingsDialog?tab=subscription");
+    const workspace = tryGetWorkspaceBundleExports();
+    if (workspace) workspace.showCollectionSettingsDialog("subscription");
+    else post("common/showSettingsDialog?tab=subscription");
 }
 
 // Use this when you just want a minimal label type message, not a fully informative sentence.
