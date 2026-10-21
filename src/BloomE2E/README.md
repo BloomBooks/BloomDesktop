@@ -164,8 +164,10 @@ real bug in the code under test; read the message and fix it rather than working
   and does nothing otherwise.
 - `helpers/collectionSettings.ts` — rewrite the collection's languages, xmatter pack or
   subscription code and restart Bloom on them; `setBranding`; `getFeatureStatus`, the same
-  answer the front end asks for before it shows a tier-gated control; and
-  `kEnterpriseSubscriptionCode`.
+  answer the front end asks for before it shows a tier-gated control;
+  `kEnterpriseSubscriptionCode` and its `kTestBookshelves`; and the new (React) Settings dialog:
+  open it, show a page, read and change its checkboxes, text boxes and drop-down lists, read its
+  subscription badge, and save, cancel or restart.
 - `helpers/keys.ts` — `pressKey`, `pressKeyIn`, `typeWithKeys`: real key presses, for tests whose
   subject is the key. `typeInGroup` inserts text and raises no key events, so use it for
   everything else.
@@ -233,6 +235,18 @@ pnpm exec playwright test --debug    # step through it
 ```
 
 A run opens a real Bloom window on your desktop. That is expected; do not click in it.
+
+### Tests that need a person: `*.manual.ts`
+
+A test that cannot pass unattended, because a person has to press real keys for instance, is named
+`*.manual.ts`, not `*.spec.ts`. A normal run, and so the nightly, does not collect it at all, so it
+is never reported as skipped; a skip in the nightly is then always one that needs work. Do not
+make such a test skip itself instead. To run one, set `PLAYWRIGHT_INCLUDE_MANUAL` (the same switch
+the component tester uses for its manual harnesses):
+
+```bash
+PLAYWRIGHT_INCLUDE_MANUAL=1 pnpm exec playwright test tests/undo-physical-keys.manual.ts
+```
 
 ### Where the Bloom window goes: `BLOOM_AUTOMATION_MONITOR`
 

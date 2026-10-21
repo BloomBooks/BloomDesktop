@@ -73,6 +73,11 @@ export type ControlId =
     | "outlineColor"
     | "setDestination"
     | "linkGridChooseBooks"
+    | "layer" // the submenu holding the four z-order commands below
+    | "bringForward"
+    | "bringToFront"
+    | "sendBackward"
+    | "sendToBack"
     | "duplicate"
     | "delete"
     | "toggleDraggable"
@@ -82,9 +87,16 @@ export type ControlId =
     | "playCurrentAudio"
     | "useTalkingBookTool";
 
+// Controls that appear only as rows inside another control's submenu are not top-level.
 export type TopLevelControlId = Exclude<
     ControlId,
-    "removeAudio" | "playCurrentAudio" | "useTalkingBookTool"
+    | "removeAudio"
+    | "playCurrentAudio"
+    | "useTalkingBookTool"
+    | "bringForward"
+    | "bringToFront"
+    | "sendBackward"
+    | "sendToBack"
 >;
 
 export type PanelControlId =
@@ -112,6 +124,7 @@ export type SectionId =
     | "bubble"
     | "outline"
     | "text"
+    | "layer"
     | "wholeElement";
 
 export interface IControlContext {
@@ -134,10 +147,17 @@ export interface IControlContext {
     isCropped: boolean;
     // The picture inside the box has been rotated or mirrored by Rotate right or Flip.
     isImageContentTransformed: boolean;
+    // The canvas element box is turned, by Rotate right or the rotation handle.
+    isBoxRotated: boolean;
     isNavigationButton: boolean;
     isButton: boolean;
     isBackgroundImage: boolean;
     isSpecialGameElement: boolean;
+    // Whether the Layer commands can move this element up or down in the stacking order:
+    // false at the top or bottom of the stack, both false when it is the only movable element
+    // or the background image. See CanvasElementZOrder.ts.
+    canBringForward: boolean;
+    canSendBackward: boolean;
     canModifyImage: boolean;
     canExpandBackgroundImage: boolean;
     missingMetadata: boolean;

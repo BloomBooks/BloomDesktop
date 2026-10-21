@@ -27,10 +27,8 @@ import {
     kBloomCanvasSelector,
     kCanvasElementSelector,
 } from "../toolbox/canvas/canvasElementConstants";
-import {
-    getBackgroundImageSizeWithBleed,
-    kBackgroundImageBleedPx,
-} from "./canvasElementManager/CanvasElementBackgroundImageManager";
+import { mirrorCropPosition } from "./imageCrop";
+import { getBackgroundImageSizeWithBleed } from "./canvasElementManager/backgroundImageBleed";
 import { getExactClientSize } from "../../utils/elementUtils";
 
 export type FlipAxis = "horizontal" | "vertical";
@@ -149,10 +147,6 @@ export interface BackgroundPictureLayout {
 // The caller passes the picture's drawn rectangle, not its layout box. For a cropped picture the
 // two are the same, but an uncropped picture is drawn inside its box by object-fit, and it is
 // the drawn rectangle that has to land in the right place.
-//
-// A background picture that reaches an edge of the page overhangs it by kBackgroundImageBleedPx,
-// so that no white line shows along that edge (adjustBackgroundImageSizeToFit gives it that
-// overhang). The rotated element gets the same overhang, scaling its content with it.
 export function computeRotatedBackgroundLayout(
     // The bloom-canvas: the page's picture area.
     pageWidth: number,
@@ -169,44 +163,16 @@ export function computeRotatedBackgroundLayout(
     // adds the class bloom-imageObjectFit-cover). Such a picture keeps the whole page and has
     // its ends clipped, instead of fitting inside the page with blank bands.
     fillsPage: boolean,
-    // True for a page background picture, which overhangs the edges of the page it reaches.
-    // False for an element that keeps its own size, whose "page" is that element with its two
-    // dimensions swapped.
-    addBleed: boolean,
 ): BackgroundPictureLayout {
     // The rotated element measures elementHeight by elementWidth. Scale it to the page.
-    let scale: number;
-    let newElementWidth: number;
-    let newElementHeight: number;
-    if (fillsPage) {
-        // Cover the page, and the bleed on every side of it.
-        const bleed = addBleed ? kBackgroundImageBleedPx : 0;
-        newElementWidth = pageWidth + 2 * bleed;
-        newElementHeight = pageHeight + 2 * bleed;
-        scale = Math.max(
-            newElementWidth / elementHeight,
-            newElementHeight / elementWidth,
-        );
-    } else {
-        const fitScale = Math.min(
-            pageWidth / elementHeight,
-            pageHeight / elementWidth,
-        );
-        const fittedWidth = fitScale * elementHeight;
-        const fittedHeight = fitScale * elementWidth;
-        const size = addBleed
-            ? getBackgroundImageSizeWithBleed(
-                  fittedWidth,
-                  fittedHeight,
-                  pageWidth,
-                  pageHeight,
-              )
-            : { width: fittedWidth, height: fittedHeight };
-        // The bleed keeps the element's shape, so it scales both dimensions by the same amount.
-        scale = (fitScale * size.width) / fittedWidth;
-        newElementWidth = size.width;
-        newElementHeight = size.height;
-    }
+    const widthRatio = pageWidth / elementHeight;
+    const heightRatio = pageHeight / elementWidth;
+    const scale = fillsPage
+        ? Math.max(widthRatio, heightRatio)
+        : Math.min(widthRatio, heightRatio);
+
+    const newElementWidth = fillsPage ? pageWidth : scale * elementHeight;
+    const newElementHeight = fillsPage ? pageHeight : scale * elementWidth;
 
     // Where the rotated content sits inside the new element. When the element fits the page, the
     // two are the same size and this is zero. When the element fills the page, the content is
@@ -230,6 +196,37 @@ export function computeRotatedBackgroundLayout(
         imageHeight: newImageHeight,
         imageLeft: centreX - newImageWidth / 2,
         imageTop: centreY - newImageHeight / 2,
+    };
+}
+
+// Enlarge a background picture's layout so that it overhangs each edge of the page's picture area
+// it fills by at least kBackgroundImageBleedPx, using the rule adjustBackgroundImageSizeToFit uses
+// for a picture that fits inside its area; without that, a rotated picture shows a thin white line
+// along those edges. Everything
+// is scaled together, so the picture keeps its shape and any crop, and the element stays centred.
+export function withBackgroundImageBleed(
+    layout: BackgroundPictureLayout,
+    pageWidth: number,
+    pageHeight: number,
+): BackgroundPictureLayout {
+    const scale =
+        getBackgroundImageSizeWithBleed(
+            layout.elementWidth,
+            layout.elementHeight,
+            pageWidth,
+            pageHeight,
+        ).width / layout.elementWidth;
+    const elementWidth = scale * layout.elementWidth;
+    const elementHeight = scale * layout.elementHeight;
+    return {
+        elementWidth,
+        elementHeight,
+        elementLeft: (pageWidth - elementWidth) / 2,
+        elementTop: (pageHeight - elementHeight) / 2,
+        imageWidth: scale * layout.imageWidth,
+        imageHeight: scale * layout.imageHeight,
+        imageLeft: scale * layout.imageLeft,
+        imageTop: scale * layout.imageTop,
     };
 }
 
@@ -318,7 +315,8 @@ function getDrawnPictureRectangle(
 //
 // There are two kinds of element to place the rotated content in, and one formula covers both.
 // A background picture has to fit the page's picture area, so its element is scaled to that
-// area and centred in it. Any other element keeps the size it has, so the area is that element
+// area and centred in it, then enlarged a little to overhang the edges it fills (see
+// withBackgroundImageBleed). Any other element keeps the size it has, so the area is that element
 // with its own two dimensions swapped, the scale comes out as one, and the element rotates about
 // its own centre and stays where the author put it. The Rotate Right command reaches an element
 // of the second kind when its box cannot rotate on the page for some other reason, which is the
@@ -335,10 +333,9 @@ function setRotatedBackgroundLayout(img: HTMLImageElement): boolean {
         element.style.height,
         element.clientHeight,
     );
-    // The area the rotated element has to land in. A background's area is the bloom-canvas,
-    // measured exactly, as adjustBackgroundImageSizeToFit measures it. clientWidth would round it
-    // to whole pixels, and on a page whose picture area is a fraction of a pixel wider the
-    // overhang at the far edge would be that much short.
+    // The area the rotated element has to land in. A background picture's area is measured
+    // exactly, as adjustBackgroundImageSizeToFit measures it: clientWidth rounds to whole pixels,
+    // and on an area with a fractional size that would leave one edge short of the bleed.
     const pageSize = isBackground ? getExactClientSize(page) : undefined;
     const areaWidth = pageSize ? pageSize.width : elementHeight;
     const areaHeight = pageSize ? pageSize.height : elementWidth;
@@ -355,7 +352,7 @@ function setRotatedBackgroundLayout(img: HTMLImageElement): boolean {
         return false;
     }
 
-    const layout = computeRotatedBackgroundLayout(
+    const fittedLayout = computeRotatedBackgroundLayout(
         areaWidth,
         areaHeight,
         elementWidth,
@@ -365,8 +362,10 @@ function setRotatedBackgroundLayout(img: HTMLImageElement): boolean {
         picture.left,
         picture.top,
         img.classList.contains("bloom-imageObjectFit-cover"),
-        isBackground,
     );
+    const layout = isBackground
+        ? withBackgroundImageBleed(fittedLayout, areaWidth, areaHeight)
+        : fittedLayout;
 
     element.style.width = `${roundPx(layout.elementWidth)}px`;
     element.style.height = `${roundPx(layout.elementHeight)}px`;
@@ -435,15 +434,9 @@ export function rotateImageContentRight90Degrees(img: HTMLImageElement): void {
 }
 
 // Move a cropped picture's box so that a mirror shows the same part of the picture, mirrored,
-// instead of another part.
-//
-// A crop is the box of the whole picture moved and sized so that the element shows part of it.
-// The transform mirrors the picture about the centre of that box, so unless the box is centred
-// on the element, the mirrored picture puts a different part of itself in view. Mirroring the
-// rectangle the element shows about the element's own centre line keeps the same part in view,
-// so we move the box by as much as that moves the rectangle. The rectangle is the box with its
-// two dimensions swapped when the picture is rotated 90 or 270 degrees, centred where the box is.
-// An uncropped picture has no width of its own and fills its element, so it needs nothing.
+// instead of another part (see mirrorCropPosition). A crop is the box of the whole picture moved
+// and sized so that the element shows part of it. An uncropped picture has no width of its own
+// and fills its element, so it needs nothing.
 function mirrorCropInPlace(
     img: HTMLImageElement,
     // True to mirror left and right in the element's own frame, false for up and down.
@@ -454,23 +447,20 @@ function mirrorCropInPlace(
         return;
     }
     const element = img.closest(kCanvasElementSelector) as HTMLElement;
-    const boxWidth = pxOrZero(img.style.width);
-    const boxHeight = img.clientHeight;
-    const boxLeft = pxOrZero(img.style.left);
-    const boxTop = pxOrZero(img.style.top);
-    const isQuarterRotation = quarterRotations % 2 === 1;
-    const shownWidth = isQuarterRotation ? boxHeight : boxWidth;
-    const shownHeight = isQuarterRotation ? boxWidth : boxHeight;
+    const position = mirrorCropPosition(
+        element.clientWidth,
+        element.clientHeight,
+        pxOrZero(img.style.left),
+        pxOrZero(img.style.top),
+        pxOrZero(img.style.width),
+        img.clientHeight,
+        quarterRotations,
+        mirrorLeftRight,
+    );
     if (mirrorLeftRight) {
-        const shownLeft = boxLeft + boxWidth / 2 - shownWidth / 2;
-        const mirroredShownLeft =
-            element.clientWidth - (shownLeft + shownWidth);
-        img.style.left = `${roundPx(boxLeft + mirroredShownLeft - shownLeft)}px`;
+        img.style.left = `${roundPx(position.left)}px`;
     } else {
-        const shownTop = boxTop + boxHeight / 2 - shownHeight / 2;
-        const mirroredShownTop =
-            element.clientHeight - (shownTop + shownHeight);
-        img.style.top = `${roundPx(boxTop + mirroredShownTop - shownTop)}px`;
+        img.style.top = `${roundPx(position.top)}px`;
     }
 }
 

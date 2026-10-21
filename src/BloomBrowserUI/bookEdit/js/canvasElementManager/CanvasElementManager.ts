@@ -35,6 +35,7 @@ import {
     UpdateImageTooltipVisibility,
     HandleImageError,
     isPlaceHolderImage,
+    refreshTransparencyIfBackgroundImage,
 } from "../bloomImages";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "../BloomHintBubbles";
@@ -110,6 +111,10 @@ import {
     removeDetachedTargets,
 } from "./CanvasElementDraggableIntegration";
 import { CanvasElementEditingSuspension } from "./CanvasElementEditingSuspension";
+import {
+    moveCanvasElementInZOrder,
+    type ZOrderMove,
+} from "./CanvasElementZOrder";
 import { adjustCanvasElementChildrenIfSizeChanged } from "./CanvasElementResizeAdjustments";
 import {
     adjustBackgroundImageSize as adjustCanvasBackgroundImageSize,
@@ -121,6 +126,7 @@ import {
 import {
     clearImageOperationUndoState,
     commitPendingImageOperationUndo,
+    forgetImageOperationUndoFor,
     IImageCropInfo,
     initializeImageUndoManager,
     prepareUndoForImageOperation,
@@ -342,6 +348,8 @@ export class CanvasElementManager {
                     this.deleteCurrentCanvasElement.bind(this),
                 moveActiveCanvasElement:
                     this.moveActiveCanvasElement.bind(this),
+                moveActiveCanvasElementInZOrder:
+                    this.moveActiveCanvasElementInZOrder.bind(this),
                 getActiveCanvasElement: this.getActiveElement.bind(this),
             },
             this.snapProvider,
@@ -1497,19 +1505,22 @@ export class CanvasElementManager {
 
     // The Reset Image command: put the picture back the way it arrived. That means the crop
     // goes, and so do the 90-degree rotations and the mirrors that Rotate right and Flip apply to
-    // the picture. The rotation of a canvas element box is left alone, because it belongs to
-    // the box, like its size and its position; the rotate handle and Undo are the way back
-    // from that.
+    // the picture. The box straightens too: on an overlay, Rotate right turns the box rather than
+    // the picture, and an author cannot tell that apart from the picture being turned, so a
+    // picture that arrived upright must end up upright whichever of the two turned it.
     //
     // This command deliberately puts nothing on the undo stack, as the older reset-crop
     // command did not either: a reset is itself a way back, so an undo of it would be a way
     // back from a way back. Rotate right and Flip do record undo, because each of them is a
-    // step forward.
+    // step forward. Those earlier Rotate right and Flip steps are forgotten here, because each
+    // one would put back a turn or a crop from before the reset.
     public resetImage(): void {
         if (!this.activeElement) return;
         const img = getImageFromCanvasElement(this.activeElement);
         if (!img) return;
         clearImageContentTransform(img);
+        setCanvasElementRotation(this.activeElement, 0);
+        forgetImageOperationUndoFor(this.activeElement);
         this.resetCropping();
         this.adjustStuffRelatedToImage(this.activeElement, img);
     }
@@ -1926,14 +1937,15 @@ export class CanvasElementManager {
 
     // When the image is changed in a canvas element (e.g., choose or paste image),
     // we remove cropping, adjust the aspect ratio, and move the control frame.
-    // The rotation and mirror of the picture (imageContentTransform.ts) belong to the old
-    // picture, so they go too, unless the caller passes imageTransform, as Undo does to put
-    // back the transform the restored picture had. The rotation of the canvas element box
-    // belongs to the box and is left alone.
+    // The rotation and mirror of the picture (imageContentTransform.ts) and the rotation of
+    // its box belong to the old picture, so they go too: the new picture arrives upright, as
+    // Reset Image would leave it. Undo passes imageTransform and elementRotation to put back
+    // what the restored picture had.
     updateCanvasElementForChangedImage(
         imgOrImageContainer: HTMLElement,
         cropInfo?: IImageCropInfo,
         imageTransform = "",
+        elementRotation = 0,
     ) {
         const canvasElement = imgOrImageContainer.closest(
             kCanvasElementSelector,
@@ -1952,6 +1964,7 @@ export class CanvasElementManager {
         // With the transform gone, the size code below sees no rotation and fits a background
         // element to the new picture's natural shape.
         img.style.transform = imageTransform;
+        setCanvasElementRotation(canvasElement, elementRotation);
         // Get the aspect ratio right (aligns control frame)
         if (canvasElement.classList.contains(kBackgroundImageClass)) {
             this.adjustBackgroundImageSize(
@@ -3037,6 +3050,8 @@ export class CanvasElementManager {
                 img.classList.remove("bloom-imageLoadError");
                 img.onerror = HandleImageError;
                 img.src = "placeHolder.png";
+                // Overlays no longer sit on a real background image.
+                refreshTransparencyIfBackgroundImage(img);
                 if (page) {
                     normalizeCoverImageDesignation(page);
                 }
@@ -3352,6 +3367,27 @@ export class CanvasElementManager {
         if (active) {
             this.deleteCanvasElement(active);
         }
+    }
+
+    // The Layer menu commands (and their keyboard shortcuts): move the active canvas element,
+    // together with any child bubbles in its family, one step forward or backward in the
+    // stacking order, or all the way to the front or back. Does nothing for the background
+    // image, or when the element is already as far as it can go. See CanvasElementZOrder.ts.
+    public moveActiveCanvasElementInZOrder(move: ZOrderMove): void {
+        // "this" might be a menu item that was clicked.  Calling explicitly again fixes that.  See BL-13928.
+        if (this !== theOneCanvasElementManager) {
+            theOneCanvasElementManager.moveActiveCanvasElementInZOrder(move);
+            return;
+        }
+        const active = this.getActiveElement();
+        if (!active || !moveCanvasElementInZOrder(active, move)) {
+            return;
+        }
+        // Moving the element rebuilt Comical's bubbles, so make sure the active one gets its
+        // handles back. Aligning the control frame also re-renders the context controls, so a
+        // reopened menu shows which layer moves are still possible.
+        Comical.activateElement(active);
+        this.alignControlFrameWithActiveElement();
     }
 
     public duplicateCanvasElement(): HTMLElement | undefined {
