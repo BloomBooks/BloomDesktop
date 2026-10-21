@@ -20,6 +20,10 @@ import { canvasElementControlRegistry } from "./canvasElementControlRegistry";
 import { CanvasElementType } from "./canvasElementTypes";
 import { IControlContext } from "./canvasControlTypes";
 import { isAiEditableImageSrc } from "../../aiImageEditor/aiImageEditorImageFormats";
+import {
+    canBringCanvasElementForward,
+    canSendCanvasElementBackward,
+} from "../../js/canvasElementManager/CanvasElementZOrder";
 import { imageContentIsTransformed } from "../../js/imageContentTransform";
 import { getCanvasElementRotation } from "../../js/canvasElementManager/canvasElementRotation";
 
@@ -197,6 +201,8 @@ export const buildCanvasElementControlRegistryContext = (
         isButton,
         isBackgroundImage,
         isSpecialGameElement,
+        canBringForward: canBringCanvasElementForward(canvasElement),
+        canSendBackward: canSendCanvasElementBackward(canvasElement),
         canModifyImage:
             !!imageContainerForCommands &&
             !imageContainerForCommands.classList.contains(

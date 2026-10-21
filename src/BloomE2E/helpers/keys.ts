@@ -11,9 +11,10 @@
 // text box raises no key events".)
 //
 // Every press goes through Playwright's keyboard, which sends the same CDP raw key events the
-// browser would build from a physical key. What it cannot do is send a key that Bloom's WinForms
-// shell claims as an accelerator: Ctrl+Z never reaches the page at all, which is why undo has its
-// own helper in workspace.ts rather than a press here.
+// browser would build from a physical key, straight to the WebView2. Bloom's WinForms shell leaves
+// the Edit tab's keys to the page, so for a key such as Ctrl+Z or Ctrl+Y that is the route a
+// person's press takes too: it reaches the TypeScript handlers of CKEditor, the reader tools and
+// Change Layout mode (see undo.ts).
 
 import { expect, type Locator, type Page } from "@playwright/test";
 

@@ -268,8 +268,12 @@ const FOLDERS_THAT_ARE_NOT_SOURCE = new Set([
     "__tests__",
     "component-tests",
     "canvas-e2e-tests",
+    "inline-images-e2e",
     "test",
-    // Playwright's own output, written by every component-test run in src/BloomBrowserUI.
+    // Playwright's own output. Every Playwright run in src/BloomBrowserUI (the component tests,
+    // pnpm e2e ...) writes .last-run.json into test-results, and an HTML report into
+    // playwright-report. Both are inside the source tree, so without these entries the next e2e
+    // run would refuse to start and name a file nobody edited.
     "test-results",
     "playwright-report",
 ]);

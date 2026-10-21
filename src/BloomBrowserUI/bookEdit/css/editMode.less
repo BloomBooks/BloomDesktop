@@ -7,8 +7,9 @@
 @import "../../bloomUI.less";
 @import "../sourceBubbles/sourceBubbles.less";
 @import "../../placeHolderImages.less";
-
-@bleed: 3mm; // Duplicated from basePage.less to remove circular dependency between BloomBrowserUI and content
+@import "bleedAndCropMarks.less";
+@import "inlineImageEditing.less";
+@import "cropHandles.less";
 
 @focusBorderColor: transparent; // #d6eaed; // @bloom-blue; // rgba(82, 168, 236, 0.6);
 @tipLinkColor: #8e3581; // intentionally a bit darker to be legible
@@ -71,45 +72,6 @@ body {
     // Geckofx anymore. However, its purpose is to keep the browser from having redraw errors during
     // Ctrl + mousewheel zooming and I saw some errors doing that, so I left it here.
     transition: transform 20ms;
-}
-
-// See comments on .bloom-mediaBox in basePage.less for a description of the mediaBox.
-// Here, we are causing it to be visible when desired.
-.bloom-mediaBox {
-    pointer-events: none; // we want all clicks to go through this to the child
-
-    & > * {
-        pointer-events: auto; // start up clicks again a the next level
-    }
-
-    :not(.Device16x9Portrait):not(.Device16x9Landscape):not(
-            .Ebook2x3Portrait
-        ):not(.Ebook7x5Landscape)&::before {
-        // show bleed area
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-
-        top: 0;
-        bottom: 0;
-        border: 3mm solid rgba(0, 0, 0, 0.8);
-        z-index: 1;
-    }
-
-    :not(.Device16x9Portrait):not(.Device16x9Landscape):not(
-            .Ebook2x3Portrait
-        ):not(.Ebook7x5Landscape)&:after {
-        // show safety area (the area inside of the trim box that still could get cut)
-        content: "";
-        position: absolute;
-        left: @bleed;
-        right: @bleed;
-        top: @bleed;
-        bottom: @bleed;
-        border: 3mm solid rgba(0, 0, 0, 0.05);
-        z-index: 2;
-    }
 }
 
 #labelAndLayoutPane {
@@ -1557,8 +1519,6 @@ canvas.moving {
 }
 
 @resizeHandleRadius: 8px;
-@sideHandleRadius: 4px;
-@sideHandleCenter: 6px;
 // The rotate handle is a small pill on the end of a short stem, above the middle of the top
 // edge of the control frame. We put it outside the frame because the middle of every side
 // inside the frame is already a crop handle.
@@ -1671,10 +1631,7 @@ canvas.moving {
     }
 
     // The resize handles are the small circles in the four corners.
-    // The move crop handle is the small circle in the center, used to change how an
-    // image is cropped by (apparently) moving the image within the frame.
-    .bloom-ui-canvas-element-resize-handle,
-    .bloom-ui-canvas-element-move-crop-handle {
+    .bloom-ui-canvas-element-resize-handle {
         position: absolute;
         width: @resizeHandleRadius * 2;
         height: @resizeHandleRadius * 2;
@@ -1710,11 +1667,10 @@ canvas.moving {
         cursor: se-resize;
     }
 
+    // The move crop handle is the small circle in the center, used to change how an
+    // image is cropped by (apparently) moving the image within the frame.
     .bloom-ui-canvas-element-move-crop-handle {
-        top: calc(50% - @resizeHandleRadius);
-        left: calc(50% - @resizeHandleRadius);
-        display: none;
-        cursor: move;
+        .move-crop-handle(var(--canvas-element-control-color));
     }
 
     // The rotate handle. It is only shown for the canvas elements we can rotate: an element
@@ -1792,43 +1748,10 @@ canvas.moving {
     // Used to crop images, but for text boxes the left and right ones are actually used to change width (and thus
     // aspect ratio).
     .bloom-ui-canvas-element-side-handle {
-        position: absolute;
-        width: @sideHandleRadius * 2;
-        height: @sideHandleRadius * 2;
-        border-radius: @sideHandleRadius;
-        background-color: white;
-        border: 1px solid var(--canvas-element-control-color);
-        box-sizing: border-box;
-        pointer-events: all;
-        &.bloom-currently-cropped {
-            background-color: var(--canvas-element-control-color);
-        }
+        .crop-side-handle(var(--canvas-element-control-color));
     }
-
-    .bloom-ui-canvas-element-side-handle-n {
-        top: -@sideHandleRadius;
-        left: calc(50% - @sideHandleRadius - @sideHandleCenter);
-        width: @sideHandleCenter * 2 + @sideHandleRadius * 2;
-        cursor: ns-resize;
-    }
-    .bloom-ui-canvas-element-side-handle-e {
-        top: calc(50% - @sideHandleRadius - @sideHandleCenter);
-        right: -@sideHandleRadius;
-        height: @sideHandleCenter * 2 + @sideHandleRadius * 2;
-        cursor: ew-resize;
-    }
-    .bloom-ui-canvas-element-side-handle-s {
-        bottom: -@sideHandleRadius;
-        left: calc(50% - @sideHandleRadius - @sideHandleCenter);
-        width: @sideHandleCenter * 2 + @sideHandleRadius * 2;
-        cursor: ns-resize;
-    }
-    .bloom-ui-canvas-element-side-handle-w {
-        top: calc(50% - @sideHandleRadius - @sideHandleCenter);
-        left: -@sideHandleRadius;
-        height: @sideHandleCenter * 2 + @sideHandleRadius * 2;
-        cursor: ew-resize;
-    }
+    // Each handle is centred on its side of the frame.
+    .crop-side-handle-positions(bloom-ui-canvas-element-side-handle; -@sideHandleRadius);
     [data-title]:hover:after,
     [data-title]:active:after {
         // display the data-title like a title, but we will show it immediately,
@@ -1879,7 +1802,11 @@ canvas.moving {
     }
 }
 
-#canvas-element-context-controls {
+// The control bar under a selected canvas element, and the same bar under a selected inline
+// image (a picture inside a text block). Both hold the same React component, so they need the
+// same box. Each has its own id because different code shows and removes each one.
+#canvas-element-context-controls,
+#inline-image-context-controls {
     position: absolute;
     transform-origin: top left;
     &.moving {

@@ -81,7 +81,8 @@ import {
     typeInCell,
     waitForTableAttached,
 } from "../helpers/tables";
-import { switchTab, undo } from "../helpers/workspace";
+import { undo } from "../helpers/undo";
+import { switchTab } from "../helpers/workspace";
 
 test.use({
     collectionSpec: {
