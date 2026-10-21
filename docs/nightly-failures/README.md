@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-10-20 (nightlies through the 2026-10-20 run have been triaged)
+**Last updated:** 2026-10-21 (nightlies through the 2026-10-21 run have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -8,47 +8,6 @@ once its fix lands and the nightly has stayed green on it. The rule they are all
 accept a flaky test, and a test is flaky from its first unexplained failure (root `AGENTS.md`,
 Testing). So "wait and see whether it recurs" is never an entry's plan. To bring this up to date,
 use the `nightly-triage` skill.
-
-## Rotate and flip: four rotations leave the background one pixel off
-
-- **Failed:** every night from 2026-10-15 to 2026-10-20.
-  `BloomE2E/tests/rotate-and-flip-images.spec.ts:322` "Rotate right rotates the page's background
-  picture inside its area, … and four rotations put it back" (Test Case 827): "After four
-  rotations the background's left is 0, not -1." The file runs in serial mode, so the tests after
-  it are skipped, which is why the run shows 15 skipped instead of 7.
-- **What the trace shows (first look):** it passed on 2026-10-13 (`51e1cb6663`), the 10-14 run
-  never reached the e2e suite, and it has failed every night since 2026-10-15 (`73c05442b6`). Two
-  PRs landed in between: [#8459](https://github.com/BloomBooks/BloomDesktop/pull/8459) (BL-17009,
-  stop white lines along the edges of full-page pictures) and #8387 (BL-16900, one undo stack).
-- **Cause (confirmed):** a real Bloom bug from #8459; reverting its commit (`b4024cccbc`) alone
-  makes the spec pass. #8459 makes a fitted background picture overhang each edge it fills by 1px,
-  so the test starts at left -1. Rotate right (`setRotatedBackgroundLayout` in
-  `imageContentTransform.ts`) refits the picture to its area exactly and never adds that overhang,
-  so after any rotation the bleed is gone (and the white line can come back), and after four the
-  left is 0. The fix gives the rotated layout the same bleed.
-- **Status:** fix in [#8485](https://github.com/BloomBooks/BloomDesktop/pull/8485), on BL-17009.
-
-## C# YouTrack test: adding a comment to the test issue fails
-
-- **Failed:** 2026-10-20. `YouTrackIssueSubmitterTests.CanSubmitToYouTrack` (line 106):
-  `AddCommentToIssue` returned false.
-- **Cause:** the YouTrack server was upgraded on 2026-10-20 at about 08:20 UTC (2026.2.19197 to
-  2026.2.19636), between the green 10-19 nightly and the failing 10-20 one. YouTrack then refused
-  the comment with 400 "An UserGroup-type entity with the specified ID (25-3) was not found". The
-  group exists; the account Bloom posts problem reports as ("auto report creator") could no
-  longer see it, and under YouTrack's 2026 permission model an account can only restrict a
-  comment to a group it can see. The comment is restricted to the Developer group, `25-3`,
-  hard-coded as `developersGroupId` in `YouTrackIssueSubmission.cs`. `AddCommentToIssue`
-  discards YouTrack's reply, so the reason was recorded nowhere.
-- **User impact:** `ProblemReportApi` uses the same call to add "Problem book uploaded to <url>"
-  to a user's problem report, and ignores the result, so a report with a book would have lost
-  its book link silently. No real report was affected: the reporting account filed none between
-  the upgrade and the fix.
-- **Status:** fixed on 2026-10-20 in YouTrack's settings, not in Bloom: "auto report creator" is
-  in a new "Report submitters" group with the optional Read Groups feature turned on, and is on
-  the Developer group's "Visible to" list. It can now see the group without being a member, so
-  its token, which is public in Bloom's source, still cannot read developer-only comments.
-  `CanSubmitToYouTrack` passes locally since. Remove this entry once a nightly has passed on it.
 
 ## Bulk upload test: two different failures against dev.bloomlibrary.org
 
