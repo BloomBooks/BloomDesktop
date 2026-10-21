@@ -1,5 +1,6 @@
 // Ctrl+Z and Ctrl+Y pressed on a real keyboard reach the page's own handlers. This test needs a
-// person, so it is skipped unless BLOOM_E2E_PHYSICAL_KEYS is set.
+// person, so it is a .manual.ts file: a normal run (and so the nightly) never collects it, and it
+// runs only when PLAYWRIGHT_INCLUDE_MANUAL is set (see playwright.config.ts).
 //
 // Why it exists: every other test presses keys through Playwright, which sends them straight to the
 // WebView2 over CDP and so never passes through Bloom's WinForms shell. If the shell claimed a key,
@@ -12,8 +13,8 @@
 // BLOOM_AUTOMATION_MONITOR unset or naming a monitor, not "headless"). To run it, from
 // src/BloomE2E:
 //
-//     $env:BLOOM_E2E_PHYSICAL_KEYS = "1"
-//     pnpm exec playwright test tests/undo-physical-keys.spec.ts
+//     $env:PLAYWRIGHT_INCLUDE_MANUAL = "1"
+//     pnpm exec playwright test tests/undo-physical-keys.manual.ts
 //
 // When the run prints "Now press Ctrl+Z", click at the end of the word "cat" in Bloom's window,
 // then press Ctrl+Z on the keyboard; when it prints "Now press Ctrl+Y", press Ctrl+Y.
@@ -39,10 +40,6 @@ const WAIT_FOR_A_PERSON_MS = 180000;
 test("Ctrl+Z and Ctrl+Y on a real keyboard are CKEditor's, and the one stack stands aside", async ({
     page,
 }) => {
-    test.skip(
-        !process.env.BLOOM_E2E_PHYSICAL_KEYS,
-        "Needs a person at the keyboard; set BLOOM_E2E_PHYSICAL_KEYS to run it.",
-    );
     test.setTimeout(600000);
     await makeBookFromTemplate(page, "Basic Book");
     await addPage(page, "Just Text");
