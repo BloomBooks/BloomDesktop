@@ -31,9 +31,9 @@ export const imageAvailabilityRules: AvailabilityRulesMap = {
     resetImage: {
         visible: (ctx) => ctx.hasImage,
         // Reset Image puts the picture back the way it arrived, so it applies to a crop, to a
-        // rotation or a mirror. It does not straighten a rotated canvas element box; that
-        // rotation belongs to the box, like its size and its position.
-        enabled: (ctx) => ctx.isCropped || ctx.isImageContentTransformed,
+        // rotation or a mirror of the picture, and to a rotation of its box.
+        enabled: (ctx) =>
+            ctx.isCropped || ctx.isImageContentTransformed || ctx.isBoxRotated,
     },
     rotateRight: {
         // Navigation buttons are not rotated.

@@ -51,6 +51,13 @@ export interface IInlineImageOptions {
     contour?: string;
     /** value for --inline-image-contour-margin */
     contourMargin?: string;
+    /** value for --inline-image-aspect-ratio; 1 when not given */
+    aspectRatio?: string;
+    /**
+     * The crop, as bookEdit/js/inlineImageCrop.ts writes it: the percentage of the picture
+     * cut away on each side.
+     */
+    crop?: { top: number; right: number; bottom: number; left: number };
 }
 
 /**
@@ -66,7 +73,15 @@ export async function loadInlineImagePage(
     const vars = [
         `--inline-image-width: ${options.width ?? "40%"}`,
         `--inline-image-offset: ${options.offset ?? "0px"}`,
-        `--inline-image-aspect-ratio: 1`,
+        `--inline-image-aspect-ratio: ${options.aspectRatio ?? "1"}`,
+        ...(options.crop
+            ? [
+                  `--inline-image-crop-top: ${options.crop.top}`,
+                  `--inline-image-crop-right: ${options.crop.right}`,
+                  `--inline-image-crop-bottom: ${options.crop.bottom}`,
+                  `--inline-image-crop-left: ${options.crop.left}`,
+              ]
+            : []),
         options.contour ? `--inline-image-contour: ${options.contour}` : "",
         options.contourMargin
             ? `--inline-image-contour-margin: ${options.contourMargin}`

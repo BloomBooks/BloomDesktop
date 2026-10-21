@@ -39,6 +39,11 @@ export interface ICollectionSettingsFrontBackMatter {
     district: string;
 }
 
+export interface ICollectionSettingsBloomLibrary {
+    // The url key of the bookshelf uploaded books go into, or "" for none.
+    defaultBookshelf: string;
+}
+
 export interface ICollectionSettingsAdvanced {
     autoUpdate: boolean;
     collectionName: string;
@@ -48,6 +53,7 @@ export interface ICollectionSettingsAdvanced {
 export interface ICollectionSettingsValues {
     languages: ICollectionSettingsLanguages;
     frontBackMatter: ICollectionSettingsFrontBackMatter;
+    bloomLibrary: ICollectionSettingsBloomLibrary;
     advanced: ICollectionSettingsAdvanced;
     // Keyed by experimental feature token.
     experimental: Record<string, boolean>;

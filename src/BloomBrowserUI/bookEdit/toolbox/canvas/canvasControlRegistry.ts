@@ -47,13 +47,15 @@ import { getWorkspaceBundleExports } from "../../js/workspaceFrames";
 import {
     doImageCommand,
     getImageFromContainer,
-    getImageTransparencyMode,
     getImageUrlFromImageContainer,
     HandleImageError,
     getOwningPageBackgroundColor,
+    isOverlayOnBackgroundImage,
     isPlaceHolderImage,
     kImageContainerClass,
     pageBackgroundNeedsTransparency,
+    refreshImgTransparentParam,
+    refreshTransparentParamsInBloomCanvas,
     setImgTransparentParam,
 } from "../../js/bloomImages";
 import { doVideoCommand } from "../../js/bloomVideo";
@@ -937,6 +939,12 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                 bgImg.setAttribute("data-book", currentDataBook);
             }
 
+            // The srcs we swapped carry the transparent param suited to each image's old role.
+            // An overlay on a real background image gets Auto transparency even on a white page,
+            // but a background does not; and if there was no real background before, every other
+            // overlay on this canvas now sits on one. So recompute them all (BL-16993).
+            refreshTransparentParamsInBloomCanvas(bloomCanvas);
+
             if (!haveRealBgImage) {
                 canvasElementManager.deleteCurrentCanvasElement();
             }
@@ -976,14 +984,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                 // After mutating the img's classes, recompute and apply the transparent param.
                 function applyTransparencyParam() {
                     if (!img) return;
-                    const bgColor = getOwningPageBackgroundColor(img);
-                    setImgTransparentParam(
-                        img,
-                        getImageTransparencyMode(
-                            img,
-                            pageBackgroundNeedsTransparency(bgColor),
-                        ),
-                    );
+                    refreshImgTransparentParam(img);
                 }
 
                 // Every explicit choice here is a user telling us our line-art detection got
@@ -1006,6 +1007,8 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                             pageBackgroundNeedsTransparency(
                                 getOwningPageBackgroundColor(img),
                             ),
+                        isOverlayOnBackgroundImage:
+                            isOverlayOnBackgroundImage(img),
                         imageFormat: imageFormatOf(img),
                         // Every transparency choice made on this image so far, joined with " > "
                         // -- so a picture switched twice reads "auto > transparent > opaque"

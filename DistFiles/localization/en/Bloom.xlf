@@ -388,10 +388,6 @@
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources</note>
         <note>OLD TEXT (before 5.0/3.9): Show Experimental Templates (e.g. Picture Dictionary)</note>
       </trans-unit>
-      <!-- <trans-unit id="CollectionSettingsDialog.BloomLibraryBookshelf"> -->
-      <!-- <source xml:lang="en">Bloom Library Bookshelf</source> -->
-      <!-- <note>ID: CollectionSettingsDialog.BloomLibraryBookshelf</note> -->
-      <!-- </trans-unit> -->
       <trans-unit id="CollectionSettingsDialog.BloomLibraryPage" translate="no">
         <source xml:lang="en">Bloom Library</source>
         <note>ID: CollectionSettingsDialog.BloomLibraryPage</note>
@@ -401,10 +397,6 @@
         <source xml:lang="en">Book Making</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>
       </trans-unit>
-      <!-- <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookshelfDescription" sil:dynamic="true"> -->
-      <!-- <source xml:lang="en">Projects that have Bloom Enterprise subscriptions can arrange for one or more bookshelves on the Bloom Library. All books uploaded from this collection will go into the selected bookshelf.</source> -->
-      <!-- <note>ID: CollectionSettingsDialog.BookMakingTab.BookshelfDescription</note> -->
-      <!-- </trans-unit> -->
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
@@ -1052,6 +1044,11 @@
       <trans-unit id="Common.No">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
+      </trans-unit>
+      <trans-unit id="Common.None" translate="no">
+        <source xml:lang="en">None</source>
+        <note>ID: Common.None</note>
+        <note>A choice in a list meaning that nothing is chosen, e.g. no bookshelf on the Bloom Library page of the Collection Settings dialog.</note>
       </trans-unit>
       <trans-unit id="Common.Note">
         <source xml:lang="en">Note</source>

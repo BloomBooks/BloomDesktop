@@ -147,6 +147,8 @@ export interface IControlContext {
     isCropped: boolean;
     // The picture inside the box has been rotated or mirrored by Rotate right or Flip.
     isImageContentTransformed: boolean;
+    // The canvas element box is turned, by Rotate right or the rotation handle.
+    isBoxRotated: boolean;
     isNavigationButton: boolean;
     isButton: boolean;
     isBackgroundImage: boolean;

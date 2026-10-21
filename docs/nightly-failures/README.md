@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-10-19 (nightlies through the 2026-10-19 run have been triaged)
+**Last updated:** 2026-10-21 (nightlies through the 2026-10-21 run have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -8,21 +8,6 @@ once its fix lands and the nightly has stayed green on it. The rule they are all
 accept a flaky test, and a test is flaky from its first unexplained failure (root `AGENTS.md`,
 Testing). So "wait and see whether it recurs" is never an entry's plan. To bring this up to date,
 use the `nightly-triage` skill.
-
-## Rotate and flip: four rotations leave the background one pixel off
-
-- **Failed:** every night from 2026-10-15 to 2026-10-19.
-  `BloomE2E/tests/rotate-and-flip-images.spec.ts:322` "Rotate right rotates the page's background
-  picture inside its area, … and four rotations put it back" (Test Case 827): "After four
-  rotations the background's left is 0, not -1." The file runs in serial mode, so the tests after
-  it are skipped, which is why the run shows 15 skipped instead of 7.
-- **What the trace shows (first look):** it passed on 2026-10-13 (`51e1cb6663`), the 10-14 run
-  never reached the e2e suite, and it has failed every night since 2026-10-15 (`73c05442b6`). Two
-  PRs landed in between: [#8459](https://github.com/BloomBooks/BloomDesktop/pull/8459) (BL-17009,
-  stop white lines along the edges of full-page pictures) and #8387 (BL-16900, one undo stack).
-  #8459 changes where a full-page picture's edges sit, which fits a one-pixel difference, but that
-  is not confirmed.
-- **Status:** no card or PR for the failure.
 
 ## Bulk upload test: two different failures against dev.bloomlibrary.org
 
