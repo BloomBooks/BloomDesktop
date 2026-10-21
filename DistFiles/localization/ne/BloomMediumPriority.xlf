@@ -60,6 +60,16 @@
         <target xml:lang="ne-NP" state="needs-translation">Tables</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.Tables</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BloomLibraryPage.Bookshelf" translate="no">
+        <source xml:lang="en">Bookshelf</source>
+        <target xml:lang="ne-NP" state="needs-translation">Bookshelf</target>
+        <note>ID: CollectionSettingsDialog.BloomLibraryPage.Bookshelf</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BloomLibraryPage.BookshelfDescription" translate="no">
+        <source xml:lang="en">Projects that have Bloom Enterprise subscriptions can arrange for one or more bookshelves on the Bloom Library. All books uploaded from this collection will go into the selected bookshelf.</source>
+        <target xml:lang="ne-NP" state="needs-translation">Projects that have Bloom Enterprise subscriptions can arrange for one or more bookshelves on the Bloom Library. All books uploaded from this collection will go into the selected bookshelf.</target>
+        <note>ID: CollectionSettingsDialog.BloomLibraryPage.BookshelfDescription</note>
+      </trans-unit>
       <trans-unit id="Feature.AiImageEditing">
         <source xml:lang="en">Edit Images with AI</source>
         <target xml:lang="ne-NP" state="needs-translation">Edit Images with AI</target>
