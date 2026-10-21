@@ -442,10 +442,6 @@
         <target xml:lang="yua" state="needs-translation">Show Experimental Book Sources</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources</note>
       </trans-unit>
-      <!-- <trans-unit id="CollectionSettingsDialog.BloomLibraryBookshelf"> -->
-      <!-- <source xml:lang="en">Bloom Library Bookshelf</source> -->
-      <!-- <note>ID: CollectionSettingsDialog.BloomLibraryBookshelf</note> -->
-      <!-- </trans-unit> -->
       <trans-unit id="CollectionSettingsDialog.BloomLibraryPage" translate="no">
         <source xml:lang="en">Bloom Library</source>
         <target xml:lang="yua" state="needs-translation">Bloom Library</target>
@@ -456,10 +452,6 @@
         <target xml:lang="yua" state="needs-translation">Book Making</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>
       </trans-unit>
-      <!-- <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookshelfDescription" sil:dynamic="true"> -->
-      <!-- <source xml:lang="en">Projects that have Bloom Enterprise subscriptions can arrange for one or more bookshelves on the Bloom Library. All books uploaded from this collection will go into the selected bookshelf.</source> -->
-      <!-- <note>ID: CollectionSettingsDialog.BookMakingTab.BookshelfDescription</note> -->
-      <!-- </trans-unit> -->
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
         <target xml:lang="yua" state="needs-translation">None</target>
@@ -1198,6 +1190,11 @@
         <source xml:lang="en">No</source>
         <target xml:lang="yua" state="needs-translation">No</target>
         <note>ID: Common.No</note>
+      </trans-unit>
+      <trans-unit id="Common.None" translate="no">
+        <source xml:lang="en">None</source>
+        <target xml:lang="yua" state="needs-translation">None</target>
+        <note>ID: Common.None</note>
       </trans-unit>
       <trans-unit id="Common.Note">
         <source xml:lang="en">Note</source>
