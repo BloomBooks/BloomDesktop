@@ -126,6 +126,7 @@ import {
 import {
     clearImageOperationUndoState,
     commitPendingImageOperationUndo,
+    forgetImageOperationUndoFor,
     IImageCropInfo,
     initializeImageUndoManager,
     prepareUndoForImageOperation,
@@ -1504,19 +1505,22 @@ export class CanvasElementManager {
 
     // The Reset Image command: put the picture back the way it arrived. That means the crop
     // goes, and so do the 90-degree rotations and the mirrors that Rotate right and Flip apply to
-    // the picture. The rotation of a canvas element box is left alone, because it belongs to
-    // the box, like its size and its position; the rotate handle and Undo are the way back
-    // from that.
+    // the picture. The box straightens too: on an overlay, Rotate right turns the box rather than
+    // the picture, and an author cannot tell that apart from the picture being turned, so a
+    // picture that arrived upright must end up upright whichever of the two turned it.
     //
     // This command deliberately puts nothing on the undo stack, as the older reset-crop
     // command did not either: a reset is itself a way back, so an undo of it would be a way
     // back from a way back. Rotate right and Flip do record undo, because each of them is a
-    // step forward.
+    // step forward. Those earlier Rotate right and Flip steps are forgotten here, because each
+    // one would put back a turn or a crop from before the reset.
     public resetImage(): void {
         if (!this.activeElement) return;
         const img = getImageFromCanvasElement(this.activeElement);
         if (!img) return;
         clearImageContentTransform(img);
+        setCanvasElementRotation(this.activeElement, 0);
+        forgetImageOperationUndoFor(this.activeElement);
         this.resetCropping();
         this.adjustStuffRelatedToImage(this.activeElement, img);
     }
@@ -1933,14 +1937,15 @@ export class CanvasElementManager {
 
     // When the image is changed in a canvas element (e.g., choose or paste image),
     // we remove cropping, adjust the aspect ratio, and move the control frame.
-    // The rotation and mirror of the picture (imageContentTransform.ts) belong to the old
-    // picture, so they go too, unless the caller passes imageTransform, as Undo does to put
-    // back the transform the restored picture had. The rotation of the canvas element box
-    // belongs to the box and is left alone.
+    // The rotation and mirror of the picture (imageContentTransform.ts) and the rotation of
+    // its box belong to the old picture, so they go too: the new picture arrives upright, as
+    // Reset Image would leave it. Undo passes imageTransform and elementRotation to put back
+    // what the restored picture had.
     updateCanvasElementForChangedImage(
         imgOrImageContainer: HTMLElement,
         cropInfo?: IImageCropInfo,
         imageTransform = "",
+        elementRotation = 0,
     ) {
         const canvasElement = imgOrImageContainer.closest(
             kCanvasElementSelector,
@@ -1959,6 +1964,7 @@ export class CanvasElementManager {
         // With the transform gone, the size code below sees no rotation and fits a background
         // element to the new picture's natural shape.
         img.style.transform = imageTransform;
+        setCanvasElementRotation(canvasElement, elementRotation);
         // Get the aspect ratio right (aligns control frame)
         if (canvasElement.classList.contains(kBackgroundImageClass)) {
             this.adjustBackgroundImageSize(

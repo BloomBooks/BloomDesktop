@@ -28,6 +28,7 @@ House rules:
 - **Cut:** Master's page-size work made C# read `output/browser/pageSizesLookup.json`, which only `pnpm build` writes. In a worktree whose `output/browser` predates that, 30 C# tests failed and every Bloom an agent started raised a "Could not locate the required file" Debug.Assert dialog on the developer's screen, and agents are told never to run `pnpm build`.
 - **Idea:** Have `go.sh`, `build/agent-dotnet.sh` and the e2e fixture run `pnpm --dir src/content run build:pageSizes` (instant) when the file is missing or older than `DistFiles/pageSizes.json`, or name that command in `src/BloomBrowserUI/AGENTS.md`.
 - **Context:** BL-16818-tables preflight, after merging master.
+- **Seen again 2026-10-12:** a fresh worktree (BL-16741-rotate-fixes preflight) whose `output/browser` was never fully built. With `BLOOM_E2E_VITE_PORT` set, the fixture skips its bundle-age check, so the e2e Bloom launched anyway, stopped on this dialog, and the spec failed as "The Edit tab never showed a page", which looks like a product bug.
 
 ## 2026-10-07 — The pre-commit hook commits files that were left unstaged
 - **Cut:** Committing a merge with only the conflict files staged also committed four modified files that were never `git add`ed. The hook runs lint-staged with `--no-stash` and then a C# formatter; which step added them is not yet known. Nothing in the output says the commit grew.
