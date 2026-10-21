@@ -65,6 +65,16 @@ export interface ICollectionSettingsValues {
     experimental: Record<string, boolean>;
 }
 
+// The reply to GET collection/qrCodeBadge (QrCodeBadgeData in C#).
+export interface IQrCodeBadgeData {
+    // A data: url of the QR code image.
+    qrCode: string;
+    // What the caption's "{0}" stands for.
+    languageName: string;
+    // The address the badge shows beneath its caption.
+    displayUrl: string;
+}
+
 // The reply to GET collection/settings.
 export interface ICollectionSettingsResponse {
     values: ICollectionSettingsValues;

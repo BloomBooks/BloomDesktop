@@ -34,6 +34,7 @@ import {
 import { useAdvancedPage } from "./settingsPages/AdvancedPage";
 import { useBloomLibraryPage } from "./settingsPages/BloomLibraryPage";
 import { useExperimentalPage } from "./settingsPages/ExperimentalPage";
+import { useFrontBackMatterPage } from "./settingsPages/FrontBackMatterPage";
 import { useSubscriptionPage } from "./settingsPages/SubscriptionPage";
 
 // Temporary content for every page. Each of the seven tab cards replaces its page's group with
@@ -174,10 +175,6 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         "Languages",
         "CollectionSettingsDialog.LanguageTab.LanguageTabLabel",
     );
-    const frontBackMatterLabel = useL10n(
-        "Front & Back Matter",
-        "CollectionSettingsDialog.FrontBackMatterPage",
-    );
     const teamCollectionLabel = useL10n(
         "Team Collection",
         "TeamCollection.TeamCollection",
@@ -206,6 +203,11 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             </ConfigrPage>
         );
     }
+    const frontBackMatterPage = useFrontBackMatterPage({
+        dialogOpen: propsForBloomDialog.open,
+        settings: loadedSettings,
+        values: currentValues,
+    });
     const subscriptionPage = useSubscriptionPage({
         code: subscriptionCode,
         onCodeChange: setSubscriptionCode,
@@ -343,10 +345,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         }}
                     >
                         {placeholderPage("languages", languagesLabel)}
-                        {placeholderPage(
-                            "frontBackMatter",
-                            frontBackMatterLabel,
-                        )}
+                        {frontBackMatterPage}
                         {subscriptionPage}
                         {placeholderPage("teamCollection", teamCollectionLabel)}
                         {bloomLibraryPage}

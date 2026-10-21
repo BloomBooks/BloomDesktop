@@ -1,3 +1,7 @@
+using System;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using Bloom;
 using Bloom.Collection;
 using Bloom.web.controllers;
@@ -56,6 +60,29 @@ namespace BloomTests.web.controllers
             dynamic result = JsonConvert.DeserializeObject(json);
             Assert.That((string)result.languageName, Is.EqualTo(""));
             Assert.That((string)result.languageCode, Is.EqualTo(""));
+        }
+
+        /// <summary>
+        /// The Front &amp; Back Matter page previews the badge from this: a QR code it can show
+        /// as an image, and the language and address the books' badges name.
+        /// </summary>
+        [Test]
+        public void MakeQrCodeBadgeData_GivesAPngQrCodeAndTheLanguagesAddress()
+        {
+            const string kPngPrefix = "data:image/png;base64,";
+
+            var badge = CollectionSettingsApi.MakeQrCodeBadgeData("cak", "Kaqchikel");
+
+            Assert.That(badge.QrCode, Does.StartWith(kPngPrefix));
+            var png = Convert.FromBase64String(badge.QrCode.Substring(kPngPrefix.Length));
+            using (var stream = new MemoryStream(png))
+            using (var image = Image.FromStream(stream))
+            {
+                Assert.That(image.RawFormat, Is.EqualTo(ImageFormat.Png));
+                Assert.That(image.Width, Is.GreaterThan(0));
+            }
+            Assert.That(badge.LanguageName, Is.EqualTo("Kaqchikel"));
+            Assert.That(badge.DisplayUrl, Is.EqualTo("BloomLibrary.org/language:cak"));
         }
 
         [Test]
