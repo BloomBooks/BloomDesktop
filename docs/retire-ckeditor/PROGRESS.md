@@ -1178,14 +1178,14 @@ Later, not Stage 0:
   Ctrl+N) and lets the key through, and nothing claims Ctrl+Z or Ctrl+Y. So a person's Ctrl+Z does
   reach CKEditor, the reader tools and origami, which makes the reader-tools double undo
   user-visible. The helper comments are corrected. Playwright's key presses go over CDP and skip the
-  shell, so `tests/undo-physical-keys.spec.ts`, skipped unless `BLOOM_E2E_PHYSICAL_KEYS` is set,
+  shell, so `tests/undo-physical-keys.manual.ts`, run only when `PLAYWRIGHT_INCLUDE_MANUAL` is set,
   waits for a person to press the real keys.
 - **Real key presses, tried once by sending OS key events to an e2e Bloom** (a one-off; it has to
   take the foreground, which the suite otherwise never does). A real Ctrl+Z reached CKEditor's own
   undo all five times. A real Ctrl+Y redid it three times out of five; one of those also picked up a
   stray keystroke from whoever was at the keyboard, and the two misses are unexplained (CDP Ctrl+Y
   redoes reliably after any pause from 0 to 2 s, so it is not timing). The opt-in
-  `undo-physical-keys.spec.ts`, run by a person at the keyboard, is the way to settle it.
+  `undo-physical-keys.manual.ts`, run by a person at the keyboard, is the way to settle it.
 
 ### 2026-10-02 — John's review of Stage 1: one compound entry per `runUndoable` gesture
 
