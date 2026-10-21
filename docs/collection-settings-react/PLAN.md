@@ -99,8 +99,8 @@ describe it with a stateless `GET settings/subscription?code=`, so Cancel has no
 
 **Tentative (John, 2026-09-22; may be overridden):**
 
-- **Q5 Page Numbering Style:** stays per collection; where it goes is open. It was to sit on
-  Front & Back Matter next to Style, but BL-16733 left it off (it is not in the mockup).
+- **Q5 Page Numbering Style:** stays per collection, and goes with the Languages page
+  (BL-16739), as the mockup shows (Andrew, 2026-10-21). It is not on Front & Back Matter.
 - **Q6 New per-language fields:** UI Font, Keyboard, Common Name are out (no backing data).
   Alphabet and Sentence ending punctuation are in BL-16739; they are reader-tool settings stored
   per language in `ReaderToolsSettings-<tag>.json` under app data, not in the collection, so
@@ -128,8 +128,8 @@ get lost.
 chosen one's description; a branding that chooses the pack leaves only that one, disabled), QR
 Codes (show, caption, and a live badge preview drawn in React from `GET collection/qrCodeBadge`,
 which gives the QR code image and the language and address the badge names), Places (Country,
-Province, District). Page Numbering Style is not on this page after all (Andrew, 2026-10-21): it
-is not in the mockup, so Q5 is open again. The packs offered follow the saved subscription; a
+Province, District). Page Numbering Style is not on this page; it goes with Languages (Q5). The
+packs offered follow the saved subscription; a
 typed code whose branding chooses a pack gets it as C# saves.
 
 **BL-16737 Advanced.** Automatically update Bloom (a user-level setting), Collection Name
