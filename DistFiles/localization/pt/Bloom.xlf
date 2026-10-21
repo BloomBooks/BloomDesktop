@@ -1439,9 +1439,9 @@
         <target xml:lang="pt-PT" state="final">Este tipo de página será incluído apenas na produção de livros digitais, não no PDF.</target>
         <note>ID: EditTab.AddPageDialog.DigitalPage</note>
       </trans-unit>
-      <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true">
+      <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Could not find {0}</source>
-        <target xml:lang="pt-PT" state="translated">{0} não encontrado</target>
+        <target xml:lang="pt-PT" state="final">{0} não encontrado</target>
         <note>ID: EditTab.AddPageDialog.NoTemplate</note>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NumberOfPagesTooltip" sil:dynamic="true" approved="yes">
