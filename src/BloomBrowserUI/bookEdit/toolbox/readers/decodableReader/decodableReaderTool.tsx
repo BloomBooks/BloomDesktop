@@ -12,7 +12,7 @@ import $ from "jquery";
 // This class renders the DecodableReaderToolControls React component
 // in the toolbox, and implements all the functionality/logic needed
 // for detaching the tool, reattaching the tool, updating the markup,
-// restoring the current tool state (which includes the saved stage
+// restoring the tool's state (which includes the saved stage
 // number, sorting type, and current graphemes and words for that stage),
 // and handling certain events such as focsuing in an element (such as
 // a textbox), focusing out of an element, and undo/redo.

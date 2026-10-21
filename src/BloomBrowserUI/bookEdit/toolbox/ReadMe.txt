@@ -53,7 +53,8 @@ know about the tool.
 To add a new tool
 1. Create a folder here whose name is the tool's canonical id (no "Tool" suffix).
 2. In it, write a class that extends ToolboxToolReactAdaptor, implementing at least id()
-   and renderPanel() (which just returns the tool's React element), plus iconPath() if its
+   and renderPanel() (which returns the tool's React element -- a node describing the UI,
+   not a DOM element), plus iconPath() if its
    header should show an icon, and whichever lifecycle methods the tool needs (see the ITool
    comments in toolbox.ts). You do not wire the lifecycle methods up to anything: the toolbox
    calls them for whichever tool is running (useToolLifecycle.ts).

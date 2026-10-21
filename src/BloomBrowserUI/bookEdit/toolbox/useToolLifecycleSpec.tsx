@@ -249,7 +249,7 @@ describe("useToolLifecycle", () => {
         );
         calls = [];
 
-        // Hiding the toolbox: still the current tool, but no longer running.
+        // Hiding the toolbox: still the open tool, but no longer running.
         await render(
             <Toolbox
                 tools={[talkingBook]}

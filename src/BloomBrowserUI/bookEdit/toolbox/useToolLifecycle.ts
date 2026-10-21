@@ -2,12 +2,12 @@
 // call the tool's lifecycle methods by hand.
 //
 // ToolboxRoot renders an accordion for every tool the toolbox is offering, and each of
-// those calls this hook. A tool runs when it is the current tool of a showing toolbox
-// (see IToolboxUiState.currentToolId / toolboxVisible), so it activates because it *is* the
-// current tool rather than because some other code remembered to activate it. That
+// those calls this hook. A tool runs when it is the open tool of a showing toolbox
+// (see IToolboxUiState.openToolId / toolboxVisible), so it activates because it *is* the
+// running tool rather than because some other code remembered to activate it. That
 // remembering is exactly what got out of step in BL-16602.
 //
-// Note that being the current tool is not the same as being mounted: MUI keeps a collapsed
+// Note that running is not the same as being mounted: MUI keeps a collapsed
 // accordion's children mounted, and ToolboxRoot relies on that so a tool keeps its
 // state while another one is open. So all the offered tools call this hook
 // all the time; only one of them is running.
@@ -18,7 +18,7 @@
 //    pageEditingMarkup.ts.
 //  - configureElements(): the toolbox calls it on every registered tool when a page is set
 //    up, open or not, so it is not a function of which tool is running.
-//  - imageUpdated(): raised by the page frame against whichever tool is current.
+//  - imageUpdated(): raised by the page frame against the open tool (bloomEditing.ts).
 //  - the detachFromPage() that has to happen just *before* the page is replaced (see
 //    removeToolboxMarkup in toolbox.ts). React only finds out that the page changed
 //    afterwards, by which time the DOM to detach from is gone, so that one cannot be a
@@ -41,7 +41,7 @@ const kRepeatNewPageReadyDelayMs = 600;
  * Runs `tool`'s lifecycle while it is the running tool.
  *
  * @param tool the tool whose lifecycle to run.
- * @param isRunning is this the current tool of a showing toolbox? While it is,
+ * @param isRunning is this the open tool of a showing toolbox? While it is,
  *   the tool is restored and shown; when it stops being, the tool is detached and hidden.
  * @param pageGeneration IToolboxUiState.pageGeneration. Changing it re-runs the sequence
  *   for the new page, which is what tells the tool about it.
@@ -74,8 +74,8 @@ export function useToolLifecycle(
         // up over the top of whatever replaced it.
         let stopped = false;
         const runActivationSequence = async () => {
-            // Always re-restore settings, even if this tool was current in the previous
-            // book, so that its state tracks the book we are now in.
+            // Always re-restore settings, even if this tool was the open one in the
+            // previous book, so that its state tracks the book we are now in.
             await tool.beginRestoreSettings(getSavedToolboxSettings());
             if (stopped) return;
             await tool.showTool();
@@ -101,8 +101,8 @@ export function useToolLifecycle(
     // Deliberately NOT keyed on pageGeneration: a new page detaches and re-attaches the
     // tool (see removeToolboxMarkup), but it does not hide it.
     //
-    // React runs every cleanup in a commit before any effect in that commit — including
-    // the cleanups of components it is removing — so the tool being switched away from is
+    // React runs every cleanup in a commit before any effect in that commit -- including
+    // the cleanups of components it is removing -- so the tool being switched away from is
     // always detached and hidden before the incoming one starts restoring and showing.
     React.useEffect(() => {
         if (!isRunning) {

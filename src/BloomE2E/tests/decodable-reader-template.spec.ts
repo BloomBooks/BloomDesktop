@@ -2,7 +2,7 @@
 // the first stage.
 //
 // This pins the toolbox deciding, from the book alone, which tool to offer and open: the template
-// turns the tool on and makes it the current one, with no click from the person. The toolbox
+// turns the tool on and opens it, with no click from the person. The toolbox
 // infrastructure rewrite (BL-16608) rewrote that decision. It is in a file of its own because the
 // stage a new book starts on is the one last chosen with the stage arrows (see
 // reader-tool-stage-and-level.spec.ts), and that is remembered for the whole run of Bloom; only a

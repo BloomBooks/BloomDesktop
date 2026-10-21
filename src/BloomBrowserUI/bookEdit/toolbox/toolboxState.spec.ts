@@ -1,17 +1,15 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-    getCurrentToolId,
+    getOpenToolId,
     getFirstOfferedToolId,
-    getPageGeneration,
     getToolboxUiState,
     isToolEnabled,
     isToolOffered,
     isToolboxUiMounted,
-    isToolboxVisible,
     notePageReady,
     offerTool,
     resetToolboxUiStateForTests,
-    setActiveTool,
+    setOpenTool,
     setEnabledTools,
     setToolEnabled,
     setToolboxUiMounted,
@@ -52,7 +50,8 @@ describe("toolboxState", () => {
             expect(isToolOffered("motion")).toBe(false);
             expect(getFirstOfferedToolId()).toBeUndefined();
 
-            // "More..." is never the first *tool*: it can't be the current tool.
+            // "More..." is never chosen as the *default* tool. (Opening it by hand does open
+            // it; this asserts only that it is not what we fall back to.)
             offerTool("settings");
             expect(getFirstOfferedToolId()).toBeUndefined();
 
@@ -92,39 +91,51 @@ describe("toolboxState", () => {
         it("makes the open tool the running one", () => {
             offerTool("motion");
 
-            setActiveTool("motion");
+            setOpenTool("motion");
 
-            expect(getToolboxUiState().activeToolId).toBe("motion");
-            expect(getCurrentToolId()).toBe("motion");
+            expect(getToolboxUiState().openToolId).toBe("motion");
+            expect(getOpenToolId()).toBe("motion");
         });
 
-        it("runs no tool that the toolbox is not offering", () => {
-            // A tool the toolbox isn't offering has nowhere to display itself, so it
-            // cannot be the running one however it came to be the open one. Recording
-            // that as "no current tool" is what lets returning from "More..." to the same
-            // tool activate it again (BL-6720).
-            setActiveTool("motion");
+        it("refuses to open a tool the toolbox is not offering", () => {
+            // Such a tool has no accordion section to expand, so obeying would put the
+            // store in a state the screen cannot show. The request is refused and logged
+            // rather than obeyed, which is what keeps what the user sees and what is
+            // running from drifting apart (BL-16602).
+            const complaints = vi
+                .spyOn(console, "error")
+                .mockImplementation(() => undefined);
+            try {
+                // sanity check: nothing is open to begin with, so a "motion" below would
+                // have to have come from this call.
+                expect(getToolboxUiState().openToolId).toBeUndefined();
 
-            expect(getToolboxUiState().activeToolId).toBe("motion");
-            expect(getCurrentToolId()).toBeUndefined();
+                setOpenTool("motion");
+
+                expect(getToolboxUiState().openToolId).toBeUndefined();
+                expect(getOpenToolId()).toBeUndefined();
+                expect(complaints).toHaveBeenCalledTimes(1);
+            } finally {
+                complaints.mockRestore();
+            }
         });
     });
 
     // What decides whether a tool actually runs; see useToolLifecycle.ts.
-    describe("what the current tool should be doing", () => {
-        it("starts with no current tool, hidden, on page generation 0", () => {
-            expect(getCurrentToolId()).toBeUndefined();
-            expect(isToolboxVisible()).toBe(false);
-            expect(getPageGeneration()).toBe(0);
+    describe("what the running tool should be doing", () => {
+        it("starts with nothing open, hidden, on page generation 0", () => {
+            expect(getOpenToolId()).toBeUndefined();
+            expect(getToolboxUiState().toolboxVisible).toBe(false);
+            expect(getToolboxUiState().pageGeneration).toBe(0);
         });
 
-        it("has a current tool once one is open, and none again once it goes", () => {
+        it("has an open tool once one is opened, and none again once it goes", () => {
             offerTool("motion");
-            setActiveTool("motion");
-            expect(getCurrentToolId()).toBe("motion");
+            setOpenTool("motion");
+            expect(getOpenToolId()).toBe("motion");
 
             withdrawTool("motion");
-            expect(getCurrentToolId()).toBeUndefined();
+            expect(getOpenToolId()).toBeUndefined();
         });
 
         it("says nothing changed when the toolbox is told the visibility it already has", () => {
@@ -141,24 +152,25 @@ describe("toolboxState", () => {
         it("bumps the page generation each time a page becomes ready", () => {
             notePageReady();
             notePageReady();
-            expect(getPageGeneration()).toBe(2);
+            expect(getToolboxUiState().pageGeneration).toBe(2);
         });
     });
 
-    // BL-16602: visiting a game page offers the Game tool and makes it open; leaving the
-    // page withdraws it again. Which tool runs is derived from which one is open and which
-    // are offered, so withdrawing the open tool moves the running tool on its own. When
-    // that had to be reported to toolbox.ts by hand and wasn't, the toolbox went on
-    // believing the withdrawn tool was current and the tool that replaced it was never
-    // shown, which killed Talking Book's highlighting and audio on leaving a game page.
+    // BL-16602: visiting a game page offers the Game tool and opens it; leaving the page
+    // withdraws it again. Withdrawing the open tool moves the open tool on to the first
+    // one left, and the running tool follows, because running is just the open tool of a
+    // showing toolbox. When that had to be reported to toolbox.ts by hand and wasn't, the
+    // toolbox went on believing the withdrawn tool was still open and the tool that
+    // replaced it was never shown, which killed Talking Book's highlighting and audio on
+    // leaving a game page.
     describe("withdrawing a tool", () => {
         it("hands running to the replacement when the withdrawn tool was the open one", () => {
             offerTool("talkingBook");
             offerTool("settings");
             offerTool("game");
-            setActiveTool("game");
+            setOpenTool("game");
             // sanity check: the Game tool really is the one running before we withdraw it
-            expect(getCurrentToolId()).toBe("game");
+            expect(getOpenToolId()).toBe("game");
 
             withdrawTool("game");
 
@@ -166,15 +178,15 @@ describe("toolboxState", () => {
                 "talkingBook",
                 "settings",
             ]);
-            expect(getToolboxUiState().activeToolId).toBe("talkingBook");
-            expect(getCurrentToolId()).toBe("talkingBook");
+            expect(getToolboxUiState().openToolId).toBe("talkingBook");
+            expect(getOpenToolId()).toBe("talkingBook");
         });
 
         it("leaves the open tool alone when some other tool is withdrawn", () => {
             offerTool("talkingBook");
             offerTool("settings");
             offerTool("game");
-            setActiveTool("talkingBook");
+            setOpenTool("talkingBook");
 
             withdrawTool("game");
 
@@ -182,25 +194,25 @@ describe("toolboxState", () => {
                 "talkingBook",
                 "settings",
             ]);
-            expect(getToolboxUiState().activeToolId).toBe("talkingBook");
-            expect(getCurrentToolId()).toBe("talkingBook");
+            expect(getToolboxUiState().openToolId).toBe("talkingBook");
+            expect(getOpenToolId()).toBe("talkingBook");
         });
 
         it("leaves nothing open, and nothing running, when nothing is left", () => {
             offerTool("game");
-            setActiveTool("game");
-            expect(getCurrentToolId()).toBe("game");
+            setOpenTool("game");
+            expect(getOpenToolId()).toBe("game");
 
             withdrawTool("game");
 
             expect(getToolboxUiState().offeredToolIds).toEqual([]);
-            expect(getToolboxUiState().activeToolId).toBeUndefined();
-            expect(getCurrentToolId()).toBeUndefined();
+            expect(getToolboxUiState().openToolId).toBeUndefined();
+            expect(getOpenToolId()).toBeUndefined();
         });
 
         it("does nothing at all when the tool isn't being offered", () => {
             offerTool("talkingBook");
-            setActiveTool("talkingBook");
+            setOpenTool("talkingBook");
             const before = getToolboxUiState();
 
             withdrawTool("game");

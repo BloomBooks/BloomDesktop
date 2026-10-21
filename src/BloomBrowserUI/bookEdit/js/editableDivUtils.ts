@@ -198,10 +198,7 @@ export class EditableDivUtils {
     // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
     // If target is supplied, we only want a scale based on the page scaler if the target is inside it.
     public static getPageScale(target?: HTMLElement): number {
-        // Note: this used to go through a local getPage()/getPageFrame() pair that looked the
-        // page frame up in window.top rather than parent. For the frames this runs in (the page
-        // frame and the toolbox frame) those are the same document; see getPageIFrame() in
-        // shared.ts for why parent is the one we standardized on.
+        // See getPageIFrame() in shared.ts for why we reach the page through parent.
         const pageBody = getPageIframeBody();
         const page = pageBody ? $(pageBody) : $();
         let scaler: HTMLElement | undefined = undefined;

@@ -5,7 +5,7 @@ import { expect, test, type Page } from "../../component-tester/playwrightTest";
 // Tests of the toolbox sidebar UI (ToolboxRoot.tsx) and the state store the rest of the
 // toolbox drives it through (toolboxState.ts). ToolboxRootTestHarness.tsx stands in for
 // toolbox.ts: it registers a few tools and populates the toolbox through the real store.
-// See that file for which tools it offers and which one it restores as current.
+// See that file for which tools it offers and which one it restores as open.
 
 const harnessUrl = "/?component=ToolboxRootTestHarness";
 
@@ -46,25 +46,20 @@ const gotoHarness = async (page: Page): Promise<void> => {
 };
 
 // Does what toolbox.ts does when the user turns a tool on: tells the toolbox to offer a
-// tool for it, and makes it the active one.
-const addToolAndMakeItActive = async (
-    page: Page,
-    toolId: string,
-): Promise<void> => {
+// tool for it, and opens it.
+const addToolAndOpenIt = async (page: Page, toolId: string): Promise<void> => {
     await page.evaluate((idOfToolToAdd) => {
         // The harness publishes these store mutators for us; see
         // ToolboxRootTestHarness.tsx.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const store = (window as any).toolboxStoreForTests;
         store.offerTool(idOfToolToAdd);
-        store.setActiveTool(idOfToolToAdd);
+        store.setOpenTool(idOfToolToAdd);
     }, toolId);
 };
 
 test.describe("ToolboxRoot", () => {
-    test("clicking a tool header makes it the active tool", async ({
-        page,
-    }) => {
+    test("clicking a tool header opens that tool", async ({ page }) => {
         await gotoHarness(page);
 
         const impairmentVisualizer = getToolHeader(
@@ -92,8 +87,8 @@ test.describe("ToolboxRoot", () => {
     }) => {
         await gotoHarness(page);
 
-        // The harness restores Motion as the current tool, and Impairment Visualizer sorts
-        // ahead of it, so this only passes if the store's active tool was honored.
+        // The harness restores Motion as the open tool, and Impairment Visualizer sorts
+        // ahead of it, so this only passes if the store's open tool was honored.
         await expect(getToolHeader(page, "Motion Tool")).toHaveAttribute(
             "aria-expanded",
             "true",
@@ -103,14 +98,14 @@ test.describe("ToolboxRoot", () => {
         ).toHaveAttribute("aria-expanded", "false");
     });
 
-    test("a tool added later gets its own row and can be made active", async ({
+    test("a tool added later gets its own row and can be opened", async ({
         page,
     }) => {
         await gotoHarness(page);
 
         await expect(getToolHeader(page, "Canvas Tool")).toHaveCount(0);
 
-        await addToolAndMakeItActive(page, "canvas");
+        await addToolAndOpenIt(page, "canvas");
 
         const canvas = getToolHeader(page, "Canvas Tool");
         await expect(canvas).toBeVisible({ timeout: 10000 });
@@ -132,7 +127,7 @@ test.describe("ToolboxRoot", () => {
     }) => {
         await gotoHarness(page);
 
-        await addToolAndMakeItActive(page, "canvas");
+        await addToolAndOpenIt(page, "canvas");
         await expect(getToolHeader(page, "Canvas Tool")).toBeVisible({
             timeout: 10000,
         });
@@ -190,7 +185,7 @@ test.describe("ToolboxRoot", () => {
         ).toHaveCount(1);
 
         // Adding Canvas, which also requires a subscription, adds a second badge.
-        await addToolAndMakeItActive(page, "canvas");
+        await addToolAndOpenIt(page, "canvas");
         await expect(getToolHeader(page, "Canvas Tool")).toBeVisible({
             timeout: 10000,
         });

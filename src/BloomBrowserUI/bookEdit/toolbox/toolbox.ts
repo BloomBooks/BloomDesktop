@@ -18,14 +18,14 @@ import {
     setExtraFunctionToHandleBlurTasks,
 } from "../../utils/menuCloseOnBlur";
 import {
-    getCurrentToolId,
+    getOpenToolId,
     getFirstOfferedToolId,
     getToolboxUiState,
     isToolEnabled,
     isToolOffered,
     notePageReady,
     offerTool,
-    setActiveTool,
+    setOpenTool,
     setEnabledTools,
     setToolEnabled,
     setToolboxVisible,
@@ -80,7 +80,7 @@ export function getSavedToolboxSettings(): IToolboxSettings {
 // The lifecycle methods (beginRestoreSettings, showTool, newPageReady, detachFromPage,
 // hideTool) are not called from here. They follow from what the toolbox state store says:
 // the accordion ToolboxRoot renders for a tool runs them from an effect keyed on whether
-// that tool is the current tool of a showing toolbox, and on which page it is looking at. See
+// that tool is running -- open, with the toolbox showing -- and on which page. See
 // useToolLifecycle.ts. The rest are called directly, from the code that raises them:
 // updateMarkup on keystrokes (pageEditingMarkup.ts), configureElements on page setup (for
 // every registered tool, open or not), imageUpdated by the page frame.
@@ -94,11 +94,14 @@ export interface ITool {
     // current book. The returned promise must resolve when the tool is ready to be shown.
     beginRestoreSettings(settings: IToolboxSettings): Promise<void>;
     configureElements(container: HTMLElement);
-    // called when the tool starts running: it has become the current tool of a showing
-    // toolbox, or it was already current and a new page arrived. Not called merely because
-    // it was opened or closed.
+    // Called when the tool starts running -- it has become the open tool of a showing
+    // toolbox, or it was already open and a new page arrived. Expanding this tool's own
+    // accordion section is not by itself what triggers it; starting to run is.
     showTool();
-    hideTool(); // called when the tool stops running: another tool takes over, or the toolbox is hidden.
+    // The exact inverse: called when the tool stops running, whether because another tool
+    // took over, the toolbox was hidden, or it stopped being offered. One flag in
+    // useToolLifecycle.ts drives both.
+    hideTool();
     // Note, new implementations of updateMarkup may need to call EditableDivUtils.doCkEditorCleanup() like readerToolsModel.doMarkup() does.
     updateMarkup(); // called on most keypresses (but notably, not on arrow navigation, also not Ctrl+C). It is called on typing letters (obviously), Ctrl+X, Ctrl+V, Ctrl+Z, Ctrl+Y etc... or even just pressing and releasing Ctrl or Shift.
     // like updateMarkup, but expected to be async. Implement instead of updateMarkup if you need to use async functions.
@@ -120,8 +123,9 @@ export interface ITool {
 
     // Renders this tool's panel. ToolboxRoot renders it inside the tool's accordion, in
     // the toolbox's single React tree, so context (e.g. the MUI theme) reaches it normally.
-    // It should return the main content of the tool, which must be a single element
-    // (ToolboxRoot sizes that element to fill the space below the header).
+    // It should return the main content of the tool, which must be a single React element
+    // -- a React node describing the UI, never a DOM element; nothing here creates or hands
+    // back real HTML. (ToolboxRoot sizes that element to fill the space below the header.)
     // ToolboxRoot renders the tool's header (label, icon, subscription badge) around it;
     // this method is however responsible to localize the content of the panel.
     renderPanel(): React.ReactNode;
@@ -134,7 +138,9 @@ export interface ITool {
     iconPath(): string | undefined;
 }
 
-// Class that represents the whole toolbox. Gradually we will move more functionality in here.
+// The whole toolbox, as the rest of Bloom's frames see it. Functionality moves *out* of here
+// into React (ToolboxRoot.tsx and the store); what stays is what has to run in this frame,
+// because this is the cross-frame API the page and the shell call through window.toolboxBundle.
 export class ToolBox {
     // The sidebar is shown and hidden by a checkbox in the workspace frame, not by us, so
     // this is the truth about whether the toolbox is showing. (It is mirrored into the
@@ -166,7 +172,7 @@ export class ToolBox {
         // attribute here would force the reader tool open and keep the book "stuck" to its
         // original type, preventing the user from switching to (and staying on) another
         // tool. So we ignore those values and leave the last tool shown (stored in the
-        // book's metadata) as the current tool. (BL-16615)
+        // book's metadata) as the open tool. (BL-16615)
         if (
             requiredToolId === "leveledReader" ||
             requiredToolId === "decodableReader"
@@ -194,15 +200,23 @@ export class ToolBox {
                 const wantTool = requiredToolId === tool.id();
                 if (haveTool !== wantTool) {
                     // add or remove as needed. (Required tools don't have check boxes.)
-                    showOrHideTool(tool.id(), wantTool);
-                    toolsAdjusted = wantTool;
+                    offerOrWithdrawTool(tool.id(), wantTool);
+                    toolsAdjusted = toolsAdjusted || wantTool;
                 }
             }
-            // We haven't called showOrHideTool, so the active tool hasn't changed.
+            // We did not offer or withdraw anything, so the open tool has not changed.
             // See the later comments on BL-14434 (after the first PR link).
             if (requiredToolId && !toolsAdjusted) {
-                makeToolCurrent(requiredToolId);
+                openToolOrFirstOffered(requiredToolId);
             }
+            // The toolbox has now acted on whatever this page asked for, so stop
+            // answering with it: whichever tool it settled on is the open one, so
+            // getEffectiveToolId() gets the right answer from the store from here on.
+            // This has to happen even when nothing changed -- a page whose tool is
+            // already open changes neither the offered list nor the open tool, and
+            // leaving the request latched would make getEffectiveToolId() name a tool
+            // that is not running for as long as that tool stayed open (BL-14434).
+            toolThePageRequires = undefined;
         };
         doAdjustment();
     }
@@ -217,15 +231,12 @@ export class ToolBox {
         return GameTool.theOneDragActivityTool;
     }
 
-    // Generally prefer to use the standalone function detachCurrentTool() instead of this method.
+    // Generally prefer to use the standalone function detachOpenTool() instead of this method.
     // In some contexts where we want to detach, we may not be able to get the toolbox instance,
     // and that function has some fallback behavior in that case.
-    public detachCurrentTool(): void {
+    public detachOpenTool(): void {
         this.runTasksForClosingTool();
-        const currentTool = findCurrentTool();
-        if (currentTool && isToolOffered(currentTool.id())) {
-            currentTool.detachFromPage();
-        }
+        findOpenTool()?.detachFromPage();
     }
     // Runs (once) whatever was registered with addWhenClosingToolTask(). Called both by the
     // explicit detach above and by the tool's own lifecycle cleanup (useToolLifecycle.ts).
@@ -235,7 +246,7 @@ export class ToolBox {
         }
         this.doWhenClosingTool = [];
     }
-    // A list of tasks to do when the current tool is closed. This is currently used to
+    // A list of tasks to do when the running tool stops. This is currently used to
     // keep track of popups and dialogs that need to be closed when the tool goes away.
     // We could make each tool responsible for this in its own detachFromPage() method,
     // but I think it would make for some duplication, as well as some complexity for
@@ -245,7 +256,7 @@ export class ToolBox {
     // the task passed must be OK to call even after the popup is closed.)
     private doWhenClosingTool: (() => void)[] = [];
     public static addWhenClosingToolTask(task: () => void): void {
-        // This is used to add a task that should be run when the current tool is closed.
+        // This is used to add a task that should be run when the running tool stops.
         // It is used by the Talking Book tool to clean up the CkEditor markup.
         getTheOneToolbox().doWhenClosingTool.push(task);
     }
@@ -267,7 +278,7 @@ export class ToolBox {
     public initialize(): void {
         // From here on, whenever a different tool becomes the open one, have Bloom
         // remember it. That is all we do: which tool is *running* follows from the store
-        // itself (see IToolboxUiState.currentToolId), and running it -- restoring its
+        // itself (see toolboxState.ts), and running it -- restoring its
         // settings, showing it, telling it the page is ready, detaching and hiding
         // whatever it replaced -- follows from that; see useToolLifecycle.ts.
         subscribeToToolboxUiState(() => {
@@ -281,10 +292,10 @@ export class ToolBox {
             $(parent.window.document)
                 .find("#pure-toggle-right")
                 .change(function () {
-                    showToolboxChanged(!this.checked);
+                    showToolboxChanged(this.checked);
                 });
-            // The checkbox may already be checked, in which case we will never be told it
-            // changed, so take its state now.
+            // The handler above fires on every later toggle, but nothing announces the state
+            // the checkbox is already in, so read it once now.
             syncToolboxVisibilityFromDom();
         });
         hookupLinkHandler();
@@ -335,7 +346,9 @@ export class ToolBox {
                     } else {
                         // optimize: maybe we can overlap these?
                         const nextToolId = toolsToLoad.pop()!;
-                        beginAddTool(nextToolId, false, () => loadNextTool());
+                        offerToolAndMaybeOpen(nextToolId, false, () =>
+                            loadNextTool(),
+                        );
                     }
                 };
                 loadNextTool();
@@ -348,11 +361,11 @@ export class ToolBox {
         if (!this.toolboxIsShowing()) {
             this.toggleToolbox();
         }
-        setToolEnabledFromSettings(toolId, true);
+        applyToolEnabledChange(toolId, true);
     }
 
     /**
-     * Makes the given tool (canonical id) the current tool, enabling it first if
+     * Opens the given tool (canonical id), enabling it first if
      * necessary. Called in response to in-page actions, e.g. clicking a video placeholder
      * to get the Sign Language tool.
      */
@@ -366,7 +379,7 @@ export class ToolBox {
         // Making it visible first allows the simulated click to actually activate the tool.
         // We don't seem to get flicker seeing some other tool first, and if we do it after
         // the simulated click and the tool we're activating wasn't previously enabled,
-        // it somehow ends up enabled but not active.
+        // it somehow ends up enabled but not open.
         const toolboxWasShowing = this.toolboxIsShowing();
         if (!toolboxWasShowing) {
             this.toggleToolbox();
@@ -375,20 +388,27 @@ export class ToolBox {
         // The tool may be present without being enabled if it is a
         // required-for-this-page tool (see adjustToolListForPage).
         if (isToolEnabled(toolId) || isToolOffered(toolId)) {
-            makeToolCurrent(toolId);
+            openToolOrFirstOffered(toolId);
         } else {
             // Genuinely disabled: enable it, which persists the state and records it in
-            // the store, then activates it (showOrHideTool opens it by default).
-            setToolEnabledFromSettings(toolId, true);
+            // the store, then activates it (offerOrWithdrawTool opens it by default).
+            applyToolEnabledChange(toolId, true);
         }
     }
 
-    public getCurrentTool(): ITool | undefined {
-        return findCurrentTool();
+    /** The tool whose accordion section is expanded, if any. See toolboxState.ts. */
+    public getOpenTool(): ITool | undefined {
+        return findOpenTool();
     }
 
-    public setCurrentTool(toolId: string): void {
-        makeToolCurrent(toolId);
+    /**
+     * The tool that is RUNNING: the open one, while the toolbox is showing. This is what code
+     * outside the toolbox usually wants -- a tool that is open behind a hidden toolbox has
+     * been detached and hidden, so it should not be marked up, played, or told about images.
+     * See toolboxState.ts for the vocabulary.
+     */
+    public getRunningTool(): ITool | undefined {
+        return this.toolboxIsShowing() ? findOpenTool() : undefined;
     }
 }
 
@@ -407,22 +427,21 @@ export function getMasterToolList() {
 const masterToolList: ITool[] = [];
 
 /**
- * The tool that is currently running, or undefined if none is. This is not a variable of
- * our own, and nothing sets it: the toolbox state store works it out from which tool is
- * open and which tools are offered (see IToolboxUiState.currentToolId), because that is
- * what ToolboxRoot renders from and what runs each tool's lifecycle.
+ * The open tool, or undefined if none is. Note that the open tool is not necessarily
+ * *running*: hiding the toolbox stops it running without changing which tool is open.
+ * toolboxState.ts defines both words.
  */
-function findCurrentTool(): ITool | undefined {
-    const currentToolId = getCurrentToolId();
-    if (!currentToolId) {
+function findOpenTool(): ITool | undefined {
+    const openToolId = getOpenToolId();
+    if (!openToolId) {
         return undefined;
     }
-    return masterToolList.find((tool) => tool.id() === currentToolId);
+    return masterToolList.find((tool) => tool.id() === openToolId);
 }
 
 /**
  * Runs whatever was registered with ToolBox.addWhenClosingToolTask(). Exported for the
- * current tool's lifecycle cleanup (useToolLifecycle.ts), which is where a tool that stops
+ * running tool's lifecycle cleanup (useToolLifecycle.ts), which is where a tool that stops
  * running gets closed down. It goes through the toolbox instance so that the tasks run are
  * the ones registered with the toolbox in this iframe.
  */
@@ -430,25 +449,24 @@ export function runTasksForClosingTool(): void {
     getTheOneToolbox()?.runTasksForClosingTool();
 }
 
-// This primarily calls the detachFromPage method of the current tool, if any.
+// This primarily calls the detachFromPage method of the open tool, if any.
 // It also tries to find the current toolbox instance (in the right iframe, wherever it is called),
 // and runs any cleanup tasks that have been registered for when closing the tool.
-// It's important to get the right toolbox (in the right iframe) beacause that's the one
+// It's important to get the right toolbox (in the right iframe) because that's the one
 // that has the valid list of tasks to run when closing the tool.
-function detachCurrentTool() {
+function detachOpenTool() {
     const toolbox = getTheOneToolbox();
-    const currentTool = findCurrentTool();
     if (toolbox) {
-        toolbox.detachCurrentTool();
-    } else if (currentTool && isToolOffered(currentTool.id())) {
-        // If the toolbox is not available, we still may be able to detach the current tool.
+        toolbox.detachOpenTool();
+    } else if (findOpenTool()) {
+        // If the toolbox is not available, we still may be able to detach the open tool.
         // This is what we used to do before we had some extra behavior in the toolbox.
-        currentTool.detachFromPage();
+        findOpenTool()?.detachFromPage();
     }
 }
 
 // Mirrors the sidebar's real showing/hidden state into the toolbox state store, which is
-// what makes the current tool run or stop running. Everything that shows or hides the
+// what makes the open tool start or stop running. Everything that shows or hides the
 // toolbox goes through the workspace's checkbox, so showToolboxChanged() normally keeps
 // this up to date; the other callers are for the times we may never have been told (the
 // state it started in) or may have missed it (a new page or book).
@@ -457,23 +475,25 @@ function syncToolboxVisibilityFromDom(): void {
 }
 
 // The tool a page that is still loading says it requires, until the toolbox has caught up
-// and made it the current one. Not a second opinion about what is running -- the store owns
+// and opened it. Not a second opinion about what is running -- the store owns
 // that -- but an answer to "which tool is this page for?", which can be known before the
 // toolbox has been told to offer it.
 //
 // It is what keeps the Talking Book tool from laying its highlight and sound over a page
 // that is arriving for some other tool: the page's own tool is announced here first, so
-// getActiveToolId() stops naming the outgoing tool before the switch completes. Without it
+// getEffectiveToolId() stops naming the outgoing tool before the switch completes. Without it
 // the asynchronous calls during page loading race and the wrong tool gets newPageReady.
-// See BL-14434, and doesCurrentToolPlayAudio() in audioRecording.ts.
+// See BL-14434, and doesEffectiveToolPlayAudio() in audioRecording.ts.
 let toolThePageRequires: string | undefined = undefined;
 
 /**
- * The id of the tool that should be treated as active: the one a loading page requires if
- * it has said so, otherwise the one that is actually running.
+ * The tool whose markup and audio should apply to the page in front of us: the one a loading
+ * page requires if it has said so, otherwise the open tool. This is deliberately not any
+ * of the words toolboxState.ts defines -- during a page change it can name a tool that is
+ * not yet the open one, which is the whole reason it exists.
  */
-export function getActiveToolId(): string | undefined {
-    return toolThePageRequires ?? findCurrentTool()?.id();
+export function getEffectiveToolId(): string | undefined {
+    return toolThePageRequires ?? findOpenTool()?.id();
 }
 
 // How long, after a tool is turned on in the "More..." tool, we wait
@@ -491,7 +511,7 @@ const pendingShowToolTimeouts = new Map<
     ReturnType<typeof setTimeout>
 >();
 
-// modifies the store's set of enabled tools, the saved active
+// modifies the store's set of enabled tools, the saved enabled
 // state of the tool in question (canonical id), and the presence of
 // the tool in the toolbox, whenever the tool is checked
 // or unchecked in the toolbox settings.
@@ -500,7 +520,7 @@ const pendingShowToolTimeouts = new Map<
 // so we briefly delay the open (see below) to let the user see the checkbox they
 // ticked. Other callers (e.g. activating a tool from an in-page action) leave it
 // false so the tool opens immediately. (BL-16501)
-export function setToolEnabledFromSettings(
+export function applyToolEnabledChange(
     toolId: string,
     turnOn: boolean,
     deferShowToRevealCheckbox: boolean = false,
@@ -534,28 +554,24 @@ export function setToolEnabledFromSettings(
             pendingShowToolTimeouts.delete(toolId);
             // Guard against the tool having been turned off again during the delay.
             if (isToolEnabled(toolId)) {
-                showOrHideTool(toolId, true);
+                offerOrWithdrawTool(toolId, true);
             }
         }, kShowToolAfterEnableDelayMs);
         pendingShowToolTimeouts.set(toolId, timeout);
     } else {
-        showOrHideTool(toolId, turnOn);
+        offerOrWithdrawTool(toolId, turnOn);
     }
 }
 
-function showOrHideTool(
-    toolId: string,
-    turnOn: boolean,
-    openTool: boolean = true,
-) {
+function offerOrWithdrawTool(toolId: string, turnOn: boolean) {
     if (turnOn) {
-        beginAddTool(toolId, openTool);
+        offerToolAndMaybeOpen(toolId, true);
     } else {
         withdrawTool(toolId);
     }
 }
 
-export function restoreToolboxSettings() {
+function restoreToolboxSettings() {
     // Snapshot BEFORE the request goes out, not in its callback: the user can open the
     // toolbox or pick a tool while it is in flight, and a snapshot taken on arrival would
     // already contain their choice and so look unchanged, letting the restore overwrite it.
@@ -584,20 +600,20 @@ export function applyToolboxStateToUpdatedPage() {
     const stateWhenFetched = captureToolboxStateForRestore();
     get("toolbox/settings", (result) => {
         savedSettings = result.data;
-        // savedSettings["current"] is always set to the last active tool for the book,
+        // savedSettings["current"] is always set to the last open tool for the book,
         // except for new books where it is null. In that case, the default value
         // should be the talking book tool.  (BL-16026)
         const currentFromBook = toCanonicalToolId(
             (savedSettings && savedSettings["current"]) || kTalkingBookToolId,
         );
-        const currentInToolbox = findCurrentTool()?.id() ?? "";
+        const currentInToolbox = findOpenTool()?.id() ?? "";
         const shouldBeVisible = !!(
             savedSettings && savedSettings["visibility"]
         );
         const isVisible = toolbox.toolboxIsShowing();
         syncToolboxVisibilityFromDom();
 
-        // When switching books, sync visibility/current tool first.
+        // When switching books, sync visibility and the open tool first.
         if (
             currentFromBook !== currentInToolbox ||
             shouldBeVisible !== isVisible
@@ -611,7 +627,7 @@ export function applyToolboxStateToUpdatedPage() {
 
         if (currentInToolbox && isVisible) {
             // Say that the page is ready, but not until it really is. That re-runs the
-            // current tool's beginRestoreSettings/showTool/newPageReady for the new page:
+            // running tool's beginRestoreSettings/showTool/newPageReady for the new page:
             // some tools do their page-dependent setup in showTool(), and re-reading the
             // saved settings is how a tool's state follows a switch of book. See
             // useToolLifecycle.ts.
@@ -740,7 +756,7 @@ interface IToolboxStateWhenFetched {
 
 function captureToolboxStateForRestore(): IToolboxStateWhenFetched {
     return {
-        openToolId: getToolboxUiState().activeToolId,
+        openToolId: getToolboxUiState().openToolId,
         toolboxVisible: toolbox.toolboxIsShowing(),
     };
 }
@@ -768,10 +784,15 @@ function restoreToolboxSettingsWhenPageReady(
     doWhenPageReady(() => {
         // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
         const opts = settings;
-        // currentTool is always set except for new books. For new books, it is undefined and we want
+        // The book's remembered tool is always set except for new books. For new books it is
+        // undefined and we want
         // to treat that the same as if it were set to the talking book tool so that the tool will
         // display the first time the user opens the toolbox. (BL-16026)
-        const currentTool = opts["current"] || kTalkingBookToolId;
+        // Convert here, at the boundary: toolIds.ts owns the "Tool"-suffixed spelling and
+        // everything inward of this point deals in canonical ids.
+        const toolTheBookRemembers = toCanonicalToolId(
+            opts["current"] || kTalkingBookToolId,
+        );
         const shouldBeVisible = !!opts["visibility"];
 
         const isVisibleNow = toolbox.toolboxIsShowing();
@@ -783,21 +804,21 @@ function restoreToolboxSettingsWhenPageReady(
         syncToolboxVisibilityFromDom();
 
         // We only get here when a page has just become ready, so say so. Together with
-        // makeToolCurrent() below this is one batch of state changes, hence one run of the
+        // openToolOrFirstOffered() below this is one batch of state changes, hence one run of the
         // tool's lifecycle, however many of these facts actually changed.
         notePageReady();
 
         const somebodyChoseATool =
-            getToolboxUiState().activeToolId !== stateWhenFetched.openToolId;
+            getToolboxUiState().openToolId !== stateWhenFetched.openToolId;
         if (!somebodyChoseATool) {
             // Before we set stage/level, as it initializes them to 1.
-            // Forget what we last persisted first, so that this book records its own current
+            // Forget what we last persisted first, so that this book records its own open
             // tool even if the book before it was using the same one.
             lastPersistedToolId = undefined;
-            makeToolCurrent(currentTool);
+            openToolOrFirstOffered(toolTheBookRemembers);
         }
 
-        // Note: the bulk of restoring the settings (everything but which if any tool is active)
+        // Note: the bulk of restoring the settings (everything but which if any tool is open)
         // is done when a tool becomes current.
     });
 }
@@ -805,7 +826,7 @@ function restoreToolboxSettingsWhenPageReady(
 // Remove any markup the toolbox is inserting. Called by a RunJavaScript() in EditingView
 // before saving the page.
 export function removeToolboxMarkup() {
-    detachCurrentTool();
+    detachOpenTool();
 }
 
 // The tool we last told Bloom to remember. Only a cache, to keep us from re-posting the
@@ -822,13 +843,11 @@ let lastPersistedToolId: string | undefined = undefined;
  * a tool later writes it then.
  */
 function persistOpenToolIfItChanged(): void {
-    const openToolId = getToolboxUiState().activeToolId;
+    const openToolId = getToolboxUiState().openToolId;
     if (openToolId === lastPersistedToolId) {
         return;
     }
     lastPersistedToolId = openToolId;
-    // The toolbox has now acted on whatever the page asked for, so stop answering with it.
-    toolThePageRequires = undefined;
     if (!openToolId) {
         return;
     }
@@ -839,18 +858,18 @@ function persistOpenToolIfItChanged(): void {
 }
 
 /**
- * Attempts to make the given tool the current one (normally the tool the book was last
- * using). If the toolbox isn't offering that tool, falls back to the first tool it does
+ * Attempts to open the given tool (normally the tool the book was last using). If the
+ * toolbox isn't offering that tool, falls back to the first tool it does
  * offer. Passing an empty id also means "whatever tool is first".
  * The id may arrive in either spelling, because one caller passes the book's saved
  * "current" tool name straight from meta.json.
  */
-function makeToolCurrent(toolId: string) {
+function openToolOrFirstOffered(toolId: string) {
     toolId = toCanonicalToolId(toolId);
 
     // NOTE: getFirstOfferedToolId() never returns the More (settings) tool: it is never a
-    // sensible *default*. (Opening it by hand does still make it current and gets
-    // persisted, as it always has.)
+    // sensible *default*. (Opening it by hand does still make it the open tool and gets
+    // persisted -- meta.json calls that "current" -- as it always has.)
     if (!toolId) {
         toolId = getFirstOfferedToolId() ?? "";
     }
@@ -867,7 +886,7 @@ function makeToolCurrent(toolId: string) {
     }
 
     if (toolId) {
-        setActiveTool(toolId);
+        setOpenTool(toolId);
     }
 }
 
@@ -875,9 +894,9 @@ function makeToolCurrent(toolId: string) {
 // come from persisted data.
 // Returns undefined if we know of no such tool, e.g. because the book's settings were
 // saved by a version of Bloom that had a tool this one doesn't.
-function getITool(toolId: string): ITool {
+function getITool(toolId: string): ITool | undefined {
     const canonicalToolId = toCanonicalToolId(toolId);
-    return masterToolList.find((tool) => tool.id() === canonicalToolId)!;
+    return masterToolList.find((tool) => tool.id() === canonicalToolId);
 }
 
 /**
@@ -885,7 +904,7 @@ function getITool(toolId: string): ITool {
  * These tools are the tools enabled by the user, tools that are always enabled
  * (like the talking book tool), and the settings ("More...") tool.
  */
-function beginAddTool(
+function offerToolAndMaybeOpen(
     toolId: string,
     openTool: boolean,
     whenLoaded?: () => void,
@@ -910,7 +929,7 @@ function beginAddTool(
     offerTool(tool.id());
 
     if (openTool && toolbox.toolboxIsShowing()) {
-        setActiveTool(tool.id());
+        setOpenTool(tool.id());
     }
 
     if (whenLoaded) {
@@ -918,26 +937,28 @@ function beginAddTool(
     }
 }
 
-function showToolboxChanged(wasShowing: boolean): void {
+function showToolboxChanged(nowShowing: boolean): void {
     postString(
         "editView/saveToolboxSetting",
-        "visibility\t" + (wasShowing ? "" : "visible"),
+        "visibility\t" + (nowShowing ? "visible" : ""),
     );
-    const currentTool = findCurrentTool();
-    if (currentTool && wasShowing) {
+    const openTool = findOpenTool();
+    if (openTool && !nowShowing) {
         postString(
             "logger/writeEvent",
-            `Toolbox deactivating: ${currentTool.id()}`,
+            `Toolbox deactivating: ${openTool.id()}`,
         );
     }
-    // Hiding the toolbox detaches and hides the current tool, and showing it again
-    // restores and shows it. Both follow from this; see useToolLifecycle.ts.
-    setToolboxVisible(!wasShowing);
-    if (!currentTool) {
-        // starting up for the very first time in this book...no tool is current,
-        // so select and properly initialize the first one. If the toolbox somehow has
-        // no tools at all, fall back to the talking book tool, which is always
-        // enabled. (This should never happen; we're just being defensive.)
-        setActiveTool(getFirstOfferedToolId() ?? kTalkingBookToolId);
+    // Hiding the toolbox stops the open tool running, and showing it again starts it
+    // again. Both follow from this; see useToolLifecycle.ts.
+    setToolboxVisible(nowShowing);
+    if (!openTool) {
+        // Starting up for the very first time in this book: nothing is open, so open
+        // the first tool on offer. If the toolbox somehow has nothing to offer there is
+        // nothing to open -- which cannot happen, since Talking Book is always enabled.
+        const firstOffered = getFirstOfferedToolId();
+        if (firstOffered) {
+            setOpenTool(firstOffered);
+        }
     }
 }

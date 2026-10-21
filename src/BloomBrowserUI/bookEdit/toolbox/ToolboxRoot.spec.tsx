@@ -22,7 +22,7 @@ vi.mock("./toolbox", () => {
             makeFakeTool("settings"),
         ],
         // Each tool's lifecycle hook wants these (see useToolLifecycle.ts). No tool is
-        // running in these tests — the store's currentToolId is never set — so they are
+        // running in these tests -- the store's openToolId is never set -- so they are
         // never actually called; they are here so that this mock stays a complete stand-in.
         getSavedToolboxSettings: () => ({}),
         runTasksForClosingTool: () => undefined,
@@ -58,10 +58,10 @@ vi.mock("axios", () => {
 // Imported after the mocks above are registered.
 const { ToolboxRoot } = await import("./ToolboxRoot");
 const {
-    getCurrentToolId,
+    getOpenToolId,
     offerTool,
     resetToolboxUiStateForTests,
-    setActiveTool,
+    setOpenTool,
     withdrawTool,
 } = await import("./toolboxState");
 
@@ -113,11 +113,11 @@ describe("ToolboxRoot", () => {
     };
 
     // BL-16602: visiting a game page auto-activates the Game tool; leaving the page removes
-    // it again. Which tool runs follows from the current tool, and toolbox.ts learns about
-    // activation changes only through the store's active-tool listeners, so if withdrawing
-    // the active tool doesn't report the replacement, the tool the user can see is never
+    // it again. Which tool runs follows from the open tool, and toolbox.ts learns about
+    // which tool runs only from the store, so if withdrawing
+    // the open tool doesn't move it on, the tool the user can see is never
     // activated. That left the Talking Book tool doing no highlighting at all.
-    it("shows the replacement tool when the active tool is withdrawn", async () => {
+    it("shows the replacement tool when the open tool is withdrawn", async () => {
         if (!container) {
             throw new Error("render container not initialized");
         }
@@ -128,11 +128,10 @@ describe("ToolboxRoot", () => {
             "settings",
         ]);
 
-        // Arriving on a game page: toolbox.ts offers the required Game tool and makes it
-        // active.
+        // Arriving on a game page: toolbox.ts offers the required Game tool and opens it.
         await act(async () => {
             offerTool("game");
-            setActiveTool("game");
+            setOpenTool("game");
         });
 
         // Sanity checks, so that a failure below can't just mean the setup never worked.
@@ -155,7 +154,7 @@ describe("ToolboxRoot", () => {
         expect(getExpandedToolId(container)).toBe("talkingBook");
     });
 
-    it("leaves the active tool alone when some other tool is withdrawn", async () => {
+    it("leaves the open tool alone when some other tool is withdrawn", async () => {
         if (!container) {
             throw new Error("render container not initialized");
         }
@@ -163,7 +162,7 @@ describe("ToolboxRoot", () => {
 
         await act(async () => {
             offerTool("game");
-            setActiveTool("talkingBook");
+            setOpenTool("talkingBook");
         });
 
         expect(getExpandedToolId(container)).toBe("talkingBook");
@@ -176,7 +175,7 @@ describe("ToolboxRoot", () => {
             "talkingBook",
             "settings",
         ]);
-        // Withdrawing a tool that wasn't active must not disturb the active tool.
+        // Withdrawing a tool that wasn't open must not disturb the open tool.
         expect(getExpandedToolId(container)).toBe("talkingBook");
     });
 
@@ -189,7 +188,7 @@ describe("ToolboxRoot", () => {
         await renderWithBaseTools(container);
 
         const talkingBookPanelBefore = container.querySelector(
-            '[data-toolid="talkingBookTool"] > *',
+            '[data-toolid="talkingBook"] > *',
         );
         expect(talkingBookPanelBefore).toBeTruthy();
 
@@ -197,13 +196,13 @@ describe("ToolboxRoot", () => {
             offerTool("game");
         });
 
-        expect(
-            container.querySelector('[data-toolid="talkingBookTool"] > *'),
-        ).toBe(talkingBookPanelBefore);
+        expect(container.querySelector('[data-toolid="talkingBook"] > *')).toBe(
+            talkingBookPanelBefore,
+        );
     });
 
     // Clicking a header is the other way a tool becomes the open one, and that is what
-    // makes it the running one too (again BL-16602: being current is what gets it shown).
+    // makes it the running one too (again BL-16602: opening a tool is what gets it shown).
     it("makes the tool whose header the user clicks the running one", async () => {
         if (!container) {
             throw new Error("render container not initialized");
@@ -211,7 +210,7 @@ describe("ToolboxRoot", () => {
         await renderWithBaseTools(container);
 
         // sanity check: the tool we are about to click is not already the running one
-        expect(getCurrentToolId()).not.toBe("settings");
+        expect(getOpenToolId()).not.toBe("settings");
 
         const settingsHeader = Array.from(
             container.querySelectorAll(".MuiAccordionSummary-root"),
@@ -226,7 +225,7 @@ describe("ToolboxRoot", () => {
             settingsHeader.click();
         });
 
-        expect(getCurrentToolId()).toBe("settings");
+        expect(getOpenToolId()).toBe("settings");
         expect(getExpandedToolId(container)).toBe("settings");
     });
 });

@@ -1750,7 +1750,7 @@ export class GameTool extends ToolboxToolReactAdaptor {
         );
     }
 
-    // If we're on a game page, return which tab of the game tool is active (even if the game tool is not active).
+    // If we're on a game page, return which tab of the game tool is active (even if the game tool is not running).
     // If we're not on a game page, return -1.
     public getActiveTab(): number {
         if (!GameTool.areGameTabsActive()) {
@@ -1759,12 +1759,6 @@ export class GameTool extends ToolboxToolReactAdaptor {
 
         return this.tab;
     }
-
-    // Activating the tool calls this right before newPageReady().
-    // Currently the latter notifies the panel, so we don't need to do it here.
-    // public showTool() {
-    //     this.notifyPanel();
-    // }
 
     // This tool should only be offered if the page has a matching data-tool-id attribute.
     public requiresToolId(): boolean {
@@ -1941,7 +1935,7 @@ export function playSound(
 // For a long time it was an attribute of the parent element of the bloom-page. This makes it difficult to
 // stay on the same tab when reloading the current page (typically after a Save), since the whole document
 // is reloaded.
-// I don't want it anywhere in the toolbox, because it is applicable even when the Game Toolbox is not active.
+// I don't want it anywhere in the toolbox, because it is applicable even when the Game tool is not running.
 // In addition to the reason above for not wanting it anywhere in the page iframe,
 // I don't want it part of the page, because then I have to take steps to prevent persisting it.
 // I don't want it in the element we add to hold the tab control, because it's possible for the page

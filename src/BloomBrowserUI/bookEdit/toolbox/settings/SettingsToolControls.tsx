@@ -1,10 +1,6 @@
 import { FunctionComponent, useSyncExternalStore } from "react";
 import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
-import {
-    getMasterToolList,
-    ITool,
-    setToolEnabledFromSettings,
-} from "../toolbox";
+import { getMasterToolList, ITool, applyToolEnabledChange } from "../toolbox";
 import { getToolboxUiState, subscribeToToolboxUiState } from "../toolboxState";
 import { css } from "@emotion/react";
 import { SubscriptionBadgeWithTooltipAndDialog } from "../../../react_components/requiresSubscription";
@@ -15,13 +11,15 @@ import {
 } from "../toolIds";
 
 /**
- * The tools the "More..." tool offers a checkbox for, in the order it shows them:
- * every registered tool except the ones the user has no say over, that is, the tools that
- * are always enabled (Talking Book), the tools that are only offered on pages that ask for
- * them (Games; see ITool.requiresToolId()), and this "More..." tool itself.
+ * The tools the "More..." tool gives the user a checkbox for, in the order it shows them.
+ * Note this is NOT the toolbox's "offered" set, which changes as you work: this is every
+ * registered tool except the ones the user has no say over -- the tools that are always
+ * enabled (Talking Book), the tools that are only offered on pages that ask for them
+ * (Games; see ITool.requiresToolId()), and this "More..." tool itself. A tool listed here
+ * is offered whenever its checkbox is ticked.
  * The order is the same one the toolbox uses for its tools: alphabetical by label.
  */
-const getToolsOfferedAsCheckboxes = (): ITool[] =>
+const getToolsWithCheckboxes = (): ITool[] =>
     getMasterToolList()
         .filter(
             (tool) =>
@@ -71,7 +69,7 @@ const ToolboxCheckbox: FunctionComponent<{
                     // Pass true so that, when enabling, the tool opens after a
                     // brief delay letting the user see this checkbox tick before
                     // "More..." closes to reveal the newly-enabled tool. (BL-16501)
-                    setToolEnabledFromSettings(props.toolId, checked!, true);
+                    applyToolEnabledChange(props.toolId, checked!, true);
                 }}
             />
             {props.featureName && (
@@ -91,7 +89,7 @@ const ToolboxCheckbox: FunctionComponent<{
 };
 
 export const SettingsToolControls: FunctionComponent = () => {
-    const toolsOffered = getToolsOfferedAsCheckboxes();
+    const toolsWithCheckboxes = getToolsWithCheckboxes();
     // Which tools are enabled is part of the toolbox's state (see toolboxState.ts), so we
     // just render from it. That way a tool that gets enabled some other way (e.g. clicking
     // a video placeholder to get the Sign Language tool) ticks its checkbox here too.
@@ -106,7 +104,7 @@ export const SettingsToolControls: FunctionComponent = () => {
                 margin-top: 6px;
             `}
         >
-            {toolsOffered.map((tool) => (
+            {toolsWithCheckboxes.map((tool) => (
                 <ToolboxCheckbox
                     key={tool.id()}
                     toolId={tool.id()}

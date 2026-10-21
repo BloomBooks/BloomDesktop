@@ -3,7 +3,7 @@ import { ToolboxRoot } from "../../bookEdit/toolbox/ToolboxRoot";
 import { registerAllToolboxTools } from "../../bookEdit/toolbox/registerAllToolboxTools";
 import {
     offerTool,
-    setActiveTool,
+    setOpenTool,
     withdrawTool,
 } from "../../bookEdit/toolbox/toolboxState";
 import { kMotionToolId, kSettingsToolId } from "../../bookEdit/toolbox/toolIds";
@@ -14,8 +14,8 @@ import { useMountEffect } from "../../utils/useMountEffect";
 //
 // ToolboxRoot does not decide which tools to offer; in the real toolbox that is
 // toolbox.ts's job (it asks the server which tools the book has enabled, records each in
-// the toolbox state store, and finally makes the tool the book was last using the current
-// one). This harness stands in for exactly that, driving the real store, so everything
+// the toolbox state store, and finally opens the tool the book was last using). This
+// harness stands in for exactly that, driving the real store, so everything
 // under test -- the tools, their order, their headers, which one is open, and each tool's
 // own panel -- is production code driven the production way.
 
@@ -23,7 +23,7 @@ import { useMountEffect } from "../../utils/useMountEffect";
 interface IToolboxStoreForTests {
     offerTool(toolId: string): void;
     withdrawTool(toolId: string): void;
-    setActiveTool(toolId: string): void;
+    setOpenTool(toolId: string): void;
 }
 
 declare global {
@@ -60,7 +60,7 @@ const initiallyOfferedToolIds = [
 // The tool this "book" was last using, which toolbox.ts makes current once the tools
 // exist. Deliberately not the first tool, so that a test can tell that it was restored
 // rather than just defaulted to.
-const restoredCurrentToolId = kMotionToolId;
+const restoredOpenToolId = kMotionToolId;
 
 export const ToolboxRootTestHarness: React.FunctionComponent = () => {
     // Publishing the test hook and populating the toolbox are side effects that have
@@ -70,14 +70,14 @@ export const ToolboxRootTestHarness: React.FunctionComponent = () => {
         window.toolboxStoreForTests = {
             offerTool,
             withdrawTool,
-            setActiveTool,
+            setOpenTool,
         };
 
         // Stand in for ToolBox.initialize(). Like the real thing, just tell the store;
         // the store exists from the moment its module loads, so there is nothing to wait
         // for.
         initiallyOfferedToolIds.forEach((toolId) => offerTool(toolId));
-        setActiveTool(restoredCurrentToolId);
+        setOpenTool(restoredOpenToolId);
 
         return () => {
             window.toolboxStoreForTests = undefined;

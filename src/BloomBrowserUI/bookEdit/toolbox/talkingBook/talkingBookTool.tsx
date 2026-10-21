@@ -51,7 +51,7 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
     }
 
     // When are showTool, newPageReady, and updateMarkup called?
-    // (The toolbox runs these from a React effect for whichever tool is the current tool of
+    // (The toolbox runs these from a React effect for whichever tool is the open tool of
     // a showing toolbox; see useToolLifecycle.ts.) Some scenarios:
     // * Open the toolbox and Talking Book shows up  - showTool, newPageReady
     // * Open a book and Talking Book tool automatically opens - showTool, newPageReady

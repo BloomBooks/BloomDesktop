@@ -38,8 +38,8 @@ import {
 export class MotionTool extends ToolboxToolReactAdaptor {
     // The MotionControl the toolbox has mounted for us, or null before our panel has been
     // rendered (and again if the toolbox stops offering the tool). Everything below that drives
-    // the control only runs while the tool is showing, i.e. while it is mounted, so the
-    // null checks are just belt and braces.
+    // the control only runs while the tool is running -- which is not the same as mounted: the
+    // toolbox mounts a tool's panel whenever it offers the tool (see setupImageObserver below).
     private rootControl: MotionControl | null = null;
     // The control instance we have already given its initial state and image observer.
     // Kept so that we do that work once per mounted control, including if the tool is

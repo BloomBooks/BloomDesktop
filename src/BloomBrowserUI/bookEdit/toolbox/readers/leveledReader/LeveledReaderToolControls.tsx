@@ -623,7 +623,7 @@ export const LeveledReaderToolControls: FunctionComponent = () => {
                     overflow-x: hidden;
                     // Stated rather than left implicit: this is what keeps
                     // everything reachable in a panel too short for the nav,
-                    // the scrolling region's floor and the control block —
+                    // the scrolling region's floor and the control block --
                     // the whole tool scrolls. (It is what overflow-x: hidden
                     // alone already computes to, since a non-visible axis
                     // forces the other to auto, but the fallback matters

@@ -9,7 +9,7 @@ import { IToolboxSettings } from "../../toolbox";
 // This class renders the LeveledReaderToolControls React component
 // in the toolbox, and implements all the functionality/logic needed
 // for detaching the tool, reattaching the tool, updating the markup,
-// and restoring the current tool state
+// and restoring the tool's state
 export class LeveledReaderTool extends ToolboxToolReactAdaptor {
     // renders the leveled reader React tool, for the toolbox to display in this
     // tool's accordion

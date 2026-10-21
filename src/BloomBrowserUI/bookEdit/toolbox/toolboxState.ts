@@ -1,11 +1,11 @@
 // The state of the toolbox: which tools it is offering, which of them is open, which tools
 // the book has enabled, whether the toolbox is showing, and which page it is looking at.
 // Which tool is *running* is not a fact of its own here: it follows from which one is open
-// and which are offered (see IToolboxUiState.currentToolId).
+// and whether the toolbox is showing.
 //
 // Every tool is a React component, and the toolbox UI is a React component
-// (ToolboxRoot.tsx). The code that decides what goes in here — asking the server which
-// tools this book has enabled, noticing that the user opened a different page or book — is
+// (ToolboxRoot.tsx). The code that decides what goes in here -- asking the server which
+// tools this book has enabled, noticing that the user opened a different page or book -- is
 // still the non-React code in toolbox.ts. Rather than have toolbox.ts push facts into
 // React, the facts live here and React subscribes: ToolboxRoot and SettingsToolControls
 // read this store with React.useSyncExternalStore(), and toolbox.ts calls the mutators and
@@ -14,12 +14,12 @@
 //
 // Each tool's lifecycle then follows from this state rather than being driven by hand: the
 // accordion ToolboxRoot renders for a tool runs beginRestoreSettings/showTool/newPageReady
-// from an effect when it is the current tool of a showing toolbox, and detachFromPage/
+// from an effect while it is running -- open, with the toolbox showing -- and detachFromPage/
 // hideTool from that effect's cleanup when it stops being. See useToolLifecycle.ts.
 //
 // Because this module's state exists as soon as the module is loaded, there is no
 // "the UI hasn't mounted yet" race to work around: toolbox.ts can offer tools and make one
-// active before ToolboxRoot has mounted, and ToolboxRoot will render what it finds here.
+// open before ToolboxRoot has mounted, and ToolboxRoot will render what it finds here.
 //
 // It lives in its own module (rather than in ToolboxRoot.tsx) because ToolboxRoot.tsx
 // imports from toolbox.ts, so having toolbox.ts import from ToolboxRoot.tsx would create
@@ -31,6 +31,31 @@
 import { compareToolsByLabel, kSettingsToolId } from "./toolIds";
 
 /**
+ * Four words describe a tool's relationship to the toolbox, and they mean different things.
+ * Defined here once; everything else in the toolbox uses them this way.
+ *
+ * - ENABLED: the book has this tool turned on, which is what the "More..." checkboxes set and
+ *   what the book remembers. This is the only one of the four the user sets directly. It is
+ *   NOT the same as offered: a tool can be enabled without being offered (we defer offering
+ *   it briefly so the checkbox does not appear to un-tick itself), and offered without being
+ *   enabled (Talking Book always is, and a page can require a tool the book never enabled).
+ * - OFFERED: the toolbox is showing this tool in its list, because the book has enabled it or
+ *   because the page being edited requires it. What is offered changes as you work: the Game
+ *   tool is offered on arriving at a game page and withdrawn on leaving it.
+ * - OPEN: the one accordion section that is expanded, and so the tool in use. Always a tool
+ *   the toolbox is offering -- setOpenTool refuses any other, and withdrawing the open tool
+ *   moves this on -- so there is no second, re-checked notion of a "current" tool. (A book's
+ *   meta.json does call it "current"; that is the persisted word, converted at the boundary.)
+ * - RUNNING: the open tool, while the toolbox is showing -- getRunningToolIdOf() below. Only
+ *   a running tool has been told to show itself, hears about page changes, and marks up the
+ *   page as you type. Hiding the toolbox stops the open tool running without changing which
+ *   tool is open. useToolLifecycle.ts is what starts and stops it.
+ *
+ * Separately, toolbox.ts tracks the tool a *loading page* requires, which briefly outranks
+ * the open one; getEffectiveToolId() is that question, and it is not any of the above.
+ */
+
+/**
  * The immutable snapshot React renders from. A new object is created on every change (and
  * this one is never mutated), because that is how useSyncExternalStore() tells that
  * something changed.
@@ -39,80 +64,37 @@ export interface IToolboxUiState {
     // The tools the toolbox is offering, in the order it shows them:
     // alphabetical by label, with the "More..." (settings) tool last.
     readonly offeredToolIds: readonly string[];
-    // The tool that is open, or undefined if none is. This is purely what the
-    // UI looks like; the tool that is actually running is currentToolId.
-    readonly activeToolId: string | undefined;
-    // The tool that is running: the one that has been told to show itself, that is told
-    // when the page changes, and whose updateMarkup() runs as the user types.
-    //
-    // DERIVED, not set: it is the open tool, unless the toolbox has stopped offering that
-    // tool, in which case nothing is running. A tool the toolbox isn't offering has nowhere
-    // to display itself, so it cannot be the running one; recording that as "no current
-    // tool" rather than leaving the previous tool current is what lets returning from
-    // "More..." to the same tool activate it again (BL-6720).
-    //
-    // Keeping this in step with activeToolId by hand is what went wrong in BL-16602, so it
-    // is no longer a field anyone can set: see deriveCurrentToolId().
-    //
-    // Note that the tool does not stop being current when the toolbox is hidden; it just
-    // stops running (see toolboxVisible).
-    readonly currentToolId: string | undefined;
-    // Is the toolbox sidebar showing? The current tool only runs while it is: hiding the
+    // OPEN: the one accordion section that is expanded, or undefined if none is. Always a
+    // tool the toolbox is offering; see the definitions above.
+    readonly openToolId: string | undefined;
+    // Is the toolbox sidebar showing? The open tool only runs while it is: hiding the
     // toolbox detaches and hides the tool, and showing it again restores and shows it.
     readonly toolboxVisible: boolean;
     // Bumped each time the page being edited has been replaced (or reloaded) and is ready
-    // for the tools to look at. The current tool's lifecycle effect keys on this, which is
+    // for the tools to look at. The running tool's lifecycle effect keys on this, which is
     // what gets it a fresh beginRestoreSettings/showTool/newPageReady for the new page.
     readonly pageGeneration: number;
     // The tools this book has enabled, which is what the "More..." checkboxes show.
     // Note that this is not the same as the tools being offered: tools that are always
     // enabled, and tools a page requires, are offered without being in here.
     readonly enabledToolIds: ReadonlySet<string>;
-    // Has ToolboxRoot mounted, i.e. is there a toolbox on screen at all? False before it
-    // mounts and after it unmounts.
-    //
-    // It is read by code that persists or restores a tool's settings, which must not run
-    // while there is no toolbox: a tool whose panel has never been shown has no
-    // user-chosen state to save, and saving then would overwrite the book's real settings
-    // with defaults. The reader tools save from wherever the user changes a stage, level
-    // or sort (readerToolsModel.ts), rather than from one point in their lifecycle, so
-    // they ask this rather than being driven by it.
-    readonly uiMounted: boolean;
 }
 
 const emptyState: IToolboxUiState = {
     offeredToolIds: [],
-    activeToolId: undefined,
-    currentToolId: undefined,
+    openToolId: undefined,
     toolboxVisible: false,
     pageGeneration: 0,
     enabledToolIds: new Set<string>(),
-    uiMounted: false,
 };
 
 let theState: IToolboxUiState = emptyState;
 
 const stateListeners = new Set<() => void>();
 
-// The tool that is running, worked out from the rest of the state rather than stored. See
-// IToolboxUiState.currentToolId.
-//
-// "Offered" is the only test needed: a tool is only ever offered after toolbox.ts has found
-// it in the master list, so every offered tool is a registered one.
-function deriveCurrentToolId(state: IToolboxUiState): string | undefined {
-    if (
-        state.activeToolId &&
-        state.offeredToolIds.includes(state.activeToolId)
-    ) {
-        return state.activeToolId;
-    }
-    return undefined;
-}
-
 // Replaces the snapshot and tells the subscribers. Never mutates the old snapshot.
 function updateState(changes: Partial<IToolboxUiState>): void {
-    const updated = { ...theState, ...changes };
-    theState = { ...updated, currentToolId: deriveCurrentToolId(updated) };
+    theState = { ...theState, ...changes };
     stateListeners.forEach((listener) => listener());
 }
 
@@ -147,16 +129,22 @@ export function subscribeToToolboxUiState(listener: () => void): () => void {
 // ---------------------------------------------------------------------------
 
 /**
- * Is the toolbox currently offering this tool? (This says nothing about whether
- * it is the active one.)
+ * Is the toolbox offering this tool -- that is, is it in the list the user can see? A tool is
+ * offered because the book has turned it on, or because the page being edited requires it.
+ * That second reason is why this genuinely changes from moment to moment: arriving at a game
+ * page offers the Game tool, and leaving withdraws it again.
+ *
+ * This is not the question "does this Bloom implement that tool?", which is the master tool
+ * list. It says nothing about whether the tool is open or running.
  */
 export function isToolOffered(toolId: string): boolean {
     return theState.offeredToolIds.includes(toolId);
 }
 
 /**
- * The id of the first tool offered, or undefined if there are none. The "More..."
- * (settings) tool doesn't count; it is not a tool that can be current.
+ * The id of the first tool offered, or undefined if there are none. The "More..." (settings)
+ * tool doesn't count: it is never chosen as the *default* tool. Opening it by hand does make
+ * it the open tool, and that gets persisted (meta.json calls it "current"), as it always has.
  */
 export function getFirstOfferedToolId(): string | undefined {
     return theState.offeredToolIds.find((id) => id !== kSettingsToolId);
@@ -181,10 +169,10 @@ export function offerTool(toolId: string): void {
  * Stops offering this tool, if it is offered. If it was the open one, the first remaining
  * tool takes over; if none remains, no tool is open and so none is running.
  *
- * Nothing has to be told that the running tool changed: currentToolId is derived from what
- * is open and what is offered, so withdrawing a tool moves it on its own. Leaving a game
- * page withdraws the Game tool this way, and the toolbox going on believing Game was still
- * current was BL-16602.
+ * Nothing has to be told that the open tool changed: which tool runs is worked out from
+ * what is open and whether the toolbox is showing, so withdrawing a tool moves it on its
+ * own. Leaving a game page withdraws the Game tool this way, and the toolbox going on
+ * believing Game was still open was BL-16602.
  */
 export function withdrawTool(toolId: string): void {
     const remainingToolIds = theState.offeredToolIds.filter(
@@ -193,16 +181,21 @@ export function withdrawTool(toolId: string): void {
     if (remainingToolIds.length === theState.offeredToolIds.length) {
         return;
     }
-    if (theState.activeToolId !== toolId) {
+    if (theState.openToolId !== toolId) {
         // We withdrew a tool the user wasn't looking at, so which tool is open doesn't
         // change -- and nor, therefore, does which one is running.
         updateState({ offeredToolIds: remainingToolIds });
         return;
     }
-    // remainingToolIds[0] is undefined when nothing is left, which leaves no tool open.
+    // Fall back to whatever is now first. remainingToolIds[0] would be undefined if nothing
+    // were left, which in practice cannot happen: Talking Book and "More..." are always
+    // offered. Nothing open is the sensible answer in that case anyway.
+    //
+    // Offered and open change together here, in one snapshot, so that no subscriber ever
+    // sees the moment in between -- which is why this does not call setOpenTool().
     updateState({
         offeredToolIds: remainingToolIds,
-        activeToolId: remainingToolIds[0],
+        openToolId: remainingToolIds[0],
     });
 }
 
@@ -211,14 +204,28 @@ export function withdrawTool(toolId: string): void {
 // ---------------------------------------------------------------------------
 
 /**
- * Opens this tool, which also makes it the running one (see
- * IToolboxUiState.currentToolId). Every path that opens a tool comes through here, so
- * there is no way for what the user can see to drift from what is actually running; one
- * that quietly changed only what the UI shows left the two out of sync and the tool the
- * user could see was never activated (BL-16602).
+ * Opens this tool. This is the only way in: `openToolId` is private to this module, and the
+ * only other place that moves it is withdrawTool, which has to change it in the same
+ * snapshot as the offered list.
+ *
+ * A tool the toolbox is not offering cannot be opened, and asking for one is refused rather
+ * than obeyed. It has no accordion section to expand, so obeying would put the store in a
+ * state the screen cannot show -- which is exactly the drift that left the tool the user
+ * could see un-activated in BL-16602. Deciding what to open *instead* is policy and stays
+ * with the caller (see openToolOrFirstOffered in toolbox.ts, which falls back to the first offered
+ * tool). We log rather than throw: this is a programming error on a UI path, and taking the
+ * Edit tab down over it would be worse than ignoring the request.
  */
-export function setActiveTool(toolId: string): void {
-    updateState({ activeToolId: toolId });
+export function setOpenTool(toolId: string): void {
+    if (!isToolOffered(toolId)) {
+        console.error(
+            `setOpenTool("${toolId}") ignored: the toolbox is not offering that tool. ` +
+                `It is offering: ${theState.offeredToolIds.join(", ") || "(nothing)"}. ` +
+                `Offer a tool before opening it.`,
+        );
+        return;
+    }
+    updateState({ openToolId: toolId });
 }
 
 // ---------------------------------------------------------------------------
@@ -227,14 +234,20 @@ export function setActiveTool(toolId: string): void {
 // see IToolboxUiState and useToolLifecycle.ts.
 // ---------------------------------------------------------------------------
 
-/** See IToolboxUiState.currentToolId. */
-export function getCurrentToolId(): string | undefined {
-    return theState.currentToolId;
+/** See IToolboxUiState.openToolId. */
+export function getOpenToolId(): string | undefined {
+    return theState.openToolId;
 }
 
-/** See IToolboxUiState.toolboxVisible. */
-export function isToolboxVisible(): boolean {
-    return theState.toolboxVisible;
+/**
+ * The RUNNING tool of a snapshot: the open one, while the toolbox is showing. A tool only
+ * runs while this names it -- it is told to show itself, hears about page changes, and marks
+ * up the page as the user types. React renders from a snapshot, so it asks this of the one it
+ * holds; code outside React asks ToolBox.getRunningTool() instead, which reads the same fact
+ * from the checkbox the store mirrors.
+ */
+export function getRunningToolIdOf(state: IToolboxUiState): string | undefined {
+    return state.toolboxVisible ? state.openToolId : undefined;
 }
 
 /**
@@ -249,14 +262,9 @@ export function setToolboxVisible(visible: boolean): void {
     updateState({ toolboxVisible: visible });
 }
 
-/** See IToolboxUiState.pageGeneration. */
-export function getPageGeneration(): number {
-    return theState.pageGeneration;
-}
-
 /**
  * Says that the page being edited has been replaced (or reloaded) and is now ready for the
- * tools. This is what re-runs the current tool's lifecycle for the new page, so call it
+ * tools. This is what re-runs the running tool's lifecycle for the new page, so call it
  * only once the page really is ready (toolbox.ts waits for CKEditor first).
  */
 export function notePageReady(): void {
@@ -295,13 +303,28 @@ export function setToolEnabled(toolId: string, enabled: boolean): void {
 // Whether the toolbox UI exists
 // ---------------------------------------------------------------------------
 
+// Has ToolboxRoot mounted, i.e. is there a toolbox on screen at all? False before it
+// mounts and after it unmounts.
+//
+// It is read by code that persists or restores a tool's settings, which must not run
+// while there is no toolbox: a tool whose panel has never been shown has no
+// user-chosen state to save, and saving then would overwrite the book's real settings
+// with defaults. The reader tools save from wherever the user changes a stage, level
+// or sort (readerToolsModel.ts), rather than from one point in their lifecycle, so
+// they ask this rather than being driven by it.
+//
+// It is deliberately not part of the snapshot: nothing renders from it, so putting it
+// there would notify every subscriber -- re-rendering the toolbox -- to record a fact
+// the toolbox does not display.
+let uiMounted = false;
+
 export function isToolboxUiMounted(): boolean {
-    return theState.uiMounted;
+    return uiMounted;
 }
 
 // Called by ToolboxRoot as it mounts and unmounts.
 export function setToolboxUiMounted(mounted: boolean): void {
-    updateState({ uiMounted: mounted });
+    uiMounted = mounted;
 }
 
 // ---------------------------------------------------------------------------
@@ -313,5 +336,6 @@ export function setToolboxUiMounted(mounted: boolean): void {
  */
 export function resetToolboxUiStateForTests(): void {
     theState = emptyState;
+    uiMounted = false;
     stateListeners.clear();
 }

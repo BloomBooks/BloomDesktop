@@ -17,25 +17,26 @@ import { getMasterToolList, ITool } from "./toolbox";
 import { kToolboxHeaderZIndex } from "./toolboxZIndexes";
 import { useMountEffect } from "../../utils/useMountEffect";
 import {
+    getRunningToolIdOf,
     getToolboxUiState,
-    setActiveTool,
+    setOpenTool,
     setToolboxUiMounted,
     subscribeToToolboxUiState,
 } from "./toolboxState";
 import { SubscriptionBadgeWithTooltipAndDialog } from "../../react_components/requiresSubscription";
-import {
-    getToolLabelInfo,
-    kTalkingBookToolId,
-    toPersistedToolName,
-} from "./toolIds";
+import { getToolLabelInfo, kTalkingBookToolId } from "./toolIds";
 import { useToolLifecycle } from "./useToolLifecycle";
 
 // React host for the toolbox sidebar. It shows an accordion for each tool the toolbox is
-// offering, and opens the active one.
+// offering, and expands the open one.
 //
 // It does not decide which tools to offer, nor own that fact: toolbox.ts asks the server
 // which tools the book has enabled and records them in the toolbox state store
 // (toolboxState.ts), which we subscribe to here.
+//
+// A note on "Accordion", which MUI uses in an unusual way: in ordinary English it is the
+// whole list of expandable sections, but to MUI each expandable item is itself an Accordion.
+// Every "Accordion" named here and in OfferedToolAccordion is one tool's section, not the list.
 //
 // Every tool is a React component, and we render each one as an ordinary child (from its
 // ITool.renderPanel()), so the whole toolbox is a single React tree: context such as the
@@ -43,7 +44,7 @@ import { useToolLifecycle } from "./useToolLifecycle";
 // default), so a tool keeps its state as the user opens and closes tools.
 //
 // Rendering a tool is also what runs it: each one runs its tool's lifecycle
-// from an effect for as long as that tool is the current tool of a showing toolbox. See
+// from an effect for as long as that tool is running -- open, with the toolbox showing. See
 // useToolLifecycle.ts.
 
 // Everything the toolbox needs in order to show one tool. It all comes from the
@@ -90,7 +91,8 @@ const makeOfferedTool = (toolId: string): OfferedTool => {
     };
 };
 
-// One tool as the toolbox shows it: its header, its panel, and its lifecycle.
+// One tool as the toolbox shows it: its header, its panel, and its lifecycle. "Accordion"
+// here is MUI's sense -- this one expandable section, not the whole list of them.
 //
 // The lifecycle hook lives here, in the component that *contains* the panel, rather than
 // beside it: React runs a child's effects before its parent's, so by the time we tell the
@@ -101,7 +103,7 @@ const OfferedToolAccordion: React.FunctionComponent<{
     // Is this the open tool? Purely how the accordion looks.
     isOpen: boolean;
     // Is this the tool that is running? Not the same thing as being open; see
-    // IToolboxUiState.currentToolId.
+    // toolboxState.ts.
     isRunning: boolean;
     pageGeneration: number;
 }> = (props) => {
@@ -163,10 +165,10 @@ const OfferedToolAccordion: React.FunctionComponent<{
                 // (originally BL-16533). With the legacy sync gone the collapse would
                 // now work cleanly, but we decided (2026-09-11, on the BL-16608 review)
                 // to keep the established behavior: the toolbox always shows one open
-                // tool. The store itself still supports a state with no open tool — the
-                // withdraw paths produce it — this just offers no gesture for it.
+                // tool. The store itself still supports a state with no open tool -- the
+                // withdraw paths produce it -- this just offers no gesture for it.
                 if (expanded) {
-                    setActiveTool(props.offeredTool.id);
+                    setOpenTool(props.offeredTool.id);
                 }
             }}
         >
@@ -261,10 +263,10 @@ const OfferedToolAccordion: React.FunctionComponent<{
                 `}
             >
                 <div
-                    // Some tool stylesheets, and our automated tests,
-                    // still select a tool's body by this attribute, using
-                    // the historical "Tool"-suffixed name.
-                    data-toolid={toPersistedToolName(props.offeredTool.id)}
+                    // The tool's own canonical id, the same spelling the header
+                    // icon carries. The "Tool"-suffixed spelling survives only
+                    // where it must: a book's meta.json (see toolIds.ts).
+                    data-toolid={props.offeredTool.id}
                     css={css`
                         width: 100%;
                         display: flex;
@@ -277,8 +279,8 @@ const OfferedToolAccordion: React.FunctionComponent<{
                         // were laid out to suit the small left padding
                         // that the old jQuery-UI accordion content panels
                         // gave them, so keep that.
-                        &[data-toolid="leveledReaderTool"],
-                        &[data-toolid="decodableReaderTool"] {
+                        &[data-toolid="leveledReader"],
+                        &[data-toolid="decodableReader"] {
                             padding-left: 3px;
                             box-sizing: border-box;
                         }
@@ -311,13 +313,14 @@ export const ToolboxRoot: React.FunctionComponent = () => {
         getToolboxUiState,
     );
     // The store keeps the offered tools in the order we show them (alphabetical by label,
-    // with "More..." last), because withdrawing the active tool has to know which tool
+    // with "More..." last), because withdrawing the open tool has to know which tool
     // replaces it.
     const offeredTools = toolboxUiState.offeredToolIds.map(makeOfferedTool);
-    const openToolId = toolboxUiState.activeToolId;
+    const openToolId = toolboxUiState.openToolId;
+    const runningToolId = getRunningToolIdOf(toolboxUiState);
 
     // Let the rest of the toolbox know whether there is a toolbox UI at all; see
-    // IToolboxUiState.uiMounted.
+    // setToolboxUiMounted() in toolboxState.ts.
     useMountEffect(() => {
         setToolboxUiMounted(true);
         return () => {
@@ -365,11 +368,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                             key={offeredTool.id}
                             offeredTool={offeredTool}
                             isOpen={openToolId === offeredTool.id}
-                            isRunning={
-                                toolboxUiState.currentToolId ===
-                                    offeredTool.id &&
-                                toolboxUiState.toolboxVisible
-                            }
+                            isRunning={runningToolId === offeredTool.id}
                             pageGeneration={toolboxUiState.pageGeneration}
                         />
                     ))}
