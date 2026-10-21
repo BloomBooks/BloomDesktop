@@ -35,3 +35,7 @@ trim_trailing_whitespace=false
 # answers in some cultures; e.g. Thai collation ignores punctuation (BL-16932, BL-16934).
 # Always pass a StringComparison.
 dotnet_diagnostic.CA1310.severity = error
+
+# Banned APIs (src/BloomExe/BannedSymbols.txt): Bloom runs in the invariant culture, and only
+# UserCulture may read or set the process culture (BL-16981).
+dotnet_diagnostic.RS0030.severity = error

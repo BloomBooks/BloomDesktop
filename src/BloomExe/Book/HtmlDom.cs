@@ -3884,7 +3884,7 @@ namespace Bloom.Book
                 imageElement.GetAttribute("src")
             );
 
-            if (altText.Equals(localizedString, StringComparison.CurrentCultureIgnoreCase))
+            if (altText.Equals(localizedString, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -3914,10 +3914,7 @@ namespace Bloom.Book
                     );
                 }
 
-                return altText.Contains(
-                    localizedSubstring,
-                    StringComparison.CurrentCultureIgnoreCase
-                );
+                return altText.Contains(localizedSubstring, StringComparison.OrdinalIgnoreCase);
             }
 
             return false;

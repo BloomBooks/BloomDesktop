@@ -14,6 +14,7 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.Code;
+using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
@@ -161,7 +162,7 @@ namespace Bloom.web.controllers
                 // On slowish machines, this compression seems to take about 1/5 as long as the video took to record.
                 // Allowing for some possibly being slower still, we're basing the timeout on half the length of the video,
                 // plus a minute to be sure.
-                var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                var result = CommandLineRunner.Run(
                     FfmpegProgram,
                     parameters,
                     "",
@@ -226,7 +227,7 @@ namespace Bloom.web.controllers
                 return string.Empty;
             // ffmpeg writes its file info to stderr even with -i alone; -hide_banner reduces noise.
             var parameters = $"-hide_banner -i \"{videoFilePath}\"";
-            var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+            var result = CommandLineRunner.Run(
                 FfmpegProgram,
                 parameters,
                 "",
@@ -447,7 +448,7 @@ namespace Bloom.web.controllers
         )
         {
             var start = DateTime.Now;
-            var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+            var result = CommandLineRunner.Run(
                 FfmpegProgram,
                 parameters,
                 null,
@@ -757,7 +758,7 @@ namespace Bloom.web.controllers
             // -hide_banner = don't write all the version and build information to the console
             // -i <path> = specify input file
             var parameters = $"-hide_banner -i \"{videoFilePath}\"";
-            var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+            var result = CommandLineRunner.Run(
                 FfmpegProgram,
                 parameters,
                 "",
@@ -833,7 +834,8 @@ namespace Bloom.web.controllers
         {
             const decimal mbConversion = 1048576M; // 1024 x 1024
             var sizeInMb = sizeInBytes / mbConversion;
-            return sizeInMb.ToString("F1", CultureInfo.CurrentUICulture);
+            // Shown to the user as-is, so it uses their number format.
+            return sizeInMb.ToString("F1", UserCulture.Current);
         }
 
         private static void ParseFrameSize(string output, IDictionary<string, object> statistics)
@@ -882,7 +884,11 @@ namespace Bloom.web.controllers
             }
             var kbps = match.Groups[1].Value;
             var fmbps = double.Parse(kbps, CultureInfo.InvariantCulture) / 1000.0;
-            statistics.Add("megabitsPerSecond", $"{fmbps:F2} Mb/s");
+            // Shown to the user as-is, so it uses their number format.
+            statistics.Add(
+                "megabitsPerSecond",
+                fmbps.ToString("F2", UserCulture.Current) + " Mb/s"
+            );
         }
 
         private static void ParseForAudioStream(
@@ -1226,7 +1232,7 @@ namespace Bloom.web.controllers
             // -c:v copy -c:a copy = copy video (and audio) streams with no codec modification
             var parameters =
                 $"-hide_banner -i \"{sourceVideoFilePath}\" -ss {startTiming} -to {endTiming} -c:v copy -c:a copy \"{destinationPath}\"";
-            var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+            var result = CommandLineRunner.Run(
                 FfmpegProgram,
                 parameters,
                 "",

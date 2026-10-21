@@ -353,8 +353,7 @@ namespace BloomTests.Book
                 var expectedEnFr = string.Format(
                     expectedTemplate,
                     string.Join(
-                        System.Globalization.CultureInfo.CurrentCulture.TextInfo.ListSeparator
-                            + " ",
+                        Bloom.UserCulture.Current.TextInfo.ListSeparator + " ",
                         "English",
                         "français"
                     )

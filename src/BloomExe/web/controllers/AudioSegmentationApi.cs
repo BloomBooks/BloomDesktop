@@ -14,6 +14,7 @@ using Bloom.Utils;
 using BloomTemp;
 using Newtonsoft.Json;
 using SIL.Code;
+using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Progress;
@@ -267,7 +268,7 @@ namespace Bloom.web.controllers
             if (workingDirectory == null || !Directory.Exists(workingDirectory))
                 workingDirectory = "";
             var setPythonEncoding = SetPythonEncodingIfNeeded();
-            var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+            var result = CommandLineRunner.Run(
                 command,
                 arguments,
                 workingDirectory,
@@ -814,7 +815,7 @@ namespace Bloom.web.controllers
                 Logger.WriteMinorEvent(
                     "AudioSegmentationApi.GetSplitStartEndTimings(): Command started, preparing to wait..."
                 );
-                var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                var result = CommandLineRunner.Run(
                     command,
                     arguments,
                     workingDirectory,
@@ -1110,45 +1111,32 @@ namespace Bloom.web.controllers
             string outputSplitFilename
         )
         {
-            // Since we are running this process aynchronously, we need to make sure that the process is not
-            // affected by the current culture settings.  We can't use the CommandLineRunner methods.
-            var currentCulture = CultureInfo.CurrentCulture;
-            var currentUICulture = CultureInfo.CurrentUICulture;
-            try
+            // This runs the process asynchronously, so it can't use the CommandLineRunner methods.
+            string commandString =
+                $"ffmpeg -i \"{inputAudioFilename}\" -acodec copy -ss {timingStartString} -to {timingEndString} \"{outputSplitFilename}\"";
+            string command;
+            string arguments;
+            var workingDir = Platform.IsLinux ? "/tmp" : kWorkingDirectory;
+            if (Platform.IsLinux)
             {
-                CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-                CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
-                string commandString =
-                    $"ffmpeg -i \"{inputAudioFilename}\" -acodec copy -ss {timingStartString} -to {timingEndString} \"{outputSplitFilename}\"";
-                string command;
-                string arguments;
-                var workingDir = Platform.IsLinux ? "/tmp" : kWorkingDirectory;
-                if (Platform.IsLinux)
-                {
-                    command = _ffmpegFound;
-                    arguments = commandString.Substring(7);
-                }
-                else
-                {
-                    command = "CMD.EXE";
-                    arguments = $"/C {commandString}";
-                }
-                var startInfo = new ProcessStartInfo()
-                {
-                    FileName = command,
-                    Arguments = arguments,
-                    WorkingDirectory = workingDir,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                };
+                command = _ffmpegFound;
+                arguments = commandString.Substring(7);
+            }
+            else
+            {
+                command = "CMD.EXE";
+                arguments = $"/C {commandString}";
+            }
+            var startInfo = new ProcessStartInfo()
+            {
+                FileName = command,
+                Arguments = arguments,
+                WorkingDirectory = workingDir,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
 
-                return RunProcessAsync(startInfo);
-            }
-            finally
-            {
-                CultureInfo.CurrentCulture = currentCulture;
-                CultureInfo.CurrentUICulture = currentUICulture;
-            }
+            return RunProcessAsync(startInfo);
         }
 
         // Starts a process and returns a task (that you can use to wait/await for the completion of the process)

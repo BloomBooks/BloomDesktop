@@ -499,13 +499,13 @@ namespace Bloom.TeamCollection
             if (whenLocked == DateTime.MaxValue)
                 return "";
             var localTime = whenLocked.ToLocalTime();
-            var calendar = CultureInfo.CurrentCulture.Calendar;
+            var calendar = UserCulture.Current.Calendar;
             if (
                 localTime < calendar.MinSupportedDateTime
                 || localTime > calendar.MaxSupportedDateTime
             )
                 return "";
-            return localTime.ToShortDateString();
+            return localTime.ToString("d", UserCulture.Current);
         }
 
         // Needs to be thread-safe
@@ -545,7 +545,7 @@ namespace Bloom.TeamCollection
                         who = "",
                         whoFirstName = "",
                         whoSurname = "",
-                        when = DateTime.Now.ToShortDateString(),
+                        when = DateTime.Now.ToString("d", UserCulture.Current),
                         where = "",
                         currentUser = CurrentUser,
                         currentUserName = TeamCollectionManager.CurrentUserFirstName,
