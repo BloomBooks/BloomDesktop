@@ -48,10 +48,13 @@ export function toCanonicalToolId(toolIdOrPersistedName: string): string {
 }
 
 /**
- * The name to use for a tool where the historical "Tool" suffix is expected: the book's
- * meta.json (the "current" tool and the enabled-tool names) and the data-toolid attribute
- * of a tool's body element. Given a canonical tool id, appends the suffix, except to ids
- * that never took it.
+ * The name to use in the one place that still expects the historical "Tool" suffix: the
+ * book's "current" tool in meta.json. Given a canonical tool id, appends the suffix, except
+ * to ids that never took it.
+ *
+ * Two places people expect to need this and do not: a tool's body element, whose
+ * data-toolid attribute carries the canonical id, and meta.json's enabled-tool names,
+ * which arrive suffixed with "Check" and are stripped by the C# side (see below).
  */
 export function toPersistedToolName(toolId: string): string {
     if (

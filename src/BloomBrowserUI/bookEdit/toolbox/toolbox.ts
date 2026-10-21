@@ -204,7 +204,10 @@ export class ToolBox {
                     toolsAdjusted = toolsAdjusted || wantTool;
                 }
             }
-            // We did not offer or withdraw anything, so the open tool has not changed.
+            // Offering the page's tool just now also opened it (offerToolAndMaybeOpen).
+            // Otherwise it still has to be opened here: either it was already on offer,
+            // or this pass only withdrew tools -- toolsAdjusted records offers, not
+            // withdrawals, because withdrawing moves the open tool on by itself.
             // See the later comments on BL-14434 (after the first PR link).
             if (requiredToolId && !toolsAdjusted) {
                 openToolOrFirstOffered(requiredToolId);
@@ -216,7 +219,16 @@ export class ToolBox {
             // already open changes neither the offered list nor the open tool, and
             // leaving the request latched would make getEffectiveToolId() name a tool
             // that is not running for as long as that tool stayed open (BL-14434).
-            toolThePageRequires = undefined;
+            //
+            // Only once the page's tool really is open, though. While the toolbox is
+            // hidden, offerToolAndMaybeOpen() offers the tool without opening it, so the
+            // store still names the tool the user was last on. The page's own request is
+            // then the only thing that knows this page belongs to another tool, and
+            // clearing it would let Talking Book claim the page's audio and highlighting
+            // -- BL-14434 over again, by the other door.
+            if (!requiredToolId || getOpenToolId() === requiredToolId) {
+                toolThePageRequires = undefined;
+            }
         };
         doAdjustment();
     }

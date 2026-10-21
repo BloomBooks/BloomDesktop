@@ -21,9 +21,10 @@ vi.mock("./toolbox", () => {
             makeFakeTool("game"),
             makeFakeTool("settings"),
         ],
-        // Each tool's lifecycle hook wants these (see useToolLifecycle.ts). No tool is
-        // running in these tests -- the store's openToolId is never set -- so they are
-        // never actually called; they are here so that this mock stays a complete stand-in.
+        // Each tool's lifecycle hook wants these (see useToolLifecycle.ts). No tool runs in
+        // these tests -- they open tools, but never set toolboxVisible, and running takes
+        // both -- so these are never actually called; they are here so that this mock stays
+        // a complete stand-in.
         getSavedToolboxSettings: () => ({}),
         runTasksForClosingTool: () => undefined,
     };

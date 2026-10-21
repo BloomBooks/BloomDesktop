@@ -88,7 +88,7 @@ describe("toolboxState", () => {
     });
 
     describe("which tool is open", () => {
-        it("makes the open tool the running one", () => {
+        it("opens the tool it is given", () => {
             offerTool("motion");
 
             setOpenTool("motion");
