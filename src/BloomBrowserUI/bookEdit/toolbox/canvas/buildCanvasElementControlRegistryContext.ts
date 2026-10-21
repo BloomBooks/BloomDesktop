@@ -20,7 +20,12 @@ import { canvasElementControlRegistry } from "./canvasElementControlRegistry";
 import { CanvasElementType } from "./canvasElementTypes";
 import { IControlContext } from "./canvasControlTypes";
 import { isAiEditableImageSrc } from "../../aiImageEditor/aiImageEditorImageFormats";
+import {
+    canBringCanvasElementForward,
+    canSendCanvasElementBackward,
+} from "../../js/canvasElementManager/CanvasElementZOrder";
 import { imageContentIsTransformed } from "../../js/imageContentTransform";
+import { getCanvasElementRotation } from "../../js/canvasElementManager/canvasElementRotation";
 
 const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
     if (!img) {
@@ -191,10 +196,13 @@ export const buildCanvasElementControlRegistryContext = (
             rectangle?.classList.contains("bloom-theme-background") ?? false,
         isCropped: !!img?.style?.width,
         isImageContentTransformed: img ? imageContentIsTransformed(img) : false,
+        isBoxRotated: getCanvasElementRotation(canvasElement) !== 0,
         isNavigationButton: elementType.startsWith("navigation-"),
         isButton,
         isBackgroundImage,
         isSpecialGameElement,
+        canBringForward: canBringCanvasElementForward(canvasElement),
+        canSendBackward: canSendCanvasElementBackward(canvasElement),
         canModifyImage:
             !!imageContainerForCommands &&
             !imageContainerForCommands.classList.contains(

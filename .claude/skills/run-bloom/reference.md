@@ -379,6 +379,26 @@ and `.Text`. A link only appears when its feature is on, so a missing Table link
 usually means the feature is not visible (see its entry in FeatureRegistry.cs), not that the
 click failed.
 
+## Building an app (Publish > Apps)
+
+The Apps screen drives Reading App Builder (RAB). Select a book first, because the Publish tab
+only appears once one is selected; then click `Apps` in the Publish sidebar. The RAB project lives
+in `<collection>/Bloom App Data`, so build test apps in a scratch collection, not one of the
+developer's own.
+
+1. **Prepare** installs RAB if needed, creates the signing key and the project, and turns the
+   other buttons on.
+2. **Build stays disabled while the screen shows "Required or invalid settings: …"** under
+   Customize. A new project has no Copyright, so Build is off until you open **Customize...**,
+   fill it in, and click OK. Also give a test app its own **Package Name** (e.g.
+   `org.sil.en.bl17007test`): the default `org.sil.<lang>.stories` is shared by every test app
+   in that language, so installing one replaces another on the phone. The dialog's fields are
+   inputs inside the row whose label text is the setting name.
+3. **Build** runs RAB. Watch progress with `GET /bloom/api/publish/rab/status` (`ProjectExists`,
+   `ActiveAction`, `ApkExists`, `ApkPath`) instead of sleeping; the APK is done when `ApkExists`
+   is true and `ActiveAction` is empty.
+4. **Try on phone** installs the APK on the developer's connected phone; leave that step to them.
+
 ## Field-verified gotchas (all hit in real agent runs)
 
 - **Port 8089 is first-come, not per-worktree.** Bloom starts at 8089 and falls forward when it

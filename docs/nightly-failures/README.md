@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-10-09 (nightlies through the 2026-10-09 15:39 UTC dispatched run have been triaged)
+**Last updated:** 2026-10-21 (nightlies through the 2026-10-21 run have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -9,22 +9,42 @@ accept a flaky test, and a test is flaky from its first unexplained failure (roo
 Testing). So "wait and see whether it recurs" is never an entry's plan. To bring this up to date,
 use the `nightly-triage` skill.
 
-## Reader setup: the Levels dialog sometimes never opens
+## Bulk upload test: two different failures against dev.bloomlibrary.org
 
-- **Failed:** 2026-10-02. `BloomE2E/tests/reader-setup-dialogs-coexist.spec.ts`. After
-  "Set Up Levels" is clicked, `#settings_frame` never appears (30 s timeout).
-- **Cause:** a real Bloom bug (the button does nothing for users too), reproduced locally in
-  about 40% of runs. The legacy jQuery accordion still runs on the hidden `#toolbox`. When it
-  refreshes while a tool body is still sitting there, it takes that body for a header and binds
-  its header click handler, which calls `preventDefault`. The body then moves into the React
-  toolbox with the handler still attached, so the "Set Up Levels" `javascript:` link never runs.
-  This is a second cause of the BL-16732 symptom, and is about as old as the React toolbox.
-- **Status:** not fixed separately. The toolbox rework removes the jQuery accordion entirely
-  ([PR #8427](https://github.com/BloomBooks/BloomDesktop/pull/8427),
-  [BL-16608](https://issues.bloomlibrary.org/youtrack/issue/BL-16608)), which should fix it.
-  #8427 merged on 2026-10-06, after that night's run. The test passed in the two runs since
-  (the 2026-10-06 evening dispatch and 2026-10-07). Remove this entry once the nightlies have
-  stayed green on it for a while.
+- **Failed:** 2026-10-11 and 2026-10-15. `BloomE2E/tests/bulk-upload-quick-test.spec.ts` "bulk
+  upload: refused without a bookshelf, then new / skipped / updated / moved to another bookshelf"
+  (Test Case 211).
+- **What the trace shows (first look):** on 10-11, the upload-agreement checkbox was still
+  unchecked 15 s after it was clicked. On 10-15, moving the collection to another bookshelf did
+  not update all four books. The 10-15 run's C# upload test also failed against the same service
+  that morning (see the C# upload entry), so the service may have been having trouble; whether
+  that explains either symptom is not known.
+- **Status:** no card or PR.
+
+## E2E teardown: the test's temp folder cannot be deleted
+
+- **Failed:** 2026-10-12 and 2026-10-13. No test failed; the suite failed on "1 error was not a
+  part of any test".
+- **What the trace shows (first look):** after a spec finished, the fixture's cleanup
+  (`fixtures/launchBloom.ts:1111`) failed with "EPERM, Permission denied" deleting the test's
+  `bloom-e2e-*` temp folder, after a different spec each night
+  (`collection-settings-advanced`, `toolbox-tools`). The code comment there already expects
+  Bloom to let go of files slightly after it dies, and retries; here the retries ran out. What
+  still held the folder is not known.
+- **Status:** no card or PR.
+
+## Nightly setup: a setup step fails, and the rest of the run is skipped
+
+- **Failed:** 2026-10-10 and 2026-10-14. Both nights the component-tester suite also reported
+  "no results file": it runs even when setup fails, and without `pnpm install` it cannot resolve
+  its imports (`axios`, `@emotion/react`).
+- **Cause:** two different setup failures.
+  - 10-10: `src/BloomE2E/scripts/install-test-fonts.ps1` installed Alef and Luciole, but GDI+ then
+    did not list them, and the script stops the run when that happens. Why GDI+ missed them is not
+    known.
+  - 10-14: build.palaso.org (TeamCity) returned HTTP 502 for `ghostscript-win32.zip`, so getting
+    the binary dependencies failed. That is outside Bloom.
+- **Status:** no card or PR.
 
 ## Publish: the Text Languages list is missing after a restart
 
@@ -39,7 +59,7 @@ use the `nightly-triage` skill.
 
 ## Link chooser: the preselected page is not scrolled into view
 
-- **Failed:** 2026-09-23, 2026-09-30. Component test `url-sync-preselection.uitest.ts`
+- **Failed:** 2026-09-23, 2026-09-30, 2026-10-17. Component test `url-sync-preselection.uitest.ts`
   "Scrolls preselected page into view".
 - **Cause:** the thumbnail stylesheets arrive after the grid is laid out. They resize the
   thumbnails and push the selected page back out of view, so this is a real (cosmetic) Bloom
@@ -78,6 +98,8 @@ use the `nightly-triage` skill.
 
 - **Failed:** 2026-09-28. `BookUploadAndDownloadTests` failed while the live upload service was
   slow, for a few minutes around 10:40 UTC.
+- **Seen again:** 2026-10-15, `DownloadUrl_NoCollectionSettings_GetsDocument_AndSettings`: "Unable
+  to initiate book upload on the server."
 - **Cause:** outside Bloom: the live service.
 - **Status:** the tests now report the uploader's error instead of a bare failure (`d8c050a2ef`).
   Open question: should these tests depend on the live service at all?

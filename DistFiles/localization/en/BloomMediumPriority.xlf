@@ -121,6 +121,11 @@
         <note>ID: EditTab.TextContextMenu.NoIndent</note>
         <note>Item on the menu you get by right-clicking a paragraph of text in the Edit tab. It is a checkable on/off command; when it is checked, this one paragraph loses the first-line indent that its style would otherwise give it. Typically used on a paragraph continued from the previous page.</note>
       </trans-unit>
+      <trans-unit id="EditTab.InlineImage.InsertImage" translate="no">
+        <source xml:lang="en">Insert Image</source>
+        <note>ID: EditTab.InlineImage.InsertImage</note>
+        <note>Command in the menu you get by right-clicking a block of text in the Edit tab. It puts a picture inside the text block, with the text wrapping around it (like an inline image in Word).</note>
+      </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
         <source xml:lang="en">Choose...</source>
@@ -1091,6 +1096,11 @@
         <note>BookSettings.ThemeDisablesOptionsNoticeWithLink</note>
         <note>When you translate, make sure to include some text in between square brackets. Those become the clickable link that opens Book and Page Settings.</note>
       </trans-unit>
+      <trans-unit id="BookSettings.EdgeToEdgeNeedsFullBleed" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Pictures cannot reach the edge of a printed page unless this book uses full bleed. Turn it on in [Print Publishing].</source>
+        <note>ID: BookSettings.EdgeToEdgeNeedsFullBleed</note>
+        <note>Warning on the Theme &amp; Layout page of Book Settings, shown when the "Edge to Edge" page theme is chosen but "Use full bleed page layout" is off. "Print Publishing" is the name of another page of Book Settings (BookSettings.PrintPublishingGroupLabel); translate it the same way. Keep the square brackets around it: that text becomes a link which opens that page.</note>
+      </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message" sil:dynamic="true">
         <source xml:lang="en">This feature requires a newer [Page Theme].</source>
         <note>ID: EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message</note>
@@ -1606,6 +1616,16 @@
         <source xml:lang="en">this page</source>
         <note>ID: ImageLibrary.ThisPage</note>
         <note>Short link text used in setup instructions (e.g., as in "go to this page"). Should be lowercase as it appears mid-sentence.</note>
+      </trans-unit>
+      <trans-unit id="Common.Dimensions" translate="no">
+        <source xml:lang="en">Dimensions</source>
+        <note>ID: Common.Dimensions</note>
+        <note>Label beside an image's width and height in pixels (e.g. "576 x 1024"), as in the Image Chooser's image details panel.</note>
+      </trans-unit>
+      <trans-unit id="Common.FileSize" translate="no">
+        <source xml:lang="en">File size</source>
+        <note>ID: Common.FileSize</note>
+        <note>Label beside how large a file is (e.g. "1.2 MB"), as in the Image Chooser's image details panel.</note>
       </trans-unit>
       <trans-unit id="BookProcessor.HousekeepingMessage">
         <source xml:lang="en">Please wait while Bloom does some housekeeping on your book...</source>
