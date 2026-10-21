@@ -20,8 +20,10 @@
 # locale-specific tests, which would only ever cover the cases we already thought of.
 #
 # The culture is applied by src/BloomTests/TestCulture.cs, a [SetUpFixture] that reads
-# BLOOM_TEST_CULTURE. It is inert when that variable is unset, so this costs the PR build and
-# developers' local runs nothing. To reproduce a failure from this workflow locally:
+# BLOOM_TEST_CULTURE. Since BL-16981 Bloom runs in the invariant culture and keeps the user's
+# regional format in UserCulture.Current, so the variable sets UserCulture.Current, not the process
+# culture: the sweep tests what a user with that format actually runs. To reproduce a failure from
+# this workflow locally:
 #
 #     BLOOM_TEST_CULTURE=tr-TR build/agent-dotnet.sh test src/BloomTests/BloomTests.csproj
 #

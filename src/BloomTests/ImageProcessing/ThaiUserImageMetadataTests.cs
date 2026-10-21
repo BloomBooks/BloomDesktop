@@ -1,9 +1,9 @@
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using Bloom;
-using Bloom.ImageProcessing;
 using BloomTemp;
 using NUnit.Framework;
 using SIL.Code;
@@ -13,26 +13,31 @@ using SIL.Windows.Forms.ImageToolbox;
 namespace BloomTests.ImageProcessing
 {
     /// <summary>
-    /// BL-16926: on a Thai-locale computer TagLib# could not work out an image's file type from its
-    /// name, so every read or write of image metadata threw. See TagLibCultureFix.
+    /// BL-16926: TagLib# works out an image's file type from its name with a culture-sensitive
+    /// LastIndexOf("."). Thai collation ignores the period, so when Bloom ran in the user's culture
+    /// every read or write of image metadata on a Thai computer threw. Bloom now runs in the
+    /// invariant culture (BL-16981), which fixes this for Bloom's own calls and libpalaso's alike.
+    /// These tests run the way a Thai user's Bloom does: UserCulture is th-TH and the process
+    /// culture is invariant.
     /// </summary>
     [TestFixture]
-    public class TagLibCultureFixTests
+    public class ThaiUserImageMetadataTests
     {
         private TemporaryFolder _folder;
+        private CultureInfo _originalUserCulture;
 
         [SetUp]
         public void Setup()
         {
-            // The SetUpFixture registers this for the whole run; say so here too, so that these
-            // tests do not depend on it.
-            TagLibCultureFix.Register();
-            _folder = new TemporaryFolder("TagLibCultureFixTests");
+            _originalUserCulture = UserCulture.Current;
+            UserCulture.SetForTests(new CultureInfo("th-TH"));
+            _folder = new TemporaryFolder("ThaiUserImageMetadataTests");
         }
 
         [TearDown]
         public void TearDown()
         {
+            UserCulture.SetForTests(_originalUserCulture);
             _folder.Dispose();
         }
 
@@ -49,24 +54,29 @@ namespace BloomTests.ImageProcessing
         }
 
         /// <summary>
-        /// Without this, the tests below would pass for nothing on a runtime whose Thai collation
-        /// does not ignore the period, since TagLib# would then find the extension unaided.
+        /// Without this, the tests below would pass for nothing: they only show something if a
+        /// Thai user's collation really does lose the period, and if the process really is
+        /// invariant rather than Thai.
         /// </summary>
-        private static void AssertThaiCollationIgnoresThePeriod()
+        private static void AssertThaiUserWouldHaveHitTheBug()
         {
             Assert.That(
-                "original.png".LastIndexOf(".", StringComparison.CurrentCulture),
+                UserCulture.Current.CompareInfo.LastIndexOf("original.png", "."),
                 Is.Not.EqualTo(8),
                 "This runtime's th-TH collation finds the period, so it cannot reproduce BL-16926"
+            );
+            Assert.That(
+                CultureInfo.CurrentCulture.Name,
+                Is.EqualTo(""),
+                "The process culture should be invariant, as it is in Bloom"
             );
         }
 
         [TestCase("png")]
         [TestCase("jpg")]
-        [SetCulture("th-TH")]
-        public void ImageMetadata_UnderThaiCulture_CanBeSavedAndReadBack(string extension)
+        public void ImageMetadata_ForAThaiUser_CanBeSavedAndReadBack(string extension)
         {
-            AssertThaiCollationIgnoresThePeriod();
+            AssertThaiUserWouldHaveHitTheBug();
             var imagePath = MakeImage(extension);
             Assert.That(RobustFileIO.MetadataFromFile(imagePath).Creator, Is.Null.Or.Empty);
 
@@ -85,14 +95,13 @@ namespace BloomTests.ImageProcessing
 
         [TestCase("png", typeof(TagLib.Png.File), "taglib/png")]
         [TestCase("jpg", typeof(TagLib.Jpeg.File), "taglib/jpg")]
-        [SetCulture("th-TH")]
-        public void CreateTaglibFile_UnderThaiCulture_RecognizesTheFileType(
+        public void CreateTaglibFile_ForAThaiUser_RecognizesTheFileType(
             string extension,
             Type expectedType,
             string expectedMimeType
         )
         {
-            AssertThaiCollationIgnoresThePeriod();
+            AssertThaiUserWouldHaveHitTheBug();
             var imagePath = MakeImage(extension);
 
             // This is Bloom's own route into TagLib#.

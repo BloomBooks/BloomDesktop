@@ -171,10 +171,7 @@ namespace Bloom.Book
                         continue;
                     var newEditableDiv = ownerDoc.CreateElement("div");
                     newEditableDiv.SetAttribute("class", "bloom-editable");
-                    newEditableDiv.SetAttribute(
-                        "lang",
-                        IetfLanguageTagExtra.GetGeneralCode(uiLanguage)
-                    );
+                    newEditableDiv.SetAttribute("lang", IetfLanguageTag.GetGeneralCode(uiLanguage));
                     newEditableDiv.InnerText = translation;
                     editableDiv.ParentNode.AppendChild(newEditableDiv);
                 }

@@ -35,9 +35,9 @@ examples in [Globalization and ICU](https://learn.microsoft.com/dotnet/core/exte
 Book text contains those characters (e.g. the zero-width space in the audio split marker), so the
 CA1310 rule stays.
 
-BL-16947 (ordinal searches in libpalaso) is still worth merging: libpalaso is shared with
-FieldWorks and others that don't run invariant. Once this plan is in, Bloom no longer depends on it
-for any known bug.
+BL-16947 (ordinal searches in libpalaso) has landed (libpalaso PR #1550, in `18.0.0-beta0046`,
+which Bloom uses). It still matters for FieldWorks and others that don't run invariant; with this
+plan in, Bloom no longer depends on it for any known bug.
 
 ### Number and date parsing and formatting
 
@@ -99,8 +99,7 @@ they do get the fix. The front end has its own locale from WebView2 and is out o
 
 4. **Delete the workarounds this makes redundant**, each with its th-TH test moved to the new setup
    (step 6) so it still proves something:
-   - `ToPalaso/IetfLanguageTagExtra.cs` (the whole class; call `IetfLanguageTag` directly). BL-16947
-     removes it too; whichever lands first does it.
+   - `ToPalaso/IetfLanguageTagExtra.cs` (the whole class; call `IetfLanguageTag` directly).
    - `ImageProcessing/TagLibCultureFix.cs`, the TagLib# `FileTypeResolver` from BL-16926, and the
      call that registers it at startup.
    - the blocks that set `CurrentCulture` and `CurrentUICulture` to invariant around starting
@@ -110,8 +109,8 @@ they do get the fix. The front end has its own locale from WebView2 and is out o
      on the theory that the child process inherits Bloom's culture. The actual ffmpeg bug was
      comma decimals in the arguments, which the same work fixed by formatting them invariantly.
      On .NET 8, setting `CultureInfo` does not change the Windows locale a child process gets, so
-     these blocks very likely do nothing. Confirm that (e.g. a child process that prints its
-     culture), then delete them.
+     these blocks do nothing. Confirmed on 2026-10-20: a parent that set `fr-FR` or invariant
+     started a .NET child and a PowerShell child, and both reported the machine's `en-US`.
 
 5. **Guard rails**
    - **Banned-API analyzer** (`Microsoft.CodeAnalysis.BannedApiAnalyzers`, error severity), banning
@@ -144,6 +143,31 @@ they do get the fix. The front end has its own locale from WebView2 and is out o
 
 Steps 1, 2, 5 (analyzer) and 6 together, since the analyzer will flag every site in step 3 and the
 tests need the new setup in the same change. Step 4 can be a follow-up commit.
+
+## Status
+
+Done: all seven steps. Beyond the sites listed in step 3, the team collection lock
+date and message-log dates (`TeamCollectionApi`, `TeamCollectionMessage`) and the file sizes in
+`PublishHelper` (font embedding) and `UsbPublisher` use `UserCulture.Current`. `HtmlDom`'s
+placeholder alt-text match is now ordinal. The step 3 judgement calls (font `list.Sort()`, the
+line-spacing combos) are left invariant. The banned list also covers `DateTime.ToShortDateString`
+and its siblings, which only make sense for display. The runtime check runs on every API request
+(`BloomApiHandler.ProcessRequestAsync`).
+
+Step 4 deleted `IetfLanguageTagExtra`, `CommandLineRunnerExtra` (callers use `CommandLineRunner`
+directly), `TagLibCultureFix` and its test `SetUpFixture`, and the culture switching in
+`RecordVideoWindow.RunFfmpeg` and `AudioSegmentationApi.ExtractAudioSegmentAsync`.
+`UserCulture.cs` is now the only file in BloomExe that touches the process culture. The th-TH
+tests that covered the workarounds still run: `ThaiCultureStringSearchTests` now checks libpalaso's
+own `GetGeneralCode` under a Thai process culture, and `ThaiUserImageMetadataTests` (formerly
+`TagLibCultureFixTests`) checks that image metadata works for a Thai user in an invariant process.
+
+BloomHarvester (BloomBooks/bloom-harvester) needs one line. It does most of its work by running
+`Bloom.exe` as a child process, which goes through `Program.Main` and so runs invariant already.
+But it also runs some Bloom code in its own process (`BookAnalyzer`, font checks, book download),
+and that code runs in the server's culture until Harvester's `Program.Main` calls
+`Bloom.UserCulture.UseInvariantCulture()` first. It uses none of the APIs step 4 removed, and it
+dispatches no API requests in its own process, so the runtime check never runs there.
 
 ## Open questions
 

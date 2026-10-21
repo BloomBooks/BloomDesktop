@@ -130,7 +130,7 @@ namespace BloomTests
         [TestCase("zh-CN", "zh-CN")]
         public void GetGeneralCode_IsTheLanguageSubtag(string code, string expected)
         {
-            Assert.That(IetfLanguageTagExtra.GetGeneralCode(code), Is.EqualTo(expected));
+            Assert.That(IetfLanguageTag.GetGeneralCode(code), Is.EqualTo(expected));
         }
 
         [Test]
