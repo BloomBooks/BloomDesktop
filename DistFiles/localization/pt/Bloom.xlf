@@ -124,17 +124,17 @@
       </trans-unit>
       <trans-unit id="AccountMenu.Account">
         <source xml:lang="en">Account</source>
-        <target xml:lang="pt-PT" state="needs-translation">Account</target>
+        <target xml:lang="pt-PT" state="translated">Conta</target>
         <note>ID: AccountMenu.Account</note>
       </trans-unit>
       <trans-unit id="AccountMenu.SignIn">
         <source xml:lang="en">Sign in</source>
-        <target xml:lang="pt-PT" state="needs-translation">Sign in</target>
+        <target xml:lang="pt-PT" state="translated">Entrar</target>
         <note>ID: AccountMenu.SignIn</note>
       </trans-unit>
       <trans-unit id="AccountMenu.SignOut">
         <source xml:lang="en">Sign out</source>
-        <target xml:lang="pt-PT" state="needs-translation">Sign out</target>
+        <target xml:lang="pt-PT" state="translated">Sair</target>
         <note>ID: AccountMenu.SignOut</note>
       </trans-unit>
       <trans-unit id="AutoUpdateSoftwareDialog.SoftwareUpdates" sil:dynamic="true" approved="yes">
@@ -374,52 +374,52 @@
       </trans-unit>
       <trans-unit id="Collection.CollectionRequiresNewerVersion">
         <source xml:lang="en">The collection "{0}" requires Bloom {1} or greater. You are running Bloom {2}.</source>
-        <target xml:lang="pt-PT" state="needs-translation">The collection "{0}" requires Bloom {1} or greater. You are running Bloom {2}.</target>
+        <target xml:lang="pt-PT" state="translated">A coleção "{0}" requer Bloom {1} ou superior. Você está usando Bloom {2}.</target>
         <note>ID: Collection.CollectionRequiresNewerVersion</note>
       </trans-unit>
       <trans-unit id="Collection.NewerVersionNeededHeader" sil:dynamic="true">
         <source xml:lang="en">This collection needs a newer version of Bloom.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This collection needs a newer version of Bloom.</target>
+        <target xml:lang="pt-PT" state="translated">Esta coleção precisa de uma versão mais nova do Bloom.</target>
         <note>ID: Collection.NewerVersionNeededHeader</note>
       </trans-unit>
       <trans-unit id="Collection.NothingNewerAvailable">
         <source xml:lang="en">This collection needs Bloom {0}, but you already have the newest Bloom available to you.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This collection needs Bloom {0}, but you already have the newest Bloom available to you.</target>
+        <target xml:lang="pt-PT" state="translated">Esta coleção precisa de Bloom {0}, mas você já está usando a versão mais recente do Bloom disponível para você.</target>
         <note>ID: Collection.NothingNewerAvailable</note>
       </trans-unit>
       <trans-unit id="Collection.OpenDifferentCollection">
         <source xml:lang="en">Open a Different Collection</source>
-        <target xml:lang="pt-PT" state="needs-translation">Open a Different Collection</target>
+        <target xml:lang="pt-PT" state="translated">Abra uma coleção diferente</target>
         <note>ID: Collection.OpenDifferentCollection</note>
       </trans-unit>
       <trans-unit id="Collection.UpgradeBloom">
         <source xml:lang="en">Upgrade Bloom</source>
-        <target xml:lang="pt-PT" state="needs-translation">Upgrade Bloom</target>
+        <target xml:lang="pt-PT" state="translated">Atualizar Bloom</target>
         <note>ID: Collection.UpgradeBloom</note>
       </trans-unit>
       <trans-unit id="CollectionChooser.BookCountSingular">
         <source xml:lang="en">{0} book</source>
-        <target xml:lang="pt-PT" state="needs-translation">{0} book</target>
+        <target xml:lang="pt-PT" state="translated">{0} livro</target>
         <note>ID: CollectionChooser.BookCountSingular</note>
       </trans-unit>
       <trans-unit id="CollectionChooser.BookCountPlural">
         <source xml:lang="en">{0} books</source>
-        <target xml:lang="pt-PT" state="needs-translation">{0} books</target>
+        <target xml:lang="pt-PT" state="translated">{0} livros</target>
         <note>ID: CollectionChooser.BookCountPlural</note>
       </trans-unit>
       <trans-unit id="CollectionChooser.CheckedOutCount">
         <source xml:lang="en">{0} checked out to you</source>
-        <target xml:lang="pt-PT" state="needs-translation">{0} checked out to you</target>
+        <target xml:lang="pt-PT" state="translated">{0} em uso por você</target>
         <note>ID: CollectionChooser.CheckedOutCount</note>
       </trans-unit>
       <trans-unit id="CollectionChooser.UnpublishedToBloomLibrary">
         <source xml:lang="en">Books not yet published to BloomLibrary.org</source>
-        <target xml:lang="pt-PT" state="needs-translation">Books not yet published to BloomLibrary.org</target>
+        <target xml:lang="pt-PT" state="translated">Livros ainda não publicados em BloomLibrary.org</target>
         <note>ID: CollectionChooser.UnpublishedToBloomLibrary</note>
       </trans-unit>
       <trans-unit id="CollectionChooser.UnpublishedShort">
         <source xml:lang="en">{0} unpublished</source>
-        <target xml:lang="pt-PT" state="needs-translation">{0} unpublished</target>
+        <target xml:lang="pt-PT" state="translated">{0} não publicado</target>
         <note>ID: CollectionChooser.UnpublishedShort</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
@@ -1641,7 +1641,7 @@
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.RemoveFormat" sil:dynamic="true">
         <source xml:lang="en">Remove Formatting</source>
-        <target xml:lang="pt-PT" state="needs-translation">Remove Formatting</target>
+        <target xml:lang="pt-PT" state="translated">Remover a formatação</target>
         <note>ID: EditTab.DirectFormatting.RemoveFormat</note>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.labelForDefaultColor" sil:dynamic="true" approved="yes">
@@ -2196,22 +2196,22 @@
       </trans-unit>
       <trans-unit id="EditTab.Image.Transparency">
         <source xml:lang="en">Transparency</source>
-        <target xml:lang="pt-PT" state="needs-translation">Transparency</target>
+        <target xml:lang="pt-PT" state="translated">Transparência</target>
         <note>ID: EditTab.Image.Transparency</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.Transparency.Auto">
         <source xml:lang="en">Auto</source>
-        <target xml:lang="pt-PT" state="needs-translation">Auto</target>
+        <target xml:lang="pt-PT" state="translated">Automática</target>
         <note>ID: EditTab.Image.Transparency.Auto</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.Transparency.Transparent">
         <source xml:lang="en">Transparent</source>
-        <target xml:lang="pt-PT" state="needs-translation">Transparent</target>
+        <target xml:lang="pt-PT" state="translated">Transparente</target>
         <note>ID: EditTab.Image.Transparency.Transparent</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.Transparency.Opaque">
         <source xml:lang="en">Opaque</source>
-        <target xml:lang="pt-PT" state="needs-translation">Opaque</target>
+        <target xml:lang="pt-PT" state="translated">Opaco</target>
         <note>ID: EditTab.Image.Transparency.Opaque</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true" approved="yes">
@@ -3456,7 +3456,7 @@
       </trans-unit>
       <trans-unit id="FontInformationPane.FontFormatUnsuitable" approved="yes">
         <source xml:lang="en">This font is in a file format that Bloom cannot use for ebooks. Please use a different font.</source>
-        <target xml:lang="pt-PT" state="final">Esta fonte está num formato de arquivo que Bloom não pode usar para e-books (livros eletrónicos). Por favor, use uma fonte diferente.</target>
+        <target xml:lang="pt-PT" state="final">Esta fonte está num formato de arquivo que Bloom não pode usar para e-books (livros digitais). Por favor, use uma fonte diferente.</target>
         <note>ID: FontInformationPane.FontFormatUnsuitable</note>
       </trans-unit>
       <trans-unit id="FontInformationPane.FontUnsuitable" approved="yes">
@@ -4079,9 +4079,9 @@
         <target xml:lang="pt-PT" state="final">Links na Tabela (%0)</target>
         <note>ID: BookGridSetup.LinksInGrid</note>
       </trans-unit>
-      <trans-unit id="BookGridSetup.BooksInApp">
+      <trans-unit id="BookGridSetup.BooksInApp" approved="yes">
         <source xml:lang="en">Books in App (%0)</source>
-        <target xml:lang="pt-PT" state="translated">Livros no Aplicativo (%0)</target>
+        <target xml:lang="pt-PT" state="final">Livros no Aplicativo (%0)</target>
         <note>ID: BookGridSetup.BooksInApp</note>
       </trans-unit>
       <trans-unit id="PublishTab.Common.StopPublishing" approved="yes">
