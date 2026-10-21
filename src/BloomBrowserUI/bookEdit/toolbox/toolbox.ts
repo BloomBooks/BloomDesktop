@@ -180,6 +180,7 @@ export class ToolBox {
             requiredToolId = null;
         }
         toolThePageRequires = requiredToolId || undefined;
+        openToolWhenThePageAsked = getOpenToolId();
         // This function is the main task of adjustToolListForPage. It may have to be postponed
         // until we've finished otherwise setting up the toolbox.
         // It's possible there will be a tiny bit of flicker if the book opens on a page that
@@ -211,23 +212,6 @@ export class ToolBox {
             // See the later comments on BL-14434 (after the first PR link).
             if (requiredToolId && !toolsAdjusted) {
                 openToolOrFirstOffered(requiredToolId);
-            }
-            // The toolbox has now acted on whatever this page asked for, so stop
-            // answering with it: whichever tool it settled on is the open one, so
-            // getEffectiveToolId() gets the right answer from the store from here on.
-            // This has to happen even when nothing changed -- a page whose tool is
-            // already open changes neither the offered list nor the open tool, and
-            // leaving the request latched would make getEffectiveToolId() name a tool
-            // that is not running for as long as that tool stayed open (BL-14434).
-            //
-            // Only once the page's tool really is open, though. While the toolbox is
-            // hidden, offerToolAndMaybeOpen() offers the tool without opening it, so the
-            // store still names the tool the user was last on. The page's own request is
-            // then the only thing that knows this page belongs to another tool, and
-            // clearing it would let Talking Book claim the page's audio and highlighting
-            // -- BL-14434 over again, by the other door.
-            if (!requiredToolId || getOpenToolId() === requiredToolId) {
-                toolThePageRequires = undefined;
             }
         };
         doAdjustment();
@@ -295,6 +279,7 @@ export class ToolBox {
         // whatever it replaced -- follows from that; see useToolLifecycle.ts.
         subscribeToToolboxUiState(() => {
             persistOpenToolIfItChanged();
+            forgetPageToolRequestIfTheToolboxHasMovedOn();
         });
 
         // It seems (see BL-5330) that the toolbox code is loaded into the edit document as well as the
@@ -388,10 +373,9 @@ export class ToolBox {
             console.error(`activateToolFromId: there is no tool "${toolId}".`);
             return;
         }
-        // Making it visible first allows the simulated click to actually activate the tool.
-        // We don't seem to get flicker seeing some other tool first, and if we do it after
-        // the simulated click and the tool we're activating wasn't previously enabled,
-        // it somehow ends up enabled but not open.
+        // Show the toolbox first: offerToolAndMaybeOpen() only opens a tool while the
+        // toolbox is showing, so opening it afterwards would leave the tool enabled and
+        // offered but not open. We don't seem to get flicker seeing some other tool first.
         const toolboxWasShowing = this.toolboxIsShowing();
         if (!toolboxWasShowing) {
             this.toggleToolbox();
@@ -402,8 +386,8 @@ export class ToolBox {
         if (isToolEnabled(toolId) || isToolOffered(toolId)) {
             openToolOrFirstOffered(toolId);
         } else {
-            // Genuinely disabled: enable it, which persists the state and records it in
-            // the store, then activates it (offerOrWithdrawTool opens it by default).
+            // Genuinely disabled: enable it, which persists the state, records it in the
+            // store, and offers it -- and offering opens it, the toolbox now being shown.
             applyToolEnabledChange(toolId, true);
         }
     }
@@ -497,6 +481,31 @@ function syncToolboxVisibilityFromDom(): void {
 // the asynchronous calls during page loading race and the wrong tool gets newPageReady.
 // See BL-14434, and doesEffectiveToolPlayAudio() in audioRecording.ts.
 let toolThePageRequires: string | undefined = undefined;
+
+// What was open at the moment the page asked. The request is only worth answering with
+// until the toolbox has moved somewhere since: once it has, the store knows better.
+let openToolWhenThePageAsked: string | undefined = undefined;
+
+/**
+ * Drops the page's tool request once the toolbox has opened something since it was made --
+ * the page's own tool, or another one the user picked instead. Called on every store change.
+ *
+ * Why not simply drop it as soon as the page has been dealt with: while the toolbox is
+ * hidden, offerToolAndMaybeOpen() offers a page's tool without opening it, so nothing in
+ * the store yet knows this page belongs to the Game tool, and dropping the request there
+ * would let Talking Book claim the page's audio and highlighting -- the very thing
+ * BL-14434 added it for. And why not keep it until the next page: the user can open
+ * another tool meanwhile, and then the request would go on naming a tool that is not
+ * running.
+ */
+function forgetPageToolRequestIfTheToolboxHasMovedOn(): void {
+    if (!toolThePageRequires) {
+        return;
+    }
+    if (getOpenToolId() !== openToolWhenThePageAsked) {
+        toolThePageRequires = undefined;
+    }
+}
 
 /**
  * The tool whose markup and audio should apply to the page in front of us: the one a loading
@@ -831,7 +840,7 @@ function restoreToolboxSettingsWhenPageReady(
         }
 
         // Note: the bulk of restoring the settings (everything but which if any tool is open)
-        // is done when a tool becomes current.
+        // is done when a tool starts running.
     });
 }
 
@@ -912,7 +921,9 @@ function getITool(toolId: string): ITool | undefined {
 }
 
 /**
- * Tells the toolbox to offer this tool, and optionally to open it.
+ * Tells the toolbox to offer this tool, and -- if the toolbox is showing -- to open it.
+ * Asking to open it while the toolbox is hidden offers it and nothing more, which is why
+ * adjustToolListForPage() holds on to the page's request until the tool really is open.
  * These tools are the tools enabled by the user, tools that are always enabled
  * (like the talking book tool), and the settings ("More...") tool.
  */

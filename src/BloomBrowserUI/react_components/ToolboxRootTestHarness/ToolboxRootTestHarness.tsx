@@ -57,7 +57,7 @@ const initiallyOfferedToolIds = [
     kSettingsToolId,
 ];
 
-// The tool this "book" was last using, which toolbox.ts makes current once the tools
+// The tool this "book" was last using, which toolbox.ts opens once the tools
 // exist. Deliberately not the first tool, so that a test can tell that it was restored
 // rather than just defaulted to.
 const restoredOpenToolId = kMotionToolId;

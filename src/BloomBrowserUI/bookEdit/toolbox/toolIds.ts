@@ -22,9 +22,10 @@ export const kMusicToolId = "music";
 export const kSettingsToolId = "settings";
 export const kTalkingBookToolId = "talkingBook";
 
-// Historically, tool names in some contexts carry a "Tool" suffix: the "current" tool and
-// the tool "name"s in a book's meta.json, and the data-toolid attribute that some tool
-// stylesheets select on. The canonical, in-memory id of a tool is always the unsuffixed
+// Historically, tool names in some contexts carry a "Tool" suffix. One such place is left:
+// the "current" tool in a book's meta.json. (A tool's data-toolid attribute now carries the
+// canonical id, and meta.json's enabled-tool names arrive with a "Check" suffix that the C#
+// side strips.) The canonical, in-memory id of a tool is always the unsuffixed
 // one that its id() method returns, e.g. "talkingBook". The two functions below are the
 // only code that knows about the suffix, and they are called only at those boundaries.
 const kPersistedNameSuffix = "Tool";

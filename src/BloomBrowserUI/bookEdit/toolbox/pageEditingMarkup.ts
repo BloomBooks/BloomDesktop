@@ -20,7 +20,7 @@ import {
 // The one toolbox, whose running tool we ask to update its markup. toolbox.ts hands it to
 // us in configurePageEditingHandlers rather than us importing it, because toolbox.ts
 // imports this module to install the handlers, and importing it back would be a cycle.
-// Undefined until then; a paste or undo that arrives first is treated as having no current
+// Undefined until then; a paste or undo that arrives first is treated as having no running
 // tool, as it was when toolbox.ts owned this code.
 let toolbox: ToolBox | undefined;
 
@@ -408,7 +408,7 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 // rejoining the text leaves the DOM exactly as it was, Chromium goes on painting
                 // the paragraph's old glyphs where a ligature straddled the split, so letters the
                 // user typed stop being drawn until something else forces a repaint (BL-16717).
-                // Nothing below rewrites this box unless a tool is active, or there is actually
+                // Nothing below rewrites this box unless a tool is running, or there is actually
                 // a comment or an nbsp to clean up - and if nothing rewrites the box, there is no
                 // selection to preserve. So only record the caret when one of those is true,
                 // which for ordinary typing is never. (Decided BEFORE the record is made: a
