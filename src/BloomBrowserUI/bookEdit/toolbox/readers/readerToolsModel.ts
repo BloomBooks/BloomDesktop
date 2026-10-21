@@ -643,6 +643,10 @@ export class ReaderToolsModel {
 
     public canUndo(): boolean {
         if (!this.activeElement) return false;
+        // The box we last saw focused may have gone from the page since: a table undo rebuilds
+        // its cells, for instance. Undoing typing there would change nothing anyone can see, and
+        // would stop the Undo button reaching whatever comes next.
+        if (!this.activeElement.isConnected) return false;
         if (
             this.undoStack &&
             (this.undoStack.length > 1 ||

@@ -236,6 +236,18 @@ pnpm exec playwright test --debug    # step through it
 
 A run opens a real Bloom window on your desktop. That is expected; do not click in it.
 
+### Tests that need a person: `*.manual.ts`
+
+A test that cannot pass unattended, because a person has to press real keys for instance, is named
+`*.manual.ts`, not `*.spec.ts`. A normal run, and so the nightly, does not collect it at all, so it
+is never reported as skipped; a skip in the nightly is then always one that needs work. Do not
+make such a test skip itself instead. To run one, set `PLAYWRIGHT_INCLUDE_MANUAL` (the same switch
+the component tester uses for its manual harnesses):
+
+```bash
+PLAYWRIGHT_INCLUDE_MANUAL=1 pnpm exec playwright test tests/undo-physical-keys.manual.ts
+```
+
 ### Where the Bloom window goes: `BLOOM_AUTOMATION_MONITOR`
 
 One environment variable decides where every window an e2e run opens goes, the main window and

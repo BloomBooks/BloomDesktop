@@ -63,7 +63,7 @@ of CKEditor's colour panel (§4.5), which supersedes A7 and A9 rather than repro
 | B9 | Shift+Enter inserts `<span class="bloom-linebreak"></span>` plus a ZWNJ if needed, and leaves the caret **after** it | `BloomField.InsertLineBreak` | BL-3009 | unit + live |
 | B10 | The caret is never left *inside* a `bloom-linebreak` span | `BloomField.EnsureCaretNotInsideLineBreakSpan`, on selection change | | unit |
 | B11 | An **empty** `span.bloom-linebreak` survives round-tripping and is not stripped as an empty element | `CKEDITOR.dtd.$removeEmpty.span = 0` | BL-3009 | unit |
-| B12 | Typing a URL then a space/enter turns it into a live link | `autolink` plugin | BL-6845 | live |
+| B12 | Pasting text that is exactly one URL (`http`, `https`, `ftp`) or one email address makes it a live link. Paste only: typing a URL does not link it | `autolink` plugin (`editor.on("paste")` only) | BL-6845 | live |
 | B13 | `.bloom-editable` divs get `spellcheck="false"` — no red squiggles | `config.disableNativeSpellChecker` | BL-12205 | live |
 | B14 | Hyperlink button opens the link-target chooser and wraps the selection in `<a href>`; failure on a complex selection shows the `EditTab.HyperlinkPasteFailure` message | `BloomField` `setupHyperlink` command | | manual |
 
@@ -192,6 +192,7 @@ DOM, so **G1 should get strictly better**.
 | H7 | With a reader tool active, Undo restores the *pre-markup* text rather than re-applying stale markup — i.e. reader-tools undo takes precedence over CKEditor's | `handleUndo` order; `shouldHandleUndo` | | live |
 | H8 | Undoing an image operation is offered only when the active element is an image container | `canUndoImageOperation` | | unit |
 | H9 | Undo state is dropped when the page changes | `clearImageOperationUndoOnPageChange` | | unit |
+| H9a | Ctrl+Shift+Z redoes, as well as Ctrl+Y | CKEditor keystrokes | | live |
 
 **New behaviour this project adds** (not regressions to guard, but acceptance criteria):
 
@@ -199,7 +200,7 @@ DOM, so **G1 should get strictly better**.
 |---|---|---|
 | H10 | One ordered stack: operations undo in the order performed, across text, images, layout and structure | §4.1, Stage 1 |
 | H11 | **Deleting a canvas element is undoable** | Stage 2b |
-| H12 | **Deleting a page is undoable**, restoring it at its original index with correct page numbering | Stage 2a |
+| H12 | ~~Deleting a page is undoable~~: dropped, because undo covers only the page as currently loaded | PLAN.md §10 decision 7 |
 | H13 | Ctrl+Z / Ctrl+Y work anywhere in the page, not only in layout mode | Stage 4 |
 | H14 | Redo works for everything undoable that has a `redo` (entries without one act as a redo floor) | §4.1, §10 q1 |
 | H15 | The browser's own undo can never diverge from Bloom's stack | §4.4 `beforeinput` fence |
@@ -252,6 +253,35 @@ ArithmeticTemplate boxes get no editor is **false**; see J1.
 `document.execCommand("undo")` to reverse it — using the very browser undo stack we are fencing off
 (§4.4). Replace with a `beforeinput` guard: reject any `delete*` whose `getTargetRanges()` covers a
 `.bloom-preventRemoval` element.
+
+## L. Editing behaviour CKEditor supplies without being asked
+
+Found by reading the CKEditor code we ship (PLAN.md §4.14, which has the code references and
+owners). Native contenteditable in Chromium is expected to behave differently in each case:
+confirm today's behaviour live before building, as the ⚠ rows in section C require.
+
+| # | Behaviour | §4.14 | Verify |
+|---|---|---|---|
+| L1 | Enter makes a new `<p>`, also at the end of a heading; never a `<div>` | 1 | live |
+| L2 | Enter inside a recorded sentence does not leave two elements with the same `id` | 2 | live |
+| L3 | A paragraph started with Enter inside bold/italic text continues it as `<strong>`/`<em>` | 3 | live |
+| L4 | Enter in a "Do Not Indent This Paragraph" paragraph starts a normally indented one (BL-16649) | 4 | live |
+| L5 | Backspace/Delete across a paragraph or heading boundary leaves no `style` spans behind | 5 | live |
+| L6 | Ctrl+B/I/U at a caret, then typing, gives formatted text; Ctrl+Space at a caret inside bold ends the bold there | 6 | unit + live |
+| L7 | Bold on legacy `<b>` text removes the bold rather than nesting `<strong>`; adjacent identical formats merge | 7 | unit |
+| L8 | Toolbar format buttons show as pressed when the selection has that format | 8 | live |
+| L9 | A new text colour replaces existing colours in the range; colour inside a link goes inside the `<a>`; "default" removes the colour | 9 | unit |
+| L10 | Clicking a toolbar button keeps the text selected and does not blur the field; the toolbar follows the box on scroll and growth | 11 | manual |
+| L11 | Text copied within the same page keeps its `bloom-linebreak` and audio-sentence spans when pasted; text from another page or book is filtered | 13 | live |
+| L12 | A pasted table, list or `div` arrives as paragraphs, not as one run-together line | 14 | unit |
+| L13 | Pasting a whole copied paragraph adds no stray line break; pasted source whitespace collapses | 15 | unit |
+| L14 | Pasting several paragraphs into the middle of a paragraph splits it, without nested `<p>` | 16 | unit + live |
+| L15 | Ctrl+V and the toolbar Paste button treat multi-line plain text the same way, and text containing `<` is pasted as text | 17 | unit |
+| L16 | Copying coloured or themed text does not freeze computed fonts or colours into the copy | 18 | live |
+| L17 | Dropping a file on a text box does nothing; dragging text within a box moves it as one undo step | 19 | manual |
+| L18 | Undo re-selects what was selected when the step was made | 20 | live |
+| L19 | Typing, deleting, then typing again gives separate undo steps; a step that changed nothing is not recorded | 21, 22 | unit |
+| L20 | Pasting image credits from a Source Bubble still works | 25 | manual |
 
 ---
 

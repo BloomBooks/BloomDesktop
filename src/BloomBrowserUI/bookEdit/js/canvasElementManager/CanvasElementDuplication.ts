@@ -12,6 +12,7 @@ import {
     getCanvasElementRotation,
     setCanvasElementRotation,
 } from "./canvasElementRotation";
+import { refreshImgTransparentParam } from "../bloomImages";
 
 const kComicalGeneratedClass: string = "comical-generated";
 
@@ -170,6 +171,13 @@ export class CanvasElementDuplication {
         patriarchDuplicateElement.style.color = sourceElement.style.color; // preserve text color
         patriarchDuplicateElement.innerHTML =
             this.safelyCloneHtmlStructure(sourceElement);
+        // A duplicated background image becomes an overlay, which gets Auto transparency even on
+        // a white page when the canvas has a real background image, so its copied src may carry
+        // the wrong transparent param.
+        const duplicateImg = patriarchDuplicateElement.querySelector("img");
+        if (duplicateImg) {
+            refreshImgTransparentParam(duplicateImg);
+        }
         // Preserve the Auto Height setting.  See BL-13931.
         if (sourceElement.classList.contains("bloom-noAutoHeight"))
             patriarchDuplicateElement.classList.add("bloom-noAutoHeight");
