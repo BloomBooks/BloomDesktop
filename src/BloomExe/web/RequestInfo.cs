@@ -76,19 +76,10 @@ namespace Bloom.Api
         //used when an anchor has given us info, but we don't actually want the browser to navigate
         public void ExternalLinkSucceeded()
         {
-            // Without the Close(), the reply is never sent and the connection stays open; after a
-            // handful of these the browser runs out of connections and other API calls stall.
-            try
-            {
-                _actualContext.Response.StatusCode = 200; //Completed
-                _actualContext.Response.ContentLength64 = 0;
-                _actualContext.Response.Close();
-            }
-            catch (HttpListenerException e)
-            {
-                ReportHttpListenerProblem(e);
-            }
-            HaveFullyProcessedRequest = true;
+            // 204 No Content tells a browser following an anchor to stay where it is. We must
+            // actually send it: a reply that is never sent leaves the connection open, and after
+            // a handful of those the browser runs out of connections and other API calls stall.
+            WriteNoContent();
         }
 
         public void WriteNoContent()
