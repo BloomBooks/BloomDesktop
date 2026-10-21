@@ -76,7 +76,18 @@ namespace Bloom.Api
         //used when an anchor has given us info, but we don't actually want the browser to navigate
         public void ExternalLinkSucceeded()
         {
-            _actualContext.Response.StatusCode = 200; //Completed
+            // Without the Close(), the reply is never sent and the connection stays open; after a
+            // handful of these the browser runs out of connections and other API calls stall.
+            try
+            {
+                _actualContext.Response.StatusCode = 200; //Completed
+                _actualContext.Response.ContentLength64 = 0;
+                _actualContext.Response.Close();
+            }
+            catch (HttpListenerException e)
+            {
+                ReportHttpListenerProblem(e);
+            }
             HaveFullyProcessedRequest = true;
         }
 
@@ -142,6 +153,7 @@ namespace Bloom.Api
         // while it is being served (notably for thumbnails and media), so we require
         // FileShare.ReadWrite | FileShare.Delete. We still want robust retry behavior,
         // so we wrap this open in RetryUtility.Retry().
+        // robustfile-hook: allow FileStream
         private static FileStream OpenSharedReadStreamWithRetry(string path)
         {
             return RetryUtility.Retry(() =>

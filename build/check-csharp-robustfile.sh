@@ -9,6 +9,8 @@ echo Checking for possible uses of non-Robust C\# File or FileStream operations.
 # 4) For any remaining files, look for possible uses of (SIL.IO.)File.<method>.  (This
 #    is complicated slightly by a set of localization IDs which use File.) We also look
 #    for FileStream constructors and certain (SIL.IO.)Directory methods.
+#    A FileStream use may be explicitly allowed if a nearby line contains
+#    `robustfile-hook: allow FileStream`.
 # 5) If anything is found (grep returns 0), then we stop everything and complain.
 filesToCheck=filesToCheck.lst
 git diff --cached --name-only --diff-filter=AM -z -- '*.cs' | tr '\0' '\n' >$filesToCheck
@@ -19,8 +21,38 @@ if [ -s $filesToCheck ]; then
       src/BloomExe/RobustFileIO.cs) continue;;
       src/BloomTests/*) continue;;
     esac
-    if grep -H '\([^A-Za-z0-9_]File\.[A-Z]\|new\s\+FileStream\|[^A-Za-z0-9_]Directory\.\(Move\|Delete\)[^A-Za-z0-9_]\|[^A-Za-z0-9_]\(Document\|Metadata\)\.FromFile\)' "$file" | \
-      grep -v 'PublishTab\.Android\.File\.'; then
+    if awk '
+      # Flag ordinary banned file APIs directly.
+      # For FileStream, allow a narrow opt-out only when a nearby line contains
+      # `robustfile-hook: allow FileStream`; this is intended for rare documented
+      # cases such as requiring FileShare.ReadWrite | FileShare.Delete.
+      /robustfile-hook:[[:space:]]*allow FileStream/ {
+        allow_filestream_until = NR + 12;
+      }
+      /PublishTab\.Android\.File\./ {
+        next;
+      }
+      # TagLib.File is a TagLib# class, not System.IO.File.
+      /TagLib\.File\./ {
+        next;
+      }
+      /(^|[^A-Za-z0-9_])File\.[A-Z]/ ||
+      /(^|[^A-Za-z0-9_])Directory\.(Move|Delete)([^A-Za-z0-9_]|$)/ ||
+      /(^|[^A-Za-z0-9_])(Document|Metadata)\.FromFile([^A-Za-z0-9_]|$)/ {
+        print FILENAME ":" $0;
+        found = 1;
+        next;
+      }
+      /new[[:space:]]+FileStream/ {
+        if (NR > allow_filestream_until) {
+          print FILENAME ":" $0;
+          found = 1;
+        }
+      }
+      END {
+        exit found ? 0 : 1;
+      }
+    ' "$file"; then
       status=0
       break
     fi
