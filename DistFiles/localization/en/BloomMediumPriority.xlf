@@ -1534,6 +1534,11 @@
         <source xml:lang="en">Sorry, there was a problem adding the image.</source>
         <note>ID: ImageLibrary.FailedToAddImage</note>
       </trans-unit>
+      <trans-unit id="ImageLibrary.CouldNotDownloadImage" translate="no">
+        <source xml:lang="en">Bloom could not download this picture. Check that this computer is connected to the internet, then try again.</source>
+        <note>ID: ImageLibrary.CouldNotDownloadImage</note>
+        <note>Message shown when the user chooses a picture from an online source in the Image Chooser and Bloom cannot download it, usually because the computer is offline. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
       <trans-unit id="ImageLibrary.AboutOpenVerse">
         <source xml:lang="en">About Openverse</source>
         <note>ID: ImageLibrary.AboutOpenVerse</note>
