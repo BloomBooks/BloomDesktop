@@ -6260,9 +6260,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="pt-PT" state="final">Ferramenta de língua de sináis</target>
         <note>ID: TemplateBooks.BookName.Sign Language</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Sign Language Pages" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Sign Language Pages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sign Language Pages</source>
-        <target xml:lang="pt-PT" state="translated">Páginas para línguas de sinais</target>
+        <target xml:lang="pt-PT" state="final">Páginas para línguas de sinais</target>
         <note>ID: TemplateBooks.BookName.Sign Language Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Special Pages" sil:dynamic="true" approved="yes">
