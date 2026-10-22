@@ -32,7 +32,7 @@
       </trans-unit>
       <trans-unit id="Common.Working">
         <source xml:lang="en">Working…</source>
-        <target xml:lang="pt-PT" state="needs-translation">Working…</target>
+        <target xml:lang="pt-PT" state="translated">Trabalhando…</target>
         <note>ID: Common.Working</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder">
@@ -1366,7 +1366,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.PrepareStepper.InstallerAvailable">
         <source xml:lang="en">Get installer</source>
-        <target xml:lang="pt-PT" state="needs-translation">Get installer</target>
+        <target xml:lang="pt-PT" state="translated">Obter o instalador</target>
         <note>ID: PublishTab.Apps.PrepareStepper.InstallerAvailable</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.PrepareStepper.ProjectCreated" approved="yes">
@@ -1376,7 +1376,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.PrepareStepper.RabInstalled">
         <source xml:lang="en">Run installer</source>
-        <target xml:lang="pt-PT" state="needs-translation">Run installer</target>
+        <target xml:lang="pt-PT" state="translated">Executar instalador</target>
         <note>ID: PublishTab.Apps.PrepareStepper.RabInstalled</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.PrepareStepper.SigningKeyReady">
@@ -1391,27 +1391,27 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Progress.InstallingOnPhone">
         <source xml:lang="en">Installing app on phone</source>
-        <target xml:lang="pt-PT" state="needs-translation">Installing app on phone</target>
+        <target xml:lang="pt-PT" state="translated">Instalando o aplicativo no celular</target>
         <note>ID: PublishTab.Apps.Progress.InstallingOnPhone</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Progress.LaunchingOnPhone">
         <source xml:lang="en">Launching app on phone</source>
-        <target xml:lang="pt-PT" state="needs-translation">Launching app on phone</target>
+        <target xml:lang="pt-PT" state="translated">Iniciando o aplicativo no telefone</target>
         <note>ID: PublishTab.Apps.Progress.LaunchingOnPhone</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.UsbDebuggingHelpLink">
         <source xml:lang="en">How to set up your Android phone</source>
-        <target xml:lang="pt-PT" state="needs-translation">How to set up your Android phone</target>
+        <target xml:lang="pt-PT" state="translated">Como configurar seu celular Android</target>
         <note>ID: PublishTab.Apps.UsbDebuggingHelpLink</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.WhatsNext">
         <source xml:lang="en">What&apos;s Next?</source>
-        <target xml:lang="pt-PT" state="needs-translation">What's Next?</target>
+        <target xml:lang="pt-PT" state="translated">Próximos passos:</target>
         <note>ID: PublishTab.Apps.WhatsNext</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.WhatsNext.Explanation">
         <source xml:lang="en">Actually publishing your app to the Android App Store requires several more steps. In the near future we hope to expand Bloom to help with that part of the process.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Actually publishing your app to the Android App Store requires several more steps. In the near future we hope to expand Bloom to help with that part of the process.</target>
+        <target xml:lang="pt-PT" state="translated">Publicar seu aplicativo na Google Play Store exige mais algumas etapas. Em um futuro próximo, esperamos expandir o Bloom para ajudar nessa parte do processo.</target>
         <note>ID: PublishTab.Apps.WhatsNext.Explanation</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.Title" approved="yes">
@@ -1421,12 +1421,12 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.BasicsGroup">
         <source xml:lang="en">Basics</source>
-        <target xml:lang="pt-PT" state="needs-translation">Basics</target>
+        <target xml:lang="pt-PT" state="translated">Básicos</target>
         <note>ID: PublishTab.Apps.SettingsDialog.BasicsGroup</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.AppearanceGroup">
         <source xml:lang="en">Appearance</source>
-        <target xml:lang="pt-PT" state="needs-translation">Appearance</target>
+        <target xml:lang="pt-PT" state="translated">Aparência</target>
         <note>ID: PublishTab.Apps.SettingsDialog.AppearanceGroup</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.AppName" approved="yes">
@@ -1436,7 +1436,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.ColorScheme">
         <source xml:lang="en">Color Scheme</source>
-        <target xml:lang="pt-PT" state="needs-translation">Color Scheme</target>
+        <target xml:lang="pt-PT" state="translated">Esquema de Cores</target>
         <note>ID: PublishTab.Apps.SettingsDialog.ColorScheme</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName" approved="yes">
@@ -1446,17 +1446,17 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.Icon">
         <source xml:lang="en">Icon</source>
-        <target xml:lang="pt-PT" state="needs-translation">Icon</target>
+        <target xml:lang="pt-PT" state="translated">Ícone</target>
         <note>ID: PublishTab.Apps.SettingsDialog.Icon</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.Icon.Current">
         <source xml:lang="en">Current icon</source>
-        <target xml:lang="pt-PT" state="needs-translation">Current icon</target>
+        <target xml:lang="pt-PT" state="translated">Ícone atual</target>
         <note>ID: PublishTab.Apps.SettingsDialog.Icon.Current</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.Copyright">
         <source xml:lang="en">Copyright</source>
-        <target xml:lang="pt-PT" state="needs-translation">Copyright</target>
+        <target xml:lang="pt-PT" state="translated">Direitos autorais</target>
         <note>ID: PublishTab.Apps.SettingsDialog.Copyright</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.About" approved="yes">
@@ -1481,7 +1481,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.ReadingAppBuilder">
         <source xml:lang="en">Reading App Builder</source>
-        <target xml:lang="pt-PT" state="needs-translation">Reading App Builder</target>
+        <target xml:lang="pt-PT" state="translated">Reading App Builder</target>
         <note>ID: PublishTab.Apps.SettingsDialog.ReadingAppBuilder</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.MoreSettings" approved="yes">
@@ -1491,7 +1491,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.StartingReadingAppBuilder">
         <source xml:lang="en">Starting Reading App Builder...</source>
-        <target xml:lang="pt-PT" state="needs-translation">Starting Reading App Builder...</target>
+        <target xml:lang="pt-PT" state="translated">Iniciando Reading App Builder...</target>
         <note>ID: PublishTab.Apps.SettingsDialog.StartingReadingAppBuilder</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.RunRAB.Description">
@@ -1546,7 +1546,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.ChooseBooks.Tooltip">
         <source xml:lang="en">Choose which books to include in the app and the order they should appear.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Choose which books to include in the app and the order they should appear.</target>
+        <target xml:lang="pt-PT" state="translated">Selecionar quais livros incluir no aplicativo e a ordem em que eles devem aparecer.</target>
         <note>ID: PublishTab.Apps.ChooseBooks.Tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Progress.BuildingAndroidApp">
@@ -1691,7 +1691,7 @@
       </trans-unit>
       <trans-unit id="ImageLibrary.ArtOfReadingDescription">
         <source xml:lang="en">International Illustrations: Art of Reading 3.0 is a collection of over 11,000 images. The collection is designed for use in the preparation of a wide variety of literacy and educational materials, such as shellbooks, primers, news-sheets, posters, and other culturally appropriate materials. These images are black and white line drawings collected from SIL and national artists from around the world.</source>
-        <target xml:lang="pt-PT" state="needs-translation">International Illustrations: Art of Reading 3.0 is a collection of over 11,000 images. The collection is designed for use in the preparation of a wide variety of literacy and educational materials, such as shellbooks, primers, news-sheets, posters, and other culturally appropriate materials. These images are black and white line drawings collected from SIL and national artists from around the world.</target>
+        <target xml:lang="pt-PT" state="translated">Ilustrações Internacionais: Art of Reading 3.0 é uma coleção de mais de 11.000 imagens. A coleção foi projetada para uso na preparação de uma ampla variedade de materiais educacionais e de alfabetização, como livros-modelo (shellbooks), cartilhas, boletins informativos, cartazes e outros materiais culturalmente apropriados. Estas imagens são desenhos de linha em preto e branco coletados da SIL e de artistas nacionais de todo o mundo.</target>
         <note>ID: ImageLibrary.ArtOfReadingDescription</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.ArtOfReadingNotReadyInstructions">
@@ -2469,9 +2469,9 @@
         <target xml:lang="pt-PT" state="final">Ilustração</target>
         <note>ID: AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Illustration</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Line Drawing">
+      <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Line Drawing" approved="yes">
         <source xml:lang="en">Line Drawing</source>
-        <target xml:lang="pt-PT" state="translated">Desenho a traço</target>
+        <target xml:lang="pt-PT" state="final">Desenho de linha</target>
         <note>ID: AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Line Drawing</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Photo" approved="yes">
