@@ -60,6 +60,8 @@ vi.mock("../../utils/bloomApi", async (importOriginal) => {
         ...actual,
         post: mockPost,
         postJson: mockPostJson,
+        // The dialog tells Bloom it is modal while open (editView/setModalState).
+        postBoolean: () => {},
         useApiBoolean: () => [true],
         useApiObject: (endpoint: string, defaultValue: unknown) => {
             if (endpoint === "book/settings/appearanceUIOptions") {

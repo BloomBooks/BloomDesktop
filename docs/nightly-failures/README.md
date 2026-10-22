@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-10-21 (nightlies through the 2026-10-21 run have been triaged)
+**Last updated:** 2026-10-22 (nightlies through the 2026-10-22 run have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -8,6 +8,38 @@ once its fix lands and the nightly has stayed green on it. The rule they are all
 accept a flaky test, and a test is flaky from its first unexplained failure (root `AGENTS.md`,
 Testing). So "wait and see whether it recurs" is never an entry's plan. To bring this up to date,
 use the `nightly-triage` skill.
+
+## E2E suite does not run: a spec imports a helper from the wrong module
+
+- **Failed:** 2026-10-22. The whole BloomE2E suite: no test ran ("no results file" after 6 s).
+- **Cause:** Playwright could not load the test files: "The requested module '../helpers/workspace'
+  does not provide an export named 'canUndo'". `rotate-and-flip-images.spec.ts:64` imports
+  `canUndo` from `helpers/workspace`, but it moved to `helpers/undo.ts` on 2026-10-13
+  (`45505dcb27`, BL-16900). The import came in with
+  [#8463](https://github.com/BloomBooks/BloomDesktop/pull/8463) (BL-16741), written before that move
+  and merged on 2026-10-21; nothing in CI type-checks the e2e project, so it was not caught.
+- **Status:** fixed by [#8494](https://github.com/BloomBooks/BloomDesktop/pull/8494), merged
+  2026-10-22, which imports `canUndo` from `../helpers/undo`. Remove this entry once a nightly has
+  passed on it.
+
+## TypeScript unit tests: teardown errors from tableEditing.test.ts
+
+- **Failed:** 2026-10-22. All 1564 vitest tests passed, but the run failed on 9 errors, all
+  "EnvironmentTeardownError: Closing rpc while 'onUserConsoleLog' was pending", originating in
+  `bookEdit/js/tableEditing.test.ts`.
+- **Cause:** a race in the test, not in Bloom. Each table cell editor the tests create gets
+  `activateLongPressFor` (`tableEditing.ts:186`), which asks the server
+  `/bloom/api/keyboarding/useLongpress` with `axios` directly, so the test's `bloomApi` mock does
+  not catch it. Under jsdom there is no server, so each request fails a moment later and logs
+  twice (jsdom's network error, then "useLongpress query failed" from `bloomEditing.ts`). When
+  those failures arrive after vitest has torn the file's environment down, vitest reports them as
+  errors and fails the run; usually they arrive in time, which is why it passed until now.
+  Confirmed locally by logging every console call from that file.
+- **Status:** fix in review in [#8495](https://github.com/BloomBooks/BloomDesktop/pull/8495)
+  ([BL-17040](https://issues.bloomlibrary.org/youtrack/issue/BL-17040)). Six other test files made
+  real requests too, so the fix is for the whole class: `vitest.setup.ts` now refuses every
+  request and fails the test that made it, so no failure can arrive after teardown, and the seven
+  files mock what they call.
 
 ## Bulk upload test: two different failures against dev.bloomlibrary.org
 

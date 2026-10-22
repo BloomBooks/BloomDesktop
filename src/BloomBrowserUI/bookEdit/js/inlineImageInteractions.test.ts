@@ -30,6 +30,13 @@ vi.mock("./workspaceFrames", async (importOriginal) => ({
         readerToolsHandleUndoKeys: () => toolboxStub.readerToolsHandleUndoKeys,
     }),
 }));
+// Unit tests must not reach the network (see vitest.setup.ts). The image menu asks Bloom for the
+// collection's language names, and commands record an analytics event; neither matters here.
+vi.mock("../../utils/bloomApi", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../../utils/bloomApi")>()),
+    useApiObject: <T>(_urlSuffix: string, defaultValue: T) => defaultValue,
+    trackEvent: () => {},
+}));
 import {
     getTestRoot,
     cleanTestRoot,
