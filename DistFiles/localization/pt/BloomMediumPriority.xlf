@@ -117,7 +117,7 @@
       </trans-unit>
       <trans-unit id="EditTab.TextContextMenu.NoIndent">
         <source xml:lang="en">Do Not Indent This Paragraph</source>
-        <target xml:lang="pt-PT" state="needs-translation">Do Not Indent This Paragraph</target>
+        <target xml:lang="pt-PT" state="translated">Não recuar este parágrafo</target>
         <note>ID: EditTab.TextContextMenu.NoIndent</note>
       </trans-unit>
       <trans-unit id="EditTab.InlineImage.InsertImage" translate="no">
@@ -345,7 +345,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageNumber" sil:dynamic="true">
         <source xml:lang="en">Stage {0}</source>
-        <target xml:lang="pt-PT" state="needs-translation">Stage {0}</target>
+        <target xml:lang="pt-PT" state="translated">Estágio {0}</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageNumber</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ReaderTools.OfCount" sil:dynamic="true">
@@ -485,17 +485,17 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelNumber" sil:dynamic="true">
         <source xml:lang="en">Level {0}</source>
-        <target xml:lang="pt-PT" state="needs-translation">Level {0}</target>
+        <target xml:lang="pt-PT" state="translated">Nível {0}</target>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelNumber</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Measure" sil:dynamic="true">
         <source xml:lang="en">Measure</source>
-        <target xml:lang="pt-PT" state="needs-translation">Measure</target>
+        <target xml:lang="pt-PT" state="translated">Medida</target>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Measure</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.OverLevel" sil:dynamic="true">
         <source xml:lang="en">Over level</source>
-        <target xml:lang="pt-PT" state="needs-translation">Over level</target>
+        <target xml:lang="pt-PT" state="translated">Acima do nível</target>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.OverLevel</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.OverLevelWarning" sil:dynamic="true">
@@ -505,7 +505,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WithinLevel" sil:dynamic="true">
         <source xml:lang="en">Within level</source>
-        <target xml:lang="pt-PT" state="needs-translation">Within level</target>
+        <target xml:lang="pt-PT" state="translated">Dentro do nível</target>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.WithinLevel</note>
       </trans-unit>
       <!-- Talking Book Advanced -->
@@ -937,7 +937,7 @@
       </trans-unit>
       <trans-unit id="CollectionTab.ImportBloomSource.ReplaceNeedsCheckout">
         <source xml:lang="en">All books must be checked out</source>
-        <target xml:lang="pt-PT" state="needs-translation">All books must be checked out</target>
+        <target xml:lang="pt-PT" state="translated">Todos os livros devem estar reservados para você</target>
         <note>ID: CollectionTab.ImportBloomSource.ReplaceNeedsCheckout</note>
       </trans-unit>
       <trans-unit id="CollectionTab.ImportBloomSource.AddCopy">
@@ -1656,12 +1656,12 @@
       </trans-unit>
       <trans-unit id="ImageLibrary.FailedToAddImage">
         <source xml:lang="en">Sorry, there was a problem adding the image.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Sorry, there was a problem adding the image.</target>
+        <target xml:lang="pt-PT" state="translated">Desculpe, houve um problema ao adicionar a imagem.</target>
         <note>ID: ImageLibrary.FailedToAddImage</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.AboutOpenVerse">
         <source xml:lang="en">About Openverse</source>
-        <target xml:lang="pt-PT" state="needs-translation">About Openverse</target>
+        <target xml:lang="pt-PT" state="translated">Sobre Openverse</target>
         <note>ID: ImageLibrary.AboutOpenVerse</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.Disclaimer">
@@ -1681,7 +1681,7 @@
       </trans-unit>
       <trans-unit id="ImageLibrary.AboutArtOfReading">
         <source xml:lang="en">About Art of Reading</source>
-        <target xml:lang="pt-PT" state="needs-translation">About Art of Reading</target>
+        <target xml:lang="pt-PT" state="translated">Sobre Art of Reading</target>
         <note>ID: ImageLibrary.AboutArtOfReading</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.AboutPixabay">
