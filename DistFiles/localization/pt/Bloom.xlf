@@ -2273,27 +2273,27 @@
       </trans-unit>
       <trans-unit id="EditTab.LayoutChoicesMenu.Ebooks">
         <source xml:lang="en">Ebooks</source>
-        <target xml:lang="pt-PT" state="needs-translation">Ebooks</target>
+        <target xml:lang="pt-PT" state="translated">E-books (livros digitais)</target>
         <note>ID: EditTab.LayoutChoicesMenu.Ebooks</note>
       </trans-unit>
       <trans-unit id="EditTab.LayoutChoicesMenu.Other">
         <source xml:lang="en">Other</source>
-        <target xml:lang="pt-PT" state="needs-translation">Other</target>
+        <target xml:lang="pt-PT" state="translated">Outro</target>
         <note>ID: EditTab.LayoutChoicesMenu.Other</note>
       </trans-unit>
       <trans-unit id="EditTab.LayoutChoicesMenu.Portrait">
         <source xml:lang="en">Portrait</source>
-        <target xml:lang="pt-PT" state="needs-translation">Portrait</target>
+        <target xml:lang="pt-PT" state="translated">Retrato</target>
         <note>ID: EditTab.LayoutChoicesMenu.Portrait</note>
       </trans-unit>
       <trans-unit id="EditTab.LayoutChoicesMenu.Landscape">
         <source xml:lang="en">Landscape</source>
-        <target xml:lang="pt-PT" state="needs-translation">Landscape</target>
+        <target xml:lang="pt-PT" state="translated">Paisagem</target>
         <note>ID: EditTab.LayoutChoicesMenu.Landscape</note>
       </trans-unit>
       <trans-unit id="EditTab.LayoutChoicesMenu.Square">
         <source xml:lang="en">Square</source>
-        <target xml:lang="pt-PT" state="needs-translation">Square</target>
+        <target xml:lang="pt-PT" state="translated">Quadrado</target>
         <note>ID: EditTab.LayoutChoicesMenu.Square</note>
       </trans-unit>
       <trans-unit id="EditTab.Overflow" sil:dynamic="true" approved="yes">
@@ -3568,12 +3568,12 @@
       </trans-unit>
       <trans-unit id="ImageLibrary.CollectionsOnThisComputer">
         <source xml:lang="en">Collections on this Computer</source>
-        <target xml:lang="pt-PT" state="needs-translation">Collections on this Computer</target>
+        <target xml:lang="pt-PT" state="translated">Coleções neste computador</target>
         <note>ID: ImageLibrary.CollectionsOnThisComputer</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.ImageChooser">
         <source xml:lang="en">Image Chooser</source>
-        <target xml:lang="pt-PT" state="needs-translation">Image Chooser</target>
+        <target xml:lang="pt-PT" state="translated">Seletor de imagens</target>
         <note>ID: ImageLibrary.ImageChooser</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.OnlineSources">
