@@ -1,5 +1,4 @@
 import { get } from "../../../../utils/bloomApi";
-import { renderRoot } from "../../../../utils/reactRender";
 import ToolboxToolReactAdaptor from "../../toolboxToolReactAdaptor";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { beginInitializeLeveledReaderTool } from "../readerTools";
@@ -10,15 +9,16 @@ import { IToolboxSettings } from "../../toolbox";
 // This class renders the LeveledReaderToolControls React component
 // in the toolbox, and implements all the functionality/logic needed
 // for detaching the tool, reattaching the tool, updating the markup,
-// and restoring the current tool state
+// and restoring the tool's state
 export class LeveledReaderTool extends ToolboxToolReactAdaptor {
-    // renders the leveled reader React tool as a div root element,
-    // and returns it so that the toolbox can display it
-    public makeRootElement(): HTMLDivElement {
-        const root = document.createElement("div");
-
-        renderRoot(<LeveledReaderToolControls />, root);
-        return root as HTMLDivElement;
+    // renders the leveled reader React tool, for the toolbox to display in this
+    // tool's accordion
+    public renderPanel(): JSX.Element {
+        return (
+            <div>
+                <LeveledReaderToolControls />
+            </div>
+        );
     }
 
     // returns the id for this tool, which is used in the
@@ -38,6 +38,9 @@ export class LeveledReaderTool extends ToolboxToolReactAdaptor {
     public async beginRestoreSettings(
         settings: IToolboxSettings,
     ): Promise<void> {
+        // This restore supersedes any level still waiting for the settings; see
+        // forgetLevelAwaitingSynphony().
+        getTheOneReaderToolsModel().forgetLevelAwaitingSynphony();
         await beginInitializeLeveledReaderTool();
         // Despite the type, settings can be undefined/null at runtime when the tool is
         // activated for a book that has no saved leveled-reader settings. Guard before
@@ -74,12 +77,12 @@ export class LeveledReaderTool extends ToolboxToolReactAdaptor {
     public configureElements(_container: HTMLElement) {
         // Leveled reader makes use of the setup in this.setupReaderKeyAndFocusHandlers(container).
         // This would be the place to call it, but it is called by decodableReaderTool.tsx' configureElements().
-        // And configureElements gets called for every tool, whether or not that tool is open,
+        // And configureElements gets called for every tool, whether or not that tool is expanded,
         // so it always get initialized by decodableReaderTool.tsx, and we don't want to call it twice.
     }
 
     // this function sets up the markup type and all the data for a page when
-    // that page has been opened, or when the tool has been opened.
+    // that page has been expanded, or when the tool has been expanded.
     public newPageReady(): void {
         const model = getTheOneReaderToolsModel();
         model.clearWholeBookCache();
