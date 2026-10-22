@@ -1586,7 +1586,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Progress.PreparingWorkspace">
         <source xml:lang="en">Preparing workspace</source>
-        <target xml:lang="pt-PT" state="needs-translation">Preparing workspace</target>
+        <target xml:lang="pt-PT" state="translated">Preparando projeto</target>
         <note>ID: PublishTab.Apps.Progress.PreparingWorkspace</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Progress.UpdatingProject">
@@ -1671,12 +1671,12 @@
       </trans-unit>
       <trans-unit id="ImageLibrary.MoreInfo">
         <source xml:lang="en">More info</source>
-        <target xml:lang="pt-PT" state="needs-translation">More info</target>
+        <target xml:lang="pt-PT" state="translated">Mais informação</target>
         <note>ID: ImageLibrary.MoreInfo</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.OpenVerseDescription">
         <source xml:lang="en">Openverse searches multiple public repositories for CC-licensed and public domain works.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Openverse searches multiple public repositories for CC-licensed and public domain works.</target>
+        <target xml:lang="pt-PT" state="translated">O Openverse pesquisa vários repositórios públicos para trabalhos de domínio público ou licenciado por CC.</target>
         <note>ID: ImageLibrary.OpenVerseDescription</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.AboutArtOfReading">
@@ -1686,7 +1686,7 @@
       </trans-unit>
       <trans-unit id="ImageLibrary.AboutPixabay">
         <source xml:lang="en">About Pixabay</source>
-        <target xml:lang="pt-PT" state="needs-translation">About Pixabay</target>
+        <target xml:lang="pt-PT" state="translated">Sobre Pixabay</target>
         <note>ID: ImageLibrary.AboutPixabay</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.ArtOfReadingDescription">
@@ -1706,42 +1706,42 @@
       </trans-unit>
       <trans-unit id="ImageLibrary.ImageCount">
         <source xml:lang="en">{0} images</source>
-        <target xml:lang="pt-PT" state="needs-translation">{0} images</target>
+        <target xml:lang="pt-PT" state="translated">{0} imagens</target>
         <note>ID: ImageLibrary.ImageCount</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.NoMatchesFound">
         <source xml:lang="en">No matches found</source>
-        <target xml:lang="pt-PT" state="needs-translation">No matches found</target>
+        <target xml:lang="pt-PT" state="translated">Nenhum resultado encontrado</target>
         <note>ID: ImageLibrary.NoMatchesFound</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.PhotogrIllustrator">
         <source xml:lang="en">Photographer/Illustrator:</source>
-        <target xml:lang="pt-PT" state="needs-translation">Photographer/Illustrator:</target>
+        <target xml:lang="pt-PT" state="translated">Fotógrafo/Ilustrador:</target>
         <note>ID: ImageLibrary.PhotogrIllustrator</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.PixabayDescription">
         <source xml:lang="en">Pixabay is a large collection of images that may be used for free without attribution.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Pixabay is a large collection of images that may be used for free without attribution.</target>
+        <target xml:lang="pt-PT" state="translated">Pixabay é uma grande coleção de imagens que podem ser usadas gratuitamente sem atribuição.</target>
         <note>ID: ImageLibrary.PixabayDescription</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.QuitAndRerunBloom">
         <source xml:lang="en">Quit and re-run Bloom</source>
-        <target xml:lang="pt-PT" state="needs-translation">Quit and re-run Bloom</target>
+        <target xml:lang="pt-PT" state="translated">Sair e reexecutar Bloom</target>
         <note>ID: ImageLibrary.QuitAndRerunBloom</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.Refresh">
         <source xml:lang="en">Refresh</source>
-        <target xml:lang="pt-PT" state="needs-translation">Refresh</target>
+        <target xml:lang="pt-PT" state="translated">Atualizar</target>
         <note>ID: ImageLibrary.Refresh</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.Source">
         <source xml:lang="en">Source</source>
-        <target xml:lang="pt-PT" state="needs-translation">Source</target>
+        <target xml:lang="pt-PT" state="translated">Fonte</target>
         <note>ID: ImageLibrary.Source</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.ThisPage">
         <source xml:lang="en">this page</source>
-        <target xml:lang="pt-PT" state="needs-translation">this page</target>
+        <target xml:lang="pt-PT" state="translated">esta página</target>
         <note>ID: ImageLibrary.ThisPage</note>
       </trans-unit>
       <trans-unit id="Common.Dimensions" translate="no">
