@@ -21,7 +21,7 @@ import * as Path from "node:path";
 import { expect, type Page } from "@playwright/test";
 import { apiGetJson, apiPost } from "./api";
 import { waitForEditablePage } from "./bookMaking";
-import { openTool, toolboxFrame } from "./toolbox";
+import { expandTool, toolboxFrame } from "./toolbox";
 import { switchTab } from "./workspace";
 
 /** The "Set Up Stages" button along the bottom of the Decodable Reader tool's panel. */
@@ -143,7 +143,7 @@ export async function openDecodableReaderTool(page: Page): Promise<void> {
     await waitForEditablePage(page);
     // Wait on the switch, not on the Set Up button: the panel renders the button only once the
     // book is marked decodable, so waiting on the button here would hang on a book that is not.
-    await openTool(page, "decodableReader", DECODABLE_SWITCH);
+    await expandTool(page, "decodableReader", DECODABLE_SWITCH);
 }
 
 /**
@@ -363,7 +363,7 @@ export async function enableLeveledReaderTool(page: Page): Promise<void> {
  */
 export async function openLeveledReaderSetup(page: Page): Promise<void> {
     await waitForEditablePage(page); // see openDecodableReaderTool
-    await openTool(page, "leveledReader", LEVELED_SWITCH);
+    await expandTool(page, "leveledReader", LEVELED_SWITCH);
     const frame = toolboxFrame(page);
     const box = frame.locator(LEVELED_SWITCH);
     if (!(await box.isChecked())) {

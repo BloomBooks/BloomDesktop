@@ -12,7 +12,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiGet } from "./api";
 import { makeBookFromTemplate } from "./bookMaking";
-import { enableToolForBook, openTool, toolboxFrame } from "./toolbox";
+import { enableToolForBook, expandTool, toolboxFrame } from "./toolbox";
 
 /** The two reader tools, by the `data-toolid` their toolbox headers carry. */
 export type ReaderTool = "decodableReader" | "leveledReader";
@@ -61,7 +61,7 @@ export async function openReaderTool(
     page: Page,
     tool: ReaderTool,
 ): Promise<Frame> {
-    const frame = await openTool(page, tool, SWITCH[tool]);
+    const frame = await expandTool(page, tool, SWITCH[tool]);
     const box = frame.locator(SWITCH[tool]);
     if (!(await box.isChecked())) await box.click();
     await expect(
