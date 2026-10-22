@@ -10,24 +10,24 @@
         <target xml:lang="pt-PT" state="final">Disponível com a sua Assinatura Bloom</target>
         <note>ID: AvailableWithSubscription</note>
       </trans-unit>
-      <trans-unit id="CopyrightAndLicense.ReuseMetadataShortcutLabel">
+      <trans-unit id="CopyrightAndLicense.ReuseMetadataShortcutLabel" approved="yes">
         <source xml:lang="en">Shortcuts:</source>
-        <target xml:lang="pt-PT" state="needs-translation">Shortcuts:</target>
+        <target xml:lang="pt-PT" state="final">Atalhos:</target>
         <note>ID: CopyrightAndLicense.ReuseMetadataShortcutLabel</note>
       </trans-unit>
-      <trans-unit id="CopyrightAndLicense.FromThisBook">
+      <trans-unit id="CopyrightAndLicense.FromThisBook" approved="yes">
         <source xml:lang="en">Copyright and license from this book</source>
-        <target xml:lang="pt-PT" state="needs-translation">Copyright and license from this book</target>
+        <target xml:lang="pt-PT" state="final">Direitos autorais e licença deste livro</target>
         <note>ID: CopyrightAndLicense.FromThisBook</note>
       </trans-unit>
-      <trans-unit id="Common.Gathering">
+      <trans-unit id="Common.Gathering" approved="yes">
         <source xml:lang="en">Gathering…</source>
-        <target xml:lang="pt-PT" state="needs-translation">Gathering…</target>
+        <target xml:lang="pt-PT" state="final">Colhendo</target>
         <note>ID: Common.Gathering</note>
       </trans-unit>
-      <trans-unit id="CopyrightAndLicense.CopyToAllImages">
+      <trans-unit id="CopyrightAndLicense.CopyToAllImages" approved="yes">
         <source xml:lang="en">Add this info to all images in this book</source>
-        <target xml:lang="pt-PT" state="needs-translation">Add this info to all images in this book</target>
+        <target xml:lang="pt-PT" state="final">Adicionar esta informação a todas as imagens deste livro</target>
         <note>ID: CopyrightAndLicense.CopyToAllImages</note>
       </trans-unit>
       <trans-unit id="Common.Working">
@@ -35,9 +35,9 @@
         <target xml:lang="pt-PT" state="translated">Trabalhando…</target>
         <note>ID: Common.Working</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder" approved="yes">
         <source xml:lang="en">App Builder</source>
-        <target xml:lang="pt-PT" state="needs-translation">App Builder</target>
+        <target xml:lang="pt-PT" state="final">Criador de Aplicativos</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate.Description" translate="no">
@@ -333,14 +333,14 @@
         <target xml:lang="pt-PT" state="final">O livro não é descodificável</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.GenerateReport" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.GenerateReport" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Generate Report</source>
-        <target xml:lang="pt-PT" state="needs-translation">Generate Report</target>
+        <target xml:lang="pt-PT" state="final">Gerar relatório</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.GenerateReport</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.GenerateReport.ToolTip" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.GenerateReport.ToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Create and open a text file listing the letters and words available at each decodable stage.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Create and open a text file listing the letters and words available at each decodable stage.</target>
+        <target xml:lang="pt-PT" state="final">Criar e abrir um arquivo de texto que lista as letras e palavras disponíveis em cada fase descodificável.</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.GenerateReport.ToolTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageNumber" sil:dynamic="true">
@@ -348,9 +348,9 @@
         <target xml:lang="pt-PT" state="translated">Estágio {0}</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageNumber</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ReaderTools.OfCount" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ReaderTools.OfCount" sil:dynamic="true" approved="yes">
         <source xml:lang="en">of {0}</source>
-        <target xml:lang="pt-PT" state="needs-translation">of {0}</target>
+        <target xml:lang="pt-PT" state="final">de {0}</target>
         <note>ID: EditTab.Toolbox.ReaderTools.OfCount</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Theme" approved="yes">
@@ -498,9 +498,9 @@
         <target xml:lang="pt-PT" state="translated">Acima do nível</target>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.OverLevel</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.OverLevelWarning" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.OverLevelWarning" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This book reads above Level {0}</source>
-        <target xml:lang="pt-PT" state="needs-translation">This book reads above Level {0}</target>
+        <target xml:lang="pt-PT" state="final">Este livro tem um nível de leitura superior ao Nível {0}</target>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.OverLevelWarning</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WithinLevel" sil:dynamic="true">
@@ -805,9 +805,9 @@
         <target xml:lang="pt-PT" state="final">Não mostre este livro para o público ainda. Eu compartilharei seu URL com os revisores para obter feedback.</target>
         <note>ID: PublishTab.Upload.Draft</note>
       </trans-unit>
-      <trans-unit id="Topic.Missing">
+      <trans-unit id="Topic.Missing" approved="yes">
         <source xml:lang="en">Missing</source>
-        <target xml:lang="pt-PT" state="needs-translation">Missing</target>
+        <target xml:lang="pt-PT" state="final">Em falta</target>
         <note>ID: Topic.Missing</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Visibility" approved="yes">
@@ -890,49 +890,49 @@
         <target xml:lang="pt-PT" state="final">Problema</target>
         <note>CollectionTab.OnBlorgBadge.Problem</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource">
+      <trans-unit id="CollectionTab.ImportBloomSource" approved="yes">
         <source xml:lang="en">Import .bloomSource File(s)</source>
-        <target xml:lang="pt-PT" state="needs-translation">Import .bloomSource File(s)</target>
+        <target xml:lang="pt-PT" state="final">Importar Arquivo(s) .bloomSource</target>
         <note>ID: CollectionTab.ImportBloomSource</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.ChoiceTitle">
+      <trans-unit id="CollectionTab.ImportBloomSource.ChoiceTitle" approved="yes">
         <source xml:lang="en">Import books</source>
-        <target xml:lang="pt-PT" state="needs-translation">Import books</target>
+        <target xml:lang="pt-PT" state="final">Importar livros</target>
         <note>ID: CollectionTab.ImportBloomSource.ChoiceTitle</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.EditChoice">
+      <trans-unit id="CollectionTab.ImportBloomSource.EditChoice" approved="yes">
         <source xml:lang="en">Import for editing</source>
-        <target xml:lang="pt-PT" state="needs-translation">Import for editing</target>
+        <target xml:lang="pt-PT" state="final">Importar para edição</target>
         <note>ID: CollectionTab.ImportBloomSource.EditChoice</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.EditChoiceDescription">
+      <trans-unit id="CollectionTab.ImportBloomSource.EditChoiceDescription" approved="yes">
         <source xml:lang="en">Preserve everything.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Preserve everything.</target>
+        <target xml:lang="pt-PT" state="final">Conserve tudo.</target>
         <note>ID: CollectionTab.ImportBloomSource.EditChoiceDescription</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.DerivativeChoice">
+      <trans-unit id="CollectionTab.ImportBloomSource.DerivativeChoice" approved="yes">
         <source xml:lang="en">Import as derivatives — new books based on the originals</source>
-        <target xml:lang="pt-PT" state="needs-translation">Import as derivatives — new books based on the originals</target>
+        <target xml:lang="pt-PT" state="final">Importar como versões derivadas — novos livros baseados nos originais</target>
         <note>ID: CollectionTab.ImportBloomSource.DerivativeChoice</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.DerivativeChoiceDescription">
+      <trans-unit id="CollectionTab.ImportBloomSource.DerivativeChoiceDescription" approved="yes">
         <source xml:lang="en">Use a new book ID &amp; make room for new copyright and credits while preserving those of the original.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Use a new book ID &amp; make room for new copyright and credits while preserving those of the original.</target>
+        <target xml:lang="pt-PT" state="final">Use um novo ID de livro &amp; crie espaço para novos direitos autorais e créditos preservando os do original.</target>
         <note>ID: CollectionTab.ImportBloomSource.DerivativeChoiceDescription</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.DuplicatePrompt">
+      <trans-unit id="CollectionTab.ImportBloomSource.DuplicatePrompt" approved="yes">
         <source xml:lang="en">Some of these books are already in this collection.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Some of these books are already in this collection.</target>
+        <target xml:lang="pt-PT" state="final">Alguns desses livros já estão nessa coleção.</target>
         <note>ID: CollectionTab.ImportBloomSource.DuplicatePrompt</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.Replace">
+      <trans-unit id="CollectionTab.ImportBloomSource.Replace" approved="yes">
         <source xml:lang="en">Replace the existing books</source>
-        <target xml:lang="pt-PT" state="needs-translation">Replace the existing books</target>
+        <target xml:lang="pt-PT" state="final">Substituir os livros existentes</target>
         <note>ID: CollectionTab.ImportBloomSource.Replace</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.ReplaceDescription">
+      <trans-unit id="CollectionTab.ImportBloomSource.ReplaceDescription" approved="yes">
         <source xml:lang="en">The current copies will be overwritten.</source>
-        <target xml:lang="pt-PT" state="needs-translation">The current copies will be overwritten.</target>
+        <target xml:lang="pt-PT" state="final">As cópias atuais serão substituídas.</target>
         <note>ID: CollectionTab.ImportBloomSource.ReplaceDescription</note>
       </trans-unit>
       <trans-unit id="CollectionTab.ImportBloomSource.ReplaceNeedsCheckout">
@@ -940,19 +940,19 @@
         <target xml:lang="pt-PT" state="translated">Todos os livros devem estar reservados para você</target>
         <note>ID: CollectionTab.ImportBloomSource.ReplaceNeedsCheckout</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.AddCopy">
+      <trans-unit id="CollectionTab.ImportBloomSource.AddCopy" approved="yes">
         <source xml:lang="en">Add them as new copies</source>
-        <target xml:lang="pt-PT" state="needs-translation">Add them as new copies</target>
+        <target xml:lang="pt-PT" state="final">Adicioná-las como novas cópias</target>
         <note>ID: CollectionTab.ImportBloomSource.AddCopy</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.AddCopyDescription">
+      <trans-unit id="CollectionTab.ImportBloomSource.AddCopyDescription" approved="yes">
         <source xml:lang="en">The existing books stay as they are.</source>
-        <target xml:lang="pt-PT" state="needs-translation">The existing books stay as they are.</target>
+        <target xml:lang="pt-PT" state="final">Os livros existentes permanecem como estão.</target>
         <note>ID: CollectionTab.ImportBloomSource.AddCopyDescription</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.Importing">
+      <trans-unit id="CollectionTab.ImportBloomSource.Importing" approved="yes">
         <source xml:lang="en">Importing Books</source>
-        <target xml:lang="pt-PT" state="needs-translation">Importing Books</target>
+        <target xml:lang="pt-PT" state="final">Importar livros</target>
         <note>ID: CollectionTab.ImportBloomSource.Importing</note>
       </trans-unit>
       <trans-unit id="BookSettings.LockedByBranding" sil:dynamic="true" approved="yes">
@@ -1040,9 +1040,9 @@
         <target xml:lang="pt-PT" state="final">Ativar o layout de sangria total para impressão. Esta opção ativa os indicadores de [Sangria](https://en.wikipedia.org/wiki/Bleed_%28printing%29) em layouts impressos. Veja [Layout de Sangria Total](https://docs.bloomlibrary.org/full-bleed) para obter mais informações.</target>
         <note>BookSettings.FullBleed.Description</note>
       </trans-unit>
-      <trans-unit id="BookSettings.FullBleed.Description.EdgeToEdge" sil:dynamic="true">
+      <trans-unit id="BookSettings.FullBleed.Description.EdgeToEdge" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Enable full bleed layout for printing. Use with the "Edge to Edge" theme. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Enable full bleed layout for printing. Use with the "Edge to Edge" theme. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</target>
+        <target xml:lang="pt-PT" state="final">Ativar layout de sangramento completo para impressão. Use com o tema "Borda para borda". Isto ativa os indicadores [Imprimir Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) em layouts de papel. Veja [Layout Completo de Bleed Byout](https://docs.bloomlibrary.org/full-bleed) para obter mais informações.</target>
         <note>ID: BookSettings.FullBleed.Description.EdgeToEdge</note>
       </trans-unit>
       <trans-unit id="BookSettings.ThemeAndLayoutGroupLabel" sil:dynamic="true" approved="yes">
@@ -1085,9 +1085,9 @@
         <target xml:lang="pt-PT" state="final">Capa</target>
         <note>BookSettings.WhatToShowOnCover</note>
       </trans-unit>
-      <trans-unit id="BookSettings.AllCoverPagesGroupLabel" sil:dynamic="true">
+      <trans-unit id="BookSettings.AllCoverPagesGroupLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">All Cover Pages</source>
-        <target xml:lang="pt-PT" state="needs-translation">All Cover Pages</target>
+        <target xml:lang="pt-PT" state="final">Todas as páginas de capa</target>
         <note>ID: BookSettings.AllCoverPagesGroupLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.ShowContentLanguage" sil:dynamic="true" approved="yes">
@@ -1304,9 +1304,9 @@
         <target xml:lang="pt-PT" state="final">Livro Electrónico de Margem zero</target>
         <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
-      <trans-unit id="AppearanceTheme.edge-to-edge" sil:dynamic="true">
+      <trans-unit id="AppearanceTheme.edge-to-edge" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edge to Edge</source>
-        <target xml:lang="pt-PT" state="needs-translation">Edge to Edge</target>
+        <target xml:lang="pt-PT" state="final">Borda a borda</target>
         <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
       <trans-unit id="AppearanceTheme.narrow-margin-ebook" sil:dynamic="true" approved="yes">
@@ -1359,9 +1359,9 @@
         <target xml:lang="pt-PT" state="final">Preparar</target>
         <note>ID: PublishTab.Apps.PrepareButton</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.PrepareStepper.BuildToolsInstalled">
+      <trans-unit id="PublishTab.Apps.PrepareStepper.BuildToolsInstalled" approved="yes">
         <source xml:lang="en">Install build tools</source>
-        <target xml:lang="pt-PT" state="needs-translation">Install build tools</target>
+        <target xml:lang="pt-PT" state="final">Instalar ferramentas de compilação</target>
         <note>ID: PublishTab.Apps.PrepareStepper.BuildToolsInstalled</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.PrepareStepper.InstallerAvailable">
@@ -1379,14 +1379,14 @@
         <target xml:lang="pt-PT" state="translated">Executar instalador</target>
         <note>ID: PublishTab.Apps.PrepareStepper.RabInstalled</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.PrepareStepper.SigningKeyReady">
+      <trans-unit id="PublishTab.Apps.PrepareStepper.SigningKeyReady" approved="yes">
         <source xml:lang="en">Create signing key</source>
-        <target xml:lang="pt-PT" state="needs-translation">Create signing key</target>
+        <target xml:lang="pt-PT" state="final">Criar chave de assinatura</target>
         <note>ID: PublishTab.Apps.PrepareStepper.SigningKeyReady</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.CheckingDevice">
+      <trans-unit id="PublishTab.Apps.Progress.CheckingDevice" approved="yes">
         <source xml:lang="en">Checking for connected phone</source>
-        <target xml:lang="pt-PT" state="needs-translation">Checking for connected phone</target>
+        <target xml:lang="pt-PT" state="final">Verificando telefone conectado</target>
         <note>ID: PublishTab.Apps.Progress.CheckingDevice</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Progress.InstallingOnPhone">
@@ -1469,14 +1469,14 @@
         <target xml:lang="pt-PT" state="final">Escolher Ícone do Aplicativo</target>
         <note>ID: PublishTab.Apps.SettingsDialog.IconChooseTitle</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Description">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Description" approved="yes">
         <source xml:lang="en">Template: org.&lt;yourorg&gt;.&lt;language-code&gt;.&lt;appname&gt;. E.g. org.sil.xyz.stories. For additional help please contact the Digital Publishing Department of your organization.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Template: org.&lt;yourorg&gt;.&lt;language-code&gt;.&lt;appname&gt;. E.g. org.sil.xyz.stories. For additional help please contact the Digital Publishing Department of your organization.</target>
+        <target xml:lang="pt-PT" state="final">Tema: org.&lt;yourorg&gt;.&lt;language-code&gt;.&lt;appname&gt;. Por exemplo, org.sil.xyz.contos. Para ajuda adicional, entre em contato com o Departamento de Publicação Digital da sua organização.</target>
         <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Description</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Invalid">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Invalid" approved="yes">
         <source xml:lang="en">Use a lowercase dot-separated package name with no spaces, like org.sil.sample.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Use a lowercase dot-separated package name with no spaces, like org.sil.sample.</target>
+        <target xml:lang="pt-PT" state="final">Use um nome de pacote separado por ponto em minúsculas sem espaços, como org.sil.sample.</target>
         <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Invalid</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.ReadingAppBuilder">
@@ -1494,19 +1494,19 @@
         <target xml:lang="pt-PT" state="translated">Iniciando Reading App Builder...</target>
         <note>ID: PublishTab.Apps.SettingsDialog.StartingReadingAppBuilder</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.RunRAB.Description">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.RunRAB.Description" approved="yes">
         <source xml:lang="en">Use this to do more customization of your app. Make sure to click Save and quit Reading App Builder before returning to Bloom.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Use this to do more customization of your app. Make sure to click Save and quit Reading App Builder before returning to Bloom.</target>
+        <target xml:lang="pt-PT" state="final">Use isto para fazer mais personalização do seu aplicativo. Certifique-se de clicar em Salvar e sair do Construtor de Aplicativos de Leitura antes de retornar ao Bloom.</target>
         <note>ID: PublishTab.Apps.SettingsDialog.RunRAB.Description</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.ShowApkInFileExplorer">
+      <trans-unit id="PublishTab.Apps.ShowApkInFileExplorer" approved="yes">
         <source xml:lang="en">Show App (.apk) in File Explorer</source>
-        <target xml:lang="pt-PT" state="needs-translation">Show App (.apk) in File Explorer</target>
+        <target xml:lang="pt-PT" state="final">Mostrar aplicativo (.apk) no Gerenciador de Arquivos</target>
         <note>ID: PublishTab.Apps.ShowApkInFileExplorer</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.BannerTitle">
+      <trans-unit id="PublishTab.Apps.BannerTitle" approved="yes">
         <source xml:lang="en">Build Android Apps</source>
-        <target xml:lang="pt-PT" state="needs-translation">Build Android Apps</target>
+        <target xml:lang="pt-PT" state="final">Criar aplicativos Android</target>
         <note>ID: PublishTab.Apps.BannerTitle</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps" approved="yes">
@@ -1514,9 +1514,9 @@
         <target xml:lang="pt-PT" state="final">Aplicativos</target>
         <note>ID: PublishTab.Apps</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps-tooltip" sil:dynamic="true">
+      <trans-unit id="PublishTab.Apps-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Create an app that you can install on your Android phone, share with others, and publish on the Google Play Store.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Create an app that you can install on your Android phone, share with others, and publish on the Google Play Store.</target>
+        <target xml:lang="pt-PT" state="final">Crie um aplicativo que você pode instalar no seu telefone Android, compartilhe com outros e publique na Google Play Store.</target>
         <note>ID: PublishTab.Apps-tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Build" approved="yes">
@@ -1534,9 +1534,9 @@
         <target xml:lang="pt-PT" state="final">Executar "Preparar" antes de compilar o aplicativo.</target>
         <note>ID: PublishTab.Apps.Build.NeedsPrepareTooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Build.Tooltip">
+      <trans-unit id="PublishTab.Apps.Build.Tooltip" approved="yes">
         <source xml:lang="en">Build a new APK from the current settings and selected books.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Build a new APK from the current settings and selected books.</target>
+        <target xml:lang="pt-PT" state="final">Crie um novo APK a partir das configurações atuais e livros selecionados.</target>
         <note>ID: PublishTab.Apps.Build.Tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.ChooseBooks" approved="yes">
@@ -1549,9 +1549,9 @@
         <target xml:lang="pt-PT" state="translated">Selecionar quais livros incluir no aplicativo e a ordem em que eles devem aparecer.</target>
         <note>ID: PublishTab.Apps.ChooseBooks.Tooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.BuildingAndroidApp">
+      <trans-unit id="PublishTab.Apps.Progress.BuildingAndroidApp" approved="yes">
         <source xml:lang="en">Building Android app</source>
-        <target xml:lang="pt-PT" state="needs-translation">Building Android app</target>
+        <target xml:lang="pt-PT" state="final">Criando aplicativo Android</target>
         <note>ID: PublishTab.Apps.Progress.BuildingAndroidApp</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Progress.Complete" approved="yes">
@@ -1559,29 +1559,29 @@
         <target xml:lang="pt-PT" state="final">Concluído</target>
         <note>ID: PublishTab.Apps.Progress.Complete</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.CreatingProject">
+      <trans-unit id="PublishTab.Apps.Progress.CreatingProject" approved="yes">
         <source xml:lang="en">Creating Reading App Builder project</source>
-        <target xml:lang="pt-PT" state="needs-translation">Creating Reading App Builder project</target>
+        <target xml:lang="pt-PT" state="final">Criando Projeto de Criador de Aplicativos de Leitura</target>
         <note>ID: PublishTab.Apps.Progress.CreatingProject</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.ExportingBloompubs">
+      <trans-unit id="PublishTab.Apps.Progress.ExportingBloompubs" approved="yes">
         <source xml:lang="en">Creating BloomPUBs</source>
-        <target xml:lang="pt-PT" state="needs-translation">Creating BloomPUBs</target>
+        <target xml:lang="pt-PT" state="final">Criando BloomPUBs</target>
         <note>ID: PublishTab.Apps.Progress.ExportingBloompubs</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.FinalizingApk">
+      <trans-unit id="PublishTab.Apps.Progress.FinalizingApk" approved="yes">
         <source xml:lang="en">Finalizing APK</source>
-        <target xml:lang="pt-PT" state="needs-translation">Finalizing APK</target>
+        <target xml:lang="pt-PT" state="final">Finalizando APK</target>
         <note>ID: PublishTab.Apps.Progress.FinalizingApk</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.GeneratingSigningKey">
+      <trans-unit id="PublishTab.Apps.Progress.GeneratingSigningKey" approved="yes">
         <source xml:lang="en">Generating signing key</source>
-        <target xml:lang="pt-PT" state="needs-translation">Generating signing key</target>
+        <target xml:lang="pt-PT" state="final">Gerando chave de assinatura</target>
         <note>ID: PublishTab.Apps.Progress.GeneratingSigningKey</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.PreparingBuild">
+      <trans-unit id="PublishTab.Apps.Progress.PreparingBuild" approved="yes">
         <source xml:lang="en">Preparing build</source>
-        <target xml:lang="pt-PT" state="needs-translation">Preparing build</target>
+        <target xml:lang="pt-PT" state="final">Preparando compilação</target>
         <note>ID: PublishTab.Apps.Progress.PreparingBuild</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Progress.PreparingWorkspace">
@@ -1589,19 +1589,19 @@
         <target xml:lang="pt-PT" state="translated">Preparando projeto</target>
         <note>ID: PublishTab.Apps.Progress.PreparingWorkspace</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Progress.UpdatingProject">
+      <trans-unit id="PublishTab.Apps.Progress.UpdatingProject" approved="yes">
         <source xml:lang="en">Updating Reading App Builder project</source>
-        <target xml:lang="pt-PT" state="needs-translation">Updating Reading App Builder project</target>
+        <target xml:lang="pt-PT" state="final">Criando Projeto de Criador de Aplicativos de Leitura</target>
         <note>ID: PublishTab.Apps.Progress.UpdatingProject</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.ReadingAppBuilderSite">
+      <trans-unit id="PublishTab.Apps.ReadingAppBuilderSite" approved="yes">
         <source xml:lang="en">Reading App Builder website</source>
-        <target xml:lang="pt-PT" state="needs-translation">Reading App Builder website</target>
+        <target xml:lang="pt-PT" state="final">O site do Criador de Aplicativos de Leitura (Reading App Builder)</target>
         <note>ID: PublishTab.Apps.ReadingAppBuilderSite</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsButton.Tooltip">
+      <trans-unit id="PublishTab.Apps.SettingsButton.Tooltip" approved="yes">
         <source xml:lang="en">Edit the Reading App Builder app settings for this collection.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Edit the Reading App Builder app settings for this collection.</target>
+        <target xml:lang="pt-PT" state="final">Editar as configurações do criador de aplicativos de leitura para esta coleção.</target>
         <note>ID: PublishTab.Apps.SettingsButton.Tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.PrepareRequiredTooltip" approved="yes">
@@ -1644,14 +1644,14 @@
         <target xml:lang="pt-PT" state="needs-translation">App overhead</target>
         <note>ID: PublishTab.Apps.SizeEstimate.OverheadLabel</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SizeEstimate.OverLimit">
+      <trans-unit id="PublishTab.Apps.SizeEstimate.OverLimit" approved="yes">
         <source xml:lang="en">This estimate is above the %0 Android app size limit. Choose fewer books or smaller books.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This estimate is above the %0 Android app size limit. Choose fewer books or smaller books.</target>
+        <target xml:lang="pt-PT" state="final">Esta estimativa está acima do limite de %0 apps Android. Escolha menos livros ou livros menores.</target>
         <note>ID: PublishTab.Apps.SizeEstimate.OverLimit</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SizeEstimate.Total">
+      <trans-unit id="PublishTab.Apps.SizeEstimate.Total" approved="yes">
         <source xml:lang="en">Apps have a maximum size of about %1. The current estimate for this app is %0.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Apps have a maximum size of about %1. The current estimate for this app is %0.</target>
+        <target xml:lang="pt-PT" state="final">Aplicativos têm um tamanho máximo de aproximadamente %1. A estimativa atual para este aplicativo é %0.</target>
         <note>ID: PublishTab.Apps.SizeEstimate.Total</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.FailedToAddImage">
@@ -1664,9 +1664,9 @@
         <target xml:lang="pt-PT" state="translated">Sobre Openverse</target>
         <note>ID: ImageLibrary.AboutOpenVerse</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.Disclaimer">
+      <trans-unit id="ImageLibrary.Disclaimer" approved="yes">
         <source xml:lang="en">These images are not from Bloom or SIL. This tool requests images suitable for general audiences. However, we cannot guarantee that all images will be inoffensive.</source>
-        <target xml:lang="pt-PT" state="needs-translation">These images are not from Bloom or SIL. This tool requests images suitable for general audiences. However, we cannot guarantee that all images will be inoffensive.</target>
+        <target xml:lang="pt-PT" state="final">Estas imagens não são de Bloom ou da SIL. Esta ferramenta solicita imagens adequadas para públicos gerais. No entanto, não podemos garantir que todas as imagens serão inofensivas.</target>
         <note>ID: ImageLibrary.Disclaimer</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.MoreInfo">
@@ -1754,9 +1754,9 @@
         <target xml:lang="pt-PT" state="needs-translation">File size</target>
         <note>ID: Common.FileSize</note>
       </trans-unit>
-      <trans-unit id="BookProcessor.HousekeepingMessage">
+      <trans-unit id="BookProcessor.HousekeepingMessage" approved="yes">
         <source xml:lang="en">Please wait while Bloom does some housekeeping on your book...</source>
-        <target xml:lang="pt-PT" state="needs-translation">Please wait while Bloom does some housekeeping on your book...</target>
+        <target xml:lang="pt-PT" state="final">Por favor, aguarde enquanto o Bloom realiza algumas atualizações no seu livro...</target>
         <note>ID: BookProcessor.HousekeepingMessage</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.AppTitle" approved="yes">
@@ -1799,9 +1799,9 @@
         <target xml:lang="pt-PT" state="translated">Stop motion em plasticina</target>
         <note>ID: AiImageEditor.ArtStyle.clay-stopmotion.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.clear-line-flat-color.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.clear-line-flat-color.Name" approved="yes">
         <source xml:lang="en">Clear Line &amp; Flat Color</source>
-        <target xml:lang="pt-PT" state="translated">Linhas claras &amp; cores sólidas</target>
+        <target xml:lang="pt-PT" state="final">Linhas claras &amp; cores sólidas</target>
         <note>ID: AiImageEditor.ArtStyle.clear-line-flat-color.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.coloring-book-page.Name">
