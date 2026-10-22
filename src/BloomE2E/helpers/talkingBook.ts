@@ -103,6 +103,60 @@ export async function getNarrationSentences(
 }
 
 /**
+ * Is the Talking Book tool highlighting a current segment right now? Reads the CSS Highlight the
+ * tool registers, which is what paints the segment, so it answers for the page as the user sees
+ * it rather than for the tool's own state.
+ */
+export async function isHighlightingCurrentAudio(page: Page): Promise<boolean> {
+    return editablePageFrame(page).evaluate(
+        (name) =>
+            !!(
+                CSS as unknown as { highlights?: Map<string, unknown> }
+            ).highlights?.has(name),
+        CURRENT_HIGHLIGHT,
+    );
+}
+
+/**
+ * Wait until the Talking Book tool is highlighting a current segment on the page being edited.
+ * Use this when the question is whether it highlights at all; getCurrentAudioHighlightColors() is
+ * for a test whose subject is the colours.
+ */
+export async function expectCurrentAudioHighlight(page: Page): Promise<void> {
+    await expect
+        .poll(() => isHighlightingCurrentAudio(page), {
+            timeout: 30000,
+            message:
+                "The Talking Book tool never highlighted a segment on this page. It has to be " +
+                "the open tool of a showing toolbox, and the page has to have text.",
+        })
+        .toBe(true);
+}
+
+/**
+ * Assert that the Talking Book tool does NOT highlight this page, having given it a fair chance
+ * to: it first waits for the tool to mark the page's sentences, which is the work it does when it
+ * runs, so a page that is simply slow cannot pass this by arriving late.
+ *
+ * This is the negative of getCurrentAudioHighlightColors(), for a page the tool should leave
+ * alone -- a game page, whose own tool owns it (see getEffectiveToolId in toolbox.ts).
+ */
+export async function expectNoCurrentAudioHighlight(page: Page): Promise<void> {
+    await expect
+        .poll(async () => (await getNarrationSentences(page)).length, {
+            timeout: 30000,
+            message:
+                "The Talking Book tool never marked this page's sentences, so this test " +
+                "cannot tell 'it chose not to highlight' from 'it never ran'.",
+        })
+        .toBeGreaterThan(0);
+    expect(
+        await isHighlightingCurrentAudio(page),
+        "The Talking Book tool highlighted a page that belongs to another tool.",
+    ).toBe(false);
+}
+
+/**
  * Wait until the Talking Book tool is highlighting a current segment on the page being edited, and
  * return the colors it is using. Throws, naming the tool, if no highlight appears: the tool has to
  * be open (see helpers/toolbox.ts) and the page has to have some text.

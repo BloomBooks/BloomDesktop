@@ -550,9 +550,12 @@ export async function addPage(
         page,
         "e2e/templatePages",
     );
+    // Compare trimmed: a template book writes its page label as HTML, so a label defined over
+    // several lines (every page in the Games template) arrives wrapped in newlines and indentation.
+    const wanted = templatePageLabel.trim();
     const template = templates.find(
         (t) =>
-            t.label === templatePageLabel &&
+            t.label.trim() === wanted &&
             (!templateBookTitle || t.templateBookTitle === templateBookTitle),
     );
     if (!template)
@@ -561,7 +564,7 @@ export async function addPage(
                 (templateBookTitle ? ` in "${templateBookTitle}"` : "") +
                 `. On offer: ` +
                 templates
-                    .map((t) => `${t.templateBookTitle}: ${t.label}`)
+                    .map((t) => `${t.templateBookTitle}: ${t.label.trim()}`)
                     .join(", ") +
                 ".",
         );

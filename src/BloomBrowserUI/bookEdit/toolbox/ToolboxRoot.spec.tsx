@@ -3,18 +3,15 @@ import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderRoot, unmountRoot } from "../../utils/reactRender";
 
-// The real ./toolbox module drags in the whole legacy toolbox (jQuery, every tool, the
-// edit-page frames...). All ToolboxRoot wants from it is the list of tools that exist,
-// which it uses to build a body for each tool it is told to offer.
+// The real ./toolbox module drags in a great deal that a unit test cannot run: jQuery, the
+// edit-page frames it reaches through parent.window, and the tools it imports directly.
+// All ToolboxRoot wants from it is the list of tools that exist, which it uses to build an
+// accordion for each tool the store says it is offering.
 const makeFakeTool = (id: string, featureName?: string) => ({
     id: () => id,
     iconPath: () => `/bloom/images/${id}.svg`,
     featureName,
-    makeRootElement: () => {
-        const root = document.createElement("div");
-        root.textContent = `${id} panel`;
-        return root;
-    },
+    renderPanel: () => <div>{`${id} panel`}</div>,
 });
 
 vi.mock("./toolbox", () => {
@@ -24,6 +21,12 @@ vi.mock("./toolbox", () => {
             makeFakeTool("game"),
             makeFakeTool("settings"),
         ],
+        // Each tool's lifecycle hook wants these (see useToolLifecycle.ts). No tool runs in
+        // these tests -- they expand tools, but never set toolboxVisible, and running takes
+        // both -- so these are never actually called; they are here so that this mock stays
+        // a complete stand-in.
+        getSavedToolboxSettings: () => ({}),
+        runTasksForClosingTool: () => undefined,
     };
 });
 
@@ -42,19 +45,26 @@ vi.mock("../../react_components/l10nComponents", async (importOriginal) => {
     };
 });
 
+// ToolboxRoot no longer asks the server which tools are enabled; toolbox.ts owns that and
+// records it in the store. Fail loudly if that ever regresses into a fetch from here.
+vi.mock("axios", () => {
+    return {
+        default: {
+            get: (url: string) =>
+                Promise.reject(new Error(`unexpected GET of ${url}`)),
+        },
+    };
+});
+
 // Imported after the mocks above are registered.
 const { ToolboxRoot } = await import("./ToolboxRoot");
-const { getToolboxReactAdapter } = await import("./toolboxReactAdapter");
-
-const getAdapter = () => {
-    const adapter = getToolboxReactAdapter();
-    if (!adapter) {
-        throw new Error(
-            "ToolboxRoot did not register an adapter; the component probably failed to render.",
-        );
-    }
-    return adapter;
-};
+const {
+    getExpandedToolId,
+    offerTool,
+    resetToolboxUiStateForTests,
+    setExpandedTool,
+    withdrawTool,
+} = await import("./toolboxState");
 
 // Each accordion header carries the tool's canonical id on its icon span, so this is the
 // order of the tools the user would see.
@@ -63,8 +73,10 @@ const getHeaderToolIds = (container: HTMLElement): string[] =>
         container.querySelectorAll(".MuiAccordionSummary-root [data-toolid]"),
     ).map((element) => element.getAttribute("data-toolid") ?? "");
 
-// Which tool the user actually has open.
-const getExpandedToolId = (container: HTMLElement): string | undefined => {
+// Which tool the user actually sees expanded, read from the rendered accordion rather
+// than from the store -- so a test can tell what the screen shows from what the store
+// holds. getExpandedToolId() (imported above) is the store's answer.
+const expandedToolIdInDom = (container: HTMLElement): string | undefined => {
     const expandedHeader = Array.from(
         container.querySelectorAll(".MuiAccordionSummary-root"),
     ).find((header) => header.getAttribute("aria-expanded") === "true");
@@ -79,6 +91,7 @@ describe("ToolboxRoot", () => {
     let container: HTMLDivElement | null = null;
 
     beforeEach(() => {
+        resetToolboxUiStateForTests();
         container = document.createElement("div");
         document.body.appendChild(container);
     });
@@ -97,36 +110,31 @@ describe("ToolboxRoot", () => {
             renderRoot(<ToolboxRoot />, host);
         });
         await act(async () => {
-            getAdapter().addTool("talkingBook");
-            getAdapter().addTool("settings");
+            offerTool("talkingBook");
+            offerTool("settings");
         });
     };
 
     // BL-16602: visiting a game page auto-activates the Game tool; leaving the page removes
-    // it again. toolbox.ts owns each tool's showTool()/hideTool() lifecycle and learns about
-    // activation changes only through onActiveToolChanged, so if removing the active tool
-    // doesn't report the replacement, the tool the user can see is never activated. That
-    // left the Talking Book tool doing no highlighting at all.
-    it("reports the replacement tool when the active tool is removed", async () => {
+    // it again. Which tool runs follows from the expanded tool, and toolbox.ts learns about
+    // which tool runs only from the store, so if withdrawing
+    // the expanded tool doesn't move it on, the tool the user can see is never
+    // activated. That left the Talking Book tool doing no highlighting at all.
+    it("shows the replacement tool when the open tool is withdrawn", async () => {
         if (!container) {
             throw new Error("render container not initialized");
         }
         await renderWithBaseTools(container);
-
-        const reportedToolIds: string[] = [];
-        getAdapter().onActiveToolChanged((toolId) => {
-            reportedToolIds.push(toolId);
-        });
 
         expect(getHeaderToolIds(container)).toEqual([
             "talkingBook",
             "settings",
         ]);
 
-        // Arriving on a game page: toolbox.ts adds the required Game tool and makes it active.
+        // Arriving on a game page: toolbox.ts offers the required Game tool and expands it.
         await act(async () => {
-            getAdapter().addTool("game");
-            getAdapter().setActiveToolByToolId("game");
+            offerTool("game");
+            setExpandedTool("game");
         });
 
         // Sanity checks, so that a failure below can't just mean the setup never worked.
@@ -135,51 +143,92 @@ describe("ToolboxRoot", () => {
             "talkingBook",
             "settings",
         ]);
-        expect(getExpandedToolId(container)).toBe("game");
-        expect(reportedToolIds).toEqual(["game"]);
+        expect(expandedToolIdInDom(container)).toBe("game");
 
-        // Leaving the game page: toolbox.ts removes the Game tool it required.
+        // Leaving the game page: toolbox.ts withdraws the Game tool it required.
         await act(async () => {
-            getAdapter().removeTool("game");
+            withdrawTool("game");
         });
 
         expect(getHeaderToolIds(container)).toEqual([
             "talkingBook",
             "settings",
         ]);
-        expect(getExpandedToolId(container)).toBe("talkingBook");
-        expect(reportedToolIds).toEqual(["game", "talkingBook"]);
+        expect(expandedToolIdInDom(container)).toBe("talkingBook");
     });
 
-    it("leaves the active tool alone when some other tool is removed", async () => {
+    it("leaves the open tool alone when some other tool is withdrawn", async () => {
         if (!container) {
             throw new Error("render container not initialized");
         }
         await renderWithBaseTools(container);
 
-        const reportedToolIds: string[] = [];
-        getAdapter().onActiveToolChanged((toolId) => {
-            reportedToolIds.push(toolId);
+        await act(async () => {
+            offerTool("game");
+            setExpandedTool("talkingBook");
         });
 
-        await act(async () => {
-            getAdapter().addTool("game");
-            getAdapter().setActiveToolByToolId("talkingBook");
-        });
-
-        expect(getExpandedToolId(container)).toBe("talkingBook");
-        expect(reportedToolIds).toEqual(["talkingBook"]);
+        expect(expandedToolIdInDom(container)).toBe("talkingBook");
 
         await act(async () => {
-            getAdapter().removeTool("game");
+            withdrawTool("game");
         });
 
         expect(getHeaderToolIds(container)).toEqual([
             "talkingBook",
             "settings",
         ]);
-        // Removing a tool that wasn't active must not disturb the active tool.
-        expect(getExpandedToolId(container)).toBe("talkingBook");
-        expect(reportedToolIds).toEqual(["talkingBook"]);
+        // Withdrawing a tool that wasn't open must not disturb the open tool.
+        expect(expandedToolIdInDom(container)).toBe("talkingBook");
+    });
+
+    // The tool panels are ordinary children of the accordions, so they hold their own
+    // state. Rebuilding the accordions on every store change would throw that away.
+    it("does not remount a tool's panel when another tool is offered", async () => {
+        if (!container) {
+            throw new Error("render container not initialized");
+        }
+        await renderWithBaseTools(container);
+
+        const talkingBookPanelBefore = container.querySelector(
+            '[data-toolid="talkingBook"] > *',
+        );
+        expect(talkingBookPanelBefore).toBeTruthy();
+
+        await act(async () => {
+            offerTool("game");
+        });
+
+        expect(container.querySelector('[data-toolid="talkingBook"] > *')).toBe(
+            talkingBookPanelBefore,
+        );
+    });
+
+    // Clicking a header is the other way a tool becomes the expanded one, and that is what
+    // makes it the running one too (again BL-16602: expanding a tool is what gets it shown).
+    it("makes the tool whose header the user clicks the running one", async () => {
+        if (!container) {
+            throw new Error("render container not initialized");
+        }
+        await renderWithBaseTools(container);
+
+        // sanity check: the tool we are about to click is not already the running one
+        expect(getExpandedToolId()).not.toBe("settings");
+
+        const settingsHeader = Array.from(
+            container.querySelectorAll(".MuiAccordionSummary-root"),
+        ).find(
+            (header) =>
+                header
+                    .querySelector("[data-toolid]")
+                    ?.getAttribute("data-toolid") === "settings",
+        ) as HTMLElement;
+
+        await act(async () => {
+            settingsHeader.click();
+        });
+
+        expect(getExpandedToolId()).toBe("settings");
+        expect(expandedToolIdInDom(container)).toBe("settings");
     });
 });

@@ -41,7 +41,7 @@ import * as toastr from "toastr";
 import WebSocketManager, {
     IBloomWebSocketEvent,
 } from "../../../utils/WebSocketManager";
-import { getActiveToolId } from "../toolbox";
+import { getEffectiveToolId } from "../toolbox";
 import * as React from "react";
 import { renderRoot } from "../../../utils/reactRender";
 import {
@@ -71,7 +71,11 @@ import {
     FeatureStatus,
     getFeatureStatusAsync,
 } from "../../../react_components/featureStatus";
-import { animateStyleName, getPageIframeBody } from "../../../utils/shared";
+import {
+    animateStyleName,
+    getPageIFrame,
+    getPageIframeBody,
+} from "../../../utils/shared";
 import jQuery from "jquery";
 import {
     AudioHighlightManager,
@@ -189,7 +193,18 @@ export default class AudioRecording implements IAudioRecorder {
     // Therefore, decided to use a cached copy instead.
     private cachedCollectionDefaultRecordingMode: RecordingMode;
 
-    private isShowing: boolean;
+    // Is the Talking Book TOOL running -- expanded, with the toolbox showing?
+    //
+    // Named in full because neither half can be left to context. Not "isRunning": in a file
+    // about audio that reads as playing or recording. Not "toolIsRunning" either, because
+    // this class does not belong to one tool -- the Motion tool makes an AudioRecording of
+    // its own to preview narration (motionTool.tsx) -- and on that instance this stays false
+    // while Motion runs quite happily.
+    //
+    // setupForRecordingAsync() sets it, handleToolHiding() clears it, and it is the reliable
+    // signal: getEffectiveToolId() can still answer "talkingBook" for a moment after the
+    // tool has gone. See toolboxState.ts for the vocabulary.
+    private isTalkingBookToolRunning: boolean;
 
     // map<string, string[]> from a sentence to the desired IDs for that span (instead of using a new, dynamically generated one)
     // We have a string[] representing the IdList instead of just a string ID because a text box could potentially contain the same sentence multiple times.
@@ -476,7 +491,7 @@ export default class AudioRecording implements IAudioRecorder {
     // This function should contain only work that needs to be done when the tool is opened.
     // Initialization that happens for a new page should happen in newPageReady instead.
     public async setupForRecordingAsync(): Promise<void> {
-        this.isShowing = true;
+        this.isTalkingBookToolRunning = true;
 
         this.updateInputDeviceDisplay();
 
@@ -538,7 +553,7 @@ export default class AudioRecording implements IAudioRecorder {
         const page = this.getPageDocBodyJQuery();
         if (this.inShowPlaybackOrderMode) {
             // We are removing the UI because we're changing tools or pages, but we want to leave
-            // the checkbox checked for the next time this tool is active, so it will turn on the
+            // the checkbox checked for the next time this tool runs, so it will turn on the
             // playback order UI again. The 'true' param tells the method to leave the checkbox checked.
             this.removePlaybackOrderUi(<HTMLElement>page[0], true);
         }
@@ -575,7 +590,7 @@ export default class AudioRecording implements IAudioRecorder {
     // And BL-5457: Check that we actually have recordable text in the divs we return.
     // And now (BL-7883) we want to optionally order the divs by the tabindex attribute
     // on their parent translationGroup div.
-    // And also (BL-8515) filter out image description text, if that tool is not active.
+    // And also (BL-8515) filter out image description text, if that tool is not running.
     private getRecordableDivs(
         includeCheckForText: boolean = true,
         includeCheckForPlaybackOrder: boolean = true,
@@ -931,31 +946,32 @@ export default class AudioRecording implements IAudioRecorder {
         this.updateIconMarker(null);
     }
 
-    // I'm not sure why activeToolId falsy should count as "true" but that's how some old code
+    // I'm not sure why the effective tool id being falsy should count as "true" but that's
+    // how some old code
     // in setSoundAndHighlightAsync was written. It might be because when we're first showing
     // the toolbox, the default talking book tool starts being initialized before we actually
-    // set what getActiveToolId() is looking for.
+    // set what getEffectiveToolId() is looking for.
     // This used to be isTalkingBookToolActive, but the motion tool also plays audio
     // when previewing.
-    private doesCurrentToolPlayAudio(): boolean {
-        const activeToolId = getActiveToolId();
+    private doesEffectiveToolPlayAudio(): boolean {
+        const effectiveToolId = getEffectiveToolId();
         return (
-            activeToolId === "talkingBook" ||
-            activeToolId === "motion" ||
-            (!activeToolId && this.isShowing)
+            effectiveToolId === "talkingBook" ||
+            effectiveToolId === "motion" ||
+            (!effectiveToolId && this.isTalkingBookToolRunning)
         );
     }
 
     public async setSoundAndHighlightAsync(
         setHighlightParams: ISetHighlightParams,
     ): Promise<void> {
-        // Check that the active tool is not something other than "talkingBook".  A page
-        // can specify a tool it wants to be active initially when it first loads.
+        // Check that the tool in effect is not something other than "talkingBook". A page
+        // can specify a tool it wants to be open initially when it first loads.
         // The multiple asynchronous calls during page loading can result in the wrong
         // tool getting the "newPageReady" method called when the new page specifies a
         // different tool to be activated.  This is the simplest fix that I've found.
         // See BL-14434.
-        if (!this.doesCurrentToolPlayAudio()) return;
+        if (!this.doesEffectiveToolPlayAudio()) return;
 
         // Note: setHighlightToAsync() should be run first so that ui-audioCurrent points to the correct element when setSoundFrom() is run.
         await this.setHighlightToAsync(setHighlightParams);
@@ -979,7 +995,7 @@ export default class AudioRecording implements IAudioRecorder {
     }: ISetHighlightParams): Promise<void> {
         // This is a last-ditch defense against something async turning the hightlight on
         // after we have switched to a different tool.
-        if (!this.doesCurrentToolPlayAudio()) {
+        if (!this.doesEffectiveToolPlayAudio()) {
             return;
         }
 
@@ -1282,7 +1298,7 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     private urlPrefix(): string {
-        const pageFrame = this.getPageFrame()!; // Note: Just fail fast if it's null.
+        const pageFrame = getPageIFrame(); // Note: Just fail fast if it's null.
         const bookSrc = pageFrame.src;
         const index = bookSrc.lastIndexOf("/");
         const bookFolderUrl = bookSrc.substring(0, index + 1);
@@ -1429,7 +1445,7 @@ export default class AudioRecording implements IAudioRecorder {
         await this.setCurrentAudioElementToDefaultAsync();
 
         // That gives up without choosing anything in several cases (most notably when the talking
-        // book tool is not the active one), so we may still be pointing off-page. Take one last
+        // book tool is not the running one), so we may still be pointing off-page. Take one last
         // step, but ONLY when the page leaves nothing to guess between: a single recordable box is
         // unambiguously the one the user meant.
         //
@@ -2076,7 +2092,7 @@ export default class AudioRecording implements IAudioRecorder {
     private async playEndedAsync(): Promise<void> {
         this.clearSubElementHighlightTimeout();
 
-        if (!this.doesCurrentToolPlayAudio()) {
+        if (!this.doesEffectiveToolPlayAudio()) {
             this.elementsToPlayConsecutivelyStack = [];
             this.subElementsWithTimings = [];
             this.listening = false;
@@ -2670,21 +2686,11 @@ export default class AudioRecording implements IAudioRecorder {
         // This only set the RECORDING mode. Don't touch the audio-sentence markup, which represents the PLAYBACK mode.
     }
 
-    // Gets the "page" iframe. May return null if the iframe doesn't exist (e.g., in testing, or while loading).
-    public getPageFrame(): HTMLIFrameElement | null {
-        // Enhance: Maybe should just use the version in workspaceFrames.ts instead?
-        //   (we could add an async version there that would return a promise which is fulfilled when the frame becomes available AND loaded.)
-        return <HTMLIFrameElement | null>(
-            parent?.window?.document?.getElementById("page")
-        );
-    }
-
     // The body of the editable page, a root for searching for document content.
+    // (This survives only because it is part of IAudioRecorder, which lets other code and the
+    // unit tests get at the page body through the recorder; the lookup itself lives in shared.ts.)
     public getPageDocBody(): HTMLElement | null {
-        // ENHANCE: What if the iFrame is there but hasn't finished loading yet? (Which will wipe contentWindow.document)
-        const page = this.getPageFrame();
-        if (!page || !page.contentWindow) return null;
-        return page.contentWindow.document.body;
+        return getPageIframeBody();
     }
 
     // The body of the editable page, a root for searching for document content.
@@ -2851,7 +2857,7 @@ export default class AudioRecording implements IAudioRecorder {
     // Determines which element should receive the Current Highlight
     //   (Notably, checks to see if we should move from the existing Current Highlight (determined via CSS classes) to the actively focused element instead.)
     private async getWhichTextBoxShouldReceiveHighlightAsync(): Promise<HTMLElement | null> {
-        const pageFrame = this.getPageFrame();
+        const pageFrame = getPageIFrame();
 
         // Determine which element should receive the current highlight
         if (
@@ -2964,7 +2970,7 @@ export default class AudioRecording implements IAudioRecorder {
         // Probably redundant, but some nasty things can happen when we try to changeStateAndSetExpectedAsync()
         // when setSoundAndHighlightAsync() didn't actually set the highlight because we're in another tool.
         // This makes things a little safer.
-        if (!this.doesCurrentToolPlayAudio()) return false;
+        if (!this.doesEffectiveToolPlayAudio()) return false;
         let boxToSelect = target.closest(kAudioSentenceClassSelector);
         if (!boxToSelect) {
             // if it isn't one and isn't inside one, see if it contains one
@@ -3045,7 +3051,7 @@ export default class AudioRecording implements IAudioRecorder {
             // Also do nothing if this instance is not the current AudioRecording (mainly a
             // concern in unit tests, which create several instances against a shared page).
             if (
-                !this.isShowing ||
+                !this.isTalkingBookToolRunning ||
                 !this.highlightedElement ||
                 (theOneAudioRecorder && theOneAudioRecorder !== this)
             ) {
@@ -3131,10 +3137,10 @@ export default class AudioRecording implements IAudioRecorder {
     private ensureHighlight(repeats: number) {
         // Stop the loop if the tool has been hidden (toolbox closed or a different tool selected).
         // Otherwise we would re-establish the highlight that handleToolHiding just cleared, leaving
-        // it stuck on the page after the tool is gone (BL-15300). getActiveToolId() can still be
-        // "talkingBook" right after closing, so isShowing -- which handleToolHiding clears -- is the
-        // reliable signal that the tool is actually active.
-        if (!this.isShowing) {
+        // it stuck on the page after the tool is gone (BL-15300). getEffectiveToolId() can still be
+        // "talkingBook" right after closing, so isTalkingBookToolRunning -- which handleToolHiding clears -- is the
+        // reliable signal that the tool is actually running.
+        if (!this.isTalkingBookToolRunning) {
             return;
         }
         this.reestablishCurrentHighlightIfNeeded();
@@ -3165,7 +3171,7 @@ export default class AudioRecording implements IAudioRecorder {
     private reestablishCurrentHighlightIfNeeded(): void {
         // Never (re-)establish the highlight while the tool is hidden; that would put back the
         // highlight handleToolHiding cleared when the toolbox was closed (BL-15300).
-        if (!this.isShowing) {
+        if (!this.isTalkingBookToolRunning) {
             return;
         }
         const pageBody = this.getPageDocBody();
@@ -3255,7 +3261,7 @@ export default class AudioRecording implements IAudioRecorder {
 
     // Should be called when whatever tool uses this is about to be hidden (e.g., changing tools or closing toolbox)
     public handleToolHiding() {
-        this.isShowing = false;
+        this.isTalkingBookToolRunning = false;
         this.wiredPlayer = null;
         // This ensures that no in-progress playback gets resumed by a timeout or end-play handler
         // after the tool closes.
@@ -3563,7 +3569,7 @@ export default class AudioRecording implements IAudioRecorder {
         element: Element,
         isEarlyAbortEnabled: boolean = false,
     ): Promise<void> {
-        if (isEarlyAbortEnabled && !this.isShowing) {
+        if (isEarlyAbortEnabled && !this.isTalkingBookToolRunning) {
             // e.g., the tool was closed during the timeout interval. We must not apply any markup
             return;
         }
@@ -3601,7 +3607,7 @@ export default class AudioRecording implements IAudioRecorder {
         element: Element,
         isEarlyAbortEnabled: boolean = false,
     ) {
-        if (isEarlyAbortEnabled && !this.isShowing) {
+        if (isEarlyAbortEnabled && !this.isTalkingBookToolRunning) {
             // e.g., the tool was closed during the timeout interval. We must not apply any markup
             return;
         }
@@ -3652,18 +3658,18 @@ export default class AudioRecording implements IAudioRecorder {
     private canvasElementBeingHighlighted: HTMLElement | undefined;
 
     public async setCurrentAudioElementToDefaultAsync(): Promise<HTMLElement | null> {
-        // Seems very strange that we would be doing this when the talking book tool is not active.
+        // Seems very strange that we would be doing this when the talking book tool is not running.
         // Unfortunately there's a weird sequence of events that happens when we add a page that calls
         // for a particular tool (e.g., Game) and the toolbox isn't open. In the process of opening
         // the toolbox, we call newPageReady() for the (default) talking book tool. Various things
         // get initiated but not awaited. Then we finish switching to the desired tool. Eventually,
         // one of the async tasks completes and this gets called. On various paths it tries to
-        // select something, but setSoundAndHighlightAsync doesn't do it because the tool isn't active.
+        // select something, but setSoundAndHighlightAsync doesn't do it because the tool isn't running.
         // Then there's a loop in changeStateAndSetExpectedAsync that keeps trying to get something
         // selected...we can get into a recursive await/call stack that freezes Bloom.
         // This is one of several places where we give up trying to select something if the tool
-        // isn't active to prevent such problems.
-        if (!this.doesCurrentToolPlayAudio()) return null;
+        // isn't running to prevent such problems.
+        if (!this.doesEffectiveToolPlayAudio()) return null;
         const pageDocBody = this.getPageDocBody();
         if (!pageDocBody) {
             return null;
@@ -4901,7 +4907,7 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     public insertSegmentMarker(): void {
-        const selection = this.getPageFrame()!.contentWindow!.getSelection();
+        const selection = getPageIFrame().contentWindow!.getSelection();
         const range = selection!.getRangeAt(0);
         const marker = document.createTextNode("|");
         range.insertNode(marker);
