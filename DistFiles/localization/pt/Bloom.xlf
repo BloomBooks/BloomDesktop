@@ -3733,12 +3733,12 @@
       </trans-unit>
       <trans-unit id="LayoutChoices.Ebook7x5Landscape" sil:dynamic="true">
         <source xml:lang="en">Ebook 7x5 Landscape</source>
-        <target xml:lang="pt-PT" state="needs-translation">Ebook 7x5 Landscape</target>
+        <target xml:lang="pt-PT" state="translated">E-book 7x5 Paisagem</target>
         <note>ID: LayoutChoices.Ebook7x5Landscape</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.Ebook2x3Portrait" sil:dynamic="true">
         <source xml:lang="en">Ebook 2x3 Portrait</source>
-        <target xml:lang="pt-PT" state="needs-translation">Ebook 2x3 Portrait</target>
+        <target xml:lang="pt-PT" state="translated">E-book 2x3 Retrato</target>
         <note>ID: LayoutChoices.Ebook2x3Portrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.HalfFolioPortrait" sil:dynamic="true" approved="yes">
@@ -6262,7 +6262,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Sign Language Pages" sil:dynamic="true">
         <source xml:lang="en">Sign Language Pages</source>
-        <target xml:lang="pt-PT" state="needs-translation">Sign Language Pages</target>
+        <target xml:lang="pt-PT" state="translated">Páginas para línguas de sinais</target>
         <note>ID: TemplateBooks.BookName.Sign Language Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Special Pages" sil:dynamic="true" approved="yes">
