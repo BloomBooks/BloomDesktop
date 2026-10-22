@@ -409,7 +409,7 @@
       </trans-unit>
       <trans-unit id="CollectionChooser.CheckedOutCount">
         <source xml:lang="en">{0} checked out to you</source>
-        <target xml:lang="pt-PT" state="translated">{0} em uso por você</target>
+        <target xml:lang="pt-PT" state="translated">{0} reservados para você</target>
         <note>ID: CollectionChooser.CheckedOutCount</note>
       </trans-unit>
       <trans-unit id="CollectionChooser.UnpublishedToBloomLibrary">
@@ -817,9 +817,9 @@
         <target xml:lang="pt-PT" state="final">Importar conteúdo da planilha...</target>
         <note>ID: CollectionTab.BookMenu.ImportContentFromSpreadsheet</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.MustCheckOutTooltip" approved="yes">
+      <trans-unit id="CollectionTab.BookMenu.MustCheckOutTooltip">
         <source xml:lang="en">This feature requires the book to be checked out to you.</source>
-        <target xml:lang="pt-PT" state="final">Este recurso requer que o livro seja retirado para você.</target>
+        <target xml:lang="pt-PT" state="translated">Este recurso requer que o livro seja reservado para você.</target>
         <note>ID: CollectionTab.BookMenu.MustCheckOutTooltip</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.RenameBook" approved="yes">
@@ -3573,47 +3573,47 @@
       </trans-unit>
       <trans-unit id="ImageLibrary.ImageChooser">
         <source xml:lang="en">Image Chooser</source>
-        <target xml:lang="pt-PT" state="translated">Seletor de imagens</target>
+        <target xml:lang="pt-PT" state="translated">Selecionar imagem</target>
         <note>ID: ImageLibrary.ImageChooser</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.OnlineSources">
         <source xml:lang="en">Online Sources</source>
-        <target xml:lang="pt-PT" state="needs-translation">Online Sources</target>
+        <target xml:lang="pt-PT" state="translated">Fontes online</target>
         <note>ID: ImageLibrary.OnlineSources</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.OpenFile">
         <source xml:lang="en">Open File...</source>
-        <target xml:lang="pt-PT" state="needs-translation">Open File...</target>
+        <target xml:lang="pt-PT" state="translated">Abrir arquivo...</target>
         <note>ID: ImageLibrary.OpenFile</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.Search">
         <source xml:lang="en">Search</source>
-        <target xml:lang="pt-PT" state="needs-translation">Search</target>
+        <target xml:lang="pt-PT" state="translated">Pesquisar</target>
         <note>ID: ImageLibrary.Search</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.ThisComputer">
         <source xml:lang="en">This Computer</source>
-        <target xml:lang="pt-PT" state="needs-translation">This Computer</target>
+        <target xml:lang="pt-PT" state="translated">Este computador</target>
         <note>ID: ImageLibrary.ThisComputer</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.UseThisImage">
         <source xml:lang="en">Use this image</source>
-        <target xml:lang="pt-PT" state="needs-translation">Use this image</target>
+        <target xml:lang="pt-PT" state="translated">Usar esta imagem</target>
         <note>ID: ImageLibrary.UseThisImage</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.PasteApiKeyFromClipboard">
         <source xml:lang="en">Paste API key from clipboard</source>
-        <target xml:lang="pt-PT" state="needs-translation">Paste API key from clipboard</target>
+        <target xml:lang="pt-PT" state="translated">Colar chave API da área de transferência</target>
         <note>ID: ImageLibrary.PasteApiKeyFromClipboard</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.PixabayApiKeyInstructions">
         <source xml:lang="en">To use Pixabay, you need an API key:</source>
-        <target xml:lang="pt-PT" state="needs-translation">To use Pixabay, you need an API key:</target>
+        <target xml:lang="pt-PT" state="translated">Para usar o Pixabay, precisa de uma chave API:</target>
         <note>ID: ImageLibrary.PixabayApiKeyInstructions</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.PixabayApiKeyLabel">
         <source xml:lang="en">Pixabay API Key</source>
-        <target xml:lang="pt-PT" state="needs-translation">Pixabay API Key</target>
+        <target xml:lang="pt-PT" state="translated">Chave API do Pixabay</target>
         <note>ID: ImageLibrary.PixabayApiKeyLabel</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.PixabayFindKey">
