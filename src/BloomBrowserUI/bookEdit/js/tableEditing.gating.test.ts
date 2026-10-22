@@ -22,6 +22,12 @@ vi.mock("../../utils/bloomApi", async (importOriginal) => ({
     post: () => {},
     get: () => {},
 }));
+// Every new cell editor gets long-press, which asks the server whether it is on, with axios
+// directly, so the mock above does not catch it. Nothing here is about long-press.
+vi.mock("./bloomEditing", async (importOriginal) => ({
+    ...((await importOriginal()) as object),
+    activateLongPressFor: () => {},
+}));
 
 import { findParagraphForTextContextMenu } from "../textContextMenu/noIndent";
 import { AttachNewTable, SetupTableEditing } from "./tableEditing";

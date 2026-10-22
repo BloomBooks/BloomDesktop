@@ -63,6 +63,11 @@ describe("describeBadUrl", () => {
 });
 
 describe("installUndefinedUrlDetector", () => {
+    // The fetch tests below call fetch(), which the detector wraps. Unit tests must not reach the
+    // network (see vitest.setup.ts), so the detector wraps this stand-in instead, which fails the
+    // way a fetch with no server would.
+    window.fetch = () =>
+        Promise.reject(new TypeError("no network in unit tests"));
     // Installed once for the whole file, as it is in the real app: the installer deliberately
     // ignores repeat calls so a bundle can't double-report.
     const report = vi.fn();
@@ -166,7 +171,7 @@ describe("installUndefinedUrlDetector", () => {
         // Called bare, exactly as application code calls it - which means the wrapper receives
         // `this === undefined` and must not pass that on to the real fetch.
         void fetch("audio/undefined").catch(() => {
-            // jsdom has no real network; the rejection is expected and irrelevant here.
+            // The stand-in fetch above rejects; that is expected and irrelevant here.
         });
 
         expect(report).toHaveBeenCalledTimes(1);
@@ -175,7 +180,7 @@ describe("installUndefinedUrlDetector", () => {
 
     it("leaves an ordinary fetch alone", () => {
         void fetch("audio/real.mp3").catch(() => {
-            // Again, no network in jsdom.
+            // Again, the stand-in fetch rejects.
         });
 
         expect(report).not.toHaveBeenCalled();
