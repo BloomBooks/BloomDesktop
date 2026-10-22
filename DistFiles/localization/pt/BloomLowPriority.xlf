@@ -170,7 +170,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.HowToVideo">
         <source xml:lang="en">How to video</source>
-        <target xml:lang="pt-PT" state="needs-translation">How to video</target>
+        <target xml:lang="pt-PT" state="translated">Vídeo tutorial</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.HowToVideo</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.BookshelfError" approved="yes">
