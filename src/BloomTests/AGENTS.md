@@ -103,17 +103,23 @@ BLOOM_RUN_RAB_MANUAL_TESTS=1 build/agent-dotnet.sh test src/BloomTests/BloomTest
 ## Don't assume the tests are running in English
 
 **The tests must not assume English any more than the production code may** (see "Don't assume
-the machine is running in English" in the root `AGENTS.md`). A test asserting `"1.5 MB"` fails in
-French for a reason that has nothing to do with the code under test. Either assert culture-agnostically (see how
-`LicenseCheckerTests` uses `CurrentCulture.TextInfo.ListSeparator`), or — where the production
+the machine is running in English" in the root `AGENTS.md`). The tests run the way Bloom does:
+`src/BloomTests/TestCulture.cs` makes the process culture invariant, and `UserCulture.Current` is the
+user's regional format. A test asserting that the user sees `"1.5 MB"` fails in French for a reason
+that has nothing to do with the code under test. Either assert culture-agnostically (see how
+`LicenseCheckerTests` uses `UserCulture.Current.TextInfo.ListSeparator`), or — where the production
 string really should be invariant, as log lines should be — fix the production code and leave the
-test asserting the period.
+test asserting the period. To test a user-culture path in a particular culture, set it with
+`UserCulture.SetForTests` and restore it afterwards (see `TeamCollectionApiTests`). Setting
+`CultureInfo.CurrentCulture` in a test is only for checking that code copes with a hostile process
+culture, as the Thai and Turkish tests do.
 
-The weekly `.github/workflows/culture-sweep.yml` already runs the whole suite under `fr-FR`,
-`tr-TR`, `th-TH` and `ar-SA`, so **do not run under another culture as a matter of routine** — it costs a full
-build and a full run for nothing new. Do it only when your change parses or formats numbers, dates,
-casing, or string searches, or when reproducing a sweep failure locally. `src/BloomTests/TestCulture.cs` makes it one environment
-variable, and does nothing when it is unset:
+The weekly `.github/workflows/culture-sweep.yml` already runs the whole suite with the user's
+culture set to `fr-FR`, `tr-TR`, `th-TH` and `ar-SA`, so **do not run under another culture as a matter of routine** — it costs a full
+build and a full run for nothing new. Do it only when your change shows or reads numbers or dates,
+or sorts for the user, or when reproducing a sweep failure locally. `BLOOM_TEST_CULTURE` sets
+`UserCulture.Current` for the run (the process culture stays invariant); with it unset, the user's
+culture is the machine's own:
 
 ```bash
 BLOOM_TEST_CULTURE=fr-FR build/agent-dotnet.sh test src/BloomTests/BloomTests.csproj

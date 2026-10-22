@@ -110,8 +110,9 @@ namespace BloomTests.Publish.BloomPub.usb
             // SUT
             var size = testUsbPublisher.GetStoredBloomPubFileSize();
 
-            // 'size' is a culture-specific string; convert it to the invariant culture for test
-            size = double.Parse(size).ToString(CultureInfo.InvariantCulture);
+            // 'size' is shown to the user, so it is in the user's culture; convert it to the
+            // invariant culture for the test
+            size = double.Parse(size, UserCulture.Current).ToString(CultureInfo.InvariantCulture);
 
             Assert.AreEqual("0.1", size);
         }

@@ -3356,7 +3356,7 @@ namespace Bloom.Book
                 if (lang != null)
                     name = lang.Name;
                 else
-                    IetfLanguageTagExtra.GetBestLanguageName(code, out name);
+                    IetfLanguageTag.GetBestLanguageName(code, out name);
                 string ethCode;
                 LanguageSubtag data;
                 if (!StandardSubtags.RegisteredLanguages.TryGet(code.ToLowerInvariant(), out data))

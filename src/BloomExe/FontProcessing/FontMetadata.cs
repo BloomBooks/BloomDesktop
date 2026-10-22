@@ -6,6 +6,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.Text;
 using SharpFont;
+using SIL.CommandLineProcessing;
 using SIL.Progress;
 using Bloom.ToPalaso;
 #else
@@ -176,7 +177,7 @@ namespace Bloom.FontProcessing
             }
             try
             {
-                var res = CommandLineRunnerExtra.RunWithInvariantCulture(
+                var res = CommandLineRunner.Run(
                     "/usr/bin/otfinfo",
                     $"-i \"{fontPath}\"",
                     "",
@@ -204,7 +205,7 @@ namespace Bloom.FontProcessing
             catch (Exception e)
             {
                 Console.WriteLine(
-                    "CommandLineRunnerExtra.RunWithInvariantCulture() of otfinfo -i \"{0}\" threw an exception: {1}",
+                    "CommandLineRunner.Run() of otfinfo -i \"{0}\" threw an exception: {1}",
                     fontPath,
                     e
                 );
