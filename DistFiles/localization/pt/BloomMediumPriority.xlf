@@ -1804,9 +1804,9 @@
         <target xml:lang="pt-PT" state="final">Linhas claras &amp; cores sólidas</target>
         <note>ID: AiImageEditor.ArtStyle.clear-line-flat-color.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.coloring-book-page.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.coloring-book-page.Name" approved="yes">
         <source xml:lang="en">Coloring Book Outline</source>
-        <target xml:lang="pt-PT" state="translated">Contorno de livro de colorir</target>
+        <target xml:lang="pt-PT" state="final">Contorno de livro de colorir</target>
         <note>ID: AiImageEditor.ArtStyle.coloring-book-page.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.comic-halftone.Name">
@@ -1829,9 +1829,9 @@
         <target xml:lang="pt-PT" state="final">Xilogravura de alto contraste</target>
         <note>ID: AiImageEditor.ArtStyle.high-contrast-block.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.kawaii-doodle.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.kawaii-doodle.Name" approved="yes">
         <source xml:lang="en">Kawaii Doodle</source>
-        <target xml:lang="pt-PT" state="translated">Desenhos fofos (Kawaii)</target>
+        <target xml:lang="pt-PT" state="final">Desenhos fofos (Kawaii)</target>
         <note>ID: AiImageEditor.ArtStyle.kawaii-doodle.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.line-art-colored-pencil.Name" approved="yes">
@@ -1884,14 +1884,14 @@
         <target xml:lang="pt-PT" state="final">Retrofuturismo</target>
         <note>ID: AiImageEditor.ArtStyle.retro-futurism.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.vintage-engraving.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.vintage-engraving.Name" approved="yes">
         <source xml:lang="en">Vintage Engraving &amp; Etching</source>
-        <target xml:lang="pt-PT" state="translated">Gravura antiga &amp; água-forte</target>
+        <target xml:lang="pt-PT" state="final">Gravura antiga &amp; água-forte</target>
         <note>ID: AiImageEditor.ArtStyle.vintage-engraving.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.vintage-illustrations.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.vintage-illustrations.Name" approved="yes">
         <source xml:lang="en">Vintage Style Illustrations</source>
-        <target xml:lang="pt-PT" state="translated">Ilustrações em estilo antigo</target>
+        <target xml:lang="pt-PT" state="final">Ilustrações em estilo antigo</target>
         <note>ID: AiImageEditor.ArtStyle.vintage-illustrations.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.watercolor-dream.Name" approved="yes">
@@ -1904,9 +1904,9 @@
         <target xml:lang="pt-PT" state="final">Ilustrações lúdicas</target>
         <note>ID: AiImageEditor.ArtStyle.whimsical-illustrations.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.wimmelbuch.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.wimmelbuch.Name" approved="yes">
         <source xml:lang="en">Wimmelbuch Style</source>
-        <target xml:lang="pt-PT" state="translated">Estilo Wimmelbuch (busca e encontre)</target>
+        <target xml:lang="pt-PT" state="final">Estilo Wimmelbuch (busca e encontre)</target>
         <note>ID: AiImageEditor.ArtStyle.wimmelbuch.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Batch.AddToBatch" approved="yes">
@@ -1914,14 +1914,14 @@
         <target xml:lang="pt-PT" state="final">Adicionar ao lote</target>
         <note>ID: AiImageEditor.Batch.AddToBatch</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Batch.SelectAllPages">
+      <trans-unit id="AiImageEditor.Batch.SelectAllPages" approved="yes">
         <source xml:lang="en">Select all pages for batch processing</source>
-        <target xml:lang="pt-PT" state="translated">Selecionar todas as páginas para o processamento em lote</target>
+        <target xml:lang="pt-PT" state="final">Selecionar todas as páginas para o processamento em lote</target>
         <note>ID: AiImageEditor.Batch.SelectAllPages</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Batch.WillEditSelected">
+      <trans-unit id="AiImageEditor.Batch.WillEditSelected" approved="yes">
         <source xml:lang="en">Will edit the {0} selected images</source>
-        <target xml:lang="pt-PT" state="translated">As {0} imagens selecionadas serão editadas</target>
+        <target xml:lang="pt-PT" state="final">As {0} imagens selecionadas serão editadas</target>
         <note>ID: AiImageEditor.Batch.WillEditSelected</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.BookImages.Current" approved="yes">
@@ -1929,14 +1929,14 @@
         <target xml:lang="pt-PT" state="final">Atual</target>
         <note>ID: AiImageEditor.BookImages.Current</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.BookImages.ReplaceTip">
+      <trans-unit id="AiImageEditor.BookImages.ReplaceTip" approved="yes">
         <source xml:lang="en">Replace images in your book with these images</source>
-        <target xml:lang="pt-PT" state="translated">Substituir as imagens do seu livro por estas imagens</target>
+        <target xml:lang="pt-PT" state="final">Substituir as imagens do seu livro por estas imagens</target>
         <note>ID: AiImageEditor.BookImages.ReplaceTip</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.BookImages.Replacement">
+      <trans-unit id="AiImageEditor.BookImages.Replacement" approved="yes">
         <source xml:lang="en">Replacement</source>
-        <target xml:lang="pt-PT" state="translated">Substituir por</target>
+        <target xml:lang="pt-PT" state="final">Substituir por</target>
         <note>ID: AiImageEditor.BookImages.Replacement</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Characters.NamePlaceholder" approved="yes">
@@ -1944,9 +1944,9 @@
         <target xml:lang="pt-PT" state="final">Nome</target>
         <note>ID: AiImageEditor.Characters.NamePlaceholder</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Characters.PasteToAdd">
+      <trans-unit id="AiImageEditor.Characters.PasteToAdd" approved="yes">
         <source xml:lang="en">Paste an image to add a character</source>
-        <target xml:lang="pt-PT" state="translated">Colar uma imagem para adicionar um personagem</target>
+        <target xml:lang="pt-PT" state="final">Colar uma imagem para adicionar um personagem</target>
         <note>ID: AiImageEditor.Characters.PasteToAdd</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Error.AddReferenceImage">
