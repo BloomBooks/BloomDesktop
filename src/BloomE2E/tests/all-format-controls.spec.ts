@@ -48,7 +48,11 @@ import {
     type ITextBoxFormatting,
 } from "../helpers/formatDialog";
 import { getCurrentAudioHighlightColors } from "../helpers/talkingBook";
-import { getOpenToolName, hideToolbox, showToolbox } from "../helpers/toolbox";
+import {
+    getExpandedToolName,
+    hideToolbox,
+    showToolbox,
+} from "../helpers/toolbox";
 
 test.use({
     collectionSpec: { name: "all-format-controls", languages: ["en", "fr"] },
@@ -330,7 +334,7 @@ test.describe("All Format Controls", () => {
         await closeFormatDialog(page);
 
         await showToolbox(page);
-        expect(await getOpenToolName(page)).toBe("Talking Book Tool");
+        expect(await getExpandedToolName(page)).toBe("Talking Book Tool");
         expect(await getCurrentAudioHighlightColors(page)).toEqual({
             background: PALE_GREEN,
             text: PURPLE,

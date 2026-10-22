@@ -16,15 +16,16 @@ export const kImageDescriptionToolId = "imageDescription";
 export const kMotionToolId = "motion";
 export const kMusicToolId = "music";
 // The "More..." tool, which is where the user turns the other tools on and off.
-// It is a tool like the others, but it is never a sensible *default* current tool
-// (the toolbox's getFirstToolId skips it). Expanding it does still get persisted as the
-// book's current tool, as it always has been.
+// It is a tool like the others, but it is never a sensible *default* tool to expand
+// (getFirstOfferedToolId skips it). Expanding it does still get persisted as the
+// book's "current" tool in meta.json, as it always has been.
 export const kSettingsToolId = "settings";
 export const kTalkingBookToolId = "talkingBook";
 
-// Historically, tool names in some contexts carry a "Tool" suffix: the "current" tool and
-// the tool "name"s in a book's meta.json, and the data-toolid attribute that some tool
-// stylesheets select on. The canonical, in-memory id of a tool is always the unsuffixed
+// Historically, tool names in some contexts carry a "Tool" suffix. One such place is left:
+// the "current" tool in a book's meta.json. (A tool's data-toolid attribute now carries the
+// canonical id, and meta.json's enabled-tool names arrive with a "Check" suffix that the C#
+// side strips.) The canonical, in-memory id of a tool is always the unsuffixed
 // one that its id() method returns, e.g. "talkingBook". The two functions below are the
 // only code that knows about the suffix, and they are called only at those boundaries.
 const kPersistedNameSuffix = "Tool";
@@ -48,10 +49,13 @@ export function toCanonicalToolId(toolIdOrPersistedName: string): string {
 }
 
 /**
- * The name to use for a tool where the historical "Tool" suffix is expected: the book's
- * meta.json (the "current" tool and the enabled-tool names) and the data-toolid attribute
- * of a tool's body element. Given a canonical tool id, appends the suffix, except to ids
- * that never took it.
+ * The name to use in the one place that still expects the historical "Tool" suffix: the
+ * book's "current" tool in meta.json. Given a canonical tool id, appends the suffix, except
+ * to ids that never took it.
+ *
+ * Two places people expect to need this and do not: a tool's body element, whose
+ * data-toolid attribute carries the canonical id, and meta.json's enabled-tool names,
+ * which arrive suffixed with "Check" and are stripped by the C# side (see below).
  */
 export function toPersistedToolName(toolId: string): string {
     if (
