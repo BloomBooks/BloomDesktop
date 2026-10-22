@@ -18,15 +18,31 @@ export const ckeditableSelector =
     ".bloom-content3[contenteditable='true'],.bloom-contentNational1[contenteditable='true']," +
     ".bloom-contentNational2[contenteditable='true'],.Equation-style[contenteditable='true']";
 
+// The iframe (in the workspace root document) that holds the page being edited.
+// We deliberately look in `parent` rather than `window.top`. Every frame that asks this
+// question (the toolbox frame and the page frame itself) is a direct child of the workspace
+// root, so parent and top are the same document there, and `parent` is what the rest of the
+// edit-mode code (e.g. workspaceFrames.ts) has always used. Using `parent` also keeps the
+// answer local: a caller running in some deeper frame gets null (no "page" sibling) rather
+// than silently reaching past its own workspace up to the outermost document.
+// Note: typed non-null for the convenience of the many callers that legitimately assume the
+// frame is there, but it really can be null (unit tests, or before the frame is created).
 export function getPageIFrame(): HTMLIFrameElement {
     return parent.window.document.getElementById("page") as HTMLIFrameElement;
 }
 
+// The document of the editable page. Use this (rather than the body) when you need
+// document-level APIs such as getElementById or documentElement.
+export function getPageIframeDocument(): Document | null {
+    const page = getPageIFrame();
+    // ENHANCE: What if the iframe is there but hasn't finished loading yet? (Which will wipe contentWindow.document)
+    if (!page || !page.contentWindow) return null;
+    return page.contentWindow.document;
+}
+
 // The body of the editable page, a root for searching for document content.
 export function getPageIframeBody(): HTMLElement | null {
-    const page = getPageIFrame();
-    if (!page || !page.contentWindow) return null;
-    return page.contentWindow.document.body;
+    return getPageIframeDocument()?.body ?? null;
 }
 
 export function getBloomPageElement(): HTMLElement | null {
