@@ -537,6 +537,30 @@ namespace BloomTests.Collection
         }
 
         /// <summary>
+        /// Pro tier is not allowed in a Team Collection, so a collection becoming one in the same
+        /// save keeps its old subscription.
+        /// </summary>
+        [Test]
+        public void Apply_ProSubscriptionWhileCreatingTeamCollection_IsRefused()
+        {
+            const string kProCode = "Fake-Pro-009926-2146";
+            var settings = CreateCollectionSettings("ApplyProWhileCreatingTeamCollection");
+            Assert.That(
+                new Subscription(kProCode).Tier,
+                Is.EqualTo(SubscriptionTier.Pro),
+                "Sanity check: the code should be a Pro one"
+            );
+            var values = CurrentValuesJson(settings);
+            values["subscription"]["code"] = kProCode;
+            values["teamCollection"]["createInFolder"] = @"C:\Dropbox";
+
+            Apply(values, settings);
+
+            Assert.That(settings.Subscription.Code, Is.Not.EqualTo(kProCode));
+            Assert.That(_teamCollectionRequests, Is.EqualTo(new[] { @"C:\Dropbox" }));
+        }
+
+        /// <summary>
         /// Pro tier is not allowed in a Team Collection; elsewhere it is applied.
         /// </summary>
         [TestCase(true, false)]
