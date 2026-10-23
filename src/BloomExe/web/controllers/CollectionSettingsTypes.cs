@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Bloom.Collection;
+using Bloom.Edit;
 using Bloom.Properties;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using SIL.Extensions;
+using SIL.IO;
 
 namespace Bloom.web.controllers
 {
@@ -35,6 +38,11 @@ namespace Bloom.web.controllers
         /// must not become a Team Collection.
         /// </summary>
         public bool EditingABlorgBook;
+
+        /// <summary>
+        /// The font a language gets when the user adds it (a third language).
+        /// </summary>
+        public string DefaultFontName;
 
         /// <summary>
         /// Set only when the user may not edit the collection settings (a Team Collection member
@@ -72,6 +80,7 @@ namespace Bloom.web.controllers
             BloomLibrary = new BloomLibraryValues(settings);
             Advanced = new AdvancedValues(settings, queueRenameOfCollection);
             Experimental = new ExperimentalValues();
+            ReaderTools = new ReaderToolsValues(settings);
         }
 
         /// <summary>
@@ -126,6 +135,7 @@ namespace Bloom.web.controllers
         public BloomLibraryValues BloomLibrary { get; }
         public AdvancedValues Advanced { get; }
         public ExperimentalValues Experimental { get; }
+        public ReaderToolsValues ReaderTools { get; }
 
         /// <summary>
         /// The dotted paths, as the dialog sees them, of every value marked RequiresRestart.
@@ -178,6 +188,13 @@ namespace Bloom.web.controllers
         public SignLanguageValues SignLanguage;
 
         /// <summary>
+        /// A non-localized key. It is for the whole collection, not one language, but it says
+        /// which digits the page numbers are written in, so the dialog shows it with the languages.
+        /// </summary>
+        [RequiresRestart]
+        public string PageNumberStyle;
+
+        /// <summary>
         /// The languages as the collection has them now.
         /// </summary>
         public static LanguagesValues From(CollectionSettings settings)
@@ -200,6 +217,7 @@ namespace Bloom.web.controllers
                         Name = settings.SignLanguage.Name,
                         IsCustomName = settings.SignLanguage.IsCustomName,
                     },
+                PageNumberStyle = settings.PageNumberStyle,
             };
         }
     }
@@ -280,16 +298,6 @@ namespace Bloom.web.controllers
         {
             get => _settings.XMatterPackName;
             set => _settings.XMatterPackName = value;
-        }
-
-        /// <summary>
-        /// A non-localized key.
-        /// </summary>
-        [RequiresRestart]
-        public string PageNumberStyle
-        {
-            get => _settings.PageNumberStyle;
-            set => _settings.PageNumberStyle = value;
         }
 
         // The QR code settings do not really need anything as drastic as a restart, but the
@@ -461,6 +469,97 @@ namespace Bloom.web.controllers
     }
 
     /// <summary>
+    /// The two reader tools settings that describe the first language's script: its alphabet and
+    /// the sentence-ending punctuation Bloom does not already know. They live in the reader tools'
+    /// own file (ReaderToolsSettings-{tag}.json in the collection folder, named for the first
+    /// language) beside the stages and levels, which only the Reader Setup dialog edits. Populating
+    /// writes a changed value straight into that file and keeps everything else in it.
+    /// </summary>
+    public class ReaderToolsValues
+    {
+        // Worked out before any posted language is applied, so a value goes into the file of the
+        // language it was shown for. (The dialog does not let the user edit these while they are
+        // changing the first language, so then nothing is written.)
+        private readonly string _settingsFilePath;
+
+        // Null when the file is there but is not valid JSON.
+        private readonly JObject _settingsFileContent;
+
+        public ReaderToolsValues(CollectionSettings settings)
+        {
+            _settingsFilePath = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(
+                settings
+            );
+            var json = RobustFile.Exists(_settingsFilePath)
+                ? RobustFile.ReadAllText(_settingsFilePath, Encoding.UTF8)
+                : "";
+            // With no file yet, show what the reader tools would start with. Nothing is written
+            // unless the user changes a value.
+            if (string.IsNullOrWhiteSpace(json))
+                json = DecodableReaderToolSettings.GetDefaultSettingsJson(settings.Language1.Tag);
+            try
+            {
+                _settingsFileContent = JObject.Parse(json);
+            }
+            catch (JsonReaderException)
+            {
+                // A damaged reader tools file must not keep the user out of every other
+                // collection setting, so its values show as empty and the dialog does not let
+                // them be edited (see IsUnreadable). SetValue refuses to write over it, since
+                // that would lose the stages and levels we could not read.
+            }
+        }
+
+        /// <summary>
+        /// Whether the file is there but cannot be read, so the dialog must not offer its values
+        /// for editing. Only the GET uses it; a posted value is ignored.
+        /// </summary>
+        public bool IsUnreadable => _settingsFileContent == null;
+
+        /// <summary>
+        /// The letters and letter combinations of the first language, separated by spaces. A tool
+        /// that is open keeps the settings it loaded, so a change needs a restart.
+        /// </summary>
+        [RequiresRestart]
+        public string Letters
+        {
+            get => GetValue("letters");
+            set => SetValue("letters", value);
+        }
+
+        /// <summary>
+        /// Unicode escapes (like \U0020) of characters that also end a sentence in this language.
+        /// </summary>
+        [RequiresRestart]
+        public string SentencePunct
+        {
+            get => GetValue("sentencePunct");
+            set => SetValue("sentencePunct", value);
+        }
+
+        private string GetValue(string key)
+        {
+            return (string)_settingsFileContent?[key] ?? "";
+        }
+
+        private void SetValue(string key, string value)
+        {
+            if (value == GetValue(key))
+                return;
+            if (_settingsFileContent == null)
+                throw new InvalidOperationException(
+                    $"Cannot save the reader tools' {key}: {_settingsFilePath} is not valid JSON."
+                );
+            _settingsFileContent[key] = value;
+            RobustFile.WriteAllText(
+                _settingsFilePath,
+                _settingsFileContent.ToString(Formatting.None),
+                Encoding.UTF8
+            );
+        }
+    }
+
+    /// <summary>
     /// The reply to GET collection/qrCodeBadge. The TypeScript interface IQrCodeBadgeData must
     /// match it.
     /// </summary>
@@ -470,11 +569,6 @@ namespace Bloom.web.controllers
         /// A data: url of the QR code image.
         /// </summary>
         public string QrCode;
-
-        /// <summary>
-        /// What the caption's "{0}" stands for.
-        /// </summary>
-        public string LanguageName;
 
         /// <summary>
         /// The address the badge shows beneath its caption.
