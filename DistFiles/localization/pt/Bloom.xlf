@@ -2221,9 +2221,9 @@
         <target xml:lang="pt-PT" state="final">Tente fechar outros programas e reinicie o computador se necessário.</target>
         <note>ID: EditTab.Image.TryRestart</note>
       </trans-unit>
-      <trans-unit id="EditTab.Instructions.DeleteAllowed" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Instructions.DeleteAllowed" sil:dynamic="true">
         <source xml:lang="en">Feel free to modify or delete this page.</source>
-        <target xml:lang="pt-PT" state="final">Sinta-se livre modificar ou deletar esta página.</target>
+        <target xml:lang="pt-PT" state="translated">Sinta-se à vontade para modificar ou excluir esta página.</target>
         <note>ID: EditTab.Instructions.DeleteAllowed</note>
       </trans-unit>
       <trans-unit id="EditTab.JpegWarningDialog.DoNotUse" approved="yes">
@@ -3491,19 +3491,19 @@
         <target xml:lang="pt-PT" state="final">solicitar e votar em novos recursos</target>
         <note>ID: ForumInvitationDialog.RequestAndVote</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.AskForAdvice" approved="yes">
+      <trans-unit id="ForumInvitationDialog.AskForAdvice">
         <source xml:lang="en">ask for advice or technical help</source>
-        <target xml:lang="pt-PT" state="final">peça um conselho ou ajuda técnica</target>
+        <target xml:lang="pt-PT" state="translated">pedir conselho ou ajuda técnica</target>
         <note>ID: ForumInvitationDialog.AskForAdvice</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.ShowOff" approved="yes">
+      <trans-unit id="ForumInvitationDialog.ShowOff">
         <source xml:lang="en">show off what you're doing with Bloom!</source>
-        <target xml:lang="pt-PT" state="final">mostre o que você está fazendo com o Bloom!</target>
+        <target xml:lang="pt-PT" state="translated">mostrar o que você está fazendo com o Bloom!</target>
         <note>ID: ForumInvitationDialog.ShowOff</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.HowToJoin" approved="yes">
+      <trans-unit id="ForumInvitationDialog.HowToJoin">
         <source xml:lang="en">How to Join</source>
-        <target xml:lang="pt-PT" state="final">Como aderir</target>
+        <target xml:lang="pt-PT" state="translated">Como fazer parte</target>
         <note>ID: ForumInvitationDialog.HowToJoin</note>
       </trans-unit>
       <trans-unit id="HelpMenu.AskAQuestionMenuItem" approved="yes">
@@ -6240,9 +6240,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="pt-PT" state="final">Livro Nivelado</target>
         <note>ID: TemplateBooks.BookName.Leveled Reader</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Paper Comic Book" sil:dynamic="true" approved="yes">
+      <trans-unit id="TemplateBooks.BookName.Paper Comic Book" sil:dynamic="true">
         <source xml:lang="en">Paper Comic Book</source>
-        <target xml:lang="pt-PT" state="final">Banda desenhada para imprimir</target>
+        <target xml:lang="pt-PT" state="translated">Banda desenhada (Quadrinhos) para imprimir</target>
         <note>ID: TemplateBooks.BookName.Paper Comic Book</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Paper Comic Book Pages" sil:dynamic="true" approved="yes">
@@ -6648,7 +6648,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Comic" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Comic</source>
-        <target xml:lang="pt-PT" state="final">Banda desenhada</target>
+        <target xml:lang="pt-PT" state="final">Banda desenhada (Quadrinhos)</target>
         <note>ID: TemplateBooks.PageLabel.Comic</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Comic Full Page" sil:dynamic="true" approved="yes">
