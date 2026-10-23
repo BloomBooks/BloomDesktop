@@ -1401,7 +1401,7 @@
         <note>Button label for building a new Android APK.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Build.DoneTooltip">
-        <source xml:lang="en">The APK is current. Try on phone will use the latest build.</source>
+        <source xml:lang="en">The app is already up to date. You only need to build again after you change books or settings.</source>
         <note>ID: PublishTab.Apps.Build.DoneTooltip</note>
         <note>Tooltip shown when the build step is already up to date.</note>
       </trans-unit>
