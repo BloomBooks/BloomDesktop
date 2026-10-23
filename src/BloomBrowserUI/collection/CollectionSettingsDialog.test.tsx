@@ -108,7 +108,7 @@ vi.mock("../react_components/requiresSubscription", () => ({
     ),
 }));
 
-// The Subscription page's pieces come from the WinForms tab and talk to Bloom themselves. These
+// The Subscription page's code editor and status talk to Bloom themselves. These
 // stand-ins show the code they were given, and let a test type a new one.
 vi.mock("./subscriptionCodeControl", () => ({
     SubscriptionControls: (props: {
@@ -133,11 +133,13 @@ vi.mock("../collectionsTab/SubscriptionStatus", () => ({
     SubscriptionStatus: () => null,
 }));
 
-vi.mock("./subscriptionSettingsTab", () => ({
-    SubscriptionIntro: () => null,
-    CommunitySubscriptionInvitation: () => (
-        <div data-testid="community-invitation" />
-    ),
+vi.mock("../react_components/markdown", () => ({
+    Markdown: () => null,
+}));
+
+// On the Subscription page, the note box holds only the community invitation.
+vi.mock("../react_components/boxes", () => ({
+    NoteBox: () => <div data-testid="community-invitation" />,
 }));
 
 vi.mock("../utils/bloomApi", () => ({
