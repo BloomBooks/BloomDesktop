@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing.Imaging;
 using System.Dynamic;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using Bloom.Api;
 using Bloom.Book;
@@ -88,6 +90,11 @@ namespace Bloom.web.controllers
                         HandleSaveCollectionSettings(request);
                 },
                 true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "collection/qrCodeBadge",
+                HandleGetQrCodeBadge,
+                false
             );
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "advancedProgramSettings",
@@ -542,6 +549,43 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
             if (saveRequest.RestartRequired)
                 WorkspaceApi.ReopenCollectionWhenIdle();
+        }
+
+        /// <summary>
+        /// Replies to GET collection/qrCodeBadge with what the Front &amp; Back Matter page needs to
+        /// draw its preview of the "Made with Bloom" badge: the QR code the books get, and the
+        /// language and address the badge names. The caption comes from the dialog's own values,
+        /// so that the preview follows it as the user types; this gives only the default caption,
+        /// which books get when that is empty.
+        /// </summary>
+        private void HandleGetQrCodeBadge(ApiRequest request)
+        {
+            var langTag = _collectionSettings.PrimaryLangTagWithSignPrioritized;
+            var badge = MakeQrCodeBadgeData(
+                langTag,
+                _collectionSettings.PrimaryLanguageWithSignPrioritized
+            );
+            badge.DefaultCaption = _collectionSettings.DefaultBadgeQrCodeLabelLocalized;
+            request.ReplyWithJson(JsonConvert.SerializeObject(badge, kCamelCaseSettings));
+        }
+
+        /// <summary>
+        /// The reply to GET collection/qrCodeBadge for a collection whose books are in the given
+        /// language. (Internal for testing.)
+        /// </summary>
+        internal static QrCodeBadgeData MakeQrCodeBadgeData(string langTag, string languageName)
+        {
+            using (var bitmap = BookStorage.MakeLanguageQrCodeBitmap(langTag))
+            using (var stream = new MemoryStream())
+            {
+                bitmap.Save(stream, ImageFormat.Png);
+                return new QrCodeBadgeData
+                {
+                    QrCode = "data:image/png;base64," + Convert.ToBase64String(stream.ToArray()),
+                    LanguageName = languageName,
+                    DisplayUrl = BookStorage.GetLanguagePageDisplayUrl(langTag),
+                };
+            }
         }
 
         private void ResetBookshelf()

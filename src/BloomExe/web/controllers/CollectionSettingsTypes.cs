@@ -409,6 +409,33 @@ namespace Bloom.web.controllers
     }
 
     /// <summary>
+    /// The reply to GET collection/qrCodeBadge. The TypeScript interface IQrCodeBadgeData must
+    /// match it.
+    /// </summary>
+    public class QrCodeBadgeData
+    {
+        /// <summary>
+        /// A data: url of the QR code image.
+        /// </summary>
+        public string QrCode;
+
+        /// <summary>
+        /// What the caption's "{0}" stands for.
+        /// </summary>
+        public string LanguageName;
+
+        /// <summary>
+        /// The address the badge shows beneath its caption.
+        /// </summary>
+        public string DisplayUrl;
+
+        /// <summary>
+        /// The caption books get when the caption box is left empty.
+        /// </summary>
+        public string DefaultCaption;
+    }
+
+    /// <summary>
     /// The body of POST collection/settings. The dialog works out RestartRequired from the
     /// restart paths, which it needs anyway to label OK. Values stays raw JSON, because it is
     /// populated into a CollectionSettingsValues bound to the open collection.
