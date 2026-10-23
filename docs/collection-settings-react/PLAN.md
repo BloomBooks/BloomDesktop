@@ -120,8 +120,15 @@ BL-16735 did the same for the Team Collection values.
   at every startup, never shown) and stays out.
 - **Q10 Subscription gating on pages:** the badge beside the control, as in Book Settings.
 - **Q11 Language "Change…":** the ethnolib chooser in a nested React dialog.
-- **Q12 Creating a Team Collection from the dialog:** a pending change applied on OK, so Cancel
-  abandons it (today it restarts immediately).
+- **Q12 Creating a Team Collection from the dialog:** ~~a pending change applied on OK, so Cancel
+  abandons it~~. **Reversed (Andrew, 2026-10-23): Create happens, and Bloom restarts, when the
+  user confirms the Create dialog, as in the old dialog.** That dialog is already a deliberate
+  confirmation (a folder and four acknowledgements), so users expect the Team Collection then;
+  making them confirm again with the settings dialog's OK is a surprise, and closing the
+  settings dialog would lose it unnoticed. Its own Cancel is the place to back out. Deferring it
+  also cost code (BL-16735's first build): a pending value, a "will become a Team Collection"
+  message and its string, and edge cases reviewers found in it (a Pro code typed in the same
+  save; no retry after a failed create).
 - **Q13 Size:** fixed 900×720 (built). **Q14 Rename:** behaves as today; disabled in a Team
   Collection with the existing explanation. **Q15:** no file-format migration is needed for
   anything here except Q6's fields.
@@ -167,9 +174,13 @@ administrators are checked in the client (`teamCollection/administrators.ts`, th
 `CollectionSettings.ValidateAdministrators`): OK is disabled and the field says why. A change goes
 to `ApplyAdministrators`. The page is hidden when the feature is off (as saved) and this is not a
 TC, and in a collection holding a Bloom Library book downloaded for editing (`editingABlorgBook`
-in the GET). Creating a TC (Q12): "Create a Team Collection" opens the existing dialog in the
-browser, whose OK only hands back the folder; `Apply` makes the TC after saving, through
-`TeamCollectionApi.CreateTeamCollection`, and the restart follows.
+in the GET). Creating a TC (Q12, reversed): "Create a Team Collection" opens the existing dialog in
+the browser; its Create & Restart has the settings dialog save at once with the chosen folder, and
+`Apply` makes the TC after saving the user's other edits (so they reach the shared copy), through
+`TeamCollectionApi.CreateTeamCollection`, then Bloom restarts. While the collection name has an
+unsaved edit, Create is disabled with a note to save the rename first: the rename only happens as
+Bloom restarts, so the TC would get the old name, which is also the name the Create dialog asks
+the user to approve.
 
 **BL-16739 Languages.** The large one. L1, L2, L3, Sign Language: name with "Change…" (Q11),
 Default Font, "Remove" for L3 and Sign Language, and "More" (Q3) with fonts, line spacing, tool

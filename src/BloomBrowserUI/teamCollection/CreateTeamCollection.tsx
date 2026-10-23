@@ -17,7 +17,6 @@ import {
 import {
     DialogCancelButton,
     DialogControlGroup,
-    DialogOkButton,
     DialogFolderChooserWithApi,
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../react_components/l10nHooks";
@@ -37,9 +36,9 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
     errorForTesting?: string;
     defaultRepoFolder?: string;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
-    // Given when the React Collection Settings dialog shows this one. It makes the Team
-    // Collection when its own settings are saved (so its Cancel abandons this too), so instead of
-    // creating it now, OK hands it the chosen folder.
+    // Given when the React Collection Settings dialog shows this one. Instead of creating the Team
+    // Collection itself, Create & Restart hands that dialog the chosen folder; it saves its own
+    // settings first, then creates the Team Collection and restarts.
     onFolderChosen?: (repoFolderParentPath: string) => void;
     // Called when the dialog closes, whether by OK or Cancel.
     onClose?: () => void;
@@ -222,28 +221,18 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                 {errorMessage && <ErrorBox>{errorMessage}</ErrorBox>}
             </DialogMiddle>
             <DialogBottomButtons>
-                {/* When the React Collection Settings dialog shows this one, nothing happens
-                    until that dialog saves, so this is a plain OK. */}
-                {props.onFolderChosen ? (
-                    <DialogOkButton
-                        default={true}
-                        enabled={readyToCreate}
-                        onClick={tryToCreate}
-                    />
-                ) : (
-                    <BloomButton
-                        id="create-and-restart"
-                        l10nKey="TeamCollection.CreateAndRestart"
-                        hasText={true}
-                        enabled={readyToCreate}
-                        temporarilyDisableI18nWarning={true}
-                        onClick={() => {
-                            tryToCreate();
-                        }}
-                    >
-                        Create &amp; Restart
-                    </BloomButton>
-                )}
+                <BloomButton
+                    id="create-and-restart"
+                    l10nKey="TeamCollection.CreateAndRestart"
+                    hasText={true}
+                    enabled={readyToCreate}
+                    temporarilyDisableI18nWarning={true}
+                    onClick={() => {
+                        tryToCreate();
+                    }}
+                >
+                    Create &amp; Restart
+                </BloomButton>
                 <DialogCancelButton
                     onClick_DEPRECATED={() => post("common/closeReactDialog")}
                 />
