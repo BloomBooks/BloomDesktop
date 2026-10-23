@@ -28,8 +28,9 @@ export function teamCollectionPageIsShown(
 }
 
 /**
- * Whether the Team Collection values may be saved: in a Team Collection the administrators must
- * be acceptable.
+ * Whether the Team Collection values may be saved: in a Team Collection, administrators the user
+ * has edited must be acceptable. Ones left as they were are not checked, because our check is a
+ * little stricter than the C# one that let them in (it wants a dot in the domain).
  */
 export function teamCollectionValuesAreValid(
     settings: ICollectionSettingsResponse,
@@ -37,6 +38,8 @@ export function teamCollectionValuesAreValid(
 ): boolean {
     return (
         !settings.isTeamCollection ||
+        values.administrators ===
+            settings.values.teamCollection.administrators ||
         administratorsAreValid(values.administrators)
     );
 }

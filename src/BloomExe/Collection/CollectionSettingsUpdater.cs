@@ -53,12 +53,14 @@ namespace Bloom.Collection
             // newBookshelf means. This runs on every save, even with the subscription unchanged:
             // it is what keeps an expired subscription's bookshelf in the file (BL-15056). It
             // comes before the xmatter check because the new subscription's branding may
-            // specify the pack.
+            // specify the pack. A collection about to become a Team Collection gets the Team
+            // Collection rules, so it cannot take a Pro subscription with it.
             var clearDefaultBookshelfAfterSaving = ApplySubscriptionAndBookshelf(
                 GetChangedSubscription(settings, values.Subscription.Code),
                 null,
                 settings,
                 currentCollectionIsTeamCollection
+                    || !string.IsNullOrEmpty(values.TeamCollection.CreateInFolder)
             );
 
             // A pack that is no longer available, or one the branding overrides, is replaced.

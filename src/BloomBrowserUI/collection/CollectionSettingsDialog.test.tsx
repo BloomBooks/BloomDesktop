@@ -2,6 +2,7 @@ import * as React from "react";
 import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderRoot, unmountRoot } from "../utils/reactRender";
+import { administratorsAreValid } from "../teamCollection/administrators";
 import {
     ICollectionSettingsResponse,
     ICollectionSettingsValues,
@@ -1424,6 +1425,28 @@ describe("CollectionSettingsDialog", () => {
             expect(
                 teamCollectionPageElement("administrators-error")?.textContent,
             ).toContain("valid administrator email addresses");
+        });
+
+        it("does not refuse saved administrators it would not accept if typed", async () => {
+            expect(administratorsAreValid("admin@intranet")).toBe(false);
+            respondWith({
+                ...settingsResponse,
+                isTeamCollection: true,
+                values: {
+                    ...initialValues,
+                    teamCollection: {
+                        administrators: "admin@intranet",
+                        createInFolder: "",
+                    },
+                },
+            });
+
+            await renderDialog();
+
+            expect(okButton().disabled).toBe(false);
+            expect(
+                teamCollectionPageElement("administrators-error")?.textContent,
+            ).toBe("");
         });
 
         it("does not check the administrators of a collection that is not a Team Collection", async () => {
