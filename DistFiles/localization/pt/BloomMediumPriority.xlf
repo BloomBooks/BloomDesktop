@@ -940,9 +940,9 @@
         <target xml:lang="pt-PT" state="final">Todos os livros devem estar reservados para você</target>
         <note>ID: CollectionTab.ImportBloomSource.ReplaceNeedsCheckout</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.AddCopy" approved="yes">
+      <trans-unit id="CollectionTab.ImportBloomSource.AddCopy">
         <source xml:lang="en">Add them as new copies</source>
-        <target xml:lang="pt-PT" state="final">Adicioná-las como novas cópias</target>
+        <target xml:lang="pt-PT" state="translated">Adicioná-las como cópias novas</target>
         <note>ID: CollectionTab.ImportBloomSource.AddCopy</note>
       </trans-unit>
       <trans-unit id="CollectionTab.ImportBloomSource.AddCopyDescription" approved="yes">
@@ -1040,9 +1040,9 @@
         <target xml:lang="pt-PT" state="final">Ativar o layout de sangria total para impressão. Esta opção ativa os indicadores de [Sangria](https://en.wikipedia.org/wiki/Bleed_%28printing%29) em layouts impressos. Veja [Layout de Sangria Total](https://docs.bloomlibrary.org/full-bleed) para obter mais informações.</target>
         <note>BookSettings.FullBleed.Description</note>
       </trans-unit>
-      <trans-unit id="BookSettings.FullBleed.Description.EdgeToEdge" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookSettings.FullBleed.Description.EdgeToEdge" sil:dynamic="true">
         <source xml:lang="en">Enable full bleed layout for printing. Use with the "Edge to Edge" theme. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
-        <target xml:lang="pt-PT" state="final">Ativar layout de sangramento completo para impressão. Use com o tema "Borda para borda". Isto ativa os indicadores [Imprimir Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) em layouts de papel. Veja [Layout Completo de Bleed Byout](https://docs.bloomlibrary.org/full-bleed) para obter mais informações.</target>
+        <target xml:lang="pt-PT" state="translated">Ativar layout de sangramento completo para impressão. Use com o tema "Borda para borda". Isto ativa os indicadores [Imprimir Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) em layouts de papel. Veja [Layout Completo de Bleed Byout](https://docs.bloomlibrary.org/full-bleed) para obter mais informações.</target>
         <note>ID: BookSettings.FullBleed.Description.EdgeToEdge</note>
       </trans-unit>
       <trans-unit id="BookSettings.ThemeAndLayoutGroupLabel" sil:dynamic="true" approved="yes">
@@ -1494,9 +1494,9 @@
         <target xml:lang="pt-PT" state="final">Iniciando Reading App Builder...</target>
         <note>ID: PublishTab.Apps.SettingsDialog.StartingReadingAppBuilder</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.RunRAB.Description" approved="yes">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.RunRAB.Description">
         <source xml:lang="en">Use this to do more customization of your app. Make sure to click Save and quit Reading App Builder before returning to Bloom.</source>
-        <target xml:lang="pt-PT" state="final">Use isto para fazer mais personalização do seu aplicativo. Certifique-se de clicar em Salvar e sair do Construtor de Aplicativos de Leitura antes de retornar ao Bloom.</target>
+        <target xml:lang="pt-PT" state="translated">Utilizado para personalizar seu aplicativo mais ainda. Certifique-se de clicar em Salvar e sair do Reading App Builder antes de retornar ao Bloom.</target>
         <note>ID: PublishTab.Apps.SettingsDialog.RunRAB.Description</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.ShowApkInFileExplorer" approved="yes">
@@ -1619,9 +1619,9 @@
         <target xml:lang="pt-PT" state="final">O projeto de Reading App Builder (Criador de aplicativos de leitura) já está preparado para esta coleção.</target>
         <note>ID: PublishTab.Apps.Prepare.DoneTooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Prepare.TooltipBloomAppData">
+      <trans-unit id="PublishTab.Apps.Prepare.TooltipBloomAppData" approved="yes">
         <source xml:lang="en">Create the Reading App Builder project in this collection's Bloom App Data folder.</source>
-        <target xml:lang="pt-PT" state="translated">Criar o projeto do Reading App Builder dentro da pasta de App Data desta coleção de Bloom.</target>
+        <target xml:lang="pt-PT" state="final">Criar o projeto do Reading App Builder dentro da pasta de App Data desta coleção de Bloom.</target>
         <note>ID: PublishTab.Apps.Prepare.TooltipBloomAppData</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.TryOnPhone" approved="yes">
@@ -2196,7 +2196,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Section.Localize">
         <source xml:lang="en">Localize</source>
-        <target xml:lang="pt-PT" state="translated">Adaptar</target>
+        <target xml:lang="pt-PT" state="translated">Adaptação</target>
         <note>ID: AiImageEditor.Section.Localize</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Section.More" approved="yes">
@@ -2326,7 +2326,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.apply_localized_characters.Title">
         <source xml:lang="en">Apply Localized Characters</source>
-        <target xml:lang="pt-PT" state="translated">Aplicar os personagens adaptados</target>
+        <target xml:lang="pt-PT" state="translated">Aplicar as personagens adaptadas</target>
         <note>ID: AiImageEditor.Tool.apply_localized_characters.Title</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.change_style.Param.extraInstructions" approved="yes">
