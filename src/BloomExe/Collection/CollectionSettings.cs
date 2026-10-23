@@ -389,7 +389,7 @@ namespace Bloom.Collection
             try
             {
                 // Note: the inLanguage parameter is often ignored by IetfLanguageTag.GetLocalizedLanguageName().
-                return IetfLanguageTagExtra.GetLocalizedLanguageName(tag, inLanguage);
+                return IetfLanguageTag.GetLocalizedLanguageName(tag, inLanguage);
             }
             catch (Exception)
             {

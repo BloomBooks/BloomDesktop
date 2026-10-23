@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
@@ -19,6 +20,11 @@ namespace WebView2PdfMaker
         [STAThread]
         private static int Main(string[] args)
         {
+            // Like Bloom itself, run in the invariant culture so that page sizes, margins and other
+            // numbers are parsed and formatted the same on every machine (BL-16981). Nothing here
+            // shows a number or date to the user, so there is no user culture to keep.
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
             Console.WriteLine("Starting WebView2PdfMaker");
 
             Application.EnableVisualStyles();

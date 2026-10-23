@@ -296,6 +296,13 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
+		<!-- Bloom runs in the invariant culture (see UserCulture.cs); BannedSymbols.txt keeps code from
+		     reading or setting the process culture anywhere else. -->
+		<PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>
+		<AdditionalFiles Include="BannedSymbols.txt" />
 		<!-- Version is sourced from the repo-wide Directory.Build.props (VelopackVersion) so that we always
 		 use the same version of the BloomBooks.Velopack and BloomBooks.Velopack.Cli  -->
 		<PackageReference Include="BloomBooks.Velopack" Version="$(VelopackVersion)" />

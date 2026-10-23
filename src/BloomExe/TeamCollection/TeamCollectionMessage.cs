@@ -131,7 +131,7 @@ namespace Bloom.TeamCollection
         {
             get
             {
-                var leadIn = DateTime.Now.ToShortDateString() + ": ";
+                var leadIn = DateTime.Now.ToString("d", UserCulture.Current) + ": ";
                 if (String.IsNullOrEmpty(RawEnglishMessageTemplate))
                 {
                     switch (MessageType)

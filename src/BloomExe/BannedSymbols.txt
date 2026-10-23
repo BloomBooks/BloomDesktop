@@ -1,0 +1,11 @@
+P:System.Globalization.CultureInfo.CurrentCulture;Bloom runs in the invariant culture (BL-16981). For machine data just let it be invariant; for numbers, dates and sorting the user sees, use UserCulture.Current.
+P:System.Globalization.CultureInfo.DefaultThreadCurrentCulture;Only UserCulture.UseInvariantCulture sets the process culture (BL-16981).
+P:System.Threading.Thread.CurrentCulture;Bloom runs in the invariant culture (BL-16981). For numbers, dates and sorting the user sees, use UserCulture.Current.
+F:System.StringComparison.CurrentCulture;The process culture is invariant (BL-16981). Use StringComparison.Ordinal, or UserCulture.Current.CompareInfo to sort what the user sees.
+F:System.StringComparison.CurrentCultureIgnoreCase;The process culture is invariant (BL-16981). Use StringComparison.OrdinalIgnoreCase, or UserCulture.Current.CompareInfo to sort what the user sees.
+P:System.StringComparer.CurrentCulture;The process culture is invariant (BL-16981). Use StringComparer.Ordinal, or StringComparer.Create(UserCulture.Current, false) to sort what the user sees.
+P:System.StringComparer.CurrentCultureIgnoreCase;The process culture is invariant (BL-16981). Use StringComparer.OrdinalIgnoreCase, or StringComparer.Create(UserCulture.Current, true) to sort what the user sees.
+M:System.DateTime.ToShortDateString;Shows a date in the invariant culture (BL-16981). Use ToString("d", UserCulture.Current) for the user, or an explicit invariant format for data.
+M:System.DateTime.ToLongDateString;Shows a date in the invariant culture (BL-16981). Use ToString("D", UserCulture.Current) for the user, or an explicit invariant format for data.
+M:System.DateTime.ToShortTimeString;Shows a time in the invariant culture (BL-16981). Use ToString("t", UserCulture.Current) for the user, or an explicit invariant format for data.
+M:System.DateTime.ToLongTimeString;Shows a time in the invariant culture (BL-16981). Use ToString("T", UserCulture.Current) for the user, or an explicit invariant format for data.

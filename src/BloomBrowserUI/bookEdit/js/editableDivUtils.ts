@@ -1,6 +1,7 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 import { get, postString, postThatMightNavigate } from "../../utils/bloomApi";
 import $ from "jquery";
+import { getPageIFrame, getPageIframeBody } from "../../utils/shared";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -28,9 +29,7 @@ export class EditableDivUtils {
     }
 
     public static getElementSelectionIndex(editableDiv: HTMLElement): number {
-        const page: HTMLIFrameElement | null = <HTMLIFrameElement | null>(
-            parent.window.document.getElementById("page")
-        );
+        const page = getPageIFrame();
         if (!page || !page.contentWindow) return -1; // unit testing? Anyway there is no selection, so not in editableDiv.
 
         const selection = page.contentWindow.getSelection();
@@ -46,9 +45,7 @@ export class EditableDivUtils {
     }
 
     public static selectAtOffset(node: Node, offset: number): void {
-        const page: HTMLIFrameElement | null = <HTMLIFrameElement | null>(
-            parent.window.document.getElementById("page")
-        );
+        const page = getPageIFrame();
         if (!page || !page.contentWindow) return;
         const iframeWindow: Window = page.contentWindow;
         const selection1 = iframeWindow.getSelection();
@@ -198,22 +195,12 @@ export class EditableDivUtils {
               );
     }
 
-    public static getPageFrame(): HTMLIFrameElement | null {
-        const doc = window.top?.document;
-        return doc ? <HTMLIFrameElement>doc.getElementById("page") : null;
-    }
-
-    // The body of the editable page, a root for searching for document content.
-    public static getPage(): JQuery {
-        const page = this.getPageFrame();
-        if (!page || !page.contentWindow) return $();
-        return $(page.contentWindow.document.body);
-    }
-
     // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
     // If target is supplied, we only want a scale based on the page scaler if the target is inside it.
     public static getPageScale(target?: HTMLElement): number {
-        const page = this.getPage();
+        // See getPageIFrame() in shared.ts for why we reach the page through parent.
+        const pageBody = getPageIframeBody();
+        const page = pageBody ? $(pageBody) : $();
         let scaler: HTMLElement | undefined = undefined;
         const getScaler = () => page.find("div#page-scaling-container").get(0);
         if (target) {
