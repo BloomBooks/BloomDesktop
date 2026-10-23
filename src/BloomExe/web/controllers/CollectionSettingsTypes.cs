@@ -69,6 +69,11 @@ namespace Bloom.web.controllers
         {
             _settings = settings;
             Subscription = new SubscriptionValues { Code = settings.Subscription.Code ?? "" };
+            TeamCollection = new TeamCollectionValues
+            {
+                Administrators = settings.AdministratorsDisplayString,
+                CreateInFolder = "",
+            };
             FrontBackMatter = new FrontBackMatterValues(settings);
             BloomLibrary = new BloomLibraryValues(settings);
             Advanced = new AdvancedValues(settings, queueRenameOfCollection);
@@ -95,25 +100,12 @@ namespace Bloom.web.controllers
         /// </summary>
         public SubscriptionValues Subscription { get; }
 
-        private TeamCollectionValues _postedTeamCollection;
-
         /// <summary>
         /// Like the subscription, the Team Collection values are not written as they are read:
-        /// populating only keeps them, and CollectionSettingsUpdater.Apply applies them once the
-        /// rest of the collection is saved.
+        /// this is a copy, which populating overwrites with the posted values, and
+        /// CollectionSettingsUpdater.Apply applies them once the rest of the collection is saved.
         /// </summary>
-        [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
-        public TeamCollectionValues TeamCollection
-        {
-            get =>
-                _postedTeamCollection
-                ?? new TeamCollectionValues
-                {
-                    Administrators = _settings.AdministratorsDisplayString,
-                    CreateInFolder = "",
-                };
-            set => _postedTeamCollection = value;
-        }
+        public TeamCollectionValues TeamCollection { get; }
 
         public FrontBackMatterValues FrontBackMatter { get; }
         public BloomLibraryValues BloomLibrary { get; }
