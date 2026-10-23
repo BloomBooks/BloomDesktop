@@ -169,7 +169,8 @@ real bug in the code under test; read the message and fix it rather than working
   `kEnterpriseSubscriptionCode` and its `kTestBookshelves`; and the new (React) Settings dialog:
   open it, show a page or read which one is showing, read and change its checkboxes, text boxes
   and drop-down lists, read or click its subscription badge, read the Subscription page and type
-  a code on it, and save, cancel or restart.
+  a code on it, read the Front & Back Matter page's badge preview, and save, cancel or restart;
+  and read back a setting the saved `.bloomCollection` holds.
 - `helpers/keys.ts` — `pressKey`, `pressKeyIn`, `typeWithKeys`: real key presses, for tests whose
   subject is the key. `typeInGroup` inserts text and raises no key events, so use it for
   everything else.

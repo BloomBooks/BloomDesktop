@@ -5,6 +5,7 @@ import { renderRoot, unmountRoot } from "../utils/reactRender";
 import {
     ICollectionSettingsResponse,
     ICollectionSettingsValues,
+    IQrCodeBadgeData,
 } from "./collectionSettingsTypes";
 
 const initialValues: ICollectionSettingsValues = {
@@ -54,6 +55,27 @@ const settingsResponse: ICollectionSettingsResponse = {
     notAllowedMessage: null,
 };
 
+// What GET settings/xmatter offers, unless a test says otherwise.
+const defaultXmatterOfferings = [
+    {
+        displayName: "Traditional",
+        internalName: "Traditional",
+        description: "Title page and credits page inside the covers.",
+    },
+    {
+        displayName: "Device",
+        internalName: "Device",
+        description: "Made for reading on phones.",
+    },
+];
+
+const qrCodeBadge: IQrCodeBadgeData = {
+    qrCode: "data:image/png;base64,AAAA",
+    languageName: "Kalaba",
+    displayUrl: "BloomLibrary.org/language:xkal",
+    defaultCaption: "More books in {0} language:",
+};
+
 const {
     mockGet,
     mockPostJson,
@@ -81,6 +103,9 @@ const {
         error: false,
     },
 }));
+
+// The packs GET settings/xmatter offers in the current test.
+let xmatterOfferings = defaultXmatterOfferings;
 
 vi.mock("./useGetEnterpriseBookshelves", () => ({
     useGetEnterpriseBookshelves: () => ({
@@ -331,6 +356,19 @@ vi.mock("@sillsdev/config-r", () => ({
                     }
                 />
                 <button
+                    data-testid="show-qr-code-with-caption"
+                    onClick={() =>
+                        props.onChange({
+                            ...props.initialValues,
+                            frontBackMatter: {
+                                ...props.initialValues.frontBackMatter,
+                                showQrCode: true,
+                                qrcodeCaption: "Books in {0}, free:",
+                            },
+                        })
+                    }
+                />
+                <button
                     data-testid="pad-country"
                     onClick={() =>
                         props.onChange({
@@ -484,10 +522,26 @@ describe("CollectionSettingsDialog", () => {
         (container.querySelector('[data-testid="dialog-ok"]') as HTMLElement)
             .textContent;
 
+    // Answers GET collection/settings with the given response, and the Front & Back Matter page's
+    // own GETs with their test data.
     const respondWith = (response: ICollectionSettingsResponse) => {
         mockGet.mockImplementation(
-            (_url: string, successCallback: (r: unknown) => void) => {
-                successCallback({ data: response });
+            (url: string, successCallback: (r: unknown) => void) => {
+                switch (url) {
+                    case "collection/settings":
+                        successCallback({ data: response });
+                        break;
+                    case "settings/xmatter":
+                        successCallback({
+                            data: { xmatterOfferings: xmatterOfferings },
+                        });
+                        break;
+                    case "collection/qrCodeBadge":
+                        successCallback({ data: qrCodeBadge });
+                        break;
+                    default:
+                        throw new Error(`The test did not expect GET ${url}`);
+                }
             },
         );
     };
@@ -503,12 +557,9 @@ describe("CollectionSettingsDialog", () => {
         enterpriseBookshelves.error = false;
         tableFeature.loaded = true;
         tableFeature.enabled = true;
+        xmatterOfferings = defaultXmatterOfferings;
         mockGet.mockReset();
-        mockGet.mockImplementation(
-            (_url: string, successCallback: (r: unknown) => void) => {
-                successCallback({ data: settingsResponse });
-            },
-        );
+        respondWith(settingsResponse);
         mockPostJson.mockReset();
         mockPostJson.mockImplementation(
             (
@@ -649,22 +700,16 @@ describe("CollectionSettingsDialog", () => {
         ).toBeNull();
 
         // Re-open against a collection whose name has since changed.
-        mockGet.mockImplementation(
-            (_url: string, successCallback: (r: unknown) => void) => {
-                successCallback({
-                    data: {
-                        ...settingsResponse,
-                        values: {
-                            ...initialValues,
-                            advanced: {
-                                ...initialValues.advanced,
-                                collectionName: "Renamed Collection",
-                            },
-                        },
-                    },
-                });
+        respondWith({
+            ...settingsResponse,
+            values: {
+                ...initialValues,
+                advanced: {
+                    ...initialValues.advanced,
+                    collectionName: "Renamed Collection",
+                },
             },
-        );
+        });
         dialogState.open = true;
         await renderDialog();
 
@@ -675,18 +720,12 @@ describe("CollectionSettingsDialog", () => {
     });
 
     it("shows only the reason and a Close button when the user may not edit", async () => {
-        mockGet.mockImplementation(
-            (_url: string, successCallback: (r: unknown) => void) => {
-                successCallback({
-                    data: {
-                        values: null,
-                        restartPaths: null,
-                        notAllowedMessage:
-                            "You must be an administrator to change collection settings",
-                    },
-                });
-            },
-        );
+        respondWith({
+            values: null,
+            restartPaths: null,
+            notAllowedMessage:
+                "You must be an administrator to change collection settings",
+        } as unknown as ICollectionSettingsResponse);
 
         await renderDialog();
 
@@ -813,6 +852,190 @@ describe("CollectionSettingsDialog", () => {
             mockPostJson.mock.calls[0][1].values.advanced.collectionName,
         ).toBe("Spaced Books");
         expect(mockPostJson.mock.calls[0][1].restartRequired).toBe(true);
+    });
+
+    describe("Front & Back Matter page", () => {
+        const pageElement = (selector: string) =>
+            container.querySelector(
+                `[data-testid="configr-page"][data-page-key="frontBackMatter"] ${selector}`,
+            ) as HTMLElement | null;
+
+        const styleSelect = () => {
+            const select = pageElement(
+                '[data-path="frontBackMatter.xmatter"]',
+            ) as HTMLSelectElement | null;
+            if (!select) {
+                throw new Error(
+                    "The Front & Back Matter page has no Style list",
+                );
+            }
+            return select;
+        };
+
+        const styleChoices = () =>
+            Array.from(styleSelect().options).map((option) => [
+                option.value,
+                option.textContent,
+            ]);
+
+        const captionBox = () => {
+            const box = pageElement(
+                '[data-path="frontBackMatter.qrcodeCaption"]',
+            ) as HTMLInputElement | null;
+            if (!box) {
+                throw new Error(
+                    "The Front & Back Matter page has no Caption box",
+                );
+            }
+            return box;
+        };
+
+        it("offers the packs, and describes the one chosen", async () => {
+            expect(initialValues.frontBackMatter.xmatter).toBe("Traditional");
+
+            await renderDialog();
+
+            expect(styleChoices()).toEqual([
+                ["Traditional", "Traditional"],
+                ["Device", "Device"],
+            ]);
+            expect(styleSelect().disabled).toBe(false);
+            expect(
+                pageElement('[data-testid="configr-select-description"]')
+                    ?.textContent,
+            ).toBe("Title page and credits page inside the covers.");
+
+            click("change-restart-value");
+            await flushDeferredChange();
+
+            expect(
+                pageElement('[data-testid="configr-select-description"]')
+                    ?.textContent,
+            ).toBe("Made for reading on phones.");
+        });
+
+        it("disables the list when the branding chooses the pack", async () => {
+            xmatterOfferings = [defaultXmatterOfferings[0]];
+
+            await renderDialog();
+
+            expect(styleChoices()).toEqual([["Traditional", "Traditional"]]);
+            expect(styleSelect().disabled).toBe(true);
+        });
+
+        it("keeps the saved pack choosable when it is no longer offered", async () => {
+            respondWith({
+                ...settingsResponse,
+                values: {
+                    ...initialValues,
+                    frontBackMatter: {
+                        ...initialValues.frontBackMatter,
+                        xmatter: "Uninstalled",
+                    },
+                },
+            });
+
+            await renderDialog();
+
+            expect(styleChoices()).toEqual([
+                ["Traditional", "Traditional"],
+                ["Device", "Device"],
+                ["Uninstalled", "Uninstalled"],
+            ]);
+        });
+
+        it("shows the plain badge, and disables the caption, when QR codes are off", async () => {
+            expect(initialValues.frontBackMatter.showQrCode).toBe(false);
+
+            await renderDialog();
+
+            expect(captionBox().disabled).toBe(true);
+            const preview = pageElement(
+                '[data-testid="qr-code-badge-preview"]',
+            );
+            expect(preview?.querySelectorAll("img").length).toBe(1);
+            expect(preview?.querySelector("img")?.getAttribute("src")).toBe(
+                "/bloom/branding/Default/made-with-bloom-badge.svg",
+            );
+        });
+
+        it("previews the QR code and the caption as typed, with the language in bold", async () => {
+            await renderDialog();
+
+            click("show-qr-code-with-caption");
+            await flushDeferredChange();
+
+            expect(captionBox().disabled).toBe(false);
+            const preview = pageElement(
+                '[data-testid="qr-code-badge-preview"]',
+            );
+            expect(
+                Array.from(preview?.querySelectorAll("img") ?? []).map((img) =>
+                    img.getAttribute("src"),
+                ),
+            ).toEqual([
+                "/bloom/branding/Default/made-with-bloom-badge-text.svg",
+                qrCodeBadge.qrCode,
+            ]);
+            const caption = pageElement(
+                '[data-testid="qr-code-badge-caption"]',
+            );
+            expect(caption?.textContent).toBe("Books in Kalaba, free:");
+            expect(caption?.querySelector("b")?.textContent).toBe("Kalaba");
+            expect(preview?.textContent).toContain(qrCodeBadge.displayUrl);
+        });
+
+        it("previews the default caption, as books get it, when the caption is empty", async () => {
+            respondWith({
+                ...settingsResponse,
+                values: {
+                    ...initialValues,
+                    frontBackMatter: {
+                        ...initialValues.frontBackMatter,
+                        showQrCode: true,
+                        qrcodeCaption: "",
+                    },
+                },
+            });
+
+            await renderDialog();
+
+            expect(
+                pageElement('[data-testid="qr-code-badge-caption"]')
+                    ?.textContent,
+            ).toBe("More books in Kalaba language:");
+        });
+
+        it("previews an untouched caption of only spaces as it is, since that is saved and books show it", async () => {
+            respondWith({
+                ...settingsResponse,
+                values: {
+                    ...initialValues,
+                    frontBackMatter: {
+                        ...initialValues.frontBackMatter,
+                        showQrCode: true,
+                        qrcodeCaption: "  ",
+                    },
+                },
+            });
+
+            await renderDialog();
+
+            expect(
+                pageElement('[data-testid="qr-code-badge-caption"]')
+                    ?.textContent,
+            ).toBe("  ");
+        });
+
+        it("has boxes for the place names", async () => {
+            await renderDialog();
+
+            for (const place of ["country", "province", "district"]) {
+                expect(
+                    pageElement(`[data-path="frontBackMatter.${place}"]`),
+                ).not.toBeNull();
+            }
+        });
     });
 
     it("says whether a dialog was there to open, so a window without one can ask Bloom instead", async () => {
