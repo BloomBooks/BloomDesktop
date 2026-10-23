@@ -366,6 +366,56 @@ namespace BloomTests.Collection
         }
 
         [Test]
+        public void Apply_NewSubscriptionCode_SavedToTheFile()
+        {
+            const string kTestEnterpriseCode = "Test-727011-1339";
+            var settings = CreateCollectionSettings("ApplySavesSubscription");
+            var values = CurrentValuesJson(settings);
+            Assert.That(
+                (string)values["subscription"]["code"],
+                Is.Empty,
+                "Sanity check: a new collection should have no subscription code"
+            );
+            values["subscription"]["code"] = kTestEnterpriseCode;
+
+            Apply(values, settings);
+
+            Assert.That(settings.Subscription.Code, Is.EqualTo(kTestEnterpriseCode));
+            Assert.That(settings.Subscription.Tier, Is.EqualTo(SubscriptionTier.Enterprise));
+            Assert.That(
+                new CollectionSettings(settings.SettingsFilePath).Subscription.Code,
+                Is.EqualTo(kTestEnterpriseCode),
+                "Apply should have saved the new code to disk"
+            );
+        }
+
+        /// <summary>
+        /// A book downloaded from Bloom Library for editing gets its subscription with the right to
+        /// its branding even when expired, which the code alone does not say. Posting the same code
+        /// back must not replace that subscription with one made from the code.
+        /// </summary>
+        [Test]
+        public void Apply_UnchangedSubscriptionCode_KeepsTheCollectionsSubscription()
+        {
+            var settings = CreateCollectionSettings("ApplyKeepsSubscription");
+            var downloadedForEditing = Subscription.FromCollectionSettingsInfo(
+                "Test-Expired-005691-4935",
+                "Default",
+                editingABlorgBook: true
+            );
+            settings.Subscription = downloadedForEditing;
+            Assert.That(
+                new Subscription(downloadedForEditing.Code).EditingBlorgBook,
+                Is.False,
+                "Sanity check: a subscription made from the code alone should lose the editing right"
+            );
+
+            Apply(CurrentValuesJson(settings), settings);
+
+            Assert.That(settings.Subscription, Is.SameAs(downloadedForEditing));
+        }
+
+        [Test]
         public void Apply_BookshelfSetToNone_RemovedFromTheFile()
         {
             var settings = CreateCollectionSettings("ApplyRemovesBookshelf");

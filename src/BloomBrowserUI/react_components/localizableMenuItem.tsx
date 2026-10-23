@@ -33,11 +33,12 @@ const NestedMenuItem = NestedMenuItemRaw as React.ComponentType<
 import CheckIcon from "@mui/icons-material/Check";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
-import { getBoolean, post, postBoolean } from "../utils/bloomApi";
+import { getBoolean, postBoolean } from "../utils/bloomApi";
 import { kBloomDisabledOpacity } from "../utils/colorUtils";
 import { kUiFontStack } from "../bloomMaterialUITheme";
 import { Variant } from "@mui/material/styles/createTypography";
 import {
+    openBloomSubscriptionSettings,
     useGetFeatureStatus,
     useGetFeatureAvailabilityMessage,
 } from "./featureStatus";
@@ -230,10 +231,9 @@ export const LocalizableMenuItem: React.FunctionComponent<
     const localizedSubLabel = useL10n("", props.subLabelL10nId ?? null);
     const subLabel =
         props.subLabel ?? props.generatedSubLabel ?? localizedSubLabel;
-    const openSubscriptionSettings = () =>
-        post("common/showSettingsDialog?tab=subscription");
-
-    const menuClickHandler = enabled ? props.onClick : openSubscriptionSettings;
+    const menuClickHandler = enabled
+        ? props.onClick
+        : openBloomSubscriptionSettings;
 
     // The "div" wrapper is necessary to get the tooltip to work on a disabled MenuItem.
     return (

@@ -2,6 +2,7 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import {
     ConfigrValues,
+    type ConfigrPaneHandle,
     ConfigrGroup,
     ConfigrPage,
     ConfigrPane,
@@ -28,6 +29,7 @@ import {
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../react_components/l10nHooks";
 import { get, postJson } from "../utils/bloomApi";
+import { useMountEffect } from "../utils/useMountEffect";
 import {
     ICollectionSettingsResponse,
     ICollectionSettingsValues,
@@ -36,6 +38,7 @@ import { collectionSettingsHelpTopic } from "./collectionSettingsHelpTopic";
 import { useAdvancedPage } from "./settingsPages/AdvancedPage";
 import { useBloomLibraryPage } from "./settingsPages/BloomLibraryPage";
 import { useExperimentalPage } from "./settingsPages/ExperimentalPage";
+import { useSubscriptionPage } from "./settingsPages/SubscriptionPage";
 
 // Temporary content for every page. Each of the seven tab cards replaces its page's group with
 // real controls, so this text is deliberately plain English and is never localized.
@@ -87,22 +90,38 @@ function withEditedTextTrimmed<T>(value: T, valueWhenOpened: unknown): T {
     ) as T;
 }
 
+// How many CollectionSettingsDialogs are mounted in this window: one in the workspace (App renders
+// it), none in a window such as the WinForms Settings dialog's tabs.
+let mountedDialogCount = 0;
+
 /**
  * Opens the Collection Settings dialog, on the page named by initialPageKey if one is given.
  * App renders the dialog on every workspace tab, so this works from any of them, with no trip
  * through C#. C# can open it too, by sending LaunchDialog with the same id over the web socket.
+ * Returns false, doing nothing, when no dialog is mounted in this window to receive the launch.
  */
-export function showCollectionSettingsDialog(initialPageKey?: string) {
+export function showCollectionSettingsDialog(initialPageKey?: string): boolean {
+    if (mountedDialogCount === 0) return false;
     document.dispatchEvent(
         new CustomEvent("LaunchDialog", {
             detail: { id: kCollectionSettingsDialogId, initialPageKey },
         }),
     );
+    return true;
 }
 
 export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const { openingEvent, closeDialog, propsForBloomDialog } =
         useEventLaunchedBloomDialog(kCollectionSettingsDialogId);
+
+    // This effect records that this window has a dialog to receive launches, for
+    // showCollectionSettingsDialog, for as long as the dialog is mounted.
+    useMountEffect(() => {
+        mountedDialogCount++;
+        return () => {
+            mountedDialogCount--;
+        };
+    });
 
     // The launch event may name the page to open on.
     const initialPageKey = openingEvent?.initialPageKey as string | undefined;
@@ -112,6 +131,10 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const [currentValues, setCurrentValues] =
         React.useState<ICollectionSettingsValues>();
     const [saving, setSaving] = React.useState(false);
+    // The subscription code as the user is typing it. It is kept here rather than in Config-R's
+    // values because its editor is not a Config-R control; withSubscriptionCode puts it in.
+    const [subscriptionCode, setSubscriptionCode] = React.useState<string>();
+    const paneRef = React.useRef<ConfigrPaneHandle>(null);
     // The top-level page Config-R is showing, so Help can open that page's topic.
     const [shownPageKey, setShownPageKey] = React.useState<string>();
 
@@ -128,6 +151,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             latestValuesRef.current = undefined;
             setLoadedSettings(undefined);
             setCurrentValues(undefined);
+            setSubscriptionCode(undefined);
             setSaving(false);
             setShownPageKey(undefined);
             return;
@@ -139,8 +163,20 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             latestValuesRef.current = response.values;
             setLoadedSettings(response);
             setCurrentValues(response.values);
+            // A user who may not edit the settings gets no values.
+            setSubscriptionCode(response.values?.subscription.code);
         });
     }, [propsForBloomDialog.open]);
+
+    // A launch that arrives while the dialog is already open comes from a subscription badge on
+    // one of its own pages, asking for the Subscription page. This effect hands that launch on to
+    // the open pane, which switches page keeping the user's edits. A launch that opens the dialog
+    // finds no pane yet; the pane opens on its page through initiallySelectedTopLevelPageKey.
+    React.useEffect(() => {
+        if (initialPageKey) paneRef.current?.selectTopLevelPage(initialPageKey);
+        // Only a new launch should do this.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [openingEvent]);
 
     const dialogTitle = useL10n(
         "Collection Settings",
@@ -154,10 +190,6 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         "Front & Back Matter",
         "CollectionSettingsDialog.FrontBackMatterPage",
     );
-    const subscriptionLabel = useL10n(
-        "Subscription",
-        "CollectionSettingsDialog.SubscriptionPage",
-    );
     const teamCollectionLabel = useL10n(
         "Team Collection",
         "TeamCollection.TeamCollection",
@@ -170,12 +202,26 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     // C# names these pageKeys when it asks us to open on a particular page. Each built page is a
     // hook in its own file under settingsPages/ that returns its ConfigrPage (Config-R rejects a
     // page wrapped in a component); each placeholder below moves to one when its tab card adds it.
-    const placeholderPages = [
-        { pageKey: "languages", label: languagesLabel },
-        { pageKey: "frontBackMatter", label: frontBackMatterLabel },
-        { pageKey: "subscription", label: subscriptionLabel },
-        { pageKey: "teamCollection", label: teamCollectionLabel },
-    ];
+    function placeholderPage(pageKey: string, label: string) {
+        return (
+            <ConfigrPage
+                key={pageKey}
+                label={label}
+                pageKey={pageKey}
+                topLevel={true}
+            >
+                <ConfigrGroup label={label}>
+                    <ConfigrStatic>
+                        <PagePlaceholder />
+                    </ConfigrStatic>
+                </ConfigrGroup>
+            </ConfigrPage>
+        );
+    }
+    const subscriptionPage = useSubscriptionPage({
+        code: subscriptionCode,
+        onCodeChange: setSubscriptionCode,
+    });
     const bloomLibraryPage = useBloomLibraryPage({
         dialogOpen: propsForBloomDialog.open,
         settings: loadedSettings,
@@ -206,12 +252,22 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             )
         );
     }
+    // Config-R's values with the subscription code being typed in place of the one loaded.
+    function withSubscriptionCode(
+        values: ICollectionSettingsValues,
+    ): ICollectionSettingsValues {
+        return { ...values, subscription: { code: subscriptionCode! } };
+    }
+
     // Both are checked: a deferred onChange can set currentValues after a close has already
     // cleared loadedSettings.
     const needsRestart = restartNeededFor(
         currentValues &&
             loadedSettings &&
-            withEditedTextTrimmed(currentValues, loadedSettings.values),
+            withEditedTextTrimmed(
+                withSubscriptionCode(currentValues),
+                loadedSettings.values,
+            ),
     );
 
     function saveAndCloseDialog() {
@@ -223,7 +279,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         // the restart flag is worked out from it too.
         // OK is enabled only once the values have loaded.
         const valuesToSave = withEditedTextTrimmed(
-            latestValuesRef.current!,
+            withSubscriptionCode(latestValuesRef.current!),
             loadedSettings!.values,
         );
         postJson(
@@ -277,6 +333,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                 )}
                 {loadedSettings && !notAllowedMessage && (
                     <ConfigrPane
+                        ref={paneRef}
                         className={kConfigrPaneClassName}
                         label={dialogTitle}
                         showAppBar={false}
@@ -297,20 +354,13 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                             }, 0);
                         }}
                     >
-                        {placeholderPages.map((page) => (
-                            <ConfigrPage
-                                key={page.pageKey}
-                                label={page.label}
-                                pageKey={page.pageKey}
-                                topLevel={true}
-                            >
-                                <ConfigrGroup label={page.label}>
-                                    <ConfigrStatic>
-                                        <PagePlaceholder />
-                                    </ConfigrStatic>
-                                </ConfigrGroup>
-                            </ConfigrPage>
-                        ))}
+                        {placeholderPage("languages", languagesLabel)}
+                        {placeholderPage(
+                            "frontBackMatter",
+                            frontBackMatterLabel,
+                        )}
+                        {subscriptionPage}
+                        {placeholderPage("teamCollection", teamCollectionLabel)}
                         {bloomLibraryPage}
                         {advancedPage}
                         {experimentalPage}
