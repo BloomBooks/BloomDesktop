@@ -403,6 +403,11 @@
         <note>ID: EditTab.PasteTextFailed</note>
         <note>Shown as a toast when Bloom fails to read text from the computer's clipboard, usually because some other program is momentarily holding the clipboard.</note>
       </trans-unit>
+      <trans-unit id="ImageLibrary.CouldNotDownloadImage">
+        <source xml:lang="en">Bloom could not download this picture. Check that this computer is connected to the internet, then try again.</source>
+        <note>ID: ImageLibrary.CouldNotDownloadImage</note>
+        <note>Message shown when the user chooses a picture from an online source in the Image Chooser and Bloom cannot download it, usually because the computer is offline. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
       <trans-unit id="ImageLibrary.PreviewTooLarge">
         <source xml:lang="en">This image is too large to preview here, but you can still use it.</source>
         <note>ID: ImageLibrary.PreviewTooLarge</note>
