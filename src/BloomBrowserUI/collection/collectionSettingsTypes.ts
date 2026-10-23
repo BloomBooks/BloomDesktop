@@ -27,11 +27,12 @@ export interface ICollectionSettingsLanguages {
     language3: ICollectionSettingsLanguage | null;
     // Null when the collection has no sign language; posting null removes it.
     signLanguage: ICollectionSettingsSignLanguage | null;
+    // For the whole collection, a non-localized key.
+    pageNumberStyle: string;
 }
 
 export interface ICollectionSettingsFrontBackMatter {
     xmatter: string;
-    pageNumberStyle: string;
     showQrCode: boolean;
     qrcodeCaption: string;
     country: string;
@@ -71,6 +72,16 @@ export interface ICollectionSettingsValues {
     advanced: ICollectionSettingsAdvanced;
     // Keyed by experimental feature token.
     experimental: Record<string, boolean>;
+    readerTools: ICollectionSettingsReaderTools;
+}
+
+// The two reader tools settings that describe the first language's script. They are kept in the
+// reader tools' own file, named for the first language, beside the stages and levels.
+export interface ICollectionSettingsReaderTools {
+    // The letters and letter combinations, separated by spaces.
+    letters: string;
+    // Unicode escapes (like \U0020) of other characters that end a sentence.
+    sentencePunct: string;
 }
 
 // The reply to GET collection/qrCodeBadge (QrCodeBadgeData in C#).
@@ -92,6 +103,8 @@ export interface ICollectionSettingsResponse {
     isTeamCollection: boolean;
     // Whether the collection holds a book downloaded from Bloom Library for editing.
     editingABlorgBook: boolean;
+    // The font a language gets when the user adds it (a third language).
+    defaultFontName: string;
     // Non-null when the user may not edit the settings (a Team Collection member who is not an
     // administrator). Then the other fields are null.
     notAllowedMessage: string | null;

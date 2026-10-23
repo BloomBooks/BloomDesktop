@@ -85,6 +85,26 @@
         <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Style</note>
         <note>On the Front &amp; Back Matter page of the Collection Settings dialog: the label of the list of front and back matter styles (such as "Traditional" or "Paper Saver"), which decide which pages come at the start and end of every book.</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.LineSpacing.Description" translate="no">
+        <source xml:lang="en">Use this to increase the default line spacing if this language has tall characters that tend to run into other lines of text.</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.LineSpacing.Description</note>
+        <note>Explains the "Default line spacing" list on the "More" page of one language in the Collection Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.ReaderTools.Language1Changed" translate="no">
+        <source xml:lang="en">These belong to the language you are replacing. To change them for the new language, click OK, then open these settings again.</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.ReaderTools.Language1Changed</note>
+        <note>On the "More" page of the first language in the Collection Settings dialog, shown under the alphabet and sentence punctuation (which cannot be edited) after the user has chosen a different first language. "OK" is the dialog's OK button.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.RightToLeft.Description" translate="no">
+        <source xml:lang="en">If you are not sure, leave this off. If your language is written starting on the right and moving left, you will know.</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.RightToLeft.Description</note>
+        <note>Explains the checkbox for a language written right to left, on the "More" page of one language in the Collection Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.ToolFontSize.Description" translate="no">
+        <source xml:lang="en">Use this to increase the font size when this language is shown in places like the Decodable Reader Tool.</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.ToolFontSize.Description</note>
+        <note>Explains the "Font size when displayed in tools" list on the "More" page of one language in the Collection Settings dialog. "Decodable Reader Tool" is the name of a Bloom tool.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.TeamCollectionPage.WillCreate" translate="no">
         <source xml:lang="en">This collection will become a Team Collection, shared in %0, when you save these settings.</source>
         <note>ID: CollectionSettingsDialog.TeamCollectionPage.WillCreate</note>

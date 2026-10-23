@@ -122,6 +122,8 @@ namespace BloomTests.web.controllers
                     .And.Member("subscription.code")
                     .And.Member("languages.language3.fontName")
                     .And.Member("languages.signLanguage.tag")
+                    .And.Member("languages.pageNumberStyle")
+                    .And.Member("readerTools.letters")
                     .And.Member("experimental." + ExperimentalFeatures.kTeamCollections)
                     .And.Member("experimental." + ExperimentalFeatures.kTables),
                 "Sanity check: the paths should cover every group"

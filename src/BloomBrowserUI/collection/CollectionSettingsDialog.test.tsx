@@ -33,10 +33,10 @@ const initialValues: ICollectionSettingsValues = {
         },
         language3: null,
         signLanguage: null,
+        pageNumberStyle: "Decimal",
     },
     frontBackMatter: {
         xmatter: "Traditional",
-        pageNumberStyle: "Decimal",
         showQrCode: false,
         qrcodeCaption: "",
         country: "",
@@ -48,6 +48,8 @@ const initialValues: ICollectionSettingsValues = {
     bloomLibrary: { defaultBookshelf: "" },
     advanced: { autoUpdate: true, collectionName: "Test Collection" },
     experimental: { "team-collections": false, tables: false },
+    // Untidy, as a hand-edited reader tools file might have it.
+    readerTools: { letters: "a  b,c", sentencePunct: "" },
 };
 
 const settingsResponse: ICollectionSettingsResponse = {
@@ -55,6 +57,7 @@ const settingsResponse: ICollectionSettingsResponse = {
     restartPaths: ["frontBackMatter.xmatter", "languages.language3.tag"],
     isTeamCollection: false,
     editingABlorgBook: false,
+    defaultFontName: "Andika",
     notAllowedMessage: null,
 };
 
@@ -360,6 +363,34 @@ vi.mock("@sillsdev/config-r", () => ({
                 }
             />{" "}
             <button
+                data-testid="change-language1"
+                onClick={() =>
+                    props.onChange({
+                        ...props.initialValues,
+                        languages: {
+                            ...props.initialValues.languages,
+                            language1: {
+                                ...props.initialValues.languages.language1,
+                                tag: "fr",
+                                name: "French",
+                            },
+                        },
+                    })
+                }
+            />
+            <button
+                data-testid="type-letters"
+                onClick={() =>
+                    props.onChange({
+                        ...props.initialValues,
+                        readerTools: {
+                            ...props.initialValues.readerTools,
+                            letters: " a,b\nc   ch ",
+                        },
+                    })
+                }
+            />
+            <button
                 data-testid="change-other-value"
                 onClick={() =>
                     props.onChange({
@@ -420,10 +451,12 @@ vi.mock("@sillsdev/config-r", () => ({
             {props.children}
         </div>
     ),
-    ConfigrPage: (props: React.PropsWithChildren<{ pageKey: string }>) => {
+    ConfigrPage: (
+        props: React.PropsWithChildren<{ pageKey: string; topLevel?: boolean }>,
+    ) => {
         // The real ConfigrPage throws (and blanks the whole UI) unless every child is a group or
-        // a static block.
-        React.Children.forEach(props.children, (child) => {
+        // a static block. Like it, this passes over empty children (a false from a condition).
+        React.Children.toArray(props.children).forEach((child) => {
             if (
                 !React.isValidElement(child) ||
                 (child.type !== MockConfigrGroup &&
@@ -434,8 +467,13 @@ vi.mock("@sillsdev/config-r", () => ({
                 );
             }
         });
+        // A page that is not top level is a sub-page, reached from a row of the page it is in.
         return (
-            <div data-testid="configr-page" data-page-key={props.pageKey}>
+            <div
+                data-testid="configr-page"
+                data-page-key={props.pageKey}
+                data-top-level={props.topLevel ? "true" : undefined}
+            >
                 {props.children}
             </div>
         );
@@ -479,6 +517,7 @@ vi.mock("@sillsdev/config-r", () => ({
         path: string;
         disabled?: boolean;
         description?: string;
+        overrideDescription?: string;
     }) => (
         <div>
             <input
@@ -487,13 +526,29 @@ vi.mock("@sillsdev/config-r", () => ({
                 data-path={props.path}
                 disabled={props.disabled}
             />
-            {props.description && (
+            {(props.overrideDescription ?? props.description) && (
                 <div data-testid="configr-input-description">
-                    {props.description}
+                    {props.overrideDescription ?? props.description}
                 </div>
             )}
         </div>
     ),
+    // The page's own controls (language, font, number lists) are not shown; tests check which
+    // values have one.
+    ConfigrCustomObjectInput: (props: { path: string }) => (
+        <div data-testid="configr-custom" data-path={props.path} />
+    ),
+    ConfigrCustomStringInput: (props: { path: string }) => (
+        <div data-testid="configr-custom" data-path={props.path} />
+    ),
+    ConfigrCustomNumberInput: (props: { path: string }) => (
+        <div data-testid="configr-custom" data-path={props.path} />
+    ),
+}));
+
+// The language chooser opens only when the user clicks Change, which these tests do not.
+vi.mock("./LanguageChooserDialog", () => ({
+    LanguageChooserDialog: () => null,
 }));
 
 import { CollectionSettingsDialog } from "./CollectionSettingsDialog";
@@ -534,8 +589,8 @@ describe("CollectionSettingsDialog", () => {
         (container.querySelector('[data-testid="dialog-ok"]') as HTMLElement)
             .textContent;
 
-    // Answers GET collection/settings with the given response, and the Front & Back Matter page's
-    // own GETs with their test data.
+    // Answers GET collection/settings with the given response, and the pages' own GETs with their
+    // test data.
     const respondWith = (response: ICollectionSettingsResponse) => {
         mockGet.mockImplementation(
             (url: string, successCallback: (r: unknown) => void) => {
@@ -553,6 +608,26 @@ describe("CollectionSettingsDialog", () => {
                         break;
                     case "teamCollection/defaultRepoFolder":
                         successCallback({ data: kDropboxFolder });
+                        break;
+                    case "fonts/metadata":
+                        successCallback({ data: [] });
+                        break;
+                    case "settings/numberingStyle":
+                        successCallback({
+                            data: {
+                                currentPageNumberStyle: "Decimal",
+                                numberingStyleData: [
+                                    {
+                                        localizedStyle: "Decimal",
+                                        styleKey: "Decimal",
+                                    },
+                                    {
+                                        localizedStyle: "Devanagari",
+                                        styleKey: "Devanagari",
+                                    },
+                                ],
+                            },
+                        });
                         break;
                     default:
                         throw new Error(`The test did not expect GET ${url}`);
@@ -610,7 +685,9 @@ describe("CollectionSettingsDialog", () => {
         );
         expect(
             Array.from(
-                container.querySelectorAll('[data-testid="configr-page"]'),
+                container.querySelectorAll(
+                    '[data-testid="configr-page"][data-top-level]',
+                ),
             ).map((page) => page.getAttribute("data-page-key")),
         ).toEqual([
             "languages",
@@ -874,6 +951,142 @@ describe("CollectionSettingsDialog", () => {
             mockPostJson.mock.calls[0][1].values.advanced.collectionName,
         ).toBe("Spaced Books");
         expect(mockPostJson.mock.calls[0][1].restartRequired).toBe(true);
+    });
+
+    describe("Languages page", () => {
+        // Every element on the page, including those on its languages' "More" pages.
+        const pageElements = (selector: string) =>
+            Array.from(
+                container.querySelectorAll(
+                    `[data-testid="configr-page"][data-page-key="languages"] ${selector}`,
+                ),
+            ) as HTMLElement[];
+
+        const moreElement = (languageNumber: number, selector: string) =>
+            container.querySelector(
+                `[data-testid="configr-page"][data-page-key="language${languageNumber}More"] ${selector}`,
+            ) as HTMLElement | null;
+
+        const lettersBox = () => {
+            const box = moreElement(
+                1,
+                '[data-path="readerTools.letters"]',
+            ) as HTMLInputElement | null;
+            if (!box) {
+                throw new Error(
+                    "Language 1's More page has no box for the alphabet",
+                );
+            }
+            return box;
+        };
+
+        it("has rows for each language, and settings only for the languages the collection has", async () => {
+            expect(initialValues.languages.language3).toBeNull();
+            expect(initialValues.languages.signLanguage).toBeNull();
+            await renderDialog();
+
+            // A language the collection lacks still has its language row, from which to set one.
+            for (const path of [
+                "languages.language1",
+                "languages.language2",
+                "languages.language3",
+                "languages.signLanguage",
+                "languages.language1.fontName",
+                "languages.language2.fontName",
+            ]) {
+                expect(
+                    pageElements(`[data-path="${path}"]`),
+                    `a control for ${path}`,
+                ).toHaveLength(1);
+            }
+            expect(
+                pageElements('[data-path="languages.language3.fontName"]'),
+            ).toHaveLength(0);
+            expect(moreElement(1, "*")).not.toBeNull();
+            expect(moreElement(2, "*")).not.toBeNull();
+            expect(moreElement(3, "*")).toBeNull();
+
+            click("add-third-language");
+            await flushDeferredChange();
+
+            expect(
+                pageElements('[data-path="languages.language3.fontName"]'),
+            ).toHaveLength(1);
+            expect(
+                moreElement(
+                    3,
+                    '[data-path="languages.language3.isRightToLeft"]',
+                ),
+            ).not.toBeNull();
+        });
+
+        it("offers the alphabet and sentence punctuation only for the first language", async () => {
+            await renderDialog();
+
+            expect(pageElements('[data-path="readerTools.letters"]')).toEqual([
+                lettersBox(),
+            ]);
+            expect(
+                pageElements('[data-path="readerTools.sentencePunct"]'),
+            ).toHaveLength(1);
+            expect(
+                moreElement(2, '[data-path="readerTools.letters"]'),
+            ).toBeNull();
+        });
+
+        it("does not let the user edit the alphabet while changing the first language", async () => {
+            await renderDialog();
+            expect(lettersBox().disabled).toBe(false);
+
+            click("change-language1");
+            await flushDeferredChange();
+
+            expect(lettersBox().disabled).toBe(true);
+            expect(
+                moreElement(
+                    1,
+                    '[data-path="readerTools.sentencePunct"]',
+                )?.hasAttribute("disabled"),
+            ).toBe(true);
+            expect(
+                moreElement(1, '[data-testid="configr-input-description"]')
+                    ?.textContent,
+            ).toContain("belong to the language you are replacing");
+        });
+
+        it("tidies an alphabet the user typed when it saves", async () => {
+            await renderDialog();
+
+            click("type-letters");
+            await flushDeferredChange();
+            click("dialog-ok");
+
+            expect(
+                mockPostJson.mock.calls[0][1].values.readerTools.letters,
+            ).toBe("a b c ch");
+        });
+
+        it("leaves an alphabet the user did not touch exactly as it was", async () => {
+            expect(initialValues.readerTools.letters).toBe("a  b,c");
+            await renderDialog();
+
+            click("dialog-ok");
+
+            expect(
+                mockPostJson.mock.calls[0][1].values.readerTools.letters,
+            ).toBe("a  b,c");
+        });
+
+        it("offers the page numbering styles Bloom knows", async () => {
+            await renderDialog();
+
+            const select = pageElements(
+                '[data-path="languages.pageNumberStyle"]',
+            )[0] as HTMLSelectElement;
+            expect(
+                Array.from(select.options).map((option) => option.value),
+            ).toEqual(["Decimal", "Devanagari"]);
+        });
     });
 
     describe("Front & Back Matter page", () => {

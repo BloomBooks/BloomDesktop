@@ -527,6 +527,7 @@ namespace Bloom.web.controllers
                 RestartPaths = CollectionSettingsValues.GetRestartPaths(),
                 IsTeamCollection = CurrentCollectionIsTeamCollection,
                 EditingABlorgBook = _collectionSettings.EditingABlorgBook,
+                DefaultFontName = WritingSystem.GetDefaultFontName(),
             };
             request.ReplyWithJson(JsonConvert.SerializeObject(response, kCamelCaseSettings));
         }

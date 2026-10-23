@@ -1,12 +1,6 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import {
-    ConfigrValues,
-    ConfigrGroup,
-    ConfigrPage,
-    ConfigrPane,
-    ConfigrStatic,
-} from "@sillsdev/config-r";
+import { ConfigrValues, ConfigrPane } from "@sillsdev/config-r";
 import {
     BloomDialog,
     DialogBottomButtons,
@@ -36,24 +30,15 @@ import { useAdvancedPage } from "./settingsPages/AdvancedPage";
 import { useBloomLibraryPage } from "./settingsPages/BloomLibraryPage";
 import { useExperimentalPage } from "./settingsPages/ExperimentalPage";
 import { useFrontBackMatterPage } from "./settingsPages/FrontBackMatterPage";
+import {
+    useLanguagesPage,
+    withEditedLettersCleaned,
+} from "./settingsPages/LanguagesPage";
 import { useSubscriptionPage } from "./settingsPages/SubscriptionPage";
 import {
     teamCollectionValuesAreValid,
     useTeamCollectionPage,
 } from "./settingsPages/TeamCollectionPage";
-
-// Temporary content for every page. Each of the seven tab cards replaces its page's group with
-// real controls, so this text is deliberately plain English and is never localized.
-const PagePlaceholder: React.FunctionComponent = () => (
-    <div
-        css={css`
-            font-size: 0.9em;
-            color: #555;
-        `}
-    >
-        Settings for this section are not available yet.
-    </div>
-);
 
 const kCollectionSettingsDialogId = "CollectionSettingsDialog";
 
@@ -181,34 +166,19 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         "Collection Settings",
         "CollectionSettingsDialog.Title",
     );
-    const languagesLabel = useL10n(
-        "Languages",
-        "CollectionSettingsDialog.LanguageTab.LanguageTabLabel",
-    );
     const restartMessage = useL10n(
         "Bloom will close and re-open this project with the new settings.",
         "CollectionSettingsDialog.RestartMessage",
     );
 
-    // C# names these pageKeys when it asks us to open on a particular page. Each built page is a
-    // hook in its own file under settingsPages/ that returns its ConfigrPage (Config-R rejects a
-    // page wrapped in a component); each placeholder below moves to one when its tab card adds it.
-    function placeholderPage(pageKey: string, label: string) {
-        return (
-            <ConfigrPage
-                key={pageKey}
-                label={label}
-                pageKey={pageKey}
-                topLevel={true}
-            >
-                <ConfigrGroup label={label}>
-                    <ConfigrStatic>
-                        <PagePlaceholder />
-                    </ConfigrStatic>
-                </ConfigrGroup>
-            </ConfigrPage>
-        );
-    }
+    // C# names these pageKeys when it asks us to open on a particular page. Each page is a hook in
+    // its own file under settingsPages/ that returns its ConfigrPage (Config-R rejects a page
+    // wrapped in a component).
+    const languagesPage = useLanguagesPage({
+        dialogOpen: propsForBloomDialog.open,
+        settings: loadedSettings,
+        values: currentValues,
+    });
     const frontBackMatterPage = useFrontBackMatterPage({
         dialogOpen: propsForBloomDialog.open,
         settings: loadedSettings,
@@ -265,15 +235,27 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         };
     }
 
+    // The values exactly as C# will be sent them: the ones edited outside Config-R put in, and the
+    // text the user edited trimmed (and an edited alphabet cleaned).
+    function valuesToSaveFrom(
+        values: ICollectionSettingsValues,
+        settings: ICollectionSettingsResponse,
+    ): ICollectionSettingsValues {
+        return withEditedLettersCleaned(
+            withEditedTextTrimmed(
+                withValuesEditedOutsideConfigr(values),
+                settings.values,
+            ),
+            settings.values,
+        );
+    }
+
     // Both are checked: a deferred onChange can set currentValues after a close has already
     // cleared loadedSettings.
     const needsRestart = restartNeededFor(
         currentValues &&
             loadedSettings &&
-            withEditedTextTrimmed(
-                withValuesEditedOutsideConfigr(currentValues),
-                loadedSettings.values,
-            ),
+            valuesToSaveFrom(currentValues, loadedSettings),
     );
 
     function saveAndCloseDialog() {
@@ -284,9 +266,9 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         // keeps OK to a single path. The ref, not the deferred state, has the newest values, so
         // the restart flag is worked out from it too.
         // OK is enabled only once the values have loaded.
-        const valuesToSave = withEditedTextTrimmed(
-            withValuesEditedOutsideConfigr(latestValuesRef.current!),
-            loadedSettings!.values,
+        const valuesToSave = valuesToSaveFrom(
+            latestValuesRef.current!,
+            loadedSettings!,
         );
         postJson(
             "collection/settings",
@@ -360,7 +342,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                             }, 0);
                         }}
                     >
-                        {placeholderPage("languages", languagesLabel)}
+                        {languagesPage}
                         {frontBackMatterPage}
                         {subscriptionPage}
                         {teamCollectionPage}
