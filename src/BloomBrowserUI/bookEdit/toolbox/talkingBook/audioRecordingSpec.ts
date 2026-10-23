@@ -68,6 +68,13 @@ const mockCanvasElement = vi.hoisted(() => {
     };
 });
 
+// The recording code asks Bloom for its microphones and default recording mode as it starts.
+vi.mock("../../../utils/bloomApi", async (importOriginal) =>
+    (await import("./talkingBookTestBloomApi")).withTalkingBookReplies(
+        await importOriginal(),
+    ),
+);
+
 vi.mock("../canvas/canvasElementPageBridge", async (importActual) => {
     const actual =
         await importActual<
