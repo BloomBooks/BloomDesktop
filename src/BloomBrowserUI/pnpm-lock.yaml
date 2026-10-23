@@ -71,8 +71,8 @@ importers:
         specifier: 0.80.0
         version: 0.80.0(@nivo/core@0.80.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@sillsdev/config-r':
-        specifier: 1.0.0-alpha.29
-        version: 1.0.0-alpha.29(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/icons-material@5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tiny-warning@1.0.3)
+        specifier: 1.0.0-alpha.30
+        version: 1.0.0-alpha.30(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/icons-material@5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tiny-warning@1.0.3)
       '@types/filesize':
         specifier: 5.0.0
         version: 5.0.0
@@ -90,7 +90,7 @@ importers:
         version: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/95df3308fc5d8ebb07dfaf34d7d2f047c0f4bd12
       bloom-image-gallery:
         specifier: github:BloomBooks/bloom-image-gallery
-        version: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/c5a539b9b77849d5f90de1bcb93c8ab522328870(@types/react@18.3.31)(supports-color@5.5.0)
+        version: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/5c7e7f4d549437c806d76b4623422a405f25940f(@types/react@18.3.31)(supports-color@5.5.0)
       bloom-player:
         specifier: alpha
         version: 2.20.3-alpha.1
@@ -107,8 +107,8 @@ importers:
         specifier: 0.1.1
         version: 0.1.1
       comicaljs:
-        specifier: 0.4.1
-        version: 0.4.1
+        specifier: 0.4.2
+        version: 0.4.2
       contentful:
         specifier: 8.3.7
         version: 8.3.7
@@ -1903,8 +1903,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@sillsdev/config-r@1.0.0-alpha.29':
-    resolution: {integrity: sha512-MTvNa94tJjdMt9D6sFeDd96zvUONzmfQmW6xrVAveNGJ8VdEsheCbu+zIx0rrjj/SzNlHqrdMEba6n9qEqi/bg==}
+  '@sillsdev/config-r@1.0.0-alpha.30':
+    resolution: {integrity: sha512-GJ81WYjZwtDU52lMS+tiKigJyxmoTb09nqxi6KkIZnkFR5t30kY1R3DXhTF/n80H+OVWlkw9XkC0KdWY+FdlXA==}
     peerDependencies:
       '@emotion/react': '>= 11.8.2 < 12'
       '@emotion/styled': '>= 11.8.1 < 12'
@@ -2705,9 +2705,9 @@ packages:
     resolution: {gitHosted: true, integrity: sha512-jNmmPgnsXuavQDdrjNXHsHuTVAl/ws0XwP5r6ncG98iilKdNdop3jwP1Xz7LsCXzibfRZh0Yv1IF8ptiDewS+A==, tarball: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/95df3308fc5d8ebb07dfaf34d7d2f047c0f4bd12}
     version: 0.2.14
 
-  bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/c5a539b9b77849d5f90de1bcb93c8ab522328870:
-    resolution: {gitHosted: true, integrity: sha512-8J40cVA6KA+EQlrdLdN5SbKa+RxIKhltrAS7w8bh3bpMVKg2tSc5+XDb/n42+6HNMIDiVTNbL2tm/G2dmUT+7g==, tarball: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/c5a539b9b77849d5f90de1bcb93c8ab522328870}
-    version: 0.0.4
+  bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/5c7e7f4d549437c806d76b4623422a405f25940f:
+    resolution: {gitHosted: true, integrity: sha512-nKoHwCkUZhMu1StAfWES6MdUMeyJMzk+ulvnTr6XVtVkn0Mmet02Wj05g7nxKy1s6cazcxC0I86NxTq2fe0mww==, tarball: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/5c7e7f4d549437c806d76b4623422a405f25940f}
+    version: 0.0.5
 
   bloom-player@2.20.3-alpha.1:
     resolution: {integrity: sha512-MTIYUUuAu26Q+WvSFIdTPl/hrunHLIILG1sqA8sJiJvK7LOOITC30+NXAcg3WhZopPZHo7L/okqHu4IFxlso0g==}
@@ -2936,8 +2936,8 @@ packages:
     resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
     engines: {node: '>= 0.8'}
 
-  comicaljs@0.4.1:
-    resolution: {integrity: sha512-5Z3k/o51TDZ7k4bEzLltI7XAWR9pvvhAYAqcLIHW8j4TDlly6lv5lYgDVKrij04wqFCQ4eOtGYJMkjtB1F6b/Q==}
+  comicaljs@0.4.2:
+    resolution: {integrity: sha512-VCFBe/gL/EwnY1K88cPhSJr2/b1j6WOnWxYqn2RLl+KkQ7LJKWius3gD9bbNYlPRwxpOomyxR9Ih0DhNMzNDMw==}
 
   commander@13.1.0:
     resolution: {integrity: sha512-/rFeCpNJQbhSZjGVwO9RFV3xPqbnERS8MmIQzCtD/zl6gpJuV/bMLuN92oG3F7d8oDEHHRrujSXNUr8fpjntKw==}
@@ -8329,7 +8329,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.62.2':
     optional: true
 
-  '@sillsdev/config-r@1.0.0-alpha.29(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/icons-material@5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tiny-warning@1.0.3)':
+  '@sillsdev/config-r@1.0.0-alpha.30(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/icons-material@5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tiny-warning@1.0.3)':
     dependencies:
       '@emotion/react': 11.14.0(@types/react@18.3.31)(react@18.3.1)
       '@emotion/styled': 11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
@@ -9269,7 +9269,7 @@ snapshots:
 
   bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/95df3308fc5d8ebb07dfaf34d7d2f047c0f4bd12: {}
 
-  bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/c5a539b9b77849d5f90de1bcb93c8ab522328870(@types/react@18.3.31)(supports-color@5.5.0):
+  bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/5c7e7f4d549437c806d76b4623422a405f25940f(@types/react@18.3.31)(supports-color@5.5.0):
     dependencies:
       '@emotion/react': 11.14.0(@types/react@18.3.31)(react@18.3.1)
       '@emotion/styled': 11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
@@ -9564,7 +9564,7 @@ snapshots:
     dependencies:
       delayed-stream: 1.0.0
 
-  comicaljs@0.4.1:
+  comicaljs@0.4.2:
     dependencies:
       paper: 0.12.8
 

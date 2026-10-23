@@ -1,5 +1,8 @@
 import $ from "jquery";
 import axios from "axios";
+// Type-only: ITool.renderPanel() returns a React node, but nothing in this module
+// actually uses React at runtime.
+import type * as React from "react";
 import { get, postString, wrapAxios } from "../../utils/bloomApi";
 import { hookupLinkHandler } from "../../utils/linkHandler";
 import {
@@ -15,9 +18,20 @@ import {
     setExtraFunctionToHandleBlurTasks,
 } from "../../utils/menuCloseOnBlur";
 import {
-    getToolboxReactAdapter,
-    whenToolboxReactAdapterReady,
-} from "./toolboxReactAdapter";
+    getExpandedToolId,
+    getFirstOfferedToolId,
+    getToolboxUiState,
+    isToolEnabled,
+    isToolOffered,
+    notePageReady,
+    offerTool,
+    setExpandedTool,
+    setEnabledTools,
+    setToolEnabled,
+    setToolboxVisible,
+    subscribeToToolboxUiState,
+    withdrawTool,
+} from "./toolboxState";
 import {
     kSettingsToolId,
     kTalkingBookToolId,
@@ -47,28 +61,13 @@ export interface IToolboxSettings {
 
 let savedSettings: IToolboxSettings = {};
 
-// This variable stores the canonical ids of all the enabled tools, so
-// that the React toolbox settings can initially check the
-// checkboxes that correspond to the enabled tools
-let enabledToolIds = new Set<string>();
-
-// Is the tool with this canonical id currently enabled?
-export function isToolEnabledInToolbox(toolId: string): boolean {
-    return enabledToolIds.has(toolId);
-}
-
-// a function to update the state of the checkboxes in the toolbox settings,
-// whenever a tool is enabled and activated using setToolEnabledFromSettings(). This
-// function starts out unimplemented, but is later implemented by SettingsToolControls.tsx
-// when it gets mounted.
-let changeToolboxSettingsState:
-    | ((which: string, value: boolean) => void)
-    | undefined;
-
-export function setToolboxSettingsChangeHandler(
-    handler: ((which: string, value: boolean) => void) | undefined,
-): void {
-    changeToolboxSettingsState = handler;
+/**
+ * The book's toolbox settings as last fetched from the server. A tool is handed these when
+ * it starts running, so that it can restore whatever it saved in this book; see
+ * ITool.beginRestoreSettings and useToolLifecycle.ts.
+ */
+export function getSavedToolboxSettings(): IToolboxSettings {
+    return savedSettings;
 }
 
 // Each tool implements this interface and adds an instance of its implementation to the
@@ -77,18 +76,32 @@ export function setToolboxSettingsChangeHandler(
 // about a tool, including the metadata it shows in the tool's header, comes from
 // here (or is derived from id(); see toolIds.ts).
 // See ToolboxView.cs class comment for a summary of how to add a new tool.
+//
+// The lifecycle methods (beginRestoreSettings, showTool, newPageReady, detachFromPage,
+// hideTool) are not called from here. They follow from what the toolbox state store says:
+// the accordion ToolboxRoot renders for a tool runs them from an effect keyed on whether
+// that tool is running -- expanded, with the toolbox showing -- and on which page. See
+// useToolLifecycle.ts. The rest are called directly, from the code that raises them:
+// updateMarkup on keystrokes (pageEditingMarkup.ts), configureElements on page setup (for
+// every registered tool, expanded or not), imageUpdated by the page frame.
 export interface ITool {
     // For tools that require a subscription. This will trigger an indicator communicating that this
     // featureName requires a subscription.
     readonly featureName?: string;
     // Gives the tool a chance to restore whatever it saved in the book's toolbox settings
     // (its own "<toolId>State" property, if any) before it is shown. Called each time the
-    // tool becomes the current tool, so it also serves to make the tool's state track the
+    // tool starts running, so it also serves to make the tool's state track the
     // current book. The returned promise must resolve when the tool is ready to be shown.
     beginRestoreSettings(settings: IToolboxSettings): Promise<void>;
     configureElements(container: HTMLElement);
-    showTool(); // called when a new tool is chosen, but not necessarily when a new page is displayed.
-    hideTool(); // called when changing tools or hiding the toolbox.
+    // Called when the tool starts running -- it has become the expanded tool of a showing
+    // toolbox, or it was already expanded and a new page arrived. Expanding this tool's own
+    // accordion section is not by itself what triggers it; starting to run is.
+    showTool();
+    // The exact inverse: called when the tool stops running, whether because another tool
+    // took over, the toolbox was hidden, or it stopped being offered. One flag in
+    // useToolLifecycle.ts drives both.
+    hideTool();
     // Note, new implementations of updateMarkup may need to call EditableDivUtils.doCkEditorCleanup() like readerToolsModel.doMarkup() does.
     updateMarkup(); // called on most keypresses (but notably, not on arrow navigation, also not Ctrl+C). It is called on typing letters (obviously), Ctrl+X, Ctrl+V, Ctrl+Z, Ctrl+Y etc... or even just pressing and releasing Ctrl or Shift.
     // like updateMarkup, but expected to be async. Implement instead of updateMarkup if you need to use async functions.
@@ -98,7 +111,7 @@ export interface ITool {
     // Note, new implementations of updateMarkupAsync may need to implement something like cleanUpCkEditorHtml() in audioRecording.ts.
     updateMarkupAsync(): Promise<() => void>;
     isUpdateMarkupAsync(): boolean; // should return true if updateMarkupAsync should be called and awaited instead of updateMarkup.
-    // called when a new page is displayed or tool is activated (called after showTool completes).
+    // called when a new page is displayed or the tool starts running (called after showTool completes).
     // To guard against certain race conditions, we currently call this again after 600ms. Tools should
     // allow for this possibility and not repeat any work that was already done.
     newPageReady();
@@ -108,10 +121,14 @@ export interface ITool {
     // If this is true, the tool may only be selected on pages that have data-tool-id matching this tool's id.
     requiresToolId(): boolean;
 
-    // It should return the main content of the tool, which must be a single div.
+    // Renders this tool's panel. ToolboxRoot renders it inside the tool's accordion, in
+    // the toolbox's single React tree, so context (e.g. the MUI theme) reaches it normally.
+    // It should return the main content of the tool, which must be a single React element
+    // -- a React node describing the UI, never a DOM element; nothing here creates or hands
+    // back real HTML. (ToolboxRoot sizes that element to fill the space below the header.)
     // ToolboxRoot renders the tool's header (label, icon, subscription badge) around it;
-    // this method is however responsible to localize the content of the div.
-    makeRootElement(): HTMLDivElement;
+    // this method is however responsible to localize the content of the panel.
+    renderPanel(): React.ReactNode;
     // notifies the tool that an image has been changed on the page.
     // If the change only affects one image, it may be passed; otherwise, all should be fixed.
     imageUpdated(img: HTMLImageElement | undefined): void;
@@ -121,12 +138,20 @@ export interface ITool {
     iconPath(): string | undefined;
 }
 
-// Class that represents the whole toolbox. Gradually we will move more functionality in here.
+// The whole toolbox, as the rest of Bloom's frames see it. Functionality moves *out* of here
+// into React (ToolboxRoot.tsx and the store); what stays is what has to run in this frame,
+// because this is the cross-frame API the page and the shell call through window.toolboxBundle.
 export class ToolBox {
-    public toolboxIsShowing() {
-        return (<HTMLInputElement>(
-            $(parent.window.document).find("#pure-toggle-right").get(0)
-        )).checked;
+    // The sidebar is shown and hidden by a checkbox in the workspace frame, not by us, so
+    // this is the truth about whether the toolbox is showing. (It is mirrored into the
+    // toolbox state store, which is how the tools' lifecycle follows it; see
+    // syncToolboxVisibilityFromDom.) Returns false rather than throwing if there is no such
+    // checkbox, which is the case in unit tests and other hosts of the toolbox UI.
+    public toolboxIsShowing(): boolean {
+        const toggle = $(parent.window.document)
+            .find("#pure-toggle-right")
+            .get(0) as HTMLInputElement | undefined;
+        return !!toggle?.checked;
     }
     public toggleToolbox() {
         (<HTMLInputElement>(
@@ -144,26 +169,25 @@ export class ToolBox {
         // Books made from the Leveled/Decodable Reader templates have pages that carry
         // data-tool-id="leveledReader" or "decodableReader". Unlike the Game tool, these
         // reader tools don't actually require a particular page type, and honoring the
-        // attribute here would force the reader tool open and keep the book "stuck" to its
+        // attribute here would force the reader tool expanded and keep the book "stuck" to its
         // original type, preventing the user from switching to (and staying on) another
         // tool. So we ignore those values and leave the last tool shown (stored in the
-        // book's metadata) as the current tool. (BL-16615)
+        // book's metadata) as the expanded tool. (BL-16615)
         if (
             requiredToolId === "leveledReader" ||
             requiredToolId === "decodableReader"
         ) {
             requiredToolId = null;
         }
-        newToolId = requiredToolId || undefined;
-
+        toolThePageRequires = requiredToolId || undefined;
+        expandedToolWhenThePageAsked = getExpandedToolId();
         // This function is the main task of adjustToolListForPage. It may have to be postponed
         // until we've finished otherwise setting up the toolbox.
         // It's possible there will be a tiny bit of flicker if the book opens on a page that
         // has a required tool as we first initialize the toolbox without that tool and then
         // add it. But this is fairly rare and I have not found it noticeable.
         const doAdjustment = () => {
-            const adapter = getToolboxReactAdapter();
-            if (!this.builtToolbox || !adapter) {
+            if (!this.builtToolbox) {
                 setTimeout(doAdjustment, 100);
                 return;
             }
@@ -173,18 +197,21 @@ export class ToolBox {
                     continue;
                 }
                 // We may need to add or remove this tool.
-                const haveTool = adapter.hasTool(tool.id());
+                const haveTool = isToolOffered(tool.id());
                 const wantTool = requiredToolId === tool.id();
                 if (haveTool !== wantTool) {
                     // add or remove as needed. (Required tools don't have check boxes.)
-                    showOrHideTool(tool.id(), wantTool);
-                    toolsAdjusted = wantTool;
+                    offerOrWithdrawTool(tool.id(), wantTool);
+                    toolsAdjusted = toolsAdjusted || wantTool;
                 }
             }
-            // We haven't called showOrHideTool, so the active tool hasn't changed.
+            // Offering the page's tool just now also expanded it (offerToolAndMaybeExpand).
+            // Otherwise it still has to be expanded here: either it was already on offer,
+            // or this pass only withdrew tools -- toolsAdjusted records offers, not
+            // withdrawals, because withdrawing moves the expanded tool on by itself.
             // See the later comments on BL-14434 (after the first PR link).
             if (requiredToolId && !toolsAdjusted) {
-                setCurrentTool(requiredToolId);
+                expandToolOrFirstOffered(requiredToolId);
             }
         };
         doAdjustment();
@@ -200,19 +227,22 @@ export class ToolBox {
         return GameTool.theOneDragActivityTool;
     }
 
-    // Generally prefer to use the standalone function detachCurrentTool() instead of this method.
+    // Generally prefer to use the standalone function detachExpandedTool() instead of this method.
     // In some contexts where we want to detach, we may not be able to get the toolbox instance,
     // and that function has some fallback behavior in that case.
-    public detachCurrentTool(): void {
+    public detachExpandedTool(): void {
+        this.runTasksForClosingTool();
+        findExpandedTool()?.detachFromPage();
+    }
+    // Runs (once) whatever was registered with addWhenClosingToolTask(). Called both by the
+    // explicit detach above and by the tool's own lifecycle cleanup (useToolLifecycle.ts).
+    public runTasksForClosingTool(): void {
         for (const task of this.doWhenClosingTool) {
             task();
         }
         this.doWhenClosingTool = [];
-        if (currentTool && isToolInitialized(currentTool)) {
-            currentTool.detachFromPage();
-        }
     }
-    // A list of tasks to do when the current tool is closed. This is currently used to
+    // A list of tasks to do when the running tool stops. This is currently used to
     // keep track of popups and dialogs that need to be closed when the tool goes away.
     // We could make each tool responsible for this in its own detachFromPage() method,
     // but I think it would make for some duplication, as well as some complexity for
@@ -222,7 +252,7 @@ export class ToolBox {
     // the task passed must be OK to call even after the popup is closed.)
     private doWhenClosingTool: (() => void)[] = [];
     public static addWhenClosingToolTask(task: () => void): void {
-        // This is used to add a task that should be run when the current tool is closed.
+        // This is used to add a task that should be run when the running tool stops.
         // It is used by the Talking Book tool to clean up the CkEditor markup.
         getTheOneToolbox().doWhenClosingTool.push(task);
     }
@@ -242,6 +272,16 @@ export class ToolBox {
 
     // Called from document.ready, initializes the whole toolbox.
     public initialize(): void {
+        // From here on, whenever a different tool becomes the expanded one, have Bloom
+        // remember it. That is all we do: which tool is *running* follows from the store
+        // itself (see toolboxState.ts), and running it -- restoring its
+        // settings, showing it, telling it the page is ready, detaching and hiding
+        // whatever it replaced -- follows from that; see useToolLifecycle.ts.
+        subscribeToToolboxUiState(() => {
+            persistExpandedToolIfItChanged();
+            forgetPageToolRequestIfTheToolboxHasMovedOn();
+        });
+
         // It seems (see BL-5330) that the toolbox code is loaded into the edit document as well as the
         // toolbox one. Nothing outside toolbox imports it directly, so it must be some indirect link.
         // It's important that this function is only hooked up to the real toolbox instance.
@@ -249,8 +289,11 @@ export class ToolBox {
             $(parent.window.document)
                 .find("#pure-toggle-right")
                 .change(function () {
-                    showToolboxChanged(!this.checked);
+                    showToolboxChanged(this.checked);
                 });
+            // The handler above fires on every later toggle, but nothing announces the state
+            // the checkbox is already in, so read it once now.
+            syncToolboxVisibilityFromDom();
         });
         hookupLinkHandler();
 
@@ -277,7 +320,7 @@ export class ToolBox {
                     }
                 }
 
-                enabledToolIds = new Set(toolsToLoad);
+                setEnabledTools(toolsToLoad);
 
                 for (let j = 0; j < masterToolList.length; j++) {
                     // add any tools we always show
@@ -300,21 +343,14 @@ export class ToolBox {
                     } else {
                         // optimize: maybe we can overlap these?
                         const nextToolId = toolsToLoad.pop()!;
-                        beginAddTool(nextToolId, false, () => loadNextTool());
+                        offerToolAndMaybeExpand(nextToolId, false, () =>
+                            loadNextTool(),
+                        );
                     }
                 };
-                // Adding the tools requires the toolbox UI, which mounts asynchronously.
-                whenToolboxReactAdapterReady(() => loadNextTool());
+                loadNextTool();
             }),
         );
-    }
-
-    /**
-     * Is the toolbox currently offering this tool (canonical id)? (Despite the
-     * name, this does not mean the tool is the *current* tool; it never did.)
-     */
-    public isToolActive(toolId: string): boolean {
-        return !!getToolboxReactAdapter()?.hasTool(toolId);
     }
 
     // Enables a tool (canonical id) from an in-page action, ensuring the toolbox is visible.
@@ -322,11 +358,11 @@ export class ToolBox {
         if (!this.toolboxIsShowing()) {
             this.toggleToolbox();
         }
-        setToolEnabledFromSettings(toolId, true);
+        applyToolEnabledChange(toolId, true);
     }
 
     /**
-     * Makes the given tool (canonical id) the current tool, enabling it first if
+     * Expands the given tool (canonical id), enabling it first if
      * necessary. Called in response to in-page actions, e.g. clicking a video placeholder
      * to get the Sign Language tool.
      */
@@ -337,32 +373,51 @@ export class ToolBox {
             console.error(`activateToolFromId: there is no tool "${toolId}".`);
             return;
         }
-        // Making it visible first allows the simulated click to actually activate the tool.
-        // We don't seem to get flicker seeing some other tool first, and if we do it after
-        // the simulated click and the tool we're activating wasn't previously enabled,
-        // it somehow ends up enabled but not active.
+        // Show the toolbox first: offerToolAndMaybeExpand() only expands a tool while the
+        // toolbox is showing, so showing it afterwards would leave the tool enabled and
+        // offered but collapsed. We don't seem to get flicker seeing some other tool first.
         const toolboxWasShowing = this.toolboxIsShowing();
         if (!toolboxWasShowing) {
             this.toggleToolbox();
         }
 
-        // The tool may be present without being in enabledToolIds if it is a
+        // The tool may be present without being enabled if it is a
         // required-for-this-page tool (see adjustToolListForPage).
-        if (isToolEnabledInToolbox(toolId) || this.isToolActive(toolId)) {
-            setCurrentTool(toolId);
+        if (isToolEnabled(toolId) || isToolOffered(toolId)) {
+            expandToolOrFirstOffered(toolId);
         } else {
-            // Genuinely disabled: enable it, which persists the state and updates
-            // enabledToolIds, then activates it (showOrHideTool opens it by default).
-            setToolEnabledFromSettings(toolId, true);
+            // Genuinely disabled: enable it, which persists the state, records it in the
+            // store, and offers it -- and offering expands it, the toolbox now being shown.
+            applyToolEnabledChange(toolId, true);
         }
     }
 
-    public getCurrentTool() {
-        return currentTool;
+    /** The EXPANDED tool: the one the user has chosen. See toolboxState.ts. */
+    public getExpandedTool(): ITool | undefined {
+        return findExpandedTool();
     }
 
-    public setCurrentTool(toolId: string): void {
-        setCurrentTool(toolId);
+    /**
+     * Which tool this page belongs to, as getEffectiveToolId() answers it -- the tool a
+     * loading page requires if it has said so, otherwise the expanded tool.
+     *
+     * On the instance so that the e2e suite can ask: it decides whether Talking Book may put
+     * its highlight and audio on a page that belongs to the Game tool (BL-14434), and the page
+     * looks the same either way, so no test can read it from the DOM. Nothing in Bloom calls
+     * this; the module function is what production code uses.
+     */
+    public getEffectiveToolIdForTests(): string | undefined {
+        return getEffectiveToolId();
+    }
+
+    /**
+     * The tool that is RUNNING: the expanded one, while the toolbox is showing. This is what
+     * code outside the toolbox usually wants -- a tool left expanded behind a hidden toolbox has
+     * been detached and hidden, so it should not be marked up, played, or told about images.
+     * See toolboxState.ts for the vocabulary.
+     */
+    public getRunningTool(): ITool | undefined {
+        return this.toolboxIsShowing() ? findExpandedTool() : undefined;
     }
 }
 
@@ -379,37 +434,109 @@ export function getMasterToolList() {
 // Array of ITool objects, typically one for each tool. The code for each tool inserts an appropriate ITool
 // into this array in order to interact with the overall toolbox code.
 const masterToolList: ITool[] = [];
-let currentTool: ITool | undefined = undefined;
-let toolboxReactActivationHooked = false;
 
-// This primarily calls the detachFromPage method of the current tool, if any.
+/**
+ * The expanded tool, or undefined if none is. Note that it is not necessarily *running*:
+ * hiding the toolbox stops a tool running without collapsing it.
+ * toolboxState.ts defines both words.
+ */
+function findExpandedTool(): ITool | undefined {
+    const expandedToolId = getExpandedToolId();
+    if (!expandedToolId) {
+        return undefined;
+    }
+    return masterToolList.find((tool) => tool.id() === expandedToolId);
+}
+
+/**
+ * Runs whatever was registered with ToolBox.addWhenClosingToolTask(). Exported for the
+ * running tool's lifecycle cleanup (useToolLifecycle.ts), which is where a tool that stops
+ * running gets closed down. It goes through the toolbox instance so that the tasks run are
+ * the ones registered with the toolbox in this iframe.
+ */
+export function runTasksForClosingTool(): void {
+    getTheOneToolbox()?.runTasksForClosingTool();
+}
+
+// This primarily calls the detachFromPage method of the expanded tool, if any.
 // It also tries to find the current toolbox instance (in the right iframe, wherever it is called),
 // and runs any cleanup tasks that have been registered for when closing the tool.
-// It's important to get the right toolbox (in the right iframe) beacause that's the one
+// It's important to get the right toolbox (in the right iframe) because that's the one
 // that has the valid list of tasks to run when closing the tool.
-function detachCurrentTool() {
+function detachExpandedTool() {
     const toolbox = getTheOneToolbox();
     if (toolbox) {
-        toolbox.detachCurrentTool();
-    } else if (currentTool && isToolInitialized(currentTool)) {
-        // If the toolbox is not available, we still may be able to detach the current tool.
+        toolbox.detachExpandedTool();
+    } else if (findExpandedTool()) {
+        // If the toolbox is not available, we still may be able to detach the expanded tool.
         // This is what we used to do before we had some extra behavior in the toolbox.
-        currentTool.detachFromPage();
+        findExpandedTool()?.detachFromPage();
     }
 }
 
-let newToolId: string | undefined = undefined;
-export function getActiveToolId(): string | undefined {
-    return newToolId ? newToolId : currentTool?.id();
+// Mirrors the sidebar's real showing/hidden state into the toolbox state store, which is
+// what makes the expanded tool start or stop running. Everything that shows or hides the
+// toolbox goes through the workspace's checkbox, so showToolboxChanged() normally keeps
+// this up to date; the other callers are for the times we may never have been told (the
+// state it started in) or may have missed it (a new page or book).
+function syncToolboxVisibilityFromDom(): void {
+    setToolboxVisible(toolbox.toolboxIsShowing());
+}
+
+// The tool a page that is still loading says it requires, until the toolbox has caught up
+// and expanded it. Not a second opinion about what is running -- the store owns
+// that -- but an answer to "which tool is this page for?", which can be known before the
+// toolbox has been told to offer it.
+//
+// It is what keeps the Talking Book tool from laying its highlight and sound over a page
+// that is arriving for some other tool: the page's own tool is announced here first, so
+// getEffectiveToolId() stops naming the outgoing tool before the switch completes. Without it
+// the asynchronous calls during page loading race and the wrong tool gets newPageReady.
+// See BL-14434, and doesEffectiveToolPlayAudio() in audioRecording.ts.
+let toolThePageRequires: string | undefined = undefined;
+
+// Which tool was expanded at the moment the page asked. The request is only worth answering with
+// until the toolbox has moved somewhere since: once it has, the store knows better.
+let expandedToolWhenThePageAsked: string | undefined = undefined;
+
+/**
+ * Drops the page's tool request once the toolbox has expanded something since it was made --
+ * the page's own tool, or another one the user picked instead. Called on every store change.
+ *
+ * Why not simply drop it as soon as the page has been dealt with: while the toolbox is
+ * hidden, offerToolAndMaybeExpand() offers a page's tool without expanding it, so nothing in
+ * the store yet knows this page belongs to the Game tool, and dropping the request there
+ * would let Talking Book claim the page's audio and highlighting -- the very thing
+ * BL-14434 added it for. And why not keep it until the next page: the user can expand
+ * another tool meanwhile, and then the request would go on naming a tool that is not
+ * running.
+ */
+function forgetPageToolRequestIfTheToolboxHasMovedOn(): void {
+    if (!toolThePageRequires) {
+        return;
+    }
+    if (getExpandedToolId() !== expandedToolWhenThePageAsked) {
+        toolThePageRequires = undefined;
+    }
+}
+
+/**
+ * The tool whose markup and audio should apply to the page in front of us: the one a loading
+ * page requires if it has said so, otherwise the expanded tool. This is deliberately not any
+ * of the words toolboxState.ts defines -- during a page change it can name a tool that is
+ * not yet the expanded one, which is the whole reason it exists.
+ */
+export function getEffectiveToolId(): string | undefined {
+    return toolThePageRequires ?? findExpandedTool()?.id();
 }
 
 // How long, after a tool is turned on in the "More..." tool, we wait
-// before adding/opening it. Opening it closes the "More..." tool, so we delay
+// before adding/expanding it. Expanding it collapses the "More..." tool, so we delay
 // it just long enough for the user to see the checkbox they ticked. (BL-16501)
 const kShowToolAfterEnableDelayMs = 300;
 
-// Pending deferred "open this tool" timers, keyed by canonical tool id, so a later toggle
-// of the same tool can cancel an open that hasn't fired yet.
+// Pending deferred "expand this tool" timers, keyed by canonical tool id, so a later toggle
+// of the same tool can cancel an expand that hasn't fired yet.
 // We deliberately don't clear this map on toolbox teardown/navigation: each timer
 // is ~300ms and removes its own entry when it fires, so at most a couple of very
 // short-lived entries ever exist and nothing can accumulate. (BL-16501)
@@ -418,36 +545,30 @@ const pendingShowToolTimeouts = new Map<
     ReturnType<typeof setTimeout>
 >();
 
-// modifies the enabledToolIds set, the saved active
+// modifies the store's set of enabled tools, the saved enabled
 // state of the tool in question (canonical id), and the presence of
 // the tool in the toolbox, whenever the tool is checked
 // or unchecked in the toolbox settings.
 // deferShowToRevealCheckbox is set only by the "More..." settings checkboxes:
-// when turning a tool on from there, opening it collapses the settings tool,
-// so we briefly delay the open (see below) to let the user see the checkbox they
+// when turning a tool on from there, expanding it collapses the settings tool,
+// so we briefly delay the expand (see below) to let the user see the checkbox they
 // ticked. Other callers (e.g. activating a tool from an in-page action) leave it
-// false so the tool opens immediately. (BL-16501)
-export function setToolEnabledFromSettings(
+// false so the tool expands immediately. (BL-16501)
+export function applyToolEnabledChange(
     toolId: string,
     turnOn: boolean,
     deferShowToRevealCheckbox: boolean = false,
 ): void {
-    if (turnOn) {
-        enabledToolIds.add(toolId);
-    } else {
-        enabledToolIds.delete(toolId);
-    }
+    // The "More..." checkboxes render from the store, so this is also what re-ticks the
+    // checkbox when a tool is enabled from somewhere else (e.g. an in-page action).
+    setToolEnabled(toolId, turnOn);
 
     postString(
         "editView/saveToolboxSetting",
         "active\t" + toEnabledSettingName(toolId) + "\t" + (turnOn ? "1" : "0"),
     );
 
-    if (changeToolboxSettingsState !== undefined) {
-        changeToolboxSettingsState(toolId, turnOn);
-    }
-
-    // A pending deferred open (below) reflects an earlier state; this call
+    // A pending deferred expand (below) reflects an earlier state; this call
     // supersedes it, so cancel it. Without this, ticking a tool on and then off
     // again within the delay would let the stale timer re-add the disabled tool
     // (the disable runs synchronously and would otherwise be overtaken).
@@ -458,7 +579,7 @@ export function setToolEnabledFromSettings(
     }
 
     if (turnOn && deferShowToRevealCheckbox) {
-        // Turning a tool on adds it to the toolbox and opens it, which closes
+        // Turning a tool on adds it to the toolbox and expands it, which collapses
         // the "More..." tool. If we do that immediately, "More..." closes before
         // the user perceives the checkbox they just ticked. Briefly delay, so the
         // checkmark is visible before "More..." closes to reveal the newly-enabled
@@ -466,29 +587,29 @@ export function setToolEnabledFromSettings(
         const timeout = setTimeout(() => {
             pendingShowToolTimeouts.delete(toolId);
             // Guard against the tool having been turned off again during the delay.
-            if (enabledToolIds.has(toolId)) {
-                showOrHideTool(toolId, true);
+            if (isToolEnabled(toolId)) {
+                offerOrWithdrawTool(toolId, true);
             }
         }, kShowToolAfterEnableDelayMs);
         pendingShowToolTimeouts.set(toolId, timeout);
     } else {
-        showOrHideTool(toolId, turnOn);
+        offerOrWithdrawTool(toolId, turnOn);
     }
 }
 
-function showOrHideTool(
-    toolId: string,
-    turnOn: boolean,
-    openTool: boolean = true,
-) {
+function offerOrWithdrawTool(toolId: string, turnOn: boolean) {
     if (turnOn) {
-        beginAddTool(toolId, openTool);
+        offerToolAndMaybeExpand(toolId, true);
     } else {
-        getToolboxReactAdapter()?.removeTool(toolId);
+        withdrawTool(toolId);
     }
 }
 
-export function restoreToolboxSettings() {
+function restoreToolboxSettings() {
+    // Snapshot BEFORE the request goes out, not in its callback: the user can open the
+    // toolbox or pick a tool while it is in flight, and a snapshot taken on arrival would
+    // already contain their choice and so look unchanged, letting the restore overwrite it.
+    const stateWhenFetched = captureToolboxStateForRestore();
     get("toolbox/settings", (result) => {
         savedSettings = result.data;
         const pageFrame = getPageIFrame();
@@ -496,80 +617,60 @@ export function restoreToolboxSettings() {
         if (contentWin && contentWin.document.readyState === "loading") {
             // We can't finish restoring settings until the main document is loaded, so arrange to call the next stage when it is.
             $(contentWin.document).ready((_e) =>
-                restoreToolboxSettingsWhenPageReady(result.data),
+                restoreToolboxSettingsWhenPageReady(
+                    result.data,
+                    stateWhenFetched,
+                ),
             );
             return;
         }
-        restoreToolboxSettingsWhenPageReady(result.data); // not loading, we can proceed immediately.
+        // not loading, we can proceed immediately.
+        restoreToolboxSettingsWhenPageReady(result.data, stateWhenFetched);
     });
 }
 
 export function applyToolboxStateToUpdatedPage() {
+    // Snapshot before the request, for the reason given in restoreToolboxSettings().
+    const stateWhenFetched = captureToolboxStateForRestore();
     get("toolbox/settings", (result) => {
         savedSettings = result.data;
-        // savedSettings["current"] is always set to the last active tool for the book,
+        // savedSettings["current"] is always set to the last expanded tool for the book,
         // except for new books where it is null. In that case, the default value
         // should be the talking book tool.  (BL-16026)
         const currentFromBook = toCanonicalToolId(
             (savedSettings && savedSettings["current"]) || kTalkingBookToolId,
         );
-        const currentInToolbox = currentTool ? currentTool.id() : "";
+        const currentInToolbox = findExpandedTool()?.id() ?? "";
         const shouldBeVisible = !!(
             savedSettings && savedSettings["visibility"]
         );
         const isVisible = toolbox.toolboxIsShowing();
+        syncToolboxVisibilityFromDom();
 
-        // When switching books, sync visibility/current tool first.
+        // When switching books, sync visibility and the expanded tool first.
         if (
             currentFromBook !== currentInToolbox ||
             shouldBeVisible !== isVisible
         ) {
-            restoreToolboxSettingsWhenPageReady(savedSettings);
+            restoreToolboxSettingsWhenPageReady(
+                savedSettings,
+                stateWhenFetched,
+            );
             return;
         }
 
-        if (currentTool && toolbox.toolboxIsShowing()) {
-            doWhenPageReady(() => {
-                const activeTool = currentTool;
-                if (activeTool && isToolInitialized(activeTool)) {
-                    activeTool.beginRestoreSettings(savedSettings).then(() => {
-                        if (currentTool !== activeTool) {
-                            return;
-                        }
-
-                        // Re-run tool UI setup on page/book switches. Some tools
-                        // (for example reader toggle controls) are initialized in showTool().
-                        Promise.resolve(activeTool.showTool()).then(() => {
-                            if (
-                                currentTool === activeTool &&
-                                isToolInitialized(activeTool)
-                            ) {
-                                activeTool.newPageReady();
-                                scheduleDelayedNewPageReady(activeTool);
-                            }
-                        });
-                    });
-                    // We used to call updateMarkup() here
-                    // Now we don't because it would mess up the Talking Book Tool
-                    // if you really need it, add call to updateMarkup to currentTool's implementation of newPageReady.
-                }
-            });
+        if (currentInToolbox && isVisible) {
+            // Say that the page is ready, but not until it really is. That re-runs the
+            // running tool's beginRestoreSettings/showTool/newPageReady for the new page:
+            // some tools do their page-dependent setup in showTool(), and re-reading the
+            // saved settings is how a tool's state follows a switch of book. See
+            // useToolLifecycle.ts.
+            // We used to call updateMarkup() here.
+            // Now we don't because it would mess up the Talking Book Tool
+            // if you really need it, add call to updateMarkup to the tool's implementation of newPageReady.
+            doWhenPageReady(() => notePageReady());
         }
     });
-}
-
-function scheduleDelayedNewPageReady(tool: ITool): void {
-    window.setTimeout(() => {
-        if (
-            currentTool !== tool ||
-            !toolbox.toolboxIsShowing() ||
-            !isToolInitialized(tool)
-        ) {
-            return;
-        }
-
-        Promise.resolve(tool.newPageReady());
-    }, 600);
 }
 
 function doWhenPageReady(action: () => void) {
@@ -680,148 +781,147 @@ function doWhenCkEditorReadyCore(
     }
 }
 
-function restoreToolboxSettingsWhenPageReady(settings: IToolboxSettings) {
+// What the toolbox looked like when we fetched the settings we are about to apply. See
+// restoreToolboxSettingsWhenPageReady().
+interface IToolboxStateWhenFetched {
+    expandedToolId: string | undefined;
+    toolboxVisible: boolean;
+}
+
+function captureToolboxStateForRestore(): IToolboxStateWhenFetched {
+    return {
+        expandedToolId: getToolboxUiState().expandedToolId,
+        toolboxVisible: toolbox.toolboxIsShowing(),
+    };
+}
+
+/**
+ * Once the page is ready, makes the toolbox's visibility and expanded tool match the book's
+ * saved settings -- except where the user got there first.
+ *
+ * We have to wait for the page (CKEditor), and the settings we are applying were read
+ * before that wait. Meanwhile the user can open the toolbox or pick a tool, and the page
+ * itself can require one. Simply applying what we read would undo them: a toolbox just
+ * expanded was shut again, and a tool just expanded collapsed back to the one saved in the book.
+ * A person who clicks that fast simply clicks again, but it lost the e2e tests for Test
+ * Case IDs 830, 441, 442 and 460 often enough that they had to be skipped.
+ *
+ * So each saved fact is imposed only if that fact has not changed since we read it.
+ * Comparing against what we saw at fetch time, rather than re-reading the settings, is
+ * deliberate: every change is saved with a fire-and-forget post, so a later read is not
+ * guaranteed to see one that has just happened.
+ */
+function restoreToolboxSettingsWhenPageReady(
+    settings: IToolboxSettings,
+    stateWhenFetched: IToolboxStateWhenFetched,
+) {
     doWhenPageReady(() => {
         // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
         const opts = settings;
-        // currentTool is always set except for new books. For new books, it is undefined and we want
+        // The book's remembered tool is always set except for new books. For new books it is
+        // undefined and we want
         // to treat that the same as if it were set to the talking book tool so that the tool will
         // display the first time the user opens the toolbox. (BL-16026)
-        const currentTool = opts["current"] || kTalkingBookToolId;
+        // Convert here, at the boundary: toolIds.ts owns the "Tool"-suffixed spelling and
+        // everything inward of this point deals in canonical ids.
+        const toolTheBookRemembers = toCanonicalToolId(
+            opts["current"] || kTalkingBookToolId,
+        );
         const shouldBeVisible = !!opts["visibility"];
 
-        if (toolbox.toolboxIsShowing() !== shouldBeVisible) {
+        const isVisibleNow = toolbox.toolboxIsShowing();
+        const somebodyChangedVisibility =
+            isVisibleNow !== stateWhenFetched.toolboxVisible;
+        if (!somebodyChangedVisibility && isVisibleNow !== shouldBeVisible) {
             toolbox.toggleToolbox();
         }
+        syncToolboxVisibilityFromDom();
 
-        // Before we set stage/level, as it initializes them to 1.
-        setCurrentTool(currentTool);
+        // We only get here when a page has just become ready, so say so. Together with
+        // expandToolOrFirstOffered() below this is one batch of state changes, hence one run of the
+        // tool's lifecycle, however many of these facts actually changed.
+        notePageReady();
 
-        // Note: the bulk of restoring the settings (everything but which if any tool is active)
-        // is done when a tool becomes current.
+        const somebodyChoseATool =
+            getToolboxUiState().expandedToolId !==
+            stateWhenFetched.expandedToolId;
+        if (!somebodyChoseATool) {
+            // Before we set stage/level, as it initializes them to 1.
+            // Forget what we last persisted first, so that this book records its own expanded
+            // tool even if the book before it was using the same one.
+            lastPersistedToolId = undefined;
+            expandToolOrFirstOffered(toolTheBookRemembers);
+        }
+
+        // Note: the bulk of restoring the settings (everything but which tool, if any, is
+        // expanded) is done when a tool starts running.
     });
 }
 
 // Remove any markup the toolbox is inserting. Called by a RunJavaScript() in EditingView
 // before saving the page.
 export function removeToolboxMarkup() {
-    detachCurrentTool();
+    detachExpandedTool();
 }
 
+// The tool we last told Bloom to remember. Only a cache, to keep us from re-posting the
+// same setting on every state change; the store remains the one place that says which tool
+// is expanded. Cleared when a page's saved settings are restored, so that each book writes its
+// setting once even when two books in a row use the same tool.
+let lastPersistedToolId: string | undefined = undefined;
+
 /**
- * Called when the toolbox UI reports that a different tool is now the active one.
- * requestedToolId is a canonical tool id (the toolbox UI only ever reports tools it is
- * offering, and it was told about them by their canonical ids).
- * Note: do not name this parameter newToolId; that is the module-level variable this
- * function clears at the end, and shadowing it silently breaks getActiveToolId().
+ * Has Bloom remember which tool is expanded, when that has changed. The book's meta.json has
+ * always stored this with the historical "Tool" suffix.
+ *
+ * Nothing is persisted for "nothing expanded": the setting has no way to say that, and
+ * expanding a tool later writes it then.
  */
-function switchTool(requestedToolId: string): void {
-    // Have Bloom remember which tool is active. (Might be none.) The book's meta.json
-    // has always stored this with the historical "Tool" suffix.
+function persistExpandedToolIfItChanged(): void {
+    const expandedToolId = getToolboxUiState().expandedToolId;
+    if (expandedToolId === lastPersistedToolId) {
+        return;
+    }
+    lastPersistedToolId = expandedToolId;
+    if (!expandedToolId) {
+        return;
+    }
     postString(
         "editView/saveToolboxSetting",
-        "current\t" + toPersistedToolName(requestedToolId),
+        "current\t" + toPersistedToolName(expandedToolId),
     );
-    let newTool: ITool | null = null;
-    if (requestedToolId) {
-        newTool =
-            masterToolList.find((tool) => tool.id() === requestedToolId) ??
-            null;
-    }
-    const canActivateNewTool = !!newTool && isToolInitialized(newTool);
-    const shouldSwitchAwayFromCurrent =
-        currentTool !== newTool || (!!newTool && !canActivateNewTool);
-
-    if (shouldSwitchAwayFromCurrent) {
-        if (currentTool && isToolInitialized(currentTool)) {
-            detachCurrentTool();
-            currentTool.hideTool();
-        }
-        if (canActivateNewTool && newTool) {
-            activateTool(newTool);
-        }
-        // Without recording that currentTool isn't defined, then returning from
-        // More... to the same tool doesn't activate that tool.
-        // See https://issues.bloomlibrary.org/youtrack/issue/BL-6720.
-        currentTool = canActivateNewTool && newTool ? newTool : undefined;
-    }
-    newToolId = undefined;
-}
-
-function activateTool(newTool: ITool) {
-    if (newTool && toolbox.toolboxIsShowing()) {
-        if (!isToolInitialized(newTool)) {
-            return;
-        }
-        // Always re-restore settings so tool state tracks the current book.
-        newTool.beginRestoreSettings(savedSettings).then(() => {
-            activateToolInternalAsync(newTool);
-        });
-    }
-}
-
-// Is the toolbox offering this tool? Only then does it have somewhere to
-// display itself and does it make sense to run its lifecycle methods.
-function isToolInitialized(tool: ITool): boolean {
-    return toolbox.isToolActive(tool.id());
-}
-
-async function activateToolInternalAsync(newTool: ITool): Promise<void> {
-    // Await it so that we can guarantee that newPageReady() happens after showTool.
-    await newTool.showTool();
-
-    postString("logger/writeEvent", `Toolbox activated: ${newTool.id()}`);
-
-    // Note: Allowed to begin some async work too, and we will await its result.
-    // (This apparently solves the single flash mentioned in BL-10471.)
-    await newTool.newPageReady();
-    scheduleDelayedNewPageReady(newTool);
 }
 
 /**
- * Attempts to make the given tool the current one (normally the tool the book was last
- * using). If the toolbox isn't offering that tool, falls back to the first tool it does
+ * Attempts to expand the given tool (normally the tool the book was last using). If the
+ * toolbox isn't offering that tool, falls back to the first tool it does
  * offer. Passing an empty id also means "whatever tool is first".
  * The id may arrive in either spelling, because one caller passes the book's saved
  * "current" tool name straight from meta.json.
  */
-function setCurrentTool(toolId: string) {
+function expandToolOrFirstOffered(toolId: string) {
     toolId = toCanonicalToolId(toolId);
 
-    const adapter = getToolboxReactAdapter();
-    if (!adapter) {
-        // ToolboxRoot has not mounted yet, so there is no toolbox UI to activate
-        // anything in. We don't expect this: see getToolboxReactAdapter().
-        return;
-    }
-
-    if (!toolboxReactActivationHooked) {
-        adapter.onActiveToolChanged((newToolId: string) => {
-            switchTool(newToolId);
-        });
-        toolboxReactActivationHooked = true;
-    }
-
-    // NOTE: getFirstToolId() never returns the More (settings) tool: it is never a
-    // sensible *default*. (Expanding it by hand does still make it current and gets
-    // persisted, as it always has.)
+    // NOTE: getFirstOfferedToolId() never returns the More (settings) tool: it is never a
+    // sensible *default*. (Expanding it by hand does still make it the expanded tool and gets
+    // persisted -- meta.json calls that "current" -- as it always has.)
     if (!toolId) {
-        toolId = adapter.getFirstToolId() ?? "";
+        toolId = getFirstOfferedToolId() ?? "";
     }
 
     if (toolId) {
         const tool = masterToolList.find(
             (possibleTool) => possibleTool.id() === toolId,
         );
-        if (tool && !isToolInitialized(tool)) {
+        if (tool && !isToolOffered(tool.id())) {
             // The tool we were asked for isn't in the toolbox (e.g., it was disabled
             // since we saved the setting), so fall back to whatever is first.
-            toolId = adapter.getFirstToolId() ?? "";
+            toolId = getFirstOfferedToolId() ?? "";
         }
     }
 
     if (toolId) {
-        adapter.setActiveToolByToolId(toolId);
+        setExpandedTool(toolId);
     }
 }
 
@@ -829,19 +929,21 @@ function setCurrentTool(toolId: string) {
 // come from persisted data.
 // Returns undefined if we know of no such tool, e.g. because the book's settings were
 // saved by a version of Bloom that had a tool this one doesn't.
-function getITool(toolId: string): ITool {
+function getITool(toolId: string): ITool | undefined {
     const canonicalToolId = toCanonicalToolId(toolId);
-    return masterToolList.find((tool) => tool.id() === canonicalToolId)!;
+    return masterToolList.find((tool) => tool.id() === canonicalToolId);
 }
 
 /**
- * Tells the toolbox UI to offer this tool, and optionally to open it.
+ * Tells the toolbox to offer this tool, and -- if the toolbox is showing -- to expand it.
+ * Asking to expand it while the toolbox is hidden offers it and nothing more, which is why
+ * adjustToolListForPage() holds on to the page's request until the tool really is expanded.
  * These tools are the tools enabled by the user, tools that are always enabled
  * (like the talking book tool), and the settings ("More...") tool.
  */
-function beginAddTool(
+function offerToolAndMaybeExpand(
     toolId: string,
-    openTool: boolean,
+    expandTool: boolean,
     whenLoaded?: () => void,
 ): void {
     const tool = getITool(toolId);
@@ -852,53 +954,48 @@ function beginAddTool(
         return;
     }
 
-    // Wait for the toolbox UI rather than assuming it, because a page can ask for a tool while
-    // it is still loading: a custom layout page enables the Canvas tool as it sets itself up,
-    // and it finds us as soon as the toolbox frame publishes its exports, which happens before
-    // ToolboxRoot has mounted and registered its adapter. Neither of the obvious alternatives
-    // is right there -- skipping would drop the request silently (and still run whenLoaded(),
-    // so the startup loop would add no tools and then report the toolbox built), and insisting
-    // on an adapter would throw on a page that has done nothing wrong. Queuing does what the
-    // caller asked, once there is something to ask.
-    whenToolboxReactAdapterReady((adapter) => {
-        // Adding a tool that is already there does nothing, so it is safe to do this
-        // whether or not the toolbox is already offering it.
-        adapter.addTool(tool.id());
+    // No waiting for the toolbox UI here, unlike the adapter this replaced: a page can ask
+    // for a tool while it is still loading (a custom layout page enables the Canvas tool as
+    // it sets itself up, and finds us as soon as the toolbox frame publishes its exports),
+    // which used to arrive before ToolboxRoot had mounted and registered itself. The store
+    // is not the UI -- it exists as soon as the module loads, and ToolboxRoot shows whatever
+    // it holds whenever it mounts -- so an early request simply lands.
 
-        if (openTool && toolbox.toolboxIsShowing()) {
-            adapter.setActiveToolByToolId(tool.id());
-        }
+    // Offering a tool that is already offered does nothing, so it is safe to do this
+    // whether or not the toolbox is already offering it.
+    offerTool(tool.id());
 
-        if (whenLoaded) {
-            whenLoaded();
-        }
-    });
+    if (expandTool && toolbox.toolboxIsShowing()) {
+        setExpandedTool(tool.id());
+    }
+
+    if (whenLoaded) {
+        whenLoaded();
+    }
 }
 
-function showToolboxChanged(wasShowing: boolean): void {
+function showToolboxChanged(nowShowing: boolean): void {
     postString(
         "editView/saveToolboxSetting",
-        "visibility\t" + (wasShowing ? "" : "visible"),
+        "visibility\t" + (nowShowing ? "visible" : ""),
     );
-    if (currentTool) {
-        if (wasShowing) {
-            detachCurrentTool();
-            currentTool.hideTool();
-            postString(
-                "logger/writeEvent",
-                `Toolbox deactivating: ${currentTool.id()}`,
-            );
-        } else {
-            activateTool(currentTool);
-        }
-    } else {
-        // starting up for the very first time in this book...no tool is current,
-        // so select and properly initialize the first one. If the toolbox somehow has
-        // no tools at all, fall back to the talking book tool, which is always
-        // enabled. (This should never happen; we're just being defensive.)
-        const adapter = getToolboxReactAdapter();
-        adapter?.setActiveToolByToolId(
-            adapter.getFirstToolId() ?? kTalkingBookToolId,
+    const expandedTool = findExpandedTool();
+    if (expandedTool && !nowShowing) {
+        postString(
+            "logger/writeEvent",
+            `Toolbox deactivating: ${expandedTool.id()}`,
         );
+    }
+    // Hiding the toolbox stops the expanded tool running, and showing it again starts it
+    // again. Both follow from this; see useToolLifecycle.ts.
+    setToolboxVisible(nowShowing);
+    if (!expandedTool) {
+        // Starting up for the very first time in this book: nothing is expanded, so expand
+        // the first tool on offer. If the toolbox somehow has nothing to offer there is
+        // nothing to expand -- which cannot happen, since Talking Book is always enabled.
+        const firstOffered = getFirstOfferedToolId();
+        if (firstOffered) {
+            setExpandedTool(firstOffered);
+        }
     }
 }

@@ -1,4 +1,5 @@
 import { css } from "@emotion/react";
+import axios from "axios";
 import { ImageGallery } from "bloom-image-gallery";
 import type {
     IImage,
@@ -161,12 +162,24 @@ const ImageGalleryDialog: React.FunctionComponent<{
                 image.providerId,
             );
             setOpen(false);
-        } catch {
-            BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
-                "ImageLibrary.FailedToAddImage",
-                "Sorry, there was a problem adding the image.",
-                "",
-            );
+        } catch (error) {
+            // C# replies 502 Bad Gateway when it could not download the picture because the
+            // connection failed, which almost always means the computer is offline. The dialog
+            // stays open so the user can try again once they are back online.  Other axios
+            // errors are also likely due to network issues.
+            if (axios.isAxiosError(error)) {
+                BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
+                    "ImageLibrary.CouldNotDownloadImage",
+                    "Bloom could not download this picture. Check that this computer is connected to the internet, then try again.",
+                    "",
+                );
+            } else {
+                BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
+                    "ImageLibrary.FailedToAddImage",
+                    "Sorry, there was a problem adding the image.",
+                    "",
+                );
+            }
         } finally {
             exports?.removeRequestPageContentDelay("imageGalleryConfirm");
         }

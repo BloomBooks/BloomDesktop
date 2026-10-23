@@ -50,7 +50,9 @@ function thresholdMs(): number {
 
 /** "tables-core" from ".../tests/tables-core.spec.ts". */
 function specNameOf(test: TestCase): string {
-    return path.basename(test.location.file).replace(/\.spec\.[tj]sx?$/i, "");
+    return path
+        .basename(test.location.file)
+        .replace(/\.(spec|manual)\.[tj]sx?$/i, "");
 }
 
 /** Seconds to one decimal place, padded so the times line up. */

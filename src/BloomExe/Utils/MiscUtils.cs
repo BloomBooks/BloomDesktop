@@ -16,6 +16,7 @@ using Bloom.Collection;
 using Microsoft.Win32;
 using Mono.Unix;
 using NAudio.Wave;
+using SIL.CommandLineProcessing;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -698,7 +699,7 @@ namespace Bloom.Utils
                 // A short file may have only one carriage-return separated section of output, while a very long file may
                 // have more sections than this.
                 var args = String.Format("-v quiet -stats -i \"{0}\" -f null -", path);
-                var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                var result = CommandLineRunner.Run(
                     "/usr/bin/ffmpeg",
                     args,
                     "",

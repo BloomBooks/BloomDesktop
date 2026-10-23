@@ -185,8 +185,9 @@ or with the rest of the file), always reported at 0ms. Run on its own eight time
 file's cancel test (no book, never leaves the Collections tab) and
 `collection-settings-bloom-library.spec.ts` never crashed. With `DEBUG=pw:*` the book test passed
 eight runs in a row, so the extra logging hides it, and `NODE_OPTIONS=--report-on-fatalerror`
-wrote no report: the worker dies by a fail-fast that skips Node's own reporting. The earlier
-sightings (`import-recording`, `xmatter-packs`) also make books, so the next thing to try is a
+wrote no report: the worker dies by a fail-fast that skips Node's own reporting. Later the same
+day it struck `collection-settings-bloom-library.spec.ts`'s first test, which makes no book and
+had passed eight times alone, so making a book is not the trigger. The next thing to try is a
 Windows crash dump of the worker (WER LocalDumps for node.exe needs an administrator).
 
 ## An api that captures CollectionSettings.Subscription cannot see a subscription change
@@ -716,6 +717,24 @@ Fix direction: the suite has no idea another one is running. A machine-wide lock
 that refuses to start while a foreign e2e Bloom is up, would turn a slow flake into a clear
 message. Worth doing if agents keep running two worktrees at once.
 (Found 2026-09-05, gating the table specs.)
+
+## A launched Bloom sometimes exposes no debugging target at all
+
+Once in a nine-file run on 2026-09-07, `inline-images-zoom.spec.ts` failed before any test code
+ran: `Bloom's WebView2 never exposed the shell document it is driving within 90s`, with
+`Targets seen: none` -- so it is not the wrong-document case above (that one lists the documents
+it found), and not the worker crash either (the worker was alive and reported the failure). The
+spec passed on its own immediately afterwards, and the other eight files in the same run were
+green.
+
+`Targets seen: none` says the debugging listener answered but had nothing on it, which points at
+Bloom still starting rather than at anything the test did. Whether the 90 seconds is simply too
+short on a loaded machine is not known; nobody has caught it with Bloom's own log alongside.
+
+How to react, until it is understood: **re-run the file**, and treat a failure that follows one
+file across runs as a real problem in that file rather than this entry. Fix direction: have
+`findShellPage` say what Bloom's process was doing when it gave up (it has the pid), so the next
+occurrence distinguishes a slow start from a Bloom that never got there.
 
 ## A title typed on the cover of a new book can fail to reach the collection
 

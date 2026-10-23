@@ -14,6 +14,7 @@ using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.MiscUI;
 using Bloom.Utils;
+using BloomTemp;
 using SIL.Core.ClearShare;
 using SIL.IO;
 using SIL.Reporting;
@@ -144,6 +145,8 @@ namespace Bloom.web.controllers
         /// Accepts either a local file path (localPath) or a remote URL (imageUrl).
         /// Gallery-provided license/credits/creator override the source EXIF, except for
         /// images from official collections (e.g. Art of Reading) whose EXIF is authoritative.
+        /// If a remote image cannot be downloaded because the connection failed (typically
+        /// the computer is offline), the request fails with 502 Bad Gateway.
         /// </summary>
         private async Task HandleImageGalleryResult(ApiRequest request)
         {
@@ -158,7 +161,7 @@ namespace Bloom.web.controllers
             // collection slug, or "local-disk"). Analytics only.
             data.TryGetValue("provider", out string provider);
             string sourceFilePath;
-            bool isTempFile = false;
+            string downloadedFilePath = null; // a temp file we must delete when done
 
             if (!string.IsNullOrEmpty(localPath))
             {
@@ -166,29 +169,58 @@ namespace Bloom.web.controllers
             }
             else if (!string.IsNullOrEmpty(imageUrl))
             {
-                string extension;
+                var downloadPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
                 try
                 {
-                    extension = Path.GetExtension(new Uri(imageUrl).LocalPath);
-                }
-                catch
-                {
-                    extension = ".jpg";
-                }
-                if (string.IsNullOrEmpty(extension))
-                    extension = ".jpg";
+                    using (var response = await s_httpClient.GetAsync(imageUrl))
+                    {
+                        response.EnsureSuccessStatusCode();
+                        using var fileStream = RobustFile.Create(downloadPath);
+                        await response.Content.CopyToAsync(fileStream);
+                    }
 
-                sourceFilePath = Path.Combine(
-                    Path.GetTempPath(),
-                    Guid.NewGuid().ToString() + extension
-                );
-                using (var response = await s_httpClient.GetAsync(imageUrl))
-                {
-                    response.EnsureSuccessStatusCode();
-                    using var fileStream = RobustFile.Create(sourceFilePath);
-                    await response.Content.CopyToAsync(fileStream);
+                    // Name the file for what it actually contains: the URL's extension may be wrong.
+                    var extension = ImageUtils.GetExtensionForImageFileFormat(
+                        ImageUtils.GetImageFileFormat(downloadPath)
+                    );
+                    if (extension == null)
+                    {
+                        try
+                        {
+                            extension = Path.GetExtension(new Uri(imageUrl).LocalPath);
+                        }
+                        catch
+                        {
+                            extension = ".jpg";
+                        }
+                        if (string.IsNullOrEmpty(extension))
+                            extension = ".jpg";
+                    }
+
+                    sourceFilePath = downloadPath + extension;
+                    RobustFile.Move(downloadPath, sourceFilePath);
                 }
-                isTempFile = true;
+                catch (Exception e)
+                {
+                    // Don't leave a partial download behind (the cleanup below doesn't cover it yet).
+                    if (RobustFile.Exists(downloadPath))
+                        RobustFile.Delete(downloadPath);
+                    if (IsConnectionFailure(e))
+                    {
+                        // Usually just means the computer is offline: not a Bloom problem to report,
+                        // so reply with a status the dialog turns into "check your internet" (BL-16998).
+                        Logger.WriteEvent(
+                            $"Image chooser could not download {imageUrl}: {e.Message}"
+                        );
+                        request.Failed(
+                            HttpStatusCode.BadGateway,
+                            $"Could not download {imageUrl}: {e.Message}"
+                        );
+                        return;
+                    }
+                    throw;
+                }
+                downloadedFilePath = sourceFilePath;
             }
             else
             {
@@ -199,8 +231,21 @@ namespace Bloom.web.controllers
                 return;
             }
 
+            TemporaryFolder conversionFolder = null;
             try
             {
+                // PalasoImage cannot read some formats that web sites serve (e.g. WebP), so
+                // convert those to JPEG or PNG first, keeping the original file's base name.
+                conversionFolder = new TemporaryFolder(
+                    "BloomImageGalleryConversion-" + Guid.NewGuid()
+                );
+                var convertedFilePath = ImageUtils.ConvertWebpToJpegOrPngAsNeeded(
+                    sourceFilePath,
+                    conversionFolder.FolderPath
+                );
+                if (convertedFilePath != null)
+                    sourceFilePath = convertedFilePath;
+
                 // GIF files must be copied byte-for-byte to preserve animation.
                 // PalasoImage / ProcessAndSaveImageIntoFolder will strip the animation frames.
                 if (
@@ -303,8 +348,32 @@ namespace Bloom.web.controllers
             }
             finally
             {
-                if (isTempFile && RobustFile.Exists(sourceFilePath))
-                    RobustFile.Delete(sourceFilePath);
+                if (downloadedFilePath != null && RobustFile.Exists(downloadedFilePath))
+                    RobustFile.Delete(downloadedFilePath);
+                conversionFolder?.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// True if downloading failed because we could not reach the server at all, or lost the
+        /// connection part way through, as opposed to the server answering with an error status.
+        /// That is what being offline looks like, so the user can be told to check their
+        /// internet connection rather than being shown a generic error.
+        /// </summary>
+        internal static bool IsConnectionFailure(Exception e)
+        {
+            switch (e)
+            {
+                // EnsureSuccessStatusCode sets StatusCode; a failed DNS lookup or connection doesn't.
+                case HttpRequestException httpRequestException:
+                    return httpRequestException.StatusCode == null;
+                // HttpClient's way of reporting that its timeout expired.
+                case TaskCanceledException:
+                // The connection dropped while we were reading the image.
+                case HttpIOException:
+                    return true;
+                default:
+                    return false;
             }
         }
 
@@ -397,6 +466,9 @@ namespace Bloom.web.controllers
             }
         }
 
+        // The FilePathMemory tag under which we remember the folder of the last image picked from disk.
+        private const string kLocalImageDirectoryTag = "ChooseImage";
+
         /// <summary>
         /// Opens a native file-picker dialog and returns the selected path as JSON.
         /// Pass gifOnly:true to restrict the filter to GIF files.
@@ -408,19 +480,25 @@ namespace Bloom.web.controllers
 
             var filter = gifOnly
                 ? "GIF images|*.gif"
-                : "Images|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.tif;*.tiff;*.svg";
+                // WebP can't be imported as-is, but HandleImageGalleryResult converts it.
+                : "Images|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.tif;*.tiff;*.svg;*.webp";
 
             string selectedPath = "";
             View.Invoke(
                 (Action)(
                     () =>
                     {
+                        // Start where the user last chose an image (BL-17026). If there is no
+                        // remembered folder, initialDirectory will be null, and the FileDialog will
+                        // use whatever location it remembers (default windows behavior).
+                        FilePathMemory.TryGetRememberedFolderPath(
+                            kLocalImageDirectoryTag,
+                            out string initialDirectory
+                        );
                         using (
                             var dlg = new BloomOpenFileDialog
                             {
-                                InitialDirectory = Environment.GetFolderPath(
-                                    Environment.SpecialFolder.MyPictures
-                                ),
+                                InitialDirectory = initialDirectory,
                                 Filter = filter,
                             }
                         )
@@ -431,7 +509,13 @@ namespace Bloom.web.controllers
                                 using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
                                 {
                                     if (dlg.ShowDialog() == DialogResult.OK)
+                                    {
                                         selectedPath = dlg.FileName;
+                                        FilePathMemory.RememberFolderPath(
+                                            kLocalImageDirectoryTag,
+                                            Path.GetDirectoryName(selectedPath)
+                                        );
+                                    }
                                 }
                             }
                             finally

@@ -61,12 +61,15 @@ export function useGetFeatureStatus(
 
 // Opens the Collection Settings dialog on its Subscription page. Every subscription badge and gated
 // command calls this. The dialog lives in the workspace's top document, which an iframe (the
-// toolbox, the page) reaches through the workspace bundle. Outside the workspace (the WinForms
-// Settings dialog's own tabs) there is no workspace bundle, so C# is asked to do it instead.
+// toolbox, the page) reaches through the workspace bundle. A window with no dialog to receive the
+// launch (the WinForms Settings dialog's own tabs, which load the workspace bundle code too) asks
+// C# instead, which switches that dialog to its Subscription tab.
 export function openBloomSubscriptionSettings() {
-    const workspace = tryGetWorkspaceBundleExports();
-    if (workspace) workspace.showCollectionSettingsDialog("subscription");
-    else post("common/showSettingsDialog?tab=subscription");
+    const opened =
+        tryGetWorkspaceBundleExports()?.showCollectionSettingsDialog(
+            "subscription",
+        ) ?? false;
+    if (!opened) post("common/showSettingsDialog?tab=subscription");
 }
 
 // Use this when you just want a minimal label type message, not a fully informative sentence.

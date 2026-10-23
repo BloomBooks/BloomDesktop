@@ -2,6 +2,7 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import {
     ConfigrValues,
+    type ConfigrPaneHandle,
     ConfigrGroup,
     ConfigrPage,
     ConfigrPane,
@@ -23,14 +24,17 @@ import { useEventLaunchedBloomDialog } from "../react_components/BloomDialog/Blo
 import {
     DialogCancelButton,
     DialogCloseButton,
+    DialogHelpButton,
     DialogOkButton,
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../react_components/l10nHooks";
 import { get, postJson } from "../utils/bloomApi";
+import { useMountEffect } from "../utils/useMountEffect";
 import {
     ICollectionSettingsResponse,
     ICollectionSettingsValues,
 } from "./collectionSettingsTypes";
+import { collectionSettingsHelpTopic } from "./collectionSettingsHelpTopic";
 import { useAdvancedPage } from "./settingsPages/AdvancedPage";
 import { useBloomLibraryPage } from "./settingsPages/BloomLibraryPage";
 import { useExperimentalPage } from "./settingsPages/ExperimentalPage";
@@ -87,22 +91,38 @@ function withEditedTextTrimmed<T>(value: T, valueWhenOpened: unknown): T {
     ) as T;
 }
 
+// How many CollectionSettingsDialogs are mounted in this window: one in the workspace (App renders
+// it), none in a window such as the WinForms Settings dialog's tabs.
+let mountedDialogCount = 0;
+
 /**
  * Opens the Collection Settings dialog, on the page named by initialPageKey if one is given.
  * App renders the dialog on every workspace tab, so this works from any of them, with no trip
  * through C#. C# can open it too, by sending LaunchDialog with the same id over the web socket.
+ * Returns false, doing nothing, when no dialog is mounted in this window to receive the launch.
  */
-export function showCollectionSettingsDialog(initialPageKey?: string) {
+export function showCollectionSettingsDialog(initialPageKey?: string): boolean {
+    if (mountedDialogCount === 0) return false;
     document.dispatchEvent(
         new CustomEvent("LaunchDialog", {
             detail: { id: kCollectionSettingsDialogId, initialPageKey },
         }),
     );
+    return true;
 }
 
 export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const { openingEvent, closeDialog, propsForBloomDialog } =
         useEventLaunchedBloomDialog(kCollectionSettingsDialogId);
+
+    // This effect records that this window has a dialog to receive launches, for
+    // showCollectionSettingsDialog, for as long as the dialog is mounted.
+    useMountEffect(() => {
+        mountedDialogCount++;
+        return () => {
+            mountedDialogCount--;
+        };
+    });
 
     // The launch event may name the page to open on.
     const initialPageKey = openingEvent?.initialPageKey as string | undefined;
@@ -115,12 +135,9 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     // The subscription code as the user is typing it. It is kept here rather than in Config-R's
     // values because its editor is not a Config-R control; withSubscriptionCode puts it in.
     const [subscriptionCode, setSubscriptionCode] = React.useState<string>();
-    // Set when the pane has to be mounted again on another page: a new key, and the values to
-    // start from (the user's changes so far).
-    const [paneRemount, setPaneRemount] = React.useState<{
-        key: number;
-        values: ICollectionSettingsValues;
-    }>();
+    const paneRef = React.useRef<ConfigrPaneHandle>(null);
+    // The top-level page Config-R is showing, so Help can open that page's topic.
+    const [shownPageKey, setShownPageKey] = React.useState<string>();
 
     // Config-r can call onChange while rendering, so state updates from it are deferred; the OK
     // handler reads this ref to be sure it has the newest values.
@@ -136,8 +153,8 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             setLoadedSettings(undefined);
             setCurrentValues(undefined);
             setSubscriptionCode(undefined);
-            setPaneRemount(undefined);
             setSaving(false);
+            setShownPageKey(undefined);
             return;
         }
         // We don't guard against this reply arriving after a quick close and reopen: it comes from
@@ -153,17 +170,12 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     }, [propsForBloomDialog.open]);
 
     // A launch that arrives while the dialog is already open comes from a subscription badge on
-    // one of its own pages, asking for the Subscription page. Config-R chooses its page only as
-    // the pane mounts, so this effect, which responds to that launch, mounts the pane again on
-    // the page asked for. On the launch that opens the dialog the settings have not loaded yet,
-    // so it does nothing.
+    // one of its own pages, asking for the Subscription page. This effect hands that launch on to
+    // the open pane, which switches page keeping the user's edits. A launch that opens the dialog
+    // finds no pane yet; the pane opens on its page through initiallySelectedTopLevelPageKey.
     React.useEffect(() => {
-        if (!loadedSettings || !initialPageKey) return;
-        setPaneRemount((previous) => ({
-            key: (previous?.key ?? 0) + 1,
-            values: latestValuesRef.current!,
-        }));
-        // Only a new launch should do this, not the settings arriving.
+        if (initialPageKey) paneRef.current?.selectTopLevelPage(initialPageKey);
+        // Only a new launch should do this.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [openingEvent]);
 
@@ -323,17 +335,17 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                 )}
                 {loadedSettings && !notAllowedMessage && (
                     <ConfigrPane
-                        key={paneRemount?.key ?? 0}
+                        ref={paneRef}
                         className={kConfigrPaneClassName}
                         label={dialogTitle}
                         showAppBar={false}
                         showSearch={false}
                         initialValues={
-                            (paneRemount?.values ??
-                                loadedSettings.values) as unknown as ConfigrValues
+                            loadedSettings.values as unknown as ConfigrValues
                         }
                         themeOverrides={kConfigrThemeOverrides}
                         initiallySelectedTopLevelPageKey={initialPageKey}
+                        onTopLevelPageChange={setShownPageKey}
                         onChange={(newValues) => {
                             const values =
                                 newValues as unknown as ICollectionSettingsValues;
@@ -355,8 +367,12 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                 )}
             </ConfigrDialogMiddle>
             <DialogBottomButtons>
-                {needsRestart && (
-                    <DialogBottomLeftButtons>
+                <DialogBottomLeftButtons>
+                    <DialogHelpButton
+                        id="collectionSettingsHelpButton"
+                        helpId={collectionSettingsHelpTopic(shownPageKey)}
+                    />
+                    {needsRestart && (
                         <div
                             css={css`
                                 align-self: center;
@@ -364,8 +380,8 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         >
                             {restartMessage}
                         </div>
-                    </DialogBottomLeftButtons>
-                )}
+                    )}
+                </DialogBottomLeftButtons>
                 {notAllowedMessage ? (
                     <DialogCloseButton onClick={closeDialog} />
                 ) : (

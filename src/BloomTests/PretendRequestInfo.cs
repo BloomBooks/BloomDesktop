@@ -169,8 +169,7 @@ namespace BloomTests
 
         public void ExternalLinkSucceeded()
         {
-            StatusCode = 200;
-            HaveFullyProcessedRequest = true;
+            WriteNoContent();
         }
 
         public void WriteNoContent()

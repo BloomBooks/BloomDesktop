@@ -1,4 +1,19 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+
+// jsdom lays nothing out, so getExactClientSize (which works from getBoundingClientRect) would
+// say every page is empty. It answers instead with the size a test gave the page in exactSizes,
+// or else the whole-pixel clientWidth and clientHeight the test gave it.
+const exactSizes = vi.hoisted(
+    () => new WeakMap<HTMLElement, { width: number; height: number }>(),
+);
+vi.mock("../../utils/elementUtils", () => ({
+    getExactClientSize: (element: HTMLElement) =>
+        exactSizes.get(element) ?? {
+            width: element.clientWidth,
+            height: element.clientHeight,
+        },
+}));
+
 import {
     clearImageContentTransform,
     computeRotatedBackgroundLayout,
@@ -7,6 +22,7 @@ import {
     imageContentIsTransformed,
     rotateImageContentRight90Degrees,
 } from "./imageContentTransform";
+import { kBackgroundImageBleedPx } from "./canvasElementManager/backgroundImageBleed";
 
 // A picture inside a container, which is what the code expects. There is no page and no canvas
 // element around it, so a rotation of this picture changes only the transform. That keeps the
@@ -77,8 +93,13 @@ function makeBackgroundImage(
     element.appendChild(container);
     container.appendChild(img);
 
-    Object.defineProperty(page, "clientWidth", { get: () => pageWidth });
-    Object.defineProperty(page, "clientHeight", { get: () => pageHeight });
+    // Like a browser, clientWidth and clientHeight round to whole pixels.
+    Object.defineProperty(page, "clientWidth", {
+        get: () => Math.round(pageWidth),
+    });
+    Object.defineProperty(page, "clientHeight", {
+        get: () => Math.round(pageHeight),
+    });
     Object.defineProperty(img, "naturalWidth", { get: () => naturalWidth });
     Object.defineProperty(img, "naturalHeight", { get: () => naturalHeight });
 
@@ -89,31 +110,34 @@ function makeBackgroundImage(
         }
         return axis === "width" ? elementWidth : elementHeight;
     };
+    // Like the page's, these round to whole pixels, as a browser's do.
     for (const box of [element, container]) {
         Object.defineProperty(box, "clientWidth", {
-            get: () => elementSize("width"),
+            get: () => Math.round(elementSize("width")),
         });
         Object.defineProperty(box, "clientHeight", {
-            get: () => elementSize("height"),
+            get: () => Math.round(elementSize("height")),
         });
     }
     Object.defineProperty(img, "clientWidth", {
         get: () => {
             const written = parseFloat(img.style.width);
-            return isNaN(written) ? elementSize("width") : written;
+            return Math.round(isNaN(written) ? elementSize("width") : written);
         },
     });
     Object.defineProperty(img, "clientHeight", {
         get: () => {
             const writtenHeight = parseFloat(img.style.height);
             if (!isNaN(writtenHeight)) {
-                return writtenHeight;
+                return Math.round(writtenHeight);
             }
             const writtenWidth = parseFloat(img.style.width);
             if (!isNaN(writtenWidth)) {
-                return (writtenWidth * naturalHeight) / naturalWidth;
+                return Math.round(
+                    (writtenWidth * naturalHeight) / naturalWidth,
+                );
             }
-            return elementSize("height");
+            return Math.round(elementSize("height"));
         },
     });
     return img;
@@ -243,6 +267,11 @@ describe("rotateImageContentRight90Degrees, on a page background picture", () =>
         return makeBackgroundImage(480, 720, 480, 320, 300, 200);
     }
 
+    // Every rotated picture in these tests fills the page's 480 width (some fill its 720 height
+    // too, which needs less enlarging), so each is enlarged by this much to overhang both sides
+    // of the page by the bleed (see withBackgroundImageBleed).
+    const kBleedScale = (480 + 2 * kBackgroundImageBleedPx) / 480;
+
     it("rotates an uncropped picture to exactly where it would be if it had arrived rotated", () => {
         const img = makeSidewaysPhotograph();
         // Sanity check: the picture has no numbers of its own before the rotation.
@@ -251,18 +280,57 @@ describe("rotateImageContentRight90Degrees, on a page background picture", () =>
         rotateImageContentRight90Degrees(img);
 
         // The element now has the shape of the rotated picture, which on this page is the shape
-        // of the page itself, so the picture fills the page. That is what an author would have
-        // had if they had rotated the file before they chose it.
-        expect(px(elementOf(img).style.width)).toBeCloseTo(480);
-        expect(px(elementOf(img).style.height)).toBeCloseTo(720);
-        expect(px(elementOf(img).style.left)).toBeCloseTo(0);
-        expect(px(elementOf(img).style.top)).toBeCloseTo(0);
+        // of the page itself, so the picture fills the page, overhanging its edges by the bleed.
+        // That is what an author would have had if they had rotated the file before they chose it.
+        expect(px(elementOf(img).style.width)).toBeCloseTo(480 * kBleedScale);
+        expect(px(elementOf(img).style.height)).toBeCloseTo(720 * kBleedScale);
+        expect(px(elementOf(img).style.left)).toBeCloseTo(
+            -kBackgroundImageBleedPx,
+        );
+        expect(px(elementOf(img).style.top)).toBeCloseTo(
+            (720 - 720 * kBleedScale) / 2,
+        );
         // The picture's box still lies the way the picture does, and the rotation of the box about
         // its own centre brings it upright over the element.
-        expect(px(img.style.width)).toBeCloseTo(720);
-        expect(px(img.style.left)).toBeCloseTo(-120);
-        expect(px(img.style.top)).toBeCloseTo(120);
+        expect(px(img.style.width)).toBeCloseTo(720 * kBleedScale);
+        expect(px(img.style.left)).toBeCloseTo(-120 * kBleedScale);
+        expect(px(img.style.top)).toBeCloseTo(120 * kBleedScale);
         expect(img.style.transform).toBe("rotate(90deg)");
+    });
+
+    it("leaves the overhang on every edge the rotated picture fills", () => {
+        const img = makeSidewaysPhotograph();
+
+        rotateImageContentRight90Degrees(img);
+
+        // Without the overhang, the editor shows a thin white line along these edges.
+        const style = elementOf(img).style;
+        expect(px(style.left)).toBeLessThanOrEqual(-kBackgroundImageBleedPx);
+        expect(px(style.top)).toBeLessThanOrEqual(-kBackgroundImageBleedPx);
+        expect(px(style.left) + px(style.width)).toBeGreaterThanOrEqual(
+            480 + kBackgroundImageBleedPx,
+        );
+        expect(px(style.top) + px(style.height)).toBeGreaterThanOrEqual(
+            720 + kBackgroundImageBleedPx,
+        );
+    });
+
+    it("leaves the overhang on both sides of a page whose width is not a whole number of pixels", () => {
+        const img = makeSidewaysPhotograph();
+        // Origami split positions are percentages, so a picture area is often a fraction of a
+        // pixel wider than its clientWidth says.
+        const page = img.closest(".bloom-canvas") as HTMLElement;
+        exactSizes.set(page, { width: 480.4, height: 720 });
+        // Sanity check: the rounded width is what clientWidth reports.
+        expect(page.clientWidth).toBe(480);
+
+        rotateImageContentRight90Degrees(img);
+
+        const style = elementOf(img).style;
+        expect(px(style.left)).toBeLessThanOrEqual(-kBackgroundImageBleedPx);
+        expect(px(style.left) + px(style.width)).toBeGreaterThanOrEqual(
+            480.4 + kBackgroundImageBleedPx,
+        );
     });
 
     it("leaves no height behind, which a change of page size would stretch", () => {
@@ -275,13 +343,65 @@ describe("rotateImageContentRight90Degrees, on a page background picture", () =>
 
     it("brings an uncropped picture back to where it began after four rotations", () => {
         const img = makeSidewaysPhotograph();
+        // Start where Bloom fits this picture on this page: the page's width plus the bleed on
+        // each side, the picture's shape, and centred.
+        const element = elementOf(img);
+        const fittedWidth = 480 * kBleedScale;
+        const fittedHeight = 320 * kBleedScale;
+        element.style.width = `${fittedWidth}px`;
+        element.style.height = `${fittedHeight}px`;
+        element.style.left = `${-kBackgroundImageBleedPx}px`;
+        element.style.top = `${(720 - fittedHeight) / 2}px`;
 
         for (let rotation = 0; rotation < 4; rotation++) {
             rotateImageContentRight90Degrees(img);
         }
 
-        expect(px(elementOf(img).style.width)).toBeCloseTo(480);
-        expect(px(elementOf(img).style.height)).toBeCloseTo(320);
+        // Each rotation rounds what it writes to a hundredth of a pixel, so after four of them
+        // the numbers can be a few hundredths off.
+        expect(px(element.style.width)).toBeCloseTo(fittedWidth, 1);
+        expect(px(element.style.height)).toBeCloseTo(fittedHeight, 1);
+        expect(px(element.style.left)).toBeCloseTo(-kBackgroundImageBleedPx, 1);
+        expect(px(element.style.top)).toBeCloseTo((720 - fittedHeight) / 2, 1);
+        expect(img.style.width).toBe("");
+        expect(img.style.left).toBe("");
+        expect(img.style.top).toBe("");
+        expect(img.style.transform).toBe("");
+    });
+
+    it("brings a picture the shape of the page back to where it began after four rotations", () => {
+        // A portrait picture the shape of the page: Bloom makes its element as big as the page
+        // and the bleed, 482 by 723, which overhangs the top and bottom by 1.5. The rotated
+        // element's sizes are fractions of a pixel, and the rotation must work from the sizes it
+        // wrote, not from the whole pixels a browser's clientWidth and clientHeight round them to.
+        const fittedWidth = 480 * kBleedScale;
+        const fittedHeight = 720 * kBleedScale;
+        const img = makeBackgroundImage(
+            480,
+            720,
+            fittedWidth,
+            fittedHeight,
+            200,
+            300,
+        );
+        const element = elementOf(img);
+        element.style.width = `${fittedWidth}px`;
+        element.style.height = `${fittedHeight}px`;
+        element.style.left = `${-kBackgroundImageBleedPx}px`;
+        element.style.top = `${(720 - fittedHeight) / 2}px`;
+        rotateImageContentRight90Degrees(img);
+        // Sanity check: the first rotation leaves the element a fraction of a pixel high.
+        expect(px(element.style.height) % 1).not.toBe(0);
+
+        for (let rotation = 1; rotation < 4; rotation++) {
+            rotateImageContentRight90Degrees(img);
+        }
+
+        expect(px(element.style.width)).toBeCloseTo(fittedWidth, 1);
+        expect(px(element.style.height)).toBeCloseTo(fittedHeight, 1);
+        expect(px(element.style.left)).toBeCloseTo(-kBackgroundImageBleedPx, 1);
+        expect(px(element.style.top)).toBeCloseTo((720 - fittedHeight) / 2, 1);
+        // A picture nobody cropped must not come back with a crop's numbers.
         expect(img.style.width).toBe("");
         expect(img.style.left).toBe("");
         expect(img.style.top).toBe("");
@@ -299,7 +419,7 @@ describe("rotateImageContentRight90Degrees, on a page background picture", () =>
         // An explicit width is how the rest of Bloom recognizes a crop, so a picture nobody
         // cropped must not keep one.
         expect(img.style.width).toBe("");
-        expect(px(elementOf(img).style.height)).toBeCloseTo(320);
+        expect(px(elementOf(img).style.height)).toBeCloseTo(320 * kBleedScale);
         expect(img.style.transform).toBe("rotate(180deg)");
     });
 
@@ -332,15 +452,18 @@ describe("rotateImageContentRight90Degrees, on a page background picture", () =>
 
         // The crop had the shape of the page, so rotated it has the page's shape lying down, and
         // it cannot fill a page that has not changed. The element takes the rotated crop's shape
-        // and keeps the page's width, which leaves 200 blank above it and 200 below.
-        expect(px(elementOf(img).style.width)).toBeCloseTo(480);
-        expect(px(elementOf(img).style.height)).toBeCloseTo(320);
-        expect(px(elementOf(img).style.top)).toBeCloseTo(200);
-        // The whole crop is there: its box is 720 by 480, its centre is the centre of the
-        // element, and rotating it about that centre covers the element exactly.
-        expect(px(img.style.width)).toBeCloseTo(720);
-        expect(px(img.style.left)).toBeCloseTo(-120);
-        expect(px(img.style.top)).toBeCloseTo(-80);
+        // and keeps the page's width (plus the bleed), which leaves about 200 blank above it and
+        // 200 below.
+        expect(px(elementOf(img).style.width)).toBeCloseTo(480 * kBleedScale);
+        expect(px(elementOf(img).style.height)).toBeCloseTo(320 * kBleedScale);
+        expect(px(elementOf(img).style.top)).toBeCloseTo(
+            (720 - 320 * kBleedScale) / 2,
+        );
+        // The whole crop is there: its box is 720 by 480 (scaled by the bleed), its centre is the
+        // centre of the element, and rotating it about that centre covers the element exactly.
+        expect(px(img.style.width)).toBeCloseTo(720 * kBleedScale);
+        expect(px(img.style.left)).toBeCloseTo(-120 * kBleedScale);
+        expect(px(img.style.top)).toBeCloseTo(-80 * kBleedScale);
     });
 
     it("keeps filling the page for a picture the author told to fill it", () => {
@@ -351,11 +474,14 @@ describe("rotateImageContentRight90Degrees, on a page background picture", () =>
         rotateImageContentRight90Degrees(img);
 
         // The element still covers the page, and the ends of the picture are clipped instead.
-        expect(px(elementOf(img).style.width)).toBeCloseTo(480);
-        expect(px(elementOf(img).style.height)).toBeCloseTo(720);
-        expect(px(img.style.width)).toBeCloseTo(1620);
-        expect(px(img.style.left)).toBeCloseTo(-570);
-        expect(px(img.style.top)).toBeCloseTo(-180);
+        expect(px(elementOf(img).style.width)).toBeCloseTo(480 * kBleedScale);
+        expect(px(elementOf(img).style.height)).toBeCloseTo(720 * kBleedScale);
+        expect(px(img.style.width)).toBeCloseTo(1620 * kBleedScale);
+        // -572.375, which the code writes rounded to a hundredth of a pixel.
+        expect(px(img.style.left)).toBe(
+            Math.round(-570 * kBleedScale * 100) / 100,
+        );
+        expect(px(img.style.top)).toBeCloseTo(-180 * kBleedScale);
     });
 
     it("rotates the picture even when nothing has been laid out yet", () => {
@@ -433,6 +559,28 @@ describe("rotateImageContentRight90Degrees, on an ordinary picture element", () 
         expect(px(img.style.left)).toBeCloseTo(-50);
         expect(px(img.style.top)).toBeCloseTo(50);
         expect(img.style.transform).toBe("rotate(90deg)");
+    });
+
+    it("keeps the centre of a crop shown at a written height, and drops the height", () => {
+        // A picture 600 by 400 cropped into a box 150 wide and 120 high, filling an element of
+        // that size. Its own shape would make the box only 100 high; Undo can put back a
+        // height like this one, and the box is then 120 high.
+        const img = makeBackgroundImage(480, 720, 150, 120, 600, 400, false);
+        img.style.width = "150px";
+        img.style.height = "120px";
+        img.style.left = "0px";
+        img.style.top = "0px";
+
+        rotateImageContentRight90Degrees(img);
+
+        // The rotation removes the written height, so the box becomes 150 by 100, and its centre
+        // is the centre of the box as it was shown, (75, 60), carried to the centre of the
+        // element, now 120 by 150. Centring the 100-high box on (75, 50) instead would put it
+        // 10 pixels to the right of that.
+        expect(img.style.height).toBe("");
+        expect(px(img.style.width)).toBeCloseTo(150);
+        expect(px(img.style.left)).toBeCloseTo(60 - 150 / 2);
+        expect(px(img.style.top)).toBeCloseTo(75 - 100 / 2);
     });
 });
 

@@ -100,14 +100,8 @@ import {
     getVideoSource,
     SHORT_VIDEO,
 } from "../helpers/videos";
-import {
-    canUndo,
-    clickUndoButton,
-    getZoom,
-    setZoom,
-    switchTab,
-    undo,
-} from "../helpers/workspace";
+import { canUndo, clickUndoButton, undo } from "../helpers/undo";
+import { getZoom, setZoom, switchTab } from "../helpers/workspace";
 
 test.use({
     collectionSpec: {
@@ -753,7 +747,7 @@ test.describe("more ways to use a table", () => {
     // structural operation until that operation is undone, so once a row has been added the table
     // always has something to undo; a caller that asks the table first therefore took the row back
     // off however long ago it was added, and the typing that came after it could never be reached
-    // at all. Undo now goes to whichever of the two stacks was written to last (undoOrdering.ts).
+    // at all. Undo now goes to whichever of the two stacks was written to last (undo/changeOrder.ts).
     test("undoes the typing that came after the row, and then the row", async ({
         page,
         step,

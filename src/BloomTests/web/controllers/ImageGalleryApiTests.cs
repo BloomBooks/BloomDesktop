@@ -2,7 +2,10 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 using Bloom.web.controllers;
 using NUnit.Framework;
 
@@ -495,6 +498,71 @@ namespace BloomTests.web.controllers
 
                 // Falling back to the original is right: the browser handles SVG fine.
                 Assert.That(ImageGalleryApi.MakeBrowserSafePreview(path), Is.Null);
+            }
+        }
+
+        /// <summary>
+        /// Covers how BL-16998 tells "the computer is offline" apart from other download failures,
+        /// so the image chooser can tell the user to check their internet connection.
+        /// </summary>
+        [TestFixture]
+        public class IsConnectionFailureTests
+        {
+            [Test]
+            public async Task IsConnectionFailure_True_ForWhatHttpClientThrowsWhenItCannotConnect()
+            {
+                // Nothing listens on port 1, so this is refused without needing (or using) the internet.
+                using var client = new HttpClient();
+                Exception thrown = null;
+                try
+                {
+                    using var response = await client.GetAsync("http://127.0.0.1:1/x.jpg");
+                }
+                catch (Exception e)
+                {
+                    thrown = e;
+                }
+                Assert.That(
+                    thrown,
+                    Is.InstanceOf<HttpRequestException>(),
+                    "Connecting to a port nobody listens on should have thrown an HttpRequestException"
+                );
+                Assert.That(((HttpRequestException)thrown).StatusCode, Is.Null);
+
+                Assert.That(ImageGalleryApi.IsConnectionFailure(thrown), Is.True);
+            }
+
+            [Test]
+            public void IsConnectionFailure_False_WhenTheServerAnsweredWithAnErrorStatus()
+            {
+                // What EnsureSuccessStatusCode throws for a 404: the server was reached.
+                var e = new HttpRequestException("Not found", null, HttpStatusCode.NotFound);
+                Assert.That(ImageGalleryApi.IsConnectionFailure(e), Is.False);
+            }
+
+            [Test]
+            public void IsConnectionFailure_True_ForATimeout()
+            {
+                Assert.That(
+                    ImageGalleryApi.IsConnectionFailure(new TaskCanceledException()),
+                    Is.True
+                );
+            }
+
+            [Test]
+            public void IsConnectionFailure_True_WhenTheConnectionDropsMidDownload()
+            {
+                var e = new HttpIOException(HttpRequestError.ResponseEnded);
+                Assert.That(ImageGalleryApi.IsConnectionFailure(e), Is.True);
+            }
+
+            [Test]
+            public void IsConnectionFailure_False_ForAnUnrelatedException()
+            {
+                Assert.That(
+                    ImageGalleryApi.IsConnectionFailure(new InvalidOperationException()),
+                    Is.False
+                );
             }
         }
     }
