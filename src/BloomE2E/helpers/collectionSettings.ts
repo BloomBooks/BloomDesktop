@@ -505,6 +505,38 @@ export async function saveCollectionSettings(page: Page): Promise<void> {
     await expect(dialog, "the dialog did not close after OK").toBeHidden();
 }
 
+/**
+ * Click the dialog's Help button and return the help topic it asks Bloom to open, such as
+ * "Tasks/Basic_tasks/Change_languages.htm". The request is answered here and never reaches Bloom,
+ * so no help window opens on the machine running the test.
+ */
+export async function clickCollectionSettingsHelp(page: Page): Promise<string> {
+    const helpRequest = /\/bloom\/api\/help\?/;
+    let requestedTopic: string | undefined;
+    await page.route(helpRequest, async (route) => {
+        requestedTopic =
+            new URL(route.request().url()).searchParams.get("topic") ??
+            "(no topic)";
+        await route.fulfill({ status: 200, body: "" });
+    });
+    try {
+        await realClick(
+            collectionSettingsDialog(page).getByRole("button", {
+                name: "Help",
+                exact: true,
+            }),
+        );
+        await expect
+            .poll(() => requestedTopic, {
+                message: "Help never asked Bloom for a topic",
+            })
+            .toBeDefined();
+    } finally {
+        await page.unroute(helpRequest);
+    }
+    return requestedTopic!;
+}
+
 /** Click Cancel: the dialog closes and nothing is saved. Returns once it has closed. */
 export async function cancelCollectionSettings(page: Page): Promise<void> {
     const dialog = collectionSettingsDialog(page);
