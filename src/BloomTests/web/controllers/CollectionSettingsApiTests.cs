@@ -64,14 +64,14 @@ namespace BloomTests.web.controllers
 
         /// <summary>
         /// The Front &amp; Back Matter page previews the badge from this: a QR code it can show
-        /// as an image, and the language and address the books' badges name.
+        /// as an image, and the address the books' badges name.
         /// </summary>
         [Test]
         public void MakeQrCodeBadgeData_GivesAPngQrCodeAndTheLanguagesAddress()
         {
             const string kPngPrefix = "data:image/png;base64,";
 
-            var badge = CollectionSettingsApi.MakeQrCodeBadgeData("cak", "Kaqchikel");
+            var badge = CollectionSettingsApi.MakeQrCodeBadgeData("cak");
 
             Assert.That(badge.QrCode, Does.StartWith(kPngPrefix));
             var png = Convert.FromBase64String(badge.QrCode.Substring(kPngPrefix.Length));
@@ -81,7 +81,6 @@ namespace BloomTests.web.controllers
                 Assert.That(image.RawFormat, Is.EqualTo(ImageFormat.Png));
                 Assert.That(image.Width, Is.GreaterThan(0));
             }
-            Assert.That(badge.LanguageName, Is.EqualTo("Kaqchikel"));
             Assert.That(badge.DisplayUrl, Is.EqualTo("BloomLibrary.org/language:cak"));
         }
 
@@ -138,6 +137,8 @@ namespace BloomTests.web.controllers
                     .And.Member("subscription.code")
                     .And.Member("languages.language3.fontName")
                     .And.Member("languages.signLanguage.tag")
+                    .And.Member("languages.pageNumberStyle")
+                    .And.Member("readerTools.letters")
                     .And.Member("experimental." + ExperimentalFeatures.kTeamCollections)
                     .And.Member("experimental." + ExperimentalFeatures.kTables),
                 "Sanity check: the paths should cover every group"

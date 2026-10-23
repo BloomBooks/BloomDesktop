@@ -40,6 +40,8 @@ export const QrCodeBadgePreview: React.FunctionComponent<{
     // The caption as the dialog opened, so the preview can tell an edited caption from one the
     // user has not touched.
     captionWhenOpened: string;
+    // What the caption's "{0}" stands for.
+    languageName: string;
     badge: IQrCodeBadgeData;
 }> = (props) => {
     // The caption as it will be saved: the dialog trims only text the user edited. An empty one
@@ -103,7 +105,7 @@ export const QrCodeBadgePreview: React.FunctionComponent<{
                             ) : (
                                 <>
                                     {caption.substring(0, placeholderIndex)}
-                                    <b>{props.badge.languageName}</b>
+                                    <b>{props.languageName}</b>
                                     {caption.substring(placeholderIndex + 3)}
                                 </>
                             )}
@@ -184,10 +186,10 @@ export function useFrontBackMatterPage(props: {
         "CollectionSettingsDialog.ProjectInformationTab.District",
     );
 
-    // Both are asked for when the dialog opens, not when Config-R mounts this page (it mounts only
-    // the page showing), so they are usually in before anyone gets here. The packs offered follow
-    // the saved subscription: a branding can choose the pack, and if a newly typed code's does,
-    // C# applies it as it saves.
+    // The packs and the badge are asked for when the dialog opens, not when Config-R mounts this
+    // page (it mounts only the page showing), so they are usually in before anyone gets here. The
+    // packs offered follow the saved subscription: a branding can choose the pack, and if a newly
+    // typed code's does, C# applies it as it saves.
     const [xmatterOfferings, setXmatterOfferings] = React.useState<
         IXmatterOffering[]
     >([]);
@@ -199,10 +201,30 @@ export function useFrontBackMatterPage(props: {
                 result.data.xmatterOfferings as IXmatterOffering[],
             );
         });
-        get("collection/qrCodeBadge", (result) => {
-            setBadge(result.data as IQrCodeBadgeData);
-        });
     }, [props.dialogOpen]);
+
+    // The badge names the sign language if the collection has one, else the first language, as
+    // CollectionSettings.PrimaryLangTagWithSignPrioritized does. It follows the draft values, so
+    // the preview shows a language the user has changed on the Languages page but not yet saved.
+    const badgeLanguage =
+        props.values?.languages.signLanguage ??
+        props.values?.languages.language1;
+    const badgeTag = badgeLanguage?.tag;
+    // Only C# can make the QR code, so this asks for it whenever the badge's language changes.
+    // A reply for a language the user has already moved on from is dropped.
+    React.useEffect(() => {
+        if (!props.dialogOpen || !badgeTag) return;
+        let current = true;
+        get(
+            `collection/qrCodeBadge?tag=${encodeURIComponent(badgeTag)}`,
+            (result) => {
+                if (current) setBadge(result.data as IQrCodeBadgeData);
+            },
+        );
+        return () => {
+            current = false;
+        };
+    }, [props.dialogOpen, badgeTag]);
 
     const options = xmatterOfferings.map((pack) => ({
         value: pack.internalName,
@@ -247,13 +269,14 @@ export function useFrontBackMatterPage(props: {
                     maxLinesToShowBeforeScrolling={4}
                     disabled={!frontBackMatter?.showQrCode}
                 />
-                {badge && frontBackMatter && (
+                {badge && badgeLanguage && frontBackMatter && (
                     <QrCodeBadgePreview
                         showQrCode={frontBackMatter.showQrCode}
                         caption={frontBackMatter.qrcodeCaption}
                         captionWhenOpened={
                             props.settings!.values.frontBackMatter.qrcodeCaption
                         }
+                        languageName={badgeLanguage.name}
                         badge={badge}
                     />
                 )}

@@ -98,8 +98,9 @@ BL-16735 did the same for the Team Collection values.
 
 - **Q1 Save model:** everything on OK, like today; Cancel abandons.
 - **Q2 Appearance tab** (collection defaults for Book Settings, BL-12521): out of scope.
-- **Q3 Languages "More" sub-page:** implement sub-pages in Config-R (BL-13273). Config-R
-  alpha.27 has none (`ConfigrPage` children may only be groups).
+- **Q3 Languages "More" sub-page:** Config-R alpha.29 already has sub-pages: a `ConfigrPage`
+  without `topLevel`, inside a group, shows as a row that opens it, with a back arrow (used by
+  BL-16739). BL-13273 is about improving them (API, docs, depth, search), not adding them.
 - **Q4 Cutover:** no flag; everyone on master sees both buttons; the old one goes before beta.
 
 **Tentative (John, 2026-09-22; may be overridden):**
@@ -107,9 +108,10 @@ BL-16735 did the same for the Team Collection values.
 - **Q5 Page Numbering Style:** stays per collection, and goes with the Languages page
   (BL-16739), as the mockup shows (Andrew, 2026-10-21). It is not on Front & Back Matter.
 - **Q6 New per-language fields:** UI Font, Keyboard, Common Name are out (no backing data).
-  Alphabet and Sentence ending punctuation are in BL-16739; they are reader-tool settings stored
-  per language in `ReaderToolsSettings-<tag>.json` under app data, not in the collection, so
-  moving them is a data change. Ask Hatton whether these were meant for 6.6.
+  Alphabet and Sentence ending punctuation are in BL-16739 (Andrew, 2026-10-23), for the first
+  language only: they live in `ReaderToolsSettings-<L1 tag>.json` in the collection folder
+  (app data only holds BloomPack copies), and the reader tools work only in L1. The dialog edits
+  those two keys in place, so there is no data change.
 - **Q7 Restart reminder and OK→Restart:** keep (built).
 - **Q8 Help:** one Help button for the selected page (built, BL-17032), using Config-R's new
   page report. Languages, Front & Back Matter and Subscription keep the old tabs' topics; Team
@@ -182,12 +184,17 @@ unsaved edit, Create is disabled with a note to save the rename first: the renam
 Bloom restarts, so the TC would get the old name, which is also the name the Create dialog asks
 the user to approve.
 
-**BL-16739 Languages.** The large one. L1, L2, L3, Sign Language: name with "Change…" (Q11),
-Default Font, "Remove" for L3 and Sign Language, and "More" (Q3) with fonts, line spacing, tool
-font size, Asian breaking and RTL, plus Q6's reader-tool fields. Retires `ScriptSettingsDialog`
-and the Book Making font controls. Could split into rows-and-fonts, then "More". Note:
-`UpdateLanguageSettings` still takes the fonts as a separate array, a WinForms leftover (fonts
-were on another tab there); in the values the font is already part of each language.
+**BL-16739 Languages.** Built. L1, L2, L3, Sign Language, each with its language ("Change…"
+opens the existing chooser as a nested React dialog, Q11; "Set…" and "Remove" for L3 and Sign
+Language), Default Font (the font picker with suitability), and a "More" sub-page (Q3): tool font
+size, line spacing, Asian breaking, RTL, and for L1 the reader tools' alphabet and sentence
+punctuation (Q6), which cannot be edited while L1 itself is being changed. A missing L3 shows
+only its language row, since Config-R would give a missing language's settings default values.
+Page Numbering Style is a group at the bottom (Q5); in the values it moved to `languages`. A
+new L3 gets `defaultFontName` from the GET. `ScriptSettingsDialog` and the Book Making font
+controls are superseded, and go at cutover. Note: `UpdateLanguageSettings` still takes the fonts
+as a separate array, a WinForms leftover (fonts were on another tab there); in the values the
+font is already part of each language.
 
 **BL-16738 Experimental.** Per Q9. Built: a feature that lands adds an `ExperimentalFeatureSetting`
 row in `settingsPages/ExperimentalPage.tsx` and a property in `ExperimentalValues`.
