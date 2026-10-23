@@ -23,10 +23,22 @@ const api = vi.hoisted(() => ({
     postJson: vi.fn(),
     handlePasteImageApiError: vi.fn(),
 }));
-vi.mock("../../utils/bloomApi", async (importOriginal) => ({
-    ...(await importOriginal<typeof import("../../utils/bloomApi")>()),
-    postJson: api.postJson,
-}));
+// Unit tests must not reach the network (see vitest.setup.ts). Adding the image selects it, and
+// its toolbar asks Bloom for the collection's language names; see the same mock in
+// inlineImageInteractions.test.ts.
+vi.mock("../../utils/bloomApi", async (importOriginal) => {
+    const actual =
+        await importOriginal<typeof import("../../utils/bloomApi")>();
+    return {
+        ...actual,
+        postJson: api.postJson,
+        useApiObject: <T>(urlSuffix: string, defaultValue: T) =>
+            urlSuffix === "settings/languageNames"
+                ? defaultValue
+                : actual.useApiObject(urlSuffix, defaultValue),
+        trackEvent: () => {},
+    };
+});
 // Showing the failure's message needs Bloom's message box, which is not here.
 vi.mock("./bloomImages", async (importOriginal) => ({
     ...(await importOriginal<typeof import("./bloomImages")>()),
