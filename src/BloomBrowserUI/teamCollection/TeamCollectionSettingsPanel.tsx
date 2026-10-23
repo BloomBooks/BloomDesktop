@@ -16,7 +16,7 @@ import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { tabMargins } from "../collection/commonTabSettings";
 import BloomButton from "../react_components/bloomButton";
 
-import { WarningBox } from "../react_components/boxes";
+import { NoteBox, WarningBox } from "../react_components/boxes";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { useEffect } from "react";
 import { Label } from "../react_components/l10nComponents";
@@ -78,8 +78,8 @@ export const TeamCollectionSettings: React.FunctionComponent<{
     // Shown beneath the administrators when they are not acceptable.
     administratorsError?: string;
     onCreateTeamCollection: () => void;
-    // The folder the user chose to create the Team Collection in, when that waits for OK.
-    pendingCreateFolder?: string;
+    // When given, Create is disabled and this says why.
+    createDisabledReason?: string;
 }> = (props) => {
     const [repoFolderPath] = useApiStringState(
         "teamCollection/repoFolderPath",
@@ -172,29 +172,22 @@ export const TeamCollectionSettings: React.FunctionComponent<{
 
     const isNotTeamCollection: JSX.Element = (
         <div>
-            {props.pendingCreateFolder ? (
-                <P
-                    l10nKey="CollectionSettingsDialog.TeamCollectionPage.WillCreate"
-                    l10nParam0={props.pendingCreateFolder}
-                >
-                    This collection will become a Team Collection, shared in %0,
-                    when you save these settings.
-                </P>
-            ) : (
-                <div className="align-right">
-                    <BloomButton
-                        className="align-right"
-                        l10nKey="TeamCollection.CreateTeamCollection"
-                        enabled={true}
-                        hasText={true}
-                        variant="outlined"
-                        onClick={props.onCreateTeamCollection}
-                        temporarilyDisableI18nWarning={true}
-                    >
-                        Create a Team Collection
-                    </BloomButton>
-                </div>
+            {props.createDisabledReason && (
+                <NoteBox>{props.createDisabledReason}</NoteBox>
             )}
+            <div className="align-right">
+                <BloomButton
+                    className="align-right"
+                    l10nKey="TeamCollection.CreateTeamCollection"
+                    enabled={!props.createDisabledReason}
+                    hasText={true}
+                    variant="outlined"
+                    onClick={props.onCreateTeamCollection}
+                    temporarilyDisableI18nWarning={true}
+                >
+                    Create a Team Collection
+                </BloomButton>
+            </div>
             <P
                 l10nKey="TeamCollection.JoiningHelp"
                 className="extra-space-above"
