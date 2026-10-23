@@ -409,9 +409,9 @@
         <target xml:lang="fr" state="needs-translation">Bloom was not able to paste.</target>
         <note>ID: EditTab.PasteTextFailed</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.CouldNotDownloadImage">
+      <trans-unit id="ImageLibrary.CouldNotDownloadImage" approved="yes">
         <source xml:lang="en">Bloom could not download this picture. Check that this computer is connected to the internet, then try again.</source>
-        <target xml:lang="fr" state="needs-translation">Bloom could not download this picture. Check that this computer is connected to the internet, then try again.</target>
+        <target xml:lang="fr" state="final">Bloom n'a pas pu télécharger cette image. Vérifiez que cet ordinateur est connecté à Internet, puis réessayez.</target>
         <note>ID: ImageLibrary.CouldNotDownloadImage</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.PreviewTooLarge">
@@ -424,14 +424,14 @@
         <target xml:lang="fr" state="needs-translation">This image could not be previewed.</target>
         <note>ID: ImageLibrary.PreviewUnavailable</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.CannotReachSource">
+      <trans-unit id="ImageLibrary.CannotReachSource" approved="yes">
         <source xml:lang="en">Could not reach {0}. Check that this computer is connected to the internet.</source>
-        <target xml:lang="fr" state="needs-translation">Could not reach {0}. Check that this computer is connected to the internet.</target>
+        <target xml:lang="fr" state="final">Impossible d'atteindre {0}. Vérifiez que cet ordinateur est connecté à Internet.</target>
         <note>ID: ImageLibrary.CannotReachSource</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.ComputerSeemsOffline">
+      <trans-unit id="ImageLibrary.ComputerSeemsOffline" approved="yes">
         <source xml:lang="en">This computer seems to be offline. Searching {0} needs an internet connection.</source>
-        <target xml:lang="fr" state="needs-translation">This computer seems to be offline. Searching {0} needs an internet connection.</target>
+        <target xml:lang="fr" state="final">Cet ordinateur semble être hors ligne. La recherche sur {0} nécessite une connexion Internet.</target>
         <note>ID: ImageLibrary.ComputerSeemsOffline</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.FieldType.BookTitle" approved="yes">
