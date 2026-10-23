@@ -568,6 +568,10 @@ namespace Bloom.web.controllers
         private void HandleGetQrCodeBadge(ApiRequest request)
         {
             var badge = MakeQrCodeBadgeData(request.RequiredParam("tag"));
+            // The default caption is translated for the collection's languages as saved, not as the
+            // user has them in the dialog. So after changing Language 1 and emptying the caption,
+            // the preview can show the old language's translation of it until OK; the books get the
+            // right one once saved. Decided not worth sending the draft languages here for that.
             badge.DefaultCaption = _collectionSettings.DefaultBadgeQrCodeLabelLocalized;
             request.ReplyWithJson(JsonConvert.SerializeObject(badge, kCamelCaseSettings));
         }
