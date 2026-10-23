@@ -22,15 +22,12 @@ import { useEffect } from "react";
 import { Label } from "../react_components/l10nComponents";
 import { TextField } from "@mui/material";
 import { DialogHelpButton } from "../react_components/BloomDialog/commonDialogComponents";
-
-// The contents of the Team Collection panel of the Settings dialog.
+// The contents of the Team Collection panel of the WinForms Settings dialog. (The React Collection
+// Settings dialog has its own page, settingsPages/TeamCollectionPage.tsx, which shows
+// TeamCollectionSettings.) The administrators being typed live in C#, which that dialog saves on
+// OK, so each change is posted to it.
 
 export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
-    const [repoFolderPath] = useApiStringState(
-        "teamCollection/repoFolderPath",
-        "",
-    );
-
     const [adminstratorEmail, setAdminstratorEmail] =
         React.useState<string>("");
 
@@ -39,6 +36,55 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
             setAdminstratorEmail(result.data);
         });
     }, []);
+
+    return (
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={lightTheme}>
+                <div
+                    css={css`
+                        margin: ${tabMargins.top} ${tabMargins.side}
+                            ${tabMargins.bottom};
+                    `}
+                >
+                    <TeamCollectionSettings
+                        administrators={adminstratorEmail}
+                        onAdministratorsChange={(newAdminString) => {
+                            setAdminstratorEmail(newAdminString);
+                            postString(
+                                "settings/administrators",
+                                newAdminString,
+                            );
+                        }}
+                        onCreateTeamCollection={() =>
+                            post(
+                                "teamCollection/showCreateTeamCollectionDialog",
+                            )
+                        }
+                    />
+                </div>
+            </ThemeProvider>
+        </StyledEngineProvider>
+    );
+};
+
+/**
+ * What the Team Collection settings show: the experimental warning, and either the collection's
+ * shared folder and administrators or how to create or join a Team Collection, all under the
+ * subscription overlay. Whoever shows it keeps the administrators being typed.
+ */
+export const TeamCollectionSettings: React.FunctionComponent<{
+    administrators: string;
+    onAdministratorsChange: (administrators: string) => void;
+    // Shown beneath the administrators when they are not acceptable.
+    administratorsError?: string;
+    onCreateTeamCollection: () => void;
+    // The folder the user chose to create the Team Collection in, when that waits for OK.
+    pendingCreateFolder?: string;
+}> = (props) => {
+    const [repoFolderPath] = useApiStringState(
+        "teamCollection/repoFolderPath",
+        "",
+    );
 
     const intro: JSX.Element = (
         <div>
@@ -93,12 +139,12 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
             </Label>
             <TextField
                 id="adminstratorEmails"
-                value={adminstratorEmail}
+                value={props.administrators}
                 onChange={(event) => {
-                    const newAdminString: string = event.target.value;
-                    setAdminstratorEmail(newAdminString);
-                    postString("settings/administrators", newAdminString);
+                    props.onAdministratorsChange(event.target.value);
                 }}
+                error={!!props.administratorsError}
+                helperText={props.administratorsError}
                 required={false}
                 css={css`
                     width: 100%;
@@ -126,21 +172,29 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
 
     const isNotTeamCollection: JSX.Element = (
         <div>
-            <div className="align-right">
-                <BloomButton
-                    className="align-right"
-                    l10nKey="TeamCollection.CreateTeamCollection"
-                    enabled={true}
-                    hasText={true}
-                    variant="outlined"
-                    onClick={() =>
-                        post("teamCollection/showCreateTeamCollectionDialog")
-                    }
-                    temporarilyDisableI18nWarning={true}
+            {props.pendingCreateFolder ? (
+                <P
+                    l10nKey="CollectionSettingsDialog.TeamCollectionPage.WillCreate"
+                    l10nParam0={props.pendingCreateFolder}
                 >
-                    Create a Team Collection
-                </BloomButton>
-            </div>
+                    This collection will become a Team Collection, shared in %0,
+                    when you save these settings.
+                </P>
+            ) : (
+                <div className="align-right">
+                    <BloomButton
+                        className="align-right"
+                        l10nKey="TeamCollection.CreateTeamCollection"
+                        enabled={true}
+                        hasText={true}
+                        variant="outlined"
+                        onClick={props.onCreateTeamCollection}
+                        temporarilyDisableI18nWarning={true}
+                    >
+                        Create a Team Collection
+                    </BloomButton>
+                </div>
+            )}
             <P
                 l10nKey="TeamCollection.JoiningHelp"
                 className="extra-space-above"
@@ -162,26 +216,14 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
     );
 
     return (
-        <StyledEngineProvider injectFirst>
-            <ThemeProvider theme={lightTheme}>
-                <div
-                    id="teamCollection-settings"
-                    css={css`
-                        margin: ${tabMargins.top} ${tabMargins.side}
-                            ${tabMargins.bottom};
-                    `}
-                >
-                    <RequiresSubscriptionOverlayWrapper featureName="TeamCollection">
-                        <React.Fragment>
-                            {intro}
-                            {repoFolderPath
-                                ? isTeamCollection
-                                : isNotTeamCollection}
-                        </React.Fragment>
-                    </RequiresSubscriptionOverlayWrapper>
-                </div>
-            </ThemeProvider>
-        </StyledEngineProvider>
+        <div id="teamCollection-settings">
+            <RequiresSubscriptionOverlayWrapper featureName="TeamCollection">
+                <React.Fragment>
+                    {intro}
+                    {repoFolderPath ? isTeamCollection : isNotTeamCollection}
+                </React.Fragment>
+            </RequiresSubscriptionOverlayWrapper>
+        </div>
     );
 };
 

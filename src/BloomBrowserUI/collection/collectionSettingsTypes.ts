@@ -44,6 +44,13 @@ export interface ICollectionSettingsSubscription {
     code: string;
 }
 
+export interface ICollectionSettingsTeamCollection {
+    // A Team Collection's administrators, separated by commas or spaces.
+    administrators: string;
+    // The folder to make this collection a Team Collection in as it is saved; "" for none.
+    createInFolder: string;
+}
+
 export interface ICollectionSettingsBloomLibrary {
     // The url key of the bookshelf uploaded books go into, or "" for none.
     defaultBookshelf: string;
@@ -59,6 +66,7 @@ export interface ICollectionSettingsValues {
     languages: ICollectionSettingsLanguages;
     frontBackMatter: ICollectionSettingsFrontBackMatter;
     subscription: ICollectionSettingsSubscription;
+    teamCollection: ICollectionSettingsTeamCollection;
     bloomLibrary: ICollectionSettingsBloomLibrary;
     advanced: ICollectionSettingsAdvanced;
     // Keyed by experimental feature token.
@@ -82,6 +90,8 @@ export interface ICollectionSettingsResponse {
     restartPaths: string[];
     // Whether the open collection is a Team Collection, even if disconnected.
     isTeamCollection: boolean;
+    // Whether the collection holds a book downloaded from Bloom Library for editing.
+    editingABlorgBook: boolean;
     // Non-null when the user may not edit the settings (a Team Collection member who is not an
     // administrator). Then the other fields are null.
     notAllowedMessage: string | null;

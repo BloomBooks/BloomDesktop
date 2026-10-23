@@ -85,6 +85,11 @@
         <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Style</note>
         <note>On the Front &amp; Back Matter page of the Collection Settings dialog: the label of the list of front and back matter styles (such as "Traditional" or "Paper Saver"), which decide which pages come at the start and end of every book.</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.TeamCollectionPage.WillCreate" translate="no">
+        <source xml:lang="en">This collection will become a Team Collection, shared in %0, when you save these settings.</source>
+        <note>ID: CollectionSettingsDialog.TeamCollectionPage.WillCreate</note>
+        <note>On the Team Collection page of the Collection Settings dialog, after the user has chosen a folder in "Create a Team Collection" but before they save the settings. %0 is replaced with the folder's path. "Team Collection" is the name of a Bloom feature.</note>
+      </trans-unit>
       <trans-unit id="Feature.AiImageEditing">
         <source xml:lang="en">Edit Images with AI</source>
         <note>ID: Feature.AiImageEditing</note>

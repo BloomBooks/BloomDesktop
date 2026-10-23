@@ -7,7 +7,7 @@ import { BloomSubscriptionIndicatorIconAndText } from "../../react_components/re
 import { ICollectionSettingsResponse } from "../collectionSettingsTypes";
 
 // ExperimentalFeatures.kTeamCollections in C#: the key of the feature in values.experimental.
-const kTeamCollectionsFeatureToken = "team-collections";
+export const kTeamCollectionsFeatureToken = "team-collections";
 // ExperimentalFeatures.kTables in C#.
 const kTablesFeatureToken = "tables";
 

@@ -131,6 +131,13 @@ namespace Bloom.TeamCollection
                 HandleShowCreateTeamCollectionDialog,
                 true
             );
+            // The folder the Create Team Collection dialog starts with: the user's Dropbox
+            // folder, or "" if we cannot find one.
+            apiHandler.RegisterEndpointHandler(
+                "teamCollection/defaultRepoFolder",
+                request => request.ReplyWithText(DropboxUtils.GetDropboxFolderPath() ?? ""),
+                false
+            );
             apiHandler.RegisterEndpointHandler(
                 "teamCollection/tcStatus",
                 HandleTeamCollectionStatus,
@@ -1265,15 +1272,26 @@ namespace Bloom.TeamCollection
         // We must ensure that the user has registered a valid email address before making the call to the API endpoint which calls this.
         public void HandleCreateTeamCollection(ApiRequest request)
         {
-            string repoFolderParentPath = null;
+            if (CreateTeamCollection(request.RequiredPostString()))
+                _callbackToReopenCollection?.Invoke();
+            // If it failed, the user has already been told, and it is better to report a success
+            // here; otherwise they will also get a toast.
+            request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// Makes the open collection a Team Collection, shared in a new folder inside
+        /// repoFolderParentPath. The caller reopens the collection. A failure is reported to the
+        /// user here.
+        /// </summary>
+        /// <returns>true if the Team Collection was created</returns>
+        public bool CreateTeamCollection(string repoFolderParentPath)
+        {
             try
             {
                 Debug.Assert(!string.IsNullOrWhiteSpace(CurrentUser));
 
-                repoFolderParentPath = request.RequiredPostString();
-
                 _tcManager.ConnectToTeamCollection(repoFolderParentPath, _settings.CollectionId);
-                _callbackToReopenCollection?.Invoke();
 
                 BloomAnalytics.Track(
                     "TeamCollectionCreate",
@@ -1285,8 +1303,7 @@ namespace Bloom.TeamCollection
                         { "User", CurrentUser },
                     }
                 );
-
-                request.PostSucceeded();
+                return true;
             }
             catch (Exception e)
             {
@@ -1299,12 +1316,9 @@ namespace Bloom.TeamCollection
                 Logger.WriteError(String.Format(msgEnglish, repoFolderParentPath, e.Message), e);
                 NonFatalProblem.ReportSentryOnly(
                     e,
-                    $"Something went wrong for {request.LocalPath()}"
+                    "Something went wrong creating a Team Collection"
                 );
-
-                // Since we have already informed the user above, it is better to just report a success here.
-                // Otherwise, they will also get a toast.
-                request.PostSucceeded();
+                return false;
             }
         }
 
