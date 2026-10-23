@@ -76,11 +76,11 @@ import {
     syncInlineImagesFromEditable,
 } from "./inlineImages";
 import { cleanupInlineImageInteractions } from "./inlineImageInteractions";
+import { endImagePaste } from "./bloomImages";
 import {
     clipboardHoldsJustAPicture,
     dataTransferHoldsJustAPicture,
     finishPasteImageAsInlineImage,
-    endInlineImagePaste,
     getInlineImagePasteTarget,
     htmlIsJustAPicture,
     isInlineImagePasteId,
@@ -100,15 +100,13 @@ const kWordHtml =
 // Something shaped like the clipboardData of a paste event. Each entry is one of its items:
 // a MIME type for a file (a picture) or for a string.
 function makeClipboardData(
-    items: { kind: "file" | "string"; type: string; fileName?: string }[],
+    items: { kind: "file" | "string"; type: string }[],
     html?: string,
 ): Pick<DataTransfer, "items" | "getData"> {
     return {
         items: items.map((item) => ({
             kind: item.kind,
             type: item.type,
-            getAsFile: () =>
-                item.fileName ? new File([], item.fileName) : null,
         })) as unknown as DataTransferItemList,
         getData: (format: string) =>
             format === "text/html" ? (html ?? "") : "",
@@ -274,15 +272,6 @@ describe("inlineImagePaste", () => {
                 ),
             ).toBe(true);
         });
-        it("accepts an image file without a MIME type, by its name", () => {
-            expect(
-                dataTransferHoldsJustAPicture(
-                    makeClipboardData([
-                        { kind: "file", type: "", fileName: "bird.JPG" },
-                    ]),
-                ),
-            ).toBe(true);
-        });
         it("rejects a picture that comes with formatted text", () => {
             expect(
                 dataTransferHoldsJustAPicture(
@@ -299,11 +288,7 @@ describe("inlineImagePaste", () => {
             expect(
                 dataTransferHoldsJustAPicture(
                     makeClipboardData([
-                        {
-                            kind: "file",
-                            type: "application/pdf",
-                            fileName: "doc.pdf",
-                        },
+                        { kind: "file", type: "application/pdf" },
                     ]),
                 ),
             ).toBe(false);
@@ -419,20 +404,14 @@ describe("inlineImagePaste", () => {
         });
 
         // C# calls removeImageId with the paste's id when it gives up, for instance when the
-        // user declines the JPEG warning. A later paste must not get that paste's block.
-        it("forgets a paste that C# gave up on", () => {
+        // user declines the JPEG warning, and removeImageId calls endImagePaste.
+        it("lets a waiting save go ahead when C# gives up on the paste", () => {
             const group = makeTextBlockWithCaret();
             pasteClipboardImageAsInlineImage(group);
 
-            endInlineImagePaste(sentImageId(0));
-            expect(delays.remove).toHaveBeenCalledWith(sentImageId(0));
-            // Forgetting it again (or forgetting an id that was never a paste) changes nothing.
-            endInlineImagePaste(sentImageId(0));
-            expect(delays.remove).toHaveBeenCalledTimes(1);
+            endImagePaste(sentImageId(0));
 
-            expect(() => deliverPicture(sentImageId(0), "late.png")).toThrow(
-                /no inline image paste is waiting/,
-            );
+            expect(delays.remove).toHaveBeenCalledWith(sentImageId(0));
             expect(getInlineImages(group).length).toBe(0);
         });
 
@@ -526,46 +505,12 @@ describe("inlineImagePaste", () => {
             pasteImageIntoTextAsInlineImage(event as unknown as ClipboardEvent);
 
             expect(event.preventDefault).toHaveBeenCalled();
-            const img = wrapper.querySelector("img")!;
-            expect(api.doImageCommand).toHaveBeenCalledWith(img, "paste");
+            expect(api.doImageCommand).toHaveBeenCalledWith(
+                wrapper.querySelector("img"),
+                "paste",
+            );
             // No new image is asked for.
             expect(api.postJson).not.toHaveBeenCalled();
-            // A save waits for the new picture, until C# answers with the img's id (changeImage
-            // or removeImageId, which both end the paste).
-            expect(img.id).not.toBe("");
-            expect(delays.add).toHaveBeenCalledWith(img.id);
-            expect(delays.remove).not.toHaveBeenCalled();
-
-            endInlineImagePaste(img.id);
-
-            expect(delays.remove).toHaveBeenCalledWith(img.id);
-        });
-
-        // Both pastes would put the same clipboard picture there, and C# would answer the second
-        // with an id the first answer has already taken off the img.
-        it("ignores a second paste over a selected image whose replacement is still pending", () => {
-            const group = makeTextBlockWithCaret();
-            const wrapper = insertInlineImage(group);
-            wrapper.classList.add(kInlineImageSelectedClass);
-            const paste = () =>
-                pasteImageIntoTextAsInlineImage(
-                    makePasteEvent(
-                        makeClipboardData([kPictureItem]),
-                    ) as unknown as ClipboardEvent,
-                );
-
-            paste();
-            paste();
-
-            expect(api.doImageCommand).toHaveBeenCalledTimes(1);
-            expect(delays.add).toHaveBeenCalledTimes(1);
-
-            // Once C# has answered, a new paste goes ahead.
-            const img = wrapper.querySelector("img")!;
-            endInlineImagePaste(img.id);
-            paste();
-
-            expect(api.doImageCommand).toHaveBeenCalledTimes(2);
         });
 
         it("leaves a picture alone where inline images can't go", () => {

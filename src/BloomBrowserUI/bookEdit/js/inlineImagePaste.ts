@@ -12,7 +12,7 @@
 // paste was for. The image is added only once the picture has arrived, so a paste that fails
 // leaves nothing behind, and one Undo takes back the whole paste. Until then the paste holds a
 // page-content delay, so that a save made in the meantime waits for the picture (see
-// requestPageContent).
+// startImagePaste in bloomImages.ts).
 //
 // When an inline image is selected, a pasted picture replaces that image's picture instead, as
 // the image's own "Paste image" command does (its menu shows Ctrl+V as the shortcut), and as a
@@ -24,13 +24,11 @@
 import { postJson } from "../../utils/bloomApi";
 import {
     doImageCommand,
+    endImagePaste,
     getOwningPageBackgroundColor,
     handlePasteImageApiError,
+    startImagePaste,
 } from "./bloomImages";
-import {
-    addRequestPageContentDelay,
-    removeRequestPageContentDelay,
-} from "./bloomEditing";
 import { EditableDivUtils } from "./editableDivUtils";
 import { kInlineImageSelectedClass } from "./inlineImages";
 import {
@@ -45,24 +43,10 @@ import {
 export const kMakeNewInlineImage = "makeNewInlineImage";
 
 // The pastes of new inline images that are waiting for C#, by the imageId each one sent, with
-// the translation group each will add its image to. C# ends a paste that fails or that the user
-// cancels (by declining the JPEG warning, for one) by calling removeImageId with its id, which
-// calls endInlineImagePaste. So an entry is never used for any paste but its own.
+// the translation group each will add its image to. Every paste has its own id, so an entry is
+// never used for any paste but its own. One that C# gives up on (removeImageId) just stays; no
+// answer will ever come with its id.
 const pendingPastes = new Map<string, HTMLElement>();
-
-// The pastes that will replace the picture of a selected inline image, by the id of its img. C#
-// ends each with changeImage (the new picture) or removeImageId (no picture), both with that id,
-// and both call endInlineImagePaste.
-const pendingReplacements = new Set<string>();
-
-// Every pending paste, of either kind, holds a page-content delay with its imageId as the delay's
-// id, so that a save made before the picture arrives waits for it. If C# ends a paste without
-// either answer (ChangePicture reports its own errors), the delay stays, and saves of this page
-// wait out requestPageContent's limit; going to another page starts afresh.
-
-// Extensions of image files Bloom can paste. A file copied in Windows Explorer is usually
-// offered with a MIME type, but this catches one that is not.
-const kImageFileExtensions = /\.(png|jpe?g|gif|bmp|tiff?)$/i;
 
 /**
  * Where a picture pasted now should go, if it is for inline images at all: "replace" the picture
@@ -116,21 +100,9 @@ export function getInlineImagePasteTarget():
  * picture to the other languages when it arrives (changeImage).
  */
 export function pasteClipboardImage(target: InlineImagePasteTarget): void {
-    if (target.kind === "add") {
+    if (target.kind === "add")
         pasteClipboardImageAsInlineImage(target.translationGroup);
-        return;
-    }
-    // doImageCommand sends C# the img's id, giving it a temporary one if it has none, and C#
-    // answers with that id. Giving it the id here lets the delay be keyed by it.
-    const img = target.img;
-    // A second paste over this image before C# has answered the first would put the same
-    // clipboard picture there, and C# would answer it with the same id, which the first answer
-    // has already taken off the img (changeImage), so it would not find the img. So it is ignored.
-    if (img.id && pendingReplacements.has(img.id)) return;
-    if (!img.id) img.id = EditableDivUtils.createUuid();
-    pendingReplacements.add(img.id);
-    addRequestPageContentDelay(img.id);
-    doImageCommand(img, "paste");
+    else doImageCommand(target.img, "paste");
 }
 
 /**
@@ -156,10 +128,7 @@ export function dataTransferHoldsJustAPicture(
     data: Pick<DataTransfer, "items" | "getData">,
 ): boolean {
     const hasPicture = Array.from(data.items).some(
-        (item) =>
-            item.kind === "file" &&
-            (item.type.startsWith("image/") ||
-                kImageFileExtensions.test(item.getAsFile()?.name ?? "")),
+        (item) => item.kind === "file" && item.type.startsWith("image/"),
     );
     return hasPicture && htmlIsJustAPicture(data.getData("text/html"));
 }
@@ -188,7 +157,7 @@ export function pasteClipboardImageAsInlineImage(
 ): void {
     const imageId = `${kMakeNewInlineImage}-${EditableDivUtils.createUuid()}`;
     pendingPastes.set(imageId, translationGroup);
-    addRequestPageContentDelay(imageId);
+    startImagePaste(imageId);
     postJson(
         "editView/pasteImage",
         {
@@ -199,7 +168,8 @@ export function pasteClipboardImageAsInlineImage(
         },
         undefined,
         (error) => {
-            endInlineImagePaste(imageId);
+            pendingPastes.delete(imageId);
+            endImagePaste(imageId);
             handlePasteImageApiError(error);
         },
     );
@@ -226,23 +196,13 @@ export function finishPasteImageAsInlineImage(
             `finishPasteImageAsInlineImage: no inline image paste is waiting for ${imageId}`,
         );
     }
+    pendingPastes.delete(imageId);
     try {
         addInlineImage(translationGroup, setUpPicture);
     } finally {
         // Only now, with the picture on the page, may a waiting save go ahead.
-        endInlineImagePaste(imageId);
+        endImagePaste(imageId);
     }
-}
-
-/**
- * Ends the pending paste C# sent this imageId for, if there is one, and lets a waiting save go
- * ahead. C# ends a paste by calling changeImage or removeImageId with its id, and both call this
- * once the page is up to date. It does nothing for any other id, so they can call it for every
- * picture change.
- */
-export function endInlineImagePaste(imageId: string): void {
-    if (pendingPastes.delete(imageId) || pendingReplacements.delete(imageId))
-        removeRequestPageContentDelay(imageId);
 }
 
 /**

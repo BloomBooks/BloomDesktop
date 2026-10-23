@@ -25,8 +25,10 @@ import { EditableDivUtils } from "./editableDivUtils";
 import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
 import {
+    addRequestPageContentDelay,
     changeImage,
     IImageInfo,
+    removeRequestPageContentDelay,
     wrapWithRequestPageContentDelay,
 } from "./bloomEditing";
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
@@ -341,6 +343,39 @@ export function handlePasteImageApiError(responseOrError: unknown): void {
     );
 }
 
+// The pastes of a picture (editView/pasteImage) that are waiting for C# to answer, by the imageId
+// each one sent. C# answers with that id, by calling changeImage with the picture or removeImageId
+// when there is none (EditingView.OnPasteImage always does one or the other), and both call
+// endImagePaste. Each pending paste holds a page-content delay with its imageId as the delay's id,
+// so that a save made before the picture arrives waits for it. If C# ends a paste without either
+// answer (ChangePicture reports its own errors), the delay stays, and saves of this page wait out
+// requestPageContent's limit; going to another page starts afresh.
+const imagePastesAwaitingPicture = new Set<string>();
+
+/**
+ * Records that a paste has asked C# for the picture on the clipboard, with this imageId, and makes
+ * page saves wait until endImagePaste is called with the same id. Returns false, and does nothing,
+ * if a paste with this id is already waiting: C# would answer both with the one id, and the first
+ * answer takes a temporary id off its img (changeImage), so the second could not find it. The
+ * second paste would only put the same clipboard picture there again, so the caller drops it.
+ */
+export function startImagePaste(imageId: string): boolean {
+    if (imagePastesAwaitingPicture.has(imageId)) return false;
+    imagePastesAwaitingPicture.add(imageId);
+    addRequestPageContentDelay(imageId);
+    return true;
+}
+
+/**
+ * Ends the paste that is waiting with this imageId, if there is one, and lets a waiting save go
+ * ahead. changeImage and removeImageId call it for every id C# sends them, once the page is up to
+ * date, so it does nothing for an id that no paste is waiting for.
+ */
+export function endImagePaste(imageId: string): void {
+    if (imagePastesAwaitingPicture.delete(imageId))
+        removeRequestPageContentDelay(imageId);
+}
+
 export function doImageCommand(
     img: HTMLElement | undefined,
     command: "copy" | "paste" | "change",
@@ -358,6 +393,10 @@ export function doImageCommand(
             imageId = EditableDivUtils.createUuid();
             img.setAttribute("id", imageId);
         }
+        // A second paste over this image before C# has answered the first is dropped; see
+        // startImagePaste.
+        if (!startImagePaste(imageId)) return;
+        const pasteId = imageId;
         const topDiv = img.closest(kCanvasElementSelector);
         const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
         const pageBackgroundColor = getOwningPageBackgroundColor(img);
@@ -365,7 +404,10 @@ export function doImageCommand(
             "editView/pasteImage",
             { imageId, imageSrc, imageIsGif, pageBackgroundColor },
             undefined,
-            handlePasteImageApiError,
+            (error) => {
+                endImagePaste(pasteId);
+                handlePasteImageApiError(error);
+            },
         );
         return;
     }

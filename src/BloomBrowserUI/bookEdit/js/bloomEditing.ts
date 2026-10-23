@@ -4,6 +4,7 @@ import $ from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import {
     cleanupImages,
+    endImagePaste,
     getImageTransparencyMode,
     getOwningPageBackgroundColor,
     HandleImageError,
@@ -37,7 +38,6 @@ import {
 import {
     clipboardHoldsJustAPicture,
     finishPasteImageAsInlineImage,
-    endInlineImagePaste,
     getInlineImagePasteTarget,
     isInlineImagePasteId,
     pasteClipboardImage,
@@ -453,10 +453,8 @@ export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
 
 // called by C# to remove the id attribute from the image element
 export function removeImageId(imageId: string) {
-    // C# calls this when a paste ends without a picture, so it ends any paste for inline images
-    // that is waiting on this id (see inlineImagePaste.ts). A new inline image has no element yet.
-    endInlineImagePaste(imageId);
-    if (isInlineImagePasteId(imageId)) return;
+    // C# calls this when a paste ends without a picture, so a save waiting for it can go ahead.
+    endImagePaste(imageId);
     const imgOrImageContainer = document.getElementById(imageId);
     imgOrImageContainer?.removeAttribute("id");
 }
@@ -527,8 +525,8 @@ export function changeImage(imageInfo: IImageInfo) {
     if (!commitInlineImageUndoForImageChange(imgOrImageContainer)) {
         commitPendingImageOperationUndo(imgOrImageContainer);
     }
-    // If this was a paste over a selected inline image, a save waiting for it can go ahead now.
-    endInlineImagePaste(imageInfo.imageId);
+    // If this was a paste, a save waiting for the picture can go ahead now.
+    endImagePaste(imageInfo.imageId);
     notifyToolOfChangedImage();
 }
 
