@@ -10,7 +10,9 @@
 // answers, so that two pastes made before C# answers the first each find their own block.
 // changeImage then calls finishPasteImageAsInlineImage, which adds the image to the block the
 // paste was for. The image is added only once the picture has arrived, so a paste that fails
-// leaves nothing behind, and one Undo takes back the whole paste.
+// leaves nothing behind, and one Undo takes back the whole paste. Until then the paste holds a
+// page-content delay, so that a save made in the meantime waits for the picture (see
+// requestPageContent).
 //
 // A clipboard that holds formatted text as well as a picture, as a copy from Word or Excel
 // usually does, is pasted as text, as before. The picture there is usually just a rendering of
@@ -20,6 +22,10 @@ import {
     getOwningPageBackgroundColor,
     handlePasteImageApiError,
 } from "./bloomImages";
+import {
+    addRequestPageContentDelay,
+    removeRequestPageContentDelay,
+} from "./bloomEditing";
 import { EditableDivUtils } from "./editableDivUtils";
 import {
     addInlineImage,
@@ -35,8 +41,17 @@ export const kMakeNewInlineImage = "makeNewInlineImage";
 // The pastes that are waiting for C#, by the imageId each one sent, with the translation group
 // each will add its image to. C# forgets a paste that fails or that the user cancels (by
 // declining the JPEG warning, for one) by calling removeImageId with its id, which calls
-// forgetInlineImagePaste. So an entry is never used for any paste but its own.
+// forgetInlineImagePaste. So an entry is never used for any paste but its own. Each one holds a
+// page-content delay with its imageId as the delay's id, released by endPendingPaste. If C# ends a
+// paste without either answer (ChangePicture reports its own errors), the delay stays, and saves of
+// this page wait out requestPageContent's limit; going to another page starts afresh.
 const pendingPastes = new Map<string, HTMLElement>();
+
+// Forgets a pending paste and releases its page-content delay. Does nothing for an imageId that is
+// not pending, so it is safe to call from every way a paste can end.
+function endPendingPaste(imageId: string): void {
+    if (pendingPastes.delete(imageId)) removeRequestPageContentDelay(imageId);
+}
 
 // Extensions of image files Bloom can paste. A file copied in Windows Explorer is usually
 // offered with a MIME type, but this catches one that is not.
@@ -117,6 +132,7 @@ export function pasteClipboardImageAsInlineImage(
 ): void {
     const imageId = `${kMakeNewInlineImage}-${EditableDivUtils.createUuid()}`;
     pendingPastes.set(imageId, translationGroup);
+    addRequestPageContentDelay(imageId);
     postJson(
         "editView/pasteImage",
         {
@@ -127,7 +143,7 @@ export function pasteClipboardImageAsInlineImage(
         },
         undefined,
         (error) => {
-            pendingPastes.delete(imageId);
+            endPendingPaste(imageId);
             handlePasteImageApiError(error);
         },
     );
@@ -149,18 +165,22 @@ export function finishPasteImageAsInlineImage(
     setUpPicture: (img: HTMLElement) => void,
 ): void {
     const translationGroup = pendingPastes.get(imageId);
-    pendingPastes.delete(imageId);
     if (!translationGroup) {
         throw new Error(
             `finishPasteImageAsInlineImage: no inline image paste is waiting for ${imageId}`,
         );
     }
-    addInlineImage(translationGroup, setUpPicture);
+    try {
+        addInlineImage(translationGroup, setUpPicture);
+    } finally {
+        // Only now, with the picture on the page, may a waiting save go ahead.
+        endPendingPaste(imageId);
+    }
 }
 
 /** Forgets a paste that C# has given up on. See pendingPastes. */
 export function forgetInlineImagePaste(imageId: string): void {
-    pendingPastes.delete(imageId);
+    endPendingPaste(imageId);
 }
 
 /**

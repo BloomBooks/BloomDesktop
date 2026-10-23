@@ -39,6 +39,19 @@ vi.mock("../../utils/bloomApi", async (importOriginal) => {
         trackEvent: () => {},
     };
 });
+// A paste holds a page-content delay until it ends, so that a save waits for the picture. The
+// tests check that every way a paste ends releases it.
+const delays = vi.hoisted(() => ({
+    add: vi.fn(),
+    remove: vi.fn(),
+}));
+// bloomEditing imports this module, so a mock built on importOriginal would load the real
+// bloomEditing, and through it this module, before the mock existed. Nothing here needs the rest
+// of bloomEditing, so the mock is only these two.
+vi.mock("./bloomEditing", () => ({
+    addRequestPageContentDelay: delays.add,
+    removeRequestPageContentDelay: delays.remove,
+}));
 // Showing the failure's message needs Bloom's message box, which is not here.
 vi.mock("./bloomImages", async (importOriginal) => ({
     ...(await importOriginal<typeof import("./bloomImages")>()),
@@ -58,6 +71,7 @@ import {
 } from "./inlineImages";
 import { cleanupInlineImageInteractions } from "./inlineImageInteractions";
 import {
+    clipboardHoldsJustAPicture,
     dataTransferHoldsJustAPicture,
     finishPasteImageAsInlineImage,
     forgetInlineImagePaste,
@@ -155,6 +169,8 @@ describe("inlineImagePaste", () => {
         discardPendingInlineImageUndo();
         api.postJson.mockReset();
         api.handlePasteImageApiError.mockReset();
+        delays.add.mockReset();
+        delays.remove.mockReset();
         // See the same spy in inlineImages.test.ts: the overflow check needs layout jsdom lacks.
         vi.spyOn(
             OverflowChecker,
@@ -189,6 +205,40 @@ describe("inlineImagePaste", () => {
             expect(
                 htmlIsJustAPicture('<img src="a.png"><img src="b.png">'),
             ).toBe(false);
+        });
+    });
+
+    // The Paste button's check. C# has already found a picture on the clipboard; this reads the
+    // clipboard's HTML to see whether it is just that picture.
+    describe("clipboardHoldsJustAPicture", () => {
+        // Puts a clipboard holding one item with these representations where the code reads it.
+        function setClipboard(representations: Record<string, string>) {
+            const item = {
+                types: Object.keys(representations),
+                getType: (type: string) =>
+                    // What the browser gives is a Blob; jsdom's Blob has no text(), so this is
+                    // just the part of one that the code reads.
+                    Promise.resolve({
+                        text: () => Promise.resolve(representations[type]),
+                    }),
+            };
+            Object.defineProperty(navigator, "clipboard", {
+                value: { read: () => Promise.resolve([item]) },
+                configurable: true,
+            });
+        }
+
+        it("accepts a clipboard with no HTML", async () => {
+            setClipboard({ "image/png": "", "text/plain": "C:\pic.png" });
+            expect(await clipboardHoldsJustAPicture()).toBe(true);
+        });
+        it("accepts HTML that is just the picture", async () => {
+            setClipboard({ "image/png": "", "text/html": kCopyImageHtml });
+            expect(await clipboardHoldsJustAPicture()).toBe(true);
+        });
+        it("rejects HTML with text in it", async () => {
+            setClipboard({ "image/png": "", "text/html": kWordHtml });
+            expect(await clipboardHoldsJustAPicture()).toBe(false);
         });
     });
 
@@ -302,10 +352,14 @@ describe("inlineImagePaste", () => {
                 expect.any(Function),
             );
             expect(isInlineImagePasteId(sentImageId(0))).toBe(true);
-            // Nothing is added until the picture arrives.
+            // Nothing is added until the picture arrives, and until then a save has to wait.
             expect(getInlineImages(group).length).toBe(0);
+            expect(delays.add).toHaveBeenCalledWith(sentImageId(0));
+            expect(delays.remove).not.toHaveBeenCalled();
 
             deliverPicture(sentImageId(0), "pasted.png");
+
+            expect(delays.remove).toHaveBeenCalledWith(sentImageId(0));
 
             ["en", "fr"].forEach((lang) => {
                 const img = getInlineImageInEditable(
@@ -331,6 +385,7 @@ describe("inlineImagePaste", () => {
             onError(error);
 
             expect(api.handlePasteImageApiError).toHaveBeenCalledWith(error);
+            expect(delays.remove).toHaveBeenCalledWith(sentImageId(0));
             // The paste is over, so a picture arriving now would be a mistake.
             expect(() => deliverPicture(sentImageId(0), "late.png")).toThrow(
                 /no inline image paste is waiting/,
@@ -345,6 +400,10 @@ describe("inlineImagePaste", () => {
             pasteClipboardImageAsInlineImage(group);
 
             forgetInlineImagePaste(sentImageId(0));
+            expect(delays.remove).toHaveBeenCalledWith(sentImageId(0));
+            // Forgetting it again (or forgetting an id that was never a paste) changes nothing.
+            forgetInlineImagePaste(sentImageId(0));
+            expect(delays.remove).toHaveBeenCalledTimes(1);
 
             expect(() => deliverPicture(sentImageId(0), "late.png")).toThrow(
                 /no inline image paste is waiting/,
