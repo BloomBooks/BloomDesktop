@@ -461,7 +461,7 @@ export const kMakeNewCanvasElement = "makeNewCanvasElement";
 
 export function notifyToolOfChangedImage(img?: HTMLImageElement) {
     const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
-    toolbox?.getCurrentTool()?.imageUpdated(img);
+    toolbox?.getExpandedTool()?.imageUpdated(img);
 }
 
 // called by c# so be careful about changing the signature, including names of parameters

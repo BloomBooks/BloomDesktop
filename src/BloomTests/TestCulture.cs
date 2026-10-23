@@ -1,25 +1,29 @@
 using System;
 using System.Globalization;
+using Bloom;
 using NUnit.Framework;
 
 namespace BloomTests
 {
     /// <summary>
-    /// Lets a whole test run be executed under a different culture, by setting BLOOM_TEST_CULTURE
-    /// (e.g. BLOOM_TEST_CULTURE=fr-FR) before starting it. With the variable unset — which is how
-    /// developers and the PR build run — this does nothing at all.
+    /// Runs the tests the way Bloom runs: with the process culture set to the invariant culture by
+    /// UserCulture.UseInvariantCulture, and the user's regional format kept in UserCulture.Current
+    /// (BL-16981).
     ///
-    /// The point is to catch code that formats or parses machine data using whatever culture the
-    /// user happens to have, which produces silently wrong output rather than an exception. Bloom
-    /// has shipped exactly that bug: BL-15064 found that PublishHelper.pxToNumber parsed CSS
-    /// measurements (always period-decimal) with a culture-sensitive double.Parse, so publishing to
-    /// BloomPUB in a comma-decimal locale such as French produced *uncropped images*. That was found
-    /// only because a developer's machine happened to be set to fr-FR.
+    /// Setting BLOOM_TEST_CULTURE (e.g. BLOOM_TEST_CULTURE=fr-FR) before starting a run makes that
+    /// culture the user's regional format, as if the machine were set to it. The process culture
+    /// stays invariant, exactly as it does for a user with that format. With the variable unset,
+    /// which is how developers and the PR build run, the user's format is whatever this machine has.
+    ///
+    /// The point of the sweep is to catch code that shows or reads numbers, dates or sorted lists
+    /// in the wrong format for the user, and code that sneaks the user's format into machine data.
+    /// Before Bloom ran invariant it caught BL-15064, where PublishHelper.pxToNumber parsed CSS
+    /// measurements with a culture-sensitive double.Parse, so publishing to BloomPUB in French
+    /// produced uncropped images.
     ///
     /// Note what this deliberately does NOT do: it leaves CurrentUICulture alone. Changing that
     /// would make L10NSharp serve translated strings, and the very many tests that assert on
-    /// English text would fail for a reason nobody cares about, burying the formatting and parsing
-    /// bugs this is meant to surface.
+    /// English text would fail for a reason nobody cares about.
     /// </summary>
     /// <remarks>
     /// Like TestTempDirectory, this is a [SetUpFixture] in the BloomTests namespace, so it applies
@@ -29,16 +33,19 @@ namespace BloomTests
     [SetUpFixture]
     public class TestCulture
     {
-        /// <summary>The environment variable naming the culture to run under, if any.</summary>
+        /// <summary>The environment variable naming the user's culture to run as, if any.</summary>
         internal const string kEnvironmentVariable = "BLOOM_TEST_CULTURE";
 
         /// <summary>
-        /// Switches the run over to the culture named by BLOOM_TEST_CULTURE, if it is set. NUnit
-        /// calls this once, before any test runs.
+        /// Makes the process culture invariant, as Program.Main does, and makes the culture named by
+        /// BLOOM_TEST_CULTURE, if it is set, the user's regional format. NUnit calls this once,
+        /// before any test runs.
         /// </summary>
         [OneTimeSetUp]
-        public void UseTheCultureWeWereAskedFor()
+        public void RunTheWayBloomRuns()
         {
+            UserCulture.UseInvariantCulture();
+
             var name = Environment.GetEnvironmentVariable(kEnvironmentVariable);
             if (string.IsNullOrWhiteSpace(name))
                 return;
@@ -47,20 +54,17 @@ namespace BloomTests
             // not quietly continue in the default culture and report a green result that means
             // nothing.
             var culture = CultureInfo.GetCultureInfo(name.Trim());
-
-            // DefaultThreadCurrentCulture covers threads the run starts later; CurrentCulture covers
-            // the one we are on now, which NUnit's setup and the tests themselves run on.
-            CultureInfo.DefaultThreadCurrentCulture = culture;
-            CultureInfo.CurrentCulture = culture;
+            UserCulture.SetForTests(culture);
 
             // Standard error, because it is the only channel `dotnet test` shows at its default
             // verbosity. Worth saying out loud: a run whose failures are all about decimal points is
             // baffling until you know it was not running in English.
             Console.Error.WriteLine(
-                $"{kEnvironmentVariable} is set, so this run uses the culture "
+                $"{kEnvironmentVariable} is set, so this run's user culture (UserCulture.Current) is "
                     + $"'{culture.Name}' ({culture.EnglishName}), whose decimal separator is "
-                    + $"'{culture.NumberFormat.NumberDecimalSeparator}'. "
-                    + "CurrentUICulture is left alone, so messages are still English."
+                    + $"'{culture.NumberFormat.NumberDecimalSeparator}'. The process culture is "
+                    + "invariant, as in Bloom, and CurrentUICulture is left alone, so messages are "
+                    + "still English."
             );
         }
     }

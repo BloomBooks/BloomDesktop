@@ -13,6 +13,14 @@ vi.mock("../../utils/bloomApi", async (importOriginal) => ({
     // than a real status arriving mid-test.
     get: () => {},
 }));
+// Every new cell editor gets long-press, which asks the server whether it is on, with axios
+// directly, so the mock above does not catch it. With no server here each request fails a
+// moment later and logs; when that lands after vitest has torn this file's environment down,
+// vitest fails the whole run although every test passed. Nothing here is about long-press.
+vi.mock("./bloomEditing", async (importOriginal) => ({
+    ...((await importOriginal()) as object),
+    activateLongPressFor: () => {},
+}));
 
 import {
     AttachNewTable,

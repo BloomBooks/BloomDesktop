@@ -23,8 +23,13 @@ namespace Bloom.Edit
     ///			(which implements ITool, supplying do-nothing defaults for everything the tool
     ///			doesn't care about, e.g. beginRestoreSettings for a tool that saves no state)
     ///			- minimally this must implement id() to return the tool ID, and
-    ///				makeRootElement() to return the single div that is the tool's React root
-    ///				(the base class's adaptReactElement() does this for you).
+    ///				renderPanel() to return the tool's React element. The toolbox renders that
+    ///				element as an ordinary child of its own single React root, so React context
+    ///				(e.g. the MUI theme) reaches it normally.
+    ///			- the lifecycle methods it does implement (beginRestoreSettings, showTool,
+    ///				newPageReady, detachFromPage, hideTool) need no wiring up: the toolbox runs
+    ///				them from a React effect for as long as that tool is running -- that is,
+    ///				open with the toolbox showing (useToolLifecycle.ts).
     ///			- should implement iconPath() to return the URL of the icon for the tool's section
     ///				header, e.g. "/bloom/bookEdit/toolbox/motion/motion.svg" (create the icon in the
     ///				tool's own folder, or in BloomBrowserUI/images).
@@ -135,9 +140,11 @@ namespace Bloom.Edit
         /// <summary>
         /// Used to save various settings relating to the toolbox. Passed a string which is typically two or three elements
         /// divided by a tab.
-        /// - may be passed 'active' followed by the ID of one of the check boxes that indicates whether the DR, LR, or TB tools are
-        /// in use, followed by "1" if it is used, or "0" if not. These IDs are arranged to be the tool name followed by "Check".
-        /// - may be passed 'current' followed by the name of one of the toolbox tools
+        /// - may be passed 'active' followed by the ID of one of the check boxes that says whether the DR, LR, or TB tools are
+        /// ENABLED, followed by "1" if so, or "0" if not. These IDs are the tool name followed by "Check".
+        /// ('active' is the historical wire word for enabled; the browser calls this set the enabled tools.)
+        /// - may be passed 'current' followed by the name of one of the toolbox tools. ('current' is the
+        /// persisted word for the tool the toolbox has open.)
         /// - may be passed 'state' followed by the name of one of the tools and its current state string.
         /// </summary>
         public static void SaveToolboxSettings(Book.Book book, string data)
@@ -147,9 +154,14 @@ namespace Bloom.Edit
             switch (args[0])
             {
                 case "active":
-                    UpdateActiveToolSetting(
+                    UpdateToolEnabledSetting(
                         book,
-                        args[1].Substring(0, args[1].Length - "Check".Length),
+                        // Historically the id is the tool name plus "Check"; strip it only if
+                        // it is really there, so a malformed request cannot silently truncate
+                        // a real tool name and write a junk entry into meta.json.
+                        args[1].EndsWith("Check", StringComparison.Ordinal)
+                            ? args[1].Substring(0, args[1].Length - "Check".Length)
+                            : args[1],
                         args[2] == "1"
                     );
                     return;
@@ -184,7 +196,7 @@ namespace Bloom.Edit
             }
         }
 
-        private static void UpdateActiveToolSetting(Book.Book book, string toolName, bool enabled)
+        private static void UpdateToolEnabledSetting(Book.Book book, string toolName, bool enabled)
         {
             var tools = book.BookInfo.Tools;
             var item = tools.FirstOrDefault(t => t.ToolId == toolName);

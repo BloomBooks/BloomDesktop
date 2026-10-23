@@ -93,8 +93,13 @@ function makeBackgroundImage(
     element.appendChild(container);
     container.appendChild(img);
 
-    Object.defineProperty(page, "clientWidth", { get: () => pageWidth });
-    Object.defineProperty(page, "clientHeight", { get: () => pageHeight });
+    // Like a browser, clientWidth and clientHeight round to whole pixels.
+    Object.defineProperty(page, "clientWidth", {
+        get: () => Math.round(pageWidth),
+    });
+    Object.defineProperty(page, "clientHeight", {
+        get: () => Math.round(pageHeight),
+    });
     Object.defineProperty(img, "naturalWidth", { get: () => naturalWidth });
     Object.defineProperty(img, "naturalHeight", { get: () => naturalHeight });
 
@@ -105,31 +110,34 @@ function makeBackgroundImage(
         }
         return axis === "width" ? elementWidth : elementHeight;
     };
+    // Like the page's, these round to whole pixels, as a browser's do.
     for (const box of [element, container]) {
         Object.defineProperty(box, "clientWidth", {
-            get: () => elementSize("width"),
+            get: () => Math.round(elementSize("width")),
         });
         Object.defineProperty(box, "clientHeight", {
-            get: () => elementSize("height"),
+            get: () => Math.round(elementSize("height")),
         });
     }
     Object.defineProperty(img, "clientWidth", {
         get: () => {
             const written = parseFloat(img.style.width);
-            return isNaN(written) ? elementSize("width") : written;
+            return Math.round(isNaN(written) ? elementSize("width") : written);
         },
     });
     Object.defineProperty(img, "clientHeight", {
         get: () => {
             const writtenHeight = parseFloat(img.style.height);
             if (!isNaN(writtenHeight)) {
-                return writtenHeight;
+                return Math.round(writtenHeight);
             }
             const writtenWidth = parseFloat(img.style.width);
             if (!isNaN(writtenWidth)) {
-                return (writtenWidth * naturalHeight) / naturalWidth;
+                return Math.round(
+                    (writtenWidth * naturalHeight) / naturalWidth,
+                );
             }
-            return elementSize("height");
+            return Math.round(elementSize("height"));
         },
     });
     return img;
@@ -361,6 +369,45 @@ describe("rotateImageContentRight90Degrees, on a page background picture", () =>
         expect(img.style.transform).toBe("");
     });
 
+    it("brings a picture the shape of the page back to where it began after four rotations", () => {
+        // A portrait picture the shape of the page: Bloom makes its element as big as the page
+        // and the bleed, 482 by 723, which overhangs the top and bottom by 1.5. The rotated
+        // element's sizes are fractions of a pixel, and the rotation must work from the sizes it
+        // wrote, not from the whole pixels a browser's clientWidth and clientHeight round them to.
+        const fittedWidth = 480 * kBleedScale;
+        const fittedHeight = 720 * kBleedScale;
+        const img = makeBackgroundImage(
+            480,
+            720,
+            fittedWidth,
+            fittedHeight,
+            200,
+            300,
+        );
+        const element = elementOf(img);
+        element.style.width = `${fittedWidth}px`;
+        element.style.height = `${fittedHeight}px`;
+        element.style.left = `${-kBackgroundImageBleedPx}px`;
+        element.style.top = `${(720 - fittedHeight) / 2}px`;
+        rotateImageContentRight90Degrees(img);
+        // Sanity check: the first rotation leaves the element a fraction of a pixel high.
+        expect(px(element.style.height) % 1).not.toBe(0);
+
+        for (let rotation = 1; rotation < 4; rotation++) {
+            rotateImageContentRight90Degrees(img);
+        }
+
+        expect(px(element.style.width)).toBeCloseTo(fittedWidth, 1);
+        expect(px(element.style.height)).toBeCloseTo(fittedHeight, 1);
+        expect(px(element.style.left)).toBeCloseTo(-kBackgroundImageBleedPx, 1);
+        expect(px(element.style.top)).toBeCloseTo((720 - fittedHeight) / 2, 1);
+        // A picture nobody cropped must not come back with a crop's numbers.
+        expect(img.style.width).toBe("");
+        expect(img.style.left).toBe("");
+        expect(img.style.top).toBe("");
+        expect(img.style.transform).toBe("");
+    });
+
     it("gives an uncropped picture no numbers of its own after a 180-degree rotation", () => {
         const img = makeSidewaysPhotograph();
         rotateImageContentRight90Degrees(img);
@@ -512,6 +559,28 @@ describe("rotateImageContentRight90Degrees, on an ordinary picture element", () 
         expect(px(img.style.left)).toBeCloseTo(-50);
         expect(px(img.style.top)).toBeCloseTo(50);
         expect(img.style.transform).toBe("rotate(90deg)");
+    });
+
+    it("keeps the centre of a crop shown at a written height, and drops the height", () => {
+        // A picture 600 by 400 cropped into a box 150 wide and 120 high, filling an element of
+        // that size. Its own shape would make the box only 100 high; Undo can put back a
+        // height like this one, and the box is then 120 high.
+        const img = makeBackgroundImage(480, 720, 150, 120, 600, 400, false);
+        img.style.width = "150px";
+        img.style.height = "120px";
+        img.style.left = "0px";
+        img.style.top = "0px";
+
+        rotateImageContentRight90Degrees(img);
+
+        // The rotation removes the written height, so the box becomes 150 by 100, and its centre
+        // is the centre of the box as it was shown, (75, 60), carried to the centre of the
+        // element, now 120 by 150. Centring the 100-high box on (75, 50) instead would put it
+        // 10 pixels to the right of that.
+        expect(img.style.height).toBe("");
+        expect(px(img.style.width)).toBeCloseTo(150);
+        expect(px(img.style.left)).toBeCloseTo(60 - 150 / 2);
+        expect(px(img.style.top)).toBeCloseTo(75 - 100 / 2);
     });
 });
 
