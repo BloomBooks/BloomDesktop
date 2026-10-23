@@ -147,8 +147,9 @@ BL-16904), before the xmatter check, since the branding can choose the pack. It 
 "open settings on the Subscription page" callers to the new dialog. Subscription badges and gated
 menu items call `showCollectionSettingsDialog` in the browser (from an iframe, through the
 workspace bundle's exports); `common/showSettingsDialog` remains for the comic book ReadMe links
-and for badges outside the workspace, and `CheckForInvalidBranding` (which never fires: nothing
-sets `InvalidBranding`) launches it from C#. A badge on one of
+and for badges outside the workspace, and `CheckForInvalidBranding` launches it from C#. That
+startup check never fires (nothing sets `InvalidBranding`); it is removed in the cutover (section
+6), not revived. A badge on one of
 the dialog's own pages switches the open pane to the Subscription page, keeping the edits so far,
 through the page control Config-R gains in BL-17032.
 The other pages' gating still follows the saved subscription, not a code typed but not saved.
@@ -170,7 +171,7 @@ were on another tab there); in the values the font is already part of each langu
 **BL-16738 Experimental.** Per Q9. Built: a feature that lands adds an `ExperimentalFeatureSetting`
 row in `settingsPages/ExperimentalPage.tsx` and a property in `ExperimentalValues`.
 
-## 6. Cutover (new card)
+## 6. Cutover (BL-17042)
 
 - First go through the WinForms OK handler (`_okButton_Click`) line by line and confirm each rule
   exists in the React path or was dropped on purpose.
@@ -180,6 +181,11 @@ row in `settingsPages/ExperimentalPage.tsx` and a property in `ExperimentalValue
   `AdvancedValues`), so that flag needs a new home when the WinForms class goes.
 - The "open settings on the Subscription page" callers already open the new dialog (BL-16734).
   The `forFixingEnterpriseSubscription` parameter of `OpenLegacySettingsDialog` goes with it.
+- Remove the dead invalid-branding startup check: `CollectionSettings.InvalidBranding`,
+  `WorkspaceView.CheckForInvalidBranding`, and its callers in `Shell` and `Program.cs`. Nothing
+  has set `InvalidBranding` since "Generalize Subscriptions (BL-14379)" (March 2025), so the check
+  always returns at once. Bringing back a startup prompt for an expired or wrong code would be a
+  separate product decision; the Collections tab's expiry banner covers that case today.
 - Mark unused `CollectionSettingsDialog.*` strings obsolete (never delete), update the help
   mapping and help pages, add an e2e test that opens the dialog and changes a setting (and update
   `src/BloomE2E/AUTOMATION-DEBT.md`), post test ideas on BL-16271.
