@@ -122,9 +122,9 @@
         <target xml:lang="es-ES" state="final">Verificador de accesibilidad de Bloom</target>
         <note>ID: AccessibilityCheck.WindowTitle</note>
       </trans-unit>
-      <trans-unit id="AccountMenu.Account">
+      <trans-unit id="AccountMenu.Account" approved="yes">
         <source xml:lang="en">Account</source>
-        <target xml:lang="es-ES" state="translated">Cuenta</target>
+        <target xml:lang="es-ES" state="final">Cuenta</target>
         <note>ID: AccountMenu.Account</note>
       </trans-unit>
       <trans-unit id="AccountMenu.SignIn">
@@ -390,7 +390,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       </trans-unit>
       <trans-unit id="Collection.OpenDifferentCollection">
         <source xml:lang="en">Open a Different Collection</source>
-        <target xml:lang="es-ES" state="needs-translation">Open a Different Collection</target>
+        <target xml:lang="es-ES" state="translated">Abrir otra colección</target>
         <note>ID: Collection.OpenDifferentCollection</note>
       </trans-unit>
       <trans-unit id="Collection.UpgradeBloom">
