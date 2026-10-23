@@ -541,6 +541,33 @@ describe("inlineImagePaste", () => {
             expect(delays.remove).toHaveBeenCalledWith(img.id);
         });
 
+        // Both pastes would put the same clipboard picture there, and C# would answer the second
+        // with an id the first answer has already taken off the img.
+        it("ignores a second paste over a selected image whose replacement is still pending", () => {
+            const group = makeTextBlockWithCaret();
+            const wrapper = insertInlineImage(group);
+            wrapper.classList.add(kInlineImageSelectedClass);
+            const paste = () =>
+                pasteImageIntoTextAsInlineImage(
+                    makePasteEvent(
+                        makeClipboardData([kPictureItem]),
+                    ) as unknown as ClipboardEvent,
+                );
+
+            paste();
+            paste();
+
+            expect(api.doImageCommand).toHaveBeenCalledTimes(1);
+            expect(delays.add).toHaveBeenCalledTimes(1);
+
+            // Once C# has answered, a new paste goes ahead.
+            const img = wrapper.querySelector("img")!;
+            endInlineImagePaste(img.id);
+            paste();
+
+            expect(api.doImageCommand).toHaveBeenCalledTimes(2);
+        });
+
         it("leaves a picture alone where inline images can't go", () => {
             makeTextBlockWithCaret({ wrapperClass: "bloom-canvas-element" });
             const event = makePasteEvent(makeClipboardData([kPictureItem]));

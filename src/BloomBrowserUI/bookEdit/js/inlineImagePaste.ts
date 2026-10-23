@@ -123,6 +123,10 @@ export function pasteClipboardImage(target: InlineImagePasteTarget): void {
     // doImageCommand sends C# the img's id, giving it a temporary one if it has none, and C#
     // answers with that id. Giving it the id here lets the delay be keyed by it.
     const img = target.img;
+    // A second paste over this image before C# has answered the first would put the same
+    // clipboard picture there, and C# would answer it with the same id, which the first answer
+    // has already taken off the img (changeImage), so it would not find the img. So it is ignored.
+    if (img.id && pendingReplacements.has(img.id)) return;
     if (!img.id) img.id = EditableDivUtils.createUuid();
     pendingReplacements.add(img.id);
     addRequestPageContentDelay(img.id);
