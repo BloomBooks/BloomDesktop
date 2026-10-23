@@ -116,7 +116,7 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         "PublishTab.Apps.Build.Tooltip",
     );
     const buildDoneTooltip = useL10n(
-        "The APK is current. Try on phone will use the latest build.",
+        "The app is already up to date. You only need to build again after you change books or settings.",
         "PublishTab.Apps.Build.DoneTooltip",
     );
     const prepareRequiredTooltip = useL10n(
