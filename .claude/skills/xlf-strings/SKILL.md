@@ -62,8 +62,9 @@ user where it is if you find one), and otherwise add one as follows.
    how important the string is to the user is. This holds however you got here: a task that began
    as something else (a review, a bug fix) and turned into adding a string still owes the
    question.
-   Likewise **never change the `id` of an existing entry** that is not `translate="no"` (it loses
-   the translations; refuse if asked, and point it out in a review), and **only mark an entry
+   Likewise **never change the `id` of an entry that has been merged without `translate="no"`**
+   (Crowdin may already have it, so a new id loses the translations; refuse if asked, and point
+   it out in a review), and **only mark an entry
    obsolete once nothing references it** (see "Marking an entry obsolete" below).
 2. Add the entry in the chosen file:
 
@@ -74,7 +75,14 @@ user where it is if you find one), and otherwise add one as follows.
 </trans-unit>
 ```
 
-- Always mark new entries `translate="no"` unless instructed otherwise.
+- **Whether a new entry gets `translate="no"` depends on the branch the PR targets.**
+  - **On master** (the alpha), mark it `translate="no"`, as in the example above, unless
+    instructed otherwise.
+  - **On a release branch** (`VersionX.Y`), leave the attribute off, so translators get the
+    string as soon as the branch is merged forward to master.
+
+  Check the PR's base branch before writing the entry. The reason is in
+  `DistFiles/localization/README.md`, "When a new entry gets translate="no"".
 - Choose an ID in the form `Namespace.EntryName` that matches the feature area.
 
 ## Translator context notes
@@ -100,7 +108,7 @@ Example with context note:
 
 ## Modifying an existing entry
 
-- **Never change the ID** of an entry that is not new (i.e. not marked `translate="no"`). Changing an ID loses all existing translations.
+- **Never change the ID** of an entry that has been merged without `translate="no"`: Crowdin may already have it, and changing an ID loses all existing translations. An entry that so far exists only on your unmerged branch can still be renamed.
 - **Never change the source text** of a translated entry unless you are certain it won't invalidate existing translations.
 - If you need to change the text or ID: mark the old entry with a `<note>` saying `Obsolete as of <version>` and create a **new entry** with a new ID and the updated text. Find the current version in the `Version` property in `build/Bloom.proj`. Avoid this when possible.
 
@@ -158,7 +166,7 @@ a rule broken.
 
 When reviewing a PR that touches XLF files:
 
-1. Check that every new entry has `translate="no"`.
+1. Check `translate="no"` against the PR's base branch. On master, every new entry should have it. On a release branch (`VersionX.Y`), new entries should not.
 2. Check that new entries are in the right priority file (see table above).
 3. Check that every entry whose context isn't obvious from the string alone has a translator context note.
 4. Check that no existing translated entry has had its ID or source text changed without the obsolete/new-entry pattern.
