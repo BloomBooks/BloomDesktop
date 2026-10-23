@@ -17,6 +17,7 @@ import {
 import {
     DialogCancelButton,
     DialogControlGroup,
+    DialogOkButton,
     DialogFolderChooserWithApi,
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../react_components/l10nHooks";
@@ -36,6 +37,12 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
     errorForTesting?: string;
     defaultRepoFolder?: string;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
+    // Given when the React Collection Settings dialog shows this one. It makes the Team
+    // Collection when its own settings are saved (so its Cancel abandons this too), so instead of
+    // creating it now, OK hands it the chosen folder.
+    onFolderChosen?: (repoFolderParentPath: string) => void;
+    // Called when the dialog closes, whether by OK or Cancel.
+    onClose?: () => void;
 }> = (props) => {
     const [repoFolderPath, setRepoFolderPath] = useState(
         props.defaultRepoFolder ?? "",
@@ -87,8 +94,20 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
         });
     }, []);
 
+    const readyToCreate =
+        !!repoFolderPath && !errorMessage && boxesChecked === 4;
+
+    function close() {
+        closeDialog();
+        props.onClose?.();
+    }
+
     function create() {
-        postString("teamCollection/createTeamCollection", repoFolderPath);
+        if (props.onFolderChosen) {
+            props.onFolderChosen(repoFolderPath);
+            close();
+        } else
+            postString("teamCollection/createTeamCollection", repoFolderPath);
     }
 
     function tryToCreate() {
@@ -103,7 +122,11 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
     }
 
     return (
-        <BloomDialog {...propsForBloomDialog}>
+        <BloomDialog
+            {...propsForBloomDialog}
+            onClose={close}
+            onCancel={props.onFolderChosen ? close : undefined}
+        >
             <DialogTitle title={`${dialogTitle}`} />
             <DialogMiddle>
                 <TextWithEmbeddedLink
@@ -199,20 +222,28 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                 {errorMessage && <ErrorBox>{errorMessage}</ErrorBox>}
             </DialogMiddle>
             <DialogBottomButtons>
-                <BloomButton
-                    id="create-and-restart"
-                    l10nKey="TeamCollection.CreateAndRestart"
-                    hasText={true}
-                    enabled={
-                        !!repoFolderPath && !errorMessage && boxesChecked == 4
-                    }
-                    temporarilyDisableI18nWarning={true}
-                    onClick={() => {
-                        tryToCreate();
-                    }}
-                >
-                    Create &amp; Restart
-                </BloomButton>
+                {/* When the React Collection Settings dialog shows this one, nothing happens
+                    until that dialog saves, so this is a plain OK. */}
+                {props.onFolderChosen ? (
+                    <DialogOkButton
+                        default={true}
+                        enabled={readyToCreate}
+                        onClick={tryToCreate}
+                    />
+                ) : (
+                    <BloomButton
+                        id="create-and-restart"
+                        l10nKey="TeamCollection.CreateAndRestart"
+                        hasText={true}
+                        enabled={readyToCreate}
+                        temporarilyDisableI18nWarning={true}
+                        onClick={() => {
+                            tryToCreate();
+                        }}
+                    >
+                        Create &amp; Restart
+                    </BloomButton>
+                )}
                 <DialogCancelButton
                     onClick_DEPRECATED={() => post("common/closeReactDialog")}
                 />

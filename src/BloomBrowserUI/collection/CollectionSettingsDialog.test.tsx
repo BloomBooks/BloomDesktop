@@ -43,6 +43,7 @@ const initialValues: ICollectionSettingsValues = {
         district: "",
     },
     subscription: { code: "Saved-Code-123456-7890" },
+    teamCollection: { administrators: "", createInFolder: "" },
     bloomLibrary: { defaultBookshelf: "" },
     advanced: { autoUpdate: true, collectionName: "Test Collection" },
     experimental: { "team-collections": false, tables: false },
@@ -52,6 +53,7 @@ const settingsResponse: ICollectionSettingsResponse = {
     values: initialValues,
     restartPaths: ["frontBackMatter.xmatter", "languages.language3.tag"],
     isTeamCollection: false,
+    editingABlorgBook: false,
     notAllowedMessage: null,
 };
 
@@ -68,6 +70,9 @@ const defaultXmatterOfferings = [
         description: "Made for reading on phones.",
     },
 ];
+
+// What GET teamCollection/defaultRepoFolder answers.
+const kDropboxFolder = "C:\\Users\\me\\Dropbox";
 
 const qrCodeBadge: IQrCodeBadgeData = {
     qrCode: "data:image/png;base64,AAAA",
@@ -165,6 +170,69 @@ vi.mock("../react_components/markdown", () => ({
 // On the Subscription page, the note box holds only the community invitation.
 vi.mock("../react_components/boxes", () => ({
     NoteBox: () => <div data-testid="community-invitation" />,
+}));
+
+// The Team Collection page's pieces come from the WinForms tab and talk to Bloom themselves. These
+// stand-ins show what they were given, and let a test type administrators or choose a folder.
+vi.mock("../teamCollection/TeamCollectionSettingsPanel", () => ({
+    TeamCollectionSettings: (props: {
+        administrators: string;
+        onAdministratorsChange: (administrators: string) => void;
+        administratorsError?: string;
+        onCreateTeamCollection: () => void;
+        pendingCreateFolder?: string;
+    }) => (
+        <div>
+            <div data-testid="administrators">{props.administrators}</div>
+            <div data-testid="administrators-error">
+                {props.administratorsError}
+            </div>
+            <div data-testid="pending-create-folder">
+                {props.pendingCreateFolder}
+            </div>
+            <button
+                data-testid="type-valid-administrators"
+                onClick={() =>
+                    props.onAdministratorsChange(
+                        " a@example.com, b@example.com ",
+                    )
+                }
+            />
+            <button
+                data-testid="type-invalid-administrators"
+                onClick={() => props.onAdministratorsChange("a@example.com, b")}
+            />
+            <button
+                data-testid="create-team-collection"
+                onClick={props.onCreateTeamCollection}
+            />
+        </div>
+    ),
+}));
+
+vi.mock("../teamCollection/CreateTeamCollection", () => ({
+    CreateTeamCollectionDialog: (props: {
+        defaultRepoFolder: string;
+        onFolderChosen: (folder: string) => void;
+        onClose: () => void;
+    }) => (
+        <div data-testid="create-dialog">
+            <div data-testid="create-dialog-folder">
+                {props.defaultRepoFolder}
+            </div>
+            <button
+                data-testid="create-dialog-ok"
+                onClick={() => {
+                    props.onFolderChosen(props.defaultRepoFolder);
+                    props.onClose();
+                }}
+            />
+            <button
+                data-testid="create-dialog-cancel"
+                onClick={props.onClose}
+            />
+        </div>
+    ),
 }));
 
 vi.mock("../utils/bloomApi", () => ({
@@ -538,6 +606,9 @@ describe("CollectionSettingsDialog", () => {
                     case "collection/qrCodeBadge":
                         successCallback({ data: qrCodeBadge });
                         break;
+                    case "teamCollection/defaultRepoFolder":
+                        successCallback({ data: kDropboxFolder });
+                        break;
                     default:
                         throw new Error(`The test did not expect GET ${url}`);
                 }
@@ -579,6 +650,13 @@ describe("CollectionSettingsDialog", () => {
     });
 
     it("asks for the settings when it opens and shows the seven pages", async () => {
+        respondWith({
+            ...settingsResponse,
+            values: {
+                ...initialValues,
+                experimental: { "team-collections": true, tables: false },
+            },
+        });
         await renderDialog();
 
         expect(mockGet).toHaveBeenCalledWith(
@@ -1369,6 +1447,182 @@ describe("CollectionSettingsDialog", () => {
             expect(
                 subscriptionPageElement("subscription-code")?.textContent,
             ).toBe("Saved-Code-123456-7890");
+        });
+    });
+
+    describe("Team Collection page", () => {
+        const teamCollectionPageElement = (testId: string) =>
+            container.querySelector(
+                `[data-testid="configr-page"][data-page-key="teamCollection"] [data-testid="${testId}"]`,
+            );
+        const pageKeys = () =>
+            Array.from(
+                container.querySelectorAll('[data-testid="configr-page"]'),
+            ).map((page) => page.getAttribute("data-page-key"));
+        const okButton = () =>
+            container.querySelector(
+                '[data-testid="dialog-ok"]',
+            ) as HTMLButtonElement;
+
+        // A Team Collection with one administrator, whose administrators need a restart.
+        const respondAsTeamCollection = () => {
+            respondWith({
+                ...settingsResponse,
+                isTeamCollection: true,
+                values: {
+                    ...initialValues,
+                    teamCollection: {
+                        administrators: "boss@example.com",
+                        createInFolder: "",
+                    },
+                },
+                restartPaths: [
+                    ...settingsResponse.restartPaths,
+                    "teamCollection.administrators",
+                ],
+            });
+        };
+
+        // Not a Team Collection, with the feature on, so it can become one.
+        const respondReadyToCreate = () => {
+            respondWith({
+                ...settingsResponse,
+                values: {
+                    ...initialValues,
+                    experimental: { "team-collections": true, tables: false },
+                },
+                restartPaths: [
+                    ...settingsResponse.restartPaths,
+                    "teamCollection.createInFolder",
+                ],
+            });
+        };
+
+        it("is not offered while the feature is off and this is not a Team Collection", async () => {
+            expect(initialValues.experimental["team-collections"]).toBe(false);
+            expect(settingsResponse.isTeamCollection).toBe(false);
+
+            await renderDialog();
+
+            expect(pageKeys()).not.toContain("teamCollection");
+            expect(pageKeys()).toContain("experimental");
+        });
+
+        it("is offered in a Team Collection even with the feature off", async () => {
+            respondAsTeamCollection();
+
+            await renderDialog();
+
+            expect(pageKeys()).toContain("teamCollection");
+            expect(
+                teamCollectionPageElement("administrators")?.textContent,
+            ).toBe("boss@example.com");
+        });
+
+        it("is not offered in a collection holding a book downloaded for editing", async () => {
+            respondWith({
+                ...settingsResponse,
+                editingABlorgBook: true,
+                values: {
+                    ...initialValues,
+                    experimental: { "team-collections": true, tables: false },
+                },
+            });
+
+            await renderDialog();
+
+            expect(pageKeys()).not.toContain("teamCollection");
+        });
+
+        it("saves the administrators as typed, trimmed, and restarts", async () => {
+            respondAsTeamCollection();
+            await renderDialog();
+            expect(okButtonLabel()).toBe("OK");
+
+            click("type-valid-administrators");
+            expect(
+                teamCollectionPageElement("administrators-error")?.textContent,
+            ).toBe("");
+            expect(okButtonLabel()).toBe("Restart");
+            click("dialog-ok");
+
+            expect(mockPostJson.mock.calls[0][1]).toEqual({
+                values: {
+                    ...initialValues,
+                    teamCollection: {
+                        administrators: "a@example.com, b@example.com",
+                        createInFolder: "",
+                    },
+                },
+                restartRequired: true,
+            });
+        });
+
+        it("will not save administrators that are not valid, and says why", async () => {
+            respondAsTeamCollection();
+            await renderDialog();
+            expect(okButton().disabled).toBe(false);
+
+            click("type-invalid-administrators");
+
+            expect(okButton().disabled).toBe(true);
+            expect(
+                teamCollectionPageElement("administrators-error")?.textContent,
+            ).toContain("valid administrator email addresses");
+        });
+
+        it("does not check the administrators of a collection that is not a Team Collection", async () => {
+            respondReadyToCreate();
+            expect(initialValues.teamCollection.administrators).toBe("");
+
+            await renderDialog();
+
+            expect(okButton().disabled).toBe(false);
+            expect(
+                teamCollectionPageElement("administrators-error")?.textContent,
+            ).toBe("");
+        });
+
+        it("creates a Team Collection in the chosen folder only when the settings are saved", async () => {
+            respondReadyToCreate();
+            await renderDialog();
+            expect(teamCollectionPageElement("create-dialog")).toBeNull();
+
+            click("create-team-collection");
+            expect(
+                teamCollectionPageElement("create-dialog-folder")?.textContent,
+            ).toBe(kDropboxFolder);
+            click("create-dialog-ok");
+
+            expect(teamCollectionPageElement("create-dialog")).toBeNull();
+            expect(
+                teamCollectionPageElement("pending-create-folder")?.textContent,
+            ).toBe(kDropboxFolder);
+            expect(mockPostJson).not.toHaveBeenCalled();
+            expect(okButtonLabel()).toBe("Restart");
+            click("dialog-ok");
+
+            expect(mockPostJson.mock.calls[0][1].values.teamCollection).toEqual(
+                {
+                    administrators: "",
+                    createInFolder: kDropboxFolder,
+                },
+            );
+            expect(mockPostJson.mock.calls[0][1].restartRequired).toBe(true);
+        });
+
+        it("forgets the folder if the Create dialog is cancelled", async () => {
+            respondReadyToCreate();
+            await renderDialog();
+
+            click("create-team-collection");
+            click("create-dialog-cancel");
+
+            expect(teamCollectionPageElement("create-dialog")).toBeNull();
+            expect(
+                teamCollectionPageElement("pending-create-folder")?.textContent,
+            ).toBe("");
+            expect(okButtonLabel()).toBe("OK");
         });
     });
 
