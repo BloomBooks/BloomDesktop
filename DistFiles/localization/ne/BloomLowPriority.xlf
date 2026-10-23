@@ -409,6 +409,11 @@
         <target xml:lang="ne-NP" state="needs-translation">Bloom was not able to paste.</target>
         <note>ID: EditTab.PasteTextFailed</note>
       </trans-unit>
+      <trans-unit id="ImageLibrary.CouldNotDownloadImage">
+        <source xml:lang="en">Bloom could not download this picture. Check that this computer is connected to the internet, then try again.</source>
+        <target xml:lang="ne-NP" state="needs-translation">Bloom could not download this picture. Check that this computer is connected to the internet, then try again.</target>
+        <note>ID: ImageLibrary.CouldNotDownloadImage</note>
+      </trans-unit>
       <trans-unit id="ImageLibrary.PreviewTooLarge">
         <source xml:lang="en">This image is too large to preview here, but you can still use it.</source>
         <target xml:lang="ne-NP" state="needs-translation">This image is too large to preview here, but you can still use it.</target>
@@ -418,6 +423,16 @@
         <source xml:lang="en">This image could not be previewed.</source>
         <target xml:lang="ne-NP" state="needs-translation">This image could not be previewed.</target>
         <note>ID: ImageLibrary.PreviewUnavailable</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.CannotReachSource">
+        <source xml:lang="en">Could not reach {0}. Check that this computer is connected to the internet.</source>
+        <target xml:lang="ne-NP" state="needs-translation">Could not reach {0}. Check that this computer is connected to the internet.</target>
+        <note>ID: ImageLibrary.CannotReachSource</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ComputerSeemsOffline">
+        <source xml:lang="en">This computer seems to be offline. Searching {0} needs an internet connection.</source>
+        <target xml:lang="ne-NP" state="needs-translation">This computer seems to be offline. Searching {0} needs an internet connection.</target>
+        <note>ID: ImageLibrary.ComputerSeemsOffline</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.FieldType.BookTitle">
         <source xml:lang="en">Book Title</source>
