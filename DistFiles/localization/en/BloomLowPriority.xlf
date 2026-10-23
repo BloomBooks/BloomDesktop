@@ -26,6 +26,11 @@
         <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.TeamCollectionPage.SaveRenameFirst" translate="no">
+        <source xml:lang="en">You have changed the collection's name. Save that first (Bloom will restart); then you can create a Team Collection with the new name.</source>
+        <note>ID: CollectionSettingsDialog.TeamCollectionPage.SaveRenameFirst</note>
+        <note>On the Team Collection page of the Collection Settings dialog, above a disabled "Create a Team Collection" button, when the user has typed a new collection name (on the Advanced page) but not saved it yet. "Team Collection" is the name of a Bloom feature.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed">
         <source xml:lang="en">Conversion file used:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed</note>

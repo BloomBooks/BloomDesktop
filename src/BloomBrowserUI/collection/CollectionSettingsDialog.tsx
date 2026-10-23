@@ -192,6 +192,17 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         settings: loadedSettings,
         values: teamCollection,
         onChange: setTeamCollection,
+        // Compared as it would be saved, so spaces typed around the name do not count.
+        // (A user who may not edit the settings gets null values.)
+        collectionNameEdited:
+            !!currentValues &&
+            !!loadedSettings &&
+            withEditedTextTrimmed(
+                currentValues.advanced.collectionName,
+                loadedSettings.values.advanced.collectionName,
+            ) !== loadedSettings.values.advanced.collectionName,
+        onCreateTeamCollection: (createInFolder) =>
+            saveAndCloseDialog({ ...teamCollection!, createInFolder }),
     });
     const bloomLibraryPage = useBloomLibraryPage({
         dialogOpen: propsForBloomDialog.open,
@@ -227,11 +238,12 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     // typed, and the Team Collection values) in place of the ones loaded.
     function withValuesEditedOutsideConfigr(
         values: ICollectionSettingsValues,
+        teamCollectionValues = teamCollection!,
     ): ICollectionSettingsValues {
         return {
             ...values,
             subscription: { code: subscriptionCode! },
-            teamCollection: teamCollection!,
+            teamCollection: teamCollectionValues,
         };
     }
 
@@ -240,10 +252,11 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     function valuesToSaveFrom(
         values: ICollectionSettingsValues,
         settings: ICollectionSettingsResponse,
+        teamCollectionValues = teamCollection!,
     ): ICollectionSettingsValues {
         return withEditedLettersCleaned(
             withEditedTextTrimmed(
-                withValuesEditedOutsideConfigr(values),
+                withValuesEditedOutsideConfigr(values, teamCollectionValues),
                 settings.values,
             ),
             settings.values,
@@ -258,7 +271,9 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             valuesToSaveFrom(currentValues, loadedSettings),
     );
 
-    function saveAndCloseDialog() {
+    // teamCollectionValues replaces the Team Collection values being edited; creating a Team
+    // Collection saves with the folder to create it in.
+    function saveAndCloseDialog(teamCollectionValues = teamCollection!) {
         // Block the button while the save is in flight, so a second click cannot save (and
         // perhaps restart Bloom) a second time.
         setSaving(true);
@@ -269,6 +284,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         const valuesToSave = valuesToSaveFrom(
             latestValuesRef.current!,
             loadedSettings!,
+            teamCollectionValues,
         );
         postJson(
             "collection/settings",
@@ -387,7 +403,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                                     : undefined
                             }
                             englishText={needsRestart ? "Restart" : undefined}
-                            onClick={saveAndCloseDialog}
+                            onClick={() => saveAndCloseDialog()}
                         />
                         <DialogCancelButton />
                     </React.Fragment>
