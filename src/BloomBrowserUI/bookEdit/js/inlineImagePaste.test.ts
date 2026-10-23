@@ -22,6 +22,7 @@ vi.mock("../../react_components/featureStatus", () => ({
 const api = vi.hoisted(() => ({
     postJson: vi.fn(),
     handlePasteImageApiError: vi.fn(),
+    doImageCommand: vi.fn(),
 }));
 // Unit tests must not reach the network (see vitest.setup.ts). Adding the image selects it, and
 // its toolbar asks Bloom for the collection's language names; see the same mock in
@@ -52,10 +53,13 @@ vi.mock("./bloomEditing", () => ({
     addRequestPageContentDelay: delays.add,
     removeRequestPageContentDelay: delays.remove,
 }));
-// Showing the failure's message needs Bloom's message box, which is not here.
+// Showing the failure's message needs Bloom's message box, which is not here. Replacing a
+// selected image's picture goes through doImageCommand, as its Paste image button does; the
+// tests check that it is asked to.
 vi.mock("./bloomImages", async (importOriginal) => ({
     ...(await importOriginal<typeof import("./bloomImages")>()),
     handlePasteImageApiError: api.handlePasteImageApiError,
+    doImageCommand: api.doImageCommand,
 }));
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import {
@@ -67,6 +71,8 @@ import {
     discardPendingInlineImageUndo,
     getInlineImageInEditable,
     getInlineImages,
+    insertInlineImage,
+    kInlineImageSelectedClass,
     syncInlineImagesFromEditable,
 } from "./inlineImages";
 import { cleanupInlineImageInteractions } from "./inlineImageInteractions";
@@ -169,6 +175,7 @@ describe("inlineImagePaste", () => {
         discardPendingInlineImageUndo();
         api.postJson.mockReset();
         api.handlePasteImageApiError.mockReset();
+        api.doImageCommand.mockReset();
         delays.add.mockReset();
         delays.remove.mockReset();
         // See the same spy in inlineImages.test.ts: the overflow check needs layout jsdom lacks.
@@ -306,7 +313,25 @@ describe("inlineImagePaste", () => {
     describe("getInlineImagePasteTarget", () => {
         it("gives the text block the caret is in", () => {
             const group = makeTextBlockWithCaret();
-            expect(getInlineImagePasteTarget()).toBe(group);
+            expect(getInlineImagePasteTarget()).toEqual({
+                kind: "add",
+                translationGroup: group,
+            });
+        });
+        // Clicking an image selects it without moving the focus, and any other press on the page
+        // deselects it. So a selected image is what the user last clicked, wherever the focus is.
+        it("gives the selected inline image, even with the focus somewhere else", () => {
+            const group = makeTextBlockWithCaret();
+            const wrapper = insertInlineImage(group);
+            wrapper.classList.add(kInlineImageSelectedClass);
+            (document.activeElement as HTMLElement).blur();
+            // Sanity check: nothing has the focus.
+            expect(document.activeElement).toBe(document.body);
+
+            expect(getInlineImagePasteTarget()).toEqual({
+                kind: "replace",
+                img: wrapper.querySelector("img"),
+            });
         });
         it("gives nothing in a canvas element's text", () => {
             makeTextBlockWithCaret({ wrapperClass: "bloom-canvas-element" });
@@ -467,6 +492,23 @@ describe("inlineImagePaste", () => {
             pasteImageIntoTextAsInlineImage(event as unknown as ClipboardEvent);
 
             expect(event.preventDefault).not.toHaveBeenCalled();
+            expect(api.postJson).not.toHaveBeenCalled();
+        });
+
+        it("replaces the picture of a selected inline image instead of adding one", () => {
+            const group = makeTextBlockWithCaret();
+            const wrapper = insertInlineImage(group);
+            wrapper.classList.add(kInlineImageSelectedClass);
+            const event = makePasteEvent(makeClipboardData([kPictureItem]));
+
+            pasteImageIntoTextAsInlineImage(event as unknown as ClipboardEvent);
+
+            expect(event.preventDefault).toHaveBeenCalled();
+            expect(api.doImageCommand).toHaveBeenCalledWith(
+                wrapper.querySelector("img"),
+                "paste",
+            );
+            // No new image is asked for.
             expect(api.postJson).not.toHaveBeenCalled();
         });
 

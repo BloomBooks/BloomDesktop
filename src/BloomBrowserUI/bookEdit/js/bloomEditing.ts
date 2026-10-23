@@ -40,7 +40,7 @@ import {
     forgetInlineImagePaste,
     getInlineImagePasteTarget,
     isInlineImagePasteId,
-    pasteClipboardImageAsInlineImage,
+    pasteClipboardImage,
     pasteImageIntoTextAsInlineImage,
 } from "./inlineImagePaste";
 import { setupOrigami, cleanupOrigami } from "./origami";
@@ -1966,12 +1966,14 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
 });
 
 async function pasteImpl(imageAvailable: boolean) {
-    // With the caret in a text block, a picture goes into that block as an inline image, as it
-    // does for Ctrl+V (see pasteImageIntoTextAsInlineImage), even on a page that has a canvas.
+    // With an inline image selected, or the focus in a text block, a picture goes to inline
+    // images (it replaces the selected image's picture, or goes into that block as a new inline
+    // image), as it does for Ctrl+V (see pasteImageIntoTextAsInlineImage), even on a page that
+    // has a canvas.
     if (imageAvailable) {
-        const translationGroup = getInlineImagePasteTarget();
-        if (translationGroup && (await clipboardHoldsJustAPicture())) {
-            pasteClipboardImageAsInlineImage(translationGroup);
+        const target = getInlineImagePasteTarget();
+        if (target && (await clipboardHoldsJustAPicture())) {
+            pasteClipboardImage(target);
             return;
         }
     }

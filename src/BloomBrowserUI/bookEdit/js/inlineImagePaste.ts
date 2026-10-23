@@ -14,11 +14,16 @@
 // page-content delay, so that a save made in the meantime waits for the picture (see
 // requestPageContent).
 //
+// When an inline image is selected, a pasted picture replaces that image's picture instead, as
+// the image's own "Paste image" command does (its menu shows Ctrl+V as the shortcut), and as a
+// paste onto a selected picture on a canvas does.
+//
 // A clipboard that holds formatted text as well as a picture, as a copy from Word or Excel
 // usually does, is pasted as text, as before. The picture there is usually just a rendering of
 // that same text.
 import { postJson } from "../../utils/bloomApi";
 import {
+    doImageCommand,
     getOwningPageBackgroundColor,
     handlePasteImageApiError,
 } from "./bloomImages";
@@ -27,6 +32,7 @@ import {
     removeRequestPageContentDelay,
 } from "./bloomEditing";
 import { EditableDivUtils } from "./editableDivUtils";
+import { kInlineImageSelectedClass } from "./inlineImages";
 import {
     addInlineImage,
     getInlineImageActionTarget,
@@ -58,23 +64,56 @@ function endPendingPaste(imageId: string): void {
 const kImageFileExtensions = /\.(png|jpe?g|gif|bmp|tiff?)$/i;
 
 /**
- * The translation group that a picture pasted now should go into, which is the text block that
- * has the focus, provided that block can take inline images (see getInlineImageActionTarget: not
- * a canvas element, an xmatter or data-book field, or an image description). Returns undefined
- * anywhere else, and then the paste is handled as it always was.
- *
- * This goes by the focus, not by where the text selection is. Selecting a picture on a canvas
- * takes the focus out of the text but leaves the text selection where it was, and a paste then
- * belongs to that picture (see CanvasElementClipboard.pasteImageFromClipboard). The page keeps
- * its focused element while the top bar's Paste button is being clicked, so that route is
- * decided the same way.
+ * Where a picture pasted now should go, if it is for inline images at all: "replace" the picture
+ * of the selected inline image, or "add" a new inline image to a translation group.
  */
-export function getInlineImagePasteTarget(): HTMLElement | undefined {
+export type InlineImagePasteTarget =
+    | { kind: "replace"; img: HTMLElement }
+    | { kind: "add"; translationGroup: HTMLElement };
+
+/**
+ * Where a picture pasted now should go (see InlineImagePasteTarget), or undefined when the paste
+ * is not for inline images, and is then handled as it always was.
+ *
+ * A selected inline image comes first, wherever the focus is. Clicking an image selects it
+ * without moving the focus, and any other press on the page deselects it, so an image that is
+ * still selected is the last thing the user clicked on the page.
+ *
+ * Otherwise it is the text block that has the focus, provided that block can take inline images
+ * (see getInlineImageActionTarget: not a canvas element, an xmatter or data-book field, or an
+ * image description). This goes by the focus, not by where the text selection is. Selecting a
+ * picture on a canvas takes the focus out of the text but leaves the text selection where it
+ * was, and a paste then belongs to that picture (see CanvasElementClipboard.pasteImageFromClipboard).
+ * The page keeps its focused element while the top bar's Paste button is being clicked, so that
+ * route is decided the same way.
+ */
+export function getInlineImagePasteTarget():
+    | InlineImagePasteTarget
+    | undefined {
+    const selected = document.querySelector("." + kInlineImageSelectedClass);
+    if (selected) {
+        return {
+            kind: "replace",
+            img: selected.querySelector("img") as HTMLElement,
+        };
+    }
     const target = getInlineImageActionTarget(
         document.activeElement as HTMLElement | null,
     );
     // The focus can't be in an existing inline image, which is contenteditable=false.
-    return target.kind === "add" ? target.translationGroup : undefined;
+    return target.kind === "add"
+        ? { kind: "add", translationGroup: target.translationGroup }
+        : undefined;
+}
+
+/**
+ * Pastes the picture on the clipboard where `target` says. Replacing goes through the same
+ * command as the image's "Paste image" button, which records its own undo and copies the new
+ * picture to the other languages when it arrives (changeImage).
+ */
+export function pasteClipboardImage(target: InlineImagePasteTarget): void {
+    if (target.kind === "replace") doImageCommand(target.img, "paste");
+    else pasteClipboardImageAsInlineImage(target.translationGroup);
 }
 
 /**
@@ -184,16 +223,16 @@ export function forgetInlineImagePaste(imageId: string): void {
 }
 
 /**
- * The document's paste listener, in the capture phase so that it runs before CKEditor's. If the
- * caret is in a text block that can take inline images and the clipboard holds just a picture,
- * the paste becomes an inline image and nobody else sees the event. Otherwise it does nothing,
- * and the paste goes on as it always has.
+ * The document's paste listener, in the capture phase so that it runs before CKEditor's. If an
+ * inline image is selected, or the focus is in a text block that can take inline images, and the
+ * clipboard holds just a picture, the paste goes to inline images (see getInlineImagePasteTarget)
+ * and nobody else sees the event. Otherwise it does nothing, and the paste goes on as it always
+ * has.
  */
 export function pasteImageIntoTextAsInlineImage(e: ClipboardEvent): void {
-    const translationGroup = getInlineImagePasteTarget();
-    if (!translationGroup || !dataTransferHoldsJustAPicture(e.clipboardData!))
-        return;
+    const target = getInlineImagePasteTarget();
+    if (!target || !dataTransferHoldsJustAPicture(e.clipboardData!)) return;
     e.preventDefault();
     e.stopImmediatePropagation();
-    pasteClipboardImageAsInlineImage(translationGroup);
+    pasteClipboardImage(target);
 }
