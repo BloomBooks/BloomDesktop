@@ -130,8 +130,10 @@ for it again, and the entry can go. Judging that is a human call.
 
 ### The exception: a string Crowdin never had
 
-New entries are added with `translate="no"`, which is what keeps them out of Crowdin until we
-say they are ready. An entry that carried `translate="no"` from the day it was added until the
+New entries on master are added with `translate="no"`, which is what keeps them out of Crowdin
+until we say they are ready. (Entries added on a release branch are not; see "When a new entry
+gets translate="no"" below. So this exception never covers them.) An entry that carried
+`translate="no"` from the day it was added until the
 day it became unused was therefore never offered to a translator, has no translations anywhere,
 and appears in none of the language subdirectories. Deleting it loses nothing, and an obsolete
 note on it protects nothing.
@@ -142,6 +144,19 @@ them; then confirm the id appears only under `en/`. `.claude/skills/xlf-strings/
 the exact commands. Deciding to act on it is still the developer's call, and the evidence
 belongs in the commit message and in the PR-review reply, because a reviewer — human or bot —
 reading only the rule will otherwise flag the deletion, quite correctly.
+
+## When a new entry gets translate="no"
+
+It depends on the branch the entry is added on.
+
+- **On master**, a new entry gets `translate="no"`. Master carries the alpha, and the flag keeps
+  its new strings away from translators until we say they are ready.
+- **On a release branch** (`VersionX.Y`), a new entry does **not** get it. That version is about
+  to ship, and its users need the string translated as soon as possible. The entry reaches
+  Crowdin when the release branch is merged forward to master (see the route above), and the
+  translations come back to the release branch the same way as any others.
+
+`.claude/skills/xlf-strings/SKILL.md` states the rule and points back here.
 
 ## Restrictions on xliff file changes
 
