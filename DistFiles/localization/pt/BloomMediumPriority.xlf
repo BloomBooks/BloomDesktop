@@ -10,9 +10,9 @@
         <target xml:lang="pt-PT" state="final">Disponível com a sua Assinatura Bloom</target>
         <note>ID: AvailableWithSubscription</note>
       </trans-unit>
-      <trans-unit id="CopyrightAndLicense.ReuseMetadataShortcutLabel" approved="yes">
+      <trans-unit id="CopyrightAndLicense.ReuseMetadataShortcutLabel">
         <source xml:lang="en">Shortcuts:</source>
-        <target xml:lang="pt-PT" state="final">Atalhos:</target>
+        <target xml:lang="pt-PT" state="translated">Atalhos:</target>
         <note>ID: CopyrightAndLicense.ReuseMetadataShortcutLabel</note>
       </trans-unit>
       <trans-unit id="CopyrightAndLicense.FromThisBook" approved="yes">
@@ -1619,9 +1619,9 @@
         <target xml:lang="pt-PT" state="final">O projeto de Reading App Builder (Criador de aplicativos de leitura) já está preparado para esta coleção.</target>
         <note>ID: PublishTab.Apps.Prepare.DoneTooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.Prepare.TooltipBloomAppData" approved="yes">
+      <trans-unit id="PublishTab.Apps.Prepare.TooltipBloomAppData">
         <source xml:lang="en">Create the Reading App Builder project in this collection's Bloom App Data folder.</source>
-        <target xml:lang="pt-PT" state="final">Criar o projeto de Reading App Builder (Criador de aplicativos de leitura) nesta pasta de dados de Bloom desta coleção.</target>
+        <target xml:lang="pt-PT" state="translated">Criar o projeto do Reading App Builder dentro da pasta de App Data desta coleção de Bloom.</target>
         <note>ID: PublishTab.Apps.Prepare.TooltipBloomAppData</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.TryOnPhone" approved="yes">
@@ -2176,7 +2176,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.NotAvailableInLookAround">
         <source xml:lang="en">Not available in look-around mode</source>
-        <target xml:lang="pt-PT" state="translated">Indisponível no modo apenas explorar</target>
+        <target xml:lang="pt-PT" state="translated">Não disponível no modo apenas explorar</target>
         <note>ID: AiImageEditor.Run.NotAvailableInLookAround</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ScaleUp.ModelLimit">
@@ -2209,9 +2209,9 @@
         <target xml:lang="pt-PT" state="final">Texto</target>
         <note>ID: AiImageEditor.Section.Text</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Settings.ChooseFolder">
+      <trans-unit id="AiImageEditor.Settings.ChooseFolder" approved="yes">
         <source xml:lang="en">Choose folder</source>
-        <target xml:lang="pt-PT" state="translated">Selecionar pasta</target>
+        <target xml:lang="pt-PT" state="final">Selecionar pasta</target>
         <note>ID: AiImageEditor.Settings.ChooseFolder</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Settings.ConnectionSection" approved="yes">
@@ -2419,14 +2419,14 @@
         <target xml:lang="pt-PT" state="final">Mudar a etnia</target>
         <note>ID: AiImageEditor.Tool.ethnicity.Title</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.extract_cast_of_characters.Param.splitIntoSeparateFiles">
+      <trans-unit id="AiImageEditor.Tool.extract_cast_of_characters.Param.splitIntoSeparateFiles" approved="yes">
         <source xml:lang="en">Split into separate files</source>
-        <target xml:lang="pt-PT" state="translated">Dividir em arquivos distintos</target>
+        <target xml:lang="pt-PT" state="final">Dividir em arquivos distintos</target>
         <note>ID: AiImageEditor.Tool.extract_cast_of_characters.Param.splitIntoSeparateFiles</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.extract_cast_of_characters.Title">
+      <trans-unit id="AiImageEditor.Tool.extract_cast_of_characters.Title" approved="yes">
         <source xml:lang="en">Extract Cast of Characters</source>
-        <target xml:lang="pt-PT" state="translated">Extrair o elenco de personagens</target>
+        <target xml:lang="pt-PT" state="final">Extrair o elenco de personagens</target>
         <note>ID: AiImageEditor.Tool.extract_cast_of_characters.Title</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.generate_image.Param.prompt" approved="yes">
@@ -2434,9 +2434,9 @@
         <target xml:lang="pt-PT" state="final">Descrição da imagem</target>
         <note>ID: AiImageEditor.Tool.generate_image.Param.prompt</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.generate_image.Param.prompt.Placeholder">
+      <trans-unit id="AiImageEditor.Tool.generate_image.Param.prompt.Placeholder" approved="yes">
         <source xml:lang="en">A cute robot playing chess in a park, children's book style</source>
-        <target xml:lang="pt-PT" state="translated">Um robô fofo jogando xadrez num parque, no estilo de um livro infantil</target>
+        <target xml:lang="pt-PT" state="final">Um robô fofo jogando xadrez num parque, no estilo de um livro infantil</target>
         <note>ID: AiImageEditor.Tool.generate_image.Param.prompt.Placeholder</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.generate_image.Title" approved="yes">
@@ -2449,9 +2449,9 @@
         <target xml:lang="pt-PT" state="final">Número de cores</target>
         <note>ID: AiImageEditor.Tool.generate_pallet.Param.numberOfColors</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.generate_pallet.Title">
+      <trans-unit id="AiImageEditor.Tool.generate_pallet.Title" approved="yes">
         <source xml:lang="en">Generate Pallet</source>
-        <target xml:lang="pt-PT" state="translated">Gerar uma paleta</target>
+        <target xml:lang="pt-PT" state="final">Gerar uma paleta</target>
         <note>ID: AiImageEditor.Tool.generate_pallet.Title</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.improve_quality.Description">
@@ -2539,9 +2539,9 @@
         <target xml:lang="pt-PT" state="final">Conectar aos geradores de imagem com IA</target>
         <note>ID: AiImageEditor.Welcome.Connect</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Welcome.CreditsNote">
+      <trans-unit id="AiImageEditor.Welcome.CreditsNote" approved="yes">
         <source xml:lang="en">Your credits are purchased directly from OpenRouter. Bloom doesn't receive any part of what you spend.</source>
-        <target xml:lang="pt-PT" state="translated">Seus créditos são comprados diretamente do OpenRouter. O Bloom não recebe nenhuma parte do valor gasto.</target>
+        <target xml:lang="pt-PT" state="final">Seus créditos são comprados diretamente do OpenRouter. O Bloom não recebe nenhuma parte do valor gasto.</target>
         <note>ID: AiImageEditor.Welcome.CreditsNote</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Welcome.Explanation" approved="yes">
