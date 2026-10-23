@@ -60,7 +60,7 @@ export interface IWorkspaceExports {
     ): void;
     showAboutDialogFromWorkspaceRoot(): void;
     showBookSettingsDialog(initiallySelectedPageKey?: string): void;
-    showCollectionSettingsDialog(initialPageKey?: string): void;
+    showCollectionSettingsDialog(initialPageKey?: string): boolean;
     showDecodableReaderSetupDialog(): void;
     closeDecodableReaderSetupDialog(): void;
     showImageGalleryDialog(img: HTMLElement, searchLang: string): void;

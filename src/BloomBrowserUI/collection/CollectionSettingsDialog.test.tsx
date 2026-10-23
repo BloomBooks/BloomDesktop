@@ -440,7 +440,10 @@ vi.mock("@sillsdev/config-r", () => ({
     ),
 }));
 
-import { CollectionSettingsDialog } from "./CollectionSettingsDialog";
+import {
+    CollectionSettingsDialog,
+    showCollectionSettingsDialog,
+} from "./CollectionSettingsDialog";
 
 describe("CollectionSettingsDialog", () => {
     let container: HTMLDivElement;
@@ -807,6 +810,17 @@ describe("CollectionSettingsDialog", () => {
             mockPostJson.mock.calls[0][1].values.advanced.collectionName,
         ).toBe("Spaced Books");
         expect(mockPostJson.mock.calls[0][1].restartRequired).toBe(true);
+    });
+
+    it("says whether a dialog was there to open, so a window without one can ask Bloom instead", async () => {
+        // No dialog is mounted before the first render.
+        expect(showCollectionSettingsDialog("subscription")).toBe(false);
+
+        await renderDialog();
+        expect(showCollectionSettingsDialog("subscription")).toBe(true);
+
+        unmountRoot(container);
+        expect(showCollectionSettingsDialog("subscription")).toBe(false);
     });
 
     it("asks Help for the topic of the page Config-R says is showing", async () => {
