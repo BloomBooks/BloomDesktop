@@ -37,7 +37,7 @@ import {
 import {
     clipboardHoldsJustAPicture,
     finishPasteImageAsInlineImage,
-    forgetInlineImagePaste,
+    endInlineImagePaste,
     getInlineImagePasteTarget,
     isInlineImagePasteId,
     pasteClipboardImage,
@@ -453,11 +453,10 @@ export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
 
 // called by C# to remove the id attribute from the image element
 export function removeImageId(imageId: string) {
-    // C# also calls this when a paste of a new inline image fails or is cancelled.
-    if (isInlineImagePasteId(imageId)) {
-        forgetInlineImagePaste(imageId);
-        return;
-    }
+    // C# calls this when a paste ends without a picture, so it ends any paste for inline images
+    // that is waiting on this id (see inlineImagePaste.ts). A new inline image has no element yet.
+    endInlineImagePaste(imageId);
+    if (isInlineImagePasteId(imageId)) return;
     const imgOrImageContainer = document.getElementById(imageId);
     imgOrImageContainer?.removeAttribute("id");
 }
@@ -528,6 +527,8 @@ export function changeImage(imageInfo: IImageInfo) {
     if (!commitInlineImageUndoForImageChange(imgOrImageContainer)) {
         commitPendingImageOperationUndo(imgOrImageContainer);
     }
+    // If this was a paste over a selected inline image, a save waiting for it can go ahead now.
+    endInlineImagePaste(imageInfo.imageId);
     notifyToolOfChangedImage();
 }
 

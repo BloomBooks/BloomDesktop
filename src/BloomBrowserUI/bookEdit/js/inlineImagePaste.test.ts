@@ -80,7 +80,7 @@ import {
     clipboardHoldsJustAPicture,
     dataTransferHoldsJustAPicture,
     finishPasteImageAsInlineImage,
-    forgetInlineImagePaste,
+    endInlineImagePaste,
     getInlineImagePasteTarget,
     htmlIsJustAPicture,
     isInlineImagePasteId,
@@ -424,10 +424,10 @@ describe("inlineImagePaste", () => {
             const group = makeTextBlockWithCaret();
             pasteClipboardImageAsInlineImage(group);
 
-            forgetInlineImagePaste(sentImageId(0));
+            endInlineImagePaste(sentImageId(0));
             expect(delays.remove).toHaveBeenCalledWith(sentImageId(0));
             // Forgetting it again (or forgetting an id that was never a paste) changes nothing.
-            forgetInlineImagePaste(sentImageId(0));
+            endInlineImagePaste(sentImageId(0));
             expect(delays.remove).toHaveBeenCalledTimes(1);
 
             expect(() => deliverPicture(sentImageId(0), "late.png")).toThrow(
@@ -450,6 +450,28 @@ describe("inlineImagePaste", () => {
                 .filter((w) => w.closest('[lang="en"]'))
                 .map((w) => w.querySelector("img")!.getAttribute("src"));
             expect(srcs.sort()).toEqual(["first.png", "second.png"]);
+        });
+
+        // A pasted picture is left selected, as Insert Image leaves its new image, so the next
+        // paste replaces it rather than adding another; a paste onto a canvas does the same.
+        it("leaves the pasted picture selected, so a second paste would replace it", () => {
+            const group = makeTextBlockWithCaret();
+            pasteClipboardImageAsInlineImage(group);
+            deliverPicture(sentImageId(0), "first.png");
+            const added = getInlineImages(group).find(
+                (w) =>
+                    w.classList.contains(kInlineImageSelectedClass) &&
+                    w.closest('[lang="en"]'),
+            );
+            // Sanity check: the new picture is the selected one.
+            expect(added?.querySelector("img")?.getAttribute("src")).toBe(
+                "first.png",
+            );
+
+            expect(getInlineImagePasteTarget()).toEqual({
+                kind: "replace",
+                img: added!.querySelector("img"),
+            });
         });
 
         it("throws if a picture arrives that no paste asked for", () => {
@@ -504,12 +526,19 @@ describe("inlineImagePaste", () => {
             pasteImageIntoTextAsInlineImage(event as unknown as ClipboardEvent);
 
             expect(event.preventDefault).toHaveBeenCalled();
-            expect(api.doImageCommand).toHaveBeenCalledWith(
-                wrapper.querySelector("img"),
-                "paste",
-            );
+            const img = wrapper.querySelector("img")!;
+            expect(api.doImageCommand).toHaveBeenCalledWith(img, "paste");
             // No new image is asked for.
             expect(api.postJson).not.toHaveBeenCalled();
+            // A save waits for the new picture, until C# answers with the img's id (changeImage
+            // or removeImageId, which both end the paste).
+            expect(img.id).not.toBe("");
+            expect(delays.add).toHaveBeenCalledWith(img.id);
+            expect(delays.remove).not.toHaveBeenCalled();
+
+            endInlineImagePaste(img.id);
+
+            expect(delays.remove).toHaveBeenCalledWith(img.id);
         });
 
         it("leaves a picture alone where inline images can't go", () => {
