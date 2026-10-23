@@ -1525,8 +1525,8 @@
         <note>ID: PublishTab.Apps.Build</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Build.DoneTooltip">
-        <source xml:lang="en">The APK is current. Try on phone will use the latest build.</source>
-        <target xml:lang="es-ES" state="needs-translation">The APK is current. Try on phone will use the latest build.</target>
+        <source xml:lang="en">The app is already up to date. You only need to build again after you change books or settings.</source>
+        <target xml:lang="es-ES" state="needs-translation">The app is already up to date. You only need to build again after you change books or settings.</target>
         <note>ID: PublishTab.Apps.Build.DoneTooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Build.NeedsPrepareTooltip">
@@ -1764,9 +1764,9 @@
         <target xml:lang="es-ES" state="final">Herramientas de imágenes con IA de Bloom</target>
         <note>ID: AiImageEditor.AppTitle</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.ChooseTitle">
+      <trans-unit id="AiImageEditor.ArtStyle.ChooseTitle" approved="yes">
         <source xml:lang="en">Choose an Art Style</source>
-        <target xml:lang="es-ES" state="translated">Elegir un tipo de estilo de imagen</target>
+        <target xml:lang="es-ES" state="final">Elegir un tipo de estilo de imagen</target>
         <note>ID: AiImageEditor.ArtStyle.ChooseTitle</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.StyleLabel" approved="yes">
@@ -1774,14 +1774,14 @@
         <target xml:lang="es-ES" state="final">Estilo:</target>
         <note>ID: AiImageEditor.ArtStyle.StyleLabel</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.abstract-illustration.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.abstract-illustration.Name" approved="yes">
         <source xml:lang="en">Abstract Illustration Style</source>
-        <target xml:lang="es-ES" state="translated">Imagen de estilo abstracto</target>
+        <target xml:lang="es-ES" state="final">Imagen de estilo abstracto</target>
         <note>ID: AiImageEditor.ArtStyle.abstract-illustration.Name</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.cartoon-style.Name">
+      <trans-unit id="AiImageEditor.ArtStyle.cartoon-style.Name" approved="yes">
         <source xml:lang="en">Cartoon Style Illustrations</source>
-        <target xml:lang="es-ES" state="translated">Imagen de estilo caricatura</target>
+        <target xml:lang="es-ES" state="final">Imagen de estilo caricatura</target>
         <note>ID: AiImageEditor.ArtStyle.cartoon-style.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.chalkboard-sketch.Name">
