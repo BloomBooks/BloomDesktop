@@ -210,13 +210,16 @@ const {
 } = vi.hoisted(() => ({
     // The dialog gives ConfigrPane a ref, so the stand-in must accept one; this passes it on
     // to the stand-in as its paneRef prop.
-    withPaneRef: <P,>(Pane: React.FunctionComponent<P>) =>
-        React.forwardRef(function MockConfigrPane(props: object, ref) {
-            const PaneTakingRef = Pane as unknown as React.FunctionComponent<{
-                paneRef: React.ForwardedRef<unknown>;
-            }>;
-            return <PaneTakingRef {...props} paneRef={ref} />;
-        }),
+    withPaneRef: <P,>(Pane: React.FunctionComponent<P>) => {
+        const PaneTakingRef = Pane as unknown as React.FunctionComponent<{
+            paneRef: React.ForwardedRef<unknown>;
+        }>;
+        const MockConfigrPane = React.forwardRef((props: object, ref) => (
+            <PaneTakingRef {...props} paneRef={ref} />
+        ));
+        MockConfigrPane.displayName = "MockConfigrPane";
+        return MockConfigrPane;
+    },
     // The page the pane shows. Like Config-r, it opens on the initially selected page, moves
     // when the user clicks another one, and moves when the pane's handle asks it to.
     MockShownPage: (props: {

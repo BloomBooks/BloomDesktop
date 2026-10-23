@@ -18,9 +18,16 @@ import { useMountEffect } from "../utils/useMountEffect";
 // is posted to it.
 export const SubscriptionSettings: React.FunctionComponent = () => {
     const [code, setCode] = React.useState<string>();
-    // This effect fetches, once, the code the WinForms dialog is editing.
+    // This effect fetches, once, the code the WinForms dialog is editing. A reply that arrives
+    // after the tab has gone is dropped.
     useMountEffect(() => {
-        get("settings/subscriptionCode", (result) => setCode(result.data));
+        let isCurrent = true;
+        get("settings/subscriptionCode", (result) => {
+            if (isCurrent) setCode(result.data);
+        });
+        return () => {
+            isCurrent = false;
+        };
     });
     const { subscriptionCodeIntegrity, haveData } = useSubscriptionInfo(code);
 
