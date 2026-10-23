@@ -54,8 +54,6 @@ type Status =
 export const SubscriptionControls: React.FC<{
     code: string;
     onCodeChange: (code: string) => void;
-    // Shown just before the branding summary, when there is one.
-    beforeBrandingSummary?: React.ReactNode;
 }> = (props) => {
     const {
         code,
@@ -121,10 +119,7 @@ export const SubscriptionControls: React.FC<{
 
             {["SubscriptionGood", "EditingBlorgBook"].includes(status) &&
                 subscriptionSummary && (
-                    <>
-                        {props.beforeBrandingSummary}
-                        <BrandingSummary summaryHtml={subscriptionSummary} />
-                    </>
+                    <BrandingSummary summaryHtml={subscriptionSummary} />
                 )}
         </div>
     );

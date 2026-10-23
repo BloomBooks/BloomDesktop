@@ -1,7 +1,6 @@
 import { css } from "@emotion/react";
 import * as React from "react";
 import { ConfigrGroup, ConfigrPage, ConfigrStatic } from "@sillsdev/config-r";
-import { Divider } from "@mui/material";
 import { useL10n } from "../../react_components/l10nHooks";
 import { SubscriptionStatus } from "../../collectionsTab/SubscriptionStatus";
 import { SubscriptionControls } from "../subscriptionCodeControl";
@@ -11,15 +10,8 @@ import {
 } from "../subscriptionSettingsTab";
 import "../enterpriseSettings.less";
 
-// Config-R's own rows are padded like this (MUI ListItem), and divided by a line across the box.
+// Config-R's own rows are padded like this (MUI ListItem).
 const kRowPadding = "8px 16px";
-const RowDivider: React.FunctionComponent = () => (
-    <Divider
-        css={css`
-            margin: 8px -16px;
-        `}
-    />
-);
 
 /**
  * The Subscription page of the Collection Settings dialog: the subscription code, what it gives
@@ -38,9 +30,8 @@ export function useSubscriptionPage(props: {
     );
 
     // The "subscriptionSettings" class brings in the tab's styles (enterpriseSettings.less), such
-    // as the red error messages and the layout of the branding summary. The box holds one element
-    // with dividers of our own, because whether the branding summary shows is known only inside
-    // SubscriptionControls.
+    // as the red error messages and the layout of the branding summary. The box holds the pieces
+    // stacked in one element, as the WinForms tab does.
     return (
         <ConfigrPage label={label} pageKey="subscription" topLevel={true}>
             <ConfigrStatic>
@@ -59,15 +50,11 @@ export function useSubscriptionPage(props: {
                         // The dialog shows its pages only once the settings have loaded.
                         code={props.code!}
                         onCodeChange={props.onCodeChange}
-                        beforeBrandingSummary={<RowDivider />}
                     />
                     <SubscriptionStatus minimalUI code={props.code} />
                     {/* C# calls a blank code "none", so this is the WinForms tab's rule. */}
                     {props.code?.trim() === "" && (
-                        <>
-                            <RowDivider />
-                            <CommunitySubscriptionInvitation />
-                        </>
+                        <CommunitySubscriptionInvitation />
                     )}
                 </div>
             </ConfigrGroup>
