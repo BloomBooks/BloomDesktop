@@ -1547,17 +1547,10 @@ window.showWorkspaceInitializationFailure = function(message) {
 
         /// <summary>
         /// Opens the React Collection Settings dialog (rendered by the workspace's App), on the
-        /// page with the given key if there is one. While the WinForms dialog is open (its own tabs
-        /// have subscription badges too), it is shown that tab instead, so that two dialogs never
-        /// edit the same settings at once.
+        /// page with the given key if there is one.
         /// </summary>
         public void OpenSettingsDialog(string pageKey = null)
         {
-            if (_currentlyOpenSettingsDialog != null)
-            {
-                OpenLegacySettingsDialog(pageKey);
-                return;
-            }
             dynamic dialogParameters = new DynamicJson();
             if (pageKey != null)
                 dialogParameters.initialPageKey = pageKey;

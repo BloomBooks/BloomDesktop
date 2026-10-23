@@ -29,7 +29,6 @@ import {
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../react_components/l10nHooks";
 import { get, postJson } from "../utils/bloomApi";
-import { useMountEffect } from "../utils/useMountEffect";
 import {
     ICollectionSettingsResponse,
     ICollectionSettingsValues,
@@ -90,38 +89,22 @@ function withEditedTextTrimmed<T>(value: T, valueWhenOpened: unknown): T {
     ) as T;
 }
 
-// How many CollectionSettingsDialogs are mounted in this window: one in the workspace (App renders
-// it), none in a window such as the WinForms Settings dialog's tabs.
-let mountedDialogCount = 0;
-
 /**
  * Opens the Collection Settings dialog, on the page named by initialPageKey if one is given.
  * App renders the dialog on every workspace tab, so this works from any of them, with no trip
  * through C#. C# can open it too, by sending LaunchDialog with the same id over the web socket.
- * Returns false, doing nothing, when no dialog is mounted in this window to receive the launch.
  */
-export function showCollectionSettingsDialog(initialPageKey?: string): boolean {
-    if (mountedDialogCount === 0) return false;
+export function showCollectionSettingsDialog(initialPageKey?: string) {
     document.dispatchEvent(
         new CustomEvent("LaunchDialog", {
             detail: { id: kCollectionSettingsDialogId, initialPageKey },
         }),
     );
-    return true;
 }
 
 export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const { openingEvent, closeDialog, propsForBloomDialog } =
         useEventLaunchedBloomDialog(kCollectionSettingsDialogId);
-
-    // This effect records that this window has a dialog to receive launches, for
-    // showCollectionSettingsDialog, for as long as the dialog is mounted.
-    useMountEffect(() => {
-        mountedDialogCount++;
-        return () => {
-            mountedDialogCount--;
-        };
-    });
 
     // The launch event may name the page to open on.
     const initialPageKey = openingEvent?.initialPageKey as string | undefined;

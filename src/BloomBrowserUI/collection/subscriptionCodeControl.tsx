@@ -135,7 +135,10 @@ const StatusText: React.FC<{
             {props.status === "SubscriptionIncorrect" && (
                 <Label
                     l10nKey="Settings.Subscription.NotValid"
-                    className={"error"}
+                    css={css`
+                        display: block;
+                        color: red;
+                    `}
                 >
                     That code appears to be incorrect.
                 </Label>
@@ -144,7 +147,10 @@ const StatusText: React.FC<{
             {props.status === "SubscriptionIncomplete" && (
                 <Label
                     l10nKey="Settings.Subscription.Incomplete"
-                    className={"incomplete"}
+                    css={css`
+                        display: block;
+                        color: ${kBloomBlue};
+                    `}
                 >
                     The code should look like SOMENAME-123456-7890
                 </Label>
@@ -178,7 +184,10 @@ const StatusText: React.FC<{
             {props.status === "SubscriptionExpired" && (
                 <Label
                     l10nKey="Settings.Subscription.Expired"
-                    className={"error"}
+                    css={css`
+                        display: block;
+                        color: red;
+                    `}
                 >
                     That code has expired.
                 </Label>
@@ -290,11 +299,48 @@ function getStatusSansEditingBlorgBook(
 export const BrandingSummary: React.FC<{ summaryHtml: string }> = (props) => {
     return (
         <div
-            className="summary"
             css={css`
                 background-color: white;
                 padding: 5px;
+                margin-top: 5px;
                 height: 106px;
+                overflow-y: hidden;
+                // Each summary.htm file has one top-level div of one of these classes. In the
+                // horizontal layout, there should be one child div, with whatever should appear
+                // beside the picture.
+                .horizontal {
+                    display: flex;
+                    box-sizing: border-box;
+                    div {
+                        margin-right: 20px;
+                        // allowing both to grow tends to distribute any extra white space,
+                        // rather than putting the image right next to the text (default) or
+                        // against the right border (as would making the parent
+                        // justify-content:space-between). Unlike justify-content:space-around,
+                        // this won't put any space before the div, so the text stays aligned with
+                        // the other two items in the column as desired.
+                        flex-grow: 1;
+                    }
+                    img {
+                        max-height: 100px;
+                        max-width: 250px;
+                        flex-grow: 1;
+                        object-fit: contain;
+                    }
+                }
+                .vertical {
+                    display: flex;
+                    height: 100%;
+                    box-sizing: border-box;
+                    flex-direction: column;
+                    justify-content: space-around;
+                    img {
+                        flex: 1 1 0;
+                        object-fit: contain;
+                        margin-top: 3px;
+                        min-height: 0;
+                    }
+                }
             `}
             dangerouslySetInnerHTML={{
                 __html: props.summaryHtml,
@@ -388,7 +434,9 @@ const Editor: React.FC<{
                 `}
             >
                 <Label
-                    className="subscriptionCodeLabel"
+                    css={css`
+                        display: inline-block;
+                    `}
                     l10nKey="Settings.Subscription.SubscriptionCodeLabel"
                 >
                     Subscription Code:
@@ -442,23 +490,13 @@ const Editor: React.FC<{
             <Button variant="text" onClick={handleCopy} size="small">
                 <Stack direction="column" alignItems="center">
                     <ContentCopy />
-                    <Label
-                        className="editButtonLabel"
-                        l10nKey="EditTab.CopyButton"
-                    >
-                        Copy
-                    </Label>
+                    <Label l10nKey="EditTab.CopyButton">Copy</Label>
                 </Stack>
             </Button>
             <Button variant="text" onClick={handlePaste} size="small">
                 <Stack direction="column" alignItems="center">
                     <ContentPaste />
-                    <Label
-                        className="editButtonLabel"
-                        l10nKey="EditTab.PasteButton"
-                    >
-                        Paste
-                    </Label>
+                    <Label l10nKey="EditTab.PasteButton">Paste</Label>
                 </Stack>
             </Button>
         </div>

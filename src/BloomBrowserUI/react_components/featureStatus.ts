@@ -1,9 +1,9 @@
 // See also: the backend version of this in FeatureStatus.cs
 
 import { useMemo } from "react";
-import { post, useApiObject, get } from "../utils/bloomApi";
+import { useApiObject, get } from "../utils/bloomApi";
 import { useL10n2 } from "./l10nHooks";
-import { tryGetWorkspaceBundleExports } from "../bookEdit/js/workspaceFrames";
+import { getWorkspaceBundleExports } from "../bookEdit/js/workspaceFrames";
 
 // NB: this must match c# enum SubscriptionTier in Subscription.cs
 export type SubscriptionTier =
@@ -61,15 +61,9 @@ export function useGetFeatureStatus(
 
 // Opens the Collection Settings dialog on its Subscription page. Every subscription badge and gated
 // command calls this. The dialog lives in the workspace's top document, which an iframe (the
-// toolbox, the page) reaches through the workspace bundle. A window with no dialog to receive the
-// launch (the WinForms Settings dialog's own tabs, which load the workspace bundle code too) asks
-// C# instead, which switches that dialog to its Subscription tab.
+// toolbox, the page) reaches through the workspace bundle.
 export function openBloomSubscriptionSettings() {
-    const opened =
-        tryGetWorkspaceBundleExports()?.showCollectionSettingsDialog(
-            "subscription",
-        ) ?? false;
-    if (!opened) post("common/showSettingsDialog?tab=subscription");
+    getWorkspaceBundleExports().showCollectionSettingsDialog("subscription");
 }
 
 // Use this when you just want a minimal label type message, not a fully informative sentence.

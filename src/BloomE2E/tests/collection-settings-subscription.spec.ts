@@ -55,8 +55,7 @@ test("a gated command in a collection without a subscription opens the Subscript
 
     await expect
         .poll(() => getShowingCollectionSettingsPage(page), {
-            message:
-                "the dialog should have opened on its Subscription page, not the old WinForms one",
+            message: "the dialog should have opened on its Subscription page",
             timeout: 30000,
         })
         .toBe("Subscription");

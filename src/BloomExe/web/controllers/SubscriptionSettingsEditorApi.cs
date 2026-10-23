@@ -40,14 +40,12 @@ namespace Bloom.web.controllers
                 {
                     if (request.HttpMethod == HttpMethods.Get)
                     {
-                        // The React Collection Settings dialog keeps the code being typed itself
-                        // and asks about it with ?code=; it is weighed against the code the
-                        // collection has saved. Without it, this describes the WinForms dialog's
-                        // pending code.
+                        // This describes the collection's subscription, or, given ?code=, the one
+                        // that code stands for (a Settings dialog asks about the code being typed).
                         var code = request.GetParamOrNull("code");
                         var subscription =
                             code == null
-                                ? _subscription
+                                ? _collectionSettings.Subscription
                                 : CollectionSettingsUpdater.GetChangedSubscription(
                                     _collectionSettings,
                                     code

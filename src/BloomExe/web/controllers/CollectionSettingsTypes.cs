@@ -63,6 +63,7 @@ namespace Bloom.web.controllers
         )
         {
             _settings = settings;
+            Subscription = new SubscriptionValues { Code = settings.Subscription.Code ?? "" };
             FrontBackMatter = new FrontBackMatterValues(settings);
             BloomLibrary = new BloomLibraryValues(settings);
             Advanced = new AdvancedValues(settings, queueRenameOfCollection);
@@ -81,21 +82,13 @@ namespace Bloom.web.controllers
             set => CollectionSettingsUpdater.ApplyLanguages(value, _settings);
         }
 
-        private SubscriptionValues _postedSubscription;
-
         /// <summary>
         /// The subscription is not written as it is read, because its rules need the bookshelf
-        /// too: populating only keeps the posted code, and CollectionSettingsUpdater.Apply hands it
-        /// to ApplySubscriptionAndBookshelf once all the values are in.
+        /// too: this is a copy of the collection's code, which populating overwrites with the
+        /// posted one, and CollectionSettingsUpdater.Apply hands it to ApplySubscriptionAndBookshelf
+        /// once all the values are in.
         /// </summary>
-        [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
-        public SubscriptionValues Subscription
-        {
-            get =>
-                _postedSubscription
-                ?? new SubscriptionValues { Code = _settings.Subscription.Code ?? "" };
-            set => _postedSubscription = value;
-        }
+        public SubscriptionValues Subscription { get; }
 
         public FrontBackMatterValues FrontBackMatter { get; }
         public BloomLibraryValues BloomLibrary { get; }

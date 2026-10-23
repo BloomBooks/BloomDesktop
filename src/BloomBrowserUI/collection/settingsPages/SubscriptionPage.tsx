@@ -6,10 +6,15 @@ import { Markdown } from "../../react_components/markdown";
 import { NoteBox } from "../../react_components/boxes";
 import { SubscriptionStatus } from "../../collectionsTab/SubscriptionStatus";
 import { SubscriptionControls } from "../subscriptionCodeControl";
-import "../enterpriseSettings.less";
+import { kUiFontStack } from "../../bloomMaterialUITheme";
 
 // Config-R's own rows are padded like this (MUI ListItem).
 const kRowPadding = "8px 16px";
+// The page's text is in Bloom's UI font, as in the rest of Bloom's subscription UI.
+const kTextStyle = css`
+    font-family: ${kUiFontStack};
+    font-size: 10pt;
+`;
 
 /**
  * The Subscription page of the Collection Settings dialog: what a subscription is for and how to
@@ -27,13 +32,10 @@ export function useSubscriptionPage(props: {
         "CollectionSettingsDialog.SubscriptionPage",
     );
 
-    // The "subscriptionSettings" class brings in the styles shared with the WinForms tab
-    // (enterpriseSettings.less), such as the red error messages and the layout of the branding
-    // summary.
     return (
         <ConfigrPage label={label} pageKey="subscription" topLevel={true}>
             <ConfigrStatic>
-                <div className="subscriptionSettings">
+                <div css={kTextStyle}>
                     <Markdown
                         l10nKey="Settings.Subscription.IntroText"
                         l10nParam0={"https://bloomlibrary.org/feature-matrix"} // redirected by cloudflare
@@ -54,10 +56,12 @@ export function useSubscriptionPage(props: {
             </ConfigrStatic>
             <ConfigrGroup>
                 <div
-                    className="subscriptionSettings"
-                    css={css`
-                        padding: ${kRowPadding};
-                    `}
+                    css={[
+                        kTextStyle,
+                        css`
+                            padding: ${kRowPadding};
+                        `,
+                    ]}
                 >
                     <SubscriptionControls
                         // The dialog shows its pages only once the settings have loaded.
@@ -65,7 +69,7 @@ export function useSubscriptionPage(props: {
                         onCodeChange={props.onCodeChange}
                     />
                     <SubscriptionStatus minimalUI code={props.code} />
-                    {/* C# calls a blank code "none", so this is the WinForms tab's rule. */}
+                    {/* A blank code means the collection has no subscription. */}
                     {props.code?.trim() === "" && (
                         <NoteBox
                             css={css`
