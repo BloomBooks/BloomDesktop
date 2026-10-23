@@ -373,8 +373,17 @@ export function makeInlineImageWrapper(id?: string): HTMLElement {
  * any C# changes (TranslationGroupManagerTests covers that cloning). Returns the copy in the
  * editable the reader sees, which is the one the caller will want to work with (for example,
  * to open the image chooser on it).
+ *
+ * The new image holds the placeholder unless `setUpPicture` is given. That is called with the
+ * img of the returned copy, after every editable has its copy and before the undo entry is
+ * recorded, to put a real picture in. It must copy the picture to the other editables, as
+ * changeImageInfo does. Then one Undo takes back both the insertion and the picture, as for a
+ * pasted image.
  */
-export function insertInlineImage(translationGroup: HTMLElement): HTMLElement {
+export function insertInlineImage(
+    translationGroup: HTMLElement,
+    setUpPicture?: (img: HTMLElement) => void,
+): HTMLElement {
     prepareInlineImageUndo(translationGroup, "Insert inline image");
     // The copies we put in each language's editable all get this one id.
     const id = createValidXhtmlUniqueId();
@@ -388,9 +397,11 @@ export function insertInlineImage(translationGroup: HTMLElement): HTMLElement {
             getFloatingClusterEnd(editable),
         );
     });
-    commitPendingInlineImageUndo(translationGroup);
     const preferred = getFirstVisibleEditable(translationGroup) ?? editables[0];
-    return getInlineImageById(preferred, id)!;
+    const wrapper = getInlineImageById(preferred, id)!;
+    setUpPicture?.(wrapper.querySelector("img")!);
+    commitPendingInlineImageUndo(translationGroup);
+    return wrapper;
 }
 
 /**
