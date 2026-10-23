@@ -48,8 +48,9 @@ export function teamCollectionValuesAreValid(
  * The Team Collection page of the Collection Settings dialog: the panel of the WinForms dialog's
  * Team Collection tab. Its values are not Config-R values, because the panel is not made of
  * Config-R controls; the dialog keeps them and puts them into the values it saves. Creating a
- * Team Collection waits for the dialog's OK, so its Cancel abandons that too. Undefined when the
- * page is not offered (see teamCollectionPageIsShown).
+ * Team Collection does not wait for the dialog's OK: the Create dialog's Create & Restart has the
+ * dialog save at once (see onCreateTeamCollection). Undefined when the page is not offered (see
+ * teamCollectionPageIsShown).
  */
 export function useTeamCollectionPage(props: {
     // Undefined until the dialog's GET collection/settings has answered.
@@ -57,11 +58,21 @@ export function useTeamCollectionPage(props: {
     // The values as the user is editing them; undefined until the settings have loaded.
     values: ICollectionSettingsTeamCollection | undefined;
     onChange: (values: ICollectionSettingsTeamCollection) => void;
+    // Whether the collection name has an edit that is not saved yet. A Team Collection cannot be
+    // created then: it would be made under the old name (the rename only happens as Bloom
+    // restarts), and the Create dialog asks the user to approve the old name.
+    collectionNameEdited: boolean;
+    // Saves the settings, makes the collection a Team Collection in this folder, and restarts.
+    onCreateTeamCollection: (repoFolderParentPath: string) => void;
 }): React.ReactElement | undefined {
     const label = useL10n("Team Collection", "TeamCollection.TeamCollection");
     const invalidAdministratorsMessage = useL10n(
         "Please enter one or more valid administrator email addresses, separated by commas or spaces.",
         "TeamCollection.InvalidAdminEmails",
+    );
+    const saveRenameFirstMessage = useL10n(
+        "You have changed the collection's name. Save that first (Bloom will restart); then you can create a Team Collection with the new name.",
+        "CollectionSettingsDialog.TeamCollectionPage.SaveRenameFirst",
     );
     // The folder the Create dialog starts with while it is showing; undefined when it is not.
     const [createDialogFolder, setCreateDialogFolder] =
@@ -107,8 +118,10 @@ export function useTeamCollectionPage(props: {
                                         setCreateDialogFolder(result.data),
                                 )
                             }
-                            pendingCreateFolder={
-                                values.createInFolder || undefined
+                            createDisabledReason={
+                                props.collectionNameEdited
+                                    ? saveRenameFirstMessage
+                                    : undefined
                             }
                         />
                         {createDialogFolder !== undefined && (
@@ -118,12 +131,7 @@ export function useTeamCollectionPage(props: {
                                     initiallyOpen: true,
                                 }}
                                 defaultRepoFolder={createDialogFolder}
-                                onFolderChosen={(createInFolder) =>
-                                    props.onChange({
-                                        ...values,
-                                        createInFolder,
-                                    })
-                                }
+                                onFolderChosen={props.onCreateTeamCollection}
                                 onClose={() => setCreateDialogFolder(undefined)}
                             />
                         )}

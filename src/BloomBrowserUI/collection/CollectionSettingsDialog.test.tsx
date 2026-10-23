@@ -178,15 +178,15 @@ vi.mock("../teamCollection/TeamCollectionSettingsPanel", () => ({
         onAdministratorsChange: (administrators: string) => void;
         administratorsError?: string;
         onCreateTeamCollection: () => void;
-        pendingCreateFolder?: string;
+        createDisabledReason?: string;
     }) => (
         <div>
             <div data-testid="administrators">{props.administrators}</div>
             <div data-testid="administrators-error">
                 {props.administratorsError}
             </div>
-            <div data-testid="pending-create-folder">
-                {props.pendingCreateFolder}
+            <div data-testid="create-disabled-reason">
+                {props.createDisabledReason}
             </div>
             <button
                 data-testid="type-valid-administrators"
@@ -1461,35 +1461,33 @@ describe("CollectionSettingsDialog", () => {
             ).toBe("");
         });
 
-        it("creates a Team Collection in the chosen folder only when the settings are saved", async () => {
+        it("saves at once, with the chosen folder, when the Create dialog's Create & Restart is pressed", async () => {
             respondReadyToCreate();
             await renderDialog();
+            click("pad-country");
+            await flushDeferredChange();
             expect(teamCollectionPageElement("create-dialog")).toBeNull();
 
             click("create-team-collection");
             expect(
                 teamCollectionPageElement("create-dialog-folder")?.textContent,
             ).toBe(kDropboxFolder);
+            expect(mockPostJson).not.toHaveBeenCalled();
             click("create-dialog-ok");
 
-            expect(teamCollectionPageElement("create-dialog")).toBeNull();
-            expect(
-                teamCollectionPageElement("pending-create-folder")?.textContent,
-            ).toBe(kDropboxFolder);
-            expect(mockPostJson).not.toHaveBeenCalled();
-            expect(okButtonLabel()).toBe("Restart");
-            click("dialog-ok");
-
-            expect(mockPostJson.mock.calls[0][1].values.teamCollection).toEqual(
-                {
-                    administrators: "",
-                    createInFolder: kDropboxFolder,
-                },
-            );
-            expect(mockPostJson.mock.calls[0][1].restartRequired).toBe(true);
+            expect(mockPostJson).toHaveBeenCalledTimes(1);
+            const posted = mockPostJson.mock.calls[0][1];
+            expect(posted.values.teamCollection).toEqual({
+                administrators: "",
+                createInFolder: kDropboxFolder,
+            });
+            // The other edits are saved with it.
+            expect(posted.values.frontBackMatter.country).toBe("Kenya");
+            expect(posted.restartRequired).toBe(true);
+            expect(mockCloseDialog).toHaveBeenCalledTimes(1);
         });
 
-        it("forgets the folder if the Create dialog is cancelled", async () => {
+        it("saves nothing if the Create dialog is cancelled", async () => {
             respondReadyToCreate();
             await renderDialog();
 
@@ -1497,10 +1495,38 @@ describe("CollectionSettingsDialog", () => {
             click("create-dialog-cancel");
 
             expect(teamCollectionPageElement("create-dialog")).toBeNull();
-            expect(
-                teamCollectionPageElement("pending-create-folder")?.textContent,
-            ).toBe("");
+            expect(mockPostJson).not.toHaveBeenCalled();
             expect(okButtonLabel()).toBe("OK");
+        });
+
+        it("will not create a Team Collection while a new collection name is unsaved, and says why", async () => {
+            respondReadyToCreate();
+            await renderDialog();
+            expect(
+                teamCollectionPageElement("create-disabled-reason")
+                    ?.textContent,
+            ).toBe("");
+
+            click("change-other-value");
+            await flushDeferredChange();
+
+            expect(
+                teamCollectionPageElement("create-disabled-reason")
+                    ?.textContent,
+            ).toContain("changed the collection's name");
+        });
+
+        it("does not count spaces typed around the name as a rename", async () => {
+            respondReadyToCreate();
+            await renderDialog();
+
+            click("pad-collection-name");
+            await flushDeferredChange();
+
+            expect(
+                teamCollectionPageElement("create-disabled-reason")
+                    ?.textContent,
+            ).toBe("");
         });
     });
 
