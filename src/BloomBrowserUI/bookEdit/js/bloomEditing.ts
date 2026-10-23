@@ -4,6 +4,7 @@ import $ from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import {
     cleanupImages,
+    endImagePaste,
     getImageTransparencyMode,
     getOwningPageBackgroundColor,
     HandleImageError,
@@ -34,6 +35,14 @@ import {
     keepInlineImageSelectionOutOfCkeditorSnapshots,
     setupInlineImageInteractions,
 } from "./inlineImageInteractions";
+import {
+    clipboardHoldsJustAPicture,
+    finishPasteImageAsInlineImage,
+    getInlineImagePasteTarget,
+    isInlineImagePasteId,
+    pasteClipboardImage,
+    pasteImageIntoTextAsInlineImage,
+} from "./inlineImagePaste";
 import { setupOrigami, cleanupOrigami } from "./origami";
 import { SetupTableEditing, TeardownTableEditing } from "./tableEditing";
 import { removeTableEditingArtifacts } from "bloom-table";
@@ -444,12 +453,16 @@ export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
 
 // called by C# to remove the id attribute from the image element
 export function removeImageId(imageId: string) {
+    // C# calls this when a paste ends without a picture, so a save waiting for it can go ahead.
+    endImagePaste(imageId);
     const imgOrImageContainer = document.getElementById(imageId);
     imgOrImageContainer?.removeAttribute("id");
 }
 
 export interface IImageInfo {
-    imageId: string; // the id of the image element, or "makeNewCanvasElement" to paste an image from the clipboard
+    // the id of the image element, or "makeNewCanvasElement" or an id starting with
+    // "makeNewInlineImage" (see inlineImagePaste.ts) to paste an image from the clipboard
+    imageId: string;
     src: string; // must already appropriately URL-encoded.
     copyright: string;
     creator: string;
@@ -473,6 +486,13 @@ export function changeImage(imageInfo: IImageInfo) {
         theOneCanvasElementManager.finishPasteImageFromClipboard(imageInfo);
         // like to do this here, but the image overlay isn't always really created yet.
         //notifyToolOfChangedImage();
+        return;
+    }
+    if (isInlineImagePasteId(imageInfo.imageId)) {
+        // The new inline image's undo entry covers its picture too, so none is recorded here.
+        finishPasteImageAsInlineImage(imageInfo.imageId, (img) =>
+            changeImageInfo(img, imageInfo),
+        );
         return;
     }
     const imgOrImageContainer = document.getElementById(imageInfo.imageId);
@@ -505,6 +525,8 @@ export function changeImage(imageInfo: IImageInfo) {
     if (!commitInlineImageUndoForImageChange(imgOrImageContainer)) {
         commitPendingImageOperationUndo(imgOrImageContainer);
     }
+    // If this was a paste, a save waiting for the picture can go ahead now.
+    endImagePaste(imageInfo.imageId);
     notifyToolOfChangedImage();
 }
 
@@ -1917,6 +1939,14 @@ function pasteHandler(e: Event) {
 // Set up a global document-level paste handler. This works even if there is no
 // focused element that allows the ctrl-V handler to be called.
 document.addEventListener("paste", pasteHandler);
+// Pasting a picture into a text block makes it an inline image there (BL-17014). This has to be
+// in the capture phase, to run before CKEditor takes the paste and inserts the text that came
+// with the picture, usually its path. Capture caused text to be pasted twice when it was tried
+// for pasteHandler (see below), but this listener does nothing unless it pastes a picture, and
+// then it stops the event, so the paste can't happen twice.
+document.addEventListener("paste", pasteImageIntoTextAsInlineImage, {
+    capture: true,
+});
 // We also need a handler on ctrl-V. The pasteHandler does not get invoked by
 // the code above when ctrl-V is pressed in a contenteditable element,
 // probably because some CkEditor code intercepts it and prevents default,
@@ -1935,6 +1965,17 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
 });
 
 async function pasteImpl(imageAvailable: boolean) {
+    // With an inline image selected, or the focus in a text block, a picture goes to inline
+    // images (it replaces the selected image's picture, or goes into that block as a new inline
+    // image), as it does for Ctrl+V (see pasteImageIntoTextAsInlineImage), even on a page that
+    // has a canvas.
+    if (imageAvailable) {
+        const target = getInlineImagePasteTarget();
+        if (target && (await clipboardHoldsJustAPicture())) {
+            pasteClipboardImage(target);
+            return;
+        }
+    }
     const canvasElementManager = theOneCanvasElementManager;
     if (
         imageAvailable &&
