@@ -1525,8 +1525,8 @@
         <note>ID: PublishTab.Apps.Build</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Build.DoneTooltip">
-        <source xml:lang="en">The APK is current. Try on phone will use the latest build.</source>
-        <target xml:lang="az" state="needs-translation">The APK is current. Try on phone will use the latest build.</target>
+        <source xml:lang="en">The app is already up to date. You only need to build again after you change books or settings.</source>
+        <target xml:lang="az" state="needs-translation">The app is already up to date. You only need to build again after you change books or settings.</target>
         <note>ID: PublishTab.Apps.Build.DoneTooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Build.NeedsPrepareTooltip">
