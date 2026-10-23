@@ -504,10 +504,17 @@ namespace Bloom.web.controllers
             catch (JsonReaderException)
             {
                 // A damaged reader tools file must not keep the user out of every other
-                // collection setting, so its values show as empty. SetValue refuses to write
-                // over it, since that would lose the stages and levels we could not read.
+                // collection setting, so its values show as empty and the dialog does not let
+                // them be edited (see IsUnreadable). SetValue refuses to write over it, since
+                // that would lose the stages and levels we could not read.
             }
         }
+
+        /// <summary>
+        /// Whether the file is there but cannot be read, so the dialog must not offer its values
+        /// for editing. Only the GET uses it; a posted value is ignored.
+        /// </summary>
+        public bool IsUnreadable => _settingsFileContent == null;
 
         /// <summary>
         /// The letters and letter combinations of the first language, separated by spaces. A tool

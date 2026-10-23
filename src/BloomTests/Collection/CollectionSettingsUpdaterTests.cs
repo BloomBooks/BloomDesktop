@@ -269,6 +269,11 @@ namespace BloomTests.Collection
                 Is.EqualTo(""),
                 "Sanity check: a damaged file's values show as empty"
             );
+            Assert.That(
+                (bool)values["readerTools"]["isUnreadable"],
+                Is.True,
+                "The dialog must be told not to offer the damaged file's values for editing"
+            );
             values["frontBackMatter"]["country"] = "Kenya";
 
             Apply(values, settings);

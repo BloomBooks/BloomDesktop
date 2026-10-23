@@ -95,6 +95,11 @@
         <note>ID: CollectionSettingsDialog.LanguagesPage.ReaderTools.Language1Changed</note>
         <note>On the "More" page of the first language in the Collection Settings dialog, shown under the alphabet and sentence punctuation (which cannot be edited) after the user has chosen a different first language. "OK" is the dialog's OK button.</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.ReaderTools.Unreadable" translate="no">
+        <source xml:lang="en">Bloom cannot read the reader tools' settings file for this language, so these cannot be changed here.</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.ReaderTools.Unreadable</note>
+        <note>On the "More" page of the first language in the Collection Settings dialog, shown under the alphabet and sentence punctuation (which cannot be edited) when the file the Decodable and Leveled Reader tools keep their settings in is damaged.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguagesPage.RightToLeft.Description" translate="no">
         <source xml:lang="en">If you are not sure, leave this off. If your language is written starting on the right and moving left, you will know.</source>
         <note>ID: CollectionSettingsDialog.LanguagesPage.RightToLeft.Description</note>

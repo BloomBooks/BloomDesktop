@@ -161,7 +161,7 @@ function signLanguageFromChooser(
  * The language row's control: the language's name and tag, a button that opens the language
  * chooser in a dialog of its own, and, for a language the collection need not have, Remove.
  */
-function LanguageChooserControl<
+const LanguageChooserControl = <
     T extends ICollectionSettingsLanguage | ICollectionSettingsSignLanguage,
 >(props: {
     value: T | null;
@@ -171,7 +171,7 @@ function LanguageChooserControl<
     removable: boolean;
     // The language as it should be once the user picks one in the chooser.
     fromChooser: (chosen: ILanguageData, previous: T | null) => T;
-}): React.ReactElement {
+}): React.ReactElement => {
     const changeLabel = useL10n(
         "Change...",
         "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink",
@@ -229,7 +229,7 @@ function LanguageChooserControl<
             )}
         </div>
     );
-}
+};
 
 // The first two languages are never removed, so they get the language they had back.
 type LanguageControlProps = {
@@ -398,6 +398,10 @@ export function useLanguagesPage(props: {
         "These belong to the language you are replacing. To change them for the new language, click OK, then open these settings again.",
         "CollectionSettingsDialog.LanguagesPage.ReaderTools.Language1Changed",
     );
+    const readerToolsUnreadable = useL10n(
+        "Bloom cannot read the reader tools' settings file for this language, so these cannot be changed here.",
+        "CollectionSettingsDialog.LanguagesPage.ReaderTools.Unreadable",
+    );
     const pageNumberingLabel = useL10n(
         "Page Numbering Style",
         "CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel",
@@ -474,6 +478,13 @@ export function useLanguagesPage(props: {
     const language1TagChanged =
         savedLanguage1Tag !== undefined &&
         props.values?.languages.language1.tag !== savedLanguage1Tag;
+    // Why the reader tools' values cannot be edited just now, if they cannot. A damaged file
+    // would be written over, losing the stages and levels Bloom could not read.
+    let readerToolsLockedReason: string | undefined;
+    if (props.settings?.values?.readerTools.isUnreadable)
+        readerToolsLockedReason = readerToolsUnreadable;
+    else if (language1TagChanged)
+        readerToolsLockedReason = readerToolsLanguage1Changed;
 
     const pageNumberStyleOptions = pageNumberStyles.map((style) => ({
         value: style.styleKey,
@@ -543,11 +554,9 @@ export function useLanguagesPage(props: {
                                     label={lettersLabel}
                                     description={`${lettersHelp} ${kEnglishAlphabetExample}`}
                                     overrideDescription={
-                                        language1TagChanged
-                                            ? readerToolsLanguage1Changed
-                                            : undefined
+                                        readerToolsLockedReason
                                     }
-                                    disabled={language1TagChanged}
+                                    disabled={!!readerToolsLockedReason}
                                     allowNewLines={true}
                                     maxLinesToShowBeforeScrolling={3}
                                 />
@@ -556,11 +565,9 @@ export function useLanguagesPage(props: {
                                     label={sentencePunctLabel}
                                     description={sentencePunctHelp}
                                     overrideDescription={
-                                        language1TagChanged
-                                            ? readerToolsLanguage1Changed
-                                            : undefined
+                                        readerToolsLockedReason
                                     }
-                                    disabled={language1TagChanged}
+                                    disabled={!!readerToolsLockedReason}
                                 />
                             </ConfigrGroup>
                         )}

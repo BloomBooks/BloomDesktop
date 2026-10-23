@@ -82,6 +82,8 @@ export interface ICollectionSettingsReaderTools {
     letters: string;
     // Unicode escapes (like \U0020) of other characters that end a sentence.
     sentencePunct: string;
+    // True when the file is damaged; then the two values above are empty and cannot be edited.
+    isUnreadable: boolean;
 }
 
 // The reply to GET collection/qrCodeBadge (QrCodeBadgeData in C#).

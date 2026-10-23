@@ -49,7 +49,7 @@ const initialValues: ICollectionSettingsValues = {
     advanced: { autoUpdate: true, collectionName: "Test Collection" },
     experimental: { "team-collections": false, tables: false },
     // Untidy, as a hand-edited reader tools file might have it.
-    readerTools: { letters: "a  b,c", sentencePunct: "" },
+    readerTools: { letters: "a  b,c", sentencePunct: "", isUnreadable: false },
 };
 
 const settingsResponse: ICollectionSettingsResponse = {
@@ -1052,6 +1052,27 @@ describe("CollectionSettingsDialog", () => {
                 moreElement(1, '[data-testid="configr-input-description"]')
                     ?.textContent,
             ).toContain("belong to the language you are replacing");
+        });
+
+        it("does not let the user edit the alphabet when its file is damaged", async () => {
+            respondWith({
+                ...settingsResponse,
+                values: {
+                    ...initialValues,
+                    readerTools: {
+                        letters: "",
+                        sentencePunct: "",
+                        isUnreadable: true,
+                    },
+                },
+            });
+            await renderDialog();
+
+            expect(lettersBox().disabled).toBe(true);
+            expect(
+                moreElement(1, '[data-testid="configr-input-description"]')
+                    ?.textContent,
+            ).toContain("cannot read the reader tools' settings file");
         });
 
         it("tidies an alphabet the user typed when it saves", async () => {
