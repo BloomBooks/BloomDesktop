@@ -413,12 +413,12 @@
         <note>ID: ImageLibrary.PreviewUnavailable</note>
         <note>Shown in the details pane of the image chooser, in place of the image, when the preview fails to load for some reason other than the image being too large.</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.CannotReachSource" translate="no">
+      <trans-unit id="ImageLibrary.CannotReachSource">
         <source xml:lang="en">Could not reach {0}. Check that this computer is connected to the internet.</source>
         <note>ID: ImageLibrary.CannotReachSource</note>
         <note>Error shown below the search box of the image chooser when a search of an online image source fails because the website could not be reached at all, which usually means the computer is offline. {0} is replaced with the name of the source, such as "Openverse" or "Pixabay", which must not be translated.</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.ComputerSeemsOffline" translate="no">
+      <trans-unit id="ImageLibrary.ComputerSeemsOffline">
         <source xml:lang="en">This computer seems to be offline. Searching {0} needs an internet connection.</source>
         <note>ID: ImageLibrary.ComputerSeemsOffline</note>
         <note>Warning shown below the search box of the image chooser whenever an online image source is selected and the computer reports having no network connection, whether or not the user has searched yet. It is replaced by ImageLibrary.CannotReachSource once a search fails for that reason. {0} is replaced with the name of the source, such as "Openverse" or "Pixabay", which must not be translated.</note>
