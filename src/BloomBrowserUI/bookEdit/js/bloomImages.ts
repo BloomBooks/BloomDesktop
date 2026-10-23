@@ -345,11 +345,12 @@ export function handlePasteImageApiError(responseOrError: unknown): void {
 
 // The pastes of a picture (editView/pasteImage) that are waiting for C# to answer, by the imageId
 // each one sent. C# answers with that id, by calling changeImage with the picture or removeImageId
-// when there is none (EditingView.OnPasteImage always does one or the other), and both call
-// endImagePaste. Each pending paste holds a page-content delay with its imageId as the delay's id,
-// so that a save made before the picture arrives waits for it. If C# ends a paste without either
-// answer (ChangePicture reports its own errors), the delay stays, and saves of this page wait out
-// requestPageContent's limit; going to another page starts afresh.
+// when there is none, including when importing the picture fails (EditingView.OnPasteImage always
+// does one or the other), and both call endImagePaste. Each pending paste holds a page-content
+// delay with its imageId as the delay's id, so that a save made before the picture arrives waits
+// for it. If an answer were ever lost, saves of this page would wait out requestPageContent's
+// limit and later pastes onto that image would be ignored (see startImagePaste), until the page
+// is loaded again.
 const imagePastesAwaitingPicture = new Set<string>();
 
 /**
