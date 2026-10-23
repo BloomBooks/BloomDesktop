@@ -789,14 +789,13 @@ namespace Bloom.Edit
                             "[Paste Image] Pasting jpeg image {0}",
                             clipboardImage.OriginalFilePath
                         );
-                        _model.ChangePicture(
+                        pictureChanged = _model.ChangePicture(
                             imageId,
                             priorImageSrc,
                             clipboardImage,
                             "clipboard",
                             pageBackgroundColor
                         );
-                        pictureChanged = true;
                     }
                     else
                     {
@@ -806,14 +805,13 @@ namespace Bloom.Edit
                             Logger.WriteMinorEvent(
                                 "[Paste Image] Pasting image directly from clipboard (e.g. screenshot)"
                             );
-                            _model.ChangePicture(
+                            pictureChanged = _model.ChangePicture(
                                 imageId,
                                 priorImageSrc,
                                 clipboardImage,
                                 "clipboard",
                                 pageBackgroundColor
                             );
-                            pictureChanged = true;
                         }
                         //they pasted a path to a png
                         else if (
@@ -825,14 +823,13 @@ namespace Bloom.Edit
                                 "[Paste Image] Pasting png file {0}",
                                 clipboardImage.OriginalFilePath
                             );
-                            _model.ChangePicture(
+                            pictureChanged = _model.ChangePicture(
                                 imageId,
                                 priorImageSrc,
                                 clipboardImage,
                                 "clipboard",
                                 pageBackgroundColor
                             );
-                            pictureChanged = true;
                         }
                         else // they pasted a path to some other bitmap format
                         {
@@ -861,14 +858,13 @@ namespace Bloom.Edit
 
                                 using (var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
                                 {
-                                    _model.ChangePicture(
+                                    pictureChanged = _model.ChangePicture(
                                         imageId,
                                         priorImageSrc,
                                         palasoImage,
                                         "clipboard",
                                         pageBackgroundColor
                                     );
-                                    pictureChanged = true;
                                 }
                             }
                         }
@@ -1241,14 +1237,13 @@ namespace Bloom.Edit
             {
                 if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(imageInfo))
                     return;
-                _model.ChangePicture(
+                imageChanged = _model.ChangePicture(
                     imageId,
                     priorImageSrc,
                     imageInfo,
                     "clipboard",
                     pageBackgroundColor
                 );
-                imageChanged = true;
             }
             catch (System.IO.IOException error)
             {
