@@ -328,7 +328,8 @@ function getPasteImageApiErrorMessage(
     return undefined;
 }
 
-function handlePasteImageApiError(responseOrError: unknown): void {
+/** Tells the user why an editView/pasteImage request failed. */
+export function handlePasteImageApiError(responseOrError: unknown): void {
     const message =
         getPasteImageApiErrorMessage(responseOrError) ??
         theOneLocalizationManager.getText(
