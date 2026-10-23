@@ -232,14 +232,11 @@ const LanguageChooserControl = <
 };
 
 // The first two languages are never removed, so they get the language they had back.
-type LanguageControlProps = {
+const RequiredLanguageControl: React.FunctionComponent<{
     value: ICollectionSettingsLanguage | null;
     disabled?: boolean;
     onChange: (value: ICollectionSettingsLanguage | null) => void;
-};
-const RequiredLanguageControl: React.FunctionComponent<LanguageControlProps> = (
-    props,
-) => (
+}> = (props) => (
     <LanguageChooserControl
         value={props.value}
         disabled={props.disabled}
@@ -455,9 +452,11 @@ export function useLanguagesPage(props: {
     // A third language the user adds starts with Bloom's default font, which C# tells us.
     const defaultFontName = props.settings?.defaultFontName ?? "";
     const Language3Control = React.useMemo(() => {
-        const Control: React.FunctionComponent<LanguageControlProps> = (
-            controlProps,
-        ) => (
+        const Control: React.FunctionComponent<{
+            value: ICollectionSettingsLanguage | null;
+            disabled?: boolean;
+            onChange: (value: ICollectionSettingsLanguage | null) => void;
+        }> = (controlProps) => (
             <LanguageChooserControl
                 value={controlProps.value}
                 disabled={controlProps.disabled}
