@@ -143,7 +143,8 @@ real bug in the code under test; read the message and fix it rather than working
   dialog it opens: `openFormatDialog`, `clickOutsideFormatDialog`, `dragFormatDialog`,
   `getFormatDialogPlacement`, and the scrolling and zooming that put the gear at the edge of the
   screen.
-- `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`.
+- `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`, and the selected book's
+  right-click menu (`chooseFromSelectedBookMenu`, `closeBookMenu`).
 - `helpers/bookMaking.ts` — make a book, add pages, type into it, read its pages.
 - `helpers/addPageDialog.ts` — open, read, scroll and close the real Add Page dialog, and add a
   page through it. Tests that only need a page in their book call `addPage` instead.
@@ -166,8 +167,9 @@ real bug in the code under test; read the message and fix it rather than working
   subscription code and restart Bloom on them; `setBranding`; `getFeatureStatus`, the same
   answer the front end asks for before it shows a tier-gated control;
   `kEnterpriseSubscriptionCode` and its `kTestBookshelves`; and the new (React) Settings dialog:
-  open it, show a page, read and change its checkboxes, text boxes and drop-down lists, read its
-  subscription badge, and save, cancel or restart.
+  open it, show a page or read which one is showing, read and change its checkboxes, text boxes
+  and drop-down lists, read or click its subscription badge, read the Subscription page and type
+  a code on it, and save, cancel or restart.
 - `helpers/keys.ts` — `pressKey`, `pressKeyIn`, `typeWithKeys`: real key presses, for tests whose
   subject is the key. `typeInGroup` inserts text and raises no key events, so use it for
   everything else.

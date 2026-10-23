@@ -178,6 +178,18 @@ seen again 2026-10-06 (`collection-settings-advanced.spec.ts`, BL-16737): once i
 of that file, and this time *after* its first test had passed, so a worker can also die between
 tests, not only at startup. The next five runs of the same file were green.
 
+seen again 2026-10-20 (`collection-settings-subscription.spec.ts`, BL-16734), and this time it
+followed one test: its first test, which makes a book from Basic Book and right-clicks it on the
+Collections tab, crashed its worker in about one run in ten (four times in some thirty runs, alone
+or with the rest of the file), always reported at 0ms. Run on its own eight times each, the same
+file's cancel test (no book, never leaves the Collections tab) and
+`collection-settings-bloom-library.spec.ts` never crashed. With `DEBUG=pw:*` the book test passed
+eight runs in a row, so the extra logging hides it, and `NODE_OPTIONS=--report-on-fatalerror`
+wrote no report: the worker dies by a fail-fast that skips Node's own reporting. Later the same
+day it struck `collection-settings-bloom-library.spec.ts`'s first test, which makes no book and
+had passed eight times alone, so making a book is not the trigger. The next thing to try is a
+Windows crash dump of the worker (WER LocalDumps for node.exe needs an administrator).
+
 ## An api that captures CollectionSettings.Subscription cannot see a subscription change
 
 `FeatureStatusApi` used to snapshot `collectionSettings.Subscription` in its constructor, so

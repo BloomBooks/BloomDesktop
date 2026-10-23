@@ -47,9 +47,9 @@ namespace Bloom.web.controllers
     /// The editable settings, grouped by the page of the dialog that shows them. Most of them
     /// are a live view of a CollectionSettings: serializing reads the collection's values, and
     /// populating from the posted JSON writes them straight back, so a simple setting is spelled
-    /// out once here, as a property that reads and writes it. The languages are the exception;
-    /// see Languages. The subscription and the team collection administrators have endpoints of
-    /// their own and so are not here.
+    /// out once here, as a property that reads and writes it. The languages and the subscription
+    /// are the exceptions; see those properties. The team collection administrators have an
+    /// endpoint of their own and so are not here.
     /// </summary>
     public class CollectionSettingsValues
     {
@@ -63,6 +63,7 @@ namespace Bloom.web.controllers
         )
         {
             _settings = settings;
+            Subscription = new SubscriptionValues { Code = settings.Subscription.Code ?? "" };
             FrontBackMatter = new FrontBackMatterValues(settings);
             BloomLibrary = new BloomLibraryValues(settings);
             Advanced = new AdvancedValues(settings, queueRenameOfCollection);
@@ -80,6 +81,14 @@ namespace Bloom.web.controllers
             get => LanguagesValues.From(_settings);
             set => CollectionSettingsUpdater.ApplyLanguages(value, _settings);
         }
+
+        /// <summary>
+        /// The subscription is not written as it is read, because its rules need the bookshelf
+        /// too: this is a copy of the collection's code, which populating overwrites with the
+        /// posted one, and CollectionSettingsUpdater.Apply hands it to ApplySubscriptionAndBookshelf
+        /// once all the values are in.
+        /// </summary>
+        public SubscriptionValues Subscription { get; }
 
         public FrontBackMatterValues FrontBackMatter { get; }
         public BloomLibraryValues BloomLibrary { get; }
@@ -289,6 +298,19 @@ namespace Bloom.web.controllers
             get => _settings.District ?? "";
             set => _settings.District = value;
         }
+    }
+
+    /// <summary>
+    /// The Subscription page's value.
+    /// </summary>
+    public class SubscriptionValues
+    {
+        /// <summary>
+        /// The subscription code as the user typed it ("" for none). The branding, and so the
+        /// look of every book, comes from it.
+        /// </summary>
+        [RequiresRestart]
+        public string Code;
     }
 
     /// <summary>

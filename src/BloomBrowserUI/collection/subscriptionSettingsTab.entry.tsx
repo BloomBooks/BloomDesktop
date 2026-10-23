@@ -1,4 +1,4 @@
 import { bootstrapReactComponent } from "../utils/entryPointBootstrap";
-import { SubscriptionSettings } from "./subscriptionSettingsTab";
+import { LegacySubscriptionSettings } from "./subscriptionSettingsTab";
 
-bootstrapReactComponent(SubscriptionSettings);
+bootstrapReactComponent(LegacySubscriptionSettings);
