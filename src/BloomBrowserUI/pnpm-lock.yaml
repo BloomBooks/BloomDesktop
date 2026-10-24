@@ -86,8 +86,8 @@ importers:
         specifier: 0.21.1
         version: 0.21.1
       bloom-ai-image-tools:
-        specifier: github:BloomBooks/bloom-ai-image-tools#dist-v0.2.14
-        version: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/95df3308fc5d8ebb07dfaf34d7d2f047c0f4bd12
+        specifier: github:BloomBooks/bloom-ai-image-tools#dist-v0.2.15
+        version: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/3463c1e7978d0bca8e753698c0d5e1193a31ccc8
       bloom-image-gallery:
         specifier: github:BloomBooks/bloom-image-gallery
         version: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/5c7e7f4d549437c806d76b4623422a405f25940f(@types/react@18.3.31)(supports-color@5.5.0)
@@ -2701,9 +2701,9 @@ packages:
   bindings@1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
 
-  bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/95df3308fc5d8ebb07dfaf34d7d2f047c0f4bd12:
-    resolution: {gitHosted: true, integrity: sha512-jNmmPgnsXuavQDdrjNXHsHuTVAl/ws0XwP5r6ncG98iilKdNdop3jwP1Xz7LsCXzibfRZh0Yv1IF8ptiDewS+A==, tarball: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/95df3308fc5d8ebb07dfaf34d7d2f047c0f4bd12}
-    version: 0.2.14
+  bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/3463c1e7978d0bca8e753698c0d5e1193a31ccc8:
+    resolution: {gitHosted: true, integrity: sha512-SnOKBxszwVSHyf9VYv/6pUIosdHteRA97giYm+5Rsi4wIDTJn3vz/M3345OJjDSjCovPXyT+cWlFAIe6sNHF4Q==, tarball: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/3463c1e7978d0bca8e753698c0d5e1193a31ccc8}
+    version: 0.2.15
 
   bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/5c7e7f4d549437c806d76b4623422a405f25940f:
     resolution: {gitHosted: true, integrity: sha512-nKoHwCkUZhMu1StAfWES6MdUMeyJMzk+ulvnTr6XVtVkn0Mmet02Wj05g7nxKy1s6cazcxC0I86NxTq2fe0mww==, tarball: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/5c7e7f4d549437c806d76b4623422a405f25940f}
@@ -9267,7 +9267,7 @@ snapshots:
       file-uri-to-path: 1.0.0
     optional: true
 
-  bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/95df3308fc5d8ebb07dfaf34d7d2f047c0f4bd12: {}
+  bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/3463c1e7978d0bca8e753698c0d5e1193a31ccc8: {}
 
   bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/5c7e7f4d549437c806d76b4623422a405f25940f(@types/react@18.3.31)(supports-color@5.5.0):
     dependencies:

@@ -2458,10 +2458,10 @@
         <source xml:lang="en">Number of Colors</source>
         <note>ID: AiImageEditor.Tool.generate_pallet.Param.numberOfColors</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>Label above a dropdown menu in the 'Generate Pallet' tool, setting how many colors the palette it makes will have.</note>
+        <note>Label above a dropdown menu in the 'Generate Palette' tool, setting how many colors the palette it makes will have.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.generate_pallet.Title">
-        <source xml:lang="en">Generate Pallet</source>
+        <source xml:lang="en">Generate Palette</source>
         <note>ID: AiImageEditor.Tool.generate_pallet.Title</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
