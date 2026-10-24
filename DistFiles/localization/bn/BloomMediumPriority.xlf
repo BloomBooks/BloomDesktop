@@ -2450,8 +2450,8 @@
         <note>ID: AiImageEditor.Tool.generate_pallet.Param.numberOfColors</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.generate_pallet.Title">
-        <source xml:lang="en">Generate Pallet</source>
-        <target xml:lang="bn" state="needs-translation">Generate Pallet</target>
+        <source xml:lang="en">Generate Palette</source>
+        <target xml:lang="bn" state="needs-translation">Generate Palette</target>
         <note>ID: AiImageEditor.Tool.generate_pallet.Title</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.improve_quality.Description">
