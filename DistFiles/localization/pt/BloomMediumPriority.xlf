@@ -1042,7 +1042,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.FullBleed.Description.EdgeToEdge" sil:dynamic="true">
         <source xml:lang="en">Enable full bleed layout for printing. Use with the "Edge to Edge" theme. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
-        <target xml:lang="pt-PT" state="translated">Ativar layout de sangramento completo para impressão. Use com o tema "Borda para borda". Isto ativa os indicadores [Imprimir Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) em layouts de papel. Veja [Layout Completo de Bleed Byout](https://docs.bloomlibrary.org/full-bleed) para obter mais informações.</target>
+        <target xml:lang="pt-PT" state="translated">Ative o layout de sangria total para impressão. Use com o tema "Sem Margens". Esta opção ativa os indicadores de [Sangria](https://en.wikipedia.org/wiki/Bleed_%28printing%29) em layouts impressos. Veja [Layout de Sangria Total](https://docs.bloomlibrary.org/full-bleed) para obter mais informações.</target>
         <note>ID: BookSettings.FullBleed.Description.EdgeToEdge</note>
       </trans-unit>
       <trans-unit id="BookSettings.ThemeAndLayoutGroupLabel" sil:dynamic="true" approved="yes">
@@ -1304,9 +1304,9 @@
         <target xml:lang="pt-PT" state="final">Livro Electrónico de Margem zero</target>
         <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
-      <trans-unit id="AppearanceTheme.edge-to-edge" sil:dynamic="true" approved="yes">
+      <trans-unit id="AppearanceTheme.edge-to-edge" sil:dynamic="true">
         <source xml:lang="en">Edge to Edge</source>
-        <target xml:lang="pt-PT" state="final">Borda a borda</target>
+        <target xml:lang="pt-PT" state="translated">Sem Margens</target>
         <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
       <trans-unit id="AppearanceTheme.narrow-margin-ebook" sil:dynamic="true" approved="yes">
