@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { get, postString } from "../utils/bloomApi";
 import { useL10n } from "./l10nHooks";
 import { MenuItem, Select, Typography } from "@mui/material";
+import { bookMakingSelectCss } from "../collection/commonTabSettings";
 
 interface PageNumberStyle {
     localizedStyle: string;
@@ -75,21 +76,26 @@ const PageNumberStyleControl: React.FunctionComponent = () => {
                 {pageNumberingLabel}
             </Typography>
             <Select
-                css={css`
-                    min-width: 180px;
-                    background-color: white;
-                    border: 1px solid #bbb;
-                    padding-left: 7px;
-                    div {
-                        padding: 4px 0 4px;
-                    }
-                    &:before {
-                        content: none !important;
-                    }
-                    &:after {
-                        content: none !important;
-                    }
-                `}
+                css={[
+                    bookMakingSelectCss,
+                    css`
+                        background-color: white;
+                        // Match the rounded, light border of the outlined font
+                        // and keyboard selects (design 1A).
+                        border: 1px solid #c8ccd1;
+                        border-radius: 6px;
+                        padding-left: 7px;
+                        div {
+                            padding: 4px 0 4px;
+                        }
+                        &:before {
+                            content: none !important;
+                        }
+                        &:after {
+                            content: none !important;
+                        }
+                    `,
+                ]}
                 variant="standard"
                 value={selectedStyle} // Must equal the 'styleKey' of a PageNumberStyle
                 MenuProps={{

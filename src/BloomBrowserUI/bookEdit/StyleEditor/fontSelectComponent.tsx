@@ -41,6 +41,9 @@ interface FontSelectProps {
     // Use this if you need to modify the style of popup menus by increasing z-index
     // (e.g., to make the popup be in front of the bloom font dialog)
     popoverZindex?: string;
+    // Applied to the underlying select's FormControl. Emotion routes a `css` prop
+    // on this component here, so callers can size the control.
+    className?: string;
 }
 
 const FontSelectComponent: React.FunctionComponent<FontSelectProps> = (
@@ -131,6 +134,7 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = (
                 currentValue={textValue}
                 onChangeHandler={handleFontChange}
                 popoverZindex={props.popoverZindex}
+                className={props.className}
             >
                 {getMenuItemsFromFontMetaData()}
             </WinFormsStyleSelect>

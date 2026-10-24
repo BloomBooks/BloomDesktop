@@ -2,6 +2,7 @@
 # them against paths that start at the repo root (src/BloomBrowserUI/...). A pattern written
 # relative to this folder would not match.
 lib
+keymanweb
 typings
 Readium
 modified_libraries

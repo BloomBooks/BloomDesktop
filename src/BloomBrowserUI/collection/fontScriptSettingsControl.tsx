@@ -7,6 +7,7 @@ import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { IFontMetaData } from "../bookEdit/StyleEditor/fontSelectComponent";
 import { useEffect, useState } from "react";
 import SingleFontSection from "../react_components/singleFontSection";
+import { bookMakingDividerCss } from "./commonTabSettings";
 
 // This component is the chooser for the collection's fonts and script settings, on the left side
 // of the "Book Making" tab of the Settings dialog. Eventually the whole tab and whole dialog
@@ -78,23 +79,30 @@ export const FontScriptSettingsControl: React.FunctionComponent = () => {
                             fontMetadata={fontMetadata}
                         />
                     )}
-                    {/* Language 2 section */}
+                    {/* Language 2 section, separated from the previous block by a
+                        divider (design 1A). */}
                     {language2Name && language2Font && (
-                        <SingleFontSection
-                            languageNumber={2}
-                            languageName={language2Name}
-                            currentFontName={language2Font}
-                            fontMetadata={fontMetadata}
-                        />
+                        <React.Fragment>
+                            <div css={bookMakingDividerCss} />
+                            <SingleFontSection
+                                languageNumber={2}
+                                languageName={language2Name}
+                                currentFontName={language2Font}
+                                fontMetadata={fontMetadata}
+                            />
+                        </React.Fragment>
                     )}
                     {/* Language 3 section */}
                     {language3Name && language3Font && (
-                        <SingleFontSection
-                            languageNumber={3}
-                            languageName={language3Name}
-                            currentFontName={language3Font}
-                            fontMetadata={fontMetadata}
-                        />
+                        <React.Fragment>
+                            <div css={bookMakingDividerCss} />
+                            <SingleFontSection
+                                languageNumber={3}
+                                languageName={language3Name}
+                                currentFontName={language3Font}
+                                fontMetadata={fontMetadata}
+                            />
+                        </React.Fragment>
                     )}
                 </div>
             </ThemeProvider>

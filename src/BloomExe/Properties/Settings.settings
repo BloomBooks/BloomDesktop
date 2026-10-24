@@ -104,6 +104,9 @@
     <Setting Name="AutoUpdate" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="KeymanOskVisible" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
     <Setting Name="ForumInvitationLastShown" Provider="Bloom.BloomSettingsProvider" Type="System.DateTime" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
