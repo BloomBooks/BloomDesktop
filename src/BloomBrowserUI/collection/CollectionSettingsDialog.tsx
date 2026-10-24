@@ -109,7 +109,8 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         React.useState<ICollectionSettingsValues>();
     const [saving, setSaving] = React.useState(false);
     // The subscription code as the user is typing it. It is kept here rather than in Config-R's
-    // values because its editor is not a Config-R control; withSubscriptionCode puts it in.
+    // values because its editor is not a Config-R control; withValuesEditedOutsideConfigr puts it
+    // in.
     const [subscriptionCode, setSubscriptionCode] = React.useState<string>();
     const paneRef = React.useRef<ConfigrPaneHandle>(null);
     // The top-level page Config-R is showing, so Help can open that page's topic.
@@ -169,6 +170,42 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         "CollectionSettingsDialog.RestartMessage",
     );
 
+    // Config-R's values with the values edited outside Config-R (the subscription code being
+    // typed, and the Team Collection values) in place of the ones loaded.
+    function withValuesEditedOutsideConfigr(
+        values: ICollectionSettingsValues,
+        teamCollectionValues = teamCollection!,
+    ): ICollectionSettingsValues {
+        return {
+            ...values,
+            subscription: { code: subscriptionCode! },
+            teamCollection: teamCollectionValues,
+        };
+    }
+
+    // The values exactly as C# will be sent them: the ones edited outside Config-R put in, and the
+    // text the user edited trimmed (and an edited alphabet cleaned).
+    function valuesToSaveFrom(
+        values: ICollectionSettingsValues,
+        settings: ICollectionSettingsResponse,
+        teamCollectionValues = teamCollection!,
+    ): ICollectionSettingsValues {
+        return withEditedLettersCleaned(
+            withEditedTextTrimmed(
+                withValuesEditedOutsideConfigr(values, teamCollectionValues),
+                settings.values,
+            ),
+            settings.values,
+        );
+    }
+
+    // The values as OK would save them now. Both are checked: a deferred onChange can set
+    // currentValues after a close has already cleared loadedSettings.
+    const currentValuesToSave =
+        currentValues &&
+        loadedSettings &&
+        valuesToSaveFrom(currentValues, loadedSettings);
+
     // C# names these pageKeys when it asks us to open on a particular page. Each page is a hook in
     // its own file under settingsPages/ that returns its ConfigrPage (Config-R rejects a page
     // wrapped in a component).
@@ -178,9 +215,8 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         values: currentValues,
     });
     const frontBackMatterPage = useFrontBackMatterPage({
-        dialogOpen: propsForBloomDialog.open,
         settings: loadedSettings,
-        values: currentValues,
+        values: currentValuesToSave,
     });
     const subscriptionPage = useSubscriptionPage({
         code: subscriptionCode,
@@ -232,42 +268,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             )
         );
     }
-    // Config-R's values with the values edited outside Config-R (the subscription code being
-    // typed, and the Team Collection values) in place of the ones loaded.
-    function withValuesEditedOutsideConfigr(
-        values: ICollectionSettingsValues,
-        teamCollectionValues = teamCollection!,
-    ): ICollectionSettingsValues {
-        return {
-            ...values,
-            subscription: { code: subscriptionCode! },
-            teamCollection: teamCollectionValues,
-        };
-    }
-
-    // The values exactly as C# will be sent them: the ones edited outside Config-R put in, and the
-    // text the user edited trimmed (and an edited alphabet cleaned).
-    function valuesToSaveFrom(
-        values: ICollectionSettingsValues,
-        settings: ICollectionSettingsResponse,
-        teamCollectionValues = teamCollection!,
-    ): ICollectionSettingsValues {
-        return withEditedLettersCleaned(
-            withEditedTextTrimmed(
-                withValuesEditedOutsideConfigr(values, teamCollectionValues),
-                settings.values,
-            ),
-            settings.values,
-        );
-    }
-
-    // Both are checked: a deferred onChange can set currentValues after a close has already
-    // cleared loadedSettings.
-    const needsRestart = restartNeededFor(
-        currentValues &&
-            loadedSettings &&
-            valuesToSaveFrom(currentValues, loadedSettings),
-    );
+    const needsRestart = restartNeededFor(currentValuesToSave);
 
     // teamCollectionValues replaces the Team Collection values being edited; creating a Team
     // Collection saves with the folder to create it in.

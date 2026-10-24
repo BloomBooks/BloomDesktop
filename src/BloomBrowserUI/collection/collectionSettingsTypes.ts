@@ -86,14 +86,12 @@ export interface ICollectionSettingsReaderTools {
     isUnreadable: boolean;
 }
 
-// The reply to GET collection/qrCodeBadge (QrCodeBadgeData in C#).
-export interface IQrCodeBadgeData {
-    // A data: url of the QR code image.
-    qrCode: string;
-    // The address the badge shows beneath its caption.
-    displayUrl: string;
-    // The caption books get when the caption box is left empty.
-    defaultCaption: string;
+// A front/back matter pack the collection may use.
+export interface IXmatterPack {
+    // The pack's key, as values.frontBackMatter.xmatter holds it.
+    value: string;
+    label: string;
+    description: string;
 }
 
 // The reply to GET collection/settings.
@@ -107,6 +105,11 @@ export interface ICollectionSettingsResponse {
     editingABlorgBook: boolean;
     // The font a language gets when the user adds it (a third language).
     defaultFontName: string;
+    // The packs the collection may use; just the one when the branding chooses it.
+    xmatterPacks: IXmatterPack[];
+    xmatterChosenByBranding: boolean;
+    // The caption books get when the QR code caption is empty.
+    defaultQrcodeCaption: string;
     // Non-null when the user may not edit the settings (a Team Collection member who is not an
     // administrator). Then the other fields are null.
     notAllowedMessage: string | null;

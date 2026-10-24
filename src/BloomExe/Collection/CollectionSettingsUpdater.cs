@@ -41,7 +41,11 @@ namespace Bloom.Collection
             // rename) before anything is saved, so if a save below fails, the in-memory settings
             // are left partly changed. We accept that, as the WinForms OK handler always has: the
             // failure is reported, and the collection is read from disk again when it reopens.
-            var values = new CollectionSettingsValues(settings, queueRenameOfCollection);
+            var values = new CollectionSettingsValues(
+                settings,
+                xmatterPackFinder,
+                queueRenameOfCollection
+            );
             using (var reader = postedValues.CreateReader())
             {
                 JsonSerializer

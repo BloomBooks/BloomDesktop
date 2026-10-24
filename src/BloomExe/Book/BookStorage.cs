@@ -3009,7 +3009,6 @@ namespace Bloom.Book
             var displayUrl = GetLanguagePageDisplayUrl(langCode);
 
             string qrFileName = null;
-            const string kQrFileName = "lang-qr-code.png";
             var qrFilePath = Path.Combine(bookFolderPath, kQrFileName);
 
             foreach (var qrWrapper in qrWrappers)
@@ -3036,7 +3035,7 @@ namespace Bloom.Book
                 if (qrFileName == null)
                 {
                     if (updateQrCodeFileEvenIfItExists || !RobustFile.Exists(qrFilePath))
-                        qrFileName = GenerateQrCodeImage(bookFolderPath, url + "?utm_source=qr");
+                        qrFileName = GenerateQrCodeImage(bookFolderPath, langCode);
                     else
                         qrFileName = kQrFileName;
                 }
@@ -3183,36 +3182,29 @@ namespace Bloom.Book
                 captionDiv.AppendChild(doc.CreateTextNode(after));
         }
 
-        private static string GenerateQrCodeImage(string bookFolderPath, string url)
+        // The file in the book folder that holds the badge's QR code.
+        private const string kQrFileName = "lang-qr-code.png";
+
+        private static string GenerateQrCodeImage(string bookFolderPath, string langCode)
         {
-            const string qrFileName = "lang-qr-code.png";
-            using (var qrBitmap = MakeQrCodeBitmap(url))
+            using (var qrBitmap = MakeLanguageQrCodeBitmap(langCode))
             {
                 // Reports a failure to write the file as a NonFatalProblem rather than
                 // throwing, so the book can still be selected (BL-16915).
                 ImageUtils.SaveOrDeletePngImageToPath(
                     qrBitmap,
-                    Path.Combine(bookFolderPath, qrFileName)
+                    Path.Combine(bookFolderPath, kQrFileName)
                 );
             }
-            return qrFileName;
-        }
-
-        /// <summary>
-        /// The QR code of a badge whose link goes to the given language's page on
-        /// BloomLibrary.org, as UpdateQrCode puts it in a book. The Collection Settings dialog
-        /// shows it in its preview of the badge.
-        /// </summary>
-        public static Bitmap MakeLanguageQrCodeBitmap(string langCode)
-        {
-            return MakeQrCodeBitmap(GetLanguagePageUrl(langCode) + "?utm_source=qr");
+            return kQrFileName;
         }
 
         /// <summary>
         /// The address of the page of books in a language on BloomLibrary.org, as a badge shows
-        /// it to the reader (see UpdateQrCode).
+        /// it to the reader (see UpdateQrCode). The Collection Settings dialog's preview of the
+        /// badge spells out the same address.
         /// </summary>
-        public static string GetLanguagePageDisplayUrl(string langCode)
+        private static string GetLanguagePageDisplayUrl(string langCode)
         {
             return "BloomLibrary.org/language:" + langCode;
         }
@@ -3223,10 +3215,13 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// The caller disposes of the bitmap.
+        /// The QR code of a badge whose link goes to the given language's page on
+        /// BloomLibrary.org, as UpdateQrCode puts it in a book. The Collection Settings dialog
+        /// shows it in its preview of the badge. The caller disposes of the bitmap.
         /// </summary>
-        private static Bitmap MakeQrCodeBitmap(string url)
+        public static Bitmap MakeLanguageQrCodeBitmap(string langCode)
         {
+            var url = GetLanguagePageUrl(langCode) + "?utm_source=qr";
             using (var qrGenerator = new QRCodeGenerator())
             {
                 using (var qrData = qrGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q))

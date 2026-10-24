@@ -80,10 +80,10 @@ namespace BloomTests.Collection
         /// The values as the GET sends them, which is also what the dialog posts back when the
         /// user changed nothing.
         /// </summary>
-        private static JObject CurrentValuesJson(CollectionSettings settings)
+        private JObject CurrentValuesJson(CollectionSettings settings)
         {
             return JObject.FromObject(
-                new CollectionSettingsValues(settings),
+                new CollectionSettingsValues(settings, _xmatterPackFinder),
                 JsonSerializer.Create(CollectionSettingsApi.kCamelCaseSettings)
             );
         }
