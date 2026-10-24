@@ -2450,7 +2450,7 @@
         <note>ID: AiImageEditor.Tool.generate_pallet.Param.numberOfColors</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.generate_pallet.Title" approved="yes">
-        <source xml:lang="en">Generate Pallet</source>
+        <source xml:lang="en">Generate Palette</source>
         <target xml:lang="fr" state="final">Générer une palette</target>
         <note>ID: AiImageEditor.Tool.generate_pallet.Title</note>
       </trans-unit>
