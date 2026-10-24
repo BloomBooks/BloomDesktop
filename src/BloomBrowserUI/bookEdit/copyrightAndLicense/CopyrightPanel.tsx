@@ -148,7 +148,7 @@ export const CopyrightPanel: React.FunctionComponent<{
                 error={!isYearValid}
                 css={css`
                     width: 150px; // Enough for slightly longer translations of the label; English only needs 100px
-                    margin-bottom: 20px !important;
+                    margin-bottom: 22px !important;
 
                     // Hide the up/down control
                     input {
@@ -167,7 +167,7 @@ export const CopyrightPanel: React.FunctionComponent<{
                 required={true}
                 error={!isHolderValid}
                 css={css`
-                    margin-bottom: 11px !important;
+                    margin-bottom: 22px !important;
                 `}
             />
             {/* keeping this for now in case things change, but the restrictions on what can
