@@ -2454,9 +2454,9 @@
         <target xml:lang="pt-PT" state="final">Gerar uma paleta</target>
         <note>ID: AiImageEditor.Tool.generate_pallet.Title</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.improve_quality.Description">
+      <trans-unit id="AiImageEditor.Tool.improve_quality.Description" approved="yes">
         <source xml:lang="en">Make the image sharp, clean, and large enough for this page.</source>
-        <target xml:lang="pt-PT" state="translated">Deixa a imagem nítida, limpa e com tamanho suficiente para esta página.</target>
+        <target xml:lang="pt-PT" state="final">Deixa a imagem nítida, limpa e com tamanho suficiente para esta página.</target>
         <note>ID: AiImageEditor.Tool.improve_quality.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind" approved="yes">
