@@ -451,7 +451,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Credits.AccountCreditsUsed">
         <source xml:lang="en">{0} used of {1} account credits</source>
-        <target xml:lang="pt-PT" state="translated">{0} usados dos {1} de crédito da conta</target>
+        <target xml:lang="pt-PT" state="translated">{0} usados de {1} em créditos da conta</target>
         <note>ID: AiImageEditor.Credits.AccountCreditsUsed</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Credits.AmountLeft" approved="yes">
@@ -536,7 +536,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.PickerTooltip">
         <source xml:lang="en">Choose which AI image engine to use</source>
-        <target xml:lang="pt-PT" state="translated">Escolha qual motor de imagem com IA usar</target>
+        <target xml:lang="pt-PT" state="translated">Escolha o motor de IA para imagens que deseja usar</target>
         <note>ID: AiImageEditor.Model.PickerTooltip</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.RecommendedChip" approved="yes">
@@ -599,9 +599,9 @@
         <target xml:lang="pt-PT" state="translated">Solte uma imagem</target>
         <note>ID: AiImageEditor.Slot.DropImage</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Source.BookImage">
+      <trans-unit id="AiImageEditor.Source.BookImage" approved="yes">
         <source xml:lang="en">A picture from this book</source>
-        <target xml:lang="pt-PT" state="translated">Uma imagem deste livro</target>
+        <target xml:lang="pt-PT" state="final">Uma imagem deste livro</target>
         <note>ID: AiImageEditor.Source.BookImage</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Source.ImagesToEdit" approved="yes">
@@ -651,12 +651,12 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Strip.Unpin">
         <source xml:lang="en">Unpin strip</source>
-        <target xml:lang="pt-PT" state="translated">Desafixar a faixa</target>
+        <target xml:lang="pt-PT" state="translated">Desafixar esta faixa</target>
         <note>ID: AiImageEditor.Strip.Unpin</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.break_into_pieces.Description">
         <source xml:lang="en">Extract images that you can use in a game.</source>
-        <target xml:lang="pt-PT" state="translated">Extrai imagens que pode usar num jogo.</target>
+        <target xml:lang="pt-PT" state="translated">Extraia imagens que pode usar em um jogo.</target>
         <note>ID: AiImageEditor.Tool.break_into_pieces.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.break_into_pieces.Param.furtherInstructions.Placeholder">
@@ -664,9 +664,9 @@
         <target xml:lang="pt-PT" state="translated">Opcional: indique o que incluir, o que omitir ou até que ponto as peças devem parecer brinquedos.</target>
         <note>ID: AiImageEditor.Tool.break_into_pieces.Param.furtherInstructions.Placeholder</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.break_into_pieces.Title">
+      <trans-unit id="AiImageEditor.Tool.break_into_pieces.Title" approved="yes">
         <source xml:lang="en">Break into Pieces</source>
-        <target xml:lang="pt-PT" state="translated">Dividir em peças</target>
+        <target xml:lang="pt-PT" state="final">Dividir em peças</target>
         <note>ID: AiImageEditor.Tool.break_into_pieces.Title</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.change_style.Description">
@@ -684,24 +684,24 @@
         <target xml:lang="pt-PT" state="translated">Transforma uma imagem de referência numa folha de animação curta em loop e codifica-a como GIF.</target>
         <note>ID: AiImageEditor.Tool.make_gif.Description</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.make_gif.Param.ending">
+      <trans-unit id="AiImageEditor.Tool.make_gif.Param.ending" approved="yes">
         <source xml:lang="en">Ending</source>
-        <target xml:lang="pt-PT" state="translated">Final</target>
+        <target xml:lang="pt-PT" state="final">Final</target>
         <note>ID: AiImageEditor.Tool.make_gif.Param.ending</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.make_gif.Param.ending.Option.Loops back to the start">
+      <trans-unit id="AiImageEditor.Tool.make_gif.Param.ending.Option.Loops back to the start" approved="yes">
         <source xml:lang="en">Loops back to the start</source>
-        <target xml:lang="pt-PT" state="translated">Volta ao início</target>
+        <target xml:lang="pt-PT" state="final">Volta ao início</target>
         <note>ID: AiImageEditor.Tool.make_gif.Param.ending.Option.Loops back to the start</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.make_gif.Param.ending.Option.Plays once (ends on the final state)">
+      <trans-unit id="AiImageEditor.Tool.make_gif.Param.ending.Option.Plays once (ends on the final state)" approved="yes">
         <source xml:lang="en">Plays once (ends on the final state)</source>
-        <target xml:lang="pt-PT" state="translated">Reproduz uma vez (termina no estado final)</target>
+        <target xml:lang="pt-PT" state="final">Reproduz uma vez (termina no estado final)</target>
         <note>ID: AiImageEditor.Tool.make_gif.Param.ending.Option.Plays once (ends on the final state)</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.make_gif.Param.frameCount">
+      <trans-unit id="AiImageEditor.Tool.make_gif.Param.frameCount" approved="yes">
         <source xml:lang="en">Frames</source>
-        <target xml:lang="pt-PT" state="translated">Quadros</target>
+        <target xml:lang="pt-PT" state="final">Quadros</target>
         <note>ID: AiImageEditor.Tool.make_gif.Param.frameCount</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.make_gif.Title" approved="yes">
@@ -714,9 +714,9 @@
         <target xml:lang="pt-PT" state="final">Escolher um PDF…</target>
         <note>ID: AiImageEditor.Tool.pdf_to_images.ActionButton</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.pdf_to_images.Title">
+      <trans-unit id="AiImageEditor.Tool.pdf_to_images.Title" approved="yes">
         <source xml:lang="en">PDF to Images</source>
-        <target xml:lang="pt-PT" state="translated">PDF para imagens</target>
+        <target xml:lang="pt-PT" state="final">PDF para imagens</target>
         <note>ID: AiImageEditor.Tool.pdf_to_images.Title</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_background.Description">
