@@ -3,6 +3,7 @@ using System.Linq;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.SubscriptionAndFeatures;
 using Bloom.web.controllers;
@@ -127,7 +128,7 @@ namespace BloomTests.Collection
             var values = CurrentValuesJson(settings);
             values["frontBackMatter"]["country"] = "Papua New Guinea";
             values["frontBackMatter"]["district"] = "Lae";
-            values["frontBackMatter"]["pageNumberStyle"] = "Devanagari";
+            values["languages"]["pageNumberStyle"] = "Devanagari";
             values["frontBackMatter"]["xmatter"] = "SuperPaperSaver";
             values["languages"]["language1"]["tag"] = "fr";
             values["languages"]["language1"]["name"] = "Français";
@@ -173,6 +174,112 @@ namespace BloomTests.Collection
             );
             Assert.That(_renameRequests, Is.Empty);
             Assert.That(_teamCollectionRequests, Is.Empty);
+            Assert.That(
+                RobustFile.Exists(
+                    DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(settings)
+                ),
+                Is.False,
+                "Showing the reader tools' default alphabet must not make their settings file"
+            );
+        }
+
+        /// <summary>
+        /// The alphabet and sentence punctuation share their file with the stages and levels,
+        /// which only Reader Setup edits; saving the dialog must change just the two values.
+        /// </summary>
+        [Test]
+        public void Apply_ChangedReaderToolsValues_WrittenIntoTheirFileKeepingTheRest()
+        {
+            var settings = CreateCollectionSettings("ApplyReaderTools");
+            var path = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(settings);
+            RobustFile.WriteAllText(
+                path,
+                "{\"letters\":\"a b c\",\"sentencePunct\":\"\",\"moreWords\":\"cab\",\"stages\":[{\"letters\":\"a b\",\"sightWords\":\"the\"}]}"
+            );
+            var values = CurrentValuesJson(settings);
+            Assert.That(
+                (string)values["readerTools"]["letters"],
+                Is.EqualTo("a b c"),
+                "Sanity check: the dialog should be shown the alphabet in the file"
+            );
+            values["readerTools"]["letters"] = "a b c ch d";
+            values["readerTools"]["sentencePunct"] = "\\U0020";
+
+            Apply(values, settings);
+
+            var saved = JObject.Parse(RobustFile.ReadAllText(path));
+            Assert.That((string)saved["letters"], Is.EqualTo("a b c ch d"));
+            Assert.That((string)saved["sentencePunct"], Is.EqualTo("\\U0020"));
+            Assert.That((string)saved["moreWords"], Is.EqualTo("cab"));
+            Assert.That((string)saved["stages"][0]["letters"], Is.EqualTo("a b"));
+            Assert.That((string)saved["stages"][0]["sightWords"], Is.EqualTo("the"));
+        }
+
+        /// <summary>
+        /// The file is named for the first language. A value goes into the file of the language
+        /// it was shown for, even when the first language changes in the same save.
+        /// </summary>
+        [Test]
+        public void Apply_ReaderToolsValuesWithNewLanguage1_WrittenToTheFileTheyWereShownFor()
+        {
+            var settings = CreateCollectionSettings("ApplyReaderToolsNewLanguage1");
+            var originalPath = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(settings);
+            Assert.That(
+                RobustFile.Exists(originalPath),
+                Is.False,
+                "Sanity check: a new collection has no reader tools settings yet"
+            );
+            var values = CurrentValuesJson(settings);
+            values["languages"]["language1"]["tag"] = "fr";
+            values["readerTools"]["letters"] = "a b c d";
+
+            Apply(values, settings);
+
+            Assert.That(settings.Language1.Tag, Is.EqualTo("fr"));
+            var saved = JObject.Parse(RobustFile.ReadAllText(originalPath));
+            Assert.That((string)saved["letters"], Is.EqualTo("a b c d"));
+            Assert.That(
+                saved["levels"],
+                Is.Not.Null,
+                "A file made by the dialog should start from the reader tools' defaults"
+            );
+            Assert.That(
+                RobustFile.Exists(
+                    DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(settings)
+                ),
+                Is.False,
+                "Nothing should be written for the new first language"
+            );
+        }
+
+        /// <summary>
+        /// A damaged reader tools file must not stop the user saving their other settings, and
+        /// must not be written over.
+        /// </summary>
+        [Test]
+        public void Apply_DamagedReaderToolsFile_OtherSettingsSavedAndFileLeftAlone()
+        {
+            var settings = CreateCollectionSettings("ApplyDamagedReaderTools");
+            var path = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(settings);
+            const string damaged = "{\"letters\":\"a b";
+            RobustFile.WriteAllText(path, damaged);
+            var values = CurrentValuesJson(settings);
+            Assert.That(
+                (string)values["readerTools"]["letters"],
+                Is.EqualTo(""),
+                "Sanity check: a damaged file's values show as empty"
+            );
+            Assert.That(
+                (bool)values["readerTools"]["isUnreadable"],
+                Is.True,
+                "The dialog must be told not to offer the damaged file's values for editing"
+            );
+            values["frontBackMatter"]["country"] = "Kenya";
+
+            Apply(values, settings);
+
+            Assert.That(settings.Country, Is.EqualTo("Kenya"));
+            Assert.That(RobustFile.ReadAllText(path), Is.EqualTo(damaged));
         }
 
         [Test]
