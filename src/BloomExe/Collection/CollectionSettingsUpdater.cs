@@ -14,8 +14,9 @@ namespace Bloom.Collection
     /// <summary>
     /// Applies the values the React Collection Settings dialog posts. Most of them write
     /// themselves into the collection as they are read (see CollectionSettingsValues); this class
-    /// holds the rules that need more than one value: the languages, the xmatter check, and the
-    /// subscription, bookshelf and administrator rules ported from the WinForms OK handler.
+    /// holds the rules that need more than one value: the languages, the xmatter check, the
+    /// subscription, bookshelf and administrator rules ported from the WinForms OK handler, and
+    /// making the collection a Team Collection.
     /// </summary>
     public static class CollectionSettingsUpdater
     {
@@ -24,12 +25,15 @@ namespace Bloom.Collection
         /// </summary>
         /// <param name="queueRenameOfCollection">called with the new (sanitized) folder name when
         /// the user renamed the collection</param>
+        /// <param name="createTeamCollection">called, once the collection is saved, with the
+        /// folder the user chose to make it a Team Collection in</param>
         public static void Apply(
             JObject postedValues,
             CollectionSettings settings,
             bool currentCollectionIsTeamCollection,
             XMatterPackFinder xmatterPackFinder,
-            Action<string> queueRenameOfCollection
+            Action<string> queueRenameOfCollection,
+            Action<string> createTeamCollection
         )
         {
             Logger.WriteEvent("React Collection Settings dialog: saving");
@@ -53,12 +57,14 @@ namespace Bloom.Collection
             // newBookshelf means. This runs on every save, even with the subscription unchanged:
             // it is what keeps an expired subscription's bookshelf in the file (BL-15056). It
             // comes before the xmatter check because the new subscription's branding may
-            // specify the pack.
+            // specify the pack. A collection about to become a Team Collection gets the Team
+            // Collection rules, so it cannot take a Pro subscription with it.
             var clearDefaultBookshelfAfterSaving = ApplySubscriptionAndBookshelf(
                 GetChangedSubscription(settings, values.Subscription.Code),
                 null,
                 settings,
                 currentCollectionIsTeamCollection
+                    || !string.IsNullOrEmpty(values.TeamCollection.CreateInFolder)
             );
 
             // A pack that is no longer available, or one the branding overrides, is replaced.
@@ -69,13 +75,23 @@ namespace Bloom.Collection
 
             Settings.Default.Save(); // AutoUpdate is a user-level setting
 
-            // The dialog does not post the administrators yet (their tab card will), so this
-            // runs with "unchanged".
-            ApplyAdministrators(null, settings, currentCollectionIsTeamCollection);
+            var postedAdministrators = values.TeamCollection.Administrators;
+            ApplyAdministrators(
+                postedAdministrators == settings.AdministratorsDisplayString
+                    ? null
+                    : postedAdministrators,
+                settings,
+                currentCollectionIsTeamCollection
+            );
             settings.Save();
 
             if (clearDefaultBookshelfAfterSaving)
                 settings.DefaultBookshelf = "";
+
+            // Making a Team Collection copies the collection's files, settings included, into
+            // the shared folder, so it comes after the save.
+            if (!string.IsNullOrEmpty(values.TeamCollection.CreateInFolder))
+                createTeamCollection(values.TeamCollection.CreateInFolder);
         }
 
         /// <summary>

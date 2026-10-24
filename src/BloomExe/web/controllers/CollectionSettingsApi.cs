@@ -525,6 +525,7 @@ namespace Bloom.web.controllers
                 Values = new CollectionSettingsValues(_collectionSettings, _xmatterPackFinder),
                 RestartPaths = CollectionSettingsValues.GetRestartPaths(),
                 IsTeamCollection = CurrentCollectionIsTeamCollection,
+                EditingABlorgBook = _collectionSettings.EditingABlorgBook,
                 XmatterPacks = GetXmatterPacks(xmatterKeyForcedByBranding),
                 XmatterChosenByBranding = xmatterKeyForcedByBranding != null,
                 DefaultQrcodeCaption = _collectionSettings.DefaultBadgeQrCodeLabelLocalized,
@@ -569,7 +570,10 @@ namespace Bloom.web.controllers
                 _collectionSettings,
                 CurrentCollectionIsTeamCollection,
                 _xmatterPackFinder,
-                newName => _queueRenameOfCollection.Raise(newName)
+                newName => _queueRenameOfCollection.Raise(newName),
+                // Making a Team Collection changes a restart path, so the reopen below follows.
+                repoFolderParentPath =>
+                    TeamCollectionApi.TheOneInstance.CreateTeamCollection(repoFolderParentPath)
             );
             request.PostSucceeded();
             if (saveRequest.RestartRequired)

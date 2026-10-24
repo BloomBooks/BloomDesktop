@@ -32,6 +32,12 @@ namespace Bloom.web.controllers
         public bool IsTeamCollection;
 
         /// <summary>
+        /// Whether the collection holds a book downloaded from Bloom Library for editing, which
+        /// must not become a Team Collection.
+        /// </summary>
+        public bool EditingABlorgBook;
+
+        /// <summary>
         /// The front/back matter packs the collection may use; only the branding's when the
         /// branding chooses the pack.
         /// </summary>
@@ -75,9 +81,8 @@ namespace Bloom.web.controllers
     /// The editable settings, grouped by the page of the dialog that shows them. Most of them
     /// are a live view of a CollectionSettings: serializing reads the collection's values, and
     /// populating from the posted JSON writes them straight back, so a simple setting is spelled
-    /// out once here, as a property that reads and writes it. The languages and the subscription
-    /// are the exceptions; see those properties. The team collection administrators have an
-    /// endpoint of their own and so are not here.
+    /// out once here, as a property that reads and writes it. The languages, the subscription
+    /// and the Team Collection values are the exceptions; see those properties.
     /// </summary>
     public class CollectionSettingsValues
     {
@@ -93,6 +98,11 @@ namespace Bloom.web.controllers
         {
             _settings = settings;
             Subscription = new SubscriptionValues { Code = settings.Subscription.Code ?? "" };
+            TeamCollection = new TeamCollectionValues
+            {
+                Administrators = settings.AdministratorsDisplayString,
+                CreateInFolder = "",
+            };
             FrontBackMatter = new FrontBackMatterValues(settings, xmatterPackFinder);
             BloomLibrary = new BloomLibraryValues(settings);
             Advanced = new AdvancedValues(settings, queueRenameOfCollection);
@@ -118,6 +128,13 @@ namespace Bloom.web.controllers
         /// once all the values are in.
         /// </summary>
         public SubscriptionValues Subscription { get; }
+
+        /// <summary>
+        /// Like the subscription, the Team Collection values are not written as they are read:
+        /// this is a copy, which populating overwrites with the posted values, and
+        /// CollectionSettingsUpdater.Apply applies them once the rest of the collection is saved.
+        /// </summary>
+        public TeamCollectionValues TeamCollection { get; }
 
         public FrontBackMatterValues FrontBackMatter { get; }
         public BloomLibraryValues BloomLibrary { get; }
@@ -365,6 +382,26 @@ namespace Bloom.web.controllers
         /// </summary>
         [RequiresRestart]
         public string Code;
+    }
+
+    /// <summary>
+    /// The Team Collection page's values.
+    /// </summary>
+    public class TeamCollectionValues
+    {
+        /// <summary>
+        /// A Team Collection's administrators, separated by commas or spaces. The dialog checks
+        /// them (the rules of CollectionSettings.ValidateAdministrators) before it posts them.
+        /// </summary>
+        [RequiresRestart]
+        public string Administrators;
+
+        /// <summary>
+        /// The folder the user chose to make this collection a Team Collection in, or "" for
+        /// none. The collection becomes one as it is saved.
+        /// </summary>
+        [RequiresRestart]
+        public string CreateInFolder;
     }
 
     /// <summary>

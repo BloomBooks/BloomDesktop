@@ -36,6 +36,12 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
     errorForTesting?: string;
     defaultRepoFolder?: string;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
+    // Given when the React Collection Settings dialog shows this one. Instead of creating the Team
+    // Collection itself, Create & Restart hands that dialog the chosen folder; it saves its own
+    // settings first, then creates the Team Collection and restarts.
+    onFolderChosen?: (repoFolderParentPath: string) => void;
+    // Called when the dialog closes, whether by OK or Cancel.
+    onClose?: () => void;
 }> = (props) => {
     const [repoFolderPath, setRepoFolderPath] = useState(
         props.defaultRepoFolder ?? "",
@@ -87,8 +93,20 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
         });
     }, []);
 
+    const readyToCreate =
+        !!repoFolderPath && !errorMessage && boxesChecked === 4;
+
+    function close() {
+        closeDialog();
+        props.onClose?.();
+    }
+
     function create() {
-        postString("teamCollection/createTeamCollection", repoFolderPath);
+        if (props.onFolderChosen) {
+            props.onFolderChosen(repoFolderPath);
+            close();
+        } else
+            postString("teamCollection/createTeamCollection", repoFolderPath);
     }
 
     function tryToCreate() {
@@ -103,7 +121,11 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
     }
 
     return (
-        <BloomDialog {...propsForBloomDialog}>
+        <BloomDialog
+            {...propsForBloomDialog}
+            onClose={close}
+            onCancel={props.onFolderChosen ? close : undefined}
+        >
             <DialogTitle title={`${dialogTitle}`} />
             <DialogMiddle>
                 <TextWithEmbeddedLink
@@ -203,9 +225,7 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                     id="create-and-restart"
                     l10nKey="TeamCollection.CreateAndRestart"
                     hasText={true}
-                    enabled={
-                        !!repoFolderPath && !errorMessage && boxesChecked == 4
-                    }
+                    enabled={readyToCreate}
                     temporarilyDisableI18nWarning={true}
                     onClick={() => {
                         tryToCreate();

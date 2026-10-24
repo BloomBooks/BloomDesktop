@@ -31,6 +31,7 @@ import { useL10n } from "../react_components/l10nHooks";
 import { get, postJson } from "../utils/bloomApi";
 import {
     ICollectionSettingsResponse,
+    ICollectionSettingsTeamCollection,
     ICollectionSettingsValues,
 } from "./collectionSettingsTypes";
 import { collectionSettingsHelpTopic } from "./collectionSettingsHelpTopic";
@@ -39,6 +40,10 @@ import { useBloomLibraryPage } from "./settingsPages/BloomLibraryPage";
 import { useExperimentalPage } from "./settingsPages/ExperimentalPage";
 import { useFrontBackMatterPage } from "./settingsPages/FrontBackMatterPage";
 import { useSubscriptionPage } from "./settingsPages/SubscriptionPage";
+import {
+    teamCollectionValuesAreValid,
+    useTeamCollectionPage,
+} from "./settingsPages/TeamCollectionPage";
 
 // Temporary content for every page. Each of the seven tab cards replaces its page's group with
 // real controls, so this text is deliberately plain English and is never localized.
@@ -116,11 +121,15 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         React.useState<ICollectionSettingsValues>();
     const [saving, setSaving] = React.useState(false);
     // The subscription code as the user is typing it. It is kept here rather than in Config-R's
-    // values because its editor is not a Config-R control; withSubscriptionCode puts it in.
+    // values because its editor is not a Config-R control; withValuesEditedOutsideConfigr puts it
+    // in.
     const [subscriptionCode, setSubscriptionCode] = React.useState<string>();
     const paneRef = React.useRef<ConfigrPaneHandle>(null);
     // The top-level page Config-R is showing, so Help can open that page's topic.
     const [shownPageKey, setShownPageKey] = React.useState<string>();
+    // The Team Collection values as the user is editing them, kept here for the same reason.
+    const [teamCollection, setTeamCollection] =
+        React.useState<ICollectionSettingsTeamCollection>();
 
     // Config-r can call onChange while rendering, so state updates from it are deferred; the OK
     // handler reads this ref to be sure it has the newest values.
@@ -136,6 +145,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             setLoadedSettings(undefined);
             setCurrentValues(undefined);
             setSubscriptionCode(undefined);
+            setTeamCollection(undefined);
             setSaving(false);
             setShownPageKey(undefined);
             return;
@@ -149,6 +159,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             setCurrentValues(response.values);
             // A user who may not edit the settings gets no values.
             setSubscriptionCode(response.values?.subscription.code);
+            setTeamCollection(response.values?.teamCollection);
         });
     }, [propsForBloomDialog.open]);
 
@@ -169,10 +180,6 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const languagesLabel = useL10n(
         "Languages",
         "CollectionSettingsDialog.LanguageTab.LanguageTabLabel",
-    );
-    const teamCollectionLabel = useL10n(
-        "Team Collection",
-        "TeamCollection.TeamCollection",
     );
     const restartMessage = useL10n(
         "Bloom will close and re-open this project with the new settings.",
@@ -198,11 +205,17 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             </ConfigrPage>
         );
     }
-    // Config-R's values with the subscription code being typed in place of the one loaded.
-    function withSubscriptionCode(
+    // Config-R's values with the values edited outside Config-R (the subscription code being
+    // typed, and the Team Collection values) in place of the ones loaded.
+    function withValuesEditedOutsideConfigr(
         values: ICollectionSettingsValues,
+        teamCollectionValues = teamCollection!,
     ): ICollectionSettingsValues {
-        return { ...values, subscription: { code: subscriptionCode! } };
+        return {
+            ...values,
+            subscription: { code: subscriptionCode! },
+            teamCollection: teamCollectionValues,
+        };
     }
     // The values as OK would save them now. Both are checked: a deferred onChange can set
     // currentValues after a close has already cleared loadedSettings.
@@ -210,7 +223,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         currentValues &&
         loadedSettings &&
         withEditedTextTrimmed(
-            withSubscriptionCode(currentValues),
+            withValuesEditedOutsideConfigr(currentValues),
             loadedSettings.values,
         );
 
@@ -221,6 +234,22 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const subscriptionPage = useSubscriptionPage({
         code: subscriptionCode,
         onCodeChange: setSubscriptionCode,
+    });
+    const teamCollectionPage = useTeamCollectionPage({
+        settings: loadedSettings,
+        values: teamCollection,
+        onChange: setTeamCollection,
+        // Compared as it would be saved, so spaces typed around the name do not count.
+        // (A user who may not edit the settings gets null values.)
+        collectionNameEdited:
+            !!currentValues &&
+            !!loadedSettings &&
+            withEditedTextTrimmed(
+                currentValues.advanced.collectionName,
+                loadedSettings.values.advanced.collectionName,
+            ) !== loadedSettings.values.advanced.collectionName,
+        onCreateTeamCollection: (createInFolder) =>
+            saveAndCloseDialog({ ...teamCollection!, createInFolder }),
     });
     const bloomLibraryPage = useBloomLibraryPage({
         dialogOpen: propsForBloomDialog.open,
@@ -254,7 +283,9 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     }
     const needsRestart = restartNeededFor(currentValuesToSave);
 
-    function saveAndCloseDialog() {
+    // teamCollectionValues replaces the Team Collection values being edited; creating a Team
+    // Collection saves with the folder to create it in.
+    function saveAndCloseDialog(teamCollectionValues = teamCollection!) {
         // Block the button while the save is in flight, so a second click cannot save (and
         // perhaps restart Bloom) a second time.
         setSaving(true);
@@ -263,7 +294,10 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         // the restart flag is worked out from it too.
         // OK is enabled only once the values have loaded.
         const valuesToSave = withEditedTextTrimmed(
-            withSubscriptionCode(latestValuesRef.current!),
+            withValuesEditedOutsideConfigr(
+                latestValuesRef.current!,
+                teamCollectionValues,
+            ),
             loadedSettings!.values,
         );
         postJson(
@@ -341,7 +375,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         {placeholderPage("languages", languagesLabel)}
                         {frontBackMatterPage}
                         {subscriptionPage}
-                        {placeholderPage("teamCollection", teamCollectionLabel)}
+                        {teamCollectionPage}
                         {bloomLibraryPage}
                         {advancedPage}
                         {experimentalPage}
@@ -370,14 +404,24 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                     <React.Fragment>
                         <DialogOkButton
                             default={true}
-                            enabled={currentValues !== undefined && !saving}
+                            enabled={
+                                currentValues !== undefined &&
+                                // Set and cleared with loadedSettings, unlike currentValues.
+                                teamCollection !== undefined &&
+                                !saving &&
+                                // The Team Collection page shows what is wrong.
+                                teamCollectionValuesAreValid(
+                                    loadedSettings!,
+                                    teamCollection,
+                                )
+                            }
                             l10nKey={
                                 needsRestart
                                     ? "CollectionSettingsDialog.Restart"
                                     : undefined
                             }
                             englishText={needsRestart ? "Restart" : undefined}
-                            onClick={saveAndCloseDialog}
+                            onClick={() => saveAndCloseDialog()}
                         />
                         <DialogCancelButton />
                     </React.Fragment>

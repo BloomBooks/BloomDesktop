@@ -26,6 +26,7 @@ namespace BloomTests.Collection
         private string _originalEnabledFeatures;
         private bool _originalAutoUpdate;
         private List<string> _renameRequests;
+        private List<string> _teamCollectionRequests;
 
         [OneTimeSetUp]
         public void FixtureSetup()
@@ -53,6 +54,7 @@ namespace BloomTests.Collection
             _originalEnabledFeatures = Settings.Default.EnabledExperimentalFeatures;
             _originalAutoUpdate = Settings.Default.AutoUpdate;
             _renameRequests = new List<string>();
+            _teamCollectionRequests = new List<string>();
         }
 
         [TearDown]
@@ -85,14 +87,19 @@ namespace BloomTests.Collection
             );
         }
 
-        private void Apply(JObject postedValues, CollectionSettings settings)
+        private void Apply(
+            JObject postedValues,
+            CollectionSettings settings,
+            bool currentCollectionIsTeamCollection = false
+        )
         {
             CollectionSettingsUpdater.Apply(
                 postedValues,
                 settings,
-                currentCollectionIsTeamCollection: false,
+                currentCollectionIsTeamCollection,
                 _xmatterPackFinder,
-                newName => _renameRequests.Add(newName)
+                newName => _renameRequests.Add(newName),
+                folder => _teamCollectionRequests.Add(folder)
             );
         }
 
@@ -165,6 +172,7 @@ namespace BloomTests.Collection
                 $"The values should not have moved.\nBefore: {before}\nAfter: {after}"
             );
             Assert.That(_renameRequests, Is.Empty);
+            Assert.That(_teamCollectionRequests, Is.Empty);
         }
 
         [Test]
@@ -464,6 +472,92 @@ namespace BloomTests.Collection
                 settings.AdministratorsDisplayString,
                 Is.EqualTo("someone@example.com, another@example.com")
             );
+        }
+
+        [Test]
+        public void Apply_ChangedAdministratorsInATeamCollection_SavedToTheFile()
+        {
+            var settings = CreateCollectionSettings("ApplySavesAdministrators");
+            var values = CurrentValuesJson(settings);
+            Assert.That(
+                (string)values["teamCollection"]["administrators"],
+                Is.Empty,
+                "Sanity check: a new collection has no administrators"
+            );
+            values["teamCollection"]["administrators"] = "someone@example.com another@example.com";
+
+            Apply(values, settings, currentCollectionIsTeamCollection: true);
+
+            Assert.That(
+                new CollectionSettings(settings.SettingsFilePath).AdministratorsDisplayString,
+                Is.EqualTo("someone@example.com, another@example.com")
+            );
+        }
+
+        /// <summary>
+        /// The collection must be saved before it becomes a Team Collection, because that copies
+        /// its settings file into the shared folder.
+        /// </summary>
+        [Test]
+        public void Apply_CreateInFolder_CreatesTeamCollectionAfterSaving()
+        {
+            const string kSharedFolder = @"C:\Dropbox";
+            var settings = CreateCollectionSettings("ApplyCreatesTeamCollection");
+            var values = CurrentValuesJson(settings);
+            Assert.That(
+                (string)values["teamCollection"]["createInFolder"],
+                Is.Empty,
+                "Sanity check: the GET should not ask for a Team Collection"
+            );
+            values["frontBackMatter"]["country"] = "Kenya";
+            values["teamCollection"]["createInFolder"] = kSharedFolder;
+            string countryInFileWhenCreated = null;
+
+            CollectionSettingsUpdater.Apply(
+                values,
+                settings,
+                currentCollectionIsTeamCollection: false,
+                _xmatterPackFinder,
+                newName => _renameRequests.Add(newName),
+                folder =>
+                {
+                    _teamCollectionRequests.Add(folder);
+                    countryInFileWhenCreated = new CollectionSettings(
+                        settings.SettingsFilePath
+                    ).Country;
+                }
+            );
+
+            Assert.That(_teamCollectionRequests, Is.EqualTo(new[] { kSharedFolder }));
+            Assert.That(
+                countryInFileWhenCreated,
+                Is.EqualTo("Kenya"),
+                "the collection should have been saved before the Team Collection was made"
+            );
+        }
+
+        /// <summary>
+        /// Pro tier is not allowed in a Team Collection, so a collection becoming one in the same
+        /// save keeps its old subscription.
+        /// </summary>
+        [Test]
+        public void Apply_ProSubscriptionWhileCreatingTeamCollection_IsRefused()
+        {
+            const string kProCode = "Fake-Pro-009926-2146";
+            var settings = CreateCollectionSettings("ApplyProWhileCreatingTeamCollection");
+            Assert.That(
+                new Subscription(kProCode).Tier,
+                Is.EqualTo(SubscriptionTier.Pro),
+                "Sanity check: the code should be a Pro one"
+            );
+            var values = CurrentValuesJson(settings);
+            values["subscription"]["code"] = kProCode;
+            values["teamCollection"]["createInFolder"] = @"C:\Dropbox";
+
+            Apply(values, settings);
+
+            Assert.That(settings.Subscription.Code, Is.Not.EqualTo(kProCode));
+            Assert.That(_teamCollectionRequests, Is.EqualTo(new[] { @"C:\Dropbox" }));
         }
 
         /// <summary>
