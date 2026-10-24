@@ -516,18 +516,25 @@ namespace Bloom.Collection
                 var pattern = BadgeQrCodeLabel; // may or may not have {0}. We'll fill in if present.
                 if (string.IsNullOrEmpty(BadgeQrCodeLabel))
                 {
-                    pattern = LocalizationManager.GetString(
-                        "CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2",
-                        "More books in {0} language:",
-                        "",
-                        new string[] { Language1Tag, Language2Tag, Language3Tag, "en" },
-                        out string _
-                    );
+                    pattern = DefaultBadgeQrCodeLabelLocalized;
                 }
 
                 return pattern;
             }
         }
+
+        /// <summary>
+        /// The caption a badge gets when the collection has none of its own (BadgeQrCodeLabel is
+        /// empty), in the first of the collection's languages that has a translation.
+        /// </summary>
+        public string DefaultBadgeQrCodeLabelLocalized =>
+            LocalizationManager.GetString(
+                "CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2",
+                "More books in {0} language:",
+                "",
+                new string[] { Language1Tag, Language2Tag, Language3Tag, "en" },
+                out string _
+            );
 
         internal void SaveColorPalettesToJsonFile()
         {

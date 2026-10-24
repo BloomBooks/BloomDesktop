@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
 using Newtonsoft.Json;
@@ -31,10 +32,37 @@ namespace Bloom.web.controllers
         public bool IsTeamCollection;
 
         /// <summary>
+        /// The front/back matter packs the collection may use; only the branding's when the
+        /// branding chooses the pack.
+        /// </summary>
+        public XmatterPack[] XmatterPacks;
+
+        public bool XmatterChosenByBranding;
+
+        /// <summary>
+        /// The caption books get when the QR code caption is empty
+        /// (CollectionSettings.DefaultBadgeQrCodeLabelLocalized).
+        /// </summary>
+        public string DefaultQrcodeCaption;
+
+        /// <summary>
         /// Set only when the user may not edit the collection settings (a Team Collection member
         /// who is not an administrator); the other fields are then null.
         /// </summary>
         public string NotAllowedMessage;
+    }
+
+    /// <summary>
+    /// A front/back matter pack, as the dialog's Style list offers it.
+    /// </summary>
+    public class XmatterPack
+    {
+        /// <summary>
+        /// The pack's key, e.g. "Traditional", as FrontBackMatterValues.Xmatter holds it.
+        /// </summary>
+        public string Value;
+        public string Label;
+        public string Description;
     }
 
     /// <summary>
@@ -59,12 +87,13 @@ namespace Bloom.web.controllers
         /// collection name differs from the current one; only needed when populating</param>
         public CollectionSettingsValues(
             CollectionSettings settings,
+            XMatterPackFinder xmatterPackFinder,
             Action<string> queueRenameOfCollection = null
         )
         {
             _settings = settings;
             Subscription = new SubscriptionValues { Code = settings.Subscription.Code ?? "" };
-            FrontBackMatter = new FrontBackMatterValues(settings);
+            FrontBackMatter = new FrontBackMatterValues(settings, xmatterPackFinder);
             BloomLibrary = new BloomLibraryValues(settings);
             Advanced = new AdvancedValues(settings, queueRenameOfCollection);
             Experimental = new ExperimentalValues();
@@ -229,24 +258,39 @@ namespace Bloom.web.controllers
     {
         private readonly CollectionSettings _settings;
 
-        // The caption as the dialog was given it. The default caption is localized using the
-        // collection's languages, which may already have changed by the time QrcodeCaption is set.
+        // The caption as the dialog was given it, which QrcodeCaption compares with to tell
+        // whether the user changed it. It is kept from when the values were read, not worked out
+        // again on save: the default caption is translated using the collection's languages, and
+        // a save may already have changed those by the time QrcodeCaption is set.
         private readonly string _qrcodeCaptionBeforeChanges;
 
-        public FrontBackMatterValues(CollectionSettings settings)
+        private readonly XMatterPackFinder _xmatterPackFinder;
+
+        public FrontBackMatterValues(
+            CollectionSettings settings,
+            XMatterPackFinder xmatterPackFinder
+        )
         {
             _settings = settings;
+            _xmatterPackFinder = xmatterPackFinder;
             _qrcodeCaptionBeforeChanges = settings.BadgeQrCodeLabelLocalized;
         }
 
         /// <summary>
-        /// CollectionSettingsUpdater.Apply replaces a pack that is not available once all the
-        /// values are in.
+        /// The pack the collection's books really get: the branding's if it chooses one, else the
+        /// saved pack, or the factory default if that is no longer installed. So it is always one
+        /// of CollectionSettingsResponse.XmatterPacks. CollectionSettingsUpdater.Apply makes the
+        /// same check on what is posted, once all the values are in (a new subscription's branding
+        /// may choose the pack).
         /// </summary>
         [RequiresRestart]
         public string Xmatter
         {
-            get => _settings.XMatterPackName;
+            get =>
+                _xmatterPackFinder.GetValidXmatter(
+                    _settings.GetXMatterPackNameSpecifiedByBrandingOrNull(),
+                    _settings.XMatterPackName
+                );
             set => _settings.XMatterPackName = value;
         }
 
@@ -269,14 +313,24 @@ namespace Bloom.web.controllers
             set => _settings.ShowBlorgLanguageQrCode = value;
         }
 
+        /// <summary>
+        /// The caption on the badge's QR code. A collection that has never set one stores nothing
+        /// (BadgeQrCodeLabel is empty), which means "Bloom's default caption": each book gets it
+        /// translated into the first of the collection's languages that has a translation, so it
+        /// keeps up with new translations and with changes to the collection's languages.
+        ///
+        /// The dialog is given that default, already translated, so the caption box opens with
+        /// the wording filled in: a user is more likely to tweak it than to write a caption from
+        /// scratch. That is why saving compares with what the dialog was given and stores the
+        /// caption only if the user changed it. Storing an untouched default would freeze it in
+        /// today's translation and language, and the collection would stop following them.
+        /// </summary>
         [RequiresRestart]
         public string QrcodeCaption
         {
             get => _settings.BadgeQrCodeLabelLocalized;
             set
             {
-                // The caption shown by default follows the current UI language, so store it only
-                // if the user actually changed it; otherwise it would be frozen in that language.
                 if (value != _qrcodeCaptionBeforeChanges)
                     _settings.BadgeQrCodeLabel = value;
             }

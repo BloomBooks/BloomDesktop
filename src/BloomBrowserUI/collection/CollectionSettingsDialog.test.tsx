@@ -51,6 +51,20 @@ const settingsResponse: ICollectionSettingsResponse = {
     values: initialValues,
     restartPaths: ["frontBackMatter.xmatter", "languages.language3.tag"],
     isTeamCollection: false,
+    xmatterPacks: [
+        {
+            value: "Traditional",
+            label: "Traditional",
+            description: "Title page and credits page inside the covers.",
+        },
+        {
+            value: "Device",
+            label: "Device",
+            description: "Made for reading on phones.",
+        },
+    ],
+    xmatterChosenByBranding: false,
+    defaultQrcodeCaption: "More books in {0} language:",
     notAllowedMessage: null,
 };
 
@@ -333,6 +347,19 @@ vi.mock("@sillsdev/config-r", () => ({
                     }
                 />
                 <button
+                    data-testid="show-qr-code-with-caption"
+                    onClick={() =>
+                        props.onChange({
+                            ...props.initialValues,
+                            frontBackMatter: {
+                                ...props.initialValues.frontBackMatter,
+                                showQrCode: true,
+                                qrcodeCaption: "Books in {0}, free:",
+                            },
+                        })
+                    }
+                />
+                <button
                     data-testid="pad-country"
                     onClick={() =>
                         props.onChange({
@@ -483,9 +510,12 @@ describe("CollectionSettingsDialog", () => {
         (container.querySelector('[data-testid="dialog-ok"]') as HTMLElement)
             .textContent;
 
+    // Answers GET collection/settings with the given response. The dialog asks for nothing else.
     const respondWith = (response: ICollectionSettingsResponse) => {
         mockGet.mockImplementation(
-            (_url: string, successCallback: (r: unknown) => void) => {
+            (url: string, successCallback: (r: unknown) => void) => {
+                if (url !== "collection/settings")
+                    throw new Error(`The test did not expect GET ${url}`);
                 successCallback({ data: response });
             },
         );
@@ -503,11 +533,7 @@ describe("CollectionSettingsDialog", () => {
         tableFeature.loaded = true;
         tableFeature.enabled = true;
         mockGet.mockReset();
-        mockGet.mockImplementation(
-            (_url: string, successCallback: (r: unknown) => void) => {
-                successCallback({ data: settingsResponse });
-            },
-        );
+        respondWith(settingsResponse);
         mockPostJson.mockReset();
         mockPostJson.mockImplementation(
             (
@@ -648,22 +674,16 @@ describe("CollectionSettingsDialog", () => {
         ).toBeNull();
 
         // Re-open against a collection whose name has since changed.
-        mockGet.mockImplementation(
-            (_url: string, successCallback: (r: unknown) => void) => {
-                successCallback({
-                    data: {
-                        ...settingsResponse,
-                        values: {
-                            ...initialValues,
-                            advanced: {
-                                ...initialValues.advanced,
-                                collectionName: "Renamed Collection",
-                            },
-                        },
-                    },
-                });
+        respondWith({
+            ...settingsResponse,
+            values: {
+                ...initialValues,
+                advanced: {
+                    ...initialValues.advanced,
+                    collectionName: "Renamed Collection",
+                },
             },
-        );
+        });
         dialogState.open = true;
         await renderDialog();
 
@@ -674,18 +694,12 @@ describe("CollectionSettingsDialog", () => {
     });
 
     it("shows only the reason and a Close button when the user may not edit", async () => {
-        mockGet.mockImplementation(
-            (_url: string, successCallback: (r: unknown) => void) => {
-                successCallback({
-                    data: {
-                        values: null,
-                        restartPaths: null,
-                        notAllowedMessage:
-                            "You must be an administrator to change collection settings",
-                    },
-                });
-            },
-        );
+        respondWith({
+            values: null,
+            restartPaths: null,
+            notAllowedMessage:
+                "You must be an administrator to change collection settings",
+        } as unknown as ICollectionSettingsResponse);
 
         await renderDialog();
 
@@ -812,6 +826,202 @@ describe("CollectionSettingsDialog", () => {
             mockPostJson.mock.calls[0][1].values.advanced.collectionName,
         ).toBe("Spaced Books");
         expect(mockPostJson.mock.calls[0][1].restartRequired).toBe(true);
+    });
+
+    describe("Front & Back Matter page", () => {
+        const pageElement = (selector: string) =>
+            container.querySelector(
+                `[data-testid="configr-page"][data-page-key="frontBackMatter"] ${selector}`,
+            ) as HTMLElement | null;
+
+        const styleSelect = () => {
+            const select = pageElement(
+                '[data-path="frontBackMatter.xmatter"]',
+            ) as HTMLSelectElement | null;
+            if (!select) {
+                throw new Error(
+                    "The Front & Back Matter page has no Style list",
+                );
+            }
+            return select;
+        };
+
+        const styleChoices = () =>
+            Array.from(styleSelect().options).map((option) => [
+                option.value,
+                option.textContent,
+            ]);
+
+        const captionBox = () => {
+            const box = pageElement(
+                '[data-path="frontBackMatter.qrcodeCaption"]',
+            ) as HTMLInputElement | null;
+            if (!box) {
+                throw new Error(
+                    "The Front & Back Matter page has no Caption box",
+                );
+            }
+            return box;
+        };
+
+        it("offers the packs, and describes the one chosen", async () => {
+            expect(initialValues.frontBackMatter.xmatter).toBe("Traditional");
+
+            await renderDialog();
+
+            expect(styleChoices()).toEqual([
+                ["Traditional", "Traditional"],
+                ["Device", "Device"],
+            ]);
+            expect(styleSelect().disabled).toBe(false);
+            expect(
+                pageElement('[data-testid="configr-select-description"]')
+                    ?.textContent,
+            ).toBe("Title page and credits page inside the covers.");
+
+            click("change-restart-value");
+            await flushDeferredChange();
+
+            expect(
+                pageElement('[data-testid="configr-select-description"]')
+                    ?.textContent,
+            ).toBe("Made for reading on phones.");
+        });
+
+        it("disables the list when the branding chooses the pack", async () => {
+            respondWith({
+                ...settingsResponse,
+                xmatterPacks: [settingsResponse.xmatterPacks[0]],
+                xmatterChosenByBranding: true,
+            });
+
+            await renderDialog();
+
+            expect(styleChoices()).toEqual([["Traditional", "Traditional"]]);
+            expect(styleSelect().disabled).toBe(true);
+        });
+
+        it("shows the plain badge, and disables the caption, when QR codes are off", async () => {
+            expect(initialValues.frontBackMatter.showQrCode).toBe(false);
+
+            await renderDialog();
+
+            expect(captionBox().disabled).toBe(true);
+            const preview = pageElement(
+                '[data-testid="qr-code-badge-preview"]',
+            );
+            expect(preview?.querySelectorAll("img").length).toBe(1);
+            expect(preview?.querySelector("img")?.getAttribute("src")).toBe(
+                "/bloom/branding/Default/made-with-bloom-badge.svg",
+            );
+        });
+
+        it("previews the QR code and the caption as typed, with the language in bold", async () => {
+            await renderDialog();
+
+            click("show-qr-code-with-caption");
+            await flushDeferredChange();
+
+            expect(captionBox().disabled).toBe(false);
+            const preview = pageElement(
+                '[data-testid="qr-code-badge-preview"]',
+            );
+            expect(
+                Array.from(preview?.querySelectorAll("img") ?? []).map((img) =>
+                    img.getAttribute("src"),
+                ),
+            ).toEqual([
+                "/bloom/branding/Default/made-with-bloom-badge-text.svg",
+                "/bloom/api/collection/qrCode?tag=xkal",
+            ]);
+            const caption = pageElement(
+                '[data-testid="qr-code-badge-caption"]',
+            );
+            expect(caption?.textContent).toBe("Books in Kalaba, free:");
+            expect(caption?.querySelector("b")?.textContent).toBe("Kalaba");
+            expect(preview?.textContent).toContain(
+                "BloomLibrary.org/language:xkal",
+            );
+        });
+
+        it("names the sign language on the badge when the collection has one, as books do", async () => {
+            respondWith({
+                ...settingsResponse,
+                values: {
+                    ...initialValues,
+                    languages: {
+                        ...initialValues.languages,
+                        signLanguage: {
+                            tag: "ase",
+                            name: "American Sign Language",
+                            isCustomName: false,
+                        },
+                    },
+                    frontBackMatter: {
+                        ...initialValues.frontBackMatter,
+                        showQrCode: true,
+                    },
+                },
+            });
+
+            await renderDialog();
+
+            const preview = pageElement(
+                '[data-testid="qr-code-badge-preview"]',
+            );
+            expect(
+                pageElement('[data-testid="qr-code-badge-caption"] b')
+                    ?.textContent,
+            ).toBe("American Sign Language");
+            expect(
+                preview?.querySelectorAll("img")[1]?.getAttribute("src"),
+            ).toBe("/bloom/api/collection/qrCode?tag=ase");
+            expect(preview?.textContent).toContain(
+                "BloomLibrary.org/language:ase",
+            );
+        });
+
+        it("previews the default caption, as books get it, when the caption is empty", async () => {
+            respondWith({
+                ...settingsResponse,
+                values: {
+                    ...initialValues,
+                    frontBackMatter: {
+                        ...initialValues.frontBackMatter,
+                        showQrCode: true,
+                        qrcodeCaption: "",
+                    },
+                },
+            });
+
+            await renderDialog();
+
+            expect(
+                pageElement('[data-testid="qr-code-badge-caption"]')
+                    ?.textContent,
+            ).toBe("More books in Kalaba language:");
+        });
+
+        it("previews an untouched caption of only spaces as it is, since that is saved and books show it", async () => {
+            respondWith({
+                ...settingsResponse,
+                values: {
+                    ...initialValues,
+                    frontBackMatter: {
+                        ...initialValues.frontBackMatter,
+                        showQrCode: true,
+                        qrcodeCaption: "  ",
+                    },
+                },
+            });
+
+            await renderDialog();
+
+            expect(
+                pageElement('[data-testid="qr-code-badge-caption"]')
+                    ?.textContent,
+            ).toBe("  ");
+        });
     });
 
     it("asks Help for the topic of the page Config-R says is showing", async () => {

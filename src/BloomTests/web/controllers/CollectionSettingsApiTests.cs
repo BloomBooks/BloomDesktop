@@ -1,4 +1,10 @@
+using System;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Linq;
 using Bloom;
+using Bloom.Book;
 using Bloom.Collection;
 using Bloom.web.controllers;
 using Newtonsoft.Json;
@@ -58,6 +64,48 @@ namespace BloomTests.web.controllers
             Assert.That((string)result.languageCode, Is.EqualTo(""));
         }
 
+        /// <summary>
+        /// The Front &amp; Back Matter page shows this as an image in its preview of the badge.
+        /// </summary>
+        [Test]
+        public void MakeLanguageQrCodePng_GivesAPng()
+        {
+            var png = CollectionSettingsApi.MakeLanguageQrCodePng("cak");
+
+            using (var stream = new MemoryStream(png))
+            using (var image = Image.FromStream(stream))
+            {
+                Assert.That(image.RawFormat, Is.EqualTo(ImageFormat.Png));
+                Assert.That(image.Width, Is.GreaterThan(0));
+            }
+        }
+
+        /// <summary>
+        /// The dialog's Style list offers only installed packs, so the value it is given must be
+        /// one of them: the pack the books really get, not one that has since been uninstalled.
+        /// </summary>
+        [Test]
+        public void FrontBackMatterXmatter_SavedPackNotInstalled_IsTheFactoryDefault()
+        {
+            using var folder = new TemporaryFolder("FrontBackMatterXmatter_NotInstalled");
+            var settings = new CollectionSettings(
+                CollectionSettings.GetPathForNewSettings(folder.Path, "Uninstalled")
+            );
+            var finder = new XMatterPackFinder(
+                new[] { BloomFileLocator.GetFactoryXMatterDirectory() }
+            );
+            settings.XMatterPackName = "NoSuchPack";
+            Assert.That(
+                finder.GetXMattersToOfferInSettings(null).Select(p => p.Key),
+                Has.No.Member("NoSuchPack"),
+                "Sanity check: the saved pack should not be installed"
+            );
+
+            var values = new CollectionSettingsValues(settings, finder);
+
+            Assert.That(values.FrontBackMatter.Xmatter, Is.EqualTo(finder.FactoryDefault.Key));
+        }
+
         [Test]
         public void MakeLanguageDataJson_OrdinaryName_ProducesExpectedFields()
         {
@@ -84,7 +132,12 @@ namespace BloomTests.web.controllers
             settings.SignLanguage.ChangeTag("ase");
             var json = JObject.Parse(
                 JsonConvert.SerializeObject(
-                    new CollectionSettingsValues(settings),
+                    new CollectionSettingsValues(
+                        settings,
+                        new XMatterPackFinder(
+                            new[] { BloomFileLocator.GetFactoryXMatterDirectory() }
+                        )
+                    ),
                     CollectionSettingsApi.kCamelCaseSettings
                 )
             );
