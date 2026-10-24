@@ -2,7 +2,9 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using Bloom;
+using Bloom.Book;
 using Bloom.Collection;
 using Bloom.web.controllers;
 using Newtonsoft.Json;
@@ -63,42 +65,45 @@ namespace BloomTests.web.controllers
         }
 
         /// <summary>
-        /// The Front &amp; Back Matter page previews the badge from this: a QR code it can show
-        /// as an image, and the language and address the books' badges name.
+        /// The Front &amp; Back Matter page shows this as an image in its preview of the badge.
         /// </summary>
         [Test]
-        public void MakeQrCodeBadgeData_GivesAPngQrCodeAndTheLanguagesAddress()
+        public void MakeLanguageQrCodePng_GivesAPng()
         {
-            const string kPngPrefix = "data:image/png;base64,";
+            var png = CollectionSettingsApi.MakeLanguageQrCodePng("cak");
 
-            var badge = CollectionSettingsApi.MakeQrCodeBadgeData("cak", "Kaqchikel");
-
-            Assert.That(badge.QrCode, Does.StartWith(kPngPrefix));
-            var png = Convert.FromBase64String(badge.QrCode.Substring(kPngPrefix.Length));
             using (var stream = new MemoryStream(png))
             using (var image = Image.FromStream(stream))
             {
                 Assert.That(image.RawFormat, Is.EqualTo(ImageFormat.Png));
                 Assert.That(image.Width, Is.GreaterThan(0));
             }
-            Assert.That(badge.LanguageName, Is.EqualTo("Kaqchikel"));
-            Assert.That(badge.DisplayUrl, Is.EqualTo("BloomLibrary.org/language:cak"));
         }
 
         /// <summary>
-        /// Books get the default caption when the collection's own caption is empty, so the
-        /// preview needs the same text.
+        /// The dialog's Style list offers only installed packs, so the value it is given must be
+        /// one of them: the pack the books really get, not one that has since been uninstalled.
         /// </summary>
         [Test]
-        public void DefaultBadgeQrCodeLabelLocalized_IsWhatAnEmptyCaptionGives()
+        public void FrontBackMatterXmatter_SavedPackNotInstalled_IsTheFactoryDefault()
         {
-            var settings = new CollectionSettings { BadgeQrCodeLabel = "" };
-
-            Assert.That(settings.DefaultBadgeQrCodeLabelLocalized, Does.Contain("{0}"));
-            Assert.That(
-                settings.BadgeQrCodeLabelLocalized,
-                Is.EqualTo(settings.DefaultBadgeQrCodeLabelLocalized)
+            using var folder = new TemporaryFolder("FrontBackMatterXmatter_NotInstalled");
+            var settings = new CollectionSettings(
+                CollectionSettings.GetPathForNewSettings(folder.Path, "Uninstalled")
             );
+            var finder = new XMatterPackFinder(
+                new[] { BloomFileLocator.GetFactoryXMatterDirectory() }
+            );
+            settings.XMatterPackName = "NoSuchPack";
+            Assert.That(
+                finder.GetXMattersToOfferInSettings(null).Select(p => p.Key),
+                Has.No.Member("NoSuchPack"),
+                "Sanity check: the saved pack should not be installed"
+            );
+
+            var values = new CollectionSettingsValues(settings, finder);
+
+            Assert.That(values.FrontBackMatter.Xmatter, Is.EqualTo(finder.FactoryDefault.Key));
         }
 
         [Test]
@@ -127,7 +132,12 @@ namespace BloomTests.web.controllers
             settings.SignLanguage.ChangeTag("ase");
             var json = JObject.Parse(
                 JsonConvert.SerializeObject(
-                    new CollectionSettingsValues(settings),
+                    new CollectionSettingsValues(
+                        settings,
+                        new XMatterPackFinder(
+                            new[] { BloomFileLocator.GetFactoryXMatterDirectory() }
+                        )
+                    ),
                     CollectionSettingsApi.kCamelCaseSettings
                 )
             );

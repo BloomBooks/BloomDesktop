@@ -4,6 +4,7 @@ using System.Drawing.Imaging;
 using System.Dynamic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Bloom.Api;
 using Bloom.Book;
@@ -91,11 +92,7 @@ namespace Bloom.web.controllers
                 },
                 true
             );
-            apiHandler.RegisterEndpointHandler(
-                "collection/qrCodeBadge",
-                HandleGetQrCodeBadge,
-                false
-            );
+            apiHandler.RegisterEndpointHandler("collection/qrCode", HandleGetQrCode, false);
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "advancedProgramSettings",
                 request =>
@@ -521,13 +518,41 @@ namespace Bloom.web.controllers
                 );
                 return;
             }
+            var xmatterKeyForcedByBranding =
+                _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
             var response = new CollectionSettingsResponse
             {
-                Values = new CollectionSettingsValues(_collectionSettings),
+                Values = new CollectionSettingsValues(_collectionSettings, _xmatterPackFinder),
                 RestartPaths = CollectionSettingsValues.GetRestartPaths(),
                 IsTeamCollection = CurrentCollectionIsTeamCollection,
+                XmatterPacks = GetXmatterPacks(xmatterKeyForcedByBranding),
+                XmatterChosenByBranding = xmatterKeyForcedByBranding != null,
+                DefaultQrcodeCaption = _collectionSettings.DefaultBadgeQrCodeLabelLocalized,
             };
             request.ReplyWithJson(JsonConvert.SerializeObject(response, kCamelCaseSettings));
+        }
+
+        /// <summary>
+        /// The front/back matter packs the collection may use, with their names and descriptions
+        /// as the user sees them.
+        /// </summary>
+        private XmatterPack[] GetXmatterPacks(string xmatterKeyForcedByBranding)
+        {
+            return _xmatterPackFinder
+                .GetXMattersToOfferInSettings(xmatterKeyForcedByBranding)
+                .Select(pack => new XmatterPack
+                {
+                    Value = pack.Key,
+                    Label = LocalizationManager.GetDynamicString(
+                        "Bloom",
+                        "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack."
+                            + pack.EnglishLabel,
+                        pack.EnglishLabel,
+                        "Name of a Front/Back Matter Pack"
+                    ),
+                    Description = pack.GetDescription(), // already localized, if available
+                })
+                .ToArray();
         }
 
         /// <summary>
@@ -552,39 +577,28 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Replies to GET collection/qrCodeBadge with what the Front &amp; Back Matter page needs to
-        /// draw its preview of the "Made with Bloom" badge: the QR code the books get, and the
-        /// language and address the badge names. The caption comes from the dialog's own values,
-        /// so that the preview follows it as the user types; this gives only the default caption,
-        /// which books get when that is empty.
+        /// Replies to GET collection/qrCode?tag=... with the PNG of the QR code that books in that
+        /// language get on their badge, for the Front &amp; Back Matter page's preview. It takes the
+        /// language rather than using the collection's, so that the preview can follow a language
+        /// changed in the dialog but not yet saved.
         /// </summary>
-        private void HandleGetQrCodeBadge(ApiRequest request)
+        private void HandleGetQrCode(ApiRequest request)
         {
-            var langTag = _collectionSettings.PrimaryLangTagWithSignPrioritized;
-            var badge = MakeQrCodeBadgeData(
-                langTag,
-                _collectionSettings.PrimaryLanguageWithSignPrioritized
-            );
-            badge.DefaultCaption = _collectionSettings.DefaultBadgeQrCodeLabelLocalized;
-            request.ReplyWithJson(JsonConvert.SerializeObject(badge, kCamelCaseSettings));
+            using (var png = new MemoryStream(MakeLanguageQrCodePng(request.RequiredParam("tag"))))
+                request.ReplyWithStreamContent(png, "image/png");
         }
 
         /// <summary>
-        /// The reply to GET collection/qrCodeBadge for a collection whose books are in the given
-        /// language. (Internal for testing.)
+        /// The PNG of the QR code that books in the given language get on their badge. (Internal
+        /// for testing.)
         /// </summary>
-        internal static QrCodeBadgeData MakeQrCodeBadgeData(string langTag, string languageName)
+        internal static byte[] MakeLanguageQrCodePng(string langTag)
         {
             using (var bitmap = BookStorage.MakeLanguageQrCodeBitmap(langTag))
             using (var stream = new MemoryStream())
             {
                 bitmap.Save(stream, ImageFormat.Png);
-                return new QrCodeBadgeData
-                {
-                    QrCode = "data:image/png;base64," + Convert.ToBase64String(stream.ToArray()),
-                    LanguageName = languageName,
-                    DisplayUrl = BookStorage.GetLanguagePageDisplayUrl(langTag),
-                };
+                return stream.ToArray();
             }
         }
 
@@ -691,33 +705,16 @@ namespace Bloom.web.controllers
 
         private object SetupXMatterList()
         {
-            var xmatterOfferings = new List<object>();
-
             string xmatterKeyForcedByBranding =
                 _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
 
-            var offerings = _xmatterPackFinder.GetXMattersToOfferInSettings(
-                xmatterKeyForcedByBranding
-            );
-
-            foreach (var pack in offerings)
-            {
-                var labelToShow = LocalizationManager.GetDynamicString(
-                    "Bloom",
-                    "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack."
-                        + pack.EnglishLabel,
-                    pack.EnglishLabel,
-                    "Name of a Front/Back Matter Pack"
-                );
-                var description = pack.GetDescription(); // already localized, if available
-                var item = new
+            var xmatterOfferings = GetXmatterPacks(xmatterKeyForcedByBranding)
+                .Select(pack => new
                 {
-                    displayName = labelToShow,
-                    internalName = pack.Key,
-                    description,
-                };
-                xmatterOfferings.Add(item);
-            }
+                    displayName = pack.Label,
+                    internalName = pack.Value,
+                    description = pack.Description,
+                });
 
             // This will switch to the default factory xmatter if the current one is not valid.
             var currentXmatter = _xmatterPackFinder.GetValidXmatter(

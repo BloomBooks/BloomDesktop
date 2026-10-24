@@ -10,22 +10,15 @@ import {
 } from "@sillsdev/config-r";
 import { Typography } from "@mui/material";
 import { useL10n } from "../../react_components/l10nHooks";
-import { get } from "../../utils/bloomApi";
 import { kBloomRed } from "../../bloomMaterialUITheme";
 import {
     ICollectionSettingsResponse,
     ICollectionSettingsValues,
-    IQrCodeBadgeData,
 } from "../collectionSettingsTypes";
 
-// One front/back matter pack, as GET settings/xmatter describes it.
-interface IXmatterOffering {
-    displayName: string;
-    internalName: string;
-    description: string;
-}
-
-// Every branding has the same badge pictures, so the preview uses the default branding's.
+// A few brandings have badge pictures of their own (dark, or white on red), but most use the
+// default branding's, so the preview shows those: it is a picture of the badge, not of this
+// branding's version of it.
 const kBadgeFolder = "/bloom/branding/Default/";
 
 /**
@@ -34,22 +27,16 @@ const kBadgeFolder = "/bloom/branding/Default/";
  * is built as BookStorage.AppendCaptionWithBoldLanguage builds it. With QR codes turned off, a book
  * shows just the badge picture.
  */
-export const QrCodeBadgePreview: React.FunctionComponent<{
+const QrCodeBadgePreview: React.FunctionComponent<{
     showQrCode: boolean;
+    // As it will be saved; books get the default caption when it is empty.
     caption: string;
-    // The caption as the dialog opened, so the preview can tell an edited caption from one the
-    // user has not touched.
-    captionWhenOpened: string;
-    badge: IQrCodeBadgeData;
+    defaultCaption: string;
+    // The badge's language: the sign language if the collection has one, else the first language.
+    languageTag: string;
+    languageName: string;
 }> = (props) => {
-    // The caption as it will be saved: the dialog trims only text the user edited. An empty one
-    // gives books the default caption.
-    const captionToSave =
-        props.caption === props.captionWhenOpened
-            ? props.caption
-            : props.caption.trim();
-    const caption =
-        captionToSave === "" ? props.badge.defaultCaption : captionToSave;
+    const caption = props.caption === "" ? props.defaultCaption : props.caption;
     const placeholderIndex = caption.indexOf("{0}");
     return (
         <div
@@ -82,8 +69,9 @@ export const QrCodeBadgePreview: React.FunctionComponent<{
             />
             {props.showQrCode && (
                 <>
+                    {/* C# makes the QR code, exactly as it puts it in books. */}
                     <img
-                        src={props.badge.qrCode}
+                        src={`/bloom/api/collection/qrCode?tag=${encodeURIComponent(props.languageTag)}`}
                         css={css`
                             width: 2.8cm;
                         `}
@@ -103,18 +91,19 @@ export const QrCodeBadgePreview: React.FunctionComponent<{
                             ) : (
                                 <>
                                     {caption.substring(0, placeholderIndex)}
-                                    <b>{props.badge.languageName}</b>
+                                    <b>{props.languageName}</b>
                                     {caption.substring(placeholderIndex + 3)}
                                 </>
                             )}
                         </div>
+                        {/* The address as BookStorage.GetLanguagePageDisplayUrl shows it on books. */}
                         <div
                             css={css`
                                 color: ${kBloomRed};
                                 font-weight: bold;
                             `}
                         >
-                            {props.badge.displayUrl}
+                            {`BloomLibrary.org/language:${props.languageTag}`}
                         </div>
                     </div>
                 </>
@@ -128,10 +117,9 @@ export const QrCodeBadgePreview: React.FunctionComponent<{
  * QR code on the badge, and the place names some front matter shows.
  */
 export function useFrontBackMatterPage(props: {
-    dialogOpen: boolean;
     // Undefined until the dialog's GET collection/settings has answered.
     settings: ICollectionSettingsResponse | undefined;
-    // The values as the user has them now, which the pack's description and the badge preview
+    // The values as they would be saved now, which the pack's description and the badge preview
     // follow.
     values: ICollectionSettingsValues | undefined;
 }): React.ReactElement {
@@ -184,41 +172,16 @@ export function useFrontBackMatterPage(props: {
         "CollectionSettingsDialog.ProjectInformationTab.District",
     );
 
-    // Both are asked for when the dialog opens, not when Config-R mounts this page (it mounts only
-    // the page showing), so they are usually in before anyone gets here. The packs offered follow
-    // the saved subscription: a branding can choose the pack, and if a newly typed code's does,
-    // C# applies it as it saves.
-    const [xmatterOfferings, setXmatterOfferings] = React.useState<
-        IXmatterOffering[]
-    >([]);
-    const [badge, setBadge] = React.useState<IQrCodeBadgeData>();
-    React.useEffect(() => {
-        if (!props.dialogOpen) return;
-        get("settings/xmatter", (result) => {
-            setXmatterOfferings(
-                result.data.xmatterOfferings as IXmatterOffering[],
-            );
-        });
-        get("collection/qrCodeBadge", (result) => {
-            setBadge(result.data as IQrCodeBadgeData);
-        });
-    }, [props.dialogOpen]);
-
-    const options = xmatterOfferings.map((pack) => ({
-        value: pack.internalName,
-        label: pack.displayName,
-    }));
-    // Keep the saved pack choosable even when it is no longer offered (it was uninstalled), so
-    // that seeing it does not change it; C# replaces it with one that is offered as it saves.
-    // (values is null for a user who may not edit the settings.)
-    const savedXmatter = props.settings?.values?.frontBackMatter.xmatter;
-    if (savedXmatter && !options.some((o) => o.value === savedXmatter))
-        options.push({ value: savedXmatter, label: savedXmatter });
-
+    // The packs offered follow the saved subscription: a branding can choose the pack, and if a
+    // newly typed code's does, C# applies it as it saves.
+    const xmatterPacks = props.settings?.xmatterPacks ?? [];
     const frontBackMatter = props.values?.frontBackMatter;
-    const selectedPackDescription = xmatterOfferings.find(
-        (pack) => pack.internalName === frontBackMatter?.xmatter,
+    const selectedPackDescription = xmatterPacks.find(
+        (pack) => pack.value === frontBackMatter?.xmatter,
     )?.description;
+    const badgeLanguage =
+        props.values?.languages.signLanguage ??
+        props.values?.languages.language1;
 
     return (
         <ConfigrPage label={label} pageKey="frontBackMatter" topLevel={true}>
@@ -226,9 +189,8 @@ export function useFrontBackMatterPage(props: {
                 <ConfigrSelect
                     label={styleLabel}
                     path="frontBackMatter.xmatter"
-                    options={options}
-                    // A branding that chooses the pack leaves only that one.
-                    disabled={options.length < 2}
+                    options={xmatterPacks}
+                    disabled={props.settings?.xmatterChosenByBranding}
                     description={selectedPackDescription}
                 />
             </ConfigrGroup>
@@ -247,14 +209,13 @@ export function useFrontBackMatterPage(props: {
                     maxLinesToShowBeforeScrolling={4}
                     disabled={!frontBackMatter?.showQrCode}
                 />
-                {badge && frontBackMatter && (
+                {frontBackMatter && badgeLanguage && (
                     <QrCodeBadgePreview
                         showQrCode={frontBackMatter.showQrCode}
                         caption={frontBackMatter.qrcodeCaption}
-                        captionWhenOpened={
-                            props.settings!.values.frontBackMatter.qrcodeCaption
-                        }
-                        badge={badge}
+                        defaultCaption={props.settings!.defaultQrcodeCaption}
+                        languageTag={badgeLanguage.tag}
+                        languageName={badgeLanguage.name}
                     />
                 )}
             </ConfigrGroup>

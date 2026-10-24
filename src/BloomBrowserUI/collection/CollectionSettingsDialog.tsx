@@ -198,10 +198,25 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             </ConfigrPage>
         );
     }
+    // Config-R's values with the subscription code being typed in place of the one loaded.
+    function withSubscriptionCode(
+        values: ICollectionSettingsValues,
+    ): ICollectionSettingsValues {
+        return { ...values, subscription: { code: subscriptionCode! } };
+    }
+    // The values as OK would save them now. Both are checked: a deferred onChange can set
+    // currentValues after a close has already cleared loadedSettings.
+    const currentValuesToSave =
+        currentValues &&
+        loadedSettings &&
+        withEditedTextTrimmed(
+            withSubscriptionCode(currentValues),
+            loadedSettings.values,
+        );
+
     const frontBackMatterPage = useFrontBackMatterPage({
-        dialogOpen: propsForBloomDialog.open,
         settings: loadedSettings,
-        values: currentValues,
+        values: currentValuesToSave,
     });
     const subscriptionPage = useSubscriptionPage({
         code: subscriptionCode,
@@ -237,23 +252,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             )
         );
     }
-    // Config-R's values with the subscription code being typed in place of the one loaded.
-    function withSubscriptionCode(
-        values: ICollectionSettingsValues,
-    ): ICollectionSettingsValues {
-        return { ...values, subscription: { code: subscriptionCode! } };
-    }
-
-    // Both are checked: a deferred onChange can set currentValues after a close has already
-    // cleared loadedSettings.
-    const needsRestart = restartNeededFor(
-        currentValues &&
-            loadedSettings &&
-            withEditedTextTrimmed(
-                withSubscriptionCode(currentValues),
-                loadedSettings.values,
-            ),
-    );
+    const needsRestart = restartNeededFor(currentValuesToSave);
 
     function saveAndCloseDialog() {
         // Block the button while the save is in flight, so a second click cannot save (and

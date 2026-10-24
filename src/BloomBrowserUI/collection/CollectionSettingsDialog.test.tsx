@@ -5,7 +5,6 @@ import { renderRoot, unmountRoot } from "../utils/reactRender";
 import {
     ICollectionSettingsResponse,
     ICollectionSettingsValues,
-    IQrCodeBadgeData,
 } from "./collectionSettingsTypes";
 
 const initialValues: ICollectionSettingsValues = {
@@ -52,28 +51,21 @@ const settingsResponse: ICollectionSettingsResponse = {
     values: initialValues,
     restartPaths: ["frontBackMatter.xmatter", "languages.language3.tag"],
     isTeamCollection: false,
+    xmatterPacks: [
+        {
+            value: "Traditional",
+            label: "Traditional",
+            description: "Title page and credits page inside the covers.",
+        },
+        {
+            value: "Device",
+            label: "Device",
+            description: "Made for reading on phones.",
+        },
+    ],
+    xmatterChosenByBranding: false,
+    defaultQrcodeCaption: "More books in {0} language:",
     notAllowedMessage: null,
-};
-
-// What GET settings/xmatter offers, unless a test says otherwise.
-const defaultXmatterOfferings = [
-    {
-        displayName: "Traditional",
-        internalName: "Traditional",
-        description: "Title page and credits page inside the covers.",
-    },
-    {
-        displayName: "Device",
-        internalName: "Device",
-        description: "Made for reading on phones.",
-    },
-];
-
-const qrCodeBadge: IQrCodeBadgeData = {
-    qrCode: "data:image/png;base64,AAAA",
-    languageName: "Kalaba",
-    displayUrl: "BloomLibrary.org/language:xkal",
-    defaultCaption: "More books in {0} language:",
 };
 
 const {
@@ -103,9 +95,6 @@ const {
         error: false,
     },
 }));
-
-// The packs GET settings/xmatter offers in the current test.
-let xmatterOfferings = defaultXmatterOfferings;
 
 vi.mock("./useGetEnterpriseBookshelves", () => ({
     useGetEnterpriseBookshelves: () => ({
@@ -521,26 +510,13 @@ describe("CollectionSettingsDialog", () => {
         (container.querySelector('[data-testid="dialog-ok"]') as HTMLElement)
             .textContent;
 
-    // Answers GET collection/settings with the given response, and the Front & Back Matter page's
-    // own GETs with their test data.
+    // Answers GET collection/settings with the given response. The dialog asks for nothing else.
     const respondWith = (response: ICollectionSettingsResponse) => {
         mockGet.mockImplementation(
             (url: string, successCallback: (r: unknown) => void) => {
-                switch (url) {
-                    case "collection/settings":
-                        successCallback({ data: response });
-                        break;
-                    case "settings/xmatter":
-                        successCallback({
-                            data: { xmatterOfferings: xmatterOfferings },
-                        });
-                        break;
-                    case "collection/qrCodeBadge":
-                        successCallback({ data: qrCodeBadge });
-                        break;
-                    default:
-                        throw new Error(`The test did not expect GET ${url}`);
-                }
+                if (url !== "collection/settings")
+                    throw new Error(`The test did not expect GET ${url}`);
+                successCallback({ data: response });
             },
         );
     };
@@ -556,7 +532,6 @@ describe("CollectionSettingsDialog", () => {
         enterpriseBookshelves.error = false;
         tableFeature.loaded = true;
         tableFeature.enabled = true;
-        xmatterOfferings = defaultXmatterOfferings;
         mockGet.mockReset();
         respondWith(settingsResponse);
         mockPostJson.mockReset();
@@ -914,33 +889,16 @@ describe("CollectionSettingsDialog", () => {
         });
 
         it("disables the list when the branding chooses the pack", async () => {
-            xmatterOfferings = [defaultXmatterOfferings[0]];
+            respondWith({
+                ...settingsResponse,
+                xmatterPacks: [settingsResponse.xmatterPacks[0]],
+                xmatterChosenByBranding: true,
+            });
 
             await renderDialog();
 
             expect(styleChoices()).toEqual([["Traditional", "Traditional"]]);
             expect(styleSelect().disabled).toBe(true);
-        });
-
-        it("keeps the saved pack choosable when it is no longer offered", async () => {
-            respondWith({
-                ...settingsResponse,
-                values: {
-                    ...initialValues,
-                    frontBackMatter: {
-                        ...initialValues.frontBackMatter,
-                        xmatter: "Uninstalled",
-                    },
-                },
-            });
-
-            await renderDialog();
-
-            expect(styleChoices()).toEqual([
-                ["Traditional", "Traditional"],
-                ["Device", "Device"],
-                ["Uninstalled", "Uninstalled"],
-            ]);
         });
 
         it("shows the plain badge, and disables the caption, when QR codes are off", async () => {
@@ -974,14 +932,53 @@ describe("CollectionSettingsDialog", () => {
                 ),
             ).toEqual([
                 "/bloom/branding/Default/made-with-bloom-badge-text.svg",
-                qrCodeBadge.qrCode,
+                "/bloom/api/collection/qrCode?tag=xkal",
             ]);
             const caption = pageElement(
                 '[data-testid="qr-code-badge-caption"]',
             );
             expect(caption?.textContent).toBe("Books in Kalaba, free:");
             expect(caption?.querySelector("b")?.textContent).toBe("Kalaba");
-            expect(preview?.textContent).toContain(qrCodeBadge.displayUrl);
+            expect(preview?.textContent).toContain(
+                "BloomLibrary.org/language:xkal",
+            );
+        });
+
+        it("names the sign language on the badge when the collection has one, as books do", async () => {
+            respondWith({
+                ...settingsResponse,
+                values: {
+                    ...initialValues,
+                    languages: {
+                        ...initialValues.languages,
+                        signLanguage: {
+                            tag: "ase",
+                            name: "American Sign Language",
+                            isCustomName: false,
+                        },
+                    },
+                    frontBackMatter: {
+                        ...initialValues.frontBackMatter,
+                        showQrCode: true,
+                    },
+                },
+            });
+
+            await renderDialog();
+
+            const preview = pageElement(
+                '[data-testid="qr-code-badge-preview"]',
+            );
+            expect(
+                pageElement('[data-testid="qr-code-badge-caption"] b')
+                    ?.textContent,
+            ).toBe("American Sign Language");
+            expect(
+                preview?.querySelectorAll("img")[1]?.getAttribute("src"),
+            ).toBe("/bloom/api/collection/qrCode?tag=ase");
+            expect(preview?.textContent).toContain(
+                "BloomLibrary.org/language:ase",
+            );
         });
 
         it("previews the default caption, as books get it, when the caption is empty", async () => {
@@ -1024,16 +1021,6 @@ describe("CollectionSettingsDialog", () => {
                 pageElement('[data-testid="qr-code-badge-caption"]')
                     ?.textContent,
             ).toBe("  ");
-        });
-
-        it("has boxes for the place names", async () => {
-            await renderDialog();
-
-            for (const place of ["country", "province", "district"]) {
-                expect(
-                    pageElement(`[data-path="frontBackMatter.${place}"]`),
-                ).not.toBeNull();
-            }
         });
     });
 

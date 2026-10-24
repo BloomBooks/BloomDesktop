@@ -131,13 +131,15 @@ describe it with a stateless `GET settings/subscription?code=`, so Cancel has no
 Each is one card, independent once the shell is in. For each: what it contains, and what must not
 get lost.
 
-**BL-16733 Front & Back Matter.** Built: Style (the packs from `GET settings/xmatter`, with the
-chosen one's description; a branding that chooses the pack leaves only that one, disabled), QR
-Codes (show, caption, and a live badge preview drawn in React from `GET collection/qrCodeBadge`,
-which gives the QR code image and the language and address the badge names), Places (Country,
-Province, District). Page Numbering Style is not on this page; it goes with Languages (Q5). The
-packs offered follow the saved subscription; a
-typed code whose branding chooses a pack gets it as C# saves.
+**BL-16733 Front & Back Matter.** Built: Style (the packs, and whether the branding chose one,
+come in the GET collection/settings reply, and the value is the pack the books really get; the
+chosen one's description shows beneath), QR Codes (show, caption, and a live badge preview drawn
+in React: the language comes from the dialog's values, and the QR code image from
+`GET collection/qrCode?tag=`, so the preview can follow a language being edited), Places
+(Country, Province, District). Page Numbering Style is not on this page; it goes with Languages
+(Q5). The packs offered follow the saved subscription; a typed code whose branding chooses a pack
+gets it as C# saves. The caption box opens with the default caption filled in and C# stores it
+only if changed (see FrontBackMatterValues.QrcodeCaption).
 
 **BL-16737 Advanced.** Automatically update Bloom (a user-level setting), Collection Name
 (disabled in a Team Collection; the model already queues the rename; trim in the client).
