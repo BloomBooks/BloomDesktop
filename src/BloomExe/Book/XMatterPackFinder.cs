@@ -63,11 +63,13 @@ namespace Bloom.Book
 
         /// <summary>
         /// Whether the pack is one of the project-specific packs that ship with Bloom, which are
-        /// offered only when a branding chooses them.
+        /// offered only when a branding chooses them. A copy the user installed themselves is
+        /// offered anyway, so it does not count.
         /// </summary>
-        public bool IsProjectSpecific(string key)
+        public bool IsOfferedOnlyByBranding(string key)
         {
-            return Factory.Any(p => p.Key == key && p.PathToFolder.Contains("project-specific"));
+            return Factory.Any(p => p.Key == key && p.PathToFolder.Contains("project-specific"))
+                && !GetXMattersToOfferInSettings(null).Any(p => p.Key == key);
         }
 
         public string GetValidXmatter(string xmatterKeyForcedByBranding, string proposedXmatter)

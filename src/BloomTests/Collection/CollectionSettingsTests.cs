@@ -52,17 +52,19 @@ namespace BloomTests.Collection
 
         private static void CheckAndFixDependencies(
             CollectionSettings settings,
-            bool mayChangeSettings
+            bool mayChangeSettings,
+            XMatterPackFinder finder = null
         )
         {
+            finder ??= s_factoryXmatterFinder;
             var locator = new BloomFileLocator(
                 settings,
-                s_factoryXmatterFinder,
+                finder,
                 ProjectContext.GetFactoryFileLocations(),
                 ProjectContext.GetFoundFileLocations(),
                 ProjectContext.GetAfterXMatterFileLocations()
             );
-            settings.CheckAndFixDependencies(locator, s_factoryXmatterFinder, mayChangeSettings);
+            settings.CheckAndFixDependencies(locator, finder, mayChangeSettings);
         }
 
         // A collection whose saved pack is a project-specific one that no branding chooses, as
@@ -156,6 +158,31 @@ namespace BloomTests.Collection
                 CreateCollectionSettings(_folder.Path, "PackNotAllowedMember").XMatterPackName,
                 Is.EqualTo(savedPack)
             );
+        }
+
+        /// <summary>
+        /// A project may have installed its pack itself (from a .bloompack) before it shipped
+        /// with Bloom. That copy is offered in Settings, so it must not be replaced.
+        /// </summary>
+        [Test]
+        public void CheckAndFixDependencies_ProjectSpecificPackAlsoInstalledByTheUser_IsKept()
+        {
+            var settings = MakeCollectionWithProjectSpecificPack("PackAlsoInstalled");
+            var savedPack = settings.XMatterPackName;
+            var installedFolder = Path.Combine(_folder.Path, "InstalledXMatter");
+            Directory.CreateDirectory(Path.Combine(installedFolder, savedPack + "-XMatter"));
+            var finder = new XMatterPackFinder(
+                new[] { BloomFileLocator.GetFactoryXMatterDirectory(), installedFolder }
+            );
+            Assert.That(
+                finder.GetXMattersToOfferInSettings(null).Select(p => p.Key),
+                Has.Member(savedPack),
+                "Sanity check: the installed copy should be offered"
+            );
+
+            CheckAndFixDependencies(settings, mayChangeSettings: true, finder);
+
+            Assert.That(settings.XMatterPackName, Is.EqualTo(savedPack));
         }
 
         [Test]

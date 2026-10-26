@@ -1401,7 +1401,7 @@ namespace Bloom.Collection
             if (
                 mayChangeSettings
                 && GetXMatterPackNameSpecifiedByBrandingOrNull() == null
-                && xmatterPackFinder.IsProjectSpecific(XMatterPackName)
+                && xmatterPackFinder.IsOfferedOnlyByBranding(XMatterPackName)
             )
             {
                 XMatterPackName = xmatterPackFinder.FactoryDefault.Key;
