@@ -3,7 +3,7 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 
-import { get, post, postString, useApiStringState } from "../utils/bloomApi";
+import { get, postString, useApiStringState } from "../utils/bloomApi";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import BloomButton from "../react_components/bloomButton";
 import { Div, P } from "../react_components/l10nComponents";
@@ -36,6 +36,12 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
     errorForTesting?: string;
     defaultRepoFolder?: string;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
+    // Create & Restart hands over the chosen folder; the caller creates the Team Collection,
+    // restarts, and takes this dialog down. (The Collection Settings dialog saves its own settings
+    // first.)
+    onFolderChosen: (repoFolderParentPath: string) => void;
+    // Called when the user closes the dialog without creating.
+    onClose: () => void;
 }> = (props) => {
     const [repoFolderPath, setRepoFolderPath] = useState(
         props.defaultRepoFolder ?? "",
@@ -87,8 +93,16 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
         });
     }, []);
 
+    const readyToCreate =
+        !!repoFolderPath && !errorMessage && boxesChecked === 4;
+
+    function close() {
+        closeDialog();
+        props.onClose();
+    }
+
     function create() {
-        postString("teamCollection/createTeamCollection", repoFolderPath);
+        props.onFolderChosen(repoFolderPath);
     }
 
     function tryToCreate() {
@@ -103,7 +117,7 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
     }
 
     return (
-        <BloomDialog {...propsForBloomDialog}>
+        <BloomDialog {...propsForBloomDialog} onClose={close} onCancel={close}>
             <DialogTitle title={`${dialogTitle}`} />
             <DialogMiddle>
                 <TextWithEmbeddedLink
@@ -203,9 +217,7 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                     id="create-and-restart"
                     l10nKey="TeamCollection.CreateAndRestart"
                     hasText={true}
-                    enabled={
-                        !!repoFolderPath && !errorMessage && boxesChecked == 4
-                    }
+                    enabled={readyToCreate}
                     temporarilyDisableI18nWarning={true}
                     onClick={() => {
                         tryToCreate();
@@ -213,12 +225,31 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                 >
                     Create &amp; Restart
                 </BloomButton>
-                <DialogCancelButton
-                    onClick_DEPRECATED={() => post("common/closeReactDialog")}
-                />
+                {/* In a WinForms window BloomDialog gives Cancel no onCancel to call, so it calls
+                    this instead. */}
+                <DialogCancelButton onClick_DEPRECATED={close} />
             </DialogBottomButtons>
         </BloomDialog>
     );
 };
 
-WireUpForWinforms(CreateTeamCollectionDialog);
+// The WinForms Collection Settings dialog's Team Collection tab shows the dialog on its own, so
+// there Create & Restart creates the Team Collection at once. C# closes the window when it
+// reopens the collection; if creating fails, the window stays open to try another folder.
+export const LegacyCreateTeamCollectionDialog: React.FunctionComponent<{
+    defaultRepoFolder?: string;
+    dialogEnvironment?: IBloomDialogEnvironmentParams;
+}> = (props) => (
+    <CreateTeamCollectionDialog
+        {...props}
+        onFolderChosen={(repoFolderParentPath) =>
+            postString(
+                "teamCollection/createTeamCollection",
+                repoFolderParentPath,
+            )
+        }
+        onClose={() => {}}
+    />
+);
+
+WireUpForWinforms(LegacyCreateTeamCollectionDialog);
