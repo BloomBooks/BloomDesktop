@@ -391,11 +391,12 @@ export async function setCollectionSettingsCheckbox(
 /** The text box of the setting with this label on the showing page of the dialog. */
 function collectionSettingsTextBox(page: Page, label: string): Locator {
     // Config-R names the box after the setting's path, not its label; the label is a heading
-    // in the same row.
+    // in the same row. A box that allows several lines is an MUI textarea, which comes with a
+    // hidden twin it uses to measure the text.
     return collectionSettingsDialog(page)
         .locator("li")
         .filter({ has: page.locator("h4").getByText(label, { exact: true }) })
-        .locator('input[type="text"]');
+        .locator('input[type="text"], textarea:not([aria-hidden="true"])');
 }
 
 /** What a text setting in the Collection Settings dialog shows. */
@@ -594,6 +595,44 @@ export function readSavedBookshelf(collectionDir: string): string | undefined {
         throw new Error(`There is no .bloomCollection in ${collectionDir}.`);
     const xml = fs.readFileSync(Path.join(collectionDir, settingsFile), "utf8");
     return /<DefaultBookTags>[^<]*bookshelf:([^,<]+)/.exec(xml)?.[1];
+}
+
+/**
+ * The text of a setting the collection's settings file holds in an element of its own, e.g.
+ * "XMatterPack" or "Country", or undefined when the file has no such element. Read from the
+ * .bloomCollection on disk, which is where a save puts it.
+ */
+export function readSavedCollectionSetting(
+    collectionDir: string,
+    elementName: string,
+): string | undefined {
+    const settingsFile = fs
+        .readdirSync(collectionDir)
+        .find((name) => name.endsWith(".bloomCollection"));
+    if (!settingsFile)
+        throw new Error(`There is no .bloomCollection in ${collectionDir}.`);
+    const xml = fs.readFileSync(Path.join(collectionDir, settingsFile), "utf8");
+    return new RegExp(`<${elementName}>([^<]*)</${elementName}>`).exec(
+        xml,
+    )?.[1];
+}
+
+/**
+ * The caption the badge preview on the Front & Back Matter page shows, with the language name
+ * filled in, as the books' badges will show it. The page must be showing, with QR codes on.
+ */
+export async function getQrCodeBadgePreviewCaption(
+    page: Page,
+): Promise<string> {
+    // The preview is the badge HTML books get, so its caption has the class books' captions have.
+    const caption = collectionSettingsDialog(page)
+        .getByTestId("qr-code-badge-preview")
+        .locator(".bloom-blorg-caption");
+    await expect(
+        caption,
+        "the showing page has no badge preview with a caption",
+    ).toHaveCount(1);
+    return (await caption.innerText()).trim();
 }
 
 /**

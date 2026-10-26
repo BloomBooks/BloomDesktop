@@ -1,0 +1,62 @@
+// The "Made with Bloom" badge (BookStorage.UpdateQrCode builds its HTML). branding-base.less
+// imports this for books, and the Collection Settings dialog imports it for its preview of the
+// badge, so the preview looks as books do.
+@import (reference) "../../BloomBrowserUI/bloomUI.less"; // importing by reference brings in only the constants
+
+// Note for branding authors: the badge inside this wrapper has its own
+// img.branding. If your branding also puts artwork of its own on the same
+// data-book element, don't style bare `img.branding` there or you will hit the
+// badge too. Use a child selector (`> img.branding`) for your artwork. A
+// percentage height/max-height is especially dangerous, since inside the wrapper
+// it resolves against the short wrapper rather than the page. (BL-16598)
+.bloom-branding-wrapper {
+    border: 5px solid @bloom-red;
+    // there may be a little space between our logo and the border,
+    // especially where the logo is rounded on the right.
+    background-color: white;
+    border-radius: 8px;
+    width: fit-content;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+
+    img.branding {
+        width: 4.7cm;
+        padding: 10px;
+        box-sizing: border-box;
+        vertical-align: top;
+    }
+    .bloom-qrcode {
+        width: 2.8cm;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+    .bloom-lang-on-blorg {
+        font-size: 9pt;
+        line-height: 1.2;
+        width: 100%;
+        box-sizing: border-box;
+        margin-left: 12px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+
+        // bloom branding is set to 4.7cm; qr code to 2.8cm.
+        // This will need to be overridden if this structure is used
+        // with another logo that wants to be a different size; however,
+        // the current intent is only to use this with the Bloom logo.
+        // I would like to let the column width be set by the first row,
+        // and the second row just fill that width, but I could not find
+        // a way to do that. However, a 7cm max-width will cause English,
+        // at least, to fit nicely on two lines for most language names,
+        // and probably won't look bad for wider logos, though it might
+        // look strange with a much narrower one.
+        max-width: 7cm;
+
+        // The BloomLibrary.org address sits on its own line beneath the caption
+        // text, in Bloom red to read as a link.
+        .bloom-blorg-url {
+            color: @bloom-red;
+            font-weight: bold;
+        }
+    }
+}

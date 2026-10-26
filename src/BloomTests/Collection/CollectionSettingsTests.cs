@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using NUnit.Framework;
@@ -43,6 +44,98 @@ namespace BloomTests.Collection
             return new CollectionSettings(
                 CollectionSettings.GetPathForNewSettings(parentFolderPath, collectionName)
             );
+        }
+
+        private static readonly XMatterPackFinder s_factoryXmatterFinder = new XMatterPackFinder(
+            new[] { BloomFileLocator.GetFactoryXMatterDirectory() }
+        );
+
+        private static void CheckAndFixDependencies(
+            CollectionSettings settings,
+            bool mayChangeSettings
+        )
+        {
+            var locator = new BloomFileLocator(
+                settings,
+                s_factoryXmatterFinder,
+                ProjectContext.GetFactoryFileLocations(),
+                ProjectContext.GetFoundFileLocations(),
+                ProjectContext.GetAfterXMatterFileLocations()
+            );
+            settings.CheckAndFixDependencies(locator, s_factoryXmatterFinder, mayChangeSettings);
+        }
+
+        // A collection whose saved pack is a project-specific one that no branding chooses, as
+        // when the subscription whose branding chose it has expired.
+        private CollectionSettings MakeCollectionWithProjectSpecificPack(string collectionName)
+        {
+            var settings = CreateCollectionSettings(_folder.Path, collectionName);
+            var projectSpecificPack = s_factoryXmatterFinder
+                .Factory.First(p => p.PathToFolder.Contains("project-specific"))
+                .Key;
+            settings.XMatterPackName = projectSpecificPack;
+            settings.Save();
+            Assert.That(
+                settings.GetXMatterPackNameSpecifiedByBrandingOrNull(),
+                Is.Null,
+                "Sanity check: no branding should choose the pack"
+            );
+            Assert.That(
+                s_factoryXmatterFinder.GetXMattersToOfferInSettings(null).Select(p => p.Key),
+                Has.No.Member(projectSpecificPack),
+                "Sanity check: the pack should not be offered"
+            );
+            return settings;
+        }
+
+        /// <summary>
+        /// Opening the collection must replace such a pack, so that books, the settings dialogs
+        /// and their saving agree on the pack.
+        /// </summary>
+        [Test]
+        public void CheckAndFixDependencies_ProjectSpecificPackNoBrandingChooses_IsReplacedAndSaved()
+        {
+            var settings = MakeCollectionWithProjectSpecificPack("PackNotAllowed");
+
+            CheckAndFixDependencies(settings, mayChangeSettings: true);
+
+            var factoryDefault = s_factoryXmatterFinder.FactoryDefault.Key;
+            Assert.That(settings.XMatterPackName, Is.EqualTo(factoryDefault));
+            Assert.That(
+                CreateCollectionSettings(_folder.Path, "PackNotAllowed").XMatterPackName,
+                Is.EqualTo(factoryDefault),
+                "the replacement should be saved"
+            );
+        }
+
+        /// <summary>
+        /// In a Team Collection the change would go to the whole team, so only an administrator
+        /// makes it.
+        /// </summary>
+        [Test]
+        public void CheckAndFixDependencies_ProjectSpecificPackButMayNotChangeSettings_IsKept()
+        {
+            var settings = MakeCollectionWithProjectSpecificPack("PackNotAllowedMember");
+            var savedPack = settings.XMatterPackName;
+
+            CheckAndFixDependencies(settings, mayChangeSettings: false);
+
+            Assert.That(settings.XMatterPackName, Is.EqualTo(savedPack));
+            Assert.That(
+                CreateCollectionSettings(_folder.Path, "PackNotAllowedMember").XMatterPackName,
+                Is.EqualTo(savedPack)
+            );
+        }
+
+        [Test]
+        public void CheckAndFixDependencies_PackOffered_IsKept()
+        {
+            var settings = CreateCollectionSettings(_folder.Path, "PackOffered");
+            settings.XMatterPackName = "Traditional";
+
+            CheckAndFixDependencies(settings, mayChangeSettings: true);
+
+            Assert.That(settings.XMatterPackName, Is.EqualTo("Traditional"));
         }
 
         /// <summary>

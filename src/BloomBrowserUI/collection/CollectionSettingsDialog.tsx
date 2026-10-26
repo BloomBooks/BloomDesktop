@@ -37,6 +37,7 @@ import { collectionSettingsHelpTopic } from "./collectionSettingsHelpTopic";
 import { useAdvancedPage } from "./settingsPages/AdvancedPage";
 import { useBloomLibraryPage } from "./settingsPages/BloomLibraryPage";
 import { useExperimentalPage } from "./settingsPages/ExperimentalPage";
+import { useFrontBackMatterPage } from "./settingsPages/FrontBackMatterPage";
 import { useSubscriptionPage } from "./settingsPages/SubscriptionPage";
 
 // Temporary content for every page. Each of the seven tab cards replaces its page's group with
@@ -169,10 +170,6 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         "Languages",
         "CollectionSettingsDialog.LanguageTab.LanguageTabLabel",
     );
-    const frontBackMatterLabel = useL10n(
-        "Front & Back Matter",
-        "CollectionSettingsDialog.FrontBackMatterPage",
-    );
     const teamCollectionLabel = useL10n(
         "Team Collection",
         "TeamCollection.TeamCollection",
@@ -201,6 +198,26 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             </ConfigrPage>
         );
     }
+    // Config-R's values with the subscription code being typed in place of the one loaded.
+    function withSubscriptionCode(
+        values: ICollectionSettingsValues,
+    ): ICollectionSettingsValues {
+        return { ...values, subscription: { code: subscriptionCode! } };
+    }
+    // The values as OK would save them now. Both are checked: a deferred onChange can set
+    // currentValues after a close has already cleared loadedSettings.
+    const currentValuesToSave =
+        currentValues &&
+        loadedSettings &&
+        withEditedTextTrimmed(
+            withSubscriptionCode(currentValues),
+            loadedSettings.values,
+        );
+
+    const frontBackMatterPage = useFrontBackMatterPage({
+        settings: loadedSettings,
+        values: currentValuesToSave,
+    });
     const subscriptionPage = useSubscriptionPage({
         code: subscriptionCode,
         onCodeChange: setSubscriptionCode,
@@ -235,23 +252,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             )
         );
     }
-    // Config-R's values with the subscription code being typed in place of the one loaded.
-    function withSubscriptionCode(
-        values: ICollectionSettingsValues,
-    ): ICollectionSettingsValues {
-        return { ...values, subscription: { code: subscriptionCode! } };
-    }
-
-    // Both are checked: a deferred onChange can set currentValues after a close has already
-    // cleared loadedSettings.
-    const needsRestart = restartNeededFor(
-        currentValues &&
-            loadedSettings &&
-            withEditedTextTrimmed(
-                withSubscriptionCode(currentValues),
-                loadedSettings.values,
-            ),
-    );
+    const needsRestart = restartNeededFor(currentValuesToSave);
 
     function saveAndCloseDialog() {
         // Block the button while the save is in flight, so a second click cannot save (and
@@ -338,10 +339,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         }}
                     >
                         {placeholderPage("languages", languagesLabel)}
-                        {placeholderPage(
-                            "frontBackMatter",
-                            frontBackMatterLabel,
-                        )}
+                        {frontBackMatterPage}
                         {subscriptionPage}
                         {placeholderPage("teamCollection", teamCollectionLabel)}
                         {bloomLibraryPage}
