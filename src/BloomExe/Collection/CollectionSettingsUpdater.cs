@@ -284,6 +284,8 @@ namespace Bloom.Collection
                     posted.SignLanguage.Name,
                     posted.SignLanguage.IsCustomName
                 );
+
+            settings.PageNumberStyle = posted.PageNumberStyle;
         }
 
         /// <summary>

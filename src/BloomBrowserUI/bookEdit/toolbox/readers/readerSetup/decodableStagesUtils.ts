@@ -1,5 +1,6 @@
 import { ReaderSettings } from "../ReaderSettings";
 import { theOneLanguageDataInstance } from "../libSynphony/synphony_lib";
+import { cleanSpaceDelimitedList } from "./spaceDelimitedList";
 
 /**
  * Copies the settings so the setup dialog can edit a draft without touching the live
@@ -13,22 +14,6 @@ export const cloneReaderSettings = (source: ReaderSettings): ReaderSettings => {
         stages: source.stages.map((stage) => ({ ...stage })),
     } as ReaderSettings;
 };
-
-/**
- * if the user enters a comma-separated list, remove the commas before saving (this is a space-delimited list)
- * Also converts newlines to spaces.
- * @param original
- * @returns {string}
- */
-export function cleanSpaceDelimitedList(original: string): string {
-    let cleaned: string = original
-        .replace(/,/g, " ")
-        .replace(/\r/g, " ")
-        .replace(/\n/g, " "); // replace commas and newlines
-    cleaned = cleaned.trim().replace(/ ( )+/g, " "); // remove consecutive spaces
-
-    return cleaned;
-}
 
 /**
  * Normalizes the typed sample-word list for storage: a space-delimited list with no
