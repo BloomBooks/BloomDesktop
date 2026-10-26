@@ -51,12 +51,26 @@ const settingsResponse: ICollectionSettingsResponse = {
     values: initialValues,
     restartPaths: ["frontBackMatter.xmatter", "languages.language3.tag"],
     isTeamCollection: false,
+    xmatterPacks: [
+        {
+            value: "Traditional",
+            label: "Traditional",
+            description: "Title page and credits page inside the covers.",
+        },
+        {
+            value: "Device",
+            label: "Device",
+            description: "Made for reading on phones.",
+        },
+    ],
+    xmatterChosenByBranding: false,
     notAllowedMessage: null,
 };
 
 const {
     mockGet,
     mockPostJson,
+    mockUseApiObject,
     mockCloseDialog,
     dialogState,
     teamCollectionFeature,
@@ -65,6 +79,8 @@ const {
 } = vi.hoisted(() => ({
     mockGet: vi.fn(),
     mockPostJson: vi.fn(),
+    // Only the badge preview uses it, to get the badge's HTML from C#.
+    mockUseApiObject: vi.fn(),
     mockCloseDialog: vi.fn(),
     // Lets a test close and re-open the dialog, which is what the real launch plumbing does, and
     // launch it again (a new event) while it is open.
@@ -145,6 +161,7 @@ vi.mock("../react_components/boxes", () => ({
 vi.mock("../utils/bloomApi", () => ({
     get: mockGet,
     postJson: mockPostJson,
+    useApiObject: mockUseApiObject,
 }));
 
 vi.mock("../react_components/l10nHooks", () => ({
@@ -333,6 +350,19 @@ vi.mock("@sillsdev/config-r", () => ({
                     }
                 />
                 <button
+                    data-testid="show-qr-code-with-caption"
+                    onClick={() =>
+                        props.onChange({
+                            ...props.initialValues,
+                            frontBackMatter: {
+                                ...props.initialValues.frontBackMatter,
+                                showQrCode: true,
+                                qrcodeCaption: "Books in {0}, free:",
+                            },
+                        })
+                    }
+                />
+                <button
                     data-testid="pad-country"
                     onClick={() =>
                         props.onChange({
@@ -508,6 +538,10 @@ describe("CollectionSettingsDialog", () => {
                 successCallback({ data: settingsResponse });
             },
         );
+        mockUseApiObject.mockReset();
+        mockUseApiObject.mockReturnValue({
+            html: '<div class="bloom-branding-wrapper">badge</div>',
+        });
         mockPostJson.mockReset();
         mockPostJson.mockImplementation(
             (
@@ -812,6 +846,167 @@ describe("CollectionSettingsDialog", () => {
             mockPostJson.mock.calls[0][1].values.advanced.collectionName,
         ).toBe("Spaced Books");
         expect(mockPostJson.mock.calls[0][1].restartRequired).toBe(true);
+    });
+
+    describe("Front & Back Matter page", () => {
+        const pageElement = (selector: string) =>
+            container.querySelector(
+                `[data-testid="configr-page"][data-page-key="frontBackMatter"] ${selector}`,
+            ) as HTMLElement | null;
+
+        const styleSelect = () => {
+            const select = pageElement(
+                '[data-path="frontBackMatter.xmatter"]',
+            ) as HTMLSelectElement | null;
+            if (!select) {
+                throw new Error(
+                    "The Front & Back Matter page has no Style list",
+                );
+            }
+            return select;
+        };
+
+        const styleChoices = () =>
+            Array.from(styleSelect().options).map((option) => [
+                option.value,
+                option.textContent,
+            ]);
+
+        // The parameters of the latest request for the badge preview's HTML.
+        const badgeRequest = () => {
+            const url = mockUseApiObject.mock.lastCall?.[0] as
+                | string
+                | undefined;
+            if (!url) throw new Error("The page never asked for the badge");
+            return new URLSearchParams(url.split("?")[1]);
+        };
+
+        const captionBox = () => {
+            const box = pageElement(
+                '[data-path="frontBackMatter.qrcodeCaption"]',
+            ) as HTMLInputElement | null;
+            if (!box) {
+                throw new Error(
+                    "The Front & Back Matter page has no Caption box",
+                );
+            }
+            return box;
+        };
+
+        it("offers the packs, and describes the one chosen", async () => {
+            expect(initialValues.frontBackMatter.xmatter).toBe("Traditional");
+
+            await renderDialog();
+
+            expect(styleChoices()).toEqual([
+                ["Traditional", "Traditional"],
+                ["Device", "Device"],
+            ]);
+            expect(styleSelect().disabled).toBe(false);
+            expect(
+                pageElement('[data-testid="configr-select-description"]')
+                    ?.textContent,
+            ).toBe("Title page and credits page inside the covers.");
+
+            click("change-restart-value");
+            await flushDeferredChange();
+
+            expect(
+                pageElement('[data-testid="configr-select-description"]')
+                    ?.textContent,
+            ).toBe("Made for reading on phones.");
+        });
+
+        it("disables the list when the branding chooses the pack", async () => {
+            respondWith({
+                ...settingsResponse,
+                xmatterPacks: [settingsResponse.xmatterPacks[0]],
+                xmatterChosenByBranding: true,
+            });
+
+            await renderDialog();
+
+            expect(styleChoices()).toEqual([["Traditional", "Traditional"]]);
+            expect(styleSelect().disabled).toBe(true);
+        });
+
+        it("asks for the plain badge, and disables the caption, when QR codes are off", async () => {
+            expect(initialValues.frontBackMatter.showQrCode).toBe(false);
+
+            await renderDialog();
+
+            expect(captionBox().disabled).toBe(true);
+            expect(badgeRequest().get("showQrCode")).toBe("false");
+        });
+
+        it("shows the badge HTML that C# builds", async () => {
+            await renderDialog();
+
+            expect(
+                pageElement(
+                    '[data-testid="qr-code-badge-preview"] .bloom-branding-wrapper',
+                )?.textContent,
+            ).toBe("badge");
+        });
+
+        it("asks for the badge with the QR code and the caption as typed", async () => {
+            await renderDialog();
+
+            click("show-qr-code-with-caption");
+            await flushDeferredChange();
+
+            expect(captionBox().disabled).toBe(false);
+            const request = badgeRequest();
+            expect(request.get("showQrCode")).toBe("true");
+            expect(request.get("caption")).toBe("Books in {0}, free:");
+            expect(request.get("tag")).toBe("xkal");
+            expect(request.get("languageName")).toBe("Kalaba");
+        });
+
+        it("names the sign language on the badge when the collection has one, as books do", async () => {
+            respondWith({
+                ...settingsResponse,
+                values: {
+                    ...initialValues,
+                    languages: {
+                        ...initialValues.languages,
+                        signLanguage: {
+                            tag: "ase",
+                            name: "American Sign Language",
+                            isCustomName: false,
+                        },
+                    },
+                    frontBackMatter: {
+                        ...initialValues.frontBackMatter,
+                        showQrCode: true,
+                    },
+                },
+            });
+
+            await renderDialog();
+
+            const request = badgeRequest();
+            expect(request.get("tag")).toBe("ase");
+            expect(request.get("languageName")).toBe("American Sign Language");
+        });
+
+        it("asks for an untouched caption of only spaces as it is, since that is saved and books show it", async () => {
+            respondWith({
+                ...settingsResponse,
+                values: {
+                    ...initialValues,
+                    frontBackMatter: {
+                        ...initialValues.frontBackMatter,
+                        showQrCode: true,
+                        qrcodeCaption: "  ",
+                    },
+                },
+            });
+
+            await renderDialog();
+
+            expect(badgeRequest().get("caption")).toBe("  ");
+        });
     });
 
     it("asks Help for the topic of the page Config-R says is showing", async () => {
