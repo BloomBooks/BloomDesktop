@@ -465,7 +465,14 @@ export async function getCollectionSettingsList(
     page: Page,
     label: string,
 ): Promise<ICollectionSettingsListState> {
-    const list = collectionSettingsList(page, label);
+    return readList(collectionSettingsList(page, label), label);
+}
+
+/** Read a drop-down list in the dialog; `label` names it in the failure message. */
+async function readList(
+    list: Locator,
+    label: string,
+): Promise<ICollectionSettingsListState> {
     await expect(
         list,
         `the showing Collection Settings page has no list labelled "${label}"`,
@@ -533,7 +540,24 @@ export async function chooseCollectionSettingsListChoice(
     label: string,
     choice: string,
 ): Promise<void> {
-    const list = collectionSettingsList(page, label);
+    await chooseInList(
+        page,
+        collectionSettingsList(page, label),
+        label,
+        choice,
+    );
+}
+
+/**
+ * Open a drop-down list in the dialog, click `choice` in it, and return once the list shows it.
+ * `label` names the list in failure messages.
+ */
+async function chooseInList(
+    page: Page,
+    list: Locator,
+    label: string,
+    choice: string,
+): Promise<void> {
     const menusBeforeOpening = await countMenus(page);
     await realClick(list);
     const choices = openListChoices(page);
@@ -555,7 +579,7 @@ export async function chooseCollectionSettingsListChoice(
     await realClick(wanted);
     await waitForListToClose(page, menusBeforeOpening);
     await expect
-        .poll(async () => (await getCollectionSettingsList(page, label)).shown)
+        .poll(async () => (await readList(list, label)).shown)
         .toBe(choice);
 }
 
@@ -759,4 +783,181 @@ export async function clickAndFollowRestart(
         : await bloomApp.reattachToShell();
     await waitForCollectionReady(newPage);
     return newPage;
+}
+
+/**
+ * The group of rows for one language on the Languages page of the dialog, found by its heading,
+ * e.g. "Local Language" or "Language 2 (e.g. National Language)". Config-R draws a group as its
+ * heading followed by the box that holds its rows.
+ */
+function languageGroup(page: Page, heading: string): Locator {
+    return collectionSettingsDialog(page).locator(
+        `xpath=.//h3[normalize-space(.)="${heading}"]/following-sibling::*[1]`,
+    );
+}
+
+/** Fail, naming the language groups the Languages page has, when it has none with this heading. */
+async function expectLanguageGroup(page: Page, heading: string): Promise<void> {
+    if ((await languageGroup(page, heading).count()) === 1) return;
+    const headings = await collectionSettingsDialog(page)
+        .locator("h3")
+        .allInnerTexts();
+    throw new Error(
+        `The showing Collection Settings page has no language group "${heading}"; it has: ${headings.join(", ")}.`,
+    );
+}
+
+/**
+ * The language a group on the Languages page shows, as "name (tag)", e.g. "English (en)", or ""
+ * when the collection has none there (a third language or sign language not set).
+ */
+export async function getCollectionSettingsLanguage(
+    page: Page,
+    heading: string,
+): Promise<string> {
+    await expectLanguageGroup(page, heading);
+    const name = languageGroup(page, heading).getByTestId("language-name");
+    return (await name.count()) === 1 ? (await name.innerText()).trim() : "";
+}
+
+/** The Default Font picker in one language's group on the Languages page. */
+function languageFontList(page: Page, heading: string): Locator {
+    return languageGroup(page, heading)
+        .locator("li")
+        .filter({
+            has: page.locator("h4").getByText("Default Font", { exact: true }),
+        })
+        .locator('[aria-haspopup="listbox"]');
+}
+
+/**
+ * The Default Font one language's group on the Languages page shows, e.g. "Andika". The fonts
+ * arrive after the page shows, so poll this for an expected font.
+ */
+export async function getCollectionSettingsLanguageFont(
+    page: Page,
+    heading: string,
+): Promise<string> {
+    await expectLanguageGroup(page, heading);
+    return (await readList(languageFontList(page, heading), "Default Font"))
+        .shown;
+}
+
+/**
+ * Choose `font` as the Default Font of one language on the Languages page, as a person does by
+ * opening its font list and clicking the font, and return once the list shows it. Fails naming the
+ * fonts offered when there is no such font. Nothing is saved until OK.
+ */
+export async function chooseCollectionSettingsLanguageFont(
+    page: Page,
+    heading: string,
+    font: string,
+): Promise<void> {
+    await expectLanguageGroup(page, heading);
+    await chooseInList(
+        page,
+        languageFontList(page, heading),
+        `${heading}: Default Font`,
+        font,
+    );
+}
+
+/** The "More" row at the bottom of one language's group, which opens its page of more settings. */
+function languageMoreRow(page: Page, heading: string): Locator {
+    // Config-R draws a row that opens a sub-page as a button, not a list item like the others.
+    return languageGroup(page, heading).getByRole("button", {
+        name: "More",
+        exact: true,
+    });
+}
+
+/** The heading a sub-page of the dialog shows above its settings, which takes the user back. */
+function subPageBackLink(page: Page): Locator {
+    // A button named after the sub-page, like the row that opened it; the row, unlike this,
+    // holds its name in a heading.
+    return collectionSettingsDialog(page)
+        .getByRole("button", { name: "More", exact: true })
+        .filter({ hasNot: page.locator("h4") });
+}
+
+/**
+ * Open the page of more settings for one language on the Languages page (line spacing, word
+ * breaking, right-to-left, and for the first language the reader tools' alphabet), as a person
+ * does by clicking "More" in its group. Returns once that page shows.
+ */
+export async function openCollectionSettingsLanguageMore(
+    page: Page,
+    heading: string,
+): Promise<void> {
+    await expectLanguageGroup(page, heading);
+    await realClick(languageMoreRow(page, heading));
+    await expect(
+        languageGroup(page, heading),
+        `clicking More for "${heading}" did not leave the Languages page`,
+    ).toHaveCount(0);
+    await expect(subPageBackLink(page)).toBeVisible();
+}
+
+/**
+ * Go back from a language's page of more settings to the Languages page, as a person does by
+ * clicking the arrow and "More" at its top. Returns once the Languages page shows again.
+ */
+export async function closeCollectionSettingsLanguageMore(
+    page: Page,
+): Promise<void> {
+    await realClick(subPageBackLink(page));
+    await expect(subPageBackLink(page)).toHaveCount(0);
+    await expect(
+        collectionSettingsDialog(page).getByTestId("language-name").first(),
+        "going back from More did not show the Languages page",
+    ).toBeVisible();
+}
+
+/**
+ * A setting of one of the collection's languages as its settings file holds it, e.g.
+ * "DefaultLanguageFontName" or "LanguageLineHeight" for language 1, or undefined when the file has
+ * no such element for it. Read from the language's own <Language L1="true"> element (not the
+ * legacy Language1... copies) in the .bloomCollection on disk, which is where a save puts it.
+ */
+export function readSavedLanguageSetting(
+    collectionDir: string,
+    languageNumber: 1 | 2 | 3,
+    elementName: string,
+): string | undefined {
+    const settingsFile = fs
+        .readdirSync(collectionDir)
+        .find((name) => name.endsWith(".bloomCollection"));
+    if (!settingsFile)
+        throw new Error(`There is no .bloomCollection in ${collectionDir}.`);
+    const xml = fs.readFileSync(Path.join(collectionDir, settingsFile), "utf8");
+    const language = new RegExp(
+        `<Language L${languageNumber}="true">([\\s\\S]*?)</Language>`,
+    ).exec(xml)?.[1];
+    if (language === undefined) {
+        const languages =
+            /<Languages>[\s\S]*?<\/Languages>/.exec(xml)?.[0] ??
+            "(no <Languages> element)";
+        throw new Error(
+            `The collection's settings file ${settingsFile} has no language ${languageNumber}. Its languages: ${languages}`,
+        );
+    }
+    return new RegExp(`<${elementName}>([^<]*)</${elementName}>`).exec(
+        language,
+    )?.[1];
+}
+
+/**
+ * How the dialog shows a line spacing, e.g. "1.5" (or "1,5" where decimals take a comma): the
+ * label of that choice in a language's "Default line spacing" list. Asked of the page, since it
+ * formats the number for the machine's culture.
+ */
+export async function getCollectionSettingsLineSpacingLabel(
+    page: Page,
+    lineSpacing: number,
+): Promise<string> {
+    return page.evaluate(
+        (value) =>
+            value.toLocaleString(undefined, { minimumFractionDigits: 1 }),
+        lineSpacing,
+    );
 }

@@ -27,11 +27,12 @@ export interface ICollectionSettingsLanguages {
     language3: ICollectionSettingsLanguage | null;
     // Null when the collection has no sign language; posting null removes it.
     signLanguage: ICollectionSettingsSignLanguage | null;
+    // For the whole collection, a non-localized key.
+    pageNumberStyle: string;
 }
 
 export interface ICollectionSettingsFrontBackMatter {
     xmatter: string;
-    pageNumberStyle: string;
     showQrCode: boolean;
     qrcodeCaption: string;
     country: string;
@@ -71,6 +72,18 @@ export interface ICollectionSettingsValues {
     advanced: ICollectionSettingsAdvanced;
     // Keyed by experimental feature token.
     experimental: Record<string, boolean>;
+    readerTools: ICollectionSettingsReaderTools;
+}
+
+// The two reader tools settings that describe the first language's script. They are kept in the
+// reader tools' own file, named for the first language, beside the stages and levels.
+export interface ICollectionSettingsReaderTools {
+    // The letters and letter combinations, separated by spaces.
+    letters: string;
+    // Unicode escapes (like \U0020) of other characters that end a sentence.
+    sentencePunct: string;
+    // True when the file is damaged; then the two values above are empty and cannot be edited.
+    isUnreadable: boolean;
 }
 
 // A front/back matter pack the collection may use.
@@ -92,6 +105,10 @@ export interface ICollectionSettingsResponse {
     editingABlorgBook: boolean;
     // The folder the Create Team Collection dialog starts with: the user's Dropbox folder, or "".
     defaultTeamCollectionFolder: string;
+    // The font a language gets when the user adds it (a third language).
+    defaultFontName: string;
+    // The page numbering styles; value is the key values.languages.pageNumberStyle holds.
+    pageNumberStyles: { value: string; label: string }[];
     // The packs the collection may use; just the one when the branding chooses it.
     xmatterPacks: IXmatterPack[];
     xmatterChosenByBranding: boolean;

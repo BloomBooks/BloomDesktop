@@ -34,7 +34,7 @@ import { useAdvancedPage } from "./settingsPages/AdvancedPage";
 import { useBloomLibraryPage } from "./settingsPages/BloomLibraryPage";
 import { useExperimentalPage } from "./settingsPages/ExperimentalPage";
 import { useFrontBackMatterPage } from "./settingsPages/FrontBackMatterPage";
-import { usePlaceholderPage } from "./settingsPages/PlaceholderPage";
+import { useLanguagesPage } from "./settingsPages/LanguagesPage";
 import { useSubscriptionPage } from "./settingsPages/SubscriptionPage";
 import { useTeamCollectionPage } from "./settingsPages/TeamCollectionPage";
 import {
@@ -177,7 +177,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const currentValuesEdited =
         (currentValues && loadedSettings && withOutsideEdits(currentValues)) ||
         undefined;
-    const currentValuesToSave =
+    const currentValuesTrimmed =
         currentValuesEdited &&
         withEditedTextTrimmed(currentValuesEdited, loadedSettings!.values);
 
@@ -185,7 +185,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         dialogOpen: propsForBloomDialog.open,
         settings: loadedSettings,
         values: currentValuesEdited,
-        valuesToSave: currentValuesToSave,
+        valuesToSave: currentValuesTrimmed,
         // Merged into the latest edits, so two edits before a render both count.
         editValues: (edit) =>
             setOutsideEdits((edits) => ({ ...edits, ...edit })),
@@ -194,12 +194,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     // In the order the dialog lists them. Each is a hook in its own file under settingsPages/ (see
     // ISettingsPage).
     const pages: ISettingsPage[] = [
-        usePlaceholderPage(
-            "languages",
-            "Languages",
-            "CollectionSettingsDialog.LanguageTab.LanguageTabLabel",
-            "Tasks/Basic_tasks/Change_languages.htm",
-        ),
+        useLanguagesPage(pageContext),
         useFrontBackMatterPage(pageContext),
         useSubscriptionPage(pageContext),
         useTeamCollectionPage(pageContext),
@@ -207,6 +202,23 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         useAdvancedPage(pageContext),
         useExperimentalPage(pageContext),
     ];
+
+    // The values exactly as C# will be sent them: edited text trimmed, then each page's own values
+    // as it saves them (see ISettingsPage.valuesToSave).
+    function valuesToSaveFrom(
+        values: ICollectionSettingsValues,
+    ): ICollectionSettingsValues {
+        return pages.reduce(
+            (valuesSoFar, page) =>
+                page.valuesToSave
+                    ? page.valuesToSave(valuesSoFar)
+                    : valuesSoFar,
+            withEditedTextTrimmed(values, loadedSettings!.values),
+        );
+    }
+    // The values as OK would save them now.
+    const currentValuesToSave =
+        currentValuesEdited && valuesToSaveFrom(currentValuesEdited);
 
     // A Team Collection member who is not an administrator gets this instead of any settings.
     const notAllowedMessage = loadedSettings?.notAllowedMessage;
@@ -239,10 +251,10 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         // keeps OK to a single path. The ref, not the deferred state, has the newest values, so
         // the restart flag is worked out from it too.
         // OK is enabled only once the values have loaded.
-        const valuesToSave = withEditedTextTrimmed(
-            { ...withOutsideEdits(latestValuesRef.current!), ...edit },
-            loadedSettings!.values,
-        );
+        const valuesToSave = valuesToSaveFrom({
+            ...withOutsideEdits(latestValuesRef.current!),
+            ...edit,
+        });
         postJson(
             "collection/settings",
             {
