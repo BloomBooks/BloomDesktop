@@ -10,9 +10,9 @@
         <target xml:lang="pt-PT" state="final">Disponível com a sua Assinatura Bloom</target>
         <note>ID: AvailableWithSubscription</note>
       </trans-unit>
-      <trans-unit id="CopyrightAndLicense.ReuseMetadataShortcutLabel">
+      <trans-unit id="CopyrightAndLicense.ReuseMetadataShortcutLabel" approved="yes">
         <source xml:lang="en">Shortcuts:</source>
-        <target xml:lang="pt-PT" state="translated">Atalhos:</target>
+        <target xml:lang="pt-PT" state="final">Atalhos:</target>
         <note>ID: CopyrightAndLicense.ReuseMetadataShortcutLabel</note>
       </trans-unit>
       <trans-unit id="CopyrightAndLicense.FromThisBook" approved="yes">
@@ -1386,7 +1386,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Progress.CheckingDevice" approved="yes">
         <source xml:lang="en">Checking for connected phone</source>
-        <target xml:lang="pt-PT" state="final">Verificando telefone conectado</target>
+        <target xml:lang="pt-PT" state="final">Verificando celular conectado</target>
         <note>ID: PublishTab.Apps.Progress.CheckingDevice</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Progress.InstallingOnPhone" approved="yes">
@@ -1396,7 +1396,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Progress.LaunchingOnPhone" approved="yes">
         <source xml:lang="en">Launching app on phone</source>
-        <target xml:lang="pt-PT" state="final">Iniciando o aplicativo no telefone</target>
+        <target xml:lang="pt-PT" state="final">Iniciando o aplicativo no celular</target>
         <note>ID: PublishTab.Apps.Progress.LaunchingOnPhone</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.UsbDebuggingHelpLink" approved="yes">
@@ -1516,7 +1516,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Create an app that you can install on your Android phone, share with others, and publish on the Google Play Store.</source>
-        <target xml:lang="pt-PT" state="final">Crie um aplicativo que você pode instalar no seu telefone Android, compartilhe com outros e publique na Google Play Store.</target>
+        <target xml:lang="pt-PT" state="final">Crie um aplicativo que você pode instalar no seu dispositivo Android, compartilhe com outros e publique na Google Play Store.</target>
         <note>ID: PublishTab.Apps-tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Build" approved="yes">
@@ -1631,7 +1631,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.TryOnPhone.Tooltip" approved="yes">
         <source xml:lang="en">Load and run the app on your phone. First enable USB Debugging on the phone and connect it with a USB cable.</source>
-        <target xml:lang="pt-PT" state="final">Carregar e executar o aplicativo em seu telefone. Primeiro habilite a Depuração USB no telefone e o conecte com um cabo USB.</target>
+        <target xml:lang="pt-PT" state="final">Carregar e executar o aplicativo em seu dispositivo. Primeiro habilite a Depuração USB no telefone e o conecte com um cabo USB.</target>
         <note>ID: PublishTab.Apps.TryOnPhone.Tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.ApkSize.Text" approved="yes">
@@ -1639,9 +1639,9 @@
         <target xml:lang="pt-PT" state="final">Tamanho real do aplicativo é %0.</target>
         <note>ID: PublishTab.Apps.ApkSize.Text</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SizeEstimate.OverheadLabel">
+      <trans-unit id="PublishTab.Apps.SizeEstimate.OverheadLabel" approved="yes">
         <source xml:lang="en">App overhead</source>
-        <target xml:lang="pt-PT" state="translated">Tamanho do aplicativo</target>
+        <target xml:lang="pt-PT" state="final">Tamanho do aplicativo</target>
         <note>ID: PublishTab.Apps.SizeEstimate.OverheadLabel</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SizeEstimate.OverLimit" approved="yes">
@@ -1699,9 +1699,9 @@
         <target xml:lang="pt-PT" state="final">Para obter imagens do Art of Reading, é necessário:</target>
         <note>ID: ImageLibrary.ArtOfReadingNotReadyInstructions</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.DownloadArtOfReading">
+      <trans-unit id="ImageLibrary.DownloadArtOfReading" approved="yes">
         <source xml:lang="en">Download and install the Art of Reading Installer</source>
-        <target xml:lang="pt-PT" state="translated">Baixe e instale o instalador do Art of Reading</target>
+        <target xml:lang="pt-PT" state="final">Baixe e instale o instalador do Art of Reading</target>
         <note>ID: ImageLibrary.DownloadArtOfReading</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.ImageCount" approved="yes">
@@ -2226,22 +2226,22 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Shape.MatchContainer">
         <source xml:lang="en">Match Container</source>
-        <target xml:lang="pt-PT" state="translated">Como o quadro da página</target>
+        <target xml:lang="pt-PT" state="translated">Ajustar ao espaço da imagem</target>
         <note>ID: AiImageEditor.Shape.MatchContainer</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Shape.MatchContainerTooltip">
         <source xml:lang="en">Image container on the page is {0} x {1}</source>
-        <target xml:lang="pt-PT" state="translated">O quadro da imagem na página tem {0} x {1}</target>
+        <target xml:lang="pt-PT" state="translated">O espaço da imagem na página mede {0} x {1}</target>
         <note>ID: AiImageEditor.Shape.MatchContainerTooltip</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Shape.MatchImage">
         <source xml:lang="en">Match Image</source>
-        <target xml:lang="pt-PT" state="translated">Como a imagem</target>
+        <target xml:lang="pt-PT" state="translated">Manter a proporção da imagem</target>
         <note>ID: AiImageEditor.Shape.MatchImage</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Shape.MatchImageTooltip">
         <source xml:lang="en">This image is {0} x {1}</source>
-        <target xml:lang="pt-PT" state="translated">Esta imagem tem {0} x {1}</target>
+        <target xml:lang="pt-PT" state="translated">Esta imagem mede {0} x {1}</target>
         <note>ID: AiImageEditor.Shape.MatchImageTooltip</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Slot.DropOrPasteToEdit" approved="yes">
@@ -2281,7 +2281,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Strip.bookImages.Tip">
         <source xml:lang="en">Book images supplied by the current book.</source>
-        <target xml:lang="pt-PT" state="translated">Imagens que vêm do livro atual.</target>
+        <target xml:lang="pt-PT" state="translated">Imagens fornecidas do livro atual.</target>
         <note>ID: AiImageEditor.Strip.bookImages.Tip</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Strip.characters.Label" approved="yes">
@@ -2321,7 +2321,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.apply_localized_characters.Param.furtherInstructions.Placeholder">
         <source xml:lang="en">Optional: explain which references map to which characters, or note any details to preserve.</source>
-        <target xml:lang="pt-PT" state="translated">Opcional: explique qual referência corresponde a qual personagem, ou que detalhes preservar.</target>
+        <target xml:lang="pt-PT" state="translated">Opcional: explique quais imagens de referência correspondem a quais personagens ou indique os detalhes a serem preservados.</target>
         <note>ID: AiImageEditor.Tool.apply_localized_characters.Param.furtherInstructions.Placeholder</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.apply_localized_characters.Title">
