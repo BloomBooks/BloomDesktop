@@ -109,6 +109,37 @@ namespace BloomTests.Collection
         }
 
         /// <summary>
+        /// The usual reason for such a pack is an expired subscription, whose bookshelf the
+        /// collection then remembers only in memory (ExpiredBookshelf). Saving the replacement must
+        /// keep it in the file, or renewing the subscription can't bring it back (BL-15056).
+        /// </summary>
+        [Test]
+        public void CheckAndFixDependencies_ReplacingPackWhileExpired_KeepsTheBookshelfInTheFile()
+        {
+            var settings = MakeCollectionWithProjectSpecificPack("PackNotAllowedExpired");
+            // What loading a collection with an expired subscription and a bookshelf leaves.
+            settings.DefaultBookshelf = "";
+            settings.ExpiredBookshelf = "rememberedShelf";
+
+            CheckAndFixDependencies(settings, mayChangeSettings: true);
+
+            Assert.That(
+                settings.XMatterPackName,
+                Is.EqualTo(s_factoryXmatterFinder.FactoryDefault.Key),
+                "Sanity check: the pack should have been replaced, so the file was saved"
+            );
+            Assert.That(
+                RobustFile.ReadAllText(settings.SettingsFilePath),
+                Does.Contain("bookshelf:rememberedShelf")
+            );
+            Assert.That(
+                settings.DefaultBookshelf,
+                Is.Empty,
+                "in memory it should stay hidden while the subscription is expired"
+            );
+        }
+
+        /// <summary>
         /// In a Team Collection the change would go to the whole team, so only an administrator
         /// makes it.
         /// </summary>

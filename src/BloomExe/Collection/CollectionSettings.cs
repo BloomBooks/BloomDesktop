@@ -1405,7 +1405,15 @@ namespace Bloom.Collection
             )
             {
                 XMatterPackName = xmatterPackFinder.FactoryDefault.Key;
+                // While the subscription is expired its bookshelf is only in ExpiredBookshelf,
+                // which Save() leaves out; it must stay in the file so that renewing the
+                // subscription brings it back (BL-15056), as CollectionSettingsUpdater.Apply also
+                // makes sure.
+                var bookshelf = DefaultBookshelf;
+                if (string.IsNullOrEmpty(DefaultBookshelf))
+                    DefaultBookshelf = ExpiredBookshelf;
                 Save();
+                DefaultBookshelf = bookshelf;
             }
         }
 
