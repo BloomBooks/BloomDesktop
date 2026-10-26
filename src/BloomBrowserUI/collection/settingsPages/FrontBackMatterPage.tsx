@@ -8,7 +8,7 @@ import {
     ConfigrSelect,
     ConfigrStatic,
 } from "@sillsdev/config-r";
-import { Typography } from "@mui/material";
+import { ListItem, Typography } from "@mui/material";
 import { useL10n } from "../../react_components/l10nHooks";
 import { kBloomRed } from "../../bloomMaterialUITheme";
 import {
@@ -47,7 +47,6 @@ const QrCodeBadgePreview: React.FunctionComponent<{
                 border-radius: 8px;
                 width: fit-content;
                 max-width: 100%;
-                margin: 8px 0;
                 color: black;
                 img {
                     padding: 10px;
@@ -210,13 +209,18 @@ export function useFrontBackMatterPage(props: {
                     disabled={!frontBackMatter?.showQrCode}
                 />
                 {frontBackMatter && badgeLanguage && (
-                    <QrCodeBadgePreview
-                        showQrCode={frontBackMatter.showQrCode}
-                        caption={frontBackMatter.qrcodeCaption}
-                        defaultCaption={props.settings!.defaultQrcodeCaption}
-                        languageTag={badgeLanguage.tag}
-                        languageName={badgeLanguage.name}
-                    />
+                    // A list item, like Config-R's rows, so the badge lines up with their labels.
+                    <ListItem>
+                        <QrCodeBadgePreview
+                            showQrCode={frontBackMatter.showQrCode}
+                            caption={frontBackMatter.qrcodeCaption}
+                            defaultCaption={
+                                props.settings!.defaultQrcodeCaption
+                            }
+                            languageTag={badgeLanguage.tag}
+                            languageName={badgeLanguage.name}
+                        />
+                    </ListItem>
                 )}
             </ConfigrGroup>
             {/* Config-R does not show a group's description, so this heading and its explanation
