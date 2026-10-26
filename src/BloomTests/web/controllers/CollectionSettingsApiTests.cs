@@ -92,6 +92,7 @@ namespace BloomTests.web.controllers
             Assert.That(
                 restartPaths,
                 Has.Member("frontBackMatter.xmatter")
+                    .And.Member("subscription.code")
                     .And.Member("languages.language3.fontName")
                     .And.Member("languages.signLanguage.tag")
                     .And.Member("experimental." + ExperimentalFeatures.kTeamCollections)

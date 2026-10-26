@@ -87,7 +87,10 @@ What a page card builds on:
 
 **Known gap for reused components.** The Subscription, Team Collection and bookshelf components
 post their edits to `settings/*` endpoints that only feed the WinForms dialog. The first card that
-reuses one decides how its edits reach the React POST.
+reuses one decides how its edits reach the React POST. BL-16734 did it for the subscription: the
+dialog keeps the code being typed in its own state (the editor is not a Config-R control), puts it
+into `values.subscription.code` for the restart check and the POST, and the reused components
+describe it with a stateless `GET settings/subscription?code=`, so Cancel has nothing to reset.
 
 ## 4. Decisions
 
@@ -138,13 +141,20 @@ client), Page Numbering Style (Q5). Values for xmatter, QR and places already ex
 **BL-16736 Bloom Library.** The bookshelf, with subscription gating (Q10). Post it and hand it to
 `ApplySubscriptionAndBookshelf`, which has the expired-bookshelf rules.
 
-**BL-16734 Subscription.** Reuse `SubscriptionSettings`. Hand the entered subscription to
-`ApplySubscriptionAndBookshelf` (its descriptor-change bookshelf clearing never fires; BL-16904).
-Reset its preview on Cancel. The "fix invalid branding" startup path must open this page. Decide
-whether the other pages' subscription gating (Experimental's Team Collections box, the bookshelf)
-should follow a code typed here but not yet saved; `features/status` only knows the saved one. If
-so, replace the Experimental page's own `useGetFeatureStatus` call with a small dialog-level
-subscription lookup that every page reads.
+**BL-16734 Subscription.** Built. The page lays out its own markup around the shared
+`SubscriptionControls` and `SubscriptionStatus`; the WinForms tab is a self-contained copy
+(`LegacySubscriptionSettings`, deleted whole in the cutover). The entered code goes
+to `ApplySubscriptionAndBookshelf` (its descriptor-change bookshelf clearing never fires;
+BL-16904), before the xmatter check, since the branding can choose the pack. It also moved the
+"open settings on the Subscription page" callers to the new dialog. Subscription badges and gated
+menu items call `showCollectionSettingsDialog` in the browser (from an iframe, through the
+workspace bundle's exports); `common/showSettingsDialog` remains for the comic book ReadMe links,
+and `CheckForInvalidBranding` launches it from C#. That startup check never fires (nothing sets
+`InvalidBranding`); it is removed in the cutover (section 6), not revived. Until the cutover, a
+badge on one of the WinForms dialog's own tabs does nothing. A badge on one of the dialog's own
+pages switches the open pane to the Subscription page, keeping the edits so far,
+through the page control Config-R gains in BL-17032.
+The other pages' gating still follows the saved subscription, not a code typed but not saved.
 
 **BL-16735 Team Collection.** Reuse `TeamCollectionSettingsPanel` with its overlay and warning.
 Validate administrator emails in the client (`CollectionSettings.ValidateAdministrators` has the
@@ -163,7 +173,7 @@ were on another tab there); in the values the font is already part of each langu
 **BL-16738 Experimental.** Per Q9. Built: a feature that lands adds an `ExperimentalFeatureSetting`
 row in `settingsPages/ExperimentalPage.tsx` and a property in `ExperimentalValues`.
 
-## 6. Cutover (new card)
+## 6. Cutover (BL-17042)
 
 - First go through the WinForms OK handler (`_okButton_Click`) line by line and confirm each rule
   exists in the React path or was dropped on purpose.
@@ -171,10 +181,13 @@ row in `settingsPages/ExperimentalPage.tsx` and a property in `ExperimentalValue
   bundles and their vite entries, `DialogBeingEdited`, and the legacy launch path. The new save
   path still reads `CollectionSettingsDialog.AutoUpdateSupportedOnThisPlatform` (in
   `AdvancedValues`), so that flag needs a new home when the WinForms class goes.
-- Point the "open settings on the Subscription page" callers (subscription badges, menu items,
-  `CheckForInvalidBranding`) at the new dialog. A caller in an iframe reaches the top frame's
-  `showCollectionSettingsDialog` through the workspace bundle's exports, as `showBookSettingsDialog`
-  does; the Comic Book ReadMe links are `fetch`es in book content, so they keep an endpoint.
+- The "open settings on the Subscription page" callers already open the new dialog (BL-16734).
+  The `forFixingEnterpriseSubscription` parameter of `OpenLegacySettingsDialog` goes with it.
+- Remove the dead invalid-branding startup check: `CollectionSettings.InvalidBranding`,
+  `WorkspaceView.CheckForInvalidBranding`, and its callers in `Shell` and `Program.cs`. Nothing
+  has set `InvalidBranding` since "Generalize Subscriptions (BL-14379)" (March 2025), so the check
+  always returns at once. Bringing back a startup prompt for an expired or wrong code would be a
+  separate product decision; the Collections tab's expiry banner covers that case today.
 - Mark unused `CollectionSettingsDialog.*` strings obsolete (never delete), update the help
   mapping and help pages, add an e2e test that opens the dialog and changes a setting (and update
   `src/BloomE2E/AUTOMATION-DEBT.md`), post test ideas on BL-16271.

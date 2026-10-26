@@ -9,14 +9,34 @@ import { SubscriptionStatus } from "../collectionsTab/SubscriptionStatus";
 import { NoteBox } from "../react_components/boxes";
 import { SubscriptionControls } from "./subscriptionCodeControl";
 import { useSubscriptionInfo } from "./useSubscriptionInfo";
+import { get, postString } from "../utils/bloomApi";
+import { useMountEffect } from "../utils/useMountEffect";
 
-// This component implements the Bloom Subscription tab of the Settings dialog.
-export const SubscriptionSettings: React.FunctionComponent = () => {
-    const { subscriptionCodeIntegrity, haveData } = useSubscriptionInfo();
+// This component implements the Bloom Subscription tab of the WinForms Settings dialog. (The React
+// Collection Settings dialog has its own page, settingsPages/SubscriptionPage.tsx.) The code being
+// typed lives in C#, which that dialog saves on OK, so each change is posted to it.
+export const LegacySubscriptionSettings: React.FunctionComponent = () => {
+    const [code, setCode] = React.useState<string>();
+    // This effect fetches, once, the code the WinForms dialog is editing. A reply that arrives
+    // after the tab has gone is dropped.
+    useMountEffect(() => {
+        let isCurrent = true;
+        get("settings/subscriptionCode", (result) => {
+            if (isCurrent) setCode(result.data);
+        });
+        return () => {
+            isCurrent = false;
+        };
+    });
+    const { subscriptionCodeIntegrity, haveData } = useSubscriptionInfo(code);
 
-    if (!haveData) {
+    if (code === undefined || !haveData) {
         return null;
     }
+    const changeCode = (newCode: string) => {
+        postString("settings/subscriptionCode", newCode);
+        setCode(newCode);
+    };
 
     return (
         <div
@@ -48,9 +68,9 @@ export const SubscriptionSettings: React.FunctionComponent = () => {
                     Please contact [%0](%1) to purchase your subscription code.
                 </Markdown>
 
-                <SubscriptionControls />
+                <SubscriptionControls code={code} onCodeChange={changeCode} />
                 <br />
-                <SubscriptionStatus minimalUI />
+                <SubscriptionStatus minimalUI code={code} />
                 {subscriptionCodeIntegrity === "none" && (
                     <NoteBox
                         css={css`
@@ -80,4 +100,4 @@ export const SubscriptionSettings: React.FunctionComponent = () => {
     );
 };
 
-WireUpForWinforms(() => <SubscriptionSettings />);
+WireUpForWinforms(() => <LegacySubscriptionSettings />);
