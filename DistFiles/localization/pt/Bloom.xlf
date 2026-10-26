@@ -122,19 +122,19 @@
         <target xml:lang="pt-PT" state="final">Verificador de Acessibilidade de Bloom</target>
         <note>ID: AccessibilityCheck.WindowTitle</note>
       </trans-unit>
-      <trans-unit id="AccountMenu.Account">
+      <trans-unit id="AccountMenu.Account" approved="yes">
         <source xml:lang="en">Account</source>
-        <target xml:lang="pt-PT" state="translated">Conta</target>
+        <target xml:lang="pt-PT" state="final">Conta</target>
         <note>ID: AccountMenu.Account</note>
       </trans-unit>
-      <trans-unit id="AccountMenu.SignIn">
+      <trans-unit id="AccountMenu.SignIn" approved="yes">
         <source xml:lang="en">Sign in</source>
-        <target xml:lang="pt-PT" state="translated">Entrar</target>
+        <target xml:lang="pt-PT" state="final">Entrar</target>
         <note>ID: AccountMenu.SignIn</note>
       </trans-unit>
-      <trans-unit id="AccountMenu.SignOut">
+      <trans-unit id="AccountMenu.SignOut" approved="yes">
         <source xml:lang="en">Sign out</source>
-        <target xml:lang="pt-PT" state="translated">Sair</target>
+        <target xml:lang="pt-PT" state="final">Sair</target>
         <note>ID: AccountMenu.SignOut</note>
       </trans-unit>
       <trans-unit id="AutoUpdateSoftwareDialog.SoftwareUpdates" sil:dynamic="true" approved="yes">
@@ -652,9 +652,9 @@
         <target xml:lang="pt-PT" state="final">Legenda</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Caption</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption.Description" approved="yes">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption.Description">
         <source xml:lang="en">Bloom shows the BloomLibrary.org address on its own line beneath this caption, so you don't need to include it here. If your caption contains "{0}", Bloom will fill this in with the name of the language.</source>
-        <target xml:lang="pt-PT" state="final">Se a legenda contem "{0}", o Bloom vai preencher com o nome da língua.</target>
+        <target xml:lang="pt-PT" state="translated">Se a legenda contem "{0}", o Bloom vai preencher com o nome da língua.</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Caption.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2" approved="yes">
@@ -829,12 +829,12 @@
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.SaveAsBloomPackContextMenuItem" approved="yes">
         <source xml:lang="en">Save as Bloom Pack (*.BloomPack)</source>
-        <target xml:lang="pt-PT" state="final">Salvar como Pacote Bloom (.bloomPack)</target>
+        <target xml:lang="pt-PT" state="final">Salvar como Pacote Bloom (*.BloomPack)</target>
         <note>ID: CollectionTab.BookMenu.SaveAsBloomPackContextMenuItem</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem" approved="yes">
         <source xml:lang="en">Save as Single File (*.bloomSource)...</source>
-        <target xml:lang="pt-PT" state="final">Salvar como arquivo único (.bloom)...</target>
+        <target xml:lang="pt-PT" state="final">Salvar como arquivo único (*.bloomSource)...</target>
         <note>ID: CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.ShowInFileExplorer" approved="yes">
@@ -3618,27 +3618,27 @@
       </trans-unit>
       <trans-unit id="ImageLibrary.PixabayFindKey">
         <source xml:lang="en">Copy the API key shown on that page, next to &quot;Your API key:&quot;</source>
-        <target xml:lang="pt-PT" state="needs-translation">Copy the API key shown on that page, next to "Your API key:"</target>
+        <target xml:lang="pt-PT" state="translated">Copiar a chave API exibida nessa página, ao lado de "Sua chave API:"</target>
         <note>ID: ImageLibrary.PixabayFindKey</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.PixabayGoToApiKeyPage">
         <source xml:lang="en">go to the API key page</source>
-        <target xml:lang="pt-PT" state="needs-translation">go to the API key page</target>
+        <target xml:lang="pt-PT" state="translated">acessar a página da chave API</target>
         <note>ID: ImageLibrary.PixabayGoToApiKeyPage</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.PixabayLogIn">
         <source xml:lang="en">Log in to Pixabay</source>
-        <target xml:lang="pt-PT" state="needs-translation">Log in to Pixabay</target>
+        <target xml:lang="pt-PT" state="translated">Fazer login no Pixabay</target>
         <note>ID: ImageLibrary.PixabayLogIn</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.PixabayOrIfLoggedIn">
         <source xml:lang="en">{0} or, if already logged in, {1}</source>
-        <target xml:lang="pt-PT" state="needs-translation">{0} or, if already logged in, {1}</target>
+        <target xml:lang="pt-PT" state="translated">{0} ou, se já fez o login, {1}</target>
         <note>ID: ImageLibrary.PixabayOrIfLoggedIn</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.PixabayStep4">
         <source xml:lang="en">Paste it below</source>
-        <target xml:lang="pt-PT" state="needs-translation">Paste it below</target>
+        <target xml:lang="pt-PT" state="translated">Colar a chave abaixo</target>
         <note>ID: ImageLibrary.PixabayStep4</note>
       </trans-unit>
       <trans-unit id="ImageUtils.PreparingImage" approved="yes">
@@ -4018,7 +4018,7 @@
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.BrowseOnThisComputer">
         <source xml:lang="en">Browse on this computer</source>
-        <target xml:lang="pt-PT" state="needs-translation">Browse on this computer</target>
+        <target xml:lang="pt-PT" state="translated">Procurar neste computador</target>
         <note>ID: OpenCreateNewCollectionsDialog.BrowseOnThisComputer</note>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.CreateNewCollection" approved="yes">
