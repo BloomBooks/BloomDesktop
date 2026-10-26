@@ -146,7 +146,7 @@
         "@use-it/event-listener": "0.1.7",
         "axios": "0.21.1",
         "bloom-ai-image-tools": "github:BloomBooks/bloom-ai-image-tools#dist-v0.2.15",
-        "bloom-image-gallery": "github:BloomBooks/bloom-image-gallery#9fc93ea49d42df70d259a6476c012417ba1b9c8d",
+        "bloom-image-gallery": "github:BloomBooks/bloom-image-gallery#686124ca1e4ebbcd05b0e5a504355e17c9cdc30b",
         "bloom-player": "2.20.2",
         "calculate-aspect-ratio": "0.1.3",
         "clsx": "1.2.1",
