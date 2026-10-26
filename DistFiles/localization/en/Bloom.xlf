@@ -597,6 +597,46 @@
         <note>ID: CollectionSettingsDialog.FrontBackMatterPage</note>
         <note>Name of one of the pages (tabs) of the Settings dialog, the one about the pages Bloom adds at the front and back of every book. "&amp;" is an abbreviation symbol for "and".</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.Auto" translate="no">
+        <source xml:lang="en">Auto</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.Auto</note>
+        <note>On the Languages page of the Collection Settings dialog: the first choice in the lists of font sizes and line spacings, meaning Bloom chooses the value itself.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.DefaultFont" translate="no">
+        <source xml:lang="en">Default Font</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.DefaultFont</note>
+        <note>On the Languages page of the Collection Settings dialog: the label of the font a language's text is shown in, unless a book chooses another.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.Fonts" translate="no">
+        <source xml:lang="en">Fonts</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.Fonts</note>
+        <note>On the "More" page of one language in the Collection Settings dialog: the heading of the group of settings about the size and spacing of the language's text.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.Language" translate="no">
+        <source xml:lang="en">Language</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.Language</note>
+        <note>On the Languages page of the Collection Settings dialog: the label beside the name of one of the collection's languages, with a button to choose a different one.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.More" translate="no">
+        <source xml:lang="en">More</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.More</note>
+        <note>On the Languages page of the Collection Settings dialog: a link, under each language, to a page of that language's less common settings (text size and spacing, script direction). It is also the title of that page.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.ReaderTools" translate="no">
+        <source xml:lang="en">Reader Tools</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.ReaderTools</note>
+        <note>On the "More" page of the first language in the Collection Settings dialog: the heading of the settings the Decodable and Leveled Reader tools use (the alphabet and sentence punctuation).</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.Script" translate="no">
+        <source xml:lang="en">Script</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.Script</note>
+        <note>On the "More" page of one language in the Collection Settings dialog: the heading of the settings about how the language is written (word breaking, right-to-left). "Script" means a writing system, such as Latin, Arabic or Thai.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.ToolFontSize" translate="no">
+        <source xml:lang="en">Font size when displayed in tools</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.ToolFontSize</note>
+        <note>On the "More" page of one language in the Collection Settings dialog: the label of the size of the language's text where Bloom's tools (such as the Decodable Reader Tool) show it.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
         <source xml:lang="en">Change...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChangeLanguageLink</note>

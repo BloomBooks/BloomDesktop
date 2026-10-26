@@ -10,7 +10,7 @@ import {
     setLevelValue,
 } from "./readerSetup.ui";
 import { ReaderStage, ReaderLevel, ReaderSettings } from "../ReaderSettings";
-import { cleanSpaceDelimitedList } from "./decodableStagesUtils";
+import { cleanSpaceDelimitedList } from "./spaceDelimitedList";
 import "../../../../lib/jquery.onSafe";
 import * as _ from "underscore";
 import $ from "jquery";

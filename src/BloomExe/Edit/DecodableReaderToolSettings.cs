@@ -126,6 +126,27 @@ namespace Bloom.Edit
         }
 
         /// <summary>
+        /// The reader tools settings a collection starts with, for a first language with the given
+        /// tag. The literal string here defines our default reader settings for a collection.
+        /// </summary>
+        public static string GetDefaultSettingsJson(string languageTag)
+        {
+            return "{\"writingSystemTag\": \""
+                + languageTag
+                + "\", "
+                + "\"letters\":\"a b c d e f g h i j k l m n o p q r s t u v w x y z\","
+                + $"\"lang\":\"{languageTag}\","
+                + "\"moreWords\":\"\","
+                + "\"stages\":[{\"letters\":\"\",\"sightWords\":\"\"}],"
+                + "\"levels\":[{\"maxWordsPerSentence\":2,\"maxWordsPerPage\":2,\"maxWordsPerBook\":20,\"maxUniqueWordsPerBook\":0,\"thingsToRemember\":[]},"
+                + "{\"maxWordsPerSentence\":5,\"maxWordsPerPage\":5,\"maxWordsPerBook\":23,\"maxUniqueWordsPerBook\":8,\"thingsToRemember\":[]},"
+                + "{\"maxWordsPerSentence\":7,\"maxWordsPerPage\":10,\"maxWordsPerBook\":72,\"maxUniqueWordsPerBook\":16,\"thingsToRemember\":[]},"
+                + "{\"maxWordsPerSentence\":8,\"maxWordsPerPage\":18,\"maxWordsPerBook\":206,\"maxUniqueWordsPerBook\":32,\"thingsToRemember\":[]},"
+                + "{\"maxWordsPerSentence\":12,\"maxWordsPerPage\":25,\"maxWordsPerBook\":500,\"maxUniqueWordsPerBook\":64,\"thingsToRemember\":[]},"
+                + "{\"maxWordsPerSentence\":20,\"maxWordsPerPage\":50,\"maxWordsPerBook\":1000,\"maxUniqueWordsPerBook\":0,\"thingsToRemember\":[]}]}";
+        }
+
+        /// <summary>
         /// If the collection has no reader tools at all, or if ones that came with the program are newer,
         /// copy the ones that came with the program.
         /// This is language-dependent, we'll typically only overwrite settings for an English collection.
