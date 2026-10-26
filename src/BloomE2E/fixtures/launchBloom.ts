@@ -954,7 +954,7 @@ async function waitForRelaunchedBloom(
 ): Promise<IRunningBloom> {
     const deadline = Date.now() + readyTimeoutMs;
     while (Date.now() < deadline) {
-        const found = await findBloomServingCollection(collectionDir);
+        const found = await findBloomServingCollection(collectionDir, deadline);
         if (found?.info.processId && found.info.cdpPort) {
             // The relaunched copy must have been given our launch options again; one that was not
             // would be sharing the developer's own user settings.
@@ -982,8 +982,9 @@ async function waitForRelaunchedBloom(
     // keeps its settings in our folder. Nothing else tracks it, so kill it here, or it would
     // outlive the test and hold the temp folder open.
     const seen: string[] = [];
+    // Quick probes: the deadline has passed.
     for (const port of CANDIDATE_PORTS) {
-        const info = await readInstanceInfo(port);
+        const info = await readInstanceInfo(port, 2000);
         if (!info) continue;
         seen.push(
             `${port} -> ${info.editableCollectionFolder ?? "no collection"}`,

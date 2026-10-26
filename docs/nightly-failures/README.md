@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-10-22 (nightlies through the 2026-10-22 run have been triaged)
+**Last updated:** 2026-10-26 (nightlies through the 2026-10-26 run have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -9,37 +9,21 @@ accept a flaky test, and a test is flaky from its first unexplained failure (roo
 Testing). So "wait and see whether it recurs" is never an entry's plan. To bring this up to date,
 use the `nightly-triage` skill.
 
-## E2E suite does not run: a spec imports a helper from the wrong module
+## Collection rename test: Bloom still running after the test
 
-- **Failed:** 2026-10-22. The whole BloomE2E suite: no test ran ("no results file" after 6 s).
-- **Cause:** Playwright could not load the test files: "The requested module '../helpers/workspace'
-  does not provide an export named 'canUndo'". `rotate-and-flip-images.spec.ts:64` imports
-  `canUndo` from `helpers/workspace`, but it moved to `helpers/undo.ts` on 2026-10-13
-  (`45505dcb27`, BL-16900). The import came in with
-  [#8463](https://github.com/BloomBooks/BloomDesktop/pull/8463) (BL-16741), written before that move
-  and merged on 2026-10-21; nothing in CI type-checks the e2e project, so it was not caught.
-- **Status:** fixed by [#8494](https://github.com/BloomBooks/BloomDesktop/pull/8494), merged
-  2026-10-22, which imports `canUndo` from `../helpers/undo`. Remove this entry once a nightly has
-  passed on it.
-
-## TypeScript unit tests: teardown errors from tableEditing.test.ts
-
-- **Failed:** 2026-10-22. All 1564 vitest tests passed, but the run failed on 9 errors, all
-  "EnvironmentTeardownError: Closing rpc while 'onUserConsoleLog' was pending", originating in
-  `bookEdit/js/tableEditing.test.ts`.
-- **Cause:** a race in the test, not in Bloom. Each table cell editor the tests create gets
-  `activateLongPressFor` (`tableEditing.ts:186`), which asks the server
-  `/bloom/api/keyboarding/useLongpress` with `axios` directly, so the test's `bloomApi` mock does
-  not catch it. Under jsdom there is no server, so each request fails a moment later and logs
-  twice (jsdom's network error, then "useLongpress query failed" from `bloomEditing.ts`). When
-  those failures arrive after vitest has torn the file's environment down, vitest reports them as
-  errors and fails the run; usually they arrive in time, which is why it passed until now.
-  Confirmed locally by logging every console call from that file.
-- **Status:** fix in review in [#8495](https://github.com/BloomBooks/BloomDesktop/pull/8495)
-  ([BL-17040](https://issues.bloomlibrary.org/youtrack/issue/BL-17040)). Six other test files made
-  real requests too, so the fix is for the whole class: `vitest.setup.ts` now refuses every
-  request and fails the test that made it, so no failure can arrive after teardown, and the seven
-  files mock what they call.
+- **Failed:** 2026-10-24, 2026-10-25, 2026-10-26 (every run since it first failed).
+  `BloomE2E/tests/collection-settings-advanced.spec.ts` "renaming the collection on the Advanced
+  page renames its folder and reopens it" (Test Case 838): timed out after 180 s with "A Bloom is
+  still answering on port 8089 after teardown" (`fixtures/launchBloom.ts`, `killAndWaitForPortToGoDark`).
+- **Cause:** a bug in the test fixture, not in Bloom.
+  [#8405](https://github.com/BloomBooks/BloomDesktop/pull/8405) (BL-16922, merged 2026-10-23) gave
+  the fixture's probes a required deadline but missed the two calls in `waitForRelaunchedBloom`.
+  Their timeout became `NaN`, so every probe threw and read as "nothing here". The fixture never
+  found the Bloom that relaunched itself under the new name, and that Bloom outlived the run on
+  port 8089. Reproduced locally. Nothing type-checks `src/BloomE2E`, which is how it reached
+  master.
+- **Status:** fixed on master on 2026-10-26, in the commit that also makes the pre-commit hook
+  type-check the e2e tests. Remove this entry once a nightly has passed on it.
 
 ## Bulk upload test: two different failures against dev.bloomlibrary.org
 
@@ -51,7 +35,11 @@ use the `nightly-triage` skill.
   not update all four books. The 10-15 run's C# upload test also failed against the same service
   that morning (see the C# upload entry), so the service may have been having trouble; whether
   that explains either symptom is not known.
-- **Status:** no card or PR.
+- **Status:** [#8405](https://github.com/BloomBooks/BloomDesktop/pull/8405)
+  ([BL-16922](https://issues.bloomlibrary.org/youtrack/issue/BL-16922)), merged 2026-10-23, makes the
+  test check the bookshelf in what Bloom uploaded rather than in the harvested record, which
+  addresses the 10-15 symptom. The test has passed every night since. The 10-11 symptom is not
+  explained.
 
 ## E2E teardown: the test's temp folder cannot be deleted
 
