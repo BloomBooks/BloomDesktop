@@ -401,12 +401,12 @@
       </trans-unit>
       <trans-unit id="EditTab.CopyTextFailed" sil:dynamic="true">
         <source xml:lang="en">Bloom was not able to copy that.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom was not able to copy that.</target>
+        <target xml:lang="pt-PT" state="translated">O Bloom não conseguiu copiar este conteúdo.</target>
         <note>ID: EditTab.CopyTextFailed</note>
       </trans-unit>
       <trans-unit id="EditTab.PasteTextFailed" sil:dynamic="true">
         <source xml:lang="en">Bloom was not able to paste.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom was not able to paste.</target>
+        <target xml:lang="pt-PT" state="translated">O Bloom não conseguiu colar este conteúdo.</target>
         <note>ID: EditTab.PasteTextFailed</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.CouldNotDownloadImage" approved="yes">
@@ -416,12 +416,12 @@
       </trans-unit>
       <trans-unit id="ImageLibrary.PreviewTooLarge">
         <source xml:lang="en">This image is too large to preview here, but you can still use it.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This image is too large to preview here, but you can still use it.</target>
+        <target xml:lang="pt-PT" state="translated">Esta imagem é muito grande para visualização aqui, mas ainda assim pode usá-la.</target>
         <note>ID: ImageLibrary.PreviewTooLarge</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.PreviewUnavailable">
         <source xml:lang="en">This image could not be previewed.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This image could not be previewed.</target>
+        <target xml:lang="pt-PT" state="translated">Não foi possível gerar a visualização desta imagem.</target>
         <note>ID: ImageLibrary.PreviewUnavailable</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.CannotReachSource" approved="yes">
@@ -576,7 +576,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Preview.ZoomHint">
         <source xml:lang="en">Ctrl + mouse wheel to zoom</source>
-        <target xml:lang="pt-PT" state="translated">Ctrl + roda do mouse para aproximar ou afastar</target>
+        <target xml:lang="pt-PT" state="translated">Ctrl + roda do mouse para ampliar</target>
         <note>ID: AiImageEditor.Preview.ZoomHint</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Quality.Label" approved="yes">
@@ -591,12 +591,12 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Slot.ClearImage">
         <source xml:lang="en">Clear Image</source>
-        <target xml:lang="pt-PT" state="translated">Esvaziar</target>
+        <target xml:lang="pt-PT" state="translated">Esvaziar o espaço</target>
         <note>ID: AiImageEditor.Slot.ClearImage</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Slot.DropImage">
         <source xml:lang="en">Drop image</source>
-        <target xml:lang="pt-PT" state="translated">Solte uma imagem</target>
+        <target xml:lang="pt-PT" state="translated">Soltar a imagem</target>
         <note>ID: AiImageEditor.Slot.DropImage</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Source.BookImage" approved="yes">
@@ -611,7 +611,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Source.OriginalBookImage">
         <source xml:lang="en">The picture this book slot started with</source>
-        <target xml:lang="pt-PT" state="translated">A imagem com que este espaço do livro começou</target>
+        <target xml:lang="pt-PT" state="translated">A imagem original que estava neste espaço</target>
         <note>ID: AiImageEditor.Source.OriginalBookImage</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Source.PdfFile" approved="yes">
@@ -744,9 +744,9 @@
         <target xml:lang="pt-PT" state="translated">ex: a bola vermelha, a bagunça no fundo</target>
         <note>ID: AiImageEditor.Tool.remove_object.Param.target.Placeholder</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.remove_object.Title">
+      <trans-unit id="AiImageEditor.Tool.remove_object.Title" approved="yes">
         <source xml:lang="en">Remove Object</source>
-        <target xml:lang="pt-PT" state="translated">Remover um objeto</target>
+        <target xml:lang="pt-PT" state="final">Remover um objeto</target>
         <note>ID: AiImageEditor.Tool.remove_object.Title</note>
       </trans-unit>
     </body>
