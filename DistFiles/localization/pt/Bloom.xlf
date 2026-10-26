@@ -954,7 +954,7 @@
       </trans-unit>
       <trans-unit id="CollectionTab.RestartToUpdate" approved="yes">
         <source xml:lang="en">Restart Bloom to Update</source>
-        <target xml:lang="pt-PT" state="final">Reinicie para atualizar</target>
+        <target xml:lang="pt-PT" state="final">Reiniciar Bloom para atualizar</target>
         <note>ID: CollectionTab.RestartToUpdate</note>
       </trans-unit>
       <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true" approved="yes">
@@ -1293,7 +1293,7 @@
       </trans-unit>
       <trans-unit id="Common.Warning" approved="yes">
         <source xml:lang="en">Warning</source>
-        <target xml:lang="pt-PT" state="final">Informação</target>
+        <target xml:lang="pt-PT" state="final">Aviso</target>
         <note>ID: Common.Warning</note>
       </trans-unit>
       <trans-unit id="Common.WhatsThis" sil:dynamic="true" approved="yes">
@@ -1343,7 +1343,7 @@
       </trans-unit>
       <trans-unit id="Copyright.PublishingAsSIL" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Using "SIL" in a Copyright</source>
-        <target xml:lang="pt-PT" state="final">Publicando como SIL</target>
+        <target xml:lang="pt-PT" state="final">Usando "SIL" nos direitos autorais</target>
         <note>ID: Copyright.PublishingAsSIL</note>
       </trans-unit>
       <trans-unit id="Copyright.UseOriginalCopyright" sil:dynamic="true" approved="yes">
@@ -2118,7 +2118,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Image.AltMsg" approved="yes">
         <source xml:lang="en">This image, {0}, is missing or was loading too slowly.</source>
-        <target xml:lang="pt-PT" state="final">Falta esta imagem, {0}, ou estava carregando muito lento.</target>
+        <target xml:lang="pt-PT" state="final">Esta imagem, {0}, está ausente ou demorou muito para carregar.</target>
         <note>ID: EditTab.Image.AltMsg</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.BackgroundImage" sil:dynamic="true" approved="yes">
@@ -2138,7 +2138,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Image.CopyImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Copy image</source>
-        <target xml:lang="pt-PT" state="final">Copiar Imagem</target>
+        <target xml:lang="pt-PT" state="final">Copiar imagem</target>
         <note>ID: EditTab.Image.CopyImage</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.CopyImageFailed" sil:dynamic="true" approved="yes">
@@ -2163,12 +2163,12 @@
       </trans-unit>
       <trans-unit id="EditTab.Image.EditMetadataOverlay" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Set image information...</source>
-        <target xml:lang="pt-PT" state="final">Definir Informação da Imagem...</target>
+        <target xml:lang="pt-PT" state="final">Definir informação da imagem...</target>
         <note>ID: EditTab.Image.EditMetadataOverlay</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditMetadataOverlayMore" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Image.EditMetadataOverlayMore" sil:dynamic="true">
         <source xml:lang="en">Image credits, copyright, &amp; license</source>
-        <target xml:lang="pt-PT" state="final">Créditos da imagem, Direitos Autorais, &amp; Licença</target>
+        <target xml:lang="pt-PT" state="needs-translation">Image credits, copyright, &amp; license</target>
         <note>ID: EditTab.Image.EditMetadataOverlayMore</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true" approved="yes">
@@ -2258,7 +2258,7 @@
       </trans-unit>
       <trans-unit id="EditTab.NoImageFoundOnClipboard" approved="yes">
         <source xml:lang="en">Bloom did not find an image on your clipboard. Copy one first, then paste again.</source>
-        <target xml:lang="pt-PT" state="final">Antes de poder colar uma ilustração, copie uma na sua "área de transferência" de outro programa.</target>
+        <target xml:lang="pt-PT" state="final">Bloom não encontrou uma imagem na sua área de transferência. Copie uma primeiro, e depois cole novamente.</target>
         <note>ID: EditTab.NoImageFoundOnClipboard</note>
       </trans-unit>
       <trans-unit id="EditTab.NoValidImageFoundOnClipboard" approved="yes">
@@ -2538,7 +2538,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.AutoHeight" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Auto height</source>
-        <target xml:lang="pt-PT" state="final">Altura Automática</target>
+        <target xml:lang="pt-PT" state="final">Altura automática</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.AutoHeight</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor" sil:dynamic="true" approved="yes">
@@ -2558,7 +2558,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.CopyText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Copy text</source>
-        <target xml:lang="pt-PT" state="final">Copiar Texto</target>
+        <target xml:lang="pt-PT" state="final">Copiar texto</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.UseForBookThumbnail" sil:dynamic="true" approved="yes">
@@ -2588,7 +2588,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Format text...</source>
-        <target xml:lang="pt-PT" state="final">Formatar Texto...</target>
+        <target xml:lang="pt-PT" state="final">Formatar texto...</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Format</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true" approved="yes">
@@ -2613,7 +2613,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.PasteText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paste text</source>
-        <target xml:lang="pt-PT" state="final">Colar Texto</target>
+        <target xml:lang="pt-PT" state="final">Colar texto</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.PasteText</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.PlayEarlier" sil:dynamic="true" approved="yes">
@@ -3028,7 +3028,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.MaxSentenceLength" sil:dynamic="true" approved="yes">
         <source xml:lang="en">longest sentence</source>
-        <target xml:lang="pt-PT" state="final">comprimento máximo da frase</target>
+        <target xml:lang="pt-PT" state="final">frase mais longa</target>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.MaxSentenceLength</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerPage" sil:dynamic="true" approved="yes">
@@ -3368,7 +3368,7 @@
       </trans-unit>
       <trans-unit id="Errors.ErrorUpdating" approved="yes">
         <source xml:lang="en">There was a problem updating the book.  Restarting Bloom may fix the problem.  If not, please report the problem to us.</source>
-        <target xml:lang="pt-PT" state="final">Houve um problema atualizando o livro. Reiniciando Bloom pode corrigir o problema. Se não, por favor clique no botão 'Detalhes' e relatar o problema para os programadores de Bloom.</target>
+        <target xml:lang="pt-PT" state="final">Houve um problema atualizando o livro. Reiniciando Bloom pode corrigir o problema. Se não, por favor reporte o problema.</target>
         <note>ID: Errors.ErrorUpdating</note>
       </trans-unit>
       <trans-unit id="Errors.FeatureRequiresNewerVersionPlural" approved="yes">
@@ -3673,12 +3673,12 @@
       </trans-unit>
       <trans-unit id="LayoutChoices.A3Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A3 Landscape</source>
-        <target xml:lang="pt-PT" state="final">A3Landscape</target>
+        <target xml:lang="pt-PT" state="final">A3 Paisagem</target>
         <note>ID: LayoutChoices.A3Landscape</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4 Landscape</source>
-        <target xml:lang="pt-PT" state="final">A4Horizontal</target>
+        <target xml:lang="pt-PT" state="final">A4 Paisagem</target>
         <note>ID: LayoutChoices.A4Landscape</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true" approved="yes">
@@ -3688,27 +3688,27 @@
       </trans-unit>
       <trans-unit id="LayoutChoices.A5Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A5 Landscape</source>
-        <target xml:lang="pt-PT" state="final">A5Horizontal</target>
+        <target xml:lang="pt-PT" state="final">A5 Paisagem</target>
         <note>ID: LayoutChoices.A5Landscape</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.A5Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A5 Portrait</source>
-        <target xml:lang="pt-PT" state="final">A5Vertical</target>
+        <target xml:lang="pt-PT" state="final">A5 Retrato</target>
         <note>ID: LayoutChoices.A5Portrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.A6Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A6 Landscape</source>
-        <target xml:lang="pt-PT" state="final">A6Horizontal</target>
+        <target xml:lang="pt-PT" state="final">A6 Paisagem</target>
         <note>ID: LayoutChoices.A6Landscape</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.A6Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A6 Portrait</source>
-        <target xml:lang="pt-PT" state="final">A6Vertical</target>
+        <target xml:lang="pt-PT" state="final">A6 Retrato</target>
         <note>ID: LayoutChoices.A6Portrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.B5Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">B5 Portrait</source>
-        <target xml:lang="pt-PT" state="final">B5Vertical</target>
+        <target xml:lang="pt-PT" state="final">B5 Retrato</target>
         <note>ID: LayoutChoices.B5Portrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.Cm13Landscape" sil:dynamic="true" approved="yes">
@@ -3723,12 +3723,12 @@
       </trans-unit>
       <trans-unit id="LayoutChoices.Device16x9Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Device16x9 Landscape</source>
-        <target xml:lang="pt-PT" state="final">Device16x9Landscape</target>
+        <target xml:lang="pt-PT" state="final">Dispositivo16x9 Paisagem</target>
         <note>ID: LayoutChoices.Device16x9Landscape</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.Device16x9Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Device16x9 Portrait</source>
-        <target xml:lang="pt-PT" state="final">Device16x9Portrait</target>
+        <target xml:lang="pt-PT" state="final">Dispositivo16x9 Retrato</target>
         <note>ID: LayoutChoices.Device16x9Portrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.Ebook7x5Landscape" sil:dynamic="true">
@@ -3753,22 +3753,22 @@
       </trans-unit>
       <trans-unit id="LayoutChoices.HalfLetterPortrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">HalfLetter Portrait</source>
-        <target xml:lang="pt-PT" state="final">MediaCartaVertical</target>
+        <target xml:lang="pt-PT" state="final">Meia-Carta Retrato</target>
         <note>ID: LayoutChoices.HalfLetterPortrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.LetterLandscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letter Landscape</source>
-        <target xml:lang="pt-PT" state="final">CartaHorizontal</target>
+        <target xml:lang="pt-PT" state="final">Carta Paisagem</target>
         <note>ID: LayoutChoices.LetterLandscape</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.LetterPortrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letter Portrait</source>
-        <target xml:lang="pt-PT" state="final">CartaVertical</target>
+        <target xml:lang="pt-PT" state="final">Carta Retrato</target>
         <note>ID: LayoutChoices.LetterPortrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.QuarterLetterLandscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">QuarterLetter Landscape</source>
-        <target xml:lang="pt-PT" state="final">QuartaCartaHorizontal</target>
+        <target xml:lang="pt-PT" state="final">Quarto de Carta Paisagem</target>
         <note>ID: LayoutChoices.QuarterLetterLandscape</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.QuarterLetterPortrait" sil:dynamic="true" approved="yes">
@@ -4028,7 +4028,7 @@
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle" approved="yes">
         <source xml:lang="en">Open / Create Collections</source>
-        <target xml:lang="pt-PT" state="final">Abrir/Criar coleções</target>
+        <target xml:lang="pt-PT" state="final">Abrir / Criar Coleções</target>
         <note>ID: OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle</note>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.UILanguageMenu_ToolTip_" approved="yes">
@@ -4542,12 +4542,12 @@
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Flowable.Description" approved="yes">
         <source xml:lang="en">Allow ePUB readers to lay out images and text however they want. The user is more likely to be able to increase font size. Custom page layouts will not look good. This mode is not available if your book has canvas pages (comics).</source>
-        <target xml:lang="pt-PT" state="final">Permita que os leitores ePUB exibam imagens e texto da maneira que quiserem. O utilizador é mais capaz de aumentar o tamanho da fonte. As disposições da página personalizada não parecerão bons. Este modo não está disponível se o seu livro tiver páginas de sobreposição (quadrinhos).</target>
+        <target xml:lang="pt-PT" state="final">Permita que os leitores ePUB exibam imagens e texto da maneira que quiserem. O utilizador é mais capaz de aumentar o tamanho da fonte. As disposições da página personalizada não parecerão bons. Este modo não está disponível se o seu livro tiver páginas de tela (quadrinhos).</target>
         <note>ID: PublishTab.Epub.Flowable.Description</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Flowable.DisabledTooltip" approved="yes">
         <source xml:lang="en">This is disabled because an ePUB viewer in flowable mode would not be able to display the canvas pages (comics) in this book.</source>
-        <target xml:lang="pt-PT" state="final">Isto está desabilitado porque um visualizador ePUB em modo fluido não conseguiria exibir as páginas da sobreposição (quadrinhos) neste livro.</target>
+        <target xml:lang="pt-PT" state="final">Isto está desabilitado porque um visualizador ePUB em modo fluido não conseguiria exibir as páginas da tela (quadrinhos) neste livro.</target>
         <note>ID: PublishTab.Epub.Flowable.DisabledTooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Mode" approved="yes">
@@ -4572,7 +4572,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.NoBookletsMessage" approved="yes">
         <source xml:lang="en">This is disabled because Bloom cannot make booklets using the current size and orientation.</source>
-        <target xml:lang="pt-PT" state="final">Bloom não pode fazer livros usando o tamanho atual da página.</target>
+        <target xml:lang="pt-PT" state="final">Esta opção está desativada porque o Bloom não pode criar livretos com o tamanho e a orientação atuais.</target>
         <note>ID: PublishTab.NoBookletsMessage</note>
       </trans-unit>
       <trans-unit id="PublishTab.OnePagePerPaperRadio" approved="yes">
@@ -4777,7 +4777,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.PrologToAdobeEula" approved="yes">
         <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for print shop".  You must agree to the following license in order to perform this task in Bloom.</source>
-        <target xml:lang="pt-PT" state="final">Bloom usa os perfis de cores da Adobe para converter arquivos em PDF usando cores de RGB para cores CMYK. Isto é parte da preparação para gerar um "PDF para impressão". Você deve concordar com a seguinte licença para realizar em tarefa em Bloom.</target>
+        <target xml:lang="pt-PT" state="final">Bloom usa os perfis de cores da Adobe para converter arquivos em PDF usando cores de RGB para cores CMYK. Isto faz parte da preparação para gerar um "PDF para impressão". Você deve concordar com a seguinte licença para realizar esta tarefa em Bloom.</target>
         <note>ID: PublishTab.PrologToAdobeEula</note>
       </trans-unit>
       <trans-unit id="PublishTab.Publish" approved="yes">
@@ -4832,7 +4832,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.ChangeScale100" approved="yes">
         <source xml:lang="en">Please change your display scaling to 100% while making videos.</source>
-        <target xml:lang="pt-PT" state="final">Por favor, altere o tamanho de sua tela para 100% ao fazer vídeos. Sem isso, os vídeos aparecerão na resolução errada ou não gravarão nada.</target>
+        <target xml:lang="pt-PT" state="final">Por favor, altere o tamanho de sua tela para 100% ao criar vídeos.</target>
         <note>ID: PublishTab.RecordVideo.ChangeScale100</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.CheckRecording" approved="yes">
@@ -4847,7 +4847,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.DisplaySettings" approved="yes">
         <source xml:lang="en">Open Display Settings</source>
-        <target xml:lang="pt-PT" state="final">Configurações de apresentação</target>
+        <target xml:lang="pt-PT" state="final">Abrir Configurações de Exibição</target>
         <note>ID: PublishTab.RecordVideo.DisplaySettings</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.DisableScaling" approved="yes">
