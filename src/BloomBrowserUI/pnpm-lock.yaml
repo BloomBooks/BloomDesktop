@@ -93,7 +93,7 @@ importers:
         version: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/5c7e7f4d549437c806d76b4623422a405f25940f(@types/react@18.3.31)(supports-color@5.5.0)
       bloom-player:
         specifier: alpha
-        version: 2.20.3-alpha.1
+        version: 2.22.0-alpha.2
       bloom-table:
         specifier: github:BloomBooks/bloom-table#dist-v0.1.1
         version: https://codeload.github.com/BloomBooks/bloom-table/tar.gz/1cdb656e552974722443edecfff9b4ad6428bfb8(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/icons-material@5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -2709,8 +2709,8 @@ packages:
     resolution: {gitHosted: true, integrity: sha512-nKoHwCkUZhMu1StAfWES6MdUMeyJMzk+ulvnTr6XVtVkn0Mmet02Wj05g7nxKy1s6cazcxC0I86NxTq2fe0mww==, tarball: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/5c7e7f4d549437c806d76b4623422a405f25940f}
     version: 0.0.5
 
-  bloom-player@2.20.3-alpha.1:
-    resolution: {integrity: sha512-MTIYUUuAu26Q+WvSFIdTPl/hrunHLIILG1sqA8sJiJvK7LOOITC30+NXAcg3WhZopPZHo7L/okqHu4IFxlso0g==}
+  bloom-player@2.22.0-alpha.2:
+    resolution: {integrity: sha512-d289mWGKMCXo2+RbfzI9GskqMU+N9Nq9Z0PmGv19pSq/0LNlrFeAPC1RcfCQkPE3Ys3XnhGcFMw9VNXhQcC3LA==}
 
   bloom-table@https://codeload.github.com/BloomBooks/bloom-table/tar.gz/1cdb656e552974722443edecfff9b4ad6428bfb8:
     resolution: {gitHosted: true, tarball: https://codeload.github.com/BloomBooks/bloom-table/tar.gz/1cdb656e552974722443edecfff9b4ad6428bfb8}
@@ -9288,7 +9288,7 @@ snapshots:
       - debug
       - supports-color
 
-  bloom-player@2.20.3-alpha.1: {}
+  bloom-player@2.22.0-alpha.2: {}
 
   bloom-table@https://codeload.github.com/BloomBooks/bloom-table/tar.gz/1cdb656e552974722443edecfff9b4ad6428bfb8(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/icons-material@5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
