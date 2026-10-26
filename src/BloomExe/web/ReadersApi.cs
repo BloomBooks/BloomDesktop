@@ -625,21 +625,9 @@ namespace Bloom.Api
                 return JsonConvert.SerializeObject(fixedSettings);
             }
             // file does not exist, so make a new one
-            // The literal string here defines our default reader settings for a collection.
-            var settingsString =
-                "{\"writingSystemTag\": \""
-                + bookData.Language1.Tag
-                + "\", "
-                + "\"letters\":\"a b c d e f g h i j k l m n o p q r s t u v w x y z\","
-                + $"\"lang\":\"{bookData.Language1.Tag}\","
-                + "\"moreWords\":\"\","
-                + "\"stages\":[{\"letters\":\"\",\"sightWords\":\"\"}],"
-                + "\"levels\":[{\"maxWordsPerSentence\":2,\"maxWordsPerPage\":2,\"maxWordsPerBook\":20,\"maxUniqueWordsPerBook\":0,\"thingsToRemember\":[]},"
-                + "{\"maxWordsPerSentence\":5,\"maxWordsPerPage\":5,\"maxWordsPerBook\":23,\"maxUniqueWordsPerBook\":8,\"thingsToRemember\":[]},"
-                + "{\"maxWordsPerSentence\":7,\"maxWordsPerPage\":10,\"maxWordsPerBook\":72,\"maxUniqueWordsPerBook\":16,\"thingsToRemember\":[]},"
-                + "{\"maxWordsPerSentence\":8,\"maxWordsPerPage\":18,\"maxWordsPerBook\":206,\"maxUniqueWordsPerBook\":32,\"thingsToRemember\":[]},"
-                + "{\"maxWordsPerSentence\":12,\"maxWordsPerPage\":25,\"maxWordsPerBook\":500,\"maxUniqueWordsPerBook\":64,\"thingsToRemember\":[]},"
-                + "{\"maxWordsPerSentence\":20,\"maxWordsPerPage\":50,\"maxWordsPerBook\":1000,\"maxUniqueWordsPerBook\":0,\"thingsToRemember\":[]}]}";
+            var settingsString = DecodableReaderToolSettings.GetDefaultSettingsJson(
+                bookData.Language1.Tag
+            );
             RobustFile.WriteAllText(settingsPath, settingsString);
 
             return settingsString;
