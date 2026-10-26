@@ -1,18 +1,16 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 
-// gets the contents of the stylesheets needed to display the
-// html of each page in a thumbnail.
-// Because our embedded browser doesn't support @scope yet, we are getting
-// the actual contents and then pushing them into a style tag
-export const PageStylesInjector: React.FunctionComponent<{
-    bookId?: string;
-}> = (props) => {
-    const [scopedStyles, setScopedStyles] = useState<string>("");
+// Gets the contents of the stylesheets needed to display the html of each page in a
+// thumbnail. Returns undefined until they have loaded for this book. The caller should not
+// lay out any thumbnails before then: they are a different size without these styles, so
+// thumbnails drawn early jump when the styles land, and that can push the selected page back
+// out of view after it has been scrolled to.
+export const usePageStyles = (bookId?: string): string | undefined => {
+    const [loaded, setLoaded] = useState<{ bookId: string; styles: string }>();
 
     useEffect(() => {
-        if (!props.bookId) {
-            setScopedStyles("");
+        if (!bookId) {
             return;
         }
 
@@ -26,14 +24,14 @@ export const PageStylesInjector: React.FunctionComponent<{
             const stylePromises = [
                 ...staticStylesheetUrls.map(fetchStylesheetContent),
                 fetchStylesheetContent(
-                    `/bloom/api/collections/bookFile?book-id=${props.bookId}&file=appearance.css`,
+                    `/bloom/api/collections/bookFile?book-id=${bookId}&file=appearance.css`,
                 ),
             ];
 
             const styleContents = await Promise.all(stylePromises);
 
             if (!canceled) {
-                setScopedStyles(styleContents.join("\n"));
+                setLoaded({ bookId, styles: styleContents.join("\n") });
             }
         };
 
@@ -42,18 +40,22 @@ export const PageStylesInjector: React.FunctionComponent<{
         return () => {
             canceled = true;
         };
-    }, [props.bookId]);
+    }, [bookId]);
 
-    if (!scopedStyles) return null;
-
-    return (
-        <style
-            dangerouslySetInnerHTML={{
-                __html: `.page-chooser-scope { ${scopedStyles} }`,
-            }}
-        />
-    );
+    return loaded && loaded.bookId === bookId ? loaded.styles : undefined;
 };
+
+// Because our embedded browser doesn't support @scope yet, we get the actual contents
+// of the stylesheets (see usePageStyles) and push them into a style tag.
+export const PageStylesInjector: React.FunctionComponent<{
+    styles: string;
+}> = (props) => (
+    <style
+        dangerouslySetInnerHTML={{
+            __html: `.page-chooser-scope { ${props.styles} }`,
+        }}
+    />
+);
 
 const fetchStylesheetContent = async (url: string): Promise<string> => {
     try {

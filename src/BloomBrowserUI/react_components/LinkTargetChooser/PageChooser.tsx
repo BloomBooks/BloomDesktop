@@ -15,7 +15,7 @@ import {
     chooserButtonPadding,
 } from "./sharedStyles";
 import { useL10n } from "../l10nHooks";
-import { PageStylesInjector } from "./PageStylesInjector";
+import { PageStylesInjector, usePageStyles } from "./PageStylesInjector";
 
 type PageWithXMatter = IPage & { isXMatter?: boolean; disabled?: boolean };
 
@@ -172,6 +172,9 @@ const PageChooserComponent: React.FunctionComponent<{
     const [bookAttributes, setBookAttributes] = useState<
         Record<string, string>
     >({});
+    // Loaded here rather than inside the grid so the "Loading" status below cannot unmount
+    // it partway through, which would restart the fetch.
+    const pageStyles = usePageStyles(props.bookId);
     // Keep the latest selected page without re-triggering the data fetch effect.
     const selectedPageIdRef = useRef<string | undefined>(props.selectedPageId);
     const onSelectPageRef = useRef(props.onSelectPage);
@@ -321,7 +324,9 @@ const PageChooserComponent: React.FunctionComponent<{
         });
     }
 
-    if (loading) {
+    // Wait for the thumbnail styles too, so the grid is laid out once, at its final size,
+    // before the selected page scrolls itself into view (see usePageStyles).
+    if (loading || pageStyles === undefined) {
         return renderStatus(loadingPagesMessage);
     }
 
@@ -342,7 +347,7 @@ const PageChooserComponent: React.FunctionComponent<{
         >
             {/* we could inject this in each individual page, but then we'd want to have caching and
             then have to defeat it for different books. At the cost of some css bleed this seems adequate. */}
-            <PageStylesInjector bookId={props.bookId} />
+            <PageStylesInjector styles={pageStyles} />
             <div
                 id="wrapperForBodyAttributes"
                 {...(bookAttributes as Record<string, string>)}

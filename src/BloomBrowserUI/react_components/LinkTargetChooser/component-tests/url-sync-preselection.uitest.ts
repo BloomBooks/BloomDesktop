@@ -550,4 +550,77 @@ test.describe("LinkTargetChooser - URL Preselection", () => {
             )
             .toBeTruthy();
     });
+
+    // On a slow machine the thumbnail stylesheets can arrive well after the page list. The
+    // thumbnails are a different size without them, so if the grid were laid out first, the
+    // selected page would be scrolled into view and then pushed back out when the styles
+    // landed (the 2026-09-23 nightly failed that way). Holding those stylesheets back makes
+    // that ordering happen on every run, on any machine.
+    test("Keeps preselected page in view when page styles arrive late", async ({
+        page,
+    }) => {
+        let delayedStylesheets = 0;
+        await page.route(
+            /\/(pageThumbnailList|basePage|previewMode)\.css$/,
+            async (route) => {
+                delayedStylesheets++;
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+                await route.fallback();
+            },
+        );
+
+        const books = createScrollableBooks(25);
+        const targetBook = books[22];
+        const targetPageId = "150";
+
+        const context = await setupLinkTargetChooser(page, {
+            currentURL: `/book/${targetBook.id}#${targetPageId}`,
+            books,
+        });
+
+        await context.bookList.waitForBooksToLoad();
+
+        const targetPage = await context.pageList.getPage(targetPageId);
+        await targetPage.waitFor({ state: "attached", timeout: 10000 });
+
+        expect(delayedStylesheets).toBeGreaterThan(0);
+
+        // Judge only once the late styles are applied and laid out: before that the page can
+        // be momentarily in view even when the bug is present.
+        await page.waitForFunction(
+            () =>
+                [...document.querySelectorAll("style")].some((style) =>
+                    style.textContent?.includes(".page-chooser-scope"),
+                ),
+            undefined,
+            { timeout: 10000 },
+        );
+        await page.evaluate(
+            () =>
+                new Promise((resolve) =>
+                    requestAnimationFrame(() => requestAnimationFrame(resolve)),
+                ),
+        );
+
+        await expect
+            .poll(
+                async () =>
+                    await targetPage.evaluate((element) => {
+                        const container = element.closest("#pageGridWrapper");
+                        if (!(container instanceof HTMLElement)) {
+                            return "no page grid";
+                        }
+                        const containerRect = container.getBoundingClientRect();
+                        const rect = element.getBoundingClientRect();
+                        const visible =
+                            rect.bottom > containerRect.top &&
+                            rect.top < containerRect.bottom;
+                        return visible
+                            ? "visible"
+                            : `out of view by ${Math.round(rect.top - containerRect.top)}px`;
+                    }),
+                { timeout: 5000 },
+            )
+            .toBe("visible");
+    });
 });
