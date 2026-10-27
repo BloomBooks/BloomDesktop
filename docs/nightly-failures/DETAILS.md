@@ -179,10 +179,14 @@ one entry there.
 
 ### Still open
 
-- How much run-from-package and loading `googleapis` lazily shorten the ~3-minute cold-start
-  hold. A proposal is on bloom-azure-functions branch `run-from-package` (not pushed). It also
-  removes the startup Contentful-to-Crowdin sync, so afterwards the hold has to be measured from
-  request durations; the warning won't appear any more.
+- How much the fix shortens the ~3-minute cold-start hold on new production instances.
+  bloom-azure-functions PR #91 (`12b0915`), in production since 2026-10-27 about 23:00 UTC,
+  runs from a package, loads `googleapis` on first use (startup modules 2,037 to 1,077), drops
+  the startup Contentful-to-Crowdin sync and moves to Node 22. A restarted slot answered its
+  first request in 3.2 s, but that was one sample, not a new instance. Measure it from first
+  request durations on new instances, since the warning no longer appears.
+- Not done: dependency tracking, per-step timing in `books` and `stats`, and timeouts on the
+  Parse and Postgres calls.
 - What failed on 10-15, given that the request apparently never reached the Function App.
 - Whether bloom-functions should log each step of `books` and record its dependency calls, so a
   stall shows where the time went.

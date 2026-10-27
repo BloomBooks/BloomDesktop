@@ -109,6 +109,9 @@ use the `nightly-triage` skill.
   them against the live service on purpose).
   [BL-17051](https://issues.bloomlibrary.org/youtrack/issue/BL-17051), in progress, makes Bloom
   tell users the service isn't responding instead of suggesting they restart Bloom.
+  bloom-azure-functions PR #91, in production since 2026-10-27, runs from a package and loads
+  less code at startup, to shorten the hold. Whether it does is not yet measured on new
+  instances.
 
 ## Open questions
 
