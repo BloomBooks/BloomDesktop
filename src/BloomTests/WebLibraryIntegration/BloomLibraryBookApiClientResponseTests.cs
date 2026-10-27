@@ -15,6 +15,7 @@ namespace BloomTests.WebLibraryIntegration
     [TestFixture]
     public class BloomLibraryBookApiClientResponseTests
     {
+        /// <summary>A request that timed out means the server isn't responding.</summary>
         [Test]
         public void IsServerNotResponding_TimedOut_ReturnsTrue()
         {
@@ -24,6 +25,7 @@ namespace BloomTests.WebLibraryIntegration
             Assert.That(BloomLibraryBookApiClient.IsServerNotResponding(response), Is.True);
         }
 
+        /// <summary>A request that got no response at all means the server isn't responding.</summary>
         [Test]
         public void IsServerNotResponding_NoResponse_ReturnsTrue()
         {
@@ -34,6 +36,7 @@ namespace BloomTests.WebLibraryIntegration
             Assert.That(BloomLibraryBookApiClient.IsServerNotResponding(response), Is.True);
         }
 
+        /// <summary>A 5xx server error means the server isn't responding usefully.</summary>
         [TestCase(HttpStatusCode.InternalServerError)]
         [TestCase(HttpStatusCode.BadGateway)]
         [TestCase(HttpStatusCode.ServiceUnavailable)]
@@ -49,6 +52,7 @@ namespace BloomTests.WebLibraryIntegration
             Assert.That(BloomLibraryBookApiClient.IsServerNotResponding(response), Is.True);
         }
 
+        /// <summary>A success or a 4xx is a real answer from the server, not a lack of one.</summary>
         [TestCase(HttpStatusCode.OK)]
         [TestCase(HttpStatusCode.Accepted)]
         [TestCase(HttpStatusCode.BadRequest)]
@@ -66,6 +70,7 @@ namespace BloomTests.WebLibraryIntegration
             Assert.That(BloomLibraryBookApiClient.IsServerNotResponding(response), Is.False);
         }
 
+        /// <summary>Both spellings of a canceled operation fail, like a failed one.</summary>
         [TestCase("Failed")]
         [TestCase("Canceled")]
         [TestCase("Cancelled")]
@@ -74,6 +79,7 @@ namespace BloomTests.WebLibraryIntegration
             Assert.That(BloomLibraryBookApiClient.IsStatusFailure(status), Is.True);
         }
 
+        /// <summary>Success and in-progress statuses are not failures.</summary>
         [TestCase("Succeeded")]
         [TestCase("Running")]
         [TestCase("NotStarted")]
@@ -83,6 +89,7 @@ namespace BloomTests.WebLibraryIntegration
             Assert.That(BloomLibraryBookApiClient.IsStatusFailure(status), Is.False);
         }
 
+        /// <summary>A timeout on the initial call throws ServerNotRespondingException.</summary>
         [Test]
         public void CallLongRunningAction_StartTimesOut_ThrowsServerNotResponding()
         {
@@ -100,6 +107,7 @@ namespace BloomTests.WebLibraryIntegration
             Assert.That(client.RequestCount, Is.EqualTo(1));
         }
 
+        /// <summary>A server error on a status poll throws ServerNotRespondingException.</summary>
         [Test]
         public void CallLongRunningAction_PollGetsServerError_ThrowsServerNotResponding()
         {
@@ -122,6 +130,7 @@ namespace BloomTests.WebLibraryIntegration
             Assert.That(client.RequestCount, Is.EqualTo(2), "should have failed on the poll");
         }
 
+        /// <summary>A 4xx on the initial call still throws the plain upload error.</summary>
         [Test]
         public void CallLongRunningAction_StartRejected_ThrowsPlainApplicationException()
         {
@@ -143,6 +152,10 @@ namespace BloomTests.WebLibraryIntegration
             Assert.That(e.Message, Is.EqualTo("Unable to start"));
         }
 
+        /// <summary>
+        /// A canceled status, in either spelling, throws rather than returning null
+        /// (which used to make InitiateBookUpload fail reading the result).
+        /// </summary>
         [TestCase("Canceled")]
         [TestCase("Cancelled")]
         public void CallLongRunningAction_StatusCanceled_ThrowsInsteadOfReturningNull(string status)
