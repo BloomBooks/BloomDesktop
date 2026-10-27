@@ -372,54 +372,54 @@
         <target xml:lang="pt-PT" state="final">Parece que alguma parte do caminho da pasta deste livro foi movido ou renomeado. Como resultado, o Bloom não conseguiu salvar as suas alterações nesta página e terá de ser fechado. Se não renomeou ou moveu itens, por favor, clique em Detalhes e relate o problema aos programadores.</target>
         <note>ID: BookStorage.FolderMoved</note>
       </trans-unit>
-      <trans-unit id="Collection.CollectionRequiresNewerVersion">
+      <trans-unit id="Collection.CollectionRequiresNewerVersion" approved="yes">
         <source xml:lang="en">The collection "{0}" requires Bloom {1} or greater. You are running Bloom {2}.</source>
-        <target xml:lang="pt-PT" state="translated">A coleção "{0}" requer Bloom {1} ou superior. Você está usando Bloom {2}.</target>
+        <target xml:lang="pt-PT" state="final">A coleção "{0}" requer Bloom {1} ou superior. Você está usando Bloom {2}.</target>
         <note>ID: Collection.CollectionRequiresNewerVersion</note>
       </trans-unit>
-      <trans-unit id="Collection.NewerVersionNeededHeader" sil:dynamic="true">
+      <trans-unit id="Collection.NewerVersionNeededHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This collection needs a newer version of Bloom.</source>
-        <target xml:lang="pt-PT" state="translated">Esta coleção precisa de uma versão mais nova do Bloom.</target>
+        <target xml:lang="pt-PT" state="final">Esta coleção precisa de uma versão mais nova do Bloom.</target>
         <note>ID: Collection.NewerVersionNeededHeader</note>
       </trans-unit>
-      <trans-unit id="Collection.NothingNewerAvailable">
+      <trans-unit id="Collection.NothingNewerAvailable" approved="yes">
         <source xml:lang="en">This collection needs Bloom {0}, but you already have the newest Bloom available to you.</source>
-        <target xml:lang="pt-PT" state="translated">Esta coleção precisa de Bloom {0}, mas você já está usando a versão mais recente do Bloom disponível para você.</target>
+        <target xml:lang="pt-PT" state="final">Esta coleção precisa de Bloom {0}, mas você já está usando a versão mais recente do Bloom disponível para você.</target>
         <note>ID: Collection.NothingNewerAvailable</note>
       </trans-unit>
-      <trans-unit id="Collection.OpenDifferentCollection">
+      <trans-unit id="Collection.OpenDifferentCollection" approved="yes">
         <source xml:lang="en">Open a Different Collection</source>
-        <target xml:lang="pt-PT" state="translated">Abra uma coleção diferente</target>
+        <target xml:lang="pt-PT" state="final">Abra uma coleção diferente</target>
         <note>ID: Collection.OpenDifferentCollection</note>
       </trans-unit>
-      <trans-unit id="Collection.UpgradeBloom">
+      <trans-unit id="Collection.UpgradeBloom" approved="yes">
         <source xml:lang="en">Upgrade Bloom</source>
-        <target xml:lang="pt-PT" state="translated">Atualizar Bloom</target>
+        <target xml:lang="pt-PT" state="final">Atualizar Bloom</target>
         <note>ID: Collection.UpgradeBloom</note>
       </trans-unit>
-      <trans-unit id="CollectionChooser.BookCountSingular">
+      <trans-unit id="CollectionChooser.BookCountSingular" approved="yes">
         <source xml:lang="en">{0} book</source>
-        <target xml:lang="pt-PT" state="translated">{0} livro</target>
+        <target xml:lang="pt-PT" state="final">{0} livro</target>
         <note>ID: CollectionChooser.BookCountSingular</note>
       </trans-unit>
-      <trans-unit id="CollectionChooser.BookCountPlural">
+      <trans-unit id="CollectionChooser.BookCountPlural" approved="yes">
         <source xml:lang="en">{0} books</source>
-        <target xml:lang="pt-PT" state="translated">{0} livros</target>
+        <target xml:lang="pt-PT" state="final">{0} livros</target>
         <note>ID: CollectionChooser.BookCountPlural</note>
       </trans-unit>
-      <trans-unit id="CollectionChooser.CheckedOutCount">
+      <trans-unit id="CollectionChooser.CheckedOutCount" approved="yes">
         <source xml:lang="en">{0} checked out to you</source>
-        <target xml:lang="pt-PT" state="translated">{0} reservados para você</target>
+        <target xml:lang="pt-PT" state="final">{0} reservados para você</target>
         <note>ID: CollectionChooser.CheckedOutCount</note>
       </trans-unit>
-      <trans-unit id="CollectionChooser.UnpublishedToBloomLibrary">
+      <trans-unit id="CollectionChooser.UnpublishedToBloomLibrary" approved="yes">
         <source xml:lang="en">Books not yet published to BloomLibrary.org</source>
-        <target xml:lang="pt-PT" state="translated">Livros ainda não publicados em BloomLibrary.org</target>
+        <target xml:lang="pt-PT" state="final">Livros ainda não publicados em BloomLibrary.org</target>
         <note>ID: CollectionChooser.UnpublishedToBloomLibrary</note>
       </trans-unit>
-      <trans-unit id="CollectionChooser.UnpublishedShort">
+      <trans-unit id="CollectionChooser.UnpublishedShort" approved="yes">
         <source xml:lang="en">{0} unpublished</source>
-        <target xml:lang="pt-PT" state="translated">{0} não publicado</target>
+        <target xml:lang="pt-PT" state="final">{0} não publicados</target>
         <note>ID: CollectionChooser.UnpublishedShort</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
@@ -2166,9 +2166,9 @@
         <target xml:lang="pt-PT" state="final">Definir informação da imagem...</target>
         <note>ID: EditTab.Image.EditMetadataOverlay</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditMetadataOverlayMore" sil:dynamic="true">
+      <trans-unit id="EditTab.Image.EditMetadataOverlayMore" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image credits, copyright, &amp; license</source>
-        <target xml:lang="pt-PT" state="needs-translation">Image credits, copyright, &amp; license</target>
+        <target xml:lang="pt-PT" state="final">Créditos da imagem, direitos autorais &amp; licença</target>
         <note>ID: EditTab.Image.EditMetadataOverlayMore</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true" approved="yes">
@@ -3403,7 +3403,7 @@
       </trans-unit>
       <trans-unit id="Errors.ProblemImportingPicture" approved="yes">
         <source xml:lang="en">Bloom had a problem importing this image.</source>
-        <target xml:lang="pt-PT" state="final">Bloom teve um problema de importar esta imagem.</target>
+        <target xml:lang="pt-PT" state="final">Bloom teve um problema ao importar esta imagem.</target>
         <note>ID: Errors.ProblemImportingPicture</note>
       </trans-unit>
       <trans-unit id="Errors.RemoveExcessHtml" approved="yes">
@@ -3683,7 +3683,7 @@
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4 Portrait</source>
-        <target xml:lang="pt-PT" state="final">A4Vertical</target>
+        <target xml:lang="pt-PT" state="final">A4 Retrato</target>
         <note>ID: LayoutChoices.A4Portrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.A5Landscape" sil:dynamic="true" approved="yes">
@@ -5110,7 +5110,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem.Result" approved="yes">
         <source xml:lang="en">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the "READ" button or downloads for BloomPUB or ePUB.</source>
-        <target xml:lang="pt-PT" state="final">BloomLibrary.org irá exibir o PDF e permitir que downloads sejam traduzidos, mas não pode oferecer o botão "READ" ou downloads para BloomPUB ou ePUB.</target>
+        <target xml:lang="pt-PT" state="final">BloomLibrary.org irá exibir o PDF e permitir que downloads sejam traduzidos, mas não pode oferecer o botão "LER" nem downloads para BloomPUB ou ePUB.</target>
         <note>ID: PublishTab.FontProblem.Result</note>
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem.CheckInBookSettingsDialog" approved="yes">
@@ -5887,7 +5887,7 @@
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.RightToLeftScriptCheckBox" approved="yes">
         <source xml:lang="en">This script is written right to left like Arabic, Hebrew, and Urdu</source>
-        <target xml:lang="pt-PT" state="final">Este escrita é direito para a esquerda</target>
+        <target xml:lang="pt-PT" state="final">Este escrita é lida da direita para a esquerda, como o árabe, o hebraico e o urdu</target>
         <note>ID: ScriptSettingsDialog.RightToLeftScriptCheckBox</note>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.ScriptSettingsWindowTitle" approved="yes">
@@ -5897,7 +5897,7 @@
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.TallerLinesCheckBox" approved="yes">
         <source xml:lang="en">Use special line spacing</source>
-        <target xml:lang="pt-PT" state="final">Este escrita requer linhas mais altas</target>
+        <target xml:lang="pt-PT" state="final">Usar espaçamento especial entre linhas</target>
         <note>ID: ScriptSettingsDialog.TallerLinesCheckBox</note>
       </trans-unit>
       <trans-unit id="Common.BloomSubscription" approved="yes">
@@ -5954,7 +5954,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription" approved="yes">
         <source xml:lang="en">Using **Local Community** subscription for {0}. Expires {1}</source>
-        <target xml:lang="pt-PT" state="final">Usando a assinatura da **Comunidade Local** por **{0}**. Expira {1}</target>
+        <target xml:lang="pt-PT" state="final">Usando a assinatura **Comunidade Local** para {0}. Expira em {1}</target>
         <note>ID: SubscriptionStatus.UsingLocalCommunitySubscription</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingEnterpriseSubscription" approved="yes">
