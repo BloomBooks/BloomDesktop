@@ -654,7 +654,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption.Description">
         <source xml:lang="en">Bloom shows the BloomLibrary.org address on its own line beneath this caption, so you don't need to include it here. If your caption contains "{0}", Bloom will fill this in with the name of the language.</source>
-        <target xml:lang="pt-PT" state="translated">Se a legenda contem "{0}", o Bloom vai preencher com o nome da língua.</target>
+        <target xml:lang="pt-PT" state="translated">Bloom mostra o endereço da BloomLibrary.org em uma linha sob esta legenda, então você não precisa incluí-lo aqui. Se a legenda contiver "{0}", o Bloom vai preencher esta lacuna com o nome da língua.</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Caption.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2" approved="yes">
@@ -817,9 +817,9 @@
         <target xml:lang="pt-PT" state="final">Importar conteúdo da planilha...</target>
         <note>ID: CollectionTab.BookMenu.ImportContentFromSpreadsheet</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.MustCheckOutTooltip">
+      <trans-unit id="CollectionTab.BookMenu.MustCheckOutTooltip" approved="yes">
         <source xml:lang="en">This feature requires the book to be checked out to you.</source>
-        <target xml:lang="pt-PT" state="translated">Este recurso requer que o livro seja reservado para você.</target>
+        <target xml:lang="pt-PT" state="final">Este recurso requer que o livro seja reservado para você.</target>
         <note>ID: CollectionTab.BookMenu.MustCheckOutTooltip</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.RenameBook" approved="yes">
@@ -1636,9 +1636,9 @@
         <target xml:lang="pt-PT" state="final">Sublinhado</target>
         <note>ID: EditTab.DirectFormatting.Underline</note>
       </trans-unit>
-      <trans-unit id="EditTab.DirectFormatting.RemoveFormat" sil:dynamic="true">
+      <trans-unit id="EditTab.DirectFormatting.RemoveFormat" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Remove Formatting</source>
-        <target xml:lang="pt-PT" state="translated">Remover a formatação</target>
+        <target xml:lang="pt-PT" state="final">Remover a formatação</target>
         <note>ID: EditTab.DirectFormatting.RemoveFormat</note>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.labelForDefaultColor" sil:dynamic="true" approved="yes">
@@ -2191,24 +2191,24 @@
         <target xml:lang="pt-PT" state="final">Restaurar a imagem</target>
         <note>ID: EditTab.Image.Reset</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.Transparency">
+      <trans-unit id="EditTab.Image.Transparency" approved="yes">
         <source xml:lang="en">Transparency</source>
-        <target xml:lang="pt-PT" state="translated">Transparência</target>
+        <target xml:lang="pt-PT" state="final">Transparência</target>
         <note>ID: EditTab.Image.Transparency</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.Transparency.Auto">
+      <trans-unit id="EditTab.Image.Transparency.Auto" approved="yes">
         <source xml:lang="en">Auto</source>
-        <target xml:lang="pt-PT" state="translated">Automática</target>
+        <target xml:lang="pt-PT" state="final">Automática</target>
         <note>ID: EditTab.Image.Transparency.Auto</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.Transparency.Transparent">
+      <trans-unit id="EditTab.Image.Transparency.Transparent" approved="yes">
         <source xml:lang="en">Transparent</source>
-        <target xml:lang="pt-PT" state="translated">Transparente</target>
+        <target xml:lang="pt-PT" state="final">Transparente</target>
         <note>ID: EditTab.Image.Transparency.Transparent</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.Transparency.Opaque">
+      <trans-unit id="EditTab.Image.Transparency.Opaque" approved="yes">
         <source xml:lang="en">Opaque</source>
-        <target xml:lang="pt-PT" state="translated">Opaco</target>
+        <target xml:lang="pt-PT" state="final">Opaco</target>
         <note>ID: EditTab.Image.Transparency.Opaque</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true" approved="yes">
@@ -2221,9 +2221,9 @@
         <target xml:lang="pt-PT" state="final">Tente fechar outros programas e reinicie o computador se necessário.</target>
         <note>ID: EditTab.Image.TryRestart</note>
       </trans-unit>
-      <trans-unit id="EditTab.Instructions.DeleteAllowed" sil:dynamic="true">
+      <trans-unit id="EditTab.Instructions.DeleteAllowed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Feel free to modify or delete this page.</source>
-        <target xml:lang="pt-PT" state="translated">Sinta-se à vontade para modificar ou excluir esta página.</target>
+        <target xml:lang="pt-PT" state="final">Sinta-se à vontade para modificar ou excluir esta página.</target>
         <note>ID: EditTab.Instructions.DeleteAllowed</note>
       </trans-unit>
       <trans-unit id="EditTab.JpegWarningDialog.DoNotUse" approved="yes">
@@ -2271,29 +2271,29 @@
         <target xml:lang="pt-PT" state="final">Não há outras opções de configuração para este modelo.</target>
         <note>ID: EditTab.NoOtherLayouts</note>
       </trans-unit>
-      <trans-unit id="EditTab.LayoutChoicesMenu.Ebooks">
+      <trans-unit id="EditTab.LayoutChoicesMenu.Ebooks" approved="yes">
         <source xml:lang="en">Ebooks</source>
-        <target xml:lang="pt-PT" state="translated">E-books (livros digitais)</target>
+        <target xml:lang="pt-PT" state="final">E-books (livros digitais)</target>
         <note>ID: EditTab.LayoutChoicesMenu.Ebooks</note>
       </trans-unit>
-      <trans-unit id="EditTab.LayoutChoicesMenu.Other">
+      <trans-unit id="EditTab.LayoutChoicesMenu.Other" approved="yes">
         <source xml:lang="en">Other</source>
-        <target xml:lang="pt-PT" state="translated">Outro</target>
+        <target xml:lang="pt-PT" state="final">Outro</target>
         <note>ID: EditTab.LayoutChoicesMenu.Other</note>
       </trans-unit>
-      <trans-unit id="EditTab.LayoutChoicesMenu.Portrait">
+      <trans-unit id="EditTab.LayoutChoicesMenu.Portrait" approved="yes">
         <source xml:lang="en">Portrait</source>
-        <target xml:lang="pt-PT" state="translated">Retrato</target>
+        <target xml:lang="pt-PT" state="final">Retrato</target>
         <note>ID: EditTab.LayoutChoicesMenu.Portrait</note>
       </trans-unit>
-      <trans-unit id="EditTab.LayoutChoicesMenu.Landscape">
+      <trans-unit id="EditTab.LayoutChoicesMenu.Landscape" approved="yes">
         <source xml:lang="en">Landscape</source>
-        <target xml:lang="pt-PT" state="translated">Paisagem</target>
+        <target xml:lang="pt-PT" state="final">Paisagem</target>
         <note>ID: EditTab.LayoutChoicesMenu.Landscape</note>
       </trans-unit>
-      <trans-unit id="EditTab.LayoutChoicesMenu.Square">
+      <trans-unit id="EditTab.LayoutChoicesMenu.Square" approved="yes">
         <source xml:lang="en">Square</source>
-        <target xml:lang="pt-PT" state="translated">Quadrado</target>
+        <target xml:lang="pt-PT" state="final">Quadrado</target>
         <note>ID: EditTab.LayoutChoicesMenu.Square</note>
       </trans-unit>
       <trans-unit id="EditTab.Overflow" sil:dynamic="true" approved="yes">
@@ -3491,19 +3491,19 @@
         <target xml:lang="pt-PT" state="final">solicitar e votar em novos recursos</target>
         <note>ID: ForumInvitationDialog.RequestAndVote</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.AskForAdvice">
+      <trans-unit id="ForumInvitationDialog.AskForAdvice" approved="yes">
         <source xml:lang="en">ask for advice or technical help</source>
-        <target xml:lang="pt-PT" state="translated">pedir conselho ou ajuda técnica</target>
+        <target xml:lang="pt-PT" state="final">pedir conselho ou ajuda técnica</target>
         <note>ID: ForumInvitationDialog.AskForAdvice</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.ShowOff">
+      <trans-unit id="ForumInvitationDialog.ShowOff" approved="yes">
         <source xml:lang="en">show off what you're doing with Bloom!</source>
-        <target xml:lang="pt-PT" state="translated">mostrar o que você está fazendo com o Bloom!</target>
+        <target xml:lang="pt-PT" state="final">mostrar o que você está fazendo com o Bloom!</target>
         <note>ID: ForumInvitationDialog.ShowOff</note>
       </trans-unit>
-      <trans-unit id="ForumInvitationDialog.HowToJoin">
+      <trans-unit id="ForumInvitationDialog.HowToJoin" approved="yes">
         <source xml:lang="en">How to Join</source>
-        <target xml:lang="pt-PT" state="translated">Como fazer parte</target>
+        <target xml:lang="pt-PT" state="final">Como fazer parte</target>
         <note>ID: ForumInvitationDialog.HowToJoin</note>
       </trans-unit>
       <trans-unit id="HelpMenu.AskAQuestionMenuItem" approved="yes">
@@ -3566,79 +3566,79 @@
         <target xml:lang="pt-PT" state="final">Vídeos de Treinamento</target>
         <note>ID: HelpMenu.trainingVideos</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.CollectionsOnThisComputer">
+      <trans-unit id="ImageLibrary.CollectionsOnThisComputer" approved="yes">
         <source xml:lang="en">Collections on this Computer</source>
-        <target xml:lang="pt-PT" state="translated">Coleções neste computador</target>
+        <target xml:lang="pt-PT" state="final">Coleções neste computador</target>
         <note>ID: ImageLibrary.CollectionsOnThisComputer</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.ImageChooser">
+      <trans-unit id="ImageLibrary.ImageChooser" approved="yes">
         <source xml:lang="en">Image Chooser</source>
-        <target xml:lang="pt-PT" state="translated">Selecionar imagem</target>
+        <target xml:lang="pt-PT" state="final">Selecionar imagem</target>
         <note>ID: ImageLibrary.ImageChooser</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.OnlineSources">
+      <trans-unit id="ImageLibrary.OnlineSources" approved="yes">
         <source xml:lang="en">Online Sources</source>
-        <target xml:lang="pt-PT" state="translated">Fontes online</target>
+        <target xml:lang="pt-PT" state="final">Fontes online</target>
         <note>ID: ImageLibrary.OnlineSources</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.OpenFile">
+      <trans-unit id="ImageLibrary.OpenFile" approved="yes">
         <source xml:lang="en">Open File...</source>
-        <target xml:lang="pt-PT" state="translated">Abrir arquivo...</target>
+        <target xml:lang="pt-PT" state="final">Abrir arquivo...</target>
         <note>ID: ImageLibrary.OpenFile</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.Search">
+      <trans-unit id="ImageLibrary.Search" approved="yes">
         <source xml:lang="en">Search</source>
-        <target xml:lang="pt-PT" state="translated">Pesquisar</target>
+        <target xml:lang="pt-PT" state="final">Pesquisar</target>
         <note>ID: ImageLibrary.Search</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.ThisComputer">
+      <trans-unit id="ImageLibrary.ThisComputer" approved="yes">
         <source xml:lang="en">This Computer</source>
-        <target xml:lang="pt-PT" state="translated">Este computador</target>
+        <target xml:lang="pt-PT" state="final">Este computador</target>
         <note>ID: ImageLibrary.ThisComputer</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.UseThisImage">
+      <trans-unit id="ImageLibrary.UseThisImage" approved="yes">
         <source xml:lang="en">Use this image</source>
-        <target xml:lang="pt-PT" state="translated">Usar esta imagem</target>
+        <target xml:lang="pt-PT" state="final">Usar esta imagem</target>
         <note>ID: ImageLibrary.UseThisImage</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PasteApiKeyFromClipboard">
+      <trans-unit id="ImageLibrary.PasteApiKeyFromClipboard" approved="yes">
         <source xml:lang="en">Paste API key from clipboard</source>
-        <target xml:lang="pt-PT" state="translated">Colar chave API da área de transferência</target>
+        <target xml:lang="pt-PT" state="final">Colar a chave API da área de transferência</target>
         <note>ID: ImageLibrary.PasteApiKeyFromClipboard</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PixabayApiKeyInstructions">
+      <trans-unit id="ImageLibrary.PixabayApiKeyInstructions" approved="yes">
         <source xml:lang="en">To use Pixabay, you need an API key:</source>
-        <target xml:lang="pt-PT" state="translated">Para usar o Pixabay, precisa de uma chave API:</target>
+        <target xml:lang="pt-PT" state="final">Para usar o Pixabay, precisa de uma chave API:</target>
         <note>ID: ImageLibrary.PixabayApiKeyInstructions</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PixabayApiKeyLabel">
+      <trans-unit id="ImageLibrary.PixabayApiKeyLabel" approved="yes">
         <source xml:lang="en">Pixabay API Key</source>
-        <target xml:lang="pt-PT" state="translated">Chave API do Pixabay</target>
+        <target xml:lang="pt-PT" state="final">Chave API do Pixabay</target>
         <note>ID: ImageLibrary.PixabayApiKeyLabel</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PixabayFindKey">
+      <trans-unit id="ImageLibrary.PixabayFindKey" approved="yes">
         <source xml:lang="en">Copy the API key shown on that page, next to &quot;Your API key:&quot;</source>
-        <target xml:lang="pt-PT" state="translated">Copiar a chave API exibida nessa página, ao lado de "Sua chave API:"</target>
+        <target xml:lang="pt-PT" state="final">Copiar a chave API exibida nessa página, ao lado de "Sua chave API:"</target>
         <note>ID: ImageLibrary.PixabayFindKey</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PixabayGoToApiKeyPage">
+      <trans-unit id="ImageLibrary.PixabayGoToApiKeyPage" approved="yes">
         <source xml:lang="en">go to the API key page</source>
-        <target xml:lang="pt-PT" state="translated">acessar a página da chave API</target>
+        <target xml:lang="pt-PT" state="final">acessar a página da chave API</target>
         <note>ID: ImageLibrary.PixabayGoToApiKeyPage</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PixabayLogIn">
+      <trans-unit id="ImageLibrary.PixabayLogIn" approved="yes">
         <source xml:lang="en">Log in to Pixabay</source>
-        <target xml:lang="pt-PT" state="translated">Fazer login no Pixabay</target>
+        <target xml:lang="pt-PT" state="final">Fazer login no Pixabay</target>
         <note>ID: ImageLibrary.PixabayLogIn</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PixabayOrIfLoggedIn">
+      <trans-unit id="ImageLibrary.PixabayOrIfLoggedIn" approved="yes">
         <source xml:lang="en">{0} or, if already logged in, {1}</source>
-        <target xml:lang="pt-PT" state="translated">{0} ou, se já fez o login, {1}</target>
+        <target xml:lang="pt-PT" state="final">{0} ou, se já fez o login, {1}</target>
         <note>ID: ImageLibrary.PixabayOrIfLoggedIn</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PixabayStep4">
+      <trans-unit id="ImageLibrary.PixabayStep4" approved="yes">
         <source xml:lang="en">Paste it below</source>
-        <target xml:lang="pt-PT" state="translated">Colar a chave abaixo</target>
+        <target xml:lang="pt-PT" state="final">Colar a chave abaixo</target>
         <note>ID: ImageLibrary.PixabayStep4</note>
       </trans-unit>
       <trans-unit id="ImageUtils.PreparingImage" approved="yes">
@@ -3731,14 +3731,14 @@
         <target xml:lang="pt-PT" state="final">Dispositivo16x9 Retrato</target>
         <note>ID: LayoutChoices.Device16x9Portrait</note>
       </trans-unit>
-      <trans-unit id="LayoutChoices.Ebook7x5Landscape" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.Ebook7x5Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Ebook 7x5 Landscape</source>
-        <target xml:lang="pt-PT" state="translated">E-book 7x5 Paisagem</target>
+        <target xml:lang="pt-PT" state="final">E-book 7x5 Paisagem</target>
         <note>ID: LayoutChoices.Ebook7x5Landscape</note>
       </trans-unit>
-      <trans-unit id="LayoutChoices.Ebook2x3Portrait" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.Ebook2x3Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Ebook 2x3 Portrait</source>
-        <target xml:lang="pt-PT" state="translated">E-book 2x3 Retrato</target>
+        <target xml:lang="pt-PT" state="final">E-book 2x3 Retrato</target>
         <note>ID: LayoutChoices.Ebook2x3Portrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.HalfFolioPortrait" sil:dynamic="true" approved="yes">
@@ -4016,9 +4016,9 @@
         <target xml:lang="pt-PT" state="final">Procure outra coleção neste computador</target>
         <note>ID: OpenCreateNewCollectionsDialog.BrowseForOtherCollections</note>
       </trans-unit>
-      <trans-unit id="OpenCreateNewCollectionsDialog.BrowseOnThisComputer">
+      <trans-unit id="OpenCreateNewCollectionsDialog.BrowseOnThisComputer" approved="yes">
         <source xml:lang="en">Browse on this computer</source>
-        <target xml:lang="pt-PT" state="translated">Procurar neste computador</target>
+        <target xml:lang="pt-PT" state="final">Procurar neste computador</target>
         <note>ID: OpenCreateNewCollectionsDialog.BrowseOnThisComputer</note>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.CreateNewCollection" approved="yes">
@@ -5959,7 +5959,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingEnterpriseSubscription" approved="yes">
         <source xml:lang="en">Using **Enterprise** subscription for {0}. Expires **{1}**</source>
-        <target xml:lang="pt-PT" state="final">Usando a assinatura de **Enterprise** para **{0}**. Expira **{1}**</target>
+        <target xml:lang="pt-PT" state="final">Usando a assinatura **Enterprise** para {0}. Expira em **{1}**</target>
         <note>ID: SubscriptionStatus.UsingEnterpriseSubscription</note>
       </trans-unit>
       <trans-unit id="TeamCollection.DuplicateIds" approved="yes">
@@ -6257,7 +6257,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Paper Comic Book" sil:dynamic="true">
         <source xml:lang="en">Paper Comic Book</source>
-        <target xml:lang="pt-PT" state="translated">Banda desenhada (Quadrinhos) para imprimir</target>
+        <target xml:lang="pt-PT" state="translated">Quadrinhos (banda desenhada) para imprimir</target>
         <note>ID: TemplateBooks.BookName.Paper Comic Book</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Paper Comic Book Pages" sil:dynamic="true" approved="yes">
@@ -6368,7 +6368,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Word from Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Readers see one image and three words. They pick the word that matches the image. The word order changes each time the game is played.</source>
-        <target xml:lang="pt-PT" state="final">Os leitores visualizam uma palavra e três imagens. Devem escolher a imagem que corresponde à palavra. A ordem das palavras muda cada vez que joga.</target>
+        <target xml:lang="pt-PT" state="final">O leitor visualiza uma palavra e três imagens. Ele deve escolher a palavra que corresponde à imagem. A ordem das palavras muda cada vez que joga.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Word from Image</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Drag Images to Shadows" sil:dynamic="true" approved="yes">
