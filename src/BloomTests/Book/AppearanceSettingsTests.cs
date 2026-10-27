@@ -737,6 +737,22 @@ namespace BloomTests.Book
             Assert.That(_cssOfEbookEdgeToEdgeTheme, Does.Contain("--page-margin: 0mm;"));
         }
 
+        /// <summary>
+        /// Custom CSS such as the Little Zebra customBookStyles2.css sets the per-side margins
+        /// directly, so Edge to Edge must set them too, or its zero margins never apply (BL-17050).
+        /// </summary>
+        [Test]
+        public void CssOfEdgeToEdgeTheme_OverridesPerSideMargins()
+        {
+            foreach (var side in new[] { "top", "bottom", "left", "right" })
+            {
+                Assert.That(
+                    _cssOfEbookEdgeToEdgeTheme,
+                    Does.Contain($"--page-margin-{side}: var(--page-margin);")
+                );
+            }
+        }
+
         [Test]
         public void CssOfSettingsObject_OverridesMargin()
         {
