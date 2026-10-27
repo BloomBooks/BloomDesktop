@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-10-26 (nightlies through the 2026-10-26 run have been triaged)
+**Last updated:** 2026-10-27 (nightlies through the 2026-10-27 run have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -8,22 +8,6 @@ once its fix lands and the nightly has stayed green on it. The rule they are all
 accept a flaky test, and a test is flaky from its first unexplained failure (root `AGENTS.md`,
 Testing). So "wait and see whether it recurs" is never an entry's plan. To bring this up to date,
 use the `nightly-triage` skill.
-
-## Collection rename test: Bloom still running after the test
-
-- **Failed:** 2026-10-24, 2026-10-25, 2026-10-26 (every run since it first failed).
-  `BloomE2E/tests/collection-settings-advanced.spec.ts` "renaming the collection on the Advanced
-  page renames its folder and reopens it" (Test Case 838): timed out after 180 s with "A Bloom is
-  still answering on port 8089 after teardown" (`fixtures/launchBloom.ts`, `killAndWaitForPortToGoDark`).
-- **Cause:** a bug in the test fixture, not in Bloom.
-  [#8405](https://github.com/BloomBooks/BloomDesktop/pull/8405) (BL-16922, merged 2026-10-23) gave
-  the fixture's probes a required deadline but missed the two calls in `waitForRelaunchedBloom`.
-  Their timeout became `NaN`, so every probe threw and read as "nothing here". The fixture never
-  found the Bloom that relaunched itself under the new name, and that Bloom outlived the run on
-  port 8089. Reproduced locally. Nothing type-checks `src/BloomE2E`, which is how it reached
-  master.
-- **Status:** fixed on master on 2026-10-26, in the commit that also makes the pre-commit hook
-  type-check the e2e tests. Remove this entry once a nightly has passed on it.
 
 ## Bulk upload test: two different failures against dev.bloomlibrary.org
 
@@ -90,9 +74,18 @@ use the `nightly-triage` skill.
 
 ## Component tests: lost connection to the dev server
 
-- **Failed:** once in September. The cause is unknown.
-- **Status:** the run is now instrumented so the next occurrence says more. See "A component
-  test lost its connection to the dev server" in `src/BloomE2E/AUTOMATION-DEBT.md`.
+- **Failed:** once in September; again 2026-10-27, `bookgridsetup-extended.uitest.ts` "After
+  adding a book, the next available book is automatically selected":
+  `page.goto: net::ERR_CONNECTION_FAILED at http://127.0.0.1:5183/`.
+- **What the trace shows (first look, 10-27):** the first navigation of the test failed about
+  15 ms after it started, with ERR_CONNECTION_FAILED rather than a refused or reset connection.
+  The log shows no Vite restart, and the other 145 tests passed. A local stress run (the suite 10
+  times, 2 workers, 1,460 tests) did not reproduce it. The cause is unknown.
+- **Status:** no card or PR. Since 2026-10-27, a failed first navigation also reports a raw TCP
+  connect and an HTTP GET to the dev server from Node, and the machine's TCP connections by state
+  (`component-tester/describeConnectionFailure.ts`). That says whether the server was reachable
+  and whether the runner was short of ports. Background: "A component test lost its connection to
+  the dev server" in `src/BloomE2E/AUTOMATION-DEBT.md`.
 
 ## C# upload integration tests: the live service was slow
 
@@ -100,9 +93,22 @@ use the `nightly-triage` skill.
   slow, for a few minutes around 10:40 UTC.
 - **Seen again:** 2026-10-15, `DownloadUrl_NoCollectionSettings_GetsDocument_AndSettings`: "Unable
   to initiate book upload on the server."
-- **Cause:** outside Bloom: the live service.
-- **Status:** the tests now report the uploader's error instead of a bare failure (`d8c050a2ef`).
-  Open question: should these tests depend on the live service at all?
+- **Seen again:** 2026-10-27, the same message in three tests:
+  `DownloadUrl_NoCollectionSettings_GetsDocument_AndSettings`,
+  `UploadBook_FillsInMetaData_AndDownloadUrl_GetsDocumentAndSettings`,
+  `UploadBook_SameId_ReplacesFilesAndSetsParseFieldsCorrectly`.
+- **Cause:** outside Bloom: the live service. On 10-27 Application Insights shows bloom-functions
+  degraded across functions between 09:38 and 09:50 UTC. `upload-start` calls hung inside the
+  `books` function for about 2 minutes, until the client gave up (HTTP 499); `stats` and `status`
+  calls failed the same way. The tests' own requests were among them. Every new bloom-functions
+  instance holds its requests for about 3 minutes while it loads its code from the file share;
+  that morning many requests landed on new instances. Times, Application Insights findings and
+  queries are in [DETAILS.md](DETAILS.md#c-upload-integration-tests-the-live-service-was-slow).
+- **Status:** the tests now report the uploader's error instead of a bare failure (`d8c050a2ef`),
+  and, since 2026-10-27, each API call's status and error from the client's log (the nightly runs
+  them against the live service on purpose).
+  [BL-17051](https://issues.bloomlibrary.org/youtrack/issue/BL-17051), in progress, makes Bloom
+  tell users the service isn't responding instead of suggesting they restart Bloom.
 
 ## Open questions
 

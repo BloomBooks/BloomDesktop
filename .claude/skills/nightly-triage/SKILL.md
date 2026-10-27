@@ -54,7 +54,12 @@ new PR opened).
 
 A first look means about one level down, no deeper. Usually that is the error and the trace,
 plus the screenshot or the Bloom log from the run's artifacts (`e2e-report`,
-`component-tester-traces`):
+`component-tester-traces`, `bloom-diagnostics`). `bloom-diagnostics` is uploaded on every run
+that reached the visual-regression suite, green ones included. It holds Bloom's own logs
+(`Log*.txt` from `%TEMP%\SIL\Bloom`, one per Bloom the e2e and visual-regression suites
+launched), the Windows application event log, and the hung-Bloom watchdog's samples. It does not
+hold anything from the C# tests: they point `TEMP` at a folder of their own, which the nightly
+does not upload.
 
 ```
 gh run download <id> --repo BloomBooks/BloomDesktop -n <artifact> -D <scratchpad folder>

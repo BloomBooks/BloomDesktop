@@ -976,6 +976,17 @@ failure is a refused connect or a reset, and what else the runner was doing at t
 How to react meanwhile: **do not re-run and move on without first looking for the trace
 artifact** (`component-tester-traces` on the nightly run). A second occurrence with no trace
 collected is a wasted one.
+
+The second occurrence (2026-10-27, `bookgridsetup-extended.uitest.ts:365`) left a trace. It
+failed about 15 ms into the navigation, which is too fast to be a refused connect on Windows.
+Chromium uses ERR_CONNECTION_FAILED for a socket error it has no specific name for, and the trace
+doesn't record which. Ten local runs of the suite (1,460 tests) did not reproduce it. So
+`setTestComponent` now catches a failed `net::ERR_` navigation and adds to its message what
+`describeConnectionFailure.ts` finds: a raw TCP connect and an HTTP GET to the dev server from
+Node, and netstat's count of TCP connections by state. If Node gets through, look inside Chromium
+next: run it with `--log-net-log` (about 425 MB for a full suite, before compression). If Node
+fails too, or TIME_WAIT is huge, look at the runner: trace Windows' TCPIP provider into a ring
+buffer.
 (Found 2026-09-21.)
 
 ## The suites test Bloom run from the source tree, not the app a user installs
