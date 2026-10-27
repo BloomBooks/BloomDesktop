@@ -189,7 +189,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.FixedInPlace" approved="yes">
         <source xml:lang="en">Objects that do not Move</source>
-        <target xml:lang="pt-PT" state="final">Fixo no local</target>
+        <target xml:lang="pt-PT" state="final">Objetos fixos</target>
         <note>ID: EditTab.Toolbox.DragActivity.FixedInPlace</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.EditWordToSpell" approved="yes">
@@ -1237,7 +1237,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.TopLevelTextPadding.1emLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1 em (font size)</source>
-        <target xml:lang="pt-PT" state="final">1em (tamanho da fonte)</target>
+        <target xml:lang="pt-PT" state="final">1 em (tamanho da fonte)</target>
         <note>BookSettings.TopLevelTextPadding.1emLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.Problematic" sil:dynamic="true" approved="yes">
@@ -1951,7 +1951,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Error.AddReferenceImage">
         <source xml:lang="en">Please add a reference image for this tool (drag from history or upload).</source>
-        <target xml:lang="pt-PT" state="translated">Adicione uma imagem de referência para esta ferramenta (arraste do histórico ou faça upload).</target>
+        <target xml:lang="pt-PT" state="translated">Adicione uma imagem de referência para esta ferramenta (arraste do histórico ou envie um arquivo).</target>
         <note>ID: AiImageEditor.Error.AddReferenceImage</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Error.CouldNotStartAuthentication" approved="yes">
