@@ -25,6 +25,18 @@ namespace Bloom.WebLibraryIntegration
             : base(message) { }
     }
 
+    // To bubble up the fact that the server timed out, gave no response, or had an internal error.
+    // Restarting Bloom won't help with that; trying again later usually does.
+    public class ServerNotRespondingException : ApplicationException
+    {
+        // Like the other messages from this client, this is shown to the user as the second,
+        // unlocalized line after the localized "There was a problem uploading your book."
+        public ServerNotRespondingException()
+            : base(
+                "BloomLibrary.org isn't responding right now. Please try again in a few minutes."
+            ) { }
+    }
+
     // This class began its life as BloomParseClient, and it encapsulated all the interactions with parse server.
     // But we are trying to move away from any direct interaction with parse server to favor our own bloomlibrary.org/api calls.
     // This will help facilitate moving away from parse server altogether in the future.
@@ -102,6 +114,7 @@ namespace Bloom.WebLibraryIntegration
             if (response.StatusCode != HttpStatusCode.Accepted)
             {
                 LogApiError(request, response);
+                ThrowIfServerNotResponding(response);
                 throw new ApplicationException(messageToShowUserOnFailure);
             }
 
@@ -128,6 +141,7 @@ namespace Bloom.WebLibraryIntegration
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
                     LogApiError(statusRequest, response, originalRequest: request);
+                    ThrowIfServerNotResponding(response);
                     throw new ApplicationException(messageToShowUserOnFailure);
                 }
 
@@ -153,7 +167,7 @@ namespace Bloom.WebLibraryIntegration
                     );
                     return result;
                 }
-                else if (status == "Failed" || status == "Cancelled")
+                else if (IsStatusFailure(status))
                 {
                     LogApiError(statusRequest, response, originalRequest: request);
 
@@ -204,7 +218,39 @@ namespace Bloom.WebLibraryIntegration
         private bool IsStatusTerminal(string status)
         {
             // See https://github.com/microsoft/api-guidelines/blob/vNext/azure/ConsiderationsForServiceDesign.md#long-running-operations
-            return new[] { "Succeeded", "Failed", "Canceled" }.Contains(status);
+            return status == "Succeeded" || IsStatusFailure(status);
+        }
+
+        /// <summary>
+        /// True if a long-running operation's status says it ended without succeeding.
+        /// The Azure guidelines spell it "Canceled", but we have also checked for "Cancelled",
+        /// so accept both.
+        /// </summary>
+        internal static bool IsStatusFailure(string status)
+        {
+            return status == "Failed" || status == "Canceled" || status == "Cancelled";
+        }
+
+        /// <summary>
+        /// True if the response means the server didn't answer usefully: the request timed out,
+        /// got no response at all, or got a server error (5xx). Those are usually temporary
+        /// problems on BloomLibrary.org's side, so the user should simply try again later.
+        /// </summary>
+        internal static bool IsServerNotResponding(IRestResponse response)
+        {
+            if (response.ResponseStatus != ResponseStatus.Completed)
+                return true;
+            return (int)response.StatusCode >= 500;
+        }
+
+        /// <summary>
+        /// Throw a ServerNotRespondingException if the response means the server didn't answer
+        /// usefully (see IsServerNotResponding). The caller has already logged the response.
+        /// </summary>
+        private static void ThrowIfServerNotResponding(IRestResponse response)
+        {
+            if (IsServerNotResponding(response))
+                throw new ServerNotRespondingException();
         }
 
         // This calls an azure function which does the following:
