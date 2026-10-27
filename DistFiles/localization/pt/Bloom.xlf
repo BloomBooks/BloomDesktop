@@ -2593,7 +2593,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true" approved="yes">
         <source xml:lang="en">There are no options for this kind of canvas element</source>
-        <target xml:lang="pt-PT" state="final">Não há opções para este tipo de sobreposição</target>
+        <target xml:lang="pt-PT" state="final">Não há opções para este tipo de elemento de tela</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ImageSelected</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor" sil:dynamic="true" approved="yes">
@@ -4787,7 +4787,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage" approved="yes">
         <source xml:lang="en">Page {0} is the first page that uses this feature.</source>
-        <target xml:lang="pt-PT" state="final">Página {0} é a primeira página que usa elementos de sobreposição.</target>
+        <target xml:lang="pt-PT" state="final">Página {0} é a primeira página que usa este recurso.</target>
         <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage</note>
       </trans-unit>
       <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.Options" approved="yes">
