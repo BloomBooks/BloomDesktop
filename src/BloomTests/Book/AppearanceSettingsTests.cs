@@ -740,16 +740,25 @@ namespace BloomTests.Book
         /// <summary>
         /// Custom CSS such as the Little Zebra customBookStyles2.css sets the per-side margins
         /// directly, so Edge to Edge must set them too, or its zero margins never apply (BL-17050).
+        /// They must be in the two-class numbered-page rule: that is what makes them beat the
+        /// custom CSS's single-class page-size rules (e.g. .A5Portrait), which load later.
         /// </summary>
         [Test]
         public void CssOfEdgeToEdgeTheme_OverridesPerSideMargins()
         {
+            const string selector = ".numberedPage:not(.bloom-interactive-page) {";
+            var start = _cssOfEbookEdgeToEdgeTheme.IndexOf(selector, StringComparison.Ordinal);
+            Assert.That(
+                start,
+                Is.GreaterThanOrEqualTo(0),
+                "Edge to Edge has no numbered-page rule"
+            );
+            var end = _cssOfEbookEdgeToEdgeTheme.IndexOf('}', start);
+            var rule = _cssOfEbookEdgeToEdgeTheme.Substring(start, end - start);
+            Assert.That(rule, Does.Contain("--page-margin: 0mm;"), "found the wrong rule");
             foreach (var side in new[] { "top", "bottom", "left", "right" })
             {
-                Assert.That(
-                    _cssOfEbookEdgeToEdgeTheme,
-                    Does.Contain($"--page-margin-{side}: var(--page-margin);")
-                );
+                Assert.That(rule, Does.Contain($"--page-margin-{side}: var(--page-margin);"));
             }
         }
 
