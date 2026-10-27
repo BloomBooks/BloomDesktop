@@ -89,15 +89,15 @@ namespace BloomTests.WebLibraryIntegration
             Assert.That(BloomLibraryBookApiClient.IsStatusFailure(status), Is.False);
         }
 
-        /// <summary>A timeout on the initial call throws ServerNotRespondingException.</summary>
+        /// <summary>A timeout on the initial call throws a WebException, which BookUpload shows as a network problem.</summary>
         [Test]
-        public void CallLongRunningAction_StartTimesOut_ThrowsServerNotResponding()
+        public void CallLongRunningAction_StartTimesOut_ThrowsWebException()
         {
             var client = new ClientWithCannedResponses(
                 new RestResponse { ResponseStatus = ResponseStatus.TimedOut }
             );
 
-            Assert.Throws<ServerNotRespondingException>(() =>
+            Assert.Throws<WebException>(() =>
                 client.CallLongRunningAction(
                     new RestRequest("start"),
                     new NullProgress(),
@@ -107,9 +107,9 @@ namespace BloomTests.WebLibraryIntegration
             Assert.That(client.RequestCount, Is.EqualTo(1));
         }
 
-        /// <summary>A server error on a status poll throws ServerNotRespondingException.</summary>
+        /// <summary>A server error on a status poll throws a WebException, which BookUpload shows as a network problem.</summary>
         [Test]
-        public void CallLongRunningAction_PollGetsServerError_ThrowsServerNotResponding()
+        public void CallLongRunningAction_PollGetsServerError_ThrowsWebException()
         {
             var client = new ClientWithCannedResponses(
                 AcceptedResponse(),
@@ -120,7 +120,7 @@ namespace BloomTests.WebLibraryIntegration
                 }
             );
 
-            Assert.Throws<ServerNotRespondingException>(() =>
+            Assert.Throws<WebException>(() =>
                 client.CallLongRunningAction(
                     new RestRequest("start"),
                     new NullProgress(),

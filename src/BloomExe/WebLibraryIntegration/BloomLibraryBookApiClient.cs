@@ -25,18 +25,6 @@ namespace Bloom.WebLibraryIntegration
             : base(message) { }
     }
 
-    // To bubble up the fact that the server timed out, gave no response, or had an internal error.
-    // Restarting Bloom won't help with that; trying again later usually does.
-    public class ServerNotRespondingException : ApplicationException
-    {
-        // Like the other messages from this client, this is shown to the user as the second,
-        // unlocalized line after the localized "There was a problem uploading your book."
-        public ServerNotRespondingException()
-            : base(
-                "BloomLibrary.org isn't responding right now. Please try again in a few minutes."
-            ) { }
-    }
-
     // This class began its life as BloomParseClient, and it encapsulated all the interactions with parse server.
     // But we are trying to move away from any direct interaction with parse server to favor our own bloomlibrary.org/api calls.
     // This will help facilitate moving away from parse server altogether in the future.
@@ -244,13 +232,18 @@ namespace Bloom.WebLibraryIntegration
         }
 
         /// <summary>
-        /// Throw a ServerNotRespondingException if the response means the server didn't answer
-        /// usefully (see IsServerNotResponding). The caller has already logged the response.
+        /// Throw a WebException if the response means the server didn't answer usefully
+        /// (see IsServerNotResponding). Restarting Bloom won't help with that; trying again
+        /// later usually does. BookUpload shows a WebException's message, unlocalized like the
+        /// other messages from this client, after "There was a problem uploading your book."
+        /// rather than suggesting a restart. The caller has already logged the response.
         /// </summary>
         private static void ThrowIfServerNotResponding(IRestResponse response)
         {
             if (IsServerNotResponding(response))
-                throw new ServerNotRespondingException();
+                throw new WebException(
+                    "BloomLibrary.org isn't responding right now. Please try again in a few minutes."
+                );
         }
 
         // This calls an azure function which does the following:

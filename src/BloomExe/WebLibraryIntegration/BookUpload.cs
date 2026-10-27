@@ -514,13 +514,6 @@ namespace Bloom.WebLibraryIntegration
                 progress.WriteMessage(cancelledMessage);
                 return "quiet";
             }
-            catch (ServerNotRespondingException e)
-            {
-                // Restarting Bloom or getting technical help won't fix this; trying again later usually does.
-                DisplayNetworkUploadProblem(e, progress);
-                ReportFailureToAnalytics(metadata, isNewBook, e);
-                return "";
-            }
             catch (Exception e)
             {
                 var msg1 = LocalizationManager.GetString(
