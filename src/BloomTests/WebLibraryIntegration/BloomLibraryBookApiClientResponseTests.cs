@@ -1,7 +1,10 @@
+using System;
+using System.Collections.Generic;
 using System.Net;
 using Bloom.WebLibraryIntegration;
 using NUnit.Framework;
 using RestSharp;
+using SIL.Progress;
 
 namespace BloomTests.WebLibraryIntegration
 {
@@ -78,6 +81,145 @@ namespace BloomTests.WebLibraryIntegration
         public void IsStatusFailure_OtherStatuses_ReturnsFalse(string status)
         {
             Assert.That(BloomLibraryBookApiClient.IsStatusFailure(status), Is.False);
+        }
+
+        [Test]
+        public void CallLongRunningAction_StartTimesOut_ThrowsServerNotResponding()
+        {
+            var client = new ClientWithCannedResponses(
+                new RestResponse { ResponseStatus = ResponseStatus.TimedOut }
+            );
+
+            Assert.Throws<ServerNotRespondingException>(() =>
+                client.CallLongRunningAction(
+                    new RestRequest("start"),
+                    new NullProgress(),
+                    "Unable to start"
+                )
+            );
+            Assert.That(client.RequestCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void CallLongRunningAction_PollGetsServerError_ThrowsServerNotResponding()
+        {
+            var client = new ClientWithCannedResponses(
+                AcceptedResponse(),
+                new RestResponse
+                {
+                    ResponseStatus = ResponseStatus.Completed,
+                    StatusCode = HttpStatusCode.ServiceUnavailable,
+                }
+            );
+
+            Assert.Throws<ServerNotRespondingException>(() =>
+                client.CallLongRunningAction(
+                    new RestRequest("start"),
+                    new NullProgress(),
+                    "Unable to start"
+                )
+            );
+            Assert.That(client.RequestCount, Is.EqualTo(2), "should have failed on the poll");
+        }
+
+        [Test]
+        public void CallLongRunningAction_StartRejected_ThrowsPlainApplicationException()
+        {
+            var client = new ClientWithCannedResponses(
+                new RestResponse
+                {
+                    ResponseStatus = ResponseStatus.Completed,
+                    StatusCode = HttpStatusCode.BadRequest,
+                }
+            );
+
+            var e = Assert.Throws<ApplicationException>(() =>
+                client.CallLongRunningAction(
+                    new RestRequest("start"),
+                    new NullProgress(),
+                    "Unable to start"
+                )
+            );
+            Assert.That(e.Message, Is.EqualTo("Unable to start"));
+        }
+
+        [TestCase("Canceled")]
+        [TestCase("Cancelled")]
+        public void CallLongRunningAction_StatusCanceled_ThrowsInsteadOfReturningNull(string status)
+        {
+            var client = new ClientWithCannedResponses(
+                AcceptedResponse(),
+                new RestResponse
+                {
+                    ResponseStatus = ResponseStatus.Completed,
+                    StatusCode = HttpStatusCode.OK,
+                    Content = "{\"status\":\"" + status + "\"}",
+                }
+            );
+
+            var e = Assert.Throws<ApplicationException>(() =>
+                client.CallLongRunningAction(
+                    new RestRequest("start"),
+                    new NullProgress(),
+                    "Unable to start"
+                )
+            );
+            Assert.That(e.Message, Is.EqualTo("Unable to start"));
+            Assert.That(client.RequestCount, Is.EqualTo(2));
+        }
+
+        /// <summary>
+        /// The 202 response upload-start gives when it has begun, pointing at the status URL to poll.
+        /// </summary>
+        private static RestResponse AcceptedResponse()
+        {
+            var response = new RestResponse
+            {
+                ResponseStatus = ResponseStatus.Completed,
+                StatusCode = HttpStatusCode.Accepted,
+            };
+            response.Headers.Add(
+                new Parameter("Operation-Location", "status", ParameterType.HttpHeader)
+            );
+            return response;
+        }
+
+        /// <summary>
+        /// A BloomLibraryBookApiClient whose requests get the given responses, in order,
+        /// instead of going to the live service.
+        /// </summary>
+        private class ClientWithCannedResponses : BloomLibraryBookApiClient
+        {
+            private readonly CannedRestClient _restClient;
+
+            public ClientWithCannedResponses(params IRestResponse[] responses)
+            {
+                _restClient = new CannedRestClient(responses);
+                _azureRestClient = _restClient;
+            }
+
+            public int RequestCount => _restClient.RequestCount;
+        }
+
+        /// <summary>
+        /// A RestClient that answers each request with the next of the given responses.
+        /// </summary>
+        private class CannedRestClient : RestClient
+        {
+            private readonly Queue<IRestResponse> _responses;
+
+            public CannedRestClient(IEnumerable<IRestResponse> responses)
+            {
+                _responses = new Queue<IRestResponse>(responses);
+            }
+
+            public int RequestCount { get; private set; }
+
+            public override IRestResponse Execute(IRestRequest request)
+            {
+                RequestCount++;
+                return _responses.Dequeue();
+            }
         }
     }
 }

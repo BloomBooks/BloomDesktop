@@ -223,8 +223,8 @@ namespace Bloom.WebLibraryIntegration
 
         /// <summary>
         /// True if a long-running operation's status says it ended without succeeding.
-        /// The Azure guidelines spell it "Canceled", but we have also checked for "Cancelled",
-        /// so accept both.
+        /// The server (and the Azure guidelines) spell it "Canceled"; we accept "Cancelled" too,
+        /// which is what this code used to check for.
         /// </summary>
         internal static bool IsStatusFailure(string status)
         {
