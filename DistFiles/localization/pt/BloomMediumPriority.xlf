@@ -940,9 +940,9 @@
         <target xml:lang="pt-PT" state="final">Todos os livros devem estar reservados para você</target>
         <note>ID: CollectionTab.ImportBloomSource.ReplaceNeedsCheckout</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ImportBloomSource.AddCopy">
+      <trans-unit id="CollectionTab.ImportBloomSource.AddCopy" approved="yes">
         <source xml:lang="en">Add them as new copies</source>
-        <target xml:lang="pt-PT" state="translated">Adicioná-las como cópias novas</target>
+        <target xml:lang="pt-PT" state="final">Adicioná-las como cópias novas</target>
         <note>ID: CollectionTab.ImportBloomSource.AddCopy</note>
       </trans-unit>
       <trans-unit id="CollectionTab.ImportBloomSource.AddCopyDescription" approved="yes">
@@ -1040,9 +1040,9 @@
         <target xml:lang="pt-PT" state="final">Ativar o layout de sangria total para impressão. Esta opção ativa os indicadores de [Sangria](https://en.wikipedia.org/wiki/Bleed_%28printing%29) em layouts impressos. Veja [Layout de Sangria Total](https://docs.bloomlibrary.org/full-bleed) para obter mais informações.</target>
         <note>BookSettings.FullBleed.Description</note>
       </trans-unit>
-      <trans-unit id="BookSettings.FullBleed.Description.EdgeToEdge" sil:dynamic="true">
+      <trans-unit id="BookSettings.FullBleed.Description.EdgeToEdge" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Enable full bleed layout for printing. Use with the "Edge to Edge" theme. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
-        <target xml:lang="pt-PT" state="translated">Ative o layout de sangria total para impressão. Use com o tema "Sem Margens". Esta opção ativa os indicadores de [Sangria](https://en.wikipedia.org/wiki/Bleed_%28printing%29) em layouts impressos. Veja [Layout de Sangria Total](https://docs.bloomlibrary.org/full-bleed) para obter mais informações.</target>
+        <target xml:lang="pt-PT" state="final">Ative o layout de sangria total para impressão. Use com o tema "Sem Margens". Esta opção ativa os indicadores de [Sangria](https://en.wikipedia.org/wiki/Bleed_%28printing%29) em layouts impressos. Veja [Layout de Sangria Total](https://docs.bloomlibrary.org/full-bleed) para obter mais informações.</target>
         <note>ID: BookSettings.FullBleed.Description.EdgeToEdge</note>
       </trans-unit>
       <trans-unit id="BookSettings.ThemeAndLayoutGroupLabel" sil:dynamic="true" approved="yes">
@@ -1494,9 +1494,9 @@
         <target xml:lang="pt-PT" state="final">Iniciando Reading App Builder...</target>
         <note>ID: PublishTab.Apps.SettingsDialog.StartingReadingAppBuilder</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.RunRAB.Description">
+      <trans-unit id="PublishTab.Apps.SettingsDialog.RunRAB.Description" approved="yes">
         <source xml:lang="en">Use this to do more customization of your app. Make sure to click Save and quit Reading App Builder before returning to Bloom.</source>
-        <target xml:lang="pt-PT" state="translated">Utilizado para personalizar seu aplicativo mais ainda. Certifique-se de clicar em Salvar e sair do Reading App Builder antes de retornar ao Bloom.</target>
+        <target xml:lang="pt-PT" state="final">Utilizado para personalizar seu aplicativo mais ainda. Certifique-se de clicar em Salvar e sair do Reading App Builder antes de retornar ao Bloom.</target>
         <note>ID: PublishTab.Apps.SettingsDialog.RunRAB.Description</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.ShowApkInFileExplorer" approved="yes">
