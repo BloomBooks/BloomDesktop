@@ -1974,9 +1974,9 @@
         <target xml:lang="pt-PT" state="final">Selecione uma imagem para editar antes de aplicar esta ferramenta.</target>
         <note>ID: AiImageEditor.Error.SelectImageFirst</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.LookAroundMode.Message">
+      <trans-unit id="AiImageEditor.LookAroundMode.Message" approved="yes">
         <source xml:lang="en">This tool is in "look-around" mode. To actually edit or create images, you will need a subscription and a book that is not based on the "Playground" template.</source>
-        <target xml:lang="pt-PT" state="translated">Esta ferramenta está no modo "apenas explorar". Para editar ou criar imagens, precisa de uma assinatura e um livro que não seja baseado no modelo "Parquinho".</target>
+        <target xml:lang="pt-PT" state="final">Esta ferramenta está no modo "apenas explorar". Para editar ou criar imagens, precisa de uma assinatura e um livro que não seja baseado no modelo "Parquinho".</target>
         <note>ID: AiImageEditor.LookAroundMode.Message</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.AboutPerImage" approved="yes">
@@ -1996,12 +1996,12 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.google-gemini-3-1-flash-image.Description">
         <source xml:lang="en">Good for changing an image. It leaves alone the parts you did not ask it to change. It does not follow your instructions quite as well as Gemini 3 Pro.</source>
-        <target xml:lang="pt-PT" state="translated">Bom para alterar uma imagem. Deixa intactas as partes que não pediu para mudar. Não segue as suas instruções tão bem como o Gemini 3 Pro.</target>
+        <target xml:lang="pt-PT" state="translated">Funciona bem para alterar uma imagem. Preserva as partes que você não pediu para mudar. Não segue as suas instruções tão bem quanto o Gemini 3 Pro.</target>
         <note>ID: AiImageEditor.Model.google-gemini-3-1-flash-image.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.google-gemini-3-pro-image.Description">
         <source xml:lang="en">Good for changing an image. It leaves alone the parts you did not ask it to change. It follows your instructions better than the others here, but it costs more.</source>
-        <target xml:lang="pt-PT" state="translated">Bom para alterar uma imagem. Deixa intactas as partes que não pediu para mudar. Segue as suas instruções melhor do que os outros aqui, mas custa mais.</target>
+        <target xml:lang="pt-PT" state="translated">Funciona bem para alterar uma imagem. Preserve as partes que você não pediu para mudar. Segue as suas instruções melhor do que as outras opções, mas custa mais.</target>
         <note>ID: AiImageEditor.Model.google-gemini-3-pro-image.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.openai-gpt-image-2-5-sunburst.Description" approved="yes">
@@ -2176,12 +2176,12 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.NotAvailableInLookAround">
         <source xml:lang="en">Not available in look-around mode</source>
-        <target xml:lang="pt-PT" state="translated">Não disponível no modo apenas explorar</target>
+        <target xml:lang="pt-PT" state="translated">Não disponível no modo "apenas explorar"</target>
         <note>ID: AiImageEditor.Run.NotAvailableInLookAround</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ScaleUp.ModelLimit">
         <source xml:lang="en">Scale up as far as this model can, about {0}% of the size this page needs.</source>
-        <target xml:lang="pt-PT" state="translated">Ampliar até onde este modelo consegue, cerca de {0}% do tamanho de que esta página precisa.</target>
+        <target xml:lang="pt-PT" state="translated">Ampliar o máximo que este modelo permite, cerca de {0}% do tamanho que esta página precisa.</target>
         <note>ID: AiImageEditor.ScaleUp.ModelLimit</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Section.Enhance" approved="yes">
@@ -2394,9 +2394,9 @@
         <target xml:lang="pt-PT" state="translated">Editar a imagem (opcionalmente, com imagens de referência adicionais).</target>
         <note>ID: AiImageEditor.Tool.custom.Description</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.custom.Param.prompt.Placeholder">
+      <trans-unit id="AiImageEditor.Tool.custom.Param.prompt.Placeholder" approved="yes">
         <source xml:lang="en">Describe how to change the image...</source>
-        <target xml:lang="pt-PT" state="translated">Descreva como modificar a imagem...</target>
+        <target xml:lang="pt-PT" state="final">Descreva como modificar a imagem...</target>
         <note>ID: AiImageEditor.Tool.custom.Param.prompt.Placeholder</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.custom.Title" approved="yes">
