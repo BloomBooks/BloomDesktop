@@ -1976,7 +1976,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.LookAroundMode.Message">
         <source xml:lang="en">This tool is in "look-around" mode. To actually edit or create images, you will need a subscription and a book that is not based on the "Playground" template.</source>
-        <target xml:lang="pt-PT" state="translated">Esta ferramenta está no modo "apenas explorar". Para editar ou criar imagens, vai precisar de uma assinatura e de um livro que não seja baseado no modelo "Playground".</target>
+        <target xml:lang="pt-PT" state="translated">Esta ferramenta está no modo "apenas explorar". Para editar ou criar imagens, precisa de uma assinatura e um livro que não seja baseado no modelo "Parquinho".</target>
         <note>ID: AiImageEditor.LookAroundMode.Message</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.AboutPerImage" approved="yes">
@@ -2304,9 +2304,9 @@
         <target xml:lang="pt-PT" state="final">Imagens de referência</target>
         <note>ID: AiImageEditor.Strip.reference.Label</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Strip.reference.Tip">
+      <trans-unit id="AiImageEditor.Strip.reference.Tip" approved="yes">
         <source xml:lang="en">Use this area to keep reference images that you use in more than one book. E.g. how people dress, what trees look like.</source>
-        <target xml:lang="pt-PT" state="translated">Use este espaço para guardar imagens de referência que servem em mais de um livro. Por exemplo, como as pessoas se vestem ou como são as árvores.</target>
+        <target xml:lang="pt-PT" state="final">Use este espaço para guardar imagens de referência que servem em mais de um livro. Por exemplo, como as pessoas se vestem ou como são as árvores.</target>
         <note>ID: AiImageEditor.Strip.reference.Tip</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Strip.starred.Label" approved="yes">
@@ -2406,7 +2406,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.ethnicity.Param.character">
         <source xml:lang="en">Target Character (optional; leave blank for all)</source>
-        <target xml:lang="pt-PT" state="translated">Personagem a alterar (opcional; deixe em branco para todos)</target>
+        <target xml:lang="pt-PT" state="translated">Personagem a alterar (opcional; deixe em branco para adaptar todas as personagens)</target>
         <note>ID: AiImageEditor.Tool.ethnicity.Param.character</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.ethnicity.Param.ethnicity" approved="yes">
