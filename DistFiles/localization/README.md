@@ -177,13 +177,16 @@ argument for it is an easy one to reach.
 2. Finished translations come **back into master** as the periodic `l10n_master` pull request
    (see "Merging Crowdin pull requests" below).
 3. A release branch gets those translations **only** by cherry-picking that merge — we do this
-   for beta, and it is conceivable though not usual for a release.
+   for the newest release branch, and sometimes the one before it, as the developer decides
+   each time.
 
 So an id deleted from master is gone from Crowdin, therefore absent from every later
 `l10n_master` merge, therefore absent from anything picked into `Version6.x`. **The release
 branch still listing the entry in its own copy of the file saves nothing** — its translations
 were never going to come from that copy; they were going to come from master. This is the trap:
-"but the 6.4 branch still has the entry" feels like a safety argument and is not one.
+"but the 6.4 branch still has the entry" feels like a safety argument and is not one.  It is
+worse than that: the cherry-pick carries master's translated files, so it also **removes** the
+release branch's existing translations of that id, and its users see English from then on.
 
 That is also why a deletion is only *eventually* safe. Once the version in which the string went
 obsolete has shipped and no longer receives updates, nothing will ever need to pick translations
@@ -247,152 +250,18 @@ It depends on the branch the entry is added on.
 
 ## Merging Crowdin pull requests
 
-The Crowdin pull request is structured as a series of commits, possibly one every 10 minutes
-while translation work is going on.  This is good because the PR reflects translation progress
-almost as soon as it is made, but bad in that each commit adds an entry to the history log.  On
-the master branch, it is much better to squash down all the commits in the PR to a single commit
-with a comment along the lines of "merge recent translations from Crowdin".  A simple merge
-would bring over all the history for all the commits, which would effectively hide the log
-entries for real programming work.  This means that a manual process is needed to properly merge
-in translations from Crowdin.  (If there were a separate repository just for localizations, then
-a normal merge with all that history would probably be okay.)
+Crowdin keeps one pull request open from the `l10n_master` branch, adding a commit to it every
+10 minutes or so while translators work.  Merging it as is would bury the log for real
+programming work.  So every so often, when we decide to bring in what translators have done
+since the last time, we squash that pull request to one commit, commit it directly on master,
+and then cherry-pick it directly onto the newest release branch, and sometimes the one before
+it, as the developer decides each time.
 
-1. Before anything else, go to [SIL-Bloom Github
-   Settings](https://crowdin.com/project/sil-bloom/integrations/system/github) and click on
-   the "Pause Sync" button.  This prevents a flood of translation work continuing to be added to
-   the pull request branch while you are trying to merge the pull request.
-
-2. Create a temporary clone of the master BloomDesktop repository on your local machine and
-   checkout the l10n_master branch.
-
-    <pre>
-        cd ~/tmp
-        git clone https://github.com/BloomBooks/BloomDesktop.git
-        cd BloomDesktop
-        git checkout l10n_master
-    </pre>
-
-3. Cleanup the history on the l10n_branch, squashing all the multitudinous commits down to a
-   single commit.  This requires figuring out how many commits have been made to the branch.
-
-    <pre>
-        git log --oneline | grep -c '^[0-9A-Fa-f]\{9\} New translations .*\.xlf (.*)$'
-    </pre>
-
-   <p>Then use the git command for amending history. This is the command below, but replace 432 with
-   the number from the log command above minus 4. (There are some old commits containing that string
-   that we cannot merge.) It will open a text editor showing a series of commands.  (The example below assumes that there are 436 commits labeled "New translations" in the branch.)  Every line in
-   the commit message file which automatically opens initially starts with 'pick'.
-   All except the first should be changed from 'pick' to *fixup*.
-   The first line 'pick' should be changed to *reword*.
-   The "git log" command is just to reassure yourself that everything looks okay after squashing
-   down all the history.
-
-    <pre>
-        git rebase -i HEAD~432
-        git log
-    </pre>
-
-4. Verify that the modified xliff files are still valid, and fix any errors that may be found.
-   This is done with the CheckOrFixXliff tool that is part of L10NSharp.  This is available as a
-   nuget package named L10NSharp.CheckOrFixXliff and can be installed by a "nuget install"
-   command, followed optionally by moving the CheckOrFixXliff.exe and L10NSharp.dll files to a
-   convenient location.  Note that if nuget is not obviously available on your machine, it can
-   be downloaded from https://docs.microsoft.com/en-us/nuget/install-nuget-client-tools and
-   installed somewhere in your PATH. Use the most recent (stable unless you need a beta)
-   version of CheckOrFixXliff. (Note the 'tee' which saves all the output in a file.)
-
-   <pre>
-       # Ensure needed program is somewhere in your PATH ... This needs to be done only once.
-       nuget install L10NSharp.CheckOrFixXliff -Version 9
-       cp L10NSharp.CheckOrFixXliff.9.0000/tools/* /c/bin
-
-       for f in DistFiles/localization/*/*.xlf; do
-           echo ==== $f ====
-           /c/bin/CheckOrFixXliff.exe --fix "$f"
-       done | tee check-xliff.log
-   </pre>
-
-   On Linux, the bash shell commands are almost the same:
-
-   <pre>
-       # Ensure needed program is somewhere in your PATH ... This needs to be done only once.
-       nuget install L10NSharp.CheckOrFixXliff -Version 4.2.0-beta0006
-       cp L10NSharp.CheckOrFixXliff.4.2.0-beta0006/tools/* /home/steve/bin
-
-       for f in DistFiles/localization/*/*.xlf; do
-           echo ==== $f ====
-           /opt/mono5-sil/bin/mono /home/steve/bin/CheckOrFixXliff.exe --fix "$f"
-       done | tee check-xliff.log
-   </pre>
-
-   This checks for invalid XML and for malformed formatting markers ({0}, {1}, etc.).  It tries
-   to fix any malformed formatting markers that it finds.  If it does find and fix any, it
-   creates a new file with the same name of the one with the invalid formatting string(s), but
-   with "-fixed" appended to the name.  If any such files are created, they should be renamed to
-   remove the "-fixed", and the commit updated to include the fixed file.  Then the command
-   given above using CheckOrFixXliff.exe should be run again to check that nothing will crash.
-
-   You can find all these -fixed files using
-
-   <pre>
-       find Distfiles/localization -name *-fixed
-   </pre>
-
-   Fix any crashing errors that are (still) reported.  If the XML file is malformed or malformed
-   formatting markers remain that would crash Bloom, the output log file will contain the words
-   "crash", "invalid", or "unexpected" in it.  This can be checked easily by
-
-   <pre>
-       grep -c '\(crash\|invalid\|unexpected\)' check-xliff.log
-   </pre>
-
-   Fixing any remaining crashing errors may require hand editing the offending xliff file, or it
-   may require updating the CheckOrFixXliff program by editing its sources in a copy of the
-   l10nsharp repository.  Other errors (missing or extra format markers) probably won't crash
-   the program, and there's no way for a programmer to fix them.  The check-xliff.log file could
-   be passed on to someone in touch with the translators (Chris Weber maybe?).
-
-   I'm not sure how to feed corrected strings back to Crowdin.  Just uploading the corrected
-   translated xliff file to crowdin does not work, at least not cleanly.
-
-5. Rebase the l10n_master branch on the master branch, and fix any merge conflicts.  (I find it
-   easier to fix merge conflicts on the local machine rather than in the web interface.  Your
-   mileage may vary, as they say.) [It may seem unusual to rebase a branch that is part of our
-   long-term process. But crowdin has set this branch up as a PR for all the new translations.
-   We've now squashed them, and after the rebase, we will merge and delete the branch, like
-   we normally do with a PR branch. Then crowdin will make a new temporary branch (and PR) with the
-   same name for the next round of changes.]
-
-   <pre>
-        git rebase master
-   </pre>
-
-6. Force push the modified l10n_master branch back to the github/BloomBooks BloomDesktop
-   repository (origin).  The form of the command given here ensures that nobody else has modified the branch on github since you acquired it. This updates the PR that crowdin created.
-
-    <pre>
-        git push --force-with-lease origin l10n_master
-    </pre>
-
-
-7. Merge the modified PR on github using the normal web browser interface.  After merging,
-   delete the remote l10n_master branch using the handy "Delete branch" button provide by the
-   web browser interface.  **Do not forget to delete the remote l10n__master branch!**
-
-8. (optional...local cleanup) Delete the temporary local copy of the BloomDesktop repository.
-
-    <pre>
-        cd ~/tmp
-        rm -rf BloomDesktop
-    </pre>
-
-9. Go back to [SIL-Bloom Github
-   Settings](https://crowdin.com/project/sil-bloom/apps/system/github) and click on
-   the "Resume" button to allow translation changes to be committed to the l10n_master branch
-   once again.  The l10n_master branch (and a new pull request) will be automatically created by
-   Crowdin when it is first needed.
-
+The procedure is the `merge-crowdin-translations` skill,
+`.claude/skills/merge-crowdin-translations/SKILL.md`.  An agent runs all of it except pausing
+and resuming Crowdin's sync, which a person does on the [SIL-Bloom GitHub
+integration](https://crowdin.com/project/sil-bloom/integrations/system/github) page.  A person can also
+follow the skill by hand; every step is a plain git, gh or python command.
 
 ## Updating Bloom and Palaso xliff files
 
