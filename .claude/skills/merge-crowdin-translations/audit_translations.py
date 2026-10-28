@@ -143,6 +143,8 @@ def main():
               "see deleted-ids.tsv)")
 
     outdir.mkdir(parents=True, exist_ok=True)
+    for old_report in outdir.glob("*.tsv"):
+        old_report.unlink()
     for k, v in rows.items():
         lines = ["\t".join(r) if isinstance(r, tuple) else r for r in v]
         (outdir / f"{k}.tsv").write_text("\n".join(lines) + "\n", encoding="utf-8")

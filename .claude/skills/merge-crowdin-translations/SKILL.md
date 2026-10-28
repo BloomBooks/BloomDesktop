@@ -122,7 +122,8 @@ Delete `check-xliff.log`, `pkg.zip`, `pkg/` and any `-fixed` files when done.
 ## 5. Audit master and the candidate release branches
 
 Audit master, and the two newest `VersionX.Y` branches as candidates for the cherry-pick, using
-the local commit from step 3:
+the local commit from step 3. Write down each release branch's commit (`git rev-parse
+origin/VersionX.Y`) as you audit it; step 7 checks it hasn't moved.
 
 ```bash
 AUDIT=.claude/skills/merge-crowdin-translations/audit_translations.py
@@ -194,9 +195,13 @@ Use the `decider` skill to put one form to the developer, with these items:
 
    The remote `l10n_master` **must** be deleted: everything on it is now on master, and
    Crowdin recreates the branch, and a fresh pull request, for the next batch of translations.
-3. For each chosen release branch:
+3. For each chosen release branch. If `origin/VersionX.Y` is no longer the commit you audited
+   in step 5, its English may have changed since the developer saw the audit: audit it again
+   and, if anything differs, put the new audit on a decider form before picking.
 
    ```bash
+   git fetch origin
+   git rev-parse origin/VersionX.Y                 # must equal the commit audited in step 5
    git switch -c crowdin-X.Y-<DATE> origin/VersionX.Y
    git cherry-pick <SQUASH>
    git push origin HEAD:VersionX.Y      # rejected if the branch moved: rebase, re-audit, ask again
