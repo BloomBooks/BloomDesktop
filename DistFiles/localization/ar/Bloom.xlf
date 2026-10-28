@@ -3386,9 +3386,9 @@
         <target xml:lang="ar" state="needs-translation">Bloom book folders must have only one file ending in .htm.  In the book "{0}", these are the files ending in .htm:</target>
         <note>ID: Errors.MultipleHtmlFiles</note>
       </trans-unit>
-      <trans-unit id="Errors.NeedNewerVersion">
+      <trans-unit id="Errors.NeedNewerVersion" approved="yes">
         <source xml:lang="en">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}</source>
-        <target xml:lang="ar" state="translated">يتطلب {0} إصدارًا جديدًا من Bloom. يمكنك تنزيل أحدث إصدار ل Bloom من خلال {1}.</target>
+        <target xml:lang="ar" state="final">يتطلب {0} إصدارًا جديدًا من Bloom. يمكنك تنزيل أحدث إصدار ل Bloom من خلال {1}.</target>
         <note>ID: Errors.NeedNewerVersion</note>
       </trans-unit>
       <trans-unit id="Errors.NewVersionNeededHeader">
