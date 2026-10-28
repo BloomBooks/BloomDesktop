@@ -21,6 +21,23 @@ Page-number visibility comes from appearance.json, not from this theme file. */
     --page-margin: var(--standard-page-margin);
 }
 
+/* As on the numbered pages below, set the per-side margins too, so that custom CSS such as the
+   Little Zebra customBookStyles2.css, which sets them per page size (e.g. .A5Portrait), doesn't keep
+   its margins on front and back matter under this theme (BL-17050). The "div" makes this rule just
+   specific enough to beat those one-class rules, while any two-class rule (an xMatter pack's own
+   cover or title page margins, .bloom-customLayout, .cover-is-image) still wins.
+   That means Little Zebra's .A5Portrait.outsideFrontCover rules (and the other portrait sizes)
+   still set the top and bottom margins of the outside covers. */
+div.bloom-frontMatter,
+div.bloom-backMatter {
+    --page-margin-top: var(--page-margin);
+    --page-margin-bottom: var(--page-margin);
+    --page-margin-left: var(--page-margin);
+    --page-margin-right: var(--page-margin);
+    --cover-margin-top: var(--page-margin);
+    --cover-margin-bottom: var(--page-margin);
+}
+
 /* This statement sets the margins on the numbered content pages */
 
 .numberedPage:not(.bloom-interactive-page) {

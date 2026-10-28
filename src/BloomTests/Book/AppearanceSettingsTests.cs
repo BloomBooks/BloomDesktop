@@ -746,20 +746,45 @@ namespace BloomTests.Book
         [Test]
         public void CssOfEdgeToEdgeTheme_OverridesPerSideMargins()
         {
-            const string selector = ".numberedPage:not(.bloom-interactive-page) {";
-            var start = _cssOfEbookEdgeToEdgeTheme.IndexOf(selector, StringComparison.Ordinal);
-            Assert.That(
-                start,
-                Is.GreaterThanOrEqualTo(0),
-                "Edge to Edge has no numbered-page rule"
-            );
-            var end = _cssOfEbookEdgeToEdgeTheme.IndexOf('}', start);
-            var rule = _cssOfEbookEdgeToEdgeTheme.Substring(start, end - start);
+            var rule = GetEdgeToEdgeRule(".numberedPage:not(.bloom-interactive-page) {");
             Assert.That(rule, Does.Contain("--page-margin: 0mm;"), "found the wrong rule");
             foreach (var side in new[] { "top", "bottom", "left", "right" })
             {
                 Assert.That(rule, Does.Contain($"--page-margin-{side}: var(--page-margin);"));
             }
+        }
+
+        /// <summary>
+        /// The same for front and back matter, where the Little Zebra customBookStyles2.css also
+        /// sets the outside covers' top and bottom margins in single-class rules (e.g. .A4Landscape).
+        /// The rule must be "div"-qualified: that beats those rules, while staying weaker than the
+        /// two-class rules that xMatter packs use for their own cover and title page margins.
+        /// </summary>
+        [Test]
+        public void CssOfEdgeToEdgeTheme_OverridesPerSideMarginsOnFrontAndBackMatter()
+        {
+            var rule = GetEdgeToEdgeRule("div.bloom-frontMatter,\ndiv.bloom-backMatter {");
+            foreach (var side in new[] { "top", "bottom", "left", "right" })
+            {
+                Assert.That(rule, Does.Contain($"--page-margin-{side}: var(--page-margin);"));
+            }
+            foreach (var side in new[] { "top", "bottom" })
+            {
+                Assert.That(rule, Does.Contain($"--cover-margin-{side}: var(--page-margin);"));
+            }
+        }
+
+        /// <summary>
+        /// Return the body of the rule in the Edge to Edge theme that starts with the given selector
+        /// (line breaks in it are matched whatever their form in the file).
+        /// </summary>
+        private string GetEdgeToEdgeRule(string selector)
+        {
+            var css = _cssOfEbookEdgeToEdgeTheme.Replace("\r\n", "\n");
+            var start = css.IndexOf(selector, StringComparison.Ordinal);
+            Assert.That(start, Is.GreaterThanOrEqualTo(0), $"Edge to Edge has no rule {selector}");
+            var end = css.IndexOf('}', start);
+            return css.Substring(start, end - start);
         }
 
         [Test]
