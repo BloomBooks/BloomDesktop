@@ -571,42 +571,18 @@ namespace Bloom.Collection
 
         /// <summary>
         /// Check whether the pending subscription is the same as the original subscription, or
-        /// possibly a renewed version of the same subscription.
+        /// possibly a renewed version of the same subscription. The rule is shared with the
+        /// React dialog's save path.
         /// </summary>
         /// <remarks>
         /// Call this only if _pendingSubscription is not null.
         /// </remarks>
         private bool IsPendingSubscriptionSameAsOriginalSubscription()
         {
-            if (_originalSubscription == null)
-                return false; // no subscription, so can't be the same
-            if (_originalSubscription.Descriptor == _pendingSubscription.Descriptor)
-                return true;
-            // Two well-formed codes with different descriptors are different subscriptions, even
-            // when one descriptor extends the other (e.g. "Fake" and "Fake-LC"), each with its
-            // own bookshelves. (BL-16904)
-            if (
-                _originalSubscription.GetIntegrityLabel() == "ok"
-                && _pendingSubscription.GetIntegrityLabel() == "ok"
-            )
-                return false;
-            if (
-                _pendingSubscription.Descriptor.StartsWith(
-                    _originalSubscription.Descriptor + "-",
-                    StringComparison.Ordinal
-                )
-                || _originalSubscription.Descriptor.StartsWith(
-                    _pendingSubscription.Descriptor + "-",
-                    StringComparison.Ordinal
-                )
-            )
-            {
-                // This may be the case when the user has entered a new subscription code that is for
-                // the same subscription, but it is incorrectly entered.  An incorrectly entered
-                // subscription may have been persisted already.
-                return true;
-            }
-            return false;
+            return CollectionSettingsUpdater.IsPendingSubscriptionSameAsOriginalSubscription(
+                _originalSubscription,
+                _pendingSubscription
+            );
         }
 
         // internal and static to facilitate unit testing

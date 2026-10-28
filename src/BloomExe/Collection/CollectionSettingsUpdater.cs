@@ -226,9 +226,10 @@ namespace Bloom.Collection
         /// possibly a renewed version of the same subscription.
         /// </summary>
         /// <remarks>
-        /// Call this only if pendingSubscription is not null.
+        /// Call this only if pendingSubscription is not null. The legacy WinForms
+        /// CollectionSettingsDialog uses this too.
         /// </remarks>
-        private static bool IsPendingSubscriptionSameAsOriginalSubscription(
+        internal static bool IsPendingSubscriptionSameAsOriginalSubscription(
             Subscription originalSubscription,
             Subscription pendingSubscription
         )
