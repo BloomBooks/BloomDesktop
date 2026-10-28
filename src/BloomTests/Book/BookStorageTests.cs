@@ -83,6 +83,68 @@ namespace BloomTests.Book
             Assert.That(captionDiv.InnerXml, Is.EqualTo("More books in <b>Foobar</b> language:"));
         }
 
+        private static SafeXmlElement MakeBadgePreview(bool showQrCode)
+        {
+            var html = BookStorage.MakeBadgePreviewHtml(
+                showQrCode,
+                "xkal",
+                "Books in {0}, free:",
+                "Kalaba",
+                "/pictures/",
+                "/qr.png"
+            );
+            return new HtmlDom("<html><body>" + html + "</body></html>").SelectSingleNode(
+                "//body/div"
+            );
+        }
+
+        /// <summary>
+        /// The Collection Settings dialog shows this as its preview, so it must be the badge books
+        /// get, but with its pictures from where it is told and no link to take the dialog away.
+        /// </summary>
+        [Test]
+        public void MakeBadgePreviewHtml_QrCodeOn_IsTheBadgeBooksGet()
+        {
+            var badge = MakeBadgePreview(true);
+
+            Assert.That(badge.GetAttribute("class"), Is.EqualTo("bloom-branding-wrapper"));
+            Assert.That(badge.SelectSingleNode("a").HasAttribute("href"), Is.False);
+            Assert.That(
+                badge.SelectSingleNode("a/img[@class='branding']")?.GetAttribute("src"),
+                Is.EqualTo("/pictures/made-with-bloom-badge-text.svg")
+            );
+            Assert.That(
+                badge.SelectSingleNode("a/img[@class='bloom-qrcode']")?.GetAttribute("src"),
+                Is.EqualTo("/qr.png")
+            );
+            var label = badge.SelectSingleNode("a/div[@class='bloom-lang-on-blorg']");
+            Assert.That(
+                label.SelectSingleNode("div[@class='bloom-blorg-caption']").InnerText,
+                Is.EqualTo("Books in Kalaba, free:")
+            );
+            Assert.That(
+                label.SelectSingleNode("div[@class='bloom-blorg-caption']/b").InnerText,
+                Is.EqualTo("Kalaba")
+            );
+            Assert.That(
+                label.SelectSingleNode("div[@class='bloom-blorg-url']").InnerText,
+                Is.EqualTo("BloomLibrary.org/language:xkal")
+            );
+        }
+
+        [Test]
+        public void MakeBadgePreviewHtml_QrCodeOff_IsThePlainBadge()
+        {
+            var badge = MakeBadgePreview(false);
+
+            Assert.That(
+                badge.SelectSingleNode("a/img[@class='branding']")?.GetAttribute("src"),
+                Is.EqualTo("/pictures/made-with-bloom-badge.svg")
+            );
+            Assert.That(badge.SelectSingleNode("a/img[@class='bloom-qrcode']"), Is.Null);
+            Assert.That(badge.SelectSingleNode("a/div[@class='bloom-lang-on-blorg']"), Is.Null);
+        }
+
         [Test]
         public void AppendCaptionWithBoldLanguage_NoPlaceholder_UsesPatternVerbatim()
         {
