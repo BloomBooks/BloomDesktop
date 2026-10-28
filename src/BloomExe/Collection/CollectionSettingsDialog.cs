@@ -461,14 +461,12 @@ namespace Bloom.Collection
                     _originalSubscription = _collectionSettings.Subscription;
                     _collectionSettings.Subscription = _pendingSubscription;
 
-                    if (
-                        _pendingSubscription.Descriptor
-                        != _collectionSettings.Subscription.Descriptor
-                    )
+                    // A renewed (or mistyped) code for the same subscription keeps its bookshelf.
+                    if (!IsPendingSubscriptionSameAsOriginalSubscription())
                     {
-                        // The user has entered a different subscription code than what was previously saved.
+                        // The user has entered a code for a different subscription than what was previously saved.
                         // We need to clear out the Bookshelf, since the new branding may not have the same bookshelf as the old one.
-                        // (We don't know if it does or not, so we have to assume it doesn't.)
+                        // (We don't know if it does or not, so we have to assume it doesn't.) (BL-16904)
                         PendingDefaultBookshelf = string.Empty;
                     }
                 }

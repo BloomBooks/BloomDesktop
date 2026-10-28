@@ -143,13 +143,19 @@ namespace Bloom.Collection
                     originalSubscription = settings.Subscription;
                     settings.Subscription = pendingSubscription;
 
-                    // This comparison is always false: settings.Subscription was just assigned from
-                    // pendingSubscription. So the bookshelf is never cleared here. Kept as it was; BL-16904.
-                    if (pendingSubscription.Descriptor != settings.Subscription.Descriptor)
+                    // A renewed (or mistyped) code for the same subscription keeps its bookshelf.
+                    if (
+                        !IsPendingSubscriptionSameAsOriginalSubscription(
+                            originalSubscription,
+                            pendingSubscription
+                        )
+                    )
                     {
-                        // The user has entered a different subscription code than what was previously saved.
+                        // The user has entered a code for a different subscription than what was previously saved.
                         // We need to clear out the Bookshelf, since the new branding may not have the same bookshelf as the old one.
-                        // (We don't know if it does or not, so we have to assume it doesn't.)
+                        // (We don't know if it does or not, so we have to assume it doesn't.) The dialog's list of
+                        // bookshelves comes from the saved subscription, so a shelf chosen alongside the new code
+                        // belongs to the old subscription too. (BL-16904)
                         pendingDefaultBookshelf = string.Empty;
                     }
                 }

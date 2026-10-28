@@ -415,6 +415,43 @@ namespace BloomTests.Collection
             Assert.That(settings.Subscription, Is.SameAs(downloadedForEditing));
         }
 
+        /// <summary>
+        /// A bookshelf belongs to a subscription, so a code for a different subscription clears it
+        /// (BL-16904). A code with the same descriptor (renewed, or mistyped) keeps it.
+        /// </summary>
+        [TestCase("Sample-361769-1209", "", TestName = "DifferentSubscription_ClearsBookshelf")]
+        [TestCase("Test-727011-1338", "oldShelf", TestName = "SameDescriptor_KeepsBookshelf")]
+        public void Apply_ChangedSubscriptionCode_Bookshelf(string newCode, string expectedShelf)
+        {
+            const string kOriginalCode = "Test-727011-1339";
+            var settings = CreateCollectionSettings("ApplyChangedSubscriptionBookshelf");
+            settings.Subscription = new Subscription(kOriginalCode);
+            settings.DefaultBookshelf = "oldShelf";
+            settings.Save();
+            Assert.That(
+                RobustFile.ReadAllText(settings.SettingsFilePath),
+                Does.Contain("bookshelf:oldShelf"),
+                "Sanity check: the file should start with a bookshelf"
+            );
+            Assert.That(
+                new Subscription(newCode).Descriptor == settings.Subscription.Descriptor,
+                Is.EqualTo(expectedShelf != ""),
+                "Sanity check: only the code expected to keep the bookshelf should share the descriptor"
+            );
+            var values = CurrentValuesJson(settings);
+            values["subscription"]["code"] = newCode;
+
+            Apply(values, settings);
+
+            Assert.That(settings.Subscription.Code, Is.EqualTo(newCode));
+            Assert.That(settings.DefaultBookshelf, Is.EqualTo(expectedShelf));
+            var savedFile = RobustFile.ReadAllText(settings.SettingsFilePath);
+            if (expectedShelf == "")
+                Assert.That(savedFile, Does.Not.Contain("bookshelf:"));
+            else
+                Assert.That(savedFile, Does.Contain("bookshelf:" + expectedShelf));
+        }
+
         [Test]
         public void Apply_BookshelfSetToNone_RemovedFromTheFile()
         {
