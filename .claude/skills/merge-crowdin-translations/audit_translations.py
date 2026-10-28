@@ -146,6 +146,8 @@ def main():
     for old_report in outdir.glob("*.tsv"):
         old_report.unlink()
     for k, v in rows.items():
+        if not v:
+            continue
         lines = ["\t".join(r) if isinstance(r, tuple) else r for r in v]
         (outdir / f"{k}.tsv").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
