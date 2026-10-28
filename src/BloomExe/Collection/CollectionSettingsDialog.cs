@@ -582,6 +582,14 @@ namespace Bloom.Collection
                 return false; // no subscription, so can't be the same
             if (_originalSubscription.Descriptor == _pendingSubscription.Descriptor)
                 return true;
+            // Two well-formed codes with different descriptors are different subscriptions, even
+            // when one descriptor extends the other (e.g. "Fake" and "Fake-LC"), each with its
+            // own bookshelves. (BL-16904)
+            if (
+                _originalSubscription.GetIntegrityLabel() == "ok"
+                && _pendingSubscription.GetIntegrityLabel() == "ok"
+            )
+                return false;
             if (
                 _pendingSubscription.Descriptor.StartsWith(
                     _originalSubscription.Descriptor + "-",

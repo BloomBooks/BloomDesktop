@@ -417,15 +417,41 @@ namespace BloomTests.Collection
 
         /// <summary>
         /// A bookshelf belongs to a subscription, so a code for a different subscription clears it
-        /// (BL-16904). A code with the same descriptor (renewed, or mistyped) keeps it.
+        /// (BL-16904), even when its descriptor extends the old one. A code with the same
+        /// descriptor (renewed), or a mistyped code that looks like the same subscription, keeps it.
         /// </summary>
-        [TestCase("Sample-361769-1209", "", TestName = "DifferentSubscription_ClearsBookshelf")]
-        [TestCase("Test-727011-1338", "oldShelf", TestName = "SameDescriptor_KeepsBookshelf")]
-        public void Apply_ChangedSubscriptionCode_Bookshelf(string newCode, string expectedShelf)
+        [TestCase(
+            "Test-727011-1339",
+            "Sample-361769-1209",
+            "",
+            TestName = "DifferentSubscription_ClearsBookshelf"
+        )]
+        [TestCase(
+            "Fake-009926-0521",
+            "Fake-LC-009926-1483",
+            "",
+            TestName = "ValidCodeWhoseDescriptorExtendsTheOld_ClearsBookshelf"
+        )]
+        [TestCase(
+            "Test-727011-1339",
+            "Test-727011-1338",
+            "oldShelf",
+            TestName = "SameDescriptor_KeepsBookshelf"
+        )]
+        [TestCase(
+            "Test-727011-1339",
+            "Test-727011-133",
+            "oldShelf",
+            TestName = "MistypedCodeForTheSameSubscription_KeepsBookshelf"
+        )]
+        public void Apply_ChangedSubscriptionCode_Bookshelf(
+            string originalCode,
+            string newCode,
+            string expectedShelf
+        )
         {
-            const string kOriginalCode = "Test-727011-1339";
             var settings = CreateCollectionSettings("ApplyChangedSubscriptionBookshelf");
-            settings.Subscription = new Subscription(kOriginalCode);
+            settings.Subscription = new Subscription(originalCode);
             settings.DefaultBookshelf = "oldShelf";
             settings.Save();
             Assert.That(
@@ -434,9 +460,9 @@ namespace BloomTests.Collection
                 "Sanity check: the file should start with a bookshelf"
             );
             Assert.That(
-                new Subscription(newCode).Descriptor == settings.Subscription.Descriptor,
-                Is.EqualTo(expectedShelf != ""),
-                "Sanity check: only the code expected to keep the bookshelf should share the descriptor"
+                settings.Subscription.GetIntegrityLabel(),
+                Is.EqualTo("ok"),
+                "Sanity check: the original code should be well-formed"
             );
             var values = CurrentValuesJson(settings);
             values["subscription"]["code"] = newCode;
