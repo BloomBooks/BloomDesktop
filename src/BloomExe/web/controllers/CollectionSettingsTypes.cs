@@ -31,10 +31,31 @@ namespace Bloom.web.controllers
         public bool IsTeamCollection;
 
         /// <summary>
+        /// The front/back matter packs the collection may use; only the branding's when the
+        /// branding chooses the pack.
+        /// </summary>
+        public XmatterPack[] XmatterPacks;
+
+        public bool XmatterChosenByBranding;
+
+        /// <summary>
         /// Set only when the user may not edit the collection settings (a Team Collection member
         /// who is not an administrator); the other fields are then null.
         /// </summary>
         public string NotAllowedMessage;
+    }
+
+    /// <summary>
+    /// A front/back matter pack, as the dialog's Style list offers it.
+    /// </summary>
+    public class XmatterPack
+    {
+        /// <summary>
+        /// The pack's key, e.g. "Traditional", as FrontBackMatterValues.Xmatter holds it.
+        /// </summary>
+        public string Value;
+        public string Label;
+        public string Description;
     }
 
     /// <summary>
@@ -240,8 +261,9 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// CollectionSettingsUpdater.Apply replaces a pack that is not available once all the
-        /// values are in.
+        /// Opening the collection makes this one the Style list offers
+        /// (CollectionSettings.CheckAndFixDependencies). CollectionSettingsUpdater.Apply replaces a
+        /// pack that is not available once all the values are in.
         /// </summary>
         [RequiresRestart]
         public string Xmatter
@@ -269,14 +291,18 @@ namespace Bloom.web.controllers
             set => _settings.ShowBlorgLanguageQrCode = value;
         }
 
+        /// <summary>
+        /// The caption on the badge's QR code. An empty BadgeQrCodeLabel means Bloom's default
+        /// caption, translated for each book. The dialog is given that default filled in, so the
+        /// user can tweak it, and it is stored only if changed: storing it untouched would freeze
+        /// it in today's translation and language.
+        /// </summary>
         [RequiresRestart]
         public string QrcodeCaption
         {
             get => _settings.BadgeQrCodeLabelLocalized;
             set
             {
-                // The caption shown by default follows the current UI language, so store it only
-                // if the user actually changed it; otherwise it would be frozen in that language.
                 if (value != _qrcodeCaptionBeforeChanges)
                     _settings.BadgeQrCodeLabel = value;
             }
