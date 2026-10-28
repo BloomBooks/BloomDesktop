@@ -32,7 +32,21 @@ namespace Bloom.web.controllers
         public EditingView View { get; set; }
 
         // Shared HttpClient for downloading remote images; reused to avoid socket exhaustion.
-        private static readonly HttpClient s_httpClient = new();
+        private static readonly HttpClient s_httpClient = CreateHttpClient();
+
+        private static HttpClient CreateHttpClient()
+        {
+            var client = new HttpClient();
+            // Some image hosts refuse requests that don't identify the client. In particular,
+            // upload.wikimedia.org answers 403 Forbidden to a request with no User-Agent, which
+            // made every Wikimedia Commons image found through Openverse fail (BL-17045).
+            // Wikimedia's policy asks for "<client>/<version> (<contact information>)".
+            var version = typeof(ImageGalleryApi).Assembly.GetName().Version;
+            client.DefaultRequestHeaders.UserAgent.ParseAdd(
+                $"Bloom/{version} (https://bloomlibrary.org)"
+            );
+            return client;
+        }
 
         /// <summary>
         /// The path most recently returned by HandlePickLocalImageFile. HandleLocalFilePreview
