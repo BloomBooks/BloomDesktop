@@ -11,7 +11,10 @@
  */
 import jQuery from "jquery";
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
-import { isLongPressEvaluating } from "../../bookEdit/longPressShared";
+import {
+    isLongPressEvaluating,
+    isKmwAttached,
+} from "../../bookEdit/longPressShared";
 import "./jquery.mousewheel.js";
 
 (function ($, window, undefined) {
@@ -209,6 +212,11 @@ import "./jquery.mousewheel.js";
         // AltGr typists if some keyboard layout or IME path fails to report it.
         if ((e.ctrlKey && !e.altKey) || e.metaKey) return;
 
+        // Field-granularity opt-out: KeymanWeb is remapping keys on this element,
+        // so long-press's alternate-character popup would be showing variants of
+        // a key that no longer means what it physically says (see longPressShared.ts).
+        if (isKmwAttached(e.target)) return;
+
         // See comment for BL-5215 in pageEditingMarkup.ts
         window.top[isLongPressEvaluating] = true;
 
@@ -250,6 +258,8 @@ import "./jquery.mousewheel.js";
     }
 
     function onKeyUp(e) {
+        if (isKmwAttached(e.target)) return;
+
         try {
             if (ignoredKeyUpKeys.indexOf(e.which) > -1) return;
             if (activeElement == null) return;

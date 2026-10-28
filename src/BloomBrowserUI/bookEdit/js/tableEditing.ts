@@ -26,11 +26,8 @@ import { post } from "../../utils/bloomApi";
 import $ from "jquery";
 import BloomField from "../bloomField/BloomField";
 import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
-import {
-    activateLongPressFor,
-    AddLanguageTags,
-    attachToCkEditor,
-} from "./bloomEditing";
+import { activateLongPressFor, attachToCkEditor } from "./bloomEditing";
+import { setupEditableControls } from "../editableControls/editableControlsManager";
 import {
     refreshTableFeatureStatus,
     tablesMayBeRestructured,
@@ -188,7 +185,7 @@ function wireBloomContentOfNewCells(root: HTMLElement): void {
     // Gives each cell the little tag naming the language it is in. Run on the
     // whole root because it only looks at editables that are contenteditable,
     // which the ones above have only just become.
-    AddLanguageTags(root);
+    setupEditableControls(root);
     // `root` itself is one of these when a cell has just become a picture cell.
     const imageCellSelector = ".bloom-cell[data-content-type='image']";
     const imageCells = Array.from(

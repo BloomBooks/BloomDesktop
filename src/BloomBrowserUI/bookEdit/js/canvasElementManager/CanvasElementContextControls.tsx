@@ -30,6 +30,7 @@ import {
     getMenuSections,
     getToolbarItems,
 } from "../../toolbox/canvas/canvasControlResolution";
+import { getLanguageDisplayName } from "../../editableControls/editableControlsManager";
 import {
     contextMenuCss,
     convertControlMenuRows,
@@ -95,7 +96,7 @@ export const CanvasElementContextControls: React.FunctionComponent<{
         props.canvasElement.getElementsByClassName("bloom-table").length > 0;
     const langName = holdsTable
         ? undefined
-        : editable?.getAttribute("data-languagetipcontent");
+        : getLanguageDisplayName(editable?.getAttribute("lang") ?? null);
     const setMenuOpen = (open: boolean, launchingDialog?: boolean) => {
         // Even though we've done our best to tell the MUI menu NOT to steal focus, it seems it still does...
         // or some other code somewhere is doing it when we choose a menu item. So we tell the CanvasElementManager

@@ -1716,6 +1716,8 @@ namespace Bloom.Book
                 "data-bubble-alternate",
                 // This is important because without it magic languages like "N1" could get overwritten by specific ones.
                 "lang",
+                // KeymanWeb attach artifact (see keymanWebIntegration.ts); never belongs in saved data.
+                "inputmode",
                 // If there's explicit formatting on an element, we probably don't want the same on every copy of
                 // the corresponding data-book.
                 // Remove "style" is normally what want to do, but there is one case where we do not. See BL-9460.
@@ -1726,7 +1728,7 @@ namespace Bloom.Book
         // These bloom-managed attributes must actually be removed from the destination if the element we're copying from
         // doesn't have them.
         static HashSet<string> _attributesToRemoveIfAbsent = new HashSet<string>(
-            new[] { "data-audiorecordingendtimes" }
+            new[] { "data-audiorecordingendtimes", "inputmode" }
         );
 
         // Classes not to copy when saving a class attribute as part of a DataSetElementValue.
@@ -1742,12 +1744,15 @@ namespace Bloom.Book
                 "bloom-content3",
                 "bloom-contentNational1",
                 "bloom-contentNational2",
+                // KeymanWeb attach artifact (see keymanWebIntegration.ts); never belongs in saved data.
+                "keymanweb-font",
             }
         );
 
         // These bloom-managed classes must actually be removed from the destination if the element we're copying from
         // doesn't have them. (ui-suppressHighlight should never get into the DOM at all, but if it somehow sneaks by,
-        // at least the next Save should be able to remove it.)
+        // at least the next Save should be able to remove it. Similarly keymanweb-font heals any book saved by an
+        // earlier POC-era session that left the class sitting in the data-div.)
         static HashSet<string> _classesToRemoveIfAbsent = new HashSet<string>(
             new[]
             {
@@ -1759,6 +1764,7 @@ namespace Bloom.Book
                 // the data-div on the next open. See _imgClassesToRestoreFromDataDiv and BL-16819.
                 "bloom-opaque",
                 "bloom-transparent",
+                "keymanweb-font",
             }
         );
 
@@ -1799,6 +1805,15 @@ namespace Bloom.Book
                     // We don't want custom canvas element formatting, like text outline and color,
                     // to get copied to other places in the book, like from front cover title to title page title.
                     // See BL-16357.
+                    continue;
+                }
+                if (attr.Name == "dir" && attr.Value == "ltr")
+                {
+                    // Bloom itself only ever writes dir="rtl" (via C# TranslationGroupManager), never
+                    // "ltr", so a "ltr" value can only be a KeymanWeb attach artifact (see
+                    // keymanWebIntegration.ts / the equivalent JS-side scrub in bloomEditing.ts) and
+                    // shouldn't be saved. An explicit dir="rtl" is ours and must survive, so this skip
+                    // has to be value-sensitive rather than skipping "dir" outright.
                     continue;
                 }
                 if (attr.Name == "class")
