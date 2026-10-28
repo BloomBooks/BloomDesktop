@@ -204,16 +204,17 @@ Use the `decider` skill to put one form to the developer, with these items:
 4. Null-merge each picked release branch up the stack, oldest first: for example Version6.4
    into Version6.5, then Version6.5 into master. Each branch already has the translations from
    its own commit, so the merge only records that the cherry-pick below it is merged, and later
-   merges up the stack don't conflict over it. First check that this batch's cherry-picks are
-   the only commits the lower branch has that the upper one lacks; if anything else shows, stop
-   and put it to the developer on a decider form, because a null merge would throw it away.
-   (When two release branches were picked, the second merge also lists the older branch's
-   cherry-pick, brought in by the first null merge. That is expected.)
+   merges up the stack don't conflict over it. First check that the lower branch has nothing
+   the upper one lacks except this run's own commits; if anything else shows, merge commits
+   included, stop and put it to the developer on a decider form, because a null merge would
+   throw it away while recording it as merged.
 
    ```bash
    git fetch origin
-   git log --oneline --no-merges origin/<upper>..origin/<lower>
-   #   every line must read "Merge all the new translations from Crowdin (<DATE>)"
+   git log --oneline origin/<upper>..origin/<lower>
+   #   every line must be one of this run's commits: a cherry-pick reading
+   #   "Merge all the new translations from Crowdin (<DATE>)", or (for the second merge when two
+   #   release branches were picked) the null merge this step just pushed
    git switch -c null-merge-<lower>-<DATE> origin/<upper>
    git merge -s ours origin/<lower> -m "Merge <lower> into <upper>" \
      -m "Null merge: <upper> already has the Crowdin translations (<DATE>) from its own commit."

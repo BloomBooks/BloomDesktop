@@ -37,7 +37,7 @@ def inner(el):
     if el is None:
         return ""
     s = ET.tostring(el, encoding="unicode")
-    return s.split(">", 1)[1].rsplit("</", 1)[0].strip() if "</" in s else ""
+    return s.split(">", 1)[1].rsplit("</", 1)[0] if "</" in s else ""
 
 
 def units(data):
@@ -102,7 +102,7 @@ def main():
                 rows["deleted"].append((lang, f, id_, o["tgt"][:80]))
         for id_, n in new.items():
             o = old.get(id_)
-            if o and (o["tgt"], o["approved"]) == (n["tgt"], n["approved"]):
+            if o and (o["tgt"], o["approved"], o["state"]) == (n["tgt"], n["approved"], n["state"]):
                 continue
             if not real(n):
                 if o and real(o) and id_ in en:
