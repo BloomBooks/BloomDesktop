@@ -65,6 +65,14 @@ export interface ICollectionSettingsValues {
     experimental: Record<string, boolean>;
 }
 
+// A front/back matter pack the collection may use.
+export interface IXmatterPack {
+    // The pack's key, as values.frontBackMatter.xmatter holds it.
+    value: string;
+    label: string;
+    description: string;
+}
+
 // The reply to GET collection/settings.
 export interface ICollectionSettingsResponse {
     values: ICollectionSettingsValues;
@@ -72,6 +80,9 @@ export interface ICollectionSettingsResponse {
     restartPaths: string[];
     // Whether the open collection is a Team Collection, even if disconnected.
     isTeamCollection: boolean;
+    // The packs the collection may use; just the one when the branding chooses it.
+    xmatterPacks: IXmatterPack[];
+    xmatterChosenByBranding: boolean;
     // Non-null when the user may not edit the settings (a Team Collection member who is not an
     // administrator). Then the other fields are null.
     notAllowedMessage: string | null;
