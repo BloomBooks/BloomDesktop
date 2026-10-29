@@ -1,4 +1,5 @@
+// LEGACY: only for the WinForms Collection Settings dialog, which is deleted at cutover (BL-17042).
 import { bootstrapReactComponent } from "../utils/entryPointBootstrap";
-import { CreateTeamCollectionDialog } from "./CreateTeamCollection";
+import { LegacyCreateTeamCollectionDialog } from "./CreateTeamCollection";
 
-bootstrapReactComponent(CreateTeamCollectionDialog);
+bootstrapReactComponent(LegacyCreateTeamCollectionDialog);
