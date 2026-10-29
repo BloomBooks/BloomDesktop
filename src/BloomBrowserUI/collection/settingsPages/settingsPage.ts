@@ -21,12 +21,18 @@ export interface ISettingsPageContext {
     // For an editor that is not a Config-R control (Config-R keeps its own controls' values):
     // replaces these sections of the values being edited.
     editValues: (edit: Partial<ICollectionSettingsValues>) => void;
+    // Saves now, with these sections replaced, as OK would (restarting if a change needs it).
+    saveNow: (edit: Partial<ICollectionSettingsValues>) => void;
 }
 
 export interface ISettingsPage {
-    // The page's ConfigrPage (Config-R rejects a page wrapped in a component).
-    element: React.ReactElement;
+    // The page's ConfigrPage (Config-R rejects a page wrapped in a component); undefined when the
+    // page is not offered.
+    element: React.ReactElement | undefined;
     // The help topic Help opens while this page shows. Pages that took over a tab of the old
     // WinForms dialog keep that tab's topic; the others get the general Settings topic.
     helpTopic?: string;
+    // False while the page has a value that may not be saved (the page shows what is wrong);
+    // OK is disabled then.
+    canSave?: boolean;
 }
