@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
     ConfigrBoolean,
     ConfigrGroup,
@@ -6,16 +5,13 @@ import {
     ConfigrPage,
 } from "@sillsdev/config-r";
 import { useL10n } from "../../react_components/l10nHooks";
-import { ICollectionSettingsResponse } from "../collectionSettingsTypes";
+import { ISettingsPage, ISettingsPageContext } from "./settingsPage";
 
 /**
  * The Advanced page of the Collection Settings dialog: whether Bloom updates itself, and the
  * collection's name.
  */
-export function useAdvancedPage(props: {
-    // Undefined until the dialog's GET collection/settings has answered.
-    settings: ICollectionSettingsResponse | undefined;
-}): React.ReactElement {
+export function useAdvancedPage(context: ISettingsPageContext): ISettingsPage {
     const label = useL10n("Advanced", "Common.Advanced");
     const programLabel = useL10n(
         "Program",
@@ -42,9 +38,9 @@ export function useAdvancedPage(props: {
         "CollectionSettingsDialog.AdvancedTab.NoRenameTeamCollection",
     );
 
-    const isTeamCollection = props.settings?.isTeamCollection === true;
+    const isTeamCollection = context.settings?.isTeamCollection === true;
 
-    return (
+    const element = (
         <ConfigrPage label={label} pageKey="advanced" topLevel={true}>
             {/* Automatic updating is a setting of Bloom on this computer, not of the collection. */}
             <ConfigrGroup label={programLabel}>
@@ -69,4 +65,5 @@ export function useAdvancedPage(props: {
             </ConfigrGroup>
         </ConfigrPage>
     );
+    return { element };
 }

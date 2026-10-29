@@ -10,10 +10,7 @@ import {
 import { ListItem } from "@mui/material";
 import { useL10n } from "../../react_components/l10nHooks";
 import { useApiObject } from "../../utils/bloomApi";
-import {
-    ICollectionSettingsResponse,
-    ICollectionSettingsValues,
-} from "../collectionSettingsTypes";
+import { ISettingsPage, ISettingsPageContext } from "./settingsPage";
 // Books style the badge with this too.
 import "../../../content/branding/bloom-badge.less";
 
@@ -60,13 +57,9 @@ const QrCodeBadgePreview: React.FunctionComponent<{
  * The Front & Back Matter page of the Collection Settings dialog: the front/back matter pack, the
  * QR code on the badge, and the place names some front matter shows.
  */
-export function useFrontBackMatterPage(props: {
-    // Undefined until the dialog's GET collection/settings has answered.
-    settings: ICollectionSettingsResponse | undefined;
-    // The values as they would be saved now, which the pack's description and the badge preview
-    // follow.
-    values: ICollectionSettingsValues | undefined;
-}): React.ReactElement {
+export function useFrontBackMatterPage(
+    context: ISettingsPageContext,
+): ISettingsPage {
     const label = useL10n(
         "Front & Back Matter",
         "CollectionSettingsDialog.FrontBackMatterPage",
@@ -118,26 +111,27 @@ export function useFrontBackMatterPage(props: {
 
     // The packs offered follow the saved subscription: a branding can choose the pack, and if a
     // newly typed code's does, C# applies it as it saves.
-    const xmatterPacks = props.settings?.xmatterPacks ?? [];
+    const xmatterPacks = context.settings?.xmatterPacks ?? [];
+    // The pack's description and the badge preview follow the values as they would be saved now.
     // Undefined until the GET answers, since this hook runs on every render of the dialog. The
     // controls' paths are not read from it: Config-R reads them from its own values, which the
     // pane only mounts with once they are loaded.
-    const frontBackMatter = props.values?.frontBackMatter;
+    const frontBackMatter = context.valuesToSave?.frontBackMatter;
     const selectedPackDescription = xmatterPacks.find(
         (pack) => pack.value === frontBackMatter?.xmatter,
     )?.description;
     const badgeLanguage =
-        props.values?.languages.signLanguage ??
-        props.values?.languages.language1;
+        context.valuesToSave?.languages.signLanguage ??
+        context.valuesToSave?.languages.language1;
 
-    return (
+    const element = (
         <ConfigrPage label={label} pageKey="frontBackMatter" topLevel={true}>
             <ConfigrGroup>
                 <ConfigrSelect
                     label={styleLabel}
                     path="frontBackMatter.xmatter"
                     options={xmatterPacks}
-                    disabled={props.settings?.xmatterChosenByBranding}
+                    disabled={context.settings?.xmatterChosenByBranding}
                     description={selectedPackDescription}
                 />
             </ConfigrGroup>
@@ -184,4 +178,9 @@ export function useFrontBackMatterPage(props: {
             </ConfigrGroup>
         </ConfigrPage>
     );
+    return {
+        element,
+        helpTopic:
+            "Tasks/Basic_tasks/Select_front_matter_or_back_matter_from_a_pack.htm",
+    };
 }
