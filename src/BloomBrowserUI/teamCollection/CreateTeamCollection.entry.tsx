@@ -1,4 +1,4 @@
 import { bootstrapReactComponent } from "../utils/entryPointBootstrap";
-import { CreateTeamCollectionDialog } from "./CreateTeamCollection";
+import { LegacyCreateTeamCollectionDialog } from "./CreateTeamCollection";
 
-bootstrapReactComponent(CreateTeamCollectionDialog);
+bootstrapReactComponent(LegacyCreateTeamCollectionDialog);
