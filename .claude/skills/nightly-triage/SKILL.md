@@ -80,15 +80,17 @@ there. Delete the downloaded artifacts when you are done; they have deep paths, 
 
 ## 5. Post a brief summary to Zulip
 
-Every triage ends with a very short post in the nightly report's own thread (channel
-`developers`, topic "Nightly run"), so the team sees that the nights were looked at. Running
-this skill is the developer's permission to post; don't ask first.
+A triage that found something ends with a very short post in the nightly report's own thread
+(channel `developers`, topic "Nightly run"), so the team sees that the nights were looked at.
+Running this skill is the developer's permission to post; don't ask first. If every run passed
+and there is nothing else worth telling the team, don't post: the nightly's own report already
+says it passed.
 
 Keep it to a few lines: `[Claude triage]` on a line of its own, then which runs were covered,
 then one line per failure saying whether it is new, seen again, or fixed, with a short name and
 any PR or card. Always end with the doc on master, on a line of its own, as
 `[All open nightly failures](https://github.com/BloomBooks/BloomDesktop/blob/master/docs/nightly-failures/README.md)`.
-If every run passed, one line saying so is enough before that link. For example:
+For example:
 
 ```
 [Claude triage]
