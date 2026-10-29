@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bloom;
@@ -26,6 +27,7 @@ namespace BloomTests.Collection
         private string _originalEnabledFeatures;
         private bool _originalAutoUpdate;
         private List<string> _renameRequests;
+        private List<string> _teamCollectionRequests;
 
         [OneTimeSetUp]
         public void FixtureSetup()
@@ -53,6 +55,7 @@ namespace BloomTests.Collection
             _originalEnabledFeatures = Settings.Default.EnabledExperimentalFeatures;
             _originalAutoUpdate = Settings.Default.AutoUpdate;
             _renameRequests = new List<string>();
+            _teamCollectionRequests = new List<string>();
         }
 
         [TearDown]
@@ -85,14 +88,28 @@ namespace BloomTests.Collection
             );
         }
 
-        private void Apply(JObject postedValues, CollectionSettings settings)
+        /// <summary>
+        /// Apply, recording any rename or Team Collection it asks for. onCreate also runs when it
+        /// makes a Team Collection, to look at the collection at that moment.
+        /// </summary>
+        private void Apply(
+            JObject postedValues,
+            CollectionSettings settings,
+            bool currentCollectionIsTeamCollection = false,
+            Action<string> onCreate = null
+        )
         {
             CollectionSettingsUpdater.Apply(
                 postedValues,
                 settings,
-                currentCollectionIsTeamCollection: false,
+                currentCollectionIsTeamCollection,
                 _xmatterPackFinder,
-                newName => _renameRequests.Add(newName)
+                newName => _renameRequests.Add(newName),
+                folder =>
+                {
+                    _teamCollectionRequests.Add(folder);
+                    onCreate?.Invoke(folder);
+                }
             );
         }
 
@@ -165,6 +182,7 @@ namespace BloomTests.Collection
                 $"The values should not have moved.\nBefore: {before}\nAfter: {after}"
             );
             Assert.That(_renameRequests, Is.Empty);
+            Assert.That(_teamCollectionRequests, Is.Empty);
         }
 
         [Test]
@@ -502,31 +520,103 @@ namespace BloomTests.Collection
         }
 
         [Test]
-        public void ApplyAdministrators_OnlyInATeamCollection()
+        public void Apply_ChangedAdministratorsInATeamCollection_SavedToTheFile()
         {
-            var settings = CreateCollectionSettings("ApplyAdministrators");
+            var settings = CreateCollectionSettings("ApplySavesAdministrators");
+            var values = CurrentValuesJson(settings);
             Assert.That(
-                settings.AdministratorsDisplayString,
+                (string)values["teamCollection"]["administrators"],
                 Is.Empty,
                 "Sanity check: a new collection has no administrators"
             );
+            values["teamCollection"]["administrators"] = "someone@example.com another@example.com";
 
-            CollectionSettingsUpdater.ApplyAdministrators(
-                "someone@example.com",
-                settings,
-                currentCollectionIsTeamCollection: false
-            );
-            Assert.That(settings.AdministratorsDisplayString, Is.Empty);
+            Apply(values, settings, currentCollectionIsTeamCollection: true);
 
-            CollectionSettingsUpdater.ApplyAdministrators(
-                "someone@example.com, another@example.com",
-                settings,
-                currentCollectionIsTeamCollection: true
-            );
             Assert.That(
-                settings.AdministratorsDisplayString,
+                new CollectionSettings(settings.SettingsFilePath).AdministratorsDisplayString,
                 Is.EqualTo("someone@example.com, another@example.com")
             );
+        }
+
+        /// <summary>
+        /// Making a Team Collection copies the settings file into the shared folder, so it comes
+        /// after the save; and it saves the settings again (ConnectToTeamCollection), so it comes
+        /// before an expired subscription's bookshelf is hidden in memory (BL-15056).
+        /// </summary>
+        [Test]
+        public void Apply_CreateInFolder_CreatesTeamCollectionAfterSavingAndBeforeHidingTheBookshelf()
+        {
+            const string kSharedFolder = @"C:\Dropbox";
+            var settings = CreateCollectionSettings("ApplyCreatesTeamCollection");
+            // What loading a collection with an expired subscription and a bookshelf leaves.
+            settings.DefaultBookshelf = "";
+            settings.ExpiredBookshelf = "rememberedShelf";
+            var values = CurrentValuesJson(settings);
+            Assert.That(
+                (string)values["teamCollection"]["createInFolder"],
+                Is.Empty,
+                "Sanity check: the GET should not ask for a Team Collection"
+            );
+            values["frontBackMatter"]["country"] = "Kenya";
+            values["teamCollection"]["createInFolder"] = kSharedFolder;
+            string countryInFileWhenCreated = null;
+            string fileAfterCreating = null;
+
+            Apply(
+                values,
+                settings,
+                onCreate: folder =>
+                {
+                    countryInFileWhenCreated = new CollectionSettings(
+                        settings.SettingsFilePath
+                    ).Country;
+                    // As ConnectToTeamCollection does.
+                    settings.Save();
+                    fileAfterCreating = RobustFile.ReadAllText(settings.SettingsFilePath);
+                }
+            );
+
+            Assert.That(_teamCollectionRequests, Is.EqualTo(new[] { kSharedFolder }));
+            Assert.That(
+                countryInFileWhenCreated,
+                Is.EqualTo("Kenya"),
+                "the collection should have been saved before the Team Collection was made"
+            );
+            Assert.That(
+                fileAfterCreating,
+                Does.Contain("bookshelf:rememberedShelf"),
+                "the save made while creating the Team Collection should keep the bookshelf"
+            );
+            Assert.That(
+                settings.DefaultBookshelf,
+                Is.Empty,
+                "in memory it should stay hidden while the subscription is expired"
+            );
+        }
+
+        /// <summary>
+        /// Pro tier is not allowed in a Team Collection, so a collection becoming one in the same
+        /// save keeps its old subscription.
+        /// </summary>
+        [Test]
+        public void Apply_ProSubscriptionWhileCreatingTeamCollection_IsRefused()
+        {
+            const string kProCode = "Fake-Pro-009926-2146";
+            var settings = CreateCollectionSettings("ApplyProWhileCreatingTeamCollection");
+            Assert.That(
+                new Subscription(kProCode).Tier,
+                Is.EqualTo(SubscriptionTier.Pro),
+                "Sanity check: the code should be a Pro one"
+            );
+            var values = CurrentValuesJson(settings);
+            values["subscription"]["code"] = kProCode;
+            values["teamCollection"]["createInFolder"] = @"C:\Dropbox";
+
+            Apply(values, settings);
+
+            Assert.That(settings.Subscription.Code, Is.Not.EqualTo(kProCode));
+            Assert.That(_teamCollectionRequests, Is.EqualTo(new[] { @"C:\Dropbox" }));
         }
 
         /// <summary>
