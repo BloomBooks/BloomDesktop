@@ -6,6 +6,7 @@ import {
     ConfigrInput,
     ConfigrPage,
     ConfigrSelect,
+    ConfigrStatic,
 } from "@sillsdev/config-r";
 import { ListItem } from "@mui/material";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -152,14 +153,18 @@ export function useFrontBackMatterPage(
                 />
                 {frontBackMatter && badgeLanguage && (
                     // A list item, like Config-R's rows, so the badge lines up with their labels.
-                    <ListItem>
-                        <QrCodeBadgePreview
-                            showQrCode={frontBackMatter.showQrCode}
-                            caption={frontBackMatter.qrcodeCaption}
-                            languageTag={badgeLanguage.tag}
-                            languageName={badgeLanguage.name}
-                        />
-                    </ListItem>
+                    // ConfigrStatic takes the props Config-R gives a group's children, which
+                    // ListItem would pass on to the DOM.
+                    <ConfigrStatic>
+                        <ListItem>
+                            <QrCodeBadgePreview
+                                showQrCode={frontBackMatter.showQrCode}
+                                caption={frontBackMatter.qrcodeCaption}
+                                languageTag={badgeLanguage.tag}
+                                languageName={badgeLanguage.name}
+                            />
+                        </ListItem>
+                    </ConfigrStatic>
                 )}
             </ConfigrGroup>
             <ConfigrGroup label={placesLabel} description={placesDescription}>

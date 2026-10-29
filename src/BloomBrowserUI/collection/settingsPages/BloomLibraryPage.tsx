@@ -1,5 +1,10 @@
 import { css } from "@emotion/react";
-import { ConfigrGroup, ConfigrPage, ConfigrSelect } from "@sillsdev/config-r";
+import {
+    ConfigrGroup,
+    ConfigrPage,
+    ConfigrSelect,
+    ConfigrStatic,
+} from "@sillsdev/config-r";
 import { useL10n } from "../../react_components/l10nHooks";
 import { BloomSubscriptionIndicatorIconAndText } from "../../react_components/requiresSubscription";
 import { useGetEnterpriseBookshelves } from "../useGetEnterpriseBookshelves";
@@ -66,36 +71,40 @@ export function useBloomLibraryPage(
     const element = (
         <ConfigrPage label={label} pageKey="bloomLibrary" topLevel={true}>
             <ConfigrGroup label={bookshelfLabel}>
-                {/* One element around both keeps Config-R from drawing a divider between them. */}
-                <div>
-                    <ConfigrSelect
-                        label={bookshelfLabel}
-                        path="bloomLibrary.defaultBookshelf"
-                        options={options}
-                        // Nothing to choose without a subscription that has bookshelves.
-                        disabled={options.length < 2}
-                        description={
-                            error
-                                ? noBookshelvesFromServer
-                                : bookshelfDescription
-                        }
-                    />
-                    <div
-                        css={css`
-                            display: flex;
-                            padding-bottom: 5px;
-                            font-size: 12px;
-                            font-weight: bold;
-                        `}
-                    >
-                        <BloomSubscriptionIndicatorIconAndText
-                            feature="Bookshelf"
-                            css={css`
-                                margin-left: auto;
-                            `}
+                {/* One element around both keeps Config-R from drawing a divider between them.
+                    ConfigrStatic takes the props Config-R gives a group's children, which a
+                    plain div would pass on to the DOM. */}
+                <ConfigrStatic>
+                    <div>
+                        <ConfigrSelect
+                            label={bookshelfLabel}
+                            path="bloomLibrary.defaultBookshelf"
+                            options={options}
+                            // Nothing to choose without a subscription that has bookshelves.
+                            disabled={options.length < 2}
+                            description={
+                                error
+                                    ? noBookshelvesFromServer
+                                    : bookshelfDescription
+                            }
                         />
+                        <div
+                            css={css`
+                                display: flex;
+                                padding-bottom: 5px;
+                                font-size: 12px;
+                                font-weight: bold;
+                            `}
+                        >
+                            <BloomSubscriptionIndicatorIconAndText
+                                feature="Bookshelf"
+                                css={css`
+                                    margin-left: auto;
+                                `}
+                            />
+                        </div>
                     </div>
-                </div>
+                </ConfigrStatic>
             </ConfigrGroup>
         </ConfigrPage>
     );
