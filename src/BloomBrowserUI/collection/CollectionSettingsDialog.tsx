@@ -36,6 +36,7 @@ import { useExperimentalPage } from "./settingsPages/ExperimentalPage";
 import { useFrontBackMatterPage } from "./settingsPages/FrontBackMatterPage";
 import { usePlaceholderPage } from "./settingsPages/PlaceholderPage";
 import { useSubscriptionPage } from "./settingsPages/SubscriptionPage";
+import { useTeamCollectionPage } from "./settingsPages/TeamCollectionPage";
 import {
     ISettingsPage,
     ISettingsPageContext,
@@ -164,11 +165,13 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         "CollectionSettingsDialog.RestartMessage",
     );
 
-    // Config-R's values with the sections edited outside Config-R in place of the ones loaded.
+    // Config-R's values with the sections edited outside Config-R, then any in `edit`, in place
+    // of the ones loaded.
     function withOutsideEdits(
         values: ICollectionSettingsValues,
+        edit: Partial<ICollectionSettingsValues> = {},
     ): ICollectionSettingsValues {
-        return { ...values, ...outsideEdits };
+        return { ...values, ...outsideEdits, ...edit };
     }
     // The values as the user is editing them, and as OK would save them now. Both are checked: a
     // deferred onChange can set currentValues after a close has already cleared loadedSettings.
@@ -188,6 +191,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         // Merged into the latest edits, so two edits before a render both count.
         editValues: (edit) =>
             setOutsideEdits((edits) => ({ ...edits, ...edit })),
+        saveNow: saveAndCloseDialog,
     };
     // In the order the dialog lists them. Each is a hook in its own file under settingsPages/ (see
     // ISettingsPage).
@@ -200,11 +204,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         ),
         useFrontBackMatterPage(pageContext),
         useSubscriptionPage(pageContext),
-        usePlaceholderPage(
-            "teamCollection",
-            "Team Collection",
-            "TeamCollection.TeamCollection",
-        ),
+        useTeamCollectionPage(pageContext),
         useBloomLibraryPage(pageContext),
         useAdvancedPage(pageContext),
         useExperimentalPage(pageContext),
@@ -232,7 +232,8 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     }
     const needsRestart = restartNeededFor(currentValuesToSave);
 
-    function saveAndCloseDialog() {
+    // `edit` replaces sections of the values being edited (see ISettingsPageContext.saveNow).
+    function saveAndCloseDialog(edit: Partial<ICollectionSettingsValues> = {}) {
         // Block the button while the save is in flight, so a second click cannot save (and
         // perhaps restart Bloom) a second time.
         setSaving(true);
@@ -241,7 +242,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         // the restart flag is worked out from it too.
         // OK is enabled only once the values have loaded.
         const valuesToSave = withEditedTextTrimmed(
-            withOutsideEdits(latestValuesRef.current!),
+            withOutsideEdits(latestValuesRef.current!, edit),
             loadedSettings!.values,
         );
         postJson(
@@ -317,10 +318,14 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         }}
                     >
                         {/* A list of elements needs keys; each page's pageKey is unique. */}
-                        {pages.map((page) =>
-                            React.cloneElement(page.element, {
-                                key: page.element.props.pageKey,
-                            }),
+                        {pages.flatMap((page) =>
+                            page.element
+                                ? [
+                                      React.cloneElement(page.element, {
+                                          key: page.element.props.pageKey,
+                                      }),
+                                  ]
+                                : [],
                         )}
                     </ConfigrPane>
                 )}
@@ -332,7 +337,8 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         helpId={
                             pages.find(
                                 (page) =>
-                                    page.element.props.pageKey === shownPageKey,
+                                    page.element?.props.pageKey ===
+                                    shownPageKey,
                             )?.helpTopic ?? kGeneralSettingsHelpTopic
                         }
                     />
@@ -352,14 +358,19 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                     <React.Fragment>
                         <DialogOkButton
                             default={true}
-                            enabled={currentValues !== undefined && !saving}
+                            enabled={
+                                currentValues !== undefined &&
+                                !saving &&
+                                // A page that refuses shows what is wrong.
+                                pages.every((page) => page.canSave !== false)
+                            }
                             l10nKey={
                                 needsRestart
                                     ? "CollectionSettingsDialog.Restart"
                                     : undefined
                             }
                             englishText={needsRestart ? "Restart" : undefined}
-                            onClick={saveAndCloseDialog}
+                            onClick={() => saveAndCloseDialog()}
                         />
                         <DialogCancelButton />
                     </React.Fragment>
