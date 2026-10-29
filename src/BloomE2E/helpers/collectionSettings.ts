@@ -727,13 +727,28 @@ export async function restartFromCollectionSettings(
         restart,
         "OK does not say Restart, so pressing it would not reopen the collection",
     ).toBeVisible();
+    return clickAndFollowRestart(bloomApp, restart, renamedTo);
+}
+
+/**
+ * Click a button that makes Bloom save and reopen the whole collection (such as the settings
+ * dialog's Restart, or the Create Team Collection dialog's Create & Restart), which destroys the
+ * shell page. Waits out the reopen, re-finds the shell page (bloomApp.page from here on) and returns
+ * it once the collection is ready again. `renamedTo` is as for restartFromCollectionSettings.
+ */
+export async function clickAndFollowRestart(
+    bloomApp: IBloomApp,
+    button: Locator,
+    renamedTo?: string,
+): Promise<Page> {
+    const page = bloomApp.page;
     const pageClosed = page.waitForEvent("close", { timeout: 60000 });
     // Pre-handled so a click failing for another reason cannot surface later as an unhandled
     // rejection charged to some other test.
     pageClosed.catch(() => undefined);
     // Bloom can tear the page down before Playwright finishes its click; a "closed" error means
     // the click landed. (If it never landed, the pageClosed wait times out.)
-    await realClick(restart).catch((error) => {
+    await realClick(button).catch((error) => {
         if (!/closed/i.test(String(error))) throw error;
     });
     await pageClosed;
