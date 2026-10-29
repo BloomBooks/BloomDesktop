@@ -8,6 +8,8 @@ export default {
 export const _CreateTeamCollectionDialog = () => (
     <CreateTeamCollectionDialog
         dialogEnvironment={normalDialogEnvironmentForStorybook}
+        onFolderChosen={() => {}}
+        onClose={() => {}}
     />
 );
 
@@ -18,6 +20,8 @@ _CreateTeamCollectionDialog.story = {
 export const CreateTeamCollectionDialogShowingPath = () => (
     <CreateTeamCollectionDialog
         dialogEnvironment={normalDialogEnvironmentForStorybook}
+        onFolderChosen={() => {}}
+        onClose={() => {}}
         defaultRepoFolder="z:\Enim aute dolore ex voluptate commodo\"
     />
 );
@@ -29,6 +33,8 @@ CreateTeamCollectionDialogShowingPath.story = {
 export const CreateTeamCollectionDialogShowingError = () => (
     <CreateTeamCollectionDialog
         dialogEnvironment={normalDialogEnvironmentForStorybook}
+        onFolderChosen={() => {}}
+        onClose={() => {}}
         errorForTesting="Commodo veniam laboris ut ut ea laboris Lorem Lorem laborum enim minim velit."
     />
 );
