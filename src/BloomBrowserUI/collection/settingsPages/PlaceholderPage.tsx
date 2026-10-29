@@ -30,12 +30,7 @@ export function usePlaceholderPage(
     const label = useL10n(englishLabel, labelL10nKey);
     return {
         element: (
-            <ConfigrPage
-                key={pageKey}
-                label={label}
-                pageKey={pageKey}
-                topLevel={true}
-            >
+            <ConfigrPage label={label} pageKey={pageKey} topLevel={true}>
                 <ConfigrGroup label={label}>
                     <ConfigrStatic>
                         <PagePlaceholder />

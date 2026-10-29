@@ -185,7 +185,9 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         settings: loadedSettings,
         values: currentValuesEdited,
         valuesToSave: currentValuesToSave,
-        editValues: (edit) => setOutsideEdits({ ...outsideEdits, ...edit }),
+        // Merged into the latest edits, so two edits before a render both count.
+        editValues: (edit) =>
+            setOutsideEdits((edits) => ({ ...edits, ...edit })),
     };
     // In the order the dialog lists them. Each is a hook in its own file under settingsPages/ (see
     // ISettingsPage).
@@ -314,7 +316,12 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                             }, 0);
                         }}
                     >
-                        {pages.map((page) => page.element)}
+                        {/* A list of elements needs keys; each page's pageKey is unique. */}
+                        {pages.map((page) =>
+                            React.cloneElement(page.element, {
+                                key: page.element.props.pageKey,
+                            }),
+                        )}
                     </ConfigrPane>
                 )}
             </ConfigrDialogMiddle>
