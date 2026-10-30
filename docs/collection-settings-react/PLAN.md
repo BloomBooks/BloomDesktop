@@ -60,11 +60,12 @@ What a page card builds on:
   Collection; the BL-15056 expired-bookshelf cases) and `ApplyAdministrators`. `Apply` already
   calls the last two with "unchanged" on every save, which keeps an expired subscription's
   bookshelf in the file.
-- **Pages.** Each built page is a hook in its own file under `collection/settingsPages/` that
-  returns its `ConfigrPage` (Config-R throws, blanking the UI, if a pane's child is not a
-  `ConfigrPage` or a page's child is not a `ConfigrGroup`, so a page cannot be a component of its
-  own). `ExperimentalPage.tsx` is the first; each card moves its page out of the placeholders in
-  `CollectionSettingsDialog.tsx` the same way.
+- **Pages.** Each page is a hook in its own file under `collection/settingsPages/` that takes the
+  dialog's `ISettingsPageContext` and returns an `ISettingsPage` holding its `ConfigrPage`
+  (Config-R throws, blanking the UI, if a pane's child is not a `ConfigrPage` or a page's child is
+  not a `ConfigrGroup`, so a page cannot be a component of its own). The dialog only lists the
+  pages: anything one page needs goes through the context, so a page added or changed touches
+  the dialog only to list it. Each card replaces its `usePlaceholderPage` entry the same way.
 - **Validation and clean-up belong in the client** (Config-R can validate a field; it does not
   trim, so add that to Config-R if a page needs it). The POST has no validation reply.
 - **Restart.** The dialog compares `restartPaths`, shows the restart reminder and relabels OK; C#
