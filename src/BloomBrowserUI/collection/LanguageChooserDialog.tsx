@@ -8,7 +8,7 @@ import {
 import * as React from "react";
 import { getLanguageData, ILanguageData } from "./languageData";
 
-import { get } from "../utils/bloomApi";
+import { useApiString } from "../utils/bloomApi";
 import {
     BloomDialog,
     DialogBottomButtons,
@@ -74,12 +74,7 @@ export const LanguageChooserDialog: React.FunctionComponent<{
         props.onClose();
     }
 
-    const [uiLanguage, setUiLanguage] = React.useState("en");
-    React.useEffect(() => {
-        get("currentUiLanguage", (result) => {
-            setUiLanguage(result.data);
-        });
-    }, []);
+    const uiLanguage = useApiString("currentUiLanguage", "en");
 
     return (
         <BloomDialog

@@ -436,7 +436,7 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
     }, [fontMetadata]);
 
     // A third language the user adds starts with Bloom's default font, which C# tells us.
-    const defaultFontName = context.settings?.defaultFontName ?? "";
+    const defaultFontName = context.settings.defaultFontName;
     const Language3Control = React.useMemo(() => {
         const Control: React.FunctionComponent<{
             value: ICollectionSettingsLanguage | null;
@@ -458,14 +458,13 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
 
     // The reader tools' file is named for the first language, so its values cannot be edited
     // while the user is changing that language: they would go to the language being replaced.
-    const savedLanguage1Tag = context.settings?.values.languages.language1.tag;
     const language1TagChanged =
-        savedLanguage1Tag !== undefined &&
-        context.values?.languages.language1.tag !== savedLanguage1Tag;
+        context.values.languages.language1.tag !==
+        context.settings.values.languages.language1.tag;
     // Why the reader tools' values cannot be edited just now, if they cannot. A damaged file
     // would be written over, losing the stages and levels Bloom could not read.
     let readerToolsLockedReason: string | undefined;
-    if (context.settings?.values.readerTools.isUnreadable)
+    if (context.settings.values.readerTools.isUnreadable)
         readerToolsLockedReason = readerToolsUnreadable;
     else if (language1TagChanged)
         readerToolsLockedReason = readerToolsLanguage1Changed;
@@ -476,7 +475,7 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
     function writtenLanguageGroup(language: IWrittenLanguage) {
         const path = `languages.language${language.number}`;
         const present =
-            language.number !== 3 || !!context.values?.languages.language3;
+            language.number !== 3 || !!context.values.languages.language3;
         return (
             <ConfigrGroup key={path} label={language.heading}>
                 <ConfigrCustomObjectInput<ICollectionSettingsLanguage | null>
@@ -572,7 +571,7 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
                 <ConfigrSelect
                     label={pageNumberingLabel}
                     path="languages.pageNumberStyle"
-                    options={context.settings?.pageNumberStyles ?? []}
+                    options={context.settings.pageNumberStyles}
                 />
             </ConfigrGroup>
         </ConfigrPage>
@@ -581,6 +580,6 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
         element,
         helpTopic: "Tasks/Basic_tasks/Change_languages.htm",
         valuesToSave: (values) =>
-            withEditedLettersCleaned(values, context.settings!.values),
+            withEditedLettersCleaned(values, context.settings.values),
     };
 }

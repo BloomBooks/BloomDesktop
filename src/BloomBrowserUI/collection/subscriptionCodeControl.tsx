@@ -24,7 +24,6 @@ type Status =
     | "SubscriptionExpired"
     | "SubscriptionIncomplete"
     | "SubscriptionIncorrect"
-    | "SubscriptionLegacy"
     | "EditingBlorgBook";
 
 // values of Status:
@@ -41,9 +40,6 @@ type Status =
 //      We show a ? icon and a message
 // SubscriptionIncorrect: a code has been entered which cannot be fixed by typing more
 //      We show a red ! icon and  message
-// SubscriptionLegacy: a special case where the subscription code is typically empty,
-// or just possibly otherwise incomplete, and this has been detected at startup
-//      We show a special message in an orange box and a red ! icon
 // EditingBlorgBook: a special case where a subscription code is incomplete
 //      because we are using a branding permitted in a special collection made by
 //      downloading a book for editing from BloomLibrary. We show a special message.
@@ -364,11 +360,9 @@ const Editor: React.FC<{
     };
 
     const shouldShowRedExclamation = () => {
-        return [
-            "SubscriptionIncorrect",
-            "SubscriptionExpired",
-            "SubscriptionLegacy",
-        ].includes(status);
+        return ["SubscriptionIncorrect", "SubscriptionExpired"].includes(
+            status,
+        );
     };
     const shouldShowGreenCheck = () => {
         return ["SubscriptionGood", "NoBrandingFilesYet"].includes(status);

@@ -24,8 +24,6 @@ export function useTeamCollectionPage(
     // Not offered while the feature is off (as saved) and this is not a Team Collection, nor at
     // all for a book downloaded from Bloom Library for editing, which must not become one.
     if (
-        !settings ||
-        !context.values ||
         settings.editingABlorgBook ||
         !(
             settings.isTeamCollection ||
@@ -65,10 +63,10 @@ export function useTeamCollectionPage(
                             onCreateTeamCollection={() =>
                                 setShowCreateDialog(true)
                             }
-                            // Compared as it would be saved (valuesToSave is set whenever
-                            // values is), so spaces typed around the name do not count.
+                            // Compared as it would be saved, so spaces typed around the name do
+                            // not count.
                             renameUnsaved={
-                                context.valuesToSave!.advanced
+                                context.valuesToSave.advanced
                                     .collectionName !==
                                 settings.values.advanced.collectionName
                             }

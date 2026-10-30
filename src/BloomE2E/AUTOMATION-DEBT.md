@@ -213,8 +213,9 @@ use.
 
 `SubscriptionSettingsEditorApi` held the same kind of snapshot, refreshed on the WinForms
 `CollectionSettingsDialog.DialogCancelled`. It was left alone then, since nothing was found to be
-wrong with it; when that dialog was removed (2026-10-30) it too went over to reading
-`_collectionSettings.Subscription` on each use, so nothing on this entry remains open.
+wrong with it; when that dialog was removed (2026-10-30) the class went too, and
+`CollectionSettingsApi` now answers `settings/subscription` from `_collectionSettings.Subscription`
+on each use, so nothing on this entry remains open.
 
 ## The Sign in button's trip through the system browser cannot be driven
 
