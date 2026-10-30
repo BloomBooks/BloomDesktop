@@ -3,6 +3,7 @@ import {
     getDisplayNameFromImageUrl,
     getImageTransparencyMode,
     isOverlayOnBackgroundImage,
+    HandleImageError,
     normalizeCoverImageDesignation,
     refreshImgTransparentParam,
     refreshTransparencyIfBackgroundImage,
@@ -381,5 +382,21 @@ describe("refreshTransparencyIfBackgroundImage", () => {
 
         expect(overlay.getAttribute("src")).toBe("overlay.png");
         page.remove();
+    });
+});
+
+describe("HandleImageError", () => {
+    it("marks the img while its src fails, and unmarks it when a src loads", () => {
+        const img = document.createElement("img");
+        img.onerror = HandleImageError;
+        img.dispatchEvent(new Event("error"));
+        expect(img.classList.contains("bloom-imageLoadError")).toBe(true);
+
+        // As when undo gives the img back a src that loads.
+        img.dispatchEvent(new Event("load"));
+        expect(img.classList.contains("bloom-imageLoadError")).toBe(false);
+
+        img.dispatchEvent(new Event("error"));
+        expect(img.classList.contains("bloom-imageLoadError")).toBe(true);
     });
 });

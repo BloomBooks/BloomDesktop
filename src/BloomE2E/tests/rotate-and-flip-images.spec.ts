@@ -17,6 +17,7 @@ import type { Page } from "@playwright/test";
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "../fixtures/bloomTest";
+import { checkUndoRoundTripAfterEachTest } from "../helpers/undoRoundTrip";
 import {
     addPage,
     getContentPages,
@@ -71,6 +72,8 @@ test.use({
         subscriptionCode: kEnterpriseSubscriptionCode,
     },
 });
+
+checkUndoRoundTripAfterEachTest(test);
 
 test.describe.configure({ mode: "serial" });
 
@@ -785,17 +788,17 @@ test.describe("rotating and flipping pictures", () => {
             .poll(async () => editable.textContent())
             .not.toBe(textBefore);
 
-        // The text editor may take the typing back in more than one step; the box must stay
-        // rotated until all of it is gone.
-        for (let step = 0; step < 10; step++) {
-            if ((await editable.textContent()) === textBefore) break;
-            await undo(page);
-            expect(
-                await getCanvasElementRotation(box),
-                "Undo took back the rotation before the typing.",
-            ).toBeCloseTo(rotated, 1);
-        }
-        expect(await editable.textContent()).toBe(textBefore);
+        // The typing in one box is one step; the box must stay rotated when it goes.
+        await undo(page);
+        await expect
+            .poll(async () => editable.textContent(), {
+                message: "Undo did not take back the typing.",
+            })
+            .toBe(textBefore);
+        expect(
+            await getCanvasElementRotation(box),
+            "Undo took back the rotation with the typing.",
+        ).toBeCloseTo(rotated, 1);
         await saveScreenshotIfAsked([canvas(page)], "35-undo-typing-first");
 
         await undo(page);

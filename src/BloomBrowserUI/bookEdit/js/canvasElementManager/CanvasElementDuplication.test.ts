@@ -13,14 +13,20 @@ vi.mock("comicaljs", () => ({
         convertBubbleJsonToCanvas: vi.fn(),
     },
 }));
+// The requests themselves are recorded, not sent; requestEndsPageHistory is the real one.
 vi.mock("../../../utils/bloomApi", async (importOriginal) => ({
-    ...((await importOriginal()) as object),
+    ...(await importOriginal<object>()),
     post: vi.fn(),
     postData: vi.fn(),
     postJson: vi.fn(),
 }));
 
-import { post, postData, postJson } from "../../../utils/bloomApi";
+import {
+    post,
+    postData,
+    postJson,
+    requestEndsPageHistory,
+} from "../../../utils/bloomApi";
 import { cloneCanvasElementHtmlStructure } from "./canvasElementCloneCleanup";
 import {
     CanvasElementDuplication,
@@ -95,7 +101,7 @@ describe("CanvasElementDuplication keeps the angle of a rotated box (BL-16741)",
 });
 
 describe("CanvasElementDuplication copies Talking Book audio", () => {
-    test("through audio/copyAudioFile, under the copy's new id", () => {
+    test("through a request that keeps the page history", () => {
         const source = document.createElement("div");
         source.innerHTML =
             '<div class="bloom-editable audio-sentence" id="i-source" data-audiorecordingmode="TextBox" data-duration="1.5"><p>One</p></div>';
@@ -123,6 +129,9 @@ describe("CanvasElementDuplication copies Talking Book audio", () => {
         expect(requests).toEqual([
             `audio/copyAudioFile?oldId=i-source&newId=${newId}`,
         ]);
+        expect(
+            requestEndsPageHistory("post", "/bloom/api/" + requests[0]),
+        ).toBe(false);
     });
 });
 

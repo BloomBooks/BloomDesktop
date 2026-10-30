@@ -532,8 +532,8 @@ export class CanvasElementDuplication {
 }
 
 // Copy the recording of sourceId, if it has one, to a new file for newId in the book's audio
-// folder, through the same request that pasting text with recordings uses. We don't need to wait
-// for this to finish.
+// folder. We don't need to wait for this to finish. audio/copyAudioFile only writes a file under
+// the new id, so it keeps the page history, which a request to fileIO would end.
 function copyAudioFile(sourceId: string, newId: string): void {
     post(
         `audio/copyAudioFile?oldId=${encodeURIComponent(

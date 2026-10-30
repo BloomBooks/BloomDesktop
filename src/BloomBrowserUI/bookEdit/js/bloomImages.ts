@@ -40,6 +40,7 @@ import {
     isDeviceLayoutPage,
     parseBloomPubImageLimit,
 } from "./imageTargetResolution";
+import { doOutsideHistory } from "../pageHistory/pageHistoryAccess";
 
 // Declared in canvasElementConstants.ts, which nothing imports anything else from, and
 // re-exported here because most of Bloom names an image slot through this module.
@@ -188,7 +189,7 @@ export function SetupImagesInContainer(container) {
         .find(".bloom-draggable")
         .mouseenter(function () {
             $(this).prepend(
-                "<button class='moveButton' title='Move'></button>",
+                "<button class='moveButton bloom-ui' title='Move'></button>",
             );
             $(this)
                 .find(".moveButton")
@@ -277,7 +278,16 @@ export function HandleImageError(event: Event | string) {
     }
     const target = event.target as HTMLImageElement;
     target.classList.add("bloom-imageLoadError");
+    // The class says that the img's current src failed to load. Undo and redo can give the img a
+    // src that loads, and the page history leaves this class alone (editTimeMarkup.ts), so the
+    // img takes the class off itself when it next loads.
+    target.addEventListener("load", removeImageLoadErrorClass);
     // console.error("Image failed to load:", target.src);
+}
+
+/** Take bloom-imageLoadError off an img that has loaded; see HandleImageError. */
+function removeImageLoadErrorClass(event: Event): void {
+    (event.target as HTMLImageElement).classList.remove("bloom-imageLoadError");
 }
 
 function getPasteImageApiErrorMessage(
@@ -351,11 +361,12 @@ export function doImageCommand(
 
     if (command === "paste") {
         // A temporary id is needed so the server-side callback can find the right
-        // image element when C# calls changeImage() by id.
+        // image element when C# calls changeImage() by id. Like every write of this id, it is
+        // made outside the page history, so that undo neither keeps nor puts it back.
         let imageId = img.getAttribute("id");
         if (!imageId) {
             imageId = EditableDivUtils.createUuid();
-            img.setAttribute("id", imageId);
+            doOutsideHistory(() => img.setAttribute("id", imageId!));
         }
         const topDiv = img.closest(kCanvasElementSelector);
         const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
@@ -395,7 +406,7 @@ export function doImageCommand(
         let imageId = img.getAttribute("id");
         if (!imageId) {
             imageId = EditableDivUtils.createUuid();
-            img.setAttribute("id", imageId);
+            doOutsideHistory(() => img.setAttribute("id", imageId!));
         }
         wrapWithRequestPageContentDelay(
             () => doChangeGifImage(img, imageId!),
@@ -456,7 +467,7 @@ async function doChangeGifImage(
         const { filePath } = pickResponse!.data as { filePath: string };
         if (!filePath) {
             // User cancelled — remove the temporary id.
-            img.removeAttribute("id");
+            doOutsideHistory(() => img.removeAttribute("id"));
             return;
         }
         const changeResponse = await postJsonAsync(
@@ -487,7 +498,7 @@ async function doChangeGifImage(
         };
         changeImage(imageInfo);
     } catch {
-        img.removeAttribute("id");
+        doOutsideHistory(() => img.removeAttribute("id"));
     }
 }
 
@@ -959,6 +970,10 @@ export function getBackgroundImageFromBloomCanvas(
     return getImageFromCanvasElement(bgCanvasElement as HTMLElement);
 }
 
+// The picture tooltip's title and data-title are recomputed from the picture and the selection,
+// so they are written outside the page history: pointing at a picture or selecting something must
+// make no undo step and must not clear redo (docs/undo/MINIMUM.md item 12).
+
 /**
  * Disables the current image tooltip
  */
@@ -970,7 +985,9 @@ function DisableImageTooltip(container: HTMLElement | undefined | null) {
         canvasElementManager
             .getAllBloomCanvasesOnPage()
             .forEach((bloomCanvas) => {
-                bloomCanvas.title = "";
+                doOutsideHistory(() => {
+                    bloomCanvas.title = "";
+                });
             });
         return;
     }
@@ -982,7 +999,9 @@ function DisableImageTooltip(container: HTMLElement | undefined | null) {
     const bloomCanvas = container.closest(kBloomCanvasSelector) as HTMLElement; // this is the one we want to clear the title on, if any
 
     if (bloomCanvas) {
-        bloomCanvas.title = "";
+        doOutsideHistory(() => {
+            bloomCanvas.title = "";
+        });
     }
 }
 
@@ -1023,7 +1042,9 @@ export function UpdateImageTooltipVisibility(
             ) as HTMLElement;
 
             if (bloomCanvas) {
-                bloomCanvas.title = dataTitle;
+                doOutsideHistory(() => {
+                    bloomCanvas.title = dataTitle;
+                });
             } else {
                 console.assert(false, ".bloom-canvas expected but not found.");
             }
@@ -1037,7 +1058,9 @@ async function SetImageTooltip(bloomCanvas: HTMLElement) {
     // We use data-title to store what the tooltip should be, regardless of whether the tooltip should actually be currently visible
     // Use the real title attribute to show the tooltip only when desired
     // (e.g. show when no canvas element selected but hide when a canvas element is selected)
-    bloomCanvas.setAttribute("data-title", title);
+    doOutsideHistory(() => {
+        bloomCanvas.setAttribute("data-title", title);
+    });
 
     UpdateImageTooltipVisibility(bloomCanvas);
 }

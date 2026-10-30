@@ -10,7 +10,6 @@ import {
 } from "../bloomImages";
 import { wrapWithRequestPageContentDelay } from "../bloomEditing";
 import { getExactClientSize } from "../../../utils/elementUtils";
-import type { IImageCropInfo } from "../ImageUndoManager";
 import {
     kBackgroundConversionDelayId,
     kBackgroundImageClass,
@@ -28,6 +27,10 @@ import {
 
 export interface BackgroundImageManagerState {
     bgImageLoadListeners: WeakMap<HTMLImageElement, (event: Event) => void>;
+    // One function for each fit of a background image that is waiting for its picture to load;
+    // each drops its fit. The canvas element manager calls them as an undo or redo begins
+    // (CanvasElementManager.abandonPendingFits).
+    abandonersOfPendingFits: Set<() => void>;
 }
 
 const pageContentDelayRequestId = "adjustBackgroundImageSize";
@@ -472,50 +475,23 @@ export function adjustBackgroundImageSize(
     useSizeOfNewImage: boolean,
     getActiveElement: () => HTMLElement | undefined,
     alignControlFrameWithActiveElement: () => void,
-    cropInfo?: IImageCropInfo,
 ): Promise<void> {
     // adjustBackgroundImageSizeToFit may wait for the image to load and make modifications after,
     // and we want to make sure those modifications are included in any save that occurs in the meantime.
     // wrapWithRequestPageContentDelay will add the delay before calling the function and remove it
     // when the promise settles.
-    return wrapWithRequestPageContentDelay(() => {
-        if (cropInfo) {
-            // For undo/restore, put cropping back first so size adjustment uses
-            // the restored image state rather than the image being replaced.
-            restoreImageCropInfo(bgCanvasElement, cropInfo);
-        }
-        return adjustBackgroundImageSizeToFit(
-            state,
-            bloomCanvas,
-            bgCanvasElement,
-            useSizeOfNewImage,
-            getActiveElement,
-            alignControlFrameWithActiveElement,
-        );
-    }, pageContentDelayRequestId);
-}
-
-function restoreImageCropInfo(
-    imageOrContainer: HTMLElement,
-    cropInfo: IImageCropInfo,
-): void {
-    const image = getImageElement(imageOrContainer);
-    if (!image) {
-        return;
-    }
-
-    image.style.width = cropInfo.width;
-    image.style.height = cropInfo.height;
-    image.style.left = cropInfo.left;
-    image.style.top = cropInfo.top;
-}
-
-function getImageElement(
-    imageOrContainer: HTMLElement,
-): HTMLImageElement | undefined {
-    return imageOrContainer.tagName.toLowerCase() === "img"
-        ? (imageOrContainer as HTMLImageElement)
-        : (imageOrContainer.getElementsByTagName("img")[0] ?? undefined);
+    return wrapWithRequestPageContentDelay(
+        () =>
+            adjustBackgroundImageSizeToFit(
+                state,
+                bloomCanvas,
+                bgCanvasElement,
+                useSizeOfNewImage,
+                getActiveElement,
+                alignControlFrameWithActiveElement,
+            ),
+        pageContentDelayRequestId,
+    );
 }
 
 // Given a bg canvas element, which is a canvas element having the bloom-backgroundImage
@@ -600,6 +576,7 @@ function adjustBackgroundImageSizeToFit(
         return new Promise<void>((resolve) => {
             const handle = setTimeout(
                 () => {
+                    state.abandonersOfPendingFits.delete(abandon);
                     adjustBackgroundImageSizeToFit(
                         state,
                         bloomCanvas,
@@ -622,6 +599,7 @@ function adjustBackgroundImageSizeToFit(
             clearImageLoadListener(state, img);
             const loadListener = () => {
                 clearTimeout(handle);
+                state.abandonersOfPendingFits.delete(abandon);
                 adjustBackgroundImageSizeToFit(
                     state,
                     bloomCanvas,
@@ -636,6 +614,17 @@ function adjustBackgroundImageSizeToFit(
             img.addEventListener("load", loadListener, {
                 once: true,
             });
+            // An undo or redo drops the fit: it would write the page after the undo or redo,
+            // which would join the latest step and clear redo. Resolving releases the page
+            // content delay that the fit holds.
+            const abandon = () => {
+                clearTimeout(handle);
+                img.removeEventListener("load", loadListener);
+                if (state.bgImageLoadListeners.get(img) === loadListener)
+                    state.bgImageLoadListeners.delete(img);
+                resolve();
+            };
+            state.abandonersOfPendingFits.add(abandon);
         });
     } else if (img.style.width) {
         // there is established cropping. Use the cropped size to determine the
