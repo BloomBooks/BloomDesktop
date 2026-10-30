@@ -4,7 +4,7 @@ import { ConfigrBoolean, ConfigrGroup, ConfigrPage } from "@sillsdev/config-r";
 import { useGetFeatureStatus } from "../../react_components/featureStatus";
 import { useL10n } from "../../react_components/l10nHooks";
 import { BloomSubscriptionIndicatorIconAndText } from "../../react_components/requiresSubscription";
-import { ICollectionSettingsResponse } from "../collectionSettingsTypes";
+import { ISettingsPage, ISettingsPageContext } from "./settingsPage";
 
 // ExperimentalFeatures.kTeamCollections in C#: the key of the feature in values.experimental.
 const kTeamCollectionsFeatureToken = "team-collections";
@@ -51,11 +51,9 @@ const ExperimentalFeatureSetting: React.FunctionComponent<{
  * The Experimental page of the Collection Settings dialog: the experimental features a user can
  * turn on.
  */
-export function useExperimentalPage(props: {
-    dialogOpen: boolean;
-    // Undefined until the dialog's GET collection/settings has answered.
-    settings: ICollectionSettingsResponse | undefined;
-}): React.ReactElement {
+export function useExperimentalPage(
+    context: ISettingsPageContext,
+): ISettingsPage {
     const label = useL10n(
         "Experimental",
         "CollectionSettingsDialog.ExperimentalPage",
@@ -75,13 +73,13 @@ export function useExperimentalPage(props: {
     // needs one, probably the Subscription page (whose typed-but-unsaved code may need to drive
     // this too).
     const teamCollectionStatus = useGetFeatureStatus(
-        props.dialogOpen ? "TeamCollection" : undefined,
+        context.dialogOpen ? "TeamCollection" : undefined,
     );
     const tablesStatus = useGetFeatureStatus(
-        props.dialogOpen ? "Table" : undefined,
+        context.dialogOpen ? "Table" : undefined,
     );
 
-    return (
+    const element = (
         <ConfigrPage label={label} pageKey="experimental" topLevel={true}>
             {/* No label: the page title already says "Experimental". */}
             <ConfigrGroup>
@@ -92,8 +90,8 @@ export function useExperimentalPage(props: {
                     disabled={
                         teamCollectionStatus?.enabled !== true ||
                         // Someone in a Team Collection may not turn the feature off.
-                        (props.settings?.isTeamCollection === true &&
-                            props.settings.values.experimental[
+                        (context.settings?.isTeamCollection === true &&
+                            context.settings.values.experimental[
                                 kTeamCollectionsFeatureToken
                             ])
                     }
@@ -107,4 +105,5 @@ export function useExperimentalPage(props: {
             </ConfigrGroup>
         </ConfigrPage>
     );
+    return { element };
 }
