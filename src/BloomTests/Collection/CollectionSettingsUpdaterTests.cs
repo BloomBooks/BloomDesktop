@@ -415,6 +415,69 @@ namespace BloomTests.Collection
             Assert.That(settings.Subscription, Is.SameAs(downloadedForEditing));
         }
 
+        /// <summary>
+        /// A bookshelf belongs to a subscription, so a code for a different subscription clears it
+        /// (BL-16904), even when its descriptor extends the old one. A code with the same
+        /// descriptor (renewed), or a mistyped code that looks like the same subscription, keeps it.
+        /// </summary>
+        [TestCase(
+            "Test-727011-1339",
+            "Sample-361769-1209",
+            "",
+            TestName = "DifferentSubscription_ClearsBookshelf"
+        )]
+        [TestCase(
+            "Fake-009926-0521",
+            "Fake-LC-009926-1483",
+            "",
+            TestName = "ValidCodeWhoseDescriptorExtendsTheOld_ClearsBookshelf"
+        )]
+        [TestCase(
+            "Test-727011-1339",
+            "Test-727011-1338",
+            "oldShelf",
+            TestName = "SameDescriptor_KeepsBookshelf"
+        )]
+        [TestCase(
+            "Test-727011-1339",
+            "Test-727011-133",
+            "oldShelf",
+            TestName = "MistypedCodeForTheSameSubscription_KeepsBookshelf"
+        )]
+        public void Apply_ChangedSubscriptionCode_Bookshelf(
+            string originalCode,
+            string newCode,
+            string expectedShelf
+        )
+        {
+            var settings = CreateCollectionSettings("ApplyChangedSubscriptionBookshelf");
+            settings.Subscription = new Subscription(originalCode);
+            settings.DefaultBookshelf = "oldShelf";
+            settings.Save();
+            Assert.That(
+                RobustFile.ReadAllText(settings.SettingsFilePath),
+                Does.Contain("bookshelf:oldShelf"),
+                "Sanity check: the file should start with a bookshelf"
+            );
+            Assert.That(
+                settings.Subscription.GetIntegrityLabel(),
+                Is.EqualTo("ok"),
+                "Sanity check: the original code should be well-formed"
+            );
+            var values = CurrentValuesJson(settings);
+            values["subscription"]["code"] = newCode;
+
+            Apply(values, settings);
+
+            Assert.That(settings.Subscription.Code, Is.EqualTo(newCode));
+            Assert.That(settings.DefaultBookshelf, Is.EqualTo(expectedShelf));
+            var savedFile = RobustFile.ReadAllText(settings.SettingsFilePath);
+            if (expectedShelf == "")
+                Assert.That(savedFile, Does.Not.Contain("bookshelf:"));
+            else
+                Assert.That(savedFile, Does.Contain("bookshelf:" + expectedShelf));
+        }
+
         [Test]
         public void Apply_BookshelfSetToNone_RemovedFromTheFile()
         {
