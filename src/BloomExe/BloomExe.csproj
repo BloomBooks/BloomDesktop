@@ -29,8 +29,8 @@
 		<!-- NETSDK1206 is expected here: SQLitePCLRaw.lib.e_sqlite3 carries non-Windows RID assets
 		     (e.g., alpine-*), but this project targets Windows only. -->
 		<NoWarn>$(NoWarn);NETSDK1206</NoWarn>
-		<!-- NU1701: Enchant.Net, ibusdotnet and KeymanLegacyBundle are transitive (via
-		     SIL.Windows.Forms and SIL.Windows.Forms.Keyboarding) and only ship .NET Framework builds. Per-package
+		<!-- NU1701: Enchant.Net is transitive (via SIL.Windows.Forms) and only ships .NET
+		     Framework builds. Per-package
 		     NoWarn metadata on a PackageReference Update does not reach transitive packages, so
 		     the code has to be suppressed for the project. -->
 		<NoWarn>$(NoWarn);NU1701</NoWarn>
@@ -278,7 +278,6 @@
 		<PackageReference Include="SIL.libpalaso.l10ns" Version="18.0.0" GeneratePathProperty="true" />
 		<PackageReference Include="SIL.Media" Version="18.0.0" />
 		<PackageReference Include="SIL.Windows.Forms" Version="18.0.0" />
-		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="18.0.0" />
 		<PackageReference Include="SIL.WritingSystems" Version="18.0.0" />
 		<PackageReference Include="sillsdev.dotImpose" Version="2.6.8" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />

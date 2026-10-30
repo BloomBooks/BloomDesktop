@@ -6,17 +6,15 @@ about what third-party packages force on us.*
 
 ## Where WinForms enters through dependencies
 
-Five NuGet packages in BloomExe are WinForms or Windows-desktop-only: three declare a WindowsDesktop
-framework reference in `project.assets.json`, SIL.Windows.Forms.Keyboarding no longer declares one
-but still ships only `net8.0-windows`, and WebView2 is used through its WinForms control. Everything
-else in the graph is netstandard or plain net8.0.
+Four NuGet packages in BloomExe are WinForms or Windows-desktop-only: three declare a WindowsDesktop
+framework reference in `project.assets.json`, and WebView2 is used through its WinForms control.
+Everything else in the graph is netstandard or plain net8.0.
 
 | Package | Why it's WinForms | How much of Bloom touches it |
 |---|---|---|
 | SIL.Windows.Forms | net8.0-windows only; owns ClearShare `Metadata` and the image-bearing licenses (`CreativeCommonsLicense`, `CustomLicense`, `ILicenseWithImage`), `PalasoImage`, `ImageUtils`, `Registration`, `PortableClipboard`, `ProgressDialog`, `ConfirmRecycleDialog`, `UniqueToken`, `WinFormsErrorReporter`. Also the source of the Enchant.Net compat shim. | 50 non-Designer files in BloomExe, 13 in BloomTests. The big one. |
-| SIL.Windows.Forms.Keyboarding | net8.0-windows only; drags in ibusdotnet and KeymanLegacyBundle (.NET Framework-only builds, source of the NU1701 warnings suppressed in `BloomExe.csproj`) | One call, `KeyboardController.IsFormUsingInputProcessor`, in `web/controllers/KeyboardingConfigApi.cs` |
 | SIL.Media | net8.0-windows only; wraps NAudio (Windows) and ALSA (Linux). No macOS backend at all. | One file, `Edit/AudioRecording.cs` (`AudioRecorder`, `RecordingDevice`) |
-| L10NSharp.Windows.Forms | The `L10NSharpExtender` designer component. A direct reference at **12.0.0-beta0006**, matching core L10NSharp; SIL.Windows.Forms and Keyboarding would otherwise bring 11.0.1 | 11 Designer files plus `NewCollectionWizard.cs`, and `using L10NSharp.Windows.Forms` in `Program.cs` and `Workspace/WorkspaceView.cs`. The core `LocalizationManager` API lives in the netstandard `L10NSharp` package, so this goes away with our own WinForms dialogs. |
+| L10NSharp.Windows.Forms | The `L10NSharpExtender` designer component. A direct reference at **12.0.0-beta0006**, matching core L10NSharp; SIL.Windows.Forms would otherwise bring 11.0.1 | 11 Designer files plus `NewCollectionWizard.cs`, and `using L10NSharp.Windows.Forms` in `Program.cs` and `Workspace/WorkspaceView.cs`. The core `LocalizationManager` API lives in the netstandard `L10NSharp` package, so this goes away with our own WinForms dialogs. |
 | Microsoft.Web.WebView2 | The package is fine; we use its WinForms wrapper control | `BloomWebView2.cs`, `WebView2Browser.cs`, and the WebView2PdfMaker project |
 
 ## What each one takes to remove
@@ -66,12 +64,6 @@ The remaining SIL.Windows.Forms pieces we use are small and replaceable one by o
 `UniqueToken` and `PortableClipboard` have trivial cross-platform equivalents; the progress and
 recycle dialogs go away with our own WinForms UI; `WinFormsErrorReporter` is only a fallback inside
 `HtmlErrorReporter`.
-
-### Keyboarding: the one-call package left, an afternoon
-
-The keyboarding call is a Windows TSF check; make it a platform-guarded no-op or hide it behind an
-interface. Dropping this package removes ibusdotnet and KeymanLegacyBundle. Enchant.Net, the third
-NU1701 shim, comes from SIL.Windows.Forms and stays until that does.
 
 ### SIL.Media: needs a replacement, not a port
 
@@ -128,12 +120,11 @@ Fleck) is already cross-platform.
 
 ## Suggested order
 
-1. Remove the last one-call dependency, Keyboarding.
-2. Decide the browser host. Every other UI decision hangs off it.
-3. Run the imaging replacement (libpalaso image core with the CC badges, our System.Drawing code,
+1. Decide the browser host. Every other UI decision hangs off it.
+2. Run the imaging replacement (libpalaso image core with the CC badges, our System.Drawing code,
    the WPF font code) as one workstream, since they share a library choice. Moving Bloom's license
    code to the `*Info` types goes with it, and then `Metadata` leaves SIL.Windows.Forms too.
-4. Replace audio recording, USB publishing, and WMI last; they are self-contained.
+3. Replace audio recording, USB publishing, and WMI last; they are self-contained.
 
 ## How this was measured
 
