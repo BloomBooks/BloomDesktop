@@ -302,6 +302,8 @@ export class CanvasElementManager {
                     this.alignControlFrameWithActiveElement,
                 adjustBackgroundImageSize:
                     this.adjustBackgroundImageSize.bind(this),
+                adjustContainerAspectRatio: (canvasElement) =>
+                    this.adjustContainerAspectRatio(canvasElement),
                 adjustCanvasElementHeightToContentOrMarkOverflow:
                     this.adjustCanvasElementHeightToContentOrMarkOverflow.bind(
                         this,
@@ -1778,8 +1780,18 @@ export class CanvasElementManager {
             this.alignControlFrameWithActiveElement();
             return;
         }
-        const containerWidth = canvasElement.clientWidth;
-        const containerHeight = canvasElement.clientHeight;
+        // The size and position as the style gives them, rather than clientWidth and offsetLeft,
+        // which the browser rounds to whole pixels. Compared with rounded numbers, a box that
+        // already fits its picture looks as if it does not, and selecting it would write a new
+        // size and position every time.
+        const containerWidth = styleLengthInPx(
+            canvasElement.style.width,
+            canvasElement.clientWidth,
+        );
+        const containerHeight = styleLengthInPx(
+            canvasElement.style.height,
+            canvasElement.clientHeight,
+        );
         let imgWidth = 1;
         let imgHeight = 1;
         if (imgOrVideo instanceof HTMLImageElement) {
@@ -1842,47 +1854,58 @@ export class CanvasElementManager {
                 newHeight = newWidth / imgRatio;
             }
         }
-        const oldHeight = canvasElement.clientHeight;
-        if (Math.abs(oldHeight - newHeight) <= 0.1) {
-            // don't let small rounding errors accumulate
-            newHeight = oldHeight;
-        } else {
-            canvasElement.style.height = `${newHeight}px`;
-        }
-        // and move container down so image does not move
-        const oldTop = canvasElement.offsetTop;
-        let newTop = oldTop + (oldHeight - newHeight) / 2;
-
-        const oldWidth = canvasElement.clientWidth;
-        if (Math.abs(oldWidth - newWidth) <= 0.1) {
-            newWidth = oldWidth;
-        } else {
-            canvasElement.style.width = `${newWidth}px`;
-        }
-        // and move container right so image does not move
-        const oldLeft = canvasElement.offsetLeft;
-        let newLeft = oldLeft + (oldWidth - newWidth) / 2;
-
-        // except, if it was "on the grid" before, such as a newly added placeholder,
-        // or we just changed the image, we want to keep it on the grid.
-        const adjustedOld = this.snapProvider.getPosition(
-            undefined,
-            oldLeft,
-            oldTop,
-        );
-        if (adjustedOld.x === oldLeft && adjustedOld.y === oldTop) {
-            // it was on the grid, so we want to keep it there.
-            const adjustedNew = this.snapProvider.getPosition(
-                undefined,
-                newLeft,
-                newTop,
+        const oldHeight = containerHeight;
+        const oldWidth = containerWidth;
+        // A box within this of the size that fits is left alone, so that small rounding errors
+        // do not accumulate, and so that selecting a box that fits writes nothing.
+        const heightFits = Math.abs(oldHeight - newHeight) <= 0.1;
+        const widthFits = Math.abs(oldWidth - newWidth) <= 0.1;
+        if (!heightFits || !widthFits) {
+            if (heightFits) {
+                newHeight = oldHeight;
+            } else {
+                canvasElement.style.height = `${newHeight}px`;
+            }
+            // and move container down so image does not move
+            const oldTop = styleLengthInPx(
+                canvasElement.style.top,
+                canvasElement.offsetTop,
             );
-            newLeft = adjustedNew.x;
-            newTop = adjustedNew.y;
-        }
+            let newTop = oldTop + (oldHeight - newHeight) / 2;
 
-        canvasElement.style.left = `${newLeft}px`;
-        canvasElement.style.top = `${newTop}px`;
+            if (widthFits) {
+                newWidth = oldWidth;
+            } else {
+                canvasElement.style.width = `${newWidth}px`;
+            }
+            // and move container right so image does not move
+            const oldLeft = styleLengthInPx(
+                canvasElement.style.left,
+                canvasElement.offsetLeft,
+            );
+            let newLeft = oldLeft + (oldWidth - newWidth) / 2;
+
+            // except, if it was "on the grid" before, such as a newly added placeholder,
+            // or we just changed the image, we want to keep it on the grid.
+            const adjustedOld = this.snapProvider.getPosition(
+                undefined,
+                oldLeft,
+                oldTop,
+            );
+            if (adjustedOld.x === oldLeft && adjustedOld.y === oldTop) {
+                // it was on the grid, so we want to keep it there.
+                const adjustedNew = this.snapProvider.getPosition(
+                    undefined,
+                    newLeft,
+                    newTop,
+                );
+                newLeft = adjustedNew.x;
+                newTop = adjustedNew.y;
+            }
+
+            canvasElement.style.left = `${newLeft}px`;
+            canvasElement.style.top = `${newTop}px`;
+        }
         this.alignControlFrameWithActiveElement();
         if (this.doAfterNewImageAdjusted) {
             this.doAfterNewImageAdjusted();
@@ -3549,6 +3572,16 @@ export {
     canvasElementDescription,
     showCanvasTool,
 } from "./CanvasElementToolboxBridge";
+
+/**
+ * The length in px that a style value such as "12.5px" gives, or measured when the style has no
+ * length in px.
+ */
+function styleLengthInPx(value: string, measured: number): number {
+    if (!value) return measured;
+    const px = pxToNumberFromCssUtils(value);
+    return isNaN(px) ? measured : px;
+}
 
 function SetupClickToShowCanvasTool(canvas: Element) {
     // When the user clicks the canvas background, we want to ensure the Canvas tool is available.

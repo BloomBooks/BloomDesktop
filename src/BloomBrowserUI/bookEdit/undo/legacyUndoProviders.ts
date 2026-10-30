@@ -58,9 +58,8 @@ export const origamiUndoProvider: ILegacyUndoProvider = {
  * consulted *before* CKEditor on purpose — while a reader tool is active it must shadow CKEditor's
  * undo, which would otherwise restore stale decodable/leveled markup.
  *
- * It is also the one legacy mechanism with a Redo (`readerToolsModel.redo`), reached by
- * Ctrl+Y/Ctrl+Shift+Z from the reader tools' own per-editable handler. The shared stack does not
- * offer it: that handler keeps working, and this adapter covers only the button's undo.
+ * Its redo (`readerToolsModel.redo`) is not offered: Ctrl+Z and Ctrl+Y in a box go to CKEditor
+ * (see decodableReaderTool.tsx), and this adapter covers only the button's undo.
  *
  * `canUndo` is called through an existence check because the old `canUndo()` did the same, and it
  * is polled on a timer by C#: a throw here would fire repeatedly. `undo` is not, also matching the
