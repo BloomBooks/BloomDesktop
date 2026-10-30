@@ -241,6 +241,37 @@ describe("Show Invisibles", () => {
         expect(selection.focusOffset).toBe(8);
     });
 
+    it("keeps the caret between two invisible characters where it was", () => {
+        firstText.data = `Hello${kNoBreakSpace}${kNoBreakSpace}big`;
+        editable.focus();
+        putCaret(firstText, 6);
+
+        holdShowInvisibles();
+        // Between the two symbols' spans.
+        const selection = document.getSelection()!;
+        expect(selection.anchorNode).toBe(editable.querySelector("p"));
+        expect(selection.anchorNode!.childNodes[selection.anchorOffset]).toBe(
+            editable.querySelectorAll("span.invisibles")[1],
+        );
+        releaseShowInvisibles();
+        expectCaret(firstText, 6);
+    });
+
+    it("puts back a caret that the user moved while the symbols showed where they moved it", () => {
+        editable.focus();
+        putCaret(firstText, 2);
+        holdShowInvisibles();
+        // The text after the U+200B's symbol, "again", is a node that showing added.
+        const again = editable.querySelector("b")!.lastChild as Text;
+        expect(again.data).toBe("again");
+
+        // As a click between "ag" and "ain" would.
+        putCaret(again, 2);
+        releaseShowInvisibles();
+
+        expectCaret(secondText, 8);
+    });
+
     it("leaves CKEditor's filling character alone", () => {
         // A box where CKEditor keeps its filling character in an empty <i>, as it does after
         // Ctrl+I with nothing selected.

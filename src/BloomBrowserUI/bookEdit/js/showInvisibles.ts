@@ -120,12 +120,17 @@ function hideInvisibles(): void {
     showing = undefined;
     // On blur the selection has already left the box; don't yank it back.
     const now = selectionEnds(shown.box.ownerDocument);
-    const restoreSelection = now && shown.box.contains(now[0][0]);
+    // The user may have moved the caret or selected something while the symbols showed, so put
+    // back the selection as it is now, not as it was before showing.
+    const selection =
+        now && shown.box.contains(now[0][0])
+            ? now.map((point) => placeAfterHiding(shown, point))
+            : undefined;
     $(shown.added).filter(".invisibles").qtip("destroy");
     shown.originals.forEach((data, node) => (node.data = data));
     shown.added.forEach((node) => node.parentNode?.removeChild(node));
-    if (restoreSelection && shown.selection) {
-        const [anchor, focus] = shown.selection;
+    if (selection) {
+        const [anchor, focus] = selection;
         shown.box.ownerDocument
             .getSelection()!
             .setBaseAndExtent(...anchor, ...focus);
@@ -182,18 +187,61 @@ function placeWhileShowing(shown: Showing, before: Point, now: Point): Point {
     const [node, offset] = before;
     const pieces = shown.pieces.get(node);
     if (!pieces) return now;
+    const indexInParent = (node: Node) =>
+        Array.from(node.parentNode!.childNodes).indexOf(node as ChildNode);
     for (const piece of pieces) {
         const length = piece.node.textContent!.length;
         const inPiece = offset >= piece.start && offset <= piece.start + length;
         if (piece.node.nodeType === Node.TEXT_NODE && inPiece)
             return [piece.node, offset - piece.start];
+        // Just before a symbol that no text comes before, such as the second of two together.
+        if (piece.node.nodeType !== Node.TEXT_NODE && offset === piece.start)
+            return [piece.node.parentNode!, indexInParent(piece.node)];
     }
     // Just after a symbol that ends the text.
     const last = pieces[pieces.length - 1].node;
-    const parent = last.parentNode!;
+    return [last.parentNode!, indexInParent(last) + 1];
+}
+
+/**
+ * Where a point in the box while the symbols show will be once hideInvisibles has put back the
+ * nodes that showInvisibles split.
+ */
+function placeAfterHiding(shown: Showing, point: Point): Point {
+    const [node, offset] = point;
+    // The split text node that piece, or the node inside it, holds the text of, and the piece.
+    const findPiece = (inPiece: Node) => {
+        for (const [original, pieces] of shown.pieces) {
+            const piece = pieces.find((p) => p.node.contains(inPiece));
+            if (piece) return { original: original as Text, piece };
+        }
+        return undefined;
+    };
+    const found = findPiece(node);
+    if (found) {
+        const { original, piece } = found;
+        if (piece.node.nodeType === Node.TEXT_NODE)
+            return [original, piece.start + offset];
+        // In a symbol's span: before or after its one character.
+        return [original, piece.start + (offset > 0 ? 1 : 0)];
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return point;
+    // Between the children of an element. Next to a piece of a split text node, the point goes to
+    // that place in the text; otherwise only the children that stay count.
+    const children = Array.from(node.childNodes);
+    const before = children[offset - 1] && findPiece(children[offset - 1]);
+    if (before)
+        return [
+            before.original,
+            before.piece.start + before.piece.node.textContent!.length,
+        ];
+    const after = children[offset] && findPiece(children[offset]);
+    if (after) return [after.original, after.piece.start];
     return [
-        parent,
-        Array.from(parent.childNodes).indexOf(last as ChildNode) + 1,
+        node,
+        children
+            .slice(0, offset)
+            .filter((child) => !shown.added.includes(child)).length,
     ];
 }
 
