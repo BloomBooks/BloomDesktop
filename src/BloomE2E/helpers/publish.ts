@@ -457,6 +457,24 @@ export async function getSignLanguageFeature(
 }
 
 /**
+ * Wait until the Sign Language row of the Publish screen showing is as expected. Use this rather
+ * than a bare expect on getSignLanguageFeature: the row is filled in from requests the screen makes
+ * after it shows (whether the book has video, the sign language's name), and after a sign
+ * language is chosen the checkbox asks Bloom for its value again.
+ */
+export async function expectSignLanguageFeature(
+    page: Page,
+    expected: ISignLanguageFeature,
+): Promise<void> {
+    await expect
+        .poll(() => getSignLanguageFeature(page), {
+            timeout: 30000,
+            message: "The Sign Language feature never showed as expected.",
+        })
+        .toEqual(expected);
+}
+
+/**
  * Open the language chooser from the link in the Sign Language row's tooltip on a Publish screen,
  * the way a person sets the collection's sign language from there: the link is the sign
  * language's name, or "no sign language selected" when the collection has none. Returns once the

@@ -28,7 +28,7 @@ import {
 } from "../helpers/languageChooser";
 import {
     getCollectionSignLanguage,
-    getSignLanguageFeature,
+    expectSignLanguageFeature,
     openSignLanguageChooserFromPublish,
     selectPublishDestination,
 } from "../helpers/publish";
@@ -70,7 +70,7 @@ test("with no sign language, the feature is off, and its tooltip's link sets one
         await getCollectionSignLanguage(page),
         "sanity check: the collection starts with no sign language",
     ).toEqual({ tag: "", name: "" });
-    expect(await getSignLanguageFeature(page)).toEqual({
+    await expectSignLanguageFeature(page, {
         enabled: false,
         checked: false,
         tooltip:
@@ -84,7 +84,7 @@ test("with no sign language, the feature is off, and its tooltip's link sets one
     await expect
         .poll(() => getCollectionSignLanguage(page))
         .toEqual({ tag: "ase", name: "American Sign Language" });
-    expect(await getSignLanguageFeature(page)).toEqual({
+    await expectSignLanguageFeature(page, {
         enabled: true,
         checked: true,
         tooltip: "The videos in this book contain American Sign Language",
@@ -112,7 +112,7 @@ test("the tooltip's link changes the sign language, Cancel there changes nothing
     await expect
         .poll(() => getCollectionSignLanguage(page))
         .toEqual({ tag: "bfi", name: "British Sign Language" });
-    expect(await getSignLanguageFeature(page)).toEqual({
+    await expectSignLanguageFeature(page, {
         enabled: true,
         checked: true,
         tooltip: "The videos in this book contain British Sign Language",
