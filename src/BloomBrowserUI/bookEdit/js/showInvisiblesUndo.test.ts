@@ -12,6 +12,7 @@ import {
     attachInputTransactions,
     kTypingUndoDescriptionL10nKey,
 } from "../pageHistory/pageHistoryInput";
+import { attachUndoAndRedoKeys } from "../pageHistory/pageHistoryKeys";
 import { PageHistory } from "../pageHistory/pageHistoryTypes";
 
 const access = vi.hoisted(() => ({
@@ -347,6 +348,29 @@ describe("Show Invisibles and the page history", () => {
         expect(secondText.data).toBe(`${kSecondText}xyz`);
         await history.undo();
         expect(secondText.data).toBe(kSecondText);
+    });
+
+    it("hides the symbols at a Ctrl+Shift+Z with nothing to redo, which the page history's keys take", () => {
+        const detachKeys = attachUndoAndRedoKeys(window, [], {
+            undo: () => void history.undo(),
+            redo: () => void history.redo(),
+            isInChangeLayoutMode: () => false,
+        });
+        try {
+            const nodesBefore = allNodesIn(editable);
+            holdShowInvisibles();
+            // Sanity checks: the symbols show, and there is nothing to redo.
+            expect(shownSymbols().length).toBe(2);
+            expect(history.redoDescriptionL10nKey).toBe(undefined);
+
+            key("keydown", "Z", { ctrlKey: true, shiftKey: true });
+
+            expectSameNodes(nodesBefore);
+            expect(firstText.data).toBe(kFirstText);
+            expect(secondText.data).toBe(kSecondText);
+        } finally {
+            detachKeys();
+        }
     });
 
     it("leaves CKEditor's filling character alone", () => {

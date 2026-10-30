@@ -59,7 +59,8 @@ interface Showing {
     added: Node[];
     // The selection's anchor and focus before showing.
     selection?: Point[];
-    stopListeningToHistory: () => void;
+    // Removes the listeners that hide the symbols again.
+    stopListening: () => void;
 }
 
 let showing: Showing | undefined;
@@ -73,17 +74,22 @@ export function listenForShowInvisiblesKeys(container: HTMLElement): void {
     $(container)
         .find("div.bloom-editable")
         .on("keydown", (e) => {
-            const isCtrlShiftSpace =
-                e.ctrlKey && e.shiftKey && !e.altKey && e.key === " ";
-            if (!isCtrlShiftSpace) {
-                // Such as Ctrl+Shift+V, which must act on the real text.
-                hideInvisibles();
-                return;
-            }
+            if (!isShowInvisiblesKey(e)) return;
             e.preventDefault();
             showInvisibles(e.currentTarget as HTMLElement);
         })
-        .on("keyup blur", () => hideInvisibles());
+        .on("blur", () => hideInvisibles());
+}
+
+function isShowInvisiblesKey(event: {
+    ctrlKey: boolean;
+    shiftKey: boolean;
+    altKey: boolean;
+    key?: string;
+}): boolean {
+    return (
+        event.ctrlKey && event.shiftKey && !event.altKey && event.key === " "
+    );
 }
 
 /** Put a symbol in place of each invisible character in box, and explain each kind of symbol. */
@@ -96,7 +102,7 @@ function showInvisibles(box: HTMLElement): void {
         pieces: new Map(),
         added: [],
         selection: selectionEnds(box.ownerDocument),
-        stopListeningToHistory: () => {},
+        stopListening: () => {},
     };
     doOutsideHistory(() => {
         const namesWithTooltip = new Set<string>();
@@ -120,8 +126,25 @@ function showInvisibles(box: HTMLElement): void {
     });
     // An undo or redo, such as a Ctrl+Shift+Z while the keys are held, must find the page as the
     // history knows it.
-    shown.stopListeningToHistory =
+    const stopListeningToHistory =
         currentPageHistory()?.onBeforeUndoOrRedo(hideInvisibles) ?? (() => {});
+    // Any other key, such as Ctrl+Shift+V, which must act on the real text, or the release of any
+    // key hides them. These listen in the capture phase of the window, where the page history's
+    // key handler stops the undo and redo keys and the keyups after them, so that the box never
+    // sees them; stopping an event there does not keep it from the window's other listeners.
+    // Otherwise a Ctrl+Shift+Z with nothing to redo would leave the symbols showing.
+    const view = box.ownerDocument.defaultView!;
+    const hideOnOtherKey = (event: KeyboardEvent) => {
+        if (event.type === "keyup" || !isShowInvisiblesKey(event))
+            hideInvisibles();
+    };
+    view.addEventListener("keydown", hideOnOtherKey, true);
+    view.addEventListener("keyup", hideOnOtherKey, true);
+    shown.stopListening = () => {
+        stopListeningToHistory();
+        view.removeEventListener("keydown", hideOnOtherKey, true);
+        view.removeEventListener("keyup", hideOnOtherKey, true);
+    };
     showing = shown;
 }
 
@@ -130,7 +153,7 @@ function hideInvisibles(): void {
     const shown = showing;
     if (!shown) return;
     showing = undefined;
-    shown.stopListeningToHistory();
+    shown.stopListening();
     doOutsideHistory(() => {
         // On blur the selection has already left the box; don't yank it back.
         const now = selectionEnds(shown.box.ownerDocument);
