@@ -243,6 +243,55 @@ describe("The reader tools' own undo, now that their markup does not rewrite the
         },
     );
 
+    it("does not let the Undo button undo a Ctrl+Z, putting back the text that it took away", () => {
+        new DecodableReaderTool().setupReaderKeyAndFocusHandlers(document.body);
+        // A stand-in for CKEditor's undo, whose listener on the box runs after the reader tools'.
+        box.addEventListener("keydown", () => {
+            paragraph.innerHTML = kTextBefore;
+        });
+        typeInTheBox();
+        // sanity check: the reader could undo the typing
+        expect(model.canUndo()).toBe(true);
+        vi.useFakeTimers({ toFake: ["setTimeout"] });
+
+        box.dispatchEvent(
+            new KeyboardEvent("keydown", {
+                keyCode: 90,
+                ctrlKey: true,
+                bubbles: true,
+                cancelable: true,
+            }),
+        );
+        vi.runAllTimers();
+        // The markup pass that follows the undo, as pageEditingMarkup.ts runs it.
+        model.doMarkup();
+
+        expect(box.innerHTML).toBe(`<p>${kTextBefore}</p>`);
+        // So the Undo button goes on to CKEditor's undo, as Ctrl+Z would.
+        expect(model.canUndo()).toBe(false);
+    });
+
+    it("keeps CKEditor's selection bookmarks out of what undo and redo write back", () => {
+        // As the toolbox's markup pass leaves the box while our markup runs, when there is an
+        // nbsp or a comment to clean up: a bookmark at the caret, taken out again afterwards.
+        (paragraph.firstChild as Text).data = kTextTyped;
+        const bookmark = document.createElement("span");
+        bookmark.setAttribute("data-cke-bookmark", "1");
+        bookmark.style.display = "none";
+        bookmark.textContent = " ";
+        paragraph.appendChild(bookmark);
+        model.doMarkup();
+        bookmark.remove();
+        // sanity check
+        expect(model.canUndo()).toBe(true);
+
+        model.undo();
+        expect(box.innerHTML).toBe(`<p>${kTextBefore}</p>`);
+
+        model.redo();
+        expect(box.innerHTML).toBe(`<p>${kTextTyped}</p>`);
+    });
+
     it("keeps CKEditor's filling character out of what undo and redo write back", () => {
         // As after the user typed " four" after a bold word: CKEditor's character is in the
         // node it tracks. doMarkup used to rewrite the box from getData(), which left it out.

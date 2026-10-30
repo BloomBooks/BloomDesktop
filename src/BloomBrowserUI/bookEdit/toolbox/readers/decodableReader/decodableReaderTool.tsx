@@ -154,10 +154,15 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
                     // the box runs after this one whatever this returns, so running the reader's
                     // undo here would make one keypress two undos, and CKEditor's redo would then
                     // put back the box as the reader's undo had left it.
-                    if (
-                        getTheOneReaderToolsModel().currentMarkupType !==
-                        MarkupType.None
-                    ) {
+                    const model = getTheOneReaderToolsModel();
+                    if (model.currentMarkupType !== MarkupType.None) {
+                        // The reader tools' own history knows nothing of CKEditor's undo or redo.
+                        // Start it again from the box as CKEditor leaves it, once CKEditor's
+                        // handler has run. Otherwise the next markup pass would record the undone
+                        // text as a new edit, and the Undo button would then undo the Ctrl+Z,
+                        // putting back the text that it took away.
+                        const box = e.currentTarget as HTMLElement;
+                        window.setTimeout(() => model.noteFocus(box));
                         // CKEditor's undo or redo replaces the text nodes our highlights are
                         // painted over, so the markup has to be redone before they can paint
                         // anything again (BL-16558). The update is scheduled, so it comes after

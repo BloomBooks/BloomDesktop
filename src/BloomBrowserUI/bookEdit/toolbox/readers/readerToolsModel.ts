@@ -664,6 +664,9 @@ export class ReaderToolsModel {
      * character: doMarkup no longer rewrites the box from CKEditor's getData(), which left it out,
      * so the box can hold it when we look, and undo or redo would write it back as text that
      * CKEditor no longer tracks and that is then saved into the book (BL-16490).
+     * They also leave out CKEditor's selection bookmarks, which the toolbox's markup pass puts in
+     * the box around our markup when there is an nbsp or a comment to clean up, and takes out
+     * after it. Kept, undo would write one back, where nothing would ever take it out.
      */
     private static contentsOf(element: HTMLElement): {
         html: string;
@@ -671,6 +674,9 @@ export class ReaderToolsModel {
     } {
         const clone =
             EditableDivUtils.cloneWithoutTrackedCkEditorFillingChar(element);
+        clone
+            .querySelectorAll("[data-cke-bookmark]")
+            .forEach((bookmark) => bookmark.remove());
         return { html: clone.innerHTML, text: clone.textContent ?? "" };
     }
 
