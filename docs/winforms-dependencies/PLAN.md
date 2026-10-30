@@ -1,9 +1,8 @@
 # Getting rid of WinForms that comes in through dependencies
 
-*Analysis of master as of 2026-10-30 (b4282881bd) plus the `libpalaso-18-upgrade` branch, against
-libpalaso 18.0.0, L10NSharp 12.0.0-beta0006, WebView2 1.0.1518.46. Our own WinForms code (Forms, Designer files, dialogs) is out of scope
-here; this is about what third-party packages force on us. First written 2026-09-17 against
-beta0028; see "Changes since the first analysis" at the end.*
+*Master as of 2026-10-30 (07b63183ac): libpalaso 18.0.0, L10NSharp 12.0.0-beta0006, WebView2
+1.0.1518.46. Our own WinForms code (Forms, Designer files, dialogs) is out of scope here; this is
+about what third-party packages force on us.*
 
 ## Where WinForms enters through dependencies
 
@@ -26,19 +25,30 @@ else in the graph is netstandard or plain net8.0.
 
 ### SIL.Windows.Forms: mostly a libpalaso problem, and libpalaso has started on it
 
-[PR #1478](https://github.com/sillsdev/libpalaso/pull/1478) (Dec 2025) moved the license and
-metadata core into `SIL.Core.ClearShare` in the netstandard SIL.Core assembly: `MetadataCore`,
-`LicenseInfo`, `CreativeCommonsLicenseInfo`, `CustomLicenseInfo`, `NullLicense`, `LicenseUtils`.
-We have used those since the beta0001 upgrade (Jan 2026); 7 BloomExe files import
-`SIL.Core.ClearShare`. libpalaso 18.0.0 shipped on 2026-10-12 and moved nothing further.
+The netstandard SIL.Core assembly has the license and metadata core in `SIL.Core.ClearShare`
+([PR #1478](https://github.com/sillsdev/libpalaso/pull/1478)): `MetadataCore`, `LicenseInfo`,
+`CreativeCommonsLicenseInfo`, `CustomLicenseInfo`, `NullLicense`, `LicenseUtils`. 7 BloomExe files
+import `SIL.Core.ClearShare`.
 
 Still coming from `SIL.Windows.Forms.ClearShare` (13 files):
 
-- `Metadata`, including `Metadata.FromFile`: ~60 lines across 14 files.
+- `Metadata`, including `Metadata.FromFile`: ~60 lines across 14 files. Every one of the 13 files
+  needs it, so this is what keeps the import.
 - `CreativeCommonsLicense` and `CustomLicense`, mainly in `Book/BookCopyrightAndLicense.cs`,
   `web/controllers/CopyrightAndLicenseApi.cs`, `ImageGalleryApi.cs` and `AiImageEditorApi.cs`.
 - `ILicenseWithImage.GetImage()` (the CC badge bitmap) in `BookCopyrightAndLicense.cs` and
-  `CopyrightAndLicenseApi.cs`. The badges could be served as files instead.
+  `CopyrightAndLicenseApi.cs`. The core `*Info` types have no badge.
+
+Moving the license code to the `*Info` types on its own removes no package and no import, and would
+mean copying libpalaso's badge PNGs into Bloom. It belongs in the libpalaso contribution below:
+add the badges to SIL.Core (a `CreativeCommonsLicenseInfo` method returning PNG bytes, no
+System.Drawing), and Bloom's switch becomes mechanical. Two traps for whoever does it:
+
+- `Metadata` returns the WinForms subclasses when it reads an image, so every type check must
+  test the `*Info` base.
+- Bloom writes the badge into each book as `license.png`. To keep that file byte-identical in
+  existing books, the badge bytes must be what GDI+ writes when it saves libpalaso's resource
+  bitmaps, not the raw resource PNGs.
 
 The image side has **not** moved either: `PalasoImage` and `ImageUtils`, built on System.Drawing.
 Our usage is narrow but deep:
@@ -48,7 +58,7 @@ Our usage is narrow but deep:
   `ImageProcessing/ImageUtils.cs`.
 
 The realistic path is a libpalaso contribution: a netstandard image core, with `Metadata.FromFile`
-reading via TagLibSharp, which is already netstandard. Prefer SkiaSharp: libpalaso just removed
+reading via TagLibSharp, which is already netstandard. Prefer SkiaSharp: libpalaso removed
 ImageSharp from SIL.Core.Tests over its known vulnerabilities
 ([PR #1553](https://github.com/sillsdev/libpalaso/pull/1553)), so it is unlikely to accept it in a
 shipping assembly.
@@ -105,8 +115,7 @@ These block cross-platform even after WinForms is gone, so they belong on the sa
     OpenType reader (SixLabors.Fonts, Typography).
   - `LocalPrintServer` in `Publish/PDF/MakePdfUsingExternalPdfMakerProgram.cs`; printing goes with
     the host framework.
-  - `BitmapSource` in `web/controllers/ImageGalleryApi.cs` (new since September); it moves with the
-    imaging workstream.
+  - `BitmapSource` in `web/controllers/ImageGalleryApi.cs`; it moves with the imaging workstream.
   - A stray `using System.Windows.Controls` in `Book/HtmlDom.cs`.
 - **PodcastUtilities.PortableDevices** (`lib/dotnet`, Windows Portable Devices COM) drives Android
   USB publishing. Cross-platform means ADB, an MTP library, or relying on the Wi-Fi path.
@@ -124,37 +133,16 @@ Fleck) is already cross-platform.
 
 ## Suggested order
 
-1. Move the remaining license code off `CreativeCommonsLicense`/`CustomLicense` onto the core
-   `*Info` types, serving the CC badges as files. That leaves `Metadata` as the last ClearShare
-   type, and it waits for the image core.
-2. Remove the three one-call dependencies: WritingSystems, Keyboarding, WindowsAPICodePack.
-3. Decide the browser host. Every other UI decision hangs off it.
-4. Run the imaging replacement (libpalaso image core, our System.Drawing code, the WPF font code) as
-   one workstream, since they share a library choice.
-5. Replace audio recording, USB publishing, and WMI last; they are self-contained.
+1. Remove the three one-call dependencies: WritingSystems, Keyboarding, WindowsAPICodePack.
+2. Decide the browser host. Every other UI decision hangs off it.
+3. Run the imaging replacement (libpalaso image core with the CC badges, our System.Drawing code,
+   the WPF font code) as one workstream, since they share a library choice. Moving Bloom's license
+   code to the `*Info` types goes with it, and then `Metadata` leaves SIL.Windows.Forms too.
+4. Replace audio recording, USB publishing, and WMI last; they are self-contained.
 
 ## How this was measured
 
 Restored `src/BloomExe/BloomExe.csproj` and read `project.assets.json` for `frameworkReferences` and
 the reverse dependency graph; scanned each package DLL for referenced assembly names; grepped
 `using` directives and type names across `src/BloomExe`, `src/BloomTests`, `src/WebView2PdfMaker`,
-and the FreezeDoctor projects. The 2026-10-30 update repeated this against the restored assets file
-and checked libpalaso's 18.0.0 changelog and PRs for upstream movement.
-
-## Changes since the first analysis (2026-09-17 → 2026-10-30)
-
-- libpalaso beta0028 → beta0046 here; 18.0.0 released upstream on 2026-10-12, with no further
-  WinForms split.
-- L10NSharp 10 → 11.0.1, with L10NSharp.Windows.Forms dropped as a direct reference. It still
-  arrives transitively, at the older 10.0.0-beta0004.
-- Step 1 was partly done before the plan was written: the core ClearShare types have been in use
-  since January. The remaining work is narrower than the plan said.
-- Corrected: Enchant.Net comes from SIL.Windows.Forms, not Keyboarding; NAudio is also used
-  directly; QRCoder's `ArtQRCode` needs System.Drawing.
-- ImageSharp is no longer used by libpalaso at all, so the plan now recommends SkiaSharp.
-- `89d9d51135` removed dead WinForms leftovers (`SourceTextControl`, wizard pages) from our own code.
-  None of the dependency counts changed because of it.
-- The `libpalaso-18-upgrade` branch moves to libpalaso 18.0.0 and L10NSharp 12.0.0-beta0006. No
-  change to the WinForms surface: no types moved, and the framework references and NU1701 shims
-  are unchanged. It fixes the L10NSharp.Windows.Forms version skew by making it a direct reference
-  at the same version as L10NSharp.
+and the FreezeDoctor projects; checked libpalaso's 18.0.0 changelog and PRs for upstream movement.
