@@ -4,7 +4,7 @@ import { ConfigrGroup, ConfigrPage, ConfigrStatic } from "@sillsdev/config-r";
 import { useL10n } from "../../react_components/l10nHooks";
 import { CreateTeamCollectionDialog } from "../../teamCollection/CreateTeamCollection";
 import { administratorsAreValid } from "../../teamCollection/administrators";
-import { TeamCollectionSettings } from "../../teamCollection/TeamCollectionSettingsPanel";
+import { TeamCollectionSettings } from "../../teamCollection/TeamCollectionSettings";
 import { kTeamCollectionsFeatureToken } from "./ExperimentalPage";
 import { ISettingsPage, ISettingsPageContext } from "./settingsPage";
 
@@ -75,12 +75,13 @@ export function useTeamCollectionPage(
                         />
                         {showCreateDialog && (
                             <CreateTeamCollectionDialog
-                                dialogEnvironment={{
-                                    dialogFrameProvidedExternally: false,
-                                    initiallyOpen: true,
-                                }}
                                 defaultRepoFolder={
                                     settings.defaultTeamCollectionFolder
+                                }
+                                // Create is disabled while the name has an unsaved edit, so
+                                // this is the name the collection has.
+                                collectionName={
+                                    settings.values.advanced.collectionName
                                 }
                                 onFolderChosen={(repoFolderParentPath) => {
                                     setShowCreateDialog(false);

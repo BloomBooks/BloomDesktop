@@ -18,17 +18,10 @@ namespace Bloom.web.controllers
         public const string kApiUrlPart = "settings/";
 
         private readonly CollectionSettings _collectionSettings;
-        private Subscription _subscription;
 
         public SubscriptionSettingsEditorApi(CollectionSettings collectionSettings)
         {
             _collectionSettings = collectionSettings;
-            _subscription = collectionSettings.Subscription;
-
-            CollectionSettingsDialog.DialogCancelled += (sender, e) =>
-            {
-                _subscription = collectionSettings.Subscription;
-            };
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -82,32 +75,10 @@ namespace Bloom.web.controllers
 
             apiHandler.RegisterEnumEndpointHandler(
                 kApiUrlPart + "subscriptionTier",
-                request => _subscription.Tier,
+                request => _collectionSettings.Subscription.Tier,
                 null,
                 false
             );
-
-            // Existing endpoints kept for backward compatibility
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "subscriptionCode",
-                request =>
-                {
-                    if (request.HttpMethod == HttpMethods.Get)
-                    {
-                        request.ReplyWithText(_subscription?.Code ?? "");
-                    }
-                    else // post
-                    {
-                        var codeString = request.RequiredPostString();
-                        _subscription = new Subscription(codeString);
-                        NotifyPendingSubscriptionChange?.Invoke(codeString);
-                        request.PostSucceeded();
-                    }
-                },
-                false
-            );
         }
-
-        public static Action<string> NotifyPendingSubscriptionChange;
     }
 }

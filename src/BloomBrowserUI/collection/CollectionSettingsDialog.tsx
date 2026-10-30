@@ -26,7 +26,9 @@ import {
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../react_components/l10nHooks";
 import { get, postJson } from "../utils/bloomApi";
+import { useMountEffect } from "../utils/useMountEffect";
 import {
+    ICollectionSettingsReply,
     ICollectionSettingsResponse,
     ICollectionSettingsValues,
 } from "./collectionSettingsTypes";
@@ -101,11 +103,32 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const { openingEvent, closeDialog, propsForBloomDialog } =
         useEventLaunchedBloomDialog(kCollectionSettingsDialogId);
 
-    // The launch event may name the page to open on.
-    const initialPageKey = openingEvent?.initialPageKey as string | undefined;
+    // Each open mounts the dialog afresh, so it starts from the collection's current values, and
+    // nothing from an earlier open carries over: not Config-R's initial values (it captures them
+    // when the pane mounts), nor anything a page fetched.
+    if (!propsForBloomDialog.open) return null;
+    return (
+        <OpenCollectionSettingsDialog
+            openingEvent={openingEvent}
+            closeDialog={closeDialog}
+        />
+    );
+};
+
+// The dialog while it is open.
+const OpenCollectionSettingsDialog: React.FunctionComponent<{
+    // The launch event, which may name the page to open on. A new one arrives if the dialog is
+    // launched again while open.
+    openingEvent: { initialPageKey?: string } | undefined;
+    closeDialog: () => void;
+}> = (props) => {
+    const initialPageKey = props.openingEvent?.initialPageKey;
+    const closeDialog = props.closeDialog;
 
     const [loadedSettings, setLoadedSettings] =
         React.useState<ICollectionSettingsResponse>();
+    // A Team Collection member who is not an administrator gets this instead of any settings.
+    const [notAllowedMessage, setNotAllowedMessage] = React.useState<string>();
     const [currentValues, setCurrentValues] =
         React.useState<ICollectionSettingsValues>();
     const [saving, setSaving] = React.useState(false);
@@ -122,39 +145,30 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     // handler reads this ref to be sure it has the newest values.
     const latestValuesRef = React.useRef<ICollectionSettingsValues>();
 
-    // Each open starts from the collection's current values, so the GET runs on every open.
-    React.useEffect(() => {
-        if (!propsForBloomDialog.open) {
-            // Forget the closing open's values. Config-r captures initialValues when the pane
-            // mounts, so if we left them here the next open would mount the pane on the previous
-            // open's data and go on editing (and saving) that until the new GET arrived.
-            latestValuesRef.current = undefined;
-            setLoadedSettings(undefined);
-            setCurrentValues(undefined);
-            setOutsideEdits({});
-            setSaving(false);
-            setShownPageKey(undefined);
-            return;
-        }
-        // We don't guard against this reply arriving after a quick close and reopen: it comes from
-        // the local Bloom in milliseconds and carries the same collection's values anyway.
+    // We don't guard against this reply arriving after a quick close: it comes from the local
+    // Bloom in milliseconds, and setting state on an unmounted component does nothing.
+    useMountEffect(() => {
         get("collection/settings", (result) => {
-            const response = result.data as ICollectionSettingsResponse;
-            latestValuesRef.current = response.values;
-            setLoadedSettings(response);
-            setCurrentValues(response.values);
+            const reply = result.data as ICollectionSettingsReply;
+            if ("notAllowedMessage" in reply) {
+                setNotAllowedMessage(reply.notAllowedMessage);
+                return;
+            }
+            latestValuesRef.current = reply.values;
+            setLoadedSettings(reply);
+            setCurrentValues(reply.values);
         });
-    }, [propsForBloomDialog.open]);
+    });
 
     // A launch that arrives while the dialog is already open comes from a subscription badge on
     // one of its own pages, asking for the Subscription page. This effect hands that launch on to
-    // the open pane, which switches page keeping the user's edits. A launch that opens the dialog
-    // finds no pane yet; the pane opens on its page through initiallySelectedTopLevelPageKey.
+    // the open pane, which switches page keeping the user's edits. The launch that opened the
+    // dialog finds no pane yet; the pane opens on its page through initiallySelectedTopLevelPageKey.
     React.useEffect(() => {
         if (initialPageKey) paneRef.current?.selectTopLevelPage(initialPageKey);
         // Only a new launch should do this.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [openingEvent]);
+    }, [props.openingEvent]);
 
     const dialogTitle = useL10n(
         "Collection Settings",
@@ -171,18 +185,14 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     ): ICollectionSettingsValues {
         return { ...values, ...outsideEdits };
     }
-    // The values as the user is editing them, and as OK would save them now. Both are checked: a
-    // deferred onChange can set currentValues after a close has already cleared loadedSettings.
-    // (A user who may not edit the settings gets null values.)
+    // The values as the user is editing them, and as OK would save them now.
     const currentValuesEdited =
-        (currentValues && loadedSettings && withOutsideEdits(currentValues)) ||
-        undefined;
+        currentValues && withOutsideEdits(currentValues);
     const currentValuesTrimmed =
         currentValuesEdited &&
         withEditedTextTrimmed(currentValuesEdited, loadedSettings!.values);
 
     const pageContext: ISettingsPageContext = {
-        dialogOpen: propsForBloomDialog.open,
         settings: loadedSettings,
         values: currentValuesEdited,
         valuesToSave: currentValuesTrimmed,
@@ -220,9 +230,6 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const currentValuesToSave =
         currentValuesEdited && valuesToSaveFrom(currentValuesEdited);
 
-    // A Team Collection member who is not an administrator gets this instead of any settings.
-    const notAllowedMessage = loadedSettings?.notAllowedMessage;
-
     // C# decides which paths need a restart (they come with the GET reply), so that rule lives in
     // one place; every path ends at a plain value, so !== is enough. Give it the values exactly as
     // they will be saved (see withEditedTextTrimmed), so it judges what C# will receive.
@@ -231,7 +238,6 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     ) {
         return (
             loadedSettings !== undefined &&
-            !notAllowedMessage &&
             valuesToSave !== undefined &&
             loadedSettings.restartPaths.some(
                 (path) =>
@@ -284,7 +290,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                 // The "not allowed" message is two lines, so it gets a dialog sized to fit.
                 ${notAllowedMessage ? "" : kConfigrDialogSizeCss}
             `}
-            {...propsForBloomDialog}
+            open={true}
             onClose={closeDialog}
             // Cancel is not blocked while a save is in flight: the local save takes milliseconds,
             // and the worst case is that the OK the user already pressed takes effect.
@@ -304,7 +310,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         {notAllowedMessage}
                     </div>
                 )}
-                {loadedSettings && !notAllowedMessage && (
+                {loadedSettings && (
                     <ConfigrPane
                         ref={paneRef}
                         className={kConfigrPaneClassName}

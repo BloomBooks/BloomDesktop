@@ -370,6 +370,7 @@
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
         <source xml:lang="en">Advanced Program Settings</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel</note>
+        <note>Obsolete as of 6.6 — the WinForms Collection Settings dialog it was in was replaced by the React one (BL-17042).</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate">
         <source xml:lang="en">Automatically Update Bloom</source>
@@ -378,6 +379,7 @@
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ExperimentalFeatures">
         <source xml:lang="en">Experimental Features</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ExperimentalFeatures</note>
+        <note>Obsolete as of 6.6 — the WinForms Collection Settings dialog it was in was replaced by the React one (BL-17042).</note>
         <note>This string is now a heading for a collection of checkboxes rather than a checkbox itself.</note>
         <note xml:lang="en">OLD TEXT (before 5.0): Show Experimental Features</note>
         <note xml:lang="en">OLD TEXT (before 4.3): Show Experimental Commands</note>
@@ -386,6 +388,7 @@
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources">
         <source xml:lang="en">Show Experimental Book Sources</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources</note>
+        <note>Obsolete as of 6.6 — the WinForms Collection Settings dialog it was in was replaced by the React one (BL-17042).</note>
         <note>OLD TEXT (before 5.0/3.9): Show Experimental Templates (e.g. Picture Dictionary)</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BloomLibraryPage" translate="no">
@@ -396,6 +399,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
         <source xml:lang="en">Book Making</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>
+        <note>Obsolete as of 6.6 — the WinForms Collection Settings dialog it was in was replaced by the React one (BL-17042).</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
@@ -582,6 +586,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink">
         <source xml:lang="en">Special Script Settings</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink</note>
+        <note>Obsolete as of 6.6 — the WinForms Collection Settings dialog it was in was replaced by the React one (BL-17042).</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Title">
         <source xml:lang="en">Collection Settings</source>
@@ -678,6 +683,7 @@
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
         <source xml:lang="en">Bloom Collection Name</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName</note>
+        <note>Obsolete as of 6.6 — the WinForms Collection Settings dialog it was in was replaced by the React one (BL-17042).</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country">
         <source xml:lang="en">Country</source>
@@ -690,6 +696,7 @@
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel">
         <source xml:lang="en">Project Information</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel</note>
+        <note>Obsolete as of 6.6 — the WinForms Collection Settings dialog it was in was replaced by the React one (BL-17042).</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Province">
         <source xml:lang="en">Province</source>
@@ -1046,6 +1053,7 @@
       <trans-unit id="Common.HelpButton">
         <source xml:lang="en">&amp;Help</source>
         <note>ID: Common.HelpButton</note>
+        <note>Obsolete as of 6.6 — the WinForms Collection Settings dialog it was in was replaced by the React one (BL-17042).</note>
       </trans-unit>
       <trans-unit id="Common.Info">
         <source xml:lang="en">Info</source>
@@ -5246,10 +5254,12 @@ Do you want to go ahead?</note>
       <trans-unit id="ScriptSettingsDialog.ScriptSettingsWindowTitle">
         <source xml:lang="en">Special Script Settings...</source>
         <note>ID: ScriptSettingsDialog.ScriptSettingsWindowTitle</note>
+        <note>Obsolete as of 6.6 — the WinForms Collection Settings dialog it was in was replaced by the React one (BL-17042).</note>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.TallerLinesCheckBox">
         <source xml:lang="en">Use special line spacing</source>
         <note>ID: ScriptSettingsDialog.TallerLinesCheckBox</note>
+        <note>Obsolete as of 6.6 — the WinForms Collection Settings dialog it was in was replaced by the React one (BL-17042).</note>
       </trans-unit>
       <trans-unit id="Common.BloomSubscription">
         <source xml:lang="en">Bloom Subscription</source>

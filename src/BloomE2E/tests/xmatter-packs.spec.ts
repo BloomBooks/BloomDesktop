@@ -1,9 +1,10 @@
 // The front/back matter packs Bloom ships. Automates the manual test "Try Different Xmatter
 // Options": give a collection each pack in turn, and see that a book gets that pack's pages.
 //
-// A pack is chosen in the collection Settings dialog, a WinForms surface CDP cannot reach, so each
-// test here changes the pack by rewriting the .bloomCollection and restarting Bloom (see
-// AUTOMATION-DEBT.md). What the test then measures is what a tester looks at: the front and back
+// A person chooses a pack on the Front & Back Matter page of the Collection Settings dialog;
+// collection-settings-front-back-matter.spec.ts covers that journey. Each test here changes the pack
+// by rewriting the .bloomCollection and restarting Bloom, which is quicker for trying every pack and
+// keeps this file about the pages a pack gives. What the test then measures is what a tester looks at: the front and back
 // matter pages the Edit tab shows for the book, in order, and the stylesheet each was shown with.
 //
 // Story Producer is not in the Settings dialog's list at all. It is a project-specific pack that a

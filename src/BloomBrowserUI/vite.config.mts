@@ -579,20 +579,13 @@ export default defineConfig(async ({ command }) => {
             "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",
         accessibilityCheckBundle:
             "./publish/accessibilityCheck/accessibilityCheckScreen.entry.tsx",
-        subscriptionSettingsBundle: "./collection/subscriptionSettingsTab.tsx",
-        advancedSettingsBundle: "./collection/AdvancedSettingsPanel.entry.tsx",
         performanceLogBundle: "./performance/PerformanceLogPage.tsx",
         appBundle: "./app/App.tsx",
         problemReportBundle: "./problemDialog/ProblemDialog.tsx",
         messageBoxBundle: "./utils/BloomMessageBox.tsx",
-        bookMakingSettingsBundle: "./collection/bookMakingSettingsControl.tsx",
         progressDialogBundle: "./react_components/Progress/ProgressDialog.tsx",
         requiresSubscriptionBundle:
             "./react_components/requiresSubscription.tsx",
-        createTeamCollectionDialogBundle:
-            "./teamCollection/CreateTeamCollection.tsx",
-        teamCollectionSettingsBundle:
-            "./teamCollection/TeamCollectionSettingsPanel.tsx",
         joinTeamCollectionDialogBundle:
             "./teamCollection/JoinTeamCollectionDialog.tsx",
         autoUpdateSoftwareDlgBundle:
@@ -600,7 +593,6 @@ export default defineConfig(async ({ command }) => {
         duplicateManyDlgBundle: "./bookEdit/duplicateManyDialog.tsx",
         copyrightAndLicenseBundle:
             "./bookEdit/copyrightAndLicense/CopyrightAndLicenseDialog.tsx",
-        languageChooserBundle: "./collection/LanguageChooserDialog.tsx",
         newCollectionLanguageChooserBundle:
             "./collection/NewCollectionLanguageChooser.tsx",
         collectionChooserBundle:

@@ -278,19 +278,18 @@ namespace Bloom.Collection
                 settings.Language2.Clone(),
                 settings.Language3.Clone(),
             };
-            var pendingFonts = new string[3];
             var postedLanguages = new[] { posted.Language1, posted.Language2, posted.Language3 };
             for (var i = 0; i < 3; i++)
-                pendingFonts[i] = CopyLanguage(postedLanguages[i], pendingLanguages[i]);
+                CopyLanguage(postedLanguages[i], pendingLanguages[i]);
 
-            //no point in letting them have the Nat lang 2 be the same as 1
+            //no point in letting them have the third language be the same as the second
             if (pendingLanguages[1].Tag == pendingLanguages[2].Tag)
             {
                 pendingLanguages[2].ChangeTag(String.Empty);
                 pendingLanguages[2].SetName(String.Empty, false);
             }
 
-            UpdateLanguageSettings(settings.AllLanguages, pendingLanguages, pendingFonts);
+            UpdateLanguageSettings(settings.AllLanguages, pendingLanguages);
 
             settings.SignLanguage.ChangeTag(posted.SignLanguage?.Tag ?? String.Empty);
             if (posted.SignLanguage != null)
@@ -303,16 +302,17 @@ namespace Bloom.Collection
         }
 
         /// <summary>
-        /// Copies one posted language onto a copy of the collection's, and returns its font. A
-        /// null language (only the third can be) clears it.
+        /// Copies one posted language onto a copy of the collection's. A null language (only the
+        /// third can be) clears it.
         /// </summary>
-        private static string CopyLanguage(LanguageValues posted, WritingSystem pending)
+        private static void CopyLanguage(LanguageValues posted, WritingSystem pending)
         {
             if (posted == null)
             {
                 pending.ChangeTag(String.Empty);
                 pending.SetName(String.Empty, false);
-                return "";
+                pending.FontName = "";
+                return;
             }
             // Setting the tag also sets a default name, so set the name we were given afterwards.
             pending.ChangeTag(posted.Tag);
@@ -321,25 +321,26 @@ namespace Bloom.Collection
             pending.LineHeight = posted.LineHeight;
             pending.BreaksLinesOnlyAtSpaces = posted.BreaksLinesOnlyAtSpaces;
             pending.BaseUIFontSizeInPoints = posted.BaseUIFontSizeInPoints;
-            return posted.FontName;
+            pending.FontName = posted.FontName;
         }
 
+        /// <summary>
+        /// Puts the pending first three languages into the collection's list of languages, keeping
+        /// any language they replace later in the list.
+        /// </summary>
         // internal and static to facilitate unit testing
         internal static void UpdateLanguageSettings(
             List<WritingSystem> languages,
-            WritingSystem[] pendingLanguages,
-            string[] pendingFonts
+            WritingSystem[] pendingLanguages
         )
         {
             Debug.Assert(languages.Count >= 3);
             Debug.Assert(pendingLanguages.Length == 3);
-            Debug.Assert(pendingFonts.Length == 3);
 
             // Provide some useful abbreviations for the first 3 languages.
-            // (This method is static so that it can be tested without creating a dialog.)
             var Language1 = languages[0];
             var Language2 = languages[1];
-            var Language3 = languages.Count > 2 ? languages[2] : null;
+            var Language3 = languages[2];
             var PendingLanguage1 = pendingLanguages[0];
             var PendingLanguage2 = pendingLanguages[1];
             var PendingLanguage3 = pendingLanguages[2];
@@ -401,9 +402,7 @@ namespace Bloom.Collection
             // Update the values in the first three languages.
             for (int i = 0; i < 3; i++)
             {
-                if (languages[i] == null)
-                    continue;
-                languages[i].FontName = pendingFonts[i];
+                languages[i].FontName = pendingLanguages[i].FontName;
                 languages[i].IsRightToLeft = pendingLanguages[i].IsRightToLeft;
                 languages[i].LineHeight = pendingLanguages[i].LineHeight;
                 languages[i].BaseUIFontSizeInPoints = pendingLanguages[i].BaseUIFontSizeInPoints;

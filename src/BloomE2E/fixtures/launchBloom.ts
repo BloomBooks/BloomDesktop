@@ -131,10 +131,10 @@ export interface ILaunchBloomOptions {
     collectionSpec?: ICollectionSpec;
     /**
      * Experimental features this Bloom should have on, by the tokens ExperimentalFeatures.cs uses:
-     * "tables", "team-collections", "experimental-source-books". A person turns these on in the Advanced tab
-     * of the collection Settings dialog, which is WinForms and so unreachable, and the saved
-     * setting is shared with the developer's own Bloom, so the launch hands them to this instance
-     * on its command line instead (--experimental-features, which Bloom accepts only beside
+     * "tables", "team-collections", "experimental-source-books". A person turns these on in the
+     * Experimental page of the Collection Settings dialog (collection-settings-experimental.spec.ts
+     * drives that); a test that only needs one on from the start names it here, and the launch
+     * hands them to this instance on its command line (--experimental-features, which Bloom accepts only beside
      * --e2e). See ExperimentalFeatures.TokensFromE2eCommandLine.
      */
     experimentalFeatures?: string[];

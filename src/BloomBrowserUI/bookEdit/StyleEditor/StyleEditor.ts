@@ -1153,8 +1153,8 @@ export default class StyleEditor {
                 // But, see the long explanation in bloomDialog.less of why @dialogZindex
                 // is 60,000. Looks like fixing that would be a project.
                 // (Earlier, this high z-index was built into WinFormsStyleSelect, but
-                // in other contexts, such as the Book Making tab, we need to NOT mess with
-                // the z-index. See BL-11271.)
+                // in other contexts, such as the Languages page of the Collection Settings
+                // dialog, we need to NOT mess with the z-index. See BL-11271.)
                 // Another option worth considering is to make a wrapper for the FontSelectComponent
                 // when it is used in this context, move the Theme management into the wrapper,
                 // and let the wrapper mess with the lightTheme in the way that WinFormsStyleSelect

@@ -1,11 +1,9 @@
-﻿using System;
-
-namespace Bloom.WebLibraryIntegration
+﻿namespace Bloom.WebLibraryIntegration
 {
     /// <summary>
-    /// Class for event args of CollectionSettingsApi.LanguageChange
+    /// The language the user chose in the language chooser, as the browser posts it.
     /// </summary>
-    public class LanguageChangeEventArgs : EventArgs
+    public class ChosenLanguage
     {
         // Should be kept in sync with ILanguageData in collection/languageData.ts
         public string LanguageTag { get; set; }

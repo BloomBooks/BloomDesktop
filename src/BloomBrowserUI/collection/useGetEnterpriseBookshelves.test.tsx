@@ -19,10 +19,8 @@ vi.mock("../contentful/ContentfulContext", () => ({
 import { useGetEnterpriseBookshelves } from "./useGetEnterpriseBookshelves";
 
 // Shows the bookshelf values the hook reports, so the test can read them from the DOM.
-const BookshelfList: React.FunctionComponent<{ enabled: boolean }> = (
-    props,
-) => {
-    const bookshelves = useGetEnterpriseBookshelves(props.enabled);
+const BookshelfList: React.FunctionComponent = () => {
+    const bookshelves = useGetEnterpriseBookshelves();
     return (
         <div data-testid="shelves">
             {bookshelves.validBookshelves.map((shelf) => shelf.value).join(",")}
@@ -49,9 +47,9 @@ function contentfulReplyWithShelves(urlKeys: string[]) {
 describe("useGetEnterpriseBookshelves", () => {
     let container: HTMLDivElement;
 
-    const render = async (enabled: boolean) => {
+    const render = async () => {
         await act(async () => {
-            renderRoot(<BookshelfList enabled={enabled} />, container);
+            renderRoot(<BookshelfList />, container);
         });
     };
 
@@ -80,43 +78,24 @@ describe("useGetEnterpriseBookshelves", () => {
         container.remove();
     });
 
-    it("asks nothing while disabled", async () => {
-        await render(false);
-
-        expect(mockGet).not.toHaveBeenCalled();
-        expect(mockGetEntries).not.toHaveBeenCalled();
-    });
-
-    it("asks Contentful again each time it is enabled, so a later open sees the current list", async () => {
+    it("lists the subscription's bookshelves after none", async () => {
         mockGetEntries.mockResolvedValueOnce(
             contentfulReplyWithShelves(["shelf-a", "shelf-b"]),
         );
-        await render(true);
-        expect(shownShelves()).toBe("none,shelf-a,shelf-b");
+        await render();
 
-        // The Collection Settings dialog stays mounted while closed, then opens again after the
-        // subscription's bookshelves have changed.
-        await render(false);
-        mockGetEntries.mockResolvedValueOnce(
-            contentfulReplyWithShelves(["shelf-a", "shelf-c"]),
+        expect(mockGet).toHaveBeenCalledWith(
+            "settings/bookShelfData",
+            expect.any(Function),
         );
-        await render(true);
-
-        expect(mockGetEntries).toHaveBeenCalledTimes(2);
-        expect(shownShelves()).toBe("none,shelf-a,shelf-c");
+        expect(shownShelves()).toBe("none,shelf-a,shelf-b");
     });
 
-    it("recovers on a later open from failing to reach Contentful", async () => {
+    it("reports an error when it cannot reach Contentful", async () => {
         mockGetEntries.mockRejectedValueOnce(new Error("offline"));
-        await render(true);
+        await render();
+
+        expect(mockGetEntries).toHaveBeenCalledTimes(1);
         expect(shownShelves()).toBe("none error");
-
-        await render(false);
-        mockGetEntries.mockResolvedValueOnce(
-            contentfulReplyWithShelves(["shelf-a"]),
-        );
-        await render(true);
-
-        expect(shownShelves()).toBe("none,shelf-a");
     });
 });

@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderRoot, unmountRoot } from "../utils/reactRender";
 import { administratorsAreValid } from "../teamCollection/administrators";
 import {
+    ICollectionSettingsReply,
     ICollectionSettingsResponse,
     ICollectionSettingsValues,
 } from "./collectionSettingsTypes";
@@ -78,7 +79,6 @@ const settingsResponse: ICollectionSettingsResponse = {
         { value: "Decimal", label: "Decimal" },
         { value: "Devanagari", label: "Devanagari" },
     ],
-    notAllowedMessage: null,
 };
 
 const {
@@ -174,7 +174,7 @@ vi.mock("../react_components/boxes", () => ({
 
 // The Team Collection page's pieces talk to Bloom themselves. These stand-ins show what they were
 // given, and let a test type administrators or choose a folder.
-vi.mock("../teamCollection/TeamCollectionSettingsPanel", () => ({
+vi.mock("../teamCollection/TeamCollectionSettings", () => ({
     TeamCollectionSettings: (props: {
         administrators: string;
         onAdministratorsChange: (administrators: string) => void;
@@ -658,7 +658,7 @@ describe("CollectionSettingsDialog", () => {
 
     // Answers GET collection/settings with the given response, and the pages' own GETs with their
     // test data.
-    const respondWith = (response: ICollectionSettingsResponse) => {
+    const respondWith = (response: ICollectionSettingsReply) => {
         mockGet.mockImplementation(
             (url: string, successCallback: (r: unknown) => void) => {
                 switch (url) {
@@ -862,11 +862,9 @@ describe("CollectionSettingsDialog", () => {
 
     it("shows only the reason and a Close button when the user may not edit", async () => {
         respondWith({
-            values: null,
-            restartPaths: null,
             notAllowedMessage:
                 "You must be an administrator to change collection settings",
-        } as unknown as ICollectionSettingsResponse);
+        });
 
         await renderDialog();
 
@@ -1358,10 +1356,7 @@ describe("CollectionSettingsDialog", () => {
     });
 
     it("offers Help even when the user may not edit the settings", async () => {
-        respondWith({
-            ...settingsResponse,
-            notAllowedMessage: "You must be an administrator",
-        });
+        respondWith({ notAllowedMessage: "You must be an administrator" });
         await renderDialog();
 
         expect(
