@@ -280,7 +280,6 @@
 		<PackageReference Include="SIL.Media" Version="18.0.0" />
 		<PackageReference Include="SIL.Windows.Forms" Version="18.0.0" />
 		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="18.0.0" />
-		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="18.0.0" />
 		<PackageReference Include="SIL.WritingSystems" Version="18.0.0" />
 		<PackageReference Include="sillsdev.dotImpose" Version="2.6.8" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
