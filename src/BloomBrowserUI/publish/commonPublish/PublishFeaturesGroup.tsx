@@ -95,8 +95,8 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         React.useState(false);
     const showSignLanguageChooser = () => setChoosingSignLanguage(true);
     function onSignLanguageChosen(chosen: ILanguageData) {
-        // Only once C# has it does the Sign Language checkbox below, which asks C# again when the
-        // name changes, get the new answer.
+        // Set the name only once C# has saved the choice: the Sign Language checkbox below asks
+        // C# for its value again when a sign language is first set (its key changes then).
         postData("publish/collectionSignLanguage", chosen, () =>
             setSignLanguage({
                 tag: chosen.LanguageTag!,
