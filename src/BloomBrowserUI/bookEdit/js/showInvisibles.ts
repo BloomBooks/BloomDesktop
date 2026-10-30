@@ -1,15 +1,20 @@
 import bloomQtipUtils from "./bloomQtipUtils";
-import { EditableDivUtils } from "./editableDivUtils";
+import { isTrackedFillingCharNode } from "../pageHistory/editTimeMarkup";
+import {
+    currentPageHistory,
+    doOutsideHistory,
+} from "../pageHistory/pageHistoryAccess";
 import $ from "jquery";
 
 // For testing and debugging, functionality to replace invisible characters with symbols.
 //
-// Showing the invisibles is a view of the page, not an edit, so it leaves the box with the same
-// nodes that it had before. Each text node that holds invisible characters keeps the text before
-// the first one, and after it go a span with the symbol of each invisible character and a new text
-// node for the text after each one. Hiding puts back the text node's data and removes every node
-// that showing added. Nothing rewrites the box's html, so the caret, CKEditor's filling character
-// and anything else that holds on to the box's nodes stay as they were.
+// Showing the invisibles is a view of the page, not an edit, so it happens outside the page
+// history and leaves the box with the same nodes that it had before. Each text node that holds
+// invisible characters keeps the text before the first one, and after it go a span with the
+// symbol of each invisible character and a new text node for the text after each one. Hiding puts
+// back the text node's data and removes every node that showing added. Nothing rewrites the box's
+// html, so the caret, CKEditor's filling character and anything else that holds on to the box's
+// nodes stay as they were.
 
 // The name and the symbol (in the SymChar font's private use area) of each invisible character.
 const invisibles: { [character: string]: { name: string; symbol: string } } = {
@@ -54,8 +59,7 @@ interface Showing {
     added: Node[];
     // The selection's anchor and focus before showing.
     selection?: Point[];
-    // The text node in which CKEditor keeps its filling character, if it keeps one in box.
-    fillingCharNode?: Node;
+    stopListeningToHistory: () => void;
 }
 
 let showing: Showing | undefined;
@@ -92,24 +96,32 @@ function showInvisibles(box: HTMLElement): void {
         pieces: new Map(),
         added: [],
         selection: selectionEnds(box.ownerDocument),
-        fillingCharNode: EditableDivUtils.ckEditorFillingCharNodeIn(box),
+        stopListeningToHistory: () => {},
     };
-    const namesWithTooltip = new Set<string>();
-    textNodesIn(box).forEach((node) => splitAtInvisibles(node, shown));
-    shown.added.forEach((node) => {
-        const name = (node as HTMLElement).dataset?.nameOfInvisible;
-        if (!name || namesWithTooltip.has(name)) return;
-        namesWithTooltip.add(name);
-        addTooltip(node as HTMLElement, name);
+    doOutsideHistory(() => {
+        const namesWithTooltip = new Set<string>();
+        textNodesIn(box).forEach((node) => splitAtInvisibles(node, shown));
+        shown.added.forEach((node) => {
+            const name = (node as HTMLElement).dataset?.nameOfInvisible;
+            if (!name || namesWithTooltip.has(name)) return;
+            namesWithTooltip.add(name);
+            addTooltip(node as HTMLElement, name);
+        });
+        // Splitting moved any end of the selection that was in a split text node to its start.
+        const now = selectionEnds(box.ownerDocument);
+        if (shown.selection && now) {
+            const [anchor, focus] = shown.selection.map((point, i) =>
+                placeWhileShowing(shown, point, now[i]),
+            );
+            box.ownerDocument
+                .getSelection()!
+                .setBaseAndExtent(...anchor, ...focus);
+        }
     });
-    // Splitting moved any end of the selection that was in a split text node to its start.
-    const now = selectionEnds(box.ownerDocument);
-    if (shown.selection && now) {
-        const [anchor, focus] = shown.selection.map((point, i) =>
-            placeWhileShowing(shown, point, now[i]),
-        );
-        box.ownerDocument.getSelection()!.setBaseAndExtent(...anchor, ...focus);
-    }
+    // An undo or redo, such as a Ctrl+Shift+Z while the keys are held, must find the page as the
+    // history knows it.
+    shown.stopListeningToHistory =
+        currentPageHistory()?.onBeforeUndoOrRedo(hideInvisibles) ?? (() => {});
     showing = shown;
 }
 
@@ -118,18 +130,21 @@ function hideInvisibles(): void {
     const shown = showing;
     if (!shown) return;
     showing = undefined;
-    // On blur the selection has already left the box; don't yank it back.
-    const now = selectionEnds(shown.box.ownerDocument);
-    const restoreSelection = now && shown.box.contains(now[0][0]);
-    $(shown.added).filter(".invisibles").qtip("destroy");
-    shown.originals.forEach((data, node) => (node.data = data));
-    shown.added.forEach((node) => node.parentNode?.removeChild(node));
-    if (restoreSelection && shown.selection) {
-        const [anchor, focus] = shown.selection;
-        shown.box.ownerDocument
-            .getSelection()!
-            .setBaseAndExtent(...anchor, ...focus);
-    }
+    shown.stopListeningToHistory();
+    doOutsideHistory(() => {
+        // On blur the selection has already left the box; don't yank it back.
+        const now = selectionEnds(shown.box.ownerDocument);
+        const restoreSelection = now && shown.box.contains(now[0][0]);
+        $(shown.added).filter(".invisibles").qtip("destroy");
+        shown.originals.forEach((data, node) => (node.data = data));
+        shown.added.forEach((node) => node.parentNode?.removeChild(node));
+        if (restoreSelection && shown.selection) {
+            const [anchor, focus] = shown.selection;
+            shown.box.ownerDocument
+                .getSelection()!
+                .setBaseAndExtent(...anchor, ...focus);
+        }
+    });
 }
 
 /** Split node at its invisible characters, as Showing describes, unless it has none. */
@@ -137,10 +152,9 @@ function splitAtInvisibles(node: Text, shown: Showing): void {
     const original = node.data;
     // CKEditor's filling character is CKEditor's, not the user's. Left as it is, CKEditor still
     // finds it when it takes it out, and never leaves it in the text.
-    const fillingCharIndex =
-        node === shown.fillingCharNode
-            ? original.indexOf(kCkEditorFillingChar)
-            : -1;
+    const fillingCharIndex = isTrackedFillingCharNode(node)
+        ? original.indexOf(kCkEditorFillingChar)
+        : -1;
     const offsets: number[] = [];
     for (let offset = 0; offset < original.length; offset++)
         if (offset !== fillingCharIndex && invisibles[original[offset]])
@@ -211,6 +225,9 @@ function addTooltip(span: HTMLElement, name: string): void {
         content: name,
         show: {
             ready: true,
+            // Now, inside doOutsideHistory: showing writes an attribute to the span, which is in
+            // the page, and the history would record it later.
+            delay: 0,
         },
         hide: {
             inactive: 2000,
