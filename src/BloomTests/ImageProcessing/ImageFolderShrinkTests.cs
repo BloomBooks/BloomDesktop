@@ -455,16 +455,16 @@ namespace BloomTests.ImageProcessing
                 Is.LessThanOrEqualTo(ImageUtils.MaxBreadth),
                 $"{label}: short dimension should now fit within the maximum."
             );
-            // GraphicsMagick's -scale fits the image inside the box we ask for, so it can land a
-            // pixel short of the requested size; what matters is that it did not shrink further.
+            // Since BL-16829 the resize asks GraphicsMagick for exactly this size (the "!" flag on
+            // -scale), so the result must match to the pixel; it used to land a pixel short.
             Assert.That(
                 newSize.Width,
-                Is.EqualTo(expectedSize.Width).Within(2),
+                Is.EqualTo(expectedSize.Width),
                 $"{label}: unexpected width."
             );
             Assert.That(
                 newSize.Height,
-                Is.EqualTo(expectedSize.Height).Within(2),
+                Is.EqualTo(expectedSize.Height),
                 $"{label}: unexpected height."
             );
 
