@@ -52,6 +52,8 @@ vi.mock("axios", () => {
         default: {
             get: (url: string) =>
                 Promise.reject(new Error(`unexpected GET of ${url}`)),
+            // utils/bloomApi installs the page history's request interceptor as it loads.
+            interceptors: { request: { use: () => 0 } },
         },
     };
 });

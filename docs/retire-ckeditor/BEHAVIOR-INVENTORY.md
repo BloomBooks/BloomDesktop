@@ -188,7 +188,7 @@ DOM, so **G1 should get strictly better**.
 | H3 | Undo reverses text edits, coalesced into sensible units rather than one per keystroke | CKEditor `undoManager` | | live |
 | H4 | Undo reverses a cut and a paste as single steps | `undoManager.save/lock` | | live |
 | H5 | Undo reverses origami (Change Layout) changes, and **Ctrl+Y redoes them** | `origamiUndo`/`origamiRedo`, own `keydown.origami` | | live |
-| H6 | Undo reverses an image replacement, restoring src, copyright, creator, licence and crop | `ImageUndoManager` | BL-16330 | live |
+| H6 | Undo reverses an image replacement, restoring src, copyright, creator, licence and crop | The page history (`bookEdit/pageHistory/`); `doTransactionUntilPageSettles` in `bloomEditing.ts` makes the step | BL-16330 | live |
 | H7 | With a reader tool active, Undo restores the *pre-markup* text rather than re-applying stale markup — i.e. reader-tools undo takes precedence over CKEditor's | `handleUndo` order; `shouldHandleUndo` | | live |
 | H8 | Undoing an image operation is offered only when the active element is an image container | `canUndoImageOperation` | | unit |
 | H9 | Undo state is dropped when the page changes | `clearImageOperationUndoOnPageChange` | | unit |

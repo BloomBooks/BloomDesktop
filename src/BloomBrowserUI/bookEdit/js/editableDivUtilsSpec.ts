@@ -298,30 +298,6 @@ describe("EditableDivUtils Tests", () => {
         expect(fillingCharNode.textContent).toBe(`ខ្ញុំ${zwsp}ចូលចិត្ត`);
     });
 
-    it("cloneWithoutTrackedCkEditorFillingChar takes the tracked character out of a copy and leaves the box alone", () => {
-        const zwsp = String.fromCharCode(0x200b);
-        const div = document.createElement("div");
-        const p = document.createElement("p");
-        // a real word break, in a node ckeditor is not tracking
-        p.appendChild(document.createTextNode(`a${zwsp}b`));
-        p.appendChild(document.createElement("strong")).textContent = "bold";
-        const fillingCharNode = document.createTextNode(`${zwsp} typed`);
-        p.appendChild(fillingCharNode);
-        div.appendChild(p);
-        const tracking = stubCkEditorTracking(div, fillingCharNode);
-        const htmlBefore = div.innerHTML;
-
-        const clone =
-            EditableDivUtils.cloneWithoutTrackedCkEditorFillingChar(div);
-
-        expect(clone.innerHTML).toBe(
-            `<p>a${zwsp}b<strong>bold</strong>&nbsp;typed</p>`,
-        );
-        expect(div.innerHTML).toBe(htmlBefore);
-        expect(p.childNodes[2]).toBe(fillingCharNode);
-        expect(tracking.removed).toBe(false);
-    });
-
     it("removeTrackedCkEditorFillingChar forgets an orphaned filling char without touching the box", () => {
         const zwsp = String.fromCharCode(0x200b);
         const div = document.createElement("div");

@@ -1,23 +1,17 @@
-// Which undo runs. Bloom has several undo mechanisms (Change Layout mode's, the reader tools', the
-// picture undo, and CKEditor's), and the top bar's Undo button picks between them through Bloom's
-// one undo stack. These tests pin that each gesture reaches the mechanism that owns the change, and
-// only that one, by counting the calls each mechanism receives (helpers/undo.ts). They also pin that
-// the stack's own Ctrl+Y binding stays out of the way of the Ctrl+Y handlers that already exist.
+// Which undo runs. The page open in the Edit tab has one undo history, the page history, and the
+// top bar's Undo button, Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z all go to it; CKEditor's own undo and the
+// reader tools' undo never run. Change Layout mode keeps its own undo, which the button and the keys
+// reach while the mode is on. These tests pin that each gesture reaches the right one, by counting
+// the undos and redos the page history runs and the commands CKEditor runs (helpers/undo.ts).
 //
-// This is the "nothing changed" claim of stage 1 of retiring CKEditor (BL-16900, under BL-6681).
-// Later stages move these mechanisms onto the shared stack one by one, and these tests are what
-// shows each one moved and nothing else did.
-//
-// Two known problems with the reader tools' keyboard undo are deliberately not asserted here, because
-// later stages of the same project remove them: with a reader tool active, Ctrl+Z also runs
-// CKEditor's undo, and the reader tools' undo restores a stale CKEditor bookmark span.
-// docs/retire-ckeditor/PROGRESS.md records both.
+// docs/undo/MINIMUM.md items 9 and 10 describe the routing.
 //
 // The tests are serial because each one starts from the book the one before it left behind.
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "../fixtures/bloomTest";
+import { checkUndoRoundTripAfterEachTest } from "../helpers/undoRoundTrip";
 import {
     addPage,
     clickInGroup,
@@ -26,11 +20,7 @@ import {
     makeBookFromTemplate,
     type IBookPage,
 } from "../helpers/bookMaking";
-import {
-    chooseImageFile,
-    getImagePlacement,
-    selectImage,
-} from "../helpers/images";
+import { chooseImageFile, getImagePlacement } from "../helpers/images";
 import { pressKey, typeWithKeys } from "../helpers/keys";
 import {
     sections,
@@ -40,14 +30,16 @@ import {
 import { makeBasicBookWithReaderTool } from "../helpers/readerTools";
 import {
     clickUndoButton,
-    expectUndoMechanismCalls,
-    waitForUndoAvailableFrom,
-    watchUndoMechanisms,
+    expectUndoAndRedoCalls,
+    waitForPageHistory,
+    watchUndoAndRedo,
 } from "../helpers/undo";
 
 test.use({
     collectionSpec: { name: "undo-routing", languages: ["en"] },
 });
+
+checkUndoRoundTripAfterEachTest(test);
 
 test.describe.configure({ mode: "serial" });
 
@@ -63,19 +55,11 @@ const IMAGE_FILE = Path.resolve(
 // The text box every test types into: the page's one translation group, in English.
 const TEXT_BOX = ".bloom-translationGroup";
 
-// What every mechanism other than the one named should have received: nothing.
-const NOTHING_REACHED = {
-    changeLayout: 0,
-    readerTools: 0,
-    picture: 0,
-    ckeditor: 0,
-};
-
 // The Basic Book page the first three tests share. Set by the first test.
 let picturePage: IBookPage;
 
-test.describe("undo reaches the mechanism that owns the change", () => {
-    test("the Undo button undoes typing through CKEditor, and Ctrl+Z and Ctrl+Y stay CKEditor's", async ({
+test.describe("undo reaches the page history, or Change Layout mode's own undo", () => {
+    test("the Undo button and Ctrl+Z undo typing, and Ctrl+Y redoes it, all through the page history", async ({
         page,
     }) => {
         test.setTimeout(300000);
@@ -83,53 +67,51 @@ test.describe("undo reaches the mechanism that owns the change", () => {
         await addPage(page, "Basic Text & Image");
         [picturePage] = await getContentPages(page);
         await goToPage(page, picturePage.id);
+        await waitForPageHistory(page);
 
         // The Undo button.
         const box = await clickInGroup(page, TEXT_BOX, "en");
-        await watchUndoMechanisms(page);
+        await watchUndoAndRedo(page);
         await typeWithKeys(page, "dog");
         await expect(box).toHaveText("dog");
-        await waitForUndoAvailableFrom(page, "ckeditor");
         await clickUndoButton(page);
-        await expectUndoMechanismCalls(
+        await expectUndoAndRedoCalls(
             page,
-            {
-                ...NOTHING_REACHED,
-                ckeditor: 1,
-                // An undo that rewrites a text box repaints the reader tools' highlighting (BL-16558).
-                readerMarkupRepaint: 1,
-                ckeditorCommands: [],
-            },
+            { historyUndo: 1, historyRedo: 0, ckeditorCommands: [] },
             "clicking Undo after typing",
         );
         await expect(box).not.toHaveText("dog");
 
-        // Ctrl+Z and Ctrl+Y, pressed in the box, are CKEditor's own commands, and the one stack's
-        // Ctrl+Y binding stands aside for them.
+        // Ctrl+Z and Ctrl+Y, pressed in the box. The page history takes them before CKEditor can.
         await clickInGroup(page, TEXT_BOX, "en");
         await typeWithKeys(page, "cat");
         await expect(box).toHaveText("cat");
-        await watchUndoMechanisms(page);
+        await watchUndoAndRedo(page);
         await pressKey(page, "Control+z");
-        await expectUndoMechanismCalls(
+        await expectUndoAndRedoCalls(
             page,
-            { ...NOTHING_REACHED, ckeditorCommands: ["undo"] },
+            { historyUndo: 1, historyRedo: 0, ckeditorCommands: [] },
             "pressing Ctrl+Z after typing",
         );
+        await expect(box).not.toHaveText("cat");
         await pressKey(page, "Control+y");
-        await expectUndoMechanismCalls(
+        await expectUndoAndRedoCalls(
             page,
-            {
-                ...NOTHING_REACHED,
-                stackRedo: 0,
-                ckeditorCommands: ["undo", "redo"],
-            },
+            { historyUndo: 1, historyRedo: 1, ckeditorCommands: [] },
             "pressing Ctrl+Y after Ctrl+Z",
+        );
+        await expect(box).toHaveText("cat");
+        await pressKey(page, "Control+z");
+        await pressKey(page, "Control+Shift+z");
+        await expectUndoAndRedoCalls(
+            page,
+            { historyUndo: 2, historyRedo: 2, ckeditorCommands: [] },
+            "pressing Ctrl+Z and then Ctrl+Shift+Z",
         );
         await expect(box).toHaveText("cat");
     });
 
-    test("in Change Layout mode, Ctrl+Z and Ctrl+Y stay origami's, and the Undo button reaches it", async ({
+    test("in Change Layout mode, Ctrl+Z, Ctrl+Y and the Undo button reach origami's own undo", async ({
         page,
     }) => {
         await goToPage(page, picturePage.id);
@@ -139,8 +121,7 @@ test.describe("undo reaches the mechanism that owns the change", () => {
         const afterOneSplit = await sections(page).count();
         await splitSection(page, "bottom");
         const afterTwoSplits = await sections(page).count();
-        await waitForUndoAvailableFrom(page, "changeLayout");
-        await watchUndoMechanisms(page);
+        await watchUndoAndRedo(page);
 
         await pressKey(page, "Control+z");
         await expect(
@@ -152,39 +133,32 @@ test.describe("undo reaches the mechanism that owns the change", () => {
             sections(page),
             "Ctrl+Y did not redo exactly the last split.",
         ).toHaveCount(afterTwoSplits);
-        await expectUndoMechanismCalls(
-            page,
-            { ...NOTHING_REACHED, stackRedo: 0, ckeditorCommands: [] },
-            "pressing Ctrl+Z and then Ctrl+Y in Change Layout mode",
-        );
 
         await clickUndoButton(page);
         await expect(
             sections(page),
             "The Undo button did not undo exactly the last split.",
         ).toHaveCount(afterOneSplit);
-        await expectUndoMechanismCalls(
+        await expectUndoAndRedoCalls(
             page,
-            { ...NOTHING_REACHED, changeLayout: 1 },
-            "clicking Undo in Change Layout mode",
+            { historyUndo: 0, historyRedo: 0, ckeditorCommands: [] },
+            "pressing Ctrl+Z and Ctrl+Y, and clicking Undo, in Change Layout mode",
         );
         await setChangeLayoutMode(page, false);
     });
 
-    test("the Undo button undoes a picture change through the picture undo", async ({
+    test("the Undo button undoes a picture change through the page history", async ({
         page,
     }) => {
         await goToPage(page, picturePage.id);
+        await waitForPageHistory(page);
         await chooseImageFile(page, IMAGE_FILE);
-        // The picture undo answers only while its picture is selected.
-        await selectImage(page);
-        await waitForUndoAvailableFrom(page, "picture");
-        await watchUndoMechanisms(page);
+        await watchUndoAndRedo(page);
 
         await clickUndoButton(page);
-        await expectUndoMechanismCalls(
+        await expectUndoAndRedoCalls(
             page,
-            { ...NOTHING_REACHED, picture: 1 },
+            { historyUndo: 1 },
             "clicking Undo after choosing a picture",
         );
         await expect
@@ -195,7 +169,7 @@ test.describe("undo reaches the mechanism that owns the change", () => {
             .toBe("placeHolder.png");
     });
 
-    test("with a reader tool active, the Undo button reaches the reader tools' undo, and Ctrl+Y stays theirs", async ({
+    test("with a reader tool active, Ctrl+Z and Ctrl+Y undo and redo the typing through the page history", async ({
         page,
     }) => {
         test.setTimeout(300000);
@@ -203,39 +177,22 @@ test.describe("undo reaches the mechanism that owns the change", () => {
         await addPage(page, "Just Text");
         const [textPage] = await getContentPages(page);
         await goToPage(page, textPage.id);
+        await waitForPageHistory(page);
 
-        // The Undo button.
         const box = await clickInGroup(page, TEXT_BOX, "en");
-        await watchUndoMechanisms(page);
         await typeWithKeys(page, "sun");
         await expect(box).toHaveText("sun");
-        await waitForUndoAvailableFrom(page, "readerTools");
-        await clickUndoButton(page);
-        await expectUndoMechanismCalls(
-            page,
-            {
-                ...NOTHING_REACHED,
-                readerTools: 1,
-                readerMarkupRepaint: 1,
-                ckeditorCommands: [],
-            },
-            "clicking Undo after typing with the Decodable Reader tool active",
-        );
-
-        // Ctrl+Y. The reader tools claim it, so the one stack's binding must not act as well.
-        await clickInGroup(page, TEXT_BOX, "en");
-        await typeWithKeys(page, "pot");
-        await waitForUndoAvailableFrom(page, "readerTools");
-        await watchUndoMechanisms(page);
+        await watchUndoAndRedo(page);
         await pressKey(page, "Control+z");
         await expect(box, "Ctrl+Z did not undo the typing.").not.toHaveText(
-            /pot$/,
+            /sun$/,
         );
         await pressKey(page, "Control+y");
-        await expectUndoMechanismCalls(
+        await expect(box, "Ctrl+Y did not redo the typing.").toHaveText("sun");
+        await expectUndoAndRedoCalls(
             page,
-            { stackRedo: 0 },
-            "pressing Ctrl+Y after Ctrl+Z with the Decodable Reader tool active",
+            { historyUndo: 1, historyRedo: 1, ckeditorCommands: [] },
+            "pressing Ctrl+Z and then Ctrl+Y with the Decodable Reader tool active",
         );
     });
 });

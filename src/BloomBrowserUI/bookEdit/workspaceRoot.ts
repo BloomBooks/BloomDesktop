@@ -132,10 +132,9 @@ export { showAdjustTimingsDialog as showAdjustTimingsDialogFromWorkspaceRoot };
 // Local alias so we have an in-scope identifier for legacy global exposure typing.
 const showAdjustTimingsDialogFromWorkspaceRoot = showAdjustTimingsDialog;
 
-// The top bar's Undo button reaches the page frame's stack directly (topBarButtonClick), so this
-// is for callers in this frame, such as the e2e tests. The one undo stack lives in the page frame
-// and starts empty with each page load; which mechanism undoes what is decided there
-// (undo/legacyUndoProviders.ts). See docs/retire-ckeditor/PLAN.md 4.2.
+// The top bar's Undo button reaches the page frame directly (topBarButtonClick), so this is for
+// callers in this frame, such as the e2e tests. The page history lives in the page frame, one for
+// each page load (pageHistory/pageHistorySetup.ts).
 export function handleUndo(): void {
     getEditablePageBundleExports()?.handleUndo();
 }
@@ -262,7 +261,7 @@ export function doWhenToolboxLoaded(
 
 //Called by c# using workspaceBundle.canUndo(), polled on a timer to set the Undo button's
 // enabled state (WebView2Browser.CanUndoAsync). "yes"/"fail" is that contract; keep it. The
-// answer comes from the one undo stack, in the page frame; no page frame means nothing to undo.
+// answer comes from the page frame's history; no page frame means nothing to undo.
 export function canUndo(): string {
     return getEditablePageBundleExports()?.canUndo() ? "yes" : "fail";
 }
