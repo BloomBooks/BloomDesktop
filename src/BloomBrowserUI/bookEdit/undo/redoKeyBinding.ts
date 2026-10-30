@@ -6,8 +6,8 @@
 // (decodableReaderTool.tsx).
 //
 // Why it is the LAST resort and not the first: those two handlers claim the keystroke where they
-// apply (the reader tools' one returns false, which stops propagation; origami's fires but does not
-// prevent the default), and CKEditor's own redo command handles Ctrl+Y inside a box with anything
+// apply (the reader tools' one returns false, which stops propagation and leaves the key to
+// CKEditor; origami's fires but does not prevent the default), and CKEditor's own redo command handles Ctrl+Y inside a box with anything
 // on its per-box stack. Until those mechanisms are converted (Stages 3-4) they must keep winning.
 // So this handler sits at the document, in the bubble phase, and acts only when nothing earlier
 // claimed the event AND the shared stack actually has something to redo. When it does not, the

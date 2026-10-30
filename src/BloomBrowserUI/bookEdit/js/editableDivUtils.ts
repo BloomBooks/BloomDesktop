@@ -477,6 +477,41 @@ export class EditableDivUtils {
         if (!element.contains(trackedNode)) {
             return; // already orphaned by some earlier rewrite; nothing left to take out
         }
+        EditableDivUtils.takeFillingCharOutOf(trackedNode as Text);
+    }
+
+    // A copy of element whose text leaves out the filling char that ckeditor is tracking in it,
+    // taken out exactly as removeTrackedCkEditorFillingChar would take it out of the box. For code
+    // that keeps the box's html to write back later (the reader tools' own undo), which would
+    // otherwise orphan the character when it wrote that html (BL-16490). The box is left alone.
+    public static cloneWithoutTrackedCkEditorFillingChar(
+        element: HTMLElement,
+    ): HTMLElement {
+        const clone = element.cloneNode(true) as HTMLElement;
+        const trackedNode = EditableDivUtils.ckEditorFillingCharNodeIn(element);
+        if (!trackedNode) {
+            return clone;
+        }
+        // Find the copy of the tracked node by the child indexes that lead to it.
+        const childIndexes: number[] = [];
+        for (
+            let node: Node = trackedNode;
+            node !== element;
+            node = node.parentNode!
+        ) {
+            childIndexes.unshift(
+                Array.prototype.indexOf.call(node.parentNode!.childNodes, node),
+            );
+        }
+        let nodeInClone: Node = clone;
+        childIndexes.forEach((index) => {
+            nodeInClone = nodeInClone.childNodes[index];
+        });
+        EditableDivUtils.takeFillingCharOutOf(nodeInClone as Text);
+        return clone;
+    }
+
+    private static takeFillingCharOutOf(text: Text): void {
         // The node can hold more than the filling char: text the user typed right after the
         // caret was placed lands in the same node, and in Khmer, Thai or Myanmar that text can
         // itself contain U+200B word breaks. ckeditor planted exactly one character, so take out
@@ -484,7 +519,6 @@ export class EditableDivUtils {
         // careful and strips every U+200B in the node; we don't copy that.)
         // Edit in place with deleteData/replaceData rather than assigning the whole text, so
         // live ranges (the caret, reader highlights) in the rest of the node keep their places.
-        const text = trackedNode as Text;
         const i = text.data.indexOf("\u200B");
         if (i < 0) {
             return; // ckeditor already took it out (its own removal leaves the node behind)
@@ -714,7 +748,8 @@ export class EditableDivUtils {
 
     // Is ckeditor currently holding a filling char in this box - that is, does it have a
     // text node it is going to come back and edit? See mergeAdjacentTextNodes(), which must
-    // not merge one away underneath it.
+    // not merge one away underneath it, and the reader tools' mapReaderText(), which leaves the
+    // character out of the text it analyzes.
     // We ask ckeditor rather than searching the text for a zero-width space, which was the
     // first thing I wrote: some scripts (Thai, Khmer, Myanmar) use U+200B in real text as a
     // word break, and searching for the character would have quietly turned the repair off
@@ -729,7 +764,7 @@ export class EditableDivUtils {
     // If a ckeditor upgrade ever renamed this key, or changed the shape it stores, this would
     // stop guarding and we would be back to the behavior that shipped in the first fix for
     // BL-16717, which merged regardless.
-    private static ckEditorFillingCharNodeIn(
+    public static ckEditorFillingCharNodeIn(
         element: HTMLElement,
     ): Node | undefined {
         const trackedNode =
