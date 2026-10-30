@@ -5,9 +5,10 @@ import {
     applyToolboxStateToUpdatedPage,
     removeToolboxMarkup,
 } from "./toolbox";
+import { whenNewPageReadyPassesHaveRun } from "./newPageReadyPasses";
 import {
+    cancelPendingMarkupUpdates,
     scheduleMarkupUpdateAfterPaste,
-    updateMarkupAfterUndoOrRedo,
 } from "./pageEditingMarkup";
 import { simulateBlurOnPageFrameMouseDown } from "../../utils/menuCloseOnBlur";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
@@ -75,11 +76,14 @@ export interface IToolboxFrameExports {
     getTheOneToolbox(): ToolBox;
 
     scheduleMarkupUpdateAfterPaste(): void;
-    updateMarkupAfterUndoOrRedo(): void;
+    cancelPendingMarkupUpdates(): void;
+    repaintReaderHighlights(): void;
 
-    canUndo(): boolean;
-    undo(): void;
-    readerToolsHandleUndoKeys(): boolean;
+    /**
+     * Resolves once the running tool has run its newPageReady passes for the page in pageDocument,
+     * or at once if no tool will. The page frame waits for it before starting its undo history.
+     */
+    whenNewPageReadyPassesHaveRun(pageDocument: Document): Promise<void>;
 
     applyToolboxStateToPage(): void;
 
@@ -111,8 +115,8 @@ export {
 export { activateLongPressFor } from "../js/bloomEditing";
 export { TalkingBookTool }; // one function is called by CSharp.
 
-export { getTheOneToolbox };
-export { scheduleMarkupUpdateAfterPaste, updateMarkupAfterUndoOrRedo };
+export { getTheOneToolbox, whenNewPageReadyPassesHaveRun };
+export { cancelPendingMarkupUpdates, scheduleMarkupUpdateAfterPaste };
 
 // Import the functions we're re-exporting so we can use them in the bundle
 import {
@@ -121,31 +125,6 @@ import {
     closeSetupDialog,
 } from "./readers/readerSetup/readerSetupDialog";
 
-export function canUndo(): boolean {
-    const readerToolsModel = getTheOneReaderToolsModel();
-
-    return (
-        readerToolsModel &&
-        readerToolsModel.shouldHandleUndo() &&
-        readerToolsModel.canUndo()
-    );
-}
-
-/**
- * Whether a reader markup tool is selected. The page's own handlers of Ctrl+Z and Ctrl+Y in a text
- * block leave both keys to CKEditor then (see decodableReaderTool.tsx).
- */
-export function readerToolsHandleUndoKeys(): boolean {
-    return !!getTheOneReaderToolsModel()?.shouldHandleUndo();
-}
-
-export function undo() {
-    const readerToolsModel = getTheOneReaderToolsModel();
-    if (readerToolsModel) {
-        readerToolsModel.undo();
-    }
-}
-
 export function applyToolboxStateToPage() {
     applyToolboxStateToUpdatedPage();
 }
@@ -153,6 +132,12 @@ export function applyToolboxStateToPage() {
 // Don't use this directly, use getAudioRecorder() in audioRecording.ts instead.
 export function getTheOneAudioRecorderForExportOnly(): IAudioRecorder {
     return theOneAudioRecorder;
+}
+
+// Paint the reader tools' highlights again from the text on the page, writing nothing to it. The
+// page history calls this after every undo and redo; see ReaderToolsModel.repaintHighlights.
+export function repaintReaderHighlights(): void {
+    getTheOneReaderToolsModel()?.repaintHighlights();
 }
 
 export function copyLeveledReaderStatsToClipboard() {
@@ -175,7 +160,8 @@ registerAllToolboxTools();
 const toolboxBundle: ToolboxBundleApi = {
     getTheOneToolbox,
     scheduleMarkupUpdateAfterPaste,
-    updateMarkupAfterUndoOrRedo,
+    cancelPendingMarkupUpdates,
+    repaintReaderHighlights,
     applyToolboxStateToPage,
     removeToolboxMarkup,
     showSetupDialog,
@@ -193,9 +179,7 @@ const toolboxBundle: ToolboxBundleApi = {
     removeWordListChangedListener,
     activateLongPressFor,
     TalkingBookTool,
-    canUndo,
-    undo,
-    readerToolsHandleUndoKeys,
+    whenNewPageReadyPassesHaveRun,
     setActiveDragActivityTab,
     getTheOneAudioRecorderForExportOnly,
     copyLeveledReaderStatsToClipboard,

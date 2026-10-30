@@ -1,6 +1,6 @@
 // The reader tools' markup reads the boxes and paints highlights; it does not rewrite a box. So
 // after typing, opening a tool, changing the level or stage, and the focus leaving a box leave the
-// box's nodes as they were, and the tools' own undo and redo of typing still work.
+// box's nodes as they were.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import $ from "jquery";
 
@@ -27,7 +27,6 @@ const kTextBefore = "One two three.";
 const kTextTyped = "One two three four.";
 // What the stand-in CKEditor's getData() gives: what a rewrite of the box would write.
 const kCkEditorData = "<p>Something else.</p>";
-const kZeroWidthSpace = String.fromCharCode(0x200b);
 
 let model: ReaderToolsModel;
 let box: HTMLDivElement;
@@ -185,94 +184,5 @@ describe("The reader tools' markup leaves the boxes alone", () => {
         expect(model.setMarkupType(2)).toBe(true);
 
         expect(paragraph.innerHTML).toBe("One two three.");
-    });
-});
-
-describe("The reader tools' own undo, now that their markup does not rewrite the box", () => {
-    beforeEach(() => {
-        model.currentMarkupType = MarkupType.Leveled;
-        model.noteFocus(box);
-        // sanity check: nothing to undo yet
-        expect(model.canUndo()).toBe(false);
-    });
-
-    it("undoes and redoes typing", () => {
-        typeInTheBox();
-        expect(model.canUndo()).toBe(true);
-
-        model.undo();
-        expect(box.innerHTML).toBe(`<p>${kTextBefore}</p>`);
-
-        model.redo();
-        expect(box.innerHTML).toBe(`<p>${kTextTyped}</p>`);
-    });
-
-    it.each([
-        ["Ctrl+Z", 90],
-        ["Ctrl+Y", 89],
-    ])(
-        "leaves %s in a box to CKEditor, running none of the reader's undo or redo",
-        (_name, keyCode) => {
-            new DecodableReaderTool().setupReaderKeyAndFocusHandlers(
-                document.body,
-            );
-            typeInTheBox();
-            // sanity check: the reader has something it could undo
-            expect(model.canUndo()).toBe(true);
-            const undo = vi.spyOn(model, "undo");
-            const redo = vi.spyOn(model, "redo");
-            const event = new KeyboardEvent("keydown", {
-                keyCode,
-                ctrlKey: true,
-                bubbles: true,
-                cancelable: true,
-            });
-            let reachedDocument = false;
-            const onDocument = () => (reachedDocument = true);
-            document.addEventListener("keydown", onDocument);
-
-            box.dispatchEvent(event);
-            document.removeEventListener("keydown", onDocument);
-
-            expect(undo).not.toHaveBeenCalled();
-            expect(redo).not.toHaveBeenCalled();
-            expect(box.innerHTML).toBe(`<p>${kTextTyped}</p>`);
-            // As before: the browser's own undo and the page's handlers on the document stay out.
-            expect(event.defaultPrevented).toBe(true);
-            expect(reachedDocument).toBe(false);
-        },
-    );
-
-    it("keeps CKEditor's filling character out of what undo and redo write back", () => {
-        // As after the user typed " four" after a bold word: CKEditor's character is in the
-        // node it tracks. doMarkup used to rewrite the box from getData(), which left it out.
-        paragraph.innerHTML = `<strong>One</strong>${kZeroWidthSpace} two three four.`;
-        fillingCharNode = paragraph.lastChild!;
-        model.doMarkup();
-        // sanity check: the box still holds the character; doMarkup did not take it out
-        expect(box.textContent).toContain(kZeroWidthSpace);
-
-        model.undo();
-        expect(box.innerHTML).toBe(`<p>${kTextBefore}</p>`);
-
-        model.redo();
-        // CKEditor's rule: the character goes, and the space after it becomes an nbsp.
-        expect(box.innerHTML).toBe(
-            "<p><strong>One</strong>&nbsp;two three four.</p>",
-        );
-        expect(box.textContent).not.toContain(kZeroWidthSpace);
-    });
-
-    it("does not count CKEditor taking out its filling character as a change to undo", () => {
-        paragraph.innerHTML = `<strong>One</strong>${kZeroWidthSpace}x two three.`;
-        fillingCharNode = paragraph.lastChild!;
-        model.noteFocus(box);
-        // CKEditor takes the character out of its node.
-        (fillingCharNode as Text).deleteData(0, 1);
-        fillingCharNode = undefined;
-
-        model.doMarkup();
-
-        expect(model.canUndo()).toBe(false);
     });
 });

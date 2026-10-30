@@ -1,6 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
+import type { ToolBox } from "./toolbox";
 import {
+    cancelPendingMarkupUpdates,
     cleanUpNbsps,
+    configurePageEditingHandlers,
     editableMightBeRewritten,
     removeCommentsFromEditableHtml,
 } from "./pageEditingMarkup";
@@ -280,5 +283,53 @@ describe("pageEditingMarkup tests", () => {
         expect(p.childNodes[0]).toBe(textNode); // not rebuilt
         expect(fillingCharNode.textContent).toBe(zwsp);
         expect(p.childNodes[1]).toBe(fillingCharNode);
+    });
+});
+
+describe("pageEditingMarkup: when a markup pass is scheduled", () => {
+    // A pass waits on a timer before it runs; the number of pending timers shows whether one
+    // was scheduled.
+    function makeBox(): HTMLElement {
+        document.body.innerHTML =
+            '<div id="container"><div class="bloom-editable"><p>text</p></div></div>';
+        const container = document.getElementById("container")!;
+        configurePageEditingHandlers(container, {} as ToolBox);
+        return container.querySelector(".bloom-editable") as HTMLElement;
+    }
+    function key(box: HTMLElement, type: string, code: string, ctrl = false) {
+        box.dispatchEvent(
+            new KeyboardEvent(type, { code, ctrlKey: ctrl, bubbles: true }),
+        );
+    }
+
+    afterEach(() => {
+        cancelPendingMarkupUpdates();
+        vi.useRealTimers();
+    });
+
+    it("schedules one after a key that went down and up in a box", () => {
+        vi.useFakeTimers();
+        const box = makeBox();
+        key(box, "keydown", "KeyA");
+        key(box, "keyup", "KeyA");
+        expect(vi.getTimerCount()).toBe(1);
+    });
+
+    it("schedules none for a keyup whose keydown no box saw, as for the undo key", () => {
+        vi.useFakeTimers();
+        const box = makeBox();
+        // The undo key's keydown is taken before it reaches the box.
+        key(box, "keyup", "KeyZ");
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it("cancelPendingMarkupUpdates drops a scheduled pass", () => {
+        vi.useFakeTimers();
+        const box = makeBox();
+        key(box, "keydown", "KeyA");
+        key(box, "keyup", "KeyA");
+        expect(vi.getTimerCount()).toBe(1);
+        cancelPendingMarkupUpdates();
+        expect(vi.getTimerCount()).toBe(0);
     });
 });

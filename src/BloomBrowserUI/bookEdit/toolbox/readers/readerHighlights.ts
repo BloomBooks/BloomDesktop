@@ -5,7 +5,7 @@ import {
     TextOffsetMap,
 } from "../../js/textHighlightManager";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
-import { EditableDivUtils } from "../../js/editableDivUtils";
+import { isTrackedFillingCharNode } from "../../pageHistory/editTimeMarkup";
 
 // The decodable and leveled reader tools mark up violations (a word that is not decodable at
 // this stage, a sentence that is too long for this level, ...). They used to do that by wrapping
@@ -111,17 +111,6 @@ export interface ReaderTextMap {
     leftOutOffsets: number[];
 }
 
-// The text node in which the CKEditor instance of element's box keeps its filling character now,
-// if it keeps one there. element may be the box or anything inside it.
-function trackedFillingCharNodeFor(element: Node): Node | undefined {
-    // Not instanceof: the boxes are in the page frame, and this code runs in the toolbox frame.
-    if (element.nodeType !== Node.ELEMENT_NODE) return undefined;
-    const box = (element as Element).closest(".bloom-editable");
-    return box
-        ? EditableDivUtils.ckEditorFillingCharNodeIn(box as HTMLElement)
-        : undefined;
-}
-
 // Snapshot the text of an element as the reader sees it, ready for analysis and for turning the
 // resulting character offsets back into Ranges.
 //
@@ -129,24 +118,22 @@ function trackedFillingCharNodeFor(element: Node): Node | undefined {
 // inline element (after a bold word, say) and takes out again later: the user typing "ger" after a
 // bold "big" leaves "big", U+200B, "ger" in the box for a while. The analysis takes U+200B as a word
 // break (zeroWidthAndDirectionalSplitters in synphony_lib.ts), so with the character "bigger" would
-// count as two words. Only the character that CKEditor tracks is left out: the first U+200B of the
-// text node that it remembers (see EditableDivUtils.removeTrackedCkEditorFillingChar). Any other
-// U+200B stays, since Thai, Khmer and Myanmar text uses it as a word break (BL-16843). The box
-// itself is left alone: this is read on every markup pass, which must not rewrite the box.
+// count as two words. Only the character that CKEditor tracks is left out, as
+// isTrackedFillingCharNode and withoutFillingChar in pageHistory/editTimeMarkup.ts define it: the
+// first U+200B of the text node that CKEditor remembers. Any other U+200B stays, since Thai, Khmer
+// and Myanmar text uses it as a word break (BL-16843). The box itself is left alone: this is read
+// on every markup pass, which must not write to the page.
 export function mapReaderText(element: Node): ReaderTextMap {
     const visibleTextMap = mapVisibleText(
         element,
         shouldSkipElementForReaderText,
     );
     const leftOutOffsets: number[] = [];
-    const fillingCharNode = trackedFillingCharNodeFor(element);
-    if (fillingCharNode) {
-        visibleTextMap.pieces.forEach((piece) => {
-            if (piece.node !== fillingCharNode) return;
-            const index = piece.node.data.indexOf(kFillingChar);
-            if (index >= 0) leftOutOffsets.push(piece.start + index);
-        });
-    }
+    visibleTextMap.pieces.forEach((piece) => {
+        if (!piece.node || !isTrackedFillingCharNode(piece.node)) return;
+        const index = piece.node.data.indexOf(kFillingChar);
+        if (index >= 0) leftOutOffsets.push(piece.start + index);
+    });
     let text = visibleTextMap.text;
     // From the end, so that each offset is still right when it is used.
     for (let i = leftOutOffsets.length - 1; i >= 0; i--) {

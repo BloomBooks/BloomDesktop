@@ -1,11 +1,10 @@
 import ToolboxToolReactAdaptor from "../../toolboxToolReactAdaptor";
 import { DecodableReaderToolControls } from "./DecodableReaderToolControls";
 import { beginInitializeDecodableReaderTool } from "../readerTools";
-import { getTheOneReaderToolsModel, MarkupType } from "../readerToolsModel";
+import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import { get } from "../../../../utils/bloomApi";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { isLongPressEvaluating, IToolboxSettings } from "../../toolbox";
-import { updateMarkupAfterUndoOrRedo } from "../../pageEditingMarkup";
 import $ from "jquery";
 
 // This class renders the DecodableReaderToolControls React component
@@ -14,7 +13,7 @@ import $ from "jquery";
 // restoring the tool's state (which includes the saved stage
 // number, sorting type, and current graphemes and words for that stage),
 // and handling certain events such as focsuing in an element (such as
-// a textbox), focusing out of an element, and undo/redo.
+// a textbox) and focusing out of an element.
 export class DecodableReaderTool extends ToolboxToolReactAdaptor {
     public renderPanel(): JSX.Element {
         return (
@@ -120,6 +119,12 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
             );
         });
     }
+    /**
+     * Mark up the page again when a box loses focus, so that the highlights match its text even
+     * when the focus left before the markup pass that follows typing. doMarkup only reads the
+     * boxes, so this writes nothing that the page history records, wherever the focus goes,
+     * the toolbox included.
+     */
     public setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
         // invoke function when a bloom-editable element loses focus.
         $(container)
@@ -133,43 +138,7 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
                     // there is nothing to gain from doing it now.
                     return;
                 }
-                // doMarkup only reads the boxes, so it cannot pull the focus back into the box
-                // that is losing it, wherever the focus is going.
                 getTheOneReaderToolsModel().doMarkup();
-            });
-
-        $(container)
-            .find(".bloom-editable")
-            .focusin(function () {
-                getTheOneReaderToolsModel().noteFocus(this); // 'This' is the element that just got focus.
-            });
-
-        $(container)
-            .find(".bloom-editable")
-            .keydown((e): boolean => {
-                if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) {
-                    // ctrl-z or ctrl-Y
-                    // The keys are left to CKEditor's undo and redo; the reader tools' own undo
-                    // is for the Undo button (toolboxUndoProvider) only. CKEditor's listener on
-                    // the box runs after this one whatever this returns, so running the reader's
-                    // undo here would make one keypress two undos, and CKEditor's redo would then
-                    // put back the box as the reader's undo had left it.
-                    if (
-                        getTheOneReaderToolsModel().currentMarkupType !==
-                        MarkupType.None
-                    ) {
-                        // CKEditor's undo or redo replaces the text nodes our highlights are
-                        // painted over, so the markup has to be redone before they can paint
-                        // anything again (BL-16558). The update is scheduled, so it comes after
-                        // CKEditor's handler.
-                        updateMarkupAfterUndoOrRedo();
-                        // CKEditor's own listener on the box still runs, but this keeps the
-                        // browser's undo and the page's handlers on the document
-                        // (redoKeyBinding.ts) out of it.
-                        return false;
-                    }
-                }
-                return true;
             });
     }
     public configureElements(container: HTMLElement) {
