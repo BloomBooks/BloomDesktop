@@ -43,9 +43,10 @@ function teamCollectionValuesAreValid(
 
 /**
  * The Team Collection page of the Collection Settings dialog. TeamCollectionSettings is not made
- * of Config-R controls, so its values are edited through context.editValues. Creating a Team Collection does not wait for the dialog's OK: the
- * Create dialog's Create & Restart saves at once, with the folder to create it in. Not offered in
- * every collection (see teamCollectionPageIsShown).
+ * of Config-R controls, so its values are edited through context.editValues. Creating a Team
+ * Collection does not wait for the dialog's OK: the Create dialog's Create & Restart saves at
+ * once, with the folder to create it in. Not offered in every collection (see
+ * teamCollectionPageIsShown).
  */
 export function useTeamCollectionPage(
     context: ISettingsPageContext,
@@ -65,12 +66,7 @@ export function useTeamCollectionPage(
     );
     const [creating, setCreating] = React.useState(false);
 
-    if (
-        !context.settings ||
-        !context.values ||
-        !context.valuesToSave ||
-        !teamCollectionPageIsShown(context.settings)
-    )
+    if (!teamCollectionPageIsShown(context.settings))
         return { element: undefined };
     const values = context.values.teamCollection;
     const canSave = teamCollectionValuesAreValid(context.settings, values);

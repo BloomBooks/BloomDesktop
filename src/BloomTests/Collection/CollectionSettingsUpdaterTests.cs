@@ -707,7 +707,6 @@ namespace BloomTests.Collection
 
             CollectionSettingsUpdater.ApplySubscriptionAndBookshelf(
                 pro,
-                null,
                 settings,
                 isTeamCollection
             );

@@ -10,6 +10,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.TeamCollection;
 using Bloom.Utils;
 using Bloom.WebLibraryIntegration;
@@ -88,13 +89,11 @@ namespace Bloom.web.controllers
             );
             apiHandler.RegisterEndpointHandler("collection/qrCode", HandleGetQrCode, false);
             apiHandler.RegisterEndpointHandler("collection/qrBadge", HandleGetQrBadge, false);
-            apiHandler.RegisterBooleanEndpointHandler(
-                kApiUrlPart + "lockedToOneDownloadedBook",
-                request => _collectionSettings.EditingABlorgBook,
-                null,
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "subscription",
+                HandleGetSubscription,
                 false
             );
-
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "bookShelfData",
                 request =>
@@ -221,7 +220,7 @@ namespace Bloom.web.controllers
                 HandleGetLanguageNames,
                 false
             );
-            // // a "deprecated" subscription is one that used to be eternal but is now being phased out
+            // a "deprecated" subscription is one that used to be eternal but is now being phased out
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "deprecatedBrandingsExpiryDate",
                 request =>
@@ -333,6 +332,42 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
             if (saveRequest.RestartRequired)
                 WorkspaceApi.ReopenCollectionWhenIdle();
+        }
+
+        /// <summary>
+        /// Replies to GET settings/subscription with a description of the collection's
+        /// subscription, or, given ?code=, of the one that code stands for (the Collection Settings
+        /// dialog asks about the code being typed).
+        /// </summary>
+        private void HandleGetSubscription(ApiRequest request)
+        {
+            var code = request.GetParamOrNull("code");
+            var subscription =
+                code == null
+                    ? _collectionSettings.Subscription
+                    : CollectionSettingsUpdater.GetChangedSubscription(_collectionSettings, code)
+                        ?? _collectionSettings.Subscription;
+            request.ReplyWithJson(
+                JsonConvert.SerializeObject(
+                    new
+                    {
+                        Code = subscription.Code ?? "",
+                        Tier = subscription.Tier.ToString(),
+                        Summary = BrandingSettings.GetSummaryHtml(subscription.Descriptor),
+                        Expiration = subscription.ExpirationDate.ToString(
+                            "yyyy-MM-dd",
+                            CultureInfo.InvariantCulture
+                        ),
+                        CodeIntegrity = subscription.GetIntegrityLabel(),
+                        SubscriptionDescriptor = subscription.Descriptor,
+                        MissingBrandingFiles = (
+                            subscription.Tier == SubscriptionTier.Enterprise
+                            && !BrandingProject.HaveFilesForBranding(subscription.BrandingKey)
+                        ),
+                        EditingBlorgBook = subscription.EditingBlorgBook,
+                    }
+                )
+            );
         }
 
         /// <summary>

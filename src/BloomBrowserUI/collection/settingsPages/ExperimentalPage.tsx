@@ -1,9 +1,8 @@
-import { css } from "@emotion/react";
 import * as React from "react";
 import { ConfigrBoolean, ConfigrGroup, ConfigrPage } from "@sillsdev/config-r";
 import { useGetFeatureStatus } from "../../react_components/featureStatus";
 import { useL10n } from "../../react_components/l10nHooks";
-import { BloomSubscriptionIndicatorIconAndText } from "../../react_components/requiresSubscription";
+import { RowWithSubscriptionBadge } from "./RowWithSubscriptionBadge";
 import { ISettingsPage, ISettingsPageContext } from "./settingsPage";
 
 // ExperimentalFeatures.kTeamCollections in C#: the key of the feature in values.experimental.
@@ -22,29 +21,13 @@ const ExperimentalFeatureSetting: React.FunctionComponent<{
     subscriptionFeature: string;
     disabled: boolean;
 }> = (props) => (
-    // One element around both keeps Config-R from drawing a divider between them.
-    <div>
+    <RowWithSubscriptionBadge subscriptionFeature={props.subscriptionFeature}>
         <ConfigrBoolean
             label={props.label}
             path={`experimental.${props.featureToken}`}
             disabled={props.disabled}
         />
-        <div
-            css={css`
-                display: flex;
-                padding-bottom: 5px;
-                font-size: 12px;
-                font-weight: bold;
-            `}
-        >
-            <BloomSubscriptionIndicatorIconAndText
-                feature={props.subscriptionFeature}
-                css={css`
-                    margin-left: auto;
-                `}
-            />
-        </div>
-    </div>
+    </RowWithSubscriptionBadge>
 );
 
 /**
@@ -83,7 +66,7 @@ export function useExperimentalPage(
                     disabled={
                         teamCollectionStatus?.enabled !== true ||
                         // Someone in a Team Collection may not turn the feature off.
-                        (context.settings?.isTeamCollection === true &&
+                        (context.settings.isTeamCollection &&
                             context.settings.values.experimental[
                                 kTeamCollectionsFeatureToken
                             ])
