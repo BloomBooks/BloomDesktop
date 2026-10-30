@@ -69,15 +69,8 @@ export function useExperimentalPage(
 
     // Asked when the dialog opens, not when Config-R mounts this page (it mounts only the page
     // showing), so the answer is in before anyone gets here. Until then the box stays disabled.
-    // Expect to refactor this into a dialog-level subscription lookup with the next page that
-    // needs one, probably the Subscription page (whose typed-but-unsaved code may need to drive
-    // this too).
-    const teamCollectionStatus = useGetFeatureStatus(
-        context.dialogOpen ? "TeamCollection" : undefined,
-    );
-    const tablesStatus = useGetFeatureStatus(
-        context.dialogOpen ? "Table" : undefined,
-    );
+    const teamCollectionStatus = useGetFeatureStatus("TeamCollection");
+    const tablesStatus = useGetFeatureStatus("Table");
 
     const element = (
         <ConfigrPage label={label} pageKey="experimental" topLevel={true}>

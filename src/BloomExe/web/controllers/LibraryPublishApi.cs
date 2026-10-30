@@ -400,7 +400,7 @@ namespace Bloom.web.controllers
             {
                 // Intentionally not localized ( because it's complicated, rare, and generally advanced )
                 _webSocketProgress.MessageWithoutLocalizing(
-                    "Before sending all of your books to BloomLibrary.org, you probably want to tell Bloom which bookshelf this collection belongs in. Please go to Collection Tab : Settings : Book Making and set the \"Bloom Library Bookshelf\".",
+                    "Before sending all of your books to BloomLibrary.org, you probably want to tell Bloom which bookshelf this collection belongs in. Please go to Collection Tab : Settings : Bloom Library and set the \"Bookshelf\".",
                     ProgressKind.Error
                 );
 

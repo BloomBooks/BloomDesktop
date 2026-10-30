@@ -47,13 +47,23 @@ namespace BloomTests.Collection
             );
 
             var pending = new WritingSystem[3];
-            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
-            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
-            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "" };
+            pending[0] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "en",
+                FontName = "Andika",
+            };
+            pending[1] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "en",
+                FontName = "Andika",
+            };
+            pending[2] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "",
+                FontName = "Andika",
+            };
 
-            var fonts = new string[3] { "Andika", "Andika", "Andika" };
-
-            CollectionSettingsDialog.UpdateLanguageSettings(languages, pending, fonts);
+            CollectionSettingsUpdater.UpdateLanguageSettings(languages, pending);
 
             Assert.AreEqual(3, languages.Count);
             Assert.AreEqual("en", languages[0].Tag);
@@ -94,13 +104,23 @@ namespace BloomTests.Collection
             );
 
             var pending = new WritingSystem[3];
-            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
-            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "fr" };
-            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "de" };
+            pending[0] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "en",
+                FontName = "Andika",
+            };
+            pending[1] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "fr",
+                FontName = "Andika",
+            };
+            pending[2] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "de",
+                FontName = "Andika",
+            };
 
-            var fonts = new string[3] { "Andika", "Andika", "Andika" };
-
-            CollectionSettingsDialog.UpdateLanguageSettings(languages, pending, fonts);
+            CollectionSettingsUpdater.UpdateLanguageSettings(languages, pending);
 
             Assert.AreEqual(5, languages.Count);
             Assert.AreEqual("en", languages[0].Tag);
@@ -153,13 +173,23 @@ namespace BloomTests.Collection
             );
 
             var pending = new WritingSystem[3];
-            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
-            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "fr" };
-            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "de" };
+            pending[0] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "en",
+                FontName = "Andika",
+            };
+            pending[1] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "fr",
+                FontName = "Andika",
+            };
+            pending[2] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "de",
+                FontName = "Andika",
+            };
 
-            var fonts = new string[3] { "Andika", "Andika", "Andika" };
-
-            CollectionSettingsDialog.UpdateLanguageSettings(languages, pending, fonts);
+            CollectionSettingsUpdater.UpdateLanguageSettings(languages, pending);
 
             Assert.AreEqual(5, languages.Count);
             Assert.AreEqual("en", languages[0].Tag);
@@ -212,13 +242,23 @@ namespace BloomTests.Collection
             );
 
             var pending = new WritingSystem[3];
-            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "es" };
-            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "pt" };
-            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "" };
+            pending[0] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "es",
+                FontName = "Andika",
+            };
+            pending[1] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "pt",
+                FontName = "Andika",
+            };
+            pending[2] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "",
+                FontName = "Andika",
+            };
 
-            var fonts = new string[3] { "Andika", "Andika", "Andika" };
-
-            CollectionSettingsDialog.UpdateLanguageSettings(languages, pending, fonts);
+            CollectionSettingsUpdater.UpdateLanguageSettings(languages, pending);
 
             Assert.AreEqual(6, languages.Count);
             Assert.AreEqual("es", languages[0].Tag);
@@ -267,13 +307,23 @@ namespace BloomTests.Collection
             );
 
             var pending = new WritingSystem[3];
-            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "se" };
-            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "fr" };
-            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "" };
+            pending[0] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "se",
+                FontName = "Andika",
+            };
+            pending[1] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "fr",
+                FontName = "Andika",
+            };
+            pending[2] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "",
+                FontName = "Andika",
+            };
 
-            var fonts = new string[3] { "Andika", "Andika", "Andika" };
-
-            CollectionSettingsDialog.UpdateLanguageSettings(languages, pending, fonts);
+            CollectionSettingsUpdater.UpdateLanguageSettings(languages, pending);
 
             Assert.AreEqual(7, languages.Count);
             Assert.AreEqual("se", languages[0].Tag);
@@ -322,13 +372,23 @@ namespace BloomTests.Collection
             );
 
             var pending = new WritingSystem[3];
-            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "de" };
-            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "fr" };
-            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "pt" };
+            pending[0] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "de",
+                FontName = "Andika",
+            };
+            pending[1] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "fr",
+                FontName = "Andika",
+            };
+            pending[2] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "pt",
+                FontName = "Andika",
+            };
 
-            var fonts = new string[3] { "Andika", "Andika", "Andika" };
-
-            CollectionSettingsDialog.UpdateLanguageSettings(languages, pending, fonts);
+            CollectionSettingsUpdater.UpdateLanguageSettings(languages, pending);
 
             Assert.AreEqual(5, languages.Count);
             Assert.AreEqual("de", languages[0].Tag);
@@ -373,13 +433,23 @@ namespace BloomTests.Collection
             );
 
             var pending = new WritingSystem[3];
-            pending[0] = new WritingSystem(DefaultLanguageForNames) { Tag = "fr" };
-            pending[1] = new WritingSystem(DefaultLanguageForNames) { Tag = "de" };
-            pending[2] = new WritingSystem(DefaultLanguageForNames) { Tag = "en" };
+            pending[0] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "fr",
+                FontName = "Andika",
+            };
+            pending[1] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "de",
+                FontName = "Andika",
+            };
+            pending[2] = new WritingSystem(DefaultLanguageForNames)
+            {
+                Tag = "en",
+                FontName = "Andika",
+            };
 
-            var fonts = new string[3] { "Andika", "Andika", "Andika" };
-
-            CollectionSettingsDialog.UpdateLanguageSettings(languages, pending, fonts);
+            CollectionSettingsUpdater.UpdateLanguageSettings(languages, pending);
 
             Assert.AreEqual(5, languages.Count);
             Assert.AreEqual("fr", languages[0].Tag);

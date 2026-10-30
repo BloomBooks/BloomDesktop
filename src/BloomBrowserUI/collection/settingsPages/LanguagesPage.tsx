@@ -13,6 +13,7 @@ import {
 import { Button, MenuItem, Select } from "@mui/material";
 import { useL10n } from "../../react_components/l10nHooks";
 import { get } from "../../utils/bloomApi";
+import { useMountEffect } from "../../utils/useMountEffect";
 import FontSelectComponent, {
     IFontMetaData,
 } from "../../bookEdit/StyleEditor/fontSelectComponent";
@@ -204,10 +205,6 @@ const LanguageChooserControl = <
             )}
             {choosing && (
                 <LanguageChooserDialog
-                    dialogEnvironment={{
-                        dialogFrameProvidedExternally: false,
-                        initiallyOpen: true,
-                    }}
                     initialLanguageTag={props.value?.tag}
                     initialCustomName={props.value?.name}
                     onChosen={(chosen) =>
@@ -390,12 +387,11 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
     // Asked for when the dialog opens, not when Config-R mounts this page, so that it is usually
     // in before anyone looks.
     const [fontMetadata, setFontMetadata] = React.useState<IFontMetaData[]>();
-    React.useEffect(() => {
-        if (!context.dialogOpen) return;
+    useMountEffect(() => {
         get("fonts/metadata", (result) => {
             setFontMetadata(result.data as IFontMetaData[]);
         });
-    }, [context.dialogOpen]);
+    });
 
     // The font picker needs the font list, so it is made again (and Config-R mounts it again)
     // only when the list arrives.
@@ -462,15 +458,14 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
 
     // The reader tools' file is named for the first language, so its values cannot be edited
     // while the user is changing that language: they would go to the language being replaced.
-    // (values is null for a user who may not edit the settings.)
-    const savedLanguage1Tag = context.settings?.values?.languages.language1.tag;
+    const savedLanguage1Tag = context.settings?.values.languages.language1.tag;
     const language1TagChanged =
         savedLanguage1Tag !== undefined &&
         context.values?.languages.language1.tag !== savedLanguage1Tag;
     // Why the reader tools' values cannot be edited just now, if they cannot. A damaged file
     // would be written over, losing the stages and levels Bloom could not read.
     let readerToolsLockedReason: string | undefined;
-    if (context.settings?.values?.readerTools.isUnreadable)
+    if (context.settings?.values.readerTools.isUnreadable)
         readerToolsLockedReason = readerToolsUnreadable;
     else if (language1TagChanged)
         readerToolsLockedReason = readerToolsLanguage1Changed;

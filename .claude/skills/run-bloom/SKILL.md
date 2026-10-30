@@ -108,7 +108,7 @@ it runs alongside.
 The "Edit with AI…" image editor spans a third frame and has a free dummy model for zero-cost
 runs: `ai-image-editor-driving.md` in this folder and `driveAiImageEditor.mjs`.
 
-WinForms dialogs (the collection Settings dialog's tabs and buttons) and native OS dialogs (the
+WinForms dialogs (e.g. `JpegWarningDialog`'s buttons and radio buttons) and native OS dialogs (the
 file picker, a raw `MessageBox`) are outside CDP's reach; `winformsUia.ps1` in this folder drives
 them over Windows UI Automation with no pointer or keyboard input (`reference.md`, "Driving
 WinForms and OS dialogs").

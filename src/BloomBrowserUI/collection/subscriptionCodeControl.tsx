@@ -9,7 +9,6 @@ import Button from "@mui/material/Button";
 import { Stack, TextField } from "@mui/material";
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import ContentPaste from "@mui/icons-material/ContentPaste";
-import { useState } from "react";
 import {
     SubscriptionCodeIntegrity,
     useLocalizedTier,
@@ -66,25 +65,13 @@ export const SubscriptionControls: React.FC<{
         haveData,
     } = useSubscriptionInfo(props.code);
 
-    const [status, setStatus] = useState<Status>("None");
-
-    React.useEffect(() => {
-        setStatus(
-            getStatus(
-                code,
-                subscriptionCodeIntegrity,
-                expiryDateStringAsYYYYMMDD,
-                editingBlorgBook,
-                missingBrandingFiles,
-            ),
-        );
-    }, [
+    const status = getStatus(
         code,
+        subscriptionCodeIntegrity,
         expiryDateStringAsYYYYMMDD,
         editingBlorgBook,
-        subscriptionCodeIntegrity,
         missingBrandingFiles,
-    ]);
+    );
 
     if (!haveData) {
         return null;

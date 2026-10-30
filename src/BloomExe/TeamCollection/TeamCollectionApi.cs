@@ -106,11 +106,6 @@ namespace Bloom.TeamCollection
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                "teamCollection/createTeamCollection",
-                HandleCreateTeamCollection,
-                true
-            );
-            apiHandler.RegisterEndpointHandler(
                 "teamCollection/joinTeamCollection",
                 HandleJoinTeamCollection,
                 true
@@ -121,23 +116,6 @@ namespace Bloom.TeamCollection
                 true
             );
             apiHandler.RegisterEndpointHandler("teamCollection/getLog", HandleGetLog, false);
-            apiHandler.RegisterEndpointHandler(
-                "teamCollection/getCollectionName",
-                HandleGetCollectionName,
-                false
-            );
-            apiHandler.RegisterEndpointHandler(
-                "teamCollection/showCreateTeamCollectionDialog",
-                HandleShowCreateTeamCollectionDialog,
-                true
-            );
-            // The folder the Create Team Collection dialog starts with: the user's Dropbox
-            // folder, or "" if we cannot find one.
-            apiHandler.RegisterEndpointHandler(
-                "teamCollection/defaultRepoFolder",
-                request => request.ReplyWithText(DropboxUtils.GetDropboxFolderPath() ?? ""),
-                false
-            );
             apiHandler.RegisterEndpointHandler(
                 "teamCollection/tcStatus",
                 HandleTeamCollectionStatus,
@@ -307,25 +285,6 @@ namespace Bloom.TeamCollection
                 ),
                 additionalFilesToInclude: new[] { file }
             );
-        }
-
-        private void HandleShowCreateTeamCollectionDialog(ApiRequest request)
-        {
-            ReactDialog.ShowOnIdle(
-                "createTeamCollectionDialogBundle",
-                new { defaultRepoFolder = DropboxUtils.GetDropboxFolderPath() },
-                600,
-                580,
-                null,
-                null,
-                "Create Team Collection"
-            );
-            request.PostSucceeded();
-        }
-
-        private void HandleGetCollectionName(ApiRequest request)
-        {
-            request.ReplyWithText(_settings.CollectionName);
         }
 
         private void HandleGetLog(ApiRequest request)
@@ -1157,14 +1116,6 @@ namespace Bloom.TeamCollection
             _tcManager.CheckConnection();
         }
 
-        // Tell the CollectionSettingsDialog that we should reopen the collection now
-        private Action _callbackToReopenCollection;
-
-        public void SetCallbackToReopenCollection(Action callback)
-        {
-            _callbackToReopenCollection = callback;
-        }
-
         public void HandleChooseFolderLocation(ApiRequest request)
         {
             try
@@ -1275,16 +1226,6 @@ namespace Bloom.TeamCollection
             }
 
             return "";
-        }
-
-        // We must ensure that the user has registered a valid email address before making the call to the API endpoint which calls this.
-        public void HandleCreateTeamCollection(ApiRequest request)
-        {
-            if (CreateTeamCollection(request.RequiredPostString()))
-                _callbackToReopenCollection?.Invoke();
-            // If it failed, the user has already been told, and it is better to report a success
-            // here; otherwise they will also get a toast.
-            request.PostSucceeded();
         }
 
         /// <summary>

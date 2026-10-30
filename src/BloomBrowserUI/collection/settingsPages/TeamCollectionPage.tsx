@@ -2,10 +2,9 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import { ConfigrGroup, ConfigrPage, ConfigrStatic } from "@sillsdev/config-r";
 import { useL10n } from "../../react_components/l10nHooks";
-import { get } from "../../utils/bloomApi";
 import { CreateTeamCollectionDialog } from "../../teamCollection/CreateTeamCollection";
 import { administratorsAreValid } from "../../teamCollection/administrators";
-import { TeamCollectionSettings } from "../../teamCollection/TeamCollectionSettingsPanel";
+import { TeamCollectionSettings } from "../../teamCollection/TeamCollectionSettings";
 import {
     ICollectionSettingsResponse,
     ICollectionSettingsTeamCollection,
@@ -14,9 +13,9 @@ import { kTeamCollectionsFeatureToken } from "./ExperimentalPage";
 import { ISettingsPage, ISettingsPageContext } from "./settingsPage";
 
 /**
- * Whether the Team Collection page is offered. As in the WinForms dialog, it is not while the
- * Team Collections feature is off (as saved) and this is not a Team Collection, nor at all in a
- * collection holding a book downloaded from Bloom Library for editing, which must not become one.
+ * Whether the Team Collection page is offered. It is not while the Team Collections feature is
+ * off (as saved) and this is not a Team Collection, nor at all in a collection holding a book
+ * downloaded from Bloom Library for editing, which must not become one.
  */
 export function teamCollectionPageIsShown(
     settings: ICollectionSettingsResponse,
@@ -43,9 +42,8 @@ function teamCollectionValuesAreValid(
 }
 
 /**
- * The Team Collection page of the Collection Settings dialog: the panel of the WinForms dialog's
- * Team Collection tab. The panel is not made of Config-R controls, so its values are edited
- * through context.editValues. Creating a Team Collection does not wait for the dialog's OK: the
+ * The Team Collection page of the Collection Settings dialog. TeamCollectionSettings is not made
+ * of Config-R controls, so its values are edited through context.editValues. Creating a Team Collection does not wait for the dialog's OK: the
  * Create dialog's Create & Restart saves at once, with the folder to create it in. Not offered in
  * every collection (see teamCollectionPageIsShown).
  */
@@ -65,9 +63,7 @@ export function useTeamCollectionPage(
         undefined,
         true,
     );
-    // The folder the Create dialog starts with while it is showing; undefined when it is not.
-    const [createDialogFolder, setCreateDialogFolder] =
-        React.useState<string>();
+    const [creating, setCreating] = React.useState(false);
 
     if (
         !context.settings ||
@@ -112,28 +108,26 @@ export function useTeamCollectionPage(
                                     ? undefined
                                     : invalidAdministratorsMessage
                             }
-                            onCreateTeamCollection={() =>
-                                get(
-                                    "teamCollection/defaultRepoFolder",
-                                    (result) =>
-                                        setCreateDialogFolder(result.data),
-                                )
-                            }
+                            onCreateTeamCollection={() => setCreating(true)}
                             createDisabledReason={
                                 collectionNameEdited
                                     ? saveRenameFirstMessage
                                     : undefined
                             }
                         />
-                        {createDialogFolder !== undefined && (
+                        {creating && (
                             <CreateTeamCollectionDialog
-                                dialogEnvironment={{
-                                    dialogFrameProvidedExternally: false,
-                                    initiallyOpen: true,
-                                }}
-                                defaultRepoFolder={createDialogFolder}
+                                defaultRepoFolder={
+                                    context.settings.defaultTeamCollectionFolder
+                                }
+                                // Create is disabled while the name has an unsaved edit, so
+                                // this is the name the collection has.
+                                collectionName={
+                                    context.settings.values.advanced
+                                        .collectionName
+                                }
                                 onFolderChosen={(repoFolderParentPath) => {
-                                    setCreateDialogFolder(undefined);
+                                    setCreating(false);
                                     context.saveNow({
                                         teamCollection: {
                                             ...values,
@@ -142,7 +136,7 @@ export function useTeamCollectionPage(
                                         },
                                     });
                                 }}
-                                onClose={() => setCreateDialogFolder(undefined)}
+                                onClose={() => setCreating(false)}
                             />
                         )}
                     </div>

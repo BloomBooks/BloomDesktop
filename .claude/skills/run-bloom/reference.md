@@ -71,7 +71,7 @@ node .claude/skills/run-bloom/launcherControl.mjs --shutdown --json             
   `logPath`). `output/bloom-launcher.starting.lock` stops two agents double-launching. It always
   passes `--dont-disturb` to go.mjs, which passes it on to Bloom: under it no Bloom window
   activates itself or comes to the front (Shell, splash, Choose Collection, every `ReactDialog`,
-  Collection Settings and Bloom's other WinForms dialogs), so an agent's Bloom never takes the
+  and Bloom's other WinForms dialogs), so an agent's Bloom never takes the
   developer's keyboard. Native Windows dialogs (a file picker, a raw `MessageBox`) are the
   exception: Windows activates them regardless, so avoid opening them while someone is working.
   `--automation`, which go.mjs passes to every Bloom, does not imply any of this; a developer's
@@ -149,8 +149,8 @@ node .claude/skills/run-bloom/screenshotBloom.mjs --http-port <httpPort> --out o
 
 ## Driving WinForms and OS dialogs (UI Automation, no pointer)
 
-CDP reaches only the web content inside Bloom's WebView2s. Everything around it — the
-collection Settings dialog's tabs and OK/Cancel/Help buttons, any other WinForms `Form`, and
+CDP reaches only the web content inside Bloom's WebView2s. Everything around it — the buttons,
+radio buttons and tab strips of any WinForms `Form` (e.g. `JpegWarningDialog`), and
 the **native OS dialogs** Bloom opens (the file picker, a raw `MessageBox`) — is driven over
 Windows UI Automation instead, with `.claude/skills/run-bloom/winformsUia.ps1` (stock
 PowerShell 5.1, nothing to install). It uses `InvokePattern`, `SelectionItemPattern`,
@@ -161,17 +161,18 @@ another app. Never fall back to synthesizing mouse or keyboard input for these.
 ```bash
 P=.claude/skills/run-bloom/winformsUia.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File $P windows  -ProcessId <bloomPid>
-powershell -NoProfile -ExecutionPolicy Bypass -File $P tree     -ProcessId <bloomPid> -Window CollectionSettingsDialog -Depth 2
-powershell -NoProfile -ExecutionPolicy Bypass -File $P select   -ProcessId <bloomPid> -Window CollectionSettingsDialog -Control "Book Making"
-powershell -NoProfile -ExecutionPolicy Bypass -File $P invoke   -ProcessId <bloomPid> -Window CollectionSettingsDialog -Control _cancelButton
+powershell -NoProfile -ExecutionPolicy Bypass -File $P tree     -ProcessId <bloomPid> -Window JpegWarningDialog -Depth 2
+powershell -NoProfile -ExecutionPolicy Bypass -File $P select   -ProcessId <bloomPid> -Window JpegWarningDialog -Control _photographRadioButton
+powershell -NoProfile -ExecutionPolicy Bypass -File $P invoke   -ProcessId <bloomPid> -Window JpegWarningDialog -Control _okButton
 powershell -NoProfile -ExecutionPolicy Bypass -File $P setvalue -ProcessId <bloomPid> -Window Open -Control "File name:" -Value "C:\full\path\image.png"
 powershell -NoProfile -ExecutionPolicy Bypass -File $P invoke   -ProcessId <bloomPid> -Window Open -Control Open
 ```
 
-Each of these works against a real `./go.sh` Bloom:
+Each of these was proven against a real `./go.sh` Bloom:
 
-- **A WinForms dialog.** Settings opened from the top bar (a CDP click on the web "Settings"
-  button); `select` switched to the Book Making tab; `invoke` on `_cancelButton` closed it.
+- **A WinForms dialog.** On the old WinForms collection Settings dialog (since removed), `select`
+  switched tabs and `invoke` on `_cancelButton` closed it. The `JpegWarningDialog` lines above
+  are the same commands on a dialog that still exists; they have not been run against it.
 - **Bloom's own OS file picker.** The image gallery's picker (`ImageGalleryApi`, a
   `BloomOpenFileDialog`) came up as `[Window] name='Open'`; `setvalue` on "File name:" plus
   `invoke` on "Open" closed it, and Bloom's API returned the chosen path.
@@ -182,9 +183,9 @@ Each of these works against a real `./go.sh` Bloom:
 What to know:
 
 - **Addressing.** A WinForms control's UIA `AutomationId` is its designer `Name`, so the
-  dialog is `CollectionSettingsDialog`, its buttons `_okButton`/`_cancelButton`/`_helpButton`,
-  its tab strip `_tab` with tab items whose `Name` is the visible caption ("Languages", "Book
-  Making", ...). OS dialogs have no useful ids; use the visible names ("Open", "File name:",
+  dialog is `JpegWarningDialog`, its button `_okButton`, its radio buttons
+  `_photographRadioButton`/`_cancelRadioButton`; the items of a tab strip have the visible
+  caption as their `Name`. OS dialogs have no useful ids; use the visible names ("Open", "File name:",
   "Cancel", "OK"). `-Window` and `-Control` accept either. `tree` shows both, so dump first
   when unsure. When several controls share a name (the picker's "File name:" is a label, a
   ComboBox and an Edit), the script takes the outermost one that supports the command.
@@ -206,9 +207,9 @@ What to know:
   `BloomOpenFileDialog`/`BloomFolderChooser` answer without showing anything, which is
   faster and cannot be upset by whatever else is on the screen. UIA is for the cases that
   hook does not cover and for interactive/diagnostic driving.
-- **Not reachable this way:** WinForms `LinkLabel`s (the "Change..." language links on the
-  Languages tab) expose no pattern at all, and the web content on the other tabs is a WebView2
-  — drive that over CDP. `tree` prunes WebView2 subtrees on purpose.
+- **Not reachable this way:** WinForms `LinkLabel`s (the old Settings dialog's "Change..."
+  language links were the case found) expose no pattern at all, and web content a WinForms
+  dialog hosts is a WebView2 — drive that over CDP. `tree` prunes WebView2 subtrees on purpose.
 - **Reading a raw `MessageBox`.** It appears as a `[Window]` named by its caption (`Error` for
   the one `WebView2Browser` shows when a WebView2 fails to initialize), class `#32770`, owned
   by the Shell; `tree -Window Error -Depth 3` prints its `[Text]` children, which is the whole
@@ -219,16 +220,14 @@ What to know:
   X (and with the launcher, takes the whole stack with it). Use it only on the window you mean.
 - **The dialog's own WebView2 and CDP.** Outside `--e2e`, every ReactControl gets its own
   WebView2 environment and browser process, and each is given the same
-  `--remote-debugging-port`. It can happen that while the Book Making tab is showing,
+  `--remote-debugging-port`. It happened that while the old WinForms Settings dialog was open,
   the CDP endpoint listed *only* the dialog's page, and the shell page came back when the dialog
   closed. So the endpoint can flip between browser processes; re-list targets after a WinForms
   dialog opens or closes rather than holding on to a page handle. Equally, the dialog's page
-  may never show up: with the Settings dialog on its Bloom Subscription tab, repeated listings
-  showed only the shell page. When that happens, drive the dialog's page with the mouse (next
-  bullet); its Paste button next to the code field takes a value from the clipboard without any
-  keyboard input (save and restore the developer's clipboard around it).
+  may never show up: on another of that dialog's tabs, repeated listings showed only the shell
+  page. When that happens, drive the dialog's page with the mouse (next bullet).
 - **When `select` lands on the wrong tab, click instead, DPI-aware.** On a machine with display
-  scaling, `select -Control "Project Information"` in the Settings dialog reported success
+  scaling, `select -Control "Project Information"` in the old Settings dialog reported success
   while the dialog showed the Bloom Subscription page, so the Project Information text boxes
   were not in the tree; a real mouse click on the same tab item worked every time. Windows
   PowerShell 5.1 is DPI-unaware, so the `BoundingRectangle` it gets from UIA and the
@@ -238,13 +237,15 @@ What to know:
   and screen capture all agree in physical pixels, a click at the rectangle's center hits, and
   capturing the rectangle gives a true picture of the dialog. Only click with the pointer when
   the developer has allowed it, and put the cursor back where it was afterwards.
-- **A tab strip lists only the tabs scrolled into view.** When the Settings dialog's tab strip
+- **A tab strip lists only the tabs scrolled into view.** When a WinForms tab strip
   is scrolled (its `Spin` control is present), UIA shows only the visible `TabItem`s, and
   `select` on an off-screen one says "No control". Reopen the dialog, or scroll with
   `invoke -Control Forward`/`Backward`.
-- **Under `--e2e`, opening the Settings dialog currently kills Bloom.** See "WinForms surfaces
-  are invisible to CDP" in `src/BloomE2E/AUTOMATION-DEBT.md` for the cause (a WebView2 DPI
-  awareness mismatch against the shared e2e environment) before writing a test that opens it.
+- **Under `--e2e`, a legacy-DPI dialog that hosts a browser kills Bloom.** That is
+  `ConfigurationDialog` and `LicenseDialog`; see "WinForms surfaces are invisible to CDP" in
+  `src/BloomE2E/AUTOMATION-DEBT.md` for the cause (a WebView2 DPI awareness mismatch against the
+  shared e2e environment) before writing a test that opens one. The Collection Settings dialog
+  is React in the shell document, so drive it over CDP.
 
 ## Driving Bloom HTTP APIs over CDP (host-header and IPv6 gotchas)
 

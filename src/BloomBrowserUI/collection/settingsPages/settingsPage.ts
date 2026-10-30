@@ -6,15 +6,15 @@ import {
 
 /**
  * What the Collection Settings dialog gives every page. Each page is a hook in this folder that
- * takes this and returns an ISettingsPage, so the dialog knows nothing about any one page.
+ * takes this and returns an ISettingsPage, so the dialog knows nothing about any one page. The
+ * dialog is mounted only while it is open, so a page can fetch what it needs when it mounts.
  */
 export interface ISettingsPageContext {
-    dialogOpen: boolean;
-    // Undefined until the dialog's GET collection/settings has answered.
+    // Undefined until the dialog's GET collection/settings has answered, and for a user who may
+    // not edit the settings.
     settings: ICollectionSettingsResponse | undefined;
-    // All the values as the user is editing them, exactly as typed; undefined until they have
-    // loaded, and for a user who may not edit the settings. An editor that is not a Config-R
-    // control shows its value from here.
+    // All the values as the user is editing them, exactly as typed; undefined when settings is.
+    // An editor that is not a Config-R control shows its value from here.
     values: ICollectionSettingsValues | undefined;
     // The same, as OK would save them now (edited text trimmed): what a page should judge by.
     // No page's own valuesToSave (see ISettingsPage) has been applied yet.

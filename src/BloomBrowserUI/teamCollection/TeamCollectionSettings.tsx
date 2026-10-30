@@ -1,71 +1,16 @@
 import { css } from "@emotion/react";
 
 import * as React from "react";
-import {
-    get,
-    post,
-    postJson,
-    postString,
-    useApiStringState,
-} from "../utils/bloomApi";
+import { postJson, useApiStringState } from "../utils/bloomApi";
 import { P } from "../react_components/l10nComponents";
 import { RequiresSubscriptionOverlayWrapper } from "../react_components/requiresSubscription";
-import "./TeamCollectionSettingsPanel.less";
-import { lightTheme } from "../bloomMaterialUITheme";
-import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { tabMargins } from "../collection/commonTabSettings";
+import "./TeamCollectionSettings.less";
 import BloomButton from "../react_components/bloomButton";
 
 import { NoteBox, WarningBox } from "../react_components/boxes";
-import { WireUpForWinforms } from "../utils/WireUpWinform";
-import { useEffect } from "react";
 import { Label } from "../react_components/l10nComponents";
 import { TextField } from "@mui/material";
 import { DialogHelpButton } from "../react_components/BloomDialog/commonDialogComponents";
-// The contents of the Team Collection panel of the WinForms Settings dialog. (The React Collection
-// Settings dialog has its own page, settingsPages/TeamCollectionPage.tsx, which shows
-// TeamCollectionSettings.) The administrators being typed live in C#, which that dialog saves on
-// OK, so each change is posted to it.
-
-export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
-    const [adminstratorEmail, setAdminstratorEmail] =
-        React.useState<string>("");
-
-    useEffect(() => {
-        get("settings/administrators", (result) => {
-            setAdminstratorEmail(result.data);
-        });
-    }, []);
-
-    return (
-        <StyledEngineProvider injectFirst>
-            <ThemeProvider theme={lightTheme}>
-                <div
-                    css={css`
-                        margin: ${tabMargins.top} ${tabMargins.side}
-                            ${tabMargins.bottom};
-                    `}
-                >
-                    <TeamCollectionSettings
-                        administrators={adminstratorEmail}
-                        onAdministratorsChange={(newAdminString) => {
-                            setAdminstratorEmail(newAdminString);
-                            postString(
-                                "settings/administrators",
-                                newAdminString,
-                            );
-                        }}
-                        onCreateTeamCollection={() =>
-                            post(
-                                "teamCollection/showCreateTeamCollectionDialog",
-                            )
-                        }
-                    />
-                </div>
-            </ThemeProvider>
-        </StyledEngineProvider>
-    );
-};
 
 /**
  * What the Team Collection settings show: the experimental warning, and either the collection's
@@ -236,4 +181,3 @@ const ExperimentalWarningBox: React.FunctionComponent = () => (
         </span>
     </WarningBox>
 );
-WireUpForWinforms(TeamCollectionSettingsPanel);

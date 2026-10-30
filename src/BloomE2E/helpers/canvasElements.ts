@@ -475,8 +475,9 @@ export async function clickCanvasElementMenuItem(
                 `${offered.join(", ") || "(nothing)"}.`,
         );
     }
-    // Bloom answers a click on a tier-gated command by opening the WinForms Settings dialog, which
-    // would hang the run (AUTOMATION-DEBT.md, "Native OS dialogs hang automation"). Refuse first.
+    // Bloom answers a click on a tier-gated command by opening the Collection Settings dialog on its
+    // Subscription page instead of running the command, so the test would go on as if the command
+    // had run. Refuse first.
     if (await item.evaluate((el) => el.hasAttribute("data-subscription-gated")))
         throw new Error(
             `The "${l10nId}" command is behind a subscription tier this collection does not ` +
