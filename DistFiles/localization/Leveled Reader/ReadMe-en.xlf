@@ -57,6 +57,11 @@
         <target />
         <note>ID: decodable.stage</note>
       </trans-unit>
+      <trans-unit id="leveled.decodable.notapplicable">
+        <source xml:lang="en">n/a</source>
+        <target />
+        <note>ID: leveled.decodable.notapplicable</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
