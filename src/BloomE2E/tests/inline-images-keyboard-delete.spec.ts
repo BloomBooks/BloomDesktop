@@ -152,14 +152,12 @@ test("a picture deleted from its own menu stays deleted through the next keystro
         "The menu's Delete left copies of the picture in the group.",
     ).toBe(0);
 
-    // A keystroke in the block next. If the menu's Delete had not lowered the number of pictures
-    // BloomField protects, this keystroke would look to it like one that removed a picture, and
-    // its browser undo would put the picture back.
+    // A keystroke in the block next. BloomField refuses an edit whose range covers a protected
+    // picture; with the picture gone, it must let the typing through and put nothing back.
     await typeAtEndOfBlock(page, BLOCK, LANG, " The end.");
     expect(
         await countImages(page),
-        "Typing after the menu's Delete put the picture back. BloomField still expected the " +
-            "block to hold a protected picture, so it undid the keystroke.",
+        "Typing after the menu's Delete put the picture back.",
     ).toBe(0);
 
     // Leave the page and come back, so that Bloom saves it and sets it up again.

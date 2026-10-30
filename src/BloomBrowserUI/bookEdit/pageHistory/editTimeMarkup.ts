@@ -56,6 +56,8 @@ const kEditTimeClasses = new Set([
     "bloom-current-table",
     // removeEditingDebris, on .marginBox there.
     "origami-layout-mode",
+    // removeEditingDebris, through clearInlineImageSelection, on the selected inline image.
+    "bloom-inlineImage-selected",
     // turnOffCanvasElementEditing: removeFocusClass and EnableAllImageEditing. The Motion tool's
     // detachFromPage also removes bloom-hideImageButtons.
     "bloom-focusedCanvasElement",

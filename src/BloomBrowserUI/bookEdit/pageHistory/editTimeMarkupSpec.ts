@@ -129,6 +129,14 @@ describe("kept classes", () => {
         ).toBe("bloom-cell");
     });
 
+    it("leave out bloom-inlineImage-selected, which marks the selected inline image", () => {
+        expect(
+            keptClasses(
+                "bloom-inlineImage bloom-inlineImageLeft bloom-inlineImage-selected",
+            ),
+        ).toBe("bloom-inlineImage bloom-inlineImageLeft");
+    });
+
     it("leave out bloom-selected, which marks the selected video container", () => {
         expect(
             keptClasses(

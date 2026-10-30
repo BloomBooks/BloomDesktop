@@ -32,8 +32,7 @@ import {
     kBloomEditableSelector,
 } from "./bloomEditableConstants";
 import { createValidXhtmlUniqueId } from "./xhtmlIdUtils";
-import { theOneUndoStack } from "../undo/UndoStack";
-import { IUndoEntry } from "../undo/undoTypes";
+import { addToLatestTransaction } from "../pageHistory/pageHistoryAccess";
 import {
     clearInlineImageCrop,
     computeCroppedInlineImageAspectRatio,
@@ -62,18 +61,13 @@ export type InlineImageDock =
     | typeof kInlineImageBottomClass;
 
 // Marks the wrapper the user has selected. It is used only while editing: makeSerializedCopy
-// removes it, so it is never copied to the other languages or saved. The code that handles
-// clicking on inline images adds it, and an undo moves it to the restored copy.
+// removes it, so it is never copied to the other languages or saved, and the page history neither
+// records it nor puts it back. The code that handles clicking on inline images adds it.
 export const kInlineImageSelectedClass = "bloom-inlineImage-selected";
-
-// Dispatched on the translation group, and bubbling, after an undo or redo has replaced its
-// wrappers, so that anything attached to the old elements can be rebuilt. See
-// restoreInlineImageGroupState.
-export const kInlineImagesRestoredEvent = "bloom-inlineImagesRestored";
 
 // Identifies one inline image. Its copy in every language's editable has the same value. A
 // text block can hold any number of inline images, so there may be no single "wrapper in this
-// editable", and sync, normalize and undo all pair up the copies by this value. It has to be
+// editable", and sync and normalize pair up the copies by this value. It has to be
 // a data attribute rather than an id, because TranslationGroupManager removes the id from an
 // editable it clones for a new language (TranslationGroupManager.cs:998). None of the C# code
 // that cleans up book markup touches a data attribute it does not know, and StripOutText only
@@ -102,7 +96,7 @@ export const kInlineImageAspectRatioVar = "--inline-image-aspect-ratio";
 export const kInlineImageOffsetBasedOnAttr = "data-inline-image-offset-basedon";
 
 // Classes that BloomField.ts uses to protect an embedded image. With bloom-keepFirstInField it
-// keeps the required <p> after the image, and with bloom-preventRemoval it undoes a ctrl+a DEL
+// keeps the required <p> after the image, and with bloom-preventRemoval it refuses a ctrl+a DEL
 // that would otherwise delete the image too.
 export const kKeepFirstInFieldClass = "bloom-keepFirstInField";
 export const kPreventRemovalClass = "bloom-preventRemoval";
@@ -206,7 +200,7 @@ export function getInlineImageOffsetBasedOn(
 
 /**
  * The kInlineImageIdAttr value of one inline image. This image's copy in every language's
- * editable has the same value, which is how sync, normalize and undo tell it apart from other
+ * editable has the same value, which is how sync and normalize tell it apart from other
  * images in the same block. It is undefined only for a wrapper written by hand (an old book,
  * or the test.pug page); insertInlineImage always sets it.
  */
@@ -375,7 +369,6 @@ export function makeInlineImageWrapper(id?: string): HTMLElement {
  * to open the image chooser on it).
  */
 export function insertInlineImage(translationGroup: HTMLElement): HTMLElement {
-    prepareInlineImageUndo(translationGroup, "Insert inline image");
     // The copies we put in each language's editable all get this one id.
     const id = createValidXhtmlUniqueId();
     const editables = getEditables(translationGroup);
@@ -388,7 +381,6 @@ export function insertInlineImage(translationGroup: HTMLElement): HTMLElement {
             getFloatingClusterEnd(editable),
         );
     });
-    commitPendingInlineImageUndo(translationGroup);
     const preferred = getFirstVisibleEditable(translationGroup) ?? editables[0];
     return getInlineImageById(preferred, id)!;
 }
@@ -402,8 +394,9 @@ export function insertInlineImage(translationGroup: HTMLElement): HTMLElement {
  * meant. It throws if given something that is not an inline image, so that it can't quietly
  * delete the wrong thing.
  *
- * `afterRemoving` runs after the copies are gone and before the undo entry is recorded, for
- * changes to the other images that belong to the same step, so that one Undo takes back both.
+ * `afterRemoving` runs after the copies are gone, for changes to the other images that belong to
+ * the same step. Both happen in the page history's transaction for the user's action, so one Undo
+ * takes back both.
  */
 export function removeInlineImage(
     wrapper: HTMLElement,
@@ -416,7 +409,6 @@ export function removeInlineImage(
             "removeInlineImage requires an inline image wrapper inside a translation group",
         );
     }
-    prepareInlineImageUndo(translationGroup, "Delete inline image");
     getEditables(translationGroup).forEach((editable) => {
         // Only hand-written markup lacks an id, and it has no copies to match, so in that case
         // we remove just the wrapper we were given.
@@ -424,7 +416,6 @@ export function removeInlineImage(
     });
     if (!id) wrapper.remove();
     afterRemoving?.();
-    commitPendingInlineImageUndo(translationGroup);
 }
 
 /**
@@ -556,315 +547,6 @@ export function handleInlineImageChanged(img: HTMLElement): void {
     OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
 }
 
-// --- undo --------------------------------------------------------------------
-//
-// Each inline image operation is an entry on the one undo stack (undo/UndoStack.ts), so an Undo
-// takes it back in the order it was made, before or after typing and table operations (see
-// undo/changeOrder.ts). The entry restores the images itself. CKEditor's undo can't see changes
-// our code makes to the DOM, and ImageUndoManager.ts only knows how to restore one img's src and
-// crop. Neither knows about a wrapper that has a copy in every language, all of which have to be
-// restored together.
-//
-// An entry records, for every editable in one translation group, the markup of all its inline
-// images, in order, before the operation and after it. Restoring all of that is simpler and
-// more reliable than reversing individual changes, because one operation can change every
-// editable (sync rewrites all of them) and any number of images in each. The markup holds each
-// image's id, dock, size and position, and the list holds their order, so an entry needs nothing
-// else. The text is not part of it, so undoing a picture operation leaves typing done since
-// alone.
-//
-// An operation is recorded in two steps: prepareInlineImageUndo before it, and
-// commitPendingInlineImageUndo after it. Then an operation that turns out not to happen (a drag
-// the person abandons, a picture change that fails) or that ends where it began pushes nothing.
-
-// The markup of the inline images in each editable of one translation group. It holds the
-// editables themselves rather than a way to find them again: a translation group has no id to
-// find it by, and the undo stack dies with the page frame, so the editables outlive every entry
-// that holds them (see the second rule in undo/undoTypes.ts).
-type InlineImageGroupState = {
-    editable: HTMLElement;
-    // The markup of each inline image, in the order they appeared. Empty when this editable
-    // had none.
-    wrapperHtmls: string[];
-}[];
-
-type PendingInlineImageUndo = {
-    translationGroup: HTMLElement;
-    label: string;
-    before: InlineImageGroupState;
-};
-
-let pendingInlineImageUndo: PendingInlineImageUndo | undefined;
-
-// The entries this file has pushed, so that inlineImageCanUndo can tell whether the stack's next
-// undo is one of them.
-const inlineImageUndoEntries = new WeakSet<IUndoEntry>();
-
-/**
- * Records the inline images of a translation group before an operation on them, which
- * commitPendingInlineImageUndo then turns into an entry on the undo stack once the operation has
- * happened. Use discardPendingInlineImageUndo instead if the operation turns out not to happen.
- * It is fast enough to call when a drag starts. Takes the translation group, or any element
- * inside one. `label` names the operation, for logging; it is not shown to the person.
- */
-export function prepareInlineImageUndo(
-    element: HTMLElement,
-    label = "Change inline image",
-): void {
-    const translationGroup = getTranslationGroupOf(element);
-    pendingInlineImageUndo = translationGroup
-        ? {
-              translationGroup,
-              label,
-              before: getInlineImageGroupState(translationGroup),
-          }
-        : undefined;
-}
-
-/**
- * Pushes an entry on the undo stack for the operation prepareInlineImageUndo was called for, now
- * that it has happened. It ignores a pending operation that belongs to some other translation
- * group, so that an operation that was replaced by another one, or that was for a different
- * group, can't push a misleading entry.
- *
- * If the group now looks exactly as it did when the operation was prepared, nothing is pushed. A
- * drag comes here whenever the pointer moved at all, but a move that doesn't fit is put back
- * where it was, so a drag into a full side, or past the level of another image, ends exactly
- * where it began. An entry for that would give the person an Undo that visibly does nothing,
- * and the Undo after it would take back a change they had stopped thinking about.
- *
- * Returns whether it pushed an entry, that is, whether the operation changed anything.
- */
-export function commitPendingInlineImageUndo(element: HTMLElement): boolean {
-    const pending = pendingInlineImageUndo;
-    pendingInlineImageUndo = undefined;
-    const translationGroup = getTranslationGroupOf(element);
-    if (!pending || pending.translationGroup !== translationGroup) return false;
-    const after = getInlineImageGroupState(translationGroup);
-    if (inlineImageGroupStatesMatch(pending.before, after)) return false;
-    const entry = makeInlineImageUndoEntry(
-        pending.label,
-        translationGroup,
-        pending.before,
-        after,
-    );
-    inlineImageUndoEntries.add(entry);
-    theOneUndoStack.push(entry);
-    return true;
-}
-
-/** Throws away a prepared operation, for one that turned out not to happen. */
-export function discardPendingInlineImageUndo(): void {
-    pendingInlineImageUndo = undefined;
-}
-
-/**
- * Whether the next Undo would take back an inline image operation: the one undo stack's next
- * undo is one of the entries this file pushed, and no legacy mechanism (CKEditor, for typing
- * newer than it) has the turn first. The Undo button needs no help from this; the stack decides
- * for it. This is for Ctrl+Z, which CKEditor handles in the text and which never reaches the
- * stack. CKEditor would undo only the copy in the focused editable, so the page's Ctrl+Z
- * handler asks this first and, when it says yes, calls inlineImageUndo instead.
- *
- * An inline image operation recorded as part of a larger gesture (undo/runUndoable.ts) is one
- * entry with the rest of the gesture, which this does not recognize, so Ctrl+Z leaves it to the
- * Undo button.
- */
-export function inlineImageCanUndo(): boolean {
-    const next = theOneUndoStack.getEntryForNextUndo();
-    return !!next && inlineImageUndoEntries.has(next);
-}
-
-/**
- * Undoes the most recent inline image operation, through the one undo stack, if that is what
- * the next Undo would do (see inlineImageCanUndo). Returns whether it did.
- */
-export function inlineImageUndo(): boolean {
-    if (!inlineImageCanUndo()) return false;
-    void theOneUndoStack.undo();
-    return true;
-}
-
-/**
- * Prepares the undo entry for a change of the picture inside an inline image. Returns true if
- * this img is inside an inline image. In that case this file handles the undo, and the caller
- * must not also record an ImageUndoManager undo point, because that would restore only one
- * language's src and leave the other languages showing the new picture.
- */
-export function prepareInlineImageUndoForImageChange(
-    img: HTMLElement,
-): boolean {
-    if (!img.closest(kInlineImageSelector)) return false;
-    prepareInlineImageUndo(img, "Change inline image picture");
-    return true;
-}
-
-/**
- * Pushes the entry prepareInlineImageUndoForImageChange prepared, now that the new picture is in
- * place. Returns true if this img is inside an inline image, as above.
- */
-export function commitInlineImageUndoForImageChange(img: HTMLElement): boolean {
-    if (!img.closest(kInlineImageSelector)) return false;
-    commitPendingInlineImageUndo(img);
-    return true;
-}
-
-/**
- * The undo stack entry for one operation on a translation group's inline images, which took
- * them from `before` to `after`.
- *
- * Undo puts back `before` and redo puts back what undo replaced. Each first checks that the
- * images are as the entry left them, and throws if not (the first rule in undo/undoTypes.ts):
- * the stack then discards itself rather than have this restore over a change it never recorded.
- */
-function makeInlineImageUndoEntry(
-    label: string,
-    translationGroup: HTMLElement,
-    before: InlineImageGroupState,
-    after: InlineImageGroupState,
-): IUndoEntry {
-    // The images as undo found them, which redo puts back. Captured when undo runs rather than
-    // taken from `after`: a picture records its shape on the wrapper when it loads, which can be
-    // after the entry was made (setAspectRatioFromNaturalSize), and redo should keep that.
-    let undone = after;
-    const checkStillAsLeft = (
-        expected: InlineImageGroupState,
-        what: string,
-    ) => {
-        if (
-            !inlineImageGroupStatesMatch(
-                expected,
-                getInlineImageGroupState(translationGroup),
-            )
-        ) {
-            throw new Error(
-                `The inline images in this block have changed since "${label}", so it cannot be ${what}.`,
-            );
-        }
-    };
-    return {
-        label,
-        kind: "custom",
-        prepareRedo: () => {
-            undone = getInlineImageGroupState(translationGroup);
-        },
-        undo: () => {
-            checkStillAsLeft(after, "undone");
-            restoreInlineImageGroupState(translationGroup, before);
-        },
-        redo: () => {
-            checkStillAsLeft(before, "redone");
-            restoreInlineImageGroupState(translationGroup, undone);
-        },
-    };
-}
-
-/** The markup of the inline images in every editable of the group, in order. */
-function getInlineImageGroupState(
-    translationGroup: HTMLElement,
-): InlineImageGroupState {
-    return getEditables(translationGroup).map((editable) => ({
-        editable,
-        wrapperHtmls: getInlineImagesInEditable(editable).map(
-            (wrapper) => makeSerializedCopy(wrapper).outerHTML,
-        ),
-    }));
-}
-
-/**
- * Whether two records of a group's inline images describe the same images, in the same
- * editables, in the same order.
- *
- * The aspect ratio is left out. A picture writes its real shape onto the wrapper when it loads
- * (setAspectRatioFromNaturalSize), which can be any time after an operation, and after an undo
- * restores a wrapper; nothing the person did changes it except choosing another picture, which
- * changes the src as well.
- */
-function inlineImageGroupStatesMatch(
-    a: InlineImageGroupState,
-    b: InlineImageGroupState,
-): boolean {
-    if (a.length !== b.length) return false;
-    return a.every((editableA, i) => {
-        const editableB = b[i];
-        return (
-            editableA.editable === editableB.editable &&
-            editableA.wrapperHtmls.length === editableB.wrapperHtmls.length &&
-            editableA.wrapperHtmls.every(
-                (html, j) =>
-                    withoutAspectRatio(html) ===
-                    withoutAspectRatio(editableB.wrapperHtmls[j]),
-            )
-        );
-    });
-}
-
-// The wrapper markup with its aspect ratio removed. The style attribute is written back from the
-// parsed declarations on both sides of a comparison, so a difference in how the original
-// attribute was spelled does not count as a change.
-function withoutAspectRatio(wrapperHtml: string): string {
-    const template = document.createElement("template");
-    template.innerHTML = wrapperHtml;
-    const wrapper = template.content.firstElementChild as HTMLElement;
-    wrapper.style.removeProperty(kInlineImageAspectRatioVar);
-    wrapper.setAttribute("style", wrapper.style.cssText);
-    return wrapper.outerHTML;
-}
-
-/**
- * Puts the group's inline images back as `state` records them, in every editable, and checks
- * overflow again, since an image's size may have changed. Announces it with
- * kInlineImagesRestoredEvent.
- */
-function restoreInlineImageGroupState(
-    translationGroup: HTMLElement,
-    state: InlineImageGroupState,
-): void {
-    // Restoring replaces the wrapper elements, which would lose the selection. So we select the
-    // restored copy of the same image. We find it by id, because the block may hold several
-    // images, and selecting the wrong one would be worse than selecting none.
-    const wasSelected = document.querySelector(
-        kInlineImageSelector + "." + kInlineImageSelectedClass,
-    ) as HTMLElement | null;
-    const selectedId = wasSelected ? getInlineImageId(wasSelected) : undefined;
-    const editableThatWasSelected = wasSelected?.closest(
-        kBloomEditableSelector,
-    ) as HTMLElement | null;
-    state.forEach((editableState) => {
-        const editable = editableState.editable;
-        getInlineImagesInEditable(editable).forEach((wrapper) =>
-            wrapper.remove(),
-        );
-        // Add all the wrappers first and put them in order afterwards, so that
-        // arrangeInlineImages works out where the text starts and ends with every wrapper
-        // present.
-        const restored = editableState.wrapperHtmls.map((html) => {
-            const template = document.createElement("template");
-            template.innerHTML = html;
-            const wrapper = template.content.firstElementChild as HTMLElement;
-            editable.appendChild(wrapper);
-            wireUpImage(wrapper);
-            return wrapper;
-        });
-        arrangeInlineImages(editable, restored);
-        OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
-    });
-    if (editableThatWasSelected && selectedId) {
-        getInlineImageById(editableThatWasSelected, selectedId)?.classList.add(
-            kInlineImageSelectedClass,
-        );
-    }
-    // Undo and redo are the only operations that replace the wrapper the user is working on;
-    // sync and normalize only replace the copies in the other editables. So anything that held a
-    // reference to the old wrapper is now out of date, and so is anything that was inside it,
-    // such as the drag handles and the buttons shown on hover, which are bloom-ui and so are not
-    // recorded. This event tells the code that handles clicks and drags on inline images to look
-    // them up in the DOM again.
-    translationGroup.dispatchEvent(
-        new CustomEvent(kInlineImagesRestoredEvent, { bubbles: true }),
-    );
-}
-
 // --- internals ---------------------------------------------------------------
 
 const getTranslationGroupOf = (element: HTMLElement): HTMLElement | undefined =>
@@ -917,7 +599,11 @@ function wireUpImage(wrapper: HTMLElement): void {
     if (imagesWithLoadHandler.has(img)) return;
     imagesWithLoadHandler.add(img);
     img.addEventListener("load", () => {
-        setAspectRatioFromNaturalSize(wrapper, img);
+        // The shape is Bloom's reaction to the change that gave the wrapper this picture, which
+        // may have ended before the picture loaded, so it joins that change's undo step.
+        addToLatestTransaction(() =>
+            setAspectRatioFromNaturalSize(wrapper, img),
+        );
         const editable = wrapper.closest(
             kBloomEditableSelector,
         ) as HTMLElement | null;

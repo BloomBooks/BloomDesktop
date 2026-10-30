@@ -1071,9 +1071,8 @@ export async function resizeInlineImage(
  * and changeImageByElement puts it in the img element the chooser was opened on, which copies the
  * new picture to the other languages' wrappers (handleInlineImageChanged).
  *
- * One difference from the real chooser: this passes undoable "false" where the chooser passes
- * "true". So the change is not an undo entry, and for an inline image changeImageByElement
- * empties the undo stack, which the real chooser never does.
+ * Like the real chooser's, the change is a step of the page history, which Undo takes back. The
+ * undoable "false" that this passes is read by nothing.
  */
 export async function changeInlineImagePicture(
     page: Page,
@@ -1297,33 +1296,6 @@ export async function getBlockText(
 }
 
 /**
- * Whether the CKEditor of one language's block has any of its own history to undo, that is,
- * whether Ctrl+Z in that block would change its text.
- */
-export async function blockCkeditorCanUndo(
-    page: Page,
-    groupSelector: string,
-    languageTag: string,
-): Promise<boolean> {
-    return inlineImageBlock(page, groupSelector, languageTag).evaluate(
-        (block) => {
-            const editor = (
-                block as HTMLElement & {
-                    bloomCkEditor?: {
-                        undoManager: { undoable: () => boolean };
-                    };
-                }
-            ).bloomCkEditor;
-            if (!editor)
-                throw new Error(
-                    "The block has no CKEditor, so this cannot ask what Ctrl+Z would undo.",
-                );
-            return editor.undoManager.undoable();
-        },
-    );
-}
-
-/**
  * Click on the text of a block, away from every inline image in it, the way a person puts the
  * caret back in the text. That deselects the picture, so its corner handles go away. Returns once
  * no inline image in the group is selected.
@@ -1390,8 +1362,8 @@ export async function anyTextBlockHasFocus(page: Page): Promise<boolean> {
 
 /**
  * Put the caret at the end of a block's text and type there with real key presses, the way a
- * person adds to the text. Real keys matter when the subject is undo: CKEditor records typing for
- * its undo only from keystrokes, and the one undo stack learns of typing from CKEditor. Returns
+ * person adds to the text. Real keys matter when the subject is undo: the page history makes a
+ * typing step from the transactions that the key presses open (pageHistoryInput.ts). Returns
  * once the block's text ends with what was typed.
  */
 export async function typeAtEndOfBlock(
