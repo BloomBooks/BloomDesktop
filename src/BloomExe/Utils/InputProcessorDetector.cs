@@ -95,9 +95,10 @@ namespace Bloom.Utils
     }
 
     /// <summary>
-    /// ITfInputProcessorProfileMgr. COM finds a method by its position, so every method is
-    /// declared in order even where Bloom calls only GetActiveProfile; ActivateProfile and
-    /// EnumProfiles are used by the unit tests.
+    /// ITfInputProcessorProfileMgr. COM finds a method by its position, so every slot is
+    /// declared in order. Bloom calls only GetActiveProfile; ActivateProfile and EnumProfiles
+    /// are used by the unit tests. The Unused slots stand in for methods nobody calls, so that
+    /// no one calls them with a guessed signature.
     /// </summary>
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -114,51 +115,19 @@ namespace Bloom.Utils
             TfIppMf dwFlags
         );
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void DeactivateProfile(
-            TfProfileType dwProfileType,
-            ushort langid,
-            ref Guid clsid,
-            ref Guid guidProfile,
-            IntPtr hkl,
-            TfIppMf dwFlags
-        );
+        void UnusedDeactivateProfile();
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [return: MarshalAs(UnmanagedType.Struct)]
-        TfInputProcessorProfile GetProfile(
-            TfProfileType dwProfileType,
-            ushort langid,
-            ref Guid clsid,
-            ref Guid guidProfile,
-            IntPtr hkl
-        );
+        void UnusedGetProfile();
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
         [return: MarshalAs(UnmanagedType.Interface)]
         IEnumTfInputProcessorProfiles EnumProfiles(short langid);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void ReleaseInputProcessor(ref Guid rclsid, uint dwFlags);
+        void UnusedReleaseInputProcessor();
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void RegisterProfile(
-            ref Guid rclsid,
-            ushort langid,
-            ref Guid guidProfile,
-            [MarshalAs(UnmanagedType.LPWStr)] string desc,
-            uint cchDesc,
-            [MarshalAs(UnmanagedType.LPWStr)] string iconFile,
-            uint cchFile,
-            uint uIconIndex,
-            uint hklSubstitute,
-            uint dwPreferredLayout,
-            [MarshalAs(UnmanagedType.VariantBool)] bool bEnabledByDefault,
-            uint dwFlags
-        );
+        void UnusedRegisterProfile();
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void UnregisterProfile(Guid rclsid, ushort langid, Guid guidProfile, uint dwFlags);
+        void UnusedUnregisterProfile();
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
         [return: MarshalAs(UnmanagedType.Struct)]

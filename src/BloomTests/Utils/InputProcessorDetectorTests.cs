@@ -15,6 +15,9 @@ namespace BloomTests.Utils
     [Apartment(ApartmentState.STA)]
     public class InputProcessorDetectorTests
     {
+        // TF_IPP_FLAG_ENABLED
+        private const uint kTfIppFlagEnabled = 2;
+
         [Test]
         public void IsInputProcessorActive_FollowsTheActiveInputMethod()
         {
@@ -67,6 +70,10 @@ namespace BloomTests.Utils
             var buffer = new TfInputProcessorProfile[1];
             while (enumerator.Next(1, buffer) == 1)
             {
+                // Windows registers IMEs the user never enabled (Japanese, Chinese, Korean...);
+                // activating one of those fails, so take only enabled profiles.
+                if ((buffer[0].Flags & kTfIppFlagEnabled) == 0)
+                    continue;
                 if (
                     buffer[0].ProfileType == TfProfileType.KeyboardLayout
                     || buffer[0].CatId == InputProcessorDetector.TfcatTipKeyboard
