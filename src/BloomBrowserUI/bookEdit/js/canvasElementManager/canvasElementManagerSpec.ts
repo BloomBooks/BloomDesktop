@@ -177,6 +177,62 @@ describe("CanvasElementManager.updateCanvasElementForChangedImage", () => {
         expect(manager.adjustBackgroundImageSize).toHaveBeenCalled();
         expect(transformWhenFitted).toBe("");
     });
+
+    it("puts the old picture's rotation and mirror back when the change is undone", async () => {
+        const { img } = makeRotatedAndMirroredPicture();
+        const history = createPageHistory({
+            root: document.querySelector(".bloom-page") as HTMLElement,
+            filter: createEditTimeMarkupFilter(),
+        });
+        await history.doTransaction(kGenericUndoDescriptionL10nKey, () => {
+            img.setAttribute("src", "new.png");
+            updateForChangedImage(img);
+        });
+        // Sanity check: the change really took the transform away.
+        expect(img.style.transform).toBe("");
+
+        await history.undo();
+
+        expect(img.getAttribute("src")).toBe("old.png");
+        expect(img.style.transform).toBe("rotate(90deg) scale(-1, 1)");
+        history.dispose();
+    });
+
+    it("puts a background element back in the old picture's shape when the change is undone", async () => {
+        const { element, img } = makeRotatedAndMirroredPicture();
+        element.classList.add("bloom-backgroundImage");
+        element.style.transform = "";
+        // The shape Rotate Right gave the old picture: portrait, centred in the picture area.
+        element.style.width = "150px";
+        element.style.height = "300px";
+        element.style.left = "125px";
+        element.style.top = "0px";
+        img.style.width = "300px";
+        const history = createPageHistory({
+            root: document.querySelector(".bloom-page") as HTMLElement,
+            filter: createEditTimeMarkupFilter(),
+        });
+        await history.doTransaction(kGenericUndoDescriptionL10nKey, () => {
+            img.setAttribute("src", "new.png");
+            updateForChangedImage(img);
+            // What fitting the landscape replacement does to the element.
+            element.style.width = "400px";
+            element.style.height = "200px";
+            element.style.left = "0px";
+            element.style.top = "50px";
+        });
+
+        await history.undo();
+
+        expect([
+            element.style.width,
+            element.style.height,
+            element.style.left,
+            element.style.top,
+        ]).toEqual(["150px", "300px", "125px", "0px"]);
+        expect(img.getAttribute("src")).toBe("old.png");
+        history.dispose();
+    });
 });
 
 describe("CanvasElementManager.resetImage", () => {
