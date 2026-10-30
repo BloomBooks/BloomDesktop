@@ -201,6 +201,11 @@ day it struck `collection-settings-bloom-library.spec.ts`'s first test, which ma
 had passed eight times alone, so making a book is not the trigger. The next thing to try is a
 Windows crash dump of the worker (WER LocalDumps for node.exe needs an administrator).
 
+seen again 2026-10-30 (`xmatter-packs.spec.ts`, BL-17042): at 0ms on its fourth pack, partway
+through a 33-test run of the collection-settings, font-chooser and xmatter-packs files, while a
+full BloomTests run was going on the same machine; the remaining three tests did not run. The file
+then passed 7 of 7 on its own.
+
 ## An api that captures CollectionSettings.Subscription cannot see a subscription change
 
 `FeatureStatusApi` used to snapshot `collectionSettings.Subscription` in its constructor, so
