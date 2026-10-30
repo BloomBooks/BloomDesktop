@@ -260,7 +260,6 @@
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyModel" Version="10.0.9" />
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1518.46" />
-		<PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
 		<PackageReference Include="Mono.Unix" Version="7.1.0-final.1.21458.1" />
 		<PackageReference Include="NAudio" Version="1.10.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
