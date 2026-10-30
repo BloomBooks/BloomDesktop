@@ -19,7 +19,8 @@ outside tests and docs; a third of the product lines of "Replace the old undo" a
 Master's undo covers the actions in the table at the top of MINIMUM.md: typing and formatting in a
 box (CKEditor, one history per box), typing with a reader tool open, table operations, replacing a
 picture (chooser, gallery, paste, AI image editor), rotate and flip, rotating by dragging,
-removing a background picture, and origami's own undo in Change Layout mode.
+removing a background picture, the inline images' operations, and origami's own undo in Change Layout
+mode.
 
 "Replace the old undo", the PR that moves the Edit tab onto the page history, has to keep each of those undoable, and it has to keep two
 promises that the design makes from the start:
@@ -110,6 +111,13 @@ One PR, and the one that needs the most careful review. After it merges, Bloom c
 - Show Invisibles inside `doOutsideHistory`.
 - The page history's lines in Bloom's log (`a7e8c20ae2`, 80 lines), so that a problem in the field
   can be traced.
+- The inline images (BL-16822), which reached master after the branch's base, moved onto the page
+  history: their stack entries, Ctrl+Z and Ctrl+Y handler and CKEditor-history resets go, the filter
+  leaves out `bloom-inlineImage-selected`, and a listener puts their selection right after an undo.
+  `BloomField`'s refusal of an edit that covers a protected element is installed on every box, so
+  that it protects an inline image inserted later.
+- `aiImageEditor/commit` stays off `kRequestsThatKeepThePageHistory` until the AI image editor's
+  pull request stops a commit deleting files.
 - E2E: `undo-typing`, `undo-routing`, `undo-reader-tools`, master's `rotate-and-flip-images`, and
   the table tests.
 
@@ -120,12 +128,14 @@ What it does compared with master:
 | | Master | After "Replace the old undo" |
 |---|---|---|
 | Typing, formatting, paste, cut | Undo and redo, per box | Undo and redo, one history for the page |
-| Typing with a reader tool | Two undos at once | One undo |
+| Typing with a reader tool | Ctrl+Z to CKEditor, the Undo button to the reader tools' own history | One history for both |
+| Inline images: insert, delete, move, resize, crop, flip, change picture | Their own entries on the one stack; Ctrl+Z while no typing is newer | Undo and redo in the page's one order |
 | Tables | Undo button only | Keys and button, with redo |
 | Replacing a picture, rotate, flip, removing a background picture | Only while that picture is selected | Always, with redo |
 | Moving, resizing, cropping, adding, deleting a canvas element | No undo | Undo and redo, all named "Edit" |
 | Change Layout mode | Origami's own undo | The same, and entering or leaving the mode ends the history |
-| A control in the Canvas tool, the colour picker, the Format dialog, Book and Page Settings, Motion, Music, Games, Image Description's checkbox, Sign Language | Box histories survive | Ends the history |
+| A control in the Canvas tool, the colour picker, the Format dialog, Book and Page Settings, Motion, Music, Games, Image Description's checkbox, Sign Language, Talking Book's recording-mode switch | Box histories survive | Ends the history |
+| An AI image editor commit | Box histories survive | Ends the history; the swaps on the current page are undoable, one step each |
 | A change that a tool makes after an `await` (Sign Language's recording, some canvas commands) | Box histories survive | Joins the step before it, so undoing that step undoes both |
 | Talking Book's Record, Clear, Import | Box histories survive | Ends the history (and still does at the end of this plan) |
 | Ctrl+Z in a box | Undoes that box's latest change | Undoes the page's latest change |
