@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-10-29 (nightlies through the 2026-10-29 run have been triaged)
+**Last updated:** 2026-10-30 (nightlies through the 2026-10-30 run have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -11,14 +11,15 @@ use the `nightly-triage` skill.
 
 ## E2E teardown: the test's temp folder cannot be deleted
 
-- **Failed:** 2026-10-12 and 2026-10-13. No test failed; the suite failed on "1 error was not a
-  part of any test".
-- **What the trace shows (first look):** after a spec finished, the fixture's cleanup
-  (`fixtures/launchBloom.ts:1111`) failed with "EPERM, Permission denied" deleting the test's
-  `bloom-e2e-*` temp folder, after a different spec each night
-  (`collection-settings-advanced`, `toolbox-tools`). The code comment there already expects
-  Bloom to let go of files slightly after it dies, and retries; here the retries ran out. What
-  still held the folder is not known.
+- **Failed:** 2026-10-12, 2026-10-13 and 2026-10-30. No test failed; the suite failed on "1
+  error was not a part of any test".
+- **Cause:** the fixture's cleanup (`fixtures/launchBloom.ts` `stop()`) deletes the temp folder
+  right after killing Bloom, counting on `fs.rmSync`'s `maxRetries` to wait while Bloom lets go of
+  its files. On Node 24 (the repo's `.node-version`) `rmSync` does not retry on EPERM: with a file
+  held open by another process it throws at once, with the same message as the nightly. On 10-30
+  it threw 0.15 s after the test ended, so no retry happened. The specs involved
+  (`collection-settings-advanced`, `toolbox-tools`) both restart or relaunch Bloom just before
+  teardown. `removeTempRoot` has the same unused retry, but only logs the failure.
 - **Status:** no card or PR.
 
 ## Link chooser: the preselected page is not scrolled into view

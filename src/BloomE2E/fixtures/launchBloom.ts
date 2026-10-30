@@ -1002,30 +1002,52 @@ async function waitForRelaunchedBloom(
     );
 }
 
+/** Whether a process with this pid is still running (it may be exiting). */
+function isProcessAlive(pid: number): boolean {
+    try {
+        // Signal 0 sends nothing; it only checks that the process exists.
+        process.kill(pid, 0);
+        return true;
+    } catch (error) {
+        // EPERM means it exists but is not ours to signal.
+        return (error as NodeJS.ErrnoException).code === "EPERM";
+    }
+}
+
 /**
- * Kill a running Bloom and wait until its HTTP port really goes dark. Shared by stop() and
- * restart(): a survivor holds file handles on the collection, which breaks both the delete and
- * the rewrite-then-relaunch.
+ * Kill a running Bloom and wait until its HTTP port really goes dark and its processes have
+ * exited. Shared by stop() and restart(): a survivor holds file handles on the collection, which
+ * breaks both the delete and the rewrite-then-relaunch.
  */
-async function killAndWaitForPortToGoDark(
+async function killAndWaitForBloomToExit(
     running: IRunningBloom,
 ): Promise<void> {
     killProcessTree(running.pids);
     // Confirm rather than assume: taskkill has been seen to under-kill.
     const deadline = Date.now() + 15000;
+    let portIsDark = false;
+    while (!portIsDark && Date.now() < deadline) {
+        portIsDark = !(await readInstanceInfo(
+            running.httpPort,
+            probeTimeoutBefore(deadline),
+        ));
+        if (!portIsDark) await delay(500);
+    }
+    if (!portIsDark)
+        throw new Error(
+            `A Bloom is still answering on port ${running.httpPort} after teardown. ` +
+                `Kill pid ${running.servingPid} by hand before re-running.`,
+        );
+    // taskkill returns before the process is gone, and the port goes dark before a dying Bloom
+    // has closed its other handles. Windows closes them all before a process counts as exited,
+    // so after this the temp folder can be deleted. Only the serving pid: a spawned Bloom that
+    // handed off to a new copy of itself exited long ago, and Windows may have reused its pid.
     while (Date.now() < deadline) {
-        if (
-            !(await readInstanceInfo(
-                running.httpPort,
-                probeTimeoutBefore(deadline),
-            ))
-        )
-            return;
-        await delay(500);
+        if (!isProcessAlive(running.servingPid)) return;
+        await delay(100);
     }
     throw new Error(
-        `A Bloom is still answering on port ${running.httpPort} after teardown. ` +
-            `Kill pid ${running.servingPid} by hand before re-running.`,
+        `Bloom (pid ${running.servingPid}) had not exited 15s after it was killed.`,
     );
 }
 
@@ -1126,7 +1148,7 @@ export async function launchBloom(
         userSettingsDir,
 
         restart: async (betweenStopAndStart, changes) => {
-            await killAndWaitForPortToGoDark(running!);
+            await killAndWaitForBloomToExit(running!);
             // Bloom releases its file handles slightly after it dies, and the caller is usually
             // about to rewrite one of the files it had open.
             await delay(1000);
@@ -1158,8 +1180,9 @@ export async function launchBloom(
         },
 
         stop: async () => {
-            await killAndWaitForPortToGoDark(running!);
-            // Bloom can release file handles slightly after it dies, so let rmSync retry.
+            // Waits for Bloom's processes to exit: Node 24's rmSync throws EPERM at once on a
+            // file a dying Bloom still holds, whatever maxRetries says.
+            await killAndWaitForBloomToExit(running!);
             fs.rmSync(tempRoot, {
                 recursive: true,
                 force: true,
@@ -1252,7 +1275,7 @@ export async function launchBloomIntoChooser(
         collectionToOpen,
         userSettingsDir,
         stop: async () => {
-            await killAndWaitForPortToGoDark(running!);
+            await killAndWaitForBloomToExit(running!);
             fs.rmSync(tempRoot, {
                 recursive: true,
                 force: true,
