@@ -3,6 +3,7 @@ import { getChecksum } from "./talkingBookChecksum";
 import { kAnyRecordingApiUrl } from "./audioUtils";
 import { RecordingMode } from "./recordingMode";
 import axios, { AxiosResponse } from "axios";
+import { doOutsideHistory } from "../../pageHistory/pageHistoryAccess";
 
 const kAudioSentence = "audio-sentence";
 
@@ -171,7 +172,11 @@ export default class Recordable {
             // We only want to update ones that have a recording associated with them.
             if (await Recordable.isSentenceRecordedAsync(sentence)) {
                 const md5 = getChecksum(sentence.innerText);
-                sentence.setAttribute("recordingmd5", md5);
+                // Talking Book fills in a missing checksum when it opens on a page; that is not
+                // something the user did, so it is not recorded in the page history.
+                doOutsideHistory(() =>
+                    sentence.setAttribute("recordingmd5", md5),
+                );
             }
         }
     }
@@ -206,7 +211,7 @@ export default class Recordable {
 
     // check whether our textBox has any text that is not covered by an audio sentence.
     // Users can type text in when the talking book tool is closed, after all.  See BL-11522.
-    private checkForMissingAudioMarkup() {
+    public checkForMissingAudioMarkup() {
         if (this.textBox.classList.contains(kAudioSentence)) {
             return false;
         }
