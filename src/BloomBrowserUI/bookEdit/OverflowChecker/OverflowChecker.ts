@@ -43,6 +43,10 @@ function getElementsThatCanOverflowOrNeedToBeResized(
     return results;
 }
 
+// The page-wide overflow check waiting to run for each margin box (see
+// CheckPageAncestorOverflowSoon).
+const pageChecksWaiting = new WeakMap<Element, ReturnType<typeof setTimeout>>();
+
 export default class OverflowChecker {
     private;
 
@@ -389,6 +393,11 @@ export default class OverflowChecker {
     // several origami elements, and the loop over all of them used to be in the
     // handling of one mouse move. Now, each timeout will be its own event, and
     // hopefully other events can be processed in between if they occur.
+    // Only the box's own check runs on its timer. The page-wide check measures every box in the
+    // margin box, so running it for each box would make a page of n boxes force n * n layouts:
+    // about 800 for a table of 28 text cells, which is over ten seconds of work. Instead, every
+    // box whose timer comes due at the same time shares one page-wide check, which runs after
+    // all of them (see CheckPageAncestorOverflowSoon).
     public static AdjustSizeOrMarkOverflowSoon(editable: HTMLElement) {
         const timeOut = (editable as any).overflowCheckTimeout;
         if (timeOut) {
@@ -396,8 +405,38 @@ export default class OverflowChecker {
         }
         (editable as any).overflowCheckTimeout = setTimeout(() => {
             this.CheckOnMinHeight(editable);
-            OverflowChecker.AdjustSizeOrMarkOverflow(editable);
+            OverflowChecker.AdjustSizeAndMarkSelfOverflow(editable);
+            OverflowChecker.CheckPageAncestorOverflowSoon(editable);
         }, 1000);
+    }
+
+    // Run CheckPageAncestorOverflow for the margin box holding `editable` once the timers that
+    // are already due have run. Each call replaces any check still waiting for the same margin
+    // box, so a batch of boxes whose timers fire together gets one page-wide check, not one each.
+    // The check finds the margin box from the box it is given, so any box in the margin box will
+    // do; that matters when `editable` has been deleted but the rest of the margin box is still there.
+    private static CheckPageAncestorOverflowSoon(editable: HTMLElement) {
+        const marginBox = editable.closest(".marginBox");
+        if (!marginBox) {
+            // CheckPageAncestorOverflow looks only within a margin box, so it would do nothing.
+            return;
+        }
+        const waiting = pageChecksWaiting.get(marginBox);
+        if (waiting) {
+            clearTimeout(waiting);
+        }
+        pageChecksWaiting.set(
+            marginBox,
+            setTimeout(() => {
+                pageChecksWaiting.delete(marginBox);
+                const box = editable.isConnected
+                    ? editable
+                    : marginBox.querySelector<HTMLElement>(".bloom-editable");
+                if (box?.isConnected) {
+                    OverflowChecker.CheckPageAncestorOverflow(box);
+                }
+            }, 0),
+        );
     }
 
     // Checks for overflow on a bloom-page and adds/removes the proper class
