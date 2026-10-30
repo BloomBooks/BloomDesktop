@@ -223,6 +223,11 @@ function handleChangeLayoutModeToggle() {
     getWorkspaceBundleExports().setToolboxEnabled(!isChangeLayoutMode);
 }
 
+/** True while the page is in Change Layout mode, where origami's own undo answers Undo and the keys. */
+export function isInChangeLayoutMode(): boolean {
+    return !!document.querySelector(".marginBox.origami-layout-mode");
+}
+
 function GetTextBoxPropertiesDialog() {
     return new TextBoxProperties("/bloom/bookEdit");
 }
@@ -312,11 +317,11 @@ export function origamiUndo() {
     }
 }
 
-function origamiCanRedo() {
+export function origamiCanRedo() {
     return origamiUndoStack.length > origamiUndoIndex;
 }
 
-function origamiRedo() {
+export function origamiRedo() {
     if (origamiCanRedo()) {
         origamiUndoIndex++;
         $(".marginBox").replaceWith(
