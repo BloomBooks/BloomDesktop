@@ -13,7 +13,11 @@ import { AccountMenu } from "./AccountMenu";
 // and black-at-80% reads well across those backgrounds.
 const kTopRightControlColor = "rgba(0, 0, 0, 0.8)";
 
-export const WorkspaceTopRightControls: React.FunctionComponent = () => {
+// Any children (the Edit tab's page view chooser) go under the account menu, level with the bottom
+// of the language/help/zoom stack.
+export const WorkspaceTopRightControls: React.FunctionComponent<{
+    children?: React.ReactNode;
+}> = (props) => {
     const lightThemeOverride = React.useMemo(
         () =>
             createTheme(lightTheme, {
@@ -88,10 +92,15 @@ export const WorkspaceTopRightControls: React.FunctionComponent = () => {
                     its left. */}
                 <div
                     css={css`
-                        align-self: flex-start;
+                        align-self: stretch;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-end;
+                        justify-content: space-between;
                     `}
                 >
                     <AccountMenu />
+                    {props.children}
                 </div>
             </div>
         </ThemeProvider>
