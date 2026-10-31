@@ -1064,6 +1064,73 @@ describe("page history: undo is refused when the page lacks the values a step le
         expect(f.history.undoDescriptionL10nKey).toBeUndefined();
     });
 
+    it("refuses an undo over an unrecorded change made while the step's transaction was open", async () => {
+        const f = setUp();
+        const image = byId(f, "img1");
+        expect(image.getAttribute("src"), "test setup").toBe("a.png");
+        const begun = f.history.beginTransaction("Picture");
+        image.setAttribute("src", "b.png");
+        f.history.doOutsideHistory(() => image.setAttribute("src", "c.png"));
+        begun.end();
+        expect(f.history.undoDescriptionL10nKey).toBe("Picture");
+
+        await f.history.undo();
+
+        expect(
+            image.getAttribute("src"),
+            "undo should not overwrite the unrecorded change",
+        ).toBe("c.png");
+        expect(
+            f.history.undoDescriptionL10nKey,
+            "the refused step should be discarded",
+        ).toBeUndefined();
+        expect(f.history.redoDescriptionL10nKey).toBeUndefined();
+    });
+
+    it("refuses an undo over an unrecorded change to text made while the step's transaction was open", async () => {
+        const f = setUp();
+        const text = byId(f, "p2").firstChild as Text;
+        const begun = f.history.beginTransaction("Type");
+        text.data = "Bonsoir";
+        f.history.doOutsideHistory(() => {
+            text.data = "Salut";
+        });
+        begun.end();
+
+        await f.history.undo();
+
+        expect(text.data).toBe("Salut");
+        expect(f.history.undoDescriptionL10nKey).toBeUndefined();
+    });
+
+    it("undoes a value that the open transaction changed again after an unrecorded change", async () => {
+        const f = setUp();
+        const image = byId(f, "img1");
+        const begun = f.history.beginTransaction("Picture");
+        image.setAttribute("src", "b.png");
+        f.history.doOutsideHistory(() => image.setAttribute("src", "c.png"));
+        image.setAttribute("src", "d.png");
+        begun.end();
+
+        await f.history.undo();
+        expect(image.getAttribute("src")).toBe("a.png");
+        await f.history.redo();
+        expect(image.getAttribute("src")).toBe("d.png");
+    });
+
+    it("makes no step of a value that the open transaction put back before an unrecorded change", async () => {
+        const f = setUp();
+        const image = byId(f, "img1");
+        const begun = f.history.beginTransaction("Picture");
+        image.setAttribute("src", "b.png");
+        image.setAttribute("src", "a.png");
+        f.history.doOutsideHistory(() => image.setAttribute("src", "c.png"));
+        begun.end();
+
+        expect(f.history.undoDescriptionL10nKey).toBeUndefined();
+        expect(image.getAttribute("src")).toBe("c.png");
+    });
+
     it("refuses an undo whose text node an unrecorded change took out of the page", async () => {
         const f = setUp();
         await stepSettingAttribute(f, "Older", byId(f, "box1"), "lang", "de");

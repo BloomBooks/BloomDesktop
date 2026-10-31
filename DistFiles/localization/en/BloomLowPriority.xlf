@@ -328,6 +328,21 @@
         <source xml:lang="en">Bloom was not able to access a microphone.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation">
+        <source xml:lang="en">Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity". Either way, you will need to use the "Apply Timings File..." button to apply your changes.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation</note>
+        <note>Shown when the user chooses "Edit Timings File..." in the Adjust Timings dialog. Audacity is a product name. "labels" is the name of a file type in Audacity's Import and Export menus. "Apply Timings File..." should match the translation of that menu item.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile">
+        <source xml:lang="en">Current timings file is {0}</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile</note>
+        <note>Shown below EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation. {0} is replaced with the full path of the timings file on the user's computer.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile">
+        <source xml:lang="en">Current audio file is {0} (.wav or .mp3)</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile</note>
+        <note>Shown below EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile. {0} is replaced with the name of the audio file, without its extension; the file may be either .wav or .mp3.</note>
+      </trans-unit>
       <trans-unit id="ReportProblemDialog.OneDriveProblem">
         <source xml:lang="en">OneDrive Problem</source>
         <note>ID: ReportProblemDialog.OneDriveProblem</note>
