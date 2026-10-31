@@ -37,7 +37,6 @@ namespace Bloom.Workspace
     public partial class WorkspaceView : UserControl
     {
         private readonly WorkspaceModel _model;
-        private readonly CollectionSettingsDialog.Factory _settingsDialogFactory;
         private readonly SelectedTabAboutToChangeEvent _selectedTabAboutToChangeEvent;
         private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
         private readonly LocalizationChangedEvent _localizationChangedEvent;
@@ -62,7 +61,6 @@ namespace Bloom.Workspace
         private WorkspaceTabSelection _tabSelection;
         private CollectionApi _collectionApi;
         private AudioRecording _audioRecording;
-        private CollectionSettingsApi _collectionSettingsApi;
         private NewCollectionWizardApi _newCollectionWizardApi;
 
         internal Browser MainBrowser => _mainBrowser;
@@ -80,7 +78,6 @@ namespace Bloom.Workspace
             CollectionTabView.Factory collectionsTabViewFactory,
             EditingView.Factory editingViewFactory,
             PublishView.Factory publishViewFactory,
-            CollectionSettingsDialog.Factory settingsDialogFactory,
             EditBookCommand editBookCommand,
             SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
             SelectedTabChangedEvent selectedTabChangedEvent,
@@ -97,14 +94,12 @@ namespace Bloom.Workspace
             WorkspaceApi workspaceApi,
             WorkspaceTabSelection tabSelection,
             AudioRecording audioRecording,
-            CollectionSettingsApi collectionSettingsApi,
             NewCollectionWizardApi newCollectionWizardApi,
             TeamCollectionApi teamCollectionApi
         )
         {
             Current = this;
             _model = model;
-            _settingsDialogFactory = settingsDialogFactory;
             _selectedTabAboutToChangeEvent = selectedTabAboutToChangeEvent;
             _selectedTabChangedEvent = selectedTabChangedEvent;
             _bookSelection = bookSelection;
@@ -118,7 +113,6 @@ namespace Bloom.Workspace
             appApi.WorkspaceView = this; // it needs to know, and there's some circularity involved in having factory pass it in
             workspaceApi.WorkspaceView = this; // and yet one more
             teamCollectionApi.WorkspaceView = this;
-            _collectionSettingsApi = collectionSettingsApi;
             _newCollectionWizardApi = newCollectionWizardApi;
 
             _collectionSettings = collectionSettings;
@@ -1494,57 +1488,6 @@ window.showWorkspaceInitializationFailure = function(message) {
             OpenSpecificCollection(selectedPath);
         }
 
-        private CollectionSettingsDialog _currentlyOpenSettingsDialog;
-
-        public void OpenLegacySettingsDialog(
-            string tab = null,
-            bool forFixingEnterpriseSubscription = false
-        )
-        {
-            if (InvokeRequired)
-            {
-                SafeInvoke.Invoke(
-                    "OpenSettingsDialog",
-                    this,
-                    true,
-                    false,
-                    () => OpenLegacySettingsDialog(tab, forFixingEnterpriseSubscription)
-                );
-            }
-            else
-            {
-                if (_currentlyOpenSettingsDialog != null)
-                {
-                    _currentlyOpenSettingsDialog.SetDesiredTab(tab);
-                    return;
-                }
-
-                DialogResult result = DialogResult.Cancel;
-                if (!_tcManager.OkToEditCollectionSettings)
-                {
-                    BloomMessageBox.ShowInfo(MustBeAdminMessage(_collectionSettings));
-                }
-                else
-                {
-                    _collectionSettingsApi.PrepareToShowDialog();
-                    using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
-                    using (var dlg = _settingsDialogFactory())
-                    {
-                        dlg.FixingEnterpriseSubscriptionCode = forFixingEnterpriseSubscription;
-                        _currentlyOpenSettingsDialog = dlg;
-                        dlg.SetDesiredTab(tab);
-                        result = dlg.ShowDialog(this);
-                        _currentlyOpenSettingsDialog = null;
-                        CollectionSettingsApi.DialogClosed();
-                    }
-                }
-                if (result == DialogResult.Yes)
-                {
-                    Invoke(ReopenCurrentProject);
-                }
-            }
-        }
-
         /// <summary>
         /// Opens the React Collection Settings dialog (rendered by the workspace's App), on the
         /// page with the given key if there is one.
@@ -1564,23 +1507,6 @@ window.showWorkspaceInitializationFailure = function(message) {
         public void ReopenCollection()
         {
             Invoke(ReopenCurrentProject);
-        }
-
-        public void CheckForInvalidBranding()
-        {
-            if (_collectionSettings.InvalidBranding == null || _collectionSettings.IgnoreExpiration)
-                return;
-            // I'm not very happy with this, but the only place I could find to detect that we're opening a new project
-            // is too soon to bring up a dialog; it comes up before the main window is fully initialized, which can
-            // leave the main window in the wrong place. Waiting until idle gives a much better effect.
-            StartupScreenManager.AddStartupAction(
-                () =>
-                {
-                    OpenSettingsDialog("subscription");
-                },
-                shouldHideSplashScreen: true,
-                lowPriority: true
-            );
         }
 
         private static WorkspaceTab? GetWorkspaceTab(IBloomTabArea view)

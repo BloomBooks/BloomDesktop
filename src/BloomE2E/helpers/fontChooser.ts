@@ -4,8 +4,8 @@
 // it is FontSelectComponent, with FontDisplayBar for each row and FontInformationPane for the pane.
 //
 // The chooser appears in two places: the Format dialog in the Edit tab (see formatDialog.ts), which
-// is where these helpers drive it, and the Book Making tab of the collection Settings dialog, a
-// WinForms surface CDP cannot reach (see AUTOMATION-DEBT.md). The component is the same in both.
+// is where these helpers drive it, and each language's Default Font on the Languages page of the
+// Collection Settings dialog, which collectionSettings.ts drives. The component is the same in both.
 //
 // Everything here lives in the Edit tab's page frame, where the Format dialog is: the chooser sits
 // in the dialog, and its list and its information pane are portals in that frame's body. Bloom

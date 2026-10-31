@@ -3,11 +3,7 @@ import * as React from "react";
 import { TopBarButton } from "../../TopBarButton";
 import { TeamCollectionButton } from "./TeamCollectionButton";
 import { TeamCollectionStatus } from "../../../teamCollection/TeamCollectionStatus";
-import {
-    getBloomApiPrefix,
-    post,
-    useWatchApiData,
-} from "../../../utils/bloomApi";
+import { getBloomApiPrefix, useWatchApiData } from "../../../utils/bloomApi";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
 import { CollectionChooserDialog } from "../../../collection/CollectionChooserDialog";
 import { showCollectionSettingsDialog } from "../../../collection/CollectionSettingsDialog";
@@ -40,12 +36,6 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
         "collection",
         "tcStatus",
     );
-
-    // "legacy" means the winforms one. This button, its handler, and its plain-English label
-    // all go away when the React CollectionSettingsDialog replaces the WinForms one.
-    const handleLegacySettingsClick = React.useCallback(() => {
-        post("workspace/showLegacySettingsDialog");
-    }, []);
 
     const [collectionChooserOpen, setCollectionChooserOpen] =
         React.useState(false);
@@ -89,18 +79,6 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
                         labelL10nKey="CollectionTab.SettingsButton"
                         labelEnglish="Settings"
                         onClick={() => showCollectionSettingsDialog()}
-                        backgroundColor={mainButtonBackground}
-                        textColor={mainButtonTextColor}
-                        cssOverrides={settingsButtonCss}
-                    />
-                    <TopBarButton
-                        iconPath={kSettingsIcon}
-                        // An empty key keeps this out of the localization files; the button is
-                        // temporary and only developers and testers need to read it.
-                        labelL10nKey=""
-                        labelEnglish="Old Settings"
-                        temporarilyDisableI18nWarning={true}
-                        onClick={handleLegacySettingsClick}
                         backgroundColor={mainButtonBackground}
                         textColor={mainButtonTextColor}
                         cssOverrides={settingsButtonCss}

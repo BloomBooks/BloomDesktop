@@ -99,7 +99,7 @@ describe("getLanguageData", () => {
     });
 
     // C# decides whether a name is custom by comparing DefaultName with DesiredName
-    // (CollectionSettingsDialog.cs), so these two must differ only when the user typed a name.
+    // (ChosenLanguage.IsCustomName), so these two must differ only when the user typed a name.
     it("reports an untouched name as not custom", () => {
         const data = getLanguageData("che", {
             language: language({}),

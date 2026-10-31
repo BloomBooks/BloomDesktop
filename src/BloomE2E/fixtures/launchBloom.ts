@@ -116,6 +116,12 @@ export interface ICollectionSpec {
      * subscription whose bookshelves include it, which is what the Settings dialog offers a person.
      */
     bookshelf?: string;
+    /**
+     * The collection's sign language, by tag, or "" for none. Left out, the file says nothing
+     * about a sign language, and Bloom then reads it as English (BL-16983, closed as something a
+     * user cannot reach); a test whose subject is the sign language says which it wants.
+     */
+    signLanguage?: string;
 }
 
 /** Options for launchBloom. Give exactly one of collectionName and collectionSpec. */
@@ -131,10 +137,10 @@ export interface ILaunchBloomOptions {
     collectionSpec?: ICollectionSpec;
     /**
      * Experimental features this Bloom should have on, by the tokens ExperimentalFeatures.cs uses:
-     * "tables", "team-collections", "experimental-source-books". A person turns these on in the Advanced tab
-     * of the collection Settings dialog, which is WinForms and so unreachable, and the saved
-     * setting is shared with the developer's own Bloom, so the launch hands them to this instance
-     * on its command line instead (--experimental-features, which Bloom accepts only beside
+     * "tables", "team-collections", "experimental-source-books". A person turns these on in the
+     * Experimental page of the Collection Settings dialog (collection-settings-experimental.spec.ts
+     * drives that); a test that only needs one on from the start names it here, and the launch
+     * hands them to this instance on its command line (--experimental-features, which Bloom accepts only beside
      * --e2e). See ExperimentalFeatures.TokensFromE2eCommandLine.
      */
     experimentalFeatures?: string[];
@@ -674,6 +680,8 @@ export interface ICollectionXmlExtras {
     subscriptionCode?: string;
     /** See ICollectionSpec.bookshelf. */
     bookshelf?: string;
+    /** See ICollectionSpec.signLanguage. */
+    signLanguage?: string;
 }
 
 /**
@@ -690,6 +698,8 @@ export interface ICollectionXmlExtras {
  * from SubscriptionCode alone; BrandingProjectName is written for older Blooms). See
  * kEnterpriseSubscriptionCode in helpers/collectionSettings.ts. `extras.bookshelf`, also written
  * only when given, becomes a "bookshelf:" tag in DefaultBookTags, which is how Bloom keeps it.
+ * `extras.signLanguage` is written only when given; "" writes the empty sign language Bloom saves
+ * for a collection that has none.
  */
 export function makeCollectionXml(
     languages: string[],
@@ -720,6 +730,11 @@ export function makeCollectionXml(
             : "") +
         (extras.bookshelf
             ? `  <DefaultBookTags>bookshelf:${extras.bookshelf}</DefaultBookTags>\n`
+            : "") +
+        (extras.signLanguage !== undefined
+            ? `  <SignLanguageName>${nameForTag(extras.signLanguage)}</SignLanguageName>\n` +
+              `  <SignLanguageIsCustomName>false</SignLanguageIsCustomName>\n` +
+              `  <SignLanguageIso639Code>${extras.signLanguage}</SignLanguageIso639Code>\n`
             : "") +
         `  <AllowNewBooks>True</AllowNewBooks>\n` +
         `  <PageNumberStyle>Decimal</PageNumberStyle>\n` +

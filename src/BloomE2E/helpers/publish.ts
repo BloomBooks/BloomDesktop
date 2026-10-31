@@ -13,6 +13,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import { apiGetJson, apiPost } from "./api";
+import { waitForLanguageChooser } from "./languageChooser";
 import { switchTab } from "./workspace";
 
 /** The publish destinations, by the label each one shows in the left-hand column. */
@@ -426,4 +427,91 @@ export async function getTooltipForLanguage(
     await row.hover();
     await tooltip.first().waitFor({ state: "visible", timeout: 30000 });
     return (await tooltip.first().innerText()).trim();
+}
+
+/** The Sign Language row of a Publish screen's Features list, as a person sees it. */
+export interface ISignLanguageFeature {
+    /** Whether the Sign Language checkbox can be changed. */
+    enabled: boolean;
+    checked: boolean;
+    /** The words of its tooltip, e.g. "The videos in this book contain American Sign Language". */
+    tooltip: string;
+}
+
+/**
+ * The Sign Language row of the Features list on the Publish screen showing (BloomPUB, Web, ...).
+ * The tooltip needs a real pointer over the row, so this moves the pointer away and back, as
+ * getTooltipForLanguage does, to be sure it reads this tooltip and not a previous one.
+ */
+export async function getSignLanguageFeature(
+    page: Page,
+): Promise<ISignLanguageFeature> {
+    const checkbox = page.getByRole("checkbox", { name: "Sign Language" });
+    await checkbox.waitFor({ state: "attached", timeout: 30000 });
+    const tooltip = await hoverSignLanguageFeature(page);
+    return {
+        enabled: await checkbox.isEnabled(),
+        checked: await checkbox.isChecked(),
+        tooltip: (await tooltip.innerText()).trim(),
+    };
+}
+
+/**
+ * Wait until the Sign Language row of the Publish screen showing is as expected. Use this rather
+ * than a bare expect on getSignLanguageFeature: the row is filled in from requests the screen makes
+ * after it shows (whether the book has video, the sign language's name), and after a sign
+ * language is chosen the checkbox asks Bloom for its value again.
+ */
+export async function expectSignLanguageFeature(
+    page: Page,
+    expected: ISignLanguageFeature,
+): Promise<void> {
+    await expect
+        .poll(() => getSignLanguageFeature(page), {
+            timeout: 30000,
+            message: "The Sign Language feature never showed as expected.",
+        })
+        .toEqual(expected);
+}
+
+/**
+ * Open the language chooser from the link in the Sign Language row's tooltip on a Publish screen,
+ * the way a person sets the collection's sign language from there: the link is the sign
+ * language's name, or "no sign language selected" when the collection has none. Returns once the
+ * chooser shows (see helpers/languageChooser.ts to drive it).
+ */
+export async function openSignLanguageChooserFromPublish(
+    page: Page,
+): Promise<void> {
+    const tooltip = await hoverSignLanguageFeature(page);
+    await tooltip.locator("a, .MuiLink-root").first().click();
+    await waitForLanguageChooser(page);
+}
+
+/**
+ * The collection's sign language as the Publish tab knows it, `{ tag, name }`, both "" for none.
+ * Poll this after choosing one: the choice reaches Bloom after the chooser closes.
+ */
+export async function getCollectionSignLanguage(
+    page: Page,
+): Promise<{ tag: string; name: string }> {
+    return apiGetJson<{ tag: string; name: string }>(
+        page,
+        "publish/collectionSignLanguage",
+    );
+}
+
+/** Hover the Sign Language row and return its tooltip once it shows. */
+async function hoverSignLanguageFeature(page: Page): Promise<Locator> {
+    const tooltip = page.locator('[role="tooltip"]');
+    await page.mouse.move(0, 0);
+    await expect
+        .poll(async () => tooltip.count(), {
+            timeout: 30000,
+            message: "A tooltip hovered before never went away.",
+        })
+        .toBe(0);
+    await page.getByText("Sign Language", { exact: true }).first().hover();
+    await tooltip.first().waitFor({ state: "visible", timeout: 30000 });
+    return tooltip.first();
 }

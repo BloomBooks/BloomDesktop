@@ -143,21 +143,24 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                "publish/signLanguageName",
-                (request) =>
+                "publish/collectionSignLanguage",
+                request =>
                 {
-                    request.ReplyWithText(Model.Book.CollectionSettings.SignLanguage?.Name ?? "");
+                    if (request.HttpMethod == HttpMethods.Get)
+                    {
+                        var signLanguage = Model.Book.CollectionSettings.SignLanguage;
+                        request.ReplyWithJson(
+                            new { tag = signLanguage?.Tag ?? "", name = signLanguage?.Name ?? "" }
+                        );
+                    }
+                    else
+                        HandleSetSignLanguage(request);
                 },
                 true
             );
             apiHandler.RegisterEndpointHandler(
                 "publish/l1Name",
                 (request) => request.ReplyWithText(Model.Book.BookData.Language1.Name),
-                true
-            );
-            apiHandler.RegisterEndpointHandler(
-                "publish/chooseSignLanguage",
-                HandleChooseSignLanguage,
                 true
             );
             apiHandler.RegisterBooleanEndpointHandler(
@@ -471,39 +474,22 @@ namespace Bloom.web.controllers
             request.ReplyWithJson(result);
         }
 
-        private void HandleChooseSignLanguage(ApiRequest request)
+        /// <summary>
+        /// Handles POST publish/collectionSignLanguage: saves the sign language the user chose in
+        /// the Publish tab's language chooser as the collection's, and publishes the book in it.
+        /// </summary>
+        private void HandleSetSignLanguage(ApiRequest request)
         {
-            Application.Idle += LaunchChooseSignLanguage;
-            request.PostSucceeded();
-        }
-
-        private void LaunchChooseSignLanguage(object sender, EventArgs e)
-        {
-            Application.Idle -= LaunchChooseSignLanguage;
+            var chosen = JsonConvert.DeserializeObject<ChosenLanguage>(request.RequiredPostJson());
             var collectionSettings = Model.Book.CollectionSettings;
-            void onLanguageChange(LanguageChangeEventArgs args)
-            {
-                // As in the Collection Settings dialog's sign-language handler, args.IsRtl is
-                // deliberately ignored: a sign language has no text direction.
-                collectionSettings.SignLanguageTag = args.LanguageTag;
-                collectionSettings.SignLanguage.SetName(args.DesiredName, args.IsCustomName);
-                collectionSettings.Save();
-                Model.UpdateLangDataCache();
+            // chosen.IsRtl is deliberately ignored: a sign language has no text direction.
+            collectionSettings.SignLanguageTag = chosen.LanguageTag;
+            collectionSettings.SignLanguage.SetName(chosen.DesiredName, chosen.IsCustomName);
+            collectionSettings.Save();
+            Model.UpdateLangDataCache();
 
-                Model.SetOnlySignLanguageToPublish(collectionSettings.SignLanguageTag);
-                _webSocketServer.SendString("publish", "signLang", args.DesiredName);
-            }
-
-            CollectionSettingsDialog.ChangeLanguage(
-                onLanguageChange,
-                collectionSettings.SignLanguageTag,
-                CurrentSignLanguageName
-            );
-        }
-
-        private string CurrentSignLanguageName
-        {
-            get { return Model.Book.CollectionSettings.SignLanguage.Name; }
+            Model.SetOnlySignLanguageToPublish(collectionSettings.SignLanguageTag);
+            request.PostSucceeded();
         }
 
         /// <summary>

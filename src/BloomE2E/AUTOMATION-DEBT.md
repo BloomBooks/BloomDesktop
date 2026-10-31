@@ -32,26 +32,25 @@ stack replaces PR #8276, which did all of this at once.
 
 ## WinForms surfaces are invisible to CDP
 
-The collection Settings dialog and other `WireUpForWinforms` modals (e.g.
-`CollectionChooserDialog`) open in their own WebView2 that is not exposed on the main
-CDP endpoint, so tests can neither drive nor screenshot them. Today's workarounds:
-edit the `.bloomCollection` file before launch, or OS-level capture with a
-force-foreground trick. Fix direction: move these surfaces to the web UI (the team
+`WireUpForWinforms` modals (e.g. `CollectionChooserDialog`, `DuplicateManyDialog`) open in
+their own WebView2 that is not exposed on the main CDP endpoint, so tests can neither drive
+nor screenshot them. Today's workarounds: edit the `.bloomCollection` file before launch, or
+OS-level capture with a force-foreground trick. Fix direction: move these surfaces to the web UI (the team
 direction anyway), or expose each dialog's WebView2 on a discoverable CDP port.
 (Promoted from PAPERCUTS 2026-07-11.)
 
 seen again 2026-09-01 (Test Case ID 169, `publish-text-languages.spec.ts`): the case
 turns on which languages the collection has, and there is no API for that either.
-`collectionSettings/changeLanguage` is not one: its only listener is the open WinForms
-`CollectionSettingsDialog` (`CollectionSettingsDialog.cs:368`), so a POST to it while
-the dialog is closed does nothing. The test therefore changes a collection language by
-stopping Bloom, rewriting the `.bloomCollection`, and starting again, which is what the
+`collectionSettings/changeLanguage` was not one: its only listener was the open WinForms
+`CollectionSettingsDialog`, so a POST to it while the dialog was closed did nothing. The
+test therefore changes a collection language by stopping Bloom, rewriting the `.bloomCollection`, and starting again, which is what the
 new `bloomApp.restart(betweenStopAndStart)` fixture method is for. Each restart costs
 about six seconds and loses whatever the editor had not yet saved.
 
 being fixed on `BL-16799-collection-languages` (#8300): the `e2e/setCollectionLanguages` hook
 does the work of the Settings dialog's OK button, so no test composes `.bloomCollection`
-XML. The dialog itself stays on this entry: nothing can drive or screenshot it.
+XML. (The dialog itself has been replaced since by a React one that tests drive; see the
+2026-10-30 line at the end of this entry.)
 
 seen again 2026-09-01 (Test Case ID 349, `duplicate-page.spec.ts`): "Duplicate Page Many
 Times..." asks how many copies in `DuplicateManyDialog`, which is `WireUpForWinforms`, so the
@@ -60,54 +59,66 @@ only posts `editView/duplicatePageMany`, which `duplicateCurrentPage` already ca
 so the fix is the same as for every other WinForms dialog: host it in the web UI.
 
 seen again 2026-09-02 (Test Case ID 66, `xmatter-packs.spec.ts`): the case tries each
-front/back matter pack, and the pack is chosen only in the same dialog. `settings/xmatter`
-is not an API for it either: its POST only records a pending choice on the open dialog
+front/back matter pack, and the pack was chosen only in the same dialog. `settings/xmatter`
+was not an API for it either: its POST only recorded a pending choice on the open dialog
 (`CollectionSettingsApi.UpdatePendingXmatter`). So the test changes the pack the same way,
-now through `helpers/collectionSettings.ts` (`restartWithCollectionSettings`), and the
-journey of picking a pack in Settings stays untested. Story Producer is worse off: it is
+now through `helpers/collectionSettings.ts` (`restartWithCollectionSettings`). The journey
+of picking a pack in Settings was untested until the React dialog's Front & Back Matter page;
+`collection-settings-front-back-matter.spec.ts` covers it now. Story Producer is worse off: it is
 not in the dialog's list at all, only forced by its branding, so the test sets the branding
 through the `e2e/setBranding` hook.
 
 seen again 2026-09-03 (Test Case ID 358, `font-chooser.spec.ts`): the manual test reaches the
-font chooser through Settings, on the Book Making tab ("Default Font for English"), which is
+font chooser through Settings, on the Book Making tab ("Default Font for English"), which was
 the same WinForms dialog. The chooser is the same React component there as in the Edit tab's
 Format dialog, so the test drives it in the Format dialog (`helpers/fontChooser.ts`) and the
-Settings route stays manual. `settings/setFontForLanguage` is not a way round it: like the other
-settings endpoints it only records a pending change on the open dialog.
+Settings route stays manual. `settings/setFontForLanguage` was not a way round it: like the other
+settings endpoints it only recorded a pending change on the open dialog. The font chooser is now
+on the React dialog's Languages page, which `collection-settings-languages.spec.ts` uses to pick a
+font; nothing checks the chooser's marks there.
 
 investigated 2026-09-16, which splits this entry in two:
 
 - **The WinForms half is drivable now.** Windows UI Automation reaches every WinForms control
   by its designer name with no pointer, keystroke or focus change:
   `.claude/skills/run-bloom/winformsUia.ps1` (see "Driving WinForms and OS dialogs" in
-  that skill's SKILL.md). Verified on the Settings dialog: `select` on the "Book Making" tab item
-  and `invoke` on `_cancelButton` both worked, headless. The `WireUpForWinforms` dialogs'
-  OK/Cancel buttons and the Settings tab strip are therefore no longer a reason a step stays
-  manual. Still out of reach: WinForms `LinkLabel`s (the "Change..." language links), which
-  expose no UIA pattern.
+  that skill's SKILL.md). Verified on the old WinForms Settings dialog (since removed): `select`
+  on its "Book Making" tab item and `invoke` on `_cancelButton` both worked, headless. The
+  `WireUpForWinforms` dialogs' OK/Cancel buttons and WinForms tab strips are therefore no longer
+  a reason a step stays manual. Still out of reach: WinForms `LinkLabel`s (the case found was
+  that dialog's "Change..." language links), which expose no UIA pattern.
 
-- **The web half crashes an `--e2e` Bloom, so no test can open Settings yet.** Twice on
-  2026-09-16 an `--e2e` Bloom died the moment Settings opened, with the "Bloom was unable to
-  initialize the WebView2 browser" `MessageBox` from `WebView2Browser.SetupEventHandling`, which
-  then calls `Environment.Exit(1)`. Cause, measured in a parallel session on the same day:
-  `WorkspaceView.OpenLegacySettingsDialog` creates the dialog inside
-  `LegacyDpiDialogLauncher.EnterLegacyDpiScope()` (thread set to System-DPI-aware), and a WebView2
-  browser process takes the DPI awareness of its *host window*, not of the process, so the
-  dialog's WebView2 comes up System-aware while the shell's is PerMonitorV2. WebView2 refuses a
+- **The web half crashes an `--e2e` Bloom that opens a legacy-DPI dialog hosting a browser.**
+  Twice on 2026-09-16 an `--e2e` Bloom died the moment the old Settings dialog opened, with the
+  "Bloom was unable to initialize the WebView2 browser" `MessageBox` from
+  `WebView2Browser.SetupEventHandling`, which then calls `Environment.Exit(1)`. Cause, measured
+  in a parallel session on the same day: `WorkspaceView.OpenLegacySettingsDialog` created the
+  dialog inside `LegacyDpiDialogLauncher.EnterLegacyDpiScope()` (thread set to
+  System-DPI-aware), and a WebView2 browser process takes the DPI awareness of its *host
+  window*, not of the process, so the dialog's WebView2 came up System-aware while the shell's
+  is PerMonitorV2. WebView2 refuses a
   controller whose awareness differs from the browser process already using the same user data
   folder (`ERROR_INVALID_STATE`, 0x8007139F, "mismatch in DPI awareness"). Outside `--e2e` each
   ReactControl gets its own environment and process, so there is nothing to conflict with; under
-  `--e2e` the shared environment from 64e91dc8c6 (2026-09-03) *is* the conflict. Six call sites
-  enter that DPI scope, but only the three whose dialog hosts a browser can hit this: the
-  Settings dialog (WorkspaceView), `ConfigurationDialog` (Configurator) and `LicenseDialog`
-  (Program). The other three open a plain WinForms dialog or a file picker
-  (`ScriptSettingsDialog`, `JpegWarningDialog`, `BloomOpenFileDialog`). Fix direction: give a WebView2
-  created under the legacy DPI scope its own environment even in `--e2e`, or stop entering that
-  scope for dialogs that host a ReactControl. **Do not** fix it by making dialogs share the main
-  window's environment outside `--e2e`: that reproduces the crash for every user. Until it is
-  fixed, an e2e test must not open the Settings dialog; `helpers/collectionSettings.ts` and the
-  `e2e/*` hooks remain the route. The exact exception text has not been captured yet; the
+  `--e2e` the shared environment from 64e91dc8c6 (2026-09-03) *is* the conflict. Four call
+  sites enter that DPI scope now (the Settings dialog and `ScriptSettingsDialog` were two more,
+  until they were removed), and only the two whose dialog hosts a browser can hit this:
+  `ConfigurationDialog` (Configurator) and `LicenseDialog` (Program). The other two open a plain
+  WinForms dialog or a file picker (`JpegWarningDialog`, `BloomOpenFileDialog`). Fix direction:
+  give a WebView2 created under the legacy DPI scope its own environment even in `--e2e`, or stop
+  entering that scope for dialogs that host a ReactControl. **Do not** fix it by making dialogs
+  share the main window's environment outside `--e2e`: that reproduces the crash for every user.
+  Until it is fixed, an e2e test must not open those two dialogs. The exact exception text has not been captured yet; the
   `winformsUia.ps1` `tree -Window Error` command is how to read it before the box is dismissed.
+
+fixed for the collection Settings dialog 2026-10-30 (BL-17042): the WinForms dialog, its
+"Old Settings" button and the `settings/*` endpoints that only fed it are gone. Collection
+Settings is a React dialog in the shell document, opened by the Collections tab's Settings
+button or `showCollectionSettingsDialog`, so CDP reaches it; `helpers/collectionSettings.ts`
+drives it, and the `collection-settings-*.spec.ts` files test each of its pages. A test whose
+subject is something else still sets the collection up with `restartWithCollectionSettings` or
+an `e2e/*` hook, which is quicker. No spec yet changes which languages the collection has
+through the dialog. What stays on this entry is the other `WireUpForWinforms` modals.
 
 ## Native OS dialogs hang automation
 
@@ -190,6 +201,11 @@ day it struck `collection-settings-bloom-library.spec.ts`'s first test, which ma
 had passed eight times alone, so making a book is not the trigger. The next thing to try is a
 Windows crash dump of the worker (WER LocalDumps for node.exe needs an administrator).
 
+seen again 2026-10-30 (`xmatter-packs.spec.ts`, BL-17042): at 0ms on its fourth pack, partway
+through a 33-test run of the collection-settings, font-chooser and xmatter-packs files, while a
+full BloomTests run was going on the same machine; the remaining three tests did not run. The file
+then passed 7 of 7 on its own.
+
 ## An api that captures CollectionSettings.Subscription cannot see a subscription change
 
 `FeatureStatusApi` used to snapshot `collectionSettings.Subscription` in its constructor, so
@@ -200,10 +216,11 @@ what the Talking Book tool reads to decide whether to offer Import Recording. Fo
 while automating Test Case ID 170; fixed by reading `_collectionSettings.Subscription` on each
 use.
 
-`SubscriptionSettingsEditorApi` still holds the same kind of snapshot, refreshed on
-`CollectionSettingsDialog.DialogCancelled`. Nothing found to be wrong with it, and no test needed
-it, so it was left alone -- but it is the same shape, and worth remembering if a test ever finds
-that api reporting a stale subscription.
+`SubscriptionSettingsEditorApi` held the same kind of snapshot, refreshed on the WinForms
+`CollectionSettingsDialog.DialogCancelled`. It was left alone then, since nothing was found to be
+wrong with it; when that dialog was removed (2026-10-30) the class went too, and
+`CollectionSettingsApi` now answers `settings/subscription` from `_collectionSettings.Subscription`
+on each use, so nothing on this entry remains open.
 
 ## The Sign in button's trip through the system browser cannot be driven
 
