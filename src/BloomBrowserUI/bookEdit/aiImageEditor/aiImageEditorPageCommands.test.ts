@@ -257,12 +257,10 @@ describe("aiImageEditorPageCommands: applying current-page replacements", () => 
         expect(changeImageByElement.mock.calls[0][0]).toBe(img);
         expect(changeImageByElement.mock.calls[0][1]).toMatchObject({
             src: "ai-image1.png",
-            // Registers an image undo, like a pasted image; that is why the overlay must
-            // not save afterwards (the reload would discard the undo stack).
             undoable: "true",
         });
-        // The swapped slot becomes the active element, or canUndoImageOperation would
-        // refuse to offer the undo until the user clicked the image.
+        // The swapped slot becomes the active element, so that on a Bloom Games page the
+        // target's copy of a draggable's picture is rebuilt.
         expect(setActiveElementToClosest).toHaveBeenCalledWith(img);
     });
 

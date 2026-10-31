@@ -796,9 +796,9 @@ async function clearCellTextBox(box: Locator): Promise<void> {
 /**
  * Type into a cell one key at a time, rather than handing the box the whole string at once.
  *
- * Use this when the test's subject is something that only a real keystroke sets off. CKEditor
- * builds its undo stack from key events, and `page.keyboard.insertText` (what `typeInCell` uses,
- * because it is far quicker) raises none, so text typed that way cannot be undone.
+ * Use this when the test's subject is something that only a real keystroke sets off. The page
+ * history makes a typing step from key presses, and `page.keyboard.insertText` (what `typeInCell`
+ * uses, because it is far quicker) raises none, so text typed that way is not a step of its own.
  */
 export async function typeInCellKeyByKey(
     page: Page,

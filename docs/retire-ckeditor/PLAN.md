@@ -120,8 +120,8 @@ asynchronously after `CKEDITOR.inline()` returns:
 | `toolboxWindow.canUndo/undo` → `readerToolsModel` | A per-editable **text-typing** undo: `{html, text, caretOffset}` snapshots, seeded on focus (`noteFocus`, :557-568, from `decodableReaderTool.tsx:155`) and pushed on every markup-changing keystroke inside `doMarkup` (:753-764) | Gated on `shouldHandleUndo()` — `currentMarkupType !== None` (:570). It is consulted *before* CKEditor **deliberately**: when a reader tool is active it must shadow CKEditor's undo, which would restore stale decodable/leveled markup. Not "reader-setup changes". |
 | `imageOperationCanUndo`/`imageOperationUndo` (`ImageUndoManager.ts`) | Restores an image's `src` / copyright / crop | Clean two-phase prepare/commit; already page-id-scoped; gated on the active element being an image container. |
 | `ckeditorCanUndo`/`ckeditorUndo` | `CKEDITOR.currentInstance.undoManager`, **per editable div** | An "implementation secret". Ordering across boxes is already wrong. |
-| bloom-table's history (added 2026-10, BL-16818) | The library's own per-table history of structural operations | Since §10 decision 8, entries on the one stack rather than a legacy mechanism (`undo/tableUndo.ts`). |
-| Inline (Word-style) images (BL-16822) | Each operation on a block's pictures (insert, delete, dock, move, resize, picture change), recorded as the markup of the pictures in every language's editable before and after | Entries on the one stack from the start (`js/inlineImages.ts`), with redo. `inlineImageCanUndo` and `inlineImageUndo` let a Ctrl+Z handler in the text, which CKEditor would otherwise take, send the key to them. |
+| bloom-table's history (added 2026-10, BL-16818) | The library's own per-table history of structural operations | Bloom does not use it: the page history (`bookEdit/pageHistory/`) records what the library's operations change on the page, as it records any other change. |
+| Inline (Word-style) images (BL-16822) | Each operation on a block's pictures (insert, delete, dock, move, resize, picture change) | The page history records what each operation changes in every language's editable, as it records any other change; `js/inlineImages.ts` keeps no history of its own. |
 | Browser-native undo | Invisible | Called directly in `BloomField.PreventRemovalOfSomeElements` (`BloomField.ts:810-825`); also fed implicitly by every `document.execCommand("insertHTML"/"formatBlock"/"justify*"/"insertText")` in `bloomEditing.ts` and `GamePromptDialog.tsx`, and by plain typing in any contenteditable. |
 
 **Correction, verified 2026-08-06 — the table above is the *button* path, not the keyboard path.**
@@ -216,8 +216,8 @@ behaviour). Two things keep the cost genuinely small:
 
 ### 4.2 The stack lives in the page frame, and dies with it
 
-`theOneUndoStack` lives in the **page** frame and is set up when each page loads
-(`bookEdit/undo/pageUndo.ts`, called from `editablePage.ts`). So undo covers the page **as it is
+The page history lives in the **page** frame and is started when each page loads
+(`bookEdit/pageHistory/pageHistorySetup.ts`, called from `editablePage.ts`). So undo covers the page **as it is
 currently loaded**: changing page, or anything that reloads the same page, starts with an empty
 stack. The page frame is also where the Undo button lands (C# calls `topBarButtonClick("undo")`
 there), where Ctrl+Z and Ctrl+Y arrive, and where every mechanism the stack arbitrates lives. The
@@ -997,7 +997,7 @@ squashed commit; the old `BL-6681-stage1-undostack` branch and its PR #8317 are 
 These rules predate the no-merging constraint and all survive it — several matter considerably more
 now than they did when stages were landing weekly.
 
-1. **Almost all new code in new directories** — `src/BloomBrowserUI/bookEdit/undo/` and
+1. **Almost all new code in new directories** — `src/BloomBrowserUI/bookEdit/pageHistory/` and
    `src/BloomBrowserUI/bookEdit/textEditor/`. New files never conflict, which is the single biggest
    reason a months-long branch is survivable at all.
 2. **Integration points into existing files are one-line dispatches** wherever possible:
@@ -1286,8 +1286,8 @@ CKEditor's doing. Measure before touching it.
 ## 7. Test strategy
 
 - **Vitest / jsdom** for everything pure or static-DOM-shaped: `inlineFormat`, `pasteSanitizer`,
-  `ISelectionAnchor` round-trips, `getCleanHtml`, `autolink`, `UndoStack` bounds / page-scoping /
-  nesting, `PageSnapshot` capture.
+  `ISelectionAnchor` round-trips, `getCleanHtml`, `autolink`, the page history's transactions /
+  page-scoping / nesting, `PageSnapshot` capture.
 - **Not testable in jsdom:** `typingTransactions.ts` and `keyCommands.ts`. jsdom has no native
   editing behaviour and does not emit `beforeinput` or support `getTargetRanges()`. These can
   only be verified against a live WebView2 — budget for the CDP harness rather than for faking

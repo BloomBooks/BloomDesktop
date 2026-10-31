@@ -1,6 +1,14 @@
 ///<reference path="BloomField.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
-import { describe, it, expect, beforeEach, afterAll, vi } from "vitest";
+import {
+    describe,
+    it,
+    expect,
+    beforeEach,
+    afterAll,
+    afterEach,
+    vi,
+} from "vitest";
 import { getTestRoot, removeTestRoot } from "../../utils/testHelper";
 import BloomField from "./BloomField";
 import $ from "jquery";
@@ -336,6 +344,50 @@ describe("BloomField", () => {
         const inlineImageHtml =
             '<div class="bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval" contenteditable="false"><img src="placeHolder.png" alt=""></div>';
 
+        // The beforeinput that the browser sends before an edit of the box, covering the range
+        // from start to end. jsdom has no getTargetRanges, so the event gets one.
+        function sendBeforeInput(
+            editable: HTMLElement,
+            inputType: string,
+            start: [Node, number],
+            end: [Node, number],
+        ): Event {
+            const range = new StaticRange({
+                startContainer: start[0],
+                startOffset: start[1],
+                endContainer: end[0],
+                endOffset: end[1],
+            });
+            const event = new Event("beforeinput", {
+                bubbles: true,
+                cancelable: true,
+            });
+            Object.defineProperty(event, "inputType", { value: inputType });
+            Object.defineProperty(event, "getTargetRanges", {
+                value: () => [range],
+            });
+            editable.dispatchEvent(event);
+            return event;
+        }
+
+        // The edit that Ctrl+A then a key makes: one over the whole box.
+        const editOfWholeBox = (editable: HTMLElement, inputType: string) =>
+            sendBeforeInput(
+                editable,
+                inputType,
+                [editable, 0],
+                [editable, editable.childNodes.length],
+            );
+
+        // An edit inside the box's text, which leaves the picture alone.
+        const editOfText = (editable: HTMLElement, inputType: string) => {
+            const text = editable.querySelector("p")!.firstChild!;
+            return sendBeforeInput(editable, inputType, [text, 1], [text, 3]);
+        };
+
+        const imageIn = (editable: HTMLElement) =>
+            editable.querySelector(".bloom-inlineImage");
+
         it("EnsureParagraphsPresent puts the <p> after a bloom-keepFirstInField inline image", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = inlineImageHtml;
@@ -356,123 +408,79 @@ describe("BloomField", () => {
             expect(editable.lastElementChild!.tagName).toBe("P");
         });
 
-        it("counts a bloom-preventRemoval inline image, so ctrl+a DEL is undone", () => {
+        it("refuses the edit of ctrl+a DEL, which would remove a bloom-preventRemoval inline image", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
             WireUp();
-            // jsdom has no execCommand, and we only want to know that BloomField asked for
-            // the undo.
-            const execCommand = vi.fn();
-            (document as any).execCommand = execCommand;
 
-            // Simulate what ctrl+a DEL does: the keydown, then the removal it causes, then the
-            // keyup. BloomField compares the count from the keydown with the count at the
-            // keyup, so the test needs to send the keydown too.
-            editable.dispatchEvent(
-                new KeyboardEvent("keydown", { bubbles: true }),
-            );
-            editable.querySelector(".bloom-inlineImage")!.remove();
-            editable.dispatchEvent(
-                new KeyboardEvent("keyup", { bubbles: true }),
-            );
+            const event = editOfWholeBox(editable, "deleteContentForward");
 
-            expect(execCommand).toHaveBeenCalledWith("undo");
+            expect(event.defaultPrevented).toBe(true);
+            expect(imageIn(editable)).not.toBeNull();
         });
 
-        // When the person deletes a picture from its own menu, they meant to. The code that
-        // deletes it records the new count, so the typing that follows is not undone one
-        // character at a time.
-        it("does not undo the typing that follows a deliberate deletion of the image", () => {
+        // When the person deletes a picture from its own menu, they meant to. That deletion
+        // raises no beforeinput, and the typing that follows is not refused.
+        it("lets through the typing that follows a deliberate deletion of the image", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
             WireUp();
-            const execCommand = vi.fn();
-            (document as any).execCommand = execCommand;
 
-            // The menu's Delete, which involves no keystroke, and records the new count.
-            editable.querySelector(".bloom-inlineImage")!.remove();
-            BloomField.UpdateProtectedElementCount(editable);
-
+            // The menu's Delete, which involves no keystroke.
+            imageIn(editable)!.remove();
             // And now the person types.
-            for (let i = 0; i < 3; i++) {
-                editable.dispatchEvent(
-                    new KeyboardEvent("keydown", { bubbles: true }),
-                );
-                editable.dispatchEvent(
-                    new KeyboardEvent("keyup", { bubbles: true }),
-                );
-            }
+            const text = editable.querySelector("p")!.firstChild!;
+            const events = [0, 1, 2].map(() =>
+                sendBeforeInput(editable, "insertText", [text, 4], [text, 4]),
+            );
 
-            expect(execCommand).not.toHaveBeenCalled();
+            events.forEach((event) =>
+                expect(event.defaultPrevented).toBe(false),
+            );
         });
 
-        // When Delete is held down, the browser's auto-repeat sends a run of keydowns and one
-        // keyup at the end. The deletion happens before that keyup, which still has to catch it.
+        // When Delete is held down, the browser's auto-repeat sends a beforeinput for each
+        // repeat, and each is refused.
         it("protects the image when delete is held down rather than pressed", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
             WireUp();
-            const execCommand = vi.fn();
-            (document as any).execCommand = execCommand;
 
-            // First press: the deletion happens.
-            editable.dispatchEvent(
-                new KeyboardEvent("keydown", { bubbles: true, repeat: false }),
-            );
-            editable.querySelector(".bloom-inlineImage")!.remove();
-            // ...and the key is still down, so auto-repeat keeps sending keydowns.
-            for (let i = 0; i < 3; i++) {
-                editable.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        bubbles: true,
-                        repeat: true,
-                    }),
-                );
-            }
-            // The one keyup, when they finally let go.
-            editable.dispatchEvent(
-                new KeyboardEvent("keyup", { bubbles: true }),
+            const events = [0, 1, 2, 3].map(() =>
+                editOfWholeBox(editable, "deleteContentForward"),
             );
 
-            expect(execCommand).toHaveBeenCalledWith("undo");
+            events.forEach((event) =>
+                expect(event.defaultPrevented).toBe(true),
+            );
+            expect(imageIn(editable)).not.toBeNull();
         });
 
-        // An image inserted after the page was set up is protected too, so if ctrl+a DEL
-        // removes it, BloomField puts it back. The code that inserts it records the new count.
+        // An image inserted after the page was set up is protected too. The guard looks for
+        // protected elements at each edit, so the code that inserts the image tells it nothing.
         it("protects an inline image inserted after the field was wired up", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = "<p>Some text</p>";
             WireUp();
-            const execCommand = vi.fn();
-            (document as any).execCommand = execCommand;
             // Sanity check: nothing to protect when the field was wired up.
             expect(
                 editable.querySelectorAll(".bloom-preventRemoval").length,
             ).toBe(0);
 
             editable.insertAdjacentHTML("afterbegin", inlineImageHtml);
-            BloomField.UpdateProtectedElementCount(editable);
-            editable.dispatchEvent(
-                new KeyboardEvent("keydown", { bubbles: true }),
-            );
-            editable.querySelector(".bloom-inlineImage")!.remove();
-            editable.dispatchEvent(
-                new KeyboardEvent("keyup", { bubbles: true }),
-            );
+            const event = editOfWholeBox(editable, "deleteContentForward");
 
-            expect(execCommand).toHaveBeenCalledWith("undo");
+            expect(event.defaultPrevented).toBe(true);
+            expect(imageIn(editable)).not.toBeNull();
         });
 
-        // Ctrl+Z after inserting a picture takes the picture out through Bloom's undo stack.
-        // BloomField must not treat that as an accidental deletion, even when the new count has not
-        // been recorded by the keyup: a browser undo on top of it would take back the person's last
-        // typing. That includes the keyup of Ctrl, which comes after the Z.
-        it("does not undo again when ctrl+z itself removes the image", () => {
+        // Ctrl+Z after inserting a picture takes the picture out through the page history, which
+        // raises no beforeinput, so the guard does not put it back. It must still refuse a later
+        // Delete that would remove a protected picture.
+        it("leaves alone an undo that removes the image, and still protects later", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
             WireUp();
-            const execCommand = vi.fn();
-            (document as any).execCommand = execCommand;
 
             // Ctrl goes down first, then Z, whose undo removes the picture.
             editable.dispatchEvent(
@@ -490,7 +498,7 @@ describe("BloomField", () => {
                     ctrlKey: true,
                 }),
             );
-            editable.querySelector(".bloom-inlineImage")!.remove();
+            imageIn(editable)!.remove();
             editable.dispatchEvent(
                 new KeyboardEvent("keyup", {
                     bubbles: true,
@@ -503,30 +511,21 @@ describe("BloomField", () => {
                 new KeyboardEvent("keyup", { bubbles: true, key: "Control" }),
             );
 
-            expect(execCommand).not.toHaveBeenCalled();
+            expect(imageIn(editable)).toBeNull();
 
-            // Sanity check that the undo keystroke did not switch the guard off: a later Delete
-            // that removes a protected picture is still undone.
+            // A later Delete that would remove a protected picture is still refused.
             editable.insertAdjacentHTML("afterbegin", inlineImageHtml);
-            BloomField.UpdateProtectedElementCount(editable);
-            editable.dispatchEvent(
-                new KeyboardEvent("keydown", { bubbles: true, key: "Delete" }),
-            );
-            editable.querySelector(".bloom-inlineImage")!.remove();
-            editable.dispatchEvent(
-                new KeyboardEvent("keyup", { bubbles: true, key: "Delete" }),
-            );
-            expect(execCommand).toHaveBeenCalledWith("undo");
+            const event = editOfWholeBox(editable, "deleteContentForward");
+            expect(event.defaultPrevented).toBe(true);
+            expect(imageIn(editable)).not.toBeNull();
         });
 
-        // Only the undo key's own keyup is exempt. A Delete pressed and released while Z is still
-        // held down is an ordinary keystroke, and a picture it removes is put back.
+        // The undo key does not switch the guard off. A Delete pressed while Z is still held
+        // down is an ordinary keystroke, and its edit is refused.
         it("still protects the image from a delete pressed while ctrl+z is held", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
             WireUp();
-            const execCommand = vi.fn();
-            (document as any).execCommand = execCommand;
 
             editable.dispatchEvent(
                 new KeyboardEvent("keydown", {
@@ -536,34 +535,19 @@ describe("BloomField", () => {
                     ctrlKey: true,
                 }),
             );
-            // With Z still down, Delete removes the picture.
-            editable.dispatchEvent(
-                new KeyboardEvent("keydown", {
-                    bubbles: true,
-                    key: "Delete",
-                    code: "Delete",
-                }),
-            );
-            editable.querySelector(".bloom-inlineImage")!.remove();
-            editable.dispatchEvent(
-                new KeyboardEvent("keyup", {
-                    bubbles: true,
-                    key: "Delete",
-                    code: "Delete",
-                }),
-            );
+            // With Z still down, Delete would remove the picture.
+            const event = editOfWholeBox(editable, "deleteContentForward");
 
-            expect(execCommand).toHaveBeenCalledWith("undo");
+            expect(event.defaultPrevented).toBe(true);
+            expect(imageIn(editable)).not.toBeNull();
         });
 
-        // If Ctrl is let go while Z is still held, Z's auto-repeat types the letter z, which can
-        // replace a selected picture. That is typing, so the picture is put back.
+        // If Ctrl is let go while Z is still held, Z's auto-repeat types the letter z, which
+        // would replace a selection that covers the picture. That is typing, and it is refused.
         it("protects the image when ctrl is let go and z repeats as typing", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
             WireUp();
-            const execCommand = vi.fn();
-            (document as any).execCommand = execCommand;
 
             editable.dispatchEvent(
                 new KeyboardEvent("keydown", {
@@ -577,64 +561,23 @@ describe("BloomField", () => {
             editable.dispatchEvent(
                 new KeyboardEvent("keyup", { bubbles: true, key: "Control" }),
             );
-            editable.dispatchEvent(
-                new KeyboardEvent("keydown", {
-                    bubbles: true,
-                    key: "z",
-                    code: "KeyZ",
-                    repeat: true,
-                }),
-            );
-            editable.querySelector(".bloom-inlineImage")!.remove();
-            editable.dispatchEvent(
-                new KeyboardEvent("keyup", {
-                    bubbles: true,
-                    key: "z",
-                    code: "KeyZ",
-                }),
-            );
+            const event = editOfWholeBox(editable, "insertText");
 
-            expect(execCommand).toHaveBeenCalledWith("undo");
+            expect(event.defaultPrevented).toBe(true);
+            expect(imageIn(editable)).not.toBeNull();
         });
 
-        // The page claims a Ctrl+Z that undoes a picture change before the field sees its keydown,
-        // so only the keyup arrives here. It must not fire a browser undo either.
-        it("does not undo on the keyup of a ctrl+z whose keydown the page claimed", () => {
+        it("lets through an edit that leaves the inline image alone", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
             WireUp();
-            const execCommand = vi.fn();
-            (document as any).execCommand = execCommand;
 
-            // No keydown reaches the field; the undo removes the picture.
-            editable.querySelector(".bloom-inlineImage")!.remove();
-            editable.dispatchEvent(
-                new KeyboardEvent("keyup", {
-                    bubbles: true,
-                    key: "z",
-                    code: "KeyZ",
-                    ctrlKey: true,
-                }),
+            expect(
+                editOfText(editable, "deleteContentForward").defaultPrevented,
+            ).toBe(false);
+            expect(editOfText(editable, "insertText").defaultPrevented).toBe(
+                false,
             );
-            editable.dispatchEvent(
-                new KeyboardEvent("keyup", { bubbles: true, key: "Control" }),
-            );
-
-            expect(execCommand).not.toHaveBeenCalled();
-        });
-
-        it("does not undo on a keyup that left the inline image alone", () => {
-            const editable = document.getElementById("simple")!;
-            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
-            WireUp();
-            const execCommand = vi.fn();
-            (document as any).execCommand = execCommand;
-
-            editable.dispatchEvent(
-                new KeyboardEvent("keyup", { bubbles: true }),
-            );
-
-            expect(execCommand).not.toHaveBeenCalled();
         });
     });
 
@@ -1138,5 +1081,285 @@ describe("normalizeBloomLineBreakSpans", () => {
         expect(lineBreakSpan?.previousSibling?.textContent).toContain(
             "chi vetaya deen ña!",
         );
+    });
+});
+
+describe("BloomField.wouldRemoveProtectedElement", () => {
+    let field: HTMLElement;
+    let protectedElement: HTMLElement;
+    beforeEach(() => {
+        const root = getTestRoot();
+        root.innerHTML =
+            '<div id="field" contenteditable="true" class="bloom-editable">' +
+            '<p id="before">Before</p>' +
+            '<div id="picture" class="bloom-preventRemoval"><p id="inside">Caption</p></div>' +
+            '<p id="after">After</p></div>';
+        field = root.querySelector<HTMLElement>("#field")!;
+        protectedElement = root.querySelector<HTMLElement>("#picture")!;
+    });
+
+    // A beforeinput whose edit covers the range from start to end.
+    function editOver(
+        startContainer: Node,
+        startOffset: number,
+        endContainer: Node,
+        endOffset: number,
+    ): InputEvent {
+        const range = new StaticRange({
+            startContainer,
+            startOffset,
+            endContainer,
+            endOffset,
+        });
+        return {
+            getTargetRanges: () => [range],
+        } as unknown as InputEvent;
+    }
+
+    function textOf(id: string): Node {
+        return field.querySelector(`#${id}`)!.firstChild!;
+    }
+
+    it("refuses an edit over the whole box, as after Ctrl+A", () => {
+        expect(
+            BloomField.wouldRemoveProtectedElement(
+                field,
+                editOver(field, 0, field, field.childNodes.length),
+            ),
+        ).toBe(true);
+    });
+
+    it("refuses an edit that runs into the protected element", () => {
+        expect(
+            BloomField.wouldRemoveProtectedElement(
+                field,
+                editOver(textOf("before"), 3, textOf("inside"), 2),
+            ),
+        ).toBe(true);
+    });
+
+    it("allows an edit beside the protected element, or inside it", () => {
+        expect(
+            BloomField.wouldRemoveProtectedElement(
+                field,
+                editOver(textOf("before"), 1, textOf("before"), 4),
+            ),
+        ).toBe(false);
+        expect(
+            BloomField.wouldRemoveProtectedElement(
+                field,
+                editOver(textOf("inside"), 1, textOf("inside"), 4),
+            ),
+        ).toBe(false);
+        expect(
+            protectedElement.isConnected,
+            "test setup: the protected element should be on the page",
+        ).toBe(true);
+    });
+
+    it("allows a collapsed edit, which deletes nothing", () => {
+        expect(
+            BloomField.wouldRemoveProtectedElement(
+                field,
+                editOver(field, 1, field, 1),
+            ),
+        ).toBe(false);
+    });
+});
+
+// A stand-in for a CKEditor instance with the parts that WireToCKEditor uses. fire calls the
+// listeners in order and stops at one that cancels, as CKEDITOR.event does, and returns false if
+// one did.
+class StandInEditor {
+    public config = {};
+    public ui = { addButton: () => {} };
+    // The box the editor is attached to, which the paste listener reads through event.sender.
+    public element: { $: HTMLElement } | undefined;
+    private listeners = new Map<string, ((event: unknown) => unknown)[]>();
+    public on(eventName: string, listener: (event: unknown) => unknown) {
+        this.listeners.set(eventName, [
+            ...(this.listeners.get(eventName) ?? []),
+            listener,
+        ]);
+    }
+    public addCommand() {
+        // Set Up Hyperlink's command, which these tests never run.
+    }
+    public fire(eventName: string, data?: unknown): boolean {
+        let cancelled = false;
+        const event = {
+            data,
+            sender: this,
+            cancel: () => (cancelled = true),
+        };
+        for (const listener of this.listeners.get(eventName) ?? []) {
+            if (listener(event) === false) cancelled = true;
+            if (cancelled) break;
+        }
+        return !cancelled;
+    }
+    public asEditor(): CKEDITOR.editor {
+        return this as unknown as CKEDITOR.editor;
+    }
+}
+
+// Select from offset start in the text of the element with id startId to offset end in the text
+// of the element with id endId.
+function selectText(
+    startId: string,
+    start: number,
+    endId: string,
+    end: number,
+) {
+    const range = document.createRange();
+    range.setStart(document.getElementById(startId)!.firstChild!, start);
+    range.setEnd(document.getElementById(endId)!.firstChild!, end);
+    const selection = window.getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
+    return range;
+}
+
+describe("BloomField.MarkWhenUserDeletesEverything (BL-13779)", () => {
+    let box: HTMLElement;
+    let editor: StandInEditor;
+    beforeEach(() => {
+        const root = getTestRoot();
+        root.innerHTML =
+            '<div id="box" contenteditable="true" class="bloom-editable bloom-copyFromOtherLanguageIfNecessary">' +
+            '<p id="p1">One</p><p id="p2">Two</p></div>';
+        box = root.querySelector<HTMLElement>("#box")!;
+        editor = new StandInEditor();
+        BloomField.MarkWhenUserDeletesEverything(box, editor.asEditor());
+    });
+
+    // What CKEditor's WebKit "key" listener does to a selection that spans two blocks: delete it
+    // with no input event.
+    function deleteBothParagraphsWithNoInputEvent() {
+        selectText("p1", 0, "p2", 3).deleteContents();
+        expect(box.textContent, "test setup: the box is empty").toBe("");
+    }
+
+    it("marks the box when Delete comes up after a deletion that raised no input event", () => {
+        deleteBothParagraphsWithNoInputEvent();
+        expect(
+            box.getAttribute("data-user-deleted"),
+            "nothing told the box about the deletion yet",
+        ).toBeNull();
+        box.dispatchEvent(new KeyboardEvent("keyup", { key: "Delete" }));
+        expect(box.getAttribute("data-user-deleted")).toBe("true");
+    });
+
+    it("marks the box when Backspace comes up too", () => {
+        deleteBothParagraphsWithNoInputEvent();
+        box.dispatchEvent(new KeyboardEvent("keyup", { key: "Backspace" }));
+        expect(box.getAttribute("data-user-deleted")).toBe("true");
+    });
+
+    it("marks the box when the editor fires change, as the top bar's Cut makes it do", () => {
+        deleteBothParagraphsWithNoInputEvent();
+        editor.fire("change");
+        expect(box.getAttribute("data-user-deleted")).toBe("true");
+    });
+
+    it("leaves the box unmarked while it has text, or at another key", () => {
+        selectText("p1", 0, "p2", 1).deleteContents();
+        box.dispatchEvent(new KeyboardEvent("keyup", { key: "Delete" }));
+        editor.fire("change");
+        expect(box.textContent, "test setup: some text is left").toBe("wo");
+        expect(box.getAttribute("data-user-deleted")).toBeNull();
+
+        selectText("p2", 0, "p2", 2).deleteContents();
+        expect(box.textContent, "test setup: the box is empty").toBe("");
+        box.dispatchEvent(new KeyboardEvent("keyup", { key: "a" }));
+        expect(box.getAttribute("data-user-deleted")).toBeNull();
+    });
+
+    it("does nothing for a box without bloom-copyFromOtherLanguageIfNecessary", () => {
+        const other = document.createElement("div");
+        other.className = "bloom-editable";
+        other.innerHTML = '<p id="p3">Three</p>';
+        getTestRoot().appendChild(other);
+        const otherEditor = new StandInEditor();
+        BloomField.MarkWhenUserDeletesEverything(other, otherEditor.asEditor());
+        other.innerHTML = "<p></p>";
+        other.dispatchEvent(new KeyboardEvent("keyup", { key: "Delete" }));
+        otherEditor.fire("change");
+        expect(other.getAttribute("data-user-deleted")).toBeNull();
+    });
+});
+
+describe("BloomField.WireToCKEditor refusing Delete and paste over a protected element", () => {
+    let field: HTMLElement;
+    let editor: StandInEditor;
+    let ckeditorWasDefined: boolean;
+    beforeEach(() => {
+        const root = getTestRoot();
+        root.innerHTML =
+            '<div id="field" contenteditable="true" class="bloom-editable">' +
+            '<div id="picture" class="bloom-preventRemoval"><p id="caption">Caption</p></div>' +
+            '<p id="p1">One</p><p id="p2">Two</p></div>';
+        field = root.querySelector<HTMLElement>("#field")!;
+        ckeditorWasDefined = "CKEDITOR" in globalThis;
+        // CKEditor is loaded into the real editing page by a script tag. A palette of its own
+        // keeps WireToCKEditor from asking Bloom's server for one.
+        (globalThis as unknown as { CKEDITOR: unknown }).CKEDITOR = {
+            config: { colorButton_colors: "FFFFFF,FF0000" },
+            SHIFT: 2228224,
+        };
+        editor = new StandInEditor();
+        editor.element = { $: field };
+        BloomField.WireToCKEditor(field, editor.asEditor());
+    });
+
+    afterEach(() => {
+        if (!ckeditorWasDefined)
+            delete (globalThis as unknown as { CKEDITOR?: unknown }).CKEDITOR;
+    });
+
+    // Fire CKEditor's key event for a key with no modifiers. Returns false if a listener cancelled
+    // it, which makes CKEditor cancel the keydown and stops its own WebKit "key" listener.
+    function pressKey(keyCode: number): boolean {
+        return editor.fire("key", {
+            keyCode,
+            domEvent: { getKey: () => keyCode },
+        });
+    }
+
+    it("cancels Delete and Backspace over a selection that runs into the protected element", () => {
+        selectText("caption", 2, "p2", 1);
+        expect(pressKey(46)).toBe(false);
+        expect(pressKey(8)).toBe(false);
+    });
+
+    // Fire CKEditor's paste event for some text, as Ctrl+V does. Returns false if a listener
+    // cancelled it, which keeps CKEditor from putting the text in place of the selection.
+    function paste(): boolean {
+        return editor.fire("paste", {
+            type: "html",
+            dataValue: "<p>pasted</p>",
+            dataTransfer: { getData: () => "" },
+        });
+    }
+
+    it("cancels a paste over a selection that runs into the protected element", () => {
+        selectText("caption", 2, "p2", 1);
+        expect(paste()).toBe(false);
+    });
+
+    it("lets a paste through over a selection beside the protected element", () => {
+        selectText("p1", 0, "p2", 1);
+        expect(paste()).toBe(true);
+    });
+
+    it("lets Delete through over a selection beside the protected element, and other keys", () => {
+        selectText("p1", 0, "p2", 1);
+        expect(pressKey(46)).toBe(true);
+        selectText("caption", 0, "p2", 1);
+        expect(pressKey(65)).toBe(true);
+        expect(
+            document.getElementById("picture"),
+            "test setup: the protected element should be on the page",
+        ).not.toBeNull();
     });
 });

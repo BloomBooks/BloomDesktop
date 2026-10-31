@@ -1,5 +1,12 @@
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { addRow, getTableInfo, setupContentsOfCell } from "bloom-table";
+import { createEditTimeMarkupFilter } from "../pageHistory/editTimeMarkup";
+import { createPageHistory } from "../pageHistory/pageHistory";
+import { kTypingUndoDescriptionL10nKey } from "../pageHistory/pageHistoryInput";
+import {
+    kGenericUndoDescriptionL10nKey,
+    type PageHistory,
+} from "../pageHistory/pageHistoryTypes";
 // A new video cell asks the server to put the video placeholder in the book
 // folder; there is no server here, and the call is also what proves the wiring
 // ran.
@@ -52,10 +59,14 @@ class NoopResizeObserver {
     // A palette of its own keeps attachToCkEditor from asking Bloom's server
     // for one.
     config: { colorButton_colors: "FFFFFF,FF0000" },
+    // The page history's undo asks every editor to forget a saved selection;
+    // these stand-in editors save none.
+    instances: {},
     inline: () => ({
         id: "stubEditor",
         config: {},
         on: () => {},
+        fire: () => true,
         addCommand: () => {},
         ui: { addButton: () => {} },
     }),
@@ -214,5 +225,92 @@ describe("video cells", () => {
         expect(postMock).not.toHaveBeenCalled();
 
         TeardownTableEditing(document.body);
+    });
+});
+
+// A table's structural change and the typing in its cells are steps of the one page history, in
+// the order they were made.
+describe("undo of a row and of typing in a table", () => {
+    let page: HTMLElement;
+    let tableDiv: HTMLElement;
+    let history: PageHistory;
+
+    beforeEach(() => {
+        document.body.innerHTML = "";
+        page = document.createElement("div");
+        page.classList.add("bloom-page");
+        tableDiv = document.createElement("div");
+        tableDiv.classList.add("bloom-table");
+        page.appendChild(tableDiv);
+        document.body.appendChild(page);
+        AttachNewTable(tableDiv);
+        history = createPageHistory({
+            root: page,
+            filter: createEditTimeMarkupFilter(),
+        });
+        // Sanity check: a new table is two by two.
+        expect(getTableInfo(tableDiv).rowCount).toBe(2);
+    });
+
+    afterEach(() => {
+        history.dispose();
+        document.body.innerHTML = "";
+    });
+
+    const addARow = () =>
+        history.doTransaction(kGenericUndoDescriptionL10nKey, () =>
+            addRow(tableDiv),
+        );
+
+    function firstCellBox(): HTMLElement {
+        return tableDiv.querySelector(".bloom-editable") as HTMLElement;
+    }
+
+    const type = (text: string) =>
+        history.doTransaction(kTypingUndoDescriptionL10nKey, () => {
+            firstCellBox().innerHTML = `<p>${text}</p>`;
+        });
+
+    it("takes back a row that was added, and redo puts it back", async () => {
+        await addARow();
+        expect(getTableInfo(tableDiv).rowCount).toBe(3);
+
+        await history.undo();
+        expect(getTableInfo(tableDiv).rowCount).toBe(2);
+        expect(tableDiv.querySelectorAll(".bloom-cell").length).toBe(4);
+
+        await history.redo();
+        expect(getTableInfo(tableDiv).rowCount).toBe(3);
+        expect(tableDiv.querySelectorAll(".bloom-cell").length).toBe(6);
+    });
+
+    it("takes back typing that came after a row before the row", async () => {
+        await addARow();
+        await type("Banana");
+
+        await history.undo();
+        expect(firstCellBox().textContent).not.toContain("Banana");
+        expect(
+            getTableInfo(tableDiv).rowCount,
+            "the first undo should take back only the typing",
+        ).toBe(3);
+
+        await history.undo();
+        expect(getTableInfo(tableDiv).rowCount).toBe(2);
+    });
+
+    it("takes back a row that came after typing before the typing, and then the typing", async () => {
+        await type("Banana");
+        await addARow();
+
+        await history.undo();
+        expect(getTableInfo(tableDiv).rowCount).toBe(2);
+        expect(
+            firstCellBox().textContent,
+            "the first undo should take back only the row",
+        ).toContain("Banana");
+
+        await history.undo();
+        expect(firstCellBox().textContent).not.toContain("Banana");
     });
 });

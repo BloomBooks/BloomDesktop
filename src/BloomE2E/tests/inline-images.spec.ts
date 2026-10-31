@@ -13,7 +13,7 @@
 //    display:flow-root keeps the picture inside its block.
 //  - What Bloom writes to the .htm file when it saves: the editing decorations removed, and
 //    contenteditable="false" still on the wrapper.
-//  - The top bar's Undo button, which takes back a picture change through Bloom's one undo stack
+//  - The top bar's Undo button, which takes back a picture change through the page history
 //    (inline-images-undo-keyboard.spec.ts covers Ctrl+Z and Ctrl+Y).
 //
 // The tests run in order, and each starts from the book the previous one left, so the file works
@@ -380,13 +380,12 @@ test.describe("inline images in a text block [Test Case ID 815]", () => {
                 {
                     message:
                         "The Undo button did not put the picture's width back. A picture change " +
-                        "is an entry on Bloom's one undo stack (inlineImages.ts), because " +
-                        "CKEditor's undo cannot see a change made to the DOM by code.",
+                        "is a step of the page history, like any other change to the page.",
                 },
             )
             .toBe(before.widthPercent);
-        // Undo puts back the markup the entry saved in every language before the change, so every
-        // copy gets the old width back, and the selected copy still has its handles.
+        // Undo puts back what the step changed in every language, so every copy gets the old
+        // width back, and the selected copy still has its handles.
         const copies = await getInlineImageInEveryLanguage(
             page,
             BLOCK,

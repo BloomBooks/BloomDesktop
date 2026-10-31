@@ -12,6 +12,9 @@ import {
     IControlMenuRow,
     IControlRuntime,
 } from "../../toolbox/canvas/canvasControlTypes";
+import { getCanvasElementManager } from "../../toolbox/canvas/canvasElementPageBridge";
+import { doTransaction, whenNoRequestPageContentDelays } from "../bloomEditing";
+import { kGenericUndoDescriptionL10nKey } from "../../pageHistory/pageHistoryTypes";
 
 // This file renders the menu rows that controlRegistry provides. Two menus use it:
 // CanvasElementContextControls (a canvas element's "..." menu and its right-click menu) and
@@ -71,26 +74,26 @@ export const contextMenuCss = css`
 // Control callbacks can be either sync or async by contract.
 // We always call through this helper so sync exceptions and async
 // rejections are handled consistently from UI event handlers.
+// Each callback is one undo step, with the general description, which stays open until the
+// callback has finished and the page has settled. A pointer or key press has usually opened a
+// transaction already, which this one joins; but a click with no press before it, such as the
+// click that assistive technology sends when it invokes a menu row, opens none, and the command's
+// changes would otherwise make no step of their own.
 export const runControlCallback = (
     callbackLabel: string,
     callback: () => void | Promise<void>,
 ): void => {
-    try {
-        const result = callback();
-        if (result) {
-            void result.catch((error) => {
-                console.error(
-                    `Canvas control callback failed (${callbackLabel})`,
-                    error,
-                );
-            });
-        }
-    } catch (error) {
+    doTransaction(kGenericUndoDescriptionL10nKey, async () => {
+        await callback();
+        await whenNoRequestPageContentDelays();
+    }).catch((error) => {
+        // The rollback put back data-bubble, but Comical draws from its own copy of each spec.
+        getCanvasElementManager()?.redrawBubblesFromPage();
         console.error(
             `Canvas control callback failed (${callbackLabel})`,
             error,
         );
-    }
+    });
 };
 
 export const scaleIconNode = (

@@ -21,15 +21,6 @@ vi.mock("../../react_components/featureStatus", () => ({
     useGetFeatureAvailabilityMessage: () => "",
     openBloomSubscriptionSettings: () => {},
 }));
-// There is no toolbox frame in these tests. A test that needs the reader tools to have a markup
-// tool selected sets readerToolsHandleUndoKeys.
-const toolboxStub = vi.hoisted(() => ({ readerToolsHandleUndoKeys: false }));
-vi.mock("./workspaceFrames", async (importOriginal) => ({
-    ...(await importOriginal<typeof import("./workspaceFrames")>()),
-    getToolboxBundleExports: () => ({
-        readerToolsHandleUndoKeys: () => toolboxStub.readerToolsHandleUndoKeys,
-    }),
-}));
 // Unit tests must not reach the network (see vitest.setup.ts). The image menu asks Bloom for the
 // collection's language names, and commands record an analytics event; neither matters here.
 vi.mock("../../utils/bloomApi", async (importOriginal) => {
@@ -50,13 +41,9 @@ import {
     removeTestRoot,
 } from "../../utils/testHelper";
 import {
-    commitPendingInlineImageUndo,
-    discardPendingInlineImageUndo,
     getInlineImage,
     getInlineImageInEditable,
     getInlineImages,
-    inlineImageCanUndo,
-    inlineImageUndo,
     insertInlineImage,
     kInlineImageBottomClass,
     kInlineImageClass,
@@ -67,7 +54,6 @@ import {
     kInlineImageRightClass,
     kInlineImageSelectedClass,
     kInlineImageWidthVar,
-    prepareInlineImageUndo,
     setInlineImageDock,
     setupInlineImages,
     syncInlineImagesFromEditable,
@@ -102,11 +88,10 @@ import {
     kInlineImageHandleClass,
     kInlineImageHandleFrameClass,
     kMaxInlineImageWidthPercent,
-    keepInlineImageSelectionOutOfCkeditorSnapshots,
     kMinInlineImageWidthPercent,
-    removeInlineImageSelectionFromHtml,
     selectInlineImage,
     setupInlineImageInteractions,
+    updateInlineImagesAfterUndoOrRedo,
 } from "./inlineImageInteractions";
 import {
     getInlineImageCrop,
@@ -114,10 +99,16 @@ import {
     kNoInlineImageCrop,
     setInlineImageCrop,
 } from "./inlineImageCrop";
-import { resetChangeOrderForTests } from "../undo/changeOrder";
 import BloomField from "../bloomField/BloomField";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
-import { theOneUndoStack } from "../undo/UndoStack";
+import { createEditTimeMarkupFilter } from "../pageHistory/editTimeMarkup";
+import { createPageHistory } from "../pageHistory/pageHistory";
+import { attachInputTransactions } from "../pageHistory/pageHistoryInput";
+import { attachUndoAndRedoKeys } from "../pageHistory/pageHistoryKeys";
+import {
+    kGenericUndoDescriptionL10nKey,
+    PageHistory,
+} from "../pageHistory/pageHistoryTypes";
 
 // jsdom reports every element's box as empty, so these tests cannot check where a drag put the
 // image. The calculations that decide that are in exported functions with no side effects,
@@ -172,8 +163,7 @@ const kImageHeightViewportPx = 40;
 let pageCounter = 0;
 
 // Builds a page with one translation group, with one editable for each entry. This is the same
-// page as in inlineImages.test.ts, including the data-page-id that the inline image undo code
-// uses to tell pages apart.
+// page as in inlineImages.test.ts.
 function makeTranslationGroup(
     editables: { lang: string; classes?: string; content?: string }[],
     options?: { insideCanvasElement?: boolean; groupClasses?: string },
@@ -220,16 +210,62 @@ const makeSimpleGroup = (options?: {
 const editableFor = (group: HTMLElement, lang: string) =>
     group.querySelector(`[lang="${lang}"]`) as HTMLElement;
 
+// Inline images have no undo of their own: the page history records what each operation
+// changes. A test of undo starts a history on the test page, wired as pageHistorySetup.ts wires
+// the page frame's: the user's presses and keys open transactions, Ctrl+Z and Ctrl+Y undo and
+// redo, and after each undo or redo updateInlineImagesAfterUndoOrRedo puts the selection right,
+// as listenToPageHistory in bloomEditing.ts has it do.
+let history: PageHistory | undefined;
+let stopPageHistory: () => void = () => {};
+function startPageHistory(
+    group: HTMLElement,
+    isInChangeLayoutMode = () => false,
+): PageHistory {
+    const started = createPageHistory({
+        root: group.closest(".bloom-page") as HTMLElement,
+        filter: createEditTimeMarkupFilter(),
+    });
+    // Events that a test dispatches are never trusted, so every one counts as the user's.
+    const detachInput = attachInputTransactions(started, window, [], {
+        isFromUser: () => true,
+    });
+    const detachKeys = attachUndoAndRedoKeys(window, [], {
+        undo: () => void started.undo(),
+        redo: () => void started.redo(),
+        isInChangeLayoutMode,
+    });
+    const stopListening = started.onAfterUndoOrRedo(() =>
+        updateInlineImagesAfterUndoOrRedo(document),
+    );
+    stopPageHistory = () => {
+        stopListening();
+        detachKeys();
+        detachInput();
+        started.dispose();
+        history = undefined;
+        stopPageHistory = () => {};
+    };
+    history = started;
+    return started;
+}
+
+// A menu command as the click on it runs it, inside the transaction that the click opens; done
+// says when the command has finished, since some commands finish after an await.
+function runAsClick(
+    command: () => void,
+    done: () => void | Promise<void>,
+): Promise<void> {
+    return history!.doTransaction(kGenericUndoDescriptionL10nKey, async () => {
+        command();
+        await done();
+    });
+}
+
 describe("inlineImageInteractions", () => {
     beforeEach(() => {
         cleanTestRoot();
         cleanupInlineImageInteractions();
         capturedPointers.clear();
-        // Every inline image operation goes on the one undo stack, so each test starts it empty.
-        theOneUndoStack.clear();
-        theOneUndoStack.clearLegacyProviders();
-        resetChangeOrderForTests();
-        discardPendingInlineImageUndo();
         // Much of the code under test asks for an overflow check, which OverflowChecker runs on
         // a one-second timer. That timer would fire after the test has ended, when the canvas
         // element manager it calls is gone, and vitest reports the error as unhandled. The
@@ -240,6 +276,7 @@ describe("inlineImageInteractions", () => {
         ).mockImplementation(() => {});
     });
     afterEach(() => {
+        stopPageHistory();
         vi.restoreAllMocks();
     });
     afterAll(removeTestRoot);
@@ -900,6 +937,7 @@ describe("inlineImageInteractions", () => {
 
         it("undoes a command that mutates the image in place", async () => {
             const group = makeSimpleGroup();
+            const history = startPageHistory(group);
             const wrapper = insertInlineImage(group);
             (wrapper.querySelector("img") as HTMLImageElement).src =
                 "flower.jpg";
@@ -912,25 +950,24 @@ describe("inlineImageInteractions", () => {
             const transparent = transparency.subMenu!.find(
                 (i) => i.l10nId === "EditTab.Image.Transparency.Transparent",
             )!;
-            (transparent.onClick as () => void)();
-            await vi.waitFor(() =>
-                expect(
-                    wrapper
-                        .querySelector("img")!
-                        .classList.contains("bloom-transparent"),
-                ).toBe(true),
+            const frenchIsTransparent = () =>
+                getInlineImageInEditable(editableFor(group, "fr"))!
+                    .querySelector("img")!
+                    .classList.contains("bloom-transparent");
+            await runAsClick(
+                () => (transparent.onClick as () => void)(),
+                () =>
+                    vi.waitFor(() => expect(frenchIsTransparent()).toBe(true)),
+            );
+            // Sanity check: the command made a step.
+            expect(history.undoDescriptionL10nKey).toBe(
+                kGenericUndoDescriptionL10nKey,
             );
 
-            expect(inlineImageCanUndo()).toBe(true);
+            await history.undo();
 
-            // This throws if the entry was recorded before the change was copied to the other
-            // language, because the entry checks that every copy is as it left it.
-            expect(inlineImageUndo()).toBe(true);
-
-            // The undo has to take back the transparency, and leave the insert that put the
-            // picture there. The commands come from the canvas element registry, which knows
-            // nothing about inline image undo. Without an undo entry of their own, the newest
-            // entry would be the insert, and ctrl+z would make the picture disappear.
+            // The undo has to take back the transparency in every copy, including the copy that
+            // the sync after the command changed, and leave the picture there.
             const restored = getInlineImage(group);
             expect(
                 restored,
@@ -986,6 +1023,7 @@ describe("inlineImageInteractions", () => {
 
         it("undoes a flip", async () => {
             const group = makeSimpleGroup();
+            const history = startPageHistory(group);
             const wrapper = insertInlineImage(group);
             (wrapper.querySelector("img") as HTMLImageElement).src =
                 "flower.jpg";
@@ -996,14 +1034,17 @@ describe("inlineImageInteractions", () => {
                 .subMenu!.find(
                     (s) => s.l10nId === "EditTab.Image.FlipVertical",
                 )!;
-            (flipVertical.onClick as () => void)();
-            await vi.waitFor(() =>
-                expect(wrapper.querySelector("img")!.style.transform).toBe(
-                    "scale(1, -1)",
-                ),
+            await runAsClick(
+                () => (flipVertical.onClick as () => void)(),
+                () =>
+                    vi.waitFor(() =>
+                        expect(
+                            wrapper.querySelector("img")!.style.transform,
+                        ).toBe("scale(1, -1)"),
+                    ),
             );
 
-            expect(inlineImageUndo()).toBe(true);
+            await history.undo();
 
             const restored = getInlineImage(group);
             expect(
@@ -1100,15 +1141,19 @@ describe("inlineImageInteractions", () => {
         });
 
         // Undo does not need a selected picture or the caret in the block: the delete is the
-        // newest entry on the one undo stack, and that is all inlineImageCanUndo asks.
-        it("Delete can be undone with nothing selected", () => {
+        // newest step of the page history.
+        it("Delete can be undone with nothing selected", async () => {
             const group = makeSimpleGroup();
+            const history = startPageHistory(group);
             const wrapper = insertInlineImage(group);
             const id = wrapper.getAttribute(kInlineImageIdAttr);
             const remove = buildInlineImageMenuItems(
                 getInlineImageActionTarget(wrapper),
             ).find((i) => i.l10nId === "Common.Delete")!;
-            (remove.onClick as () => void)();
+            await runAsClick(
+                () => (remove.onClick as () => void)(),
+                () => {},
+            );
             // Sanity check: both copies are gone, and nothing is selected.
             expect(
                 document.querySelectorAll(`[${kInlineImageIdAttr}="${id}"]`)
@@ -1117,9 +1162,8 @@ describe("inlineImageInteractions", () => {
             expect(
                 document.querySelector("." + kInlineImageSelectedClass),
             ).toBeNull();
-            expect(inlineImageCanUndo()).toBe(true);
 
-            expect(inlineImageUndo()).toBe(true);
+            await history.undo();
 
             expect(
                 document.querySelectorAll(`[${kInlineImageIdAttr}="${id}"]`)
@@ -1238,109 +1282,110 @@ describe("inlineImageInteractions", () => {
         });
     });
 
-    // Two things leave an inline image unselected: an undo or redo, after which inlineImages.ts
-    // has replaced the wrappers and sends kInlineImagesRestoredEvent, and a new picture, which
-    // arrives through inlineImagePictureChanged. In both, the image has to be selected again,
-    // so that the person keeps working on it, and the handles were on an element that may no
-    // longer be in the document.
-    describe("reacting to inlineImages.ts", () => {
-        it("puts the handles back on the wrapper an undo restored", () => {
+    // After an undo or redo, updateInlineImagesAfterUndoOrRedo gives the selected image its
+    // handles and toolbar for where the undo left it, or takes the toolbar down when the undo
+    // took the image out. A new picture, which arrives through inlineImagePictureChanged,
+    // selects its image again, so that the person keeps working on it.
+    describe("after an undo or redo", () => {
+        // Change the dock as one step, so that undo has something to put back.
+        const dockAtBottom = (
+            history: PageHistory,
+            group: HTMLElement,
+            wrapper: HTMLElement,
+        ) =>
+            history.doTransaction(kGenericUndoDescriptionL10nKey, () => {
+                setInlineImageDock(wrapper, kInlineImageBottomClass);
+                syncInlineImagesFromEditable(editableFor(group, "en"));
+            });
+
+        it("keeps the handles on the selected wrapper after an undo", async () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
+            const history = startPageHistory(group);
             const wrapper = insertInlineImage(group);
             selectInlineImage(wrapper);
-            // Change the dock as an undoable operation, so that undo has something to put back.
-            prepareInlineImageUndo(group);
-            setInlineImageDock(wrapper, kInlineImageBottomClass);
-            syncInlineImagesFromEditable(editableFor(group, "en"));
-            commitPendingInlineImageUndo(group);
+            await dockAtBottom(history, group, wrapper);
 
-            expect(inlineImageUndo()).toBe(true);
+            await history.undo();
 
-            // Undo rebuilds the wrapper from saved markup, so this is a new element.
             const restored = getInlineImageInEditable(editableFor(group, "en"));
-            expect(restored, "expected a restored wrapper").not.toBeNull();
-            expect(restored).not.toBe(wrapper);
+            expect(restored, "expected the wrapper").not.toBeNull();
             expect(getInlineImageDock(restored!)).toBe(kInlineImageRightClass);
-            // inlineImages.ts marks it as selected, so it needs handles. The saved markup does
-            // not include them, since they are bloom-ui.
+            // The history neither records nor puts back the selection, which is view state.
             expect(
                 restored!.classList.contains(kInlineImageSelectedClass),
             ).toBe(true);
             expect(
                 restored!.querySelector("." + kInlineImageHandleFrameClass),
-                "expected the handles to be rebuilt",
+                "expected the handles to be there",
             ).not.toBeNull();
         });
 
-        it("puts the handles back on the wrapper a redo restored", () => {
+        it("keeps the handles on the selected wrapper after a redo", async () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
+            const history = startPageHistory(group);
             const wrapper = insertInlineImage(group);
             selectInlineImage(wrapper);
-            prepareInlineImageUndo(group);
-            setInlineImageDock(wrapper, kInlineImageBottomClass);
-            syncInlineImagesFromEditable(editableFor(group, "en"));
-            commitPendingInlineImageUndo(group);
-            expect(inlineImageUndo()).toBe(true);
+            await dockAtBottom(history, group, wrapper);
+            await history.undo();
             const afterUndo = getInlineImageInEditable(
                 editableFor(group, "en"),
             );
             // Sanity check: the undo put the picture back on the right.
             expect(getInlineImageDock(afterUndo!)).toBe(kInlineImageRightClass);
 
-            void theOneUndoStack.redo();
+            await history.redo();
 
             const redone = getInlineImageInEditable(editableFor(group, "en"));
-            expect(redone, "expected a redone wrapper").not.toBeNull();
-            expect(redone).not.toBe(afterUndo);
+            expect(redone, "expected the wrapper").not.toBeNull();
             expect(getInlineImageDock(redone!)).toBe(kInlineImageBottomClass);
             expect(redone!.classList.contains(kInlineImageSelectedClass)).toBe(
                 true,
             );
             expect(
                 redone!.querySelector("." + kInlineImageHandleFrameClass),
-                "expected the handles to be rebuilt",
+                "expected the handles to be there",
             ).not.toBeNull();
         });
 
-        // The toolbar is a div on the body, so it stays when undo replaces the wrapper it was
-        // built for. It has to be rebuilt so that its commands act on a picture that is still
-        // in the document.
-        it("rebuilds the toolbar for the wrapper an undo restored", () => {
+        // The toolbar is a div on the body, built for the selected picture. It has to stay up
+        // after an undo that leaves the picture, so that its commands still have a subject.
+        it("keeps the toolbar up for the picture an undo left", async () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
+            const history = startPageHistory(group);
             const wrapper = insertInlineImage(group);
             selectInlineImage(wrapper);
-            prepareInlineImageUndo(group);
-            setInlineImageDock(wrapper, kInlineImageBottomClass);
-            syncInlineImagesFromEditable(editableFor(group, "en"));
-            commitPendingInlineImageUndo(group);
-            const barBuiltForTheOldWrapper = document.getElementById(
-                kInlineImageContextControlsId,
-            );
+            await dockAtBottom(history, group, wrapper);
             // Sanity check: selecting the picture showed the toolbar.
-            expect(barBuiltForTheOldWrapper).not.toBeNull();
+            expect(
+                document.getElementById(kInlineImageContextControlsId),
+            ).not.toBeNull();
 
-            expect(inlineImageUndo()).toBe(true);
+            await history.undo();
 
-            const bar = document.getElementById(kInlineImageContextControlsId);
-            expect(bar, "expected the toolbar to still be up").not.toBeNull();
-            expect(bar).not.toBe(barBuiltForTheOldWrapper);
+            expect(
+                document.getElementById(kInlineImageContextControlsId),
+                "expected the toolbar to still be up",
+            ).not.toBeNull();
         });
 
         // Undoing an insert removes the picture, so the toolbar has nothing to act on and
         // nowhere to be.
-        it("takes the toolbar down when the undo left no picture", () => {
+        it("takes the toolbar down when the undo left no picture", async () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
-            selectInlineImage(insertInlineImage(group));
+            const history = startPageHistory(group);
+            await history.doTransaction(kGenericUndoDescriptionL10nKey, () =>
+                selectInlineImage(insertInlineImage(group)),
+            );
             // Sanity check: the picture is selected and its toolbar is showing.
             expect(
                 document.getElementById(kInlineImageContextControlsId),
             ).not.toBeNull();
 
-            expect(inlineImageUndo()).toBe(true);
+            await history.undo();
 
             expect(getInlineImages(group).length).toBe(0);
             expect(
@@ -1370,21 +1415,10 @@ describe("inlineImageInteractions", () => {
         });
     });
 
-    // BloomField undoes a Ctrl+A then Delete that removes a picture. It knows how many pictures a
-    // block should have, and the commands that add and delete pictures on purpose have to keep
-    // that number up to date.
+    // BloomField refuses an edit, such as Ctrl+A then Delete, whose range covers a picture. It
+    // looks for pictures at each edit, so the commands that add and delete pictures on purpose
+    // tell it nothing.
     describe("protection from Ctrl+A then Delete", () => {
-        const originalExecCommand = document.execCommand;
-        let execCommand: ReturnType<typeof vi.fn>;
-        beforeEach(() => {
-            execCommand = vi.fn();
-            document.execCommand =
-                execCommand as unknown as typeof document.execCommand;
-        });
-        afterEach(() => {
-            document.execCommand = originalExecCommand;
-        });
-
         const runMenuCommand = (clicked: HTMLElement, l10nId: string) => {
             const item = buildInlineImageMenuItems(
                 getInlineImageActionTarget(clicked),
@@ -1392,10 +1426,27 @@ describe("inlineImageInteractions", () => {
             expect(item, `expected a ${l10nId} item`).toBeTruthy();
             (item!.onClick as () => void)();
         };
-        const releaseAKey = (editable: HTMLElement) =>
-            editable.dispatchEvent(
-                new KeyboardEvent("keyup", { bubbles: true }),
-            );
+
+        // The beforeinput that the browser sends before an edit of the whole block, as after
+        // Ctrl+A. jsdom has no getTargetRanges, so the event gets one.
+        const editWholeBlock = (editable: HTMLElement, inputType: string) => {
+            const range = new StaticRange({
+                startContainer: editable,
+                startOffset: 0,
+                endContainer: editable,
+                endOffset: editable.childNodes.length,
+            });
+            const event = new Event("beforeinput", {
+                bubbles: true,
+                cancelable: true,
+            });
+            Object.defineProperty(event, "inputType", { value: inputType });
+            Object.defineProperty(event, "getTargetRanges", {
+                value: () => [range],
+            });
+            editable.dispatchEvent(event);
+            return event;
+        };
 
         const pressCtrlA = (target: HTMLElement) => {
             const event = new KeyboardEvent("keydown", {
@@ -1450,59 +1501,70 @@ describe("inlineImageInteractions", () => {
             const english = editableFor(group, "en");
             // The block starts with no picture, so there is nothing to protect yet.
             BloomField.ManageField(english);
+            // Sanity check: with no picture, the edit is let through.
+            expect(
+                editWholeBlock(english, "deleteContentForward")
+                    .defaultPrevented,
+            ).toBe(false);
+
             runMenuCommand(
                 english.querySelector("p") as HTMLElement,
                 "EditTab.InlineImage.InsertImage",
             );
-            // Sanity check: the picture is there, and nothing has asked for an undo.
+            // Sanity check: the picture is there.
             expect(getInlineImageInEditable(english)).not.toBeNull();
-            releaseAKey(english);
-            expect(execCommand).not.toHaveBeenCalled();
 
-            // This is what Ctrl+A then Delete leaves.
-            getInlineImageInEditable(english)!.remove();
-            releaseAKey(english);
-
-            expect(execCommand).toHaveBeenCalledWith("undo");
+            expect(
+                editWholeBlock(english, "deleteContentForward")
+                    .defaultPrevented,
+            ).toBe(true);
         });
 
-        it("does not put back a picture deleted with the Delete command", () => {
+        it("lets the block be edited after its picture is deleted with the Delete command", () => {
             const group = makeSimpleGroup();
             const english = editableFor(group, "en");
             insertInlineImage(group);
-            // Set up after the insert, so the picture counts from the start, as in a saved book.
+            // Set up after the insert, so the picture is there from the start, as in a saved book.
             BloomField.ManageField(english);
 
             runMenuCommand(getInlineImageInEditable(english)!, "Common.Delete");
             // Sanity check: the delete happened.
             expect(getInlineImageInEditable(english)).toBeNull();
-            releaseAKey(english);
 
-            expect(execCommand).not.toHaveBeenCalled();
+            expect(
+                editWholeBlock(english, "deleteContentForward")
+                    .defaultPrevented,
+            ).toBe(false);
         });
 
-        it("counts the picture an undo of its delete brings back", () => {
+        it("protects the picture an undo of its delete brings back", async () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
+            const history = startPageHistory(group);
             const english = editableFor(group, "en");
             insertInlineImage(group);
             BloomField.ManageField(english);
-            runMenuCommand(getInlineImageInEditable(english)!, "Common.Delete");
-            expect(inlineImageUndo()).toBe(true);
+            await runAsClick(
+                () =>
+                    runMenuCommand(
+                        getInlineImageInEditable(english)!,
+                        "Common.Delete",
+                    ),
+                () => {},
+            );
+            await history.undo();
             // Sanity check: the undo brought the picture back.
             expect(getInlineImageInEditable(english)).not.toBeNull();
 
-            getInlineImageInEditable(english)!.remove();
-            releaseAKey(english);
-
-            expect(execCommand).toHaveBeenCalledWith("undo");
+            expect(
+                editWholeBlock(english, "deleteContentForward")
+                    .defaultPrevented,
+            ).toBe(true);
         });
     });
 
-    // CKEditor compares each editable with its latest snapshot on every keyup, and would take a
-    // picture change for typing. So every finished picture change updates that snapshot.
-    // CKEditor claims Ctrl+Z and Ctrl+Y inside a text block, and does nothing with them when it
-    // has nothing of its own to undo or redo, so the page takes them first for picture changes.
+    // The page history takes Ctrl+Z and Ctrl+Y in the page frame (pageHistoryKeys.ts), and undoes
+    // and redoes the newest step on the page, whatever it changed.
     describe("Ctrl+Z and Ctrl+Y", () => {
         const pressKey = (
             target: HTMLElement,
@@ -1519,25 +1581,25 @@ describe("inlineImageInteractions", () => {
             target.dispatchEvent(event);
             return event;
         };
-        // A resize as the page records it: prepare, change, sync, commit.
-        const resizeTo = (group: HTMLElement, width: string) => {
-            prepareInlineImageUndo(group);
-            getInlineImageInEditable(
-                editableFor(group, "en"),
-            )!.style.setProperty(kInlineImageWidthVar, width);
-            syncInlineImagesFromEditable(editableFor(group, "en"));
-            commitPendingInlineImageUndo(group);
-        };
+        // A resize as one step.
+        const resizeTo = (group: HTMLElement, width: string) =>
+            history!.doTransaction(kGenericUndoDescriptionL10nKey, () => {
+                getInlineImageInEditable(
+                    editableFor(group, "en"),
+                )!.style.setProperty(kInlineImageWidthVar, width);
+                syncInlineImagesFromEditable(editableFor(group, "en"));
+            });
         const widthIn = (group: HTMLElement, lang: string) =>
             getInlineImageInEditable(
                 editableFor(group, lang),
             )!.style.getPropertyValue(kInlineImageWidthVar);
 
-        it("Ctrl+Z undoes a picture change in every copy, before CKEditor sees the key", () => {
+        it("Ctrl+Z undoes a picture change in every copy, before CKEditor sees the key", async () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
+            startPageHistory(group);
             insertInlineImage(group);
-            resizeTo(group, "60%");
+            await resizeTo(group, "60%");
             const english = editableFor(group, "en");
             const reachedTheEditable = vi.fn();
             english.addEventListener("keydown", reachedTheEditable);
@@ -1546,7 +1608,7 @@ describe("inlineImageInteractions", () => {
 
             const event = pressKey(english, "z");
 
-            expect(widthIn(group, "en")).toBe("40%");
+            await vi.waitFor(() => expect(widthIn(group, "en")).toBe("40%"));
             expect(widthIn(group, "fr")).toBe("40%");
             expect(event.defaultPrevented).toBe(true);
             expect(
@@ -1555,11 +1617,12 @@ describe("inlineImageInteractions", () => {
             ).not.toHaveBeenCalled();
         });
 
-        it("recognizes Ctrl+Z on a non-Latin keyboard layout, as CKEditor does", () => {
+        it("recognizes Ctrl+Z on a non-Latin keyboard layout, as CKEditor does", async () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
+            startPageHistory(group);
             insertInlineImage(group);
-            resizeTo(group, "60%");
+            await resizeTo(group, "60%");
             // On a Russian layout the Z key gives "я"; CKEditor goes by keyCode 90.
             const event = new KeyboardEvent("keydown", {
                 key: "я",
@@ -1572,14 +1635,15 @@ describe("inlineImageInteractions", () => {
             editableFor(group, "en").dispatchEvent(event);
 
             expect(event.defaultPrevented).toBe(true);
-            expect(widthIn(group, "fr")).toBe("40%");
+            await vi.waitFor(() => expect(widthIn(group, "fr")).toBe("40%"));
         });
 
-        it("leaves Ctrl+Z to a form field", () => {
+        it("leaves Ctrl+Z to a form field", async () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
+            const history = startPageHistory(group);
             insertInlineImage(group);
-            resizeTo(group, "60%");
+            await resizeTo(group, "60%");
             const input = document.createElement("input");
             getTestRoot().appendChild(input);
 
@@ -1587,360 +1651,144 @@ describe("inlineImageInteractions", () => {
 
             expect(event.defaultPrevented).toBe(false);
             expect(widthIn(group, "fr")).toBe("60%");
+            // The resize is still there to undo.
+            expect(history.undoDescriptionL10nKey).toBe(
+                kGenericUndoDescriptionL10nKey,
+            );
         });
 
-        it("leaves Ctrl+Z alone when the next undo is not a picture change", () => {
+        it("Ctrl+Y and Ctrl+Shift+Z redo the picture change Ctrl+Z took back", async () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
-            // Sanity check: nothing on the stack.
-            expect(inlineImageCanUndo()).toBe(false);
-
-            const event = pressKey(editableFor(group, "en"), "z");
-
-            expect(event.defaultPrevented).toBe(false);
-        });
-
-        it("Ctrl+Y and Ctrl+Shift+Z redo the picture change Ctrl+Z took back", () => {
-            setupInlineImageInteractions(getTestRoot());
-            const group = makeSimpleGroup();
+            startPageHistory(group);
             insertInlineImage(group);
-            resizeTo(group, "60%");
+            await resizeTo(group, "60%");
             const english = editableFor(group, "en");
             pressKey(english, "z");
             // Sanity check: undone.
-            expect(widthIn(group, "fr")).toBe("40%");
+            await vi.waitFor(() => expect(widthIn(group, "fr")).toBe("40%"));
 
             const event = pressKey(english, "y");
 
             expect(event.defaultPrevented).toBe(true);
-            expect(widthIn(group, "en")).toBe("60%");
+            await vi.waitFor(() => expect(widthIn(group, "en")).toBe("60%"));
             expect(widthIn(group, "fr")).toBe("60%");
 
             pressKey(english, "z");
+            await vi.waitFor(() => expect(widthIn(group, "fr")).toBe("40%"));
             pressKey(english, "Z", { shiftKey: true });
+            await vi.waitFor(() => expect(widthIn(group, "fr")).toBe("60%"));
+        });
+
+        it("leaves both keys to origami in Change Layout mode", async () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            startPageHistory(group, () => true);
+            insertInlineImage(group);
+            await resizeTo(group, "60%");
+
+            const undoEvent = pressKey(editableFor(group, "en"), "z");
+            const redoEvent = pressKey(editableFor(group, "en"), "y");
+
+            expect(undoEvent.defaultPrevented).toBe(false);
+            expect(redoEvent.defaultPrevented).toBe(false);
             expect(widthIn(group, "fr")).toBe("60%");
-        });
-
-        it("leaves Ctrl+Y to CKEditor when it has a redo of its own", () => {
-            setupInlineImageInteractions(getTestRoot());
-            const group = makeSimpleGroup();
-            insertInlineImage(group);
-            resizeTo(group, "60%");
-            const english = editableFor(group, "en") as HTMLElement & {
-                bloomCkEditor?: unknown;
-            };
-            pressKey(english, "z");
-            // CKEditor is at its first snapshot, with one after it to redo.
-            english.bloomCkEditor = {
-                undoManager: { index: 0, snapshots: [{}, {}] },
-            };
-            english.setAttribute("tabindex", "0");
-            english.focus();
-            // Sanity check: the focus is in the block, and the stack has a redo.
-            expect(document.activeElement).toBe(english);
-            expect(theOneUndoStack.canRedo()).toBe(true);
-
-            const event = pressKey(english, "y");
-
-            expect(event.defaultPrevented).toBe(false);
-            expect(widthIn(group, "en")).toBe("40%");
-        });
-
-        // CKEditor's redoable() can say yes after a save has dropped its redo snapshots.
-        it("takes Ctrl+Y when CKEditor's flag says it can redo but it has no snapshot to redo", () => {
-            setupInlineImageInteractions(getTestRoot());
-            const group = makeSimpleGroup();
-            insertInlineImage(group);
-            resizeTo(group, "60%");
-            const english = editableFor(group, "en") as HTMLElement & {
-                bloomCkEditor?: unknown;
-            };
-            pressKey(english, "z");
-            english.bloomCkEditor = {
-                undoManager: {
-                    index: 1,
-                    snapshots: [{}, {}],
-                    redoable: () => true,
-                },
-            };
-            english.setAttribute("tabindex", "0");
-            english.focus();
-            // Sanity check: the focus is in the block.
-            expect(document.activeElement).toBe(english);
-
-            const event = pressKey(english, "y");
-
-            expect(event.defaultPrevented).toBe(true);
-            expect(widthIn(group, "fr")).toBe("60%");
-        });
-
-        it("leaves both keys to origami in Change Layout mode", () => {
-            setupInlineImageInteractions(getTestRoot());
-            const group = makeSimpleGroup();
-            insertInlineImage(group);
-            resizeTo(group, "60%");
-            const marginBox = document.createElement("div");
-            marginBox.className = "marginBox origami-layout-mode";
-            getTestRoot().appendChild(marginBox);
-
-            const event = pressKey(editableFor(group, "en"), "z");
-
-            expect(event.defaultPrevented).toBe(false);
-            expect(widthIn(group, "fr")).toBe("60%");
-        });
-
-        it("leaves both keys to the reader tools while a markup tool is selected", () => {
-            setupInlineImageInteractions(getTestRoot());
-            const group = makeSimpleGroup();
-            insertInlineImage(group);
-            resizeTo(group, "60%");
-            const english = editableFor(group, "en");
-            // Sanity check: without the reader tools, Ctrl+Z would be taken.
-            expect(inlineImageCanUndo()).toBe(true);
-            toolboxStub.readerToolsHandleUndoKeys = true;
-            try {
-                const undoEvent = pressKey(english, "z");
-                const redoEvent = pressKey(english, "y");
-
-                expect(undoEvent.defaultPrevented).toBe(false);
-                expect(redoEvent.defaultPrevented).toBe(false);
-                expect(widthIn(group, "fr")).toBe("60%");
-            } finally {
-                toolboxStub.readerToolsHandleUndoKeys = false;
-            }
         });
     });
 
-    // To CKEditor, a selection change looked like an edit, and an undo of typing first spent a
-    // step taking the handles away.
-    describe("keeping the selection out of CKEditor's snapshots", () => {
-        it("snapshots a selected picture as if it were not selected", () => {
+    // A typing step stays open through a click in its box that leaves the caret where it was
+    // (pageHistoryInput.ts). The picture is in the box too, but a press on it is no click in the
+    // text: it ends the typing step, so a drag of the picture is a step of its own.
+    describe("typing, then a drag of the picture", () => {
+        it("makes two steps, so that the first undo takes back only the drag", async () => {
+            setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
             const english = editableFor(group, "en");
-            insertInlineImage(group);
-            const unselected = english.innerHTML;
-            selectInlineImage(getInlineImageInEditable(english)!);
-            // Sanity check: selecting added handles and the class.
-            expect(english.innerHTML).toContain(kInlineImageHandleFrameClass);
-            expect(english.innerHTML).toContain(kInlineImageSelectedClass);
+            english.setAttribute("contenteditable", "true");
+            const wrapper = insertInlineImage(group);
+            const img = wrapper.querySelector("img") as HTMLElement;
+            const dockBefore = getInlineImageDock(wrapper);
+            const history = startPageHistory(group);
+            const paragraph = english.querySelector("p") as HTMLElement;
+            const textBefore = paragraph.textContent;
 
-            expect(removeInlineImageSelectionFromHtml(english.innerHTML)).toBe(
-                removeInlineImageSelectionFromHtml(unselected),
+            // A key in the box opens the typing step, which stays open between key presses.
+            english.dispatchEvent(
+                new KeyboardEvent("keydown", {
+                    key: "a",
+                    bubbles: true,
+                    cancelable: true,
+                }),
             );
+            paragraph.append("a");
+            english.dispatchEvent(new InputEvent("input", { bubbles: true }));
+            // Sanity check
+            expect(history.hasOpenTransaction).toBe(true);
+
+            img.dispatchEvent(pointerEvent("pointerdown", 200, 100));
+            document.dispatchEvent(pointerEvent("pointermove", 160, 80));
+            document.dispatchEvent(pointerEvent("pointermove", 100, 50));
+            document.dispatchEvent(pointerEvent("pointerup", 100, 50));
+            await vi.waitFor(() =>
+                expect(history.hasOpenTransaction).toBe(false),
+            );
+            // Sanity check: the drag moved the picture.
+            expect(getInlineImageDock(wrapper)).not.toBe(dockBefore);
+
+            await history.undo();
+
+            expect(getInlineImageDock(getInlineImageInEditable(english)!)).toBe(
+                dockBefore,
+            );
+            expect(
+                paragraph.textContent,
+                "the first undo should take back only the drag",
+            ).toBe(`${textBefore}a`);
+            await history.undo();
+            expect(paragraph.textContent).toBe(textBefore);
         });
+    });
 
-        it("keeps other bloom-ui, such as the format button", () => {
-            const html =
-                '<div class="bloom-inlineImage bloom-inlineImage-selected"><img src="a.png"></div>' +
-                '<p>Text</p><div id="formatButton" class="bloom-ui"></div>';
-
-            const filtered = removeInlineImageSelectionFromHtml(html);
-
-            expect(filtered).toContain("formatButton");
-            expect(filtered).not.toContain(kInlineImageSelectedClass);
-        });
-
-        it("deselects the picture when CKEditor's undo of typing replaces it", () => {
-            const listeners = new Map<string, () => void>();
-            let loadSnapshotPriority: number | undefined;
-            keepInlineImageSelectionOutOfCkeditorSnapshots({
-                on: (name, l, _scope, _data, priority) => {
-                    listeners.set(name, l as () => void);
-                    if (name === "loadSnapshot")
-                        loadSnapshotPriority = priority;
-                },
-            });
+    // The history records neither the selection class nor the handles (editTimeMarkup.ts), so
+    // selecting a picture is no step, and an undo of typing spends no step on the selection.
+    describe("keeping the selection out of the page history", () => {
+        it("makes no step for selecting and deselecting a picture", async () => {
+            setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
+            const history = startPageHistory(group);
+            const wrapper = insertInlineImage(group);
+
+            await history.doTransaction(kGenericUndoDescriptionL10nKey, () =>
+                selectInlineImage(wrapper),
+            );
+            await history.doTransaction(kGenericUndoDescriptionL10nKey, () =>
+                deselectAllInlineImages(document),
+            );
+
+            expect(history.undoDescriptionL10nKey).toBeUndefined();
+        });
+
+        it("undoes typing in one step and keeps the picture selected", async () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            const history = startPageHistory(group);
             const english = editableFor(group, "en");
-            insertInlineImage(group);
-            selectInlineImage(getInlineImageInEditable(english)!);
-            // Sanity check: the toolbar is showing.
-            expect(
-                document.getElementById(kInlineImageContextControlsId),
-            ).not.toBeNull();
-            // CKEditor puts back a snapshot, which has no selection in it.
-            english.innerHTML = removeInlineImageSelectionFromHtml(
-                english.innerHTML,
-            );
-
-            listeners.get("loadSnapshot")!();
-
-            expect(
-                document.getElementById(kInlineImageContextControlsId),
-            ).toBeNull();
-            expect(
-                loadSnapshotPriority,
-                "it must run after the editable's own loadSnapshot listener, at 10",
-            ).toBeGreaterThan(10);
-        });
-
-        it("keeps a selection that CKEditor's undo did not replace", () => {
-            const listeners = new Map<string, () => void>();
-            keepInlineImageSelectionOutOfCkeditorSnapshots({
-                on: (name, l) => listeners.set(name, l as () => void),
+            const wrapper = insertInlineImage(group);
+            await history.doTransaction(kGenericUndoDescriptionL10nKey, () => {
+                english.querySelector("p")!.textContent += " typed";
             });
-            const group = makeSimpleGroup();
-            insertInlineImage(group);
-            const wrapper = getInlineImageInEditable(editableFor(group, "en"))!;
             selectInlineImage(wrapper);
 
-            listeners.get("loadSnapshot")!();
+            await history.undo();
 
+            expect(english.querySelector("p")!.textContent).toBe("English");
+            expect(history.undoDescriptionL10nKey).toBeUndefined();
             expect(wrapper.classList.contains(kInlineImageSelectedClass)).toBe(
                 true,
             );
             expect(
-                document.getElementById(kInlineImageContextControlsId),
+                wrapper.querySelector("." + kInlineImageHandleFrameClass),
             ).not.toBeNull();
-        });
-
-        it("filters what the editable's own listener put in the snapshot", () => {
-            let listener: ((evt: { data?: unknown }) => void) | undefined;
-            let priority: number | undefined;
-            keepInlineImageSelectionOutOfCkeditorSnapshots({
-                on: (name, l, _scope, _data, p) => {
-                    if (name !== "getSnapshot") return;
-                    listener = l;
-                    priority = p;
-                },
-            });
-            const evt: { data?: unknown } = {
-                data: '<div class="bloom-inlineImage bloom-inlineImage-selected"></div>',
-            };
-
-            listener!(evt);
-
-            expect(
-                priority,
-                "it must run after the editable's listener, at 10",
-            ).toBeGreaterThan(10);
-            expect(evt.data).not.toContain(kInlineImageSelectedClass);
-        });
-    });
-
-    describe("resetting CKEditor's history after a picture change", () => {
-        // Stands in for CKEditor's undo Image, which takes a snapshot of an editor; the second
-        // argument says whether to leave out the selection.
-        class FakeImage {
-            public contentOnly: boolean;
-            constructor(_editor: unknown, contentOnly: boolean) {
-                this.contentOnly = contentOnly;
-            }
-        }
-        beforeEach(() => {
-            (globalThis as unknown as { CKEDITOR?: unknown }).CKEDITOR = {
-                plugins: { undo: { Image: FakeImage } },
-            };
-        });
-        afterEach(() => {
-            delete (globalThis as unknown as { CKEDITOR?: unknown }).CKEDITOR;
-        });
-
-        // Gives each editable a stand-in for the CKEditor instance Bloom attaches to it.
-        const attachFakeEditors = (group: HTMLElement, hasSnapshot = true) =>
-            ["en", "fr"].map((lang) => {
-                const undoManager = {
-                    currentImage: hasSnapshot ? {} : undefined,
-                    reset: vi.fn(),
-                    save: vi.fn(),
-                    refreshState: vi.fn(),
-                    editingHandler: {
-                        keyEventsStack: { resetInputs: vi.fn() },
-                    },
-                };
-                (
-                    editableFor(group, lang) as HTMLElement & {
-                        bloomCkEditor?: unknown;
-                    }
-                ).bloomCkEditor = { undoManager };
-                return undoManager;
-            });
-
-        it("starts every editable's history again after an undo restores the pictures", () => {
-            setupInlineImageInteractions(getTestRoot());
-            const group = makeSimpleGroup();
-            insertInlineImage(group);
-            const undoManagers = attachFakeEditors(group);
-
-            expect(inlineImageUndo()).toBe(true);
-
-            // Sanity check: the undo took the picture out.
-            expect(getInlineImages(group).length).toBe(0);
-            undoManagers.forEach((undoManager) => {
-                expect(undoManager.reset).toHaveBeenCalled();
-                expect(undoManager.save).toHaveBeenCalledTimes(1);
-                const [onContentOnly, image, autoFireChange] =
-                    undoManager.save.mock.calls[0];
-                // Recording the selection of editables that do not have the focus scrolled the
-                // page.
-                expect(
-                    (image as FakeImage).contentOnly,
-                    "expected a snapshot of the content only",
-                ).toBe(true);
-                expect(onContentOnly).toBe(true);
-                expect(
-                    autoFireChange,
-                    "a change event would count the picture change as typing",
-                ).toBe(false);
-                expect(
-                    undoManager.reset.mock.invocationCallOrder[0],
-                ).toBeLessThan(undoManager.save.mock.invocationCallOrder[0]);
-            });
-        });
-
-        it("starts every editable's history again after a menu command", async () => {
-            const group = makeSimpleGroup();
-            const wrapper = insertInlineImage(group);
-            (wrapper.querySelector("img") as HTMLImageElement).src =
-                "flower.jpg";
-            const undoManagers = attachFakeEditors(group);
-            const transparent = buildInlineImageMenuItems(
-                getInlineImageActionTarget(wrapper),
-            )
-                .find((i) => i.l10nId === "EditTab.Image.Transparency")!
-                .subMenu!.find(
-                    (i) =>
-                        i.l10nId === "EditTab.Image.Transparency.Transparent",
-                )!;
-
-            (transparent.onClick as () => void)();
-
-            await vi.waitFor(() =>
-                undoManagers.forEach((undoManager) =>
-                    expect(undoManager.reset).toHaveBeenCalled(),
-                ),
-            );
-        });
-
-        // An input event with no keydown before it (a spelling suggestion, a paste from the menu)
-        // leaves CKEditor counting typing in progress, and it then records typing on every keyup,
-        // which discarded what the undo stack could redo.
-        it("clears CKEditor's count of typing in progress", () => {
-            setupInlineImageInteractions(getTestRoot());
-            const group = makeSimpleGroup();
-            insertInlineImage(group);
-            const undoManagers = attachFakeEditors(group);
-
-            expect(inlineImageUndo()).toBe(true);
-
-            undoManagers.forEach((undoManager) =>
-                expect(
-                    undoManager.editingHandler.keyEventsStack.resetInputs,
-                ).toHaveBeenCalled(),
-            );
-        });
-
-        it("leaves alone an editor that has not recorded a snapshot yet", () => {
-            setupInlineImageInteractions(getTestRoot());
-            const group = makeSimpleGroup();
-            insertInlineImage(group);
-            const undoManagers = attachFakeEditors(group, false);
-
-            expect(inlineImageUndo()).toBe(true);
-
-            undoManagers.forEach((undoManager) =>
-                expect(undoManager.reset).not.toHaveBeenCalled(),
-            );
         });
     });
 
@@ -2444,6 +2292,7 @@ describe("inlineImageInteractions", () => {
 
         it("Flip on a cropped picture mirrors the crop in every language, and Undo puts it back", async () => {
             const group = makeSimpleGroup();
+            const history = startPageHistory(group);
             const wrapper = insertInlineImage(group);
             wrapper.querySelector("img")!.setAttribute("src", "flower.jpg");
             setInlineImageCrop(wrapper, crop(10, 20, 30, 5));
@@ -2455,12 +2304,21 @@ describe("inlineImageInteractions", () => {
                 (s) => s.l10nId === "EditTab.Image.FlipHorizontal",
             )!;
 
-            (flipHorizontal.onClick as () => void)();
-
-            await vi.waitFor(() =>
-                expect(wrapper.querySelector("img")!.style.transform).toBe(
-                    "scale(-1, 1)",
-                ),
+            await runAsClick(
+                () => (flipHorizontal.onClick as () => void)(),
+                () =>
+                    vi.waitFor(() =>
+                        expect(
+                            getInlineImageCrop(
+                                getInlineImageInEditable(
+                                    editableFor(group, "fr"),
+                                )!,
+                            ),
+                        ).toEqual(crop(10, 5, 30, 20)),
+                    ),
+            );
+            expect(wrapper.querySelector("img")!.style.transform).toBe(
+                "scale(-1, 1)",
             );
             // The same part of the picture shows, mirrored: left and right swap.
             expect(getInlineImageCrop(wrapper)).toEqual(crop(10, 5, 30, 20));
@@ -2470,11 +2328,16 @@ describe("inlineImageInteractions", () => {
                 ),
             ).toEqual(crop(10, 5, 30, 20));
 
-            expect(inlineImageUndo()).toBe(true);
+            await history.undo();
 
             expect(getInlineImageCrop(getInlineImage(group)!)).toEqual(
                 crop(10, 20, 30, 5),
             );
+            expect(
+                getInlineImageCrop(
+                    getInlineImageInEditable(editableFor(group, "fr"))!,
+                ),
+            ).toEqual(crop(10, 20, 30, 5));
         });
 
         it("Reset Image is offered for a cropped picture, and takes the crop away in every language", async () => {
@@ -2563,9 +2426,10 @@ describe("inlineImageInteractions", () => {
 
         // jsdom lays nothing out and loads no pictures, so this gives the picture a size and a
         // box by hand. That is enough for the whole gesture: press, move, release.
-        it("dragging a crop handle crops every language's copy, and one Undo takes it back", () => {
+        it("dragging a crop handle crops every language's copy, and one Undo takes it back", async () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
+            const history = startPageHistory(group);
             const wrapper = insertInlineImage(group);
             const img = wrapper.querySelector("img") as HTMLImageElement;
             img.setAttribute("src", "flower.jpg");
@@ -2598,7 +2462,7 @@ describe("inlineImageInteractions", () => {
             const french = getInlineImageInEditable(editableFor(group, "fr"))!;
             expect(getInlineImageCrop(french)).toEqual(crop(0, 25, 0, 0));
 
-            expect(inlineImageUndo()).toBe(true);
+            await history.undo();
 
             const restored = getInlineImage(group)!;
             expect(getInlineImageCrop(restored)).toEqual(kNoInlineImageCrop);
@@ -2607,10 +2471,14 @@ describe("inlineImageInteractions", () => {
             );
         });
 
-        it("a crop handle does nothing on a picture that has not loaded", () => {
+        it("a crop handle does nothing on a picture that has not loaded", async () => {
             setupInlineImageInteractions(getTestRoot());
             const group = makeSimpleGroup();
-            const wrapper = insertInlineImage(group);
+            const history = startPageHistory(group);
+            const wrapper = await history.doTransaction(
+                kGenericUndoDescriptionL10nKey,
+                () => insertInlineImage(group),
+            );
             selectInlineImage(wrapper);
             const northHandle = wrapper.querySelector(
                 `.${kInlineImageSideHandleClass}-n`,
@@ -2621,10 +2489,10 @@ describe("inlineImageInteractions", () => {
             document.dispatchEvent(pointerEvent("pointerup", 100, 40));
 
             expect(getInlineImageCrop(wrapper)).toEqual(kNoInlineImageCrop);
-            // Nor does the press start a drag of the image.
-            expect(inlineImageCanUndo()).toBe(true); // the insert
-            expect(inlineImageUndo()).toBe(true);
+            // Nor does the press start a drag of the image: the one step is the insert.
+            await history.undo();
             expect(getInlineImage(group)).toBeNull();
+            expect(history.undoDescriptionL10nKey).toBeUndefined();
         });
     });
 });

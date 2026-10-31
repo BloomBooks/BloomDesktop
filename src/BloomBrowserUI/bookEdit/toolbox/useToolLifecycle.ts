@@ -25,11 +25,13 @@
 //    render-driven cleanup and remains an explicit call.
 import * as React from "react";
 import { postString } from "../../utils/bloomApi";
+import { getPageIframeBody } from "../../utils/shared";
 import {
     getSavedToolboxSettings,
     ITool,
     runTasksForClosingTool,
 } from "./toolbox";
+import { noteNewPageReadyPassesHaveRun } from "./newPageReadyPasses";
 
 // How long after telling a tool the page is ready we tell it again.
 // The toolbox has always done this to get around a race we never tracked down, in which
@@ -80,12 +82,30 @@ export function useToolLifecycle(
             if (stopped) return;
             await tool.showTool();
             if (stopped) return;
-            await tool.newPageReady();
-            if (stopped) return;
-            window.setTimeout(() => {
-                if (stopped) return;
-                Promise.resolve(tool.newPageReady());
-            }, kRepeatNewPageReadyDelayMs);
+            // The page frame starts its undo history only once both passes for its page have
+            // run (whenNewPageReadyPassesHaveRun in newPageReadyPasses.ts). Talking Book's pass writes its
+            // sentence split after awaiting the server; written once the history has started,
+            // the split would join the user's first undo step, or clear redo. So the second
+            // pass, and the word to the page frame, wait until the first pass has finished,
+            // even when it fails; the failure is still reported.
+            const pageDocument = getPageIframeBody()?.ownerDocument;
+            try {
+                await tool.newPageReady();
+            } finally {
+                window.setTimeout(() => {
+                    if (stopped) {
+                        noteNewPageReadyPassesHaveRun(pageDocument);
+                        return;
+                    }
+                    // The executor turns an exception from the pass into a rejection, so the
+                    // page frame stops waiting even when that pass fails.
+                    new Promise((resolve) =>
+                        resolve(tool.newPageReady()),
+                    ).finally(() =>
+                        noteNewPageReadyPassesHaveRun(pageDocument),
+                    );
+                }, kRepeatNewPageReadyDelayMs);
+            }
         };
         runActivationSequence();
         return () => {

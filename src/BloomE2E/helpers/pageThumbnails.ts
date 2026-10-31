@@ -111,6 +111,10 @@ function isPaneReloadError(error: unknown): boolean {
  * Click a page's thumbnail and wait for Bloom to report it selected. The click target is the
  * transparent cover over the thumbnail, which is what a person hits; the thumbnail's own
  * content ignores clicks.
+ *
+ * A page that is already selected and showing is not clicked. A click on it makes Bloom load the
+ * page again, and the waits below would pass on the document that is about to be replaced, so a
+ * command run next, such as Copy Page, would arrive while Bloom is loading and do nothing.
  */
 export async function selectPage(
     page: Page,
@@ -123,6 +127,19 @@ export async function selectPage(
         `#pageGridWrapper .gridItem[id="${pageId}"]`,
     );
     await thumbnail.waitFor({ timeout: timeoutMs });
+    const isSelected = /\bgridSelected\b/.test(
+        (await thumbnail.getAttribute("class")) ?? "",
+    );
+    const isShowing =
+        ((await page
+            .frame({ name: "page" })
+            ?.locator(`.bloom-page[id="${pageId}"]`)
+            .count()
+            .catch(() => 0)) ?? 0) === 1;
+    if (isSelected && isShowing) {
+        await waitForEditablePage(page, pageId, timeoutMs);
+        return;
+    }
     await thumbnail
         .locator(".invisibleThumbnailCover")
         .click({ timeout: timeoutMs });

@@ -1,18 +1,19 @@
 // The Decodable and Leveled Reader tools' panels in the toolbox: turning a book into a decodable or
-// leveled reader, and which stage or level the panel is on. (The Decodable Reader's "Set Up Stages"
-// dialog is readerSetup.ts.)
+// leveled reader, and which stage or level the panel is on; and what the tools mark in the text of
+// the page (getReaderMarkup). (The Decodable Reader's "Set Up Stages" dialog is readerSetup.ts.)
 //
 // Both tools render the same stepper ("Stage 3 of 10" / "Level 2 of 5", with two arrow buttons),
 // and it shows only while the tool's switch is on, so everything here expands the tool with its
 // switch on first. The stepper's number is read from data attributes it carries for this suite,
 // because its visible text is localized.
 
-import { expect, type Frame, type Page } from "@playwright/test";
+import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiGet } from "./api";
-import { makeBookFromTemplate } from "./bookMaking";
+import { editablePageFrame, makeBookFromTemplate } from "./bookMaking";
 import { enableToolForBook, expandTool, toolboxFrame } from "./toolbox";
+import { redoWithCtrlYAndExpect, undoWithCtrlZAndExpect } from "./undo";
 
 /** The two reader tools, by the `data-toolid` their toolbox headers carry. */
 export type ReaderTool = "decodableReader" | "leveledReader";
@@ -242,4 +243,146 @@ export async function expectReaderToolToShow(
             message,
         })
         .toBe(expected);
+}
+
+/**
+ * Click the "Stage 3" or "Level 2" words of a reader tool's stepper, the way a person clicks
+ * somewhere in the toolbox that does nothing, and wait until the page being edited has lost the
+ * focus. For a test whose subject is the focus leaving a text box for the toolbox. Opens the tool
+ * first.
+ */
+export async function clickReaderToolStepperText(
+    page: Page,
+    tool: ReaderTool,
+): Promise<void> {
+    const frame = await expandReaderTool(page, tool);
+    const nav = frame.locator(stepper(tool)).first();
+    const bounds = await nav.boundingBox();
+    if (!bounds)
+        throw new Error(`${describeTool(tool)} is not showing its stepper.`);
+    // The words are at the stepper's left; its arrow buttons are at its right.
+    await nav.click({ position: { x: 4, y: bounds.height / 2 } });
+    await expect
+        .poll(
+            async () =>
+                editablePageFrame(page).evaluate(() => document.hasFocus()),
+            {
+                timeout: 15000,
+                message: `Clicking the stepper of ${describeTool(tool)} did not take the focus from the page.`,
+            },
+        )
+        .toBe(false);
+}
+
+/**
+ * The reader highlights, by the names Bloom registers them under in the page's CSS.highlights
+ * (readerHighlights.ts in BloomBrowserUI). The highlights are painted over the text without any
+ * element or class in the page, so the registry is the one place a test can read them.
+ */
+const READER_HIGHLIGHT_NAMES = {
+    sentenceTooLong: "bloom-reader-sentence-too-long",
+    wordTooLong: "bloom-reader-word-too-long",
+    wordNotDecodable: "bloom-reader-word-not-decodable",
+    sightWord: "bloom-reader-sight-word",
+} as const;
+
+/** A kind of reader highlight: what the reader tools mark in the text. */
+export type ReaderHighlight = keyof typeof READER_HIGHLIGHT_NAMES;
+
+/** What a text box shows a reader tool's user: its text, and what is highlighted in it. */
+export interface IReaderMarkup {
+    /** The box's text, without CKEditor's zero width filling characters. */
+    text: string;
+    /**
+     * For each kind of highlight that marks something in the box, the text of each thing it marks,
+     * sorted. A kind that marks nothing is left out. A highlight whose text has gone from the page
+     * (its Range is collapsed or detached, so it paints nothing) shows as "(gone)", wherever it was.
+     */
+    highlights: Partial<Record<ReaderHighlight, string[]>>;
+}
+
+/**
+ * Read a text box's text and the reader highlights in it. The box is one that clickInGroup
+ * (bookMaking.ts) returned. Bloom's own UI inside the box (the format gear) and CKEditor's hidden
+ * bookmarks are not text.
+ */
+export async function getReaderMarkup(box: Locator): Promise<IReaderMarkup> {
+    return box.evaluate((element, names) => {
+        const zeroWidthSpaces = new RegExp(String.fromCharCode(0x200b), "g");
+        const notText = ".bloom-ui, [data-cke-bookmark], [data-cke-hidden-sel]";
+        let text = "";
+        const walker = element.ownerDocument.createTreeWalker(
+            element,
+            NodeFilter.SHOW_TEXT,
+        );
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            if (!node.parentElement?.closest(notText))
+                text += node.nodeValue ?? "";
+        }
+        const registry = (
+            element.ownerDocument.defaultView as unknown as {
+                CSS: { highlights: Map<string, Iterable<Range>> };
+            }
+        ).CSS.highlights;
+        const highlights: Record<string, string[]> = {};
+        for (const [kind, name] of Object.entries(names)) {
+            const texts: string[] = [];
+            for (const range of registry.get(name) ?? []) {
+                if (range.collapsed || !range.startContainer.isConnected)
+                    texts.push("(gone)");
+                else if (element.contains(range.commonAncestorContainer))
+                    texts.push(range.toString().replace(zeroWidthSpaces, ""));
+            }
+            if (texts.length > 0) highlights[kind] = texts.sort();
+        }
+        return { text: text.replace(zeroWidthSpaces, ""), highlights };
+    }, READER_HIGHLIGHT_NAMES);
+}
+
+/**
+ * Press Ctrl+Z once and then Ctrl+Y once, the way a person does, into whatever has the focus, and
+ * wait after each until the text box shows what it should: `beforeTyping` after the undo and
+ * `afterTyping` after the redo (see getReaderMarkup). Fails, naming the typing, when the page
+ * history did not run exactly one undo and then one redo, or when the box never showed the text
+ * and highlights expected. `typing` says what the test typed, and what it did after, for the
+ * messages.
+ */
+export async function undoAndRedoWithKeysAndExpectReaderMarkup(
+    page: Page,
+    box: Locator,
+    beforeTyping: IReaderMarkup,
+    afterTyping: IReaderMarkup,
+    typing: string,
+): Promise<void> {
+    await undoWithCtrlZAndExpect(
+        page,
+        () => getReaderMarkup(box),
+        beforeTyping,
+        typing,
+    );
+    await redoWithCtrlYAndExpect(
+        page,
+        () => getReaderMarkup(box),
+        afterTyping,
+        typing,
+    );
+}
+
+/**
+ * Wait until a text box shows `expected` (see getReaderMarkup), and fail, showing what it shows
+ * instead, if it never does. `after` says what the test just did, for the message, e.g. "opening
+ * the Decodable Reader tool". The reader tools mark up the text half a second after typing pauses,
+ * which this waits for.
+ */
+export async function expectReaderMarkup(
+    box: Locator,
+    expected: IReaderMarkup,
+    after: string,
+): Promise<void> {
+    await expect
+        .poll(async () => getReaderMarkup(box), {
+            timeout: 15000,
+            message: `After ${after}, the box's text or its reader highlights were not as expected.`,
+        })
+        .toEqual(expected);
 }

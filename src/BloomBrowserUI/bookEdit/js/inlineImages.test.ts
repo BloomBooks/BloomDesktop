@@ -14,8 +14,6 @@ import {
     removeTestRoot,
 } from "../../utils/testHelper";
 import {
-    commitPendingInlineImageUndo,
-    discardPendingInlineImageUndo,
     getEditables,
     getInlineImage,
     getInlineImageById,
@@ -27,25 +25,25 @@ import {
     kInlineImageAspectRatioVar,
     kInlineImageLeftClass,
     kInlineImageMiddleClass,
-    inlineImageCanUndo,
-    inlineImageUndo,
     insertInlineImage,
     kInlineImageBottomClass,
     kInlineImageClass,
     kInlineImageRightClass,
     kInlineImageWidthVar,
     kInlineImageSelectedClass,
-    kInlineImagesRestoredEvent,
     kKeepFirstInFieldClass,
     normalizeInlineImages,
-    prepareInlineImageUndo,
-    prepareInlineImageUndoForImageChange,
     removeInlineImage,
     setInlineImageDock,
     syncInlineImagesFromEditable,
 } from "./inlineImages";
-import { nextChangeOrder, resetChangeOrderForTests } from "../undo/changeOrder";
-import { theOneUndoStack } from "../undo/UndoStack";
+import { createEditTimeMarkupFilter } from "../pageHistory/editTimeMarkup";
+import { createPageHistory } from "../pageHistory/pageHistory";
+import { kTypingUndoDescriptionL10nKey } from "../pageHistory/pageHistoryInput";
+import {
+    kGenericUndoDescriptionL10nKey,
+    PageHistory,
+} from "../pageHistory/pageHistoryTypes";
 
 // Each group is built inside its own .bloom-page with a new data-page-id, which is how it looks
 // in Bloom.
@@ -91,11 +89,6 @@ const editableFor = (group: HTMLElement, lang: string) =>
 describe("inlineImages", () => {
     beforeEach(() => {
         cleanTestRoot();
-        // Every insert and remove goes on the one undo stack, so each test starts it empty.
-        theOneUndoStack.clear();
-        theOneUndoStack.clearLegacyProviders();
-        resetChangeOrderForTests();
-        discardPendingInlineImageUndo();
         // Some of the code under test asks for an overflow check, which OverflowChecker runs on a
         // one-second timer. That timer would fire after the test has ended, when the canvas
         // element manager it calls is gone, and vitest reports the error as unhandled. The
@@ -797,27 +790,40 @@ describe("inlineImages", () => {
         });
     });
 
-    // Inline image operations as entries on the one undo stack. CKEditor is faked the way its
-    // legacy provider presents it to the stack, as in undo/tableUndoSpec.ts: it has something to
-    // undo once there has been typing, and reports when that was on the shared sequence.
+    // Inline images have no undo of their own: the page history records what each operation
+    // changes in the page frame, as it records any other change there. These tests make each
+    // operation a step the way the page does, inside a transaction that the user's press opens
+    // (pageHistoryInput.ts), and check what an undo and a redo of that step leave.
     describe("undo", () => {
-        let ckeditorChangedAt: number;
-        let ckeditorUndos: number;
+        let history: PageHistory;
 
-        /** A keystroke in a block, as CKEditor reports it on the shared sequence. */
-        function typing(): void {
-            ckeditorChangedAt = nextChangeOrder();
+        /** A page history on the page that holds group, as the page frame makes one. */
+        function startHistory(group: HTMLElement): PageHistory {
+            history = createPageHistory({
+                root: group.closest(".bloom-page") as HTMLElement,
+                filter: createEditTimeMarkupFilter(),
+            });
+            return history;
         }
 
-        /** An entry for something other than an inline image, such as a table operation. */
-        function otherOperation(label: string, log: string[]): void {
-            theOneUndoStack.push({
-                label,
-                kind: "custom",
-                undo: () => {
-                    log.push(`undo ${label}`);
-                },
+        /** One user operation, as the transaction that the user's press opens makes it a step. */
+        function operation(fn: () => void): Promise<void> {
+            return history.doTransaction(kGenericUndoDescriptionL10nKey, fn);
+        }
+
+        /** Typing in the block's first paragraph, as a step of its own. */
+        function typing(editable: HTMLElement, text: string): Promise<void> {
+            return history.doTransaction(kTypingUndoDescriptionL10nKey, () => {
+                editable.querySelector("p")!.textContent += text;
             });
+        }
+
+        /** Something other than an inline image, such as a table operation, as a step. */
+        function otherOperation(
+            group: HTMLElement,
+            value: string,
+        ): Promise<void> {
+            return operation(() => group.setAttribute("data-other", value));
         }
 
         const widthIn = (editable: HTMLElement) =>
@@ -825,63 +831,57 @@ describe("inlineImages", () => {
                 kInlineImageWidthVar,
             );
 
-        /** Resize the group's one image the way the page does: prepare, change, sync, commit. */
-        function resize(group: HTMLElement, width: string): void {
-            prepareInlineImageUndo(group);
-            const source = editableFor(group, "en");
-            getInlineImageInEditable(source)!.style.setProperty(
-                kInlineImageWidthVar,
-                width,
-            );
-            syncInlineImagesFromEditable(source);
-            commitPendingInlineImageUndo(group);
+        /** Resize the group's one image the way the page does: change it, then sync. */
+        function resize(group: HTMLElement, width: string): Promise<void> {
+            return operation(() => {
+                const source = editableFor(group, "en");
+                getInlineImageInEditable(source)!.style.setProperty(
+                    kInlineImageWidthVar,
+                    width,
+                );
+                syncInlineImagesFromEditable(source);
+            });
         }
 
-        beforeEach(() => {
-            ckeditorChangedAt = 0;
-            ckeditorUndos = 0;
-            theOneUndoStack.registerLegacyProvider({
-                name: "ckeditor",
-                canUndo: () => ckeditorChangedAt > 0,
-                undo: () => {
-                    ckeditorUndos++;
-                    return true;
-                },
-                lastChangeOrder: () => ckeditorChangedAt,
-            });
+        afterEach(() => {
+            history?.dispose();
         });
 
-        it("makes an insert an entry that takes the image back out of every editable", () => {
+        it("makes an insert a step that takes the image back out of every editable", async () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
                 { lang: "fr", content: "<p>b</p>" },
                 { lang: "z", content: "<p></p>" },
             ]);
+            startHistory(group);
 
-            insertInlineImage(group);
-            // Sanity check: the insert happened, and is the one entry.
+            await operation(() => insertInlineImage(group));
+            // Sanity check: the insert happened, and is the one step.
             expect(getInlineImages(group).length).toBe(3);
-            expect(theOneUndoStack.getEntryCount()).toBe(1);
-            expect(theOneUndoStack.peekUndoLabel()).toBe("Insert inline image");
+            expect(history.undoDescriptionL10nKey).toBe(
+                kGenericUndoDescriptionL10nKey,
+            );
 
-            theOneUndoStack.undo();
+            await history.undo();
 
             expect(getInlineImages(group).length).toBe(0);
             // Inserting and undoing leaves the text unchanged.
             expect(editableFor(group, "fr").textContent).toBe("b");
+            expect(history.undoDescriptionL10nKey).toBeUndefined();
         });
 
-        it("undoes a remove, restoring the image to every editable", () => {
+        it("undoes a remove, restoring the image to every editable", async () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
                 { lang: "fr", content: "<p>b</p>" },
             ]);
-            removeInlineImage(insertInlineImage(group));
-            // Sanity check: they are gone, and the remove is the newest entry.
+            startHistory(group);
+            const wrapper = insertInlineImage(group);
+            await operation(() => removeInlineImage(wrapper));
+            // Sanity check: they are gone.
             expect(getInlineImages(group).length).toBe(0);
-            expect(theOneUndoStack.peekUndoLabel()).toBe("Delete inline image");
 
-            theOneUndoStack.undo();
+            await history.undo();
 
             expect(getInlineImages(group).length).toBe(2);
             expect(
@@ -892,24 +892,25 @@ describe("inlineImages", () => {
 
         // The delete command moves the images left in the block back to where they were, and
         // one Undo has to take back both that and the delete.
-        it("makes what afterRemoving changes part of the remove's entry", () => {
+        it("makes what afterRemoving changes part of the remove's step", async () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
                 { lang: "fr", content: "<p>b</p>" },
             ]);
+            startHistory(group);
             const first = insertInlineImage(group);
             const second = insertInlineImage(group);
-            const entriesBefore = theOneUndoStack.getEntryCount();
 
-            removeInlineImage(first, () => {
-                second.style.setProperty(kInlineImageWidthVar, "80%");
-                syncInlineImagesFromEditable(editableFor(group, "en"));
-            });
-            // Sanity check: one entry for both, and the change reached the other language.
-            expect(theOneUndoStack.getEntryCount()).toBe(entriesBefore + 1);
+            await operation(() =>
+                removeInlineImage(first, () => {
+                    second.style.setProperty(kInlineImageWidthVar, "80%");
+                    syncInlineImagesFromEditable(editableFor(group, "en"));
+                }),
+            );
+            // Sanity check: the change reached the other language.
             expect(widthIn(editableFor(group, "fr"))).toBe("80%");
 
-            theOneUndoStack.undo();
+            await history.undo();
 
             expect(getInlineImages(group).length).toBe(4);
             getEditables(group).forEach((editable) => {
@@ -920,30 +921,33 @@ describe("inlineImages", () => {
                     survivor.style.getPropertyValue(kInlineImageWidthVar),
                 ).toBe("40%");
             });
+            // One undo took back both, so there is nothing left to undo.
+            expect(history.undoDescriptionL10nKey).toBeUndefined();
         });
 
-        it("undoes a dock and size change in every editable at once", () => {
+        it("undoes a dock and size change in every editable at once", async () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
                 { lang: "fr", content: "<p>b</p>" },
             ]);
+            startHistory(group);
             insertInlineImage(group);
             const source = editableFor(group, "en");
             const sibling = editableFor(group, "fr");
 
-            prepareInlineImageUndo(group);
-            const wrapper = getInlineImageInEditable(source)!;
-            wrapper.style.setProperty(kInlineImageWidthVar, "80%");
-            setInlineImageDock(wrapper, kInlineImageBottomClass);
-            syncInlineImagesFromEditable(source);
-            commitPendingInlineImageUndo(group);
+            await operation(() => {
+                const wrapper = getInlineImageInEditable(source)!;
+                wrapper.style.setProperty(kInlineImageWidthVar, "80%");
+                setInlineImageDock(wrapper, kInlineImageBottomClass);
+                syncInlineImagesFromEditable(source);
+            });
             // Sanity check: the change reached the other editable too.
             expect(sibling.lastElementChild).toBe(
                 getInlineImageInEditable(sibling),
             );
             expect(widthIn(sibling)).toBe("80%");
 
-            theOneUndoStack.undo();
+            await history.undo();
 
             [source, sibling].forEach((editable) => {
                 const restored = getInlineImageInEditable(editable)!;
@@ -959,11 +963,12 @@ describe("inlineImages", () => {
             });
         });
 
-        it("restores the whole set of images, in order", () => {
+        it("restores the whole set of images, in order", async () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
                 { lang: "fr", content: "<p>b</p>" },
             ]);
+            startHistory(group);
             const first = insertInlineImage(group);
             const second = insertInlineImage(group);
             const idsBefore = [
@@ -971,11 +976,11 @@ describe("inlineImages", () => {
                 getInlineImageId(second)!,
             ];
 
-            removeInlineImage(second);
+            await operation(() => removeInlineImage(second));
             // Sanity check: one image left in each of the two languages.
             expect(getInlineImages(group).length).toBe(2);
 
-            theOneUndoStack.undo();
+            await history.undo();
 
             getEditables(group).forEach((editable) => {
                 expect(
@@ -985,94 +990,105 @@ describe("inlineImages", () => {
             expect(editableFor(group, "fr").textContent).toBe("b");
         });
 
-        it("undoes typing that came after a picture operation before the operation", () => {
+        it("undoes typing that came after a picture operation before the operation", async () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
             ]);
-            insertInlineImage(group);
-            typing();
+            startHistory(group);
+            const editable = editableFor(group, "en");
+            await operation(() => insertInlineImage(group));
+            await typing(editable, "bc");
 
-            theOneUndoStack.undo();
+            await history.undo();
 
-            expect(ckeditorUndos).toBe(1);
+            expect(editable.textContent).toBe("a");
             expect(getInlineImages(group).length).toBe(1);
         });
 
-        it("undoes a picture operation that came after typing before the typing", () => {
+        it("undoes a picture operation that came after typing before the typing", async () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
             ]);
-            typing();
-            insertInlineImage(group);
+            startHistory(group);
+            const editable = editableFor(group, "en");
+            await typing(editable, "bc");
+            await operation(() => insertInlineImage(group));
 
-            theOneUndoStack.undo();
+            await history.undo();
 
-            expect(ckeditorUndos).toBe(0);
+            expect(editable.textContent).toBe("abc");
             expect(getInlineImages(group).length).toBe(0);
 
             // Then the typing, which came before it, is next.
-            theOneUndoStack.undo();
-            expect(ckeditorUndos).toBe(1);
+            await history.undo();
+            expect(editable.textContent).toBe("a");
         });
 
-        it("orders picture operations and other operations on the stack as they were made", () => {
+        it("orders picture operations and other operations as they were made", async () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
             ]);
-            const log: string[] = [];
-            otherOperation("Add Row", log);
-            insertInlineImage(group);
-            otherOperation("Add Column", log);
+            startHistory(group);
+            await otherOperation(group, "Add Row");
+            await operation(() => insertInlineImage(group));
+            await otherOperation(group, "Add Column");
 
-            theOneUndoStack.undo();
-            // Sanity check: the newest, a table operation, went first and left the picture.
-            expect(log).toEqual(["undo Add Column"]);
+            await history.undo();
+            // Sanity check: the newest, the other operation, went first and left the picture.
+            expect(group.getAttribute("data-other")).toBe("Add Row");
             expect(getInlineImages(group).length).toBe(1);
 
-            theOneUndoStack.undo();
+            await history.undo();
             expect(getInlineImages(group).length).toBe(0);
-            expect(log).toEqual(["undo Add Column"]);
+            expect(group.getAttribute("data-other")).toBe("Add Row");
 
-            theOneUndoStack.undo();
-            expect(log).toEqual(["undo Add Column", "undo Add Row"]);
+            await history.undo();
+            expect(group.hasAttribute("data-other")).toBe(false);
         });
 
-        it("redoes an operation it undid", () => {
+        it("redoes an operation it undid", async () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
                 { lang: "fr", content: "<p>b</p>" },
             ]);
+            startHistory(group);
             insertInlineImage(group);
-            resize(group, "80%");
-            theOneUndoStack.undo();
+            await resize(group, "80%");
+            await history.undo();
             // Sanity check: undone in both languages, and there is something to redo.
             expect(widthIn(editableFor(group, "fr"))).toBe("40%");
-            expect(theOneUndoStack.canRedo()).toBe(true);
+            expect(history.redoDescriptionL10nKey).toBe(
+                kGenericUndoDescriptionL10nKey,
+            );
 
-            theOneUndoStack.redo();
+            await history.redo();
 
             expect(widthIn(editableFor(group, "en"))).toBe("80%");
             expect(widthIn(editableFor(group, "fr"))).toBe("80%");
             // And it can be undone again.
-            theOneUndoStack.undo();
+            await history.undo();
             expect(widthIn(editableFor(group, "en"))).toBe("40%");
         });
 
         // A picture writes its real shape onto the wrapper when it loads, which can happen at
-        // any time after the operation. That is not a change anyone made, so the entry must
-        // not refuse because of it, and redo must keep the shape.
-        it("does not count a picture recording its shape as a change", () => {
+        // any time after the operation. That is not a change anyone made, so it must not stop
+        // the undo, and redo must keep the shape.
+        it("does not let a picture recording its shape stop the undo or lose it on redo", async () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
             ]);
+            startHistory(group);
             insertInlineImage(group);
-            resize(group, "80%");
+            await resize(group, "80%");
             const wrapper = getInlineImageInEditable(editableFor(group, "en"))!;
-            wrapper.style.setProperty(kInlineImageAspectRatioVar, "3 / 2");
+            // As the picture's load handler (wireUpImage) writes it.
+            history.addToLatestTransaction(() =>
+                wrapper.style.setProperty(kInlineImageAspectRatioVar, "3 / 2"),
+            );
 
-            theOneUndoStack.undo();
+            await history.undo();
             expect(widthIn(editableFor(group, "en"))).toBe("40%");
-            theOneUndoStack.redo();
+            await history.redo();
 
             const redone = getInlineImageInEditable(editableFor(group, "en"))!;
             expect(redone.style.getPropertyValue(kInlineImageWidthVar)).toBe(
@@ -1083,36 +1099,18 @@ describe("inlineImages", () => {
             ).toBe("3 / 2");
         });
 
-        it("refuses, discarding the stack, when the images changed without an entry", () => {
+        it("keeps the selection on the image after an undo", async () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
             ]);
-            insertInlineImage(group);
-            resize(group, "80%");
-            // A change nothing recorded.
-            getInlineImageInEditable(
-                editableFor(group, "en"),
-            )!.style.setProperty(kInlineImageWidthVar, "60%");
-
-            expect(() => theOneUndoStack.undo()).toThrow(
-                /have changed since "Change inline image"/,
-            );
-            expect(theOneUndoStack.getEntryCount()).toBe(0);
-            expect(widthIn(editableFor(group, "en"))).toBe("60%");
-        });
-
-        it("keeps the selection on the restored image", () => {
-            const group = makeTranslationGroup([
-                { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
-            ]);
+            startHistory(group);
             const source = editableFor(group, "en");
             select(insertInlineImage(group));
-            resize(group, "60%");
-            resize(group, "80%");
+            await resize(group, "60%");
+            await resize(group, "80%");
 
-            theOneUndoStack.undo();
+            await history.undo();
             expect(widthIn(source)).toBe("60%");
-            // The restored wrapper is a new element, but it is still selected.
             expect(
                 getInlineImageInEditable(source)!.classList.contains(
                     kInlineImageSelectedClass,
@@ -1120,168 +1118,26 @@ describe("inlineImages", () => {
             ).toBe(true);
         });
 
-        it("announces the restore, after undo and after redo, so the interaction layer can rebuild what it attached", () => {
-            const group = makeTranslationGroup([
-                { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
-            ]);
-            insertInlineImage(group);
-            const targets: (EventTarget | null)[] = [];
-            // Listening on the document shows that the event bubbles, which lets the code that
-            // handles clicks and drags on inline images use one listener for the whole page.
-            const listener = (e: Event) => targets.push(e.target);
-            document.addEventListener(kInlineImagesRestoredEvent, listener);
-
-            theOneUndoStack.undo();
-            theOneUndoStack.redo();
-
-            document.removeEventListener(kInlineImagesRestoredEvent, listener);
-            expect(targets).toEqual([group, group]);
-        });
-
-        it("records on commit but not on discard", () => {
-            const group = makeTranslationGroup([
-                { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
-            ]);
-            const image = insertInlineImage(group);
-            // Sanity check: the insert is the only entry.
-            expect(theOneUndoStack.getEntryCount()).toBe(1);
-
-            prepareInlineImageUndo(group);
-            image.style.setProperty(kInlineImageWidthVar, "55%");
-            discardPendingInlineImageUndo();
-            commitPendingInlineImageUndo(group);
-            expect(theOneUndoStack.getEntryCount()).toBe(1);
-
-            prepareInlineImageUndo(group);
-            image.style.setProperty(kInlineImageWidthVar, "65%");
-            commitPendingInlineImageUndo(group);
-            expect(theOneUndoStack.getEntryCount()).toBe(2);
-        });
-
         // This is what a drag leaves when the move did not fit and the picture was put back.
-        // The drag prepared and committed, but the picture is back where it started. An entry
-        // here would do nothing visible, and the undo after it would take back a change the
-        // person had stopped thinking about.
-        it("does not record an operation that ended where it began", () => {
+        // A step here would do nothing visible, and the undo after it would take back a change
+        // the person had stopped thinking about.
+        it("makes no step for an operation that ended where it began", async () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
             ]);
-            insertInlineImage(group);
+            startHistory(group);
+            await operation(() => insertInlineImage(group));
 
-            prepareInlineImageUndo(group);
-            commitPendingInlineImageUndo(group);
-
-            expect(theOneUndoStack.getEntryCount()).toBe(1);
-        });
-
-        it("ignores a commit for a different block from the one prepared", () => {
-            const first = makeTranslationGroup([
-                { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
-            ]);
-            const second = makeTranslationGroup(
-                [
-                    {
-                        lang: "en",
-                        classes: "bloom-content1",
-                        content: "<p>b</p>",
-                    },
-                ],
-                "group2",
-            );
-            insertInlineImage(first);
-            insertInlineImage(second);
-            // Sanity check: two inserts.
-            expect(theOneUndoStack.getEntryCount()).toBe(2);
-
-            prepareInlineImageUndo(first);
-            getInlineImage(second)!.style.setProperty(
-                kInlineImageWidthVar,
-                "70%",
-            );
-            commitPendingInlineImageUndo(second);
-
-            expect(theOneUndoStack.getEntryCount()).toBe(2);
-        });
-
-        // inlineImageCanUndo and inlineImageUndo are for Ctrl+Z in the text, which CKEditor
-        // handles and which never reaches the stack. They must agree with what the Undo button
-        // would do.
-        describe("from the keyboard", () => {
-            it("takes back the picture operation when it is the stack's next undo", () => {
-                const group = makeTranslationGroup([
-                    {
-                        lang: "en",
-                        classes: "bloom-content1",
-                        content: "<p>a</p>",
-                    },
-                ]);
-                typing();
-                insertInlineImage(group);
-
-                expect(inlineImageCanUndo()).toBe(true);
-                expect(inlineImageUndo()).toBe(true);
-
-                expect(getInlineImages(group).length).toBe(0);
-                expect(ckeditorUndos).toBe(0);
+            await operation(() => {
+                const wrapper = getInlineImage(group)!;
+                wrapper.style.setProperty(kInlineImageWidthVar, "70%");
+                wrapper.style.setProperty(kInlineImageWidthVar, "40%");
             });
 
-            it("leaves Ctrl+Z to CKEditor when typing is newer", () => {
-                const group = makeTranslationGroup([
-                    {
-                        lang: "en",
-                        classes: "bloom-content1",
-                        content: "<p>a</p>",
-                    },
-                ]);
-                insertInlineImage(group);
-                typing();
-
-                expect(inlineImageCanUndo()).toBe(false);
-                expect(inlineImageUndo()).toBe(false);
-
-                expect(getInlineImages(group).length).toBe(1);
-                expect(ckeditorUndos).toBe(0);
-            });
-
-            it("leaves an operation that is not an inline image's to the Undo button", () => {
-                const group = makeTranslationGroup([
-                    {
-                        lang: "en",
-                        classes: "bloom-content1",
-                        content: "<p>a</p>",
-                    },
-                ]);
-                const log: string[] = [];
-                insertInlineImage(group);
-                otherOperation("Add Row", log);
-
-                expect(inlineImageCanUndo()).toBe(false);
-                expect(inlineImageUndo()).toBe(false);
-
-                expect(log).toEqual([]);
-                expect(getInlineImages(group).length).toBe(1);
-            });
-
-            it("says no when there is nothing to undo", () => {
-                expect(inlineImageCanUndo()).toBe(false);
-            });
-        });
-
-        it("takes charge of undo only for images that really are inline images", () => {
-            const group = makeTranslationGroup([
-                { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
-            ]);
-            const wrapper = insertInlineImage(group);
-            const inlineImg = wrapper.querySelector("img") as HTMLElement;
-            const ordinaryImg = document.createElement("img");
-            group.closest(".bloom-page")!.appendChild(ordinaryImg);
-
-            // The return value tells bloomEditing's changeImage whether this file or
-            // ImageUndoManager handles undo for the change.
-            expect(prepareInlineImageUndoForImageChange(inlineImg)).toBe(true);
-            expect(prepareInlineImageUndoForImageChange(ordinaryImg)).toBe(
-                false,
-            );
+            // The one step is still the insert.
+            await history.undo();
+            expect(getInlineImages(group).length).toBe(0);
+            expect(history.undoDescriptionL10nKey).toBeUndefined();
         });
     });
 });

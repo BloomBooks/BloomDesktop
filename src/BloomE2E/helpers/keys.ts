@@ -85,3 +85,32 @@ export async function copyAllTextIn(box: Locator, what: string): Promise<void> {
     await pressKeyIn(box, "Control+a", what);
     await box.press("Control+c");
 }
+
+/**
+ * Delete all the text in a text box with the real Ctrl+A and Delete a person presses, and wait until
+ * the box holds no text. CKEditor may leave its zero width filling character behind, which is not
+ * text. Then press End, which ends the undo step of the deleting, as it would for a person: typing
+ * right after deleting would join the deleting's step. So a test that types next can undo its
+ * typing back to the empty box.
+ */
+export async function deleteAllTextIn(
+    box: Locator,
+    what: string,
+): Promise<void> {
+    await pressKeyIn(box, "Control+a", what);
+    await box.press("Delete");
+    await expect
+        .poll(
+            async () =>
+                ((await box.textContent()) ?? "").replace(
+                    new RegExp(String.fromCharCode(0x200b), "g"),
+                    "",
+                ),
+            {
+                timeout: 15000,
+                message: `Ctrl+A and Delete did not empty ${what}.`,
+            },
+        )
+        .toBe("");
+    await box.press("End");
+}

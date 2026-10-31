@@ -246,21 +246,3 @@ describe("sample text file readability", () => {
         );
     });
 });
-
-describe("ReaderToolsModel.canUndo", () => {
-    it("declines once the box it remembers has gone from the page", () => {
-        // A table undo, for instance, rebuilds its cells; undoing typing in the old cell would
-        // change nothing visible and keep the Undo button from reaching what comes next.
-        const box = document.createElement("div");
-        box.textContent = "before";
-        document.body.appendChild(box);
-        const model = new ReaderToolsModel();
-        model.noteFocus(box);
-        box.textContent = "after typing";
-        expect(model.canUndo()).toBe(true); // sanity check: there is typing to undo
-
-        box.remove();
-
-        expect(model.canUndo()).toBe(false);
-    });
-});

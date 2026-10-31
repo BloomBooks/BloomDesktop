@@ -125,9 +125,9 @@ function asMessage(e: unknown): string {
 // use Bloom's changeImageByElement() here. Returns how many swaps landed and how many were
 // asked for, so the caller can report a partial failure honestly.
 //
-// Each swap registers an image undo, like a pasted image or a picture chosen from the
-// gallery, so Ctrl+Z puts the old image back. That works because nothing here saves the
-// page: the save's reload would throw the live undo stack away (the same reasoning as
+// Each swap is a picture change, a step of the page history like a pasted image or a picture
+// chosen from the gallery, so Ctrl+Z puts the old image back. That works because nothing here
+// saves the page: the save's reload would throw the page history away (the same reasoning as
 // BL-16330 for ordinary image changes). The page is saved by the normal mechanisms when the
 // user moves on, and every editor launch saves first (see HandleSaveThenLaunch), so later
 // sessions still read a fresh book DOM.
@@ -173,17 +173,10 @@ export function applyAiImageEditorReplacements(
                 creator: r.creator ?? "",
                 copyright: r.copyright ?? "",
                 license: r.license ?? "",
-                // Register an image undo for each swap, like any other image change
-                // (see the header comment).
                 undoable: "true",
             });
-            // Make the swapped slot the active element. canUndoImageOperation only
-            // offers the undo while an image container is active, and after the launch
-            // saved and reloaded this page nothing is — so without this, Ctrl+Z right
-            // after the editor closes would do nothing until the user clicked the image.
-            //
-            // It does a second job, which matters on a Bloom Games page: a draggable's
-            // target holds a copy of the draggable's content, and activating the draggable
+            // Make the swapped slot the active element, which matters on a Bloom Games
+            // page: a draggable's target holds a copy of the draggable's content, and activating the draggable
             // is what makes Bloom rebuild that copy. changeImageByElement above does NOT
             // (verified against a running Bloom: without this line the target went on
             // showing the replaced picture), so the target would otherwise keep a picture

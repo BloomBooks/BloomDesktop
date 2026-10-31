@@ -1,207 +1,331 @@
 import bloomQtipUtils from "./bloomQtipUtils";
-import { EditableDivUtils } from "./editableDivUtils";
+import { isTrackedFillingCharNode } from "../pageHistory/editTimeMarkup";
+import {
+    currentPageHistory,
+    doOutsideHistory,
+} from "../pageHistory/pageHistoryAccess";
 import $ from "jquery";
 
 // For testing and debugging, functionality to replace invisible characters with symbols.
+//
+// Showing the invisibles is a view of the page, not an edit, so it happens outside the page
+// history and leaves the box with the same nodes that it had before. Each text node that holds
+// invisible characters keeps the text before the first one, and after it go a span with the
+// symbol of each invisible character and a new text node for the text after each one. Hiding puts
+// back the text node's data and removes every node that showing added. Nothing rewrites the box's
+// html, so the caret, CKEditor's filling character and anything else that holds on to the box's
+// nodes stay as they were.
 
-const invisibles = [
-    { name: "Zero Width Joiner", re: "&zwj;|\u200D", symbol: "\uE077" },
-    { name: "Word Joiner", re: "&NoBreak;|\u2060", symbol: "\uE078" },
-    {
-        name: "Zero Width Non-Joiner",
-        re: "&zwnj;|\u200C",
-        symbol: "\uE079",
-    },
-    { name: "Combining Grapheme Joiner", re: "\u034F", symbol: "\uE07A" },
-    {
-        name: "Zero Width Space",
-        re: "&ZeroWidthSpace;|&NegativeMediumSpace;|&NegativeThickSpace;|&NegativeThinSpace;|&NegativeVeryThinSpace;|\u200B",
-        symbol: "\uE081",
-    },
-    {
-        name: "No-Break Space",
-        re: "&nbsp;|&NonBreakingSpace;|\u00A0",
-        symbol: "\uE082",
-    },
-    { name: "Narrow No-Break Space", re: "\u202F", symbol: "\uE083" },
-    { name: "En Quad", re: "\u2000", symbol: "\uE084" },
-    { name: "Em Quad", re: "\u2001", symbol: "\uE085" },
-    { name: "En Space", re: "&ensp;|\u2002", symbol: "\uE086" },
-    { name: "Em Space", re: "&emsp;|\u2003", symbol: "\uE087" },
-    { name: "Three-Per-Em Space", re: "&emsp13;|\u2004", symbol: "\uE088" },
-    { name: "Four-Per-Em Space", re: "&emsp14;|\u2005", symbol: "\uE089" },
-    { name: "Six-Per-Em Space", re: "\u2006", symbol: "\uE08A" },
-    { name: "Figure Space", re: "&numsp;|\u2007", symbol: "\uE08B" },
-    { name: "Punctuation Space", re: "&puncsp;|\u2008", symbol: "\uE08C" },
-    {
-        name: "Thin Space",
-        re: "&thinsp;|&ThinSpace;|\u2009",
-        symbol: "\uE08D",
-    },
-    {
-        name: "Hair Space",
-        re: "&VeryThinSpace;|&hairsp;|\u200A",
-        symbol: "\uE08E",
-    },
-    { name: "Left-To-Right Mark", re: "&lrm;|\u200E", symbol: "\uE090" },
-    { name: "Right-To-Left Mark", re: "&rlm;|\u200F", symbol: "\uE091" },
-    { name: "Soft Hyphen", re: "&shy;|\u00AD", symbol: "\uE0A1" },
-    { name: "Horizontal Tabulation", re: "&Tab;|\u0009", symbol: "\uE0A2" },
-];
+// The name and the symbol (in the SymChar font's private use area) of each invisible character.
+const invisibles: { [character: string]: { name: string; symbol: string } } = {
+    "\u200D": { name: "Zero Width Joiner", symbol: "\uE077" },
+    "\u2060": { name: "Word Joiner", symbol: "\uE078" },
+    "\u200C": { name: "Zero Width Non-Joiner", symbol: "\uE079" },
+    "\u034F": { name: "Combining Grapheme Joiner", symbol: "\uE07A" },
+    "\u200B": { name: "Zero Width Space", symbol: "\uE081" },
+    "\u00A0": { name: "No-Break Space", symbol: "\uE082" },
+    "\u202F": { name: "Narrow No-Break Space", symbol: "\uE083" },
+    "\u2000": { name: "En Quad", symbol: "\uE084" },
+    "\u2001": { name: "Em Quad", symbol: "\uE085" },
+    "\u2002": { name: "En Space", symbol: "\uE086" },
+    "\u2003": { name: "Em Space", symbol: "\uE087" },
+    "\u2004": { name: "Three-Per-Em Space", symbol: "\uE088" },
+    "\u2005": { name: "Four-Per-Em Space", symbol: "\uE089" },
+    "\u2006": { name: "Six-Per-Em Space", symbol: "\uE08A" },
+    "\u2007": { name: "Figure Space", symbol: "\uE08B" },
+    "\u2008": { name: "Punctuation Space", symbol: "\uE08C" },
+    "\u2009": { name: "Thin Space", symbol: "\uE08D" },
+    "\u200A": { name: "Hair Space", symbol: "\uE08E" },
+    "\u200E": { name: "Left-To-Right Mark", symbol: "\uE090" },
+    "\u200F": { name: "Right-To-Left Mark", symbol: "\uE091" },
+    "\u00AD": { name: "Soft Hyphen", symbol: "\uE0A1" },
+    "\u0009": { name: "Horizontal Tabulation", symbol: "\uE0A2" },
+};
 
-let inShowInvisiblesMode = false;
+const kCkEditorFillingChar = "\u200B";
 
-function invisibleToCode(invisible) {
-    // check if it is an html entity and return it if so
-    if (invisible[0] === "&" && invisible[invisible.length - 1] === ";") {
-        return invisible;
-    }
-    if (invisible.length > 1) {
-        throw new Error(
-            "Something went wrong - invisible character is neither an html entity nor a single UTF-16 character: " +
-                invisible,
-        );
-    }
-    const codePoint = invisible.charCodeAt(0);
-    let unicodePoint = codePoint.toString(16);
-    while (unicodePoint.length < 4) {
-        unicodePoint = "0" + unicodePoint;
-    }
-    return "\\u" + unicodePoint;
+/** A point in the page: a node and an offset in it. */
+type Point = [Node, number];
+
+/** What showInvisibles changed, for hideInvisibles to put back. */
+interface Showing {
+    box: HTMLElement;
+    // The data that each split text node had before.
+    originals: Map<Text, string>;
+    // For each split text node, the nodes that hold its text now, in order, starting with itself,
+    // each with where its text starts in the original data.
+    pieces: Map<Node, { node: Node; start: number }[]>;
+    // The spans and text nodes that showInvisibles added.
+    added: Node[];
+    // The selection's anchor and focus before showing.
+    selection?: Point[];
+    // Removes the listeners that hide the symbols again.
+    stopListening: () => void;
 }
 
-function invisibleFromCode(unicodeCode, entity) {
-    if (unicodeCode && entity) {
-        console.error(
-            "Something went wrong - we got both a unicode code and an html entity: " +
-                unicodeCode +
-                " and " +
-                entity,
-        );
-        return "";
-    }
-    if (unicodeCode) {
-        return String.fromCharCode(parseInt(unicodeCode, 16));
-    }
-    return entity;
+let showing: Showing | undefined;
+
+/**
+ * Show the invisible characters of a text box in container while the user holds Ctrl+Shift+Space
+ * in it. Hide them when the user releases any key (listening only for the release of the space
+ * would miss a release of the keys in another order), presses any other key, or leaves the box.
+ */
+export function listenForShowInvisiblesKeys(container: HTMLElement): void {
+    $(container)
+        .find("div.bloom-editable")
+        .on("keydown", (e) => {
+            if (!isShowInvisiblesKey(e)) return;
+            e.preventDefault();
+            showInvisibles(e.currentTarget as HTMLElement);
+        })
+        .on("blur", () => hideInvisibles());
 }
 
-export function showInvisibles(e) {
-    e.preventDefault();
-
-    // get the parent that has the class bloom-editable
-    const editable = $(e.target).closest(".bloom-editable");
-    if (inShowInvisiblesMode) {
-        return;
-    }
-    inShowInvisiblesMode = true;
-    // Rewriting the editable's HTML below from the live DOM would turn ckeditor's zero-width
-    // "filling char" into ordinary text that nothing removes again (BL-16490), so take it out
-    // first. Before saving the caret position, since removing a character ahead of the caret
-    // shifts that offset.
-    EditableDivUtils.removeTrackedCkEditorFillingChar(editable.get(0));
-    // Rewriting the editable's HTML below destroys the selection, which made the
-    // cursor jump to the start of the box (BL-16616). Save the caret position as a
-    // character offset and restore it afterwards; offsets stay valid because each
-    // invisible character is replaced by a single visible symbol character.
-    const selectionIndex = EditableDivUtils.getElementSelectionIndex(
-        editable.get(0),
+function isShowInvisiblesKey(event: {
+    ctrlKey: boolean;
+    shiftKey: boolean;
+    altKey: boolean;
+    key?: string;
+}): boolean {
+    return (
+        event.ctrlKey && event.shiftKey && !event.altKey && event.key === " "
     );
-    editable.html((i, html) => {
-        // for each replacement, replace all instances of the invisible char/entity with the symbol
-        invisibles.forEach(function (invisibleType) {
-            // Just in case there were invisibles-replacement spans left in the document,
-            // don't match anything immediately following data-original="
-            const re = new RegExp(
-                `(?<!data-original=\")(${invisibleType.re})`,
-                "g",
-            );
-            html = html.replace(re, (match) => {
-                const code = invisibleToCode(match); // get something like \u00A0 for unicode chars. leaves html entities as is.
-                return `<span class="invisibles" data-name-of-invisible="${invisibleType.name}" data-original="${code}">${invisibleType.symbol}</span>`;
-            });
-            return html;
-        });
-        return html;
-    });
-    if (selectionIndex >= 0) {
-        EditableDivUtils.makeSelectionIn(
-            editable.get(0),
-            selectionIndex,
-            -1,
-            true,
-        );
-    }
-    // Make one qtip per type of invisible character to explain the symbol to the user without cluttering the page too much
-    const invisibleCharTypesWithQtips = new Set();
+}
 
-    $(".invisibles").each(function () {
-        const $this: JQuery = $(this);
-        if (
-            !invisibleCharTypesWithQtips.has(
-                $this.attr("data-name-of-invisible"),
-            )
-        ) {
-            invisibleCharTypesWithQtips.add(
-                $this.attr("data-name-of-invisible"),
+/** Put a symbol in place of each invisible character in box, and explain each kind of symbol. */
+function showInvisibles(box: HTMLElement): void {
+    // The key repeats while it is held.
+    if (showing) return;
+    const shown: Showing = {
+        box,
+        originals: new Map(),
+        pieces: new Map(),
+        added: [],
+        selection: selectionEnds(box.ownerDocument),
+        stopListening: () => {},
+    };
+    doOutsideHistory(() => {
+        const namesWithTooltip = new Set<string>();
+        textNodesIn(box).forEach((node) => splitAtInvisibles(node, shown));
+        shown.added.forEach((node) => {
+            const name = (node as HTMLElement).dataset?.nameOfInvisible;
+            if (!name || namesWithTooltip.has(name)) return;
+            namesWithTooltip.add(name);
+            addTooltip(node as HTMLElement, name);
+        });
+        // Splitting moved any end of the selection that was in a split text node to its start.
+        const now = selectionEnds(box.ownerDocument);
+        if (shown.selection && now) {
+            const [anchor, focus] = shown.selection.map((point, i) =>
+                placeWhileShowing(shown, point, now[i]),
             );
-            $this.qtip({
-                position: {
-                    my: "top left",
-                    at: "bottom right",
-                    container: bloomQtipUtils.qtipZoomContainer(),
-                },
-                content: $this.attr("data-name-of-invisible"),
-                show: {
-                    ready: true,
-                },
-                hide: {
-                    inactive: 2000,
-                    effect: function () {
-                        $(this).fadeOut(250);
-                    },
-                },
-            });
+            box.ownerDocument
+                .getSelection()!
+                .setBaseAndExtent(...anchor, ...focus);
+        }
+    });
+    // An undo or redo, such as a Ctrl+Shift+Z while the keys are held, must find the page as the
+    // history knows it.
+    const stopListeningToHistory =
+        currentPageHistory()?.onBeforeUndoOrRedo(hideInvisibles) ?? (() => {});
+    // Any other key, such as Ctrl+Shift+V, which must act on the real text, or the release of any
+    // key hides them. These listen in the capture phase of the window, where the page history's
+    // key handler stops the undo and redo keys and the keyups after them, so that the box never
+    // sees them; stopping an event there does not keep it from the window's other listeners.
+    // Otherwise a Ctrl+Shift+Z with nothing to redo would leave the symbols showing.
+    const view = box.ownerDocument.defaultView!;
+    const hideOnOtherKey = (event: KeyboardEvent) => {
+        if (event.type === "keyup" || !isShowInvisiblesKey(event))
+            hideInvisibles();
+    };
+    view.addEventListener("keydown", hideOnOtherKey, true);
+    view.addEventListener("keyup", hideOnOtherKey, true);
+    shown.stopListening = () => {
+        stopListeningToHistory();
+        view.removeEventListener("keydown", hideOnOtherKey, true);
+        view.removeEventListener("keyup", hideOnOtherKey, true);
+    };
+    showing = shown;
+}
+
+/** Put back the text nodes that showInvisibles split, as they were, and remove what it added. */
+function hideInvisibles(): void {
+    const shown = showing;
+    if (!shown) return;
+    showing = undefined;
+    shown.stopListening();
+    doOutsideHistory(() => {
+        // On blur the selection has already left the box; don't yank it back.
+        const now = selectionEnds(shown.box.ownerDocument);
+        // The user may have moved the caret or selected something while the symbols showed, so put
+        // back the selection as it is now, not as it was before showing.
+        const selection =
+            now && shown.box.contains(now[0][0])
+                ? now.map((point) => placeAfterHiding(shown, point))
+                : undefined;
+        $(shown.added).filter(".invisibles").qtip("destroy");
+        shown.originals.forEach((data, node) => (node.data = data));
+        shown.added.forEach((node) => node.parentNode?.removeChild(node));
+        if (selection) {
+            const [anchor, focus] = selection;
+            shown.box.ownerDocument
+                .getSelection()!
+                .setBaseAndExtent(...anchor, ...focus);
         }
     });
 }
 
-export function hideInvisibles(e) {
-    if (inShowInvisiblesMode) {
-        inShowInvisiblesMode = false;
+/** Split node at its invisible characters, as Showing describes, unless it has none. */
+function splitAtInvisibles(node: Text, shown: Showing): void {
+    const original = node.data;
+    // CKEditor's filling character is CKEditor's, not the user's. Left as it is, CKEditor still
+    // finds it when it takes it out, and never leaves it in the text.
+    const fillingCharIndex = isTrackedFillingCharNode(node)
+        ? original.indexOf(kCkEditorFillingChar)
+        : -1;
+    const offsets: number[] = [];
+    for (let offset = 0; offset < original.length; offset++)
+        if (offset !== fillingCharIndex && invisibles[original[offset]])
+            offsets.push(offset);
+    if (offsets.length === 0) return;
 
-        // destroy all qtips
-        $(".invisibles").each(function () {
-            const $this: JQuery = $(this);
-            $this.qtip("destroy");
-        });
+    const doc = node.ownerDocument;
+    const after = node.nextSibling;
+    const pieces = [{ node: node as Node, start: 0 }];
+    const add = (piece: Node, start: number) => {
+        node.parentNode!.insertBefore(piece, after);
+        pieces.push({ node: piece, start });
+        shown.added.push(piece);
+    };
+    shown.originals.set(node, original);
+    shown.pieces.set(node, pieces);
+    node.data = original.substring(0, offsets[0]);
+    offsets.forEach((offset, i) => {
+        const invisible = invisibles[original[offset]];
+        const span = doc.createElement("span");
+        span.className = "invisibles";
+        span.dataset.nameOfInvisible = invisible.name;
+        span.textContent = invisible.symbol;
+        add(span, offset);
+        const restEnd = offsets[i + 1] ?? original.length;
+        if (restEnd > offset + 1)
+            add(
+                doc.createTextNode(original.substring(offset + 1, restEnd)),
+                offset + 1,
+            );
+    });
+}
 
-        // restore all the original characters
-        const editable = $(e.target).closest(".bloom-editable");
-        // As in showInvisibles, don't bake ckeditor's filling char into the rewritten html.
-        EditableDivUtils.removeTrackedCkEditorFillingChar(editable.get(0));
-        // As in showInvisibles, preserve the caret across the HTML rewrite.
-        // On blur the selection has already left the editable, so this returns -1
-        // and we correctly don't yank the selection back.
-        const selectionIndex = EditableDivUtils.getElementSelectionIndex(
-            editable.get(0),
-        );
-        editable.html((i, html) => {
-            return html.replace(
-                /<span class="invisibles"[^<>]*data-original="(?:\\u(....)|(&[a-z,0-9]*;))"[^<>]*>.<\/span>/g,
-                // p1 will match unicode char codes, p2 will html entities
-                function (match, p1, p2) {
-                    return invisibleFromCode(p1, p2);
-                },
-            );
-        });
-        if (selectionIndex >= 0) {
-            EditableDivUtils.makeSelectionIn(
-                editable.get(0),
-                selectionIndex,
-                -1,
-                true,
-            );
-        }
+/**
+ * Where an end of the selection that was at before, before splitting, is now. The browser has
+ * already moved an end that was not in a split text node to now.
+ */
+function placeWhileShowing(shown: Showing, before: Point, now: Point): Point {
+    const [node, offset] = before;
+    const pieces = shown.pieces.get(node);
+    if (!pieces) return now;
+    const indexInParent = (node: Node) =>
+        Array.from(node.parentNode!.childNodes).indexOf(node as ChildNode);
+    for (const piece of pieces) {
+        const length = piece.node.textContent!.length;
+        const inPiece = offset >= piece.start && offset <= piece.start + length;
+        if (piece.node.nodeType === Node.TEXT_NODE && inPiece)
+            return [piece.node, offset - piece.start];
+        // Just before a symbol that no text comes before, such as the second of two together.
+        if (piece.node.nodeType !== Node.TEXT_NODE && offset === piece.start)
+            return [piece.node.parentNode!, indexInParent(piece.node)];
     }
+    // Just after a symbol that ends the text.
+    const last = pieces[pieces.length - 1].node;
+    return [last.parentNode!, indexInParent(last) + 1];
+}
+
+/**
+ * Where a point in the box while the symbols show will be once hideInvisibles has put back the
+ * nodes that showInvisibles split.
+ */
+function placeAfterHiding(shown: Showing, point: Point): Point {
+    const [node, offset] = point;
+    // The split text node that piece, or the node inside it, holds the text of, and the piece.
+    const findPiece = (inPiece: Node) => {
+        for (const [original, pieces] of shown.pieces) {
+            const piece = pieces.find((p) => p.node.contains(inPiece));
+            if (piece) return { original: original as Text, piece };
+        }
+        return undefined;
+    };
+    const found = findPiece(node);
+    if (found) {
+        const { original, piece } = found;
+        if (piece.node.nodeType === Node.TEXT_NODE)
+            return [original, piece.start + offset];
+        // In a symbol's span: before or after its one character.
+        return [original, piece.start + (offset > 0 ? 1 : 0)];
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return point;
+    // Between the children of an element. Next to a piece of a split text node, the point goes to
+    // that place in the text; otherwise only the children that stay count.
+    const children = Array.from(node.childNodes);
+    const before = children[offset - 1] && findPiece(children[offset - 1]);
+    if (before)
+        return [
+            before.original,
+            before.piece.start + before.piece.node.textContent!.length,
+        ];
+    const after = children[offset] && findPiece(children[offset]);
+    if (after) return [after.original, after.piece.start];
+    return [
+        node,
+        children
+            .slice(0, offset)
+            .filter((child) => !shown.added.includes(child)).length,
+    ];
+}
+
+/**
+ * Explain the symbol in span with a tooltip. The tooltip itself is in #page-scaling-container,
+ * beside the page.
+ */
+function addTooltip(span: HTMLElement, name: string): void {
+    $(span).qtip({
+        position: {
+            my: "top left",
+            at: "bottom right",
+            container: bloomQtipUtils.qtipZoomContainer(),
+        },
+        content: name,
+        show: {
+            ready: true,
+            // Now, inside doOutsideHistory: showing writes an attribute to the span, which is in
+            // the page, and the history would record it later.
+            delay: 0,
+        },
+        hide: {
+            inactive: 2000,
+            effect: function () {
+                $(this).fadeOut(250);
+            },
+        },
+    });
+}
+
+/** The selection's anchor and focus, or undefined when there is no selection. */
+function selectionEnds(doc: Document): Point[] | undefined {
+    const selection = doc.getSelection();
+    if (!selection || selection.rangeCount === 0) return undefined;
+    return [
+        [selection.anchorNode!, selection.anchorOffset],
+        [selection.focusNode!, selection.focusOffset],
+    ];
+}
+
+/** The text nodes inside root, in document order. */
+function textNodesIn(root: Node): Text[] {
+    const nodes: Text[] = [];
+    const walker = root.ownerDocument!.createTreeWalker(
+        root,
+        NodeFilter.SHOW_TEXT,
+    );
+    while (walker.nextNode()) nodes.push(walker.currentNode as Text);
+    return nodes;
 }

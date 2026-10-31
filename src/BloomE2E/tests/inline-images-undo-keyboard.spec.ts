@@ -1,22 +1,19 @@
 // Checks what Ctrl+Z and Ctrl+Y do to an inline image, as distinct from what the top-bar Undo button
 // does (inline-images.spec.ts tests the button).
 //
-// Every inline image operation is an entry on Bloom's one undo stack (bookEdit/undo), beside
-// CKEditor's record of the typing. The two keys reach that stack by different routes. Ctrl+Z in a
-// text block belongs to CKEditor unless the stack's next undo is an inline image entry; then
-// inlineImages.ts cancels CKEditor's undo command and undoes the entry through the stack instead.
-// Ctrl+Y goes to the stack's redo key binding (redoKeyBinding.ts) whenever the stack has something
-// to redo. Typing discards what the stack could redo (undo/ckeditorChanges.ts), so after
-// "change a picture, Undo, type", Ctrl+Y must not bring the picture change back over the typing.
+// Every inline image operation, like every other change to the page, is a step of the page
+// history (bookEdit/pageHistory), and so is each run of typing. The page frame takes both keys
+// (pageHistoryKeys.ts): Ctrl+Z undoes the newest step on the page and Ctrl+Y redoes the step undone
+// last, whatever each changed. A change after an undo, typing included, drops what could be
+// redone, so after "change a picture, Undo, type", Ctrl+Y must not bring the picture change back
+// over the typing.
 //
 // Nothing in src/BloomExe binds either key, so both reach the page. The first test undoes a picture
-// change in a block whose text was not typed with keys, so CKEditor has no history of its own; the
-// second checks that the key reaches CKEditor for typing; the third undoes a picture change after
-// that typing.
+// change in a block whose text was not typed with keys; the second checks that the key takes back
+// typing; the third undoes a picture change after that typing.
 //
-// A picture change starts CKEditor's history for its block again, so Ctrl+Z cannot take back typing
-// done before it. One test checks that. Typing becomes undoable across a picture change again when
-// it moves onto the stack (Stage 3 of docs/retire-ckeditor/PLAN.md).
+// One test checks that after typing and then a picture change, Ctrl+Z takes back the picture change
+// first and the typing next, each in every language that it changed.
 //
 // The tests run in order on one text block, each starting from what the previous one left.
 
@@ -33,7 +30,6 @@ import {
 import {
     addInlineImage,
     anyTextBlockHasFocus,
-    blockCkeditorCanUndo,
     changeInlineImagePicture,
     clickPageMargin,
     getBlockText,
@@ -74,9 +70,8 @@ let imageId: string;
 let originalWidth: number;
 let widenedWidth: number;
 
-// Wait until every language's copy of the picture has this width. CKEditor's undo restores the
-// saved HTML of one editable only, so a copy left behind in another language (the lang="z"
-// prototype included) is how a key that reached CKEditor instead of the stack shows.
+// Wait until every language's copy of the picture has this width. A copy left behind in another
+// language (the lang="z" prototype included) is how an undo that restored one editable only shows.
 async function expectEveryCopyWidth(
     page: import("@playwright/test").Page,
     width: number,
@@ -92,8 +87,8 @@ async function expectEveryCopyWidth(
                 timeout: 10000,
                 message:
                     `After ${gesture}, not every copy of the picture was ${width}% wide. ` +
-                    `A copy in the "${LANG}" block alone at ${width}% means CKEditor's undo ran ` +
-                    `instead of the stack's.`,
+                    `A copy in the "${LANG}" block alone at ${width}% means the undo restored ` +
+                    `that editable only.`,
             },
         )
         .toEqual(
@@ -136,7 +131,7 @@ test("Ctrl+Z takes back a picture change in a block nobody has typed in [Test Ca
     const [contentPage] = await getContentPages(page);
     await goToPage(page, contentPage.id);
     // typeInGroup puts the text in without key presses, as an existing book's text is when a
-    // person opens it: CKEditor has no typing of its own to undo.
+    // person opens it: there is no typing to undo.
     await typeInGroup(page, BLOCK, LANG, TEXT);
 
     imageId = await addInlineImage(page, BLOCK, LANG);
@@ -150,8 +145,8 @@ test("Ctrl+Z takes back a picture change in a block nobody has typed in [Test Ca
     const copies = await getInlineImageInEveryLanguage(page, BLOCK, imageId);
     expect(
         copies.length,
-        "The group holds fewer than two copies of the picture, so this test cannot tell the " +
-            "stack's undo from CKEditor's, which restores one editable only.",
+        "The group holds fewer than two copies of the picture, so this test cannot tell an " +
+            "undo of every language from one that restores one editable only.",
     ).toBeGreaterThan(1);
     originalWidth = (await getInlineImage(page, BLOCK, LANG, imageId))
         .widthPercent;
@@ -162,19 +157,18 @@ test("Ctrl+Z reaches the page, and takes back typing [Test Case ID 815]", async 
     page,
 }) => {
     test.setTimeout(300000);
-    // Fewer than 25 keystrokes: CKEditor's undo saves a snapshot every 25, so one Ctrl+Z after
-    // a longer run of typing takes back only the keystrokes since the last of them.
+    // Typed without a pause, so that it is one step of the page history.
     const typed = " A word nobody wanted.";
     const textBefore = await getBlockText(page, BLOCK, LANG);
     await typeAtEndOfBlock(page, BLOCK, LANG, typed);
     await pressKey(page, "Control+z");
-    // CKEditor's undo plugin restores a saved snapshot of the editable after the keystroke has
-    // been handled, so this waits for the text instead of for a fixed time.
+    // The page history's undo can wait for the typing step to end, so this waits for the text
+    // instead of for a fixed time.
     await expect
         .poll(async () => getBlockText(page, BLOCK, LANG), {
             message:
                 `Ctrl+Z did not put the text back as it was before the typing, so the key is ` +
-                `not reaching the page's CKEditor.`,
+                `not reaching the page history.`,
             timeout: 10000,
         })
         .toBe(textBefore);
@@ -193,7 +187,7 @@ test("Ctrl+Y puts back a picture change that Ctrl+Z took back [Test Case ID 815]
     test.setTimeout(300000);
     expect(
         await canRedo(page),
-        "After undoing the picture's resize, the undo stack has nothing to redo.",
+        "After undoing the picture's resize, the page history has nothing to redo.",
     ).toBe(true);
     await pressKey(page, "Control+y");
 
@@ -209,8 +203,8 @@ test("typing after Ctrl+Z means Ctrl+Y no longer brings the picture change back 
     await expectEveryCopyWidth(page, originalWidth, "Ctrl+Z");
     expect(
         await canRedo(page),
-        "Right after Ctrl+Z took back the resize, the undo stack has nothing to redo, so this " +
-            "test could not show typing discarding it.",
+        "Right after Ctrl+Z took back the resize, the page history has nothing to redo, so " +
+            "this test could not show typing discarding it.",
     ).toBe(true);
 
     const typed = " A heron lands.";
@@ -219,7 +213,7 @@ test("typing after Ctrl+Z means Ctrl+Y no longer brings the picture change back 
         .poll(async () => canRedo(page), {
             timeout: 10000,
             message:
-                "Typing after an undo left the picture change on the undo stack to be redone, " +
+                "Typing after an undo left the picture change in the page history to be redone, " +
                 "so Ctrl+Y would put it back on top of the new typing.",
         })
         .toBe(false);
@@ -232,7 +226,7 @@ test("typing after Ctrl+Z means Ctrl+Y no longer brings the picture change back 
     ).toContain(typed.trim());
 });
 
-test("after typing and then a picture change, Ctrl+Z takes back the picture change but not the typing [Test Case ID 815]", async ({
+test("after typing and then a picture change, Ctrl+Z takes back the picture change and then the typing [Test Case ID 815]", async ({
     page,
 }) => {
     test.setTimeout(300000);
@@ -261,19 +255,16 @@ test("after typing and then a picture change, Ctrl+Z takes back the picture chan
         "The first Ctrl+Z took back the typing as well as the picture change.",
     ).toContain(typed.trim());
 
-    // A picture change, and an undo of one, start CKEditor's history for the block again
-    // (inlineImageInteractions.ts), because an older snapshot would put the old picture back in
-    // one language alone. So the typing before the picture change is no longer CKEditor's to undo.
-    expect(
-        await blockCkeditorCanUndo(page, BLOCK, LANG),
-        "After Ctrl+Z took back the picture change, CKEditor still had history to undo in the " +
-            "block, so a second Ctrl+Z could restore an older snapshot of one language alone.",
-    ).toBe(false);
+    // The typing is the step before the picture change, so the second Ctrl+Z takes it back, and
+    // leaves the picture as the first one left it.
     await pressKey(page, "Control+z");
-    expect(
-        await getBlockText(page, BLOCK, LANG),
-        "The second Ctrl+Z took back typing done before the picture change.",
-    ).toContain(typed.trim());
+    await expect
+        .poll(async () => getBlockText(page, BLOCK, LANG), {
+            timeout: 10000,
+            message:
+                "The second Ctrl+Z did not take back the typing done before the picture change.",
+        })
+        .not.toContain(typed.trim());
     await expectEveryCopyWidth(page, widthBefore, "the second Ctrl+Z");
 });
 

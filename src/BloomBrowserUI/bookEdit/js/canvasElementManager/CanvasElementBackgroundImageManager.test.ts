@@ -138,7 +138,10 @@ describe("switchBackgroundToCanvasElement vs. a save requested mid-conversion (B
         saveTracker.reset();
         document.body.innerHTML = kOldStylePage;
         bloomCanvas = document.querySelector(".bloom-canvas") as HTMLElement;
-        state = { bgImageLoadListeners: new WeakMap() };
+        state = {
+            bgImageLoadListeners: new WeakMap(),
+            abandonersOfPendingFits: new Set(),
+        };
     });
 
     afterEach(() => {
@@ -260,7 +263,10 @@ describe("repairInterruptedBackgroundConversion (BL-16870)", () => {
 
     beforeEach(() => {
         saveTracker.reset();
-        state = { bgImageLoadListeners: new WeakMap() };
+        state = {
+            bgImageLoadListeners: new WeakMap(),
+            abandonersOfPendingFits: new Set(),
+        };
     });
 
     afterEach(() => {
@@ -401,6 +407,7 @@ describe("adjustBackgroundImageSize on a background that fills the page", () => 
         // picture 100 by 200 that Rotate Right has rotated, whose box is 300 by 600.
         const state: BackgroundImageManagerState = {
             bgImageLoadListeners: new WeakMap(),
+            abandonersOfPendingFits: new Set(),
         };
         const upright = makeFilledBackground(200, 100, "", 600, 0, 0);
         // Sanity check: the shown rectangle is what the comment says.
@@ -462,6 +469,7 @@ describe("adjustBackgroundImageSize on a background that fills the page", () => 
         async (newSize) => {
             const state: BackgroundImageManagerState = {
                 bgImageLoadListeners: new WeakMap(),
+                abandonersOfPendingFits: new Set(),
             };
             const fit = async (
                 bloomCanvas: HTMLElement,

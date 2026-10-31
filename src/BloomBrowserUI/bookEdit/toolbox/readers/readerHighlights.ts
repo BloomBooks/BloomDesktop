@@ -5,6 +5,7 @@ import {
     TextOffsetMap,
 } from "../../js/textHighlightManager";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
+import { isTrackedFillingCharNode } from "../../pageHistory/editTimeMarkup";
 
 // The decodable and leveled reader tools mark up violations (a word that is not decodable at
 // this stage, a sentence that is too long for this level, ...). They used to do that by wrapping
@@ -96,25 +97,86 @@ function shouldSkipElementForReaderText(element: Element): boolean {
     return false;
 }
 
-// Snapshot the text of an element as the reader sees it, ready for analysis and for turning the
-// resulting character offsets back into Ranges.
-export function mapReaderText(element: Node): TextOffsetMap {
-    return mapVisibleText(element, shouldSkipElementForReaderText);
+// CKEditor's filling character, U+200B ZERO WIDTH SPACE.
+const kFillingChar = String.fromCharCode(0x200b);
+
+// The text of an element as the reader sees it, and what makeRangesForSpans needs to turn
+// offsets in that text back into Ranges.
+export interface ReaderTextMap {
+    // The text that the reader tools analyze.
+    text: string;
+    // The element's visible text, which also holds the filling characters that text leaves out.
+    visibleTextMap: TextOffsetMap;
+    // Where in visibleTextMap.text each character is that text leaves out, in ascending order.
+    leftOutOffsets: number[];
 }
 
-// A span of characters within a TextOffsetMap's text.
+// Snapshot the text of an element as the reader sees it, ready for analysis and for turning the
+// resulting character offsets back into Ranges.
+//
+// The text leaves out CKEditor's filling character, which CKEditor puts at the caret next to an
+// inline element (after a bold word, say) and takes out again later: the user typing "ger" after a
+// bold "big" leaves "big", U+200B, "ger" in the box for a while. The analysis takes U+200B as a word
+// break (zeroWidthAndDirectionalSplitters in synphony_lib.ts), so with the character "bigger" would
+// count as two words. Only the character that CKEditor tracks is left out, as
+// isTrackedFillingCharNode and withoutFillingChar in pageHistory/editTimeMarkup.ts define it: the
+// first U+200B of the text node that CKEditor remembers. Any other U+200B stays, since Thai, Khmer
+// and Myanmar text uses it as a word break (BL-16843). The box itself is left alone: this is read
+// on every markup pass, which must not write to the page.
+export function mapReaderText(element: Node): ReaderTextMap {
+    const visibleTextMap = mapVisibleText(
+        element,
+        shouldSkipElementForReaderText,
+    );
+    const leftOutOffsets: number[] = [];
+    visibleTextMap.pieces.forEach((piece) => {
+        if (!piece.node || !isTrackedFillingCharNode(piece.node)) return;
+        const index = piece.node.data.indexOf(kFillingChar);
+        if (index >= 0) leftOutOffsets.push(piece.start + index);
+    });
+    let text = visibleTextMap.text;
+    // From the end, so that each offset is still right when it is used.
+    for (let i = leftOutOffsets.length - 1; i >= 0; i--) {
+        const offset = leftOutOffsets[i];
+        text = text.substring(0, offset) + text.substring(offset + 1);
+    }
+    return { text, visibleTextMap, leftOutOffsets };
+}
+
+// The offset in map.visibleTextMap.text of the character at offset in map.text, or of the end of
+// that text when offset is its length.
+function visibleTextOffset(map: ReaderTextMap, offset: number): number {
+    let visibleOffset = offset;
+    for (const leftOut of map.leftOutOffsets) {
+        if (leftOut > visibleOffset) break;
+        visibleOffset++;
+    }
+    return visibleOffset;
+}
+
+// A span of characters within a ReaderTextMap's text.
 export interface TextSpan {
     start: number;
     end: number;
 }
 
 // Make the Ranges for a set of character spans, dropping any that turn out to cover no real text.
+// A span's end is taken just after its last character, so a Range does not run on over a filling
+// character that follows the span.
 export function makeRangesForSpans(
-    map: TextOffsetMap,
+    map: ReaderTextMap,
     spans: TextSpan[],
 ): Range[] {
     return spans
-        .map((span) => makeRangeFromTextOffsets(map, span.start, span.end))
+        .map((span) =>
+            span.end <= span.start
+                ? undefined
+                : makeRangeFromTextOffsets(
+                      map.visibleTextMap,
+                      visibleTextOffset(map, span.start),
+                      visibleTextOffset(map, span.end - 1) + 1,
+                  ),
+        )
         .filter((range): range is Range => !!range);
 }
 

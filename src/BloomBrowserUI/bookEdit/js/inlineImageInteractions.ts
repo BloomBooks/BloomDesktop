@@ -1,21 +1,23 @@
 // This file handles what the user does to inline (Word-style) images while editing: the
 // right-click menu commands that add and remove them, the toolbar under a selected image,
 // selecting an image, dragging it to another dock, and resizing it. inlineImages.ts handles
-// the markup, the custom properties that hold the size and position, keeping every language's
-// copy the same, and undo.
+// the markup, the custom properties that hold the size and position, and keeping every language's
+// copy the same. The page history records what each of these changes, as it records any other
+// change in the page frame, and updateInlineImagesAfterUndoOrRedo puts the selection right after an
+// undo or redo.
 //
 // Two things explain much of the code here:
 //
 // 1. Every drag or resize ends with the same three steps, because of how inline images are
-//    stored. It copies the new size and position onto the other languages' copies, commits the
-//    undo entry, and checks overflow again, since an image that just got bigger can push the
+//    stored. It copies the new size and position onto the other languages' copies, records
+//    the block's size, and checks overflow again, since an image that just got bigger can push the
 //    text past the bottom of the block. While the pointer is moving, only the wrapper in this
 //    editable changes, which keeps each move fast. The copying happens once, at the end. See
 //    commitInlineImageChange.
 //
 // 2. All the listeners are on the document, and none are on the wrappers. Wrapper elements
 //    are replaced all the time: a sync puts new copies into the other editables, and an undo or
-//    redo rebuilds them from saved markup. A handler attached to one wrapper element would stop
+//    redo puts back the copies that a sync took out. A handler attached to one wrapper element would stop
 //    working without any error, so every handler here starts from the event's target.
 //
 // The calculations (which dock a position calls for, how far down the image has been dragged,
@@ -34,11 +36,7 @@ import { default as InsertImageIcon } from "@mui/icons-material/AddPhotoAlternat
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
-import BloomField from "../bloomField/BloomField";
-import { isInChangeLayoutMode } from "../undo/redoKeyBinding";
-import { theOneUndoStack } from "../undo/UndoStack";
 import { EditableDivUtils } from "./editableDivUtils";
-import { getToolboxBundleExports } from "./workspaceFrames";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 import { buildCanvasElementControlRegistryContext } from "../toolbox/canvas/buildCanvasElementControlRegistryContext";
 import { imageAvailabilityRules } from "../toolbox/canvas/canvasControlAvailabilityRules";
@@ -76,15 +74,12 @@ import {
     setInlineImageCrop,
 } from "./inlineImageCrop";
 import {
-    commitPendingInlineImageUndo,
     getEditables,
     getFirstVisibleEditable,
     getInlineImageOffsetBasedOn,
     getInlineImagesInEditable,
     getTranslationGroupsWithInlineImages,
-    inlineImageCanUndo,
     InlineImageDock,
-    inlineImageUndo,
     insertInlineImage,
     kInlineImageBottomClass,
     handleInlineImageChanged,
@@ -94,10 +89,8 @@ import {
     kInlineImageMiddleClass,
     kInlineImageOffsetVar,
     kInlineImageRightClass,
-    kInlineImagesRestoredEvent,
     kInlineImageSelectedClass,
     kInlineImageWidthVar,
-    prepareInlineImageUndo,
     recordInlineImageOffsetBasedOn,
     refreshInlineImageAspectRatio,
     removeInlineImage,
@@ -149,7 +142,7 @@ export const kMinInlineImageWidthPercent = 10;
 export const kMaxInlineImageWidthPercent = 95;
 
 // The pointer often moves a pixel or two during a click. A movement smaller than this is
-// treated as a click, so nothing changes and no undo point is recorded.
+// treated as a click, so nothing changes and no undo step is made.
 const kDragThresholdViewportPx = 3;
 
 /** Just the parts of a DOMRect this module needs, so that callers can supply plain numbers. */
@@ -766,101 +759,12 @@ export function setupInlineImageInteractions(container: HTMLElement): void {
     doc.addEventListener("pointerdown", onPointerDown, true);
     doc.addEventListener("mousedown", onMouseDown, true);
     doc.addEventListener("focusin", onFocusIn);
-    doc.addEventListener("keydown", onUndoOrRedoKeyDown, true);
     doc.addEventListener("keydown", onSelectAllKeyDown, true);
-    // inlineImages.ts sends this event when an undo or redo replaces the wrappers, and afterwards the
-    // selection has to be updated. It bubbles, so one listener on the document covers the page.
-    doc.addEventListener(kInlineImagesRestoredEvent, onInlineImagesRestored);
     // See aiImageEditingIsAvailable. It is fetched here because the menu is built
     // synchronously when the user right-clicks, long after this promise resolves.
     void getFeatureStatusAsync("AiImageEditing").then((status) => {
         aiImageEditingIsAvailable = status?.visible ?? false;
     });
-}
-
-// Ctrl+Z and Ctrl+Y for picture changes. Inside a text block, CKEditor's undo plugin claims both
-// keys: it prevents their default on keydown and runs its own "undo" or "redo" command, which
-// restores the saved HTML of the focused editable alone. An inline image has a copy in every
-// language's editable in the group, so CKEditor would put back the copy in the focused block and
-// leave the others, including the lang="z" one that a language added later is copied from. And
-// when CKEditor has nothing of its own to undo or redo, it runs no command at all, so the key
-// would do nothing. Outside a text block (a picture clicked when the caret was never in its
-// block), nothing handles Ctrl+Z.
-//
-// So this listens on the page's document in the capture phase, which runs before CKEditor's
-// listeners on the editable. It takes Ctrl+Z when the one undo stack's next undo is a picture
-// change (inlineImageCanUndo, which leaves the key to CKEditor while typing is newer). It takes
-// Ctrl+Y (or Ctrl+Shift+Z) when the stack has something to redo and the focused block's CKEditor
-// has nothing of its own: typing discards what the stack could redo, and a picture change
-// clears the history of the CKEditors in its group (see resetCkeditorHistories). Either way it
-// stops the event, so CKEditor and the other key handlers never see it.
-// In Change Layout mode origami owns both keys, so this leaves them alone. So do the reader
-// tools, in a text block, while one of their markup tools is selected: they keep their own
-// history of the marked text and take both keys on the editable.
-function onUndoOrRedoKeyDown(event: KeyboardEvent): void {
-    const doc = (event.target as Node).ownerDocument ?? document;
-    if (isInChangeLayoutMode(doc)) return;
-    // A form field has its own undo of what was typed in it.
-    if ((event.target as Element).closest?.("input, textarea, select")) return;
-    if (
-        (event.target as Element).closest?.(".bloom-editable") &&
-        getToolboxBundleExports()?.readerToolsHandleUndoKeys()
-    )
-        return;
-    if (isUndoKeystroke(event)) {
-        if (!inlineImageCanUndo()) return;
-        claimKeystroke(event);
-        inlineImageUndo();
-    } else if (isRedoKeystroke(event) || isShiftedUndoKeystroke(event)) {
-        if (!theOneUndoStack.canRedo()) return;
-        if (focusedCkeditorCanRedo(doc)) return;
-        claimKeystroke(event);
-        void theOneUndoStack.redo();
-    }
-}
-
-// Whether this is the Z (or Y) key. CKEditor recognizes its undo and redo keys by keyCode, which
-// is the key's place on the keyboard, so it gets Ctrl+Z on any layout; on a Russian layout, for
-// one, event.key is "я". This has to recognize every Ctrl+Z that CKEditor would, or CKEditor
-// would undo the focused copy of a picture alone.
-function isZKey(event: KeyboardEvent): boolean {
-    return event.key === "z" || event.key === "Z" || event.keyCode === 90;
-}
-function isYKey(event: KeyboardEvent): boolean {
-    return event.key === "y" || event.key === "Y" || event.keyCode === 89;
-}
-
-// Ctrl+Z with no other modifier.
-function isUndoKeystroke(event: KeyboardEvent): boolean {
-    return (
-        event.ctrlKey &&
-        !event.altKey &&
-        !event.metaKey &&
-        !event.shiftKey &&
-        isZKey(event)
-    );
-}
-
-// Ctrl+Y with no other modifier.
-function isRedoKeystroke(event: KeyboardEvent): boolean {
-    return (
-        event.ctrlKey &&
-        !event.altKey &&
-        !event.metaKey &&
-        !event.shiftKey &&
-        isYKey(event)
-    );
-}
-
-// Ctrl+Shift+Z, which CKEditor also treats as Redo.
-function isShiftedUndoKeystroke(event: KeyboardEvent): boolean {
-    return (
-        event.ctrlKey &&
-        event.shiftKey &&
-        !event.altKey &&
-        !event.metaKey &&
-        isZKey(event)
-    );
 }
 
 // Ctrl+A in a text block that holds an inline image. Left to the browser, Ctrl+A in a block
@@ -895,30 +799,6 @@ function onSelectAllKeyDown(event: KeyboardEvent): void {
     const selection = editable.ownerDocument.getSelection();
     selection?.removeAllRanges();
     selection?.addRange(range);
-}
-
-function claimKeystroke(event: KeyboardEvent): void {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-}
-
-// Whether the CKEditor of the text block that has the focus has a redo of its own: a snapshot
-// after the current one. This reads the snapshots rather than CKEditor's redoable(), whose flag
-// can say there is a redo after a save has dropped it.
-function focusedCkeditorCanRedo(doc: Document): boolean {
-    const editable = (doc.activeElement as HTMLElement | null)?.closest(
-        ".bloom-editable",
-    ) as
-        | (HTMLElement & {
-              bloomCkEditor?: {
-                  undoManager?: { index: number; snapshots: object[] };
-              };
-          })
-        | null;
-    const undoManager = editable?.bloomCkEditor?.undoManager;
-    return (
-        !!undoManager && undoManager.index < undoManager.snapshots.length - 1
-    );
 }
 
 /**
@@ -1067,8 +947,8 @@ export function buildInlineImageMenuItems(
 // The registry's Flip and Reset Image act on the canvas element manager's active element, and
 // an inline image is never that. This makes them act on the wrapper's own picture instead,
 // using the same functions the canvas element manager calls. Like the other commands, they then
-// go through withInlineImageSync, which copies the change to the other languages and records
-// the undo entry. Every other row is returned unchanged.
+// go through withInlineImageSync, which copies the change to the other languages. Every other
+// row is returned unchanged.
 function withInlineImageTransforms(
     row: IControlMenuRow,
     controlId: string,
@@ -1124,8 +1004,8 @@ function flipAxisOf(row: IControlMenuRow): FlipAxis {
 
 // The registry's commands were written for images in canvas elements, so they change only the
 // img they are given, which for an inline image is one language's copy. Ending every command
-// with syncInlineImagesFromEditable copies the change onto the other languages' copies, the
-// undo entry is committed, and then overflow is checked again, as at the end of a drag. Commands that change the picture
+// with syncInlineImagesFromEditable copies the change onto the other languages' copies, and
+// then overflow is checked again, as at the end of a drag. Commands that change the picture
 // itself go through changeImageInfo, which already copies it (see handleInlineImageChanged),
 // so for them this repeats a copy of markup that has not changed, which does no harm. Commands
 // that change the img where it is, such as the transparency submenu, rely on this alone.
@@ -1139,18 +1019,8 @@ function withInlineImageSync(
             ? withInlineImageSync(row.subMenuItems, target)
             : undefined,
         onSelect: async (rowCtx, rowRuntime) => {
-            // The registry's commands know nothing about inline image undo, so the undo entry
-            // has to be recorded here. Otherwise ctrl+z after making an image transparent would
-            // take back whatever came before, such as putting the picture there. The undo is
-            // prepared before the command and committed after it, because the command may be
-            // asynchronous and may end up changing nothing. The commit comes after the sync,
-            // because the entry checks, before it undoes, that every language's copy is as the
-            // commit recorded it.
-            prepareInlineImageUndo(target.wrapper, row.l10nId);
             await row.onSelect(rowCtx, rowRuntime);
             syncInlineImagesFromEditable(target.editable);
-            if (commitPendingInlineImageUndo(target.wrapper))
-                resetCkeditorHistories(target.translationGroup);
             refreshOverflow(target.translationGroup);
         },
     }));
@@ -1159,22 +1029,19 @@ function withInlineImageSync(
 // Adds an inline image to the block, selected and holding a placeholder. It does not open the
 // image chooser. The user often wants to move the image into place before picking a picture,
 // and a dialog that opened by itself would get in the way of that. The picture is chosen
-// later, with "Change image" on the image's menu. insertInlineImage records its own undo entry
-// and puts a copy in every editable of the group, so nothing has to be copied here.
+// later, with "Change image" on the image's menu. insertInlineImage puts a copy in every
+// editable of the group, so nothing has to be copied here.
 function addInlineImage(translationGroup: HTMLElement): void {
     const wrapper = insertInlineImage(translationGroup);
-    updateProtectedPictureCounts(translationGroup);
-    resetCkeditorHistories(translationGroup);
     selectInlineImage(wrapper);
     refreshOverflow(translationGroup);
 }
 
-// removeInlineImage records its own undo entry and removes this image's copy, found by its
-// data-bloom-inline-image-id, from every language's editable. Other inline images stay where
-// they are. Removing an image above another frees the space it took up, which would make the
-// lower image jump upward, so this function moves the lower images back to where they were.
-// (John: moving one image must not move the others.) That happens in the callback
-// removeInlineImage runs before it records the entry, so one Undo takes back both.
+// removeInlineImage removes this image's copy, found by its data-bloom-inline-image-id, from
+// every language's editable. Other inline images stay where they are. Removing an image above
+// another frees the space it took up, which would make the lower image jump upward, so this
+// function moves the lower images back to where they were. (John: moving one image must not move
+// the others.) That happens in the same undo step as the removal, so one Undo takes back both.
 function removeInlineImageCommand(wrapper: HTMLElement): void {
     const translationGroup = wrapper.closest(
         ".bloom-translationGroup",
@@ -1189,160 +1056,11 @@ function removeInlineImageCommand(wrapper: HTMLElement): void {
     removeInlineImage(wrapper, () =>
         keepSurvivorsInPlace(editable, survivors, keptTops),
     );
-    updateProtectedPictureCounts(translationGroup);
-    resetCkeditorHistories(translationGroup);
     // The toolbar is a div on the body (see kInlineImageContextControlsId), so removing the
     // picture does not remove it. Without this it would stay on screen under a picture that is
     // gone, offering commands for it.
     deselectAllInlineImages(editable.ownerDocument);
     refreshOverflow(translationGroup);
-}
-
-// BloomField undoes a Ctrl+A then Delete that removes a picture, by comparing how many pictures each
-// block has with how many it should have. Inserting and deleting a picture, and undoing or redoing
-// either, change that number on purpose, so each of them records the new number here. Otherwise a
-// picture inserted after the page was set up would not be protected, and the next keystroke after
-// a deliberate delete would put the picture back.
-function updateProtectedPictureCounts(translationGroup: HTMLElement): void {
-    getEditables(translationGroup).forEach((editable) =>
-        BloomField.UpdateProtectedElementCount(editable),
-    );
-}
-
-// Selecting a picture adds its resize handles inside the editable and marks its wrapper with
-// kInlineImageSelectedClass. CKEditor's undo snapshots are the editable's HTML, so to CKEditor a
-// change of selection looked like an edit: an undo of typing first spent a step taking the
-// handles away, and only the next one reached the typing. This takes both out of every
-// snapshot of an editable that holds an inline image. Other bloom-ui stays, such as the format
-// button, which CKEditor's undo would otherwise remove from the page.
-//
-// It listens after the editable's own getSnapshot listener (priority 10), which fills in the
-// HTML. Every such snapshot goes through the same parse and serialize, selected or not, so two
-// snapshots of the same content compare as equal.
-//
-// When CKEditor's Undo or Redo of typing puts back one of these snapshots, the editable's
-// pictures are replaced by copies that are not selected. If the selected picture was one of
-// them, the toolbar would stay on screen with commands for a picture that is gone, so then the
-// picture is deselected. This listens to the editor's loadSnapshot, after the editable's own
-// listener (priority 10) has put the snapshot in. CKEditor fires afterUndo and afterRedo on its
-// undo and redo commands, not on the editor, and the Undo button calls the undo manager
-// directly, without the command; every one of those restores goes through loadSnapshot.
-export function keepInlineImageSelectionOutOfCkeditorSnapshots(editor: {
-    on(
-        eventName: string,
-        listener: (evt: { data?: unknown }) => void,
-        scope?: unknown,
-        listenerData?: unknown,
-        priority?: number,
-    ): void;
-}): void {
-    editor.on(
-        "getSnapshot",
-        (evt) => {
-            if (typeof evt.data !== "string") return;
-            if (!evt.data.includes(kInlineImageClass)) return;
-            evt.data = removeInlineImageSelectionFromHtml(evt.data);
-        },
-        undefined,
-        undefined,
-        20,
-    );
-    const deselectIfSelectionWasReplaced = () => {
-        if (!document.querySelector("." + kInlineImageSelectedClass))
-            deselectAllInlineImages(document);
-    };
-    editor.on(
-        "loadSnapshot",
-        deselectIfSelectionWasReplaced,
-        undefined,
-        undefined,
-        20,
-    );
-}
-
-/** The editable's HTML without the selected picture's handles and selection class. */
-export function removeInlineImageSelectionFromHtml(html: string): string {
-    const template = document.createElement("template");
-    template.innerHTML = html;
-    template.content
-        .querySelectorAll("." + kInlineImageHandleFrameClass)
-        .forEach((frame) => frame.remove());
-    template.content
-        .querySelectorAll("." + kInlineImageSelectedClass)
-        .forEach((wrapper) =>
-            wrapper.classList.remove(kInlineImageSelectedClass),
-        );
-    return template.innerHTML;
-}
-
-// The parts of CKEditor's undo manager that resetCkeditorHistories uses.
-interface ICkeditorUndoManager {
-    // The snapshot of the editable that CKEditor last recorded; undefined until it records one.
-    currentImage?: object;
-    // Forgets every snapshot.
-    reset: () => void;
-    // Records `image` as a snapshot. `onContentOnly` makes it ignore a difference in the
-    // selection alone, and an `autoFireChange` of false stops it firing "change".
-    save: (
-        onContentOnly: boolean,
-        image: object,
-        autoFireChange: boolean,
-    ) => boolean;
-    // Works out again whether there is anything to undo or redo.
-    refreshState: () => void;
-    // Counts the input events of the keys being pressed. On keyup, CKEditor treats any count
-    // above zero as typing.
-    editingHandler: { keyEventsStack: { resetInputs: () => void } };
-}
-
-// A CKEditor snapshot of the editable's content only (the second argument to CKEditor's undo
-// Image). A full snapshot also records the selection as bookmarks, and doing that for editables
-// that do not have the focus moved the selection and scrolled the page after every drag, so the
-// next drag started from the wrong place.
-function makeContentOnlySnapshot(editor: unknown): object {
-    // Our CKEditor typings leave out the undo plugin.
-    const undoPlugin = (
-        CKEDITOR.plugins as unknown as {
-            undo: {
-                Image: new (editor: unknown, contentOnly: boolean) => object;
-            };
-        }
-    ).undo;
-    return new undoPlugin.Image(editor, true);
-}
-
-// CKEditor keeps its own undo history for each editable, as snapshots of its HTML. A picture
-// change is not CKEditor's, but it changes every editable in the group, and an older snapshot
-// would put the old picture back in one editable alone. So after a picture change, and after an
-// undo or redo of one, each editable's history starts again from its current content. Ctrl+Z in
-// that block then cannot take back typing done before the picture change. That comes back when
-// typing moves onto the one undo stack (stage 3 of docs/retire-ckeditor/PLAN.md). A menu
-// command, drag or resize that ends up changing nothing leaves the history alone.
-//
-// The new first snapshot fires no "change". If it did, trackCkeditorChanges
-// (undo/ckeditorChanges.ts) would count the picture change as typing, which discards what the
-// undo stack could redo, so Ctrl+Y after Ctrl+Z on a picture change would do nothing.
-//
-// CKEditor's count of typing in progress goes back to zero too. On every keyup, even of a bare
-// modifier key, CKEditor records typing whenever that count is above zero, and an input event
-// that came without a keydown (a spelling suggestion, a paste from the menu, a drop) leaves a
-// count that no keyup clears.
-//
-// An editor that has not recorded a snapshot yet has no history to reset.
-function resetCkeditorHistories(translationGroup: HTMLElement): void {
-    getEditables(translationGroup).forEach((editable) => {
-        const editor = (
-            editable as HTMLElement & {
-                bloomCkEditor?: { undoManager?: ICkeditorUndoManager };
-            }
-        ).bloomCkEditor;
-        const undoManager = editor?.undoManager;
-        if (!undoManager?.currentImage) return;
-        undoManager.reset();
-        undoManager.save(true, makeContentOnlySnapshot(editor), false);
-        undoManager.refreshState();
-        undoManager.editingHandler.keyEventsStack.resetInputs();
-    });
 }
 
 // Moves the images left in the editable after a delete back to where they were before it
@@ -1541,26 +1259,20 @@ export function getInlineImageMenuItemsForClick(
     return buildInlineImageMenuItems(target, closeMenu);
 }
 
-// Undo and redo replace every wrapper in the group with a new element built from saved markup,
-// which has no bloom-ui children. inlineImages.ts puts kInlineImageSelectedClass back on the
-// restored wrapper in the editable that had it, and that wrapper needs its handles and toolbar
-// set up again. The handles cannot have survived. The toolbar is a div on the body that was
-// built for the element undo has just replaced, and still refers to it. If it were left alone
-// it would offer Choose image, Copy image and Delete for an element that is no longer in the
-// document, and it would stay where the old picture used to be.
-//
-// When no wrapper comes back selected, the toolbar has to be removed. That is what happens
-// when an insert is undone: undo has removed the picture the toolbar belonged to.
-function onInlineImagesRestored(event: Event): void {
-    const translationGroup = event.target as HTMLElement | null;
-    if (!translationGroup) return;
-    updateProtectedPictureCounts(translationGroup);
-    resetCkeditorHistories(translationGroup);
-    const selected = translationGroup.querySelector(
+/**
+ * Puts the inline image selection right after an undo or redo of the page history. The history
+ * neither records nor puts back kInlineImageSelectedClass or the handles, which are view state,
+ * so the picture that was selected keeps the class, wherever the undo or redo has left it. When it
+ * is still in the page it gets its handles and toolbar again, for where it is now. When it is
+ * not, as after an undo of the insert that made it, the toolbar, which is a div on the body built
+ * for that picture, goes, so that it does not offer commands for a picture that is gone.
+ */
+export function updateInlineImagesAfterUndoOrRedo(doc: Document): void {
+    const selected = doc.querySelector(
         "." + kInlineImageClass + "." + kInlineImageSelectedClass,
     ) as HTMLElement | null;
     if (selected) selectInlineImage(selected);
-    else deselectAllInlineImages(translationGroup.ownerDocument);
+    else deselectAllInlineImages(doc);
 }
 
 /**
@@ -1571,9 +1283,6 @@ function onInlineImagesRestored(event: Event): void {
  */
 export function inlineImagePictureChanged(img: HTMLElement): void {
     handleInlineImageChanged(img);
-    resetCkeditorHistories(
-        img.closest(".bloom-translationGroup") as HTMLElement,
-    );
     const wrapper = img.closest("." + kInlineImageClass) as HTMLElement | null;
     if (wrapper) selectInlineImage(wrapper);
 }
@@ -1729,7 +1438,7 @@ function onFocusIn(event: FocusEvent): void {
  * outside the window never reaches onPointerEnd. Then the drag never ends. The timer started
  * by startEdgeScrollTimer keeps moving the picture to a pointer position that is no longer
  * updated, the body keeps kInlineImageDraggingClass so text cannot be selected, the toolbar
- * stays hidden, and the change is never copied to the other languages or given an undo point.
+ * stays hidden, and the change is never copied to the other languages.
  * Capturing the pointer makes the browser deliver that pointerup here wherever it happens.
  *
  * No other drag in Bloom crosses from one document to another, which is why nothing else
@@ -2242,10 +1951,8 @@ function continueCrop(state: IInlineImageCropState, event: PointerEvent): void {
     updateInlineImageCropHandles(state.wrapper);
 }
 
-// A press that has not moved far enough is still a click, so nothing changes and no undo entry
-// is recorded until it has. The undo is prepared here, and onPointerEnd commits it
-// through commitInlineImageChange, since even a real drag may end up changing nothing. Returns
-// whether the caller should go on to apply this move.
+// A press that has not moved far enough is still a click, so nothing changes until it has.
+// Returns whether the caller should go on to apply this move.
 function beginGestureIfMoved(
     state: { wrapper: HTMLElement; started: boolean },
     absDeltaX: number,
@@ -2258,7 +1965,6 @@ function beginGestureIfMoved(
     )
         return false;
     state.started = true;
-    prepareInlineImageUndo(state.wrapper);
     state.wrapper.ownerDocument.body.classList.add(kInlineImageDraggingClass);
     setInlineImageContextControlsMoving(state.wrapper.ownerDocument, true);
     return true;
@@ -2308,7 +2014,7 @@ function onPointerEnd(event: PointerEvent): void {
         kInlineImageDraggingClass,
     );
     setInlineImageContextControlsMoving(state.wrapper.ownerDocument, false);
-    if (!state.started) return; // a click changes nothing and prepares no undo point
+    if (!state.started) return; // a click changes nothing
     if (drag && drag === state) {
         restoreNeighborImagePositions(drag);
         normalizeFloatingClusterOrder(
@@ -2377,9 +2083,9 @@ function restoreNeighborImagePositions(state: IInlineImageDragState): void {
     }
 }
 
-// Called at the end of every completed drag or resize of an inline image. The undo entry is
-// committed after the sync, because it checks, before it undoes, that every language's copy is
-// as the commit recorded it.
+// Called at the end of every completed drag or resize of an inline image, inside the page
+// history's transaction for the drag, so that the sync to the other languages is part of its
+// undo step.
 function commitInlineImageChange(
     wrapper: HTMLElement,
     editable: HTMLElement,
@@ -2390,10 +2096,6 @@ function commitInlineImageChange(
         recordInlineImageOffsetBasedOn(each, editable),
     );
     syncInlineImagesFromEditable(editable);
-    if (commitPendingInlineImageUndo(wrapper))
-        resetCkeditorHistories(
-            editable.closest(".bloom-translationGroup") as HTMLElement,
-        );
     OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
 }
 
