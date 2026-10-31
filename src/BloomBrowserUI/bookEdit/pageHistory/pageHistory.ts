@@ -1751,17 +1751,25 @@ class PageHistoryImpl implements PageHistory {
 
     /**
      * Whether a node that records took an ignored node out of was made in the step, so that what
-     * it held was made in the step too: it is in step.ignoredNodesAdded, or it is ignored and
-     * inside one that is, by ignored nodes only. A node that the step moved, or one that the
-     * filter keeps, stops the search: it was in the page when the step began, or may have been.
-     * Its ancestors are those at the end of the records, so a node that the step moved into one
-     * that it added is found among step.ignoredNodesMoved first.
+     * it held was made in the step too: it is in step.ignoredNodesAdded, or inside one that is.
+     * Its ancestors are those at the end of the records, so the search stops at a node that was
+     * in the page when the step began, and which the step may have moved into one that it added:
+     * an ignored node that the step moved (step.ignoredNodesMoved), or a node that the filter
+     * keeps and that is in one of the step's child lists from before it.
      */
     private wasMadeInStep(step: Step, holder: Node): boolean {
+        let inListsFromBefore: Set<Node> | undefined;
         for (let n: Node | null = holder; n; n = n.parentNode) {
             if (step.ignoredNodesAdded.has(n)) return true;
-            if (step.ignoredNodesMoved.has(n) || !this.filter.ignoreNode(n))
-                return false;
+            if (step.ignoredNodesMoved.has(n)) return false;
+            if (!inListsFromBefore) {
+                inListsFromBefore = new Set();
+                for (const change of step.changes.values())
+                    change.children?.before.forEach((child) =>
+                        inListsFromBefore!.add(child),
+                    );
+            }
+            if (inListsFromBefore.has(n)) return false;
         }
         return false;
     }
