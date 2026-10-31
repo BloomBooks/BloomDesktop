@@ -1626,6 +1626,39 @@ describe("page history: restoring the selection on undo and redo", () => {
             restoring.mockRestore();
         }
     });
+
+    // As the toolbox's markup pass, after typing, replaces the text with a copy and puts the caret
+    // in the copy.
+    it("puts the caret back on redo in a copy that a change joining the step put in place of its node", async () => {
+        const f = setUp();
+        const p2 = byId(f, "p2");
+        const typed = p2.firstChild as Text;
+        const selection = document.getSelection()!;
+        await f.history.doTransaction("Typing", () => {
+            typed.data = "Bonjour d";
+            selection.collapse(typed, 9);
+        });
+        const copy = typed.cloneNode() as Text;
+        f.history.addToLatestTransaction(() => {
+            p2.replaceChild(copy, typed);
+            selection.collapse(copy, 9);
+        });
+        expect(
+            f.history.undoDescriptionL10nKey,
+            "test setup: the copy should have joined the typing",
+        ).toBe("Typing");
+
+        await f.history.undo();
+        expect(p2.textContent).toBe("Bonjour");
+        selection.removeAllRanges();
+        await f.history.redo();
+
+        expect(p2.firstChild).toBe(copy);
+        expect(selection.anchorNode, "the caret should be in the copy").toBe(
+            copy,
+        );
+        expect(selection.anchorOffset).toBe(9);
+    });
 });
 
 describe("page history: descriptions", () => {
@@ -2316,6 +2349,148 @@ describe("page history: the filter (rule 6)", () => {
         expect(byId(f, "img1").getAttribute("src")).toBe("a.png");
         expect(byId(f, "img1").getAttribute("data-hover")).toBe("yes");
     });
+
+    describe("an ignored node inside a node that undo puts back", () => {
+        // As CKEditor's selection bookmarks are ignored.
+        const bookmarkFilter: PageHistoryFilter = {
+            ...kKeepEverythingFilter,
+            ignoreNode: (node) =>
+                node instanceof Element &&
+                node.hasAttribute("data-cke-bookmark"),
+        };
+        const kPageWithSentence =
+            '<div class="bloom-editable" id="box1"><p id="p1"><span id="s1">Hello</span></p></div>';
+
+        function addBookmark(parent: Element): HTMLElement {
+            const bookmark = document.createElement("span");
+            bookmark.setAttribute("data-cke-bookmark", "1");
+            bookmark.innerHTML = "&nbsp;";
+            parent.appendChild(bookmark);
+            return bookmark;
+        }
+
+        // As the toolbox's markup pass does after typing: it puts a bookmark at the caret, writes
+        // the sentence again as a copy of itself, and takes the bookmark out of the copy. The
+        // bookmark stays in the sentence that the copy replaced.
+        function replaceWithCopyLeavingBookmarkBehind(span: Element): Element {
+            addBookmark(span);
+            const copy = span.cloneNode(true) as Element;
+            span.replaceWith(copy);
+            copy.querySelector("[data-cke-bookmark]")!.remove();
+            return copy;
+        }
+
+        it("takes out an ignored node that the step added to it", async () => {
+            const f = setUp(kPageWithSentence, { filter: bookmarkFilter });
+            const span = byId(f, "s1");
+            let copy: Element | undefined;
+            await f.history.doTransaction("Typing", () => {
+                (span.firstChild as Text).data = "Helloxy";
+                copy = replaceWithCopyLeavingBookmarkBehind(span);
+            });
+            expect(
+                span.querySelector("[data-cke-bookmark]"),
+                "test setup: the replaced sentence should still hold the bookmark",
+            ).not.toBeNull();
+
+            await f.history.undo();
+
+            expect(byId(f, "p1").innerHTML).toBe('<span id="s1">Hello</span>');
+            expect(byId(f, "s1")).toBe(span);
+            await f.history.redo();
+            expect(byId(f, "p1").innerHTML).toBe(
+                '<span id="s1">Helloxy</span>',
+            );
+            expect(byId(f, "s1")).toBe(copy);
+        });
+
+        it("takes it out when the change that added it joined the step later", async () => {
+            const f = setUp(kPageWithSentence, { filter: bookmarkFilter });
+            const span = byId(f, "s1");
+            await f.history.doTransaction("Typing", () => {
+                (span.firstChild as Text).data = "Helloxy";
+            });
+            f.history.addToLatestTransaction(() => {
+                replaceWithCopyLeavingBookmarkBehind(span);
+            });
+            expect(
+                f.history.undoDescriptionL10nKey,
+                "test setup: the markup pass should have joined the typing",
+            ).toBe("Typing");
+
+            await f.history.undo();
+
+            expect(byId(f, "p1").innerHTML).toBe('<span id="s1">Hello</span>');
+        });
+
+        it("leaves an ignored node that was in it before the step", async () => {
+            // As a video's play button is in its container from when the page is set up, and is
+            // never made again.
+            const f = setUp(kPageWithSentence, { filter: bookmarkFilter });
+            const span = byId(f, "s1");
+            const bookmark = addBookmark(span);
+            await letObserverDeliver();
+            await f.history.doTransaction("Delete", () => {
+                span.remove();
+            });
+            expect(byId(f, "p1").innerHTML, "test setup").toBe("");
+
+            await f.history.undo();
+
+            expect(byId(f, "s1")).toBe(span);
+            expect(bookmark.parentNode).toBe(span);
+        });
+
+        it("leaves an ignored node that the step moved into it from elsewhere in the page", async () => {
+            const f = setUp(kPageWithSentence, { filter: bookmarkFilter });
+            const span = byId(f, "s1");
+            const bookmark = addBookmark(byId(f, "box1"));
+            await letObserverDeliver();
+            await f.history.doTransaction("Delete", () => {
+                span.appendChild(bookmark);
+                span.remove();
+            });
+            expect(
+                bookmark.parentNode,
+                "test setup: the bookmark should have gone out with the sentence",
+            ).toBe(span);
+
+            await f.history.undo();
+
+            expect(byId(f, "s1")).toBe(span);
+            expect(
+                bookmark.parentNode,
+                "undo should not take out an ignored node that the step only moved",
+            ).toBe(span);
+        });
+
+        it("leaves one that changes joining the step later moved into it", async () => {
+            const f = setUp(kPageWithSentence, { filter: bookmarkFilter });
+            const span = byId(f, "s1");
+            const bookmark = addBookmark(byId(f, "box1"));
+            await letObserverDeliver();
+            await f.history.doTransaction("Typing", () => {
+                (span.firstChild as Text).data = "Helloxy";
+            });
+            f.history.addToLatestTransaction(() => bookmark.remove());
+            f.history.addToLatestTransaction(() => {
+                span.appendChild(bookmark);
+                span.replaceWith(span.cloneNode(true));
+            });
+            expect(
+                f.history.undoDescriptionL10nKey,
+                "test setup: both changes should have joined the typing",
+            ).toBe("Typing");
+
+            await f.history.undo();
+
+            expect(byId(f, "s1")).toBe(span);
+            expect(
+                bookmark.parentNode,
+                "undo should not take out an ignored node that the step only moved",
+            ).toBe(span);
+        });
+    });
 });
 
 describe("page history: a node made and thrown away within one batch", () => {
@@ -2988,6 +3163,32 @@ describe("page history: log", () => {
         expect(lines[0]).toMatch(
             /: the children of .*p2.* are not the ones that the step left$/,
         );
+    });
+
+    it("logs which text differs, without the page's text, when an undo finds the page changed", async () => {
+        const log = vi.fn<(line: string) => void>();
+        const f = setUp(kStandardPage, { log });
+        const text = byId(f, "p2").firstChild as Text;
+        expect(text.data, "test setup").toBe("Bonjour");
+        await f.history.doTransaction("A", () => {
+            text.data = "Bonjour secret";
+        });
+        f.history.doOutsideHistory(() => {
+            text.data = "Bonjour private";
+        });
+        log.mockClear();
+
+        await f.history.undo();
+
+        expect(text.data, "a refused undo should leave the page alone").toBe(
+            "Bonjour private",
+        );
+        const lines = log.mock.calls.map((call) => call[0]);
+        expect(lines.length).toBe(1);
+        expect(lines[0]).toMatch(
+            /: the text of .*p2.* is not the text that the step left$/,
+        );
+        expect(lines[0]).not.toMatch(/Bonjour|secret|private/);
     });
 });
 
