@@ -618,7 +618,7 @@ describe("typing", () => {
         },
     );
 
-    it.each(["Escape", "Tab", "Dead", "Unidentified"])(
+    it.each(["Escape", "F2", "F9", "Tab", "Dead", "Unidentified"])(
         "opens nothing, and leaves the step open, for %s, which neither types nor deletes",
         (key) => {
             const box = byId("box1");
@@ -872,6 +872,18 @@ describe("typing", () => {
             modifierAltGraph: true,
         } as KeyboardEventInit);
         box.lastElementChild!.append("1");
+        asUser(box, new InputEvent("input", { bubbles: true }));
+        finishTask();
+        pressUndoKey();
+
+        expect(await undoEverything()).toEqual(["HelloBonjour"]);
+    });
+
+    it("treats Ctrl+Alt with a digit that Bloom does not bind, such as 5, as typing", async () => {
+        const box = byId("box1");
+        typeText(box, "a");
+        keyDown(box, { key: "5", ctrlKey: true, altKey: true });
+        box.lastElementChild!.append("5");
         asUser(box, new InputEvent("input", { bubbles: true }));
         finishTask();
         pressUndoKey();

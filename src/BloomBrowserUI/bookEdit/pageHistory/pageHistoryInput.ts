@@ -116,11 +116,14 @@ const kTypingInputTypes =
 // The keys that delete, which the browser's undo groups apart from the keys that type.
 const kDeletingKeys = new Set(["Backspace", "Delete"]);
 
-// The KeyboardEvent.key of a function key, F1 to F24.
-const kFunctionKey = /^F([1-9]|1[0-9]|2[0-4])$/;
+// The keys with no modifier that Bloom binds to a command on the text of a box: F6 makes a
+// superscript, F7 and F8 make headings (AddEditKeyHandlers in bloomEditing.ts). Every other key
+// that Bloom binds to a command on the page has Ctrl.
+const kBloomCommandKeys = new Set(["F6", "F7", "F8"]);
 
-// The KeyboardEvent.key of a digit key.
-const kDigitKey = /^[0-9]$/;
+// The keys that Bloom binds with Ctrl+Alt: 0, 1 and 2 set a paragraph or heading style
+// (AddEditKeyHandlers in bloomEditing.ts).
+const kBloomCtrlAltCommandKeys = new Set(["0", "1", "2"]);
 
 // The values of KeyboardEvent.key for a modifier or lock key. A keydown of one of these alone
 // opens no transaction, ends no typing step and counts for nothing. The toolbox's markup handlers
@@ -697,7 +700,7 @@ function isUndoOrRedoKey(event: KeyboardEvent): boolean {
 
 /**
  * True for the value of KeyboardEvent.key of a key that types: a single character (one code
- * point, which may be outside the BMP), or Enter. Named keys such as "Escape", "Tab", "Dead"
+ * point, which may be outside the BMP), or Enter. Named keys such as "Escape", "F2", "Tab", "Dead"
  * and "Unidentified" are longer.
  */
 function isTypingKey(key: string): boolean {
@@ -705,17 +708,19 @@ function isTypingKey(key: string): boolean {
 }
 
 /**
- * A key press that CKEditor or Bloom would treat as a command: a function key, such as Bloom's
- * F6, F7 and F8 (bloomEditing.ts), or one with Ctrl, Alt or Command, but not a modifier key on its
- * own, and not AltGr, which types characters on many keyboards and reports Ctrl and Alt both. A
- * Ctrl+Alt press counts as AltGr unless the browser says otherwise and its key is a digit, such
- * as Bloom's Ctrl+Alt+0, 1 and 2: AltGr with a digit key types something other than the digit.
+ * A key press that CKEditor or Bloom would treat as a command: one of Bloom's F6, F7 and F8, or
+ * one with Ctrl, Alt or Command, but not a modifier key on its own, and not AltGr, which types
+ * characters on many keyboards and reports Ctrl and Alt both. A Ctrl+Alt press counts as AltGr
+ * unless the browser says otherwise and it is one of Bloom's Ctrl+Alt+0, 1 and 2: AltGr with a
+ * digit key types something other than the digit. Other function keys change nothing in a box,
+ * so they neither end a typing step nor make one.
  */
 function isCommandKey(event: KeyboardEvent): boolean {
     if (kModifierKeys.has(event.key)) return false;
-    if (kFunctionKey.test(event.key)) return true;
+    if (kBloomCommandKeys.has(event.key)) return true;
     if (event.getModifierState?.("AltGraph")) return false;
-    if (event.ctrlKey && event.altKey) return kDigitKey.test(event.key);
+    if (event.ctrlKey && event.altKey)
+        return kBloomCtrlAltCommandKeys.has(event.key);
     return event.ctrlKey || event.altKey || event.metaKey;
 }
 
