@@ -164,11 +164,6 @@ REVIEW-PLAN.md's table. The design itself is in APPROACHES.md; section numbers b
     page that names that file. The swaps on the current page are undoable, one step each. The "AI
     image editor" pull request stops a commit deleting the replaced files and puts the request back
     on the list.
-41. **Set as Background may make a change after its step closes.** When the canvas has no real
-    background picture, its command in `canvasControlRegistry.ts` selects the new background and
-    calls `expandImageToFillSpace` in a `setTimeout`. `runControlCallback` waits for the command and
-    for the page content delays, not for that timer, so the fill may land after the step, outside
-    any transaction, and join the latest step. Not checked.
 42. **E2E coverage that is still missing.** No e2e test covers the requests that end the history
     (only `bloomApiPageHistory.spec.ts`, a unit test), undo during real playback (item 39), or, from
     PR 8521, the reader tools' highlights while typing, Show Invisibles, the fit at the end of a
