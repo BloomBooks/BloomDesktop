@@ -206,3 +206,8 @@ same tree as `BL-17020-undo` apart from the fixes made on the stack since the re
 
 PR 8484 is closed. Its branch, `BL-17020-undo`, stays as the source of the PRs after "Replace the
 old undo".
+
+## When the plan is done
+
+When the last PR of this plan has merged, delete REVIEW-PLAN.md and MINIMUM.md. Before that,
+rewrite each code comment that cites a MINIMUM.md item so that it states the rule in place.
