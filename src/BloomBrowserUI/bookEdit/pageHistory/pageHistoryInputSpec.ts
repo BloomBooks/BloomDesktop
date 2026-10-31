@@ -618,7 +618,7 @@ describe("typing", () => {
         },
     );
 
-    it.each(["Escape", "F2", "Tab", "Dead", "Unidentified"])(
+    it.each(["Escape", "Tab", "Dead", "Unidentified"])(
         "opens nothing, and leaves the step open, for %s, which neither types nor deletes",
         (key) => {
             const box = byId("box1");
@@ -818,6 +818,65 @@ describe("typing", () => {
             "HelloabBonjour",
             "HelloBonjour",
         ]);
+    });
+
+    // As Bloom's F6, F7 and F8, and its Ctrl+Alt+0, 1 and 2, which format the text (bloomEditing.ts).
+    it.each([
+        ["F7", { key: "F7" }],
+        ["Ctrl+Alt+1", { key: "1", ctrlKey: true, altKey: true }],
+    ])(
+        "makes %s a command, a step of its own after typing",
+        async (_name, init) => {
+            const box = byId("box1");
+            onBloomEvent(box, "keydown", (e) => {
+                if ((e as KeyboardEvent).key === init.key)
+                    box.firstElementChild!.setAttribute("data-format", "h1");
+            });
+            typeText(box, "ab");
+            keyDown(box, init);
+            finishTask();
+            pressUndoKey();
+
+            expect(await undoEverything()).toEqual([
+                "HelloabBonjour",
+                "HelloBonjour",
+            ]);
+            expect(box.firstElementChild!.hasAttribute("data-format")).toBe(
+                false,
+            );
+        },
+    );
+
+    it("makes F7 a step on a page with no step before it", async () => {
+        const box = byId("box1");
+        onBloomEvent(box, "keydown", () =>
+            box.firstElementChild!.setAttribute("data-format", "h1"),
+        );
+        keyDown(box, { key: "F7" });
+        finishTask();
+
+        expect(history.undoDescriptionL10nKey).toBe(
+            kGenericUndoDescriptionL10nKey,
+        );
+        await history.undo();
+        expect(box.firstElementChild!.hasAttribute("data-format")).toBe(false);
+    });
+
+    it("treats Ctrl+Alt+1 as typing when it is AltGr", async () => {
+        const box = byId("box1");
+        typeText(box, "a");
+        keyDown(box, {
+            key: "1",
+            ctrlKey: true,
+            altKey: true,
+            modifierAltGraph: true,
+        } as KeyboardEventInit);
+        box.lastElementChild!.append("1");
+        asUser(box, new InputEvent("input", { bubbles: true }));
+        finishTask();
+        pressUndoKey();
+
+        expect(await undoEverything()).toEqual(["HelloBonjour"]);
     });
 
     it("closes a step when the focus leaves the box", async () => {

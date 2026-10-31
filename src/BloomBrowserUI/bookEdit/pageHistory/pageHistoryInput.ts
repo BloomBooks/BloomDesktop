@@ -116,6 +116,12 @@ const kTypingInputTypes =
 // The keys that delete, which the browser's undo groups apart from the keys that type.
 const kDeletingKeys = new Set(["Backspace", "Delete"]);
 
+// The KeyboardEvent.key of a function key, F1 to F24.
+const kFunctionKey = /^F([1-9]|1[0-9]|2[0-4])$/;
+
+// The KeyboardEvent.key of a digit key.
+const kDigitKey = /^[0-9]$/;
+
 // The values of KeyboardEvent.key for a modifier or lock key. A keydown of one of these alone
 // opens no transaction, ends no typing step and counts for nothing. The toolbox's markup handlers
 // on each box (pageEditingMarkup.ts) leave these keys alone too.
@@ -691,7 +697,7 @@ function isUndoOrRedoKey(event: KeyboardEvent): boolean {
 
 /**
  * True for the value of KeyboardEvent.key of a key that types: a single character (one code
- * point, which may be outside the BMP), or Enter. Named keys such as "Escape", "F2", "Tab", "Dead"
+ * point, which may be outside the BMP), or Enter. Named keys such as "Escape", "Tab", "Dead"
  * and "Unidentified" are longer.
  */
 function isTypingKey(key: string): boolean {
@@ -699,14 +705,17 @@ function isTypingKey(key: string): boolean {
 }
 
 /**
- * A key press that CKEditor would treat as a command: one with Ctrl, Alt or Command, but not a
- * modifier key on its own, and not AltGr, which types characters on many keyboards and reports
- * Ctrl and Alt both.
+ * A key press that CKEditor or Bloom would treat as a command: a function key, such as Bloom's
+ * F6, F7 and F8 (bloomEditing.ts), or one with Ctrl, Alt or Command, but not a modifier key on its
+ * own, and not AltGr, which types characters on many keyboards and reports Ctrl and Alt both. A
+ * Ctrl+Alt press counts as AltGr unless the browser says otherwise and its key is a digit, such
+ * as Bloom's Ctrl+Alt+0, 1 and 2: AltGr with a digit key types something other than the digit.
  */
 function isCommandKey(event: KeyboardEvent): boolean {
     if (kModifierKeys.has(event.key)) return false;
+    if (kFunctionKey.test(event.key)) return true;
     if (event.getModifierState?.("AltGraph")) return false;
-    if (event.ctrlKey && event.altKey) return false;
+    if (event.ctrlKey && event.altKey) return kDigitKey.test(event.key);
     return event.ctrlKey || event.altKey || event.metaKey;
 }
 

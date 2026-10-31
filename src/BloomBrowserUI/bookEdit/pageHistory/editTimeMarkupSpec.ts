@@ -286,6 +286,33 @@ describe("kept style", () => {
         );
     });
 
+    it("keeps only the page's colors on the .bloom-page, as C#'s save does", () => {
+        const page = document.createElement("div");
+        page.className = "bloom-page";
+        const pageStyle =
+            "width: 500px; --page-background-color: red; --PAGENUMBER-color: blue; " +
+            "--pageNumber-outline-color: green; --pageNumber-background-color: white; --other: 1";
+        expect(keptAttributeValue(page, "style", pageStyle)).toBe(
+            "--page-background-color: red; --PAGENUMBER-color: blue; " +
+                "--pageNumber-outline-color: green; --pageNumber-background-color: white;",
+        );
+        expect(
+            keptAttributeValue(page, "style", "width: 500px"),
+        ).toBeUndefined();
+        expect(
+            attributeValueToPutBack(
+                page,
+                "style",
+                "--page-background-color: red;",
+                "width: 500px; --page-background-color: blue",
+            ),
+        ).toBe("--page-background-color: red; width: 500px;");
+        const other = document.createElement("div");
+        expect(keptAttributeValue(other, "style", "width: 500px")).toBe(
+            "width: 500px;",
+        );
+    });
+
     it("leaves out min-height only on a box, where OverflowChecker works it out", () => {
         makePage(kEditablePage);
         expect(
