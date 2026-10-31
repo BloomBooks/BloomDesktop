@@ -64,6 +64,8 @@ export interface IWorkspaceExports {
     closeDecodableReaderSetupDialog(): void;
     showImageGalleryDialog(img: HTMLElement, searchLang: string): void;
     openAiImageEditor(target: IAiImageEditorTarget): void;
+    // Where each page frame's history sends what it does, for the Show Page History dialog.
+    pageHistoryRecorder: PageHistoryRecorder;
 }
 
 export function SayHello() {
@@ -111,6 +113,10 @@ import { showImageGalleryDialog as doShowImageGalleryDialog } from "../react_com
 // page reloads that iframe and would strand the overlay; C# calls this once it has saved.
 // See aiImageEditorOverlay.ts.
 import { openAiImageEditor } from "./aiImageEditor/aiImageEditorOverlay";
+import {
+    pageHistoryRecorder,
+    type PageHistoryRecorder,
+} from "./pageHistory/pageHistoryRecorder";
 import type { IAiImageEditorTarget } from "./aiImageEditor/aiImageEditorShared";
 export { openAiImageEditor };
 import { renderRoot } from "../utils/reactRender";
@@ -456,6 +462,7 @@ interface WorkspaceBundleApi {
     closeDecodableReaderSetupDialog: typeof closeDecodableReaderSetupDialog;
     showRegistrationDialog: typeof showRegistrationDialogForEditTab;
     showAboutDialog: typeof showAboutDialog;
+    pageHistoryRecorder: PageHistoryRecorder;
 }
 
 declare global {
@@ -507,4 +514,5 @@ window.workspaceBundle = {
     closeDecodableReaderSetupDialog,
     showRegistrationDialog: showRegistrationDialogForEditTab,
     showAboutDialog,
+    pageHistoryRecorder,
 };
