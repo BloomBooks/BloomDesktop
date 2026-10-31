@@ -80,8 +80,8 @@ interface Step {
     // page, each serialized when it was taken out. The observer cannot see a change to a detached
     // node, so before the next undo or redo each must still serialize the same (rule 4).
     detachedAsText: Map<Node, string>;
-    // The nodes that the filter ignores and that the step's records added to a node it does not
-    // ignore. The page had none of them when the step began, so undo takes out each one that it
+    // The nodes that the filter ignores and that the step's records added to a node, or took out
+    // of one of these. The page had none of them when the step began, so undo takes out each one that it
     // brings back into the page inside a node that it puts back, as the toolbox's markup pass
     // leaves a CKEditor bookmark in a sentence that it replaces with a copy.
     ignoredNodesAdded: Set<Node>;
@@ -827,7 +827,9 @@ class PageHistoryImpl implements PageHistory {
 
     /**
      * Make the values noted by noteValuesBeforeUnrecordedChanges the after values of open's
-     * changes, in place of those read from the page.
+     * changes, in place of those read from the page. A value that the page now holds as it was
+     * when open began keeps the after value read from the page: there is nothing for undo to put
+     * back, so it is no change, and it makes no step that undo would refuse.
      */
     private useValuesBeforeUnrecordedChanges(open: OpenTransaction): void {
         open.valuesBeforeUnrecordedChanges.forEach((noted, node) => {
@@ -835,11 +837,20 @@ class PageHistoryImpl implements PageHistory {
             if (!change) return;
             noted.attributes?.forEach((value, name) => {
                 const values = change.attributes?.get(name);
-                if (values) values.after = value;
+                if (values && values.after !== values.before)
+                    values.after = value;
             });
-            if (noted.text !== undefined && change.text)
+            if (
+                noted.text !== undefined &&
+                change.text &&
+                change.text.after !== change.text.before
+            )
                 change.text.after = noted.text;
-            if (noted.children && change.children)
+            if (
+                noted.children &&
+                change.children &&
+                !sameNodes(change.children.after, change.children.before)
+            )
                 change.children.after = noted.children;
         });
     }
@@ -1711,20 +1722,24 @@ class PageHistoryImpl implements PageHistory {
 
     /**
      * Add to step.ignoredNodesAdded the nodes that the filter ignores and that records, the
-     * step's own in the order they were made, added to a node that it does not ignore, leaving
-     * out those that the step had already taken out of a node (step.ignoredNodesMoved).
+     * step's own in the order they were made, added to a node, leaving out those that the step
+     * had already taken out of a node (step.ignoredNodesMoved). One added to an ignored node is
+     * noted too, since the step may move it on into a node that undo puts back.
      */
     private noteIgnoredNodesAdded(step: Step, records: MutationRecord[]): void {
         for (const record of records) {
             if (record.type !== "childList") continue;
             record.removedNodes.forEach((node) => {
                 if (
-                    this.filter.ignoreNode(node) &&
-                    !step.ignoredNodesAdded.has(node)
+                    !this.filter.ignoreNode(node) ||
+                    step.ignoredNodesAdded.has(node)
                 )
-                    step.ignoredNodesMoved.add(node);
+                    return;
+                // A node taken out of one that the step added was made in the step too.
+                if (isInsideOneOf(record.target, step.ignoredNodesAdded))
+                    step.ignoredNodesAdded.add(node);
+                else step.ignoredNodesMoved.add(node);
             });
-            if (this.isIgnored(record.target)) continue;
             record.addedNodes.forEach((node) => {
                 if (
                     this.filter.ignoreNode(node) &&

@@ -1131,6 +1131,38 @@ describe("page history: undo is refused when the page lacks the values a step le
         expect(image.getAttribute("src")).toBe("c.png");
     });
 
+    it("makes no step of values that an unrecorded change put back as they were before the transaction", async () => {
+        const f = setUp();
+        const image = byId(f, "img1");
+        const text = byId(f, "p2").firstChild as Text;
+        const canvas = byId(f, "canvas");
+        await stepSettingAttribute(f, "Older", byId(f, "box1"), "lang", "de");
+        await stepSettingAttribute(f, "Undone", byId(f, "box2"), "lang", "es");
+        await f.history.undo();
+        expect(f.history.redoDescriptionL10nKey, "test setup").toBe("Undone");
+        const begun = f.history.beginTransaction("Picture");
+        image.setAttribute("src", "b.png");
+        text.data = "Bonsoir";
+        const added = document.createElement("span");
+        canvas.appendChild(added);
+        f.history.doOutsideHistory(() => {
+            image.setAttribute("src", "a.png");
+            text.data = "Bonjour";
+            added.remove();
+        });
+        begun.end();
+
+        expect(
+            f.history.undoDescriptionL10nKey,
+            "a transaction that leaves the page as it was makes no step",
+        ).toBe("Older");
+        expect(f.history.redoDescriptionL10nKey, "redo should be kept").toBe(
+            "Undone",
+        );
+        await f.history.undo();
+        expect(byId(f, "box1").getAttribute("lang")).toBe("en");
+    });
+
     it("refuses an undo whose text node an unrecorded change took out of the page", async () => {
         const f = setUp();
         await stepSettingAttribute(f, "Older", byId(f, "box1"), "lang", "de");
@@ -2529,6 +2561,54 @@ describe("page history: the filter (rule 6)", () => {
                 bookmark.parentNode,
                 "undo should not take out an ignored node that the step only moved",
             ).toBe(span);
+        });
+
+        it("takes out one that the step added to an ignored node and then moved into it", async () => {
+            const f = setUp(kPageWithSentence, { filter: bookmarkFilter });
+            const span = byId(f, "s1");
+            const ignoredHolder = addBookmark(byId(f, "box1"));
+            await letObserverDeliver();
+            let bookmark: HTMLElement | undefined;
+            await f.history.doTransaction("Delete", () => {
+                bookmark = addBookmark(ignoredHolder);
+                span.appendChild(bookmark);
+                span.remove();
+            });
+            expect(
+                bookmark!.parentNode,
+                "test setup: the bookmark should have gone out with the sentence",
+            ).toBe(span);
+
+            await f.history.undo();
+
+            expect(byId(f, "s1")).toBe(span);
+            expect(
+                bookmark!.parentNode,
+                "undo should take out an ignored node that the step made",
+            ).toBeNull();
+            expect(ignoredHolder.parentNode).toBe(byId(f, "box1"));
+        });
+
+        it("takes out one that the step added inside an ignored node it added, and then moved into it", async () => {
+            const f = setUp(kPageWithSentence, { filter: bookmarkFilter });
+            const span = byId(f, "s1");
+            let bookmark: HTMLElement | undefined;
+            await f.history.doTransaction("Delete", () => {
+                const ignoredHolder = document.createElement("span");
+                ignoredHolder.setAttribute("data-cke-bookmark", "1");
+                bookmark = addBookmark(ignoredHolder);
+                byId(f, "box1").appendChild(ignoredHolder);
+                span.appendChild(bookmark);
+                span.remove();
+            });
+
+            await f.history.undo();
+
+            expect(byId(f, "s1")).toBe(span);
+            expect(
+                bookmark!.parentNode,
+                "undo should take out an ignored node that the step made",
+            ).toBeNull();
         });
 
         it("leaves one that changes joining the step later moved into it", async () => {
