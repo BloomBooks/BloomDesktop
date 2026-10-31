@@ -810,7 +810,7 @@ test.describe("rotating and flipping pictures", () => {
             .toBeCloseTo(angle, 1);
     });
 
-    test("Reset Image straightens a picture that Rotate right turned, and Undo does not turn it back [Test Case ID 827]", async ({
+    test("Reset Image straightens a picture that Rotate right turned, and Undo turns it back [Test Case ID 827]", async ({
         page,
     }) => {
         await goToPage(page, itemsPage.id);
@@ -843,16 +843,24 @@ test.describe("rotating and flipping pictures", () => {
             await isResetImageEnabled(page),
             "Reset Image should be greyed out once it has put the picture back.",
         ).toBe(false);
-        // Each Rotate right step would put back the angle from before it, turning the reset
-        // picture to 90 degrees again.
-        expect(
-            await canUndo(page),
-            "After Reset Image, Undo still offers to take back a rotation.",
-        ).toBe(false);
         await saveScreenshotIfAsked(
             [canvas(page)],
             "36-reset-after-rotate-right",
         );
+
+        // Reset Image is a step of its own, so Undo takes back the reset, and the box is turned
+        // as the two Rotate rights left it.
+        expect(
+            await canUndo(page),
+            "After Reset Image, Undo should offer to take back the reset.",
+        ).toBe(true);
+        await undo(page);
+        await expect
+            .poll(async () => getCanvasElementRotation(picture), {
+                message:
+                    "Undo after Reset Image did not turn the box back to where Rotate right left it.",
+            })
+            .toBe(180);
     });
 
     test("Change Image gives a turned and mirrored picture an upright, unmirrored new one [Test Case ID 827]", async ({
