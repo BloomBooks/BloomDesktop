@@ -6,7 +6,6 @@ import { get } from "../../../../utils/bloomApi";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { isLongPressEvaluating, IToolboxSettings } from "../../toolbox";
 import { updateMarkupAfterUndoOrRedo } from "../../pageEditingMarkup";
-import StyleEditor from "../../../StyleEditor/StyleEditor";
 import $ from "jquery";
 
 // This class renders the DecodableReaderToolControls React component
@@ -41,11 +40,9 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
     public detachFromPage(): void {
         getTheOneReaderToolsModel().setMarkupType(0);
     }
+    /** Mark up the page again after typing; the toolbox's markup pass calls this. */
     public updateMarkup() {
-        // Don't let this lower-level code create ckeditor bookmarks in this case.
-        // We've already created them in toolbox.ts which calls this.
-        const createCkEditorBookMarks = false;
-        getTheOneReaderToolsModel().doMarkup(createCkEditorBookMarks);
+        getTheOneReaderToolsModel().doMarkup();
     }
     public showTool() {
         // change markup based on visible options
@@ -127,34 +124,18 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
         // invoke function when a bloom-editable element loses focus.
         $(container)
             .find(".bloom-editable")
-            .focusout((event) => {
-                let createCkEditorBookMarks = true;
-                // We don't want to create bookmarks if we are switching from one text box on the page to another.
-                // Otherwise, we prevent switching text boxes altogether because the restoration of the bookmark
-                // will put focus back into the text box we are trying to leave.
-                // relatedTarget is what we are switching to, if anything.
-                if (
-                    event.relatedTarget &&
-                    event.relatedTarget !== event.target &&
-                    event.relatedTarget.matches(".bloom-editable")
-                )
-                    createCkEditorBookMarks = false;
-                // If the Format (Styles) dialog is showing, then we don't want to create
-                // bookmarks.  The div#format-toolbar is instantiated only when the dialog
-                // is showing.  See BL-13043.
-                else if (StyleEditor.isStyleDialogOpen())
-                    createCkEditorBookMarks = false;
+            .focusout(() => {
                 if (window?.top?.[isLongPressEvaluating]) {
                     // This gets raised, for no reason I can see, when you click on one
                     // of the longpress buttons. The bloom-editable is the target. It makes no
                     // sense that it should be losing focus at this point, but it happens.
-                    // Markup will be sorted out when the long press is done (at keyup).
-                    // Letting it happen now seems to contribute to the insertion point jumping
-                    // back to previous locations (BL-12889), possibly because the call here
-                    // creates a bookmark but doesn't use and remove it.
+                    // Markup will be sorted out when the long press is done (at keyup), so
+                    // there is nothing to gain from doing it now.
                     return;
                 }
-                getTheOneReaderToolsModel().doMarkup(createCkEditorBookMarks);
+                // doMarkup only reads the boxes, so it cannot pull the focus back into the box
+                // that is losing it, wherever the focus is going.
+                getTheOneReaderToolsModel().doMarkup();
             });
 
         $(container)
@@ -168,21 +149,28 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
             .keydown((e): boolean => {
                 if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) {
                     // ctrl-z or ctrl-Y
-                    if (
-                        getTheOneReaderToolsModel().currentMarkupType !==
-                        MarkupType.None
-                    ) {
-                        e.preventDefault();
-                        if (e.shiftKey || e.keyCode == 89) {
-                            // ctrl-shift-z or ctrl-y
-                            getTheOneReaderToolsModel().redo();
-                        } else {
-                            getTheOneReaderToolsModel().undo();
-                        }
-                        // Both of those restore a saved innerHTML, which replaces the text
-                        // nodes our highlights are painted over, so the markup has to be
-                        // redone before they can paint anything again (BL-16558).
+                    // The keys are left to CKEditor's undo and redo; the reader tools' own undo
+                    // is for the Undo button (toolboxUndoProvider) only. CKEditor's listener on
+                    // the box runs after this one whatever this returns, so running the reader's
+                    // undo here would make one keypress two undos, and CKEditor's redo would then
+                    // put back the box as the reader's undo had left it.
+                    const model = getTheOneReaderToolsModel();
+                    if (model.currentMarkupType !== MarkupType.None) {
+                        // The reader tools' own history knows nothing of CKEditor's undo or redo.
+                        // Start it again from the box as CKEditor leaves it, once CKEditor's
+                        // handler has run. Otherwise the next markup pass would record the undone
+                        // text as a new edit, and the Undo button would then undo the Ctrl+Z,
+                        // putting back the text that it took away.
+                        const box = e.currentTarget as HTMLElement;
+                        window.setTimeout(() => model.noteFocus(box));
+                        // CKEditor's undo or redo replaces the text nodes our highlights are
+                        // painted over, so the markup has to be redone before they can paint
+                        // anything again (BL-16558). The update is scheduled, so it comes after
+                        // CKEditor's handler.
                         updateMarkupAfterUndoOrRedo();
+                        // CKEditor's own listener on the box still runs, but this keeps the
+                        // browser's undo and the page's handlers on the document
+                        // (redoKeyBinding.ts) out of it.
                         return false;
                     }
                 }

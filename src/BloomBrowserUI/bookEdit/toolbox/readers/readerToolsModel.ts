@@ -649,13 +649,35 @@ export class ReaderToolsModel {
         this.activeElement = element;
         this.undoStack = [];
         this.redoStack = [];
+        const contents = ReaderToolsModel.contentsOf(element);
         this.undoStack.push({
-            html: element.innerHTML,
-            text: element.textContent,
+            html: contents.html,
+            text: contents.text,
             offset: EditableDivUtils.getElementSelectionIndex(
                 this.activeElement,
             ),
         });
+    }
+
+    /**
+     * The html and text that this tool's undo keeps for a box. They leave out CKEditor's filling
+     * character: doMarkup no longer rewrites the box from CKEditor's getData(), which left it out,
+     * so the box can hold it when we look, and undo or redo would write it back as text that
+     * CKEditor no longer tracks and that is then saved into the book (BL-16490).
+     * They also leave out CKEditor's selection bookmarks, which the toolbox's markup pass puts in
+     * the box around our markup when there is an nbsp or a comment to clean up, and takes out
+     * after it. Kept, undo would write one back, where nothing would ever take it out.
+     */
+    private static contentsOf(element: HTMLElement): {
+        html: string;
+        text: string;
+    } {
+        const clone =
+            EditableDivUtils.cloneWithoutTrackedCkEditorFillingChar(element);
+        clone
+            .querySelectorAll("[data-cke-bookmark]")
+            .forEach((bookmark) => bookmark.remove());
+        return { html: clone.innerHTML, text: clone.textContent ?? "" };
     }
 
     public shouldHandleUndo(): boolean {
@@ -665,7 +687,7 @@ export class ReaderToolsModel {
     public undo(): void {
         if (!this.activeElement) return;
         if (
-            this.activeElement.textContent ==
+            ReaderToolsModel.contentsOf(this.activeElement).text ==
                 this.undoStack[this.undoStack.length - 1].text &&
             this.undoStack.length > 1
         ) {
@@ -692,7 +714,8 @@ export class ReaderToolsModel {
         if (
             this.undoStack &&
             (this.undoStack.length > 1 ||
-                this.activeElement.textContent !== this.undoStack[0].text)
+                ReaderToolsModel.contentsOf(this.activeElement).text !==
+                    this.undoStack[0].text)
         ) {
             return true;
         }
@@ -723,9 +746,14 @@ export class ReaderToolsModel {
     }
 
     /**
-     * Displays the correct markup for the current page.
+     * Displays the correct markup for the current page: the reader highlights, the page's
+     * page-too-many-words-or-sentences class, and the statistics in the toolbox. It reads the
+     * boxes and paints CSS highlights over their text; it does not rewrite them, so the caret
+     * stays where it is and nothing needs to be recorded to put it back. The only changes it
+     * makes to a box are the removal of markup that earlier versions of Bloom saved
+     * (removeSynphonyMarkup and removeCkEditorMarkup).
      */
-    public doMarkup(createCkEditorBookMarks: boolean = true): void {
+    public doMarkup(): void {
         if (!this.readyToDoMarkup()) return;
         if (this.currentMarkupType === MarkupType.None) {
             this.clearReaderHighlights();
@@ -743,7 +771,6 @@ export class ReaderToolsModel {
         // console.log("start of doMarkup:");
         // EditableDivUtils.logElementsInnerHtml(editableElements.toArray());
 
-        let bookmarksForEachEditable: object[] = [];
         if (editableElements.length === 0) {
             // e.g. a cover page. There is nothing to mark, so make sure nothing is left
             // highlighted from a page that did have something.
@@ -758,19 +785,6 @@ export class ReaderToolsModel {
                 .closest("body")
                 .children('.qtip:not(".uibloomSourceTextsBubble")')
                 .remove();
-
-            if (
-                this.currentMarkupType === MarkupType.Decodable ||
-                this.currentMarkupType === MarkupType.Leveled
-            )
-                bookmarksForEachEditable = EditableDivUtils.doCkEditorCleanup(
-                    editableElements
-                        .filter(
-                            (index, element) => !!(element as HTMLDivElement),
-                        )
-                        .toArray() as HTMLDivElement[],
-                    createCkEditorBookMarks,
-                );
         }
 
         switch (this.currentMarkupType) {
@@ -839,31 +853,21 @@ export class ReaderToolsModel {
             default:
         }
 
-        // console.log("in doMarkup, before restoreSelection:");
-        // EditableDivUtils.logElementsInnerHtml(editableElements.toArray());
-
-        if (bookmarksForEachEditable.length)
-            EditableDivUtils.restoreSelectionFromCkEditorBookmarks(
-                editableElements
-                    .filter((index, element) => !!(element as HTMLDivElement))
-                    .toArray() as HTMLDivElement[],
-                bookmarksForEachEditable,
-            );
-
         // console.log("end of doMarkup:");
         // EditableDivUtils.logElementsInnerHtml(editableElements.toArray());
 
-        if (
-            this.activeElement &&
-            this.activeElement.textContent !=
-                this.undoStack[this.undoStack.length - 1].text
-        ) {
-            this.undoStack.push({
-                html: this.activeElement.innerHTML,
-                text: this.activeElement.textContent,
-                offset: oldSelectionPosition,
-            });
-            this.redoStack = []; // ok because only referred to by this variable.
+        if (this.activeElement) {
+            const contents = ReaderToolsModel.contentsOf(this.activeElement);
+            if (
+                contents.text !== this.undoStack[this.undoStack.length - 1].text
+            ) {
+                this.undoStack.push({
+                    html: contents.html,
+                    text: contents.text,
+                    offset: oldSelectionPosition,
+                });
+                this.redoStack = []; // ok because only referred to by this variable.
+            }
         }
     }
 

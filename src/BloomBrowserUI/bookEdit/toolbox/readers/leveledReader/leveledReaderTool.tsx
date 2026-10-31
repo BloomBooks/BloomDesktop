@@ -102,10 +102,7 @@ export class LeveledReaderTool extends ToolboxToolReactAdaptor {
     // the thing that the user typed may need to receieve markup or have markup taken
     // away from it
     public updateMarkup() {
-        // Don't let this lower-level code create ckeditor bookmarks in this case.
-        // We've already created them in toolbox.ts which calls this.
-        const createCkEditorBookMarks = false;
-        getTheOneReaderToolsModel().doMarkup(createCkEditorBookMarks);
+        getTheOneReaderToolsModel().doMarkup();
     }
 
     public showTool() {

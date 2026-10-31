@@ -132,9 +132,8 @@ export function canUndo(): boolean {
 }
 
 /**
- * Whether the reader tools take Ctrl+Z and Ctrl+Y in a text block. Their key handler on each
- * editable claims both keys whenever a markup tool is selected (see decodableReaderTool.tsx), and
- * the page's own handlers of those keys must leave them to it then.
+ * Whether a reader markup tool is selected. The page's own handlers of Ctrl+Z and Ctrl+Y in a text
+ * block leave both keys to CKEditor then (see decodableReaderTool.tsx).
  */
 export function readerToolsHandleUndoKeys(): boolean {
     return !!getTheOneReaderToolsModel()?.shouldHandleUndo();

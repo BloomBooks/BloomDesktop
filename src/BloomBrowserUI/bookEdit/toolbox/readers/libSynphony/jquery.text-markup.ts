@@ -12,8 +12,8 @@ import * as _ from "underscore";
 import { theOneLibSynphony, LibSynphony } from "./synphony_lib";
 import "./bloomSynphonyExtensions"; //add several functions to LanguageData
 import { ReaderToolsModel } from "../readerToolsModel";
-import { TextOffsetMap } from "../../../js/textHighlightManager";
 import {
+    ReaderTextMap,
     kSentenceTooLongHighlight,
     kSightWordHighlight,
     kWordNotDecodableHighlight,
@@ -79,7 +79,7 @@ import {
         // cumulative over the whole page, so we can't decide which words to highlight in the
         // first leaf until we have analyzed the last one.
         const leafResults: {
-            map: TextOffsetMap;
+            map: ReaderTextMap;
             sentenceTooLongSpans: TextSpan[];
         }[] = [];
 
@@ -259,7 +259,7 @@ import {
         this.removeCkEditorMarkup();
 
         // Snapshot the text of each element as the reader sees it, and get all the page's text.
-        const maps: TextOffsetMap[] = [];
+        const maps: ReaderTextMap[] = [];
         this.each(function () {
             const map = mapReaderText(this);
             maps.push(map);
@@ -423,10 +423,9 @@ import {
             // NB: do NOT remove CKEditor's hidden cke_* spans here. We used to, so that they
             // could not skew the word markup, but mapReaderText() now simply skips them, and
             // removing them moved the insertion point to the start of the text box after every
-            // typing pause: the hidden spans include the selection bookmarks that
-            // readerToolsModel.doMarkup() has EditableDivUtils.doCkEditorCleanup() insert before
-            // it calls us, and that it passes to restoreSelectionFromCkEditorBookmarks()
-            // afterwards to put the caret back. See also (BL-16490)
+            // typing pause: the hidden spans include the selection bookmarks that the toolbox's
+            // markup pass after typing (pageEditingMarkup.ts) may insert before it calls the
+            // reader tools, and removes afterwards to put the caret back. See also (BL-16490)
         });
     };
 

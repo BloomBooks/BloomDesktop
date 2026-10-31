@@ -15,10 +15,12 @@ vi.mock("comicaljs", () => ({
 }));
 vi.mock("../../../utils/bloomApi", async (importOriginal) => ({
     ...((await importOriginal()) as object),
+    post: vi.fn(),
     postData: vi.fn(),
     postJson: vi.fn(),
 }));
 
+import { post, postData, postJson } from "../../../utils/bloomApi";
 import { cloneCanvasElementHtmlStructure } from "./canvasElementCloneCleanup";
 import {
     CanvasElementDuplication,
@@ -89,6 +91,38 @@ describe("CanvasElementDuplication keeps the angle of a rotated box (BL-16741)",
         expect(copy!.querySelector("img")!.style.transform).toBe(
             "scale(-1, 1)",
         );
+    });
+});
+
+describe("CanvasElementDuplication copies Talking Book audio", () => {
+    test("through audio/copyAudioFile, under the copy's new id", () => {
+        const source = document.createElement("div");
+        source.innerHTML =
+            '<div class="bloom-editable audio-sentence" id="i-source" data-audiorecordingmode="TextBox" data-duration="1.5"><p>One</p></div>';
+        const copy = document.createElement("div");
+        copy.innerHTML =
+            '<div class="bloom-editable audio-sentence" data-audiorecordingmode="TextBox"><p>One</p></div>';
+        vi.mocked(post).mockClear();
+        vi.mocked(postData).mockClear();
+        vi.mocked(postJson).mockClear();
+
+        new CanvasElementDuplication(
+            {} as ICanvasElementDuplicationHost,
+        ).copyAnySoundFileAndAttributesForEditable(source, copy);
+
+        const copiedEditable = copy.querySelector(".bloom-editable")!;
+        const newId = copiedEditable.getAttribute("id");
+        expect(newId).toBeTruthy();
+        expect(newId).not.toBe("i-source");
+        expect(copiedEditable.getAttribute("data-duration")).toBe("1.5");
+        const requests = [
+            ...vi.mocked(post).mock.calls,
+            ...vi.mocked(postData).mock.calls,
+            ...vi.mocked(postJson).mock.calls,
+        ].map((call) => call[0]);
+        expect(requests).toEqual([
+            `audio/copyAudioFile?oldId=i-source&newId=${newId}`,
+        ]);
     });
 });
 
