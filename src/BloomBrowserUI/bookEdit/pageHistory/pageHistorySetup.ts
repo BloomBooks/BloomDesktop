@@ -250,8 +250,14 @@ export function handleRedo(): void {
     if (history) void history.redo();
 }
 
-/** Whether there is anything to redo. */
+/**
+ * Whether there is anything to redo. Not while a transaction is open, as when the user has typed
+ * after an undo: a transaction that changes the page empties redo when it closes, which for typing
+ * is only at the next key after a pause, or at an undo or redo key, and a redo asked for meanwhile
+ * waits for it to close (PageHistory.redo).
+ */
 export function canRedo(): boolean {
     if (isInChangeLayoutMode()) return origamiCanRedo();
-    return history?.redoDescriptionL10nKey !== undefined;
+    if (!history || history.hasOpenTransaction) return false;
+    return history.redoDescriptionL10nKey !== undefined;
 }
