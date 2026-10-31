@@ -1,7 +1,12 @@
 # Undo design: issues to pick up next
 
-What is still open in the undo design (2026-10-16), with the page history built on this branch as
-MINIMUM.md describes it. The design itself is in APPROACHES.md; section numbers below refer to it.
+What is still open in the undo design (2026-10-31). BL-17020 is built as a stack of pull requests
+that REVIEW-PLAN.md lays out. PR 8520 (the engine), PR 8525 (the markup filter) and PR 8526 (input,
+keys and page readiness) add code that nothing calls. PR 8527, "Replace the old undo with the page
+history", switches the Edit tab over to it, and depends on PR 8521, a preparation PR based on master.
+"The first version" below means PR 8527, as MINIMUM.md describes it. Where an item concerns one of
+the pull requests that REVIEW-PLAN.md plans after PR 8527, it names that pull request by its row in
+REVIEW-PLAN.md's table. The design itself is in APPROACHES.md; section numbers below refer to it.
 
 ## Proposed, waiting for a decision
 
@@ -27,7 +32,8 @@ MINIMUM.md describes it. The design itself is in APPROACHES.md; section numbers 
    });
    ```
 
-   This also settles the next item.
+   This also settles the next item. No pull request in REVIEW-PLAN.md implements
+   `addChangeOutsidePage`; `pageHistoryTypes.ts` only says where it will go.
 
 2. **Order between page changes and changes outside the page.** Undo and redo make every change
    outside the page first (in reverse order on undo, in the original order on redo) and then put back
@@ -68,8 +74,11 @@ MINIMUM.md describes it. The design itself is in APPROACHES.md; section numbers 
 
 5. **Whether `undo()` and `redo()` report a refusal** (`Promise<boolean>` instead of
    `Promise<void>`), so that the caller can tell the user that older history was discarded.
-6. **The Undo button's read side** (John set this aside). Nothing tells the button when to change:
-   C# polls `canUndo` on a timer, and nothing shows the descriptions. Suggested: one
+6. **The Undo button's read side** (John set this aside). In the first version nothing tells the
+   button when to change: C# polls `canUndo` on a timer, and nothing shows the descriptions. The
+   "Redo button" pull request adds a Redo button and takes Undo and Redo to the page without a
+   round trip through C#; whether it also tells the buttons when to change is not decided.
+   Suggested: one
    `onUndoRedoChanged(listener)` that hands over `undoDescriptionL10nKey` and
    `redoDescriptionL10nKey` (`undefined` means nothing to undo), called on subscribe and after every
    change, replacing the read properties; and the root window subscribes once, with each new page's
@@ -94,7 +103,10 @@ MINIMUM.md describes it. The design itself is in APPROACHES.md; section numbers 
 10. **Typing during an async transaction** joins it (rule 7), so a slow action can take in the user's
     typing. A picture change keeps its transaction open until no page content delay is pending, for
     up to 4 s (MINIMUM.md item 5), so typing in that time is undone with the picture, and so is a
-    second picture change or a canvas command made in that time. A UX cost to weigh. Two async `doTransaction` calls can overlap, when the second begins while the first
+    second picture change or a canvas command made in that time. A command from a canvas element's
+    menu or toolbar does the same: `runControlCallback` keeps its transaction open until the command
+    and the page content delays that it started have finished. A UX cost to weigh. Two async
+    `doTransaction` calls can overlap, when the second begins while the first
     awaits: the second nests in the first, the first waits for it if it settles first, and the step
     is made when the last of them ends. If the second then fails, every change since it began is
     put back, the first one's writes after that point included, since the history cannot tell which
@@ -124,9 +136,11 @@ MINIMUM.md describes it. The design itself is in APPROACHES.md; section numbers 
     every level change causes today can become a write in `doOutsideHistory`. APPROACHES case 7.6
     still needs updating to say so.
 16. **Table operation keys.** bloom-table reports operations by English name ("Resize Column");
-    `tableL10nKey(label)` maps them to keys, which must exist in the English XLF. In the first
-    version each table operation is an "Undo edit" step, and `bloom-table` still keeps its own
-    history inside the library, though nothing in Bloom reaches it.
+    APPROACHES.md's `tableL10nKey(label)` would map them to keys, which must exist in the English
+    XLF. No code has it yet. In the first version each table operation is a step with the general
+    description, `EditTab.Undo.Edit`, and `bloom-table` still keeps its own history inside the
+    library, though nothing in Bloom reaches it. No pull request in REVIEW-PLAN.md names table
+    steps.
 37. **The overflow checker's `padding-bottom`.** It writes `padding-bottom` into the `style` of a
     `bloom-padForOverflow` box (for the book title, only on the front cover), worked out from how
     far the text's descenders reach, and the save keeps it. The filter records it like any style
@@ -135,7 +149,33 @@ MINIMUM.md describes it. The design itself is in APPROACHES.md; section numbers 
     writes into a box's `style` (`kBoxStylePropertiesIgnoredByUndoOnly` in `editTimeMarkup.ts`).
     Open: whether to treat `padding-bottom` the same.
 38. **Undo while a save is in flight** (`SavePending`, `EditingStateMachine.cs:14`), which the save
-    can overtake (retire-ckeditor PLAN.md:657-663). Still to decide (MINIMUM.md item 8).
+    can overtake (retire-ckeditor PLAN.md:657-663). The first version adds nothing for it, and every
+    save still reloads the page (MINIMUM.md item 8). Still to decide.
+
+## Found while building the first version
+
+39. **Undo during real Talking Book playback has not been checked in a running Bloom.** Before an
+    undo, Talking Book stops playback and puts back the spans that playback made
+    (`updateAfterUndoOrRedo` in `audioRecording.ts`), and `talkingBookUndo.test.ts` covers that, but
+    no e2e test plays audio: the e2e fixture `sample.mp3` gave "Format error".
+40. **An AI image editor commit ends the history** in the first version. `aiImageEditor/commit` is
+    not on `kRequestsThatKeepThePageHistory`, because a commit can delete an `ai-image` file that it
+    replaced on another page (`DeleteSupersededAiImageFiles`), and an undo after it could put back a
+    page that names that file. The swaps on the current page are undoable, one step each. The "AI
+    image editor" pull request stops a commit deleting the replaced files and puts the request back
+    on the list.
+41. **Set as Background may make a change after its step closes.** When the canvas has no real
+    background picture, its command in `canvasControlRegistry.ts` selects the new background and
+    calls `expandImageToFillSpace` in a `setTimeout`. `runControlCallback` waits for the command and
+    for the page content delays, not for that timer, so the fill may land after the step, outside
+    any transaction, and join the latest step. Not checked.
+42. **E2E coverage that is still missing.** No e2e test covers the requests that end the history
+    (only `bloomApiPageHistory.spec.ts`, a unit test), undo during real playback (item 39), or, from
+    PR 8521, the reader tools' highlights while typing, Show Invisibles, the fit at the end of a
+    canvas resize, and duplicating a canvas element that has a recording.
+43. **`undo-routing.spec.ts` on PR 8521.** Its test "with a reader tool active, the Undo button
+    reaches the reader tools' undo…" and its header comment describe the keys as they were before
+    PR 8521 changed them, and it was not run on that branch. PR 8527 rewrites the spec.
 
 ## Found in the code (CODE-WALK.md, 2026-10-15)
 
@@ -149,8 +189,9 @@ lists. A few more are product decisions.
 Deleting or overwriting a file that a page names:
 
 - **The Games tool's built-in sounds**: skip the copy when the file is already there. (§4)
-  `fileIO/copyBuiltInSound` does this, so a different file that the book has under a built-in's
-  name stays, and choosing that built-in plays the book's file. Only a file put into the audio
+  In the first version the copy goes through `fileIO/copyFile` and ends the history. The "Other
+  toolbox tools" pull request brings `fileIO/copyBuiltInSound`, which skips the copy, so a
+  different file that the book has under a built-in's name stays, and choosing that built-in plays the book's file. Only a file put into the audio
   folder outside Bloom can have such a name: Choose... offers only MP3 files, and every built-in
   sound is a `.webm` file whose name no Bloom version has given other content. Copying the
   built-in under an unused name, and writing that name into the page, would cover it, if a user
@@ -184,9 +225,10 @@ Talking Book:
   `.bloom-wordChoice`; its markup pass should write nothing when the markup is already right. (§8)
 - The toolbox's records of which files exist (`haveAudio`, the video stats) refresh after undo and
   redo. That can be asynchronous, because it doesn't write the page. (§8)
-- While the playback-order arrows show, there is no current box, so an undo of a recording-mode
-  switch leaves the mode's radio buttons and the collection's default mode as they were until the
-  arrows are hidden. Fixing it needs the tool to remember which box was current when the arrows
+- While the playback-order arrows show, there is no current box, so once the "Talking Book's
+  steps" pull request makes the recording-mode switch a step (in the first version it ends the
+  history), an undo of a switch leaves the mode's radio buttons and the collection's default mode
+  as they were until the arrows are hidden. Fixing it needs the tool to remember which box was current when the arrows
   came on.
 
 Reader tools: `removeSynphonyMarkup` takes out the markup of older versions of Bloom outside the
@@ -197,9 +239,11 @@ step's undo refused. The page is never damaged.
 Components:
 
 - The `ResizeObserver`s in the Motion tool and `CanvasElementEditingSuspension` each need their own
-  fix. (§8)
+  fix. (§8) The Motion tool's is for the "Other toolbox tools" pull request.
 - The colour picker can close through `hideColorPickerDialog`, which runs neither OK nor Cancel; and
   Cancel probably doesn't restore the colour that was there before (inferred, a bug today). (§11)
+  This matters to the "Canvas commands and the Canvas tool" pull request, which makes a colour
+  picker session one step.
 - The Motion tool's preview cleanup removes the page's `Landscape` class (probably a bug today).
 
 ### Improve the plan
@@ -219,8 +263,7 @@ the history, or make the action end the history.
   undo leaves `bloom-selected` alone, as view state (`kClassesIgnoredByUndoOnly` in
   `editTimeMarkup.ts`).
 - **Not decided:** the Games tool's built-in sound files could be declared outside the history
-  instead of skipping the copy. The sound attributes on the page change outside the history; the
-  copy, through `fileIO/copyFile`, ends it.
+  instead of skipping the copy, which is what the "Other toolbox tools" pull request does.
 - **`addPage` needs nothing.** It overwrites smart-page scripts, but it goes to the new page, which
   ends the history anyway. (§4)
 - **Rule 1 assumes that Bloom's reactions finish before the next input.** Anything that waits on a
@@ -231,7 +274,7 @@ the history, or make the action end the history.
 - **Setup that a tool does when the user opens it** is outside the history (Motion's rectangles,
   Image Description's wrapper and the description box that it adds, what Talking Book writes on
   opening), except Talking Book's sentence split, which is saved content and joins the latest step
-  (MINIMUM.md item 4). Still open: the Games tool's random shuffle. (§3)
+  (MINIMUM.md item 4). (§3)
 - **Rule 6's filter** was derived from the save path. It needs an audit of `mouseenter`,
   `mouseleave` and selection handlers too. (§2)
 - **What listeners of `onAfterUndoOrRedo` may do later.** React renders, `useEffect` writes and
@@ -278,8 +321,8 @@ the history, or make the action end the history.
 ## Documents
 
 33. **Work that builds on the removed stack.** Draft PR 8451 and retire-ckeditor PROGRESS.md's next
-    step (Stage 3) build on `UndoStack`, which the first version removes, along with the table
-    entries on the one stack of retire-ckeditor decision 8 (RETIRE-CKEDITOR-COMPARED.md section 6).
+    step (Stage 3) build on `UndoStack`, which the first version deletes with the rest of
+    `bookEdit/undo/`, along with the table entries on the one stack of retire-ckeditor decision 8 (RETIRE-CKEDITOR-COMPARED.md section 6).
 34. **RETIRE-CKEDITOR-COMPARED.md section 4** lists facts that our documents should take in: the
     paste filter bypass (case 11.1 says the opposite), Ctrl+Y doing redo in a CKEditor box (EXPERIMENTS
     §3.2 says it did nothing; one of the two is wrong), and same-page reloads missing from §3.3.
