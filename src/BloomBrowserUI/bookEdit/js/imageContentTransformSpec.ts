@@ -23,6 +23,12 @@ import {
     rotateImageContentRight90Degrees,
 } from "./imageContentTransform";
 import { kBackgroundImageBleedPx } from "./canvasElementManager/backgroundImageBleed";
+import { createEditTimeMarkupFilter } from "../pageHistory/editTimeMarkup";
+import { createPageHistory } from "../pageHistory/pageHistory";
+import {
+    kGenericUndoDescriptionL10nKey,
+    type PageHistory,
+} from "../pageHistory/pageHistoryTypes";
 
 // A picture inside a container, which is what the code expects. There is no page and no canvas
 // element around it, so a rotation of this picture changes only the transform. That keeps the
@@ -824,5 +830,71 @@ describe("clearImageContentTransform", () => {
 
         expect(img.style.transform).toBe("");
         expect(imageContentIsTransformed(img)).toBe(false);
+    });
+});
+
+// Rotate right and Flip as page-history steps: undo puts the picture back as it was.
+describe("undo of Rotate right and Flip", () => {
+    function startHistory(img: HTMLImageElement): PageHistory {
+        return createPageHistory({
+            root: img.closest(".bloom-canvas") as HTMLElement,
+            filter: createEditTimeMarkupFilter(),
+        });
+    }
+
+    it("puts back a cropped background picture's turn, its crop and its element after Rotate right", async () => {
+        // A photograph that the author magnified and centred, so the crop fills the page.
+        const img = makeBackgroundImage(480, 720, 480, 720, 300, 200);
+        img.style.width = "1080px";
+        img.style.left = "-300px";
+        img.style.top = "0px";
+        const element = elementOf(img);
+        element.style.width = "480px";
+        element.style.height = "720px";
+        element.style.left = "0px";
+        element.style.top = "0px";
+        const imgBefore = img.getAttribute("style");
+        const elementBefore = element.getAttribute("style");
+        const history = startHistory(img);
+
+        await history.doTransaction(kGenericUndoDescriptionL10nKey, () =>
+            rotateImageContentRight90Degrees(img),
+        );
+        // Sanity check: the rotation turned the picture and changed its crop's numbers.
+        expect(img.style.transform).toBe("rotate(90deg)");
+        expect(img.style.width).not.toBe("1080px");
+
+        await history.undo();
+
+        expect(img.style.transform).toBe("");
+        expect([img.style.width, img.style.left, img.style.top]).toEqual([
+            "1080px",
+            "-300px",
+            "0px",
+        ]);
+        expect(img.getAttribute("style")).toBe(imgBefore);
+        expect(element.getAttribute("style")).toBe(elementBefore);
+        history.dispose();
+    });
+
+    it("puts back the mirror that Flip took away", async () => {
+        const img = makeBackgroundImage(480, 720, 480, 320, 300, 200, false);
+        // The picture is already mirrored, so Flip horizontal takes the mirror away.
+        flipImageContent(img, "horizontal");
+        const mirrored = img.style.transform;
+        expect(getImageContentTransform(img).flipX, "test setup").toBe(true);
+        const history = startHistory(img);
+
+        await history.doTransaction(kGenericUndoDescriptionL10nKey, () =>
+            flipImageContent(img, "horizontal"),
+        );
+        // Sanity check
+        expect(getImageContentTransform(img).flipX).toBe(false);
+
+        await history.undo();
+
+        expect(img.style.transform).toBe(mirrored);
+        expect(getImageContentTransform(img).flipX).toBe(true);
+        history.dispose();
     });
 });

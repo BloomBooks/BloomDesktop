@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { getTestRoot, removeTestRoot } from "../../../utils/testHelper";
 import { CanvasElementManager } from "./CanvasElementManager";
 import jQuery from "jquery";
@@ -9,16 +9,20 @@ import {
 } from "../../pageHistory/pageHistoryTypes";
 import { createEditTimeMarkupFilter } from "../../pageHistory/editTimeMarkup";
 import { createPageHistory } from "../../pageHistory/pageHistory";
+import { kTypingUndoDescriptionL10nKey } from "../../pageHistory/pageHistoryInput";
 import { setCanvasElementRotation } from "./canvasElementRotation";
 
-// vitest.setup.ts mocks comicaljs without Comical; updateAfterUndoOrRedo needs it.
+// vitest.setup.ts mocks comicaljs without Comical; updateAfterUndoOrRedo needs it. Rotate right
+// asks Bubble for the box's bubble style (canRotateCanvasElement); a picture box has none.
 const comical = vi.hoisted(() => ({
     activateElement: vi.fn(),
     update: vi.fn(),
     startEditing: vi.fn(),
 }));
 vi.mock("comicaljs", () => ({
-    Bubble: vi.fn(),
+    Bubble: Object.assign(vi.fn(), {
+        getBubbleSpec: () => ({ style: "none" }),
+    }),
     Node: vi.fn(),
     Parser: vi.fn(),
     BubbleSpec: {},
@@ -233,6 +237,69 @@ describe("CanvasElementManager.updateCanvasElementForChangedImage", () => {
         expect(img.getAttribute("src")).toBe("old.png");
         history.dispose();
     });
+
+    it("puts back the old picture's credits and crop when the change is undone", async () => {
+        const { img } = makeRotatedAndMirroredPicture();
+        img.setAttribute("data-copyright", "© 2024");
+        img.setAttribute("data-creator", "Test Creator");
+        img.setAttribute("data-license", "cc-by");
+        img.style.width = "150px";
+        img.style.height = "120px";
+        img.style.left = "-25px";
+        img.style.top = "-30px";
+        const history = createPageHistory({
+            root: document.querySelector(".bloom-page") as HTMLElement,
+            filter: createEditTimeMarkupFilter(),
+        });
+        // As changeImage does: the new picture's file and credits, then the update, which takes
+        // the old picture's crop away.
+        await history.doTransaction(kGenericUndoDescriptionL10nKey, () => {
+            img.setAttribute("src", "new.png");
+            img.setAttribute("data-copyright", "© 2025");
+            img.setAttribute("data-creator", "Someone Else");
+            img.setAttribute("data-license", "cc-by-sa");
+            updateForChangedImage(img);
+        });
+        // Sanity check: the change took the crop away.
+        expect(img.style.width).toBe("");
+        expect(img.style.left).toBe("");
+
+        await history.undo();
+
+        expect(img.getAttribute("src")).toBe("old.png");
+        expect(img.getAttribute("data-copyright")).toBe("© 2024");
+        expect(img.getAttribute("data-creator")).toBe("Test Creator");
+        expect(img.getAttribute("data-license")).toBe("cc-by");
+        expect([
+            img.style.width,
+            img.style.height,
+            img.style.left,
+            img.style.top,
+        ]).toEqual(["150px", "120px", "-25px", "-30px"]);
+        history.dispose();
+    });
+
+    it("leaves a picture that had no crop with none when a crop of it is undone", async () => {
+        const { img } = makeRotatedAndMirroredPicture();
+        // Sanity check: no crop.
+        expect(img.style.width).toBe("");
+        expect(img.style.left).toBe("");
+        const history = createPageHistory({
+            root: document.querySelector(".bloom-page") as HTMLElement,
+            filter: createEditTimeMarkupFilter(),
+        });
+        // A crop is the picture's box made bigger than the element and moved.
+        await history.doTransaction(kGenericUndoDescriptionL10nKey, () => {
+            img.style.width = "100px";
+            img.style.left = "-50px";
+        });
+
+        await history.undo();
+
+        expect(img.style.width).toBe("");
+        expect(img.style.left).toBe("");
+        history.dispose();
+    });
 });
 
 describe("CanvasElementManager.resetImage", () => {
@@ -369,6 +436,180 @@ describe("CanvasElementManager.rotateActiveImageRight90Degrees", () => {
         ).not.toHaveBeenCalled();
         expect(element.style.transform).toBe("");
         expect(img.style.transform).toBe("");
+    });
+
+    // Rotate right as a page-history step, with the box's angle before it as the test gives it.
+    async function rotateRightAndUndo(angleBefore: number): Promise<{
+        element: HTMLElement;
+        transformAfterRotation: string;
+    }> {
+        document.body.innerHTML = `
+            <div class="bloom-page" data-page-id="page1">
+                <div class="bloom-canvas">
+                    <div class="bloom-canvas-element">
+                        <div class="bloom-imageContainer"><img src="picture.png"></div>
+                    </div>
+                </div>
+            </div>`;
+        const element = document.querySelector(
+            ".bloom-canvas-element",
+        ) as HTMLElement;
+        setCanvasElementRotation(element, angleBefore);
+        // The parts of the manager that Rotate right uses; the frame and the target need layout.
+        const manager = {
+            activeElement: element,
+            rotateActiveElementRight90Degrees:
+                CanvasElementManager.prototype
+                    .rotateActiveElementRight90Degrees,
+            adjustTarget: vi.fn(),
+            alignControlFrameWithActiveElement: vi.fn(),
+            adjustStuffRelatedToImage: vi.fn(),
+        };
+        const history = createPageHistory({
+            root: document.querySelector(".bloom-page") as HTMLElement,
+            filter: createEditTimeMarkupFilter(),
+        });
+        await history.doTransaction(kGenericUndoDescriptionL10nKey, () => {
+            expect(
+                CanvasElementManager.prototype.rotateActiveImageRight90Degrees.call(
+                    manager,
+                ),
+                "test setup: Rotate right should have rotated the box",
+            ).toBe(true);
+        });
+        const transformAfterRotation = element.style.transform;
+        await history.undo();
+        history.dispose();
+        return { element, transformAfterRotation };
+    }
+
+    it("puts back the box's angle and its mark when Rotate right is undone", async () => {
+        const { element, transformAfterRotation } =
+            await rotateRightAndUndo(30);
+
+        expect(transformAfterRotation, "test setup").toBe("rotate(120deg)");
+        expect(element.style.transform).toBe("rotate(30deg)");
+        expect(element.classList.contains("bloom-rotated")).toBe(true);
+    });
+
+    it("leaves no transform and no mark when the undo of Rotate right brings the box upright", async () => {
+        const { element, transformAfterRotation } = await rotateRightAndUndo(0);
+
+        expect(transformAfterRotation, "test setup").toBe("rotate(90deg)");
+        expect(element.style.transform).toBe("");
+        expect(element.classList.contains("bloom-rotated")).toBe(false);
+    });
+});
+
+// A text box's rotation, by the knob, and the edits that come after it, each a page-history step.
+describe("undo of a text box's rotation and the edits after it", () => {
+    const kOriginalText =
+        '<p><a href="https://example.org/a">some</a> words</p>';
+    let history: PageHistory;
+    let textBox: HTMLElement;
+    let editable: HTMLElement;
+
+    beforeEach(() => {
+        document.body.innerHTML = `
+            <div class="bloom-page" data-page-id="page1">
+                <div class="bloom-canvas">
+                    <div class="bloom-canvas-element">
+                        <div class="bloom-translationGroup">
+                            <div class="bloom-editable" lang="en">${kOriginalText}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        textBox = document.querySelector(
+            ".bloom-canvas-element",
+        ) as HTMLElement;
+        editable = textBox.querySelector(".bloom-editable") as HTMLElement;
+        history = createPageHistory({
+            root: document.querySelector(".bloom-page") as HTMLElement,
+            filter: createEditTimeMarkupFilter(),
+        });
+    });
+
+    afterEach(() => history.dispose());
+
+    // A drag of the knob turns the box as the pointer moves, in one step.
+    function dragKnobTo(...angles: number[]): Promise<unknown> {
+        return history.doTransaction(kGenericUndoDescriptionL10nKey, () =>
+            angles.forEach((angle) => setCanvasElementRotation(textBox, angle)),
+        );
+    }
+
+    it("puts back the angle the box had before a drag of the knob", async () => {
+        history.doOutsideHistory(() => setCanvasElementRotation(textBox, 10));
+        await dragKnobTo(30, 55, 75);
+        // Sanity check
+        expect(textBox.style.transform).toBe("rotate(75deg)");
+
+        await history.undo();
+
+        expect(textBox.style.transform).toBe("rotate(10deg)");
+    });
+
+    it.each([
+        [
+            "typing",
+            `<p><a href="https://example.org/a">some</a> words and more</p>`,
+        ],
+        [
+            "formatting",
+            `<p><strong><a href="https://example.org/a">some</a> words</strong></p>`,
+        ],
+        [
+            "a changed link",
+            `<p><a href="https://example.org/b">some</a> words</p>`,
+        ],
+        [
+            "a line break",
+            `<p><a href="https://example.org/a">some</a> <br>words</p>`,
+        ],
+        [
+            "a word break",
+            `<p><a href="https://example.org/a">some</a> ​words</p>`,
+        ],
+    ])(
+        "takes back %s after a rotation first, and then the rotation",
+        async (_edit, editedHtml) => {
+            await dragKnobTo(45);
+            await history.doTransaction(kTypingUndoDescriptionL10nKey, () => {
+                editable.innerHTML = editedHtml;
+            });
+            // Sanity check: the edit changed the box.
+            expect(editable.innerHTML).toBe(editedHtml);
+
+            await history.undo();
+            expect(editable.innerHTML).toBe(kOriginalText);
+            expect(
+                textBox.style.transform,
+                "the first undo should take back only the edit",
+            ).toBe("rotate(45deg)");
+
+            await history.undo();
+            expect(textBox.style.transform).toBe("");
+            expect(editable.innerHTML).toBe(kOriginalText);
+        },
+    );
+
+    it("takes back the rotation next once typing in an empty box is undone", async () => {
+        // An empty box, as a fresh Text Block is.
+        history.doOutsideHistory(() => (editable.innerHTML = "<p><br></p>"));
+        await dragKnobTo(45);
+        await history.doTransaction(kTypingUndoDescriptionL10nKey, () => {
+            editable.innerHTML = "<p>xyz</p>";
+        });
+
+        await history.undo();
+        expect(editable.innerHTML).toBe("<p><br></p>");
+        expect(history.undoDescriptionL10nKey).toBe(
+            kGenericUndoDescriptionL10nKey,
+        );
+
+        await history.undo();
+        expect(textBox.style.transform).toBe("");
     });
 });
 
