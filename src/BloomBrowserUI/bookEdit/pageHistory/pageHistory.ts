@@ -80,15 +80,16 @@ interface Step {
     // page, each serialized when it was taken out. The observer cannot see a change to a detached
     // node, so before the next undo or redo each must still serialize the same (rule 4).
     detachedAsText: Map<Node, string>;
-    // The nodes that the filter ignores and that the step's records added to a node, or took out
-    // of one of these. The page had none of them when the step began, so undo takes out each one that it
-    // brings back into the page inside a node that it puts back, as the toolbox's markup pass
-    // leaves a CKEditor bookmark in a sentence that it replaces with a copy.
-    ignoredNodesAdded: Set<Node>;
-    // The nodes that the filter ignores and that the step's records took out of a node before
+    // The nodes that the step made: those that its records added to a node without first taking
+    // them out of one, and those that they took out of a node that the step made. The page had
+    // none of them when the step began, so undo takes out each one that the filter ignores and
+    // that undo brings back into the page inside a node that it puts back, as the toolbox's
+    // markup pass leaves a CKEditor bookmark in a sentence that it replaces with a copy.
+    nodesMade: Set<Node>;
+    // The nodes that the step's records took out of a node that the step did not make, before
     // adding them anywhere: they were in the page when the step began, so a record that adds one
-    // moves it, and it never joins ignoredNodesAdded.
-    ignoredNodesMoved: Set<Node>;
+    // moves it, and it never joins nodesMade.
+    nodesMoved: Set<Node>;
     selectionBefore?: SavedSelection;
     selectionAfter?: SavedSelection;
 }
@@ -744,12 +745,12 @@ class PageHistoryImpl implements PageHistory {
                 "before",
                 "after",
             ),
-            ignoredNodesAdded: new Set(),
-            ignoredNodesMoved: new Set(),
+            nodesMade: new Set(),
+            nodesMoved: new Set(),
             selectionBefore: open.selectionBefore,
             selectionAfter: saveSelection(this.root.ownerDocument),
         };
-        this.noteIgnoredNodesAdded(step, open.records);
+        this.noteNodesMadeAndMoved(step, open.records);
         this.undoSteps.push(step);
         while (this.undoSteps.length > this.maxUndoSteps)
             this.undoSteps.shift();
@@ -1110,10 +1111,10 @@ class PageHistoryImpl implements PageHistory {
             addBeforeValues(open.changes, batch);
             return;
         }
-        // An ignored node joins the latest step even from a batch with no net change, since a
-        // later batch may take the node that holds it out of the page.
+        // A node made joins the latest step even from a batch with no net change, since a later
+        // batch may take the node that holds it out of the page.
         const latestAtStart = this.latestStep();
-        if (latestAtStart) this.noteIgnoredNodesAdded(latestAtStart, records);
+        if (latestAtStart) this.noteNodesMadeAndMoved(latestAtStart, records);
         if (batch.size === 0) return;
         if (this.redoSteps.length > 0) {
             this.log(
@@ -1666,11 +1667,12 @@ class PageHistoryImpl implements PageHistory {
             else this.redoSteps = [];
             return;
         }
-        // See Step.ignoredNodesAdded. Redo puts back the page as the step left it, which may have
-        // held them.
+        // See Step.nodesMade. Redo puts back the page as the step left it, which may have held
+        // them.
         const ignoredAndOut = isUndo
-            ? Array.from(step.ignoredNodesAdded).filter(
-                  (node) => !this.root.contains(node),
+            ? Array.from(step.nodesMade).filter(
+                  (node) =>
+                      this.filter.ignoreNode(node) && !this.root.contains(node),
               )
             : [];
         this.putBackValues(step, to);
@@ -1721,55 +1723,37 @@ class PageHistoryImpl implements PageHistory {
     }
 
     /**
-     * Add to step.ignoredNodesAdded the nodes that the filter ignores and that records, the
-     * step's own in the order they were made, added to a node, leaving out those that the step
-     * had already taken out of a node (step.ignoredNodesMoved). One added to an ignored node is
-     * noted too, since the step may move it on into a node that undo puts back.
+     * Add to step.nodesMade and step.nodesMoved the nodes, ignored or kept, that records, the
+     * step's own in the order they were made, added to a node or took out of one. Every node
+     * counts, whatever the filter says of it or of the node that held it, since the step may move
+     * an ignored node made inside any of them into a node that undo puts back.
      */
-    private noteIgnoredNodesAdded(step: Step, records: MutationRecord[]): void {
+    private noteNodesMadeAndMoved(step: Step, records: MutationRecord[]): void {
         for (const record of records) {
             if (record.type !== "childList") continue;
             record.removedNodes.forEach((node) => {
-                if (
-                    !this.filter.ignoreNode(node) ||
-                    step.ignoredNodesAdded.has(node)
-                )
+                if (step.nodesMade.has(node) || step.nodesMoved.has(node))
                     return;
                 if (this.wasMadeInStep(step, record.target))
-                    step.ignoredNodesAdded.add(node);
-                else step.ignoredNodesMoved.add(node);
+                    step.nodesMade.add(node);
+                else step.nodesMoved.add(node);
             });
             record.addedNodes.forEach((node) => {
-                if (
-                    this.filter.ignoreNode(node) &&
-                    !step.ignoredNodesMoved.has(node)
-                )
-                    step.ignoredNodesAdded.add(node);
+                if (!step.nodesMoved.has(node)) step.nodesMade.add(node);
             });
         }
     }
 
     /**
-     * Whether a node that records took an ignored node out of was made in the step, so that what
-     * it held was made in the step too: it is in step.ignoredNodesAdded, or inside one that is.
-     * Its ancestors are those at the end of the records, so the search stops at a node that was
-     * in the page when the step began, and which the step may have moved into one that it added:
-     * an ignored node that the step moved (step.ignoredNodesMoved), or a node that the filter
-     * keeps and that is in one of the step's child lists from before it.
+     * Whether a node that records took a node out of was made in the step, so that what it held
+     * was made in the step too: it is in step.nodesMade, or inside one that is. Its ancestors are
+     * those at the end of the records, so the search stops at a node that the step moved, which
+     * was in the page when the step began even if the step moved it into one that it made.
      */
     private wasMadeInStep(step: Step, holder: Node): boolean {
-        let inListsFromBefore: Set<Node> | undefined;
         for (let n: Node | null = holder; n; n = n.parentNode) {
-            if (step.ignoredNodesAdded.has(n)) return true;
-            if (step.ignoredNodesMoved.has(n)) return false;
-            if (!inListsFromBefore) {
-                inListsFromBefore = new Set();
-                for (const change of step.changes.values())
-                    change.children?.before.forEach((child) =>
-                        inListsFromBefore!.add(child),
-                    );
-            }
-            if (inListsFromBefore.has(n)) return false;
+            if (step.nodesMade.has(n)) return true;
+            if (step.nodesMoved.has(n)) return false;
         }
         return false;
     }
