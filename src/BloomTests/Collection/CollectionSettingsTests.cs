@@ -614,6 +614,38 @@ namespace BloomTests.Collection
         }
 
         [Test]
+        public void Reading_IsCustomNameMissing_ComputedFromLanguageLookup()
+        {
+            // With no IsCustomName stored, Bloom compares the name with the one the language
+            // lookup has for the tag.
+            var bloomCollectionFileContents =
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<Language1Name>Arta</Language1Name>
+	<Language1Iso639Code>atz</Language1Iso639Code>
+	<Language2Name>Our Arta</Language2Name>
+	<Language2Iso639Code>atz</Language2Iso639Code>
+</Collection>";
+            Assert.That(
+                bloomCollectionFileContents,
+                Does.Not.Contain("IsCustomName"),
+                "test setup: the value must be computed, not read"
+            );
+            const string collectionName = "testComputedCustomName";
+            var collectionPath = CollectionSettings.GetPathForNewSettings(
+                _folder.Path,
+                collectionName
+            );
+            Directory.CreateDirectory(Path.GetDirectoryName(collectionPath));
+            RobustFile.WriteAllText(collectionPath, bloomCollectionFileContents);
+
+            var settings = CreateCollectionSettings(_folder.Path, collectionName);
+
+            Assert.That(settings.Language1.IsCustomName, Is.False, "Arta is the lookup's name");
+            Assert.That(settings.Language2.IsCustomName, Is.True, "Our Arta is not");
+        }
+
+        [Test]
         public void Reading_InvalidSubscription_ClearsDefaultBookshelf()
         {
             var bloomCollectionFileContents =

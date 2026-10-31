@@ -80,6 +80,11 @@ interface Step {
     // page, each serialized when it was taken out. The observer cannot see a change to a detached
     // node, so before the next undo or redo each must still serialize the same (rule 4).
     detachedAsText: Map<Node, string>;
+    // The nodes that the filter ignores and that the step's records added to a node it does not
+    // ignore. The page had none of them when the step began, so undo takes out each one that it
+    // brings back into the page inside a node that it puts back, as the toolbox's markup pass
+    // leaves a CKEditor bookmark in a sentence that it replaces with a copy.
+    ignoredNodesAdded: Set<Node>;
     selectionBefore?: SavedSelection;
     selectionAfter?: SavedSelection;
 }
@@ -727,6 +732,7 @@ class PageHistoryImpl implements PageHistory {
                 "before",
                 "after",
             ),
+            ignoredNodesAdded: this.ignoredNodesAddedBy(open.records),
             selectionBefore: open.selectionBefore,
             selectionAfter: saveSelection(this.root.ownerDocument),
         });
@@ -988,6 +994,12 @@ class PageHistoryImpl implements PageHistory {
             addBeforeValues(open.changes, batch);
             return;
         }
+        // An ignored node joins the latest step even from a batch with no net change, since a
+        // later batch may take the node that holds it out of the page.
+        const latestAtStart = this.latestStep();
+        this.ignoredNodesAddedBy(records).forEach((node) =>
+            latestAtStart?.ignoredNodesAdded.add(node),
+        );
         if (batch.size === 0) return;
         if (this.redoSteps.length > 0) {
             this.log(
@@ -1527,7 +1539,17 @@ class PageHistoryImpl implements PageHistory {
             else this.redoSteps = [];
             return;
         }
+        // See Step.ignoredNodesAdded. Redo puts back the page as the step left it, which may have
+        // held them.
+        const ignoredAndOut = isUndo
+            ? Array.from(step.ignoredNodesAdded).filter(
+                  (node) => !this.root.contains(node),
+              )
+            : [];
         this.putBackValues(step, to);
+        ignoredAndOut
+            .filter((node) => this.root.contains(node))
+            .forEach((node) => node.parentNode!.removeChild(node));
         // Undo's own changes are not edits, nor are those of handlers that the restored
         // selection set off. Restoring the selection can focus a box, and a focus handler may
         // call into the history, which takes the pending records first; so the put-back's
@@ -1569,6 +1591,19 @@ class PageHistoryImpl implements PageHistory {
     /** The newest undo step, or undefined when there is none. */
     private latestStep(): Step | undefined {
         return this.undoSteps[this.undoSteps.length - 1];
+    }
+
+    /** The nodes that the filter ignores and that records added to a node it does not ignore. */
+    private ignoredNodesAddedBy(records: MutationRecord[]): Set<Node> {
+        const added = new Set<Node>();
+        for (const record of records) {
+            if (record.type !== "childList" || this.isIgnored(record.target))
+                continue;
+            record.addedNodes.forEach((node) => {
+                if (this.filter.ignoreNode(node)) added.add(node);
+            });
+        }
+        return added;
     }
 
     /** The part of an element's attribute value now that the filter keeps. */
