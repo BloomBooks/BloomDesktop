@@ -1696,6 +1696,59 @@ describe("inlineImageInteractions", () => {
         });
     });
 
+    // A typing step stays open through a click in its box that leaves the caret where it was
+    // (pageHistoryInput.ts). The picture is in the box too, but a press on it is no click in the
+    // text: it ends the typing step, so a drag of the picture is a step of its own.
+    describe("typing, then a drag of the picture", () => {
+        it("makes two steps, so that the first undo takes back only the drag", async () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            const english = editableFor(group, "en");
+            english.setAttribute("contenteditable", "true");
+            const wrapper = insertInlineImage(group);
+            const img = wrapper.querySelector("img") as HTMLElement;
+            const dockBefore = getInlineImageDock(wrapper);
+            const history = startPageHistory(group);
+            const paragraph = english.querySelector("p") as HTMLElement;
+            const textBefore = paragraph.textContent;
+
+            // A key in the box opens the typing step, which stays open between key presses.
+            english.dispatchEvent(
+                new KeyboardEvent("keydown", {
+                    key: "a",
+                    bubbles: true,
+                    cancelable: true,
+                }),
+            );
+            paragraph.append("a");
+            english.dispatchEvent(new InputEvent("input", { bubbles: true }));
+            // Sanity check
+            expect(history.hasOpenTransaction).toBe(true);
+
+            img.dispatchEvent(pointerEvent("pointerdown", 200, 100));
+            document.dispatchEvent(pointerEvent("pointermove", 160, 80));
+            document.dispatchEvent(pointerEvent("pointermove", 100, 50));
+            document.dispatchEvent(pointerEvent("pointerup", 100, 50));
+            await vi.waitFor(() =>
+                expect(history.hasOpenTransaction).toBe(false),
+            );
+            // Sanity check: the drag moved the picture.
+            expect(getInlineImageDock(wrapper)).not.toBe(dockBefore);
+
+            await history.undo();
+
+            expect(getInlineImageDock(getInlineImageInEditable(english)!)).toBe(
+                dockBefore,
+            );
+            expect(
+                paragraph.textContent,
+                "the first undo should take back only the drag",
+            ).toBe(`${textBefore}a`);
+            await history.undo();
+            expect(paragraph.textContent).toBe(textBefore);
+        });
+    });
+
     // The history records neither the selection class nor the handles (editTimeMarkup.ts), so
     // selecting a picture is no step, and an undo of typing spends no step on the selection.
     describe("keeping the selection out of the page history", () => {

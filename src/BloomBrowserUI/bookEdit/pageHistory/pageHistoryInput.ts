@@ -398,8 +398,10 @@ class InputTransactions {
     /**
      * A pointer press, pointerdown or the mousedown after it. A press on the Undo button opens
      * nothing, but still ends the typing step, which would otherwise hold the undo until something
-     * else ended it. A press in the box of the typing step leaves the step open until the press
-     * has ended, and ends it then only if the caret moved (onRelease).
+     * else ended it. A press in the text of the box of the typing step leaves the step open until
+     * the press has ended, and ends it then only if the caret moved (onRelease). A press on
+     * something in the box that is not text, such as an inline image (contenteditable=false),
+     * ends it like any other press, so that a drag of the picture is a step of its own.
      */
     private onPress(event: Event, fromOtherWindow: boolean): void {
         const run = this.held?.typing;
@@ -407,7 +409,8 @@ class InputTransactions {
             run &&
             !fromOtherWindow &&
             isNode(event.target) &&
-            run.box.contains(event.target)
+            run.box.contains(event.target) &&
+            !isInsideNonEditablePartOf(run.box, event.target)
         ) {
             run.selectionAtPress ??= readSelection(run.box);
             return;
@@ -717,6 +720,16 @@ function textBoxContaining(event: Event): Element | undefined {
             '[contenteditable]:not([contenteditable="false"])',
         ) ?? undefined
     );
+}
+
+/** True when node is inside a contenteditable=false element of box, such as an inline image. */
+function isInsideNonEditablePartOf(box: Element, node: Node): boolean {
+    const element =
+        node.nodeType === Node.ELEMENT_NODE
+            ? (node as Element)
+            : node.parentElement;
+    const nonEditable = element?.closest('[contenteditable="false"]');
+    return !!nonEditable && box.contains(nonEditable);
 }
 
 /** True when the event's target is inside kIgnoredByPageHistoryInputSelector. */
