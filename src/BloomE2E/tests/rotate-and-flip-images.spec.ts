@@ -62,7 +62,7 @@ import {
 import { typeWithKeys } from "../helpers/keys";
 import { realClick } from "../helpers/realClick";
 import { saveScreenshotIfAsked } from "../helpers/screenshot";
-import { canUndo, undo } from "../helpers/undo";
+import { canUndo, redoWithCtrlYAndExpect, undo } from "../helpers/undo";
 
 // The Canvas tool is a Pro feature, so the collection is on the Test enterprise subscription.
 test.use({
@@ -861,6 +861,14 @@ test.describe("rotating and flipping pictures", () => {
                     "Undo after Reset Image did not turn the box back to where Rotate right left it.",
             })
             .toBe(180);
+
+        // Redo puts the reset back, which leaves the box straight for the test after this one.
+        await redoWithCtrlYAndExpect(
+            page,
+            async () => getCanvasElementRotation(picture),
+            0,
+            "Reset Image",
+        );
     });
 
     test("Change Image gives a turned and mirrored picture an upright, unmirrored new one [Test Case ID 827]", async ({
