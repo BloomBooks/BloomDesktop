@@ -33,11 +33,13 @@ Backspace or Delete is described as `EditTab.Undo.DeleteText`.
 | **Backspace or Delete right after typing** | Ends the step, and the deleting starts a new one. Typing after the deleting joins the deleting's step. So "abc", Backspace twice, "xy", Backspace is three steps: "abc"; the two Backspaces with "xy"; the last Backspace. A delete that changes nothing, such as Delete at the end of the text, doesn't count. |
 | **An Enter or Shift+Enter that leaves nothing after the caret on its line** | The Enter joins the step that is open. The next key that types starts a new step. So typing three lines makes three steps, each a line with the Enter that ends it. An Enter in the middle of a line joins the typing before and after it. |
 | **A key that moves the caret** | The arrow keys, Home, End, Page Up and Page Down. The browser ends the step at these even when the caret doesn't move, as with End when the caret is already at the end. |
-| **A click in the box that moves the caret, or a drag that selects** | A click that leaves the caret where it was doesn't end the step. |
+| **A click in the box that moves the caret, or a drag that selects** | A click in the text that leaves the caret where it was doesn't end the step. |
+| **A press of the mouse on a part of the box that is not text** | Any `contenteditable=false` element in the box, such as an inline image, its handles or its toolbar, so that a drag of the picture is a step of its own. This rule comes with PR 8527, "Replace the old undo with the page history", where inline images reach the page history (`isInsideNonEditablePartOf` in `pageHistoryInput.ts`). |
 | **A press of the mouse outside the box** | In another box, in the toolbox, on the top bar. |
 | **The focus leaving the box, or Bloom's window losing it** | For example, Tab to the next box. |
 | **The end of an IME composition** | The composition joins the step that is open, and its end ends that step. |
 | **A key with Ctrl, Alt or Cmd** | Such as Ctrl+B with text selected, Ctrl+A, or Ctrl+Backspace (delete a word). Each is a step of its own if it changes the page, and no step if it doesn't. AltGr, which types characters on many keyboards, is typing. |
+| **Bloom's own command keys: F6, F7 and F8, and Ctrl+Alt+0, 1 and 2** | Bloom binds these to commands on the text of a box (`AddEditKeyHandlers` in `bloomEditing.ts`). Each ends the step and is a step of its own if it changes the page. Ctrl+Alt+0, 1 and 2 count only when the browser doesn't report AltGr; Ctrl+Alt with any other key is taken as AltGr, which is typing (`isCommandKey` in `pageHistoryInput.ts`). |
 | **Paste, Cut, or a drop** | Each is a step of its own (`EditTab.Undo.Paste`, `Cut`, `Drop`), and typing after one starts a new step. |
 | **A key press in another text box** | Each box's typing is a step of its own. There is one history for the whole page, as in the browser. |
 | **Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z, or the Undo or Redo button** | The typing step ends first, then the undo or redo runs. |
@@ -50,8 +52,8 @@ Backspace or Delete is described as `EditTab.Undo.DeleteText`.
 | **Spaces and the ends of sentences** | Words and sentences don't end a step. |
 | **Deleting, then typing** | The typing joins the deleting's step. |
 | **A delete that changes nothing** | Backspace at the start of the box, Delete at the end. |
-| **A click in the box that leaves the caret where it was** | |
-| **A modifier key on its own, Escape, a function key, a dead key** | |
+| **A click in the text of the box that leaves the caret where it was** | |
+| **A modifier key on its own, Escape, a function key other than F6, F7 and F8, a dead key** | Those function keys change nothing in a box, so they make no step either. |
 | **Bloom's reactions to the typing** | They join the open step. |
 
 ## What the browser does, case by case

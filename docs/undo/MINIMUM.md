@@ -98,6 +98,11 @@ Items 1 to 3 and 6 are the earlier pull requests' code, which this one starts us
    - Adding a canvas element and its layer moves, each in a transaction with the general description
      (`doAddAsUndoStep` and `doAsUndoStep` in `CanvasElementManager.ts`), so that an add at the end of
      a drag from the Canvas tool is a step.
+   - Each command chosen from a canvas element's menu or toolbar, in a transaction with the general
+     description that stays open until the command and the page content delays that it started
+     have finished (`runControlCallback` in `canvasControlMenuRendering.tsx`). A press's
+     transaction, when there is one, takes it in; a click with no press before it, such as the
+     click that assistive technology sends for a menu row, would otherwise make no step.
 6. **A moment when the page is ready** (`pageReadiness.ts`). The history starts when the page loads;
    until the page is ready, a change made outside any transaction is not recorded. The toolbox says
    when the running tool's two `newPageReady` passes for the page have run (`useToolLifecycle.ts` and
@@ -152,8 +157,7 @@ Items 1 to 3 and 6 are the earlier pull requests' code, which this one starts us
 
 Each is in REVIEW-PLAN.md's table, and each removes a loss from the list below.
 
-- Canvas commands, the Canvas tool's controls, the colour picker and layer moves as named steps, and
-  an async canvas command no longer joining the step before it.
+- Canvas commands, the Canvas tool's controls, the colour picker and layer moves as named steps.
 - The Format dialog, Book and Page Settings, the link grid, Original Title, Set Destination and Set Up
   Hyperlink, which stop ending the history.
 - The other toolbox tools: Games, Music, Motion, Image Description and the Impairment Visualizer.
@@ -177,7 +181,8 @@ Each is in REVIEW-PLAN.md's table, and each removes a loss from the list below.
 - **History is lost on every request that isn't on item 7's list**, including an AI image editor
   commit.
 - **A change that a tool makes after an `await`** (Sign Language's recording, a hyperlink from Set Up
-  Hyperlink, some canvas commands) joins the step before it, so undoing that step undoes both.
+  Hyperlink) joins the step before it, so undoing that step undoes both. A command from a canvas
+  element's menu or toolbar does not, since its transaction waits for it (item 5).
 - **History is lost when an undo is refused** because a change made outside the history altered a
   value that the step holds. The refusal empties the undo stack.
 - **Playback still writes the page** (issue 7), outside the history, and typing during a paused

@@ -1,13 +1,24 @@
 # Splitting BL-17020 into PRs that a person can review
 
-PR 8484 (https://github.com/BloomBooks/BloomDesktop/pull/8484) changes 221 files: about 14,000
-lines of product code, 27,000 lines of tests and 8,000 lines of docs. Its 13 parts were cut by
-component, and none of them can ship alone: parts 2 to 4 add code that nothing calls, part 5
-switches the Edit tab over, and parts 6 to 13 each bring one more component onto the page history.
+PR 8484 (https://github.com/BloomBooks/BloomDesktop/pull/8484), now closed, changed 221 files:
+about 14,000 lines of product code, 27,000 lines of tests and 8,000 lines of docs. Its 13 parts were
+cut by component, and none of them could ship alone: parts 2 to 4 add code that nothing calls, part
+5 switches the Edit tab over, and parts 6 to 13 each bring one more component onto the page history.
 Until all 13 merged, there was no point at which master was releasable with the new undo.
 
 This plan cuts the same work so that master is releasable after every PR, and so that one named
-PR is the point where Bloom's undo does about as much as master's does today. Every PR after
+PR is the point where Bloom's undo does about as much as master's does today. The PRs that exist so
+far:
+
+| PR | Branch | Based on |
+|---|---|---|
+| Engine, https://github.com/BloomBooks/BloomDesktop/pull/8520 | `BL-17020-history-engine` | master |
+| Markup filter, https://github.com/BloomBooks/BloomDesktop/pull/8525 | `BL-17020-markup-filter` | the engine |
+| Input, keys and page readiness, https://github.com/BloomBooks/BloomDesktop/pull/8526 | `BL-17020-history-input` | the markup filter |
+| Replace the old undo with the page history, https://github.com/BloomBooks/BloomDesktop/pull/8527 | `BL-17020-replace-undo` | input, keys and page readiness, and merges the preparation |
+| Preparation, https://github.com/BloomBooks/BloomDesktop/pull/8521 | `BL-17020-undo-prep` | master |
+
+The PRs after "Replace the old undo" have no numbers yet. Every PR after
 that one adds undo coverage that master never had or removes a loss of history that the new undo
 brings, and each can be reviewed, merged and shipped on its own.
 
@@ -65,7 +76,9 @@ strip this?", and each rule names the step of the save path that it mirrors.
 `pageHistoryAccess.ts`, and origami's exports, in their final form: typing steps follow
 Chromium's own undo (TYPING-STEPS.md), a pause of a second ends a typing step, Enter starts a new
 step. 1,436 product lines, of which 26 are exports added to `origami.ts`, `editablePage.ts` and
-`workspaceRoot.ts`, and 2,432 test lines.
+`workspaceRoot.ts`, and 2,432 test lines. One change to `pageHistoryInput.ts` is made in "Replace
+the old undo" instead (`991426f617`): a press on something in a box that is not text, such as an
+inline image, ends the typing step. Inline images reach the page history only there.
 
 ### Preparation that is right on master without the new undo
 
@@ -116,10 +129,17 @@ One PR, and the one that needs the most careful review. After it merges, Bloom c
   leaves out `bloom-inlineImage-selected`, and a listener puts their selection right after an undo.
   `BloomField`'s refusal of an edit that covers a protected element is installed on every box, so
   that it protects an inline image inserted later.
+- Adding a canvas element and moving one between layers are each a transaction with the general
+  description (`doAddAsUndoStep`, `doAsUndoStep`).
+- Each command from a canvas element's menu or toolbar runs in a transaction with the general
+  description (`runControlCallback`), which stays open until the command and the page content
+  delays that it started have finished, so that a click with no press before it still makes a
+  step. This is the part of part 8's `runControlCallback` that brings no per-command descriptions.
 - `aiImageEditor/commit` stays off `kRequestsThatKeepThePageHistory` until the AI image editor's
-  pull request stops a commit deleting files.
-- E2E: `undo-typing`, `undo-routing`, `undo-reader-tools`, master's `rotate-and-flip-images`, and
-  the table tests.
+  pull request stops a commit deleting files, so a commit ends the history.
+- E2E: `undo-typing`, `undo-routing`, `undo-reader-tools`, master's `rotate-and-flip-images`, the
+  table tests, the inline images' tests and `import-recording`. Every one of them but the inline
+  images' tests does an undo round trip after each test (`helpers/undoRoundTrip.ts`).
 
 About 4,000 product lines, of which about 1,500 are deletions, and about 6,500 test lines.
 
@@ -136,7 +156,7 @@ What it does compared with master:
 | Change Layout mode | Origami's own undo | The same, and entering or leaving the mode ends the history |
 | A control in the Canvas tool, the colour picker, the Format dialog, Book and Page Settings, Motion, Music, Games, Image Description's checkbox, Sign Language, Talking Book's recording-mode switch | Box histories survive | Ends the history |
 | An AI image editor commit | Box histories survive | Ends the history; the swaps on the current page are undoable, one step each |
-| A change that a tool makes after an `await` (Sign Language's recording, some canvas commands) | Box histories survive | Joins the step before it, so undoing that step undoes both |
+| A change that a tool makes after an `await` (Sign Language's recording, a hyperlink from Set Up Hyperlink) | Box histories survive | Joins the step before it, so undoing that step undoes both |
 | Talking Book's Record, Clear, Import | Box histories survive | Ends the history (and still does at the end of this plan) |
 | Ctrl+Z in a box | Undoes that box's latest change | Undoes the page's latest change |
 
@@ -152,12 +172,12 @@ component, with that component's tests.
 
 | PR | From | What gets better | Product | Tests |
 |---|---|---|---|---|
-| Canvas commands and the Canvas tool | part 8, `a6d1806d8b`, `1da4f5c367` | Each command, Canvas tool control, colour picker session and layer move is one named step; an async command no longer joins the step before it | about 500 | about 3,200 |
+| Canvas commands and the Canvas tool | part 8, `a6d1806d8b`, `1da4f5c367` | Each command, Canvas tool control, colour picker session and layer move is one named step | about 500 | about 3,200 |
 | Format dialog, Book and Page Settings, link grid, Original Title, Set Destination, Set Up Hyperlink | part 12 | These stop ending the history; the last three become named steps | about 650 | about 1,300 |
 | Other toolbox tools | part 13, game theme from `2b8dda6e18` | Games, Music, Motion, Image Description and the Impairment Visualizer stop ending the history; a Motion drag is a step | about 700 | about 2,200 |
 | Talking Book's steps | rest of part 10, Adjust Timings from `2b8dda6e18` | The recording mode, the playback-order arrows and Adjust Timings' OK are named steps | about 300 | about 800 |
 | Video and Sign Language | part 9 | Choosing a video no longer reloads the page; Record, Import and Delete are steps | about 200 | about 850 |
-| AI image editor | part 6 | One step per commit; the editor no longer deletes the files that an undo needs | about 170 | about 550 |
+| AI image editor | part 6 | One step per commit; the editor no longer deletes the files that an undo needs, so `aiImageEditor/commit` goes back on `kRequestsThatKeepThePageHistory` and a commit no longer ends the history | about 170 | about 550 |
 | Redo button | `3c643efb36` | A Redo button; Undo and Redo reach the page without a round trip through C# | about 180 | about 20 |
 | Show Page History | `2af6bd54d8`, `05736e941c` | The developer's window that shows the steps and the Stack tab | about 2,100 | about 1,600 |
 
@@ -170,8 +190,9 @@ start, "Replace the old undo" gives the general "Edit" to everything, and each P
 
 The 8,000 lines in `docs/undo/` are reference, not something to review line by line. They go in
 with the engine PR, and the reviewer's reading list is OUTLINE.md, MINIMUM.md and APPROACHES.md
-sections 3 and 11.8. MINIMUM.md is rewritten in "Replace the old undo" to describe that PR as this plan cuts it, and its
-list of what is worse than master becomes the table above.
+sections 3 and 11.8. MINIMUM.md describes "Replace the old undo" as this plan cuts it, on every
+branch of the stack, and its list of what is worse than master is the table above. OPEN-ISSUES.md
+lists what is still open, and names the PR after "Replace the old undo" that an item concerns.
 
 ## How the PRs get built
 
@@ -180,7 +201,13 @@ commits: each PR takes the final version of the files that belong to it, and the
 several PRs touch (`bloomEditing.ts`, `CanvasElementManager.ts`, `bloomApi.ts`, `toolbox.ts`) are
 split by hunk. Each PR must build, pass the front-end tests and lint on its own, and, from "Replace the old
 undo" on, pass the undo e2e tests that exist at that point. The last PR leaves master with the
-same tree as `BL-17020-undo`, which `git diff` checks.
+same tree as `BL-17020-undo` apart from the fixes made on the stack since the re-cut, which
+`BL-17020-undo` does not have; `git diff` against it shows them.
 
-PR 8484 stays open as the reference until "Replace the old undo" merges, then closes, and BL-17020 links each
-new PR in order.
+PR 8484 is closed. Its branch, `BL-17020-undo`, stays as the source of the PRs after "Replace the
+old undo".
+
+## When the plan is done
+
+When the last PR of this plan has merged, delete REVIEW-PLAN.md and MINIMUM.md. Before that,
+rewrite each code comment that cites a MINIMUM.md item so that it states the rule in place.
