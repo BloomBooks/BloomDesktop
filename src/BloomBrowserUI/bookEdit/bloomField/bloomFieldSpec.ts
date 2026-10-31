@@ -1173,6 +1173,8 @@ describe("BloomField.wouldRemoveProtectedElement", () => {
 class StandInEditor {
     public config = {};
     public ui = { addButton: () => {} };
+    // The box the editor is attached to, which the paste listener reads through event.sender.
+    public element: { $: HTMLElement } | undefined;
     private listeners = new Map<string, ((event: unknown) => unknown)[]>();
     public on(eventName: string, listener: (event: unknown) => unknown) {
         this.listeners.set(eventName, [
@@ -1185,7 +1187,11 @@ class StandInEditor {
     }
     public fire(eventName: string, data?: unknown): boolean {
         let cancelled = false;
-        const event = { data, cancel: () => (cancelled = true) };
+        const event = {
+            data,
+            sender: this,
+            cancel: () => (cancelled = true),
+        };
         for (const listener of this.listeners.get(eventName) ?? []) {
             if (listener(event) === false) cancelled = true;
             if (cancelled) break;
@@ -1283,7 +1289,7 @@ describe("BloomField.MarkWhenUserDeletesEverything (BL-13779)", () => {
     });
 });
 
-describe("BloomField.WireToCKEditor refusing Delete over a protected element", () => {
+describe("BloomField.WireToCKEditor refusing Delete and paste over a protected element", () => {
     let field: HTMLElement;
     let editor: StandInEditor;
     let ckeditorWasDefined: boolean;
@@ -1302,6 +1308,7 @@ describe("BloomField.WireToCKEditor refusing Delete over a protected element", (
             SHIFT: 2228224,
         };
         editor = new StandInEditor();
+        editor.element = { $: field };
         BloomField.WireToCKEditor(field, editor.asEditor());
     });
 
@@ -1323,6 +1330,26 @@ describe("BloomField.WireToCKEditor refusing Delete over a protected element", (
         selectText("caption", 2, "p2", 1);
         expect(pressKey(46)).toBe(false);
         expect(pressKey(8)).toBe(false);
+    });
+
+    // Fire CKEditor's paste event for some text, as Ctrl+V does. Returns false if a listener
+    // cancelled it, which keeps CKEditor from putting the text in place of the selection.
+    function paste(): boolean {
+        return editor.fire("paste", {
+            type: "html",
+            dataValue: "<p>pasted</p>",
+            dataTransfer: { getData: () => "" },
+        });
+    }
+
+    it("cancels a paste over a selection that runs into the protected element", () => {
+        selectText("caption", 2, "p2", 1);
+        expect(paste()).toBe(false);
+    });
+
+    it("lets a paste through over a selection beside the protected element", () => {
+        selectText("p1", 0, "p2", 1);
+        expect(paste()).toBe(true);
     });
 
     it("lets Delete through over a selection beside the protected element, and other keys", () => {

@@ -291,6 +291,18 @@ export default class BloomField {
         //     alert(event.data.dataValue);
         // });
         ckeditor.on("paste", (event) => {
+            // CKEditor puts a paste in place of the selection itself, raising no beforeinput for
+            // PreventRemovalOfSomeElements to refuse, so a paste over a selection that covers a
+            // protected element, such as Ctrl+A then Ctrl+V in a box with an inline image, is
+            // refused here.
+            if (
+                BloomField.selectionWouldRemoveProtectedElement(
+                    bloomEditableDiv,
+                )
+            ) {
+                event.cancel();
+                return;
+            }
             event.data.dataValue = this.restoreHtmlMarkupIfNecessary(
                 event.data,
             );
@@ -930,7 +942,8 @@ export default class BloomField {
         // selection (typing or pasting over Ctrl+A). The deletions that Bloom and CKEditor
         // make themselves raise no beforeinput: WireToCKEditor refuses Delete and Backspace
         // over a selection that covers a protected element, which CKEditor may delete itself,
-        // and cutSelectionImpl in bloomEditing.ts refuses the top bar's Cut of one.
+        // and a paste over one, which CKEditor always puts in place itself; cutSelectionImpl
+        // and pasteImpl in bloomEditing.ts refuse the top bar's Cut and Paste over one.
         field.addEventListener("beforeinput", (e) => {
             if (BloomField.wouldRemoveProtectedElement(field, e)) {
                 e.preventDefault();

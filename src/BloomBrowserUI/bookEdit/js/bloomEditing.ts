@@ -2114,6 +2114,16 @@ async function pasteImpl(imageAvailable: boolean) {
         return;
     }
     const ckEditorInstance = CKEDITOR.currentInstance;
+    // As Ctrl+V does (BloomField.WireToCKEditor), paste nothing when the paste would replace a
+    // selection that covers an element that has the bloom-preventRemoval class.
+    if (
+        ckEditorInstance &&
+        BloomField.selectionWouldRemoveProtectedElement(
+            ckEditorInstance.element.$ as HTMLElement,
+        )
+    ) {
+        return;
+    }
     if (ckEditorInstance) {
         ckEditorInstance.insertText(textToPaste);
         // We need to update the canvas element height (BL-14004).
