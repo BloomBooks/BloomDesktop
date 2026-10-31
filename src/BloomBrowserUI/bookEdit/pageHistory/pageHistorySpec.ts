@@ -2611,6 +2611,28 @@ describe("page history: the filter (rule 6)", () => {
             ).toBeNull();
         });
 
+        it("leaves one that was in an ignored node that the step moved into an ignored node it added", async () => {
+            const f = setUp(kPageWithSentence, { filter: bookmarkFilter });
+            const span = byId(f, "s1");
+            const oldHolder = addBookmark(byId(f, "box1"));
+            const bookmark = addBookmark(oldHolder);
+            await letObserverDeliver();
+            await f.history.doTransaction("Delete", () => {
+                const newHolder = addBookmark(byId(f, "box1"));
+                newHolder.appendChild(oldHolder);
+                span.appendChild(bookmark);
+                span.remove();
+            });
+
+            await f.history.undo();
+
+            expect(byId(f, "s1")).toBe(span);
+            expect(
+                bookmark.parentNode,
+                "undo should not take out an ignored node that was in the page before the step",
+            ).toBe(span);
+        });
+
         it("leaves one that changes joining the step later moved into it", async () => {
             const f = setUp(kPageWithSentence, { filter: bookmarkFilter });
             const span = byId(f, "s1");

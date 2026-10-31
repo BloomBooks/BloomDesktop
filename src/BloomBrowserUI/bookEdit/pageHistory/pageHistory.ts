@@ -1735,8 +1735,7 @@ class PageHistoryImpl implements PageHistory {
                     step.ignoredNodesAdded.has(node)
                 )
                     return;
-                // A node taken out of one that the step added was made in the step too.
-                if (isInsideOneOf(record.target, step.ignoredNodesAdded))
+                if (this.wasMadeInStep(step, record.target))
                     step.ignoredNodesAdded.add(node);
                 else step.ignoredNodesMoved.add(node);
             });
@@ -1748,6 +1747,23 @@ class PageHistoryImpl implements PageHistory {
                     step.ignoredNodesAdded.add(node);
             });
         }
+    }
+
+    /**
+     * Whether a node that records took an ignored node out of was made in the step, so that what
+     * it held was made in the step too: it is in step.ignoredNodesAdded, or it is ignored and
+     * inside one that is, by ignored nodes only. A node that the step moved, or one that the
+     * filter keeps, stops the search: it was in the page when the step began, or may have been.
+     * Its ancestors are those at the end of the records, so a node that the step moved into one
+     * that it added is found among step.ignoredNodesMoved first.
+     */
+    private wasMadeInStep(step: Step, holder: Node): boolean {
+        for (let n: Node | null = holder; n; n = n.parentNode) {
+            if (step.ignoredNodesAdded.has(n)) return true;
+            if (step.ignoredNodesMoved.has(n) || !this.filter.ignoreNode(n))
+                return false;
+        }
+        return false;
     }
 
     /** The part of an element's attribute value now that the filter keeps. */
