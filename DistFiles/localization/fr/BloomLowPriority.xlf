@@ -349,19 +349,19 @@
         <target xml:lang="fr" state="final">Bloom n'a pas pu accéder à un microphone.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation" approved="yes">
         <source xml:lang="en">Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity". Either way, you will need to use the "Apply Timings File..." button to apply your changes.</source>
-        <target xml:lang="fr" state="needs-translation">Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity". Either way, you will need to use the "Apply Timings File..." button to apply your changes.</target>
+        <target xml:lang="fr" state="final">Bloom va maintenant ouvrir le fichier de timings pour que vous puissiez le modifier directement. Sinon, vous pouvez utiliser Audacity en important/exportant ce fichier comme un fichier "labels". Pour plus d'informations sur la façon de modifier ce fichier en utilisant Audacity, recherchez docs.bloomlibrary.org pour "Audacity". Dans les deux cas, il faudra utiliser le bouton "Appliquer le Fichier de Timings..." pour appliquer vos modifications.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile" approved="yes">
         <source xml:lang="en">Current timings file is {0}</source>
-        <target xml:lang="fr" state="needs-translation">Current timings file is {0}</target>
+        <target xml:lang="fr" state="final">Le fichier de timings actuel est {0}</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile" approved="yes">
         <source xml:lang="en">Current audio file is {0} (.wav or .mp3)</source>
-        <target xml:lang="fr" state="needs-translation">Current audio file is {0} (.wav or .mp3)</target>
+        <target xml:lang="fr" state="final">Le fichier audio actuel est {0} (.wav ou .mp3)</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile</note>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.OneDriveProblem">
