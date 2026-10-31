@@ -242,9 +242,9 @@
         <target xml:lang="my" state="final">ဤပုံစံအချိုးအစားသည် '{0}'စတိုင်ဖြင့်စာရိုက်ရန်ဇယားကွက်များအတွက် ဖြစ်သည်။</target>
         <note>ID: BookEditor.ForText</note>
       </trans-unit>
-      <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true">
+      <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is for all {0} text boxes with '{1}' style.</source>
-        <target xml:lang="my" state="translated">ဤပုံစံအချိုးအစားသည် '{1}'စတိုင်ဖြင့် {0}စာရိုက်ရန်ဇယားကွက်များအတွက် ဖြစ်သည်။</target>
+        <target xml:lang="my" state="final">ဤပုံစံအချိုးအစားသည် '{1}'စတိုင်ဖြင့် {0}စာရိုက်ရန်ဇယားကွက်များအတွက် ဖြစ်သည်။</target>
         <note>ID: BookEditor.ForTextInLang</note>
       </trans-unit>
       <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true" approved="yes">

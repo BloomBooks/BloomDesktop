@@ -349,6 +349,21 @@
         <target xml:lang="kw" state="needs-translation">Bloom was not able to access a microphone.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation">
+        <source xml:lang="en">Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity". Either way, you will need to use the "Apply Timings File..." button to apply your changes.</source>
+        <target xml:lang="kw" state="needs-translation">Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity". Either way, you will need to use the "Apply Timings File..." button to apply your changes.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile">
+        <source xml:lang="en">Current timings file is {0}</source>
+        <target xml:lang="kw" state="needs-translation">Current timings file is {0}</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile">
+        <source xml:lang="en">Current audio file is {0} (.wav or .mp3)</source>
+        <target xml:lang="kw" state="needs-translation">Current audio file is {0} (.wav or .mp3)</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile</note>
+      </trans-unit>
       <trans-unit id="ReportProblemDialog.OneDriveProblem">
         <source xml:lang="en">OneDrive Problem</source>
         <target xml:lang="kw" state="needs-translation">OneDrive Problem</target>

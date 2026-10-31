@@ -70,6 +70,21 @@
         <target xml:lang="es-ES" state="needs-translation">Projects that have Bloom Enterprise subscriptions can arrange for one or more bookshelves on the Bloom Library. All books uploaded from this collection will go into the selected bookshelf.</target>
         <note>ID: CollectionSettingsDialog.BloomLibraryPage.BookshelfDescription</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage.Places" translate="no">
+        <source xml:lang="en">Places</source>
+        <target xml:lang="es-ES" state="needs-translation">Places</target>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Places</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage.Places.Description" translate="no">
+        <source xml:lang="en">Some front matters will show the following place names. If there are any that you don't want to show, leave them empty.</source>
+        <target xml:lang="es-ES" state="needs-translation">Some front matters will show the following place names. If there are any that you don't want to show, leave them empty.</target>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Places.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage.Style" translate="no">
+        <source xml:lang="en">Style</source>
+        <target xml:lang="es-ES" state="needs-translation">Style</target>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Style</note>
+      </trans-unit>
       <trans-unit id="Feature.AiImageEditing">
         <source xml:lang="en">Edit Images with AI</source>
         <target xml:lang="es-ES" state="needs-translation">Edit Images with AI</target>
@@ -2146,7 +2161,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.BatchGo">
         <source xml:lang="en">Go ({0} Images)</source>
-        <target xml:lang="es-ES" state="translated">Ejecutar ({0} imágenes)</target>
+        <target xml:lang="es-ES" state="translated">Aplicar ({0} imágenes)</target>
         <note>ID: AiImageEditor.Run.BatchGo</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.BatchGoOne">
@@ -2156,17 +2171,17 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.BatchProgress">
         <source xml:lang="en">Processed {0} of {1}</source>
-        <target xml:lang="es-ES" state="translated">{0} de {1} procesadas</target>
+        <target xml:lang="es-ES" state="translated">{0} de {1} aplicado</target>
         <note>ID: AiImageEditor.Run.BatchProgress</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Run.ClickToCancel">
+      <trans-unit id="AiImageEditor.Run.ClickToCancel" approved="yes">
         <source xml:lang="en">Click to Cancel</source>
-        <target xml:lang="es-ES" state="translated">Haga clic para cancelar</target>
+        <target xml:lang="es-ES" state="final">Haga clic para cancelar</target>
         <note>ID: AiImageEditor.Run.ClickToCancel</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.FillInRequiredFields">
         <source xml:lang="en">Fill in required fields</source>
-        <target xml:lang="es-ES" state="translated">Complete los campos obligatorios</target>
+        <target xml:lang="es-ES" state="translated">Llene los campos obligatorios</target>
         <note>ID: AiImageEditor.Run.FillInRequiredFields</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.Go">
@@ -2176,7 +2191,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.NotAvailableInLookAround">
         <source xml:lang="en">Not available in look-around mode</source>
-        <target xml:lang="es-ES" state="translated">No disponible en el modo de solo explorar</target>
+        <target xml:lang="es-ES" state="translated">No disponible en modo de exploración</target>
         <note>ID: AiImageEditor.Run.NotAvailableInLookAround</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ScaleUp.ModelLimit">
@@ -2184,29 +2199,29 @@
         <target xml:lang="es-ES" state="translated">Ampliar hasta donde llegue este modelo, alrededor del {0} % del tamaño que necesita esta página.</target>
         <note>ID: AiImageEditor.ScaleUp.ModelLimit</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Section.Enhance">
+      <trans-unit id="AiImageEditor.Section.Enhance" approved="yes">
         <source xml:lang="en">Enhance</source>
-        <target xml:lang="es-ES" state="translated">Mejorar</target>
+        <target xml:lang="es-ES" state="final">Mejorar</target>
         <note>ID: AiImageEditor.Section.Enhance</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Section.Games">
+      <trans-unit id="AiImageEditor.Section.Games" approved="yes">
         <source xml:lang="en">Games</source>
-        <target xml:lang="es-ES" state="translated">Juegos</target>
+        <target xml:lang="es-ES" state="final">Juegos</target>
         <note>ID: AiImageEditor.Section.Games</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Section.Localize">
         <source xml:lang="en">Localize</source>
-        <target xml:lang="es-ES" state="translated">Adaptar</target>
+        <target xml:lang="es-ES" state="translated">Adecuación cultural</target>
         <note>ID: AiImageEditor.Section.Localize</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Section.More">
+      <trans-unit id="AiImageEditor.Section.More" approved="yes">
         <source xml:lang="en">More</source>
-        <target xml:lang="es-ES" state="translated">Más</target>
+        <target xml:lang="es-ES" state="final">Más</target>
         <note>ID: AiImageEditor.Section.More</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Section.Text">
+      <trans-unit id="AiImageEditor.Section.Text" approved="yes">
         <source xml:lang="en">Text</source>
-        <target xml:lang="es-ES" state="translated">Texto</target>
+        <target xml:lang="es-ES" state="final">Texto</target>
         <note>ID: AiImageEditor.Section.Text</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Settings.ChooseFolder">
@@ -2214,24 +2229,24 @@
         <target xml:lang="es-ES" state="translated">Elegir carpeta</target>
         <note>ID: AiImageEditor.Settings.ChooseFolder</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Settings.ConnectionSection">
+      <trans-unit id="AiImageEditor.Settings.ConnectionSection" approved="yes">
         <source xml:lang="en">Connection to AI Image Generators</source>
-        <target xml:lang="es-ES" state="translated">Conexión con los generadores de imágenes con IA</target>
+        <target xml:lang="es-ES" state="final">Conexión con los generadores de imágenes con IA</target>
         <note>ID: AiImageEditor.Settings.ConnectionSection</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Settings.Title">
+      <trans-unit id="AiImageEditor.Settings.Title" approved="yes">
         <source xml:lang="en">AI Image Tools settings</source>
-        <target xml:lang="es-ES" state="translated">Configuración de las herramientas de imágenes con IA</target>
+        <target xml:lang="es-ES" state="final">Configuración de las herramientas de imágenes con IA</target>
         <note>ID: AiImageEditor.Settings.Title</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Shape.MatchContainer">
         <source xml:lang="en">Match Container</source>
-        <target xml:lang="es-ES" state="translated">Como el marco de la página</target>
+        <target xml:lang="es-ES" state="translated">Ajustar al contenedor</target>
         <note>ID: AiImageEditor.Shape.MatchContainer</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Shape.MatchContainerTooltip">
         <source xml:lang="en">Image container on the page is {0} x {1}</source>
-        <target xml:lang="es-ES" state="translated">El marco de la imagen en la página mide {0} x {1}</target>
+        <target xml:lang="es-ES" state="translated">El contenedor de la imagen en la página es {0} x {1}</target>
         <note>ID: AiImageEditor.Shape.MatchContainerTooltip</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Shape.MatchImage">
@@ -2246,7 +2261,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Slot.DropOrPasteToEdit">
         <source xml:lang="en">Drop or paste an image to edit</source>
-        <target xml:lang="es-ES" state="translated">Suelte o pegue una imagen para editar</target>
+        <target xml:lang="es-ES" state="translated">Arrastre o pegue una imagen para editar</target>
         <note>ID: AiImageEditor.Slot.DropOrPasteToEdit</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Slot.Empty">
