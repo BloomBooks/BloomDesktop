@@ -2657,6 +2657,30 @@ describe("page history: the filter (rule 6)", () => {
             ).toBeNull();
         });
 
+        it("leaves one that was in a kept node, inside an ignored node, that the step moved into an ignored node it added", async () => {
+            const f = setUp(kPageWithSentence, { filter: bookmarkFilter });
+            const span = byId(f, "s1");
+            const oldWrapper = addBookmark(byId(f, "box1"));
+            const plain = document.createElement("span");
+            oldWrapper.appendChild(plain);
+            const bookmark = addBookmark(plain);
+            await letObserverDeliver();
+            await f.history.doTransaction("Delete", () => {
+                const newWrapper = addBookmark(byId(f, "box1"));
+                newWrapper.appendChild(plain);
+                span.appendChild(bookmark);
+                span.remove();
+            });
+
+            await f.history.undo();
+
+            expect(byId(f, "s1")).toBe(span);
+            expect(
+                bookmark.parentNode,
+                "undo should not take out an ignored node that was in the page before the step",
+            ).toBe(span);
+        });
+
         it("leaves one that was in a kept node that the step moved into an ignored node it added", async () => {
             const f = setUp(
                 '<div class="bloom-editable" id="box1"><p id="p1"><span id="s1">Hello</span></p><span id="plain"></span></div>',
