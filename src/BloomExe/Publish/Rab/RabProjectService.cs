@@ -62,6 +62,9 @@ namespace Bloom.Publish.Rab
         // RAB that is already installed is left alone, not downgraded: Bloom channels installed side
         // by side share one RAB install, and an exact match would make them reinstall over each
         // other. Before changing this, upload the matching installer (see kRabSetupDownloadUrl).
+        // When this moves to a RAB that serves Andika under the names bloom-player asks for
+        // (sillsdev/app-builders#2510), stop setting EmbedDefaultFont in ExportBookInfos: apps
+        // would then carry Andika twice.
         private const string kRabInstallerVersion = "14-0-1";
         internal static readonly Version kRabInstallerVersionNumber = new Version(
             kRabInstallerVersion.Replace('-', '.')
@@ -1753,6 +1756,11 @@ namespace Bloom.Publish.Rab
                         _bookServer,
                         bookInfo
                     );
+                    // The app does not serve Andika to bloom-player under the names it asks for,
+                    // and RAB apps have no internet permission for bloom-player's fallback, so
+                    // the book carries the Andika faces it uses, like any other font (BL-17007,
+                    // sillsdev/app-builders#2510).
+                    settings.EmbedDefaultFont = true;
                     BloomPubMaker.CreateBloomPub(
                         settings,
                         bloomPubPath,
