@@ -839,7 +839,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         id: "becomeBackground",
         l10nId: "EditTab.Toolbox.ComicTool.Options.BecomeBackground",
         englishLabel: "Become Background",
-        action: (ctx) => {
+        action: async (ctx) => {
             const img = getImage(ctx);
             if (!img) {
                 return;
@@ -952,10 +952,11 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             canvasElementManager.updateCanvasElementForChangedImage(bgImg);
             if (!haveRealBgImage) {
                 // Wait until selection settles after conversion, then ensure background fills.
-                setTimeout(() => {
-                    canvasElementManager.setActiveElement(bgImageCe);
-                    canvasElementManager.expandImageToFillSpace();
-                });
+                // The action awaits the timer, so that the fill is part of this command's undo
+                // step: runControlCallback keeps the step open until the action has finished.
+                await new Promise<void>((resolve) => setTimeout(resolve));
+                canvasElementManager.setActiveElement(bgImageCe);
+                canvasElementManager.expandImageToFillSpace();
             }
         },
     },
