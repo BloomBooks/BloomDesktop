@@ -1309,6 +1309,16 @@ namespace BloomTests.Book
                 "<div>Hello <cite class=\"myClass\">world</cite> That was a citation</div>",
                 dom.InnerXml
             );
+
+            // Older books can have a line break in the original title (BL-17031).
+            HtmlDom.SetElementFromUserStringSafely(
+                target,
+                "Hello <cite data-book=\"originalTitle\">line one\nline two</cite>, Copyright"
+            );
+            Assert.AreEqual(
+                "<div>Hello <cite data-book=\"originalTitle\">line one\nline two</cite>, Copyright</div>",
+                dom.InnerXml
+            );
         }
 
         [Test]

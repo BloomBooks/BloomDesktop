@@ -978,6 +978,36 @@ namespace BloomTests.Book
         }
 
         /// <summary>
+        /// Older books can have a line break inside the original title (BL-17031). The citation
+        /// must still come through as markup and become italics, not escaped text.
+        /// </summary>
+        [Test]
+        public void SeedUserEditableOriginalCopyrightNotice_TitleWithLineBreak_BecomesItalics()
+        {
+            var html =
+                "<html><head></head><body>"
+                + "<div id='bloomDataDiv'>"
+                + "<div data-book='originalLicenseUrl' lang='*'>http://creativecommons.org/licenses/by/4.0/</div>"
+                + "<div data-book='originalCopyright' lang='*'>Copyright © 1997, SIL Cameroon</div>"
+                + "<div data-book='originalTitle' lang='*'>The Young Man and The Dragon:\nParasitic Worms</div>"
+                + "</div></body></html>";
+            var bookDom = new HtmlDom(html);
+            var bookData = new BookData(bookDom, _collectionSettings, null);
+            Assert.That(
+                bookDom.GetBookSetting("originalTitle").GetExactAlternative("*"),
+                Does.Contain("\n"),
+                "Test setup problem: the original title was supposed to contain a line break."
+            );
+
+            BookCopyrightAndLicense.SeedUserEditableOriginalCopyrightNotice(bookDom, bookData);
+
+            var stored = bookData.GetVariableOrNull("userOriginalCopyrightAndLicense", "*").Xml;
+            Assert.That(stored, Does.Contain("<em>The Young Man and The Dragon:"));
+            Assert.That(stored, Does.Not.Contain("cite"));
+            Assert.That(stored, Does.Not.Contain("&lt;"));
+        }
+
+        /// <summary>
         /// Bloom builds the sentence by pasting the original title and copyright holder straight
         /// into it, and those are whatever the publisher typed: "SIL &amp; LASI" is ordinary.
         /// The sentence therefore is not valid XML, and handing it over to the user has to escape
