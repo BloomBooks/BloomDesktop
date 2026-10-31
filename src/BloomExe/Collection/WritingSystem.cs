@@ -7,7 +7,6 @@ using System.Threading;
 using System.Xml.Linq;
 using Bloom.ToPalaso;
 using SIL.Reporting;
-using SIL.Windows.Forms.WritingSystems;
 using SIL.WritingSystems;
 
 namespace Bloom.Collection
@@ -34,7 +33,7 @@ namespace Bloom.Collection
         }
 
         private readonly Func<string> _tagOfDefaultLanguageForNaming;
-        public static LanguageLookupModel LookupModel = new LanguageLookupModel();
+        private static LanguageLookup _languageLookup;
         private string _langTag;
         public bool IsRightToLeft;
 
@@ -379,21 +378,21 @@ namespace Bloom.Collection
                     return b;
             }
             // Compute value since it wasn't stored.
-            if (!LookupModel.AreLanguagesLoaded)
+            if (_languageLookup == null)
             {
                 EnsureSldrInitialized(true); // needed for tests
-                LoadLookupModelLanguages();
+                LoadLanguageLookup();
             }
             if (string.IsNullOrWhiteSpace(Tag))
                 return false; // undefined (probably language3 or sign language)
 
-            var language = LookupModel.LanguageLookup.GetLanguageFromCode(Tag);
+            var language = _languageLookup.GetLanguageFromCode(Tag);
             // (If the lookup didn't find a language, treat the name as custom.)
             return Name != language?.Names?.FirstOrDefault();
         }
 
         /// <summary>
-        /// Load the language list into LookupModel. Loading it makes Sldr compare its langtags.json
+        /// Load the language list into _languageLookup. Loading it makes Sldr compare its langtags.json
         /// cache with the server, inside a machine-wide mutex named "SldrCache". If a process is
         /// killed while it holds that mutex (for example, a Bloom the e2e harness kills during that
         /// web request), the next process to wait on it gets AbandonedMutexException. That process
@@ -402,26 +401,25 @@ namespace Bloom.Collection
         /// load a collection until something releases it. So release it here and try once more.
         /// (BL-16802)
         /// </summary>
-        private static void LoadLookupModelLanguages()
+        private static void LoadLanguageLookup()
         {
             try
             {
-                LoadLookupModelLanguagesOnce();
+                LoadLanguageLookupOnce();
             }
             catch (AbandonedMutexException)
             {
                 ReleaseSldrCacheMutexHeldByThisThread();
-                LoadLookupModelLanguagesOnce();
+                LoadLanguageLookupOnce();
             }
         }
 
-        private static void LoadLookupModelLanguagesOnce()
+        private static void LoadLanguageLookupOnce()
         {
-            LookupModel.IncludeScriptMarkers = false;
-            // The previous line should have loaded the LanguageLookup object: if something changes so that
-            // it doesn't, ensure that happens anyway.
-            if (!LookupModel.AreLanguagesLoaded)
-                LookupModel.LoadLanguages();
+            // Bloom looks languages up by bare code. ensureDefaultTags gives a language whose
+            // langtags.json entries all carry a script marker a tag that is just its code, so
+            // GetLanguageFromCode finds it too.
+            _languageLookup = new LanguageLookup(ensureDefaultTags: true);
         }
 
         /// <summary>
