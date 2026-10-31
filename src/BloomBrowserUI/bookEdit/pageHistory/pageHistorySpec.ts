@@ -2633,6 +2633,55 @@ describe("page history: the filter (rule 6)", () => {
             ).toBe(span);
         });
 
+        it("takes out one that the step made in a kept node inside an ignored node it added", async () => {
+            const f = setUp(kPageWithSentence, { filter: bookmarkFilter });
+            const span = byId(f, "s1");
+            let bookmark: HTMLElement | undefined;
+            await f.history.doTransaction("Delete", () => {
+                const wrapper = document.createElement("span");
+                wrapper.setAttribute("data-cke-bookmark", "1");
+                const plain = document.createElement("span");
+                wrapper.appendChild(plain);
+                bookmark = addBookmark(plain);
+                byId(f, "box1").appendChild(wrapper);
+                span.appendChild(bookmark);
+                span.remove();
+            });
+
+            await f.history.undo();
+
+            expect(byId(f, "s1")).toBe(span);
+            expect(
+                bookmark!.parentNode,
+                "undo should take out an ignored node that the step made",
+            ).toBeNull();
+        });
+
+        it("leaves one that was in a kept node that the step moved into an ignored node it added", async () => {
+            const f = setUp(
+                '<div class="bloom-editable" id="box1"><p id="p1"><span id="s1">Hello</span></p><span id="plain"></span></div>',
+                { filter: bookmarkFilter },
+            );
+            const span = byId(f, "s1");
+            const plain = byId(f, "plain");
+            const bookmark = addBookmark(plain);
+            await letObserverDeliver();
+            await f.history.doTransaction("Delete", () => {
+                const wrapper = addBookmark(byId(f, "box1"));
+                wrapper.appendChild(plain);
+                span.appendChild(bookmark);
+                span.remove();
+            });
+
+            await f.history.undo();
+
+            expect(byId(f, "s1")).toBe(span);
+            expect(
+                bookmark.parentNode,
+                "undo should not take out an ignored node that was in the page before the step",
+            ).toBe(span);
+        });
+
         it("leaves one that changes joining the step later moved into it", async () => {
             const f = setUp(kPageWithSentence, { filter: bookmarkFilter });
             const span = byId(f, "s1");
