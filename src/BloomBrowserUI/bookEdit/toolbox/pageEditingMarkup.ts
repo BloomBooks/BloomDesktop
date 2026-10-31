@@ -12,6 +12,7 @@ import type { ToolBox } from "./toolbox";
 import { EditableDivUtils } from "../js/editableDivUtils";
 import {
     boxParticipatesInMarkup,
+    discardSavedSelectionForMarkup,
     restoreAndResaveSelectionForMarkup,
     restoreSelectionAfterMarkup,
     saveSelectionForMarkup,
@@ -240,7 +241,13 @@ export function cancelPendingMarkupUpdates(): void {
     keypressTimer = null;
     // A pass waiting for updateMarkupAsync applies its result only if no other pass began since.
     ++keydownEventCounter;
+    // And it changes nothing more at all once an undo or redo has come.
+    ++cancelledMarkupPasses;
 }
+
+// Counts the calls of cancelPendingMarkupUpdates, which the page history makes before each undo
+// and redo. A pass waiting for updateMarkupAsync that sees it change is abandoned.
+let cancelledMarkupPasses = 0;
 const retryDelayForMarkupUpdateInMilliseconds = 100;
 const maxMarkupUpdateRetries = 3;
 
@@ -465,8 +472,23 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                         }
                         savedSelection = resaved;
 
+                        const cancelledPassesBeforeAwait =
+                            cancelledMarkupPasses;
                         const actualUpdateFunc =
                             await runningTool.updateMarkupAsync();
+                        if (
+                            cancelledMarkupPasses !== cancelledPassesBeforeAwait
+                        ) {
+                            // An undo or redo came meanwhile, and put the page and the caret
+                            // where the history says. Anything the pass did now would move that
+                            // caret and join the step before, dropping redo; it only takes out
+                            // its bookmark, which the history leaves out.
+                            discardSavedSelectionForMarkup(
+                                editableDiv,
+                                resaved,
+                            );
+                            return;
+                        }
                         if (
                             keydownEventCounter ===
                             counterValueThatIdentifiesThisKeyDown

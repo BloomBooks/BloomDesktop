@@ -28,7 +28,7 @@
 //
 // THE PLANNED IMPLEMENTATION records the caret as a character offset into the editable's text
 // instead, which perturbs nothing and therefore fixes that mis-analysis rather than preserving it.
-// When that lands, only the four functions below change; toolbox.ts should not need to.
+// When that lands, only the five functions below change; toolbox.ts should not need to.
 
 /**
  * An opaque record of where the caret was. Callers must not inspect it — that is the whole point
@@ -146,4 +146,26 @@ export function restoreAndResaveSelectionForMarkup(
 ): SavedMarkupSelection | undefined {
     restoreSelectionAfterMarkup(editableDiv, saved);
     return saveSelectionForMarkup(editableDiv, saved.bookmarks !== undefined);
+}
+
+/**
+ * Take the marker spans of a saved caret out of the page without moving the caret, for a pass that
+ * is abandoned because an undo or redo came while it waited, and put the caret where the history
+ * left it. Call it instead of restoreSelectionAfterMarkup(), exactly once per save.
+ */
+export function discardSavedSelectionForMarkup(
+    editableDiv: HTMLElement,
+    saved: SavedMarkupSelection,
+): void {
+    (
+        saved.bookmarks as
+            | { startNode?: unknown; endNode?: unknown }[]
+            | undefined
+    )?.forEach((bookmark) => {
+        // createBookmarks(true) makes serializable bookmarks, which name their spans by id.
+        [bookmark.startNode, bookmark.endNode].forEach((id) => {
+            if (typeof id === "string")
+                editableDiv.ownerDocument.getElementById(id)?.remove();
+        });
+    });
 }

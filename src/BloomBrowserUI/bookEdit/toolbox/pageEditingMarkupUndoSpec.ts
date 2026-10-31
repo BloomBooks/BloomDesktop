@@ -17,6 +17,8 @@ const selection = vi.hoisted(() => ({
     save: vi.fn((_box: HTMLElement, _boxMightBeRewritten: boolean) => ({
         bookmarks: undefined,
     })),
+    restore: vi.fn(),
+    discard: vi.fn(),
 }));
 
 vi.mock("../js/workspaceFrames", async (importOriginal) => ({
@@ -27,7 +29,8 @@ vi.mock("../js/workspaceFrames", async (importOriginal) => ({
 vi.mock("./markupSelectionPreservation", () => ({
     boxParticipatesInMarkup: () => true,
     saveSelectionForMarkup: selection.save,
-    restoreSelectionAfterMarkup: () => undefined,
+    restoreSelectionAfterMarkup: selection.restore,
+    discardSavedSelectionForMarkup: selection.discard,
     restoreAndResaveSelectionForMarkup: (_box: HTMLElement, saved: object) =>
         saved,
 }));
@@ -46,6 +49,8 @@ afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
     selection.save.mockClear();
+    selection.restore.mockClear();
+    selection.discard.mockClear();
     history?.dispose();
     history = undefined;
     frames.pageFrameExports = undefined;
@@ -129,6 +134,49 @@ describe("pageEditingMarkup: the markup pass and the page history", () => {
         ).toBe("Hello");
         expect(box.firstChild, "the same paragraph is back").toBe(paragraph);
         expect(pageHistory.undoDescriptionL10nKey).toBeUndefined();
+    });
+
+    it("changes nothing more once an undo comes while an async tool works out its markup", async () => {
+        const update = vi.fn();
+        let finishToolMarkup: (update: () => void) => void = () => {
+            throw new Error(
+                "test setup: the tool's markup was never asked for",
+            );
+        };
+        // The nbsp is one that the pass would replace after the tool's markup, by rewriting the box.
+        const { box, paragraph } = setUpPage("Hello a b", {
+            isUpdateMarkupAsync: () => true,
+            updateMarkupAsync: () =>
+                new Promise<() => void>((resolve) => {
+                    finishToolMarkup = resolve;
+                }),
+        });
+        vi.useFakeTimers();
+        typeKey(box, paragraph);
+        vi.advanceTimersByTime(500);
+        expect(
+            selection.save,
+            "test setup: the pass should have recorded the caret",
+        ).toHaveBeenCalled();
+
+        // What the page history calls before an undo or redo (listenToPageHistory).
+        cancelPendingMarkupUpdates();
+        finishToolMarkup(update);
+        await vi.runAllTimersAsync();
+
+        expect(
+            update,
+            "the tool's markup is not applied",
+        ).not.toHaveBeenCalled();
+        expect(
+            selection.restore,
+            "the caret stays where the undo put it",
+        ).not.toHaveBeenCalled();
+        expect(
+            selection.discard,
+            "the pass takes out its bookmark",
+        ).toHaveBeenCalledTimes(1);
+        expect(box.textContent, "the nbsp is left alone").toBe("Hello a b");
     });
 
     it("keeps redo when the Ctrl of a Ctrl+Y goes down in a box whose paragraph undo left split", async () => {
