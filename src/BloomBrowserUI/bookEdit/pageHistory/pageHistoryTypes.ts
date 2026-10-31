@@ -441,7 +441,9 @@ export interface PageHistory {
      * recomputes from other content (rule 3), and for a change that is deliberately not undoable
      * but must not end the history. If a later undo or redo needs a value that such a change
      * altered, the check of rule 4 refuses it: that stack of steps is emptied and the page is left
-     * as it is.
+     * as it is. This holds when fn runs while a transaction is open too: a value that the
+     * transaction had changed and fn then altered keeps, in its step, the value that the
+     * transaction gave it.
      */
     doOutsideHistory<T>(fn: () => T): T;
 

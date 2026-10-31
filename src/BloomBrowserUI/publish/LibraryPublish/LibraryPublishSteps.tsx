@@ -37,7 +37,7 @@ import {
     showConfirmDialog,
 } from "../../react_components/confirmDialog";
 import { BloomSplitButton } from "../../react_components/bloomSplitButton";
-import { ErrorBox, WaitBox } from "../../react_components/boxes";
+import { ErrorBox, WaitBox, WarningBox } from "../../react_components/boxes";
 import {
     IUploadCollisionDlgData,
     showUploadCollisionDialog,
@@ -407,11 +407,12 @@ export const LibraryPublishSteps: React.FunctionComponent<{
         localizedSuggestChangeCC,
     ]);
 
+    // Only a warning: the upload itself may still work (BL-17001).
     const serverErrorBox = serverError && (
-        <ErrorBox
+        <WarningBox
             l10Msg="Bloom could not reach the server to get the list of bookshelves."
             l10nKey="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer"
-        ></ErrorBox>
+        ></WarningBox>
     );
     const bookshelfErrorBox = bookshelfHasProblem && (
         <ErrorBox
@@ -427,13 +428,18 @@ export const LibraryPublishSteps: React.FunctionComponent<{
                 !isReadyForUpload() ||
                 !loggedInEmail ||
                 isPlaygroundBook ||
-                // If 'error', there's probably an internet problem that will
-                // hinder upload anyway.
                 // If 'bookshelfHasProblem', the collection settings have a
                 // bookshelf that isn't acceptable according to the current
-                // subscription. In both cases, we give the user a tool tip on the
-                // disabled button to tell them what the problem is.
-                serverError ||
+                // subscription, and an error box tells the user so.
+                // A 'serverError' does not disable the button. The bookshelf list
+                // comes from Contentful, which can be unreachable while our own
+                // upload server is fine; Contentful refuses some regions outright
+                // (BL-17001). Then we can't check the collection's bookshelf, and
+                // the upload tags the book with it unchecked. C# still requires
+                // a subscription tier that allows bookshelves, so the only gap is
+                // that someone could hand-edit their collection to name another
+                // organization's shelf and block Contentful. We accept that: it
+                // needs a paid subscription and deliberate effort.
                 bookshelfHasProblem
             }
             options={[
