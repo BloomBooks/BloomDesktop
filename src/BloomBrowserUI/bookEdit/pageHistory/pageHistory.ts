@@ -126,6 +126,10 @@ interface OpenTransaction {
     // old value. A rollback writes this and not the raw old value, which may hold a character
     // that only the editor's state at that time explains.
     keptOldTexts: Map<MutationRecord, string>;
+    // For each value that this had changed and that a change inside doOutsideHistory then
+    // altered, the value as this left it before that change, until this or its rollback writes
+    // the value again. The step takes these as its after values (closeOpenTransaction).
+    valuesBeforeUnrecordedChanges: BatchChanges;
     selectionBefore?: SavedSelection;
     // The listeners of BegunTransaction.onClose, called once when this closes.
     closeListeners: CloseListener[];
@@ -299,6 +303,7 @@ class PageHistoryImpl implements PageHistory {
             // changes back to those from before fn when the stand-in closes; the next records
             // give their before values afresh.
             this.openTransaction!.changes.clear();
+            this.openTransaction!.valuesBeforeUnrecordedChanges.clear();
         }
         const latest = joinsLatestStep
             ? this.latestStep()
@@ -577,6 +582,7 @@ class PageHistoryImpl implements PageHistory {
         });
         this.endFramesFrom(index);
         const records = open.records.splice(frame.firstRecordIndex);
+        this.forgetValuesBeforeUnrecordedChanges(open, records);
         for (let i = records.length - 1; i >= 0; i--) reverseRecord(records[i]);
         this.putBackKeptOldTexts(records, open.keptOldTexts);
         if (records.length > 0)
@@ -656,6 +662,7 @@ class PageHistoryImpl implements PageHistory {
                 changes: new Map(),
                 records: [],
                 keptOldTexts: new Map(),
+                valuesBeforeUnrecordedChanges: new Map(),
                 selectionBefore: saveSelection(this.root.ownerDocument),
                 closeListeners: [],
             };
@@ -716,6 +723,7 @@ class PageHistoryImpl implements PageHistory {
         this.stopObservingRemovedNodes();
         this.readAfterValues(open.changes, open.changes);
         this.fixChildListsOfNodesNewToStep(open.changes);
+        this.useValuesBeforeUnrecordedChanges(open);
         removeEntriesWithNoNetChange(open.changes);
         this.removeEntriesOfNodesAtNeitherEnd(open.changes);
         if (open.changes.size === 0) {
@@ -752,6 +760,88 @@ class PageHistoryImpl implements PageHistory {
         );
         this.noteClosed(open, open.descriptionL10nKey, open.descriptionArgs);
         return true;
+    }
+
+    /**
+     * Note, for each value that open has changed and that records of a change inside
+     * doOutsideHistory altered, the value as open left it, unless one is noted already. Read from
+     * the page when open closes, the after value would hold the unrecorded change, and undo would
+     * overwrite it. As open left it, the after value differs from the page, so the check of rule 4
+     * refuses that undo, as doOutsideHistory promises.
+     */
+    private noteValuesBeforeUnrecordedChanges(
+        open: OpenTransaction,
+        records: MutationRecord[],
+    ): void {
+        this.netChanges(records, new Map()).forEach((values, node) => {
+            const change = open.changes.get(node);
+            if (!change) return;
+            let noted = open.valuesBeforeUnrecordedChanges.get(node);
+            if (!noted) {
+                noted = {};
+                open.valuesBeforeUnrecordedChanges.set(node, noted);
+            }
+            const notedValues = noted;
+            values.attributes?.forEach((value, name) => {
+                if (!change.attributes?.has(name)) return;
+                if (!notedValues.attributes) notedValues.attributes = new Map();
+                if (!notedValues.attributes.has(name))
+                    notedValues.attributes.set(name, value);
+            });
+            if (
+                values.text !== undefined &&
+                change.text &&
+                notedValues.text === undefined
+            )
+                notedValues.text = values.text;
+            if (values.children && change.children && !notedValues.children)
+                notedValues.children = values.children;
+        });
+    }
+
+    /**
+     * Forget the values noted by noteValuesBeforeUnrecordedChanges that records of open, or of
+     * its rollback, wrote again: the page's value then is the one that open left.
+     */
+    private forgetValuesBeforeUnrecordedChanges(
+        open: OpenTransaction,
+        records: MutationRecord[],
+    ): void {
+        if (open.valuesBeforeUnrecordedChanges.size === 0) return;
+        for (const record of records) {
+            const noted = open.valuesBeforeUnrecordedChanges.get(record.target);
+            if (!noted) continue;
+            switch (record.type) {
+                case "attributes":
+                    noted.attributes?.delete(record.attributeName!);
+                    break;
+                case "characterData":
+                    delete noted.text;
+                    break;
+                case "childList":
+                    delete noted.children;
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Make the values noted by noteValuesBeforeUnrecordedChanges the after values of open's
+     * changes, in place of those read from the page.
+     */
+    private useValuesBeforeUnrecordedChanges(open: OpenTransaction): void {
+        open.valuesBeforeUnrecordedChanges.forEach((noted, node) => {
+            const change = open.changes.get(node);
+            if (!change) return;
+            noted.attributes?.forEach((value, name) => {
+                const values = change.attributes?.get(name);
+                if (values) values.after = value;
+            });
+            if (noted.text !== undefined && change.text)
+                change.text.after = noted.text;
+            if (noted.children && change.children)
+                change.children.after = noted.children;
+        });
     }
 
     /**
@@ -985,7 +1075,14 @@ class PageHistoryImpl implements PageHistory {
             ignored: records.map((record) => this.isLeftOutByFilter(record)),
             context: this.changeContext(),
         });
-        if (this.callContext === "doOutsideHistory") return;
+        if (this.callContext === "doOutsideHistory") {
+            if (this.openTransaction)
+                this.noteValuesBeforeUnrecordedChanges(
+                    this.openTransaction,
+                    records,
+                );
+            return;
+        }
         const open =
             this.callContext === "addToLatestStep"
                 ? undefined
@@ -994,6 +1091,7 @@ class PageHistoryImpl implements PageHistory {
         const keptOldTexts = new Map<MutationRecord, string>();
         const batch = this.netChanges(records, keptOldTexts);
         if (open) {
+            this.forgetValuesBeforeUnrecordedChanges(open, records);
             for (const record of records) open.records.push(record);
             keptOldTexts.forEach((kept, record) =>
                 open.keptOldTexts.set(record, kept),
