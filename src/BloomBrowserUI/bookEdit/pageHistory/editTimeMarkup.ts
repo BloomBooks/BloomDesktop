@@ -56,6 +56,8 @@ const kEditTimeClasses = new Set([
     "bloom-current-table",
     // removeEditingDebris, on .marginBox there.
     "origami-layout-mode",
+    // removeEditingDebris, through clearInlineImageSelection, on the selected inline image.
+    "bloom-inlineImage-selected",
     // turnOffCanvasElementEditing: removeFocusClass and EnableAllImageEditing. The Motion tool's
     // detachFromPage also removes bloom-hideImageButtons.
     "bloom-focusedCanvasElement",
@@ -496,8 +498,21 @@ function normalizedStyleValue(
     return important ? `${normalized} !important` : normalized;
 }
 
+/**
+ * The inline style properties of the .bloom-page that a save keeps, compared ignoring case: C#'s
+ * ProcessPageAfterEditing drops every other one (HtmlDom.kPageStylePropertiesToPersist).
+ */
+const kSavedPageStyleProperties = new Set([
+    "--page-background-color",
+    "--pagenumber-color",
+    "--pagenumber-outline-color",
+    "--pagenumber-background-color",
+]);
+
 /** True for an inline style property of element that a save removes, or that undo leaves alone. */
 function isEditTimeStyleProperty(element: Element, name: string): boolean {
+    if (element.classList.contains("bloom-page"))
+        return !kSavedPageStyleProperties.has(name.toLowerCase());
     if (kEditTimeStyleProperties.has(name)) return true;
     if (
         kBoxStylePropertiesIgnoredByUndoOnly.has(name) &&
