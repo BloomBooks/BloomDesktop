@@ -217,8 +217,10 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
             {...propsForBloomDialog}
             css={css`
                 // Airier overall padding than the 24px default. (Doubled selector so this
-                // wins over BloomDialog's own padding rule on the same element.)
-                && {
+                // wins over BloomDialog's own padding rule on the same element.) BloomDialog
+                // also passes this className to the full-screen MUI Dialog root, which must
+                // not get the padding.
+                &&:not(.MuiDialog-root) {
                     padding-left: 28px;
                     padding-right: 28px;
                 }
