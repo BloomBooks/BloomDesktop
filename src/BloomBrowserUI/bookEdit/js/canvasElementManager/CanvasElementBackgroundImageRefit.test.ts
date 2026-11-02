@@ -177,10 +177,13 @@ describe("adjustBackgroundImageSize", () => {
 
         await refit(bloomCanvas, bgCanvasElement);
 
-        expect(bgCanvasElement.style.width).toBe("400px");
-        expect(bgCanvasElement.style.height).toBe("500px");
-        expect(bgCanvasElement.style.left).toBe("0px");
-        expect(bgCanvasElement.style.top).toBe("0px");
+        // The picture fills the 400 x 500 bloom-canvas and then overhangs it by
+        // kBackgroundImageBleedPx: scaling by 402/400 (the larger of 402/400 and 502/500)
+        // keeps the aspect ratio and makes it 402 x 502.5, centred.
+        expect(parseFloat(bgCanvasElement.style.width)).toBeCloseTo(402);
+        expect(parseFloat(bgCanvasElement.style.height)).toBeCloseTo(502.5);
+        expect(parseFloat(bgCanvasElement.style.left)).toBeCloseTo(-1);
+        expect(parseFloat(bgCanvasElement.style.top)).toBeCloseTo(-1.25);
     });
 });
 

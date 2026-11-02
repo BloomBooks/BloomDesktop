@@ -259,6 +259,7 @@ namespace Bloom.Collection
             Language2Tag = "en";
             AllowNewBooks = true;
             AllowCheckouts = true;
+            AllowSharedFolderChanges = true;
             CollectionName = "dummy collection";
             AudioRecordingMode = TalkingBookApi.AudioRecordingMode.Sentence;
             AudioRecordingTrimEndMilliseconds = kDefaultAudioRecordingTrimEndMilliseconds;
@@ -389,7 +390,7 @@ namespace Bloom.Collection
             try
             {
                 // Note: the inLanguage parameter is often ignored by IetfLanguageTag.GetLocalizedLanguageName().
-                return IetfLanguageTagExtra.GetLocalizedLanguageName(tag, inLanguage);
+                return IetfLanguageTag.GetLocalizedLanguageName(tag, inLanguage);
             }
             catch (Exception)
             {
@@ -461,6 +462,15 @@ namespace Bloom.Collection
             // collection still round-trips correctly. See BL-16691.
             if (!AllowCheckouts)
                 xml.Add(new XElement("AllowCheckouts", AllowCheckouts.ToString()));
+            // Written only while false, for the same reasons as AllowCheckouts. See BL-16928.
+            if (!AllowSharedFolderChanges)
+                xml.Add(
+                    new XElement("AllowSharedFolderChanges", AllowSharedFolderChanges.ToString())
+                );
+            // Written only when present. Save() rebuilds the whole file, so without this an ordinary
+            // save would drop it from the local file. See BL-16928.
+            if (!string.IsNullOrEmpty(CloudCollectionId))
+                xml.Add(new XElement(kCloudCollectionIdElementName, CloudCollectionId));
             xml.Add(new XElement("AudioRecordingMode", AudioRecordingMode.ToString()));
             xml.Add(
                 new XElement("AudioRecordingTrimEndMilliseconds", AudioRecordingTrimEndMilliseconds)
@@ -509,24 +519,25 @@ namespace Bloom.Collection
         public string PrimaryLanguageWithSignPrioritized =>
             string.IsNullOrEmpty(SignLanguageTag) ? Language1.Name : SignLanguage.Name;
 
-        public string BadgeQrCodeLabelLocalized
-        {
-            get
-            {
-                var pattern = BadgeQrCodeLabel; // may or may not have {0}. We'll fill in if present.
-                if (string.IsNullOrEmpty(BadgeQrCodeLabel))
-                {
-                    pattern = LocalizationManager.GetString(
-                        "CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2",
-                        "More books in {0} language:",
-                        "",
-                        new string[] { Language1Tag, Language2Tag, Language3Tag, "en" },
-                        out string _
-                    );
-                }
+        public string BadgeQrCodeLabelLocalized => GetBadgeCaptionPattern(BadgeQrCodeLabel);
 
-                return pattern;
-            }
+        /// <summary>
+        /// The caption pattern a badge gets for the given BadgeQrCodeLabel: the label itself, or
+        /// the default caption when it is empty. The pattern may or may not have {0}; it is
+        /// filled in if present. The Collection Settings dialog previews a caption not yet saved
+        /// with this.
+        /// </summary>
+        public string GetBadgeCaptionPattern(string badgeQrCodeLabel)
+        {
+            if (!string.IsNullOrEmpty(badgeQrCodeLabel))
+                return badgeQrCodeLabel;
+            return LocalizationManager.GetString(
+                "CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2",
+                "More books in {0} language:",
+                "",
+                new string[] { Language1Tag, Language2Tag, Language3Tag, "en" },
+                out string _
+            );
         }
 
         internal void SaveColorPalettesToJsonFile()
@@ -754,6 +765,10 @@ namespace Bloom.Collection
                 // behaves the same way, and making this the one exception would be more surprising
                 // than the behavior itself. See BL-16691.
                 AllowCheckouts = ReadBoolean(xml, "AllowCheckouts", true);
+                // Missing means allowed, and a malformed value means paused, exactly as for
+                // AllowCheckouts above. See BL-16928.
+                AllowSharedFolderChanges = ReadBoolean(xml, "AllowSharedFolderChanges", true);
+                CloudCollectionId = ReadString(xml, kCloudCollectionIdElementName, "");
 
                 string audioRecordingModeStr = ReadString(xml, "AudioRecordingMode", "Unknown");
                 TalkingBookApi.AudioRecordingMode parsedAudioRecordingMode;
@@ -1097,6 +1112,28 @@ namespace Bloom.Collection
         /// </summary>
         public bool AllowCheckouts { get; set; }
 
+        /// <summary>
+        /// When false, Bloom must not write anything to this Team Collection's shared folder. It is
+        /// set when a folder Team Collection is being moved to the cloud, so that the old shared
+        /// folder stops changing. What counts is the shared folder's copy: when that says false,
+        /// FolderTeamCollection.CheckConnection() puts Bloom in Disconnected mode, where books
+        /// already checked out here can still be edited but nothing is sent to the team. The
+        /// property is here so that Save() keeps the value. See BL-16928.
+        /// </summary>
+        public bool AllowSharedFolderChanges { get; set; }
+
+        /// <summary>
+        /// The name of the element that holds CloudCollectionId.
+        /// </summary>
+        public const string kCloudCollectionIdElementName = "CloudCollectionId";
+
+        /// <summary>
+        /// The id of the cloud collection that replaced this folder Team Collection, or empty if
+        /// there is none. This version of Bloom uses it only to tell people, while
+        /// AllowSharedFolderChanges is false, that the collection has moved to the cloud. See BL-16928.
+        /// </summary>
+        public string CloudCollectionId { get; set; } = "";
+
         public TalkingBookApi.AudioRecordingMode AudioRecordingMode { get; set; }
 
         public int AudioRecordingTrimEndMilliseconds { get; set; }
@@ -1328,7 +1365,13 @@ namespace Bloom.Collection
         /// So this should be called as soon as it is OK to show some UI. It will find any dependencies it can't meet,
         /// revert them to defaults, and notify the user.
         /// </summary>
-        public void CheckAndFixDependencies(BloomFileLocator bloomFileLocator)
+        /// <param name="mayChangeSettings">false on the command line, and for a Team Collection
+        /// member who is not an administrator, who must not change the team's settings</param>
+        public void CheckAndFixDependencies(
+            BloomFileLocator bloomFileLocator,
+            XMatterPackFinder xmatterPackFinder,
+            bool mayChangeSettings
+        )
         {
             var errorTemplate = LocalizationManager.GetString(
                 "Errors.XMatterNotFound",
@@ -1349,6 +1392,28 @@ namespace Bloom.Collection
             {
                 this.XMatterPackName = kDefaultXmatterName;
                 Save();
+            }
+
+            // Likewise a project-specific pack that no branding chooses, as when the subscription
+            // whose branding chose it has expired. Otherwise books would keep it while the settings
+            // dialogs show, and their next save quietly switches to, another. In a Team Collection
+            // only an administrator makes this change, since it goes to the whole team.
+            if (
+                mayChangeSettings
+                && GetXMatterPackNameSpecifiedByBrandingOrNull() == null
+                && xmatterPackFinder.IsOfferedOnlyByBranding(XMatterPackName)
+            )
+            {
+                XMatterPackName = xmatterPackFinder.FactoryDefault.Key;
+                // While the subscription is expired its bookshelf is only in ExpiredBookshelf,
+                // which Save() leaves out; it must stay in the file so that renewing the
+                // subscription brings it back (BL-15056), as CollectionSettingsUpdater.Apply also
+                // makes sure.
+                var bookshelf = DefaultBookshelf;
+                if (string.IsNullOrEmpty(DefaultBookshelf))
+                    DefaultBookshelf = ExpiredBookshelf;
+                Save();
+                DefaultBookshelf = bookshelf;
             }
         }
 

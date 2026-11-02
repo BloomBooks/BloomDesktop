@@ -47,8 +47,8 @@ export const BloomMessageBox: React.FunctionComponent<{
 
     // If defined (and true) the request came from C# and the response is via an api call.
     closeWithAPICall?: boolean;
-    // When called from Typescript, we could provide a callback like this, but we haven't needed it yet.
-    //buttonClicked?: (buttonId: string) => void;
+    // When called from Typescript, tells the caller which button closed the box.
+    buttonClicked?: (buttonId: string) => void;
 }> = (props) => {
     const { showDialog, closeDialog, propsForBloomDialog } =
         useSetupBloomDialog(props.dialogEnvironment);
@@ -59,9 +59,7 @@ export const BloomMessageBox: React.FunctionComponent<{
             postString("common/closeReactDialog", buttonId);
         } else {
             closeDialog();
-            // if (props.buttonClicked) {
-            //     props.buttonClicked(buttonId);
-            // }
+            props.buttonClicked?.(buttonId);
         }
     };
 

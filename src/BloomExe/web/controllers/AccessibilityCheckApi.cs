@@ -293,7 +293,7 @@ namespace Bloom.web.controllers
                     // wrong version of a library as part of our mozilla code.
                     ldpath = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH");
                     Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", null);
-                    res = CommandLineRunnerExtra.RunWithInvariantCulture(
+                    res = CommandLineRunner.Run(
                         "node",
                         arguments,
                         Encoding.UTF8,
@@ -404,7 +404,7 @@ namespace Bloom.web.controllers
             _webSocketProgress.Message("FindingAce", "Finding Ace by DAISY on this computer...");
             var whereProgram = Platform.IsWindows ? "where" : "which";
             var npmFileName = Platform.IsWindows ? "npm.cmd" : "npm";
-            var whereResult = CommandLineRunnerExtra.RunWithInvariantCulture(
+            var whereResult = CommandLineRunner.Run(
                 whereProgram,
                 npmFileName,
                 Encoding.ASCII,
@@ -437,7 +437,7 @@ namespace Bloom.web.controllers
             var fullNpmPath = outputArray[0].Trim(); // If the (dev) machine has Volta installed, this will be the Volta npm.
             // note: things like nvm will mess with where the global node_modules lives. The best way seems to be
             // to ask npm:
-            var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+            var result = CommandLineRunner.Run(
                 fullNpmPath,
                 "root -g",
                 Encoding.ASCII,

@@ -163,12 +163,11 @@ function SetupClickToShowSignLanguageTool(videoContainerDiv: Element) {
         // In canvas/game tools, suppress the click handler of video-over-picture elements so it won't take us to the sign
         // language tool, but everywhere else we want a click on a video element to take us to the SL tool
         const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
-        const currentToolId = toolbox?.getCurrentTool()?.id();
+        const runningToolId = toolbox?.getRunningTool()?.id();
 
         if (
-            toolbox?.toolboxIsShowing() &&
-            (currentToolId === kCanvasToolId ||
-                currentToolId === kGameToolId) &&
+            (runningToolId === kCanvasToolId ||
+                runningToolId === kGameToolId) &&
             videoContainerDiv.closest(kCanvasElementSelector) && // only ones actually in a canvas element
             // A video in a table cell is not one of the canvas elements those
             // tools arrange, even though the table it sits in may itself be a

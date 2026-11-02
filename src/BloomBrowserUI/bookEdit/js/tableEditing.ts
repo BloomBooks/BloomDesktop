@@ -35,7 +35,7 @@ import {
     refreshTableFeatureStatus,
     tablesMayBeRestructured,
 } from "./tableFeature";
-import { noteTableHistoryUpdate } from "./undoOrdering";
+import { noteTableHistoryUpdate } from "../undo/tableUndo";
 
 // The library's own "something changed in a table" notification. It fires on the
 // page's document at the end of every operation that goes through the table's

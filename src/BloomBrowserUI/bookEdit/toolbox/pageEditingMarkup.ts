@@ -1,5 +1,5 @@
 /**
- * Keeping the current tool's markup (e.g. decodable-reader highlighting, or the talking
+ * Keeping the running tool's markup (e.g. decodable-reader highlighting, or the talking
  * book's sentence spans) intact while the user edits the page: the keypress/paste handlers
  * on the .bloom-editable divs, and the CKEditor bookmark coordination that lets a tool
  * change the html out from under the user without losing the insertion point.
@@ -17,10 +17,10 @@ import {
     saveSelectionForMarkup,
 } from "./markupSelectionPreservation";
 
-// The one toolbox, whose current tool we ask to update its markup. toolbox.ts hands it to
+// The one toolbox, whose running tool we ask to update its markup. toolbox.ts hands it to
 // us in configurePageEditingHandlers rather than us importing it, because toolbox.ts
 // imports this module to install the handlers, and importing it back would be a cycle.
-// Undefined until then; a paste or undo that arrives first is treated as having no current
+// Undefined until then; a paste or undo that arrives first is treated as having no running
 // tool, as it was when toolbox.ts owned this code.
 let toolbox: ToolBox | undefined;
 
@@ -45,8 +45,8 @@ const minMillisecondsBetweenUndoRedoMarkups = 150;
 
 /**
  * Installs on the .bloom-editable elements of the given container the handlers that keep
- * the current tool's markup up to date as the user types and pastes. Called by
- * ToolBox.configureElementsForTools, which passes the toolbox so we can find its current tool.
+ * the running tool's markup up to date as the user types and pastes. Called by
+ * ToolBox.configureElementsForTools, which passes the toolbox so we can find its running tool.
  */
 export function configurePageEditingHandlers(
     container: HTMLElement,
@@ -396,15 +396,11 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
             // markup. If a block didn't get one, we presume it isn't true vernacular text and
             // doesn't need markup, so all the code below is skipped.
             if (boxParticipatesInMarkup(editableDiv)) {
-                // Which tool (if any) is current is the toolbox's business; we just ask it.
+                // Which tool (if any) is running is the toolbox's business; we just ask it.
                 // Nothing below reads it after an await, so reading it once here behaves the
                 // same as reading the toolbox's own variable at each use, as we used to.
-                const currentTool = toolbox?.getCurrentTool();
-                // If there's no tool active, we don't need to update the markup.
-                const activeTool =
-                    currentTool && toolbox?.toolboxIsShowing()
-                        ? currentTool
-                        : undefined;
+                // Only a *running* tool marks up the page: expanded, and the toolbox showing.
+                const runningTool = toolbox?.getRunningTool();
 
                 // Recording the caret with a CKEditor bookmark inserts a hidden span at the
                 // insertion point, which SPLITS the text node the user is typing in. That is
@@ -412,13 +408,13 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 // rejoining the text leaves the DOM exactly as it was, Chromium goes on painting
                 // the paragraph's old glyphs where a ligature straddled the split, so letters the
                 // user typed stop being drawn until something else forces a repaint (BL-16717).
-                // Nothing below rewrites this box unless a tool is active, or there is actually
+                // Nothing below rewrites this box unless a tool is running, or there is actually
                 // a comment or an nbsp to clean up - and if nothing rewrites the box, there is no
                 // selection to preserve. So only record the caret when one of those is true,
                 // which for ordinary typing is never. (Decided BEFORE the record is made: a
                 // bookmark span itself contains an nbsp, so the test would answer yes after it.)
                 const boxMightBeRewritten =
-                    !!activeTool || editableMightBeRewritten(editableDiv);
+                    !!runningTool || editableMightBeRewritten(editableDiv);
 
                 let savedSelection = saveSelectionForMarkup(
                     editableDiv,
@@ -441,8 +437,8 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 // ckeditor is inserting tons of comments which are messing with our parsing
                 // See http://issues.bloomlibrary.org/youtrack/issue/BL-4775
                 removeCommentsFromEditableHtml(editableDiv);
-                if (activeTool) {
-                    if (activeTool.isUpdateMarkupAsync()) {
+                if (runningTool) {
+                    if (runningTool.isUpdateMarkupAsync()) {
                         // It's possible that removeCommentsFromEditableHtml moved the selection, typically
                         // to the start of the editableDiv. This doesn't matter on the synchronous branch,
                         // because we restore it at the end of this method, after the other updates, and no
@@ -476,7 +472,7 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                         savedSelection = resaved;
 
                         const actualUpdateFunc =
-                            await activeTool.updateMarkupAsync();
+                            await runningTool.updateMarkupAsync();
                         if (
                             keydownEventCounter ===
                             counterValueThatIdentifiesThisKeyDown
@@ -510,14 +506,14 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 // window's "page" iframe and a real Selection - none of which we can stand up in
                 // jsdom. So if you reorder anything in here, test it by typing in a Leveled
                 // Reader book and watching the over-long sentences stay highlighted.
-                if (activeTool && !activeTool.isUpdateMarkupAsync()) {
+                if (runningTool && !runningTool.isUpdateMarkupAsync()) {
                     // Note, the updateMarkup routine must be sure to use the result of
                     // ckEditor's getData() method, not the raw HTML of the editableDivs.
                     // See EditableDivUtils.doCkEditorCleanup() and .restoreSelectionFromCkEditorBookmarks().
                     // Unfortunately, we can't easily do that in a top-level (general for all tools) way because of
                     // our current architecture. Namely, the reader tools have a lower-level
                     // doMarkup() which gets called more than just from here.
-                    activeTool.updateMarkup();
+                    runningTool.updateMarkup();
                 }
 
                 //put the caret back where it was before all of the above

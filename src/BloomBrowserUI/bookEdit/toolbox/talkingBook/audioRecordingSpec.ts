@@ -68,6 +68,13 @@ const mockCanvasElement = vi.hoisted(() => {
     };
 });
 
+// The recording code asks Bloom for its microphones and default recording mode as it starts.
+vi.mock("../../../utils/bloomApi", async (importOriginal) =>
+    (await import("./talkingBookTestBloomApi")).withTalkingBookReplies(
+        await importOriginal(),
+    ),
+);
+
 vi.mock("../canvas/canvasElementPageBridge", async (importActual) => {
     const actual =
         await importActual<
@@ -680,6 +687,36 @@ describe("audio recording tests", () => {
             expect(spans.first().attr("class") ?? "").not.toContain(
                 "audio-sentence",
             );
+        });
+
+        // An inline (Word-style) image is a contenteditable=false div inside the
+        // bloom-editable. It holds no text to record, and recursing into it reaches the img,
+        // which would then be treated as a leaf and get audio markup added to it.
+        // See inlineImages.ts.
+        it("skips a contenteditable=false island such as an inline image", () => {
+            const islandHtml =
+                '<div class="bloom-inlineImage bloom-inlineImageRight" contenteditable="false"><img src="flower.jpg"></div>';
+            const div = $(
+                `<div class="bloom-editable">${islandHtml}<p>This is a sentence. This is another.</p></div>`,
+            );
+            const recording = new AudioRecording();
+            recording.makeAudioSentenceElementsTest(
+                div,
+                RecordingMode.Sentence,
+            );
+
+            // The paragraph got its sentence spans as usual...
+            const spans = div.find("p span.audio-sentence");
+            expect(spans.length).toBe(2);
+            // ...and the image wrapper is unchanged, with no spans, no id and no audio class.
+            const island = div.find(".bloom-inlineImage");
+            expect(island.length).toBe(1);
+            expect(island.find("span").length).toBe(0);
+            expect(island.attr("class")).toBe(
+                "bloom-inlineImage bloom-inlineImageRight",
+            );
+            expect(island.attr("id")).toBeUndefined();
+            expect(island.html()).toBe('<img src="flower.jpg">');
         });
 
         it("flattens nested audio spans", () => {
@@ -1665,8 +1702,10 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
-            // Simulate the tool being visible so doesCurrentToolPlayAudio() returns true.
-            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            // Simulate the tool running so doesEffectiveToolPlayAudio() returns true.
+            (
+                recording as unknown as { isTalkingBookToolRunning: boolean }
+            ).isTalkingBookToolRunning = true;
 
             // System under test
             await recording.handleNewPageReady();
@@ -1694,7 +1733,9 @@ describe("audio recording tests", () => {
             // Page 1: opens fine and highlights its text.
             SetupIFrameFromHtml(canvasTextPage(1));
             const recording = new AudioRecording();
-            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            (
+                recording as unknown as { isTalkingBookToolRunning: boolean }
+            ).isTalkingBookToolRunning = true;
             recording.recordingMode = RecordingMode.Sentence;
             await recording.handleNewPageReady();
             expect(getHighlightTexts(currentHighlightName)).toEqual([
@@ -1742,8 +1783,10 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
-            // Simulate the tool being visible so doesCurrentToolPlayAudio() returns true.
-            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            // Simulate the tool running so doesEffectiveToolPlayAudio() returns true.
+            (
+                recording as unknown as { isTalkingBookToolRunning: boolean }
+            ).isTalkingBookToolRunning = true;
             setHighlightedElementFromDom(recording);
 
             const box = getFrameElementById("page", "box1")!;
@@ -1775,8 +1818,10 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.Sentence;
-            // Simulate the tool being visible so doesCurrentToolPlayAudio() returns true.
-            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            // Simulate the tool running so doesEffectiveToolPlayAudio() returns true.
+            (
+                recording as unknown as { isTalkingBookToolRunning: boolean }
+            ).isTalkingBookToolRunning = true;
             setHighlightedElementFromDom(recording);
 
             const second = getFrameElementById("page", "sent2")!;
@@ -1818,8 +1863,10 @@ describe("audio recording tests", () => {
         const makeRecorder = (mode: RecordingMode) => {
             const recording = new AudioRecording();
             recording.recordingMode = mode;
-            // Simulate the tool being visible so doesCurrentToolPlayAudio() returns true.
-            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            // Simulate the tool running so doesEffectiveToolPlayAudio() returns true.
+            (
+                recording as unknown as { isTalkingBookToolRunning: boolean }
+            ).isTalkingBookToolRunning = true;
             return recording;
         };
 
@@ -2707,7 +2754,9 @@ describe("audio recording tests", () => {
             );
 
             const recording = new AudioRecording();
-            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            (
+                recording as unknown as { isTalkingBookToolRunning: boolean }
+            ).isTalkingBookToolRunning = true;
             const setHighlightToAsync = (
                 recording as unknown as {
                     setHighlightToAsync(args: {
@@ -2740,7 +2789,9 @@ describe("audio recording tests", () => {
             );
 
             const recording = new AudioRecording();
-            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            (
+                recording as unknown as { isTalkingBookToolRunning: boolean }
+            ).isTalkingBookToolRunning = true;
             recording.recordingMode = RecordingMode.Sentence;
 
             // Simulate the stale reference: a same-id element that is NOT in the live page
@@ -2777,7 +2828,7 @@ describe("audio recording tests", () => {
         // BL-15300: the ensureHighlight loop (which reestablishCurrentHighlightIfNeeded drives)
         // keeps running for a few seconds after a page loads. If the toolbox is closed during that
         // window, handleToolHiding clears the highlight -- but the loop must NOT put it back. So
-        // reestablish must be a no-op while the tool is not showing (isShowing false). Without this
+        // reestablish must be a no-op while the tool is not showing (isTalkingBookToolRunning false). Without this
         // guard the highlight stays stuck on the page after the toolbox is closed.
         it("does not re-establish the current highlight while the tool is not showing", () => {
             SetupIFrameFromHtml(
@@ -2799,14 +2850,18 @@ describe("audio recording tests", () => {
             ).reestablishCurrentHighlightIfNeeded.bind(recording);
 
             // Tool hidden (e.g., toolbox just closed): reestablish must not re-add the highlight.
-            (recording as unknown as { isShowing: boolean }).isShowing = false;
+            (
+                recording as unknown as { isTalkingBookToolRunning: boolean }
+            ).isTalkingBookToolRunning = false;
             expect(getHighlightTexts(currentHighlightName)).toEqual([]);
             reestablish();
             expect(getHighlightTexts(currentHighlightName)).toEqual([]);
 
             // Sanity/positive control: when the tool IS showing, it does establish the highlight
             // (so the assertion above is meaningful, not a no-op for some unrelated reason).
-            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            (
+                recording as unknown as { isTalkingBookToolRunning: boolean }
+            ).isTalkingBookToolRunning = true;
             reestablish();
             expect(getHighlightTexts(currentHighlightName)).toEqual(["One."]);
         });
@@ -2817,7 +2872,9 @@ describe("audio recording tests", () => {
             );
 
             const recording = new AudioRecording();
-            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            (
+                recording as unknown as { isTalkingBookToolRunning: boolean }
+            ).isTalkingBookToolRunning = true;
             const setHighlightToAsync = (
                 recording as unknown as {
                     setHighlightToAsync(args: {
@@ -2848,7 +2905,9 @@ describe("audio recording tests", () => {
             );
 
             const recording = new AudioRecording();
-            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            (
+                recording as unknown as { isTalkingBookToolRunning: boolean }
+            ).isTalkingBookToolRunning = true;
             const setHighlightToAsync = (
                 recording as unknown as {
                     setHighlightToAsync(args: {
@@ -2881,7 +2940,9 @@ describe("audio recording tests", () => {
             );
 
             const recording = new AudioRecording();
-            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            (
+                recording as unknown as { isTalkingBookToolRunning: boolean }
+            ).isTalkingBookToolRunning = true;
             const setHighlightToAsync = (
                 recording as unknown as {
                     setHighlightToAsync(args: {
@@ -2938,7 +2999,9 @@ describe("audio recording tests", () => {
             );
 
             const recording = new AudioRecording();
-            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            (
+                recording as unknown as { isTalkingBookToolRunning: boolean }
+            ).isTalkingBookToolRunning = true;
             recording.markAudioSplit();
 
             const setHighlightToAsync = (
@@ -2967,7 +3030,9 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             setHighlightedElementFromDom(recording);
-            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            (
+                recording as unknown as { isTalkingBookToolRunning: boolean }
+            ).isTalkingBookToolRunning = true;
             recording.recordingMode = RecordingMode.TextBox;
             document.getElementById("audio-record")?.classList.add("expected");
 
@@ -3011,7 +3076,9 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             setHighlightedElementFromDom(recording);
-            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            (
+                recording as unknown as { isTalkingBookToolRunning: boolean }
+            ).isTalkingBookToolRunning = true;
             recording.recordingMode = RecordingMode.TextBox;
 
             // Simulate the post-split state: blue segment highlights are showing, no yellow.
@@ -3044,7 +3111,9 @@ describe("audio recording tests", () => {
             vi.spyOn(axios, "post").mockResolvedValue({});
 
             const recording = new AudioRecording();
-            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            (
+                recording as unknown as { isTalkingBookToolRunning: boolean }
+            ).isTalkingBookToolRunning = true;
 
             // 1) Earlier in the session: a by-sentence text box; end on Sentence mode.
             SetupIFrameFromHtml(

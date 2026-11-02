@@ -49,9 +49,11 @@ namespace Bloom
     ///
     /// The consequence: whoever turns one of these names INTO a url has to encode it at that
     /// point, or a sound whose name contains a percent escape ("beep%41.mp3") is asked for as
-    /// "beepA.mp3" and silently never plays. GameTool.tsx's playSound does that encoding. Bloom
-    /// Player, which reads the same attributes in a published book, does not yet -- that is
-    /// BL-16688, and it is the reason such a sound still fails there.
+    /// "beepA.mp3", and one containing a '#' ("bird#1.mp3") is asked for as "bird", and either
+    /// silently never plays. GameTool.tsx's playSound does that encoding for the editor's
+    /// preview. Bloom Player does it too (getSoundUrl in its dragActivityRuntime, BL-16177 and
+    /// BL-16688), and that is the code that plays these sounds both in a published book and in
+    /// the Game tool's Play mode here.
     ///
     /// Note that this is all about URL encoding. XML/HTML encoding is a separate matter and is
     /// handled for us: SetAttribute and InnerText escape on write and unescape on read, so a '&amp;'

@@ -102,6 +102,7 @@ namespace Bloom.WebLibraryIntegration
             if (response.StatusCode != HttpStatusCode.Accepted)
             {
                 LogApiError(request, response);
+                ThrowIfServerNotResponding(response);
                 throw new ApplicationException(messageToShowUserOnFailure);
             }
 
@@ -128,6 +129,7 @@ namespace Bloom.WebLibraryIntegration
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
                     LogApiError(statusRequest, response, originalRequest: request);
+                    ThrowIfServerNotResponding(response);
                     throw new ApplicationException(messageToShowUserOnFailure);
                 }
 
@@ -153,7 +155,7 @@ namespace Bloom.WebLibraryIntegration
                     );
                     return result;
                 }
-                else if (status == "Failed" || status == "Cancelled")
+                else if (IsStatusFailure(status))
                 {
                     LogApiError(statusRequest, response, originalRequest: request);
 
@@ -204,7 +206,44 @@ namespace Bloom.WebLibraryIntegration
         private bool IsStatusTerminal(string status)
         {
             // See https://github.com/microsoft/api-guidelines/blob/vNext/azure/ConsiderationsForServiceDesign.md#long-running-operations
-            return new[] { "Succeeded", "Failed", "Canceled" }.Contains(status);
+            return status == "Succeeded" || IsStatusFailure(status);
+        }
+
+        /// <summary>
+        /// True if a long-running operation's status says it ended without succeeding.
+        /// The server (and the Azure guidelines) spell it "Canceled"; we accept "Cancelled" too,
+        /// which is what this code used to check for.
+        /// </summary>
+        internal static bool IsStatusFailure(string status)
+        {
+            return status == "Failed" || status == "Canceled" || status == "Cancelled";
+        }
+
+        /// <summary>
+        /// True if the response means the server didn't answer usefully: the request timed out,
+        /// got no response at all, or got a server error (5xx). Those are usually temporary
+        /// problems on BloomLibrary.org's side, so the user should simply try again later.
+        /// </summary>
+        internal static bool IsServerNotResponding(IRestResponse response)
+        {
+            if (response.ResponseStatus != ResponseStatus.Completed)
+                return true;
+            return (int)response.StatusCode >= 500;
+        }
+
+        /// <summary>
+        /// Throw a WebException if the response means the server didn't answer usefully
+        /// (see IsServerNotResponding). Restarting Bloom won't help with that; trying again
+        /// later usually does. BookUpload shows a WebException's message, unlocalized like the
+        /// other messages from this client, after "There was a problem uploading your book."
+        /// rather than suggesting a restart. The caller has already logged the response.
+        /// </summary>
+        private static void ThrowIfServerNotResponding(IRestResponse response)
+        {
+            if (IsServerNotResponding(response))
+                throw new WebException(
+                    "BloomLibrary.org isn't responding right now. Please try again in a few minutes."
+                );
         }
 
         // This calls an azure function which does the following:

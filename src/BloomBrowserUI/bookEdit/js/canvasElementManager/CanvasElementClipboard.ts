@@ -38,6 +38,7 @@ import { getTarget } from "bloom-player";
 import $ from "jquery";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
+import { setCanvasElementRotation } from "./canvasElementRotation";
 
 export interface ICanvasElementClipboardHost {
     getActiveOrFirstBloomCanvasOnPage: () => HTMLElement | null;
@@ -228,12 +229,14 @@ export class CanvasElementClipboard {
     ): void {
         changeImageInfo(img, imageInfo);
         // As in updateCanvasElementForChangedImage(), the new picture starts upright and
-        // uncropped: the old picture's rotation, mirror and crop do not carry over to it.
+        // uncropped: the old picture's rotation, mirror and crop, and the rotation of its box,
+        // do not carry over to it.
         img.style.width = "";
         img.style.height = "";
         img.style.left = "";
         img.style.top = "";
         img.style.transform = "";
+        setCanvasElementRotation(canvasElement, 0);
         if (canvasElement.classList.contains(kBackgroundImageClass)) {
             this.host.adjustBackgroundImageSize(
                 bloomCanvas,

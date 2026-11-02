@@ -9,7 +9,7 @@
 //
 // 2. The dialog is NOT in the toolbox frame. It is React-rendered in the workspace root so its
 //    modal backdrop covers the whole workspace rather than just the book pane, so its controls
-//    are on `page` while the button that opens it is inside the toolbox frame. Every helper
+//    are on `page` while the button that expands it is inside the toolbox frame. Every helper
 //    below is on the side it belongs to.
 //
 // 3. The dialog's own labels are all localized (and its text boxes are named only by a nearby
@@ -21,7 +21,7 @@ import * as Path from "node:path";
 import { expect, type Page } from "@playwright/test";
 import { apiGetJson, apiPost } from "./api";
 import { waitForEditablePage } from "./bookMaking";
-import { openTool, toolboxFrame } from "./toolbox";
+import { expandTool, toolboxFrame } from "./toolbox";
 import { switchTab } from "./workspace";
 
 /** The "Set Up Stages" button along the bottom of the Decodable Reader tool's panel. */
@@ -130,11 +130,11 @@ export async function enableDecodableReaderTool(page: Page): Promise<void> {
 }
 
 /**
- * Open the Decodable Reader tool in the toolbox, the way a person does, and wait until its
+ * Expand the Decodable Reader tool in the toolbox, the way a person does, and wait until its
  * panel -- and so its "Set Up Stages" button -- is showing. Opens the toolbox drawer first if
  * it is shut.
  */
-export async function openDecodableReaderTool(page: Page): Promise<void> {
+export async function expandDecodableReaderTool(page: Page): Promise<void> {
     // Saving the reader settings makes Bloom rebuild the edit view, so a caller that starts
     // straight after a save -- the next test in a file, most often -- can arrive while the Edit
     // tab is briefly not showing at all. Waiting for the editing state machine first turns that
@@ -143,7 +143,7 @@ export async function openDecodableReaderTool(page: Page): Promise<void> {
     await waitForEditablePage(page);
     // Wait on the switch, not on the Set Up button: the panel renders the button only once the
     // book is marked decodable, so waiting on the button here would hang on a book that is not.
-    await openTool(page, "decodableReader", DECODABLE_SWITCH);
+    await expandTool(page, "decodableReader", DECODABLE_SWITCH);
 }
 
 /**
@@ -159,7 +159,7 @@ export async function setBookIsDecodable(
     page: Page,
     isDecodable: boolean,
 ): Promise<void> {
-    await openDecodableReaderTool(page);
+    await expandDecodableReaderTool(page);
     const frame = toolboxFrame(page);
     const box = frame.locator(DECODABLE_SWITCH);
     if ((await box.isChecked()) !== isDecodable) {
@@ -362,8 +362,8 @@ export async function enableLeveledReaderTool(page: Page): Promise<void> {
  * first, because the panel shows the button only while it is.
  */
 export async function openLeveledReaderSetup(page: Page): Promise<void> {
-    await waitForEditablePage(page); // see openDecodableReaderTool
-    await openTool(page, "leveledReader", LEVELED_SWITCH);
+    await waitForEditablePage(page); // see expandDecodableReaderTool
+    await expandTool(page, "leveledReader", LEVELED_SWITCH);
     const frame = toolboxFrame(page);
     const box = frame.locator(LEVELED_SWITCH);
     if (!(await box.isChecked())) {

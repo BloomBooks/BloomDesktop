@@ -158,6 +158,9 @@ namespace Bloom
         [STAThread]
         static int Main(string[] args1)
         {
+            // First, before anything can capture the culture: the process runs invariant, and the
+            // user's regional format is kept in UserCulture.Current (BL-16981).
+            UserCulture.UseInvariantCulture();
             // AttachConsole(-1);	// Enable this to allow Console.Out.WriteLine to be viewable (must run Bloom from terminal, AFAIK)
             _ownsSingleInstanceToken = false;
             _uiThreadId = Thread.CurrentThread.ManagedThreadId;
@@ -168,7 +171,6 @@ namespace Bloom
             // final call to CleanupTempFolder. Also prevents our temp files competing with
             // other programs for 64K available default temp file names.
             TempFile.NamePrefix = "bloom";
-            TagLibCultureFix.Register();
 
             // Parse our own startup arguments before anything reads Settings.Default:
             // --user-settings-folder decides where the settings live (the parser hands it to
