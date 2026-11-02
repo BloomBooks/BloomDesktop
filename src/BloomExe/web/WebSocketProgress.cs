@@ -302,6 +302,46 @@ namespace Bloom.web
         }
     }
 
+    /// <summary>
+    /// Writes progress messages to the console, for command-line verbs that have no progress dialog.
+    /// Problems are marked, so they stand out from ordinary progress.
+    /// </summary>
+    public class ConsoleWebSocketProgress : WebSocketProgress
+    {
+        /// <summary>
+        /// Write the message to the console, prefixed by its kind unless it is ordinary progress.
+        /// </summary>
+        public override void MessageWithoutLocalizing(
+            string message,
+            ProgressKind kind = ProgressKind.Progress
+        )
+        {
+            base.MessageWithoutLocalizing(message, kind);
+            switch (kind)
+            {
+                case ProgressKind.Fatal:
+                case ProgressKind.Error:
+                    Console.WriteLine("Error: " + message);
+                    break;
+                case ProgressKind.Warning:
+                    Console.WriteLine("Warning: " + message);
+                    break;
+                default:
+                    Console.WriteLine(message);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// A prefix only changes which localization ids are looked up. Like NullWebSocketProgress,
+        /// this ignores it, so messages that would have used it come out in English.
+        /// </summary>
+        public override WebSocketProgress WithL10NPrefix(string localizationIdPrefix)
+        {
+            return this;
+        }
+    }
+
     // Passing one of these where we don't need the progress report saves recipients handling nulls
     public class NullWebSocketProgress : WebSocketProgress
     {

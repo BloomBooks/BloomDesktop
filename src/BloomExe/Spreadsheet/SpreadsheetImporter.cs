@@ -234,11 +234,21 @@ namespace Bloom.Spreadsheet
                 // The ToLocalHost() seems to be necessary to prevent CORS errors loading the
                 // javascript. This somehow was not an issue with the webpack build but is
                 // with Vite.
-                _browser.Navigate(rootPage.ToLocalhost(), false);
+                var url = rootPage.ToLocalhost();
+                _browser.Navigate(url, false);
                 await signal.WaitAsync(); // Following code happens after browser has navigated
                 // This extra check that spreadsheetBundle actually exists might not be necessary.
+                // But if the page failed to load (for example, because no local server is listening),
+                // the bundle will never appear, so give up with a clear error rather than wait forever.
+                var timer = Stopwatch.StartNew();
                 while (await _browser.GetStringFromJavascriptAsync($"spreadsheetBundle") == null)
+                {
+                    if (timer.ElapsedMilliseconds > 20000)
+                        throw new ApplicationException(
+                            $"The page spreadsheet import needs for processing audio ({url}) did not load."
+                        );
                     await Task.Delay(10);
+                }
             }
             return _browser;
         }
