@@ -2584,7 +2584,10 @@ describe("audio recording tests", () => {
             newElement: Element,
         ): Promise<string[]> => {
             const recording = new AudioRecording();
-            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            // Simulate the tool running so doesEffectiveToolPlayAudio() returns true.
+            (
+                recording as unknown as { isTalkingBookToolRunning: boolean }
+            ).isTalkingBookToolRunning = true;
             await (
                 recording as unknown as {
                     setHighlightToAsync(args: {

@@ -1475,7 +1475,7 @@ export async function getPageContentForSaveWhenReady(): Promise<string> {
 }
 
 // Produce the HTML of the .bloom-page element as it should be saved. All the cleanup is done on a
-// CLONE, so the live page is untouched and stays editable without a reload (BL-13502).
+// CLONE, so the live page is untouched and the user goes on editing it.
 //
 // Caution: We don't want this to become an async method because we don't want any other event
 // handlers running between cleaning up the page and getting the content to save. (Or think hard

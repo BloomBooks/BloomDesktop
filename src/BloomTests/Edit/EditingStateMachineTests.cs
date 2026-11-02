@@ -363,11 +363,10 @@ namespace BloomTests.Edit
         [Test]
         public void SaveThenNavigate_ActionNavigatesToTheSamePage_DoesNotNavigateTwice()
         {
-            // Found live: relocating a page raises RelocatePageEvent, and OnRelocatePage refreshes
-            // the display of the page whose HTML just changed -- i.e. the action navigates. That
-            // used to throw "Cannot navigate while editing", because we are still in Editing while
-            // the action runs. It is safe here: the browser's content is already in the book DOM,
-            // so there is nothing left to lose.
+            // Relocating a page raises RelocatePageEvent, and OnRelocatePage refreshes the display
+            // of the page whose HTML just changed, so the action navigates while we are still in
+            // Editing. That is allowed while an action runs: the browser's content is already in
+            // the book DOM, so there is nothing left to lose.
             GoToEditing("page1");
             _navigatedTo.Clear();
 

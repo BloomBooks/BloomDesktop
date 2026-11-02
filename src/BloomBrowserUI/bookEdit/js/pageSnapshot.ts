@@ -3,8 +3,8 @@ import { reportError } from "../../lib/errorHandler";
 import { onDelayRegisterChanged } from "./pageContentDelays";
 
 // Keep C# supplied with the current content of the page being edited, so that a save can take it
-// synchronously (see PageSnapshot.cs) instead of asking the browser for it and waiting. Gathering
-// the page is cheap (~0.7 ms) and works on a clone, so we can afford to do it after every change.
+// synchronously (see PageSnapshot.cs). Gathering the page is cheap and works on a clone, so we can
+// afford to do it after every change (see kQuietMs).
 //
 // We post the page once as soon as it has loaded, whether or not anyone touches it, because loading
 // can itself change the page (after a change of page size or appearance, image sizing and
@@ -40,10 +40,20 @@ export function getPageLoadId(): string {
     return pageLoadId;
 }
 
-// How long the page must be quiet before we take a snapshot. Small on purpose: it bounds how much
-// typing an exit could lose. It only has to coalesce the ~nine MutationObserver batches CKEditor
-// produces per keystroke; below about 25 ms the lag is dominated by the POST anyway. The cost, one
-// cheap localhost POST per keystroke, is measured in Edit/SavingWithoutReloading.md.
+// How long the page must be quiet before we take a snapshot.
+//
+// This is the freshness window. Every save uses the last snapshot, so a click, a command or an
+// exit within about 50 ms of a keystroke (this wait plus the POST) saves the page as it was just
+// before that keystroke. That is a deliberate trade: no person moves from the keyboard to a
+// thumbnail, a tab or the close box that fast. (An automated test can, so e2e tests wait for Bloom
+// to have their typing; see waitForBloomToHaveTyping.)
+//
+// It is small on purpose, to keep that window short. It only has to coalesce the ~nine
+// MutationObserver batches CKEditor produces per keystroke; below about 25 ms the lag is dominated
+// by the POST anyway. The cost is one localhost POST per keystroke. Measured on a 26 KB page, a
+// gather takes 0.4 ms, and 3.9 ms with the CPU throttled 8x; a slower machine gets fewer, later
+// snapshots rather than a pile-up, because only one gather-and-post runs at a time. A much larger
+// page costs proportionally more.
 const kQuietMs = 25;
 
 let observer: MutationObserver | undefined;
@@ -258,6 +268,8 @@ export function startWatchingPageForSnapshots(
     // Not input/keyup handlers: much of what changes a page (a tool rewriting markup, a canvas
     // element being dragged, an image replaced, a paste) is not a keyboard event.
     observer = new MutationObserver(scheduleSnapshot);
+    // The whole body, though only the page is saved: a change outside the page can still change
+    // what the gather produces, and a change that does not just costs a gather that posts nothing.
     observer.observe(document.body, {
         subtree: true,
         childList: true,

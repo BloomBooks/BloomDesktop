@@ -116,6 +116,9 @@ export interface ITool {
     // allow for this possibility and not repeat any work that was already done.
     newPageReady();
     // Remove from 'pageOrClone' the markup this tool adds for editing that must not be saved.
+    // "Markup" here means any change the tool makes to the page's DOM for editing: elements and
+    // wrappers it adds, classes and attributes it sets, and positions it moves things to (the Game
+    // tool's play mode, for one), not just highlighting.
     // It is given either a detached clone of the .bloom-page div, on every save while the user
     // goes on editing (see bloomEditing.ts), or the live .bloom-page div, from detachFromPage().
     // So it must only change the DOM inside 'pageOrClone': it may not reach into the live document

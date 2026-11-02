@@ -906,9 +906,8 @@ namespace BloomTests.Book
         {
             var book = CreateBook();
             var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
-            // This test used to hand the page back exactly as it came and still expect a write.
-            // Since BL-13502 a save that would not change the book does not happen at all, so it
-            // has to make the change its name always claimed it made.
+            // A save that would not change the book is not written, so the test has to change the
+            // page.
             var textarea =
                 dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='1']") as SafeXmlElement;
             Assert.That(textarea, Is.Not.Null, "test setup: expected the first page's textarea");

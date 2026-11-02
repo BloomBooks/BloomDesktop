@@ -2,8 +2,7 @@
 // another page, a page-list command, moving a page, leaving the Edit tab, or quitting Bloom.
 //
 // Every one of those saves the page from the copy the browser sent Bloom after the typing settled
-// (BL-13502; see src/BloomExe/Edit/SavingWithoutReloading.md), not by asking the browser at the
-// moment of leaving. So each case waits until Bloom has the typing (waitForBloomToHaveTyping), as a
+// (see kQuietMs in src/BloomBrowserUI/bookEdit/js/pageSnapshot.ts). So each case waits until Bloom has the typing (waitForBloomToHaveTyping), as a
 // person's pause before moving on would, and then checks the saved file.
 //
 // The quit cases automate "Quit Without Losing Changes" (Test Case ID 659); the others automate

@@ -802,9 +802,9 @@ export async function waitForPageToSettle(page: Page): Promise<void> {
  * Every save takes the page from the copy the browser sends Bloom a moment after typing settles
  * (its "snapshot"), so this is the wait a test needs between typing and an action that saves --
  * the moment a person takes before moving on. Acting within that moment saves the page as it was
- * just before the last keystroke, which is a deliberate trade, not a bug (see "The freshness
- * window" in src/BloomExe/Edit/SavingWithoutReloading.md). Reads Bloom's e2e/pageSnapshotIncludes
- * hook rather than waiting a fixed time.
+ * just before the last keystroke, which is a deliberate trade, not a bug (see kQuietMs in
+ * src/BloomBrowserUI/bookEdit/js/pageSnapshot.ts). Reads Bloom's e2e/pageSnapshotIncludes hook
+ * rather than waiting a fixed time.
  */
 export async function waitForBloomToHaveTyping(
     page: Page,

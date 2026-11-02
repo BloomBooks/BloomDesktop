@@ -1898,8 +1898,7 @@ namespace Bloom.Edit
         /// failed save would edit stale images. Having nothing to save is not a failure.
         ///
         /// This cannot save a change made in the last few tens of milliseconds, which the browser
-        /// has not posted yet. See "The freshness window" in SavingWithoutReloading.md for why
-        /// that is the accepted trade.
+        /// has not posted yet; kQuietMs in pageSnapshot.ts says why that is the accepted trade.
         /// </summary>
         public bool SaveCurrentPageAndBook(bool waitForInFlightPageWork = true)
         {

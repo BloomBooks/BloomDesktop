@@ -2,8 +2,8 @@
 // leftovers when they do edit.
 //
 // Saving builds the page from a copy of the live page with the editor's markup taken off, and
-// Bloom writes a page only when that copy says something the book does not already say (BL-13502;
-// see src/BloomExe/Edit/SavingWithoutReloading.md). Two ways that can go wrong: something the
+// Bloom writes a page only when that copy says something the book does not already say
+// (Book.UpdateDomFromEditedPage). Two ways that can go wrong: something the
 // editor adds makes an untouched page look edited, so merely looking at a book rewrites it; or
 // something the editor adds is not taken off, and ends up in the book.
 //

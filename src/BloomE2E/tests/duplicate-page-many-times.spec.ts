@@ -1,10 +1,9 @@
 // "Duplicate Page Many Times..." from a page's menu: OK adds as many copies as asked for, Cancel
 // adds none, and the workspace tabs are locked while the dialog is open.
 //
-// The dialog used to be a WinForms window CDP could not reach, which is why the Duplicate Page test
-// (Test Case ID 349) left this step to its manual portion (Test Case ID 810). It now opens inside
-// the Edit tab (duplicateManyDialog.tsx; BL-13502), so it can be driven. Automates "Duplicate Page
-// Many Times" (Test Case ID 844), split from 810.
+// The dialog opens inside the Edit tab (duplicateManyDialog.tsx), so it can be driven. Automates
+// "Duplicate Page Many Times" (Test Case ID 844), split from the manual portion of the Duplicate
+// Page test (Test Case ID 810).
 //
 // The tests are serial because each one works on the book the first one builds.
 
