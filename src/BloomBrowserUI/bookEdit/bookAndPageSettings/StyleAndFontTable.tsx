@@ -46,7 +46,9 @@ export const StyleAndFontTable: React.FunctionComponent<{
 
     function closeDialogAndJumpToPage(pageId: string) {
         props.closeDialog();
-        postString("editView/jumpToPage", pageId);
+        // report: false — the edit tab declines a jump it cannot do (it is mid-save), and that
+        // is not something to raise a problem report about. See EditingModel.JumpToPage.
+        postString("editView/jumpToPage", pageId, false);
     }
 
     return (
