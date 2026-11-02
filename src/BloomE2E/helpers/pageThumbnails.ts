@@ -67,18 +67,44 @@ export async function getPageIds(
     );
 }
 
-/** Wait until the thumbnail pane shows exactly `count` pages. */
+/**
+ * Wait until the thumbnail pane shows exactly `count` pages.
+ *
+ * Bloom reloads the pane when the book's pages change (after Paste Page, for instance), and a
+ * reload that lands while getPageIds is reading throws "Execution context was destroyed". That
+ * is not an answer yet, so it counts as "not there yet" and the poll asks again once the new
+ * pane is up. It has to be caught here: expect.poll retries a failed assertion, but a callback
+ * that throws fails the test at once.
+ */
 export async function waitForPageCount(
     page: Page,
     count: number,
     timeoutMs = 60000,
 ): Promise<void> {
     await expect
-        .poll(async () => (await getPageIds(page, timeoutMs)).length, {
-            timeout: timeoutMs,
-            message: `The page thumbnail list never showed ${count} pages.`,
-        })
+        .poll(
+            async () => {
+                try {
+                    return (await getPageIds(page, timeoutMs)).length;
+                } catch (error) {
+                    if (isPaneReloadError(error)) return undefined;
+                    throw error;
+                }
+            },
+            {
+                timeout: timeoutMs,
+                message: `The page thumbnail list never showed ${count} pages.`,
+            },
+        )
         .toBe(count);
+}
+
+/** True when an error came from the thumbnail pane's document being replaced mid-read. */
+function isPaneReloadError(error: unknown): boolean {
+    return (
+        error instanceof Error &&
+        /Execution context was destroyed|Frame was detached/.test(error.message)
+    );
 }
 
 /**
@@ -284,7 +310,15 @@ export async function runPageMenuCommand(
 /**
  * The menu item for a command, in the shell page (the menu is portaled out of the iframe).
  * Exported so a test can assert on a command's enabled state without running it.
+ *
+ * A command whose menu entry has addEllipsis (Choose Different Layout) is shown with "..." after
+ * it. The match accepts an optional trailing "...", so callers do not need to know which commands
+ * open a dialog.
  */
 export function pageMenuItem(page: Page, command: PageMenuCommand): Locator {
-    return page.getByRole("menuitem", { name: command, exact: true });
+    // No PageMenuCommand contains a regular-expression metacharacter, so the label can go into
+    // the pattern without escaping.
+    return page.getByRole("menuitem", {
+        name: new RegExp("^" + command + "(\\.\\.\\.)?$"),
+    });
 }

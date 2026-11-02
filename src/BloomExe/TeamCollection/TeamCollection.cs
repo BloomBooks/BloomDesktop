@@ -3,11 +3,13 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -483,7 +485,10 @@ namespace Bloom.TeamCollection
             // If it's in a book folder (any subfolder except the two we save as settings) ignore it.
             if (e.Name.Contains(Path.DirectorySeparatorChar))
             {
-                if (!e.Name.StartsWith("Allowed Words") && !e.Name.StartsWith("Sample Texts"))
+                if (
+                    !e.Name.StartsWith("Allowed Words", StringComparison.Ordinal)
+                    && !e.Name.StartsWith("Sample Texts", StringComparison.Ordinal)
+                )
                     return;
             }
 
@@ -762,7 +767,17 @@ namespace Bloom.TeamCollection
         public DateTime WhenWasBookLocked(string bookName)
         {
             var status = GetStatus(bookName);
-            if (DateTime.TryParse(status.lockedWhen, out var result))
+            // lockedWhen is written invariantly (see BookStatus.WithLockedBy), so read it that way too.
+            // A Buddhist-calendar year written by a Thai machine before BL-16948 is deliberately not
+            // corrected; it goes away when the book is checked in.
+            if (
+                DateTime.TryParse(
+                    status.lockedWhen,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out var result
+                )
+            )
                 return result;
             return DateTime.MaxValue;
         }
@@ -1143,7 +1158,7 @@ namespace Bloom.TeamCollection
         /// <returns>A string which is the book name without the .bloom suffix</returns>
         protected static string GetBookNameWithoutSuffix(string bookName)
         {
-            if (bookName.EndsWith(".bloom"))
+            if (bookName.EndsWith(".bloom", StringComparison.Ordinal))
                 return Path.GetFileNameWithoutExtension(bookName);
 
             return bookName;
@@ -1402,7 +1417,73 @@ namespace Bloom.TeamCollection
                 return true;
 
             UpdateAllowCheckoutsFromRepo();
+            // The change may have been an administrator pausing changes to the shared folder.
+            // If so, switch to Disconnected mode now rather than at the next connection check.
+            // Only the pause is checked here, not the whole connection: a momentary network or
+            // Dropbox blip while a teammate's settings change arrives must not leave an ordinary
+            // collection disconnected for the rest of the session. (We are on the UI thread, in
+            // an Idle handler; our caller then fires the selection-changed event that refreshes
+            // the book status panel.) See BL-16928.
+            var pausedProblem = GetSharedFolderChangesPausedProblem();
+            if (pausedProblem != null && _tcManager.CurrentCollection == this)
+                _tcManager.MakeDisconnected(pausedProblem, RepoDescription);
             return false;
+        }
+
+        /// <summary>
+        /// The L10N id of the message FolderTeamCollection.CheckConnection() gives while the shared
+        /// folder's settings say AllowSharedFolderChanges is false. See BL-16928.
+        /// </summary>
+        public const string kSharedFolderChangesPausedL10nId =
+            "TeamCollection.SharedFolderChangesPaused";
+
+        /// <summary>
+        /// The L10N id of that message once the collection has also been given a CloudCollectionId,
+        /// that is, it has moved to Bloom's cloud collections. See BL-16928.
+        /// </summary>
+        public const string kMovedToCloudL10nId = "TeamCollection.MovedToCloud";
+
+        /// <summary>
+        /// If the repo's copy of the collection settings says that nothing may be written to the
+        /// shared folder (AllowSharedFolderChanges is false), return the message that explains
+        /// this, which puts us in Disconnected mode just as a real connection problem would.
+        /// Return null otherwise, including when we can't read the repo's settings: that is
+        /// normally transient, and no reason on its own to disconnect. See BL-16928.
+        /// </summary>
+        protected TeamCollectionMessage GetSharedFolderChangesPausedProblem()
+        {
+            var content = TryGetRepoCollectionSettingsContent();
+            if (string.IsNullOrWhiteSpace(content))
+                return null;
+            XElement xml;
+            try
+            {
+                xml = XElement.Parse(content);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError("TeamCollection could not parse the repo collection settings", e);
+                return null;
+            }
+            // As when loading settings, missing means allowed and a malformed value means paused.
+            if (CollectionSettings.ReadBoolean(xml, "AllowSharedFolderChanges", true))
+                return null;
+            var cloudId = CollectionSettings.ReadString(
+                xml,
+                CollectionSettings.kCloudCollectionIdElementName,
+                ""
+            );
+            if (!string.IsNullOrEmpty(cloudId))
+                return new TeamCollectionMessage(
+                    MessageAndMilestoneType.Error,
+                    kMovedToCloudL10nId,
+                    "This collection has moved to Bloom's cloud sharing. To keep working with your team, close and reopen the collection, and Bloom will switch it over. Until then, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection."
+                );
+            return new TeamCollectionMessage(
+                MessageAndMilestoneType.Error,
+                kSharedFolderChangesPausedL10nId,
+                "The administrator of this collection has paused changes to it. For now, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection."
+            );
         }
 
         /// <summary>
@@ -1709,7 +1790,7 @@ namespace Bloom.TeamCollection
         /// <param name="args"></param>
         public void HandleModifiedFile(BookRepoChangeEventArgs args)
         {
-            if (args.BookFileName.EndsWith(".bloom"))
+            if (args.BookFileName.EndsWith(".bloom", StringComparison.Ordinal))
             {
                 var bookBaseName = GetBookNameWithoutSuffix(args.BookFileName);
                 //Debug.WriteLine("Modified: " + bookBaseName);
@@ -1966,7 +2047,7 @@ namespace Bloom.TeamCollection
                 return;
             }
 
-            if (args.BookFileName.EndsWith(".bloom"))
+            if (args.BookFileName.EndsWith(".bloom", StringComparison.Ordinal))
             {
                 HandleNewBook(bookBaseName);
             }
@@ -2049,7 +2130,7 @@ namespace Bloom.TeamCollection
             // Don't use GetFileNameWithoutExtension here, what comes in might be a plain folder name
             // that doesn't have an extension, but might contain a period if the book title does.
             var bookFolderName = Path.GetFileName(bookName);
-            if (bookFolderName.EndsWith(".bloom"))
+            if (bookFolderName.EndsWith(".bloom", StringComparison.Ordinal))
                 bookFolderName = bookFolderName.Substring(
                     0,
                     bookFolderName.Length - ".bloom".Length
@@ -3196,7 +3277,7 @@ namespace Bloom.TeamCollection
         /// <returns></returns>
         public static string GetLocalCollectionNameFromTcName(string tcName)
         {
-            if (tcName.EndsWith(" - TC"))
+            if (tcName.EndsWith(" - TC", StringComparison.Ordinal))
                 return tcName.Substring(0, tcName.Length - 5);
             return tcName;
         }
@@ -3229,7 +3310,7 @@ namespace Bloom.TeamCollection
         public void UpdateBookStatus(string bookName, bool shouldNotifyIfNotCheckedOut)
         {
             Debug.Assert(
-                !bookName.EndsWith(".bloom"),
+                !bookName.EndsWith(".bloom", StringComparison.Ordinal),
                 $"UpdateBookStatus was passed bookName=\"{bookName}\", which has a .bloom suffix. This is probably incorrect. This function wants only the bookBaseName"
             );
 

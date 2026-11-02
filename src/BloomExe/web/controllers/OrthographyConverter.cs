@@ -44,7 +44,10 @@ namespace Bloom.web.controllers
             foreach (var line in lines)
             {
                 // Allow empty lines and # comments.  (See BL-7023)
-                if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#"))
+                if (
+                    string.IsNullOrWhiteSpace(line)
+                    || line.TrimStart().StartsWith("#", StringComparison.Ordinal)
+                )
                     continue;
                 // Allow any number of spaces or tabs to separate fields on a line.  (See BL-7023)
                 string[] fields = line.Split(
@@ -167,7 +170,7 @@ namespace Bloom.web.controllers
             {
                 return null;
             }
-            else if (!basename.EndsWith(".txt"))
+            else if (!basename.EndsWith(".txt", StringComparison.Ordinal))
             {
                 return null;
             }

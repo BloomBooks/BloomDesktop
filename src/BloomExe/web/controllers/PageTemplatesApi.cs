@@ -285,13 +285,19 @@ namespace Bloom.web.controllers
                                         expectedPathOfThumbnailImage
                                     )
                                     .Trim();
-                                var isLandscape = caption.EndsWith("-landscape"); // matches string in PageChooserDialog.tsx
+                                var isLandscape = caption.EndsWith(
+                                    "-landscape",
+                                    StringComparison.Ordinal
+                                ); // matches string in PageChooserDialog.tsx
                                 if (isLandscape)
                                     caption = caption.Substring(
                                         0,
                                         caption.Length - "-landscape".Length
                                     );
-                                var isSquare = caption.EndsWith("-square");
+                                var isSquare = caption.EndsWith(
+                                    "-square",
+                                    StringComparison.Ordinal
+                                );
                                 if (isSquare)
                                     caption = caption.Substring(
                                         0,
@@ -426,7 +432,7 @@ namespace Bloom.web.controllers
 
         private string GetAlternativeWritablePath(string pngpath)
         {
-            var idx = pngpath.IndexOf("browser");
+            var idx = pngpath.IndexOf("browser", StringComparison.Ordinal);
             string newpath;
             if (idx >= 0)
             {

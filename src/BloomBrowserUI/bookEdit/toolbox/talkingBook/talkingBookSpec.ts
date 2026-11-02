@@ -28,6 +28,13 @@ import { setSentenceEndingPunctuationForBloom } from "../readers/libSynphony/blo
 import $ from "jquery";
 import { Status } from "./TalkingBookUiState";
 
+// The recording code asks Bloom for its microphones and default recording mode as it starts.
+vi.mock("../../../utils/bloomApi", async (importOriginal) =>
+    (await import("./talkingBookTestBloomApi")).withTalkingBookReplies(
+        await importOriginal(),
+    ),
+);
+
 describe("talking book tests", () => {
     beforeAll(async () => {
         await setupForAudioRecordingTests();

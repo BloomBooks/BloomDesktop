@@ -121,14 +121,16 @@ namespace Bloom.Api
             out String subUnitName
         )
         {
-            if (subscriptionDescriptor.ToLowerInvariant().EndsWith("-lc"))
+            if (subscriptionDescriptor.ToLowerInvariant().EndsWith("-lc", StringComparison.Ordinal))
             {
                 folderName = "Local-Community";
                 flavor = "";
                 subUnitName = "";
                 return;
             }
-            if (subscriptionDescriptor.ToLowerInvariant().EndsWith("-pro"))
+            if (
+                subscriptionDescriptor.ToLowerInvariant().EndsWith("-pro", StringComparison.Ordinal)
+            )
             {
                 // Pro tier doesn't have brandings, so we use the default.
                 folderName = "Default";
@@ -136,7 +138,11 @@ namespace Bloom.Api
                 subUnitName = "";
                 return;
             }
-            if (subscriptionDescriptor.ToLowerInvariant().EndsWith("-trainer"))
+            if (
+                subscriptionDescriptor
+                    .ToLowerInvariant()
+                    .EndsWith("-trainer", StringComparison.Ordinal)
+            )
             {
                 // Trainer subscriptions don't have brandings, so we use the default.
                 folderName = "Default";

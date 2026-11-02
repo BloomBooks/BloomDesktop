@@ -17,6 +17,14 @@ import {
 } from "./js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
 import { renderDragActivityTabControl } from "./js/AbovePageControls";
+import {
+    canRedo,
+    canUndo,
+    handleRedo,
+    handleUndo,
+    setUpPageUndo,
+} from "./undo/pageUndo";
+import { tableCanUndo } from "./undo/tableUndo";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -68,9 +76,16 @@ export interface IPageFrameExports {
     getTheOneCanvasElementManager(): CanvasElementManager;
 
     ckeditorCanUndo(): boolean;
-    ckeditorUndo(): void;
+    ckeditorUndo(): boolean;
     imageOperationCanUndo(): boolean;
     imageOperationUndo(): boolean;
+
+    // The one undo stack, which lives in this frame (undo/pageUndo.ts).
+    handleUndo(): void;
+    canUndo(): boolean;
+    handleRedo(): void;
+    canRedo(): boolean;
+    tableCanUndo(): boolean;
 
     addRequestPageContentDelay(id: string): void;
     removeRequestPageContentDelay(id: string): void;
@@ -333,17 +348,36 @@ export function ckeditorCanUndo(): boolean {
         CKEDITOR &&
         CKEDITOR.currentInstance &&
         (<any>CKEDITOR.currentInstance).undoManager &&
-        (<any>CKEDITOR.currentInstance).undoManager.undoable()
+        (<any>CKEDITOR.currentInstance).undoManager.undoable() &&
+        // Not an editor whose box has gone from the page (a table undo rebuilds its cells, for
+        // instance): undoing there would change nothing anyone can see, and would stop the Undo
+        // button reaching whatever comes next.
+        (<any>CKEDITOR.currentInstance).element.$.isConnected
     ) {
         return true;
     }
     return false;
 }
 
-export function ckeditorUndo() {
+/**
+ * Undo the most recent change ckeditor knows about, and say whether it undid anything.
+ *
+ * undo() answers false when it finds nothing to restore, which happens even after
+ * ckeditorCanUndo() said yes: ckeditor sets its hasUndo flag on the first keystroke of a
+ * group and clears it only when it next refreshes its state, so a manager whose snapshots
+ * have already been restored keeps claiming an undo it cannot perform. The caller needs to
+ * know, so that an Undo the person pressed is not swallowed here. (See the CKEditor provider in
+ * undo/legacyUndoProviders.ts.)
+ */
+export function ckeditorUndo(): boolean {
     // review: do we need to examine all instances?
-    (<any>CKEDITOR.currentInstance).undoManager.undo();
+    return (<any>CKEDITOR.currentInstance).undoManager.undo();
 }
+
+// The bloom-table library's undo is an entry on the one undo stack (undo/tableUndo.ts). This is
+// exported on the bundle only for the e2e tests, which check that a table's history stays out of
+// Undo in Change Layout mode.
+export { tableCanUndo };
 
 for (let j = 0; j < styleSheets.length; j++) {
     // This doesn't work any more because we are now loading this code as a module,
@@ -376,6 +410,16 @@ window["PasteImageCredits"] = () => {
     EditableDivUtils.pasteImageCredits();
 };
 
+//UnlockOriginalCredits() is called from the hint bubble on the credits page's
+//generated original-copyright sentence. See BookCopyrightAndLicense.SetOriginalCopyrightNoticeHint().
+window["UnlockOriginalCredits"] = () => {
+    EditableDivUtils.unlockOriginalCredits();
+};
+
+window["RelockOriginalCredits"] = () => {
+    EditableDivUtils.relockOriginalCredits();
+};
+
 $(document).ready(() => {
     $("body").find("*[data-i18n]").localize();
     bootstrap();
@@ -388,6 +432,10 @@ $(document).ready(() => {
     // just signals that bootstrap itself has run and it is safe to ask for the content. Harmless no-op
     // in the live editor, which never reads this flag.
     window.__bloomEditablePageReady = true;
+
+    // The one undo stack lives in this frame and starts empty with each page load (see
+    // undo/pageUndo.ts). This registers the pre-existing undo mechanisms with it and binds Ctrl+Y.
+    setUpPageUndo();
 
     // If the user clicks outside of the page thumbnail context menu, we want to close it.
     // Since it is currently a winforms menu, we do that by sending a message
@@ -428,6 +476,11 @@ interface EditablePageBundleApi {
     getTheOneCanvasElementManager: typeof getTheOneCanvasElementManager;
     ckeditorCanUndo: typeof ckeditorCanUndo;
     ckeditorUndo: typeof ckeditorUndo;
+    handleUndo: typeof handleUndo;
+    canUndo: typeof canUndo;
+    handleRedo: typeof handleRedo;
+    canRedo: typeof canRedo;
+    tableCanUndo: typeof tableCanUndo;
     addRequestPageContentDelay: typeof addRequestPageContentDelay;
     removeRequestPageContentDelay: typeof removeRequestPageContentDelay;
     e2eSetActiveCanvasElementByIndex: typeof e2eSetActiveCanvasElementByIndex;
@@ -455,8 +508,8 @@ declare global {
         // ── Off-screen page-capture handshake (C# BookProcessor ⇆ this bundle) ──────────────────
         // The "process-book" feature (external/process-book API, used by BloomBridge to run
         // finished books through Bloom's browser-only page fix-ups) re-saves every page of a book
-        // WITHOUT opening the live editor. For each page, C# loads it into a throwaway, off-screen
-        // WebView2 and runs this three-step handshake against the two globals below:
+        // WITHOUT opening the live editor. For each page, C# loads it into an off-screen WebView2
+        // and runs this three-step handshake against the two globals below:
         //
         //   1. C# polls window.__bloomEditablePageReady until it is true. We set it (once, in
         //      $(document).ready below) the moment bootstrap()/SetupElements() returns. That kicks off
@@ -475,10 +528,11 @@ declare global {
         //     synchronous, so it can't directly await the capture function's internal async settle.
         //     A plain window field it can poll is the simplest bridge.
         // This looks fragile (two magic globals) but is well-contained: exactly one writer (the
-        // capture fn) and one reader (BookProcessor), and every page gets its own fresh disposable
-        // browser, so there is no stale-value or cross-page-bleed risk.
+        // capture fn) and one reader (BookProcessor). An off-screen browser loads several pages in
+        // turn, so before each navigation BookProcessor clears these globals on the outgoing page;
+        // otherwise it could read the previous page's values before the new document replaces it.
         //
-        // Step 1's flag: set in $(document).ready below; read in BookProcessor.ProcessPage.
+        // Step 1's flag: set in $(document).ready below; read in BookProcessor.ProcessOnePage.
         __bloomEditablePageReady?: boolean;
         // Step 2/3's mailbox: the combined "body<SPLIT-DATA>userCss" string, or "ERROR: <message>".
         __bloomExternalPageContent?: string;
@@ -508,6 +562,11 @@ window.editablePageBundle = {
     getTheOneCanvasElementManager,
     ckeditorCanUndo,
     ckeditorUndo,
+    handleUndo,
+    canUndo,
+    handleRedo,
+    canRedo,
+    tableCanUndo,
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
     e2eSetActiveCanvasElementByIndex,

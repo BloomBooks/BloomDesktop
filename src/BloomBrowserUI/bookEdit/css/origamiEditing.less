@@ -134,6 +134,29 @@
     color: @OrigamiActiveColor;
 }
 
+// The Table entry when the collection's subscription tier is below the one tables
+// need. It stays on offer so the user can see that tables exist, but it is dimmed
+// and carries the same badge the toolbox puts on its subscription-only tools.
+// Clicking it opens the dialog that says which subscription tables need; see
+// createTableSelector in origami.ts.
+.selector-links .origami-tableSelector {
+    a.origami-featureNeedsSubscription {
+        opacity: 0.38; // matches kBloomDisabledOpacity
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .subscription-badge {
+        display: inline-block;
+        vertical-align: text-bottom;
+        height: 1.2em;
+        width: 1.2em;
+        margin-left: 3px;
+        cursor: pointer;
+        background: no-repeat center/contain
+            url("../../images/bloom-enterprise-badge.svg");
+    }
+}
+
 .origami-controls {
     .button,
     .origami-controls .button:visited {

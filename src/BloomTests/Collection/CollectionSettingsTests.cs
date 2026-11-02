@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using NUnit.Framework;
@@ -43,6 +44,156 @@ namespace BloomTests.Collection
             return new CollectionSettings(
                 CollectionSettings.GetPathForNewSettings(parentFolderPath, collectionName)
             );
+        }
+
+        private static readonly XMatterPackFinder s_factoryXmatterFinder = new XMatterPackFinder(
+            new[] { BloomFileLocator.GetFactoryXMatterDirectory() }
+        );
+
+        private static void CheckAndFixDependencies(
+            CollectionSettings settings,
+            bool mayChangeSettings,
+            XMatterPackFinder finder = null
+        )
+        {
+            finder ??= s_factoryXmatterFinder;
+            var locator = new BloomFileLocator(
+                settings,
+                finder,
+                ProjectContext.GetFactoryFileLocations(),
+                ProjectContext.GetFoundFileLocations(),
+                ProjectContext.GetAfterXMatterFileLocations()
+            );
+            settings.CheckAndFixDependencies(locator, finder, mayChangeSettings);
+        }
+
+        // A collection whose saved pack is a project-specific one that no branding chooses, as
+        // when the subscription whose branding chose it has expired.
+        private CollectionSettings MakeCollectionWithProjectSpecificPack(string collectionName)
+        {
+            var settings = CreateCollectionSettings(_folder.Path, collectionName);
+            var projectSpecificPack = s_factoryXmatterFinder
+                .Factory.First(p => p.PathToFolder.Contains("project-specific"))
+                .Key;
+            settings.XMatterPackName = projectSpecificPack;
+            settings.Save();
+            Assert.That(
+                settings.GetXMatterPackNameSpecifiedByBrandingOrNull(),
+                Is.Null,
+                "Sanity check: no branding should choose the pack"
+            );
+            Assert.That(
+                s_factoryXmatterFinder.GetXMattersToOfferInSettings(null).Select(p => p.Key),
+                Has.No.Member(projectSpecificPack),
+                "Sanity check: the pack should not be offered"
+            );
+            return settings;
+        }
+
+        /// <summary>
+        /// Opening the collection must replace such a pack, so that books, the settings dialogs
+        /// and their saving agree on the pack.
+        /// </summary>
+        [Test]
+        public void CheckAndFixDependencies_ProjectSpecificPackNoBrandingChooses_IsReplacedAndSaved()
+        {
+            var settings = MakeCollectionWithProjectSpecificPack("PackNotAllowed");
+
+            CheckAndFixDependencies(settings, mayChangeSettings: true);
+
+            var factoryDefault = s_factoryXmatterFinder.FactoryDefault.Key;
+            Assert.That(settings.XMatterPackName, Is.EqualTo(factoryDefault));
+            Assert.That(
+                CreateCollectionSettings(_folder.Path, "PackNotAllowed").XMatterPackName,
+                Is.EqualTo(factoryDefault),
+                "the replacement should be saved"
+            );
+        }
+
+        /// <summary>
+        /// The usual reason for such a pack is an expired subscription, whose bookshelf the
+        /// collection then remembers only in memory (ExpiredBookshelf). Saving the replacement must
+        /// keep it in the file, or renewing the subscription can't bring it back (BL-15056).
+        /// </summary>
+        [Test]
+        public void CheckAndFixDependencies_ReplacingPackWhileExpired_KeepsTheBookshelfInTheFile()
+        {
+            var settings = MakeCollectionWithProjectSpecificPack("PackNotAllowedExpired");
+            // What loading a collection with an expired subscription and a bookshelf leaves.
+            settings.DefaultBookshelf = "";
+            settings.ExpiredBookshelf = "rememberedShelf";
+
+            CheckAndFixDependencies(settings, mayChangeSettings: true);
+
+            Assert.That(
+                settings.XMatterPackName,
+                Is.EqualTo(s_factoryXmatterFinder.FactoryDefault.Key),
+                "Sanity check: the pack should have been replaced, so the file was saved"
+            );
+            Assert.That(
+                RobustFile.ReadAllText(settings.SettingsFilePath),
+                Does.Contain("bookshelf:rememberedShelf")
+            );
+            Assert.That(
+                settings.DefaultBookshelf,
+                Is.Empty,
+                "in memory it should stay hidden while the subscription is expired"
+            );
+        }
+
+        /// <summary>
+        /// In a Team Collection the change would go to the whole team, so only an administrator
+        /// makes it.
+        /// </summary>
+        [Test]
+        public void CheckAndFixDependencies_ProjectSpecificPackButMayNotChangeSettings_IsKept()
+        {
+            var settings = MakeCollectionWithProjectSpecificPack("PackNotAllowedMember");
+            var savedPack = settings.XMatterPackName;
+
+            CheckAndFixDependencies(settings, mayChangeSettings: false);
+
+            Assert.That(settings.XMatterPackName, Is.EqualTo(savedPack));
+            Assert.That(
+                CreateCollectionSettings(_folder.Path, "PackNotAllowedMember").XMatterPackName,
+                Is.EqualTo(savedPack)
+            );
+        }
+
+        /// <summary>
+        /// A project may have installed its pack itself (from a .bloompack) before it shipped
+        /// with Bloom. That copy is offered in Settings, so it must not be replaced.
+        /// </summary>
+        [Test]
+        public void CheckAndFixDependencies_ProjectSpecificPackAlsoInstalledByTheUser_IsKept()
+        {
+            var settings = MakeCollectionWithProjectSpecificPack("PackAlsoInstalled");
+            var savedPack = settings.XMatterPackName;
+            var installedFolder = Path.Combine(_folder.Path, "InstalledXMatter");
+            Directory.CreateDirectory(Path.Combine(installedFolder, savedPack + "-XMatter"));
+            var finder = new XMatterPackFinder(
+                new[] { BloomFileLocator.GetFactoryXMatterDirectory(), installedFolder }
+            );
+            Assert.That(
+                finder.GetXMattersToOfferInSettings(null).Select(p => p.Key),
+                Has.Member(savedPack),
+                "Sanity check: the installed copy should be offered"
+            );
+
+            CheckAndFixDependencies(settings, mayChangeSettings: true, finder);
+
+            Assert.That(settings.XMatterPackName, Is.EqualTo(savedPack));
+        }
+
+        [Test]
+        public void CheckAndFixDependencies_PackOffered_IsKept()
+        {
+            var settings = CreateCollectionSettings(_folder.Path, "PackOffered");
+            settings.XMatterPackName = "Traditional";
+
+            CheckAndFixDependencies(settings, mayChangeSettings: true);
+
+            Assert.That(settings.XMatterPackName, Is.EqualTo("Traditional"));
         }
 
         /// <summary>
@@ -408,6 +559,93 @@ namespace BloomTests.Collection
         }
 
         [Test]
+        public void Reading_InvariantLanguageNameSavedUnderThaiFormat_LooksTheNameUpAgain()
+        {
+            // BL-16945: under a Thai regional format, a new collection's default Language2 was
+            // saved with the invariant culture's name.
+            var bloomCollectionFileContents =
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<Language1Name>Arta</Language1Name>
+	<Language1IsCustomName>false</Language1IsCustomName>
+	<Language1Iso639Code>atz</Language1Iso639Code>
+	<Language2Name>Invariant Language (Invariant Country)</Language2Name>
+	<Language2IsCustomName>false</Language2IsCustomName>
+	<Language2Iso639Code>en</Language2Iso639Code>
+</Collection>";
+            const string collectionName = "testInvariantName";
+            var collectionPath = CollectionSettings.GetPathForNewSettings(
+                _folder.Path,
+                collectionName
+            );
+            Directory.CreateDirectory(Path.GetDirectoryName(collectionPath));
+            RobustFile.WriteAllText(collectionPath, bloomCollectionFileContents);
+
+            var settings = CreateCollectionSettings(_folder.Path, collectionName);
+
+            Assert.That(settings.Language1.Name, Is.EqualTo("Arta"));
+            Assert.That(settings.Language2.Tag, Is.EqualTo("en"));
+            // The looked-up name follows the machine's UI language, so don't insist on "English".
+            Assert.That(settings.Language2.Name, Is.Not.Empty);
+            Assert.That(settings.Language2.Name, Does.Not.StartWith("Invariant"));
+        }
+
+        [Test]
+        public void Reading_CustomNameStartingWithInvariantLanguage_KeepsIt()
+        {
+            var bloomCollectionFileContents =
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<Language1Name>Invariant Language Lab</Language1Name>
+	<Language1IsCustomName>true</Language1IsCustomName>
+	<Language1Iso639Code>atz</Language1Iso639Code>
+</Collection>";
+            const string collectionName = "testInvariantCustomName";
+            var collectionPath = CollectionSettings.GetPathForNewSettings(
+                _folder.Path,
+                collectionName
+            );
+            Directory.CreateDirectory(Path.GetDirectoryName(collectionPath));
+            RobustFile.WriteAllText(collectionPath, bloomCollectionFileContents);
+
+            var settings = CreateCollectionSettings(_folder.Path, collectionName);
+
+            Assert.That(settings.Language1.Name, Is.EqualTo("Invariant Language Lab"));
+        }
+
+        [Test]
+        public void Reading_IsCustomNameMissing_ComputedFromLanguageLookup()
+        {
+            // With no IsCustomName stored, Bloom compares the name with the one the language
+            // lookup has for the tag.
+            var bloomCollectionFileContents =
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<Language1Name>Arta</Language1Name>
+	<Language1Iso639Code>atz</Language1Iso639Code>
+	<Language2Name>Our Arta</Language2Name>
+	<Language2Iso639Code>atz</Language2Iso639Code>
+</Collection>";
+            Assert.That(
+                bloomCollectionFileContents,
+                Does.Not.Contain("IsCustomName"),
+                "test setup: the value must be computed, not read"
+            );
+            const string collectionName = "testComputedCustomName";
+            var collectionPath = CollectionSettings.GetPathForNewSettings(
+                _folder.Path,
+                collectionName
+            );
+            Directory.CreateDirectory(Path.GetDirectoryName(collectionPath));
+            RobustFile.WriteAllText(collectionPath, bloomCollectionFileContents);
+
+            var settings = CreateCollectionSettings(_folder.Path, collectionName);
+
+            Assert.That(settings.Language1.IsCustomName, Is.False, "Arta is the lookup's name");
+            Assert.That(settings.Language2.IsCustomName, Is.True, "Our Arta is not");
+        }
+
+        [Test]
         public void Reading_InvalidSubscription_ClearsDefaultBookshelf()
         {
             var bloomCollectionFileContents =
@@ -531,6 +769,114 @@ namespace BloomTests.Collection
             // ...and the collection still reads back as allowing checkouts.
             var reloaded = CreateCollectionSettings(_folder.Path, collectionName);
             Assert.That(reloaded.AllowCheckouts, Is.True);
+        }
+
+        /// <summary>
+        /// Like AllowCheckouts, AllowSharedFolderChanges (BL-16928) must default to allowed, and
+        /// a collection without a cloud id must read as having none.
+        /// </summary>
+        [Test]
+        public void AllowSharedFolderChanges_ElementsMissing_DefaultToAllowedAndNoCloudId()
+        {
+            var settings = CreateSettingsFromFileContents(
+                "sharedFolderChangesMissing",
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<AllowNewBooks>True</AllowNewBooks>
+</Collection>"
+            );
+            Assert.That(settings.AllowSharedFolderChanges, Is.True);
+            Assert.That(settings.CloudCollectionId, Is.Empty);
+        }
+
+        [TestCase("False", false)]
+        [TestCase("True", true)]
+        public void AllowSharedFolderChanges_ElementPresent_IsRead(
+            string valueInFile,
+            bool expected
+        )
+        {
+            var settings = CreateSettingsFromFileContents(
+                "sharedFolderChangesRead" + valueInFile,
+                $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<AllowSharedFolderChanges>{valueInFile}</AllowSharedFolderChanges>
+</Collection>"
+            );
+            Assert.That(settings.AllowSharedFolderChanges, Is.EqualTo(expected));
+        }
+
+        /// <summary>
+        /// Save() rebuilds the file, so both values must be written back, or an ordinary save
+        /// would silently un-pause the collection (or forget that it moved). See BL-16928.
+        /// </summary>
+        [Test]
+        public void AllowSharedFolderChanges_FalseAndCloudId_SurviveSaveAndReload()
+        {
+            const string collectionName = "sharedFolderChangesRoundTrip";
+            var settings = CreateSettingsFromFileContents(
+                collectionName,
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<AllowSharedFolderChanges>False</AllowSharedFolderChanges>
+	<CloudCollectionId>abc-123</CloudCollectionId>
+</Collection>"
+            );
+            Assert.That(
+                settings.AllowSharedFolderChanges,
+                Is.False,
+                "setup failed: AllowSharedFolderChanges should have been read as false"
+            );
+            Assert.That(
+                settings.CloudCollectionId,
+                Is.EqualTo("abc-123"),
+                "setup failed: CloudCollectionId should have been read"
+            );
+
+            settings.Save();
+
+            var reloaded = CreateCollectionSettings(_folder.Path, collectionName);
+            Assert.That(reloaded.AllowSharedFolderChanges, Is.False);
+            Assert.That(reloaded.CloudCollectionId, Is.EqualTo("abc-123"));
+        }
+
+        /// <summary>
+        /// Neither element is written for an ordinary collection. See BL-16928.
+        /// </summary>
+        [Test]
+        public void AllowSharedFolderChanges_TrueAndNoCloudId_AreNotWrittenToTheFile()
+        {
+            const string collectionName = "sharedFolderChangesNotWritten";
+            var settings = CreateSettingsFromFileContents(
+                collectionName,
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<AllowSharedFolderChanges>False</AllowSharedFolderChanges>
+	<CloudCollectionId>abc-123</CloudCollectionId>
+</Collection>"
+            );
+            settings.Save();
+            var written = RobustFile.ReadAllText(settings.SettingsFilePath);
+            Assert.That(
+                written,
+                Does.Contain("AllowSharedFolderChanges"),
+                "setup failed: a paused collection should write the element"
+            );
+            Assert.That(
+                written,
+                Does.Contain("CloudCollectionId"),
+                "setup failed: a moved collection should write its cloud id"
+            );
+
+            settings.AllowSharedFolderChanges = true;
+            settings.CloudCollectionId = "";
+            settings.Save();
+
+            written = RobustFile.ReadAllText(settings.SettingsFilePath);
+            Assert.That(written, Does.Not.Contain("AllowSharedFolderChanges"));
+            Assert.That(written, Does.Not.Contain("CloudCollectionId"));
+            var reloaded = CreateCollectionSettings(_folder.Path, collectionName);
+            Assert.That(reloaded.AllowSharedFolderChanges, Is.True);
         }
 
         /// <summary>

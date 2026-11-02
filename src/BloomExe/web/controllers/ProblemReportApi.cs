@@ -261,7 +261,12 @@ namespace Bloom.web.controllers
                             null
                         );
 
-                        if (issueLinkOrFailureWithZipPath.StartsWith(kFailureResult))
+                        if (
+                            issueLinkOrFailureWithZipPath.StartsWith(
+                                kFailureResult,
+                                StringComparison.Ordinal
+                            )
+                        )
                         {
                             bool failed = true;
                             string zippedReportPath = issueLinkOrFailureWithZipPath.Substring(
@@ -994,7 +999,7 @@ namespace Bloom.web.controllers
                 _showingProblemReport = false;
             }
 
-            string message = issueLink.StartsWith(kFailureResult)
+            string message = issueLink.StartsWith(kFailureResult, StringComparison.Ordinal)
                 ? "Failed to report issue. Please email Bloom team manually."
                 : "Successfully reported issue: " + issueLink;
 
@@ -1124,7 +1129,10 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            using var screenshot = new Bitmap(form.Width, form.Height);
+            // Our caller has put this thread in PerMonitorV2, so this is the size, in physical
+            // pixels, that PrintWindow will draw.
+            var formBounds = WindowsMonitorScaling.GetScreenRectangleInPhysicalPixels(form);
+            using var screenshot = new Bitmap(formBounds.Width, formBounds.Height);
             using (var g = Graphics.FromImage(screenshot))
             {
                 var hdc = g.GetHdc();
@@ -1179,6 +1187,9 @@ namespace Bloom.web.controllers
                     true,
                     () =>
                     {
+                        // Measure and copy in physical pixels, even if a legacy-DPI dialog has
+                        // switched this thread to SYSTEM_AWARE. See WindowsMonitorScaling (BL-16495).
+                        using var dpiScope = WindowsMonitorScaling.EnterPerMonitorV2Scope();
                         try
                         {
                             // I got tired of landing here in the debugger so I'm avoiding the exception
@@ -1198,45 +1209,26 @@ namespace Bloom.web.controllers
                                 // those screen coordinates would save whatever the desktop has
                                 // there, which is nothing. Render the window itself instead, the
                                 // way the not-in-front case already does.
-                                var scaledBounds = controlForScreenshotting.Bounds;
-#if !__MonoCS__
-                                scaledBounds =
-                                    WindowsMonitorScaling.GetRectangleFromControlScaledToMonitorResolution(
+                                var screenBounds =
+                                    WindowsMonitorScaling.GetScreenRectangleInPhysicalPixels(
                                         controlForScreenshotting
                                     );
-#endif
-                                var screenshot = new Bitmap(
-                                    scaledBounds.Width,
-                                    scaledBounds.Height
+                                using var screenshot = new Bitmap(
+                                    screenBounds.Width,
+                                    screenBounds.Height
                                 );
                                 using (var g = Graphics.FromImage(screenshot))
                                 {
-                                    if (controlForScreenshotting.Parent == null)
-                                        g.CopyFromScreen(
-                                            scaledBounds.Left,
-                                            scaledBounds.Top,
-                                            0,
-                                            0,
-                                            scaledBounds.Size
-                                        ); // bounds already in screen coords
-                                    else
-                                        g.CopyFromScreen(
-                                            controlForScreenshotting.PointToScreen(
-                                                new Point(scaledBounds.Left, scaledBounds.Top)
-                                            ),
-                                            Point.Empty,
-                                            scaledBounds.Size
-                                        );
+                                    g.CopyFromScreen(
+                                        screenBounds.Left,
+                                        screenBounds.Top,
+                                        0,
+                                        0,
+                                        screenBounds.Size
+                                    );
                                 }
 
-                                _reportInfo.ScreenshotTempFile = TempFile.WithFilename(
-                                    ScreenshotName
-                                );
-                                SIL.IO.RobustImageIO.SaveImage(
-                                    screenshot,
-                                    _reportInfo.ScreenshotTempFile.Path,
-                                    ImageFormat.Png
-                                );
+                                SaveScreenshot(screenshot);
                             }
                             else
                             {
@@ -1337,7 +1329,7 @@ namespace Bloom.web.controllers
 
         private static string GetDomainlessEmail(string rawEmail)
         {
-            var atIndex = rawEmail.IndexOf("@");
+            var atIndex = rawEmail.IndexOf("@", StringComparison.Ordinal);
             return atIndex < 0 ? rawEmail : rawEmail.Substring(0, atIndex);
         }
 

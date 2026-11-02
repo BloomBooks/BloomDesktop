@@ -11,9 +11,10 @@
 // text box raises no key events".)
 //
 // Every press goes through Playwright's keyboard, which sends the same CDP raw key events the
-// browser would build from a physical key. What it cannot do is send a key that Bloom's WinForms
-// shell claims as an accelerator: Ctrl+Z never reaches the page at all, which is why undo has its
-// own helper in workspace.ts rather than a press here.
+// browser would build from a physical key, straight to the WebView2. Bloom's WinForms shell leaves
+// the Edit tab's keys to the page, so for a key such as Ctrl+Z or Ctrl+Y that is the route a
+// person's press takes too: it reaches the TypeScript handlers of CKEditor, the reader tools and
+// Change Layout mode (see undo.ts).
 
 import { expect, type Locator, type Page } from "@playwright/test";
 
@@ -73,4 +74,14 @@ export async function moveCaretToEnd(box: Locator): Promise<void> {
  */
 export async function typeWithKeys(page: Page, text: string): Promise<void> {
     await page.keyboard.type(text);
+}
+
+/**
+ * Select all the text in a text box and copy it to the clipboard with the real Ctrl+A and Ctrl+C a
+ * person presses, so that whatever CKEditor and Bloom do on a copy runs. The copy carries the
+ * box's markup as well as its text, e.g. the Talking Book tool's sentence markers.
+ */
+export async function copyAllTextIn(box: Locator, what: string): Promise<void> {
+    await pressKeyIn(box, "Control+a", what);
+    await box.press("Control+c");
 }

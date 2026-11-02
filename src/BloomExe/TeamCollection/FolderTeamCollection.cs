@@ -13,6 +13,7 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
 using L10NSharp;
+using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -228,7 +229,7 @@ namespace Bloom.TeamCollection
             string command =
                 $"Set-Content -Path {powerShellPath} -Stream com.dropbox.ignored -Value 1";
 
-            var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+            var result = CommandLineRunner.Run(
                 "powershell.exe",
                 $"-Command \"{command}\"",
                 "", // working directory
@@ -442,7 +443,7 @@ namespace Bloom.TeamCollection
                 GetBookNameWithoutSuffix(bookName)
             );
             Debug.Assert(
-                !destFolder.EndsWith(".bloom"),
+                !destFolder.EndsWith(".bloom", StringComparison.Ordinal),
                 $"Copying zipFile to folder \"{destFolder}\", which ends with .bloom. This is probably an error, unless the book title literally contains .bloom"
             );
 
@@ -1036,7 +1037,11 @@ namespace Bloom.TeamCollection
                     return true;
                 // The creation of the temp folder where we write local stuff during put
                 // is not interesting.
-                if (path.Replace("\\", "/").ToLowerInvariant().EndsWith("/books/temp"))
+                if (
+                    path.Replace("\\", "/")
+                        .ToLowerInvariant()
+                        .EndsWith("/books/temp", StringComparison.Ordinal)
+                )
                     return true;
                 // Not the book we most recently wrote, so not an 'own write'.
                 // Note that our zip library sometimes creates a temp file by adding a suffix to the
@@ -1044,7 +1049,7 @@ namespace Bloom.TeamCollection
                 // wrote is a result of that.
                 if (
                     !string.IsNullOrWhiteSpace(_lastWriteBookPath)
-                    && !path.StartsWith(_lastWriteBookPath)
+                    && !path.StartsWith(_lastWriteBookPath, StringComparison.Ordinal)
                 )
                     return false;
                 // We're still writing it...definitely an 'own write'
@@ -1337,7 +1342,7 @@ namespace Bloom.TeamCollection
         /// <returns></returns>
         public static bool IsJoinTeamCollectionFile(string[] args)
         {
-            return args.Length == 1 && args[0].EndsWith(".JoinBloomTC");
+            return args.Length == 1 && args[0].EndsWith(".JoinBloomTC", StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -1673,7 +1678,10 @@ namespace Bloom.TeamCollection
                 }
             }
 
-            return null;
+            // Last, because a real connection problem is the one to report first: it is something
+            // the user can fix, and until it is fixed what we read here may be stale anyway. (Either
+            // way we end up disconnected, so nothing can slip through.) See BL-16928.
+            return GetSharedFolderChangesPausedProblem();
         }
 
         private bool IsFolderOnLocalNetwork(string repoFolderPath)

@@ -63,6 +63,14 @@ namespace Bloom.Api
                 },
                 false
             );
+            // Whether this Bloom was launched with --e2e, and so has the e2e/ endpoints. Registered in
+            // every run, so an automation script can ask before calling one: in a run without them,
+            // each call to a missing endpoint puts up a "Bloom had a problem" dialog.
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "runningE2eTests",
+                request => request.ReplyWithText(Program.RunningE2eTests ? "true" : "false"),
+                false
+            );
             apiHandler.RegisterEndpointHandler(
                 kAppUrlPrefix + "userSetting",
                 HandleUserSetting,
@@ -146,7 +154,10 @@ namespace Bloom.Api
                     var assembly = Assembly.GetEntryAssembly();
                     var file = PathHelper.StripFilePrefix(assembly.Location);
                     var fi = new FileInfo(file);
-                    request.ReplyWithText(fi.LastWriteTimeUtc.ToString("dd-MMM-yyyy"));
+                    // Shown in the About dialog, so the month name follows the user's format.
+                    request.ReplyWithText(
+                        fi.LastWriteTimeUtc.ToString("dd-MMM-yyyy", UserCulture.Current)
+                    );
                 },
                 false
             );

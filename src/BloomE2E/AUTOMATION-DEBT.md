@@ -21,7 +21,6 @@ and ask its author.
 
 | Pull request | Branch | What it pays down |
 | --- | --- | --- |
-| #8299 | `BL-16799-page-change` | `editView/jumpToPage` refuses a jump it cannot do, and every page-changing helper waits for the Edit tab to settle. |
 | #8300 | `BL-16799-collection-languages` | The `e2e/setCollectionLanguages` hook, so no test composes `.bloomCollection` XML. |
 | #8306 | `e2e-real-library-login` | A test can sign in to dev.bloomlibrary.org for real, with a test account whose credentials the run supplies, so the upload cases can run to the end. Branches off `e2e-private-user-settings`, which gave every Bloom a test launches a settings folder of its own and removed its entry from this file. |
 
@@ -174,6 +173,22 @@ ask is whether it reproduces: a crash that follows a particular file across runs
 right after that file gained an import, is a real problem in that file. One that lands on a
 different file each time, on files the branch never touched, is this entry.
 
+seen again 2026-10-06 (`collection-settings-advanced.spec.ts`, BL-16737): once in about twenty runs
+of that file, and this time *after* its first test had passed, so a worker can also die between
+tests, not only at startup. The next five runs of the same file were green.
+
+seen again 2026-10-20 (`collection-settings-subscription.spec.ts`, BL-16734), and this time it
+followed one test: its first test, which makes a book from Basic Book and right-clicks it on the
+Collections tab, crashed its worker in about one run in ten (four times in some thirty runs, alone
+or with the rest of the file), always reported at 0ms. Run on its own eight times each, the same
+file's cancel test (no book, never leaves the Collections tab) and
+`collection-settings-bloom-library.spec.ts` never crashed. With `DEBUG=pw:*` the book test passed
+eight runs in a row, so the extra logging hides it, and `NODE_OPTIONS=--report-on-fatalerror`
+wrote no report: the worker dies by a fail-fast that skips Node's own reporting. Later the same
+day it struck `collection-settings-bloom-library.spec.ts`'s first test, which makes no book and
+had passed eight times alone, so making a book is not the trigger. The next thing to try is a
+Windows crash dump of the worker (WER LocalDumps for node.exe needs an administrator).
+
 ## An api that captures CollectionSettings.Subscription cannot see a subscription change
 
 `FeatureStatusApi` used to snapshot `collectionSettings.Subscription` in its constructor, so
@@ -310,6 +325,12 @@ template book the dialog would show, each page tagged with its book's title, thr
 `PageTemplatesApi.GetTemplateBookPathsForAddPage`. The dialog still parses the HTML
 itself; the hook only mirrors which books it is handed.
 
+seen again 2026-09-04 (tables-extended.spec.ts, pasting a table into a second book): the
+destination book was made from Basic Book and therefore had no page to paste into, and
+Paste Page is a command on a page's own menu. It reads as a save that never happened,
+because what the test sees is a book file with no numbered pages in it. Adding a page
+first is the whole fix; the note is here because the symptom points elsewhere.
+
 ## The Edit tab silently drops a jump to a page while it is loading
 
 `editView/jumpToPage` is the only way to move a test to a particular page, and it is
@@ -322,10 +343,10 @@ would look like the same flake. Fix direction: have `jumpToPage` queue the reque
 until the Edit tab is ready, or report that it refused it.
 (Found 2026-09-01 automating Test Case ID 169.)
 
-being fixed on `BL-16799-page-change` (#8299): it reports that it refused the jump, rather than
-queueing it, and the helpers wait for the Edit tab to settle before asking. Queueing was
-tried first and made things worse. That branch adds an entry for the Bloom defect behind
-this one, which it does not fix.
+Answered for tests, 2026-09-02: `editView/jumpToPage` no longer replies success to a jump
+it drops. It refuses the jump and says why, and every helper that changes the page waits for
+`waitForEditTabSettled` first. What remains is the Bloom defect itself, in the section "A page
+change asked for while the Edit tab is still loading a page can be lost" below.
 
 seen again 2026-09-02 (Test Case ID 72, `derivative-keeps-template-pages.spec.ts`): the
 same drop hits `addPage`. Every action that saves the page first goes through
@@ -353,6 +374,9 @@ it. Nobody has found what. Until they do, the cheap fix is the same as the entry
 page-changing helpers now do.
 (Seen while preflighting #8351, which cannot reach any of this — its whole diff is one
 font-chooser helper.)
+seen again 2026-09-23 on the same developer machine, in a full-suite run and again alone, failing
+at two different `selectPage` calls (spec lines 118 and 185), while the same morning's nightly
+passed it. (Preflight of #8275, which does not touch page selection.)
 
 ## Filling a text box directly leaves part of the old text behind
 
@@ -368,6 +392,17 @@ box: that still needs a click, Control+A and Delete, because neither `fill()` no
 setting the value leaves CKEditor in a state Bloom then saves correctly. Fix direction:
 an `e2e/` hook, or a supported CKEditor path, that sets the text of one box outright.
 (Found 2026-09-01 automating Test Case ID 169.)
+
+## Undo and overflow checks in a table cell need real key presses
+
+Undoing typing in a cell needs real key presses, because CKEditor builds its undo stack from
+them, so `keyboard.insertText` leaves nothing to undo and the undo test passed vacuously until
+the typing was done key by key. `typeInCellKeyByKey` in `helpers/tables.ts` does that, for cells
+only. Bloom also marks a box as overflowing from a `keyup` or a `paste`
+(`OverflowChecker.AddOverflowHandlers`), so no test that fills a box the quick way can see an
+overflow mark at all, and one that appears to is riding on the keyup from the select-all and
+Delete that cleared the box first.
+(Found 2026-09-04, writing the table suites.)
 
 ## The page menu offers commands that silently do nothing while a page is loading
 
@@ -548,6 +583,35 @@ Fix direction: a click-to-add route on the palette (click the item, then click t
 a test can drive with real presses, which would also help anyone who cannot drag. (Found
 2026-09-04.)
 
+## Saving the reader settings costs the next test in the file its shell document
+
+A spec file may contain at most **one** test that presses OK in the Decodable Reader setup
+dialog. With two, the test after the first save fails at its very first step with "There is no
+toolbox toggle in this document, so Bloom is not showing the Edit tab", and a
+`waitForEditablePage` added in front of it just times out instead.
+
+It is not a product bug, and it is not the save being slow. Measured in a running Bloom
+immediately after `acceptReaderSetup` and again 2, 5, 10 and 20 seconds later, the edit view is
+perfectly healthy every time: `frames=[(main),toolbox,pageList,page]`, one `.bloom-page`, and
+`e2e/isEditingPage` true. The same save-then-reopen sequence inside a *single* test passes. Only
+crossing a test boundary after a save breaks it, and the failing test's page snapshot shows the
+Edit tab selected with the book and the toolbox both present -- in the document the test cannot
+see.
+
+That is the entry above wearing different clothes: saving evidently leaves a second document
+carrying the workspace root's markup, and from the next test on, the worker's page handle is the
+wrong one. The entry above says nobody knows why a second workspace-root document exists at all;
+this is a reproducible way to make one.
+
+Worked around by splitting the reader-setup specs so that no file saves twice
+(`decodable-reader-saves-sample-words`, `decodable-reader-drops-empty-stage` and
+`decodable-reader-cancel` are one behaviour each for this reason, and say so at the top). The
+cost is one Bloom launch per behaviour.
+
+What would fix it: re-resolving the shell page after a save the way `bloomApp.restart` already
+re-resolves it, or finding the duplicate document the entry above is hunting.
+(Found 2026-09-17 while adding e2e tests for the converted Decodable Reader setup dialog.)
+
 ## A test can attach to a shell document Bloom does not drive
 
 More than one document in a run carries the workspace root's markup, and therefore the
@@ -576,6 +640,148 @@ creates one `_workspaceReactControl`. Worth finding, because the duplicate is wh
 the test-side check necessary.
 (Found 2026-09-01 while making `jumpToPage` queue a jump.)
 
+## A page change asked for while the Edit tab is still loading a page can be lost
+
+A page change that reaches the Edit tab between two announcements of one page load wedges
+that tab: it stays in SavePending and refuses every later page change. The caller waits 60
+seconds for a page that never comes, and a user who clicks a page thumbnail in that window
+cannot change pages at all until they leave the tab.
+
+The cause is a page that announces itself to Bloom twice. Bloom's own log, from the run
+that found this on 2026-09-02:
+
+```
+Navigating(f45a2ef8) --> editing(f45a2ef8)
+Editing(f45a2ef8) --> savePending()
+Ignoring edit() request while in SavePending(f45a2ef8)
+```
+
+The first announcement moves the tab to Editing. The page change then asks the browser for
+the page content so it can save the page it is leaving. The second announcement arrives, is
+refused because a save is in flight, and the browser never answers the save request. The
+tab stays in SavePending. The same three lines in the order that works read `--> editing`,
+`Ignoring edit()`, then `--> savePending`, and the save completes.
+
+Any request that changes the page does this, not only a jump. The run that found it lost a
+language change from `setContentLanguages`, and the Edit tab then held the tab switch that
+followed, so a Publish test failed instead.
+
+A first attempt at this, on 2026-09-02, had `JumpToPage` queue a jump that arrived while
+the tab was navigating and release it on the next page-load announcement. That made the
+wedge easier to reach rather than harder, because the released jump is itself a page change
+arriving in exactly the window above. `JumpToPage` now refuses such a jump and says so, so
+the caller can wait and ask again.
+
+Worked around for tests, 2026-09-02: `e2e/editState` reports what the Edit tab is doing and
+how many times the page it shows has announced itself, and every helper that changes the
+page waits for `waitForEditTabSettled` first. That keeps the request out of the window. The
+wait reads the state twice, 1500 ms apart, and needs Editing both times with the count
+unchanged: the state alone reads Editing between the two announcements, when a request
+would still be lost, and the gap between them has been seen to reach a second. No test can
+see any of this from the DOM, because Bloom leaves the previous page in the frame while it
+loads the next one.
+
+What remains: the Bloom defect itself, which is older than this suite. A user hits it
+whenever something asks for a page change in that window, and the Edit tab then stops
+responding to page changes altogether. Fix direction: either stop the browser announcing a
+page twice, or make the state machine treat a second announcement of the page it is saving
+as a reason to discard that save (`DiscardInFlightSave` already exists for BL-16766). Both
+change production save behavior, so this needs a decision rather than a quiet fix.
+
+## A table's own menus can only be found by their English words
+
+The bloom-table library labels its pills and its commands in English and does not localize
+them, so `helpers/tables.ts` opens a menu by `button[data-btable-menu-pill="row|column|table"]`
+(stable, because the library sets it) but picks a command out of that menu by matching the
+English `aria-label`: "Add Row Below", "Delete Column", and so on. Every table test therefore
+depends on wording the library owns, in a repository of its own, and a reworded command breaks
+the tests rather than the product.
+
+Fix direction: have the library put a command id on each item, the way Bloom's own menus are
+being given `data-testid`s, and match on that. Until then a table test cannot check what a
+person actually reads, because the words are not Bloom's to translate.
+(Found 2026-09-04, writing the table suites.)
+
+## Nothing in the markup marks the boundary between two rows or columns
+
+A person resizes a row or a column by dragging the line between them, and that line is not an
+element: the library listens for a pointer down near a cell's edge. So `dragBoundary` in
+`helpers/tables.ts` aims two pixels inside the cell's own edge and hopes that is within the grab
+area, which is a guess at a number the library owns and does not publish. A change to that
+distance breaks the tests silently, by making the drag do nothing.
+
+Fix direction: give each boundary a small element of its own carrying a `data-btable-resize`
+attribute that names what it resizes. A test can then aim at the middle of the thing it means to
+drag, and a person gets a target that can be seen.
+(Found 2026-09-04, writing the table suites.)
+
+## Leaving Change Layout mode is finished later than the mode says
+
+Turning origami's Change Layout switch off takes the mode off straight away, then saves the
+page and asks Bloom to rebuild it 450 ms later (`saveChangesAndRethinkPageEvent`). Until that
+rebuild lands, the page on screen is the one layout mode left behind: its text boxes have had
+`contentEditable` taken off them, so anything typed goes nowhere and anything measured is about
+to be replaced. `helpers/origami.ts` waits for an editable text box to come back, which is a
+guess at the product's own signal.
+
+Fix direction: have the rebuild announce itself, so a test can wait for the event rather than
+for a symptom of it.
+(Found 2026-09-04, writing the table suites.)
+
+## What Copy Page put on the clipboard does not survive making a book
+
+Copy Page and Paste Page are the only route to the page clipboard, and a test that copies a
+page, makes a second book, adds a page to it, and then goes there to paste finds Paste Page
+still greyed out. Nothing says the clipboard was emptied: the command is simply never enabled,
+which reads as a Copy Page that did nothing, and the test fails 30 seconds later in the paste
+rather than at the copy. It is intermittent, which makes it worse -- the same order of steps
+passed twice and failed on the third run, so it looks like a race in the copy.
+
+Working around it is easy once known: build the destination book and its page first, then copy,
+then switch and paste, so nothing happens between the two halves. `tables-extended.spec.ts`
+does that, with a comment saying why the order matters.
+
+Worth finding out whether the page clipboard is meant to survive this, since a person doing the
+same thing by hand would lose their copy the same way. If it is meant to, this is a product bug
+rather than automation debt.
+(Found 2026-09-04 automating the table specs.)
+
+## A second e2e Bloom on the machine pushes a cold start past two minutes
+
+Two suites running at once, in two worktrees, make each other slow to start: a Bloom that
+normally serves its collection in twenty seconds took a little over two minutes twice in five
+runs of `tables-gating.spec.ts` while another worktree's suite was launching its own. The
+failure names nothing of the kind. It says `Bloom did not open the collection within 120s`,
+lists the instances it can see, and the wanted collection is right there among them on port
+8089, because the diagnostic look happens a second after the last poll gave up. So it reads as
+a discovery bug in the fixture, and the fixture is fine.
+
+`startBloomOn` now allows four minutes rather than two. Nothing waits that long in a healthy
+run, since the poll stops the moment Bloom answers; the number only decides how patient a slow
+start is allowed to make us.
+
+Fix direction: the suite has no idea another one is running. A machine-wide lock, or a check
+that refuses to start while a foreign e2e Bloom is up, would turn a slow flake into a clear
+message. Worth doing if agents keep running two worktrees at once.
+(Found 2026-09-05, gating the table specs.)
+
+## A launched Bloom sometimes exposes no debugging target at all
+
+Once in a nine-file run on 2026-09-07, `inline-images-zoom.spec.ts` failed before any test code
+ran: `Bloom's WebView2 never exposed the shell document it is driving within 90s`, with
+`Targets seen: none` -- so it is not the wrong-document case above (that one lists the documents
+it found), and not the worker crash either (the worker was alive and reported the failure). The
+spec passed on its own immediately afterwards, and the other eight files in the same run were
+green.
+
+`Targets seen: none` says the debugging listener answered but had nothing on it, which points at
+Bloom still starting rather than at anything the test did. Whether the 90 seconds is simply too
+short on a loaded machine is not known; nobody has caught it with Bloom's own log alongside.
+
+How to react, until it is understood: **re-run the file**, and treat a failure that follows one
+file across runs as a real problem in that file rather than this entry. Fix direction: have
+`findShellPage` say what Bloom's process was doing when it gave up (it has the pid), so the next
+occurrence distinguishes a slow start from a Bloom that never got there.
 
 ## A title typed on the cover of a new book can fail to reach the collection
 
@@ -745,32 +951,6 @@ already has everything that shape of suite needs, so after the port, adding it i
 edit. Its shared mode (reuse one live page, clean elements back to baseline between tests)
 is worth keeping — page loads are the slow part either way.
 
-## import-recording.spec.ts:84 failing is a PRODUCT bug, not a flaky test — BL-16873
-
-If a nightly fails with
-
-> The imported file "i<guid>.mp3" is not named after any recordable element on the page.
-
-that is **BL-16873**, not the suite being flaky, and the test is doing its job. Bloom names a
-narration file after the id of the element that owns the audio; the Talking Book tool was reading
-the id off whatever `highlightedElement` happened to be, which is not always that element — it can
-be a sub-element, or a node no longer in the page after CKEditor replaced a paragraph or the page
-changed. The mp3 then lands under an id nothing on the page owns, or under **another page's** text
-box, so the page the user was on stays silent while a different one acquires the audio. Reproduced
-in a running Bloom, so it is user-facing, not a test artifact.
-
-It is timing-dependent (the stale-highlight window is normally repaired within 200ms), which is why
-it shows up on a loaded runner and not on a developer machine — do not expect to reproduce it
-locally, and do not write it off when you cannot.
-
-Fixed in PR #8363, which is still in review — so until that merges, this is the expected state of
-master's nightly, and it is not occasional: it failed two of the last three (09-15 fail, 09-16
-pass, 09-17 fail). A red nightly whose only failure is this one needs no investigation; check the
-occurrence log on BL-16873 and move on.
-
-If it recurs **after** #8363 merges, that is a new mechanism rather than a return of this one — say
-so on BL-16873 and keep the trace, because the api-timeline read below is what distinguishes them.
-
 ## A failed run's Bloom API traffic is what settles things, and only hand-parsing reaches it
 
 `import-recording.spec.ts:84` failed in the 2026-09-15 nightly (run 34994810480) with a good
@@ -843,26 +1023,36 @@ failure is a refused connect or a reset, and what else the runner was doing at t
 How to react meanwhile: **do not re-run and move on without first looking for the trace
 artifact** (`component-tester-traces` on the nightly run). A second occurrence with no trace
 collected is a wasted one.
+
+The second occurrence (2026-10-27, `bookgridsetup-extended.uitest.ts:365`) left a trace. It
+failed about 15 ms into the navigation, which is too fast to be a refused connect on Windows.
+Chromium uses ERR_CONNECTION_FAILED for a socket error it has no specific name for, and the trace
+doesn't record which. Ten local runs of the suite (1,460 tests) did not reproduce it. So
+`setTestComponent` now catches a failed `net::ERR_` navigation and adds to its message what
+`describeConnectionFailure.ts` finds: a raw TCP connect and an HTTP GET to the dev server from
+Node, and netstat's count of TCP connections by state. If Node gets through, look inside Chromium
+next: run it with `--log-net-log` (about 425 MB for a full suite, before compression). If Node
+fails too, or TIME_WAIT is huge, look at the runner: trace Windows' TCPIP provider into a ring
+buffer.
 (Found 2026-09-21.)
 
----
+## The suites test Bloom run from the source tree, not the app a user installs
 
-## Changing the UI language reopens the project, invalidating the test's page
+BloomE2E and the visual-regression suite launch a Release build from the repo
+(`output\Release\x64\Bloom.exe`, with the web UI in `output\browser`), never an installed Bloom.
+Roughly 15 places in `BloomExe` behave differently depending on where Bloom is running from:
+finding shipped files (`BloomFileLocator`), deciding which collections are Bloom's own
+(`IsInstalledFileOrDirectory`), PDF making and Ghostscript, Reading App Builder, and a few
+copyright and image checks. A mistake in any of those shows up only in the layout it affects.
 
-Choosing a language in the top bar's UI language menu makes Bloom reopen the collection
-(`WorkspaceView.SetUiLanguage` calls `ReopenCurrentProject`, because many surfaces only pick up
-a new language when they are rebuilt). That replaces the shell document, so the `page` a test is
-holding goes dead — the same thing `bloomApp.restart()` warns about, but with no equivalent way
-to get the new page: `findShellPage` is private to the fixture, and nothing re-resolves the shell
-after a reopen that the test did not initiate.
+The cost cuts both ways. A mistake that affects only the source-tree layout fails the suites
+while no user ever sees it. A mistake that affects only the *installed* layout is the mirror
+image: every nightly green, only users hit it. Nothing covers install-only behaviour at all: the
+installed app's own layout and Velopack updates, what the installer actually ships, or
+channel-dependent behaviour (for example the release channel's 25% threshold for listing a UI
+language, which `ui-language.spec.ts` notes it cannot see).
 
-The cost today is that `pseudo-english-ui-language.spec.ts` covers only the *offer* — that the
-pseudo-locale is listed, named right, and sorted last — and not the switch itself, which is the
-more interesting half: that choosing it really does pseudolocalize the UI, and that choosing
-English again puts it back. The same limit will bite any future test of a real UI language.
+So read a green nightly as "Bloom run from source works", not "the installed app works".
 
-Fix direction: export the shell resolution from the fixture (or expose it as
-`bloomApp.waitForNewShell()`), so a helper that knowingly triggers a reopen can return the new
-page the way `restart()` does. Then `setUiLanguage(page, name)` can drive the real menu and hand
-back a usable page, and the switch becomes testable.
-(Found 2026-09-17, while adding the Pseudo-English test for BL-16748.)
+Idea: a periodic run of the suites against an installed Bloom.
+(Found 2026-09-25.)

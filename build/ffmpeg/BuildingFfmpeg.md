@@ -1,4 +1,4 @@
-                                                June 7, 2018 (revised October 22, 2025)
+                                                June 7, 2018 (revised October 8, 2026)
 Building a Reduced ffmpeg for Windows
 =====================================
 
@@ -20,18 +20,20 @@ msys2
 Building ffmpeg for x86_64
 --------------------------
 1. Open the shell window provided for msys2 using the mingw64.exe program.  (This opens the shell window in the right state for compiling programs.)  cd to the desired spot in the filesystem for where you want to build ffmpeg.  (Some sort of temporary or scratch position would do.  Even C:\ (aka /c inside msys2) would probably work as the root.
-2. Execute the shell script <BloomDesktop>/build/build-x86_64.sh and wait until it finishes.  If it succeeds, the finished product (ffmpeg.exe) should be at /win-x64/bin/ffmpeg.exe (or C:\msys64\win-x64\bin\ffmpeg.exe if you prefer).  If the build fails, the ffmpeg-x86_64-build.log file may contain helpful information about the nature of the failure.
+2. Execute the shell script <BloomDesktop>/build/ffmpeg/build-x86_64.sh and wait until it finishes.  If it succeeds, the finished product (ffmpeg.exe) should be at /win-x64/bin/ffmpeg.exe (or C:\msys64\win-x64\bin\ffmpeg.exe if you prefer).  If the build fails, the ffmpeg-x86_64-build.log file may contain helpful information about the nature of the failure.
 ```
     .../build/ffmpeg/build-x86_64.sh | tee ffmpeg-x86_64-build.log
 ```
 On a reasonably fast developer machine with a reasonably fast internet connection, the shell script should take about 20-30 minutes to complete.
 
-The current full static ffmpeg.exe downloaded from the internet is about 189MB in size.  The reduced static ffmpeg.exe built through the process above is about 12MB in size.
+The current full static ffmpeg.exe downloaded from the internet is about 189MB in size.  The reduced static ffmpeg.exe built through the process above is about 13MB in size.  (Adding Opus support in October 2026 increased the size from about 12MB.)
+
+The script installs everything into /win-x64.  If that folder already holds an earlier build that you want to keep, rename it before running the script.
 
 Building ffmpeg for arm64
 -------------------------
 1. Open the shell window provided for msys2 using the mingw64.exe program.  (This opens the shell window in the right state for compiling programs.)  cd to the desired spot in the filesystem for where you want to build ffmpeg.  (Some sort of temporary or scratch position would do.  Even C:\ (aka /c inside msys2) would probably work as the root.
-2. Execute the shell script <BloomDesktop>/build/build-arm64.sh and wait until it finishes.  If it succeeds, the finished product (ffmpeg.exe) should be at /arm64/bin/ffmpeg.exe (or C:\msys64\arm64\bin\ffmpeg.exe if you prefer).  If the build fails, the ffmpeg-arm64-build.log file may contain helpful information about the nature of the failure.
+2. Execute the shell script <BloomDesktop>/build/ffmpeg/build-arm64.sh and wait until it finishes.  If it succeeds, the finished product (ffmpeg.exe) should be at /arm64/bin/ffmpeg.exe (or C:\msys64\arm64\bin\ffmpeg.exe if you prefer).  If the build fails, the ffmpeg-arm64-build.log file may contain helpful information about the nature of the failure.
 ```
     .../build/ffmpeg/build-arm64.sh | tee ffmpeg-arm64-build.log
 ```

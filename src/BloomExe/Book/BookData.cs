@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -11,6 +11,7 @@ using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.SafeXml;
+using Bloom.ToPalaso;
 using L10NSharp;
 using Microsoft.CSharp.RuntimeBinder;
 using SIL.Extensions;
@@ -1436,10 +1437,18 @@ namespace Bloom.Book
             }
         }
 
-        private static string TrimEnd(string source, string value)
+        /// <summary>
+        /// Remove every trailing copy of value from the end of source.
+        /// </summary>
+        internal static string TrimEnd(string source, string value)
         {
-            while (source.EndsWith(value))
-                source = source.Remove(source.LastIndexOf(value));
+            // Every string ends with the empty string, and removing it changes nothing, so the
+            // loop below would never end. The separator we are called with is translated, so a
+            // translator really can hand us one.
+            if (string.IsNullOrEmpty(value))
+                return source;
+            while (source.EndsWith(value, StringComparison.Ordinal))
+                source = source.Remove(source.LastIndexOf(value, StringComparison.Ordinal));
             return source;
         }
 
@@ -1448,9 +1457,9 @@ namespace Bloom.Book
         /// This routine uses the user-specified name for the main project language.
         /// For the other two project languages, it explicitly uses the appropriate collection settings
         /// name for that language, which the user also set.
-        /// If the user hasn't set a name for the given language, this returns the language's
-        /// standard name from the subtag registry Palaso ships ("Spanish"), and falls
-        /// back to the code itself if it can't find a name.
+        /// If the user hasn't set a name for the given language, this will find a fairly readable name
+        /// for the languages Palaso knows about (probably the autonym) and fall back to the code itself
+        /// if it can't find a name.
         /// BL-8174 But in case the code includes Script/Region/Variant codes, we should show them somewhere too.
         /// </summary>
         public string GetDisplayNameForLanguage(string code)
@@ -1590,7 +1599,7 @@ namespace Bloom.Book
                         if (itemsToDelete != null)
                             itemsToDelete.Add(Tuple.Create(key, lang));
                     }
-                    else if (!value.StartsWith("{"))
+                    else if (!value.StartsWith("{", StringComparison.Ordinal))
                     //ignore placeholder stuff like "{Book Title}"; that's not a value we want to collect
                     {
                         if (
@@ -1702,6 +1711,10 @@ namespace Bloom.Book
                 "spellcheck",
                 "data-hasqtip",
                 "data-languagetipcontent",
+                // Asks the editing code to put the cursor in a field the server has just opened;
+                // it takes the attribute off again, but if the page is shown with focus
+                // suppressed it is still there at save time.
+                "data-bloom-focus-when-shown",
                 // These are the keys that are used to match the copy-from and copy-to elements.
                 // They are already on both so no point in copying.
                 "data-book",
@@ -1800,7 +1813,10 @@ namespace Bloom.Book
                 if (attr.Name == "class")
                 {
                     var classes = attr.Value.Split().ToList();
-                    classes.RemoveAll(x => _classesNotToCopy.Contains(x) || x.EndsWith("-style"));
+                    classes.RemoveAll(x =>
+                        _classesNotToCopy.Contains(x)
+                        || x.EndsWith("-style", StringComparison.Ordinal)
+                    );
                     result.Add(
                         Tuple.Create("class", XmlString.FromUnencoded(string.Join(" ", classes)))
                     );
@@ -1839,7 +1855,7 @@ namespace Bloom.Book
                 if (
                     attribute.Name != kDataXmatterPage
                     && attribute.Name != "data-custom-layout-id"
-                    && attribute.Name.StartsWith("data-")
+                    && attribute.Name.StartsWith("data-", StringComparison.Ordinal)
                 )
                 {
                     // xmatter pages are not numbered.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7303.
@@ -2298,7 +2314,7 @@ namespace Bloom.Book
 
         internal static string GetInactiveAttributeName(string activeAttributeName)
         {
-            if (activeAttributeName.StartsWith("data-"))
+            if (activeAttributeName.StartsWith("data-", StringComparison.Ordinal))
                 return $"{activeAttributeName}-inactive";
             // We don't want to make bad HTML by creating invalid non-data attributes like "id-inactive",
             // so if the attribute we want to make inactive doesn't already start with data- we'll add that.
@@ -2985,7 +3001,7 @@ namespace Bloom.Book
                             .Any(word =>
                                 word == "©"
                                 || word.ToLowerInvariant() == "copyright"
-                                || word.StartsWith("20")
+                                || word.StartsWith("20", StringComparison.Ordinal)
                             );
                         if (!presetContainsMoreThanPublisher)
                         {

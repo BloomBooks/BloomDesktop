@@ -17,6 +17,21 @@ namespace Bloom.Book
     /// </summary>
     public class SizeAndOrientation
     {
+        private static readonly Lazy<
+            Dictionary<string, (double width, double height)>
+        > s_pageSizesInMillimeters = new(LoadPageSizesInMillimeters);
+
+        private class PageSizeLookupFile
+        {
+            public Dictionary<string, PageSizeLookupItem> sizesInMillimeters { get; set; }
+        }
+
+        private class PageSizeLookupItem
+        {
+            public double width { get; set; }
+            public double height { get; set; }
+        }
+
         public string PageSizeName;
 
         public bool IsLandScape { get; set; }
@@ -45,8 +60,8 @@ namespace Bloom.Book
         {
             var nameLower = name.ToLowerInvariant();
             var startOfOrientationName = Math.Max(
-                nameLower.IndexOf("landscape"),
-                nameLower.IndexOf("portrait")
+                nameLower.IndexOf("landscape", StringComparison.Ordinal),
+                nameLower.IndexOf("portrait", StringComparison.Ordinal)
             );
             if (startOfOrientationName == -1)
             {
@@ -105,6 +120,105 @@ namespace Bloom.Book
                 ) != null;
         }
 
+        /// <summary>
+        /// Looks up the width and height, in millimeters, of a layout name such as "A5Portrait",
+        /// a base name such as "A5" (portrait when both orientations exist), an ISO A/B size
+        /// ("A0"-"A10", "B0"-"B10"), or a square size ("Cm13", "In8"). The names and numbers come
+        /// from pageSizesLookup.json, which the front-end build generates from pageSizes.json.
+        /// The name is matched without regard to case.
+        /// </summary>
+        /// <returns>false if the name is empty or not in the lookup</returns>
+        public static bool TryGetSizeInMillimeters(
+            string sizeName,
+            out (double width, double height) size
+        )
+        {
+            size = default;
+            if (string.IsNullOrWhiteSpace(sizeName))
+                return false;
+
+            return s_pageSizesInMillimeters.Value.TryGetValue(sizeName, out size);
+        }
+
+        /// <summary>
+        /// Gets the trim size, in millimeters, of a paper size (e.g. "A5", "Letter") in the
+        /// requested orientation. Uses the matching Portrait/Landscape entry when there is one;
+        /// otherwise rotates the other orientation's entry, or the base entry, to suit.
+        /// Device, Ebook and PictureStory layouts are not paper and always return false.
+        /// </summary>
+        public static bool TryGetPaperLayoutInMillimeters(
+            string paperSizeName,
+            bool landscape,
+            out (double width, double height) size
+        )
+        {
+            size = default;
+            if (string.IsNullOrWhiteSpace(paperSizeName) || IsNonPaperLayout(paperSizeName))
+                return false;
+
+            var requestedOrientation = landscape ? "Landscape" : "Portrait";
+            var requestedKey = $"{paperSizeName}{requestedOrientation}";
+            if (TryGetSizeInMillimeters(requestedKey, out size))
+                return true;
+
+            var oppositeOrientation = landscape ? "Portrait" : "Landscape";
+            var oppositeKey = $"{paperSizeName}{oppositeOrientation}";
+            if (!TryGetSizeInMillimeters(oppositeKey, out var oppositeSize))
+            {
+                if (!TryGetSizeInMillimeters(paperSizeName, out size))
+                    return false;
+
+                if (landscape && size.width < size.height)
+                    size = (size.height, size.width);
+                else if (!landscape && size.width > size.height)
+                    size = (size.height, size.width);
+                return true;
+            }
+
+            size = (oppositeSize.height, oppositeSize.width);
+            return true;
+        }
+
+        /// <summary>
+        /// Reads pageSizesLookup.json from the browser output folder into a case-insensitive map.
+        /// Throws if the file is missing or can't be parsed: it is produced by the front-end build.
+        /// </summary>
+        private static Dictionary<
+            string,
+            (double width, double height)
+        > LoadPageSizesInMillimeters()
+        {
+            var map = new Dictionary<string, (double width, double height)>(
+                StringComparer.OrdinalIgnoreCase
+            );
+            var path = BloomFileLocator.GetBrowserFile(false, "pageSizesLookup.json");
+            var json = RobustFile.ReadAllText(path);
+            var parsed = JsonConvert.DeserializeObject<PageSizeLookupFile>(json);
+            if (parsed?.sizesInMillimeters == null)
+                throw new ApplicationException("Could not parse pageSizesLookup.json.");
+
+            foreach (var item in parsed.sizesInMillimeters)
+            {
+                if (string.IsNullOrWhiteSpace(item.Key) || item.Value == null)
+                    continue;
+
+                map[item.Key] = (item.Value.width, item.Value.height);
+            }
+
+            return map;
+        }
+
+        /// <summary>
+        /// Device, Ebook and PictureStory layouts are screen shapes, not paper, so they have no print
+        /// trim size. The Ebook test matches Layout.IsDeviceLayout.
+        /// </summary>
+        private static bool IsNonPaperLayout(string pageSizeName)
+        {
+            return pageSizeName.StartsWith("Device", StringComparison.OrdinalIgnoreCase)
+                || pageSizeName.Contains("Ebook", StringComparison.OrdinalIgnoreCase)
+                || pageSizeName.StartsWith("PictureStory", StringComparison.OrdinalIgnoreCase);
+        }
+
         public static void AddClassesForLayout(HtmlDom dom, Layout layout)
         {
             UpdatePageSizeAndOrientationClasses(dom.RawDom, layout);
@@ -140,7 +254,10 @@ namespace Bloom.Book
                 fileName = fileName.Replace("file://", "").Replace("%5C", "/").Replace("%20", " ");
                 fileName = fileName.Replace("\\", "/");
                 var path = fileLocator.LocateFile(fileName);
-                if (string.IsNullOrEmpty(path) && fileName.StartsWith("../"))
+                if (
+                    string.IsNullOrEmpty(path)
+                    && fileName.StartsWith("../", StringComparison.Ordinal)
+                )
                     path = fileLocator.LocateFile(fileName.Substring(3));
                 if (string.IsNullOrEmpty(path))
                 {

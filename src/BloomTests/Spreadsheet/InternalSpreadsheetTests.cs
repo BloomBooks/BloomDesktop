@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -70,6 +71,69 @@ namespace BloomTests.Spreadsheet
         {
             var dataBookLabel = InternalSpreadsheet.MapRowLabelToDataBookLabel(rowLabel);
             Assert.That(dataBookLabel, Is.EqualTo(expectedDataBookLabel));
+        }
+
+        /// <summary>
+        /// The two mappings must not depend on the user's culture. Turkish is the case that breaks
+        /// naive casing: it maps 'i' to the DOTTED capital 'İ' (U+0130) and 'I' to the DOTLESS 'ı'
+        /// (U+0131). Before BL-16754 these used ToUpper()/ToLower(), so a Turkish user turned
+        /// "[cover image]" into "coverİmage", which matches no data-book label — the cover image was
+        /// silently dropped from the spreadsheet, with no error.
+        /// </summary>
+        /// <remarks>
+        /// [SetCulture] rather than the BLOOM_TEST_CULTURE sweep (see src/BloomTests/TestCulture.cs)
+        /// so this specific regression is caught on every PR build rather than once a week.
+        /// </remarks>
+        [TestCase("coverImage", "[cover image]")]
+        [TestCase("bookTitle", "[book title]")]
+        [TestCase("insideFontCover", "[inside front cover]")]
+        [SetCulture("tr-TR")]
+        public void MapDataBookLabelToRowLabel_InTurkish_IsUnaffectedByCulture(
+            string dataBookLabel,
+            string expectedRowLabel
+        )
+        {
+            AssertTurkishCasingReallyIsInEffect();
+            Assert.That(
+                InternalSpreadsheet.MapDataBookLabelToRowLabel(dataBookLabel),
+                Is.EqualTo(expectedRowLabel)
+            );
+        }
+
+        [TestCase("[cover image]", "coverImage")]
+        [TestCase("[book title]", "bookTitle")]
+        [TestCase("[ISBN]", "ISBN")]
+        [SetCulture("tr-TR")]
+        public void MapRowLabelToDataBookLabel_InTurkish_IsUnaffectedByCulture(
+            string rowLabel,
+            string expectedDataBookLabel
+        )
+        {
+            AssertTurkishCasingReallyIsInEffect();
+            Assert.That(
+                InternalSpreadsheet.MapRowLabelToDataBookLabel(rowLabel),
+                Is.EqualTo(expectedDataBookLabel)
+            );
+        }
+
+        /// <summary>
+        /// Guards against these tests passing for the wrong reason. If [SetCulture] ever stops
+        /// taking effect, the assertions above would pass trivially in English and we would think
+        /// the Turkish case was covered when it was not.
+        /// </summary>
+        private static void AssertTurkishCasingReallyIsInEffect()
+        {
+            if (CultureInfo.CurrentCulture.Name != "tr-TR")
+                Assert.Fail(
+                    $"This test must run in tr-TR, but the culture is '{CultureInfo.CurrentCulture.Name}'; "
+                        + "[SetCulture] is not doing anything, so the Turkish casing hazard is not being tested."
+                );
+            Assert.That(
+                "i".ToUpper(),
+                Is.Not.EqualTo("I"),
+                "In tr-TR, 'i' should uppercase to the dotted 'İ'. It did not, so this test would pass "
+                    + "even with the culture-sensitive ToUpper() that BL-16754 removed."
+            );
         }
     }
 }

@@ -61,7 +61,8 @@ namespace BloomTests
             Assert.That(lookupResult.URL, Is.Null.Or.Empty);
             Assert.IsTrue(
                 lookupResult.Error.Message.StartsWith(
-                    "Could not parse a line of the UpdateVersionTable"
+                    "Could not parse a line of the UpdateVersionTable",
+                    StringComparison.Ordinal
                 )
             );
         }
@@ -76,7 +77,8 @@ namespace BloomTests
             Assert.That(lookupResult.URL, Is.Null.Or.Empty);
             Assert.IsTrue(
                 lookupResult.Error.Message.StartsWith(
-                    "Could not parse a line of the UpdateVersionTable"
+                    "Could not parse a line of the UpdateVersionTable",
+                    StringComparison.Ordinal
                 )
             );
         }
@@ -91,7 +93,8 @@ namespace BloomTests
             Assert.That(lookupResult.URL, Is.Null.Or.Empty);
             Assert.IsTrue(
                 lookupResult.Error.Message.StartsWith(
-                    "Could not parse a version number in the UpdateVersionTable"
+                    "Could not parse a version number in the UpdateVersionTable",
+                    StringComparison.Ordinal
                 )
             );
         }
@@ -188,7 +191,10 @@ namespace BloomTests
             //this just checks the part that is less likely to break (independent of channel)
             Assert.That(
                 t.LookupURLOfUpdate()
-                    .URL.StartsWith("https://s3.amazonaws.com/bloomlibrary.org/deltas")
+                    .URL.StartsWith(
+                        "https://s3.amazonaws.com/bloomlibrary.org/deltas",
+                        StringComparison.Ordinal
+                    )
             );
         }
 

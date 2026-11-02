@@ -125,7 +125,9 @@ namespace Bloom
         public virtual IEnumerable<string> GetSourceCollectionsFolders()
         {
             return from dir in GetCollectionFolders()
-                where dir != _editableCollectionDirectory && !Path.GetFileName(dir).StartsWith(".")
+                where
+                    dir != _editableCollectionDirectory
+                    && !Path.GetFileName(dir).StartsWith(".", StringComparison.Ordinal)
                 select dir;
         }
 

@@ -573,7 +573,9 @@ namespace Bloom.Book
         public void UpdateOneSingletonTag(string tagPrefixWithoutColon, string newValueOrNull)
         {
             var list = MetaData.Tags?.ToList() ?? new List<string>();
-            list.RemoveAll((t) => t.StartsWith(tagPrefixWithoutColon + ":"));
+            list.RemoveAll(
+                (t) => t.StartsWith(tagPrefixWithoutColon + ":", StringComparison.Ordinal)
+            );
             var value = newValueOrNull;
             value = value?.Trim(); // I'm feeling defensive
             if (!string.IsNullOrEmpty(value))
@@ -707,19 +709,21 @@ namespace Bloom.Book
 
         private static bool TagIsCorrectType(string prefix, string tag)
         {
-            return tag.StartsWith(prefix) || !tag.Contains(":");
+            return tag.StartsWith(prefix, StringComparison.Ordinal) || !tag.Contains(":");
         }
 
         private static string GetTopicNameFromTag(string tag)
         {
-            return tag.StartsWith(kTopicPrefix) ? tag.Substring(kTopicPrefix.Length) : tag;
+            return tag.StartsWith(kTopicPrefix, StringComparison.Ordinal)
+                ? tag.Substring(kTopicPrefix.Length)
+                : tag;
         }
 
         private static void EnsureStringsHaveCorrectPrefixes(string prefix, string[] tagStrings)
         {
             for (int i = 0; i < tagStrings.Length; i++)
             {
-                if (!tagStrings[i].StartsWith(prefix))
+                if (!tagStrings[i].StartsWith(prefix, StringComparison.Ordinal))
                     tagStrings[i] = prefix + tagStrings[i];
             }
         }

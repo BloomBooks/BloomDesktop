@@ -11,6 +11,8 @@ export interface IAppBuilderTrackedBook {
     title: string;
 }
 
+// TODO: clean up the *Api interfaces below. Bloom sends PascalCase (JsonConvert's default), so
+// their camelCase fields, and the camelCase halves of the normalizers' "??" chains, are dead.
 export interface IAppBuilderTrackedBookApi {
     bookId?: string;
     folderPath?: string;
@@ -22,6 +24,8 @@ export interface IAppBuilderTrackedBookApi {
 
 export interface IAppBuilderStatus {
     rabInstalled: boolean;
+    // The Reading App Builder version this Bloom needs, when the installed one is older.
+    rabUpdateVersion?: string;
     projectExists: boolean;
     apkExists: boolean;
     buildNeeded: boolean;
@@ -87,6 +91,8 @@ export interface IAppBuilderStatusApi {
     ActiveActionProgressStage?: string;
     ActiveActionProgressPercent?: number;
     RabInstalled?: boolean;
+    // Only the C# casing: Bloom sends this status as JsonConvert's default PascalCase.
+    RabUpdateVersion?: string;
     ProjectExists?: boolean;
     ApkExists?: boolean;
     BuildNeeded?: boolean;
@@ -237,6 +243,7 @@ export function normalizeStatus(
         undefined;
     return {
         rabInstalled: status?.rabInstalled ?? status?.RabInstalled ?? false,
+        rabUpdateVersion: status?.RabUpdateVersion,
         projectExists: status?.projectExists ?? status?.ProjectExists ?? false,
         apkExists: status?.apkExists ?? status?.ApkExists ?? false,
         buildNeeded: status?.buildNeeded ?? status?.BuildNeeded ?? false,

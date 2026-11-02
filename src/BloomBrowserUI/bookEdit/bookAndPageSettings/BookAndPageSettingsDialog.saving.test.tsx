@@ -60,6 +60,13 @@ vi.mock("../../utils/bloomApi", async (importOriginal) => {
         ...actual,
         post: mockPost,
         postJson: mockPostJson,
+        // The dialog tells Bloom it is modal while open. Any other endpoint goes to the
+        // real postBoolean, which unit tests refuse (see vitest.setup.ts).
+        postBoolean: (urlSuffix: string, value: boolean) => {
+            if (urlSuffix !== "editView/setModalState") {
+                actual.postBoolean(urlSuffix, value);
+            }
+        },
         useApiBoolean: () => [true],
         useApiObject: (endpoint: string, defaultValue: unknown) => {
             if (endpoint === "book/settings/appearanceUIOptions") {

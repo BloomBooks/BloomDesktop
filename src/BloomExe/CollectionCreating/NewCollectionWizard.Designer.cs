@@ -43,7 +43,6 @@ namespace Bloom.CollectionCreating
             this._finishPage = new Bloom.Wizard.WizardAdapterPage();
 			this._finalMessage = new SIL.Windows.Forms.Widgets.BetterLabel();
             this._collectionNamePage = new Bloom.Wizard.WizardAdapterPage();
-            this._collectionNameProblemPage = new Bloom.Wizard.WizardAdapterPage();
 			this._welcomeHtml = new SIL.Windows.Forms.Widgets.BetterLabel();
 			this._languageChooserReactControl = new web.ReactControl();
 			this._fontDetails = new Bloom.MiscUI.LanguageFontDetails();
@@ -68,7 +67,6 @@ namespace Bloom.CollectionCreating
 			this._wizardControl.Pages.Add(this._languageFontPage);
 			this._wizardControl.Pages.Add(this._collectionNamePage);
 			this._wizardControl.Pages.Add(this._finishPage);
-			this._wizardControl.Pages.Add(this._collectionNameProblemPage);
 			this._wizardControl.Size = new System.Drawing.Size(759, 464);
 			this._wizardControl.TabIndex = 0;
 			this._wizardControl.Title = "Create New Bloom Collection";
@@ -151,14 +149,6 @@ namespace Bloom.CollectionCreating
 			this._collectionNamePage.TabIndex = 2;
 			this._collectionNamePage.Text = "Collection Name";
 			//
-			// _collectionNameProblemPage
-			//
-			this._collectionNameProblemPage.Name = "_collectionNameProblemPage";
-			this._collectionNameProblemPage.NextPage = this._finishPage;
-			this._collectionNameProblemPage.Size = new System.Drawing.Size(637, 310);
-			this._collectionNameProblemPage.TabIndex = 4;
-			this._collectionNameProblemPage.Text = "Collection Name Problem";
-			//
 			// _welcomeHtml
 			//
 			this._welcomeHtml.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -176,7 +166,6 @@ namespace Bloom.CollectionCreating
 			this._languageLocationControl.Name = "_languageLocationControl";
 			this._languageLocationControl.Size = new System.Drawing.Size(615, 310);
 			this._languageLocationControl.TabIndex = 0;
-			this._languageLocationControl.Load += new System.EventHandler(this._languageLocationControl_Load);
 			//
 			// _collectionNameControl
 			//
@@ -221,7 +210,6 @@ namespace Bloom.CollectionCreating
         private Bloom.Wizard.WizardAdapterPage _collectionNamePage;
 		private CollectionNameControl _collectionNameControl;
         private Bloom.Wizard.WizardAdapterPage _finishPage;
-        private Bloom.Wizard.WizardAdapterPage _collectionNameProblemPage;
         private Bloom.Wizard.WizardAdapterPage _languageLocationPage;
 		private Bloom.Wizard.WizardAdapterPage _languageFontPage;
 		private Bloom.MiscUI.LanguageFontDetails _fontDetails;

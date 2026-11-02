@@ -10,7 +10,7 @@ import $ from "jquery";
 import { DirectoryWatcher } from "./directoryWatcher";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import "./libSynphony/jquery.text-markup";
-import { removeAllHtmlMarkupFromString } from "./libSynphony/jquery.text-markup";
+import { visibleTextOfHtmlString } from "./libSynphony/jquery.text-markup";
 import "./jquery.div-columns";
 import { ReaderStage, ReaderLevel } from "./ReaderSettings";
 import * as _ from "underscore";
@@ -33,12 +33,16 @@ import {
     postString,
 } from "../../../utils/bloomApi";
 import { EditableDivUtils } from "../../js/editableDivUtils";
-import { theOneReaderHighlightManager } from "./readerHighlights";
+import {
+    mapReaderText,
+    theOneReaderHighlightManager,
+} from "./readerHighlights";
 import {
     allPromiseSettled,
     setTimeoutPromise,
 } from "../../../utils/asyncUtils";
 import { updateReaderNumbersOnCurrentPage } from "./readerToolPageState";
+import { isToolboxUiMounted } from "../toolboxState";
 
 const SortType = {
     alphabetic: "alphabetic",
@@ -58,9 +62,70 @@ export class DRTState {
     public markupType: number = MarkupType.Decodable;
 }
 
+/**
+ * The sample-text file types Bloom can actually read. Single source of truth: the setup dialog
+ * asks for this (through the toolbox bundle) rather than keeping its own copy, so what the dialog
+ * lists cannot drift from what Bloom loads.
+ */
+export const kReadableSampleTextFileExtensions = ["txt", "js", "json"];
+
+/**
+ * Gets a file's extension, lowercased, or undefined when it has none. Only the file name is
+ * considered: a dot in a folder name (say C:\My.Books\wordlist) is not a file type, and treating
+ * it as one would make a file with no extension look like it had an unreadable one.
+ */
+export function getFileExtension(path: string): string | undefined {
+    const fileName = path.split(/[\\/]/).pop() ?? "";
+    const lastDot = fileName.lastIndexOf(".");
+    if (lastDot === -1) return undefined;
+    return fileName.slice(lastDot + 1).toLowerCase();
+}
+
+/**
+ * Whether this sample-text file has a type Bloom knows how to read. It looks only at the
+ * extension; it does not check that the file exists or can actually be opened. Compared without
+ * regard to case, so a file named .TXT counts just as .txt does.
+ */
+export function isValidSampleTextFileType(path: string): boolean {
+    const extension = getFileExtension(path);
+    return (
+        extension !== undefined &&
+        kReadableSampleTextFileExtensions.includes(extension)
+    );
+}
+
+/** A stage or level asked for before the Synphony settings were there to judge it. */
+interface IPhaseRequest {
+    value: number;
+    skipSave: boolean | undefined;
+}
+
 export class ReaderToolsModel {
     public stageNumber: number = 1;
     public levelNumber: number = 1;
+    // Has anything told this model which stage or level to show? False only while it is
+    // still sitting on the defaults above. restoreState() uses it to tell a model that
+    // nobody has told anything from one that is already showing a real choice; see there.
+    private hasBeenGivenAPhase = false;
+    // A stage or level someone asked for before the Synphony settings arrived, waiting
+    // for setSynphony() to apply it. See setStageNumber().
+    //
+    // A request can outlive the book it was made for. Only the reader tool that is running
+    // discards one (forgetStageAwaitingSynphony / forgetLevelAwaitingSynphony, called from
+    // each tool's beginRestoreSettings), so opening a second book with the OTHER reader tool,
+    // or with Talking Book, leaves the first book's request pending and setSynphony() then
+    // applies it to the second book.
+    //
+    // We know about it and have left it. Stages and levels are defined per collection, so the
+    // value is always one the second book could legitimately be on, and setStageNumber() and
+    // setLevelNumber() range-check it regardless; a restore replays with skipSave, so nothing
+    // reaches disk unless the user then changes a stage or sort in that book; and setting the
+    // stage or level there puts it right. Closing the gap properly needs this model to know
+    // which book it is on, which it does not; the cheap alternative -- having toolbox.ts clear
+    // these on every book restore -- would teach the toolbox about an individual tool again,
+    // which is the coupling BL-16608 set out to remove. Reported by Greptile on PR #8447.
+    private stageAwaitingSynphony: IPhaseRequest | undefined;
+    private levelAwaitingSynphony: IPhaseRequest | undefined;
     public synphony: ReadersSynphonyWrapper | undefined; // to ensure detection of async issues, don't init until we load its settings
     public sort: string = SortType.alphabetic;
     public currentMarkupType: number = MarkupType.None;
@@ -117,6 +182,9 @@ export class ReaderToolsModel {
         this.stageNumber = 1;
         this.levelNumber = 1;
         this.synphony = undefined;
+        this.hasBeenGivenAPhase = false;
+        this.stageAwaitingSynphony = undefined;
+        this.levelAwaitingSynphony = undefined;
         this.sort = SortType.alphabetic;
         this.currentMarkupType = MarkupType.None;
         this.allWords = {};
@@ -133,7 +201,7 @@ export class ReaderToolsModel {
         this.wordListChangedListeners = {};
     }
     public getReadableFileExtensions() {
-        return ["txt", "js", "json"];
+        return kReadableSampleTextFileExtensions;
     }
 
     public readyToDoMarkup(): boolean {
@@ -156,7 +224,13 @@ export class ReaderToolsModel {
         skipSave?: boolean,
     ): Promise<void> {
         if (!this.synphony) {
-            return; // Synphony not loaded yet
+            // Don't throw the caller's choice away. Without the settings we cannot yet
+            // tell whether this is a valid stage, so remember it and let setSynphony()
+            // apply it when they arrive. Discarding it here is how a book's saved stage
+            // could spring back to 1 -- and, because the restore passes skipSave, never
+            // be recorded either -- whenever the settings load was slow or failed.
+            this.stageAwaitingSynphony = { value: stage, skipSave };
+            return;
         }
         // this much needs to be done immediately; otherwise, the result of
         // different routines calling setStageNumber is unpredictable, depending on
@@ -167,6 +241,7 @@ export class ReaderToolsModel {
         }
 
         this.stageNumber = stage;
+        this.hasBeenGivenAPhase = true;
         this.updateStageNumberIfNeeded(); // May change the stage number
         updateReaderNumbersOnCurrentPage(this.levelNumber, this.stageNumber);
 
@@ -231,13 +306,16 @@ export class ReaderToolsModel {
 
     public setLevelNumber(val: number, skipSave?: boolean): void {
         if (!this.synphony) {
-            return; // Synphony not loaded yet
+            // Remember it for setSynphony(); see setStageNumber() for why.
+            this.levelAwaitingSynphony = { value: val, skipSave };
+            return;
         }
         const levels = this.synphony.getLevels();
         if (val < 1 || val > levels.length) {
             return;
         }
         this.levelNumber = val;
+        this.hasBeenGivenAPhase = true;
         this.updateLevelNumberIfNeeded(); // May change the level number
         // A branding stylesheet draws its grade from these attributes on the page body.
         updateReaderNumbersOnCurrentPage(this.levelNumber, this.stageNumber);
@@ -611,6 +689,10 @@ export class ReaderToolsModel {
 
     public canUndo(): boolean {
         if (!this.activeElement) return false;
+        // The box we last saw focused may have gone from the page since: a table undo rebuilds
+        // its cells, for instance. Undoing typing there would change nothing anyone can see, and
+        // would stop the Undo button reaching whatever comes next.
+        if (!this.activeElement.isConnected) return false;
         if (
             this.undoStack &&
             (this.undoStack.length > 1 ||
@@ -942,13 +1024,15 @@ export class ReaderToolsModel {
         this.bookStatistics = {};
         this.bookStatsReady = false;
         const pageStrings = _.values(this.pageIDToText).map((x) =>
-            removeAllHtmlMarkupFromString(x),
+            visibleTextOfHtmlString(x),
         );
 
         const pageElementsToCheck = this.getElementsToCheck();
         const pageText = pageElementsToCheck
             .toArray()
-            .map((x) => x.innerText) // this has newlines between paragraph content, text has none
+            // The same snapshot the on-page marking and the other statistics use, so every
+            // number the tool reports is derived from one idea of what the text is.
+            .map((x) => mapReaderText(x).text)
             .join(" ");
 
         const sentences = theOneLibSynphony
@@ -1273,9 +1357,33 @@ export class ReaderToolsModel {
         return w.length;
     }
 
+    /**
+     * Discard a stage request that is still waiting for the Synphony settings. A restore
+     * beginning now supersedes it, and the waiting one may belong to a book we have since
+     * left: the model outlives a book change (the toolbox frame is not reloaded for one),
+     * so without this a value stashed for the previous book could be applied to this one.
+     */
+    public forgetStageAwaitingSynphony(): void {
+        this.stageAwaitingSynphony = undefined;
+    }
+
+    /** The level equivalent of forgetStageAwaitingSynphony(). */
+    public forgetLevelAwaitingSynphony(): void {
+        this.levelAwaitingSynphony = undefined;
+    }
+
     /** Should be called early on, before other init. */
     public setSynphony(val: ReadersSynphonyWrapper): void {
         this.synphony = val;
+        // Now we can judge anything that asked for a stage or level while we had no
+        // settings to judge it by. Take them before applying, since the setters are
+        // what fill these in and we don't want to re-queue what we are replaying.
+        const stage = this.stageAwaitingSynphony;
+        const level = this.levelAwaitingSynphony;
+        this.stageAwaitingSynphony = undefined;
+        this.levelAwaitingSynphony = undefined;
+        if (stage) this.setStageNumber(stage.value, stage.skipSave);
+        if (level) this.setLevelNumber(level.value, level.skipSave);
     }
 
     //   getSynphony(): ReadersSynphonyWrapper {
@@ -1323,29 +1431,28 @@ export class ReaderToolsModel {
 
     public beginSetTextsList(textsArg: string[]): Promise<void> {
         // only save the file types we can read
-        this.texts = textsArg.filter((t) => {
-            const ext = t.split(".").pop();
-            if (!ext) return false;
-            return this.getReadableFileExtensions().indexOf(ext) > -1;
-        });
+        this.texts = textsArg.filter((t) => isValidSampleTextFileType(t));
         return this.beginGetAllSampleFiles().then(() => {
             this.addWordsToSynphony();
 
             // The word list has been received. Now we are using setTimeout() to delay the remainder of the word
             // list processing so the UI doesn't appear frozen as long.
-            setTimeout(() => {
-                this.wordListLoaded = true;
-                this.updateControlContents(); // needed if user deletes all of the stages.
-                this.doMarkup();
-                this.processWordListChangedListeners();
+            return new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    this.wordListLoaded = true;
+                    this.updateControlContents(); // needed if user deletes all of the stages.
+                    this.doMarkup();
+                    this.processWordListChangedListeners();
 
-                //note, this endpoint is confusing because it appears that ultimately we only use the word list out of this file (see "sampleTextsList").
-                //This ends up being written to a ReaderToolsWords-xyz.json (matching its use, if not it contents).
-                postData(
-                    "readers/io/synphonyLanguageData",
-                    theOneLanguageDataInstance,
-                );
-            }, 200);
+                    //note, this endpoint is confusing because it appears that ultimately we only use the word list out of this file (see "sampleTextsList").
+                    //This ends up being written to a ReaderToolsWords-xyz.json (matching its use, if not it contents).
+                    postData(
+                        "readers/io/synphonyLanguageData",
+                        theOneLanguageDataInstance,
+                    );
+                    resolve();
+                }, 200);
+            });
         });
     }
 
@@ -1536,14 +1643,16 @@ export class ReaderToolsModel {
         return dataWords;
     }
 
+    /**
+     * Persists the decodable-reader stage/sort and the leveled-reader level in the book.
+     *
+     * Does nothing while there is no toolbox on screen. We are called from wherever the
+     * user changes a stage, level or sort, and those paths also run before the toolbox has
+     * been built, when the values are still defaults rather than anything the user chose;
+     * saving then would overwrite the book's real settings with those defaults.
+     */
     public saveState(): void {
-        // this is needed for unit testing
-        const toolbox = $("#toolbox");
-        if (typeof toolbox.accordion !== "function") return;
-
-        // this is also needed for unit testing
-        const active = toolbox.accordion("option", "active");
-        if (isNaN(active)) return;
+        if (!isToolboxUiMounted()) return;
 
         postString(
             "editView/saveToolboxSetting",
@@ -1559,14 +1668,28 @@ export class ReaderToolsModel {
         );
     }
 
+    /**
+     * Restores the stage/level the book was last using. Like saveState(), does nothing
+     * while there is no toolbox on screen.
+     */
     public restoreState(): void {
-        // this is needed for unit testing
-        const toolbox = $("#toolbox");
-        if (typeof toolbox.accordion !== "function") return;
+        if (!isToolboxUiMounted()) return;
 
         const state = new DRTState();
 
         if (!this.currentMarkupType) this.currentMarkupType = state.markupType;
+
+        if (this.hasBeenGivenAPhase) {
+            // Something has already said which stage and level to show -- the user working
+            // the stepper, or the tool restoring the book's saved state. We run late (the
+            // synphony settings arriving are what bring us here), so seeding the defaults
+            // now would undo that choice, and because we skip saving it would leave nothing
+            // recorded either: the stage sprang back to 1 and Bloom never learned the user
+            // had chosen 2. That is what kept the reader-tool e2e tests (Test Case IDs 441,
+            // 442, 460) failing intermittently.
+            return;
+        }
+
         // when restoring state we do NOT want to save the results; things are presumably unchanged,
         // and saving the state of a new book from a template can override system defaults we have
         // not yet applied to the book.

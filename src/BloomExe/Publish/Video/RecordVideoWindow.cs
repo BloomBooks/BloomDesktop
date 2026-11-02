@@ -437,7 +437,7 @@ namespace Bloom.Publish.Video
         string UrlToFile(string input)
         {
             string result;
-            if (input.StartsWith("/bloom/"))
+            if (input.StartsWith("/bloom/", StringComparison.Ordinal))
             {
                 // As of bloom-player 2.8.0, this is the expected form: /bloom/C:/rest-of-path
                 result = input.Replace("/bloom/", "").UnescapeFileNameForHttp();
@@ -449,7 +449,7 @@ namespace Bloom.Publish.Video
             }
 
             // If we added a param to force reloading, remove it.
-            var index = result.IndexOf("?");
+            var index = result.IndexOf("?", StringComparison.Ordinal);
             if (index >= 0)
                 result = result.Substring(0, index);
             return result;
@@ -1249,13 +1249,8 @@ namespace Bloom.Publish.Video
         {
             // This method attaches event handlers to the process and doesn't wait for the process
             // to finish, so it can't use the CommandLineRunner methods.
-            var currentCulture = CultureInfo.CurrentCulture;
-            var currentUICulture = CultureInfo.CurrentUICulture;
             try
             {
-                CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-                CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
-
                 if (_errorData == null)
                     _errorData = new StringBuilder();
                 if (_ffmpegPath == null)
@@ -1311,11 +1306,6 @@ namespace Bloom.Publish.Video
             {
                 Logger.WriteError("Starting ffmpeg failed: command line was " + args, ex);
                 throw;
-            }
-            finally
-            {
-                CultureInfo.CurrentCulture = currentCulture;
-                CultureInfo.CurrentUICulture = currentUICulture;
             }
         }
 

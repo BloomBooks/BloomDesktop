@@ -47,6 +47,10 @@ namespace Bloom.Edit
         private bool _reloadFromDiskOnLeavingEditTab;
 
         public bool Visible;
+
+        // A page a JumpToPage call asked for while the Edit tab was not showing. OnBecomeVisible
+        // displays this page instead of the one it would otherwise choose. See JumpToPage.
+        private string _pageIdToShowWhenVisible;
         private Book.Book _currentlyDisplayedBook;
         private Book.Book _bookForToolboxContent;
         private EditingView _view;
@@ -113,7 +117,6 @@ namespace Bloom.Edit
             _server = server;
             _webSocketServer = webSocketServer;
             _sourceCollectionsList = sourceCollectionsList;
-
             _stateMachine = new EditingStateMachine(
                 // navigate,
                 (string pageId) =>
@@ -149,6 +152,13 @@ namespace Bloom.Edit
                 },
                 enableStateTransitions: (enabled) => _view?.WorkspaceView?.SetTabsEnabled(enabled)
             );
+
+            // A run has one EditingModel, and E2eTestingApi has no way to be handed it: the
+            // container builds that api before any book is selected. So hand it over here, the
+            // same way WorkspaceView hands over its browser for e2e/shellUrl. This must come after
+            // _stateMachine exists, because e2e/editState reads it off the UI thread.
+            if (Program.RunningE2eTests)
+                ModelForE2eTests = this;
 
             bookSelection.SelectionChanged += OnBookSelectionChanged;
             templateInsertionCommand.InsertPage += OnInsertPage;
@@ -553,6 +563,8 @@ namespace Bloom.Edit
             // This edit tab can ignore changes that don't actually involve selecting a different book.
             if (_bookSelection.CurrentSelection == _currentlyDisplayedBook)
                 return;
+            // A jump queued for a page of the book we are leaving means nothing in the new one.
+            _pageIdToShowWhenVisible = null;
             //prevent trying to save this page in whatever comes next
             var hadPageToSave = _havePageToSave;
             _havePageToSave = false;
@@ -898,10 +910,11 @@ namespace Bloom.Edit
 
         public void SetLayout(Layout layout)
         {
-            // Set by the save callback for the benefit of doAfterSaveToDisk, which needs to know
-            // which page we left and whether the pass is actually going to run.
-            string pageIdWeLeft = null;
-            Book.Book bookToUpdate = null;
+            // The measurements each page records (image sizing, canvas-element geometry) are
+            // relative to the page, so after a new size the book needs its page layout update again
+            // (Book.SetLayout records that; BL-16852). We do not run the update here; it runs
+            // when something needs the whole book (the AI image editor, a Publish tool).
+            // Meanwhile each page gets the same changes in the editor when it is opened.
             SaveThen(
                 () =>
                 {
@@ -927,32 +940,9 @@ namespace Bloom.Edit
                     }
                     CurrentBook.PrepareForEditing();
                     _view.UpdatePageList(true); //counting on this to redo the thumbnails
-
-                    // The measurements each page records (image sizing, canvas-element geometry) are
-                    // relative to the page, so changing its size leaves them stale and makes the book
-                    // due for the per-page pass again -- its recorded layout no longer matches
-                    // (BL-16852). When it is due, return null so the editor empties, and let
-                    // doAfterSaveToDisk run the pass and bring us back, exactly as the AI image
-                    // editor does. ProcessBook must have the book to itself: it rewrites the book's
-                    // DOM from a worker thread, and every page it loads off-screen is a full editing
-                    // page that announces itself as loaded -- including one carrying the very page id
-                    // a live editor would be waiting on, which the editor would then accept in place
-                    // of the real page. Emptying the editor first is what makes those announcements
-                    // ignorable. (Do NOT queue this with RunAfterNextPageLoad instead: that action
-                    // does not reliably fire for the page load that follows a layout change, so the
-                    // pass silently never ran.)
-                    pageIdWeLeft = pageId;
-                    if (!BookProcessor.NeedsPerPageFixup(CurrentBook))
-                        return pageId;
-                    bookToUpdate = CurrentBook;
-                    return null;
+                    return pageId;
                 },
-                () => { }, // wrong state, do nothing
-                doAfterSaveToDisk: () =>
-                {
-                    if (bookToUpdate != null)
-                        RunPerPageFixupThenReturnToPage(bookToUpdate, pageIdWeLeft, null);
-                }
+                () => { } // wrong state, do nothing
             );
         }
 
@@ -1061,11 +1051,23 @@ namespace Bloom.Edit
 
             ErrorReportUtils.CheckForFakeTestErrorsIfNotRealUser(_currentlyDisplayedBook.Title);
 
-            // BL-2339: try to choose the last edited page
-            var page =
-                _currentlyDisplayedBook.GetPageByIndex(
-                    _currentlyDisplayedBook.UserPrefs.MostRecentPage
-                ) ?? _currentlyDisplayedBook.FirstPage;
+            // A jump asked for while this tab was not showing wins over the remembered page: it is
+            // the more recent request. See JumpToPage.
+            var requestedPageId = _pageIdToShowWhenVisible;
+            _pageIdToShowWhenVisible = null;
+            IPage page = null;
+            if (requestedPageId != null)
+                page = _currentlyDisplayedBook
+                    .GetPages()
+                    .FirstOrDefault(p => p.Id == requestedPageId);
+            if (page == null)
+            {
+                // BL-2339: try to choose the last edited page
+                page =
+                    _currentlyDisplayedBook.GetPageByIndex(
+                        _currentlyDisplayedBook.UserPrefs.MostRecentPage
+                    ) ?? _currentlyDisplayedBook.FirstPage;
+            }
 
             if (page != null)
                 _view.GoToPage(page);
@@ -1076,12 +1078,10 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// Save the current page, bring the whole book up to the current browser maintenance level
+        /// Save the current page, bring the whole book up to the current page layout update level
         /// (BL-16852), and then come back to the page we were on and run
         /// <paramref name="afterPageReloaded"/>. Used before launching the AI image editor, which
-        /// needs every page's recorded data, not just the pages someone happens to have visited,
-        /// (A page-size change also leaves the book due, but SetLayout runs the pass directly rather
-        /// than through here, because it has no page to return to afterwards.)
+        /// needs every page's recorded data, not just the pages someone happens to have visited.
         /// </summary>
         /// <remarks>
         /// The sequence exists to give BookProcessor.ProcessBook the book to itself. It rewrites the
@@ -1092,7 +1092,7 @@ namespace Bloom.Edit
         /// off-screen pages it loads make their own sync-locked API calls and would otherwise block
         /// behind the handler that got us here. Finally we navigate back and hand control on.
         /// </remarks>
-        public void BringBookToCurrentBrowserLevelThen(string pageId, Action afterPageReloaded)
+        public void UpdatePageLayoutIfNeededThen(string pageId, Action afterPageReloaded)
         {
             var book = CurrentBook;
             // Deliberately no failureAction. It fires only on the exception paths, where leaving the
@@ -1121,12 +1121,12 @@ namespace Bloom.Edit
                     });
                 },
                 doAfterSaveToDisk: () =>
-                    RunPerPageFixupThenReturnToPage(book, pageId, afterPageReloaded)
+                    RunPageLayoutUpdateThenReturnToPage(book, pageId, afterPageReloaded)
             );
         }
 
         /// <summary>
-        /// Bring <paramref name="book"/> up to the current browser maintenance level, then go back to
+        /// Bring <paramref name="book"/> up to the current page layout update level, then go back to
         /// <paramref name="pageId"/> and, if one is given, run <paramref name="afterPageReloaded"/>
         /// once that page has loaded. Call this only from a save whose callback returned null, so the
         /// editor is empty by the time the pass starts.
@@ -1137,7 +1137,7 @@ namespace Bloom.Edit
         /// since the off-screen pages it loads make their own sync-locked API calls; that deferral is
         /// also what puts it after the state machine has finished emptying the editor.
         /// </remarks>
-        private void RunPerPageFixupThenReturnToPage(
+        private void RunPageLayoutUpdateThenReturnToPage(
             Book.Book book,
             string pageId,
             Action afterPageReloaded
@@ -1145,31 +1145,54 @@ namespace Bloom.Edit
         {
             RunOffTheApiLock(() =>
             {
-                BookProcessor.EnsurePerPageFixupIfNeeded(book, _webSocketServer);
-                // The user may have switched books or left the tab while the dialog was up.
-                if (!Visible || CurrentBook != book)
-                    return;
-                // ProcessBook rebuilt the pages, so the IPage objects and editable areas
-                // need redoing before we show one again.
-                book.PrepareForEditing();
-                // The page we left can be gone: ProcessBook starts with BringBookUpToDate, and a
-                // layout change may have run it too, which regenerates the xmatter pages with fresh
-                // ids. We returned null from the save callback, so the editor is empty and nothing
-                // else will put a page back in it -- landing on the first page is much better than
-                // leaving the user looking at a blank editor, which reads as Bloom having lost the
-                // book. (StartNavigationToEditPage falls back the same way.)
-                var page = book.GetPages().FirstOrDefault(p => p.Id == pageId);
-                var pageToShow = page ?? book.FirstPage;
-                if (pageToShow == null)
-                    return; // a book with no pages at all; nothing we can do
-                // Only hand on when we got the page that was actually asked for. The caller's action
-                // is about that page -- the AI image editor opens on a slot in it -- so running it on
-                // a fallback page would act on the wrong thing.
-                if (page != null && afterPageReloaded != null)
-                    RunAfterNextPageLoad(_ => afterPageReloaded());
-                _view.GoToPage(pageToShow);
-                _view.UpdatePageList(true);
+                BookProcessor.UpdatePageLayoutIfNeededThen(
+                    book,
+                    _webSocketServer,
+                    // The dialog reports itself closed on one of the API server's threads, so come
+                    // back to the UI thread -- and off the API lock -- before touching the view.
+                    // (When there was nothing to do this runs straight away, still on this thread;
+                    // the extra hop is harmless.)
+                    () =>
+                        RunOffTheApiLock(() =>
+                            ReturnToPageAfterPageLayoutUpdate(book, pageId, afterPageReloaded)
+                        )
+                );
             });
+        }
+
+        /// <summary>
+        /// Put the editor back together once the page layout update has finished (or was not needed):
+        /// show <paramref name="pageId"/> again, or the first page if it is gone, and then run
+        /// <paramref name="afterPageReloaded"/>. Must run on the UI thread.
+        /// </summary>
+        private void ReturnToPageAfterPageLayoutUpdate(
+            Book.Book book,
+            string pageId,
+            Action afterPageReloaded
+        )
+        {
+            // The user may have switched books or left the tab while the dialog was up.
+            if (!Visible || CurrentBook != book)
+                return;
+            // ProcessBook rebuilt the pages, so the IPage objects and editable areas
+            // need redoing before we show one again.
+            book.PrepareForEditing();
+            // The page we left can be gone: ProcessBook starts with BringBookUpToDate, which
+            // regenerates the xmatter pages with fresh ids. We returned null from the save
+            // callback, so the editor is empty and nothing else will put a page back in it --
+            // landing on the first page is much better than leaving the user looking at a blank
+            // editor, which reads as Bloom having lost the book. (StartNavigationToEditPage falls back the same way.)
+            var page = book.GetPages().FirstOrDefault(p => p.Id == pageId);
+            var pageToShow = page ?? book.FirstPage;
+            if (pageToShow == null)
+                return; // a book with no pages at all; nothing we can do
+            // Only hand on when we got the page that was actually asked for. The caller's action
+            // is about that page -- the AI image editor opens on a slot in it -- so running it on
+            // a fallback page would act on the wrong thing.
+            if (page != null && afterPageReloaded != null)
+                RunAfterNextPageLoad(_ => afterPageReloaded());
+            _view.GoToPage(pageToShow);
+            _view.UpdatePageList(true);
         }
 
         /// <summary>
@@ -1492,6 +1515,17 @@ namespace Bloom.Edit
         public static HtmlDom GetEditPageIframeDom(Book.Book book, IPage page)
         {
             var dom = book.GetEditableHtmlDomForPage(page);
+            // The user's permission to edit the sentence about the original book lasts for one
+            // rendering, so spend it here rather than in the book's own copy of the page.
+            if (book.OriginalCopyrightNoticeIsUnlockedForOneRendering)
+            {
+                book.OriginalCopyrightNoticeIsUnlockedForOneRendering = false;
+                BookCopyrightAndLicense.MakeOriginalCopyrightNoticeEditable(dom);
+            }
+            else
+            {
+                BookCopyrightAndLicense.LockOriginalCopyrightNotice(dom.RawDom);
+            }
             AddMissingCopyrightNoticeIfNeeded(book, dom);
             SetupPageZoom(dom);
             book.InsertFullBleedMarkup(dom.Body);
@@ -1860,6 +1894,28 @@ namespace Bloom.Edit
             SaveThen(() => _pageSelection.CurrentSelection.Id, () => { });
         }
 
+        /// <summary>
+        /// The user has asked to edit the sentence Bloom generates on the credits page about the
+        /// original book's copyright and license. We save the page first, then hand the sentence
+        /// over and reload, so the page comes back with an editable field in its place.
+        /// </summary>
+        internal void UnlockOriginalCopyrightNotice()
+        {
+            if (CannotSavePage())
+                return;
+            // The sentence lives in the data div rather than in the page's own markup, so the
+            // save has to be a full one to notice that it changed.
+            _pageHasUnsavedDataDerivedChange = true;
+            SaveThen(
+                () =>
+                {
+                    CurrentBook.LetUserEditOriginalCopyrightNotice();
+                    return _pageSelection.CurrentSelection.Id;
+                },
+                () => { } // wrong state, do nothing
+            );
+        }
+
         //invoked from TopicChooserDialog.tsx via API
         internal void SetTopic(string englishTopicAsKey)
         {
@@ -1874,6 +1930,105 @@ namespace Bloom.Edit
         {
             SavePageAndReloadIt();
             request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// The one EditingModel of an e2e run, or null outside such a run. See the constructor.
+        /// </summary>
+        public static EditingModel ModelForE2eTests;
+
+        /// <summary>
+        /// What the Edit tab is doing, for the e2e suite to wait on (see e2e/editState). Editing
+        /// is the only state in which the tab accepts a request without deferring it.
+        /// </summary>
+        public State EditTabState => _stateMachine.CurrentState;
+
+        /// <summary>
+        /// The page EditTabState is about, or null.
+        /// </summary>
+        public string EditTabStatePageId => _stateMachine.CurrentPageId;
+
+        // How many times the page named by _announcedPageId has told us its DOM had loaded. See
+        // HandlePageDomLoadedEvent.
+        private string _announcedPageId;
+        private int _pageLoadAnnouncements;
+
+        /// <summary>
+        /// How many times the page now being shown has announced that its DOM had loaded. A page
+        /// does that more than once, and a request that changes the page is lost if it arrives
+        /// between two of those announcements (see src/BloomE2E/AUTOMATION-DEBT.md). So the e2e
+        /// suite waits for this to stop rising. For automation only.
+        /// </summary>
+        public int PageLoadAnnouncements => _pageLoadAnnouncements;
+
+        /// <summary>
+        /// Show the page with this id in the Edit tab. The page being left is saved on the way,
+        /// which is how anything typed on it reaches the file.
+        ///
+        /// A jump that arrives before the Edit tab is showing is remembered, and OnBecomeVisible
+        /// displays that page instead of the one it would otherwise choose.
+        ///
+        /// Otherwise the jump either happens at once or is refused: this returns false when the
+        /// Edit tab is busy with a page (loading one, or saving one), when there is no book, and
+        /// when the tab is in the momentary state after a save in which no transition is allowed.
+        /// Bloom used to drop such a jump and report success, which left the caller waiting for a
+        /// page that was never coming (see src/BloomE2E/AUTOMATION-DEBT.md).
+        /// </summary>
+        public bool JumpToPage(string pageId)
+        {
+            if (CurrentBook == null || string.IsNullOrEmpty(pageId))
+                return false;
+
+            // A page the book does not have. Both paths below would otherwise show some other
+            // page and report success: OnBecomeVisible falls back to the most recently edited
+            // page, and a save-then-navigate lands wherever the id takes it. The caller would
+            // then wait for a page that cannot appear.
+            if (CurrentBook.GetPage(pageId) == null)
+            {
+                Logger.WriteEvent(
+                    $"EditingModel.JumpToPage({pageId}): the book has no such page, so the jump was refused."
+                );
+                return false;
+            }
+
+            if (!Visible)
+            {
+                // The Edit tab is not showing, so there is nothing to save and nowhere to
+                // navigate. OnBecomeVisible chooses the page to display, so hand it this one.
+                _pageIdToShowWhenVisible = pageId;
+                return true;
+            }
+
+            // The Edit tab is busy with a page: saving one, or loading one. Say so rather than
+            // queue the jump. A queued jump has to be released by some signal that the tab is
+            // ready, and the only signal available is a page announcing that its DOM has loaded,
+            // which a page does more than once. A jump released by the first announcement starts
+            // a save, the second announcement is then refused because a save is in flight, and
+            // the browser never answers the save request, which leaves the tab unable to change
+            // pages at all. See src/BloomE2E/AUTOMATION-DEBT.md.
+            if (_stateMachine.SavePending || _stateMachine.Navigating)
+            {
+                Logger.WriteEvent(
+                    $"EditingModel.JumpToPage({pageId}): the edit tab was busy with a page, so the jump was refused."
+                );
+                return false;
+            }
+
+            var jumped = true;
+            SaveThen(
+                () => pageId,
+                doIfNotInRightStateToSave: () =>
+                {
+                    // We ruled out the two states that refuse a save above, so we are in the
+                    // momentary SavedAndStripped state, which an API call should not be able to
+                    // observe. Say so rather than drop the request silently.
+                    Logger.WriteEvent(
+                        $"EditingModel.JumpToPage({pageId}): the edit tab was not in a state to save, so the jump was refused."
+                    );
+                    jumped = false;
+                }
+            );
+            return jumped;
         }
 
         private bool CannotSavePage()
@@ -2422,6 +2577,16 @@ namespace Bloom.Edit
 
         public void HandlePageDomLoadedEvent(string pageId)
         {
+            // Count the announcement before acting on it. A page announces itself more than once,
+            // and the e2e suite has to know that the last one has been and gone before it asks
+            // this tab for anything (see the editState endpoint and PageLoadAnnouncements).
+            if (pageId != _announcedPageId)
+            {
+                _announcedPageId = pageId;
+                _pageLoadAnnouncements = 0;
+            }
+            _pageLoadAnnouncements++;
+
             var nowEditing = _stateMachine.ToEditing(pageId);
             if (nowEditing)
             {
@@ -2499,7 +2664,9 @@ namespace Bloom.Edit
                     {
                         return;
                     }
-                    _weHaveSeenAJsonChange |= args.Name.ToLowerInvariant().EndsWith(".json");
+                    _weHaveSeenAJsonChange |= args
+                        .Name.ToLowerInvariant()
+                        .EndsWith(".json", StringComparison.Ordinal);
                     if (CurrentBook == null)
                         return;
                     // if we've been called already in the past 5 seconds, don't do it again

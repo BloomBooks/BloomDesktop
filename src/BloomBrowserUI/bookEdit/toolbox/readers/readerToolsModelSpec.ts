@@ -1,5 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
-import { ReaderToolsModel } from "./readerToolsModel";
+import {
+    getFileExtension,
+    isValidSampleTextFileType,
+    ReaderToolsModel,
+} from "./readerToolsModel";
 import { theOneLanguageDataInstance } from "./libSynphony/synphony_lib";
 import { TextFragment } from "./libSynphony/bloomSynphonyExtensions";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
@@ -193,5 +197,70 @@ describe("maxWordLength tests", () => {
                 "the cat sat on the 'ma\u0301ntle\u0301pi\u0301ece\u0301'",
             ),
         ).toBe(11);
+    });
+});
+
+// The setup dialog lists these files and Bloom loads them; both go through this, so a file the
+// dialog shows as usable is one Bloom will actually read.
+describe("sample text file readability", () => {
+    it("accepts the readable extensions", () => {
+        expect(isValidSampleTextFileType("words.txt")).toBe(true);
+        expect(isValidSampleTextFileType("words.js")).toBe(true);
+        expect(isValidSampleTextFileType("words.json")).toBe(true);
+    });
+
+    it("ignores case, so a .TXT file is readable too", () => {
+        expect(isValidSampleTextFileType("WORDS.TXT")).toBe(true);
+        expect(isValidSampleTextFileType("Words.Txt")).toBe(true);
+        expect(isValidSampleTextFileType("words.JSON")).toBe(true);
+    });
+
+    it("rejects a format Bloom cannot read", () => {
+        expect(isValidSampleTextFileType("words.docx")).toBe(false);
+        expect(isValidSampleTextFileType("words.pdf")).toBe(false);
+    });
+
+    it("rejects a file with no extension at all", () => {
+        expect(isValidSampleTextFileType("words")).toBe(false);
+        expect(getFileExtension("words")).toBeUndefined();
+    });
+
+    it("uses the last extension, lowercased, on a path with dots and folders", () => {
+        expect(getFileExtension("C:/texts/my.word.list.TXT")).toBe("txt");
+        expect(isValidSampleTextFileType("C:/texts/my.word.list.TXT")).toBe(
+            true,
+        );
+    });
+
+    // A dot in a folder name is not a file type. Getting this wrong made a file with no
+    // extension look like it had one, so the dialog labelled it "Cannot read this format"
+    // instead of "File needs .TXT extension".
+    it("does not mistake a dot in a folder name for an extension", () => {
+        expect(getFileExtension("C:/My.Books/wordlist")).toBeUndefined();
+        expect(getFileExtension("C:\\My.Books\\wordlist")).toBeUndefined();
+        expect(isValidSampleTextFileType("C:/My.Books/wordlist")).toBe(false);
+        // ...but a real extension under such a folder is still found.
+        expect(getFileExtension("C:/My.Books/wordlist.TXT")).toBe("txt");
+        expect(isValidSampleTextFileType("C:/My.Books/wordlist.txt")).toBe(
+            true,
+        );
+    });
+});
+
+describe("ReaderToolsModel.canUndo", () => {
+    it("declines once the box it remembers has gone from the page", () => {
+        // A table undo, for instance, rebuilds its cells; undoing typing in the old cell would
+        // change nothing visible and keep the Undo button from reaching what comes next.
+        const box = document.createElement("div");
+        box.textContent = "before";
+        document.body.appendChild(box);
+        const model = new ReaderToolsModel();
+        model.noteFocus(box);
+        box.textContent = "after typing";
+        expect(model.canUndo()).toBe(true); // sanity check: there is typing to undo
+
+        box.remove();
+
+        expect(model.canUndo()).toBe(false);
     });
 });

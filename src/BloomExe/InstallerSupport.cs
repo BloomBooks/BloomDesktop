@@ -181,7 +181,8 @@ namespace Bloom
             // Being a 32-bit app, we expect to get installed in Program Files (x86) on a 64-bit system.
             // If we are in fact on a 32-bit system, we will be in plain Program Files...but on such a system that's what this code gets.
             return Application.ExecutablePath.StartsWith(
-                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                StringComparison.Ordinal
             );
         }
 

@@ -46,6 +46,7 @@ type BookSettingsAreaProps = {
     appearanceDisabled: boolean;
     tierAllowsFullBleed?: boolean;
     pageSizeSupportsFullBleed: boolean;
+    fullBleed: boolean;
     settings: object | undefined;
     settingsToReturnLater: object | undefined;
     getAdditionalProps: <T>(subPath: string) => {
@@ -59,6 +60,7 @@ type BookSettingsAreaProps = {
     deleteCustomBookStyles: () => void;
     saveSettingsAndCloseDialog: () => void;
     onGoToThemeAndLayout?: () => void;
+    onGoToPrintPublishing?: () => void;
     onColorPickerVisibilityChanged?: (open: boolean) => void;
     themeNames: Array<{ label: string; value: string }>;
     unusedLanguageDataExists?: boolean;
@@ -197,8 +199,8 @@ export const useBookSettingsAreaDefinition = (
         "BookSettings.FullBleed",
     );
     const fullBleedDescription = useL10n(
-        "Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.",
-        "BookSettings.FullBleed.Description",
+        'Enable full bleed layout for printing. Use with the "Edge to Edge" theme. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.',
+        "BookSettings.FullBleed.Description.EdgeToEdge",
     );
     const otherLanguagesLabel = useL10n(
         "Other Languages",
@@ -343,6 +345,21 @@ export const useBookSettingsAreaDefinition = (
                                 </Div>
                             </NoteBox>
                         )}
+                        {props.theme === "edge-to-edge" &&
+                            props.pageSizeSupportsFullBleed &&
+                            !props.fullBleed && (
+                                <WarningBox
+                                    css={css`
+                                        margin-left: 20px;
+                                    `}
+                                >
+                                    <EdgeToEdgeNeedsFullBleedWarning
+                                        onGoToPrintPublishing={
+                                            props.onGoToPrintPublishing
+                                        }
+                                    />
+                                </WarningBox>
+                            )}
                     </div>
                     <ConfigrSelect
                         label={pageNumbersLabel}
@@ -614,6 +631,43 @@ export const ThemeDisablesOptionsNoticeWithLink: React.FunctionComponent<{
                 onClick={(event) => {
                     event.preventDefault();
                     props.onGoToThemeAndLayout?.();
+                }}
+            >
+                {parts.linkText}
+            </Link>
+            {parts.afterLink}
+        </span>
+    );
+};
+
+// Shown when the theme is Edge to Edge on a paper size but full bleed is off: without bleed,
+// a picture meant to reach the edge of the page stops short of it once the paper is printed.
+// The bracketed text links to the Print Publishing page, where full bleed is turned on.
+export const EdgeToEdgeNeedsFullBleedWarning: React.FunctionComponent<{
+    onGoToPrintPublishing?: () => void;
+}> = (props) => {
+    const message = useL10n(
+        "Pictures cannot reach the edge of a printed page unless this book uses full bleed. Turn it on in [Print Publishing].",
+        "BookSettings.EdgeToEdgeNeedsFullBleed",
+    );
+
+    const parts = splitAtLinkText(message);
+    const testId = "edge-to-edge-needs-full-bleed-warning";
+
+    if (!parts.found) {
+        return <span data-testid={testId}>{message}</span>;
+    }
+
+    return (
+        <span data-testid={testId}>
+            {parts.beforeLink}
+            <Link
+                component="button"
+                type="button"
+                underline="always"
+                onClick={(event) => {
+                    event.preventDefault();
+                    props.onGoToPrintPublishing?.();
                 }}
             >
                 {parts.linkText}

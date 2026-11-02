@@ -102,15 +102,23 @@ vi.mock("./CanvasElementContextControls", () => ({
 }));
 
 // jsdom has no layout; give the bloom-canvas a size so the fit arithmetic is real numbers.
+// A test that changes the size of the page's picture area sets bloomCanvasSize.
+const bloomCanvasSize = vi.hoisted(() => ({ width: 400, height: 300 }));
 vi.mock("../../../utils/elementUtils", () => ({
-    getExactClientSize: () => ({ width: 400, height: 300 }),
+    getExactClientSize: () => ({ ...bloomCanvasSize }),
 }));
 
 import {
+    adjustBackgroundImageSize,
+    backgroundImageAlreadyFillsCanvas,
     BackgroundImageManagerState,
     handleResizeAdjustments,
     repairInterruptedBackgroundConversion,
 } from "./CanvasElementBackgroundImageManager";
+import {
+    getBackgroundImageSizeWithBleed,
+    kBackgroundImageBleedPx,
+} from "./backgroundImageBleed";
 
 // Old-style page markup (Bloom 6.2 and earlier): the img sits directly in the bloom-canvas, with
 // no bloom-backgroundImage canvas element yet. handleResizeAdjustments converts it on page load.
@@ -315,5 +323,333 @@ describe("repairInterruptedBackgroundConversion (BL-16870)", () => {
         ).toBe(false);
         expect(bloomCanvas.innerHTML).toBe(before);
         expect(directImgChildren(bloomCanvas)).toHaveLength(1);
+    });
+});
+
+describe("adjustBackgroundImageSize on a background that fills the page", () => {
+    afterEach(() => {
+        bloomCanvasSize.width = 400;
+        bloomCanvasSize.height = 300;
+        document.body.innerHTML = "";
+    });
+
+    // A background element that fills a picture area 400 by 300, holding a picture with the
+    // given natural size, transform, and img box. jsdom does no layout, so the element reports
+    // the size written on it.
+    function makeFilledBackground(
+        naturalWidth: number,
+        naturalHeight: number,
+        transform: string,
+        boxWidth: number,
+        boxLeft: number,
+        boxTop: number,
+    ): {
+        bloomCanvas: HTMLElement;
+        element: HTMLElement;
+        img: HTMLImageElement;
+    } {
+        document.body.innerHTML = `
+            <div class="bloom-canvas">
+                <div class="bloom-canvas-element bloom-backgroundImage" style="width: 400px; height: 300px; left: 0px; top: 0px">
+                    <div class="bloom-imageContainer">
+                        <img class="bloom-imageObjectFit-cover" src="picture.png">
+                    </div>
+                </div>
+            </div>`;
+        const bloomCanvas = document.querySelector(
+            ".bloom-canvas",
+        ) as HTMLElement;
+        const element = document.querySelector(
+            ".bloom-canvas-element",
+        ) as HTMLElement;
+        const img = document.querySelector("img") as HTMLImageElement;
+        img.style.width = `${boxWidth}px`;
+        img.style.left = `${boxLeft}px`;
+        img.style.top = `${boxTop}px`;
+        img.style.transform = transform;
+        Object.defineProperty(element, "clientWidth", {
+            get: () => parseFloat(element.style.width),
+        });
+        Object.defineProperty(element, "clientHeight", {
+            get: () => parseFloat(element.style.height),
+        });
+        Object.defineProperty(img, "naturalWidth", { value: naturalWidth });
+        Object.defineProperty(img, "naturalHeight", { value: naturalHeight });
+        return { bloomCanvas, element, img };
+    }
+
+    // The rectangle the element shows: the img box, with its two dimensions swapped when the
+    // picture is rotated 90 degrees, about the same centre.
+    function shownRectangle(
+        img: HTMLImageElement,
+        rotated: boolean,
+    ): { left: number; top: number; width: number } {
+        const boxWidth = parseFloat(img.style.width);
+        const boxHeight = (boxWidth * img.naturalHeight) / img.naturalWidth;
+        const width = rotated ? boxHeight : boxWidth;
+        const height = rotated ? boxWidth : boxHeight;
+        return {
+            left: parseFloat(img.style.left) + boxWidth / 2 - width / 2,
+            top: parseFloat(img.style.top) + boxHeight / 2 - height / 2,
+            width,
+        };
+    }
+
+    test("a picture rotated 90 degrees keeps the framing it would have had if it had arrived rotated", async () => {
+        // Both show a landscape picture 600 by 300 whose left edge is at the page's left edge,
+        // with 200 hidden at the right. The first arrived that shape; the second is a portrait
+        // picture 100 by 200 that Rotate Right has rotated, whose box is 300 by 600.
+        const state: BackgroundImageManagerState = {
+            bgImageLoadListeners: new WeakMap(),
+        };
+        const upright = makeFilledBackground(200, 100, "", 600, 0, 0);
+        // Sanity check: the shown rectangle is what the comment says.
+        expect(shownRectangle(upright.img, false)).toEqual({
+            left: 0,
+            top: 0,
+            width: 600,
+        });
+        // Origami makes the picture area twice as tall.
+        bloomCanvasSize.height = 600;
+        await adjustBackgroundImageSize(
+            state,
+            upright.bloomCanvas,
+            upright.element,
+            false,
+            () => undefined,
+            () => {},
+        );
+        const expected = shownRectangle(upright.img, false);
+
+        bloomCanvasSize.height = 300;
+        const rotated = makeFilledBackground(
+            100,
+            200,
+            "rotate(90deg)",
+            300,
+            150,
+            -150,
+        );
+        expect(shownRectangle(rotated.img, true)).toEqual({
+            left: 0,
+            top: 0,
+            width: 600,
+        });
+        bloomCanvasSize.height = 600;
+        await adjustBackgroundImageSize(
+            state,
+            rotated.bloomCanvas,
+            rotated.element,
+            false,
+            () => undefined,
+            () => {},
+        );
+
+        expect(shownRectangle(rotated.img, true)).toEqual(expected);
+    });
+
+    // A landscape picture shown 600 by 300, 150 hidden at the left and 50 at the right, is
+    // fitted to a new page size, once as a picture that arrived that shape and once as a
+    // portrait picture 100 by 200 rotated 270 degrees, whose box is 300 by 600 at (0, -150).
+    // The hidden amounts differ on the two sides, so a conversion that mixed up the box and
+    // the shown rectangle would give the two different framings.
+    test.each([
+        { width: 400, height: 600 },
+        { width: 800, height: 300 },
+        { width: 300, height: 300 },
+    ])(
+        "a picture rotated 270 degrees and cropped off centre keeps its framing when the page becomes $width by $height",
+        async (newSize) => {
+            const state: BackgroundImageManagerState = {
+                bgImageLoadListeners: new WeakMap(),
+            };
+            const fit = async (
+                bloomCanvas: HTMLElement,
+                element: HTMLElement,
+            ) => {
+                bloomCanvasSize.width = newSize.width;
+                bloomCanvasSize.height = newSize.height;
+                await adjustBackgroundImageSize(
+                    state,
+                    bloomCanvas,
+                    element,
+                    false,
+                    () => undefined,
+                    () => {},
+                );
+                bloomCanvasSize.width = 400;
+                bloomCanvasSize.height = 300;
+            };
+            const upright = makeFilledBackground(200, 100, "", 600, -150, 0);
+            await fit(upright.bloomCanvas, upright.element);
+            const expected = shownRectangle(upright.img, false);
+
+            const rotated = makeFilledBackground(
+                100,
+                200,
+                "rotate(270deg)",
+                300,
+                0,
+                -150,
+            );
+            // Sanity check: before the resize both show the same rectangle.
+            expect(shownRectangle(rotated.img, true)).toEqual({
+                left: -150,
+                top: 0,
+                width: 600,
+            });
+            await fit(rotated.bloomCanvas, rotated.element);
+            const result = shownRectangle(rotated.img, true);
+
+            expect(result.left).toBeCloseTo(expected.left);
+            expect(result.top).toBeCloseTo(expected.top);
+            expect(result.width).toBeCloseTo(expected.width);
+            // And no blank band: the shown rectangle still covers the page.
+            expect(result.left).toBeLessThanOrEqual(0);
+            expect(result.top).toBeLessThanOrEqual(0);
+            expect(result.left + result.width).toBeGreaterThanOrEqual(
+                newSize.width - 0.01,
+            );
+        },
+    );
+});
+
+describe("getBackgroundImageSizeWithBleed", () => {
+    test("an image that fills the width overhangs both sides by the bleed and keeps its shape", () => {
+        // A 2:1 image fitted to a 400 x 300 canvas: full width, letterboxed top and bottom.
+        const size = getBackgroundImageSizeWithBleed(400, 200, 400, 300);
+        expect(size.width).toBeCloseTo(400 + 2 * kBackgroundImageBleedPx, 6);
+        expect(size.width / size.height).toBeCloseTo(2, 6);
+        // still letterboxed, so no bleed is forced on the height
+        expect(size.height).toBeLessThan(300);
+    });
+
+    test("an image that misses filling the height by a sliver also overhangs top and bottom", () => {
+        // An origami split that leaves 0.46px of white beside an almost-square image.
+        const size = getBackgroundImageSizeWithBleed(
+            377.476,
+            379.75,
+            377.938,
+            379.75,
+        );
+        expect(size.width).toBeGreaterThanOrEqual(
+            377.938 + 2 * kBackgroundImageBleedPx - 1e-9,
+        );
+        expect(size.height).toBeGreaterThanOrEqual(
+            379.75 + 2 * kBackgroundImageBleedPx - 1e-9,
+        );
+        expect(size.width / size.height).toBeCloseTo(377.476 / 379.75, 6);
+    });
+
+    test("an image well inside the canvas in both dimensions is left alone", () => {
+        expect(getBackgroundImageSizeWithBleed(300, 200, 400, 300)).toEqual({
+            width: 300,
+            height: 200,
+        });
+    });
+});
+
+describe("backgroundImageAlreadyFillsCanvas", () => {
+    const savedSize = { ...bloomCanvasSize };
+    afterEach(() => {
+        Object.assign(bloomCanvasSize, savedSize);
+    });
+
+    // A background canvas element with the given style, holding an img of the given natural size.
+    function makeBackground(
+        elementStyle: string,
+        naturalWidth: number,
+        naturalHeight: number,
+        imgStyle = "",
+    ) {
+        document.body.innerHTML = `<div class="bloom-canvas"><div class="bloom-canvas-element bloom-backgroundImage" style="${elementStyle}"><div class="bloom-imageContainer"><img src="a.png" style="${imgStyle}"></div></div></div>`;
+        const img = document.querySelector("img") as HTMLImageElement;
+        Object.defineProperty(img, "naturalWidth", { value: naturalWidth });
+        Object.defineProperty(img, "naturalHeight", { value: naturalHeight });
+        return {
+            bloomCanvas: document.querySelector(".bloom-canvas") as HTMLElement,
+            bg: document.querySelector(".bloom-backgroundImage") as HTMLElement,
+            img,
+        };
+    }
+
+    test("a picture fitted with the bleed on a wide canvas counts as filling it", () => {
+        bloomCanvasSize.width = 600;
+        bloomCanvasSize.height = 200;
+        const size = getBackgroundImageSizeWithBleed(600, 200, 600, 200);
+        // sanity check: the bleed made the long side overhang by more than 1px each end
+        expect(size.width - 600).toBeGreaterThan(2 * kBackgroundImageBleedPx);
+        const { bloomCanvas, bg, img } = makeBackground(
+            `left: ${(600 - size.width) / 2}px; top: ${(200 - size.height) / 2}px; width: ${size.width}px; height: ${size.height}px;`,
+            1200,
+            400,
+        );
+        expect(backgroundImageAlreadyFillsCanvas(bloomCanvas, bg, img)).toBe(
+            true,
+        );
+    });
+
+    test("a picture that misses the canvas height by more than the fill tolerance does not", () => {
+        bloomCanvasSize.width = 400;
+        bloomCanvasSize.height = 300;
+        const size = getBackgroundImageSizeWithBleed(400, 297.5, 400, 300);
+        // sanity check: only the width got the bleed, so there is still a gap top and bottom
+        expect(size.height).toBeLessThan(300);
+        const { bloomCanvas, bg, img } = makeBackground(
+            `left: ${(400 - size.width) / 2}px; top: ${(300 - size.height) / 2}px; width: ${size.width}px; height: ${size.height}px;`,
+            400,
+            297.5,
+        );
+        expect(backgroundImageAlreadyFillsCanvas(bloomCanvas, bg, img)).toBe(
+            false,
+        );
+    });
+
+    test("a wide crop moved off-centre does not, so Fit Space can re-centre it", () => {
+        bloomCanvasSize.width = 400;
+        bloomCanvasSize.height = 300;
+        // A 4:1 picture filling the height of the overhanging element: 1208 x 302.
+        const element = "left: -1px; top: -1px; width: 402px; height: 302px;";
+        const centred = makeBackground(
+            element,
+            1200,
+            300,
+            "width: 1208px; left: -403px; top: 0px;",
+        );
+        // sanity check: the same picture centred does count as filling
+        expect(
+            backgroundImageAlreadyFillsCanvas(
+                centred.bloomCanvas,
+                centred.bg,
+                centred.img,
+            ),
+        ).toBe(true);
+        const moved = makeBackground(
+            element,
+            1200,
+            300,
+            "width: 1208px; left: -100px; top: 0px;",
+        );
+        expect(
+            backgroundImageAlreadyFillsCanvas(
+                moved.bloomCanvas,
+                moved.bg,
+                moved.img,
+            ),
+        ).toBe(false);
+    });
+
+    test("a picture the author cropped well into does not, so Fit Space can reset it", () => {
+        bloomCanvasSize.width = 400;
+        bloomCanvasSize.height = 300;
+        const { bloomCanvas, bg, img } = makeBackground(
+            "left: 0px; top: 0px; width: 400px; height: 300px;",
+            400,
+            300,
+            "width: 800px; left: -200px; top: -150px;",
+        );
+        expect(backgroundImageAlreadyFillsCanvas(bloomCanvas, bg, img)).toBe(
+            false,
+        );
     });
 });

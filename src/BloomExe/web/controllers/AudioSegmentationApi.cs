@@ -14,6 +14,7 @@ using Bloom.Utils;
 using BloomTemp;
 using Newtonsoft.Json;
 using SIL.Code;
+using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Progress;
@@ -267,7 +268,7 @@ namespace Bloom.web.controllers
             if (workingDirectory == null || !Directory.Exists(workingDirectory))
                 workingDirectory = "";
             var setPythonEncoding = SetPythonEncodingIfNeeded();
-            var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+            var result = CommandLineRunner.Run(
                 command,
                 arguments,
                 workingDirectory,
@@ -376,7 +377,7 @@ namespace Bloom.web.controllers
             // it doesn't apply when we're only reading times out of a file the user chose.
             if (!usingManualTimings && !Platform.IsLinux)
             {
-                if (directoryName.StartsWith("\\"))
+                if (directoryName.StartsWith("\\", StringComparison.Ordinal))
                 {
                     // I'm intentionally not adding this to the l10n load, as it seems like a pretty sophisticated thing, to be running in a VM
                     // or directly off a server, and it seems a bit hard to translate.  Ref BL-9959.
@@ -814,7 +815,7 @@ namespace Bloom.web.controllers
                 Logger.WriteMinorEvent(
                     "AudioSegmentationApi.GetSplitStartEndTimings(): Command started, preparing to wait..."
                 );
-                var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                var result = CommandLineRunner.Run(
                     command,
                     arguments,
                     workingDirectory,
@@ -925,7 +926,7 @@ namespace Bloom.web.controllers
                 // split into four fields, with the last one being the label. The label is everything between the quotes.
                 string[] fields = line.Split(new char[] { ' ' }, 4);
 
-                if (fields.Length < 4 || !fields[3].StartsWith("\""))
+                if (fields.Length < 4 || !fields[3].StartsWith("\"", StringComparison.Ordinal))
                 {
                     // so I don't know that Aeneas would ever fail to produce a valid line, but if it did, let's just
                     // output a line that sticks a label at a point in time after the last segment so that someone could
@@ -1110,45 +1111,32 @@ namespace Bloom.web.controllers
             string outputSplitFilename
         )
         {
-            // Since we are running this process aynchronously, we need to make sure that the process is not
-            // affected by the current culture settings.  We can't use the CommandLineRunner methods.
-            var currentCulture = CultureInfo.CurrentCulture;
-            var currentUICulture = CultureInfo.CurrentUICulture;
-            try
+            // This runs the process asynchronously, so it can't use the CommandLineRunner methods.
+            string commandString =
+                $"ffmpeg -i \"{inputAudioFilename}\" -acodec copy -ss {timingStartString} -to {timingEndString} \"{outputSplitFilename}\"";
+            string command;
+            string arguments;
+            var workingDir = Platform.IsLinux ? "/tmp" : kWorkingDirectory;
+            if (Platform.IsLinux)
             {
-                CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-                CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
-                string commandString =
-                    $"ffmpeg -i \"{inputAudioFilename}\" -acodec copy -ss {timingStartString} -to {timingEndString} \"{outputSplitFilename}\"";
-                string command;
-                string arguments;
-                var workingDir = Platform.IsLinux ? "/tmp" : kWorkingDirectory;
-                if (Platform.IsLinux)
-                {
-                    command = _ffmpegFound;
-                    arguments = commandString.Substring(7);
-                }
-                else
-                {
-                    command = "CMD.EXE";
-                    arguments = $"/C {commandString}";
-                }
-                var startInfo = new ProcessStartInfo()
-                {
-                    FileName = command,
-                    Arguments = arguments,
-                    WorkingDirectory = workingDir,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                };
+                command = _ffmpegFound;
+                arguments = commandString.Substring(7);
+            }
+            else
+            {
+                command = "CMD.EXE";
+                arguments = $"/C {commandString}";
+            }
+            var startInfo = new ProcessStartInfo()
+            {
+                FileName = command,
+                Arguments = arguments,
+                WorkingDirectory = workingDir,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
 
-                return RunProcessAsync(startInfo);
-            }
-            finally
-            {
-                CultureInfo.CurrentCulture = currentCulture;
-                CultureInfo.CurrentUICulture = currentUICulture;
-            }
+            return RunProcessAsync(startInfo);
         }
 
         // Starts a process and returns a task (that you can use to wait/await for the completion of the process)

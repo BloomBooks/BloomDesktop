@@ -8,6 +8,11 @@ import {
 import { createValidXhtmlUniqueId } from "../xhtmlIdUtils";
 import { postData, postJson } from "../../../utils/bloomApi";
 import { cloneCanvasElementHtmlStructure } from "./canvasElementCloneCleanup";
+import {
+    getCanvasElementRotation,
+    setCanvasElementRotation,
+} from "./canvasElementRotation";
+import { refreshImgTransparentParam } from "../bloomImages";
 
 const kComicalGeneratedClass: string = "comical-generated";
 
@@ -138,11 +143,17 @@ export class CanvasElementDuplication {
     ): HTMLElement | undefined {
         const sourceElement = patriarchSourceBubble.content;
         const proposedOffset = 15;
+        // The location is worked out from the source's rectangle on screen, which for a rotated
+        // element is the larger rectangle around it. Measure the upright box instead, so that
+        // the copy, rotated the same way, lands where the source is.
+        const sourceRotation = getCanvasElementRotation(sourceElement);
+        setCanvasElementRotation(sourceElement, 0);
         const newPoint = this.host.findBestLocationForNewCanvasElement(
             sourceElement,
             sameLocation ? 0 : proposedOffset + sourceElement.clientWidth, // try to not overlap too much
             sameLocation ? 0 : proposedOffset,
         );
+        setCanvasElementRotation(sourceElement, sourceRotation);
         if (!newPoint) {
             return;
         }
@@ -160,6 +171,13 @@ export class CanvasElementDuplication {
         patriarchDuplicateElement.style.color = sourceElement.style.color; // preserve text color
         patriarchDuplicateElement.innerHTML =
             this.safelyCloneHtmlStructure(sourceElement);
+        // A duplicated background image becomes an overlay, which gets Auto transparency even on
+        // a white page when the canvas has a real background image, so its copied src may carry
+        // the wrong transparent param.
+        const duplicateImg = patriarchDuplicateElement.querySelector("img");
+        if (duplicateImg) {
+            refreshImgTransparentParam(duplicateImg);
+        }
         // Preserve the Auto Height setting.  See BL-13931.
         if (sourceElement.classList.contains("bloom-noAutoHeight"))
             patriarchDuplicateElement.classList.add("bloom-noAutoHeight");
@@ -196,6 +214,9 @@ export class CanvasElementDuplication {
 
         this.host.setActiveElement(patriarchDuplicateElement);
         this.matchSizeOfSource(sourceElement, patriarchDuplicateElement);
+        // The copied contents carry the picture's own rotation and mirror, but the angle of the
+        // box is on the element itself, which is new.
+        setCanvasElementRotation(patriarchDuplicateElement, sourceRotation);
         const container = patriarchDuplicateElement.closest(
             ".bloom-canvas",
         ) as HTMLElement | null;

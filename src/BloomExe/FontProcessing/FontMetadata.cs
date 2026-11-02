@@ -6,6 +6,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.Text;
 using SharpFont;
+using SIL.CommandLineProcessing;
 using SIL.Progress;
 using Bloom.ToPalaso;
 #else
@@ -176,7 +177,7 @@ namespace Bloom.FontProcessing
             }
             try
             {
-                var res = CommandLineRunnerExtra.RunWithInvariantCulture(
+                var res = CommandLineRunner.Run(
                     "/usr/bin/otfinfo",
                     $"-i \"{fontPath}\"",
                     "",
@@ -204,7 +205,7 @@ namespace Bloom.FontProcessing
             catch (Exception e)
             {
                 Console.WriteLine(
-                    "CommandLineRunnerExtra.RunWithInvariantCulture() of otfinfo -i \"{0}\" threw an exception: {1}",
+                    "CommandLineRunner.Run() of otfinfo -i \"{0}\" threw an exception: {1}",
                     fontPath,
                     e
                 );
@@ -236,7 +237,7 @@ namespace Bloom.FontProcessing
                 version = gtf.VersionStrings[english];
                 // Most fonts include the text "Version x" here, but our UI provides the
                 // (possibly localized) text, so we strip it out here.
-                if (version.StartsWith("Version "))
+                if (version.StartsWith("Version ", StringComparison.Ordinal))
                     version = version.Replace("Version ", "");
                 copyright = gtf.Copyrights[english];
                 var embeddingRights = gtf.EmbeddingRights;
@@ -298,7 +299,10 @@ namespace Bloom.FontProcessing
                     || license.Contains("OFL")
                     || /* Kmhmu OT has this typo */
                     license.Contains("SIL OpenFont License")
-                    || license.StartsWith("Licensed under the Apache License")
+                    || license.StartsWith(
+                        "Licensed under the Apache License",
+                        StringComparison.Ordinal
+                    )
                     || license.Contains("GNU GPL")
                     || license.Contains("GNU General Public License")
                     || license.Contains(" GPL ")
@@ -316,7 +320,12 @@ namespace Bloom.FontProcessing
                         license.Contains("SIL OpenFont License")
                     )
                         determinedSuitabilityNotes = "Open Font License";
-                    else if (license.StartsWith("Licensed under the Apache License"))
+                    else if (
+                        license.StartsWith(
+                            "Licensed under the Apache License",
+                            StringComparison.Ordinal
+                        )
+                    )
                         determinedSuitabilityNotes = "Apache License";
                     else if (
                         license.Contains("GNU LGPL")

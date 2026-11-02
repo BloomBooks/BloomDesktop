@@ -164,7 +164,7 @@ namespace Bloom.Publish.BloomPub
             string colorString;
             int ignore = 0;
             // is it already a nice HTML color?
-            if (s.StartsWith("#"))
+            if (s.StartsWith("#", StringComparison.Ordinal))
             {
                 colorString = s.Replace("#", "");
             }

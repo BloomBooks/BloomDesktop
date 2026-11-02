@@ -132,16 +132,25 @@ test.describe("importing a recording made outside Bloom", () => {
 
         // Bloom names a narration file after the id of the text it belongs to, so the file that
         // appeared should be named after something the tool marked on this page.
-        const sentences = await getNarrationSentences(page);
         const files = fs.readdirSync(audioFolder);
         expect(files.length, `Expected one narration file, got ${files}.`).toBe(
             1,
         );
         const importedId = Path.basename(files[0], Path.extname(files[0]));
-        expect(
-            sentences.map((s) => s.id),
-            `The imported file "${files[0]}" is not named after any recordable element on the page.`,
-        ).toContain(importedId);
+        // Poll, because the file lands before the markup does: the tool marks the text box as the
+        // audio-sentence only after the copy returns, so a read in between still sees the old
+        // By Sentence span. On a loaded runner importNarration can return inside that window
+        // (the 2026-09-24 nightly did), which looks exactly like BL-16873 but is not.
+        await expect
+            .poll(
+                async () =>
+                    (await getNarrationSentences(page)).map((s) => s.id),
+                {
+                    timeout: 10000,
+                    message: `The imported file "${files[0]}" is not named after any recordable element on the page.`,
+                },
+            )
+            .toContain(importedId);
 
         // And it is really the audio that was handed to the chooser, not an empty placeholder.
         expect(

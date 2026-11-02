@@ -1,9 +1,11 @@
+using System;
 using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.MiscUI;
 using Bloom.SubscriptionAndFeatures;
 using SIL.IO;
 using SIL.Progress;
@@ -68,7 +70,7 @@ namespace Bloom.web.controllers
                 true
             );
 
-            // POST body is an appearance theme name, e.g. "default", "zero-margin-ebook" (see the
+            // POST body is an appearance theme name, e.g. "default", "edge-to-edge" (see the
             // files in src/content/appearanceThemes). Lets tests screenshot each theme. Must run
             // on the UI thread because bringing the book up to date shows a dialog.
             apiHandler.RegisterEndpointHandler(kApiUrlPart + "setTheme", HandleSetTheme, true);
@@ -142,6 +144,21 @@ namespace Bloom.web.controllers
             // Bloom and by the debugging protocol. Needs the UI thread to read the browser.
             apiHandler.RegisterEndpointHandler(kApiUrlPart + "shellUrl", HandleGetShellUrl, true);
 
+            // GET returns what the Edit tab is doing, as
+            // {state, pageId, visible, pageLoadAnnouncements}. A test must not ask that tab to
+            // change pages while it is still loading one: a page announces itself more than once,
+            // and a page change that arrives between the first announcement and the second starts
+            // a save that the second one leaves unanswered. The tab changes no pages after that (see src/BloomE2E/AUTOMATION-DEBT.md). The DOM cannot tell a test
+            // any of this, because the frame still holds the page from before the tab switch, so
+            // the count of announcements is how a test knows the last one has been and gone. Off
+            // the UI thread on purpose: this reads three fields, and a test asks for them exactly
+            // when the UI thread is busy.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "editState",
+                HandleGetEditState,
+                false // does not need the UI thread
+            );
+
             // POST {"email": ...}: which Bloom Library login state Bloom should REPORT. A test
             // needs this because the real login lives in machine-wide settings shared with the
             // developer's own Bloom: signing out for real would sign the developer out, and
@@ -190,6 +207,29 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
+        /// Reply with what the Edit tab is doing (see the registration above). Before the first
+        /// book is selected there is no EditingModel, which reads as NoPage.
+        /// </summary>
+        private void HandleGetEditState(ApiRequest request)
+        {
+            var model = Bloom.Edit.EditingModel.ModelForE2eTests;
+            // The UI thread can change these fields between one read and the next, so keep
+            // pageLoadAnnouncements last. A count read after the state can only be the same or
+            // higher, which makes a test see the count still rising and wait again. Read first, it
+            // could pair a stale count with a settled state, and a test would stop waiting too
+            // soon.
+            request.ReplyWithJson(
+                new
+                {
+                    state = (model?.EditTabState ?? State.NoPage).ToString(),
+                    pageId = model?.EditTabStatePageId ?? "",
+                    visible = model?.Visible ?? false,
+                    pageLoadAnnouncements = model?.PageLoadAnnouncements ?? 0,
+                }
+            );
+        }
+
+        /// <summary>
         /// Reply with the URL of the workspace root document Bloom drives (see the registration
         /// above), or an empty string if the main browser is not up yet.
         /// </summary>
@@ -206,7 +246,7 @@ namespace Bloom.web.controllers
         /// </summary>
         private class E2eLoginState
         {
-            public string Email;
+            public string Email { get; set; }
         }
 
         /// <summary>
@@ -220,9 +260,10 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// True if the editable collection is loaded and its book list is available. Mirrors what
-        /// selecting a book needs (see CollectionApi.GetCollectionOfRequest), so a test can wait
-        /// for this before selecting. Any exception means "not ready yet", so we swallow it.
+        /// True once Bloom's startup book selection is done and the editable collection is loaded
+        /// with its book list available. Mirrors what selecting a book needs (see
+        /// CollectionApi.GetCollectionOfRequest), so a test can wait for this before selecting.
+        /// Any exception means "not ready yet", so we swallow it.
         /// An EMPTY collection is ready: a test that creates its own collection starts with no
         /// books and then makes one, so "has at least one book" would never come true for it.
         /// </summary>
@@ -230,6 +271,10 @@ namespace Bloom.web.controllers
         {
             try
             {
+                // At startup Bloom clears the selection and then restores the last-selected book,
+                // after the collection is listed. A book the test selects before that is lost.
+                if (!StartupScreenManager.StartupMilestoneHasBeenReached("startupBookSelected"))
+                    return false;
                 var editable = _collectionModel.TheOneEditableCollection;
                 if (editable == null)
                     return false;
@@ -387,9 +432,9 @@ namespace Bloom.web.controllers
 
             var lower = branding.ToLowerInvariant();
             SubscriptionTier tier;
-            if (lower.EndsWith("-lc"))
+            if (lower.EndsWith("-lc", StringComparison.Ordinal))
                 tier = SubscriptionTier.LocalCommunity;
-            else if (lower.EndsWith("-pro"))
+            else if (lower.EndsWith("-pro", StringComparison.Ordinal))
                 tier = SubscriptionTier.Pro;
             else
                 tier = SubscriptionTier.Enterprise;

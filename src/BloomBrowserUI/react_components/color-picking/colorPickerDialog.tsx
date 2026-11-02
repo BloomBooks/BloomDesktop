@@ -528,6 +528,11 @@ export interface IColorDisplayButtonProps {
     transparency: boolean;
     width?: number;
     disabled?: boolean;
+    // When true, onChange is not called for every step of a drag in the picker, only when
+    // the picker reports a change "complete". For the saturation, hue and alpha sliders that
+    // means react-color's onChangeComplete, which is a 100ms debounce, not a mouse-up: a drag
+    // that pauses still calls onChange before the button is released. So this reduces how
+    // often onChange is called during a drag; it does not hold every change until the end.
     deferOnChangeUntilComplete?: boolean;
     onClose: (result: DialogResult, newColor: string) => void;
     onChange?: (newColor: string) => void;

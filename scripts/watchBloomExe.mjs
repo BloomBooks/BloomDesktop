@@ -32,6 +32,8 @@ const parseArgs = () => {
         vitePort: undefined,
         // Build and run once instead of running under "dotnet watch". See go.mjs --nowatch.
         noWatch: false,
+        // Pass --dont-disturb on to Bloom. See go.mjs --dont-disturb.
+        dontDisturb: false,
     };
 
     for (let i = 0; i < args.length; i++) {
@@ -39,6 +41,11 @@ const parseArgs = () => {
 
         if (arg === "--nowatch" || arg === "--no-watch") {
             options.noWatch = true;
+            continue;
+        }
+
+        if (arg === "--dont-disturb") {
+            options.dontDisturb = true;
             continue;
         }
 
@@ -67,7 +74,7 @@ const parseArgs = () => {
 
         if (arg.startsWith("--")) {
             throw new Error(
-                "Unsupported option. Supported options are --repo-root and --vite-port.",
+                "Unsupported option. Supported options are --repo-root, --vite-port, --nowatch and --dont-disturb.",
             );
         }
     }
@@ -157,6 +164,13 @@ const startupLabel = getHelpfulStartupLabel(options.repoRoot);
 
 if (startupLabel) {
     dotnetArgs.push("--label", startupLabel);
+}
+
+// --automation (above) is what every Bloom this launcher starts needs: running beside other
+// Blooms, and the BLOOM_AUTOMATION_READY line we wait for. Keeping the foreground to itself is
+// only for a Bloom that something other than the person at the keyboard is driving.
+if (options.dontDisturb) {
+    dotnetArgs.push("--dont-disturb");
 }
 
 if (effectiveVitePort) {
