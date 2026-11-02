@@ -237,6 +237,7 @@ namespace Bloom.Workspace
             StartupScreenManager.ClearStartupMilestone("collectionButtonsDrawn");
             StartupScreenManager.ClearStartupMilestone("teamSyncCompleted");
             StartupScreenManager.ClearStartupMilestone("startupBookSelectionReady");
+            StartupScreenManager.ClearStartupMilestone("startupBookSelected");
             if (_tcManager?.CurrentCollectionEvenIfDisconnected == null)
             {
                 StartupScreenManager.StartupMilestoneReached("teamSyncCompleted");
@@ -670,6 +671,12 @@ window.showWorkspaceInitializationFailure = function(message) {
                 SaveCurrentBookPath(null);
 
                 MiscUtils.SuppressUnusedExceptionVarWarning(e);
+            }
+            finally
+            {
+                // Until now this has been clearing and restoring the selection, so anything that
+                // selects a book of its own (an e2e test) must wait for this (see isCollectionReady).
+                StartupScreenManager.StartupMilestoneReached("startupBookSelected");
             }
         }
 

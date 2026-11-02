@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-10-30 (nightlies through the 2026-10-30 run have been triaged)
+**Last updated:** 2026-11-02 (nightlies through the 2026-11-02 run have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -9,20 +9,39 @@ accept a flaky test, and a test is flaky from its first unexplained failure (roo
 Testing). So "wait and see whether it recurs" is never an entry's plan. To bring this up to date,
 use the `nightly-triage` skill.
 
-## E2E teardown: the test's temp folder cannot be deleted
+## Canvas element menu: the Flip submenu stays open
 
-- **Failed:** 2026-10-12, 2026-10-13 and 2026-10-30. No test failed; the suite failed on "1
-  error was not a part of any test".
-- **Cause:** the fixture's cleanup (`fixtures/launchBloom.ts` `stop()`) deletes the temp folder
-  right after killing Bloom, counting on `fs.rmSync`'s `maxRetries` to wait while Bloom lets go of
-  its files. On Node 24 (the repo's `.node-version`) `rmSync` does not retry on EPERM: with a file
-  held open by another process it throws at once, with the same message as the nightly. On 10-30
-  it threw 0.15 s after the test ended, so no retry happened. The specs involved
-  (`collection-settings-advanced`, `toolbox-tools`) both restart or relaunch Bloom just before
-  teardown. `removeTempRoot` has the same unused retry, but only logs the failure.
-- **Status:** we think [#8515](https://github.com/BloomBooks/BloomDesktop/pull/8515) fixes it:
-  teardown now waits until Bloom has exited before deleting the folder. The 12 specs that
-  restart or relaunch Bloom passed locally with it; not yet confirmed by a nightly.
+- **Failed:** 2026-11-01. `BloomE2E/tests/rotate-and-flip-images.spec.ts` "Change Image gives a
+  turned and mirrored picture an upright, unmirrored new one" (Test Case 827): "Moving the pointer
+  off the submenu did not close it" (`helpers/canvasElements.ts:836`, two menus still open after
+  30 s).
+- **Cause:** the Flip submenu was opened by keyboard focus, not by the pointer. The screenshot shows
+  the menu with its Flip row highlighted and the submenu open. Bloom's submenus
+  (`mui-nested-menu-item` 1.2.6) open on mouse-enter or on focus, and close only on mouse-leave
+  or ArrowLeft. The menu can give its first rows focus as it opens, so a submenu opened that way
+  never sees a mouse-leave, and `closeCanvasElementMenu` (`helpers/canvasElements.ts`), which
+  closes a submenu by moving the pointer off it, cannot close it. `clickCanvasElementMenuItem`
+  already notes that a focus-opened submenu stays open wherever the pointer goes. Why focus
+  landed on Flip this time is not known; focus events need Bloom's window to have focus, which it
+  has on CI but not in a local `--dont-disturb` run.
+- **Status:** fix in [#8528](https://github.com/BloomBooks/BloomDesktop/pull/8528): the helper closes a submenu
+  with Escape instead.
+
+## Visual regression: staging the BloomPUB preview found no book selected
+
+- **Failed:** 2026-11-02. `BloomVisualRegressionTests/index.spec.ts` "16x9 Landscape
+  branding:Default": the test-only `e2e/makeBloomPubPreview` call failed.
+- **Cause:** a race with Bloom's startup. This was the run's first case, right after launch. The
+  test waits for `e2e/isCollectionReady`, which is true once the collection's books can be listed,
+  then selects its book. But Bloom's own startup selection (`WorkspaceView.SelectBookAtStartup`)
+  runs later, once the collection's buttons are drawn: it clears the selection, then reloads the
+  last-selected book (here the same one) and brings it up to date. The test's
+  `e2e/makeBloomPubPreview` came in that window, found no selected book, and threw a
+  NullReferenceException in `BloomLibraryPublishModel.InitializeLanguages`. The log shows the book
+  being reloaded at the moment of the error. Only a run's first case can lose this race; the
+  night before it passed.
+- **Status:** fix in [#8528](https://github.com/BloomBooks/BloomDesktop/pull/8528): `isCollectionReady` waits for
+  the startup selection to finish.
 
 ## Link chooser: the preselected page is not scrolled into view
 

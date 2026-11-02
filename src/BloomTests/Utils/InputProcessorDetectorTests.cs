@@ -19,8 +19,10 @@ namespace BloomTests.Utils
         private const uint kTfIppFlagEnabled = 2;
 
         /// <summary>
-        /// The detector reports false with a keyboard layout active and true with an input
-        /// processor active; the test then restores the original input method.
+        /// The detector reports false with a keyboard layout active and, on a machine that has an
+        /// input processor (Keyman, an IME) enabled, true with that active; the test then restores
+        /// the original input method. Build agents rarely have an input processor, so there only
+        /// the layout half runs, rather than the whole test reporting itself as skipped.
         /// </summary>
         [Test]
         public void IsInputProcessorActive_FollowsTheActiveInputMethod()
@@ -41,18 +43,16 @@ namespace BloomTests.Utils
                 Is.EqualTo(TfProfileType.KeyboardLayout),
                 "test setup: every Windows machine has a keyboard layout"
             );
-            if (inputProcessor.ProfileType != TfProfileType.InputProcessor)
-                Assert.Ignore(
-                    "No TSF input processor (Keyman, an IME) is installed on this machine."
-                );
-
             try
             {
                 Activate(profileMgr, layout);
                 Assert.That(InputProcessorDetector.IsInputProcessorActive(), Is.False);
 
-                Activate(profileMgr, inputProcessor);
-                Assert.That(InputProcessorDetector.IsInputProcessorActive(), Is.True);
+                if (inputProcessor.ProfileType == TfProfileType.InputProcessor)
+                {
+                    Activate(profileMgr, inputProcessor);
+                    Assert.That(InputProcessorDetector.IsInputProcessorActive(), Is.True);
+                }
             }
             finally
             {
