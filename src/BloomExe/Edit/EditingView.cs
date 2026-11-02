@@ -402,6 +402,20 @@ namespace Bloom.Edit
         /// </summary>
         public void OnHideEditTab()
         {
+            // Run the page frame's leaving-the-page teardown. Changing pages gets this via
+            // switchContentPage in workspaceRoot.ts, but leaving the tab does not unload or
+            // re-navigate the page frame, so without this the page keeps everything the editor had
+            // hung on it: the open toolbox tool with its observers and any window it had opened,
+            // the controls above the page, and the canvas-element machinery. Symptoms are a pop-up
+            // left on screen behind the new tab, and the toolbox staying switched off if the user
+            // left with Change Layout on.
+            //
+            // We are called from the state machine's transition to NoPage, i.e. AFTER the page has
+            // been saved. That matters, because this changes the live page.
+            _mainBrowser?.RunJavascriptFireAndForget(
+                "workspaceBundle.getEditablePageBundleExports()?.pageUnloading();"
+            );
+
             // Tells the model to prepare for possibly changing the current book, which
             // currently requires reloading the toolbox.
             _model.ClearBookForToolboxContent();
@@ -1560,20 +1574,11 @@ namespace Bloom.Edit
 
         public void ShowAddPageDialog()
         {
-            PageTemplatesApi.ForPageLayout = false;
             //if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
             // Fire-and-forget: we just want the dialog to open; nothing here depends on it having finished.
             _mainBrowser.RunJavascriptFireAndForget(
                 "workspaceBundle.showPageChooserDialog(false);"
             );
-        }
-
-        internal void ShowChangeLayoutDialog()
-        {
-            PageTemplatesApi.ForPageLayout = true;
-            //if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-            // Fire-and-forget: we just want the dialog to open; nothing here depends on it having finished.
-            _mainBrowser.RunJavascriptFireAndForget("workspaceBundle.showPageChooserDialog(true);");
         }
 
         public int Zoom => EditingView.ZoomSetting;

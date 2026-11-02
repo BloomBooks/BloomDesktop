@@ -164,10 +164,9 @@ export function adjustCanvasElementChildrenIfSizeChanged(
         let newChildHeight = child.clientHeight;
         let reposition = true;
         const bubbleSpec = Bubble.getBubbleSpec(child);
+        // Comical has something to redraw unless it draws nothing at all for this element.
         needComicalUpdate =
-            needComicalUpdate ||
-            (!!bubbleSpec.tails && bubbleSpec.tails.length > 0) ||
-            bubbleSpec.spec !== "none";
+            needComicalUpdate || !new Bubble(child).isTransparent();
         if (
             Array.from(child.children).some(
                 (c: HTMLElement) =>

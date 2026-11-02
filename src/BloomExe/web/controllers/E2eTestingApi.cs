@@ -115,6 +115,22 @@ namespace Bloom.web.controllers
                 false // does not need the UI thread
             );
 
+            // GET ?text=... returns true once the content the browser last sent for the page being
+            // edited (its snapshot; see PageSnapshot) contains that text. Every save takes the page
+            // from that snapshot, which the browser sends a moment after typing settles, so a test
+            // that types and then leaves the page waits on this rather than on a fixed delay: it
+            // stands for the moment a person takes before moving on. Read-only.
+            apiHandler.RegisterBooleanEndpointHandler(
+                kApiUrlPart + "pageSnapshotIncludes",
+                request =>
+                    _editingModel
+                        .GetCurrentPageSnapshotForTests()
+                        ?.Contains(request.RequiredParam("text"), StringComparison.Ordinal)
+                    ?? false,
+                null, // read only
+                false // does not need the UI thread
+            );
+
             // GET returns the selected book's pages as JSON: id, caption, and whether the page is
             // front or back matter. A test needs page ids to navigate (editView/jumpToPage takes
             // one), and the page-list thumbnails do not expose which pages are xmatter, so without
@@ -146,11 +162,11 @@ namespace Bloom.web.controllers
 
             // GET returns what the Edit tab is doing, as
             // {state, pageId, visible, pageLoadAnnouncements}. A test must not ask that tab to
-            // change pages while it is still loading one: a page announces itself more than once,
-            // and a page change that arrives between the first announcement and the second starts
-            // a save that the second one leaves unanswered. The tab changes no pages after that (see src/BloomE2E/AUTOMATION-DEBT.md). The DOM cannot tell a test
-            // any of this, because the frame still holds the page from before the tab switch, so
-            // the count of announcements is how a test knows the last one has been and gone. Off
+            // change pages while it is still loading one, and a page announces itself more than
+            // once, so the Editing state can show before the page has finished arriving. The DOM
+            // cannot tell a test any of this, because the frame still holds the page from before
+            // the tab switch, so the count of announcements is how a test knows the last one has
+            // been and gone. Off
             // the UI thread on purpose: this reads three fields, and a test asks for them exactly
             // when the UI thread is busy.
             apiHandler.RegisterEndpointHandler(
