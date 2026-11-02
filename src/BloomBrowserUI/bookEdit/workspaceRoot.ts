@@ -78,6 +78,7 @@ export function SayHello() {
 import { getToolboxBundleExports } from "./js/workspaceFrames";
 export { getToolboxBundleExports };
 import { getEditablePageBundleExports } from "./js/workspaceFrames";
+import { isUndoKeystroke } from "./undo/redoKeyBinding";
 export { getEditablePageBundleExports };
 import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
 export { showPageChooserDialog };
@@ -136,12 +137,10 @@ export function handleUndo(): void {
 // Ctrl+Z when the keystroke arrives here rather than in the page. That is where it arrives
 // right after the AI Image Editor closes, because the editor's overlay lives in this window,
 // so without this the key did nothing until the user clicked back into the page (BL-16868).
-// The page has the same handler for when it has the focus; both take the key only for an
-// image change, leaving text to the ckeditor instance that has it. A dialog's own text field
-// keeps the browser's native undo.
+// The page has the same handler for when it has the focus; both do what the Undo button does,
+// through the page's one undo stack. A dialog's own text field keeps the browser's native undo.
 document.addEventListener("keydown", (e: KeyboardEvent) => {
-    if (!e.ctrlKey || e.altKey || e.shiftKey) return;
-    if (e.key?.toLowerCase() !== "z" && e.code !== "KeyZ") return;
+    if (!isUndoKeystroke(e)) return;
     const target = e.target as HTMLElement | null;
     const contentWindow = getEditablePageBundleExports();
     if (!contentWindow) return;
@@ -150,26 +149,11 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
     // document, so without the check a keystroke meant for the thing on top would replace the
     // picture behind it.
     if (contentWindow.isModalOpen(document)) return;
-    // Origami and the toolbox get first refusal here too, in handleUndo's order. Both undos are
-    // performed here rather than merely deferred to, because nothing else would do them: the
-    // keystroke arrived in THIS window, and origami's own handler is bound to the page frame's
-    // html element, so it never sees this event. (The page frame's handler can simply stand
-    // aside for origami, because there that handler does fire.)
-    if (contentWindow.origamiCanUndo()) {
-        e.preventDefault();
-        contentWindow.origamiUndo();
-        return;
-    }
-    const toolboxWindow = getToolboxBundleExports();
-    if (toolboxWindow?.canUndo()) {
-        e.preventDefault();
-        toolboxWindow.undo();
-        toolboxWindow.updateMarkupAfterUndoOrRedo();
-        return;
-    }
-    if (!contentWindow.imageOperationCanUndo()) return;
+    // Origami's own handler is bound to the page frame's html element, so it never sees this
+    // event; the stack's origami entry comes first, so layout mode's undo still wins here.
+    if (!contentWindow.canUndo()) return;
     e.preventDefault();
-    contentWindow.imageOperationUndo();
+    contentWindow.handleUndo();
 });
 
 // We need this update to maintain relative paths to images for the thumbnails. (BL-15906)
