@@ -146,13 +146,12 @@ namespace Bloom.Spreadsheet
                         return true;
                     if (!Validate(sheet, progress))
                         return true; // errors already reported to progress
-                    progress.MessageWithoutLocalizing($"Making a backup of the original book...");
-                    var backupPath = BookStorage.SaveCopyBeforeImportOverwrite(_pathToBookFolder);
-                    progress.MessageWithoutLocalizing($"Backup completed (at {backupPath})");
-                    var audioFolder = Path.Combine(_pathToBookFolder, "audio");
-                    if (Directory.Exists(audioFolder))
-                        SIL.IO.RobustIO.DeleteDirectoryAndContents(audioFolder);
-                    await ImportAsync(sheet, progress);
+                    await ImportWithBackupAsync(
+                        _pathToBookFolder,
+                        progress,
+                        () => ImportAsync(sheet, progress),
+                        () => HasStartedSaving
+                    );
                     BookHistory.AddEvent(
                         _book,
                         BookHistoryEventType.ImportSpreadsheet,
@@ -166,6 +165,95 @@ namespace Bloom.Spreadsheet
                 showCancelButton: false,
                 doWhenDialogCloses: doWhenProgressCloses
             );
+        }
+
+        /// <summary>
+        /// How both the in-app and the command-line import run: save a backup copy of the book, delete
+        /// its audio folder (the spreadsheet supplies all the recordings the book will have), then run
+        /// the import. If the import throws before it starts saving the book, the book's text is
+        /// unchanged, so put its old recordings back from the backup before letting the exception go
+        /// on; otherwise the unchanged book would point at recordings that are gone. Once saving has
+        /// started the saved book may already point at the new recordings (and the save may have
+        /// renamed the folder), so they are left alone and the user is told where the backup is.
+        /// </summary>
+        /// <param name="hasStartedSaving">whether the import has begun saving the book</param>
+        /// <returns>the path of the backup</returns>
+        public static async Task<string> ImportWithBackupAsync(
+            string bookFolderPath,
+            IWebSocketProgress progress,
+            Func<Task> import,
+            Func<bool> hasStartedSaving
+        )
+        {
+            progress.MessageWithoutLocalizing($"Making a backup of the original book...");
+            var backupPath = BookStorage.SaveCopyBeforeImportOverwrite(bookFolderPath);
+            progress.MessageWithoutLocalizing($"Backup completed (at {backupPath})");
+            var audioFolder = Path.Combine(bookFolderPath, "audio");
+            if (Directory.Exists(audioFolder))
+                RobustIO.DeleteDirectoryAndContents(audioFolder);
+            try
+            {
+                await import();
+            }
+            catch (Exception)
+            {
+                if (hasStartedSaving())
+                {
+                    progress.MessageWithoutLocalizing(
+                        $"The import failed while saving the book. The original book, with its recordings, is in the backup at {backupPath}.",
+                        ProgressKind.Error
+                    );
+                    throw;
+                }
+                try
+                {
+                    RestoreAudioFromBackup(bookFolderPath, backupPath);
+                    progress.MessageWithoutLocalizing(
+                        "The import failed, so the book's recordings were put back as they were."
+                    );
+                }
+                catch (Exception restoreError)
+                {
+                    // Report this, but let the import's own exception, the real problem, go on.
+                    progress.MessageWithoutLocalizing(
+                        $"The import failed, and its recordings could not be put back ({restoreError.Message}). The original book, with its recordings, is in the backup at {backupPath}.",
+                        ProgressKind.Error
+                    );
+                }
+                throw;
+            }
+            return backupPath;
+        }
+
+        /// <summary>
+        /// Set just before the import saves the book, so ImportWithBackupAsync knows not to restore
+        /// the old recordings if something fails after that.
+        /// </summary>
+        public bool HasStartedSaving { get; private set; }
+
+        /// <summary>
+        /// Replace the book's audio folder with the one in the backup made by
+        /// BookStorage.SaveCopyBeforeImportOverwrite.
+        /// </summary>
+        private static void RestoreAudioFromBackup(string bookFolderPath, string backupPath)
+        {
+            var audioFolder = Path.Combine(bookFolderPath, "audio");
+            if (Directory.Exists(audioFolder))
+                RobustIO.DeleteDirectoryAndContents(audioFolder);
+            using (var zipFile = new ICSharpCode.SharpZipLib.Zip.ZipFile(backupPath))
+            {
+                foreach (ICSharpCode.SharpZipLib.Zip.ZipEntry entry in zipFile)
+                {
+                    // Zip entry names always use forward slashes.
+                    if (!entry.IsFile || !entry.Name.StartsWith("audio/", StringComparison.Ordinal))
+                        continue;
+                    var destPath = Path.Combine(bookFolderPath, entry.Name);
+                    Directory.CreateDirectory(Path.GetDirectoryName(destPath));
+                    using (var input = zipFile.GetInputStream(entry))
+                    using (var output = RobustFile.Create(destPath))
+                        input.CopyTo(output);
+                }
+            }
         }
 
         private Browser _browser;
@@ -234,11 +322,26 @@ namespace Bloom.Spreadsheet
                 // The ToLocalHost() seems to be necessary to prevent CORS errors loading the
                 // javascript. This somehow was not an issue with the webpack build but is
                 // with Vite.
-                _browser.Navigate(rootPage.ToLocalhost(), false);
-                await signal.WaitAsync(); // Following code happens after browser has navigated
+                var url = rootPage.ToLocalhost();
+                // If the page fails to load (for example, because no local server is listening),
+                // give up with a clear error rather than wait forever. One deadline covers both
+                // the navigation and the bundle appearing.
+                const int timeLimitMs = 20000;
+                var timer = Stopwatch.StartNew();
+                var pageNotLoaded = new ApplicationException(
+                    $"The page spreadsheet import needs for processing audio ({url}) did not load."
+                );
+                _browser.Navigate(url, false);
+                // Following code happens after browser has navigated
+                if (!await signal.WaitAsync(timeLimitMs))
+                    throw pageNotLoaded;
                 // This extra check that spreadsheetBundle actually exists might not be necessary.
                 while (await _browser.GetStringFromJavascriptAsync($"spreadsheetBundle") == null)
+                {
+                    if (timer.ElapsedMilliseconds > timeLimitMs)
+                        throw pageNotLoaded;
                     await Task.Delay(10);
+                }
             }
             return _browser;
         }
@@ -280,6 +383,40 @@ namespace Bloom.Spreadsheet
         public async Task<List<string>> ImportAsync(
             InternalSpreadsheet sheet,
             IWebSocketProgress progress = null
+        )
+        {
+            try
+            {
+                return await ImportContentAsync(sheet, progress);
+            }
+            finally
+            {
+                // Whether or not the import succeeded, don't leave a browser running.
+                DisposeBrowser();
+            }
+        }
+
+        /// <summary>
+        /// Dispose the browser GetBrowserAsync made, if any, on the thread it belongs to.
+        /// </summary>
+        private void DisposeBrowser()
+        {
+            if (_browser == null)
+                return;
+            Action disposeBrowser = () =>
+            {
+                _browser.Dispose();
+                _browser = null;
+            };
+            if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
+                ControlForInvoke.Invoke(disposeBrowser);
+            else
+                disposeBrowser();
+        }
+
+        private async Task<List<string>> ImportContentAsync(
+            InternalSpreadsheet sheet,
+            IWebSocketProgress progress
         )
         {
             _sheet = sheet;
@@ -425,21 +562,10 @@ namespace Bloom.Spreadsheet
             if (_collectionSettings != null && _book != null)
             {
                 ImportLanguageNames();
+                HasStartedSaving = true; // BringBookUpToDate saves the book
                 _book.BringBookUpToDate(new NullProgress());
             }
 
-            if (_browser != null)
-            {
-                Action disposeBrowser = () =>
-                {
-                    _browser.Dispose();
-                    _browser = null;
-                };
-                if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
-                    ControlForInvoke.Invoke(disposeBrowser);
-                else
-                    disposeBrowser();
-            }
             Progress("Done");
             return _warnings;
         }
