@@ -235,18 +235,23 @@ namespace Bloom.Spreadsheet
                 // javascript. This somehow was not an issue with the webpack build but is
                 // with Vite.
                 var url = rootPage.ToLocalhost();
-                _browser.Navigate(url, false);
-                await signal.WaitAsync(); // Following code happens after browser has navigated
-                // This extra check that spreadsheetBundle actually exists might not be necessary.
-                // But if the page failed to load (for example, because no local server is listening),
-                // the bundle will never appear, so give up with a clear error rather than wait forever.
+                // If the page fails to load (for example, because no local server is listening),
+                // give up with a clear error rather than wait forever. One deadline covers both
+                // the navigation and the bundle appearing.
+                const int timeLimitMs = 20000;
                 var timer = Stopwatch.StartNew();
+                var pageNotLoaded = new ApplicationException(
+                    $"The page spreadsheet import needs for processing audio ({url}) did not load."
+                );
+                _browser.Navigate(url, false);
+                // Following code happens after browser has navigated
+                if (!await signal.WaitAsync(timeLimitMs))
+                    throw pageNotLoaded;
+                // This extra check that spreadsheetBundle actually exists might not be necessary.
                 while (await _browser.GetStringFromJavascriptAsync($"spreadsheetBundle") == null)
                 {
-                    if (timer.ElapsedMilliseconds > 20000)
-                        throw new ApplicationException(
-                            $"The page spreadsheet import needs for processing audio ({url}) did not load."
-                        );
+                    if (timer.ElapsedMilliseconds > timeLimitMs)
+                        throw pageNotLoaded;
                     await Task.Delay(10);
                 }
             }
@@ -290,6 +295,40 @@ namespace Bloom.Spreadsheet
         public async Task<List<string>> ImportAsync(
             InternalSpreadsheet sheet,
             IWebSocketProgress progress = null
+        )
+        {
+            try
+            {
+                return await ImportContentAsync(sheet, progress);
+            }
+            finally
+            {
+                // Whether or not the import succeeded, don't leave a browser running.
+                DisposeBrowser();
+            }
+        }
+
+        /// <summary>
+        /// Dispose the browser GetBrowserAsync made, if any, on the thread it belongs to.
+        /// </summary>
+        private void DisposeBrowser()
+        {
+            if (_browser == null)
+                return;
+            Action disposeBrowser = () =>
+            {
+                _browser.Dispose();
+                _browser = null;
+            };
+            if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
+                ControlForInvoke.Invoke(disposeBrowser);
+            else
+                disposeBrowser();
+        }
+
+        private async Task<List<string>> ImportContentAsync(
+            InternalSpreadsheet sheet,
+            IWebSocketProgress progress
         )
         {
             _sheet = sheet;
@@ -438,18 +477,6 @@ namespace Bloom.Spreadsheet
                 _book.BringBookUpToDate(new NullProgress());
             }
 
-            if (_browser != null)
-            {
-                Action disposeBrowser = () =>
-                {
-                    _browser.Dispose();
-                    _browser = null;
-                };
-                if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
-                    ControlForInvoke.Invoke(disposeBrowser);
-                else
-                    disposeBrowser();
-            }
             Progress("Done");
             return _warnings;
         }

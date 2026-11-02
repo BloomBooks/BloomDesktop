@@ -18,6 +18,9 @@ namespace BloomTests.CLI
         private string _bookFile;
         private string _collectionFile;
 
+        /// <summary>
+        /// Make a book folder with its .htm file, and a collection file.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -30,6 +33,9 @@ namespace BloomTests.CLI
             RobustFile.WriteAllText(_collectionFile, "<Collection/>");
         }
 
+        /// <summary>
+        /// Remove the test's files.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {

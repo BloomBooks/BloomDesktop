@@ -33,6 +33,9 @@ namespace BloomTests.CLI
         private string _bookFolder;
         private string _spreadsheetPath;
 
+        /// <summary>
+        /// Make a book to import into, and a spreadsheet with one sentence and its recording.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -71,6 +74,9 @@ namespace BloomTests.CLI
             sheet.WriteToFile(_spreadsheetPath);
         }
 
+        /// <summary>
+        /// Remove the test's files.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {
