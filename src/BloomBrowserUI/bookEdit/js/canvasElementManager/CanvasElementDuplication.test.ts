@@ -13,7 +13,8 @@ vi.mock("comicaljs", () => ({
         convertBubbleJsonToCanvas: vi.fn(),
     },
 }));
-vi.mock("../../../utils/bloomApi", () => ({
+vi.mock("../../../utils/bloomApi", async (importOriginal) => ({
+    ...((await importOriginal()) as object),
     postData: vi.fn(),
     postJson: vi.fn(),
 }));

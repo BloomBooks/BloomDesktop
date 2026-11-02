@@ -79,6 +79,7 @@ export interface IToolboxFrameExports {
 
     canUndo(): boolean;
     undo(): void;
+    readerToolsHandleUndoKeys(): boolean;
 
     applyToolboxStateToPage(): void;
 
@@ -128,6 +129,15 @@ export function canUndo(): boolean {
         readerToolsModel.shouldHandleUndo() &&
         readerToolsModel.canUndo()
     );
+}
+
+/**
+ * Whether the reader tools take Ctrl+Z and Ctrl+Y in a text block. Their key handler on each
+ * editable claims both keys whenever a markup tool is selected (see decodableReaderTool.tsx), and
+ * the page's own handlers of those keys must leave them to it then.
+ */
+export function readerToolsHandleUndoKeys(): boolean {
+    return !!getTheOneReaderToolsModel()?.shouldHandleUndo();
 }
 
 export function undo() {
@@ -186,6 +196,7 @@ const toolboxBundle: ToolboxBundleApi = {
     TalkingBookTool,
     canUndo,
     undo,
+    readerToolsHandleUndoKeys,
     setActiveDragActivityTab,
     getTheOneAudioRecorderForExportOnly,
     copyLeveledReaderStatsToClipboard,

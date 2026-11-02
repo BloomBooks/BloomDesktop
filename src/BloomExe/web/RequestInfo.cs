@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2014 SIL International
+// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using System;
@@ -76,8 +76,10 @@ namespace Bloom.Api
         //used when an anchor has given us info, but we don't actually want the browser to navigate
         public void ExternalLinkSucceeded()
         {
-            _actualContext.Response.StatusCode = 200; //Completed
-            HaveFullyProcessedRequest = true;
+            // 204 No Content tells a browser following an anchor to stay where it is. We must
+            // actually send it: a reply that is never sent leaves the connection open, and after
+            // a handful of those the browser runs out of connections and other API calls stall.
+            WriteNoContent();
         }
 
         public void WriteNoContent()

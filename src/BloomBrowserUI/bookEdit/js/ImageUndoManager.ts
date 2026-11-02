@@ -34,6 +34,8 @@ type ImageOperationUndoItem =
           cropInfo: IImageCropInfo;
           // The img's inline transform: the rotation and mirror of the picture being replaced.
           imageTransform: string;
+          // The rotation of the canvas element box, which a new picture also takes away.
+          elementRotation: number;
           // The size and place of the canvas element that holds the picture. A page
           // background element takes the shape of its picture, crop and rotation, and the
           // size code keeps a cropped picture's element shape, so Undo has to put this back
@@ -69,6 +71,7 @@ export interface ImageUndoManagerHost {
         imgOrImageContainer: HTMLElement,
         cropInfo?: IImageCropInfo,
         imageTransform?: string,
+        elementRotation?: number,
     ): void;
     // Put the frame, the game target and the tool panel back in step after an undo that only
     // changed a rotation, a mirror or a crop.
@@ -95,6 +98,7 @@ export class ImageUndoManager {
     // This avoids adding undo records for canceled/failed/mismatched operations.
     public prepareUndoForImageOperation(imageOrContainer: HTMLElement): void {
         this.clearImageOperationUndoOnPageChange();
+        const canvasElement = this.getCanvasElement(imageOrContainer);
         this.pendingImageOperationUndo = {
             kind: "restoreImage",
             element: imageOrContainer,
@@ -102,9 +106,10 @@ export class ImageUndoManager {
             cropInfo: this.getCurrentImageCropInfo(imageOrContainer),
             imageTransform:
                 this.getImageElement(imageOrContainer)?.style.transform ?? "",
-            elementGeometry: this.getElementGeometry(
-                this.getCanvasElement(imageOrContainer),
-            ),
+            elementRotation: canvasElement
+                ? getCanvasElementRotation(canvasElement)
+                : 0,
+            elementGeometry: this.getElementGeometry(canvasElement),
         };
     }
 
@@ -156,6 +161,22 @@ export class ImageUndoManager {
             elementGeometry: this.getElementGeometry(canvasElement),
             textWhenRecorded: textBoxContents(canvasElement),
         });
+    }
+
+    /**
+     * Drop the Rotate right, Flip and rotation handle steps recorded for this canvas element.
+     * Reset Image calls this: it is not itself undoable, and each of those steps puts back a
+     * turn, mirror or crop from before the reset, so an Undo after it would undo the reset.
+     * A change of picture is kept: undoing it brings back the old picture with the turn and
+     * crop that picture had, which is still a sensible way back.
+     */
+    public forgetImageOperationUndoFor(canvasElement: HTMLElement): void {
+        this.clearImageOperationUndoOnPageChange();
+        this.imageOperationUndoStack = this.imageOperationUndoStack.filter(
+            (item) =>
+                item.kind !== "restoreImageTransform" ||
+                item.canvasElement !== canvasElement,
+        );
     }
 
     /** Clear all pending/recorded image operation undo state. */
@@ -250,6 +271,7 @@ export class ImageUndoManager {
                     undoItem.element,
                     undoItem.cropInfo,
                     undoItem.imageTransform,
+                    undoItem.elementRotation,
                 );
                 const page = undoItem.element.closest(
                     ".bloom-page",
@@ -458,6 +480,10 @@ export function pushUndoForCanvasElementRotation(
         canvasElement,
         rotationBeforeDrag,
     );
+}
+
+export function forgetImageOperationUndoFor(canvasElement: HTMLElement): void {
+    getImageUndoManager().forgetImageOperationUndoFor(canvasElement);
 }
 
 export function clearImageOperationUndoState(): void {

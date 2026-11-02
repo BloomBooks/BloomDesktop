@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.ToPalaso;
 using Bloom.web;
 using L10NSharp;
+using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Progress;
@@ -153,7 +154,7 @@ namespace Bloom.Publish.PDF
 
             var progress = new NullProgress();
             // NB: WebView2 does not appear to support progress reporting while making PDFs.
-            var res = runner.StartWithInvariantCulture(
+            var res = runner.Start(
                 exePath,
                 arguments,
                 Encoding.UTF8,

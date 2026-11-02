@@ -61,7 +61,7 @@ import {
 import { typeWithKeys } from "../helpers/keys";
 import { realClick } from "../helpers/realClick";
 import { saveScreenshotIfAsked } from "../helpers/screenshot";
-import { undo } from "../helpers/workspace";
+import { canUndo, undo } from "../helpers/undo";
 
 // The Canvas tool is a Pro feature, so the collection is on the Test enterprise subscription.
 test.use({
@@ -378,7 +378,7 @@ test.describe("rotating and flipping pictures", () => {
         await saveScreenshotIfAsked([canvas(page)], "12-undo-rotate");
     });
 
-    test("Reset Image clears a crop and a mirror, but leaves a box rotated with the knob [Test Case ID 827]", async ({
+    test("Reset Image clears a crop, a mirror, and a box rotated with the knob [Test Case ID 827]", async ({
         page,
     }) => {
         await goToPage(page, itemsPage.id);
@@ -407,13 +407,17 @@ test.describe("rotating and flipping pictures", () => {
         await expect
             .poll(async () => (await getImagePlacement(page, picture)).cropped)
             .toBe(false);
-        // The mirror is gone, and the box is still rotated the 90 degrees the knob gave it.
+        // The mirror is gone, and so is the 90 degrees the knob gave the box.
         await expect
             .poll(async () => getCanvasElementRotation(picture))
-            .toBe(90);
+            .toBe(0);
         await expect
             .poll(async () => getPictureRotation(page, picture))
-            .toEqual(ROTATED_90);
+            .toEqual(kUprightPicture);
+        expect(
+            await isResetImageEnabled(page),
+            "Reset Image should be greyed out again once it has put the picture back.",
+        ).toBe(false);
         await saveScreenshotIfAsked([canvas(page)], "15-after-reset");
     });
 
@@ -422,10 +426,11 @@ test.describe("rotating and flipping pictures", () => {
     }) => {
         await goToPage(page, itemsPage.id);
         const picture = await selectCanvasElement(page, overlayPicture);
-        // Left rotated 90 degrees by the test before.
-        await expect
-            .poll(async () => getCanvasElementRotation(picture))
-            .toBe(90);
+        expect(
+            await getCanvasElementRotation(picture),
+            "The Reset Image test should have left the box straight.",
+        ).toBe(0);
+        expect(await dragRotateHandle(page, 88)).toBe(90);
 
         await flipSelectedImage(page, "horizontal");
         await expect
@@ -800,6 +805,84 @@ test.describe("rotating and flipping pictures", () => {
                     "Once the typing was gone, Undo did not take back the rotation.",
             })
             .toBeCloseTo(angle, 1);
+    });
+
+    test("Reset Image straightens a picture that Rotate right turned, and Undo does not turn it back [Test Case ID 827]", async ({
+        page,
+    }) => {
+        await goToPage(page, itemsPage.id);
+        const picture = await selectCanvasElement(page, overlayPicture);
+        // Start from the picture as it arrived; earlier tests left it turned and mirrored.
+        await resetSelectedImage(page);
+        await expect
+            .poll(async () => getCanvasElementRotation(picture))
+            .toBe(0);
+
+        await rotateSelectedImageRight90Degrees(page);
+        await rotateSelectedImageRight90Degrees(page);
+        // Sanity check: Rotate right turned the whole box, twice, and Undo has something to do.
+        await expect
+            .poll(async () => getCanvasElementRotation(picture))
+            .toBe(180);
+        expect(await canUndo(page)).toBe(true);
+        expect(await isResetImageEnabled(page)).toBe(true);
+
+        await resetSelectedImage(page);
+        await expect
+            .poll(async () => getCanvasElementRotation(picture), {
+                message: "Reset Image left the box that Rotate right turned.",
+            })
+            .toBe(0);
+        await expect
+            .poll(async () => getPictureRotation(page, picture))
+            .toEqual(kUprightPicture);
+        expect(
+            await isResetImageEnabled(page),
+            "Reset Image should be greyed out once it has put the picture back.",
+        ).toBe(false);
+        // Each Rotate right step would put back the angle from before it, turning the reset
+        // picture to 90 degrees again.
+        expect(
+            await canUndo(page),
+            "After Reset Image, Undo still offers to take back a rotation.",
+        ).toBe(false);
+        await saveScreenshotIfAsked(
+            [canvas(page)],
+            "36-reset-after-rotate-right",
+        );
+    });
+
+    test("Change Image gives a turned and mirrored picture an upright, unmirrored new one [Test Case ID 827]", async ({
+        page,
+    }) => {
+        await goToPage(page, itemsPage.id);
+        const picture = await selectCanvasElement(page, overlayPicture);
+        expect(
+            await getCanvasElementRotation(picture),
+            "The Reset Image test should have left the box straight.",
+        ).toBe(0);
+        await rotateSelectedImageRight90Degrees(page);
+        await flipSelectedImage(page, "horizontal");
+        // Sanity check: the box is turned and the picture mirrored.
+        await expect
+            .poll(async () => getPictureRotation(page, picture))
+            .toEqual(mirroredAboutOwnAxis(ROTATED_90, "horizontal"));
+
+        await chooseImageFile(page, PICTURE_FILE, picture);
+        await expect
+            .poll(async () => getCanvasElementRotation(picture), {
+                message: "The new picture's box kept the old picture's turn.",
+            })
+            .toBe(0);
+        await expect
+            .poll(async () => getPictureRotation(page, picture))
+            .toEqual(kUprightPicture);
+        await selectCanvasElement(page, overlayPicture);
+        expect(
+            await isResetImageEnabled(page),
+            "A new picture has nothing for Reset Image to put back.",
+        ).toBe(false);
+        await saveScreenshotIfAsked([canvas(page)], "37-change-image-upright");
     });
 });
 

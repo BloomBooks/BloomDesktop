@@ -33,7 +33,7 @@ Where the mockup and current code disagree and the code is newer, keep the code.
 | Project Information: Country, Province, District, Collection Name | Places group on Front & Back Matter; Collection Name on **Advanced** (disabled in a Team Collection) | Intent. |
 | Advanced: auto update, QR codes, experimental features | Advanced: auto update, collection name. QR codes move to Front & Back Matter with a new live badge preview. Experimental features get their own page. | Intent; the QR preview is new UI. |
 | Subscription, Team Collection tabs (React) | Same content | Reuse. |
-| Restart reminder, OK becomes "Restart"; Help button per tab | Not shown (mockups have no buttons) | Unspecified; see Q7, Q8. |
+| Restart reminder, OK becomes "Restart"; Help button per tab | Not shown (mockups have no buttons) | Built anyway; see Q7, Q8. |
 | Older Notion design: Appearance tab (collection defaults for Book Settings), AI tab | Absent | Dropped from this project (Q2). |
 
 The 2023 cards BL-12408, BL-12416, BL-12417, BL-12418 are superseded by BL-16733 to BL-16739.
@@ -55,16 +55,16 @@ What a page card builds on:
   control. The POST populates the view from the posted JSON, then `CollectionSettingsUpdater.Apply`
   runs the rules that span values and saves.
 - **Rules that span values** live in `CollectionSettingsUpdater`: the languages (applied together,
-  reusing `UpdateLanguageSettings`), the xmatter check, and, ported from the WinForms OK handler
-  and waiting for their cards, `ApplySubscriptionAndBookshelf` (Pro tier refused in a Team
-  Collection; the BL-15056 expired-bookshelf cases) and `ApplyAdministrators`. `Apply` already
-  calls the last two with "unchanged" on every save, which keeps an expired subscription's
-  bookshelf in the file.
-- **Pages.** Each built page is a hook in its own file under `collection/settingsPages/` that
-  returns its `ConfigrPage` (Config-R throws, blanking the UI, if a pane's child is not a
-  `ConfigrPage` or a page's child is not a `ConfigrGroup`, so a page cannot be a component of its
-  own). `ExperimentalPage.tsx` is the first; each card moves its page out of the placeholders in
-  `CollectionSettingsDialog.tsx` the same way.
+  reusing `UpdateLanguageSettings`), the xmatter check, making a Team Collection, and, ported
+  from the WinForms OK handler, `ApplySubscriptionAndBookshelf` (Pro tier refused in a Team Collection; the BL-15056
+  expired-bookshelf cases) and the administrators (only in a Team Collection). `Apply` calls the first on every save,
+  which keeps an expired subscription's bookshelf in the file.
+- **Pages.** Each page is a hook in its own file under `collection/settingsPages/` that takes the
+  dialog's `ISettingsPageContext` and returns an `ISettingsPage` holding its `ConfigrPage`
+  (Config-R throws, blanking the UI, if a pane's child is not a `ConfigrPage` or a page's child is
+  not a `ConfigrGroup`, so a page cannot be a component of its own). The dialog only lists the
+  pages: anything one page needs goes through the context, so a page added or changed touches
+  the dialog only to list it. Each card replaces its `usePlaceholderPage` entry the same way.
 - **Validation and clean-up belong in the client** (Config-R can validate a field; it does not
   trim, so add that to Config-R if a page needs it). The POST has no validation reply.
 - **Restart.** The dialog compares `restartPaths`, shows the restart reminder and relabels OK; C#
@@ -75,6 +75,11 @@ What a page card builds on:
 - **Chrome.** Both Config-R settings dialogs (this and Book Settings) use the usual `BloomDialog`
   shape and share `ConfigrDialogMiddle` and the 900×720 size (`react_components/ConfigrDialogMiddle.tsx`).
   Search is off.
+- **Which page shows.** Config-R reports the showing top-level page (`onTopLevelPageChange`), and
+  a ref on the pane switches to one while it stays open, keeping the user's edits
+  (`selectTopLevelPage(pageKey)`, as clicking its tab does; sillsdev/config-r#29, needs
+  `@sillsdev/config-r` 1.0.0-alpha.30). Help uses the report; going to a page from inside the
+  dialog (a subscription badge) uses the ref, not a remount of the pane.
 - **The WinForms dialog is untouched**, including `DialogBeingEdited` and the `settings/*` endpoints
   its React tabs post to. The two save paths share nothing.
 - **Strings.** The new page labels are `translate="no"` until the pages are real; reuse existing
@@ -82,7 +87,11 @@ What a page card builds on:
 
 **Known gap for reused components.** The Subscription, Team Collection and bookshelf components
 post their edits to `settings/*` endpoints that only feed the WinForms dialog. The first card that
-reuses one decides how its edits reach the React POST.
+reuses one decides how its edits reach the React POST. BL-16734 did it for the subscription: the
+dialog keeps the code being typed in its own state (the editor is not a Config-R control), puts it
+into `values.subscription.code` for the restart check and the POST, and the reused components
+describe it with a stateless `GET settings/subscription?code=`, so Cancel has nothing to reset.
+BL-16735 did the same for the Team Collection values.
 
 ## 4. Decisions
 
@@ -96,21 +105,26 @@ reuses one decides how its edits reach the React POST.
 
 **Tentative (John, 2026-09-22; may be overridden):**
 
-- **Q5 Page Numbering Style:** stays per collection, on Front & Back Matter next to Style.
+- **Q5 Page Numbering Style:** stays per collection, and goes with the Languages page
+  (BL-16739), as the mockup shows (Andrew, 2026-10-21). It is not on Front & Back Matter.
 - **Q6 New per-language fields:** UI Font, Keyboard, Common Name are out (no backing data).
   Alphabet and Sentence ending punctuation are in BL-16739; they are reader-tool settings stored
   per language in `ReaderToolsSettings-<tag>.json` under app data, not in the collection, so
   moving them is a data change. Ask Hatton whether these were meant for 6.6.
 - **Q7 Restart reminder and OK→Restart:** keep (built).
-- **Q8 Help:** one Help button for the selected page. Config-R does not report the current page,
-  so this needs a way to know it (track nav clicks, or add `onPageChange` to Config-R).
+- **Q8 Help:** one Help button for the selected page (built, BL-17032), using Config-R's new
+  page report. Languages, Front & Back Matter and Subscription keep the old tabs' topics; Team
+  Collection, Bloom Library, Advanced and Experimental open the general Settings topic until the
+  help gains pages of their own (`collection/collectionSettingsHelpTopic.ts`).
 - **Q9 Experimental page:** a list of the features that exist (only Team Collections today);
   each unmerged feature adds itself when it lands. Experimental book sources is dead (turned off
   at every startup, never shown) and stays out.
 - **Q10 Subscription gating on pages:** the badge beside the control, as in Book Settings.
 - **Q11 Language "Change…":** the ethnolib chooser in a nested React dialog.
-- **Q12 Creating a Team Collection from the dialog:** a pending change applied on OK, so Cancel
-  abandons it (today it restarts immediately).
+- **Q12 Creating a Team Collection from the dialog:** Create happens, and Bloom restarts, when the
+  user confirms the Create dialog, as in the old dialog. That dialog is already a deliberate
+  confirmation (a folder and four acknowledgements), so users expect the Team Collection then;
+  its own Cancel is the place to back out.
 - **Q13 Size:** fixed 900×720 (built). **Q14 Rename:** behaves as today; disabled in a Team
   Collection with the existing explanation. **Q15:** no file-format migration is needed for
   anything here except Q6's fields.
@@ -120,10 +134,16 @@ reuses one decides how its edits reach the React POST.
 Each is one card, independent once the shell is in. For each: what it contains, and what must not
 get lost.
 
-**BL-16733 Front & Back Matter.** Style (xmatter select with description, honoring a
-branding-forced pack), QR Codes (show, caption, and a new live badge preview: C# builds the badge
-today, so the preview needs an endpoint), Places (Country, Province, District, trimmed in the
-client), Page Numbering Style (Q5). Values for xmatter, QR and places already exist in the model.
+**BL-16733 Front & Back Matter.** Built: Style (the packs, and whether the branding chose one,
+come in the GET collection/settings reply, and the value is the pack the books really get; the
+chosen one's description shows beneath), QR Codes (show, caption, and a live badge preview: C# builds
+its HTML with the code that puts the badge in books, from the dialog's values via
+`GET collection/qrBadge`, so the preview can follow a language being edited, and the dialog
+styles it with `bloom-badge.less`, which books use too), Places
+(Country, Province, District). Page Numbering Style is not on this page; it goes with Languages
+(Q5). The packs offered follow the saved subscription; a typed code whose branding chooses a pack
+gets it as C# saves. The caption box opens with the default caption filled in and C# stores it
+only if changed (see FrontBackMatterValues.QrcodeCaption).
 
 **BL-16737 Advanced.** Automatically update Bloom (a user-level setting), Collection Name
 (disabled in a Team Collection; the model already queues the rename; trim in the client).
@@ -131,20 +151,36 @@ client), Page Numbering Style (Q5). Values for xmatter, QR and places already ex
 **BL-16736 Bloom Library.** The bookshelf, with subscription gating (Q10). Post it and hand it to
 `ApplySubscriptionAndBookshelf`, which has the expired-bookshelf rules.
 
-**BL-16734 Subscription.** Reuse `SubscriptionSettings`. Hand the entered subscription to
-`ApplySubscriptionAndBookshelf` (its descriptor-change bookshelf clearing never fires; BL-16904).
-Reset its preview on Cancel. The "fix invalid branding" startup path must open this page. Decide
-whether the other pages' subscription gating (Experimental's Team Collections box, the bookshelf)
-should follow a code typed here but not yet saved; `features/status` only knows the saved one. If
-so, replace the Experimental page's own `useGetFeatureStatus` call with a small dialog-level
-subscription lookup that every page reads.
+**BL-16734 Subscription.** Built. The page lays out its own markup around the shared
+`SubscriptionControls` and `SubscriptionStatus`; the WinForms tab is a self-contained copy
+(`LegacySubscriptionSettings`, deleted whole in the cutover). The entered code goes
+to `ApplySubscriptionAndBookshelf` (its descriptor-change bookshelf clearing never fires;
+BL-16904), before the xmatter check, since the branding can choose the pack. It also moved the
+"open settings on the Subscription page" callers to the new dialog. Subscription badges and gated
+menu items call `showCollectionSettingsDialog` in the browser (from an iframe, through the
+workspace bundle's exports); `common/showSettingsDialog` remains for the comic book ReadMe links,
+and `CheckForInvalidBranding` launches it from C#. That startup check never fires (nothing sets
+`InvalidBranding`); it is removed in the cutover (section 6), not revived. Until the cutover, a
+badge on one of the WinForms dialog's own tabs does nothing. A badge on one of the dialog's own
+pages switches the open pane to the Subscription page, keeping the edits so far,
+through the page control Config-R gains in BL-17032.
+The other pages' gating still follows the saved subscription, not a code typed but not saved.
 
-**BL-16735 Team Collection.** Reuse `TeamCollectionSettingsPanel` with its overlay and warning.
-Validate administrator emails in the client (`CollectionSettings.ValidateAdministrators` has the
-rules) and hand them to `ApplyAdministrators` (`Apply` calls it with null today, which does
-nothing; it is there for this card). Hide the page when the feature is off and this is
-not a TC, and when editing a Bloom Library book (as `CollectionSettingsDialog.cs` does). Creating
-a TC per Q12.
+**BL-16735 Team Collection.** Built. Reuses the WinForms tab's panel (`TeamCollectionSettings`,
+with its overlay and warning). Like the subscription code, its values (`teamCollection`:
+administrators, and the folder to create a TC in) are not Config-R values; the page edits them
+through the page context's `editValues`. The administrators are checked in the client
+(`teamCollection/administrators.ts`, the rules of `CollectionSettings.ValidateAdministrators`): the
+page reports it cannot save, so OK is disabled, and the field says why. A change goes
+to `Apply`. The page is hidden when the feature is off (as saved) and this is not a
+TC, and in a collection holding a Bloom Library book downloaded for editing (`editingABlorgBook`
+in the GET). Creating a TC (Q12): "Create a Team Collection" opens the existing dialog in
+the browser; its Create & Restart has the settings dialog save at once with the chosen folder, and
+`Apply` makes the TC after saving the user's other edits (so they reach the shared copy), through
+`TeamCollectionApi.CreateTeamCollection`, then Bloom restarts. While the collection name has an
+unsaved edit, Create is disabled with a note to save the rename first: the rename only happens as
+Bloom restarts, so the TC would get the old name, which is also the name the Create dialog asks
+the user to approve.
 
 **BL-16739 Languages.** The large one. L1, L2, L3, Sign Language: name with "Change…" (Q11),
 Default Font, "Remove" for L3 and Sign Language, and "More" (Q3) with fonts, line spacing, tool
@@ -156,7 +192,7 @@ were on another tab there); in the values the font is already part of each langu
 **BL-16738 Experimental.** Per Q9. Built: a feature that lands adds an `ExperimentalFeatureSetting`
 row in `settingsPages/ExperimentalPage.tsx` and a property in `ExperimentalValues`.
 
-## 6. Cutover (new card)
+## 6. Cutover (BL-17042)
 
 - First go through the WinForms OK handler (`_okButton_Click`) line by line and confirm each rule
   exists in the React path or was dropped on purpose.
@@ -164,10 +200,13 @@ row in `settingsPages/ExperimentalPage.tsx` and a property in `ExperimentalValue
   bundles and their vite entries, `DialogBeingEdited`, and the legacy launch path. The new save
   path still reads `CollectionSettingsDialog.AutoUpdateSupportedOnThisPlatform` (in
   `AdvancedValues`), so that flag needs a new home when the WinForms class goes.
-- Point the "open settings on the Subscription page" callers (subscription badges, menu items,
-  `CheckForInvalidBranding`) at the new dialog. A caller in an iframe reaches the top frame's
-  `showCollectionSettingsDialog` through the workspace bundle's exports, as `showBookSettingsDialog`
-  does; the Comic Book ReadMe links are `fetch`es in book content, so they keep an endpoint.
+- The "open settings on the Subscription page" callers already open the new dialog (BL-16734).
+  The `forFixingEnterpriseSubscription` parameter of `OpenLegacySettingsDialog` goes with it.
+- Remove the dead invalid-branding startup check: `CollectionSettings.InvalidBranding`,
+  `WorkspaceView.CheckForInvalidBranding`, and its callers in `Shell` and `Program.cs`. Nothing
+  has set `InvalidBranding` since "Generalize Subscriptions (BL-14379)" (March 2025), so the check
+  always returns at once. Bringing back a startup prompt for an expired or wrong code would be a
+  separate product decision; the Collections tab's expiry banner covers that case today.
 - Mark unused `CollectionSettingsDialog.*` strings obsolete (never delete), update the help
   mapping and help pages, add an e2e test that opens the dialog and changes a setting (and update
   `src/BloomE2E/AUTOMATION-DEBT.md`), post test ideas on BL-16271.

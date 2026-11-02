@@ -178,6 +178,18 @@ seen again 2026-10-06 (`collection-settings-advanced.spec.ts`, BL-16737): once i
 of that file, and this time *after* its first test had passed, so a worker can also die between
 tests, not only at startup. The next five runs of the same file were green.
 
+seen again 2026-10-20 (`collection-settings-subscription.spec.ts`, BL-16734), and this time it
+followed one test: its first test, which makes a book from Basic Book and right-clicks it on the
+Collections tab, crashed its worker in about one run in ten (four times in some thirty runs, alone
+or with the rest of the file), always reported at 0ms. Run on its own eight times each, the same
+file's cancel test (no book, never leaves the Collections tab) and
+`collection-settings-bloom-library.spec.ts` never crashed. With `DEBUG=pw:*` the book test passed
+eight runs in a row, so the extra logging hides it, and `NODE_OPTIONS=--report-on-fatalerror`
+wrote no report: the worker dies by a fail-fast that skips Node's own reporting. Later the same
+day it struck `collection-settings-bloom-library.spec.ts`'s first test, which makes no book and
+had passed eight times alone, so making a book is not the trigger. The next thing to try is a
+Windows crash dump of the worker (WER LocalDumps for node.exe needs an administrator).
+
 ## An api that captures CollectionSettings.Subscription cannot see a subscription change
 
 `FeatureStatusApi` used to snapshot `collectionSettings.Subscription` in its constructor, so
@@ -706,6 +718,24 @@ that refuses to start while a foreign e2e Bloom is up, would turn a slow flake i
 message. Worth doing if agents keep running two worktrees at once.
 (Found 2026-09-05, gating the table specs.)
 
+## A launched Bloom sometimes exposes no debugging target at all
+
+Once in a nine-file run on 2026-09-07, `inline-images-zoom.spec.ts` failed before any test code
+ran: `Bloom's WebView2 never exposed the shell document it is driving within 90s`, with
+`Targets seen: none` -- so it is not the wrong-document case above (that one lists the documents
+it found), and not the worker crash either (the worker was alive and reported the failure). The
+spec passed on its own immediately afterwards, and the other eight files in the same run were
+green.
+
+`Targets seen: none` says the debugging listener answered but had nothing on it, which points at
+Bloom still starting rather than at anything the test did. Whether the 90 seconds is simply too
+short on a loaded machine is not known; nobody has caught it with Bloom's own log alongside.
+
+How to react, until it is understood: **re-run the file**, and treat a failure that follows one
+file across runs as a real problem in that file rather than this entry. Fix direction: have
+`findShellPage` say what Bloom's process was doing when it gave up (it has the pid), so the next
+occurrence distinguishes a slow start from a Bloom that never got there.
+
 ## A title typed on the cover of a new book can fail to reach the collection
 
 `import-recording.spec.ts` made a book under the Sample-Pro branding (`e2e/setBranding`,
@@ -946,6 +976,17 @@ failure is a refused connect or a reset, and what else the runner was doing at t
 How to react meanwhile: **do not re-run and move on without first looking for the trace
 artifact** (`component-tester-traces` on the nightly run). A second occurrence with no trace
 collected is a wasted one.
+
+The second occurrence (2026-10-27, `bookgridsetup-extended.uitest.ts:365`) left a trace. It
+failed about 15 ms into the navigation, which is too fast to be a refused connect on Windows.
+Chromium uses ERR_CONNECTION_FAILED for a socket error it has no specific name for, and the trace
+doesn't record which. Ten local runs of the suite (1,460 tests) did not reproduce it. So
+`setTestComponent` now catches a failed `net::ERR_` navigation and adds to its message what
+`describeConnectionFailure.ts` finds: a raw TCP connect and an HTTP GET to the dev server from
+Node, and netstat's count of TCP connections by state. If Node gets through, look inside Chromium
+next: run it with `--log-net-log` (about 425 MB for a full suite, before compression). If Node
+fails too, or TIME_WAIT is huge, look at the runner: trace Windows' TCPIP provider into a ring
+buffer.
 (Found 2026-09-21.)
 
 ## The suites test Bloom run from the source tree, not the app a user installs

@@ -1338,10 +1338,10 @@ window.showWorkspaceInitializationFailure = function(message) {
 
             // Get the language name in its own language if at all possible.
             // Add an English name suffix if it's not in a Latin script.
-            var menuText = IetfLanguageTagExtra.GetNativeLanguageNameWithEnglishSubtitle(code);
+            var menuText = IetfLanguageTag.GetNativeLanguageNameWithEnglishSubtitle(code);
             var englishName = IetfLanguageTag.GetManuallyOverriddenEnglishNameIfNeeded(
                 code,
-                () => IetfLanguageTagExtra.GetLocalizedLanguageName(code, "en")
+                () => IetfLanguageTag.GetLocalizedLanguageName(code, "en")
             );
             return new LanguageItem
             {
@@ -1546,6 +1546,18 @@ window.showWorkspaceInitializationFailure = function(message) {
         }
 
         /// <summary>
+        /// Opens the React Collection Settings dialog (rendered by the workspace's App), on the
+        /// page with the given key if there is one.
+        /// </summary>
+        public void OpenSettingsDialog(string pageKey = null)
+        {
+            dynamic dialogParameters = new DynamicJson();
+            if (pageKey != null)
+                dialogParameters.initialPageKey = pageKey;
+            _webSocketServer.LaunchDialog("CollectionSettingsDialog", dialogParameters);
+        }
+
+        /// <summary>
         /// Closes the collection and opens it again, as the Settings dialog does when a change
         /// needs a restart.
         /// </summary>
@@ -1564,7 +1576,7 @@ window.showWorkspaceInitializationFailure = function(message) {
             StartupScreenManager.AddStartupAction(
                 () =>
                 {
-                    OpenLegacySettingsDialog("subscription", forFixingEnterpriseSubscription: true);
+                    OpenSettingsDialog("subscription");
                 },
                 shouldHideSplashScreen: true,
                 lowPriority: true

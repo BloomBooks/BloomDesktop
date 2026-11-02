@@ -62,9 +62,15 @@ export async function openAddPageDialog(page: Page): Promise<void> {
     await waitForAddPageThumbnails(page);
 }
 
+// PageChooserDialog shows one of two titles: "Add Page..." when it is adding a page, and
+// "Choose Different Layout..." when it is changing the layout of the current page. Otherwise
+// the dialog is the same, so the helpers here accept either title.
+const kPageChooserDialogTitles = /(Add Page|Choose Different Layout)/;
+
 /**
- * The open Add Page dialog, wherever Bloom mounted it. Throws, naming the frames it looked in, if
- * no dialog appears within the timeout.
+ * Find the open page chooser dialog in whichever frame Bloom mounted it, whether it was opened to
+ * add a page or to choose a different layout. Throws, naming the frames it looked in, if no
+ * dialog appears within the timeout.
  */
 async function findAddPageDialog(
     page: Page,
@@ -77,7 +83,7 @@ async function findAddPageDialog(
                 for (const frame of page.frames()) {
                     const dialog = frame
                         .locator('[role="dialog"]')
-                        .filter({ hasText: "Add Page" });
+                        .filter({ hasText: kPageChooserDialogTitles });
                     if ((await dialog.count().catch(() => 0)) > 0) {
                         found = dialog.first();
                         return true;
@@ -88,7 +94,7 @@ async function findAddPageDialog(
             {
                 timeout: timeoutMs,
                 message:
-                    "The Add Page dialog never appeared. Frames: " +
+                    "The page chooser dialog never appeared. Frames: " +
                     page
                         .frames()
                         .map((f) => f.name() || "(main)")
@@ -99,12 +105,12 @@ async function findAddPageDialog(
     return found!;
 }
 
-/** True while an Add Page dialog is open in any frame. */
+/** True while the page chooser dialog is open in any frame, under either of its titles. */
 async function isAddPageDialogOpen(page: Page): Promise<boolean> {
     for (const frame of page.frames()) {
         const count = await frame
             .locator('[role="dialog"]')
-            .filter({ hasText: "Add Page" })
+            .filter({ hasText: kPageChooserDialogTitles })
             .count()
             .catch(() => 0);
         if (count > 0) return true;
@@ -296,6 +302,35 @@ export async function addPageFromDialog(
 }
 
 /**
+ * In the dialog opened by the page menu's "Choose Different Layout", select this layout and
+ * click "Use This Layout", then wait for the page to be shown again. The book keeps the same
+ * number of pages. Bloom imports the template page and moves the existing text into it
+ * (HtmlDom.MigrateEditableData), so a test uses this to check what happens to content the person
+ * had already put on the page.
+ */
+export async function chooseDifferentLayout(
+    page: Page,
+    label: string,
+    templateBookFolderName?: string,
+): Promise<void> {
+    const dialog = await selectPageInAddPageDialog(
+        page,
+        label,
+        templateBookFolderName,
+    );
+    await dialog
+        .getByRole("button", { name: "Use This Layout", exact: true })
+        .click();
+    await expect
+        .poll(() => isAddPageDialogOpen(page), {
+            timeout: 30000,
+            message: "The dialog did not close after Use This Layout.",
+        })
+        .toBe(false);
+    await waitForEditablePage(page);
+}
+
+/**
  * In the open Add Page dialog, select the thumbnail with this label and wait until the dialog's
  * right-hand pane is showing it. Returns the dialog, so a caller can go on to read what the pane
  * offers for the selected page. Adds nothing to the book.
@@ -303,6 +338,9 @@ export async function addPageFromDialog(
  * This is separate from addPageFromDialog because a page whose feature the collection's
  * subscription tier does not include can be selected but not added: the pane replaces the Add
  * Page button with a notice saying what subscription it needs.
+ *
+ * addPageFromDialog and chooseDifferentLayout also use this, then click the button that
+ * confirms the choice.
  */
 export async function selectPageInAddPageDialog(
     page: Page,
@@ -310,6 +348,12 @@ export async function selectPageInAddPageDialog(
     templateBookFolderName?: string,
 ): Promise<Locator> {
     const dialog = await findAddPageDialog(page);
+    // The groups are read from thumbnails that arrive over a websocket. If we read them too
+    // early we get none, and the error below would then report an empty list of layouts when the
+    // dialog had simply not finished loading. openAddPageDialog already waits for the
+    // thumbnails; this wait is for a caller that opened the dialog another way, such as the page
+    // menu's Choose Different Layout. Waiting a second time does no harm.
+    await waitForAddPageThumbnails(page);
     const groups = await getAddPageDialogGroups(page);
     const group = groups.find(
         (g) =>
@@ -350,6 +394,7 @@ export async function selectPageInAddPageDialog(
         dialog.getByText(label, { exact: true }),
         `Selecting "${label}" never showed it in the dialog's preview pane.`,
     ).toBeVisible({ timeout: 15000 });
+
     return dialog;
 }
 

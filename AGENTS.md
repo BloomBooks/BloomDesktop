@@ -38,12 +38,18 @@ The front-end uses pnpm 11.5.2. Never ever use npm or yarn.
 
 ## Don't assume the machine is running in English
 
-Many users' machines use a comma decimal separator or Turkish casing (where `"IMG".ToLower()` is
-`"ımg"`). **Parse and format machine data invariantly** — CSS measurements, version numbers, tool
-output, anything going into a file or a log — with `CultureInfo.InvariantCulture`,
-`FormattableString.Invariant`, `ToUpperInvariant`, or `StringComparison.OrdinalIgnoreCase`. Use the
-current culture only for numbers and dates shown to the user. Tests must not assume English either;
-see `src/BloomTests/AGENTS.md`.
+Many users' machines use a comma decimal separator, Turkish casing (where `"IMG".ToLower()` is
+`"ımg"`) or Thai collation (where `"en-US".IndexOf("-")` is 0). So **Bloom runs in the invariant
+culture**: `Program.Main` calls `UserCulture.UseInvariantCulture()` first, and machine data — CSS
+measurements, version numbers, tool arguments and output, anything going into a file or a log — is
+parsed and formatted the same everywhere without naming a culture. (Being explicit with
+`CultureInfo.InvariantCulture` or `ToUpperInvariant` is still fine.) **For numbers and dates shown
+to or read from the user, and for sorting lists the user reads, use `UserCulture.Current`**, the
+user's regional format. Reading or setting `CultureInfo.CurrentCulture`, or using
+`StringComparison.CurrentCulture`, is a build error in BloomExe (`src/BloomExe/BannedSymbols.txt`).
+`CurrentUICulture`, which picks translations, is not affected. String searches still need
+`StringComparison.Ordinal` (CA1310): even the invariant culture ignores characters such as the soft
+hyphen and zero-width space. Tests must not assume English either; see `src/BloomTests/AGENTS.md`.
 
 ## Building and testing while a Bloom is running
 

@@ -16,21 +16,24 @@ import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { tabMargins } from "../collection/commonTabSettings";
 import BloomButton from "../react_components/bloomButton";
 
-import { WarningBox } from "../react_components/boxes";
+import { NoteBox, WarningBox } from "../react_components/boxes";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { useEffect } from "react";
 import { Label } from "../react_components/l10nComponents";
 import { TextField } from "@mui/material";
 import { DialogHelpButton } from "../react_components/BloomDialog/commonDialogComponents";
-
-// The contents of the Team Collection panel of the Settings dialog.
+import { useL10n } from "../react_components/l10nHooks";
+import { administratorsAreValid } from "./administrators";
+// LEGACY: this component, TeamCollectionSettingsPanel, and the WireUpForWinforms call at the end of
+// this file are only for the WinForms Collection Settings dialog and are deleted with it at cutover
+// (BL-17042). TeamCollectionSettings, further down this file, stays: the new dialog's Team
+// Collection page uses it.
+// The contents of the Team Collection panel of the WinForms Settings dialog. (The React Collection
+// Settings dialog has its own page, settingsPages/TeamCollectionPage.tsx, which shows
+// TeamCollectionSettings.) The administrators being typed live in C#, which that dialog saves on
+// OK, so each change is posted to it.
 
 export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
-    const [repoFolderPath] = useApiStringState(
-        "teamCollection/repoFolderPath",
-        "",
-    );
-
     const [adminstratorEmail, setAdminstratorEmail] =
         React.useState<string>("");
 
@@ -39,6 +42,68 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
             setAdminstratorEmail(result.data);
         });
     }, []);
+
+    return (
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={lightTheme}>
+                <div
+                    css={css`
+                        margin: ${tabMargins.top} ${tabMargins.side}
+                            ${tabMargins.bottom};
+                    `}
+                >
+                    <TeamCollectionSettings
+                        administrators={adminstratorEmail}
+                        onAdministratorsChange={(newAdminString) => {
+                            setAdminstratorEmail(newAdminString);
+                            postString(
+                                "settings/administrators",
+                                newAdminString,
+                            );
+                        }}
+                        onCreateTeamCollection={() =>
+                            post(
+                                "teamCollection/showCreateTeamCollectionDialog",
+                            )
+                        }
+                    />
+                </div>
+            </ThemeProvider>
+        </StyledEngineProvider>
+    );
+};
+
+/**
+ * What the Team Collection settings show: the experimental warning, and either the collection's
+ * shared folder and administrators or how to create or join a Team Collection, all under the
+ * subscription overlay. Whoever shows it keeps the administrators being typed.
+ */
+export const TeamCollectionSettings: React.FunctionComponent<{
+    administrators: string;
+    onAdministratorsChange: (administrators: string) => void;
+    onCreateTeamCollection: () => void;
+    // The collection name has an unsaved edit, so Create is disabled: the Team Collection would be
+    // made under the old name (the rename only happens as Bloom restarts), and the Create dialog
+    // asks the user to approve the old name.
+    renameUnsaved?: boolean;
+}> = (props) => {
+    const [repoFolderPath] = useApiStringState(
+        "teamCollection/repoFolderPath",
+        "",
+    );
+    const invalidAdministratorsMessage = useL10n(
+        "Please enter one or more valid administrator email addresses, separated by commas or spaces.",
+        "TeamCollection.InvalidAdminEmails",
+    );
+    const saveRenameFirstMessage = useL10n(
+        "You have changed the collection's name. Save that first (Bloom will restart); then you can create a Team Collection with the new name.",
+        "CollectionSettingsDialog.TeamCollectionPage.SaveRenameFirst",
+        undefined,
+        undefined,
+        undefined,
+        true,
+    );
+    const administratorsValid = administratorsAreValid(props.administrators);
 
     const intro: JSX.Element = (
         <div>
@@ -93,12 +158,16 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
             </Label>
             <TextField
                 id="adminstratorEmails"
-                value={adminstratorEmail}
+                value={props.administrators}
                 onChange={(event) => {
-                    const newAdminString: string = event.target.value;
-                    setAdminstratorEmail(newAdminString);
-                    postString("settings/administrators", newAdminString);
+                    props.onAdministratorsChange(event.target.value);
                 }}
+                error={!administratorsValid}
+                helperText={
+                    administratorsValid
+                        ? undefined
+                        : invalidAdministratorsMessage
+                }
                 required={false}
                 css={css`
                     width: 100%;
@@ -126,16 +195,15 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
 
     const isNotTeamCollection: JSX.Element = (
         <div>
+            {props.renameUnsaved && <NoteBox>{saveRenameFirstMessage}</NoteBox>}
             <div className="align-right">
                 <BloomButton
                     className="align-right"
                     l10nKey="TeamCollection.CreateTeamCollection"
-                    enabled={true}
+                    enabled={!props.renameUnsaved}
                     hasText={true}
                     variant="outlined"
-                    onClick={() =>
-                        post("teamCollection/showCreateTeamCollectionDialog")
-                    }
+                    onClick={props.onCreateTeamCollection}
                     temporarilyDisableI18nWarning={true}
                 >
                     Create a Team Collection
@@ -162,26 +230,14 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
     );
 
     return (
-        <StyledEngineProvider injectFirst>
-            <ThemeProvider theme={lightTheme}>
-                <div
-                    id="teamCollection-settings"
-                    css={css`
-                        margin: ${tabMargins.top} ${tabMargins.side}
-                            ${tabMargins.bottom};
-                    `}
-                >
-                    <RequiresSubscriptionOverlayWrapper featureName="TeamCollection">
-                        <React.Fragment>
-                            {intro}
-                            {repoFolderPath
-                                ? isTeamCollection
-                                : isNotTeamCollection}
-                        </React.Fragment>
-                    </RequiresSubscriptionOverlayWrapper>
-                </div>
-            </ThemeProvider>
-        </StyledEngineProvider>
+        <div id="teamCollection-settings">
+            <RequiresSubscriptionOverlayWrapper featureName="TeamCollection">
+                <React.Fragment>
+                    {intro}
+                    {repoFolderPath ? isTeamCollection : isNotTeamCollection}
+                </React.Fragment>
+            </RequiresSubscriptionOverlayWrapper>
+        </div>
     );
 };
 
