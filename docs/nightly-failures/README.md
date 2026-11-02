@@ -24,7 +24,8 @@ use the `nightly-triage` skill.
   already notes that a focus-opened submenu stays open wherever the pointer goes. Why focus
   landed on Flip this time is not known; focus events need Bloom's window to have focus, which it
   has on CI but not in a local `--dont-disturb` run.
-- **Status:** no card or PR.
+- **Status:** fix in [#8528](https://github.com/BloomBooks/BloomDesktop/pull/8528): the helper closes a submenu
+  with Escape instead.
 
 ## Visual regression: staging the BloomPUB preview found no book selected
 
@@ -39,7 +40,8 @@ use the `nightly-triage` skill.
   NullReferenceException in `BloomLibraryPublishModel.InitializeLanguages`. The log shows the book
   being reloaded at the moment of the error. Only a run's first case can lose this race; the
   night before it passed.
-- **Status:** no card or PR.
+- **Status:** fix in [#8528](https://github.com/BloomBooks/BloomDesktop/pull/8528): `isCollectionReady` waits for
+  the startup selection to finish.
 
 ## Link chooser: the preselected page is not scrolled into view
 
