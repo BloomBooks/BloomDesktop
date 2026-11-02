@@ -157,6 +157,40 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public void IsCurrent_MetadataChanged_False()
+        {
+            // meta.json goes into the BloomPUB, though the content hash ignores it (Devin, PR 8531).
+            var metaPath = Path.Combine(_bookFolder, "meta.json");
+            RobustFile.WriteAllText(metaPath, "{\"summary\":\"old\",\"currentTool\":\"a\"}");
+            MakeRecordedBloomPub();
+
+            RobustFile.WriteAllText(
+                metaPath,
+                "{\"summary\":\"a new summary\",\"currentTool\":\"a\"}"
+            );
+
+            Assert.That(_cache.IsCurrent(_bloomPubPath, _bookFolder, kSettingsKey), Is.False);
+        }
+
+        [Test]
+        public void IsCurrent_OnlyEditorStateInMetadataChanged_True()
+        {
+            var metaPath = Path.Combine(_bookFolder, "meta.json");
+            RobustFile.WriteAllText(
+                metaPath,
+                "{\"summary\":\"same\",\"currentTool\":\"talkingBookTool\",\"toolboxIsOpen\":false}"
+            );
+            MakeRecordedBloomPub();
+
+            RobustFile.WriteAllText(
+                metaPath,
+                "{\"summary\":\"same\",\"currentTool\":\"imageDescriptionTool\",\"toolboxIsOpen\":true}"
+            );
+
+            Assert.That(_cache.IsCurrent(_bloomPubPath, _bookFolder, kSettingsKey), Is.True);
+        }
+
+        [Test]
         public void Delete_RemovesBloomPubAndRecord()
         {
             MakeRecordedBloomPub();

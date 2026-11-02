@@ -648,16 +648,26 @@ namespace Bloom.Publish.Rab
                     lock (_pngCheckLock)
                     {
                         next = _pngsToCheck.FirstOrDefault();
-                        if (next == null)
+                        if (next != null)
+                            _pngsToCheck.Remove(next);
+                    }
+                    if (next != null)
+                    {
+                        cache.CheckAndRemember(next);
+                        continue;
+                    }
+                    // Save while still marked as running, so no second worker starts until this
+                    // one is completely done; then stop only if nothing was queued meanwhile.
+                    cache.Save();
+                    lock (_pngCheckLock)
+                    {
+                        if (_pngsToCheck.Count == 0)
                         {
                             _pngCheckRunning = false;
                             break;
                         }
-                        _pngsToCheck.Remove(next);
                     }
-                    cache.CheckAndRemember(next);
                 }
-                cache.Save();
             }
             catch (Exception error)
             {

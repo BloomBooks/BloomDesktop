@@ -5,6 +5,7 @@ using System.Linq;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.Publish.BloomPub;
+using Bloom.SafeXml;
 using Bloom.web.controllers;
 
 namespace Bloom.Publish.Rab
@@ -140,13 +141,18 @@ namespace Bloom.Publish.Rab
             var maxShortSide = (int)imageSettings.MaxHeight;
             var maxLongSide = (int)imageSettings.MaxWidth;
 
+            var picturesPublishingShrinks = FindPicturesPublishingProcesses(bookFolderPath);
+
             var result = new BookSizeEstimate();
             foreach (var file in files)
             {
                 if (!filter.ShouldAllow(file.FullName))
                     continue;
                 var extension = file.Extension.ToLowerInvariant();
-                if (BookCompressor.CompressableImageFileExtensions.Contains(extension))
+                if (
+                    BookCompressor.CompressableImageFileExtensions.Contains(extension)
+                    && picturesPublishingShrinks.Contains(file.Name)
+                )
                     result.SizeBytes += EstimatePublishedImageBytes(
                         file,
                         extension,
@@ -156,10 +162,48 @@ namespace Bloom.Publish.Rab
                         result.UncheckedPngPaths
                     );
                 else
-                    // Everything else (the book's HTML, CSS, fonts, audio, video) goes in about as
-                    // it is. Zipping shrinks the text files some, but they are rarely what makes a
-                    // book big, and media files barely compress.
+                    // Everything else (the book's HTML, CSS, fonts, audio, video, and pictures
+                    // publishing leaves alone) goes in about as it is. Zipping shrinks the text
+                    // files some, but they are rarely what makes a book big, and media files
+                    // barely compress.
                     result.SizeBytes += file.Length;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// The names of the pictures that <see cref="BloomPubMaker.CompressImages"/> will shrink and
+        /// re-encode: those that are the picture of an image container or canvas on a page (which
+        /// <see cref="BloomPubMaker.ConvertImagesToBackground"/> turns into the background images
+        /// CompressImages processes), less those marked bloom-preserveResolution. Any other picture
+        /// in the book (branding, a file the pages no longer use, ...) goes into the BloomPUB at
+        /// its full size, so it must be counted that way.
+        /// </summary>
+        internal static HashSet<string> FindPicturesPublishingProcesses(string bookFolderPath)
+        {
+            var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var htmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
+            if (string.IsNullOrEmpty(htmlPath))
+                return result;
+            var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlPath, false);
+            foreach (
+                var img in dom.SafeSelectNodes(
+                        "//div[contains(@class,'bloom-page')]//div[contains(@class,'bloom-imageContainer') or contains(@class,'bloom-canvas')]/img[@src]"
+                    )
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                // Matches BloomPubMaker.FindImagesToPreserveResolution, which looks only inside
+                // the page's marginBox.
+                if (
+                    img.HasClass("bloom-preserveResolution")
+                    && img.SafeSelectNodes("ancestor::div[contains(@class,'marginBox')]").Length > 0
+                )
+                    continue;
+                // An img @src is URL-encoded (see the encoding conventions in UrlPathString).
+                result.Add(
+                    UrlPathString.CreateFromUrlEncodedString(img.GetAttribute("src")).NotEncoded
+                );
             }
             return result;
         }

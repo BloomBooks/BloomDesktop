@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using Bloom.Book;
 using Bloom.Publish.Rab;
 using NUnit.Framework;
@@ -32,11 +33,78 @@ namespace BloomTests.Publish.Rab
             _tempFolder = new TemporaryFolder("BloomPubSizeEstimatorTests");
             _bookFolder = Path.Combine(_tempFolder.Path, "book");
             Directory.CreateDirectory(_bookFolder);
-            var htmlPath = Path.Combine(_bookFolder, "book.htm");
-            RobustFile.WriteAllText(htmlPath, "<html><body></body></html>");
-            _htmlBytes = new FileInfo(htmlPath).Length;
+            // The book's pages show the pictures the tests below make (publishing only shrinks
+            // pictures that are shown on a page; files need not exist for every test).
+            _htmlBytes = WriteBookHtml(
+                _bookFolder,
+                "big.jpg",
+                "small.jpg",
+                "rgb.png",
+                "opaque.png",
+                "transparent.png"
+            );
             _transparencyCachePath = Path.Combine(_tempFolder.Path, "transparency.json");
             _transparencyCache = new PngTransparencyCache(_transparencyCachePath);
+        }
+
+        /// <summary>
+        /// Write the book's HTML with one page per picture, each shown in a bloom-canvas the way
+        /// Bloom pages are, and return the file's size. A name starting with "keep:" is marked
+        /// bloom-preserveResolution.
+        /// </summary>
+        internal static long WriteBookHtml(string bookFolder, params string[] pictures)
+        {
+            var pages = string.Concat(
+                pictures.Select(picture =>
+                {
+                    var preserve = picture.StartsWith("keep:", StringComparison.Ordinal);
+                    var name = preserve ? picture.Substring(5) : picture;
+                    var imgClass = preserve ? " class=\"bloom-preserveResolution\"" : "";
+                    return "<div class=\"bloom-page\"><div class=\"marginBox\"><div class=\"bloom-canvas\">"
+                        + $"<img src=\"{Uri.EscapeDataString(name)}\"{imgClass} />"
+                        + "</div></div></div>";
+                })
+            );
+            var htmlPath = Path.Combine(bookFolder, Path.GetFileName(bookFolder) + ".htm");
+            RobustFile.WriteAllText(htmlPath, $"<html><head></head><body>{pages}</body></html>");
+            return new FileInfo(htmlPath).Length;
+        }
+
+        [Test]
+        public void EstimateBloomPubSize_PicturesPublishingDoesNotShrink_CountAtFullSize()
+        {
+            // An unused file, and a picture the author asked to keep at full resolution, both go
+            // into the BloomPUB as they are (Devin, PR 8531).
+            var htmlBytes = WriteBookHtml(_bookFolder, "keep:kept.jpg");
+            var keptPath = Path.Combine(_bookFolder, "kept.jpg");
+            var unusedPath = Path.Combine(_bookFolder, "unused.jpg");
+            WriteNoisyImage(keptPath, 2560, 1440, PixelFormat.Format24bppRgb, ImageFormat.Jpeg);
+            WriteNoisyImage(unusedPath, 2560, 1440, PixelFormat.Format24bppRgb, ImageFormat.Jpeg);
+            var keptBytes = new FileInfo(keptPath).Length;
+            var unusedBytes = new FileInfo(unusedPath).Length;
+            Assert.That(
+                Estimate(2560, 1440, keptBytes, false, false),
+                Is.LessThan(keptBytes),
+                "test setup: shrinking these pictures would have made them smaller"
+            );
+
+            var estimate = new BloomPubSizeEstimator().EstimateBloomPubSize(
+                _bookFolder,
+                new ImagePublishSettings(),
+                _transparencyCache
+            );
+
+            Assert.That(estimate.SizeBytes, Is.EqualTo(htmlBytes + keptBytes + unusedBytes));
+        }
+
+        [Test]
+        public void FindPicturesPublishingProcesses_FindsPagePicturesExceptPreserved()
+        {
+            WriteBookHtml(_bookFolder, "a picture.png", "keep:full.jpg", "b.jpg");
+
+            var found = BloomPubSizeEstimator.FindPicturesPublishingProcesses(_bookFolder);
+
+            Assert.That(found, Is.EquivalentTo(new[] { "a picture.png", "b.jpg" }));
         }
 
         [TearDown]

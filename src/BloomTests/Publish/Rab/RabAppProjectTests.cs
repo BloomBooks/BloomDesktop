@@ -3173,7 +3173,7 @@ namespace BloomTests.Publish.Rab
             var paths = new RabWorkspacePaths(tempFolder.Path);
             var bookFolder = Path.Combine(tempFolder.Path, "book-1");
             Directory.CreateDirectory(bookFolder);
-            RobustFile.WriteAllText(Path.Combine(bookFolder, "book-1.htm"), "<html></html>");
+            BloomPubSizeEstimatorTests.WriteBookHtml(bookFolder, "picture.png");
             // An opaque painting saved with an alpha channel: only decoding it shows it can become
             // a JPEG.
             BloomPubSizeEstimatorTests.WriteNoisyImage(

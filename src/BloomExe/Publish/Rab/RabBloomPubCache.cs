@@ -8,6 +8,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Publish.BloomPub;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SIL.IO;
 
 namespace Bloom.Publish.Rab
@@ -30,8 +31,9 @@ namespace Bloom.Publish.Rab
     /// update the record's signature so the next check is cheap again.
     /// </summary>
     /// <remarks>
-    /// Like Team Collections, this trusts the content hash, which ignores meta.json (where only
-    /// metadata that hardly affects a BloomPUB changes) and PDFs (which a BloomPUB leaves out).
+    /// The content hash ignores meta.json, which does go into the BloomPUB, so the record also
+    /// keeps a hash of meta.json without its editor-state fields (see ComputeMetadataHash). Both
+    /// leave out PDFs, which a BloomPUB leaves out too.
     /// </remarks>
     public class RabBloomPubCache
     {
@@ -44,6 +46,7 @@ namespace Bloom.Publish.Rab
         {
             public string ContentHash;
             public string FileSignature;
+            public string MetadataHash;
         }
 
         /// <summary>
@@ -55,7 +58,15 @@ namespace Bloom.Publish.Rab
             public string SettingsKey;
             public string ContentHash;
             public string FileSignature;
+            public string MetadataHash;
         }
+
+        // meta.json fields that only record the state of the editor, not the book.
+        private static readonly string[] kEditorStateMetadataFields =
+        {
+            "currentTool",
+            "toolboxIsOpen",
+        };
 
         // The modified time of Bloom.dll makes every developer build count as a new version, not
         // just each release.
@@ -104,6 +115,7 @@ namespace Bloom.Publish.Rab
             {
                 FileSignature = MakeFileSignature(bookFolderPath),
                 ContentHash = ComputeContentHash(bookFolderPath),
+                MetadataHash = ComputeMetadataHash(bookFolderPath),
             };
         }
 
@@ -126,6 +138,7 @@ namespace Bloom.Publish.Rab
                     SettingsKey = settingsKey,
                     ContentHash = snapshot.ContentHash,
                     FileSignature = snapshot.FileSignature,
+                    MetadataHash = snapshot.MetadataHash,
                 }
             );
         }
@@ -161,7 +174,10 @@ namespace Bloom.Publish.Rab
             var signature = MakeFileSignature(bookFolderPath);
             if (signature == record.FileSignature)
                 return true;
-            if (ComputeContentHash(bookFolderPath) != record.ContentHash)
+            if (
+                ComputeContentHash(bookFolderPath) != record.ContentHash
+                || ComputeMetadataHash(bookFolderPath) != record.MetadataHash
+            )
                 return false;
 
             // The files were touched but their content is the same. Remember the new signature
@@ -200,6 +216,33 @@ namespace Bloom.Publish.Rab
             return Book.Book.ComputeHashForAllBookRelatedFiles(
                 BookStorage.FindBookHtmlInFolder(bookFolderPath)
             );
+        }
+
+        /// <summary>
+        /// A hash of the book's meta.json, which goes into the BloomPUB but which the content hash
+        /// leaves out (BL-17062: e.g. a changed summary, tags or credits). The fields that only
+        /// record the editor's state are dropped first, so that switching tools doesn't make a
+        /// BloomPUB look out of date. Null if the book has no meta.json.
+        /// </summary>
+        internal static string ComputeMetadataHash(string bookFolderPath)
+        {
+            var metaPath = Path.Combine(bookFolderPath, "meta.json");
+            if (!RobustFile.Exists(metaPath))
+                return null;
+            var text = RobustFile.ReadAllText(metaPath);
+            try
+            {
+                var metadata = JObject.Parse(text);
+                foreach (var field in kEditorStateMetadataFields)
+                    metadata.Remove(field);
+                text = metadata.ToString(Formatting.None);
+            }
+            catch (JsonException)
+            {
+                // Not valid JSON: hash it as it is, which only errs towards making it again.
+            }
+            using var sha = SHA256.Create();
+            return Convert.ToBase64String(sha.ComputeHash(Encoding.UTF8.GetBytes(text)));
         }
 
         /// <summary>

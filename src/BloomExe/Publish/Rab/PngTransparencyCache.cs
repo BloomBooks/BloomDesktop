@@ -34,6 +34,7 @@ namespace Bloom.Publish.Rab
 
         private readonly string _filePath;
         private readonly object _lock = new object();
+        private readonly object _saveLock = new object();
         private readonly Dictionary<string, Entry> _entries;
         private bool _dirty;
 
@@ -126,18 +127,25 @@ namespace Bloom.Publish.Rab
         /// </summary>
         public void Save()
         {
-            string json;
-            lock (_lock)
+            // One save at a time, from taking the snapshot to finishing the write, so an older
+            // snapshot can never be written over a newer one.
+            lock (_saveLock)
             {
-                if (!_dirty)
-                    return;
-                foreach (var gone in _entries.Keys.Where(path => !RobustFile.Exists(path)).ToList())
-                    _entries.Remove(gone);
-                json = JsonConvert.SerializeObject(_entries);
-                _dirty = false;
+                string json;
+                lock (_lock)
+                {
+                    if (!_dirty)
+                        return;
+                    foreach (
+                        var gone in _entries.Keys.Where(path => !RobustFile.Exists(path)).ToList()
+                    )
+                        _entries.Remove(gone);
+                    json = JsonConvert.SerializeObject(_entries);
+                    _dirty = false;
+                }
+                Directory.CreateDirectory(Path.GetDirectoryName(_filePath));
+                RobustFile.WriteAllText(_filePath, json);
             }
-            Directory.CreateDirectory(Path.GetDirectoryName(_filePath));
-            RobustFile.WriteAllText(_filePath, json);
         }
 
         /// <summary>
