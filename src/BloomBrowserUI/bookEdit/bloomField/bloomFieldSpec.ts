@@ -804,6 +804,90 @@ describe("BloomField", () => {
             );
         });
 
+        const inlineImageHtml = (dockClass: string, id: string) =>
+            `<div id="${id}" class="bloom-inlineImage ${dockClass} bloom-preventRemoval" contenteditable="false"><img src="placeHolder.png" alt=""></div>`;
+
+        // Sets up the field, then puts its content in place, the way an inline image inserted
+        // after the page was set up arrives, presses the key and reports whether the field
+        // cancelled it.
+        function pressKeyInFieldFilledAfterSetup(
+            fieldHtml: string,
+            key: string,
+            setSelectionCallback: () => void,
+        ): boolean {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = "<p></p>";
+            WireUp();
+            editable.innerHTML = fieldHtml;
+            setSelectionCallback();
+            return !editable.dispatchEvent(
+                new KeyboardEvent("keydown", { key, cancelable: true }),
+            );
+        }
+
+        it("backspace prevented at start of the paragraph after inline images inserted after setup", () => {
+            const fieldHtml =
+                inlineImageHtml("bloom-inlineImageRight", "img1") +
+                inlineImageHtml("bloom-inlineImageLeft", "img2") +
+                '<p id="p1">Some text</p>';
+            expect(
+                pressKeyInFieldFilledAfterSetup(fieldHtml, "Backspace", () =>
+                    setCursorTo("p1", 0),
+                ),
+                "Backspace here would delete the inline image before the paragraph",
+            ).toBe(true);
+        });
+
+        it("backspace NOT prevented at start of the second paragraph after an inline image", () => {
+            const fieldHtml =
+                inlineImageHtml("bloom-inlineImageRight", "img1") +
+                '<p id="p1">First</p><p id="p2">Second</p>';
+            expect(
+                pressKeyInFieldFilledAfterSetup(fieldHtml, "Backspace", () =>
+                    setCursorTo("p2", 0),
+                ),
+            ).toBe(false);
+        });
+
+        it("delete prevented at end of the last paragraph before a bottom inline image", () => {
+            const fieldHtml =
+                '<p id="p1">Some text</p>' +
+                inlineImageHtml("bloom-inlineImageBottom", "img1");
+            const p1 = () => document.getElementById("p1")!;
+            expect(
+                pressKeyInFieldFilledAfterSetup(fieldHtml, "Delete", () =>
+                    window.getSelection()!.collapse(p1().firstChild, 9),
+                ),
+                "Delete here would delete the inline image after the paragraph",
+            ).toBe(true);
+        });
+
+        it("delete NOT prevented inside the last paragraph before a bottom inline image", () => {
+            const fieldHtml =
+                '<p id="p1">Some text</p>' +
+                inlineImageHtml("bloom-inlineImageBottom", "img1");
+            expect(
+                pressKeyInFieldFilledAfterSetup(fieldHtml, "Delete", () =>
+                    window
+                        .getSelection()!
+                        .collapse(document.getElementById("p1")!.firstChild, 4),
+                ),
+            ).toBe(false);
+        });
+
+        it("delete NOT prevented at end of the last paragraph with no inline image after it", () => {
+            const fieldHtml =
+                inlineImageHtml("bloom-inlineImageRight", "img1") +
+                '<p id="p1">Some text</p>';
+            expect(
+                pressKeyInFieldFilledAfterSetup(fieldHtml, "Delete", () =>
+                    window
+                        .getSelection()!
+                        .collapse(document.getElementById("p1")!.firstChild, 9),
+                ),
+            ).toBe(false);
+        });
+
         function runBackspacePreventionTest(
             paragraphInnerHtml: string,
             setSelectionCallback: () => void,

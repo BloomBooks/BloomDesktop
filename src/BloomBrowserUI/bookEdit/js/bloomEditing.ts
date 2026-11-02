@@ -569,6 +569,16 @@ export function changeImageInfo(
         );
         (imgOrImageContainer as HTMLImageElement).src =
             buildSrcWithTransparentParam(imageInfo.src, mode);
+        // CKEditor gives every img in a field it manages (such as an inline image) a copy of
+        // its src in data-cke-saved-src when the page loads, and its getData(), which the page
+        // is saved through, writes that copy out as the src. So it has to name the new picture
+        // too, or the page is saved with the old one.
+        if (imgOrImageContainer.hasAttribute("data-cke-saved-src")) {
+            imgOrImageContainer.setAttribute(
+                "data-cke-saved-src",
+                imgOrImageContainer.getAttribute("src")!,
+            );
+        }
         // A new (or newly placeholder) background image changes whether the overlays on
         // its canvas need transparency.
         refreshTransparencyIfBackgroundImage(imgOrImageContainer);

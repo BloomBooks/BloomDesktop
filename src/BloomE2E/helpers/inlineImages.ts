@@ -29,6 +29,7 @@ import { apiPost } from "./api";
 import { bookHtmlPath } from "./bookHtml";
 import { editablePageFrame } from "./bookMaking";
 import type { IRect } from "./geometry";
+import { chooseFileInImageChooser } from "./imageChooser";
 import { realClick, realClickAt } from "./realClick";
 
 /**
@@ -1143,6 +1144,65 @@ export async function changeInlineImagePicture(
 }
 
 /**
+ * Change an inline image's picture the way a person does: right-click the picture, choose "Choose
+ * image from your computer...", and in the Image Chooser open the file at `filePath` and click "Use
+ * this image" (helpers/imageChooser.ts). Returns once every language's copy shows the new file
+ * with the picture's shape written on it.
+ *
+ * Unlike changeInlineImagePicture, this goes through the menu and the dialog, which hold on to the
+ * picture element from the right-click until the picture is chosen. So it is the route for a test
+ * about something that could replace that element in between, such as a reader tool tidying the
+ * text when it loses the focus.
+ */
+export async function chooseInlineImagePictureFromMenu(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+    filePath: string,
+): Promise<void> {
+    const copyCount = (
+        await getInlineImageInEveryLanguage(page, groupSelector, id)
+    ).length;
+    expect(
+        copyCount,
+        `inline image ${id} should exist in at least one language before its picture changes`,
+    ).toBeGreaterThan(0);
+    await openInlineImageMenu(page, groupSelector, languageTag, id);
+    await clickInlineImageMenuCommand(page, kChooseImageCommand);
+    await chooseFileInImageChooser(page, filePath);
+    // Bloom copies the file into the book under its own name, or under that name with a number
+    // added when the book already has a file by that name.
+    const fileName = Path.basename(filePath);
+    const extension = Path.extname(fileName);
+    const stem = fileName.slice(0, fileName.length - extension.length);
+    const isTheChosenFile = (name: string) =>
+        name.startsWith(stem) &&
+        name.endsWith(extension) &&
+        /^\d*$/.test(name.slice(stem.length, name.length - extension.length));
+    await expect
+        .poll(
+            async () =>
+                (await getInlineImageInEveryLanguage(page, groupSelector, id))
+                    .filter(
+                        (copy) =>
+                            isTheChosenFile(copy.fileName) && copy.aspectRatio,
+                    )
+                    .map((copy) => copy.languageTag)
+                    .sort(),
+            {
+                timeout: 30000,
+                message:
+                    `After ${fileName} was chosen in the Image Chooser, it did not reach every ` +
+                    `language's copy of inline image ${id} (these are the languages that show ` +
+                    `it). A chooser that changes a picture element no longer on the page ` +
+                    `changes nothing that anyone sees.`,
+            },
+        )
+        .toHaveLength(copyCount);
+}
+
+/**
  * True when the text of a block flows beside the picture instead of starting below it, meaning
  * some line of text has its top above the bottom of the picture and lies to the side of it.
  *
@@ -1409,6 +1469,54 @@ export async function typeAtEndOfBlock(
             message: `Typing "${text}" at the end of the "${languageTag}" block did not land.`,
         })
         .toMatch(new RegExp(`${escapeForRegExp(text.trim())}$`));
+}
+
+/**
+ * Click just before the first letter of a block's text, the way a person puts the caret at the very
+ * start of the text, and return once the block has the focus and the caret is there: collapsed,
+ * with no text of the block before it. The pictures docked at the top of the block come before the
+ * text in the markup, and the caret is still at the start of the text, after them.
+ */
+export async function putCaretAtStartOfBlockText(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+): Promise<void> {
+    await putCaretAtEdgeOfBlockText(page, groupSelector, languageTag, "start");
+}
+
+/**
+ * Click just after the last letter of a block's text, the way a person puts the caret at the very
+ * end of the text, and return once the block has the focus and the caret is there: collapsed, with
+ * no text of the block after it. A picture docked at the bottom comes after the text in the markup,
+ * and the caret is still at the end of the text, before it.
+ */
+export async function putCaretAtEndOfBlockText(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+): Promise<void> {
+    await putCaretAtEdgeOfBlockText(page, groupSelector, languageTag, "end");
+}
+
+/**
+ * Type text where the caret is, with real key presses, and return once the block's text has it.
+ * The text arrives after every key pressed before it has been handled, so this is also how a test
+ * waits for those keys to finish before it checks what they did.
+ */
+export async function typeAtCaretInBlock(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    text: string,
+): Promise<void> {
+    await page.keyboard.type(text);
+    await expect
+        .poll(async () => getBlockText(page, groupSelector, languageTag), {
+            timeout: 30000,
+            message: `Typing "${text}" in the "${languageTag}" block did not land.`,
+        })
+        .toContain(text);
 }
 
 /**
@@ -1773,6 +1881,120 @@ async function clearTextPoint(
         x: onScreen.x + (found.point.x - found.blockLeft),
         y: onScreen.y + (found.point.y - found.blockTop),
     };
+}
+
+/**
+ * Click at one edge of a block's text, just inside its first or last letter, and wait until the
+ * caret is at that edge of the text. See putCaretAtStartOfBlockText and putCaretAtEndOfBlockText.
+ */
+async function putCaretAtEdgeOfBlockText(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    edge: "start" | "end",
+): Promise<void> {
+    const block = inlineImageBlock(page, groupSelector, languageTag);
+    await block.scrollIntoViewIfNeeded();
+    const onScreen = await blockRect(page, groupSelector, languageTag);
+    const found = await block.evaluate(
+        (element, args) => {
+            const texts: Text[] = [];
+            const walker = document.createTreeWalker(
+                element,
+                NodeFilter.SHOW_TEXT,
+            );
+            while (walker.nextNode()) {
+                const node = walker.currentNode as Text;
+                if (node.parentElement?.closest("." + args.wrapperClass))
+                    continue;
+                if (!node.data.trim()) continue;
+                texts.push(node);
+            }
+            if (texts.length === 0) return undefined;
+            // The rectangle of the first or last letter that is not white space.
+            const node =
+                args.edge === "start" ? texts[0] : texts[texts.length - 1];
+            const index =
+                args.edge === "start"
+                    ? node.data.search(/\S/)
+                    : node.data.length -
+                      1 -
+                      node.data.split("").reverse().join("").search(/\S/);
+            const range = document.createRange();
+            range.setStart(node, index);
+            range.setEnd(node, index + 1);
+            const letter = range.getClientRects()[0];
+            const rect = element.getBoundingClientRect();
+            return {
+                // One pixel inside the letter, on the side of the edge, which puts the caret on
+                // that side of it.
+                x: args.edge === "start" ? letter.left + 1 : letter.right - 1,
+                y: letter.top + letter.height / 2,
+                blockLeft: rect.left,
+                blockTop: rect.top,
+            };
+        },
+        { wrapperClass: kWrapperClass, edge },
+    );
+    if (!found)
+        throw new Error(
+            `The "${languageTag}" block of "${groupSelector}" has no text, so there is no ${edge} ` +
+                `of its text to put the caret at. Type something first.`,
+        );
+    await realClickAt(
+        page,
+        onScreen.x + (found.x - found.blockLeft),
+        onScreen.y + (found.y - found.blockTop),
+    );
+    await expect(
+        block,
+        `Clicking the text of the "${languageTag}" block did not give it the focus.`,
+    ).toBeFocused({ timeout: 15000 });
+    await expect
+        .poll(
+            async () =>
+                block.evaluate(
+                    (element, args) => {
+                        const selection = element.ownerDocument.getSelection();
+                        if (!selection || selection.rangeCount === 0)
+                            return "there is no selection";
+                        if (!selection.isCollapsed)
+                            return `text is selected: "${selection.toString()}"`;
+                        const caret = selection.getRangeAt(0);
+                        if (!element.contains(caret.startContainer))
+                            return "the caret is outside the block";
+                        // The block's text, from the caret to the edge, leaving the pictures out.
+                        const text = Array.from(element.children).filter(
+                            (child) =>
+                                !child.classList.contains(args.wrapperClass),
+                        );
+                        const between = element.ownerDocument.createRange();
+                        if (args.edge === "start") {
+                            between.setStartBefore(text[0]);
+                            between.setEnd(
+                                caret.startContainer,
+                                caret.startOffset,
+                            );
+                        } else {
+                            between.setStart(
+                                caret.startContainer,
+                                caret.startOffset,
+                            );
+                            between.setEndAfter(text[text.length - 1]);
+                        }
+                        const skipped = between.toString();
+                        return skipped
+                            ? `the caret has "${skipped}" between it and the ${args.edge}`
+                            : `at the ${args.edge}`;
+                    },
+                    { wrapperClass: kWrapperClass, edge },
+                ),
+            {
+                timeout: 15000,
+                message: `Clicking at the ${edge} of the "${languageTag}" block's text did not put the caret there.`,
+            },
+        )
+        .toBe(`at the ${edge}`);
 }
 
 /**

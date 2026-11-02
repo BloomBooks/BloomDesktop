@@ -411,7 +411,42 @@ export class EditableDivUtils {
         // console.log("safelyReplaceContentWithCkEditorData, before getData replacement: ");
         // EditableDivUtils.logElementsInnerHtml([div]);
 
+        // Inline images (inlineImages.ts) are contenteditable=false, so CKEditor cannot have
+        // changed anything inside them, and their menus, toolbar, handles and load handlers hold
+        // the live elements. Rebuilding them from CKEditor's data would detach all of those: with
+        // the Decodable or Leveled Reader open this runs whenever the text loses focus, so Change
+        // image or Delete then acted on an element no longer on the page. CKEditor's data also
+        // carries the src the img had when the page loaded (data-cke-saved-src), not the current
+        // one. So the live wrappers replace their rebuilt copies. The selectors are written out
+        // here because importing inlineImages.ts would make an import cycle.
+        const liveInlineImages = Array.from(
+            div.querySelectorAll<HTMLElement>(":scope > .bloom-inlineImage"),
+        );
+
         div.innerHTML = ckEditorData;
+
+        liveInlineImages.forEach((live) => {
+            const id = live.getAttribute("data-bloom-inline-image-id");
+            if (!id) return;
+            const rebuilt = div.querySelector(
+                `:scope > .bloom-inlineImage[data-bloom-inline-image-id="${id}"]`,
+            );
+            if (!rebuilt) return;
+            // CKEditor's data never carries its own data-cke-* attributes, and the page is
+            // saved from what this leaves, so they must not come back with the live wrapper.
+            // A data-cke-saved-src saved in the book would outlive any later change to the src.
+            [live, ...Array.from(live.querySelectorAll("*"))].forEach(
+                (element) =>
+                    Array.from(element.attributes)
+                        .filter((attribute) =>
+                            attribute.name.startsWith("data-cke-"),
+                        )
+                        .forEach((attribute) =>
+                            element.removeAttribute(attribute.name),
+                        ),
+            );
+            rebuilt.replaceWith(live);
+        });
 
         // console.log("safelyReplaceContentWithCkEditorData, after getData replacement: ");
         // EditableDivUtils.logElementsInnerHtml([div]);
