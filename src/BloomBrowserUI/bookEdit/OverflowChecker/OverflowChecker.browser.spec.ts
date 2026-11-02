@@ -228,4 +228,39 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowSoon", () => {
             marginBox,
         );
     });
+
+    // Bloom has been seen getting a window resize event about every 110 ms for many seconds, each
+    // of which asks again for every box on the page. If each request restarted the box's second,
+    // no box would be checked until the events stopped.
+    it("checks a box a second after it was first asked, however often it is asked again", () => {
+        const [[box]] = loadPages([1]);
+        vi.useFakeTimers();
+        const selfChecks = vi
+            .spyOn(OverflowChecker, "AdjustSizeAndMarkSelfOverflow")
+            .mockImplementation(() => {});
+        vi.spyOn(
+            OverflowChecker,
+            "CheckPageAncestorOverflow",
+        ).mockImplementation(() => {});
+
+        OverflowChecker.AdjustSizeOrMarkOverflowSoon(box);
+        for (let elapsed = 100; elapsed < 1000; elapsed += 100) {
+            vi.advanceTimersByTime(100);
+            OverflowChecker.AdjustSizeOrMarkOverflowSoon(box);
+        }
+        expect(
+            selfChecks,
+            "nothing should be checked before the second is up",
+        ).not.toHaveBeenCalled();
+        vi.advanceTimersByTime(100);
+        expect(
+            selfChecks,
+            "the box should be checked one second after the first request",
+        ).toHaveBeenCalledTimes(1);
+
+        // A request after that check needs a check of its own.
+        OverflowChecker.AdjustSizeOrMarkOverflowSoon(box);
+        vi.advanceTimersByTime(1000);
+        expect(selfChecks).toHaveBeenCalledTimes(2);
+    });
 });

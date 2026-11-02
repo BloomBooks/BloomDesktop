@@ -386,9 +386,11 @@ export default class OverflowChecker {
     // We want to check for overflow, but we can't afford the delay right now.
     // (checking all elements on a complex page can take several seconds, and this
     // is called on every mouse move when adjusting origami). We will wait a second.
-    // If we're asked to check the same element again before that second is up, we'll
-    // cancel that timer and start a new one. When we don't get a new request for a
-    // whole second, we'll do the check.
+    // If we're asked to check the same element again before that second is up, the check
+    // already waiting covers the new request too, since it runs later than the request.
+    // Don't restart the timer instead: a steady stream of requests (a long origami drag, or
+    // window resize events arriving every 100 ms or so) would then postpone the check for as
+    // long as the stream lasts.
     // A further benefit of this delay is that a single mouse movement could resize
     // several origami elements, and the loop over all of them used to be in the
     // handling of one mouse move. Now, each timeout will be its own event, and
@@ -399,11 +401,11 @@ export default class OverflowChecker {
     // box whose timer comes due at the same time shares one page-wide check, which runs after
     // all of them (see CheckPageAncestorOverflowSoon).
     public static AdjustSizeOrMarkOverflowSoon(editable: HTMLElement) {
-        const timeOut = (editable as any).overflowCheckTimeout;
-        if (timeOut) {
-            clearTimeout(timeOut);
+        if ((editable as any).overflowCheckTimeout) {
+            return;
         }
         (editable as any).overflowCheckTimeout = setTimeout(() => {
+            (editable as any).overflowCheckTimeout = undefined;
             this.CheckOnMinHeight(editable);
             OverflowChecker.AdjustSizeAndMarkSelfOverflow(editable);
             OverflowChecker.CheckPageAncestorOverflowSoon(editable);
