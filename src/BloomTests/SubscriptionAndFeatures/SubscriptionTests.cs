@@ -248,7 +248,10 @@ namespace BloomTests.SubscriptionAndFeatures
         {
             var subscription = new Subscription(code);
             var expirationDate = subscription.ExpirationDate;
-            Assert.AreEqual(expectedYYYYmmDD, expirationDate.ToString("yyyy-MM-dd"));
+            Assert.AreEqual(
+                expectedYYYYmmDD,
+                expirationDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+            );
         }
 
         [TestCase("Acme-003506-0487", 2019, 2, 10)]

@@ -1,3 +1,4 @@
+using System.Linq;
 using Bloom;
 using NUnit.Framework;
 using Sentry;
@@ -41,6 +42,178 @@ namespace BloomTests
             Assert.That(Program.StartupVitePort, Is.EqualTo(15173));
             Assert.That(Program.StartupLabel, Is.EqualTo("my-cool-feature"));
             Assert.That(remainingArgs, Is.EqualTo(new[] { @"C:\Temp\Example.bloomcollection" }));
+        }
+
+        /// <summary>
+        /// Windows' own rule for splitting a command line into arguments, which is what the copy
+        /// of Bloom that RestartBloom starts will see.
+        /// </summary>
+        private static string[] SplitCommandLineAsWindowsDoes(string arguments)
+        {
+            // The first token is parsed as a program name, by slightly different rules.
+            var argv = CommandLineToArgvW("Bloom.exe " + arguments, out var count);
+            Assert.That(argv, Is.Not.EqualTo(System.IntPtr.Zero), "CommandLineToArgvW failed");
+            try
+            {
+                return Enumerable
+                    .Range(1, count - 1)
+                    .Select(i =>
+                        System.Runtime.InteropServices.Marshal.PtrToStringUni(
+                            System.Runtime.InteropServices.Marshal.ReadIntPtr(
+                                argv,
+                                i * System.IntPtr.Size
+                            )
+                        )
+                    )
+                    .ToArray();
+            }
+            finally
+            {
+                LocalFree(argv);
+            }
+        }
+
+        [System.Runtime.InteropServices.DllImport(
+            "shell32.dll",
+            CharSet = System.Runtime.InteropServices.CharSet.Unicode
+        )]
+        private static extern System.IntPtr CommandLineToArgvW(string commandLine, out int count);
+
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        private static extern System.IntPtr LocalFree(System.IntPtr memory);
+
+        /// <summary>
+        /// Values that end in a backslash or contain quotes must come back unchanged, so a
+        /// folder path written with a trailing separator, say, is not split wrongly.
+        /// </summary>
+        [TestCase("plain")]
+        [TestCase("with spaces")]
+        [TestCase(@"C:\folder\")]
+        [TestCase(@"ends in two\\")]
+        [TestCase("has \"quotes\" inside")]
+        [TestCase(@"backslash before \""quote")]
+        [TestCase("")]
+        public void QuoteArgument_ComesBackUnchanged(string value)
+        {
+            Assert.That(
+                SplitCommandLineAsWindowsDoes(Program.QuoteArgument(value) + " next"),
+                Is.EqualTo(new[] { value, "next" })
+            );
+        }
+
+        /// <summary>
+        /// A copy of Bloom that RestartBloom starts (e.g. to finish a collection rename) must come
+        /// up in the same mode, so parsing what StartupArgumentsToForward produces, after the
+        /// caller's own --rename, must give back every option, and leave --rename first.
+        /// </summary>
+        [Test]
+        public void StartupArgumentsToForward_ParseBackToTheSameStartupOptions()
+        {
+            var settingsFolder = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                "Bloom user settings"
+            );
+            const string label = "my \"quoted\" feature\\";
+            Program.ParseStartupPortArguments(
+                new[]
+                {
+                    "--e2e",
+                    "--automation",
+                    "--dont-disturb",
+                    "--vite-port",
+                    "15173",
+                    "--label",
+                    label,
+                    "--user-settings-folder",
+                    settingsFolder,
+                    "--experimental-features",
+                    "team-collections",
+                },
+                out var firstError
+            );
+            Assert.That(firstError, Is.Null, "Sanity check: the original options parse");
+
+            // As Shell asks for a rename: the two folders, then its process id.
+            var commandLine =
+                "--rename \"C:\\Old Books\" \"C:\\New Books\" 1234 "
+                + Program.StartupArgumentsToForward();
+            var remainingArgs = Program.ParseStartupPortArguments(
+                SplitCommandLineAsWindowsDoes(commandLine),
+                out var secondError
+            );
+
+            Assert.That(secondError, Is.Null);
+            Assert.That(
+                remainingArgs,
+                Is.EqualTo(new[] { "--rename", @"C:\Old Books", @"C:\New Books", "1234" })
+            );
+            Assert.That(Program.RunningE2eTests, Is.True);
+            Assert.That(Program.StartupAutomation, Is.True);
+            Assert.That(Program.StartupDontDisturb, Is.True);
+            Assert.That(Program.StartupVitePort, Is.EqualTo(15173));
+            Assert.That(Program.StartupLabel, Is.EqualTo(label));
+            Assert.That(Program.StartupUserSettingsFolder, Is.EqualTo(settingsFolder));
+            Assert.That(Program.StartupExperimentalFeatures, Is.EqualTo("team-collections"));
+        }
+
+        /// <summary>
+        /// A developer's or an agent's Bloom from ./go.sh has --automation but not --e2e. A rename
+        /// keeps its session its own (settings folder, quiet window, label) but not --vite-port:
+        /// its launcher stops the Vite server when it exits, so the copy would load nothing.
+        /// </summary>
+        [Test]
+        public void StartupArgumentsToForward_AutomationWithoutE2eKeepsItsSessionButNotVite()
+        {
+            var settingsFolder = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                "Agent settings"
+            );
+            Program.ParseStartupPortArguments(
+                new[]
+                {
+                    "--automation",
+                    "--dont-disturb",
+                    "--vite-port",
+                    "15173",
+                    "--label",
+                    "dev",
+                    "--user-settings-folder",
+                    settingsFolder,
+                },
+                out var firstError
+            );
+            Assert.That(firstError, Is.Null, "Sanity check: the original options parse");
+            Assert.That(Program.RunningE2eTests, Is.False);
+
+            Program.ParseStartupPortArguments(
+                SplitCommandLineAsWindowsDoes(Program.StartupArgumentsToForward()),
+                out var secondError
+            );
+
+            Assert.That(secondError, Is.Null);
+            Assert.That(Program.StartupAutomation, Is.True);
+            Assert.That(Program.StartupDontDisturb, Is.True);
+            Assert.That(Program.StartupLabel, Is.EqualTo("dev"));
+            Assert.That(Program.StartupUserSettingsFolder, Is.EqualTo(settingsFolder));
+            Assert.That(Program.StartupVitePort, Is.Null);
+            Assert.That(Program.RunningE2eTests, Is.False);
+        }
+
+        /// <summary>
+        /// An ordinary Bloom (no --automation, no --e2e) restarts exactly as it always has.
+        /// </summary>
+        [Test]
+        public void StartupArgumentsToForward_IsEmptyForAnOrdinaryBloom()
+        {
+            Program.ParseStartupPortArguments(
+                new[] { "--vite-port", "15173", "--label", "dev" },
+                out var errorMessage
+            );
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(Program.StartupAutomation, Is.False);
+            Assert.That(Program.RunningE2eTests, Is.False);
+
+            Assert.That(Program.StartupArgumentsToForward(), Is.EqualTo(""));
         }
 
         [Test]

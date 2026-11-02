@@ -44,3 +44,4 @@ changelog -whitespace
 # tree as phantom modifications with an empty diff after every such install.
 src/BloomBrowserUI/package.json text eol=lf
 src/BloomBrowserUI/pnpm-lock.yaml text eol=lf
+src/content/package.json text eol=lf

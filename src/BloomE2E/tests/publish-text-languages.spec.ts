@@ -353,8 +353,8 @@ test.describe("the Text Languages publish list", () => {
     });
 
     // This assertion is what caught BL-16806: the name of a language the collection has stopped
-    // listing used to depend on the machine, not on the request. It asserts "Spanish" because the
-    // fallback in CollectionSettings.GetDisplayNameForLanguage now reads the subtag registry.
+    // listing used to depend on whether the machine happened to have a native ICU library. Bloom
+    // now turns ICU off for language names, so the answer no longer depends on the machine.
     //
     // A local failure here is usually something else: earlier steps time out on a loaded machine
     // and the run dies before reaching this assertion.
@@ -367,14 +367,14 @@ test.describe("the Text Languages publish list", () => {
     // hard kill, so the reopened book still shows English+French and French stays required. If
     // that is right, the fix is for the previous test (or restart itself) to wait for the
     // content-language change to reach the book file before Bloom dies.
-    test("keeps a language that the collection no longer has, under its standard name [Test Case ID 169]", async ({
+    test("keeps a language that the collection no longer has, under its own name [Test Case ID 169]", async ({
         bloomApp,
     }) => {
         test.setTimeout(180000);
 
         // Drop Spanish from the collection. The book still has Spanish text, so the language stays
-        // in the list; but the collection no longer supplies a name for it, so Bloom falls back to
-        // the language's standard name.
+        // in the list; but the collection no longer supplies a name for it, so Bloom asks LibPalaso,
+        // which, with ICU turned off, answers with the language's own name for itself.
         const withoutSpanish = await restartWithCollectionSettings(bloomApp, {
             languages: ["en", "fr"],
         });
@@ -399,13 +399,13 @@ test.describe("the Text Languages publish list", () => {
                     disabled: false,
                 },
                 {
-                    name: "Spanish",
+                    name: "español",
                     incomplete: false,
                     checked: false,
                     disabled: false,
                 },
             ],
-            "Spanish did not stay in the list, unchecked and under its standard name.",
+            "Spanish did not stay in the list, unchecked and under its own name.",
         );
 
         // Put Spanish back, for the test that follows.

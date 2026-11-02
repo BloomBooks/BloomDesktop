@@ -51,12 +51,20 @@ namespace BloomTests
             var xml = dom.OuterXml;
             Assert.That(
                 xml,
-                Does.Contain("<link rel=\"stylesheet\" href=\"basePage.css\" type=\"text/css\" />")
+                Contains
+                    .Substring(
+                        "<link rel=\"stylesheet\" href=\"basePage.css\" type=\"text/css\" />"
+                    )
+                    .Using(StringComparison.Ordinal)
             );
             Assert.That(
                 xml,
-                Does.Not.Contain(
-                    "<link rel=\"stylesheet\" href=\"basePage.css\" type=\"text/css\">"
+                Is.Not.Matches(
+                    Contains
+                        .Substring(
+                            "<link rel=\"stylesheet\" href=\"basePage.css\" type=\"text/css\">"
+                        )
+                        .Using(StringComparison.Ordinal)
                 )
             );
         }
@@ -94,11 +102,26 @@ namespace BloomTests
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
                 var text = File.ReadAllText(temp.Path);
-                Assert.That(text, Does.Not.Contain("<u />"));
-                Assert.That(text, Does.Not.Contain("<b />"));
-                Assert.That(text, Does.Not.Contain("<i />"));
-                Assert.That(text, Does.Not.Contain("<em />"));
-                Assert.That(text, Does.Not.Contain("<strong />"));
+                Assert.That(
+                    text,
+                    Is.Not.Matches(Contains.Substring("<u />").Using(StringComparison.Ordinal))
+                );
+                Assert.That(
+                    text,
+                    Is.Not.Matches(Contains.Substring("<b />").Using(StringComparison.Ordinal))
+                );
+                Assert.That(
+                    text,
+                    Is.Not.Matches(Contains.Substring("<i />").Using(StringComparison.Ordinal))
+                );
+                Assert.That(
+                    text,
+                    Is.Not.Matches(Contains.Substring("<em />").Using(StringComparison.Ordinal))
+                );
+                Assert.That(
+                    text,
+                    Is.Not.Matches(Contains.Substring("<strong />").Using(StringComparison.Ordinal))
+                );
             }
         }
 
@@ -115,18 +138,56 @@ namespace BloomTests
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
                 var text = File.ReadAllText(temp.Path);
-                Assert.That(text, Does.Not.Contain("<u />"));
-                Assert.That(text, Does.Not.Contain("<b />"));
-                Assert.That(text, Does.Not.Contain("<i />"));
-                Assert.That(text, Does.Not.Contain("<em />"));
-                Assert.That(text, Does.Not.Contain("<strong />"));
-                Assert.That(text, Does.Not.Contain("<span />"));
-                Assert.That(text, Does.Contain("<b attr=\"1\"></b>"));
-                Assert.That(text, Does.Contain("<u attr=\"1\"></u>"));
-                Assert.That(text, Does.Contain("<i attr=\"1\"></i>"));
-                Assert.That(text, Does.Contain("<strong attr=\"1\"></strong>"));
-                Assert.That(text, Does.Contain("<em attr=\"1\"></em>"));
-                Assert.That(text, Does.Contain("<span attr=\"1\"></span>"));
+                Assert.That(
+                    text,
+                    Is.Not.Matches(Contains.Substring("<u />").Using(StringComparison.Ordinal))
+                );
+                Assert.That(
+                    text,
+                    Is.Not.Matches(Contains.Substring("<b />").Using(StringComparison.Ordinal))
+                );
+                Assert.That(
+                    text,
+                    Is.Not.Matches(Contains.Substring("<i />").Using(StringComparison.Ordinal))
+                );
+                Assert.That(
+                    text,
+                    Is.Not.Matches(Contains.Substring("<em />").Using(StringComparison.Ordinal))
+                );
+                Assert.That(
+                    text,
+                    Is.Not.Matches(Contains.Substring("<strong />").Using(StringComparison.Ordinal))
+                );
+                Assert.That(
+                    text,
+                    Is.Not.Matches(Contains.Substring("<span />").Using(StringComparison.Ordinal))
+                );
+                Assert.That(
+                    text,
+                    Contains.Substring("<b attr=\"1\"></b>").Using(StringComparison.Ordinal)
+                );
+                Assert.That(
+                    text,
+                    Contains.Substring("<u attr=\"1\"></u>").Using(StringComparison.Ordinal)
+                );
+                Assert.That(
+                    text,
+                    Contains.Substring("<i attr=\"1\"></i>").Using(StringComparison.Ordinal)
+                );
+                Assert.That(
+                    text,
+                    Contains
+                        .Substring("<strong attr=\"1\"></strong>")
+                        .Using(StringComparison.Ordinal)
+                );
+                Assert.That(
+                    text,
+                    Contains.Substring("<em attr=\"1\"></em>").Using(StringComparison.Ordinal)
+                );
+                Assert.That(
+                    text,
+                    Contains.Substring("<span attr=\"1\"></span>").Using(StringComparison.Ordinal)
+                );
             }
         }
 
@@ -236,8 +297,20 @@ namespace BloomTests
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
                 var text = File.ReadAllText(temp.Path);
-                Assert.That(text, Does.Contain($"<span data-foo=\"bar\"></span>"));
-                Assert.That(text, Does.Not.Contain($"<span data-foo=\"bar\" />"));
+                Assert.That(
+                    text,
+                    Contains
+                        .Substring($"<span data-foo=\"bar\"></span>")
+                        .Using(StringComparison.Ordinal)
+                );
+                Assert.That(
+                    text,
+                    Is.Not.Matches(
+                        Contains
+                            .Substring($"<span data-foo=\"bar\" />")
+                            .Using(StringComparison.Ordinal)
+                    )
+                );
             }
         }
 
@@ -292,8 +365,11 @@ namespace BloomTests
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
                 var text = File.ReadAllText(temp.Path);
-                Assert.That(text, Does.Contain("<br"));
-                Assert.That(text, Does.Not.Contain("</br>"));
+                Assert.That(text, Contains.Substring("<br").Using(StringComparison.Ordinal));
+                Assert.That(
+                    text,
+                    Is.Not.Matches(Contains.Substring("</br>").Using(StringComparison.Ordinal))
+                );
             }
         }
 
@@ -509,17 +585,19 @@ namespace BloomTests
             var xml = htmlDom.DocumentElement.InnerXml;
             Assert.That(
                 xml,
-                Does.Not.Contain("data-foo=\"bar\""),
+                Is.Not.Matches(
+                    Contains.Substring("data-foo=\"bar\"").Using(StringComparison.Ordinal)
+                ),
                 "The first of the duplicate attributes should not be present."
             );
             Assert.That(
                 xml,
-                Does.Contain("data-foo=\"bar2\""),
+                Contains.Substring("data-foo=\"bar2\"").Using(StringComparison.Ordinal),
                 "The second of the duplicate attributes should be present."
             );
             Assert.That(
                 xml,
-                Does.Contain("data-baz=\"qux\""),
+                Contains.Substring("data-baz=\"qux\"").Using(StringComparison.Ordinal),
                 "The remaining attributes should remain present."
             );
         }

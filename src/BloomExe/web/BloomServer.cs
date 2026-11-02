@@ -1016,11 +1016,12 @@ namespace Bloom.Api
                     }
                 }
 
-                if (
-                    CurrentBook?.UserPrefs.IncludeBackgroundColors == true
-                    && transparentParam == "yes"
-                    && _useCache
-                )
+                // We don't need to check UserPrefs.IncludeBackgroundColors here: when it is off,
+                // PublishModel passes suppressBackgroundColors to AddTransparencyParamToImages, so
+                // transparent=yes is only present on canvas overlays on a real background image,
+                // which need it whatever the page color, since they would otherwise hide that
+                // picture (BL-16993).
+                if (transparentParam == "yes" && _useCache)
                 {
                     // Use transparencyOnly so AdjustImageForDisplay skips resize and JPEG
                     // conversion and returns null (→ cached as a no-op) when the image isn't
@@ -1036,7 +1037,7 @@ namespace Bloom.Api
                     info.ReplyWithImage(autoFile, imageFile);
                     return true;
                 }
-                // IncludeBackgroundColors is off, or no transparent param — serve the original
+                // No transparent param — serve the original
                 // without any processing.
                 info.ReplyWithImage(imageFile);
                 return true;

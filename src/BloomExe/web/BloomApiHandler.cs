@@ -297,6 +297,7 @@ namespace Bloom.Api
         // NOTE: this method gets called on different threads!
         public async Task<bool> ProcessRequestAsync(IRequestInfo info, string localPath)
         {
+            UserCulture.CheckProcessCultureIsInvariant();
             var localPathLc = localPath.ToLowerInvariant();
             if (localPathLc.StartsWith(ApiPrefix, StringComparison.InvariantCulture))
             {

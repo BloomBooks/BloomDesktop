@@ -40,22 +40,32 @@ namespace Bloom.web.controllers
                 {
                     if (request.HttpMethod == HttpMethods.Get)
                     {
+                        // This describes the collection's subscription, or, given ?code=, the one
+                        // that code stands for (a Settings dialog asks about the code being typed).
+                        var code = request.GetParamOrNull("code");
+                        var subscription =
+                            code == null
+                                ? _collectionSettings.Subscription
+                                : CollectionSettingsUpdater.GetChangedSubscription(
+                                    _collectionSettings,
+                                    code
+                                ) ?? _collectionSettings.Subscription;
                         var subscriptionData = new
                         {
-                            Code = _subscription.Code ?? "",
-                            Tier = _subscription.Tier.ToString(),
-                            Summary = BrandingSettings.GetSummaryHtml(_subscription.Descriptor),
-                            Expiration = _subscription.ExpirationDate.ToString(
+                            Code = subscription.Code ?? "",
+                            Tier = subscription.Tier.ToString(),
+                            Summary = BrandingSettings.GetSummaryHtml(subscription.Descriptor),
+                            Expiration = subscription.ExpirationDate.ToString(
                                 "yyyy-MM-dd",
                                 CultureInfo.InvariantCulture
                             ),
-                            CodeIntegrity = _subscription.GetIntegrityLabel(),
-                            SubscriptionDescriptor = _subscription.Descriptor,
+                            CodeIntegrity = subscription.GetIntegrityLabel(),
+                            SubscriptionDescriptor = subscription.Descriptor,
                             MissingBrandingFiles = (
-                                _subscription.Tier == SubscriptionTier.Enterprise
-                                && !BrandingProject.HaveFilesForBranding(_subscription.BrandingKey)
+                                subscription.Tier == SubscriptionTier.Enterprise
+                                && !BrandingProject.HaveFilesForBranding(subscription.BrandingKey)
                             ),
-                            EditingBlorgBook = _subscription.EditingBlorgBook,
+                            EditingBlorgBook = subscription.EditingBlorgBook,
                         };
 
                         request.ReplyWithJson(JsonConvert.SerializeObject(subscriptionData));

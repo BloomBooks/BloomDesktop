@@ -1,6 +1,6 @@
 ///<reference path="BloomField.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
-import { describe, it, expect, beforeEach, afterAll } from "vitest";
+import { describe, it, expect, beforeEach, afterAll, vi } from "vitest";
 import { getTestRoot, removeTestRoot } from "../../utils/testHelper";
 import BloomField from "./BloomField";
 import $ from "jquery";
@@ -35,6 +35,70 @@ describe("BloomField", () => {
                 "A v 2 B C \\v D E.",
             );
         expect(result).toBe("A v 2 B C \\v D E.");
+    });
+
+    // What CKEditor hands Bloom's paste handler for a plain-text paste: `dataValue` is the text as
+    // CKEditor filtered it, and the raw text is in the data transfer.
+    function plainTextPaste(text: string, dataValue = "filtered text") {
+        return {
+            type: "text",
+            dataValue,
+            dataTransfer: { getData: (_format: string) => text },
+        };
+    }
+
+    it("reconstituteParagraphsOnPlainTextPaste puts each line of a multi-line paste in its own paragraph", () => {
+        expect(
+            BloomField.reconstituteParagraphsOnPlainTextPaste(
+                plainTextPaste("first\nsecond"),
+            ),
+        ).toBe("<p>first</p><p>second</p>");
+    });
+
+    it("reconstituteParagraphsOnPlainTextPaste escapes text that looks like markup (BL-16982)", () => {
+        const result = BloomField.reconstituteParagraphsOnPlainTextPaste(
+            plainTextPaste("if a <b and c> d & e\nsecond"),
+        );
+
+        expect(result).toBe(
+            "<p>if a &lt;b and c&gt; d &amp; e</p><p>second</p>",
+        );
+        // And the browser reads it back as exactly the text that was pasted, with no elements
+        // other than the paragraphs.
+        const holder = document.createElement("div");
+        holder.innerHTML = result;
+        expect(holder.querySelectorAll("p").length).toBe(2);
+        expect(holder.querySelectorAll("*").length).toBe(2);
+        expect(holder.querySelector("p")!.textContent).toBe(
+            "if a <b and c> d & e",
+        );
+    });
+
+    it("reconstituteParagraphsOnPlainTextPaste does not turn pasted text into a live element (BL-16982)", () => {
+        const result = BloomField.reconstituteParagraphsOnPlainTextPaste(
+            plainTextPaste('<img src="x" onerror="alert(1)">\nsecond'),
+        );
+
+        const holder = document.createElement("div");
+        holder.innerHTML = result;
+        expect(holder.querySelector("img")).toBeNull();
+        expect(holder.querySelector("p")!.textContent).toBe(
+            '<img src="x" onerror="alert(1)">',
+        );
+    });
+
+    it("reconstituteParagraphsOnPlainTextPaste leaves a single-line or HTML paste as CKEditor filtered it", () => {
+        expect(
+            BloomField.reconstituteParagraphsOnPlainTextPaste(
+                plainTextPaste("one line <b>", "filtered one line"),
+            ),
+        ).toBe("filtered one line");
+        expect(
+            BloomField.reconstituteParagraphsOnPlainTextPaste({
+                ...plainTextPaste("two\nlines", "<p>filtered html</p>"),
+                type: "html",
+            }),
+        ).toBe("<p>filtered html</p>");
     });
 
     it("copyAudioFilesWithNewIdsDuringPasting does not change input when no audio found", () => {
@@ -262,6 +326,316 @@ describe("BloomField", () => {
     it("bloom-editable div creates a <p>", () => {
         WireUp();
         expect($("div p").length).toBeGreaterThan(0);
+    });
+
+    // Inline (Word-style) images carry the same two classes that the old embedded-image
+    // templates used, bloom-keepFirstInField and bloom-preventRemoval. These tests check that
+    // BloomField still honors those classes when they are on a .bloom-inlineImage wrapper.
+    // See inlineImages.ts.
+    describe("inline image protections", () => {
+        const inlineImageHtml =
+            '<div class="bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval" contenteditable="false"><img src="placeHolder.png" alt=""></div>';
+
+        it("EnsureParagraphsPresent puts the <p> after a bloom-keepFirstInField inline image", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml;
+            // Sanity check: no paragraph yet, and the image is the only child.
+            expect(editable.querySelectorAll("p").length).toBe(0);
+            expect(editable.children.length).toBe(1);
+
+            WireUp();
+
+            expect(editable.querySelectorAll("p").length).toBe(1);
+            // bloom-keepFirstInField means the image stays the first child. The paragraph goes
+            // after it, because text has to come after a float in order to wrap around it.
+            expect(
+                editable.firstElementChild!.classList.contains(
+                    "bloom-inlineImage",
+                ),
+            ).toBe(true);
+            expect(editable.lastElementChild!.tagName).toBe("P");
+        });
+
+        it("counts a bloom-preventRemoval inline image, so ctrl+a DEL is undone", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            // jsdom has no execCommand, and we only want to know that BloomField asked for
+            // the undo.
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            // Simulate what ctrl+a DEL does: the keydown, then the removal it causes, then the
+            // keyup. BloomField compares the count from the keydown with the count at the
+            // keyup, so the test needs to send the keydown too.
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", { bubbles: true }),
+            );
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true }),
+            );
+
+            expect(execCommand).toHaveBeenCalledWith("undo");
+        });
+
+        // When the person deletes a picture from its own menu, they meant to. The code that
+        // deletes it records the new count, so the typing that follows is not undone one
+        // character at a time.
+        it("does not undo the typing that follows a deliberate deletion of the image", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            // The menu's Delete, which involves no keystroke, and records the new count.
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            BloomField.UpdateProtectedElementCount(editable);
+
+            // And now the person types.
+            for (let i = 0; i < 3; i++) {
+                editable.dispatchEvent(
+                    new KeyboardEvent("keydown", { bubbles: true }),
+                );
+                editable.dispatchEvent(
+                    new KeyboardEvent("keyup", { bubbles: true }),
+                );
+            }
+
+            expect(execCommand).not.toHaveBeenCalled();
+        });
+
+        // When Delete is held down, the browser's auto-repeat sends a run of keydowns and one
+        // keyup at the end. The deletion happens before that keyup, which still has to catch it.
+        it("protects the image when delete is held down rather than pressed", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            // First press: the deletion happens.
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", { bubbles: true, repeat: false }),
+            );
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            // ...and the key is still down, so auto-repeat keeps sending keydowns.
+            for (let i = 0; i < 3; i++) {
+                editable.dispatchEvent(
+                    new KeyboardEvent("keydown", {
+                        bubbles: true,
+                        repeat: true,
+                    }),
+                );
+            }
+            // The one keyup, when they finally let go.
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true }),
+            );
+
+            expect(execCommand).toHaveBeenCalledWith("undo");
+        });
+
+        // An image inserted after the page was set up is protected too, so if ctrl+a DEL
+        // removes it, BloomField puts it back. The code that inserts it records the new count.
+        it("protects an inline image inserted after the field was wired up", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+            // Sanity check: nothing to protect when the field was wired up.
+            expect(
+                editable.querySelectorAll(".bloom-preventRemoval").length,
+            ).toBe(0);
+
+            editable.insertAdjacentHTML("afterbegin", inlineImageHtml);
+            BloomField.UpdateProtectedElementCount(editable);
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", { bubbles: true }),
+            );
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true }),
+            );
+
+            expect(execCommand).toHaveBeenCalledWith("undo");
+        });
+
+        // Ctrl+Z after inserting a picture takes the picture out through Bloom's undo stack.
+        // BloomField must not treat that as an accidental deletion, even when the new count has not
+        // been recorded by the keyup: a browser undo on top of it would take back the person's last
+        // typing. That includes the keyup of Ctrl, which comes after the Z.
+        it("does not undo again when ctrl+z itself removes the image", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            // Ctrl goes down first, then Z, whose undo removes the picture.
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", {
+                    bubbles: true,
+                    key: "Control",
+                    ctrlKey: true,
+                }),
+            );
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", {
+                    bubbles: true,
+                    key: "z",
+                    code: "KeyZ",
+                    ctrlKey: true,
+                }),
+            );
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", {
+                    bubbles: true,
+                    key: "z",
+                    code: "KeyZ",
+                    ctrlKey: true,
+                }),
+            );
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true, key: "Control" }),
+            );
+
+            expect(execCommand).not.toHaveBeenCalled();
+
+            // Sanity check that the undo keystroke did not switch the guard off: a later Delete
+            // that removes a protected picture is still undone.
+            editable.insertAdjacentHTML("afterbegin", inlineImageHtml);
+            BloomField.UpdateProtectedElementCount(editable);
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", { bubbles: true, key: "Delete" }),
+            );
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true, key: "Delete" }),
+            );
+            expect(execCommand).toHaveBeenCalledWith("undo");
+        });
+
+        // Only the undo key's own keyup is exempt. A Delete pressed and released while Z is still
+        // held down is an ordinary keystroke, and a picture it removes is put back.
+        it("still protects the image from a delete pressed while ctrl+z is held", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", {
+                    bubbles: true,
+                    key: "z",
+                    code: "KeyZ",
+                    ctrlKey: true,
+                }),
+            );
+            // With Z still down, Delete removes the picture.
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", {
+                    bubbles: true,
+                    key: "Delete",
+                    code: "Delete",
+                }),
+            );
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", {
+                    bubbles: true,
+                    key: "Delete",
+                    code: "Delete",
+                }),
+            );
+
+            expect(execCommand).toHaveBeenCalledWith("undo");
+        });
+
+        // If Ctrl is let go while Z is still held, Z's auto-repeat types the letter z, which can
+        // replace a selected picture. That is typing, so the picture is put back.
+        it("protects the image when ctrl is let go and z repeats as typing", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", {
+                    bubbles: true,
+                    key: "z",
+                    code: "KeyZ",
+                    ctrlKey: true,
+                }),
+            );
+            // Ctrl comes up; Z is still down and repeats, now without Ctrl.
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true, key: "Control" }),
+            );
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", {
+                    bubbles: true,
+                    key: "z",
+                    code: "KeyZ",
+                    repeat: true,
+                }),
+            );
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", {
+                    bubbles: true,
+                    key: "z",
+                    code: "KeyZ",
+                }),
+            );
+
+            expect(execCommand).toHaveBeenCalledWith("undo");
+        });
+
+        // The page claims a Ctrl+Z that undoes a picture change before the field sees its keydown,
+        // so only the keyup arrives here. It must not fire a browser undo either.
+        it("does not undo on the keyup of a ctrl+z whose keydown the page claimed", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            // No keydown reaches the field; the undo removes the picture.
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", {
+                    bubbles: true,
+                    key: "z",
+                    code: "KeyZ",
+                    ctrlKey: true,
+                }),
+            );
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true, key: "Control" }),
+            );
+
+            expect(execCommand).not.toHaveBeenCalled();
+        });
+
+        it("does not undo on a keyup that left the inline image alone", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true }),
+            );
+
+            expect(execCommand).not.toHaveBeenCalled();
+        });
     });
 
     // Content converted from other formats can arrive with a real heading as the first thing

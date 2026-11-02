@@ -106,6 +106,17 @@ match the launch mode fails at once and says which one to use.
 
 Teardown kills the process tree, waits for the HTTP port to go dark, and deletes the temp copy.
 
+`step` names one step of a test: `await step("Add a row from the row menu", async () => { ... })`.
+It is Playwright's own `test.step`, so the HTML report keeps the nesting, and it also writes the
+title onto the caption strip in the Bloom window, where the last three steps show with their times.
+Someone watching a run can therefore read what the test is doing rather than guessing from the
+mouse. Write titles the way a tester would say them out loud: a verb first, one line, no selectors
+and no helper names. A step returns whatever its body returns, so a value measured in one step can
+be checked in the next. Pass `{ fixme: true }` as a third argument to record a step that is
+deliberately not run; its body is skipped and the caption shows it struck through. None of this
+changes what a test does or whether it passes: a Bloom too old to have the caption, or a shell
+mid-reload, simply gets nothing.
+
 A background watcher polls for Bloom's "Bloom had a problem" dialog. When one appears it reads the
 exception from behind the dialog's own "Learn More" link, closes the dialog the way its Close
 button does, and fails the test with that text. It never clicks Submit, which would send a report,
@@ -132,7 +143,8 @@ real bug in the code under test; read the message and fix it rather than working
   dialog it opens: `openFormatDialog`, `clickOutsideFormatDialog`, `dragFormatDialog`,
   `getFormatDialogPlacement`, and the scrolling and zooming that put the gear at the edge of the
   screen.
-- `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`.
+- `helpers/collection.ts` — `selectBook`, `waitForCollectionReady`, and the selected book's
+  right-click menu (`chooseFromSelectedBookMenu`, `closeBookMenu`).
 - `helpers/bookMaking.ts` — make a book, add pages, type into it, read its pages.
 - `helpers/addPageDialog.ts` — open, read, scroll and close the real Add Page dialog, and add a
   page through it. Tests that only need a page in their book call `addPage` instead.
@@ -153,8 +165,12 @@ real bug in the code under test; read the message and fix it rather than working
   and does nothing otherwise.
 - `helpers/collectionSettings.ts` — rewrite the collection's languages, xmatter pack or
   subscription code and restart Bloom on them; `setBranding`; `getFeatureStatus`, the same
-  answer the front end asks for before it shows a tier-gated control; and
-  `kEnterpriseSubscriptionCode`.
+  answer the front end asks for before it shows a tier-gated control;
+  `kEnterpriseSubscriptionCode` and its `kTestBookshelves`; and the new (React) Settings dialog:
+  open it, show a page or read which one is showing, read and change its checkboxes, text boxes
+  and drop-down lists, read or click its subscription badge, read the Subscription page and type
+  a code on it, read the Front & Back Matter page's badge preview, and save, cancel or restart;
+  and read back a setting the saved `.bloomCollection` holds.
 - `helpers/keys.ts` — `pressKey`, `pressKeyIn`, `typeWithKeys`: real key presses, for tests whose
   subject is the key. `typeInGroup` inserts text and raises no key events, so use it for
   everything else.
@@ -223,6 +239,18 @@ pnpm exec playwright test --debug    # step through it
 
 A run opens a real Bloom window on your desktop. That is expected; do not click in it.
 
+### Tests that need a person: `*.manual.ts`
+
+A test that cannot pass unattended, because a person has to press real keys for instance, is named
+`*.manual.ts`, not `*.spec.ts`. A normal run, and so the nightly, does not collect it at all, so it
+is never reported as skipped; a skip in the nightly is then always one that needs work. Do not
+make such a test skip itself instead. To run one, set `PLAYWRIGHT_INCLUDE_MANUAL` (the same switch
+the component tester uses for its manual harnesses):
+
+```bash
+PLAYWRIGHT_INCLUDE_MANUAL=1 pnpm exec playwright test tests/undo-physical-keys.manual.ts
+```
+
 ### Where the Bloom window goes: `BLOOM_AUTOMATION_MONITOR`
 
 One environment variable decides where every window an e2e run opens goes, the main window and
@@ -277,6 +305,22 @@ is pointless. A setting that names a monitor is left alone, because that window 
 
 The variable applies only to a Bloom started with `--automation`, which every e2e run passes, and
 so does `./go.sh`. A Bloom you start any other way is unaffected, however the variable is set.
+
+### Running at the nightly's window size
+
+On a developer's monitor Bloom is big. On the nightly CI runner its page area is about 1008x681,
+so the lower part of an A5 page is below the fold and a long menu scrolls. A spec can pass every
+time locally and fail every night. `BLOOM_E2E_VIEWPORT` makes a run see what the nightly sees:
+
+```bash
+BLOOM_E2E_VIEWPORT=nightly pnpm exec playwright test tests/my-feature.spec.ts
+BLOOM_E2E_VIEWPORT=1024x586 pnpm test           # any other size, at least 400x300
+```
+
+The fixture emulates the size with a CDP device-metrics override (`fixtures/viewport.ts`), so the
+page lays out as it would in a window of that size. A value it cannot read fails the run. Preflight
+runs every spec a branch adds or changes this way once; see "Preflight checks" in the root
+`AGENTS.md`.
 
 ### Whether the Bloom window takes the keyboard: `BLOOM_E2E_DONT_DISTURB`
 

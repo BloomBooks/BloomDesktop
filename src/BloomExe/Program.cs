@@ -158,6 +158,9 @@ namespace Bloom
         [STAThread]
         static int Main(string[] args1)
         {
+            // First, before anything can capture the culture: the process runs invariant, and the
+            // user's regional format is kept in UserCulture.Current (BL-16981).
+            UserCulture.UseInvariantCulture();
             // AttachConsole(-1);	// Enable this to allow Console.Out.WriteLine to be viewable (must run Bloom from terminal, AFAIK)
             _ownsSingleInstanceToken = false;
             _uiThreadId = Thread.CurrentThread.ManagedThreadId;
@@ -168,7 +171,6 @@ namespace Bloom
             // final call to CleanupTempFolder. Also prevents our temp files competing with
             // other programs for 64K available default temp file names.
             TempFile.NamePrefix = "bloom";
-            TagLibCultureFix.Register();
 
             // Parse our own startup arguments before anything reads Settings.Default:
             // --user-settings-folder decides where the settings live (the parser hands it to
@@ -700,6 +702,20 @@ namespace Bloom
                                 // rename, and that prevents the rename. Since we don't even use Current Directory in Bloom, just change it to temp.
                                 // See BL-11004
                                 Directory.SetCurrentDirectory(Path.GetTempPath());
+                                // The Bloom that asked for the rename passes its process id last.
+                                // Wait for it to exit, so it no longer holds files in the folder.
+                                // An ordinary launch already waits for it on the single-instance
+                                // token, but an automation run (the e2e suite) skips the token.
+                                if (
+                                    args.Length > 3
+                                    && int.TryParse(
+                                        args[3],
+                                        NumberStyles.None,
+                                        CultureInfo.InvariantCulture,
+                                        out var renamingBloomPid
+                                    )
+                                )
+                                    WaitForProcessToExit(renamingBloomPid);
                                 var pathToNewCollection = CollectionSettings.RenameCollection(
                                     args[1],
                                     args[2]
@@ -1553,6 +1569,101 @@ namespace Bloom
             }
         }
 
+        /// <summary>
+        /// The command-line options this Bloom was started with that a copy it starts of itself
+        /// (RestartBloom) must be given again, or "" when there are none. An ordinary Bloom has
+        /// none. An automation run (an agent's or a test's Bloom) keeps what makes its session its
+        /// own: without these, the copy that finishes a collection rename would use the shared user
+        /// settings, take the developer's foreground, and collide with the developer's own Bloom.
+        /// Only an e2e run also keeps --vite-port and its e2e options: a Bloom from ./go.sh, which
+        /// has --automation but not --e2e, has a launcher that stops its Vite server when it exits,
+        /// so a copy given --vite-port would load nothing. --launcher-port is never forwarded, for
+        /// the same reason: the dev launcher does not own a Bloom that started itself.
+        /// </summary>
+        internal static string StartupArgumentsToForward()
+        {
+            if (!StartupAutomation && !RunningE2eTests)
+                return "";
+            var forwarded = new List<string>();
+            if (StartupAutomation)
+                forwarded.Add("--automation");
+            if (StartupDontDisturb)
+                forwarded.Add("--dont-disturb");
+            if (StartupLabel != null)
+                forwarded.Add("--label " + QuoteArgument(StartupLabel));
+            if (StartupUserSettingsFolder != null)
+                forwarded.Add("--user-settings-folder " + QuoteArgument(StartupUserSettingsFolder));
+            if (RunningE2eTests)
+            {
+                forwarded.Add("--e2e");
+                if (StartupVitePort != null)
+                    forwarded.Add(
+                        "--vite-port "
+                            + StartupVitePort.Value.ToString(CultureInfo.InvariantCulture)
+                    );
+                if (StartupExperimentalFeatures != null)
+                    forwarded.Add(
+                        "--experimental-features " + QuoteArgument(StartupExperimentalFeatures)
+                    );
+            }
+            return string.Join(" ", forwarded);
+        }
+
+        /// <summary>
+        /// One command-line argument, quoted so Windows hands it back unchanged however it ends
+        /// and whatever quotes it contains: backslashes are doubled where they come before a quote
+        /// (an escaped one, or the closing one), and each quote is escaped.
+        /// </summary>
+        internal static string QuoteArgument(string value)
+        {
+            var quoted = new StringBuilder("\"");
+            var pendingBackslashes = 0;
+            foreach (var c in value)
+            {
+                if (c == '\\')
+                {
+                    pendingBackslashes++;
+                    continue;
+                }
+                if (c == '"')
+                    quoted.Append('\\', pendingBackslashes * 2 + 1);
+                else
+                    quoted.Append('\\', pendingBackslashes);
+                pendingBackslashes = 0;
+                quoted.Append(c);
+            }
+            quoted.Append('\\', pendingBackslashes * 2);
+            return quoted.Append('"').ToString();
+        }
+
+        /// <summary>
+        /// Wait (up to 30 seconds) for the process with this id to exit. Returns at once when no
+        /// such process is running. This is only a courtesy before renaming a collection folder,
+        /// so it never throws: by the time we look, Windows may have given the id to some other
+        /// process, perhaps one we may not even inspect, and that must not stop the rename.
+        /// </summary>
+        private static void WaitForProcessToExit(int processId)
+        {
+            try
+            {
+                using var process = Process.GetProcessById(processId);
+                if (!process.WaitForExit(30000))
+                    Logger.WriteEvent(
+                        $"Timed out waiting for process {processId} to exit before renaming the collection."
+                    );
+            }
+            catch (ArgumentException)
+            {
+                // It has already exited.
+            }
+            catch (Exception e)
+            {
+                Logger.WriteEvent(
+                    $"Could not wait for process {processId} to exit before renaming the collection: {e.Message}"
+                );
+            }
+        }
+
         public static void RestartBloom(bool hardExit, string args = null)
         {
             try
@@ -1562,6 +1673,10 @@ namespace Bloom
                 // Bloom exits.  So we ask the launcher to do the restart instead.
                 if (args == null && AskDevLauncherToRestartBloom())
                     return;
+                // After the caller's own arguments, so a --rename stays first.
+                var forwarded = StartupArgumentsToForward();
+                if (forwarded.Length > 0)
+                    args = string.IsNullOrEmpty(args) ? forwarded : args + " " + forwarded;
                 var program = BloomExePath;
                 if (SIL.PlatformUtilities.Platform.IsLinux)
                 {
@@ -2727,9 +2842,6 @@ namespace Bloom
                 {
                     LocalizationManager.FallbackLanguageIds = new[] { "es", "en" };
                 }
-
-                // It's now safe to read the localized strings.  See BL-13245.
-                HtmlErrorReporter.Instance.LocalizeDefaultReportLabel();
             }
             catch (Exception error)
             {

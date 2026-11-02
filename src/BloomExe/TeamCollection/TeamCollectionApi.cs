@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -486,6 +487,27 @@ namespace Bloom.TeamCollection
             }
         }
 
+        /// <summary>
+        /// The lock date as the status panel shows it, or "" if there is none to show. Not locked is
+        /// DateTime.MaxValue. Some calendars cannot format every date (ar-SA's Um al-Qura covers only
+        /// 1900-2077), and a lock time written before BL-16948 can be far off (a Thai Buddhist year
+        /// like 2569, or a Hijri year like 1448), so a date the calendar can't show is dropped rather
+        /// than failing the whole status request.
+        /// </summary>
+        internal static string FormatLockDate(DateTime whenLocked)
+        {
+            if (whenLocked == DateTime.MaxValue)
+                return "";
+            var localTime = whenLocked.ToLocalTime();
+            var calendar = UserCulture.Current.Calendar;
+            if (
+                localTime < calendar.MinSupportedDateTime
+                || localTime > calendar.MaxSupportedDateTime
+            )
+                return "";
+            return localTime.ToString("d", UserCulture.Current);
+        }
+
         // Needs to be thread-safe
         private string GetBookStatusJson(string bookFolderName, Book.Book book)
         {
@@ -523,7 +545,7 @@ namespace Bloom.TeamCollection
                         who = "",
                         whoFirstName = "",
                         whoSurname = "",
-                        when = DateTime.Now.ToShortDateString(),
+                        when = DateTime.Now.ToString("d", UserCulture.Current),
                         where = "",
                         currentUser = CurrentUser,
                         currentUserName = TeamCollectionManager.CurrentUserFirstName,
@@ -537,6 +559,8 @@ namespace Bloom.TeamCollection
                         checkinMessage = "",
                         isUserAdmin = _tcManager.OkToEditCollectionSettings,
                         checkoutsArePaused = !_settings.AllowCheckouts,
+                        disconnectedBecausePaused = false,
+                        movedToCloud = false,
                     }
                 );
             }
@@ -595,6 +619,8 @@ namespace Bloom.TeamCollection
                 book == null || !Directory.Exists(book.FolderPath)
                     ? ""
                     : BookHistory.GetPendingCheckinMessage(book);
+            var disconnectedTC =
+                _tcManager.CurrentCollectionEvenIfDisconnected as DisconnectedTeamCollection;
             return JsonConvert.SerializeObject(
                 new
                 {
@@ -606,7 +632,7 @@ namespace Bloom.TeamCollection
                     whoSurname = _tcManager.CurrentCollectionEvenIfDisconnected?.WhoHasBookLockedSurname(
                         bookFolderName
                     ),
-                    when = whenLocked.ToLocalTime().ToShortDateString(),
+                    when = FormatLockDate(whenLocked),
                     where = _tcManager.CurrentCollectionEvenIfDisconnected?.WhatComputerHasBookLocked(
                         bookFolderName
                     ),
@@ -624,6 +650,10 @@ namespace Bloom.TeamCollection
                     checkinMessage,
                     isUserAdmin = _tcManager.OkToEditCollectionSettings,
                     checkoutsArePaused = !_settings.AllowCheckouts,
+                    // So the panel can say why, when that is an administrator's pause. See BL-16928.
+                    disconnectedBecausePaused = disconnectedTC?.DisconnectedBecauseSharedFolderChangesPaused
+                        ?? false,
+                    movedToCloud = disconnectedTC?.MovedToCloud ?? false,
                 }
             );
         }
@@ -1240,18 +1270,32 @@ namespace Bloom.TeamCollection
             return "";
         }
 
+        // LEGACY: this method, the handler for teamCollection/createTeamCollection (and its
+        // registration), is only for the WinForms Collection Settings dialog and is deleted with it
+        // at cutover (BL-17042). CreateTeamCollection, below, stays: the new dialog's save uses it.
         // We must ensure that the user has registered a valid email address before making the call to the API endpoint which calls this.
         public void HandleCreateTeamCollection(ApiRequest request)
         {
-            string repoFolderParentPath = null;
+            if (CreateTeamCollection(request.RequiredPostString()))
+                _callbackToReopenCollection?.Invoke();
+            // If it failed, the user has already been told, and it is better to report a success
+            // here; otherwise they will also get a toast.
+            request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// Makes the open collection a Team Collection, shared in a new folder inside
+        /// repoFolderParentPath. The caller reopens the collection. A failure is reported to the
+        /// user here.
+        /// </summary>
+        /// <returns>true if the Team Collection was created</returns>
+        public bool CreateTeamCollection(string repoFolderParentPath)
+        {
             try
             {
                 Debug.Assert(!string.IsNullOrWhiteSpace(CurrentUser));
 
-                repoFolderParentPath = request.RequiredPostString();
-
                 _tcManager.ConnectToTeamCollection(repoFolderParentPath, _settings.CollectionId);
-                _callbackToReopenCollection?.Invoke();
 
                 BloomAnalytics.Track(
                     "TeamCollectionCreate",
@@ -1263,8 +1307,7 @@ namespace Bloom.TeamCollection
                         { "User", CurrentUser },
                     }
                 );
-
-                request.PostSucceeded();
+                return true;
             }
             catch (Exception e)
             {
@@ -1277,12 +1320,9 @@ namespace Bloom.TeamCollection
                 Logger.WriteError(String.Format(msgEnglish, repoFolderParentPath, e.Message), e);
                 NonFatalProblem.ReportSentryOnly(
                     e,
-                    $"Something went wrong for {request.LocalPath()}"
+                    "Something went wrong creating a Team Collection"
                 );
-
-                // Since we have already informed the user above, it is better to just report a success here.
-                // Otherwise, they will also get a toast.
-                request.PostSucceeded();
+                return false;
             }
         }
 

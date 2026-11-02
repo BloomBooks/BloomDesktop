@@ -40,6 +40,51 @@
         <note>This checkbox enables the experimental publish-to-apps workflow.</note>
         <note>Obsolete as of Bloom 6.5</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate.Description" translate="no">
+        <source xml:lang="en">When a new version of Bloom is available, Bloom will get it for you.</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate.Description</note>
+        <note>Shown under the "Automatically Update Bloom" checkbox on the Advanced page of the Collection Settings dialog. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Collection" translate="no">
+        <source xml:lang="en">Collection</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Collection</note>
+        <note>Heading of the group of settings about the collection itself (its name) on the Advanced page of the Collection Settings dialog. A collection is a folder of books that share settings.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.NoRenameTeamCollection" translate="no">
+        <source xml:lang="en">The collection name cannot be changed because this is a Team Collection. Contact the Bloom team for more information.</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.NoRenameTeamCollection</note>
+        <note>Shown under the disabled Collection Name box on the Advanced page of the Collection Settings dialog when the collection is shared as a Team Collection. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.Tables" translate="no">
+        <source xml:lang="en">Tables</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.Tables</note>
+        <note>Label of a checkbox in the Experimental Features list of the Advanced tab of Collection Settings. Turning it on lets the user add a table to a custom page.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BloomLibraryPage.Bookshelf" translate="no">
+        <source xml:lang="en">Bookshelf</source>
+        <note>ID: CollectionSettingsDialog.BloomLibraryPage.Bookshelf</note>
+        <note>On the Bloom Library page of the Collection Settings dialog: the heading of a group, and the label of the list beside it. A bookshelf is a named collection of books on the BloomLibrary.org website, which a project with a subscription can have set up for its books.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BloomLibraryPage.BookshelfDescription" translate="no">
+        <source xml:lang="en">Projects that have Bloom Enterprise subscriptions can arrange for one or more bookshelves on the Bloom Library. All books uploaded from this collection will go into the selected bookshelf.</source>
+        <note>ID: CollectionSettingsDialog.BloomLibraryPage.BookshelfDescription</note>
+        <note>Explains the bookshelf list on the Bloom Library page of the Collection Settings dialog. "Bloom Enterprise" and "Bloom Library" are product names and should not be translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage.Places" translate="no">
+        <source xml:lang="en">Places</source>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Places</note>
+        <note>On the Front &amp; Back Matter page of the Collection Settings dialog: the heading of a group of boxes for the country, province and district where the books are made.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage.Places.Description" translate="no">
+        <source xml:lang="en">Some front matters will show the following place names. If there are any that you don't want to show, leave them empty.</source>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Places.Description</note>
+        <note>Explains the Places group on the Front &amp; Back Matter page of the Collection Settings dialog. "Front matter" is the pages at the start of a book, such as the title and credits pages.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage.Style" translate="no">
+        <source xml:lang="en">Style</source>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Style</note>
+        <note>On the Front &amp; Back Matter page of the Collection Settings dialog: the label of the list of front and back matter styles (such as "Traditional" or "Paper Saver"), which decide which pages come at the start and end of every book.</note>
+      </trans-unit>
       <trans-unit id="Feature.AiImageEditing">
         <source xml:lang="en">Edit Images with AI</source>
         <note>ID: Feature.AiImageEditing</note>
@@ -81,10 +126,20 @@
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Names one picture of a page that has several, shown over the picture in the AI image editor's strip of the book's images. This is the picture behind the page, which other pictures sit on top of. The code puts the page name in front of it, giving e.g. "Page 3 - Canvas Background".</note>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.UnlockOriginalCopyrightAndLicenseTooltip" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Unlock to edit</source>
+        <note>ID: EditTab.FrontMatter.UnlockOriginalCopyrightAndLicenseTooltip</note>
+        <note>Tooltip on the padlock button in the hint bubble beside the sentence Bloom writes on the credits page about the original book's copyright and license. Clicking it lets the user reword that sentence.</note>
+      </trans-unit>
       <trans-unit id="EditTab.TextContextMenu.NoIndent">
         <source xml:lang="en">Do Not Indent This Paragraph</source>
         <note>ID: EditTab.TextContextMenu.NoIndent</note>
         <note>Item on the menu you get by right-clicking a paragraph of text in the Edit tab. It is a checkable on/off command; when it is checked, this one paragraph loses the first-line indent that its style would otherwise give it. Typically used on a paragraph continued from the previous page.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.InlineImage.InsertImage" translate="no">
+        <source xml:lang="en">Insert Image</source>
+        <note>ID: EditTab.InlineImage.InsertImage</note>
+        <note>Command in the menu you get by right-clicking a block of text in the Edit tab. It puts a picture inside the text block, with the text wrapping around it (like an inline image in Word).</note>
       </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
@@ -586,6 +641,11 @@
         <note>ID: EditTab.Toolbox.CanvasTool.Navigation</note>
         <note>Label for an expandable section in the Canvas Tool that contains navigation-related objects (e.g. buttons and book grids) that can be dragged onto a page.</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Table" translate="no">
+        <source xml:lang="en">A table whose cells can hold text or pictures</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.Table</note>
+        <note>Tooltip on the table icon in the Canvas Tool. The user drags the icon onto a page to add a table.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true">
         <source xml:lang="en">Set Destination</source>
         <note>ID: EditTab.Toolbox.CanvasTool.SetDest</note>
@@ -913,6 +973,12 @@
       <trans-unit id="BookSettings.FullBleed.Description" sil:dynamic="true">
         <source xml:lang="en">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
         <note>BookSettings.FullBleed.Description</note>
+        <note>Obsolete as of Bloom 6.6</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.FullBleed.Description.EdgeToEdge" sil:dynamic="true">
+        <source xml:lang="en">Enable full bleed layout for printing. Use with the "Edge to Edge" theme. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
+        <note>ID: BookSettings.FullBleed.Description.EdgeToEdge</note>
+        <note>Help text under the "Use full bleed page layout" option in Book Settings. "Edge to Edge" is the name of a page theme (AppearanceTheme.edge-to-edge); translate it the same way here.</note>
       </trans-unit>
       <trans-unit id="BookSettings.ThemeAndLayoutGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Theme &amp; Layout</source>
@@ -1045,6 +1111,11 @@
         <note>BookSettings.ThemeDisablesOptionsNoticeWithLink</note>
         <note>When you translate, make sure to include some text in between square brackets. Those become the clickable link that opens Book and Page Settings.</note>
       </trans-unit>
+      <trans-unit id="BookSettings.EdgeToEdgeNeedsFullBleed" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Pictures cannot reach the edge of a printed page unless this book uses full bleed. Turn it on in [Print Publishing].</source>
+        <note>ID: BookSettings.EdgeToEdgeNeedsFullBleed</note>
+        <note>Warning on the Theme &amp; Layout page of Book Settings, shown when the "Edge to Edge" page theme is chosen but "Use full bleed page layout" is off. "Print Publishing" is the name of another page of Book Settings (BookSettings.PrintPublishingGroupLabel); translate it the same way. Keep the square brackets around it: that text becomes a link which opens that page.</note>
+      </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message" sil:dynamic="true">
         <source xml:lang="en">This feature requires a newer [Page Theme].</source>
         <note>ID: EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message</note>
@@ -1134,6 +1205,11 @@
       </trans-unit> -->
       <trans-unit id="AppearanceTheme.zero-margin-ebook" sil:dynamic="true">
         <source xml:lang="en">Zero Margin Ebook</source>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
+        <note>Obsolete as of Bloom 6.6</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.edge-to-edge" sil:dynamic="true">
+        <source xml:lang="en">Edge to Edge</source>
         <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
       <trans-unit id="AppearanceTheme.narrow-margin-ebook" sil:dynamic="true">
@@ -1347,7 +1423,7 @@
         <note>Button label for building a new Android APK.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Build.DoneTooltip">
-        <source xml:lang="en">The APK is current. Try on phone will use the latest build.</source>
+        <source xml:lang="en">The app is already up to date. You only need to build again after you change books or settings.</source>
         <note>ID: PublishTab.Apps.Build.DoneTooltip</note>
         <note>Tooltip shown when the build step is already up to date.</note>
       </trans-unit>
@@ -1430,6 +1506,11 @@
         <source xml:lang="en">Run Prepare before using this step.</source>
         <note>ID: PublishTab.Apps.PrepareRequiredTooltip</note>
         <note>Tooltip shown when a later step is disabled until Prepare has been run.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.RabUpdateNeeded" translate="no">
+        <source xml:lang="en">This version of Bloom needs Reading App Builder %0. Click Prepare to update.</source>
+        <note>ID: PublishTab.Apps.RabUpdateNeeded</note>
+        <note>Warning shown in the Prepare step when the installed Reading App Builder is older than the one this Bloom requires. %0 is the required version number, e.g. 14.0.1.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Prepare.DoneTooltip">
         <source xml:lang="en">The Reading App Builder project is already prepared for this collection.</source>
@@ -1550,6 +1631,16 @@
         <source xml:lang="en">this page</source>
         <note>ID: ImageLibrary.ThisPage</note>
         <note>Short link text used in setup instructions (e.g., as in "go to this page"). Should be lowercase as it appears mid-sentence.</note>
+      </trans-unit>
+      <trans-unit id="Common.Dimensions" translate="no">
+        <source xml:lang="en">Dimensions</source>
+        <note>ID: Common.Dimensions</note>
+        <note>Label beside an image's width and height in pixels (e.g. "576 x 1024"), as in the Image Chooser's image details panel.</note>
+      </trans-unit>
+      <trans-unit id="Common.FileSize" translate="no">
+        <source xml:lang="en">File size</source>
+        <note>ID: Common.FileSize</note>
+        <note>Label beside how large a file is (e.g. "1.2 MB"), as in the Image Chooser's image details panel.</note>
       </trans-unit>
       <trans-unit id="BookProcessor.HousekeepingMessage">
         <source xml:lang="en">Please wait while Bloom does some housekeeping on your book...</source>
@@ -2382,10 +2473,10 @@
         <source xml:lang="en">Number of Colors</source>
         <note>ID: AiImageEditor.Tool.generate_pallet.Param.numberOfColors</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>Label above a dropdown menu in the 'Generate Pallet' tool, setting how many colors the palette it makes will have.</note>
+        <note>Label above a dropdown menu in the 'Generate Palette' tool, setting how many colors the palette it makes will have.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.generate_pallet.Title">
-        <source xml:lang="en">Generate Pallet</source>
+        <source xml:lang="en">Generate Palette</source>
         <note>ID: AiImageEditor.Tool.generate_pallet.Title</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>

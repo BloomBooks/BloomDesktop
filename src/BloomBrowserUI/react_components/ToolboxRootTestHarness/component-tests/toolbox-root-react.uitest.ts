@@ -2,10 +2,10 @@
 // the component-tester's own node_modules (see playwrightTest.ts).
 import { expect, test, type Page } from "../../component-tester/playwrightTest";
 
-// Tests of the toolbox sidebar UI (ToolboxRoot.tsx) and the adapter that the rest of the
-// toolbox drives it through (toolboxReactAdapter.ts). ToolboxRootTestHarness.tsx stands in
-// for toolbox.ts: it registers a few tools and populates the toolbox through the real
-// adapter. See that file for which tools it offers and which one it restores as current.
+// Tests of the toolbox sidebar UI (ToolboxRoot.tsx) and the state store the rest of the
+// toolbox drives it through (toolboxState.ts). ToolboxRootTestHarness.tsx stands in for
+// toolbox.ts: it registers a few tools and populates the toolbox through the real store.
+// See that file for which tools it offers and which one it restores as expanded.
 
 const harnessUrl = "/?component=ToolboxRootTestHarness";
 
@@ -46,24 +46,23 @@ const gotoHarness = async (page: Page): Promise<void> => {
 };
 
 // Does what toolbox.ts does when the user turns a tool on: tells the toolbox to offer a
-// tool for it, and makes it the active one.
-const addToolAndMakeItActive = async (
+// tool for it, and expands it.
+const addToolAndExpandIt = async (
     page: Page,
     toolId: string,
 ): Promise<void> => {
     await page.evaluate((idOfToolToAdd) => {
-        // The harness publishes this accessor for us; see ToolboxRootTestHarness.tsx.
+        // The harness publishes these store mutators for us; see
+        // ToolboxRootTestHarness.tsx.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const adapter = (window as any).getToolboxReactAdapterForTests();
-        adapter.addTool(idOfToolToAdd);
-        adapter.setActiveToolByToolId(idOfToolToAdd);
+        const store = (window as any).toolboxStoreForTests;
+        store.offerTool(idOfToolToAdd);
+        store.setExpandedTool(idOfToolToAdd);
     }, toolId);
 };
 
 test.describe("ToolboxRoot", () => {
-    test("clicking a tool header makes it the active tool", async ({
-        page,
-    }) => {
+    test("clicking a tool header expands that tool", async ({ page }) => {
         await gotoHarness(page);
 
         const impairmentVisualizer = getToolHeader(
@@ -86,13 +85,13 @@ test.describe("ToolboxRoot", () => {
         );
     });
 
-    test("opens the tool the book was last using, not just the first one", async ({
+    test("expands the tool the book was last using, not just the first one", async ({
         page,
     }) => {
         await gotoHarness(page);
 
-        // The harness restores Motion as the current tool, and Impairment Visualizer sorts
-        // ahead of it, so this only passes if setActiveToolByToolId() was honored.
+        // The harness restores Motion as the expanded tool, and Impairment Visualizer sorts
+        // ahead of it, so this only passes if the store's expanded tool was honored.
         await expect(getToolHeader(page, "Motion Tool")).toHaveAttribute(
             "aria-expanded",
             "true",
@@ -102,14 +101,14 @@ test.describe("ToolboxRoot", () => {
         ).toHaveAttribute("aria-expanded", "false");
     });
 
-    test("a tool added later gets its own row and can be made active", async ({
+    test("a tool added later gets its own row and can be expanded", async ({
         page,
     }) => {
         await gotoHarness(page);
 
         await expect(getToolHeader(page, "Canvas Tool")).toHaveCount(0);
 
-        await addToolAndMakeItActive(page, "canvas");
+        await addToolAndExpandIt(page, "canvas");
 
         const canvas = getToolHeader(page, "Canvas Tool");
         await expect(canvas).toBeVisible({ timeout: 10000 });
@@ -131,7 +130,7 @@ test.describe("ToolboxRoot", () => {
     }) => {
         await gotoHarness(page);
 
-        await addToolAndMakeItActive(page, "canvas");
+        await addToolAndExpandIt(page, "canvas");
         await expect(getToolHeader(page, "Canvas Tool")).toBeVisible({
             timeout: 10000,
         });
@@ -189,7 +188,7 @@ test.describe("ToolboxRoot", () => {
         ).toHaveCount(1);
 
         // Adding Canvas, which also requires a subscription, adds a second badge.
-        await addToolAndMakeItActive(page, "canvas");
+        await addToolAndExpandIt(page, "canvas");
         await expect(getToolHeader(page, "Canvas Tool")).toBeVisible({
             timeout: 10000,
         });
@@ -199,5 +198,67 @@ test.describe("ToolboxRoot", () => {
         await expect(
             page.locator(".MuiAccordionSummary-expandIconWrapper"),
         ).toHaveCount(0);
+    });
+
+    // Canvas, Motion and Music are the tools that need a subscription, so each of their
+    // headers carries a badge; Talking Book and Impairment Visualizer do not. Every enabled
+    // tool's header carries an icon. Which image each icon shows is a static lookup table
+    // and is not asserted.
+    test("header shows icons and subscription badges", async ({ page }) => {
+        await gotoHarness(page);
+
+        // The harness starts with Impairment Visualizer, Motion and "More..."; offer the
+        // other tools this test is about, the way ticking their checkboxes would.
+        await page.evaluate(() => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const store = (window as any).toolboxStoreForTests;
+            store.offerTool("canvas");
+            store.offerTool("music");
+            store.offerTool("talkingBook");
+        });
+        await expect(getToolHeader(page, "Canvas Tool")).toBeVisible({
+            timeout: 10000,
+        });
+
+        // Six headers: the five tools plus the "More..." (settings) header. The component
+        // exposes each header's icon path as data-icon-src; "More..." has no icon of its own.
+        const icons = page.getByTestId("toolbox-header-icon");
+        await expect(icons).toHaveCount(6);
+        const icon = (toolId: string) =>
+            icons.and(page.locator(`[data-toolid='${toolId}']`));
+        for (const toolId of [
+            "canvas",
+            "motion",
+            "music",
+            "talkingBook",
+            "impairmentVisualizer",
+        ]) {
+            await expect(icon(toolId)).toHaveCount(1);
+            await expect(icon(toolId)).toHaveAttribute(
+                "data-icon-src",
+                /svg|png/,
+            );
+        }
+        await expect(icon("settings")).toHaveCount(1);
+        await expect(icon("settings")).not.toHaveAttribute("data-icon-src");
+
+        // Scoped to the headers: the "More..." panel lists the tools with their own
+        // badges, which are not what this test is about.
+        const headerBadges = (toolId: string) =>
+            page
+                .locator(".MuiAccordionSummary-root", {
+                    has: icon(toolId),
+                })
+                .getByTestId("subscription-badge");
+        for (const toolId of ["canvas", "motion", "music"]) {
+            await expect(headerBadges(toolId)).toHaveCount(1);
+        }
+        for (const toolId of [
+            "talkingBook",
+            "impairmentVisualizer",
+            "settings",
+        ]) {
+            await expect(headerBadges(toolId)).toHaveCount(0);
+        }
     });
 });

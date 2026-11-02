@@ -7,15 +7,33 @@ using System.Threading;
 using System.Xml.Linq;
 using Bloom.ToPalaso;
 using SIL.Reporting;
-using SIL.Windows.Forms.WritingSystems;
 using SIL.WritingSystems;
 
 namespace Bloom.Collection
 {
     public class WritingSystem
     {
+        static WritingSystem()
+        {
+            // LibPalaso otherwise decides once per process whether to ask ICU, and the two
+            // answers differ -- with ICU it names Spanish in French as "espagnol"; without it the
+            // name comes from CultureInfo.DisplayName, which on an English-speaking machine gives
+            // the autonym "espanol". So the name a user saw turned on whether some unrelated
+            // software had left an ICU library on the machine (BL-16806). Bloom ships no
+            // icuuc.dll, so the non-ICU answer is also the one most users already get.
+            //
+            // Note what this does and does not buy. It removes the dependence on ICU being
+            // installed. It does not make the name a pure function of the request: the remaining
+            // path renders in the process's CurrentUICulture, so a Bloom running in French can
+            // still name Spanish "espagnol". Same UI language, same name -- which is the
+            // guarantee this card needed.
+            // This is a static constructor so that it also covers the tests and the CLI, not
+            // just a normal Bloom startup.
+            IetfLanguageTag.UseICUForLanguageNames = false;
+        }
+
         private readonly Func<string> _tagOfDefaultLanguageForNaming;
-        public static LanguageLookupModel LookupModel = new LanguageLookupModel();
+        private static LanguageLookup _languageLookup;
         private string _langTag;
         public bool IsRightToLeft;
 
@@ -97,11 +115,11 @@ namespace Bloom.Collection
                 if (string.IsNullOrEmpty(Tag))
                     return string.Empty;
 
-                var name = IetfLanguageTagExtra.GetLocalizedLanguageName(Tag, inLanguage);
+                var name = IetfLanguageTag.GetLocalizedLanguageName(Tag, inLanguage);
                 if (name == Tag)
                 {
                     string match;
-                    if (!IetfLanguageTagExtra.GetBestLanguageName(Tag, out match))
+                    if (!IetfLanguageTag.GetBestLanguageName(Tag, out match))
                     {
                         return $"Unknown-{Tag}";
                     }
@@ -360,21 +378,21 @@ namespace Bloom.Collection
                     return b;
             }
             // Compute value since it wasn't stored.
-            if (!LookupModel.AreLanguagesLoaded)
+            if (_languageLookup == null)
             {
                 EnsureSldrInitialized(true); // needed for tests
-                LoadLookupModelLanguages();
+                LoadLanguageLookup();
             }
             if (string.IsNullOrWhiteSpace(Tag))
                 return false; // undefined (probably language3 or sign language)
 
-            var language = LookupModel.LanguageLookup.GetLanguageFromCode(Tag);
+            var language = _languageLookup.GetLanguageFromCode(Tag);
             // (If the lookup didn't find a language, treat the name as custom.)
             return Name != language?.Names?.FirstOrDefault();
         }
 
         /// <summary>
-        /// Load the language list into LookupModel. Loading it makes Sldr compare its langtags.json
+        /// Load the language list into _languageLookup. Loading it makes Sldr compare its langtags.json
         /// cache with the server, inside a machine-wide mutex named "SldrCache". If a process is
         /// killed while it holds that mutex (for example, a Bloom the e2e harness kills during that
         /// web request), the next process to wait on it gets AbandonedMutexException. That process
@@ -383,26 +401,25 @@ namespace Bloom.Collection
         /// load a collection until something releases it. So release it here and try once more.
         /// (BL-16802)
         /// </summary>
-        private static void LoadLookupModelLanguages()
+        private static void LoadLanguageLookup()
         {
             try
             {
-                LoadLookupModelLanguagesOnce();
+                LoadLanguageLookupOnce();
             }
             catch (AbandonedMutexException)
             {
                 ReleaseSldrCacheMutexHeldByThisThread();
-                LoadLookupModelLanguagesOnce();
+                LoadLanguageLookupOnce();
             }
         }
 
-        private static void LoadLookupModelLanguagesOnce()
+        private static void LoadLanguageLookupOnce()
         {
-            LookupModel.IncludeScriptMarkers = false;
-            // The previous line should have loaded the LanguageLookup object: if something changes so that
-            // it doesn't, ensure that happens anyway.
-            if (!LookupModel.AreLanguagesLoaded)
-                LookupModel.LoadLanguages();
+            // Bloom looks languages up by bare code. ensureDefaultTags gives a language whose
+            // langtags.json entries all carry a script marker a tag that is just its code, so
+            // GetLanguageFromCode finds it too.
+            _languageLookup = new LanguageLookup(ensureDefaultTags: true);
         }
 
         /// <summary>

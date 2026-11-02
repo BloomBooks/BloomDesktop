@@ -9,8 +9,9 @@
  * See registration/e2e/setup.ts for an example of how to wrap this for a specific component with type checking.
  */
 
-import { Page } from "@playwright/test";
+import { Page, test } from "@playwright/test";
 import { ComponentRenderRequest } from "./componentTypes";
+import { describeConnectionFailure } from "./describeConnectionFailure";
 import { bypassLocalization } from "../../lib/localizationManager/localizationManager";
 
 bypassLocalization(true);
@@ -52,8 +53,16 @@ export async function setTestComponent<TProps>(
         (window as any).__TEST_ELEMENT__ = JSON.parse(json);
     }, elementJson);
 
-    // Navigate to the dev server
-    await page.goto("/");
+    // Navigate to the dev server. If the connection itself fails, say what the dev server and the
+    // machine looked like at that moment (see describeConnectionFailure.ts); the test still fails.
+    try {
+        await page.goto("/");
+    } catch (error) {
+        if (error instanceof Error && error.message.includes("net::ERR_")) {
+            error.message += `\n\n${await describeConnectionFailure(test.info().project.use.baseURL!)}`;
+        }
+        throw error;
+    }
 
     // Wait for React to render
     await page.waitForLoadState("load");

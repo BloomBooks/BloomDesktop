@@ -13,6 +13,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiGet, apiGetJson, apiPost } from "./api";
 import { selectBook, waitForCollectionReady } from "./collection";
+import { markEditablePage, waitForEditablePageReload } from "./pageThumbnails";
 import { switchTab } from "./workspace";
 
 /** One book as collections/books reports it. Only the fields used here. */
@@ -47,37 +48,57 @@ export async function makeBookFromTemplate(
     page: Page,
     templateTitle: string,
 ): Promise<string> {
+    return makeBookFromSourceBook(page, "Templates", templateTitle);
+}
+
+/**
+ * Make a new book in the editable collection from a book in one of the collections under Sources
+ * For New Books, and return its folder. `sourceCollectionName` is the collection's heading there,
+ * e.g. "Sample Shells" (the shell books Bloom installs) or "Templates". Bloom lands in the Edit
+ * tab, showing the new book's cover.
+ *
+ * This is the same action as selecting the book in Sources For New Books and clicking MAKE A BOOK
+ * USING THIS SOURCE. A book that is not a template (a shell) gives a derivative: Bloom records the
+ * source's copyright and license as the original's.
+ */
+export async function makeBookFromSourceBook(
+    page: Page,
+    sourceCollectionName: string,
+    bookTitle: string,
+): Promise<string> {
     // A person makes a book from the Collections tab, and so does this. Selecting the template
     // while the Edit tab is showing a book has been seen to leave the Edit tab showing the
     // template, which has no page to edit, once the new book is made (every time the book being
     // left had a reader tool turned on), so a test making its second book would hang here.
     await switchTab(page, "collection");
     await waitForCollectionReady(page);
-    const { collectionId, template } = await findFactoryTemplate(
+    const { collectionId, book } = await findSourceBook(
         page,
-        templateTitle,
+        sourceCollectionName,
+        bookTitle,
     );
     await apiPost(
         page,
-        `collections/selected-book?path=${encodeURIComponent(template.folderPath)}` +
+        `collections/selected-book?path=${encodeURIComponent(book.folderPath)}` +
             `&collection-id=${encodeURIComponent(collectionId)}`,
     );
-    return makeBookFromSelectedBook(page, templateTitle);
+    return makeBookFromSelectedBook(page, bookTitle);
 }
 
 /**
- * The "Templates" source collection's entry for one factory template, e.g. "Basic Book", with the
- * id of that collection. Throws, listing what Bloom does offer, when there is no such template.
+ * One book of a source collection (e.g. "Templates" or "Sample Shells"), with the id of that
+ * collection. Throws, listing what Bloom does offer, when there is no such collection or book.
  */
-async function findFactoryTemplate(
+async function findSourceBook(
     page: Page,
-    templateTitle: string,
-): Promise<{ collectionId: string; template: IBookInfo }> {
+    sourceCollectionName: string,
+    bookTitle: string,
+): Promise<{ collectionId: string; book: IBookInfo }> {
     // collections/list leaves out every source collection whose books have not been read yet,
-    // and Bloom reads the factory templates in the background after the collection opens. So
-    // wait for "Templates" to be listed rather than reading the list once.
+    // and Bloom reads the factory collections in the background after the collection opens. So
+    // wait for the collection to be listed rather than reading the list once.
     let collections: ICollectionInfo[] = [];
-    let templates: ICollectionInfo | undefined;
+    let source: ICollectionInfo | undefined;
     try {
         // The message is built after the wait fails, so that it can name what WAS listed. A
         // message passed to expect.poll would be built before the first poll, when nothing is.
@@ -88,34 +109,52 @@ async function findFactoryTemplate(
                         page,
                         "collections/list",
                     );
-                    templates = collections.find((c) => c.name === "Templates");
-                    return !!templates;
+                    source = collections.find(
+                        (c) => c.name === sourceCollectionName,
+                    );
+                    return !!source;
                 },
                 { timeout: 60000 },
             )
             .toBe(true);
     } catch {
         throw new Error(
-            `Bloom never listed a "Templates" source collection, so there is no ` +
-                `"${templateTitle}" to make a book from. Collections: ` +
+            `Bloom never listed a "${sourceCollectionName}" source collection, so there is no ` +
+                `"${bookTitle}" to make a book from. Collections: ` +
                 collections.map((c) => c.name).join(", "),
         );
     }
-    if (!templates)
+    if (!source)
         throw new Error(
-            `Bloom listed "Templates" a moment ago and then lost it.`,
+            `Bloom listed "${sourceCollectionName}" a moment ago and then lost it.`,
         );
     const books = await apiGetJson<IBookInfo[]>(
         page,
-        `collections/books?collection-id=${encodeURIComponent(templates.id)}`,
+        `collections/books?collection-id=${encodeURIComponent(source.id)}`,
     );
-    const template = books.find((b) => b.title === templateTitle);
-    if (!template)
+    const book = books.find((b) => b.title === bookTitle);
+    if (!book)
         throw new Error(
-            `There is no factory template called "${templateTitle}". ` +
-                `Templates: ${books.map((b) => b.title).join(", ")}.`,
+            `There is no book called "${bookTitle}" in "${sourceCollectionName}". ` +
+                `It has: ${books.map((b) => b.title).join(", ")}.`,
         );
-    return { collectionId: templates.id, template };
+    return { collectionId: source.id, book };
+}
+
+/**
+ * The "Templates" source collection's entry for one factory template, e.g. "Basic Book", with the
+ * id of that collection. Throws, listing what Bloom does offer, when there is no such template.
+ */
+async function findFactoryTemplate(
+    page: Page,
+    templateTitle: string,
+): Promise<{ collectionId: string; template: IBookInfo }> {
+    const { collectionId, book } = await findSourceBook(
+        page,
+        "Templates",
+        templateTitle,
+    );
+    return { collectionId, template: book };
 }
 
 /**
@@ -286,15 +325,22 @@ async function listEditableBooks(page: Page): Promise<IBookInfo[]> {
 
 /**
  * Set exactly which of the collection's languages the book shows, by the same route as the Edit
- * tab's One/Two/Three Languages dropdown. Language 1 is always shown and cannot be turned off.
+ * tab's Monolingual/Bilingual/Trilingual dropdown. Any language can be turned off, Language 1
+ * included, as long as one other stays on.
  *
- * Each change is confirmed before the next is sent. Sending two in quick succession has been seen
- * to lose one, and a state wait is both the honest fix and faster than a fixed pause.
+ * Each change makes Bloom save the page and then reload it, but only if Bloom is editing the page
+ * at that moment. If the change arrives while the page is still loading, or while an earlier save
+ * is still running, Bloom neither saves nor reloads (EditingModel.SaveThen), and the book records
+ * the new languages while the Edit tab goes on showing the old ones. So before each change this
+ * waits for the page to be ready for editing, and after it this waits for the reload to finish.
  */
 export async function setContentLanguages(
     page: Page,
     tags: string[],
 ): Promise<void> {
+    // Each change makes Bloom reload the page, so this is a page-changing request and must not
+    // arrive while the Edit tab is still loading one. See waitForEditTabSettled.
+    await waitForEditTabSettled(page);
     const usage = await apiGetJson<IContentLanguageUsage>(
         page,
         "editView/topBar/contentLanguageUsage",
@@ -302,6 +348,15 @@ export async function setContentLanguages(
     for (const language of usage.languages) {
         const wanted = tags.includes(language.id);
         if (language.isUsedForContent === wanted) continue;
+        await waitForEditablePage(page);
+        const pageId = await editablePageFrame(page)
+            .locator(".bloom-page")
+            .getAttribute("id");
+        if (!pageId)
+            throw new Error(
+                "The page in the Edit tab has no id, so its reload cannot be awaited.",
+            );
+        await markEditablePage(page);
         await apiPost(
             page,
             "editView/topBar/contentLanguageUsageChange",
@@ -327,8 +382,9 @@ export async function setContentLanguages(
                 },
             )
             .toBe(wanted);
+        await waitForEditablePageReload(page, pageId);
     }
-    await waitForEditablePage(page);
+    await waitForEditTabSettled(page);
 }
 
 /** The Edit tab's frame holding the page being edited. Throws if the Edit tab is not showing. */
@@ -354,6 +410,18 @@ export function editablePageFrame(page: Page): Frame {
  * any command that begins with saving it (add a page, duplicate, delete, jump elsewhere). The page
  * can look ready in the DOM a moment before Bloom is, so this asks Bloom as well, through the e2e
  * hook that reports its editing state.
+ *
+ * It also waits for the iframe element itself to have a size in Bloom's window. The other checks
+ * look at the document inside the frame, and that document can be fully laid out while the iframe
+ * has no box yet, because switching back to the Edit tab rebuilds the view around it. Playwright
+ * cannot measure an element inside an iframe that has no box, even when the page's own script
+ * reports a perfectly good rectangle for it. Without this wait, a helper that measures an inline
+ * image would fail in a test that is about something else.
+ *
+ * Finally, Bloom reports that it is editing before the page's own script has decided which
+ * language boxes to show. Until it has, every box on the page is hidden, so an inline image inside
+ * one is in the DOM but has no box on the screen, and measuring it fails in the same misleading
+ * way. So when the page has text boxes, this waits until one of them is showing.
  */
 export async function waitForEditablePage(
     page: Page,
@@ -382,6 +450,120 @@ export async function waitForEditablePage(
                 "Bloom never finished loading the page in the Edit tab (its editing state never became Editing).",
         })
         .toBe("true");
+    await expect
+        .poll(
+            async () => {
+                const box = await page
+                    .locator("iframe#page")
+                    .boundingBox()
+                    .catch(() => null);
+                return box ? Math.min(box.width, box.height) : 0;
+            },
+            {
+                timeout: timeoutMs,
+                message:
+                    "The Edit tab's page frame never got a box of its own in Bloom's window, so " +
+                    "nothing inside it can be measured.",
+            },
+        )
+        .toBeGreaterThan(0);
+    // The page's script (updateLanguageVisibility) adds bloom-visibility-code-on to each box it
+    // decides to show, and the CSS hides every box that lacks it.
+    const groupCount = await editablePageFrame(page)
+        .locator(".bloom-page .bloom-translationGroup")
+        .count()
+        .catch(() => 0);
+    if (groupCount === 0) return;
+    await expect
+        .poll(
+            async () =>
+                await editablePageFrame(page)
+                    .locator(
+                        ".bloom-page .bloom-editable.bloom-visibility-code-on",
+                    )
+                    .count()
+                    .catch(() => 0),
+            {
+                timeout: timeoutMs,
+                message:
+                    "The page's script never decided which language boxes to show, so every box " +
+                    "on the page is still hidden.",
+            },
+        )
+        .toBeGreaterThan(0);
+}
+
+/** What e2e/editState replies with: what the Edit tab is doing. */
+interface IEditTabState {
+    /** A name from Bloom's State enum: NoPage, Navigating, Editing, SavePending, SavedAndStripped. */
+    state: string;
+    /** The page that state is about, or "". */
+    pageId: string;
+    /** Whether the Edit tab is the tab being shown. */
+    visible: boolean;
+    /** How many times the page now shown has told Bloom its DOM had loaded. */
+    pageLoadAnnouncements: number;
+}
+
+/**
+ * How long the Edit tab must report the same page, with no new announcement, before this counts
+ * as settled. It has to cover the gap between the two announcements of one page load, which has
+ * been seen to reach a second. John approved this wait on 2026-09-03, as
+ * src/BloomBrowserUI/AGENTS.md asks.
+ */
+const kEditTabQuietPeriodMs = 1500;
+
+/**
+ * Wait until the Edit tab is settled on a page: showing it, in the Editing state, and done
+ * announcing that the page has loaded.
+ *
+ * Ask this before any request that changes the page. The Edit tab refuses such a request while it
+ * navigates, and a page announces itself to Bloom more than once, so a request that arrives
+ * between two of those announcements starts a save that the second announcement leaves unanswered
+ * (AUTOMATION-DEBT.md: "A page change asked for while the Edit tab is still loading a page can be
+ * lost"). Waiting for the Editing state alone is therefore not enough. The condition this waits
+ * for is that the page and the count of announcements have both held still for
+ * kEditTabQuietPeriodMs, so it returns as soon as that holds.
+ *
+ * The DOM is no help here. Bloom leaves the previous page in the frame while it loads the next
+ * one, so a test looking at the frame sees a settled Edit tab throughout.
+ */
+export async function waitForEditTabSettled(
+    page: Page,
+    timeoutMs = 90000,
+): Promise<void> {
+    let lastReading = "";
+    let unchangedSince = 0;
+    await expect
+        .poll(
+            async () => {
+                const now = await apiGetJson<IEditTabState>(
+                    page,
+                    "e2e/editState",
+                );
+                if (!now.visible || now.state !== "Editing") {
+                    lastReading = "";
+                    return now.state;
+                }
+                const reading = `${now.pageId} ${now.pageLoadAnnouncements}`;
+                if (reading !== lastReading) {
+                    lastReading = reading;
+                    unchangedSince = Date.now();
+                }
+                const quietFor = Date.now() - unchangedSince;
+                if (quietFor < kEditTabQuietPeriodMs)
+                    return `Editing, but page ${now.pageId} last announced itself ${quietFor}ms ago`;
+                return "Editing";
+            },
+            {
+                // Poll often, so that the wait is only as long as the quiet period needs.
+                intervals: [250],
+                timeout: timeoutMs,
+                message:
+                    "The Edit tab never settled on a page, so a request to change pages could be lost.",
+            },
+        )
+        .toBe("Editing");
 }
 
 /** One page of the selected book, as e2e/pages reports it. */
@@ -444,9 +626,12 @@ export async function addPage(
         page,
         "e2e/templatePages",
     );
+    // Compare trimmed: a template book writes its page label as HTML, so a label defined over
+    // several lines (every page in the Games template) arrives wrapped in newlines and indentation.
+    const wanted = templatePageLabel.trim();
     const template = templates.find(
         (t) =>
-            t.label === templatePageLabel &&
+            t.label.trim() === wanted &&
             (!templateBookTitle || t.templateBookTitle === templateBookTitle),
     );
     if (!template)
@@ -455,7 +640,7 @@ export async function addPage(
                 (templateBookTitle ? ` in "${templateBookTitle}"` : "") +
                 `. On offer: ` +
                 templates
-                    .map((t) => `${t.templateBookTitle}: ${t.label}`)
+                    .map((t) => `${t.templateBookTitle}: ${t.label.trim()}`)
                     .join(", ") +
                 ".",
         );
@@ -483,7 +668,7 @@ export async function addPage(
             message: `Bloom never added the "${templatePageLabel}" page(s).`,
         })
         .toBe(before + times);
-    await waitForEditablePage(page);
+    await waitForEditTabSettled(page);
 }
 
 /**
@@ -529,31 +714,75 @@ export async function reloadPageBeingEdited(page: Page): Promise<void> {
  * it is leaving, so text typed into a box reaches the file only once the book moves off that page.
  */
 export async function goToPage(page: Page, pageId: string): Promise<void> {
-    // The Edit tab drops a jump that arrives while it is still loading a page, so wait for it to
-    // be showing one before asking for another.
-    await waitForEditablePage(page);
-
-    // Ask up to three times. Coming back from the Publish tab, the Edit tab can still swallow a
-    // jump after it looks ready, and asking again costs a few seconds where failing costs the run.
+    // Wait for the Edit tab first. A jump asked for while it is still loading a page is refused,
+    // and one asked for between two announcements of one page load wedges it (see
+    // waitForEditTabSettled). Asking at a moment when the tab acts on the jump at once avoids
+    // both.
+    // Then ask, and ask again if the tab was busy after all. The tab answers with an error when
+    // it cannot jump (EditingModel.JumpToPage), rather than dropping the jump and reporting
+    // success as it used to, so a refusal is visible here instead of turning into a 60-second
+    // wait for a page that is not coming. Three tries, because the wait above closes the window
+    // for a refusal without quite shutting it: the tab can start loading the page list in the
+    // moment between the wait finishing and this request arriving.
+    let refusal: unknown;
+    for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt > 0) await waitForEditTabSettled(page);
+        refusal = undefined;
+        await apiPost(page, "editView/jumpToPage", pageId, "text/plain").catch(
+            (error) => {
+                refusal = error;
+            },
+        );
+        if (refusal === undefined) break;
+    }
+    if (refusal !== undefined)
+        throw new Error(
+            `The Edit tab refused to show page ${pageId} three times running: ${refusal}`,
+        );
     const showing = async () =>
         (await page
             .frame({ name: "page" })
             ?.locator(`.bloom-page[id="${pageId}"]`)
             .count()
             .catch(() => 0)) ?? 0;
-    for (let attempt = 1; attempt <= 3; attempt++) {
-        await apiPost(page, "editView/jumpToPage", pageId, "text/plain");
-        try {
-            await expect.poll(showing, { timeout: 20000 }).toBe(1);
-            await waitForEditablePage(page);
-            return;
-        } catch {
-            // fall through and ask again
-        }
+    try {
+        await expect.poll(showing, { timeout: 60000 }).toBe(1);
+    } catch {
+        // Say what the frame does hold. "Bloom never showed the page" on its own cannot tell a
+        // page that never arrived from a page that arrived and was replaced by another one.
+        const frame = page.frame({ name: "page" });
+        const heldPageIds = frame
+            ? await frame
+                  .locator(".bloom-page")
+                  .evaluateAll((pages) => pages.map((p) => p.id))
+                  .catch(() => ["(could not read the frame)"])
+            : [];
+        // Read this the forgiving way. A shell document Bloom is not driving is one of the
+        // failures this message exists to explain, and in exactly that case the request can
+        // fail. Letting it throw here would replace the whole diagnostic with its own error.
+        const drivenShell = await apiGet(page, "e2e/shellUrl")
+            .then((response) => response.body)
+            .catch((error) => `(could not be read: ${error})`);
+        // The state the Edit tab is stuck in says which of the two failures this is: a jump that
+        // wedged the tab leaves it in SavePending or Navigating on the page it already had.
+        const editState = await apiGet(page, "e2e/editState")
+            .then((response) => response.body)
+            .catch((error) => `(could not be read: ${error})`);
+        throw new Error(
+            `Bloom never showed page ${pageId} in the Edit tab. ` +
+                `The Edit tab is at ${editState}. ` +
+                (frame
+                    ? `The 'page' frame is at ${frame.url()} and holds [${heldPageIds.join(", ")}].`
+                    : `There is no 'page' frame.`) +
+                ` Bloom drives the shell at ${drivenShell}; ` +
+                `this test is watching ${page.url()}. If those name different documents, the test ` +
+                `attached to the wrong one and nothing Bloom does will ever appear (see AUTOMATION-DEBT.md).`,
+        );
     }
-    throw new Error(
-        `Bloom never showed page ${pageId} in the Edit tab, after three attempts.`,
-    );
+    // The page being in the frame is not the whole of arriving: Bloom is still setting it up, and
+    // it re-navigates the page list too. Leave the Edit tab settled, so whatever the test does
+    // next is not working against a frame that is about to be replaced.
+    await waitForEditTabSettled(page);
 }
 
 /**
@@ -578,7 +807,7 @@ export async function goToPage(page: Page, pageId: string): Promise<void> {
  * This is a workaround in the tests for a real Bloom defect, and it is deliberately not a fix for
  * it. Delete it when CKEditor goes (the `retireCkEditor` work).
  */
-async function waitForCkEditorToTakeTheBox(box: Locator): Promise<void> {
+export async function waitForCkEditorToTakeTheBox(box: Locator): Promise<void> {
     // Ask the page what is actually bound to this box, rather than trying to predict it. An
     // earlier version of this replicated bloomEditing.ts's three conditions for attaching an
     // editor (matches ckeditableSelector, no .bloom-canvas on the page, not read-only) and

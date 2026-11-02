@@ -47,7 +47,6 @@ export interface IWorkspaceExports {
         // The split and applyTimingsFile calls both return a list of new timings,
         // such as we might find in data-audioRecordingEndTimes
         split: (timingFilePath: string) => Promise<string | undefined>,
-        editTimingsFile: (timingsFilePath?: string) => Promise<void>,
         applyTimingsFile: (
             timingsFilePath?: string,
         ) => Promise<string | undefined>,
@@ -60,6 +59,7 @@ export interface IWorkspaceExports {
     ): void;
     showAboutDialogFromWorkspaceRoot(): void;
     showBookSettingsDialog(initiallySelectedPageKey?: string): void;
+    showCollectionSettingsDialog(initialPageKey?: string): void;
     showDecodableReaderSetupDialog(): void;
     closeDecodableReaderSetupDialog(): void;
     showImageGalleryDialog(img: HTMLElement, searchLang: string): void;
@@ -92,6 +92,8 @@ export { showBookGridSetupDialog };
 import "../lib/errorHandler";
 import { showBookSettingsDialog } from "./bookAndPageSettings/BookAndPageSettingsDialog";
 export { showBookSettingsDialog };
+import { showCollectionSettingsDialog } from "../collection/CollectionSettingsDialog";
+export { showCollectionSettingsDialog };
 import {
     closeDecodableReaderSetupDialog,
     showDecodableReaderSetupDialog,
@@ -123,45 +125,12 @@ export { showAdjustTimingsDialog as showAdjustTimingsDialogFromWorkspaceRoot };
 // Local alias so we have an in-scope identifier for legacy global exposure typing.
 const showAdjustTimingsDialogFromWorkspaceRoot = showAdjustTimingsDialog;
 
+// The top bar's Undo button reaches the page frame's stack directly (topBarButtonClick), so this
+// is for callers in this frame, such as the e2e tests. The one undo stack lives in the page frame
+// and starts empty with each page load; which mechanism undoes what is decided there
+// (undo/legacyUndoProviders.ts). See docs/retire-ckeditor/PLAN.md 4.2.
 export function handleUndo(): void {
-    // First see if origami is active and knows about something we can undo.
-    // (Origami undo works only while the origami tool is active.)
-    const contentWindow = getEditablePageBundleExports();
-    if (contentWindow && contentWindow.origamiCanUndo()) {
-        contentWindow.origamiUndo();
-        return;
-    }
-    // Undoing changes made by commands and dialogs in the toolbox can't be undone using
-    // ckeditor, and has its own mechanism. Look next to see whether we know about any Undos there.
-    const toolboxWindow = getToolboxBundleExports();
-    if (toolboxWindow && toolboxWindow.canUndo()) {
-        toolboxWindow.undo();
-        // The reader tools' undo restores a saved innerHTML, which replaces the text nodes
-        // their highlights are painted over. Nothing else will notice: unlike Ctrl+Z, a click
-        // on this button produces no keystroke in the page, so the usual keyup markup update
-        // never happens and the highlights would stay dead. (BL-16558)
-        toolboxWindow.updateMarkupAfterUndoOrRedo();
-        return;
-    }
-    // In an ideal world, we would have all undo information stored in the order of the operations.
-    // But since ckeditor and image operations handle undo differently, we don't have that ordering.
-    // And each textbox has its own ckeditor instance, so their undo stacks are already separate.
-    // The canUndoImageOperation check verifies that we are on a canvas element that contains an image,
-    // which makes things work similarly to having multiple textboxes on a page.  However, multiple image
-    // boxes will operate on a single undo stack unlike mutiple textboxes.
-    // Because they are independent, and operational only the the proper context, it doesn't really
-    // matter in which order we check for undo operations.
-    if (contentWindow && contentWindow.imageOperationCanUndo()) {
-        contentWindow.imageOperationUndo();
-    } else if (contentWindow && contentWindow.ckeditorCanUndo()) {
-        contentWindow.ckeditorUndo();
-        // As above: this undo replaces the content of an editable, and there is no keystroke
-        // to trigger the markup update that repaints the tools' highlights over the new text
-        // nodes. (We call ckeditor's undoManager directly rather than its undo command, so the
-        // afterCommandExec handler in attachToCkEditor doesn't see this one.)
-        toolboxWindow?.updateMarkupAfterUndoOrRedo();
-    }
-    // See also Browser.Undo; if all else fails we ask the C# browser object to Undo.
+    getEditablePageBundleExports()?.handleUndo();
 }
 
 // Ctrl+Z when the keystroke arrives here rather than in the page. That is where it arrives
@@ -323,24 +292,11 @@ export function doWhenToolboxLoaded(
     }
 }
 
-//Called by c# using workspaceBundle.canUndo()
+//Called by c# using workspaceBundle.canUndo(), polled on a timer to set the Undo button's
+// enabled state (WebView2Browser.CanUndoAsync). "yes"/"fail" is that contract; keep it. The
+// answer comes from the one undo stack, in the page frame; no page frame means nothing to undo.
 export function canUndo(): string {
-    // See comments on handleUndo()
-    const contentWindow = getEditablePageBundleExports();
-    if (contentWindow && contentWindow.origamiCanUndo()) {
-        return "yes";
-    }
-    const toolboxWindow = getToolboxBundleExports();
-    if (toolboxWindow && toolboxWindow.canUndo && toolboxWindow.canUndo()) {
-        return "yes";
-    }
-    if (contentWindow && contentWindow.imageOperationCanUndo()) {
-        return "yes";
-    }
-    if (contentWindow && contentWindow.ckeditorCanUndo()) {
-        return "yes";
-    }
-    return "fail"; //can't undo in Javascript, possibly something in C# can?
+    return getEditablePageBundleExports()?.canUndo() ? "yes" : "fail";
 }
 
 //noinspection JSUnusedGlobalSymbols
@@ -485,6 +441,9 @@ export function setZoom(zoom: number): void {
         // But if you read it back it will be something like calc(125% - 6.25px)
         // (which is actually equivalent).
         container.style.width = newWidth;
+        getEditablePageBundleExports()
+            ?.getTheOneCanvasElementManager()
+            ?.onPageZoomChanged();
     } else {
         console.warn("setZoom called before page loaded");
     }
@@ -531,6 +490,7 @@ interface WorkspaceBundleApi {
     showLinkTargetChooserDialog: typeof showLinkTargetChooserDialog;
     showBookGridSetupDialog: typeof showBookGridSetupDialog;
     showBookSettingsDialog: typeof showBookSettingsDialog;
+    showCollectionSettingsDialog: typeof showCollectionSettingsDialog;
     showDecodableReaderSetupDialog: typeof showDecodableReaderSetupDialog;
     closeDecodableReaderSetupDialog: typeof closeDecodableReaderSetupDialog;
     showRegistrationDialog: typeof showRegistrationDialogForEditTab;
@@ -581,6 +541,7 @@ window.workspaceBundle = {
     showLinkTargetChooserDialog,
     showBookGridSetupDialog,
     showBookSettingsDialog,
+    showCollectionSettingsDialog,
     showDecodableReaderSetupDialog,
     closeDecodableReaderSetupDialog,
     showRegistrationDialog: showRegistrationDialogForEditTab,
