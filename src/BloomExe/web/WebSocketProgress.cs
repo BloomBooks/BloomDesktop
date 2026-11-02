@@ -309,6 +309,12 @@ namespace Bloom.web
     public class ConsoleWebSocketProgress : WebSocketProgress
     {
         /// <summary>
+        /// True once an Error or Fatal message has been written (warnings don't count), so a
+        /// command can exit with a code that says something went wrong.
+        /// </summary>
+        public bool HaveErrorsBeenReported { get; private set; }
+
+        /// <summary>
         /// Write the message to the console, prefixed by its kind unless it is ordinary progress.
         /// </summary>
         public override void MessageWithoutLocalizing(
@@ -321,6 +327,7 @@ namespace Bloom.web
             {
                 case ProgressKind.Fatal:
                 case ProgressKind.Error:
+                    HaveErrorsBeenReported = true;
                     Console.WriteLine("Error: " + message);
                     break;
                 case ProgressKind.Warning:

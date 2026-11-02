@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -155,6 +156,109 @@ namespace BloomTests.CLI
                 "Sanity check: setup should have written the spreadsheet."
             );
 
+            var (exitCode, consoleOutput) = RunInCommandLoop();
+            Assert.That(
+                exitCode,
+                Is.EqualTo(0),
+                "The import should succeed. Console output:\n" + consoleOutput
+            );
+
+            var sentences = GetFrenchSentences();
+            Assert.That(
+                sentences.Count,
+                Is.EqualTo(1),
+                "The one French sentence should have become one recorded sentence. Console output:\n"
+                    + consoleOutput
+            );
+            var sentence = sentences[0];
+            Assert.That(sentence.InnerText, Is.EqualTo("This is page one."));
+            Assert.That(sentence.GetAttribute("id"), Is.EqualTo(kAudioId));
+            Assert.That(
+                sentence.GetAttribute("data-duration"),
+                Is.Not.Empty,
+                "The recording's duration should be recorded."
+            );
+            Assert.That(
+                sentence.GetAttribute("recordingmd5"),
+                Is.Not.Empty,
+                "The checksum of the recorded text, which comes from the browser, should be recorded."
+            );
+            Assert.That(
+                RobustFile.Exists(Path.Combine(_bookFolder, "audio", kAudioId + ".mp3")),
+                Is.True,
+                "The recording should have been copied into the book's audio folder."
+            );
+        }
+
+        /// <summary>
+        /// Like the in-app import, the command-line import replaces the book's recordings with the
+        /// spreadsheet's, so a recording the spreadsheet does not mention is gone afterwards.
+        /// </summary>
+        [Test]
+        public void Handle_BookHasOldRecordings_TheyAreRemoved()
+        {
+            var bookAudioFolder = Path.Combine(_bookFolder, "audio");
+            Directory.CreateDirectory(bookAudioFolder);
+            var oldRecording = Path.Combine(bookAudioFolder, "old-recording.mp3");
+            RobustFile.WriteAllText(oldRecording, "not really an mp3");
+
+            var (exitCode, consoleOutput) = RunInCommandLoop();
+            Assert.That(
+                exitCode,
+                Is.EqualTo(0),
+                "The import should succeed. Console output:\n" + consoleOutput
+            );
+            Assert.That(
+                RobustFile.Exists(oldRecording),
+                Is.False,
+                "The recording the spreadsheet does not mention should have been removed."
+            );
+            Assert.That(
+                RobustFile.Exists(Path.Combine(bookAudioFolder, kAudioId + ".mp3")),
+                Is.True,
+                "The spreadsheet's recording should be there."
+            );
+        }
+
+        /// <summary>
+        /// When a recording the spreadsheet names is missing, the rest of the book still imports and is
+        /// saved, the problem is reported, and the exit code (2) says the import had errors.
+        /// </summary>
+        [Test]
+        public void Handle_RecordingMissing_SavesTheTextAndExitsWith2()
+        {
+            var recording = Path.Combine(
+                Path.GetDirectoryName(_spreadsheetPath),
+                "audio",
+                kAudioId + ".mp3"
+            );
+            RobustFile.Delete(recording);
+
+            var (exitCode, consoleOutput) = RunInCommandLoop();
+            Assert.That(
+                exitCode,
+                Is.EqualTo(2),
+                "The import should finish but report errors. Console output:\n" + consoleOutput
+            );
+            Assert.That(consoleOutput, Does.Contain("Error: Did not import audio on page"));
+            var sentences = GetFrenchSentences();
+            Assert.That(
+                sentences.Count,
+                Is.EqualTo(1),
+                "The text should still have been imported and saved. Console output:\n"
+                    + consoleOutput
+            );
+            Assert.That(sentences[0].InnerText, Is.EqualTo("This is page one."));
+            Assert.That(
+                RobustFile.Exists(Path.Combine(_bookFolder, "audio", kAudioId + ".mp3")),
+                Is.False
+            );
+        }
+
+        // Run the verb on the test book and spreadsheet the way Program.Main does, with the real
+        // browser, returning the exit code and what it wrote to the console.
+        private (int, string) RunInCommandLoop()
+        {
             var options = new SpreadsheetImportParameters
             {
                 BookPath = _bookPath,
@@ -182,49 +286,24 @@ namespace BloomTests.CLI
             {
                 Console.SetOut(originalOut);
             }
-
             var consoleOutput = output.ToString();
             Assert.That(
                 exitCode,
                 Is.Not.EqualTo(-1),
                 "The import did not finish within a minute. Console output:\n" + consoleOutput
             );
-            Assert.That(
-                exitCode,
-                Is.EqualTo(0),
-                "The import should succeed. Console output:\n" + consoleOutput
-            );
+            return (exitCode, consoleOutput);
+        }
 
+        // The recorded sentences in the saved book's French text.
+        private List<SafeXmlElement> GetFrenchSentences()
+        {
             var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(_bookPath, false));
-            var sentences = dom.SafeSelectNodes(
+            return dom.SafeSelectNodes(
                     "//div[contains(@class,'bloom-editable') and @lang='fr']//span[contains(@class,'audio-sentence')]"
                 )
                 .Cast<SafeXmlElement>()
                 .ToList();
-            Assert.That(
-                sentences.Count,
-                Is.EqualTo(1),
-                "The one French sentence should have become one recorded sentence. Console output:\n"
-                    + consoleOutput
-            );
-            var sentence = sentences[0];
-            Assert.That(sentence.InnerText, Is.EqualTo("This is page one."));
-            Assert.That(sentence.GetAttribute("id"), Is.EqualTo(kAudioId));
-            Assert.That(
-                sentence.GetAttribute("data-duration"),
-                Is.Not.Empty,
-                "The recording's duration should be recorded."
-            );
-            Assert.That(
-                sentence.GetAttribute("recordingmd5"),
-                Is.Not.Empty,
-                "The checksum of the recorded text, which comes from the browser, should be recorded."
-            );
-            Assert.That(
-                RobustFile.Exists(Path.Combine(_bookFolder, "audio", kAudioId + ".mp3")),
-                Is.True,
-                "The recording should have been copied into the book's audio folder."
-            );
         }
     }
 }

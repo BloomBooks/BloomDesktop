@@ -21,7 +21,9 @@ namespace Bloom.CLI
         /// <summary>
         /// Run the spreadsheetImport verb, writing progress and problems to the console.
         /// </summary>
-        /// <returns>the process exit code: 0 for success, 1 for failure</returns>
+        /// <returns>the process exit code: 0 for success; 1 when the import could not be done;
+        /// 2 when the import finished and the book was saved, but errors were reported (for example,
+        /// a recording that could not be imported)</returns>
         public static Task<int> Handle(SpreadsheetImportParameters options)
         {
             return Handle(options, server => server.Dispose());
@@ -74,7 +76,7 @@ namespace Bloom.CLI
                     importer.Params = SpreadsheetImportParams.FromFile(options.ParamsPath);
                 if (!importer.Validate(sheet, progress))
                     return 1;
-                BookStorage.SaveCopyBeforeImportOverwrite(folderPath);
+                SpreadsheetImporter.BackUpBookAndClearItsAudio(folderPath, progress);
                 // Importing audio uses a browser (to split text into sentences and to checksum it),
                 // and that browser loads its page from our local http server. In the app that server
                 // is always running; a console verb has to start one itself. Without it the page URL
@@ -96,6 +98,13 @@ namespace Bloom.CLI
                 // Review: A lot of other stuff happens in Book.Save() and BookStorage.SaveHtml().
                 // I doubt we need any of it for current purposes, but later we might.
                 XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, options.BookPath);
+                if (progress.HaveErrorsBeenReported)
+                {
+                    // Errors here are things like a missing recording: the rest of the book imported
+                    // and has been saved, but something the spreadsheet asked for is not in it.
+                    Console.WriteLine("done, with errors");
+                    return 2;
+                }
                 Console.WriteLine("done");
                 return 0; // all went well
             }

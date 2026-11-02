@@ -146,12 +146,7 @@ namespace Bloom.Spreadsheet
                         return true;
                     if (!Validate(sheet, progress))
                         return true; // errors already reported to progress
-                    progress.MessageWithoutLocalizing($"Making a backup of the original book...");
-                    var backupPath = BookStorage.SaveCopyBeforeImportOverwrite(_pathToBookFolder);
-                    progress.MessageWithoutLocalizing($"Backup completed (at {backupPath})");
-                    var audioFolder = Path.Combine(_pathToBookFolder, "audio");
-                    if (Directory.Exists(audioFolder))
-                        SIL.IO.RobustIO.DeleteDirectoryAndContents(audioFolder);
+                    BackUpBookAndClearItsAudio(_pathToBookFolder, progress);
                     await ImportAsync(sheet, progress);
                     BookHistory.AddEvent(
                         _book,
@@ -166,6 +161,24 @@ namespace Bloom.Spreadsheet
                 showCancelButton: false,
                 doWhenDialogCloses: doWhenProgressCloses
             );
+        }
+
+        /// <summary>
+        /// What both the in-app and the command-line import do to a book just before importing into
+        /// it: save a backup copy, then delete its audio folder, since the spreadsheet supplies all
+        /// the recordings the book will have and the backup keeps the old ones.
+        /// </summary>
+        public static void BackUpBookAndClearItsAudio(
+            string bookFolderPath,
+            IWebSocketProgress progress
+        )
+        {
+            progress.MessageWithoutLocalizing($"Making a backup of the original book...");
+            var backupPath = BookStorage.SaveCopyBeforeImportOverwrite(bookFolderPath);
+            progress.MessageWithoutLocalizing($"Backup completed (at {backupPath})");
+            var audioFolder = Path.Combine(bookFolderPath, "audio");
+            if (Directory.Exists(audioFolder))
+                SIL.IO.RobustIO.DeleteDirectoryAndContents(audioFolder);
         }
 
         private Browser _browser;
