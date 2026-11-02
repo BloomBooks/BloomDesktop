@@ -90,6 +90,9 @@ namespace Bloom.Publish.Rab
             (512, @"drawable-web\ic_launcher.png"),
         };
         internal const long kEstimatedAppOverheadBytes = 12L * 1000 * 1000;
+
+        // The name of the background action that makes BloomPUBs just to measure them (BL-17062).
+        internal const string kMeasureAction = "measure";
         public const long kMaxAppSizeBytes = 100L * 1000 * 1000;
         private static readonly (
             string organizationName,
@@ -101,6 +104,21 @@ namespace Bloom.Publish.Rab
         private readonly CollectionSettings _collectionSettings;
         private readonly BloomWebSocketServer _webSocketServer;
         private readonly IWebSocketProgress _progress;
+        private readonly BloomPubSizeEstimator _bloomPubSizeEstimator = new BloomPubSizeEstimator();
+        private readonly RabBloomPubCache _bloomPubCache = new RabBloomPubCache();
+
+        // Whether each PNG has transparency, which the size estimates need (BL-17062). Kept in a
+        // file in the collection's Bloom App Data folder; see GetPngTransparencyCache.
+        private PngTransparencyCache _pngTransparencyCache;
+        private readonly object _pngCheckLock = new object();
+
+        // PNGs waiting to be checked for transparency in the background, and whether the
+        // background check is running. Both guarded by _pngCheckLock.
+        private readonly HashSet<string> _pngsToCheck = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase
+        );
+        private bool _pngCheckRunning;
+        internal const string kPngTransparencyCacheFileName = "png-transparency-cache.json";
         private volatile string _activeProgressAction;
         private int _lastBuildProgressPercent;
         private volatile string _lastLoggedProgressStage;
@@ -188,16 +206,31 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
-        /// Clears cached BloomPUB exports that are only intended to live for the current Apps screen session.
+        /// Makes the BloomPUBs that are missing or out of date for the app's books, without
+        /// building the app, so that the Apps screen can show their actual sizes instead of
+        /// estimates (BL-17062). A later Build reuses them.
         /// </summary>
-        public void ResetBloomPubCacheForScreenSession()
+        public Task MeasureBookSizesAsync()
         {
+            MeasureBookSizes();
+            return Task.CompletedTask;
+        }
+
+        private void MeasureBookSizes()
+        {
+            using var _longOperation = FreezeDoctorSupport.LongOperation(
+                "making BloomPUBs to measure the books in an app"
+            );
             var paths = GetPaths();
             EnsureWorkspaceFolders(paths);
-            DeleteStaleBloomPubExports(
-                paths.BloomPubRoot,
-                new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            ReportProgressStage("exporting-bloompubs", 0);
+            _progress.MessageWithoutLocalizing(
+                "Making BloomPUBs to measure the app's books...",
+                ProgressKind.Heading
             );
+            ExportTrackedBooks(paths, LoadState(paths) ?? new RabPrepareState());
+            ReportProgressStage("complete", 100);
+            _progress.MessageWithoutLocalizing("Measuring complete.", ProgressKind.Heading);
         }
 
         /// <summary>
@@ -471,38 +504,183 @@ namespace Bloom.Publish.Rab
 
         /// <summary>
         /// Estimates per-book and overall app size using available BloomPUB exports when possible.
+        /// PNGs that haven't yet been checked for transparency are counted at their larger
+        /// (transparent) size and checked in the background; when that finishes, the Apps screen
+        /// is told to ask again (see <see cref="SendSizeEstimatesChangedEvent"/>).
         /// </summary>
         public RabAppSizeEstimates GetSizeEstimates()
         {
             var paths = GetPaths();
-            return new RabAppSizeEstimates()
+            var transparencyCache = GetPngTransparencyCache(paths);
+            // The app's books keep the BloomPUB name recorded when they were added, even if the
+            // book folder has since been renamed, so look them up the same way export does.
+            var trackedByFolder = (LoadState(paths)?.Books ?? new List<RabBookPublishInfo>())
+                .Where(book => !string.IsNullOrWhiteSpace(book.FolderPath))
+                .GroupBy(book => book.FolderPath, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group.First(),
+                    StringComparer.OrdinalIgnoreCase
+                );
+            var uncheckedPngs = new List<string>();
+            var estimates = new RabAppSizeEstimates()
             {
                 Books = GetCollectionBooksForSizeEstimates()
                     .Select(book =>
                     {
-                        var bloomPubPath = Path.Combine(
+                        trackedByFolder.TryGetValue(book.FolderPath ?? "", out var tracked);
+                        var bloomPubPath = ResolveBloomPubPath(
                             paths.BloomPubRoot,
                             Path.GetFileName(book.FolderPath)
-                                + BloomPubMaker.BloomPubExtensionWithDot
+                                + BloomPubMaker.BloomPubExtensionWithDot,
+                            tracked?.BloomPubPath
                         );
-                        var hasBloomPub =
-                            !string.IsNullOrWhiteSpace(bloomPubPath)
-                            && RobustFile.Exists(bloomPubPath);
-                        return new RabBookSizeEstimate()
+                        var bloomPubSize = IsBloomPubCurrentForSizeEstimate(bloomPubPath, book)
+                            ? GetBloomPubSizeIfPresent(bloomPubPath)
+                            : null;
+                        if (!bloomPubSize.HasValue)
                         {
-                            BookId = book.BookId,
-                            FolderPath = book.FolderPath,
-                            Title = book.Title,
-                            SizeBytes = hasBloomPub
-                                ? new FileInfo(bloomPubPath).Length
-                                : GetFolderSizeBytes(book.FolderPath),
-                            IsActual = hasBloomPub,
-                        };
+                            var estimate = _bloomPubSizeEstimator.EstimateBloomPubSize(
+                                book.FolderPath,
+                                book.ImageSettings,
+                                transparencyCache
+                            );
+                            uncheckedPngs.AddRange(estimate.UncheckedPngPaths);
+                            return MakeBookSizeEstimate(book, estimate.SizeBytes, false);
+                        }
+                        return MakeBookSizeEstimate(book, bloomPubSize.Value, true);
                     })
                     .ToArray(),
                 EstimatedAppOverheadBytes = kEstimatedAppOverheadBytes,
                 MaxAppSizeBytes = kMaxAppSizeBytes,
             };
+            if (uncheckedPngs.Count > 0)
+                CheckPngTransparencyInBackground(transparencyCache, uncheckedPngs);
+            return estimates;
+        }
+
+        /// <summary>
+        /// Whether the BloomPUB at <paramref name="bloomPubPath"/> can be reported as the book's
+        /// actual size. Checking reads the book's files, and one can vanish or be locked part way
+        /// through, e.g. while a Measure or Build in the background rewrites meta.json; then we
+        /// show the estimate this time rather than fail the whole size request (BL-17062).
+        /// </summary>
+        private bool IsBloomPubCurrentForSizeEstimate(string bloomPubPath, RabTrackedBookInfo book)
+        {
+            try
+            {
+                return _bloomPubCache.IsCurrent(
+                    bloomPubPath,
+                    book.FolderPath,
+                    book.BloomPubSettingsKey
+                );
+            }
+            catch (Exception error)
+                when (error is IOException || error is UnauthorizedAccessException)
+            {
+                return false;
+            }
+        }
+
+        private static RabBookSizeEstimate MakeBookSizeEstimate(
+            RabTrackedBookInfo book,
+            long sizeBytes,
+            bool isActual
+        )
+        {
+            return new RabBookSizeEstimate()
+            {
+                BookId = book.BookId,
+                FolderPath = book.FolderPath,
+                Title = book.Title,
+                SizeBytes = sizeBytes,
+                IsActual = isActual,
+            };
+        }
+
+        /// <summary>
+        /// The transparency cache for this collection's Apps workspace, loading it from its file
+        /// the first time.
+        /// </summary>
+        private PngTransparencyCache GetPngTransparencyCache(RabWorkspacePaths paths)
+        {
+            lock (_pngCheckLock)
+            {
+                _pngTransparencyCache ??= new PngTransparencyCache(
+                    Path.Combine(paths.RabRoot, kPngTransparencyCacheFileName)
+                );
+                return _pngTransparencyCache;
+            }
+        }
+
+        /// <summary>
+        /// Check <paramref name="pngPaths"/> for transparency on a background thread, one at a
+        /// time (each decode briefly needs tens of MB), then save the answers and tell the Apps
+        /// screen its size estimates may have changed. If a check is already running, the new
+        /// paths just join its queue.
+        /// </summary>
+        private void CheckPngTransparencyInBackground(
+            PngTransparencyCache cache,
+            IEnumerable<string> pngPaths
+        )
+        {
+            lock (_pngCheckLock)
+            {
+                _pngsToCheck.UnionWith(pngPaths);
+                if (_pngCheckRunning || _pngsToCheck.Count == 0)
+                    return;
+                _pngCheckRunning = true;
+            }
+            Task.Run(() => CheckQueuedPngs(cache));
+        }
+
+        /// <summary>
+        /// The body of the background transparency check; see
+        /// <see cref="CheckPngTransparencyInBackground"/>. Internal so tests can run it directly.
+        /// </summary>
+        internal void CheckQueuedPngs(PngTransparencyCache cache)
+        {
+            try
+            {
+                while (true)
+                {
+                    string next;
+                    lock (_pngCheckLock)
+                    {
+                        next = _pngsToCheck.FirstOrDefault();
+                        if (next == null)
+                        {
+                            _pngCheckRunning = false;
+                            break;
+                        }
+                        _pngsToCheck.Remove(next);
+                    }
+                    cache.CheckAndRemember(next);
+                }
+                cache.Save();
+            }
+            catch (Exception error)
+            {
+                // Nothing the user did can cause this, and the estimates simply stay on the
+                // larger side, so log it rather than interrupting them.
+                lock (_pngCheckLock)
+                {
+                    _pngCheckRunning = false;
+                }
+                Logger.WriteError("Checking pictures for the app size estimates failed", error);
+            }
+            SendSizeEstimatesChangedEvent();
+        }
+
+        /// <summary>
+        /// Tell the Apps screen that asking for the size estimates again would give better ones.
+        /// </summary>
+        internal virtual void SendSizeEstimatesChangedEvent()
+        {
+            _webSocketServer.SendEvent(
+                kWebSocketContext,
+                RabPublishApi.kWebSocketEventId_SizeEstimatesChanged
+            );
         }
 
         /// <summary>
@@ -1070,7 +1248,8 @@ namespace Bloom.Publish.Rab
                 "building an app with Reading App Builder"
             );
 
-            // Build reuses BloomPUBs created during the current Apps-screen session and regenerates only missing ones.
+            // Build reuses BloomPUBs made earlier that still match their books (see RabBloomPubCache)
+            // and makes only the missing or out-of-date ones.
             var paths = GetPaths();
             EnsureWorkspaceFolders(paths);
             _lastBuildProgressPercent = 0;
@@ -1714,6 +1893,16 @@ namespace Bloom.Publish.Rab
                 )
                     bloomPubPathsToKeep.Add(bloomPubPath);
             }
+            // Keep the BloomPUBs of the collection's other books too, so their sizes stay known
+            // and a later app with those books can reuse them (BL-17062). Only BloomPUBs of
+            // books that are gone (deleted or renamed) are left to be cleaned up.
+            foreach (var book in GetCollectionBooksForSizeEstimates())
+                bloomPubPathsToKeep.Add(
+                    Path.Combine(
+                        paths.BloomPubRoot,
+                        Path.GetFileName(book.FolderPath) + BloomPubMaker.BloomPubExtensionWithDot
+                    )
+                );
 
             DeleteStaleBloomPubExports(paths.BloomPubRoot, bloomPubPathsToKeep);
 
@@ -1740,7 +1929,12 @@ namespace Bloom.Publish.Rab
                     existing?.BloomPubPath
                 );
 
-                if (RobustFile.Exists(bloomPubPath))
+                var settings = BloomPubPublishSettings.GetPublishSettingsForBook(
+                    _bookServer,
+                    bookInfo
+                );
+                var settingsKey = RabBloomPubCache.MakeSettingsKey(settings);
+                if (_bloomPubCache.IsCurrent(bloomPubPath, bookInfo.FolderPath, settingsKey))
                 {
                     _progress.MessageWithoutLocalizing(
                         $"Reusing existing BloomPUB for {bookTitle}..."
@@ -1749,10 +1943,8 @@ namespace Bloom.Publish.Rab
                 else
                 {
                     _progress.MessageWithoutLocalizing($"Creating BloomPUB for {bookTitle}...");
-                    var settings = BloomPubPublishSettings.GetPublishSettingsForBook(
-                        _bookServer,
-                        bookInfo
-                    );
+                    RabBloomPubCache.Delete(bloomPubPath);
+                    var snapshot = _bloomPubCache.TakeSnapshot(bookInfo.FolderPath);
                     BloomPubMaker.CreateBloomPub(
                         settings,
                         bloomPubPath,
@@ -1760,6 +1952,7 @@ namespace Bloom.Publish.Rab
                         _bookServer,
                         _progress
                     );
+                    _bloomPubCache.RecordNewBloomPub(bloomPubPath, snapshot, settingsKey);
                 }
                 ReportBloomPubStageProgress(index + 1, booksToExport.Count);
 
@@ -1855,7 +2048,24 @@ namespace Bloom.Publish.Rab
                 if (bloomPubPathsToKeep.Contains(existingBloomPubPath))
                     continue;
 
-                RobustFile.Delete(existingBloomPubPath);
+                RabBloomPubCache.Delete(existingBloomPubPath);
+            }
+
+            // Also clear out records whose BloomPUB is gone (e.g. a build that was cancelled).
+            foreach (
+                var recordPath in Directory.GetFiles(
+                    bloomPubRoot,
+                    "*" + BloomPubMaker.BloomPubExtensionWithDot + RabBloomPubCache.kRecordSuffix,
+                    SearchOption.TopDirectoryOnly
+                )
+            )
+            {
+                var bloomPubPath = recordPath.Substring(
+                    0,
+                    recordPath.Length - RabBloomPubCache.kRecordSuffix.Length
+                );
+                if (!RobustFile.Exists(bloomPubPath))
+                    RobustFile.Delete(recordPath);
             }
         }
 
@@ -2200,8 +2410,16 @@ namespace Bloom.Publish.Rab
                 return;
 
             // Keep the prepare/build progress bar moving during per-book export work instead of jumping straight to the next stage.
-            var startPercent = _activeProgressAction == "build" ? 10 : 10;
-            var endPercent = _activeProgressAction == "build" ? 30 : 45;
+            // Measuring does nothing but export, so it uses the whole bar.
+            var startPercent = 10;
+            var endPercent = 45;
+            if (_activeProgressAction == "build")
+                endPercent = 30;
+            else if (_activeProgressAction == kMeasureAction)
+            {
+                startPercent = 0;
+                endPercent = 100;
+            }
             var percent =
                 startPercent
                 + (int)
@@ -4321,44 +4539,30 @@ namespace Bloom.Publish.Rab
                     BookId = book.Id,
                     FolderPath = book.FolderPath,
                     Title = string.IsNullOrWhiteSpace(book.Title) ? book.FolderName : book.Title,
+                    ImageSettings = book.PublishSettings.BloomPub.ImageSettings,
+                    BloomPubSettingsKey = RabBloomPubCache.MakeSettingsKey(
+                        BloomPubPublishSettings.FromBookInfo(book)
+                    ),
                 });
         }
 
-        private static long GetFolderSizeBytes(string folderPath)
+        /// <summary>
+        /// The size of an already-made BloomPUB, or null if there isn't one. The file can vanish
+        /// between checking for it and reading its size, e.g. when a build replaces it while the
+        /// size estimates are being worked out (BL-17062); that counts as not having one.
+        /// </summary>
+        private static long? GetBloomPubSizeIfPresent(string bloomPubPath)
         {
-            if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath))
-                return 0;
-
-            long totalBytes = 0;
-
+            if (!RobustFile.Exists(bloomPubPath))
+                return null;
             try
             {
-                foreach (
-                    var filePath in Directory.EnumerateFiles(
-                        folderPath,
-                        "*",
-                        SearchOption.AllDirectories
-                    )
-                )
-                {
-                    try
-                    {
-                        totalBytes += new FileInfo(filePath).Length;
-                    }
-                    catch (Exception error)
-                        when (error is IOException
-                            || error is UnauthorizedAccessException
-                            || error is NotSupportedException
-                        ) { }
-                }
+                return new FileInfo(bloomPubPath).Length;
             }
-            catch (Exception error)
-                when (error is IOException
-                    || error is UnauthorizedAccessException
-                    || error is NotSupportedException
-                ) { }
-
-            return totalBytes;
+            catch (FileNotFoundException)
+            {
+                return null;
+            }
         }
 
         private static string FirstNonEmpty(params string[] values)

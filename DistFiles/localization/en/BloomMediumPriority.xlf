@@ -1530,6 +1530,36 @@
         <note>ID: PublishTab.Apps.SizeEstimate.Total</note>
         <note>Summary text for the estimated total app size. %0 is the current estimated app size and %1 is the app size limit, for example 100 MB.</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.OverLimitWithEstimates">
+        <source xml:lang="en">This estimate is above the %0 Android app size limit, but some of the books' sizes are only estimates. Measure the books to find out for sure, or choose fewer books or smaller books.</source>
+        <note>ID: PublishTab.Apps.SizeEstimate.OverLimitWithEstimates</note>
+        <note>Warning shown when the estimated app size exceeds the Android size limit while some books' sizes are still estimates (their BloomPUB files have not been made yet). "Measure" refers to the "Measure exact sizes" button. %0 is the size limit, for example 100 MB.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.MeasuredCount">
+        <source xml:lang="en">%0 of %1 books have been measured. The striped ones are estimates.</source>
+        <note>ID: PublishTab.Apps.SizeEstimate.MeasuredCount</note>
+        <note>Shown below the app size bar. %0 is how many of the app's books have exact sizes and %1 is how many books the app has. "The striped ones" are the books shown with diagonal stripes in the size bar.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.ActualSuffix">
+        <source xml:lang="en">(actual)</source>
+        <note>ID: PublishTab.Apps.SizeEstimate.ActualSuffix</note>
+        <note>Added after a book's size in the tooltip of the app size bar, e.g. "My Book: 3.5 mb (actual)", when the size is exact.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.EstimateSuffix">
+        <source xml:lang="en">(estimate)</source>
+        <note>ID: PublishTab.Apps.SizeEstimate.EstimateSuffix</note>
+        <note>Added after a book's size in the tooltip of the app size bar, e.g. "My Book: 3.5 mb (estimate)", when the size is only an estimate.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.MeasureBooks">
+        <source xml:lang="en">Measure exact sizes</source>
+        <note>ID: PublishTab.Apps.MeasureBooks</note>
+        <note>Button below the app size bar in Publish > Apps. It makes the BloomPUB files for the app's books so that their exact sizes can be shown instead of estimates.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.MeasureBooks.Tooltip">
+        <source xml:lang="en">Make the BloomPUB files for the app's books now, so that their exact sizes are shown. Build will use them too.</source>
+        <note>ID: PublishTab.Apps.MeasureBooks.Tooltip</note>
+        <note>Tooltip for the "Measure exact sizes" button. "BloomPUB" is a file format name and must not be translated. "Build" is the name of the button that builds the app.</note>
+      </trans-unit>
       <trans-unit id="ImageLibrary.FailedToAddImage">
         <source xml:lang="en">Sorry, there was a problem adding the image.</source>
         <note>ID: ImageLibrary.FailedToAddImage</note>
