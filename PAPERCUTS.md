@@ -19,6 +19,11 @@ House rules:
 
 ---
 
+## 2026-11-02 — `pnpm typecheck` passes when `node_modules` is missing
+- **Cut:** `scripts/typecheck.js` runs `node_modules\.bin\tsgo.cmd` through a shell, so a missing binary is a "not recognized" message and a non-zero exit, not a spawn error. The script ignores the exit status, finds no diagnostics, and prints "Type check passed". In a worktree whose `node_modules` had been cleaned it reported a pass while lint and vitest could not even start.
+- **Idea:** fail when `result.status` is non-zero and no diagnostic lines were parsed, printing the tool's own output.
+- **Context:** BL-16775 preflight, after the worktree's dependencies had been deleted to free disk space.
+
 ## 2026-10-08 — `CI=true` to satisfy pnpm silently turns off `--dont-disturb`
 - **Cut:** pnpm refuses to run a script when a worktree's deps are stale (`Aborted removal of modules directory due to no TTY`) and the way past it is `CI=true`. The e2e fixture reads that same variable: it then launched Bloom *without* `--dont-disturb` ("Bloom's windows take the foreground as they would for a user"), so a preflight e2e run seized the developer's screen for two minutes. Two unrelated tools, one overloaded variable.
 - **Idea:** key the disturb decision off a `BLOOM_E2E_*` variable rather than bare `CI`, or keep `--dont-disturb` unless the run is really on a CI runner (`GITHUB_ACTIONS`/`TEAMCITY_VERSION` present). Failing that, name the trap in `src/BloomE2E/README.md` beside the existing `CI` note.
