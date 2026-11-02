@@ -73,6 +73,18 @@ const pictureRect = async (page: Page, id: string) =>
     (await getInlineImageRects(page, BLOCK, LANG, id)).picture;
 
 /**
+ * How far below the top of the block a picture starts, in screen pixels. The tests compare this,
+ * not where the picture is on the screen, because the page scrolls during a gesture: the helpers
+ * scroll a picture into view before pressing on it, and the browser moves the scroll position as
+ * the layout changes (scroll anchoring). In a small window, like the nightly runner's, that moved
+ * every picture on the screen by over a hundred pixels while none moved in its block.
+ */
+const topInBlock = async (page: Page, id: string) => {
+    const rects = await getInlineImageRects(page, BLOCK, LANG, id);
+    return rects.picture.y - rects.block.y;
+};
+
+/**
  * Make a Just Text page with text and the three pictures of the layout described at the top of
  * this file, check that the layout is what the tests need, and return the pictures' ids.
  */
@@ -118,9 +130,9 @@ async function makePageWithThreePictures(
         ],
         "The layout should have two pictures docked right and one docked left.",
     ).toEqual(["right", "right", "left"]);
-    const upperTop = (await pictureRect(page, upperRight)).y;
-    const lowerTop = (await pictureRect(page, lowerRight)).y;
-    const leftTop = (await pictureRect(page, left)).y;
+    const upperTop = await topInBlock(page, upperRight);
+    const lowerTop = await topInBlock(page, lowerRight);
+    const leftTop = await topInBlock(page, left);
     expect(
         lowerTop,
         "The two right pictures should be stacked, the second directly below the first.",
@@ -143,8 +155,8 @@ test("dragging one picture down, pushing the one below it, does not move the pic
         ids = await makePageWithThreePictures(page);
     });
     const upper = await pictureRect(page, ids.upperRight);
-    const lowerTop = (await pictureRect(page, ids.lowerRight)).y;
-    const leftTop = (await pictureRect(page, ids.left)).y;
+    const lowerTop = await topInBlock(page, ids.lowerRight);
+    const leftTop = await topInBlock(page, ids.left);
 
     await step(
         "Drag the upper right picture down half its height",
@@ -160,14 +172,14 @@ test("dragging one picture down, pushing the one below it, does not move the pic
     );
     // Sanity check: the drag has to push the lower right picture past the left one's top, or
     // the left one would have nothing to be pushed by.
-    const lowerAfter = (await pictureRect(page, ids.lowerRight)).y;
+    const lowerAfter = await topInBlock(page, ids.lowerRight);
     expect(
         lowerAfter,
         `The drag should have pushed the lower right picture below the left picture's top ` +
             `(${leftTop}), but it went from ${lowerTop} to ${lowerAfter}.`,
     ).toBeGreaterThan(leftTop + 1);
 
-    const leftAfter = (await pictureRect(page, ids.left)).y;
+    const leftAfter = await topInBlock(page, ids.left);
     expect(
         Math.abs(leftAfter - leftTop),
         `Dragging the upper right picture down moved the left picture from ${leftTop} to ` +
@@ -184,8 +196,8 @@ test("resizing one picture larger, pushing the one below it, does not move the p
     await step("Make a page with text and three pictures", async () => {
         ids = await makePageWithThreePictures(page);
     });
-    const lowerTop = (await pictureRect(page, ids.lowerRight)).y;
-    const leftTop = (await pictureRect(page, ids.left)).y;
+    const lowerTop = await topInBlock(page, ids.lowerRight);
+    const leftTop = await topInBlock(page, ids.left);
     const widthBefore = (
         await getInlineImage(page, BLOCK, LANG, ids.upperRight)
     ).widthPercent;
@@ -205,14 +217,14 @@ test("resizing one picture larger, pushing the one below it, does not move the p
         width,
         "The resize should have made the upper right picture wider.",
     ).toBeGreaterThan(widthBefore);
-    const lowerAfter = (await pictureRect(page, ids.lowerRight)).y;
+    const lowerAfter = await topInBlock(page, ids.lowerRight);
     expect(
         lowerAfter,
         `The resize should have pushed the lower right picture below the left picture's top ` +
             `(${leftTop}), but it went from ${lowerTop} to ${lowerAfter}.`,
     ).toBeGreaterThan(leftTop + 1);
 
-    const leftAfter = (await pictureRect(page, ids.left)).y;
+    const leftAfter = await topInBlock(page, ids.left);
     expect(
         Math.abs(leftAfter - leftTop),
         `Resizing the upper right picture moved the left picture from ${leftTop} to ${leftAfter}, ` +

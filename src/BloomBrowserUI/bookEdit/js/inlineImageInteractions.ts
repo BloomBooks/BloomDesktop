@@ -1628,9 +1628,10 @@ interface IInlineImageResizeState {
     started: boolean;
     // The pointer this gesture captured; see captureGesturePointer.
     pointerId: number;
-    // Where the other floating images were when the resize began. A picture that grows taller
-    // pushes down every float after it in the DOM, so each move puts them back here.
-    neighborImageTopsViewportPx: Map<HTMLElement, number>;
+    // Where every floating image, the resized one included, was when the resize began. A picture
+    // that grows taller pushes down every float after it in the DOM, so each move puts them
+    // back here.
+    imageTopsViewportPx: Map<HTMLElement, number>;
     viewportPxPerLayoutPx: number;
 }
 
@@ -2193,7 +2194,7 @@ function startResize(event: PointerEvent, handle: HTMLElement): void {
         horizontalSign: getInlineImageHandleHorizontalSign(corner),
         started: false,
         pointerId: event.pointerId,
-        neighborImageTopsViewportPx: getNeighborImageTops(editable, wrapper),
+        imageTopsViewportPx: getNeighborImageTops(editable, undefined),
         viewportPxPerLayoutPx: getViewportPxPerLayoutPx(editable),
     };
     // Grabbing a handle is not the start of a text selection.
@@ -2223,17 +2224,17 @@ function continueResize(
     state.wrapper.style.setProperty(kInlineImageWidthVar, `${percent}%`);
     // A taller picture can push the one below it on the same side down; see
     // computeInlineImageFloatOrder for why that must not move the pictures on the other side.
-    const wantedTops = new Map(state.neighborImageTopsViewportPx);
-    wantedTops.set(state.wrapper, getImageBox(state.wrapper).top);
+    // Reordering can move the resized wrapper in the DOM too, which changes where its offset is
+    // measured from, so it is put back where it started like the others.
     orderFloatsSoEachCanReachItsTop(
         state.editable,
-        wantedTops,
+        state.imageTopsViewportPx,
         state.viewportPxPerLayoutPx,
     );
     restoreImagePositions(
         state.editable,
-        state.wrapper,
-        state.neighborImageTopsViewportPx,
+        undefined,
+        state.imageTopsViewportPx,
         state.viewportPxPerLayoutPx,
     );
 }
@@ -2476,11 +2477,12 @@ function restoreNeighborImagePositions(state: IInlineImageDragState): void {
     );
 }
 
-// Where the top of each floating image in the editable other than movingWrapper is now, in
-// viewport pixels, so that restoreImagePositions can put them back after a gesture.
+// Where the top of each floating image in the editable other than movingWrapper (all of them,
+// when it is undefined) is now, in viewport pixels, so that restoreImagePositions can put them
+// back after a gesture.
 function getNeighborImageTops(
     editable: HTMLElement,
-    movingWrapper: HTMLElement,
+    movingWrapper: HTMLElement | undefined,
 ): Map<HTMLElement, number> {
     return new Map(
         getFloatingWrappersIn(editable)
@@ -2489,11 +2491,12 @@ function getNeighborImageTops(
     );
 }
 
-// Puts every floating image other than movingWrapper back at the top recorded for it in
-// wantedTops, as far as the layout allows. See restoreNeighborImagePositions.
+// Puts every floating image other than movingWrapper (all of them, when it is undefined) back at
+// the top recorded for it in wantedTops, as far as the layout allows. See
+// restoreNeighborImagePositions.
 function restoreImagePositions(
     editable: HTMLElement,
-    movingWrapper: HTMLElement,
+    movingWrapper: HTMLElement | undefined,
     wantedTops: Map<HTMLElement, number>,
     viewportPxPerLayoutPx: number,
 ): void {

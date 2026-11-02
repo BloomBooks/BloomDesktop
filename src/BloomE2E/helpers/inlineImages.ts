@@ -1894,8 +1894,7 @@ async function putCaretAtEdgeOfBlockText(
     edge: "start" | "end",
 ): Promise<void> {
     const block = inlineImageBlock(page, groupSelector, languageTag);
-    await block.scrollIntoViewIfNeeded();
-    const onScreen = await blockRect(page, groupSelector, languageTag);
+    await block.waitFor({ state: "visible", timeout: 30000 });
     const found = await block.evaluate(
         (element, args) => {
             const texts: Text[] = [];
@@ -1923,15 +1922,35 @@ async function putCaretAtEdgeOfBlockText(
             const range = document.createRange();
             range.setStart(node, index);
             range.setEnd(node, index + 1);
-            const letter = range.getClientRects()[0];
+            // Scroll the page so the letter is well inside the page frame's view. The block can
+            // be taller than the window, so scrolling the block into view is not enough: in a
+            // small window, like the nightly runner's, its first line can be at the very top of
+            // the frame, where a click lands on the shell's top bar instead.
+            const view = element.ownerDocument.defaultView!;
+            const margin = 40;
+            let letter = range.getClientRects()[0];
+            if (letter.top < margin) view.scrollBy(0, letter.top - margin);
+            else if (letter.bottom > view.innerHeight - margin)
+                view.scrollBy(0, letter.bottom - (view.innerHeight - margin));
+            letter = range.getClientRects()[0];
+            // One pixel inside the letter, on the side of the edge, which puts the caret on
+            // that side of it, and halfway down the line.
+            const x =
+                args.edge === "start" ? letter.left + 1 : letter.right - 1;
+            const y = letter.top + letter.height / 2;
+            const under = element.ownerDocument.elementFromPoint(x, y);
             const rect = element.getBoundingClientRect();
             return {
-                // One pixel inside the letter, on the side of the edge, which puts the caret on
-                // that side of it.
-                x: args.edge === "start" ? letter.left + 1 : letter.right - 1,
-                y: letter.top + letter.height / 2,
+                x,
+                y,
                 blockLeft: rect.left,
                 blockTop: rect.top,
+                pointIsOnText:
+                    !!under &&
+                    element.contains(under) &&
+                    !under.closest("." + args.wrapperClass),
+                letterTop: letter.top,
+                viewHeight: view.innerHeight,
             };
         },
         { wrapperClass: kWrapperClass, edge },
@@ -1941,6 +1960,14 @@ async function putCaretAtEdgeOfBlockText(
             `The "${languageTag}" block of "${groupSelector}" has no text, so there is no ${edge} ` +
                 `of its text to put the caret at. Type something first.`,
         );
+    if (!found.pointIsOnText)
+        throw new Error(
+            `The ${edge} of the "${languageTag}" block's text is not where a click would reach it: ` +
+                `after scrolling, its letter is at ${Math.round(found.letterTop)}px in a page view ` +
+                `${found.viewHeight}px high, and something else is under that point.`,
+        );
+    // Measured after the scroll above, so it matches the letter's position.
+    const onScreen = await blockRect(page, groupSelector, languageTag);
     await realClickAt(
         page,
         onScreen.x + (found.x - found.blockLeft),
