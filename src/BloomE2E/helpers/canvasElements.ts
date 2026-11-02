@@ -825,20 +825,26 @@ export async function dragRotateHandle(
  * does, into whatever has the focus: the menu does not take it when it opens. Waits until neither
  * the menu nor a submenu open beside it is showing.
  *
- * A submenu open beside the menu is closed first, by moving the pointer off it: an MUI menu answers
- * Escape only when it is the topmost one, and an open submenu is.
+ * A submenu open beside the menu is closed first, by Escape on the submenu itself: an MUI menu
+ * answers Escape only when it is the topmost one, and an open submenu is. Moving the pointer off it
+ * would not always do: a submenu that opened because its row got the keyboard focus, which the menu
+ * can give a row as it opens, closes only on Escape or ArrowLeft. The focus goes to the menu first:
+ * a closing submenu gives the focus back to whatever had it, and if that is its own row, the row
+ * opens it again. That Escape may shut the menu as well, which is fine here.
  */
 export async function closeCanvasElementMenu(page: Page): Promise<void> {
     const menu = editablePageFrame(page).locator(MENU).first();
     if (!(await menu.isVisible().catch(() => false))) return;
     if ((await getOpenCanvasElementMenuCount(page)) > 1) {
-        await moveMouseOffMenus(page);
+        await menu.focus();
+        await editablePageFrame(page).locator(MENU).last().press("Escape");
         await expect
             .poll(async () => getOpenCanvasElementMenuCount(page), {
                 timeout: 30000,
-                message: "Moving the pointer off the submenu did not close it.",
+                message: "Pressing Escape on the submenu did not close it.",
             })
-            .toBe(1);
+            .toBeLessThanOrEqual(1);
+        if ((await getOpenCanvasElementMenuCount(page)) === 0) return;
     }
     // On the menu itself, not page.keyboard: the menu closes on an Escape it receives, and the
     // focus may be elsewhere, e.g. on a picture in a table cell that was just pressed.

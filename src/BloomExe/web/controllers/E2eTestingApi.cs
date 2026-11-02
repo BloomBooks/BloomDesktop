@@ -5,6 +5,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.MiscUI;
 using Bloom.SubscriptionAndFeatures;
 using SIL.IO;
 using SIL.Progress;
@@ -221,9 +222,10 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// True if the editable collection is loaded and its book list is available. Mirrors what
-        /// selecting a book needs (see CollectionApi.GetCollectionOfRequest), so a test can wait
-        /// for this before selecting. Any exception means "not ready yet", so we swallow it.
+        /// True once Bloom's startup book selection is done and the editable collection is loaded
+        /// with its book list available. Mirrors what selecting a book needs (see
+        /// CollectionApi.GetCollectionOfRequest), so a test can wait for this before selecting.
+        /// Any exception means "not ready yet", so we swallow it.
         /// An EMPTY collection is ready: a test that creates its own collection starts with no
         /// books and then makes one, so "has at least one book" would never come true for it.
         /// </summary>
@@ -231,6 +233,10 @@ namespace Bloom.web.controllers
         {
             try
             {
+                // At startup Bloom clears the selection and then restores the last-selected book,
+                // after the collection is listed. A book the test selects before that is lost.
+                if (!StartupScreenManager.StartupMilestoneHasBeenReached("startupBookSelected"))
+                    return false;
                 var editable = _collectionModel.TheOneEditableCollection;
                 if (editable == null)
                     return false;
