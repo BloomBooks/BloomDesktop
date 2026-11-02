@@ -76,28 +76,38 @@ namespace Bloom.CLI
                     importer.Params = SpreadsheetImportParams.FromFile(options.ParamsPath);
                 if (!importer.Validate(sheet, progress))
                     return 1;
-                SpreadsheetImporter.BackUpBookAndClearItsAudio(folderPath, progress);
-                // Importing audio uses a browser (to split text into sentences and to checksum it),
-                // and that browser loads its page from our local http server. In the app that server
-                // is always running; a console verb has to start one itself. Without it the page URL
-                // points at port 0 and the page never loads (BL-16773).
-                var server = new BloomServer(
-                    new RuntimeImageProcessor(new BookRenamedEvent()),
-                    new BookSelection()
+                var hasStartedSaving = false;
+                await SpreadsheetImporter.ImportWithBackupAsync(
+                    folderPath,
+                    progress,
+                    async () =>
+                    {
+                        // Importing audio uses a browser (to split text into sentences and to
+                        // checksum it), and that browser loads its page from our local http server.
+                        // In the app that server is always running; a console verb has to start one
+                        // itself. Without it the page URL points at port 0 and the page never loads
+                        // (BL-16773).
+                        var server = new BloomServer(
+                            new RuntimeImageProcessor(new BookRenamedEvent()),
+                            new BookSelection()
+                        );
+                        try
+                        {
+                            server.EnsureListening();
+                            // Warnings and errors go to the console through the progress as they happen.
+                            await importer.ImportAsync(sheet, progress);
+                        }
+                        finally
+                        {
+                            releaseServer(server);
+                        }
+                        // Review: A lot of other stuff happens in Book.Save() and BookStorage.SaveHtml().
+                        // I doubt we need any of it for current purposes, but later we might.
+                        hasStartedSaving = true;
+                        XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, options.BookPath);
+                    },
+                    () => hasStartedSaving
                 );
-                try
-                {
-                    server.EnsureListening();
-                    // Warnings and errors go to the console through the progress as they happen.
-                    await importer.ImportAsync(sheet, progress);
-                }
-                finally
-                {
-                    releaseServer(server);
-                }
-                // Review: A lot of other stuff happens in Book.Save() and BookStorage.SaveHtml().
-                // I doubt we need any of it for current purposes, but later we might.
-                XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, options.BookPath);
                 if (progress.HaveErrorsBeenReported)
                 {
                     // Errors here are things like a missing recording: the rest of the book imported

@@ -146,8 +146,12 @@ namespace Bloom.Spreadsheet
                         return true;
                     if (!Validate(sheet, progress))
                         return true; // errors already reported to progress
-                    BackUpBookAndClearItsAudio(_pathToBookFolder, progress);
-                    await ImportAsync(sheet, progress);
+                    await ImportWithBackupAsync(
+                        _pathToBookFolder,
+                        progress,
+                        () => ImportAsync(sheet, progress),
+                        () => HasStartedSaving
+                    );
                     BookHistory.AddEvent(
                         _book,
                         BookHistoryEventType.ImportSpreadsheet,
@@ -164,13 +168,21 @@ namespace Bloom.Spreadsheet
         }
 
         /// <summary>
-        /// What both the in-app and the command-line import do to a book just before importing into
-        /// it: save a backup copy, then delete its audio folder, since the spreadsheet supplies all
-        /// the recordings the book will have and the backup keeps the old ones.
+        /// How both the in-app and the command-line import run: save a backup copy of the book, delete
+        /// its audio folder (the spreadsheet supplies all the recordings the book will have), then run
+        /// the import. If the import throws before it starts saving the book, the book's text is
+        /// unchanged, so put its old recordings back from the backup before letting the exception go
+        /// on; otherwise the unchanged book would point at recordings that are gone. Once saving has
+        /// started the saved book may already point at the new recordings (and the save may have
+        /// renamed the folder), so they are left alone and the user is told where the backup is.
         /// </summary>
-        public static void BackUpBookAndClearItsAudio(
+        /// <param name="hasStartedSaving">whether the import has begun saving the book</param>
+        /// <returns>the path of the backup</returns>
+        public static async Task<string> ImportWithBackupAsync(
             string bookFolderPath,
-            IWebSocketProgress progress
+            IWebSocketProgress progress,
+            Func<Task> import,
+            Func<bool> hasStartedSaving
         )
         {
             progress.MessageWithoutLocalizing($"Making a backup of the original book...");
@@ -178,7 +190,70 @@ namespace Bloom.Spreadsheet
             progress.MessageWithoutLocalizing($"Backup completed (at {backupPath})");
             var audioFolder = Path.Combine(bookFolderPath, "audio");
             if (Directory.Exists(audioFolder))
-                SIL.IO.RobustIO.DeleteDirectoryAndContents(audioFolder);
+                RobustIO.DeleteDirectoryAndContents(audioFolder);
+            try
+            {
+                await import();
+            }
+            catch (Exception)
+            {
+                if (hasStartedSaving())
+                {
+                    progress.MessageWithoutLocalizing(
+                        $"The import failed while saving the book. The original book, with its recordings, is in the backup at {backupPath}.",
+                        ProgressKind.Error
+                    );
+                    throw;
+                }
+                try
+                {
+                    RestoreAudioFromBackup(bookFolderPath, backupPath);
+                    progress.MessageWithoutLocalizing(
+                        "The import failed, so the book's recordings were put back as they were."
+                    );
+                }
+                catch (Exception restoreError)
+                {
+                    // Report this, but let the import's own exception, the real problem, go on.
+                    progress.MessageWithoutLocalizing(
+                        $"The import failed, and its recordings could not be put back ({restoreError.Message}). The original book, with its recordings, is in the backup at {backupPath}.",
+                        ProgressKind.Error
+                    );
+                }
+                throw;
+            }
+            return backupPath;
+        }
+
+        /// <summary>
+        /// Set just before the import saves the book, so ImportWithBackupAsync knows not to restore
+        /// the old recordings if something fails after that.
+        /// </summary>
+        public bool HasStartedSaving { get; private set; }
+
+        /// <summary>
+        /// Replace the book's audio folder with the one in the backup made by
+        /// BookStorage.SaveCopyBeforeImportOverwrite.
+        /// </summary>
+        private static void RestoreAudioFromBackup(string bookFolderPath, string backupPath)
+        {
+            var audioFolder = Path.Combine(bookFolderPath, "audio");
+            if (Directory.Exists(audioFolder))
+                RobustIO.DeleteDirectoryAndContents(audioFolder);
+            using (var zipFile = new ICSharpCode.SharpZipLib.Zip.ZipFile(backupPath))
+            {
+                foreach (ICSharpCode.SharpZipLib.Zip.ZipEntry entry in zipFile)
+                {
+                    // Zip entry names always use forward slashes.
+                    if (!entry.IsFile || !entry.Name.StartsWith("audio/", StringComparison.Ordinal))
+                        continue;
+                    var destPath = Path.Combine(bookFolderPath, entry.Name);
+                    Directory.CreateDirectory(Path.GetDirectoryName(destPath));
+                    using (var input = zipFile.GetInputStream(entry))
+                    using (var output = RobustFile.Create(destPath))
+                        input.CopyTo(output);
+                }
+            }
         }
 
         private Browser _browser;
@@ -487,6 +562,7 @@ namespace Bloom.Spreadsheet
             if (_collectionSettings != null && _book != null)
             {
                 ImportLanguageNames();
+                HasStartedSaving = true; // BringBookUpToDate saves the book
                 _book.BringBookUpToDate(new NullProgress());
             }
 
