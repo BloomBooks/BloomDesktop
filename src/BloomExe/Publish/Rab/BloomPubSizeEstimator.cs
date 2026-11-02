@@ -97,7 +97,7 @@ namespace Bloom.Publish.Rab
                 .EnumerateFiles("*", SearchOption.AllDirectories)
                 .OrderBy(file => file.FullName, StringComparer.OrdinalIgnoreCase)
                 .ToList();
-            var key = MakeCacheKey(files, imageSettings);
+            var key = MakeCacheKey(files, imageSettings, appearanceSettings);
             lock (_cacheLock)
             {
                 if (_cache.TryGetValue(bookFolderPath, out var cached) && cached.Key == key)
@@ -125,14 +125,25 @@ namespace Bloom.Publish.Rab
 
         /// <summary>
         /// A string that changes whenever a file in the book is added, removed, resized or
-        /// rewritten, or the publish resolution changes. Checking it costs only a directory listing.
+        /// rewritten, or the publish resolution or the cover color changes. Checking it costs only
+        /// a directory listing. (The cover color normally lives in the book's appearance.json, so a
+        /// change shows up in the file list anyway; it is in the key too so that the estimate
+        /// can't depend on it without the key doing so; Devin, PR 8531.)
         /// </summary>
-        private static string MakeCacheKey(List<FileInfo> files, ImagePublishSettings imageSettings)
+        private static string MakeCacheKey(
+            List<FileInfo> files,
+            ImagePublishSettings imageSettings,
+            AppearanceSettings appearanceSettings
+        )
         {
             var keyParts = files.Select(file =>
                 $"{file.FullName}|{file.Length}|{file.LastWriteTimeUtc.Ticks}"
             );
-            return $"{imageSettings.MaxWidth}x{imageSettings.MaxHeight}\n"
+            var coverColor = appearanceSettings?.GetStringPropertyValueOrDefault(
+                "cover-background-color",
+                null
+            );
+            return $"{imageSettings.MaxWidth}x{imageSettings.MaxHeight}|{appearanceSettings?.CssThemeName}|{coverColor}\n"
                 + string.Join("\n", keyParts);
         }
 
