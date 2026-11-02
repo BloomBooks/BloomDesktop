@@ -75,12 +75,15 @@ namespace Bloom.Publish.Rab
         /// Estimate the size of the BloomPUB that would be made from the book in
         /// <paramref name="bookFolderPath"/>, with pictures limited to
         /// <paramref name="imageSettings"/>, taking PNG transparency from
-        /// <paramref name="transparencyCache"/>. The size is 0 if the folder doesn't exist.
+        /// <paramref name="transparencyCache"/>. <paramref name="appearanceSettings"/> (may be null)
+        /// gives the cover color, which decides whether cover pictures are made transparent. The
+        /// size is 0 if the folder doesn't exist.
         /// </summary>
         public BookSizeEstimate EstimateBloomPubSize(
             string bookFolderPath,
             ImagePublishSettings imageSettings,
-            PngTransparencyCache transparencyCache
+            PngTransparencyCache transparencyCache,
+            AppearanceSettings appearanceSettings = null
         )
         {
             if (!Directory.Exists(bookFolderPath))
@@ -101,7 +104,13 @@ namespace Bloom.Publish.Rab
                     return new BookSizeEstimate { SizeBytes = cached.SizeBytes };
             }
 
-            var estimate = ComputeEstimate(bookFolderPath, files, imageSettings, transparencyCache);
+            var estimate = ComputeEstimate(
+                bookFolderPath,
+                files,
+                imageSettings,
+                transparencyCache,
+                appearanceSettings
+            );
             // An estimate that still has unchecked PNGs will improve once they are checked, so
             // only remember it once it is complete.
             if (estimate.UncheckedPngPaths.Count == 0)
@@ -131,7 +140,8 @@ namespace Bloom.Publish.Rab
             string bookFolderPath,
             List<FileInfo> files,
             ImagePublishSettings imageSettings,
-            PngTransparencyCache transparencyCache
+            PngTransparencyCache transparencyCache,
+            AppearanceSettings appearanceSettings
         )
         {
             var filter = BloomPubMaker.MakeFilter(bookFolderPath);
@@ -141,7 +151,10 @@ namespace Bloom.Publish.Rab
             var maxShortSide = (int)imageSettings.MaxHeight;
             var maxLongSide = (int)imageSettings.MaxWidth;
 
-            var picturesPublishingShrinks = FindPicturesPublishingProcesses(bookFolderPath);
+            var picturesPublishingProcesses = FindPicturesPublishingProcesses(
+                bookFolderPath,
+                appearanceSettings
+            );
 
             var result = new BookSizeEstimate();
             foreach (var file in files)
@@ -151,11 +164,15 @@ namespace Bloom.Publish.Rab
                 var extension = file.Extension.ToLowerInvariant();
                 if (
                     BookCompressor.CompressableImageFileExtensions.Contains(extension)
-                    && picturesPublishingShrinks.Contains(file.Name)
+                    && picturesPublishingProcesses.TryGetValue(
+                        file.Name,
+                        out var mayBeMadeTransparent
+                    )
                 )
                     result.SizeBytes += EstimatePublishedImageBytes(
                         file,
                         extension,
+                        mayBeMadeTransparent,
                         maxShortSide,
                         maxLongSide,
                         transparencyCache,
@@ -178,14 +195,56 @@ namespace Bloom.Publish.Rab
         /// CompressImages processes), less those marked bloom-preserveResolution. Any other picture
         /// in the book (branding, a file the pages no longer use, ...) goes into the BloomPUB at
         /// its full size, so it must be counted that way.
+        /// Each name maps to whether publishing may make that picture transparent, which turns it
+        /// into a PNG whatever its format (see BloomPubMaker.GetElementTransparencyMode): it has
+        /// bloom-transparent, or sits on a colored page or as an overlay on a background picture.
+        /// In the last two cases publishing makes it transparent only if it looks like line art,
+        /// which we can't tell without decoding it, so we assume it might (the larger estimate).
         /// </summary>
-        internal static HashSet<string> FindPicturesPublishingProcesses(string bookFolderPath)
+        internal static Dictionary<string, bool> FindPicturesPublishingProcesses(
+            string bookFolderPath,
+            AppearanceSettings appearanceSettings = null
+        )
         {
-            var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var result = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
             var htmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
             if (string.IsNullOrEmpty(htmlPath))
                 return result;
             var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlPath, false);
+            // Motion books in landscape have an all-black background, where publishing makes
+            // nothing transparent (BL-6564).
+            var body = dom.SafeSelectNodes("//body").Cast<SafeXmlElement>().FirstOrDefault();
+            var fullScreenBlack = (body?.GetAttribute("data-bffullscreenpicture") ?? "").Contains(
+                "bloomReader"
+            );
+            void Add(SafeXmlElement element, string name)
+            {
+                // Matches BloomPubMaker.FindImagesToPreserveResolution, which looks only inside
+                // the page's marginBox.
+                if (
+                    string.IsNullOrEmpty(name)
+                    || element.HasClass("bloom-preserveResolution")
+                        && element
+                            .SafeSelectNodes("ancestor::div[contains(@class,'marginBox')]")
+                            .Length > 0
+                )
+                    return;
+                var page = element
+                    .SafeSelectNodes("ancestor::div[contains(@class,'bloom-page')]")
+                    .Cast<SafeXmlElement>()
+                    .Last();
+                var mayBeMadeTransparent =
+                    !fullScreenBlack
+                    && HtmlDom.GetImageTransparencyMode(
+                        element,
+                        HtmlDom.PageNeedsTransparentImages(page, appearanceSettings)
+                    ) != ImageTransparencyMode.None;
+                // A picture used in more than one place is processed for each.
+                result[name] =
+                    mayBeMadeTransparent || (result.TryGetValue(name, out var already) && already);
+            }
+
+            // The usual case: an img in an image container or canvas.
             foreach (
                 var img in dom.SafeSelectNodes(
                         "//div[contains(@class,'bloom-page')]//div[contains(@class,'bloom-imageContainer') or contains(@class,'bloom-canvas')]/img[@src]"
@@ -193,17 +252,24 @@ namespace Bloom.Publish.Rab
                     .Cast<SafeXmlElement>()
             )
             {
-                // Matches BloomPubMaker.FindImagesToPreserveResolution, which looks only inside
-                // the page's marginBox.
-                if (
-                    img.HasClass("bloom-preserveResolution")
-                    && img.SafeSelectNodes("ancestor::div[contains(@class,'marginBox')]").Length > 0
-                )
-                    continue;
                 // An img @src is URL-encoded (see the encoding conventions in UrlPathString).
-                result.Add(
+                Add(
+                    img,
                     UrlPathString.CreateFromUrlEncodedString(img.GetAttribute("src")).NotEncoded
                 );
+            }
+            // Some older books already hold a page picture as a background-image style, which
+            // CompressImages processes just the same (Devin, PR 8531).
+            foreach (
+                var div in dom.SafeSelectNodes(
+                        "//div[contains(@class,'bloom-page')]//div[contains(@class,'bloom-background-image-in-style-attr')]"
+                    )
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var style = div.GetAttribute("style") ?? "";
+                if (style.Contains("background-image:url"))
+                    Add(div, BloomPubMaker.ExtractFilenameFromBackgroundImageStyleUrl(style));
             }
             return result;
         }
@@ -212,12 +278,14 @@ namespace Bloom.Publish.Rab
         /// The approximate size a picture is likely to have in a BloomPUB (see
         /// <see cref="EstimatePublishedImageBytes(int, int, long, bool, bool, bool, int, int)"/>). For a
         /// PNG whose transparency matters to the answer and isn't known yet, assume it is
-        /// transparent and add it to <paramref name="uncheckedPngPaths"/>. If we can't read the
-        /// dimensions, count the file as it is.
+        /// transparent and add it to <paramref name="uncheckedPngPaths"/>. A picture publishing may
+        /// make transparent (<paramref name="mayBeMadeTransparent"/>) counts as a transparent PNG
+        /// whatever its format. If we can't read the dimensions, count the file as it is.
         /// </summary>
         private static long EstimatePublishedImageBytes(
             FileInfo file,
             string lowerCaseExtension,
+            bool mayBeMadeTransparent,
             int maxShortSide,
             int maxLongSide,
             PngTransparencyCache transparencyCache,
@@ -242,10 +310,12 @@ namespace Bloom.Publish.Rab
                     maxLongSide
                 );
 
+            var ifTransparent = Estimate(true);
+            if (mayBeMadeTransparent)
+                return ifTransparent;
             var ifOpaque = Estimate(false);
             if (!isPng)
                 return ifOpaque;
-            var ifTransparent = Estimate(true);
             // Only decode the picture when the answer makes a difference and its header doesn't
             // already rule out transparency.
             if (
@@ -272,8 +342,11 @@ namespace Bloom.Publish.Rab
         ///   isn't shrunk goes in as it is.
         /// - A transparent PNG stays a PNG: if shrunk, we assume
         ///   <see cref="kAssumedResizedPngBytesPerPixel"/>; if not, it goes in as it is.
+        /// - Any other picture publishing makes transparent (<paramref name="hasTransparency"/>
+        ///   for a non-PNG) becomes a PNG at <see cref="kAssumedResizedPngBytesPerPixel"/>, which
+        ///   can be bigger than the original.
         /// - Anything else that is shrunk keeps the same bytes per pixel as before.
-        /// None of these is counted as bigger than the original file.
+        /// Apart from a picture that becomes a PNG, none is counted as bigger than the original.
         /// </summary>
         internal static long EstimatePublishedImageBytes(
             int width,
@@ -304,6 +377,10 @@ namespace Bloom.Publish.Rab
                 estimate = isShrunk
                     ? Math.Min(originalBytes, publishedPixels * kAssumedResizedPngBytesPerPixel)
                     : originalBytes;
+            else if (hasTransparency)
+                // Any other picture made transparent is saved as a PNG, which can be bigger than
+                // the original.
+                estimate = publishedPixels * kAssumedResizedPngBytesPerPixel;
             else if (isPng || (isJpeg && isShrunk))
                 estimate = Math.Min(
                     originalBytes * (publishedPixels / originalPixels),

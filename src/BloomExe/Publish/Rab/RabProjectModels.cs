@@ -104,6 +104,12 @@ namespace Bloom.Publish.Rab
         internal ImagePublishSettings ImageSettings { get; set; } = new ImagePublishSettings();
 
         /// <summary>
+        /// The book's appearance settings, which give the cover color that decides whether cover
+        /// pictures are made transparent when published. Internal so it isn't sent to the browser.
+        /// </summary>
+        internal AppearanceSettings AppearanceSettings { get; set; }
+
+        /// <summary>
         /// The book's BloomPUB publish settings, as made by
         /// <see cref="RabBloomPubCache.MakeSettingsKey"/>, used to tell whether a BloomPUB made
         /// earlier is still current. Internal so it isn't sent to the browser.

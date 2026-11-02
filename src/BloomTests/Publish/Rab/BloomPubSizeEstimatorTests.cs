@@ -104,7 +104,74 @@ namespace BloomTests.Publish.Rab
 
             var found = BloomPubSizeEstimator.FindPicturesPublishingProcesses(_bookFolder);
 
-            Assert.That(found, Is.EquivalentTo(new[] { "a picture.png", "b.jpg" }));
+            Assert.That(found.Keys, Is.EquivalentTo(new[] { "a picture.png", "b.jpg" }));
+            Assert.That(found.Values, Has.All.False, "plain pictures on white pages stay opaque");
+        }
+
+        [Test]
+        public void FindPicturesPublishingProcesses_FindsBackgroundImageStylePictures()
+        {
+            // Some older books hold a page picture this way (Devin, PR 8531).
+            RobustFile.WriteAllText(
+                Path.Combine(_bookFolder, "book.htm"),
+                "<html><head></head><body><div class=\"bloom-page\"><div class=\"marginBox\">"
+                    + "<div class=\"bloom-imageContainer bloom-background-image-in-style-attr\" "
+                    + "style=\"background-image:url('my%20cover.jpg')\"></div>"
+                    + "</div></div></body></html>"
+            );
+
+            var found = BloomPubSizeEstimator.FindPicturesPublishingProcesses(_bookFolder);
+
+            Assert.That(found.Keys, Is.EquivalentTo(new[] { "my cover.jpg" }));
+        }
+
+        [TestCase(
+            "class=\"bloom-transparent\"",
+            "",
+            ExpectedResult = true,
+            TestName = "bloom-transparent is made transparent"
+        )]
+        [TestCase(
+            "class=\"bloom-opaque\"",
+            "--page-background-color: #ffe0a0",
+            ExpectedResult = false,
+            TestName = "bloom-opaque never is"
+        )]
+        [TestCase(
+            "",
+            "--page-background-color: #ffe0a0",
+            ExpectedResult = true,
+            TestName = "a colored page may make it transparent"
+        )]
+        [TestCase("", "", ExpectedResult = false, TestName = "a white page doesn't")]
+        public bool FindPicturesPublishingProcesses_KnowsWhichMayBeMadeTransparent(
+            string imgAttributes,
+            string pageStyle
+        )
+        {
+            RobustFile.WriteAllText(
+                Path.Combine(_bookFolder, "book.htm"),
+                $"<html><head></head><body><div class=\"bloom-page\" style=\"{pageStyle}\">"
+                    + "<div class=\"marginBox\"><div class=\"bloom-canvas\">"
+                    + $"<img src=\"art.jpg\" {imgAttributes} /></div></div></div></body></html>"
+            );
+
+            return BloomPubSizeEstimator.FindPicturesPublishingProcesses(_bookFolder)["art.jpg"];
+        }
+
+        [Test]
+        public void EstimatePublishedImageBytes_JpegMadeTransparent_BecomesPng()
+        {
+            // Publishing saves a picture it makes transparent as a PNG, even a JPEG (Greptile,
+            // PR 8531), and the PNG can be bigger than the JPEG was.
+            var expected = (long)
+                Math.Ceiling(1280 * 720 * BloomPubSizeEstimator.kAssumedResizedPngBytesPerPixel);
+            Assert.That(Estimate(2560, 1440, 1_000_000, false, true), Is.EqualTo(expected));
+            Assert.That(
+                expected,
+                Is.GreaterThan(1_000_000),
+                "test setup: the PNG should be bigger"
+            );
         }
 
         [TearDown]

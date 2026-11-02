@@ -513,8 +513,14 @@ namespace Bloom.Publish.Rab
             var paths = GetPaths();
             var transparencyCache = GetPngTransparencyCache(paths);
             // The app's books keep the BloomPUB name recorded when they were added, even if the
-            // book folder has since been renamed, so look them up the same way export does.
-            var trackedByFolder = (LoadState(paths)?.Books ?? new List<RabBookPublishInfo>())
+            // book folder has since been renamed, so look them up the same way export does: by
+            // book id first (the saved folder path is the old one after a rename), then by folder.
+            var trackedBooks = LoadState(paths)?.Books ?? new List<RabBookPublishInfo>();
+            var trackedById = trackedBooks
+                .Where(book => !string.IsNullOrWhiteSpace(book.BookId))
+                .GroupBy(book => book.BookId)
+                .ToDictionary(group => group.Key, group => group.First());
+            var trackedByFolder = trackedBooks
                 .Where(book => !string.IsNullOrWhiteSpace(book.FolderPath))
                 .GroupBy(book => book.FolderPath, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(
@@ -528,7 +534,8 @@ namespace Bloom.Publish.Rab
                 Books = GetCollectionBooksForSizeEstimates()
                     .Select(book =>
                     {
-                        trackedByFolder.TryGetValue(book.FolderPath ?? "", out var tracked);
+                        if (!trackedById.TryGetValue(book.BookId ?? "", out var tracked))
+                            trackedByFolder.TryGetValue(book.FolderPath ?? "", out tracked);
                         var bloomPubPath = ResolveBloomPubPath(
                             paths.BloomPubRoot,
                             Path.GetFileName(book.FolderPath)
@@ -543,7 +550,8 @@ namespace Bloom.Publish.Rab
                             var estimate = _bloomPubSizeEstimator.EstimateBloomPubSize(
                                 book.FolderPath,
                                 book.ImageSettings,
-                                transparencyCache
+                                transparencyCache,
+                                book.AppearanceSettings
                             );
                             uncheckedPngs.AddRange(estimate.UncheckedPngPaths);
                             return MakeBookSizeEstimate(book, estimate.SizeBytes, false);
@@ -1943,7 +1951,7 @@ namespace Bloom.Publish.Rab
                     _bookServer,
                     bookInfo
                 );
-                var settingsKey = RabBloomPubCache.MakeSettingsKey(settings);
+                var settingsKey = MakeBloomPubSettingsKey(settings);
                 if (_bloomPubCache.IsCurrent(bloomPubPath, bookInfo.FolderPath, settingsKey))
                 {
                     _progress.MessageWithoutLocalizing(
@@ -4550,10 +4558,25 @@ namespace Bloom.Publish.Rab
                     FolderPath = book.FolderPath,
                     Title = string.IsNullOrWhiteSpace(book.Title) ? book.FolderName : book.Title,
                     ImageSettings = book.PublishSettings.BloomPub.ImageSettings,
-                    BloomPubSettingsKey = RabBloomPubCache.MakeSettingsKey(
+                    AppearanceSettings = book.AppearanceSettings,
+                    BloomPubSettingsKey = MakeBloomPubSettingsKey(
                         BloomPubPublishSettings.FromBookInfo(book)
                     ),
                 });
+        }
+
+        /// <summary>
+        /// The key that says which settings a kept BloomPUB was made with (see
+        /// <see cref="RabBloomPubCache"/>). Besides the book's publish settings it includes the
+        /// collection's effective subscription, because publishing leaves out subscription
+        /// features and branding once a subscription has expired, and that happens by date, with no
+        /// file changing (Greptile, PR 8531).
+        /// </summary>
+        private string MakeBloomPubSettingsKey(BloomPubPublishSettings settings)
+        {
+            var subscription = _collectionSettings.Subscription;
+            return RabBloomPubCache.MakeSettingsKey(settings)
+                + $"|{subscription.Tier}|{subscription.IsExpired()}|{subscription.BrandingKey}";
         }
 
         /// <summary>

@@ -3167,6 +3167,55 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public void GetSizeEstimates_RenamedAppBookStillSavedUnderOldFolder_MatchesByBookId()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            // After a rename, the app's saved record still has the old folder path; export finds
+            // the book by its id and keeps making the old-named BloomPUB (Greptile, PR 8531).
+            var bookFolder = Path.Combine(tempFolder.Path, "New Name");
+            Directory.CreateDirectory(bookFolder);
+            RobustFile.WriteAllText(Path.Combine(bookFolder, "New Name.htm"), "<html></html>");
+            Directory.CreateDirectory(paths.BloomPubRoot);
+            var recordedBloomPubPath = Path.Combine(paths.BloomPubRoot, "Old Name.bloompub");
+            WriteCurrentBloomPub(recordedBloomPubPath, bookFolder, 4000);
+            Directory.CreateDirectory(Path.GetDirectoryName(paths.PrepareStatePath));
+            RobustFile.WriteAllText(
+                paths.PrepareStatePath,
+                JsonConvert.SerializeObject(
+                    new RabPrepareState
+                    {
+                        Books = new List<RabBookPublishInfo>
+                        {
+                            new RabBookPublishInfo
+                            {
+                                BookId = "book-1",
+                                FolderPath = Path.Combine(tempFolder.Path, "Old Name"),
+                                Title = "Book One",
+                                BloomPubPath = recordedBloomPubPath,
+                            },
+                        },
+                    }
+                )
+            );
+            var collectionBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = bookFolder,
+                    Title = "Book One",
+                },
+            };
+            var service = new TestRabProjectService(paths, "Sample App", collectionBooks);
+
+            var estimate = service.GetSizeEstimates().Books.Single();
+
+            Assert.That(estimate.IsActual, Is.True);
+            Assert.That(estimate.SizeBytes, Is.EqualTo(4000));
+        }
+
+        [Test]
         public void GetSizeEstimates_UncheckedPng_CountsLargeThenShrinksAfterBackgroundCheck()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
