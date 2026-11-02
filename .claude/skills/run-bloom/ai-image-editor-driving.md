@@ -67,12 +67,9 @@ Right-click the canvas element → **"Edit with AI…"**. Loading the iframe dir
 current or the editor opens with an empty "Image to Edit" slot). **Wait for the overlay**, e.g.
 `await page.waitForSelector("#ai-image-editor-overlay iframe")`.
 
-That save used to end in a navigation, so the wait spanned a whole page load and any content-frame
-handle taken before the click was stale. Since BL-13502 a save does not navigate: the page frame
-stays put and its handles stay good. Waiting for the overlay is still the right thing — the save
-and the round trip take a moment — but the page is no longer replaced underneath you. (Continuing
-to wait for a page load that no longer happens is precisely what once left the editor never
-opening; see the comment on `HandleSaveThenLaunch`.)
+The save does not navigate, so the page frame stays put and handles to it taken before the click
+stay good; the wait is only for the save and the round trip. Don't wait for a page load: none
+happens.
 
 Note also that the overlay itself belongs to the **shell**, not the `page` frame, so it survives a
 reload when one does happen.

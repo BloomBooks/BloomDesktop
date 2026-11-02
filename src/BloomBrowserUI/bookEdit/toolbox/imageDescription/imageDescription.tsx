@@ -13,6 +13,7 @@ import { Link } from "../../../react_components/link";
 import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
 import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
 import {
+    hideImageDescriptions,
     showImageDescriptions,
     unwrapDescribedImages,
 } from "./imageDescriptionUtils";
@@ -376,14 +377,10 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
 
     public detachFromPage() {
         const bodyOfPageIframe = getPageIframeBody();
-        if (!bodyOfPageIframe) {
-            return;
-        }
-        // Removing the class and the wrappers must both happen before we resume comic editing;
-        // resume may not work right while the extra wrapper is present.
-        bodyOfPageIframe.classList.remove("bloom-showImageDescriptions");
-        super.detachFromPage(); // removeToolMarkup: unwraps the bloom-describedImage wrappers
-        getCanvasElementManager()?.resumeComicEditing();
+        if (bodyOfPageIframe) hideImageDescriptions(bodyOfPageIframe);
+        // hideImageDescriptions has already unwrapped the images, so removeToolMarkup finds nothing
+        // more; calling super is still how the toolbox knows the markup came off.
+        super.detachFromPage();
     }
 
     public id(): string {

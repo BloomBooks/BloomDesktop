@@ -53,16 +53,6 @@ being fixed on `BL-16799-collection-languages` (#8300): the `e2e/setCollectionLa
 does the work of the Settings dialog's OK button, so no test composes `.bloomCollection`
 XML. The dialog itself stays on this entry: nothing can drive or screenshot it.
 
-seen again 2026-09-01 (Test Case ID 349, `duplicate-page.spec.ts`): "Duplicate Page Many
-Times..." asks how many copies in `DuplicateManyDialog`, which is `WireUpForWinforms`, so the
-one step of that manual test that uses it ("make 3 duplicates") is not automated. The dialog
-only posts `editView/duplicatePageMany`, which `duplicateCurrentPage` already calls for setup,
-so the fix is the same as for every other WinForms dialog: host it in the web UI.
-
-fixed 2026-10-06 on `BL-13502-save-without-reload` (#8209): the dialog now opens inside the Edit
-tab (`duplicateManyDialog.tsx`), and `duplicate-page-many-times.spec.ts` drives it with
-`openDuplicatePageManyTimes` / `finishDuplicatePageManyTimes` (helpers/pageList.ts).
-
 seen again 2026-09-02 (Test Case ID 66, `xmatter-packs.spec.ts`): the case tries each
 front/back matter pack, and the pack is chosen only in the same dialog. `settings/xmatter`
 is not an API for it either: its POST only records a pending choice on the open dialog
@@ -408,31 +398,6 @@ only. Bloom also marks a box as overflowing from a `keyup` or a `paste`
 overflow mark at all, and one that appears to is riding on the keyup from the select-all and
 Delete that cleared the box first.
 (Found 2026-09-04, writing the table suites.)
-
-## The page menu offers commands that silently do nothing while a page is loading
-
-Copy Page and Paste Page go through `EditingModel.SaveThen`, which quietly gives up when the
-editing state machine is not in Editing or NoPage (`EditingStateMachine.ToSavePending` returns
-false and `CopyPage` passes `() => { }` as its "wrong state" action). The menu does not know
-this: `PageThumbnailList.IsContextMenuCommandEnabled` disables commands during SavePending, but
-NOT during Navigating, so while a page is still loading both commands look available and both
-do nothing at all, with no error and no message. Copy Page itself then saves and reloads the
-page, which reopens the same window for the very next click.
-
-Cost, twice over. For a person: click Copy Page and then Paste Page quickly and the paste is
-lost with no feedback. For a test: `src/BloomE2E/helpers/pageThumbnails.ts` has to carry
-`markEditablePage` / `waitForEditablePageReload`, which stamp the page's document and wait for
-Bloom to replace it, purely to know when the model has come back to Editing — the page url
-cannot answer it, because Bloom reloads a page to the same in-memory url. Fix direction: make
-the enabled test cover the Navigating state too, so a command that cannot run is greyed out;
-or, better, queue the command instead of dropping it. Either would let the helper drop the
-document-marking dance.
-(Found 2026-09-01 while automating Test Case ID 348, copy page preserves everything.)
-
-fixed 2026-10-09 on `BL-13502-save-without-reload` (#8209): `SaveThen` is gone, a page-menu
-command waits its turn instead of being dropped, and Copy Page saves without reloading the page.
-The document-marking helpers are gone too; a test that copies a page waits for Paste Page to be
-enabled (`runPageMenuCommand` does this), as `copy-page.spec.ts` and `tables-extended.spec.ts` do.
 
 ## Copying a page between two Bloom instances cannot be tested at all
 

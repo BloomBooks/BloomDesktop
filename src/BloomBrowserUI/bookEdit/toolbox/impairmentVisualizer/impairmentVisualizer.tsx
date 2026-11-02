@@ -190,8 +190,9 @@ export class ImpairmentVisualizerControls extends React.Component<
         body.classList.remove("simulateCataracts");
     }
 
-    // Caller is responsible for guarding against a null page parameter.
-    // Public because it is also the tool's removeToolMarkup, which may be given a clone.
+    // Removes the colour-blindness overlays from 'page'. Public because the tool's adapter
+    // (ImpairmentVisualizerAdapter.removeToolMarkup) calls it too, with the live page or the copy of
+    // it about to be saved. The caller is responsible for guarding against a null page.
     public static removeColorBlindnessMarkup(page: HTMLElement) {
         [].slice
             .call(page.getElementsByClassName("ui-cbOverlay"))
