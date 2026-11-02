@@ -27,7 +27,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiPost } from "./api";
 import { bookHtmlPath } from "./bookHtml";
-import { editablePageFrame } from "./bookMaking";
+import { clickInGroup, editablePageFrame } from "./bookMaking";
 import type { IRect } from "./geometry";
 import { realClick, realClickAt } from "./realClick";
 
@@ -343,6 +343,56 @@ export async function addInlineImage(
         .flatMap((block) => block.images)
         .find((image) => !known.has(image.id))!;
     return added.id;
+}
+
+/**
+ * Paste the picture on the clipboard into a text block the way a person does: click in the
+ * block's text and press Ctrl+V. Put the picture there first, e.g. with
+ * copyPictureWithPathToClipboard in helpers/clipboard.ts. Returns the data-bloom-inline-image-id
+ * of the inline image the paste makes.
+ *
+ * The picture reaches the page by a round trip through C# (editView/pasteImage copies it into the
+ * book folder), and the image is added only when it arrives, already holding the picture, in
+ * every language's block at once, the prototype included. This waits until every block has a new
+ * image whose picture is not the placeholder. If that never happens, the error says what the
+ * group holds and what text the block now has, because a paste that inserted the picture's path
+ * as text is the failure this guards against (BL-17014).
+ */
+export async function pastePictureIntoText(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+): Promise<string> {
+    const before = await getInlineImages(page, groupSelector);
+    const known = new Set(
+        before.flatMap((block) => block.images.map((image) => image.id)),
+    );
+    const isNewPicture = (image: IInlineImageState) =>
+        !known.has(image.id) && image.fileName !== "placeHolder.png";
+    await clickInGroup(page, groupSelector, languageTag);
+    await page.keyboard.press("Control+v");
+    const wanted = before.length;
+    try {
+        await expect
+            .poll(
+                async () =>
+                    (await getInlineImages(page, groupSelector)).filter(
+                        (block) => block.images.some(isNewPicture),
+                    ).length,
+                { timeout: 30000 },
+            )
+            .toBe(wanted);
+    } catch {
+        throw new Error(
+            `Ctrl+V did not put a new inline image holding the pasted picture in all ${wanted} ` +
+                `language blocks of "${groupSelector}". The group holds: ` +
+                `${describeBlocks(await getInlineImages(page, groupSelector))}. The ` +
+                `"${languageTag}" block's text is now: ` +
+                `"${await getBlockText(page, groupSelector, languageTag)}".`,
+        );
+    }
+    const after = await getInlineImages(page, groupSelector);
+    return after.flatMap((block) => block.images).find(isNewPicture)!.id;
 }
 
 /**
