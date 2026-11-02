@@ -875,6 +875,33 @@ describe("BloomField", () => {
             ).toBe(false);
         });
 
+        it("delete NOT prevented before a trailing line break, even with a bottom inline image after the paragraph", () => {
+            const fieldHtml =
+                '<p id="p1">Some text<span class="bloom-linebreak"></span></p>' +
+                inlineImageHtml("bloom-inlineImageBottom", "img1");
+            expect(
+                pressKeyInFieldFilledAfterSetup(fieldHtml, "Delete", () =>
+                    window
+                        .getSelection()!
+                        .collapse(document.getElementById("p1")!.firstChild, 9),
+                ),
+                "Delete here should remove the line break",
+            ).toBe(false);
+        });
+
+        it("delete prevented at the end of bold text that ends the paragraph before a bottom inline image", () => {
+            const fieldHtml =
+                '<p id="p1">Some <b id="b1">text</b></p>' +
+                inlineImageHtml("bloom-inlineImageBottom", "img1");
+            expect(
+                pressKeyInFieldFilledAfterSetup(fieldHtml, "Delete", () =>
+                    window
+                        .getSelection()!
+                        .collapse(document.getElementById("b1")!.firstChild, 4),
+                ),
+            ).toBe(true);
+        });
+
         it("delete NOT prevented at end of the last paragraph with no inline image after it", () => {
             const fieldHtml =
                 inlineImageHtml("bloom-inlineImageRight", "img1") +

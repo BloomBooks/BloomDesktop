@@ -1193,6 +1193,18 @@ export default class BloomField {
             rest.setStart(sel.anchorNode, sel.anchorOffset);
             rest.setEnd(block, block.childNodes.length);
             if (rest.toString().length > 0) return;
+            // Delete can also remove an element with no text, such as the span a Shift+Enter
+            // line break is. A <br> is only the paragraph's end, and the elements around the
+            // caret are not after it.
+            const anchorNode = sel.anchorNode;
+            const somethingElseAfterCaret = Array.from(
+                block.querySelectorAll(":not(br)"),
+            ).some(
+                (element) =>
+                    !element.contains(anchorNode) &&
+                    rest.intersectsNode(element),
+            );
+            if (somethingElseAfterCaret) return;
             e.stopImmediatePropagation();
             e.preventDefault();
         };
