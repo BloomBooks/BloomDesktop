@@ -130,7 +130,9 @@ namespace BloomTests.WebLibraryIntegration
                 var relativePath in Directory
                     .GetFiles(fullBookSrcPath, "*.*", SearchOption.AllDirectories)
                     .Select(fullPath => fullPath.Substring(fullBookSrcPath.Length + 1))
-                    .Where(relativePath => !relativePath.EndsWith("preview.pdf"))
+                    .Where(relativePath =>
+                        !relativePath.EndsWith("preview.pdf", StringComparison.Ordinal)
+                    )
             )
             {
                 Assert.IsTrue(

@@ -9,11 +9,16 @@
 //
 // Nothing here turns a tool on through the toolbox's own "More..." check boxes. The toolbox shows
 // only the tools a book has enabled, and for the tools a test wants, Bloom enables the tool itself
-// when the page asks for it: clicking the canvas of a Canvas page opens the Canvas tool (see
-// canvasElements.ts, openCanvasTool), and clicking a video box opens the Sign Language tool (see
-// videos.ts). A test that goes through the page drives the same route a person does.
+// when the page asks for it: clicking the canvas of a Canvas page expands the Canvas tool (see
+// canvasElements.ts, openCanvasTool), and clicking a video box expands the Sign Language tool (see
+// videos.ts). A test that goes through the page drives the same route a person does. The two
+// exceptions are for tests whose subject is the toolbox itself: setToolTurnedOn is the journey
+// route through the "More..." check boxes, and enableToolForBook is the fast setup route that
+// posts the same setting they do.
 
-import { expect, type Frame, type Page } from "@playwright/test";
+import { expect, type Frame, type Locator, type Page } from "@playwright/test";
+import { apiPost } from "./api";
+import { editBook } from "./bookMaking";
 
 /** The tool ids Bloom's toolbox uses, as the accordion headers carry them in data-toolid. */
 export type ToolId =
@@ -26,12 +31,14 @@ export type ToolId =
     | "bookSettings"
     | "settings"
     | "impairmentVisualizer"
+    | "imageDescription"
+    | "motion"
     | "music";
 
 /** The check box the pure-drawer CSS reads to decide whether the toolbox is open. */
 const TOOLBOX_CHECKBOX = "#pure-toggle-right";
 
-/** The label a person clicks to open or shut the toolbox. */
+/** The label a person clicks to expand or shut the toolbox. */
 const TOOLBOX_LABEL = 'label.pure-toggle-label[for="pure-toggle-right"]';
 
 /** True when the toolbox drawer is open. */
@@ -44,7 +51,7 @@ export async function isToolboxShowing(page: Page): Promise<boolean> {
 
 /**
  * Open the toolbox drawer, by clicking the same label a person clicks, and wait until it is open.
- * Does nothing when it is open already, so a test can call it without knowing what the book
+ * Does nothing when it is expanded already, so a test can call it without knowing what the book
  * remembered. Throws when Bloom is not showing the Edit tab, where there is no toolbox at all.
  */
 export async function showToolbox(page: Page): Promise<Frame> {
@@ -82,7 +89,7 @@ export async function hideToolbox(page: Page): Promise<void> {
 }
 
 /**
- * The iframe the toolbox's tools are drawn in. The frame exists whether or not the drawer is open,
+ * The iframe the toolbox's tools are drawn in. The frame exists whether or not the drawer is expanded,
  * so a caller that wants a control in it should showToolbox first.
  */
 export function toolboxFrame(page: Page): Frame {
@@ -99,7 +106,31 @@ export function toolboxFrame(page: Page): Frame {
 }
 
 /**
- * Open one of the tools the toolbox is showing, by clicking its accordion header the way a person
+ * Wait for a tool's header to appear, and explain it in the toolbox's own terms if it never
+ * does. A single count() here is a race: the toolbox renders its headers a moment after it
+ * becomes visible, so a check that runs first sees nothing and reports a tool missing that is
+ * about to arrive -- the error even listed the tool it claimed was absent.
+ */
+async function waitForToolHeader(
+    page: Page,
+    frame: Frame,
+    tool: ToolId,
+    extra = "",
+): Promise<Locator> {
+    const header = frame.locator(toolHeader(tool)).first();
+    try {
+        await header.waitFor({ state: "attached", timeout: 30000 });
+    } catch {
+        throw new Error(
+            `The toolbox is not offering the "${tool}" tool. It shows: ` +
+                `${(await getShownTools(page)).join(", ") || "(nothing)"}.${extra}`,
+        );
+    }
+    return header;
+}
+
+/**
+ * Expand one of the tools the toolbox is showing, by clicking its accordion header the way a person
  * does, and wait until the tool's own controls are showing. Opens the toolbox drawer first if it is
  * shut. Does nothing but return the frame when the tool's controls are showing already.
  *
@@ -107,7 +138,7 @@ export function toolboxFrame(page: Page): Frame {
  * localized. Throws, naming the tools on offer, when the book has not got this tool; see the note
  * at the top of this file for how a tool gets turned on.
  */
-export async function openTool(
+export async function expandTool(
     page: Page,
     tool: ToolId,
     controlsSelector: string,
@@ -115,18 +146,47 @@ export async function openTool(
     const frame = await showToolbox(page);
     const controls = frame.locator(controlsSelector).first();
     if (await controls.isVisible().catch(() => false)) return frame;
-    const header = frame
-        .locator(`.MuiAccordionSummary-root:has([data-toolid="${tool}"])`)
-        .first();
-    if ((await header.count()) === 0)
-        throw new Error(
-            `The toolbox is not offering the "${tool}" tool. It shows: ` +
-                `${(await getShownTools(page)).join(", ") || "(nothing)"}. A tool is offered ` +
-                `only once the book has it on; the page it belongs to turns it on when clicked.`,
-        );
+    const header = await waitForToolHeader(
+        page,
+        frame,
+        tool,
+        " A tool is offered only once the book has it on; the page it belongs to turns it" +
+            " on when clicked.",
+    );
     await header.click();
     await controls.waitFor({ state: "visible", timeout: 30000 });
     return frame;
+}
+
+/**
+ * Which tool the toolbox thinks the page in front of us belongs to: the tool a loading page says
+ * it requires, if it has said so, and otherwise the expanded tool.
+ *
+ * This is not one of the four words the toolbox's own vocabulary defines (see toolboxState.ts),
+ * and it is deliberately not readable from the page: it is what decides whether the Talking Book
+ * tool may put its highlight and audio on a page that belongs to the Game tool (BL-14434), and
+ * the page looks the same either way. The toolbox bundle exports it for exactly this.
+ */
+export async function getEffectiveToolForPage(
+    page: Page,
+): Promise<string | undefined> {
+    return toolboxFrame(page).evaluate(() =>
+        (
+            window as unknown as {
+                toolboxBundle: {
+                    getTheOneToolbox: () =>
+                        | {
+                              getEffectiveToolIdForTests: () =>
+                                  | string
+                                  | undefined;
+                          }
+                        | undefined;
+                };
+            }
+        ).toolboxBundle
+            .getTheOneToolbox()
+            ?.getEffectiveToolIdForTests(),
+    );
 }
 
 /** Which tools the toolbox is showing, by the `data-toolid` each accordion header carries. */
@@ -139,13 +199,193 @@ export async function getShownTools(page: Page): Promise<string[]> {
 }
 
 /**
- * The name of the tool whose section of the toolbox is open, as its header shows it, e.g.
- * "Talking Book Tool", or undefined when no tool is open.
+ * The name of the tool the toolbox has expanded, as its header shows it, e.g.
+ * "Talking Book Tool", or undefined when nothing is expanded.
  */
-export async function getOpenToolName(page: Page): Promise<string | undefined> {
-    const open = toolboxFrame(page).locator(
+export async function getExpandedToolName(
+    page: Page,
+): Promise<string | undefined> {
+    const expandedHeader = toolboxFrame(page).locator(
         '.MuiAccordionSummary-root[aria-expanded="true"]',
     );
-    if ((await open.count()) === 0) return undefined;
-    return (await open.first().innerText()).trim();
+    if ((await expandedHeader.count()) === 0) return undefined;
+    return (await expandedHeader.first().innerText()).trim();
+}
+
+/** The selector for one tool's accordion header, by the `data-toolid` it carries. */
+function toolHeader(tool: ToolId): string {
+    return `.MuiAccordionSummary-root:has([data-toolid="${tool}"])`;
+}
+
+/**
+ * The tool the toolbox has expanded, by the `data-toolid` its header carries, e.g.
+ * "talkingBook", or undefined when nothing is expanded. getExpandedToolName reads the header's
+ * localized text instead.
+ */
+export async function getExpandedTool(page: Page): Promise<ToolId | undefined> {
+    const icon = toolboxFrame(page).locator(
+        '.MuiAccordionSummary-root[aria-expanded="true"] [data-toolid]',
+    );
+    if ((await icon.count()) === 0) return undefined;
+    return ((await icon.first().getAttribute("data-toolid")) ?? undefined) as
+        | ToolId
+        | undefined;
+}
+
+/**
+ * Wait until the toolbox has finished reacting to what just happened in it: two animation frames
+ * in the toolbox's own document, by which time React has committed any re-render a click caused.
+ * This is for a test that has to show a click changed NOTHING, where there is no new state to
+ * wait for.
+ */
+async function waitForToolboxToSettle(page: Page): Promise<void> {
+    await toolboxFrame(page).evaluate(
+        () =>
+            new Promise<void>((resolve) =>
+                requestAnimationFrame(() =>
+                    requestAnimationFrame(() => resolve()),
+                ),
+            ),
+    );
+}
+
+/**
+ * Click one of the toolbox's tool headers, the way a person does, whether or not that
+ * tool is already expanded, and wait for the toolbox to settle. expandTool is the route for "expand
+ * this tool"; this is for a test whose subject is what the click itself does, such as clicking
+ * the header of the tool that is already expanded. Throws, naming the tools on offer, when the
+ * toolbox is not offering this one.
+ */
+export async function clickToolHeader(page: Page, tool: ToolId): Promise<void> {
+    const frame = await showToolbox(page);
+    const header = await waitForToolHeader(page, frame, tool);
+    await header.click();
+    await waitForToolboxToSettle(page);
+}
+
+/**
+ * Expand one of the tools the toolbox is showing, by clicking its accordion header the way a person
+ * does, and wait until the toolbox reports it as the expanded one. Opens the toolbox drawer first if
+ * it is shut, and does nothing but return when the tool is expanded already.
+ *
+ * Use this rather than expandTool() when the tool has no panel selector worth naming: it waits on
+ * the toolbox's own answer to "which tool is expanded?" instead of on one control inside the panel.
+ */
+export async function expandToolByHeader(
+    page: Page,
+    tool: ToolId,
+): Promise<Frame> {
+    const frame = await showToolbox(page);
+    if ((await getExpandedTool(page)) === tool) return frame;
+    await clickToolHeader(page, tool);
+    await expectExpandedTool(
+        page,
+        tool,
+        `Clicking the "${tool}" header did not make it the expanded tool.`,
+    );
+    return frame;
+}
+
+/** The row under the toolbox's "More..." tool that holds one tool's on/off check box. */
+function toolCheckboxRow(tool: ToolId): string {
+    return `[data-testid="toolbox-tool-checkbox-${tool}"]`;
+}
+
+/**
+ * Turn a tool on or off by ticking or unticking its check box under the toolbox's "More..."
+ * tool, the way a person does, and wait until the toolbox has caught up: the tool's body is
+ * offered (on) or gone (off). Expands the "More..." tool first. Does nothing but wait when the
+ * box is already in the state asked for.
+ *
+ * This is the UI route, for the journey test of turning tools on and off. A test that only needs
+ * a tool to be there should call enableToolForBook, which is faster.
+ */
+export async function setToolTurnedOn(
+    page: Page,
+    tool: ToolId,
+    on: boolean,
+): Promise<void> {
+    const frame = await expandTool(page, "settings", toolCheckboxRow(tool));
+    const box = frame.locator(
+        `${toolCheckboxRow(tool)} input[type="checkbox"]`,
+    );
+    if ((await box.isChecked()) !== on) await box.click();
+    await expect
+        .poll(async () => (await getShownTools(page)).includes(tool), {
+            timeout: 30000,
+            message: `Turning the "${tool}" tool ${on ? "on" : "off"} under "More..." did not ${
+                on ? "add" : "remove"
+            } it.`,
+        })
+        .toBe(on);
+}
+
+/**
+ * Turn a tool on for the book being edited, by posting the same setting its check box under
+ * "More..." posts, and wait until the toolbox is offering it. This is SETUP, not the path under
+ * test; setToolTurnedOn is the UI route. `bookFolder` must be the book being edited.
+ *
+ * The toolbox asks which tools are enabled only while it is initializing, so this leaves the book
+ * and comes back; without that round trip the tool stays absent until something else rebuilds the
+ * toolbox. It comes back by selecting the book again rather than just switching tabs: after a book
+ * is made from a template, the Collections tab can still have the template selected, and going
+ * straight back to Edit then shows the template, which has no page to edit. (readerSetup.ts's
+ * enableDecodableReaderTool is the same sequence, without that reselection.)
+ */
+export async function enableToolForBook(
+    page: Page,
+    bookFolder: string,
+    tool: ToolId,
+): Promise<void> {
+    await apiPost(
+        page,
+        "editView/saveToolboxSetting",
+        // "active", then the check box's id (the tool id plus "Check"), then 1 for on.
+        `active\t${tool}Check\t1`,
+        "text/plain",
+    );
+    // editBook waits for Bloom's editing state machine, not just for the toolbox: clicks aimed at a
+    // toolbox that is still re-rendering land on nothing (see readerSetup.ts).
+    await editBook(page, bookFolder);
+    await expect
+        .poll(async () => (await getShownTools(page)).includes(tool), {
+            timeout: 30000,
+            message: `The toolbox never offered the "${tool}" tool after it was enabled and the Edit tab was re-entered.`,
+        })
+        .toBe(true);
+}
+
+/**
+ * Wait until the toolbox has a tool expanded, and return which tool it is. The toolbox expands a
+ * tool a moment after the drawer opens, and again a moment after a tool is turned on (so the
+ * person sees the check box tick before "More..." closes, BL-16501).
+ */
+export async function waitForExpandedTool(page: Page): Promise<ToolId> {
+    let expanded: ToolId | undefined;
+    await expect
+        .poll(
+            async () => {
+                expanded = await getExpandedTool(page);
+                return expanded;
+            },
+            {
+                timeout: 30000,
+                message: `The toolbox never expanded a tool. It shows: ${(
+                    await getShownTools(page)
+                ).join(", ")}.`,
+            },
+        )
+        .toBeDefined();
+    return expanded!;
+}
+
+/** Wait until this tool is the expanded one in the toolbox, and fail with `message` if it never is. */
+export async function expectExpandedTool(
+    page: Page,
+    tool: ToolId,
+    message: string,
+): Promise<void> {
+    await expect
+        .poll(async () => getExpandedTool(page), { timeout: 30000, message })
+        .toBe(tool);
 }

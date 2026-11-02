@@ -81,6 +81,11 @@ namespace Bloom.Publish.Rab
         private string BooksRootPath => Path.Combine(ProjectDataFolderPath, "books");
 
         /// <summary>
+        /// The folder where RAB looks for the files of the fonts listed in the .appDef when it builds.
+        /// </summary>
+        internal string FontsFolderPath => Path.Combine(ProjectDataFolderPath, "fonts");
+
+        /// <summary>
         /// Gets the project name stored in the .appDef, falling back to the file name when needed.
         /// </summary>
         public string ProjectName =>

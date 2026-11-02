@@ -54,6 +54,9 @@
     <RestartBuild Condition="!Exists('$(BuildTasksDll)') Or !Exists('$(BuildTasksAwsDll)')">true</RestartBuild>
     <RestartBuild Condition="Exists('$(BuildTasksDll)') And Exists('$(BuildTasksAwsDll)')">false</RestartBuild>
     <OkIfSigningFails>false</OkIfSigningFails>
+    <!-- The command that signs files: given one or more paths, it signs each of them in place. The build agents that
+    can sign have one called 'sign'. Override it to try out signing locally, e.g. with a self-signed certificate. -->
+    <SignCommand Condition="'$(SignCommand)'==''">sign</SignCommand>
   </PropertyGroup>
   <UsingTask TaskName="StampAssemblies" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
   <UsingTask TaskName="MakeWixForDirTree" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
@@ -173,7 +176,7 @@
     <!-- The Freeze Doctor, which ships inside Bloom's installer rather than having one of its own. It
     has to be named here, exactly like WebView2PdfMaker above, BECAUSE this target builds project by
     project rather than building the solution: being in Bloom.sln is not enough. Leaving it out would
-    have failed silently and expensively - the signing step below has ContinueOnError, so an unbuilt
+    have failed silently and expensively - Velopack signs only what is staged, so an unbuilt
     Doctor would simply have been missing from the installer with nothing going red anywhere. -->
     <Exec Command='dotnet build "$(RootDir)\src\BloomFreezeDoctor\BloomFreezeDoctor.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
   <!--If the number of directories between output and OutDir changes, we need a corresponding
@@ -432,8 +435,10 @@
     <Exec Command="dotnet tool install --global BloomBooks.Velopack.Cli --version $(VelopackVersion)" />
   </Target>
 
-  <Target Name="Installer" DependsOnTargets="VersionNumbers; Build; EnsureVelopackCli">
-    <CallTarget Targets="SignExesIfPossible"/>
+  <Target Name="Installer" DependsOnTargets="VersionNumbers; Build; EnsureVelopackCli; StageInstallerContent; PackInstaller"/>
+  <!-- Gathers everything that goes into the installer into ..\output\installer\content\x64, from the build output,
+  DistFiles and the browser output. -->
+  <Target Name="StageInstallerContent" DependsOnTargets="VersionNumbers">
     <!-- the name of the exe must also match the application product name. Use move rather than rename in case the destination
 		already exists from a previous build. Review: we could do this in installer\content after the following copies.-->
     <Exec Command="move /y $(RootDir)\output\$(Configuration)\x64\Bloom.exe $(RootDir)\output\$(Configuration)\x64\Bloom$(channel).exe"/>
@@ -484,8 +489,22 @@
     <Copy SourceFiles="@(DistFiles)" DestinationFolder="..\output\installer\content\arm64\%(RecursiveDir)" />
     <Copy SourceFiles="@(BrowserFiles)" DestinationFolder="..\output\installer\content\arm64\browser\%(RecursiveDir)" />
     -->
-
+  </Target>
+  <!-- Runs Velopack on the staged content (see StageInstallerContent), signing as it goes when this machine can sign
+  (see ChooseSigning). It can be run by itself on content staged some other way, e.g. to try out signing. -->
+  <Target Name="PackInstaller" DependsOnTargets="VersionNumbers; ChooseSigning">
+    <PropertyGroup>
+      <!-- Velopack signs every exe and dll in the package that is not already validly signed (so files signed by
+      Microsoft and other vendors keep their own signatures), and also the Update.exe and Setup.exe it adds.
+      Smart App Control can refuse to load ANY unsigned file that Microsoft does not consider reputable, including
+      long-established third-party DLLs, and Bloom then crashes (BL-16913), so everything we ship must be signed.
+      {{file...}} passes several files (up to signParallel, default 10) to each signing command.
+      connections.dll is not actually a program, so it cannot be signed. -->
+      <VpkSignArgument Condition="'$(CanSign)'=='true'">--signTemplate &quot;$(SignCommand) {{file...}}&quot; --signExclude &quot;connections\.dll$&quot;</VpkSignArgument>
+    </PropertyGroup>
     <Message Text="Running Vpk: $(Version)" Importance="high"  />
+    <Message Text="Velopack will sign the package contents using: $(SignCommand)" Importance="high" Condition="'$(CanSign)'=='true'" />
+    <Message Text="Velopack will NOT sign anything" Importance="high" Condition="'$(CanSign)'!='true'" />
     <Message Text="Using localization from: $(LocalizationFilesDir)" Importance="high" />
     <!-- This is the command that actually runs Velopack. It generates a complete installer as well as full and delta nupkg packages,
       a json file which Velopack uses to figure out what deltas to download, and a RELEASES file which tells old Squirrel-based
@@ -502,7 +521,7 @@
     <!-- For x64, keep it the same as pre-x64-vs-arm64 for continuity. -->
     <!-- Note, the default for exclude is ".*\.pdb", so we must set it to "" to include .pdb files. -->
     <Exec
-      Command="vpk pack --packId Bloom$(channel) --runtime win11-x64 --packVersion $(Version) --packDir ..\output\installer\content\x64 --exclude &quot;&quot; --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder) --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-x64-desktop,webview2 --progressColor &quot;#d65649&quot; --localization &quot;$(LocalizationFilesDir)&quot; --packAuthors &quot;SIL Global&quot; " />
+      Command="vpk pack --packId Bloom$(channel) --runtime win11-x64 --packVersion $(Version) --packDir ..\output\installer\content\x64 --exclude &quot;&quot; --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder) --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-x64-desktop,webview2 --progressColor &quot;#d65649&quot; --localization &quot;$(LocalizationFilesDir)&quot; --packAuthors &quot;SIL Global&quot; $(VpkSignArgument)" />
     <!-- Restore to Create ARM64 installer with dedicated output directory
     Note! restore -x- to double hyphen
     <Exec
@@ -520,32 +539,40 @@
     <Message Text="Copied ARM64 installer to $(InstallerOutputFolder)\BloomInstaller.$(Version)$(dotChannel).arm64.exe" Importance="high"/>
     -->
 
+    <!-- If we signed, make sure nothing slipped through: every exe and dll in the package, and the installer itself,
+    must now carry a valid signature. SignatureCheckArguments is only for trying this out locally with a
+    self-signed certificate; see check-signatures.ps1. -->
+    <Exec Condition="'$(CanSign)'=='true'"
+      Command='powershell -NoProfile -ExecutionPolicy Bypass -File "$(RootDir)\build\check-signatures.ps1" -Package "$(InstallerOutputFolder)\$(VelopackFullPkgX64)" -Installer "$(InstallerOutputFolder)\$(InstallerFileNameX64)" $(SignatureCheckArguments)' />
   </Target>
-  <Target Name="SignExesIfPossible">
+  <!-- Decides whether PackInstaller signs things, by trying to sign one throwaway file. Only some build agents can
+  sign. On TeamCity, failing to sign is an error unless /p:OkIfSigningFails=true is passed; elsewhere (e.g. a
+  developer's machine) we just build an unsigned installer. -->
+  <Target Name="ChooseSigning">
     <PropertyGroup>
-      <ContinueOnExeSignError Condition="$(isOnTeamCity) == true AND $(OkIfSigningFails) == false">false</ContinueOnExeSignError>
-      <ContinueOnExeSignError Condition="$(isOnTeamCity) == false OR $(OkIfSigningFails) == true">true</ContinueOnExeSignError>
+      <SigningProbeFolder>$(RootDir)\output\installer\signingProbe</SigningProbeFolder>
+      <SigningRequired Condition="$(isOnTeamCity) == true AND $(OkIfSigningFails) == false">true</SigningRequired>
+      <SigningRequired Condition="'$(SigningRequired)'==''">false</SigningRequired>
     </PropertyGroup>
-    <!-- Sign x64 executables -->
-    <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-    <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-    <!-- The Freeze Doctor. It has no installer of its own: it ships inside Bloom's installer and is
-         switched on from the debug menu, so this is the only place it gets signed. An unsigned exe
-         inside a signed installer is what behavioural antivirus objects to, and it matters more than
-         usual for this one, which opens handles to other processes and writes memory dumps. -->
-    <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\BloomFreezeDoctor.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-    <!-- restore to Sign ARM64 executables
-    <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-    <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-    -->
+    <RemoveDir Directories="$(SigningProbeFolder)" />
+    <!-- Any unsigned exe will do; this one is always staged. -->
+    <Copy SourceFiles="$(RootDir)\output\installer\content\x64\BloomPdfMaker.exe" DestinationFolder="$(SigningProbeFolder)" />
+    <Exec Command='$(SignCommand) "$(SigningProbeFolder)\BloomPdfMaker.exe"' ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="SigningProbeExitCode" />
+    </Exec>
+    <RemoveDir Directories="$(SigningProbeFolder)" />
+    <PropertyGroup>
+      <CanSign Condition="'$(SigningProbeExitCode)'=='0'">true</CanSign>
+      <CanSign Condition="'$(SigningProbeExitCode)'!='0'">false</CanSign>
+    </PropertyGroup>
+    <Error Condition="'$(CanSign)'!='true' AND '$(SigningRequired)'=='true'"
+      Text="Could not sign files with '$(SignCommand)' (exit code $(SigningProbeExitCode)). Pass /p:OkIfSigningFails=true to build an unsigned installer anyway." />
   </Target>
-  <!-- This target is designed to be an target on TeamCity (but using Upload is more likely) that includes target Installer. Review: Velopack itself
-	can sign things if passed the right command line arguments. Is that a better thing to do? -->
+  <!-- This target is designed to be an target on TeamCity (but using Upload is more likely) that includes target Installer.
+  Velopack does the actual signing, inside PackInstaller; this just insists that it happened. -->
   <Target Name="SignInstaller" DependsOnTargets="VersionNumbers; Installer">
-    <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileNameX64)"'></Exec>
-    <!-- <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileNameArm64)"'></Exec> -->
+    <Error Condition="'$(CanSign)'!='true'" Text="This build could not sign the installer and its contents, so it must not be uploaded." />
     <Message Text="Signed x64 Velopack installer at $(InstallerOutputFolder)\$(InstallerFileNameX64)" Importance="high"/>
-    <!-- <Message Text="Signed ARM64 Velopack installer at $(InstallerOutputFolder)\$(InstallerFileNameArm64)" Importance="high"/> -->
   </Target>
   <Target Name="Upload" DependsOnTargets="VersionNumbers; SignInstaller" >
     <CallTarget Targets="UploadCore"/>
@@ -645,12 +672,9 @@
     </ItemGroup>
     <Delete Files="@(FilesToDelete)" />
   </Target>
-  <Target Name="SignIfPossible" DependsOnTargets="VersionNumbers; Installer">
-    <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileNameX64)"' ContinueOnError="true"></Exec>
-    <!-- Restore for Arm64
-    <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileNameArm64)"' ContinueOnError="true"></Exec>
-    -->
-  </Target>
+  <!-- Installer already signs whatever it can (see PackInstaller), so this is just Installer under the name
+  UploadSignIfPossible and build configurations know. -->
+  <Target Name="SignIfPossible" DependsOnTargets="VersionNumbers; Installer" />
   <Target Name="DownloadDistFiles">
     <Message Text="Downloading Bloom.chm help file" Importance="high"  />
     <!-- NB: some configurations on TeamCity may also get a version of this from

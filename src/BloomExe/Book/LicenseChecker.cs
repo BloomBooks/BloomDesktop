@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Bloom.Api;
+using Bloom.ToPalaso;
 using L10NSharp;
 using SIL.Code;
 using SIL.IO;
@@ -235,9 +236,12 @@ namespace Bloom.Book
         {
             if (contentId == key)
                 return true;
-            if (!contentId.EndsWith("*"))
+            if (!contentId.EndsWith("*", StringComparison.Ordinal))
                 return false;
-            return key.StartsWith(contentId.Substring(0, contentId.Length - 1));
+            return key.StartsWith(
+                contentId.Substring(0, contentId.Length - 1),
+                StringComparison.Ordinal
+            );
         }
 
         public static void SetOfflineFolder(string folderPath)
@@ -314,7 +318,7 @@ namespace Bloom.Book
             );
             // In real life we always have a book and can get nicer names. I put the fallback in for testing.
             var langs = string.Join(
-                CultureInfo.CurrentCulture.TextInfo.ListSeparator + " ",
+                UserCulture.Current.TextInfo.ListSeparator + " ",
                 problems.Select(x =>
                     book == null
                         ? IetfLanguageTag.GetLocalizedLanguageName(x, "")

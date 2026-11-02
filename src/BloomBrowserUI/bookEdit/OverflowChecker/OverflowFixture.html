@@ -1,64 +1,31 @@
-<!doctype html>
-<!-- Generated from corresponding pug by hand. Tests of overflow feature in Bloom that puts a red background in a field if there's too much content--><head
-></head>
+<!DOCTYPE html>
+<!-- OverflowFixture.html is generated from OverflowFixture.pug. Don't edit the .html file by hand; change the .pug and regenerate it.-->
+<head></head>
 <body>
-    <!-- Test#0-->
-    <div
-        class="myTest bloom-editable bloom-content1"
-        lang="z"
-        contenteditable="true"
-        name="Default font bloom-editable with no styles doesn't overflow"
-    >
-        Test texty
-    </div>
-    <!-- Test#1-->
-    <div
-        class="myTest bloom-editable bloom-content1 expectToOverflow"
-        lang="z"
-        contenteditable="true"
-        name="Arial bloom-editable with x-large text and small height should overflow"
-        style="font-family: Arial; font-size: x-large; height: 18px"
-    >
-        Test texty
-    </div>
-    <!-- Test#2-->
-    <div
-        class="myTest bloom-editable bloom-content1 expectToOverflow"
-        lang="z"
-        contenteditable="true"
-        name="Default font bloom-editable with large text and small height should overflow"
-        style="font-size: 20pt; height: 21px; overflow: visible"
-    >
-        Test texty
-    </div>
-    <!-- Test#3-->
-    <div
-        class="myTest bloom-editable bloom-content1"
-        lang="z"
-        contenteditable="true"
-        name="Arial bloom-editable with no other styles should not overflow"
-        style="font-family: Arial"
-    >
-        Test texty
-    </div>
-    <!-- Test#4-->
-    <div
-        class="myTest bloom-editable bloom-content1"
-        lang="z"
-        contenteditable="true"
-        name="Arial bloom-editable with fixed height should not overflow"
-        style="font-family:Arial; height=50px;"
-    >
-        Test texty
-    </div>
-    <!-- Test#5-->
-    <div
-        class="myTest bloom-editable bloom-content1"
-        lang="z"
-        contenteditable="true"
-        name="Arial bloom-editable with only some padding should not overflow"
-        style="font-family: Arial; padding: 2px"
-    >
-        Test texty
-    </div>
+  <!-- Test#0-->
+  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Default font bloom-editable with no styles doesn't overflow">Test texty
+  </div>
+  <!-- Test#1-->
+  <div class="myTest bloom-editable bloom-content1 expectToOverflow" lang="z" contenteditable="true" name="Arial bloom-editable with x-large text and small height should overflow" style="font-family:Arial; font-size:x-large;height:18px;">Test texty
+  </div>
+  <!-- Test#2-->
+  <div class="myTest bloom-editable bloom-content1 expectToOverflow" lang="z" contenteditable="true" name="Default font bloom-editable with large text and small height should overflow" style="font-size:20pt;height:21px;overflow:visible;">Test texty
+  </div>
+  <!-- Test#3-->
+  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Arial bloom-editable with no other styles should not overflow" style="font-family:Arial;">Test texty
+  </div>
+  <!-- Test#4-->
+  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Arial bloom-editable with fixed height should not overflow" style="font-family:Arial; height:50px;">Test texty
+  </div>
+  <!-- Test#5-->
+  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Arial bloom-editable with only some padding should not overflow" style="font-family:Arial; padding: 2px;">Test texty
+  </div>
+  <!-- Test#6 (BL-6338): Bloom's auto-sizing fits some boxes (canvas text boxes, the cover title) to the-->
+  <!-- visible text, leaving out room below the baseline that the font reserves but this text doesn't use.-->
+  <!-- Cutting off only that empty space is not overflow.-->
+  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Arial text with no descenders doesn't overflow when only unused descent space is cut off" style="font-family:Arial; font-size:20px; height:20px;">summer
+  </div>
+  <!-- Test#7: the same box, but the text has descenders, and they are cut off.-->
+  <div class="myTest bloom-editable bloom-content1 expectToOverflow" lang="z" contenteditable="true" name="Arial text whose descenders are cut off should overflow" style="font-family:Arial; font-size:20px; height:20px;">happy puppy
+  </div>
 </body>

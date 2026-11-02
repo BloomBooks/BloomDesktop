@@ -1,6 +1,7 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
-import { get, postString } from "../../utils/bloomApi";
+import { get, postString, postThatMightNavigate } from "../../utils/bloomApi";
 import $ from "jquery";
+import { getPageIFrame, getPageIframeBody } from "../../utils/shared";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -28,9 +29,7 @@ export class EditableDivUtils {
     }
 
     public static getElementSelectionIndex(editableDiv: HTMLElement): number {
-        const page: HTMLIFrameElement | null = <HTMLIFrameElement | null>(
-            parent.window.document.getElementById("page")
-        );
+        const page = getPageIFrame();
         if (!page || !page.contentWindow) return -1; // unit testing? Anyway there is no selection, so not in editableDiv.
 
         const selection = page.contentWindow.getSelection();
@@ -46,9 +45,7 @@ export class EditableDivUtils {
     }
 
     public static selectAtOffset(node: Node, offset: number): void {
-        const page: HTMLIFrameElement | null = <HTMLIFrameElement | null>(
-            parent.window.document.getElementById("page")
-        );
+        const page = getPageIFrame();
         if (!page || !page.contentWindow) return;
         const iframeWindow: Window = page.contentWindow;
         const selection1 = iframeWindow.getSelection();
@@ -198,22 +195,12 @@ export class EditableDivUtils {
               );
     }
 
-    public static getPageFrame(): HTMLIFrameElement | null {
-        const doc = window.top?.document;
-        return doc ? <HTMLIFrameElement>doc.getElementById("page") : null;
-    }
-
-    // The body of the editable page, a root for searching for document content.
-    public static getPage(): JQuery {
-        const page = this.getPageFrame();
-        if (!page || !page.contentWindow) return $();
-        return $(page.contentWindow.document.body);
-    }
-
     // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
     // If target is supplied, we only want a scale based on the page scaler if the target is inside it.
     public static getPageScale(target?: HTMLElement): number {
-        const page = this.getPage();
+        // See getPageIFrame() in shared.ts for why we reach the page through parent.
+        const pageBody = getPageIframeBody();
+        const page = pageBody ? $(pageBody) : $();
         let scaler: HTMLElement | undefined = undefined;
         const getScaler = () => page.find("div#page-scaling-container").get(0);
         if (target) {
@@ -274,6 +261,25 @@ export class EditableDivUtils {
                     scale;
             },
         });
+    }
+
+    // Bloom generates the sentence about the original book's copyright and license into a
+    // data-derived div on the credits page, where the user cannot touch it. This asks the server
+    // to hand the text over: it stores the current wording in the data div, stops generating the
+    // sentence, and rebuilds the credits page with that spot as an ordinary editable field.
+    // The server saves the page and reloads it, so we have nothing to change here ourselves.
+    // The reload can cut the request off, which must not be reported as an error.
+    public static unlockOriginalCredits() {
+        postThatMightNavigate(
+            "copyrightAndLicense/unlockOriginalCopyrightNotice",
+        );
+    }
+
+    // Close the sentence about the original book again. The wording the user has just typed is
+    // theirs from now on; saving the page stores it in the data div, and the page comes back
+    // with that spot read-only, as it is on every other visit.
+    public static relockOriginalCredits() {
+        postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
     }
 
     public static pasteImageCredits() {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -14,10 +15,12 @@ using Bloom.SubscriptionAndFeatures;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using BloomTests.Book;
+using BloomTests.ToPalaso;
 using NUnit.Framework;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
+using SIL.Reporting;
 
 // It would be nice to have some tests for the new FirebaseLogin code, too, but so far
 // we have not been able to get that code to run except after starting Bloom fully.
@@ -128,11 +131,17 @@ namespace BloomTests.WebLibraryIntegration
             BookUpload.IsDryRun = false;
             _downloader = new BookDownload(new BloomS3Client(BloomS3Client.UnitTestBucketName));
             _downloader.BookDownLoaded += (sender, args) => _downloadedBooks.Add(args.BookDetails);
+
+            // BloomLibraryBookApiClient logs the details of a failed API call (status, timeout,
+            // error) only to Bloom's log, which writes nothing until it is initialized.
+            // UploadOrFailWithReasonAsync quotes those details when an upload fails.
+            Logger.Init();
         }
 
         [TearDown]
         public void TearDown()
         {
+            Logger.ShutDown();
             _htmlThumbNailer.Dispose();
             _workFolder.Dispose();
             RetiredTestServers.Retire(s_bloomServer);
@@ -191,6 +200,49 @@ namespace BloomTests.WebLibraryIntegration
         /// Regression test. Using ChangeExtension to append the PDF truncates the name when there is a period.
         /// </summary>
         [Test]
+        public void DescribeApiCallsInLog_KeepsStatusAndError_DropsBodiesHeadersAndQueryStrings()
+        {
+            // Shaped like what BloomLibraryBookApiClient.LogApiError writes for a failed status poll.
+            var log = string.Join(
+                "\r\n",
+                "09:40:30\tBloomLibraryBookApiClient is beginning to poll for long-running https://api.bloomlibrary.org/v1/books/new:upload-start.",
+                "09:42:09\tBloomLibraryBookApiClient call failed:",
+                "  Request:",
+                "    Resource: https://api.example.net/runtime/instances/abc?taskHub=h&code=SECRETKEY",
+                "    Body: {\"name\":\"Some title\"}",
+                "  Response:",
+                "    StatusCode: 0",
+                "    Content: {\"credentials\":\"SECRETCREDS\"}",
+                "    ResponseStatus: TimedOut",
+                "    StatusDescription: ",
+                "    ErrorMessage: The operation has timed out.",
+                "    ErrorException: System.Net.WebException: The operation has timed out.",
+                "    Headers: ",
+                "      Operation-Location: https://api.example.net/x?code=SECRETKEY",
+                "  Original Request:",
+                "    Resource: v1/books/new:upload-start",
+                "09:42:10\tSomething unrelated"
+            );
+            Assert.That(log, Does.Contain("SECRETKEY"), "sanity check: the sample holds a key");
+
+            var description = BookUploadAndDownloadTests.DescribeApiCallsInLog(log);
+
+            Assert.That(description, Does.Contain("is beginning to poll"));
+            Assert.That(description, Does.Contain("call failed"));
+            Assert.That(
+                description,
+                Does.Contain("Resource: https://api.example.net/runtime/instances/abc?...")
+            );
+            Assert.That(description, Does.Contain("Resource: v1/books/new:upload-start"));
+            Assert.That(description, Does.Contain("StatusCode: 0"));
+            Assert.That(description, Does.Contain("ResponseStatus: TimedOut"));
+            Assert.That(description, Does.Contain("ErrorMessage: The operation has timed out."));
+            Assert.That(description, Does.Not.Contain("SECRET"));
+            Assert.That(description, Does.Not.Contain("Some title"));
+            Assert.That(description, Does.Not.Contain("Something unrelated"));
+        }
+
+        [Test]
         public void BookWithPeriodInTitle_DoesNotGetTruncatedPdfName()
         {
 #if __MonoCS__
@@ -227,7 +279,7 @@ namespace BloomTests.WebLibraryIntegration
             File.WriteAllText(jsonPath, newJson);
             _bloomLibraryBookApiClient.TestOnly_SetUserAccountInfo();
 
-            var bookObjectId = await _uploader.UploadBook_ForUnitTestAsync(bookFolder);
+            var (bookObjectId, _) = await UploadOrFailWithReasonAsync(bookFolder);
             try
             {
                 Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
@@ -452,9 +504,9 @@ namespace BloomTests.WebLibraryIntegration
                     Subscription = new Subscription("Test-Expired-005691-4935"), // expired 2/3/2025
                 }
             );
-            var (bookObjectId, s3PrefixUploadedTo) = await _uploader.UploadBook_ForUnitTestAsync(
+            var (bookObjectId, s3PrefixUploadedTo) = await UploadOrFailWithReasonAsync(
                 bookFolder,
-                collectionSettings: settings
+                settings
             );
             try
             {
@@ -483,7 +535,10 @@ namespace BloomTests.WebLibraryIntegration
                 var record = _bloomLibraryBookApiClient.TestOnly_GetSingleBookRecord(metadata.Id);
                 string baseUrl = record.baseUrl;
                 Assert.That(
-                    baseUrl.StartsWith("https://s3.amazonaws.com/BloomLibraryBooks"),
+                    baseUrl.StartsWith(
+                        "https://s3.amazonaws.com/BloomLibraryBooks",
+                        StringComparison.Ordinal
+                    ),
                     "baseUrl should start with s3 prefix"
                 );
 
@@ -554,10 +609,7 @@ namespace BloomTests.WebLibraryIntegration
             int fileCount = Directory.GetFiles(bookFolder).Length;
             _bloomLibraryBookApiClient.TestOnly_SetUserAccountInfo();
 
-            var (bookObjectId, s3PrefixUploadedTo) = await _uploader.UploadBook_ForUnitTestAsync(
-                bookFolder,
-                new NullProgress()
-            );
+            var (bookObjectId, s3PrefixUploadedTo) = await UploadOrFailWithReasonAsync(bookFolder);
             try
             {
                 Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
@@ -739,7 +791,8 @@ namespace BloomTests.WebLibraryIntegration
             var count = Directory
                 .GetFiles(bookPath)
                 .Count(p =>
-                    !p.EndsWith(".bak") && !p.Contains(BookStorage.PrefixForCorruptHtmFiles)
+                    !p.EndsWith(".bak", StringComparison.Ordinal)
+                    && !p.Contains(BookStorage.PrefixForCorruptHtmFiles)
                 );
             for (int i = 0; i < 30; i++)
             {
@@ -751,6 +804,62 @@ namespace BloomTests.WebLibraryIntegration
                 Thread.Sleep(100);
             }
             throw new ApplicationException("S3 is very slow today");
+        }
+
+        /// <summary>
+        /// Upload through the real uploader and fail at once if no book id came back, quoting the
+        /// errors the uploader reported. The uploader catches every failure (network, S3, the
+        /// bloomlibrary API) and reports it only through its progress, so without this a failed
+        /// upload shows up as nothing more than "Expected: False But was: True". Only the error
+        /// lines are quoted, not verbose output or stack traces, because CI logs are public.
+        /// The same goes for what the API client logged: see <see cref="DescribeApiCallsInLog"/>.
+        /// </summary>
+        private async Task<(string bookObjectId, string s3Prefix)> UploadOrFailWithReasonAsync(
+            string bookFolder,
+            CollectionSettings collectionSettings = null
+        )
+        {
+            var progress = new RecordingProgress();
+            var result = await _uploader.UploadBook_ForUnitTestAsync(
+                bookFolder,
+                progress,
+                collectionSettings: collectionSettings
+            );
+            Assert.That(
+                string.IsNullOrEmpty(result.Item1) || result.Item1 == "quiet",
+                Is.False,
+                "The upload failed. The uploader reported: "
+                    + (
+                        progress.Errors.Count == 0
+                            ? "(no errors)"
+                            : string.Join(" | ", progress.Errors)
+                    )
+                    + Environment.NewLine
+                    + "The API client logged:"
+                    + Environment.NewLine
+                    + DescribeApiCallsInLog(Logger.LogText)
+            );
+            return result;
+        }
+
+        /// <summary>
+        /// The lines of Bloom's log that say which bloomlibrary API calls were made and how each
+        /// failed one failed: when it happened, the endpoint, the HTTP status, RestSharp's
+        /// ResponseStatus (e.g. TimedOut) and its error message. Request and response bodies and
+        /// headers are left out, and so is every query string, because the status URL the service
+        /// hands back can carry an Azure function key and CI logs are public.
+        /// </summary>
+        internal static string DescribeApiCallsInLog(string log)
+        {
+            var wanted = new Regex(
+                @"BloomLibraryBookApiClient|^\s*(Resource|StatusCode|ResponseStatus|StatusDescription|ErrorMessage):"
+            );
+            var queryString = new Regex(@"\?\S*");
+            var lines = log.Split('\n')
+                .Where(line => wanted.IsMatch(line))
+                .Select(line => queryString.Replace(line.TrimEnd('\r'), "?..."))
+                .ToList();
+            return lines.Count == 0 ? "(nothing)" : string.Join(Environment.NewLine, lines);
         }
 
         private string GetParentOfS3Prefix(string prefix)

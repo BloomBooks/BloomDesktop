@@ -237,6 +237,7 @@ namespace Bloom.Workspace
             StartupScreenManager.ClearStartupMilestone("collectionButtonsDrawn");
             StartupScreenManager.ClearStartupMilestone("teamSyncCompleted");
             StartupScreenManager.ClearStartupMilestone("startupBookSelectionReady");
+            StartupScreenManager.ClearStartupMilestone("startupBookSelected");
             if (_tcManager?.CurrentCollectionEvenIfDisconnected == null)
             {
                 StartupScreenManager.StartupMilestoneReached("teamSyncCompleted");
@@ -670,6 +671,12 @@ window.showWorkspaceInitializationFailure = function(message) {
                 SaveCurrentBookPath(null);
 
                 MiscUtils.SuppressUnusedExceptionVarWarning(e);
+            }
+            finally
+            {
+                // Until now this has been clearing and restoring the selection, so anything that
+                // selects a book of its own (an e2e test) must wait for this (see isCollectionReady).
+                StartupScreenManager.StartupMilestoneReached("startupBookSelected");
             }
         }
 
@@ -1153,7 +1160,12 @@ window.showWorkspaceInitializationFailure = function(message) {
             // until L10nSharp changes to allow dynamic response to setting change
             // Skip the restart at startup (no project loaded); CollectionChooserApi
             // handles that case by reopening the dialog to refresh the language list.
-            if (Current != null)
+            // Skip it in e2e test mode too: a self-restart keeps the launch options
+            // (Program.StartupArgumentsToForward) but not the collection argument, and starts a
+            // new process the test is not following. The e2e fixture provides the restart
+            // instead (bloomApp.restart in src/BloomE2E), and the setting is already saved
+            // above, so the relaunched Bloom picks it up at startup.
+            if (Current != null && !Program.RunningE2eTests)
                 Program.RestartBloom(false);
         }
 
@@ -1274,6 +1286,14 @@ window.showWorkspaceInitializationFailure = function(message) {
             // In the single-browser architecture, many UI surfaces don't fully refresh their
             // localized strings without a full workspace reload. Reopening the current project
             // gives us behavior similar to collection switching and guarantees consistency.
+            //
+            // Note that this reopens the project in the SAME process. Language names are one
+            // thing that does not come back fresh: LibPalaso caches them in a static dictionary
+            // keyed by language and metadata language but not by the UI culture, and the name it
+            // computes depends on the UI culture (CultureInfo.DisplayName is rendered in it). So
+            // a language name already looked up keeps the wording it had under the previous UI
+            // language. Anyone making the UI language change without reopening at all should
+            // expect more of this, not less.
             Application.Idle -= ReopenProjectAfterUiLanguageChange;
             Application.Idle += ReopenProjectAfterUiLanguageChange;
         }
@@ -1370,16 +1390,20 @@ window.showWorkspaceInitializationFailure = function(message) {
             return (float)translatedCount / (float)totalCount;
         }
 
+        /// <summary>
+        /// Shorten a UI-language menu entry for the language button by dropping the part in
+        /// parentheses, e.g. "ไทย (Thai)" becomes "ไทย".
+        /// </summary>
         public static string GetShortenedLanguageName(string itemText)
         {
-            var idxChinese = itemText.IndexOf(" (Chinese");
+            var idxChinese = itemText.IndexOf(" (Chinese", StringComparison.Ordinal);
             if (idxChinese > 0)
             {
                 return itemText.Substring(0, idxChinese);
             }
             else
             {
-                var idxCountry = itemText.IndexOf(" (");
+                var idxCountry = itemText.IndexOf(" (", StringComparison.Ordinal);
                 if (idxCountry > 0)
                     return itemText.Substring(0, idxCountry);
                 else
@@ -1528,6 +1552,27 @@ window.showWorkspaceInitializationFailure = function(message) {
             }
         }
 
+        /// <summary>
+        /// Opens the React Collection Settings dialog (rendered by the workspace's App), on the
+        /// page with the given key if there is one.
+        /// </summary>
+        public void OpenSettingsDialog(string pageKey = null)
+        {
+            dynamic dialogParameters = new DynamicJson();
+            if (pageKey != null)
+                dialogParameters.initialPageKey = pageKey;
+            _webSocketServer.LaunchDialog("CollectionSettingsDialog", dialogParameters);
+        }
+
+        /// <summary>
+        /// Closes the collection and opens it again, as the Settings dialog does when a change
+        /// needs a restart.
+        /// </summary>
+        public void ReopenCollection()
+        {
+            Invoke(ReopenCurrentProject);
+        }
+
         public void CheckForInvalidBranding()
         {
             if (_collectionSettings.InvalidBranding == null || _collectionSettings.IgnoreExpiration)
@@ -1538,7 +1583,7 @@ window.showWorkspaceInitializationFailure = function(message) {
             StartupScreenManager.AddStartupAction(
                 () =>
                 {
-                    OpenLegacySettingsDialog("subscription", forFixingEnterpriseSubscription: true);
+                    OpenSettingsDialog("subscription");
                 },
                 shouldHideSplashScreen: true,
                 lowPriority: true

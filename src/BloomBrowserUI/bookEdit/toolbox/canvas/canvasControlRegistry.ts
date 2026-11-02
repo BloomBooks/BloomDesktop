@@ -29,6 +29,7 @@
 // rejections are not dropped when handlers are called from click events.
 
 import * as React from "react";
+import { SvgIconProps } from "@mui/material";
 import { default as ArrowDownwardIcon } from "@mui/icons-material/ArrowDownward";
 import { default as ArrowUpwardIcon } from "@mui/icons-material/ArrowUpward";
 import { default as CheckIcon } from "@mui/icons-material/Check";
@@ -37,20 +38,24 @@ import { default as CopyIcon } from "@mui/icons-material/ContentCopy";
 import { default as PasteIcon } from "@mui/icons-material/ContentPaste";
 import { default as CopyrightIcon } from "@mui/icons-material/Copyright";
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
+import { default as FlipIcon } from "@mui/icons-material/Flip";
+import { default as LayersOutlinedIcon } from "@mui/icons-material/LayersOutlined";
+import { default as RotateRightIcon } from "@mui/icons-material/RotateRight";
 import { default as SearchIcon } from "@mui/icons-material/Search";
 import { default as VolumeUpIcon } from "@mui/icons-material/VolumeUp";
 import { getWorkspaceBundleExports } from "../../js/workspaceFrames";
 import {
     doImageCommand,
-    getImageFromCanvasElement,
     getImageFromContainer,
-    getImageTransparencyMode,
     getImageUrlFromImageContainer,
     HandleImageError,
     getOwningPageBackgroundColor,
+    isOverlayOnBackgroundImage,
     isPlaceHolderImage,
     kImageContainerClass,
     pageBackgroundNeedsTransparency,
+    refreshImgTransparentParam,
+    refreshTransparentParamsInBloomCanvas,
     setImgTransparentParam,
 } from "../../js/bloomImages";
 import { doVideoCommand } from "../../js/bloomVideo";
@@ -62,6 +67,13 @@ import {
 import { CogIcon } from "../../js/CogIcon";
 import { DuplicateIcon } from "../../js/DuplicateIcon";
 import { FillSpaceIcon } from "../../js/FillSpaceIcon";
+import {
+    BringForwardIcon,
+    BringToFrontIcon,
+    SendBackwardIcon,
+    SendToBackIcon,
+} from "../../js/LayerIcons";
+import type { ZOrderMove } from "../../js/canvasElementManager/CanvasElementZOrder";
 import { LinkIcon } from "../../js/LinkIcon";
 import { MissingMetadataIcon } from "../../js/MissingMetadataIcon";
 import StyleEditor from "../../StyleEditor/StyleEditor";
@@ -114,7 +126,12 @@ const getImageContainer = (ctx: IControlContext): HTMLElement | undefined => {
     if (imageContainer) {
         return imageContainer;
     }
-    return getImageFromCanvasElement(ctx.canvasElement)
+    // Some elements have the img as a direct child with no bloom-imageContainer. Older books
+    // have canvas elements like that, and an inline image in a text block is like that too
+    // (its wrapper is passed in here as ctx.canvasElement). Such an element serves as its own
+    // image container. buildCanvasElementControlRegistryContext falls back the same way when
+    // it sets hasImage, and hasImage decides whether these commands are offered.
+    return getImageFromContainer(ctx.canvasElement)
         ? ctx.canvasElement
         : undefined;
 };
@@ -478,7 +495,98 @@ export const makeChooseAudioMenuItemForImage = (
     };
 };
 
+// One command row of the "Layer" submenu. The command itself runs in the page frame's
+// CanvasElementManager, which reorders the DOM and keeps the Comical bubble levels in step.
+const makeLayerCommandRow = (
+    id: "bringForward" | "bringToFront" | "sendBackward" | "sendToBack",
+    l10nId: string,
+    englishLabel: string,
+    icon: React.FunctionComponent<SvgIconProps>,
+    shortcutDisplay: string,
+    move: ZOrderMove,
+    enabled: (ctx: IControlContext) => boolean,
+): IControlMenuCommandRow => ({
+    id,
+    l10nId,
+    englishLabel,
+    icon: React.createElement(icon, null),
+    shortcut: {
+        id: `${id}.defaultShortcut`,
+        display: shortcutDisplay,
+    },
+    availability: { enabled },
+    onSelect: () => {
+        getCanvasElementManager()?.moveActiveCanvasElementInZOrder(move);
+    },
+});
+
+// The "Layer" submenu: the four commands that change where the selected canvas element sits
+// in the stacking order (BL-15992). The forward commands are disabled when the element is
+// already at the front, the backward ones when it is already at the back; the whole submenu
+// is disabled by layerAvailabilityRules when there is nothing to move past. The keyboard
+// shortcuts shown here are handled by CanvasElementKeyboardProvider.
+// Exported for unit testing.
+export const makeLayerMenuItem = (
+    _ctx: IControlContext,
+    _runtime: IControlRuntime,
+): IControlMenuCommandRow => ({
+    id: "layer",
+    l10nId: "EditTab.Toolbox.CanvasTool.Layer",
+    englishLabel: "Layer",
+    onSelect: () => {},
+    subMenuItems: [
+        makeLayerCommandRow(
+            "bringForward",
+            "EditTab.Toolbox.CanvasTool.Layer.BringForward",
+            "Bring Forward",
+            BringForwardIcon,
+            "Ctrl+]",
+            "forward",
+            (ctx) => ctx.canBringForward,
+        ),
+        makeLayerCommandRow(
+            "bringToFront",
+            "EditTab.Toolbox.CanvasTool.Layer.BringToFront",
+            "Bring to Front",
+            BringToFrontIcon,
+            "Ctrl+Shift+]",
+            "front",
+            (ctx) => ctx.canBringForward,
+        ),
+        makeLayerCommandRow(
+            "sendBackward",
+            "EditTab.Toolbox.CanvasTool.Layer.SendBackward",
+            "Send Backwards",
+            SendBackwardIcon,
+            "Ctrl+[",
+            "backward",
+            (ctx) => ctx.canSendBackward,
+        ),
+        makeLayerCommandRow(
+            "sendToBack",
+            "EditTab.Toolbox.CanvasTool.Layer.SendToBack",
+            "Send to Back",
+            SendToBackIcon,
+            "Ctrl+Shift+[",
+            "back",
+            (ctx) => ctx.canSendBackward,
+        ),
+    ],
+});
+
 export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
+    layer: {
+        kind: "command",
+        id: "layer",
+        l10nId: "EditTab.Toolbox.CanvasTool.Layer",
+        englishLabel: "Layer",
+        icon: LayersOutlinedIcon,
+        // Only a submenu; selecting the row itself does nothing.
+        action: () => {},
+        menu: {
+            buildMenuItem: makeLayerMenuItem,
+        },
+    },
     chooseImage: {
         kind: "command",
         id: "chooseImage",
@@ -560,14 +668,74 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         id: "resetImage",
         l10nId: "EditTab.Image.Reset",
         englishLabel: "Reset Image",
-        iconScale: 0.9,
-        icon: React.createElement("img", {
-            src: "/bloom/images/reset image black.svg",
-            alt: "",
-            className: "canvas-context-menu-monochrome-icon",
-        }),
+        // No icon: the row reads better without one, and the command is the odd one out in
+        // its group, because it undoes the commands above it.
         action: () => {
-            getCanvasElementManager()?.resetCropping();
+            getCanvasElementManager()?.resetImage();
+        },
+    },
+    // "Rotate right" — 90 degrees clockwise. What rotates depends on what the image is
+    // part of, because the two cases want different things:
+    // - An ordinary image canvas element rotates as a whole, using the same rotation the
+    //   rotate handle on the control frame sets, so the two commands cannot disagree.
+    // - A background image fills its bloom-canvas and cannot be rotated as a box, so the
+    //   picture inside rotates and its own box is reshaped to match. Any cropping is kept: the
+    //   cropped region rotates with the picture and is scaled to fit the page.
+    rotateRight: {
+        kind: "command",
+        id: "rotateRight",
+        l10nId: "EditTab.Image.RotateRight",
+        englishLabel: "Rotate right",
+        icon: RotateRightIcon,
+        action: () => {
+            getCanvasElementManager()?.rotateActiveImageRight90Degrees();
+        },
+    },
+    // "Flip" — mirror the picture. This always applies to the picture rather than to the
+    // canvas element, because mirroring a box moves it without changing how it looks.
+    // The axes are the ones the user sees on screen, whatever way the picture is rotated.
+    flipImage: {
+        kind: "command",
+        id: "flipImage",
+        l10nId: "EditTab.Image.Flip",
+        englishLabel: "Flip",
+        icon: FlipIcon,
+        action: () => {},
+        menu: {
+            buildMenuItem: () => {
+                return {
+                    id: "flipImage",
+                    l10nId: "EditTab.Image.Flip",
+                    englishLabel: "Flip",
+                    onSelect: () => {},
+                    subMenuItems: [
+                        {
+                            l10nId: "EditTab.Image.FlipHorizontal",
+                            englishLabel: "Flip horizontal",
+                            icon: React.createElement(FlipIcon, null),
+                            onSelect: () => {
+                                getCanvasElementManager()?.flipActiveImage(
+                                    "horizontal",
+                                );
+                            },
+                        },
+                        {
+                            l10nId: "EditTab.Image.FlipVertical",
+                            englishLabel: "Flip vertical",
+                            // The same icon rotated 90 degrees, so that the pair reads as
+                            // one idea about two axes. MUI has no vertical flip icon.
+                            icon: React.createElement(FlipIcon, {
+                                style: { transform: "rotate(90deg)" },
+                            }),
+                            onSelect: () => {
+                                getCanvasElementManager()?.flipActiveImage(
+                                    "vertical",
+                                );
+                            },
+                        },
+                    ],
+                };
+            },
         },
     },
     // "Edit with AI…" — the entry point for the AI Image Editor integration. This command
@@ -771,6 +939,12 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                 bgImg.setAttribute("data-book", currentDataBook);
             }
 
+            // The srcs we swapped carry the transparent param suited to each image's old role.
+            // An overlay on a real background image gets Auto transparency even on a white page,
+            // but a background does not; and if there was no real background before, every other
+            // overlay on this canvas now sits on one. So recompute them all (BL-16993).
+            refreshTransparentParamsInBloomCanvas(bloomCanvas);
+
             if (!haveRealBgImage) {
                 canvasElementManager.deleteCurrentCanvasElement();
             }
@@ -810,14 +984,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                 // After mutating the img's classes, recompute and apply the transparent param.
                 function applyTransparencyParam() {
                     if (!img) return;
-                    const bgColor = getOwningPageBackgroundColor(img);
-                    setImgTransparentParam(
-                        img,
-                        getImageTransparencyMode(
-                            img,
-                            pageBackgroundNeedsTransparency(bgColor),
-                        ),
-                    );
+                    refreshImgTransparentParam(img);
                 }
 
                 // Every explicit choice here is a user telling us our line-art detection got
@@ -840,6 +1007,8 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                             pageBackgroundNeedsTransparency(
                                 getOwningPageBackgroundColor(img),
                             ),
+                        isOverlayOnBackgroundImage:
+                            isOverlayOnBackgroundImage(img),
                         imageFormat: imageFormatOf(img),
                         // Every transparency choice made on this image so far, joined with " > "
                         // -- so a picture switched twice reads "auto > transparent > opaque"
@@ -1257,7 +1426,14 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         menu: {
             iconScale: 1.2,
         },
-        action: () => {
+        action: (ctx) => {
+            // An inline image supplies deleteThisObject (see IControlContext), because it is
+            // not the page's active canvas element, and deleting it means removing it from
+            // every language's text.
+            if (ctx.deleteThisObject) {
+                ctx.deleteThisObject();
+                return;
+            }
             getCanvasElementManager()?.deleteCurrentCanvasElement?.();
         },
     },
@@ -1345,21 +1521,32 @@ export const controlSections: Record<SectionId, IControlSection> = {
             menu: ["format"],
         },
     },
+    // The image commands come in three menu sections, so that the menu shows a line between
+    // them. The first section is about which picture is in the box, the second about how the
+    // picture sits in the box, and the third about the other things we can do to it. Reset
+    // image is last in its section because it undoes the commands above it.
     image: {
         id: "image",
         controlsBySurface: {
+            menu: ["missingMetadata", "chooseImage", "copyImage", "pasteImage"],
+        },
+    },
+    imageArrangement: {
+        id: "imageArrangement",
+        controlsBySurface: {
             menu: [
-                "missingMetadata",
-                "chooseImage",
-                "copyImage",
-                "pasteImage",
-                "resetImage",
                 "expandToFillSpace",
-                "becomeBackground",
-                "imageFieldType",
+                "rotateRight",
+                "flipImage",
                 "imageBackground",
-                "editWithAi",
+                "resetImage",
             ],
+        },
+    },
+    imageSettings: {
+        id: "imageSettings",
+        controlsBySurface: {
+            menu: ["becomeBackground", "imageFieldType", "editWithAi"],
         },
     },
     imagePanel: {
@@ -1422,6 +1609,12 @@ export const controlSections: Record<SectionId, IControlSection> = {
                 "fieldType",
             ],
             toolPanel: ["textColor", "backgroundColor"],
+        },
+    },
+    layer: {
+        id: "layer",
+        controlsBySurface: {
+            menu: ["layer"],
         },
     },
     wholeElement: {

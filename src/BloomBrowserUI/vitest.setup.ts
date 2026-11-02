@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { vi } from "vitest";
+import { afterAll, afterEach, expect, vi } from "vitest";
 
 // Tell React 18 that this environment supports act(), suppressing the
 // "not configured to support act(...)" warning in every React component test.
@@ -39,15 +39,6 @@ console.error = (...args: unknown[]) => {
             return String(arg);
         })
         .join("\n");
-
-    const isJsdomXhrAggregateError =
-        serialized.includes("AggregateError") &&
-        serialized.includes("jsdom") &&
-        serialized.includes("XMLHttpRequest-impl.js");
-
-    if (isJsdomXhrAggregateError) {
-        return;
-    }
 
     // React 18 emits two families of act() warnings in jsdom test environments:
     //   • "not configured to support act()" – the environment flag is absent
@@ -498,6 +489,67 @@ globalThis.jQuery = jQuery;
 // from assigning those workers to the remaining test files.
 // WebSocketManager already honours this flag for Storybook and Playwright tests.
 (window as any)._SKIP_WEBSOCKET_CREATION_ = true;
+
+// -----------------------------------------------------------------------------
+// NO NETWORK
+// -----------------------------------------------------------------------------
+
+// Unit tests must not reach the network: there is no Bloom server here, so a real
+// request only fails a moment later. When that failure is logged after vitest has
+// torn the test file down, vitest fails the whole run although every test passed
+// (it did so in the 2026-10-22 nightly, BL-17040). So every request is refused at
+// once, and the test that made it fails, naming the request. Mock the call instead,
+// with vi.mock of utils/bloomApi replacing just the function the code under test calls
+// (not bloomApi's mockReplies, which is global and fragile). Code under test usually
+// catches a failed request itself, which is why the failure is raised from afterEach
+// rather than left to the request.
+const requestsMadeByThisTest: string[] = [];
+function refuseRequest(request: string): Error {
+    let where = "outside any test";
+    try {
+        where = `in "${expect.getState().currentTestName ?? "?"}"`;
+    } catch {
+        // no test is running, e.g. a module making a request as it loads
+    }
+    requestsMadeByThisTest.push(`${request} (${where})`);
+    return new Error(
+        `Unit tests must not reach the network; mock this call: ${request}`,
+    );
+}
+function failIfAnyRequestsWereMade(): void {
+    if (requestsMadeByThisTest.length === 0) {
+        return;
+    }
+    const requests = requestsMadeByThisTest.splice(0);
+    throw new Error(
+        "Unit tests must not reach the network. Mock these calls with vi.mock of utils/bloomApi:\n" +
+            requests.join("\n"),
+    );
+}
+const originalXhrOpen = XMLHttpRequest.prototype.open;
+XMLHttpRequest.prototype.open = function (
+    this: XMLHttpRequest & { requestForUnitTests?: string },
+    method: string,
+    url: string | URL,
+    ...rest: unknown[]
+) {
+    this.requestForUnitTests = `${method} ${url}`;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (originalXhrOpen as any).call(this, method, url, ...rest);
+} as typeof XMLHttpRequest.prototype.open;
+XMLHttpRequest.prototype.send = function (
+    this: XMLHttpRequest & { requestForUnitTests?: string },
+) {
+    throw refuseRequest(this.requestForUnitTests ?? "XMLHttpRequest");
+};
+globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) =>
+    Promise.reject(
+        refuseRequest(
+            `${init?.method ?? "GET"} ${input instanceof Request ? input.url : String(input)}`,
+        ),
+    )) as typeof fetch;
+afterEach(failIfAnyRequestsWereMade);
+afterAll(failIfAnyRequestsWereMade);
 
 // -----------------------------------------------------------------------------
 // C# INTEROP MOCKS

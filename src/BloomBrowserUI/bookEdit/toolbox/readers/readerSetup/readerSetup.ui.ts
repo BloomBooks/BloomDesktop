@@ -51,8 +51,9 @@ function process_UI_Message(event: MessageEvent): void {
                             "</span>";
                         foundNotSupported = true;
                     } else {
-                        const ext: string | undefined =
-                            filenameComponents.pop();
+                        const ext: string | undefined = filenameComponents
+                            .pop()
+                            ?.toLowerCase(); // a .TXT file is just as readable as a .txt one
                         if (!ext || extensions.indexOf(ext) === -1) {
                             array[index] =
                                 element +

@@ -179,12 +179,12 @@ namespace BloomTests.Spreadsheet
             // Sanity checks on the test data so a green result can't be a false pass.
             Assert.That(
                 editableInnerXml,
-                Does.Contain("<br />"),
+                Contains.Substring("<br />").Using(StringComparison.Ordinal),
                 "test setup: input should contain a line break"
             );
             Assert.That(
                 editableInnerXml,
-                Does.Contain("\u00A0"),
+                Contains.Substring("\u00A0").Using(StringComparison.Ordinal),
                 "test setup: input should contain a non-breaking space"
             );
             Assert.That(
@@ -200,12 +200,12 @@ namespace BloomTests.Spreadsheet
             Assert.That(text, Is.EqualTo("Some words joined\u00A0text here"));
             Assert.That(
                 text,
-                Does.Not.Contain("wordsjoined"),
+                Is.Not.Matches(Contains.Substring("wordsjoined").Using(StringComparison.Ordinal)),
                 "a line break must not fuse the words on either side of it"
             );
             Assert.That(
                 text,
-                Does.Contain("\u00A0"),
+                Contains.Substring("\u00A0").Using(StringComparison.Ordinal),
                 "a non-breaking space must be preserved, not collapsed to an ordinary space"
             );
         }
@@ -221,12 +221,12 @@ namespace BloomTests.Spreadsheet
 
             // Sanity checks on the test data so a green result can't be a false pass.
             Assert.That(
-                editableInnerXml.StartsWith("\u00A0"),
+                editableInnerXml.StartsWith("\u00A0", StringComparison.Ordinal),
                 Is.True,
                 "test setup: input should start with a non-breaking space"
             );
             Assert.That(
-                editableInnerXml.EndsWith(" "),
+                editableInnerXml.EndsWith(" ", StringComparison.Ordinal),
                 Is.True,
                 "test setup: input should end with an ordinary space that must be trimmed"
             );
@@ -237,12 +237,12 @@ namespace BloomTests.Spreadsheet
             // space is trimmed away.
             Assert.That(text, Is.EqualTo("\u00A0\u00A0Indented text\u00A0"));
             Assert.That(
-                text.StartsWith("\u00A0\u00A0"),
+                text.StartsWith("\u00A0\u00A0", StringComparison.Ordinal),
                 Is.True,
                 "leading non-breaking spaces must be preserved, not stripped by Trim()"
             );
             Assert.That(
-                text.EndsWith("\u00A0"),
+                text.EndsWith("\u00A0", StringComparison.Ordinal),
                 Is.True,
                 "a trailing non-breaking space must be preserved, not stripped by Trim()"
             );

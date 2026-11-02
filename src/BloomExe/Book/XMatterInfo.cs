@@ -29,17 +29,22 @@ namespace Bloom.Book
             get
             {
                 var x = Path.GetFileName(PathToFolder);
-                var end = x.ToLowerInvariant().IndexOf("-xmatter");
+                // Must be ordinal: a culture-sensitive search under th-TH ignores the hyphen
+                // and leaves it on the end of the key.
+                var end = x.IndexOf("-xmatter", StringComparison.OrdinalIgnoreCase);
                 return x.Substring(0, end);
             }
         }
 
+        /// <summary>
+        /// The key split into words for display, e.g. "Paper Saver" for "Factory-XMatter".
+        /// </summary>
         public string EnglishLabel
         {
             get
             {
                 var x = Path.GetFileName(PathToFolder);
-                var end = x.ToLowerInvariant().IndexOf("-xmatter");
+                var end = x.IndexOf("-xmatter", StringComparison.OrdinalIgnoreCase);
                 var label = x.Substring(0, end);
                 if (label == "Factory") //historical name
                 {
@@ -71,7 +76,7 @@ namespace Bloom.Book
                     return string.Empty;
 
                 var englishDescription = RobustFile.ReadAllText(pathEnglish);
-                if (!englishDescription.StartsWith("[V"))
+                if (!englishDescription.StartsWith("[V", StringComparison.Ordinal))
                     return englishDescription;
 
                 // Once we put [V1] in the english description we could have translations
@@ -98,7 +103,7 @@ namespace Bloom.Book
 
         private static int GetVersionNumberString(string fullDescription)
         {
-            if (!fullDescription.StartsWith("[V"))
+            if (!fullDescription.StartsWith("[V", StringComparison.Ordinal))
                 return 0;
             var endIndex = fullDescription.IndexOf("]", StringComparison.InvariantCulture);
             if (endIndex < 2)
@@ -116,7 +121,7 @@ namespace Bloom.Book
 
         private static string StripVersionOff(string fullDescription)
         {
-            if (!fullDescription.StartsWith("[V"))
+            if (!fullDescription.StartsWith("[V", StringComparison.Ordinal))
                 return fullDescription;
             var closeBracketIndex = fullDescription.IndexOf("]", StringComparison.InvariantCulture);
             return (closeBracketIndex > 2 && fullDescription.Length > 4)

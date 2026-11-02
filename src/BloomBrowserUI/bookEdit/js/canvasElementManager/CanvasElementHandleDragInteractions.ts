@@ -12,6 +12,22 @@ import { renderCanvasElementContextControls } from "./CanvasElementContextContro
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
 import { getHandleTitlesAsync } from "./CanvasElementSelectionUi";
+import {
+    getCanvasElementRotation,
+    rotateVector,
+    setCanvasElementRotation,
+    unrotateVector,
+} from "./canvasElementRotation";
+import { pushUndoForCanvasElementRotation } from "../ImageUndoManager";
+import { getImageContentTransform } from "../imageContentTransform";
+import { EditableDivUtils } from "../editableDivUtils";
+import {
+    clampCropPosition,
+    cropOneSide,
+    CropSide,
+    getCroppedSides,
+    getShownContentRectangle,
+} from "../imageCrop";
 
 export interface ICanvasElementHandleDragInteractionsHost {
     getActiveElement: () => HTMLElement | undefined;
@@ -40,6 +56,23 @@ export interface ICanvasElementHandleDragInteractionsHost {
     stopMoving: () => void;
 }
 
+// Turn a movement of the pointer, in screen pixels, into the same movement in the unscaled,
+// un-rotated coordinates of a canvas element's own style (left, top, width, height). The edit
+// zoom scales the whole page, so one screen pixel is 1 / pageScale of a style pixel; the
+// element's rotation turns the screen axes into its own.
+export function screenDeltaToElementDelta(
+    screenDeltaX: number,
+    screenDeltaY: number,
+    rotationDegrees: number,
+    pageScale: number,
+): { x: number; y: number } {
+    return unrotateVector(
+        screenDeltaX / pageScale,
+        screenDeltaY / pageScale,
+        rotationDegrees,
+    );
+}
+
 export class CanvasElementHandleDragInteractions {
     private host: ICanvasElementHandleDragInteractionsHost;
     private snapProvider: CanvasSnapProvider;
@@ -55,6 +88,7 @@ export class CanvasElementHandleDragInteractions {
     private oldTop: number;
     // The original size and position of the main img inside a canvas element being resized or cropped
     private oldImageWidth: number;
+    private oldImageHeight: number;
     private oldImageLeft: number;
     private oldImageTop: number;
     // during a resize drag, keeps track of which corner we're dragging
@@ -82,6 +116,13 @@ export class CanvasElementHandleDragInteractions {
     private currentDragSide: string | undefined;
     private currentDragControl: HTMLElement | undefined;
 
+    // The centre of the element being rotated, in viewport coordinates, and the two angles
+    // we measure the drag against.
+    private rotateCenterX: number;
+    private rotateCenterY: number;
+    private startRotatePointerAngle: number;
+    private startRotation: number;
+
     public constructor(
         host: ICanvasElementHandleDragInteractionsHost,
         snapProvider: CanvasSnapProvider,
@@ -95,6 +136,145 @@ export class CanvasElementHandleDragInteractions {
     public resetCropBasis(): void {
         this.lastCropControl = undefined;
     }
+
+    // Convert a movement of the mouse, which is measured on the screen, into the element's
+    // own un-rotated coordinates. All the resize and crop arithmetic below works in those
+    // coordinates, so without this a rotated element grows along the wrong axis, and at any
+    // edit zoom other than 100% the dragged edge runs ahead of or behind the pointer.
+    private getUnrotatedDelta(
+        activeElement: HTMLElement,
+        screenDeltaX: number,
+        screenDeltaY: number,
+    ): { x: number; y: number } {
+        return screenDeltaToElementDelta(
+            screenDeltaX,
+            screenDeltaY,
+            getCanvasElementRotation(activeElement),
+            EditableDivUtils.getPageScale(activeElement),
+        );
+    }
+
+    // A rotated element rotates about its own centre, so changing the size of the box moves
+    // what the user sees at both ends of it: the edge or corner opposite the one being
+    // dragged drifts away. This shifts the element to put that opposite edge back where it
+    // was on screen.
+    //
+    // Writing it as a correction applied after the ordinary arithmetic keeps the rotation out
+    // of that arithmetic.
+    //
+    // The caller passes the position the ordinary arithmetic wants, rather than letting this
+    // method read the position out of the element. That matters because the correction writes
+    // both left and top, while a drag of one edge recomputes only one of them from the
+    // mouse-down values: the other still holds the correction of the previous mouse move.
+    // Reading it back therefore fed each correction into the next one, and the element crept
+    // across the page for as long as the drag went on (BL-16741).
+    private compensateForRotationDuringResize(
+        activeElement: HTMLElement,
+        newLeft: number,
+        newTop: number,
+    ): void {
+        const rotation = getCanvasElementRotation(activeElement);
+        if (rotation === 0) {
+            return;
+        }
+        // How far the centre of the box has moved, in un-rotated coordinates.
+        const centerShiftX =
+            newLeft +
+            activeElement.clientWidth / 2 -
+            (this.oldLeft + this.oldWidth / 2);
+        const centerShiftY =
+            newTop +
+            activeElement.clientHeight / 2 -
+            (this.oldTop + this.oldHeight / 2);
+        // On screen that shift appears rotated by the element's angle. The difference between
+        // where it appears and where the arithmetic put it is what we must undo.
+        const onScreen = rotateVector(centerShiftX, centerShiftY, rotation);
+        activeElement.style.left = `${newLeft + onScreen.x - centerShiftX}px`;
+        activeElement.style.top = `${newTop + onScreen.y - centerShiftY}px`;
+    }
+
+    // Start dragging the rotate handle (the "lollipop" above the top of the control frame).
+    // We rotate the element by however far the pointer travels around its centre, so the point
+    // the user grabbed stays under the pointer.
+    public startRotateDrag = (event: MouseEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const activeElement = this.host.getActiveElement();
+        if (!activeElement) return;
+        this.currentDragControl = event.currentTarget as HTMLElement;
+        this.currentDragControl.classList.add("active-control");
+        // Rotating about the centre leaves the centre of the bounding rectangle where it was,
+        // so this is the centre of rotation whether or not the element is already rotated.
+        const bounds = activeElement.getBoundingClientRect();
+        this.rotateCenterX = bounds.left + bounds.width / 2;
+        this.rotateCenterY = bounds.top + bounds.height / 2;
+        this.startRotation = getCanvasElementRotation(activeElement);
+        this.startRotatePointerAngle = this.getPointerAngle(event);
+        document.addEventListener("mousemove", this.continueRotateDrag, {
+            capture: true,
+        });
+        document.addEventListener("mouseup", this.endRotateDrag, {
+            capture: true,
+        });
+        this.host.startMoving();
+    };
+
+    // The angle from the centre of the element to the pointer, in degrees.
+    private getPointerAngle(event: MouseEvent): number {
+        return (
+            (Math.atan2(
+                event.clientY - this.rotateCenterY,
+                event.clientX - this.rotateCenterX,
+            ) *
+                180) /
+            Math.PI
+        );
+    }
+
+    private continueRotateDrag = (event: MouseEvent) => {
+        const activeElement = this.host.getActiveElement();
+        if (event.buttons !== 1 || !activeElement) {
+            this.endRotateDrag();
+            return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        const pointerTravel =
+            this.getPointerAngle(event) - this.startRotatePointerAngle;
+        // Snapping puts the common angles within easy reach; holding CTRL turns it off.
+        const newRotation = this.snapProvider.getSnappedRotation(
+            this.startRotation + pointerTravel,
+            event,
+        );
+        setCanvasElementRotation(activeElement, newRotation);
+        this.host.alignControlFrameWithActiveElement();
+    };
+
+    private endRotateDrag = () => {
+        document.removeEventListener("mousemove", this.continueRotateDrag, {
+            capture: true,
+        });
+        document.removeEventListener("mouseup", this.endRotateDrag, {
+            capture: true,
+        });
+        this.currentDragControl?.classList.remove("active-control");
+        this.host.stopMoving();
+        const activeElement = this.host.getActiveElement();
+        if (activeElement) {
+            // One record for the whole drag, and none at all if the element came back to the
+            // angle it started at, so that Undo always has something to put back.
+            if (
+                getCanvasElementRotation(activeElement) !== this.startRotation
+            ) {
+                pushUndoForCanvasElementRotation(
+                    activeElement,
+                    this.startRotation,
+                );
+            }
+            this.host.adjustTarget(activeElement);
+        }
+        this.host.alignControlFrameWithActiveElement();
+    };
 
     public startMoveCrop = (event: MouseEvent) => {
         event.preventDefault();
@@ -148,8 +328,11 @@ export class CanvasElementHandleDragInteractions {
         if (event.buttons !== 1 || !activeElement) {
             return;
         }
-        const deltaX = event.clientX - this.startMoveCropX;
-        const deltaY = event.clientY - this.startMoveCropY;
+        const { x: deltaX, y: deltaY } = this.getUnrotatedDelta(
+            activeElement,
+            event.clientX - this.startMoveCropX,
+            event.clientY - this.startMoveCropY,
+        );
         const imgC =
             activeElement.getElementsByClassName(kImageContainerClass)[0];
         const img = imgC?.getElementsByTagName("img")[0];
@@ -157,17 +340,14 @@ export class CanvasElementHandleDragInteractions {
         event.preventDefault();
         event.stopPropagation();
         const imgStyle = img.style;
-        const newLeft = Math.max(
-            Math.min(this.oldImageLeft + deltaX, 0),
-            activeElement.clientLeft +
-                activeElement.clientWidth -
-                img.clientWidth,
-        );
-        const newTop = Math.max(
-            Math.min(this.oldImageTop + deltaY, 0),
-            activeElement.clientTop +
-                activeElement.clientHeight -
-                img.clientHeight,
+        const { left: newLeft, top: newTop } = clampCropPosition(
+            activeElement.clientWidth,
+            activeElement.clientHeight,
+            this.oldImageLeft + deltaX,
+            this.oldImageTop + deltaY,
+            img.clientWidth,
+            img.clientHeight,
+            getImageContentTransform(img).quarterRotations,
         );
         imgStyle.left = newLeft + "px";
         imgStyle.top = newTop + "px";
@@ -270,8 +450,11 @@ export class CanvasElementHandleDragInteractions {
         this.lastCropControl = undefined;
 
         if (!this.resizeDragCorner) return;
-        const deltaX = event.clientX - this.startResizeDragX;
-        const deltaY = event.clientY - this.startResizeDragY;
+        const { x: deltaX, y: deltaY } = this.getUnrotatedDelta(
+            activeElement,
+            event.clientX - this.startResizeDragX,
+            event.clientY - this.startResizeDragY,
+        );
         const style = activeElement.style;
         const imgOrVideo = this.getImageOrVideo(activeElement);
         let slope = imgOrVideo ? this.oldHeight / this.oldWidth : 0;
@@ -423,6 +606,7 @@ export class CanvasElementHandleDragInteractions {
         style.height = newHeight + "px";
         style.top = newTop + "px";
         style.left = newLeft + "px";
+        this.compensateForRotationDuringResize(activeElement, newLeft, newTop);
         if (imgOrVideo?.style.width) {
             const scale = newWidth / this.oldWidth;
             imgOrVideo.style.width = this.oldImageWidth * scale + "px";
@@ -460,6 +644,9 @@ export class CanvasElementHandleDragInteractions {
         if (img) {
             this.oldImageLeft = img.offsetLeft;
             this.oldImageTop = img.offsetTop;
+            // A side drag never writes the picture's own size, so these hold for the whole drag.
+            this.oldImageWidth = img.offsetWidth;
+            this.oldImageHeight = img.offsetHeight;
 
             if (this.lastCropControl !== event.currentTarget) {
                 this.initialCropImageWidth = img.offsetWidth;
@@ -519,10 +706,18 @@ export class CanvasElementHandleDragInteractions {
     private continueTextBoxResize(event: MouseEvent, editable: HTMLElement) {
         const activeElement = this.host.getActiveElement();
         if (!activeElement) return;
-        let deltaX = event.clientX - this.startSideDragX;
-        let deltaY = event.clientY - this.startSideDragY;
+        const unrotatedDelta = this.getUnrotatedDelta(
+            activeElement,
+            event.clientX - this.startSideDragX,
+            event.clientY - this.startSideDragY,
+        );
+        let deltaX = unrotatedDelta.x;
+        let deltaY = unrotatedDelta.y;
         let newCanvasElementWidth = this.oldWidth;
         let newCanvasElementHeight = this.oldHeight;
+        // Where this drag puts the box. Only the w handle moves it, but the rotation
+        // correction needs both numbers; see compensateForRotationDuringResize.
+        let newLeft = this.oldLeft;
         console.assert(
             this.currentDragSide === "e" ||
                 this.currentDragSide === "w" ||
@@ -551,8 +746,9 @@ export class CanvasElementHandleDragInteractions {
                     minWidth,
                 );
                 deltaX = this.oldWidth - newCanvasElementWidth;
+                newLeft = this.oldLeft + deltaX;
                 activeElement.style.width = `${newCanvasElementWidth}px`;
-                activeElement.style.left = `${this.oldLeft + deltaX}px`;
+                activeElement.style.left = `${newLeft}px`;
                 break;
             case "s":
                 newCanvasElementHeight = Math.max(
@@ -566,6 +762,11 @@ export class CanvasElementHandleDragInteractions {
                 activeElement.style.height = `${newCanvasElementHeight}px`;
         }
         this.host.adjustCanvasElementHeightToContentOrMarkOverflow(editable);
+        this.compensateForRotationDuringResize(
+            activeElement,
+            newLeft,
+            this.oldTop,
+        );
         this.host.adjustTarget(activeElement);
         this.host.alignControlFrameWithActiveElement();
         this.guideProvider.duringDrag(activeElement);
@@ -595,12 +796,13 @@ export class CanvasElementHandleDragInteractions {
         }
         event.preventDefault();
         event.stopPropagation();
-        let deltaX = event.clientX - this.startSideDragX;
-        let deltaY = event.clientY - this.startSideDragY;
+        const unrotatedDelta = this.getUnrotatedDelta(
+            activeElement,
+            event.clientX - this.startSideDragX,
+            event.clientY - this.startSideDragY,
+        );
         if (event.movementX === 0 && event.movementY === 0) return;
 
-        let newCanvasElementWidth = this.oldWidth;
-        let newCanvasElementHeight = this.oldHeight;
         let shouldSnapForBackground = "";
         let backgroundSnapDelta = 0;
         if (
@@ -649,95 +851,60 @@ export class CanvasElementHandleDragInteractions {
             }
         }
 
-        const minWidth = this.host.getMinWidth();
-        const minHeight = this.host.getMinHeight();
+        // How far each edge can travel is a property of the rectangle the element shows, not of
+        // the picture's own box, and the two differ on a rotated picture. The n and w handles move
+        // the picture as well as the edge, so they measure from where the picture was when this
+        // drag began; the s and e handles leave the picture alone, so they measure from where it
+        // was when this handle was first taken hold of.
+        const quarterRotations = getImageContentTransform(img).quarterRotations;
+        const shownNow = getShownContentRectangle(
+            this.oldImageLeft,
+            this.oldImageTop,
+            this.oldImageWidth,
+            this.oldImageHeight,
+            quarterRotations,
+        );
+        const shownAtFirst = getShownContentRectangle(
+            this.initialCropImageLeft,
+            this.initialCropImageTop,
+            this.initialCropImageWidth,
+            this.initialCropImageHeight,
+            quarterRotations,
+        );
 
-        switch (this.currentDragSide) {
-            case "n":
-                deltaY = this.adjustDeltaForSnap(
-                    shouldSnapForBackground === "y",
-                    deltaY,
-                    backgroundSnapDelta,
-                    "n",
-                );
-                if (this.oldImageTop - deltaY > 0) {
-                    deltaY = this.oldImageTop;
-                }
-                newCanvasElementHeight = Math.max(
-                    this.oldHeight - deltaY,
-                    minHeight,
-                );
-                deltaY = this.oldHeight - newCanvasElementHeight;
-                activeElement.style.height = `${newCanvasElementHeight}px`;
-                activeElement.style.top = `${this.oldTop + deltaY}px`;
-                img.style.top = `${this.oldImageTop - deltaY}px`;
-                break;
-            case "s":
-                deltaY = this.adjustDeltaForSnap(
-                    shouldSnapForBackground === "y",
-                    deltaY,
-                    backgroundSnapDelta,
-                    "s",
-                );
-                if (
-                    this.initialCropImageTop + this.initialCropImageHeight <
-                    this.oldHeight + deltaY
-                ) {
-                    deltaY =
-                        this.initialCropImageTop +
-                        this.initialCropImageHeight -
-                        this.oldHeight;
-                }
-                newCanvasElementHeight = Math.max(
-                    this.oldHeight + deltaY,
-                    minHeight,
-                );
-                deltaY = newCanvasElementHeight - this.oldHeight;
-                activeElement.style.height = `${newCanvasElementHeight}px`;
-                break;
-            case "e":
-                deltaX = this.adjustDeltaForSnap(
-                    shouldSnapForBackground === "x",
-                    deltaX,
-                    backgroundSnapDelta,
-                    "e",
-                );
-                if (
-                    this.initialCropImageLeft + this.initialCropImageWidth <
-                    this.oldWidth + deltaX
-                ) {
-                    deltaX =
-                        this.initialCropImageLeft +
-                        this.initialCropImageWidth -
-                        this.oldWidth;
-                }
-                newCanvasElementWidth = Math.max(
-                    this.oldWidth + deltaX,
-                    minWidth,
-                );
-                deltaX = newCanvasElementWidth - this.oldWidth;
-                activeElement.style.width = `${newCanvasElementWidth}px`;
-                break;
-            case "w":
-                deltaX = this.adjustDeltaForSnap(
-                    shouldSnapForBackground === "x",
-                    deltaX,
-                    backgroundSnapDelta,
-                    "w",
-                );
-                if (this.oldImageLeft > deltaX) {
-                    deltaX = this.oldImageLeft;
-                }
-                newCanvasElementWidth = Math.max(
-                    this.oldWidth - deltaX,
-                    minWidth,
-                );
-                deltaX = this.oldWidth - newCanvasElementWidth;
-                activeElement.style.width = `${newCanvasElementWidth}px`;
-                activeElement.style.left = `${this.oldLeft + deltaX}px`;
-                img.style.left = `${this.oldImageLeft - deltaX}px`;
-                break;
+        const side = this.currentDragSide as CropSide;
+        const horizontal = side === "e" || side === "w";
+        const delta = this.adjustDeltaForSnap(
+            shouldSnapForBackground === (horizontal ? "x" : "y"),
+            horizontal ? unrotatedDelta.x : unrotatedDelta.y,
+            backgroundSnapDelta,
+            side,
+        );
+        const cropped = cropOneSide(
+            side,
+            delta,
+            this.oldWidth,
+            this.oldHeight,
+            side === "n" || side === "w" ? shownNow : shownAtFirst,
+            horizontal ? this.host.getMinWidth() : this.host.getMinHeight(),
+        );
+        // Where this drag puts the box. Only the n and w handles move it, but the rotation
+        // correction needs both numbers; see compensateForRotationDuringResize.
+        const newLeft = this.oldLeft + cropped.left;
+        const newTop = this.oldTop + cropped.top;
+        if (horizontal) {
+            activeElement.style.width = `${cropped.width}px`;
+        } else {
+            activeElement.style.height = `${cropped.height}px`;
         }
+        if (side === "n") {
+            activeElement.style.top = `${newTop}px`;
+            img.style.top = `${this.oldImageTop - cropped.top}px`;
+        } else if (side === "w") {
+            activeElement.style.left = `${newLeft}px`;
+            img.style.left = `${this.oldImageLeft - cropped.left}px`;
+        }
+        this.compensateForRotationDuringResize(activeElement, newLeft, newTop);
         this.host.adjustStuffRelatedToImage(activeElement, img);
         CanvasElementHandleDragInteractions.updateCurrentlyCropped(
             activeElement,
@@ -791,15 +958,30 @@ export class CanvasElementHandleDragInteractions {
             });
             return;
         }
-        const imgRect = img.getBoundingClientRect();
-        const canvasElementRect = activeElement.getBoundingClientRect();
-        const slop = 1;
-        const cropped = {
-            n: imgRect.top + slop < canvasElementRect.top,
-            e: imgRect.right > canvasElementRect.right + slop,
-            s: imgRect.bottom > canvasElementRect.bottom + slop,
-            w: imgRect.left + slop < canvasElementRect.left,
-        };
+        // Compare the laid-out positions and sizes rather than the on-screen rectangles.
+        // getBoundingClientRect reports the upright box around a rotated element, which is
+        // larger than the element itself, so on a rotated element it puts the mark on sides
+        // that are not cropped. The image and the element are inside the same rotation, so
+        // their own offsets, widths and heights compare directly.
+        let imgLeft = 0;
+        let imgTop = 0;
+        for (
+            let e: HTMLElement | null = img;
+            e && e !== activeElement;
+            e = e.offsetParent as HTMLElement | null
+        ) {
+            imgLeft += e.offsetLeft;
+            imgTop += e.offsetTop;
+        }
+        const cropped = getCroppedSides(
+            activeElement.clientWidth,
+            activeElement.clientHeight,
+            imgLeft,
+            imgTop,
+            img.offsetWidth,
+            img.offsetHeight,
+            getImageContentTransform(img).quarterRotations,
+        );
         sideHandles.forEach((handle) => {
             const longClass = Array.from(handle.classList).find((c) =>
                 c.startsWith("bloom-ui-canvas-element-side-handle-"),

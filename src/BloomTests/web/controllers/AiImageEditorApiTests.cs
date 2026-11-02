@@ -11,6 +11,7 @@ using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
 using Bloom.web.controllers;
+using BloomTests.ImageProcessing;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SIL.Code;
@@ -2742,10 +2743,7 @@ namespace BloomTests.web.controllers
         public void RefitSlotImageForNewPicture_RemovesOnlyTheCropProperties()
         {
             var element = MakeCroppedSlotImage();
-            element.SetAttribute(
-                "style",
-                element.GetAttribute("style") + " transform: rotate(3deg);"
-            );
+            element.SetAttribute("style", element.GetAttribute("style") + " opacity: 0.5;");
             // Sanity check, so the assertion below can't pass on markup that never had a crop.
             Assert.That(
                 element.GetAttribute("style"),
@@ -2761,9 +2759,122 @@ namespace BloomTests.web.controllers
             Assert.That(style, Does.Not.Contain("top"), "crop top should be gone");
             Assert.That(
                 style,
-                Does.Contain("rotate(3deg)"),
+                Does.Contain("opacity: 0.5"),
                 "styling that has nothing to do with cropping should survive"
             );
+        }
+
+        /// <summary>
+        /// A slot img showing the 40x20 quadrant image from ReallyCropImagesTransformTests,
+        /// written into the book folder as quadrants.png.
+        /// </summary>
+        private SafeXmlElement MakeQuadrantSlotImage(string imgStyle, string canvasElementStyle)
+        {
+            ReallyCropImagesTransformTests.MakeQuadrantImage(
+                Path.Combine(_bookFolder.Path, "quadrants.png")
+            );
+            var element = MakeSlotImage(imgStyle, canvasElementStyle);
+            element.SetAttribute("src", "quadrants.png");
+            return element;
+        }
+
+        /// <summary>
+        /// Read the file a TryMakeCroppedViewOfSlotImage result names.
+        /// </summary>
+        private byte[] ReadRendering(string relativePath)
+        {
+            Assert.That(relativePath, Is.Not.Null, "a rotated picture should get a rendering");
+            return RobustFile.ReadAllBytes(
+                Path.Combine(
+                    _bookFolder.Path,
+                    relativePath.Replace('/', Path.DirectorySeparatorChar)
+                )
+            );
+        }
+
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_RotatedCroppedImage_RendersUprightShownRectangle()
+        {
+            // The same crop as ReallyCropImages_Rotate90CroppedOffCentre_CropsShownRectangle:
+            // the element shows the lower 30 of the 40 rows of the rotated picture.
+            var element = MakeQuadrantSlotImage(
+                "width: 40px; left: -10px; top: 0px; transform: rotate(90deg);",
+                "width: 20px; height: 30px;"
+            );
+
+            var bytes = ReadRendering(
+                AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                    _bookFolder.Path,
+                    element,
+                    "page1",
+                    1
+                )
+            );
+
+            // Upright, as the page shows it, so the transform that committing a replacement
+            // removes is not applied a second time.
+            ReallyCropImagesTransformTests.AssertQuadrants(
+                bytes,
+                20,
+                30,
+                ReallyCropImagesTransformTests.kBottomLeft,
+                ReallyCropImagesTransformTests.kTopLeft,
+                ReallyCropImagesTransformTests.kBottomRight,
+                ReallyCropImagesTransformTests.kTopRight
+            );
+            Assert.That(
+                element.GetAttribute("style"),
+                Does.Contain("rotate(90deg)"),
+                "making the rendering must leave the book's own markup alone"
+            );
+        }
+
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_RotatedUncroppedImage_RendersUpright()
+        {
+            var element = MakeQuadrantSlotImage(
+                "transform: rotate(90deg);",
+                "width: 20px; height: 40px;"
+            );
+
+            var bytes = ReadRendering(
+                AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                    _bookFolder.Path,
+                    element,
+                    "page1",
+                    1
+                )
+            );
+
+            ReallyCropImagesTransformTests.AssertQuadrants(
+                bytes,
+                20,
+                40,
+                ReallyCropImagesTransformTests.kBottomLeft,
+                ReallyCropImagesTransformTests.kTopLeft,
+                ReallyCropImagesTransformTests.kBottomRight,
+                ReallyCropImagesTransformTests.kTopRight
+            );
+        }
+
+        [Test]
+        public void RefitSlotImageForNewPicture_RemovesPictureTransform()
+        {
+            var element = MakeCroppedSlotImage();
+            element.SetAttribute(
+                "style",
+                element.GetAttribute("style") + " transform: rotate(90deg) scale(-1, 1);"
+            );
+            Assert.That(
+                element.GetAttribute("style"),
+                Does.Contain("transform"),
+                "setup: the picture starts out rotated"
+            );
+
+            AiImageEditorApi.RefitSlotImageForNewPicture(element, () => new Size(100, 100));
+
+            // The editor was handed the picture upright, so its replacement needs no transform.
+            Assert.That(element.HasAttribute("style"), Is.False);
         }
 
         [Test]

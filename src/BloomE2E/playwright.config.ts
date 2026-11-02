@@ -13,6 +13,14 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
     testDir: "./tests",
 
+    // A *.manual.ts file is a test that needs a person (to press real keys, say), so it can never
+    // pass unattended. It is collected only when PLAYWRIGHT_INCLUDE_MANUAL is set, as in the
+    // component tester, so a normal run, and the nightly report, never counts it as skipped.
+    testMatch:
+        process.env.PLAYWRIGHT_INCLUDE_MANUAL === "1"
+            ? ["**/*.spec.ts", "**/*.manual.ts"]
+            : "**/*.spec.ts",
+
     // One Bloom at a time. Several Bloom instances would race for the candidate HTTP ports and for
     // the settings each one writes, and the machine cannot usefully run two WebView2 shells at
     // once anyway.
@@ -41,7 +49,12 @@ export default defineConfig({
         screenshot: "only-on-failure",
     },
 
-    reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
+    // The slow-steps reporter is on in every run, CI included: it prints one short list at the
+    // end and nothing at all when no step was slow, and a step that has started taking seconds is
+    // exactly the thing that otherwise goes unnoticed while the test still passes.
+    reporter: process.env.CI
+        ? [["list"], ["html", { open: "never" }], ["./reporters/slowSteps.ts"]]
+        : [["list"], ["./reporters/slowSteps.ts"]],
 
     // Fail a CI run that was pushed with a stray test.only.
     forbidOnly: !!process.env.CI,

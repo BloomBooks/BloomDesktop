@@ -28,9 +28,9 @@ namespace Bloom
             Invoke((Action)(() => _fadeOutTimer.Enabled = true));
         }
 
-        // During an automation run (--automation) the splash must not steal the user's
-        // keyboard focus when it is shown. That holds wherever the splash is.
-        protected override bool ShowWithoutActivation => Program.StartupAutomation;
+        // Under --dont-disturb the splash must not steal the user's keyboard focus when it is
+        // shown. That holds wherever the splash is.
+        protected override bool ShowWithoutActivation => Program.StartupDontDisturb;
 
         private SplashScreen()
         {
@@ -126,10 +126,10 @@ namespace Bloom
 
         private void SplashScreen_Load(object sender, EventArgs e)
         {
-            // During an automation run, grabbing focus would yank the user's keyboard away
-            // from whatever they are doing while tests run, and a splash off every monitor
-            // cannot come to the front at all.
-            if (!Program.StartupAutomation)
+            // Under --dont-disturb, grabbing focus would yank the user's keyboard away from
+            // whatever they are doing while an agent or a test drives Bloom, and a splash off
+            // every monitor cannot come to the front at all.
+            if (!Program.StartupDontDisturb)
             {
                 //try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
                 TopMost = true;
@@ -139,7 +139,7 @@ namespace Bloom
             _channelLabel.Visible = channel.ToLowerInvariant() != "release";
             _channelLabel.Text = channel; // No need to localize this: seen only by testers or special users (BL-4451)
             _copyrightlabel.Text = $"© 2011-{DateTime.Now.Year} SIL Global";
-            if (!Program.StartupAutomation)
+            if (!Program.StartupDontDisturb)
                 BringToFront();
         }
 

@@ -17,6 +17,11 @@
         <note>ID: Errors.CorruptImageFile</note>
         <note>The placeholder {0} represents the name of the corrupt file. The placeholder {1} represents a message describing the problem with the file.</note>
       </trans-unit>
+      <trans-unit id="ErrorReport.Details">
+        <source xml:lang="en">Details</source>
+        <note>ID: ErrorReport.Details</note>
+        <note>Button on a small notification that tells the user something went wrong. Clicking it opens a message with more information about the problem.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true">
         <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
@@ -58,26 +63,6 @@
         <source xml:lang="en">Choose Link Target</source>
         <note>ID: LinkTargetChooser.Dialog.Title</note>
         <note>Title of the Link Target chooser dialog that lets users pick where a link should go.</note>
-      </trans-unit>
-      <trans-unit id="LinkTargetChooser.BookList.Heading">
-        <source xml:lang="en">Books in this Collection</source>
-        <note>ID: LinkTargetChooser.BookList.Heading</note>
-        <note>Heading above the list of books in the Link Target chooser dialog.</note>
-      </trans-unit>
-      <trans-unit id="LinkTargetChooser.PageList.Heading">
-        <source xml:lang="en">Pages in the selected book</source>
-        <note>ID: LinkTargetChooser.PageList.Heading</note>
-        <note>Heading above the list of pages for the currently selected book in the Link Target chooser dialog.</note>
-      </trans-unit>
-      <trans-unit id="LinkTargetChooser.SelectionError.BookNotFound">
-        <source xml:lang="en">Book not found: {0}</source>
-        <note>ID: LinkTargetChooser.SelectionError.BookNotFound</note>
-        <note>Shown in the Link Target chooser when the stored link points to a book that is no longer available. {0} is the missing book ID.</note>
-      </trans-unit>
-      <trans-unit id="LinkTargetChooser.SelectionError.PageNotFound">
-        <source xml:lang="en">Page {0} not found in book "{1}"</source>
-        <note>ID: LinkTargetChooser.SelectionError.PageNotFound</note>
-        <note>Shown in the Link Target chooser when the stored link points to a page that no longer exists. {0} is the missing page ID and {1} is the book title.</note>
       </trans-unit>
       <trans-unit id="LinkTargetChooser.PageList.SelectBookPrompt">
         <source xml:lang="en">Select a book to see its pages</source>
@@ -182,10 +167,6 @@
         <source xml:lang="en">How to video</source>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.HowToVideo</note>
         <note>Text of a link at the bottom of the USB debugging instructions dialog; it opens a short YouTube video showing the same steps.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Upload.CheckEmailFailed">
-        <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
-        <note>ID: PublishTab.Upload.CheckEmailFailed</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.BookshelfError">
         <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Bloom subscription.</source>
@@ -338,9 +319,6 @@
         <note>ID: Spreadsheet.CannotExportDragAndDropGamePages</note>
         <note>{0} is a placeholder for the number of pages</note>
       </trans-unit>
-      <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer">
-        <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
-      </trans-unit>
       <trans-unit id="Download.PleaseSendLogFile">
         <source xml:lang="en">Please also send us the latest log file found at {0}.</source>
         <note>ID: Download.PleaseSendLogFile</note>
@@ -349,6 +327,21 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem">
         <source xml:lang="en">Bloom was not able to access a microphone.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation">
+        <source xml:lang="en">Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity". Either way, you will need to use the "Apply Timings File..." button to apply your changes.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation</note>
+        <note>Shown when the user chooses "Edit Timings File..." in the Adjust Timings dialog. Audacity is a product name. "labels" is the name of a file type in Audacity's Import and Export menus. "Apply Timings File..." should match the translation of that menu item.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile">
+        <source xml:lang="en">Current timings file is {0}</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile</note>
+        <note>Shown below EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation. {0} is replaced with the full path of the timings file on the user's computer.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile">
+        <source xml:lang="en">Current audio file is {0} (.wav or .mp3)</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile</note>
+        <note>Shown below EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile. {0} is replaced with the name of the audio file, without its extension; the file may be either .wav or .mp3.</note>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.OneDriveProblem">
         <source xml:lang="en">OneDrive Problem</source>
@@ -403,6 +396,11 @@
         <note>ID: EditTab.PasteTextFailed</note>
         <note>Shown as a toast when Bloom fails to read text from the computer's clipboard, usually because some other program is momentarily holding the clipboard.</note>
       </trans-unit>
+      <trans-unit id="ImageLibrary.CouldNotDownloadImage">
+        <source xml:lang="en">Bloom could not download this picture. Check that this computer is connected to the internet, then try again.</source>
+        <note>ID: ImageLibrary.CouldNotDownloadImage</note>
+        <note>Message shown when the user chooses a picture from an online source in the Image Chooser and Bloom cannot download it, usually because the computer is offline. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
       <trans-unit id="ImageLibrary.PreviewTooLarge">
         <source xml:lang="en">This image is too large to preview here, but you can still use it.</source>
         <note>ID: ImageLibrary.PreviewTooLarge</note>
@@ -412,6 +410,16 @@
         <source xml:lang="en">This image could not be previewed.</source>
         <note>ID: ImageLibrary.PreviewUnavailable</note>
         <note>Shown in the details pane of the image chooser, in place of the image, when the preview fails to load for some reason other than the image being too large.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.CannotReachSource">
+        <source xml:lang="en">Could not reach {0}. Check that this computer is connected to the internet.</source>
+        <note>ID: ImageLibrary.CannotReachSource</note>
+        <note>Error shown below the search box of the image chooser when a search of an online image source fails because the website could not be reached at all, which usually means the computer is offline. {0} is replaced with the name of the source, such as "Openverse" or "Pixabay", which must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ComputerSeemsOffline">
+        <source xml:lang="en">This computer seems to be offline. Searching {0} needs an internet connection.</source>
+        <note>ID: ImageLibrary.ComputerSeemsOffline</note>
+        <note>Warning shown below the search box of the image chooser whenever an online image source is selected and the computer reports having no network connection, whether or not the user has searched yet. It is replaced by ImageLibrary.CannotReachSource once a search fails for that reason. {0} is replaced with the name of the source, such as "Openverse" or "Pixabay", which must not be translated.</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.FieldType.BookTitle">
         <source xml:lang="en">Book Title</source>

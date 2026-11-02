@@ -297,6 +297,7 @@ namespace Bloom.Api
         // NOTE: this method gets called on different threads!
         public async Task<bool> ProcessRequestAsync(IRequestInfo info, string localPath)
         {
+            UserCulture.CheckProcessCultureIsInvariant();
             var localPathLc = localPath.ToLowerInvariant();
             if (localPathLc.StartsWith(ApiPrefix, StringComparison.InvariantCulture))
             {
@@ -440,7 +441,7 @@ namespace Bloom.Api
                     syncOn = ThumbnailsAndPreviewsSyncObj;
                     syncName = "the thumbnail/preview lock";
                 }
-                else if (localPathLc.StartsWith("api/i18n/"))
+                else if (localPathLc.StartsWith("api/i18n/", StringComparison.Ordinal))
                 {
                     syncOn = I18NLock;
                     syncName = "the i18n lock";

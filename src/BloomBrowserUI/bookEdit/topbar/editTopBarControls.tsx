@@ -332,6 +332,7 @@ export const UndoButton: React.FunctionComponent<{
             tooltipL10nKey="EditTab.UndoButton.ToolTip"
             disabledTooltipL10nKey="EditTab.UndoButton.ToolTipWhenDisabled"
             onClickAction="undo"
+            testId="undo-button"
             enabledIcon={enabledIcon}
             disabledIcon={disabledIcon}
             iconBeforeText={true}
@@ -352,6 +353,8 @@ export const EditingControlButton: React.FunctionComponent<{
         | "undo"
         | "contentLanguages"
         | "layoutChoices";
+    // For the e2e suite (src/BloomE2E), which finds the button by it.
+    testId?: string;
     enabledIcon?: string;
     disabledIcon?: string;
     iconBeforeText?: boolean;
@@ -374,6 +377,7 @@ export const EditingControlButton: React.FunctionComponent<{
             <BloomButton
                 enabled={props.enabled}
                 l10nKey={props.l10nKey}
+                data-testid={props.testId}
                 onMouseDown={(e) => {
                     // Keep focus in the main editable browser; otherwise this button takes focus
                     // first and copy/cut/paste/undo may run against the wrong context.

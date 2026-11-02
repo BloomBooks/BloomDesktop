@@ -13,6 +13,7 @@ using Bloom.MiscUI;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.BloomPub;
 using Bloom.SubscriptionAndFeatures;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using DesktopAnalytics;
@@ -258,6 +259,7 @@ namespace Bloom.Collection
             Language2Tag = "en";
             AllowNewBooks = true;
             AllowCheckouts = true;
+            AllowSharedFolderChanges = true;
             CollectionName = "dummy collection";
             AudioRecordingMode = TalkingBookApi.AudioRecordingMode.Sentence;
             AudioRecordingTrimEndMilliseconds = kDefaultAudioRecordingTrimEndMilliseconds;
@@ -460,6 +462,15 @@ namespace Bloom.Collection
             // collection still round-trips correctly. See BL-16691.
             if (!AllowCheckouts)
                 xml.Add(new XElement("AllowCheckouts", AllowCheckouts.ToString()));
+            // Written only while false, for the same reasons as AllowCheckouts. See BL-16928.
+            if (!AllowSharedFolderChanges)
+                xml.Add(
+                    new XElement("AllowSharedFolderChanges", AllowSharedFolderChanges.ToString())
+                );
+            // Written only when present. Save() rebuilds the whole file, so without this an ordinary
+            // save would drop it from the local file. See BL-16928.
+            if (!string.IsNullOrEmpty(CloudCollectionId))
+                xml.Add(new XElement(kCloudCollectionIdElementName, CloudCollectionId));
             xml.Add(new XElement("AudioRecordingMode", AudioRecordingMode.ToString()));
             xml.Add(
                 new XElement("AudioRecordingTrimEndMilliseconds", AudioRecordingTrimEndMilliseconds)
@@ -508,24 +519,25 @@ namespace Bloom.Collection
         public string PrimaryLanguageWithSignPrioritized =>
             string.IsNullOrEmpty(SignLanguageTag) ? Language1.Name : SignLanguage.Name;
 
-        public string BadgeQrCodeLabelLocalized
-        {
-            get
-            {
-                var pattern = BadgeQrCodeLabel; // may or may not have {0}. We'll fill in if present.
-                if (string.IsNullOrEmpty(BadgeQrCodeLabel))
-                {
-                    pattern = LocalizationManager.GetString(
-                        "CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2",
-                        "More books in {0} language:",
-                        "",
-                        new string[] { Language1Tag, Language2Tag, Language3Tag, "en" },
-                        out string _
-                    );
-                }
+        public string BadgeQrCodeLabelLocalized => GetBadgeCaptionPattern(BadgeQrCodeLabel);
 
-                return pattern;
-            }
+        /// <summary>
+        /// The caption pattern a badge gets for the given BadgeQrCodeLabel: the label itself, or
+        /// the default caption when it is empty. The pattern may or may not have {0}; it is
+        /// filled in if present. The Collection Settings dialog previews a caption not yet saved
+        /// with this.
+        /// </summary>
+        public string GetBadgeCaptionPattern(string badgeQrCodeLabel)
+        {
+            if (!string.IsNullOrEmpty(badgeQrCodeLabel))
+                return badgeQrCodeLabel;
+            return LocalizationManager.GetString(
+                "CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2",
+                "More books in {0} language:",
+                "",
+                new string[] { Language1Tag, Language2Tag, Language3Tag, "en" },
+                out string _
+            );
         }
 
         internal void SaveColorPalettesToJsonFile()
@@ -753,6 +765,10 @@ namespace Bloom.Collection
                 // behaves the same way, and making this the one exception would be more surprising
                 // than the behavior itself. See BL-16691.
                 AllowCheckouts = ReadBoolean(xml, "AllowCheckouts", true);
+                // Missing means allowed, and a malformed value means paused, exactly as for
+                // AllowCheckouts above. See BL-16928.
+                AllowSharedFolderChanges = ReadBoolean(xml, "AllowSharedFolderChanges", true);
+                CloudCollectionId = ReadString(xml, kCloudCollectionIdElementName, "");
 
                 string audioRecordingModeStr = ReadString(xml, "AudioRecordingMode", "Unknown");
                 TalkingBookApi.AudioRecordingMode parsedAudioRecordingMode;
@@ -771,7 +787,7 @@ namespace Bloom.Collection
                     .Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
                 var defaultTags = ReadString(xml, "DefaultBookTags", "").Split(',');
                 var defaultBookshelfTag = defaultTags
-                    .Where(t => t.StartsWith("bookshelf:"))
+                    .Where(t => t.StartsWith("bookshelf:", StringComparison.Ordinal))
                     .FirstOrDefault();
                 DefaultBookshelf =
                     (
@@ -1096,6 +1112,28 @@ namespace Bloom.Collection
         /// </summary>
         public bool AllowCheckouts { get; set; }
 
+        /// <summary>
+        /// When false, Bloom must not write anything to this Team Collection's shared folder. It is
+        /// set when a folder Team Collection is being moved to the cloud, so that the old shared
+        /// folder stops changing. What counts is the shared folder's copy: when that says false,
+        /// FolderTeamCollection.CheckConnection() puts Bloom in Disconnected mode, where books
+        /// already checked out here can still be edited but nothing is sent to the team. The
+        /// property is here so that Save() keeps the value. See BL-16928.
+        /// </summary>
+        public bool AllowSharedFolderChanges { get; set; }
+
+        /// <summary>
+        /// The name of the element that holds CloudCollectionId.
+        /// </summary>
+        public const string kCloudCollectionIdElementName = "CloudCollectionId";
+
+        /// <summary>
+        /// The id of the cloud collection that replaced this folder Team Collection, or empty if
+        /// there is none. This version of Bloom uses it only to tell people, while
+        /// AllowSharedFolderChanges is false, that the collection has moved to the cloud. See BL-16928.
+        /// </summary>
+        public string CloudCollectionId { get; set; } = "";
+
         public TalkingBookApi.AudioRecordingMode AudioRecordingMode { get; set; }
 
         public int AudioRecordingTrimEndMilliseconds { get; set; }
@@ -1327,7 +1365,13 @@ namespace Bloom.Collection
         /// So this should be called as soon as it is OK to show some UI. It will find any dependencies it can't meet,
         /// revert them to defaults, and notify the user.
         /// </summary>
-        public void CheckAndFixDependencies(BloomFileLocator bloomFileLocator)
+        /// <param name="mayChangeSettings">false on the command line, and for a Team Collection
+        /// member who is not an administrator, who must not change the team's settings</param>
+        public void CheckAndFixDependencies(
+            BloomFileLocator bloomFileLocator,
+            XMatterPackFinder xmatterPackFinder,
+            bool mayChangeSettings
+        )
         {
             var errorTemplate = LocalizationManager.GetString(
                 "Errors.XMatterNotFound",
@@ -1348,6 +1392,28 @@ namespace Bloom.Collection
             {
                 this.XMatterPackName = kDefaultXmatterName;
                 Save();
+            }
+
+            // Likewise a project-specific pack that no branding chooses, as when the subscription
+            // whose branding chose it has expired. Otherwise books would keep it while the settings
+            // dialogs show, and their next save quietly switches to, another. In a Team Collection
+            // only an administrator makes this change, since it goes to the whole team.
+            if (
+                mayChangeSettings
+                && GetXMatterPackNameSpecifiedByBrandingOrNull() == null
+                && xmatterPackFinder.IsOfferedOnlyByBranding(XMatterPackName)
+            )
+            {
+                XMatterPackName = xmatterPackFinder.FactoryDefault.Key;
+                // While the subscription is expired its bookshelf is only in ExpiredBookshelf,
+                // which Save() leaves out; it must stay in the file so that renewing the
+                // subscription brings it back (BL-15056), as CollectionSettingsUpdater.Apply also
+                // makes sure.
+                var bookshelf = DefaultBookshelf;
+                if (string.IsNullOrEmpty(DefaultBookshelf))
+                    DefaultBookshelf = ExpiredBookshelf;
+                Save();
+                DefaultBookshelf = bookshelf;
             }
         }
 
@@ -1395,9 +1461,9 @@ namespace Bloom.Collection
         /// This routine uses the user-specified name for the main project language.
         /// For the other two project languages, it explicitly uses the appropriate collection settings
         /// name for that language, which the user also set.
-        /// If the user hasn't set a name for the given language, this returns the language's
-        /// standard name from the subtag registry Palaso ships ("Spanish"), and falls
-        /// back to the tag itself if it can't find a name.
+        /// If the user hasn't set a name for the given language, this will find a fairly readable name
+        /// for the languages Palaso knows about (probably the autonym) and fall back to the tag itself
+        /// if it can't find a name.
         /// BL-8174 But in case the tag includes Script/Region/Variant codes, we should show them somewhere too.
         /// </summary>
         // TODO (default name BL-13703) make this consistent with the new Language Chooser default display name instead of using LibPalasso?
@@ -1434,69 +1500,10 @@ namespace Bloom.Collection
                     this.SignLanguage.IsCustomName,
                     metadataLanguageTag
                 );
-            // The four checks above cover Language1/2/3 and the sign language, but AllLanguages can
-            // hold more than those -- callers add to it (see
-            // RuntimeInformationInjectorTests.AddLanguagesUsedInPage_AddsOnlyAppropriateNames) --
-            // and a name the user gave any of them still wins over anything we look up.
-            var namedByTheCollection = AllLanguages.Find(x => x.Tag == langTag);
-            if (
-                namedByTheCollection != null
-                && !string.IsNullOrWhiteSpace(namedByTheCollection.Name)
-            )
-                return namedByTheCollection.Name;
-
-            // Not a language the collection names, so look one up. GetBestLanguageName reads the
-            // subtag registry LibPalaso ships, which is the same on every machine. Do NOT use
-            // GetLocalizedLanguageName here: which of its two paths runs depends on whether a native
-            // ICU library happens to be installed, so it named the same language differently on
-            // different machines (BL-16806).
-            //
-            // A collection language's name comes from somewhere else again -- WritingSystem derives
-            // those, and judges "custom" against LibPalaso's SLDR-backed LanguageLookup -- so the two
-            // can disagree. Accepted: this path runs only when the collection has no name to give.
-            //
-            // Route the result through GetLanguageNameWithScriptVariants, as the branches above do, to
-            // keep BL-8174's script/region distinctions: the lookup answers with the base language's
-            // name, so on its own an nsk-Latn row would read just "Naskapi". nameIsCustom is false
-            // because nobody chose this name, which also keeps us out of that method's one branch that
-            // calls GetLanguageName.
-            try
-            {
-                // LibPalaso special-cases these three ahead of its ICU branch, so asking it is safe
-                // here and is the only way to get "Chinese (Simplified)" rather than a bare "Chinese".
-                // Exactly these tags: variants like zh-CN-x-foo must stay distinguishable from each
-                // other, so they go through GetLanguageNameWithScriptVariants below instead.
-                if (langTag == "zh-CN" || langTag == "zh-TW" || langTag == "prs")
-                    return IetfLanguageTag.GetLocalizedLanguageName(langTag, "en");
-                if (IetfLanguageTag.GetBestLanguageName(langTag, out var bestName))
-                {
-                    // For an unlisted language the lookup has already built the whole label, tag
-                    // included ("Language Not Listed (qaa-x-foo)"); wrapping it in script variants
-                    // would nest it inside itself.
-                    if (
-                        IetfLanguageTag.GetGeneralCode(langTag.ToLowerInvariant())
-                        == WellKnownSubtags.UnlistedLanguage
-                    )
-                        return bestName;
-                    return GetLanguageNameWithScriptVariants(
-                        langTag,
-                        bestName,
-                        false,
-                        metadataLanguageTag
-                    );
-                }
-            }
-            catch (Exception e)
-            {
-                // Never let looking up a name throw: we do this while building the page DOM, and
-                // an exception here made the Edit tab unusable once already (BL-15159). Falling
-                // back to the tag is a fine label, but log it rather than swallowing it silently,
-                // so a language that starts displaying as a bare tag is diagnosable.
-                Logger.WriteEvent(
-                    $"Could not find a display name for language \"{langTag}\", so showing the tag itself: {e.Message}"
-                );
-            }
-            return langTag;
+            // Not one of the collection's languages, so ask LibPalaso. Bloom turns ICU off
+            // (see WritingSystem's static constructor), which is what makes this answer the
+            // same on every machine.
+            return this.GetLanguageName(langTag, metadataLanguageTag);
         }
 
         // We always want to use a name the user deliberately gave (hence the use of 'nameIsCustom').

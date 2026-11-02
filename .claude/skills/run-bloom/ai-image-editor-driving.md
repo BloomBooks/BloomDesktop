@@ -25,7 +25,7 @@ Reusable driver: **`driveAiImageEditor.mjs`** in this folder.
 ## 1. Launch Bloom with the editor linked (HMR) + dev tools
 
 ```bash
-./go.sh --with bloom-ai-image-tools=D:/bloom-ai-image-tools > /tmp/go-bloom.log 2>&1   # background
+./go.sh --dont-disturb --with bloom-ai-image-tools=D:/bloom-ai-image-tools > /tmp/go-bloom.log 2>&1   # background
 until grep -qE "BLOOM_AUTOMATION_READY|exited shortly after" /tmp/go-bloom.log; do sleep 3; done
 grep -E "BLOOM_AUTOMATION_READY|AI Image Editor: live dev server" /tmp/go-bloom.log
 # => [go] AI Image Editor: live dev server at http://localhost:3000/ (HMR).

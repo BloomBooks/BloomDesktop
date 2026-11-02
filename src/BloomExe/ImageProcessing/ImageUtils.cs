@@ -34,6 +34,20 @@ using TempFile = SIL.IO.TempFile;
 namespace Bloom.ImageProcessing
 {
     /// <summary>
+    /// The image file formats we can recognize from a file's leading ("magic") bytes.
+    /// </summary>
+    public enum ImageFileFormat
+    {
+        Unknown,
+        Jpeg,
+        Png,
+        Gif,
+        Bmp,
+        Tiff,
+        WebP,
+    }
+
+    /// <summary>
     /// Controls whether (and how) a background-transparency pass is applied to an image.
     /// </summary>
     /// <notes> Should be kept in sync with the definition of TransparencyMode in bloomImages.ts. </notes>
@@ -650,21 +664,14 @@ namespace Bloom.ImageProcessing
             }
         }
 
+        /// <summary>
+        /// Check whether the file's content (not its name) is a JPEG image.
+        /// </summary>
         public static bool IsJpegFile(string path)
         {
             if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
                 return false;
-            byte[] bytes = new byte[10];
-            using (var file = RobustFile.OpenRead(path))
-            {
-                file.Read(bytes, 0, 10);
-            }
-            // see https://www.sparkhound.com/blog/detect-image-file-types-through-byte-arrays
-            var jpeg = new byte[] { 255, 216, 255, 224 }; // jpeg
-            var jpeg2 = new byte[] { 255, 216, 255, 225 }; // jpeg canon
-
-            return jpeg.SequenceEqual(bytes.Take(jpeg.Length))
-                || jpeg2.SequenceEqual(bytes.Take(jpeg2.Length));
+            return GetImageFileFormat(path) == ImageFileFormat.Jpeg;
         }
 
         public static bool HasJpegExtension(string filename)
@@ -699,19 +706,173 @@ namespace Bloom.ImageProcessing
             return false;
         }
 
+        /// <summary>
+        /// Check whether the file's content (not its name) is a PNG image.
+        /// </summary>
         public static bool IsPngFile(string path)
         {
             if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
                 return false;
-            byte[] bytes = new byte[10];
+            return GetImageFileFormat(path) == ImageFileFormat.Png;
+        }
+
+        /// <summary>
+        /// Identify an image file's format from its leading bytes, ignoring its name.
+        /// </summary>
+        public static ImageFileFormat GetImageFileFormat(string path)
+        {
+            var bytes = new byte[16];
+            int count;
             using (var file = RobustFile.OpenRead(path))
             {
-                file.Read(bytes, 0, 10);
+                count = file.Read(bytes, 0, bytes.Length);
             }
-            // see https://www.sparkhound.com/blog/detect-image-file-types-through-byte-arrays
-            var png = new byte[] { 137, 80, 78, 71 }; // PNG
+            return GetImageFileFormat(bytes.Take(count).ToArray());
+        }
 
-            return png.SequenceEqual(bytes.Take(png.Length));
+        /// <summary>
+        /// Identify an image's format from its leading bytes. Web servers don't always deliver
+        /// the format a URL's extension names (BL-16998: images.rawpixel.com serves WebP from
+        /// URLs ending in ".jpg"), so neither the URL nor the file name can be trusted.
+        /// See https://en.wikipedia.org/wiki/List_of_file_signatures.
+        /// </summary>
+        public static ImageFileFormat GetImageFileFormat(byte[] bytes)
+        {
+            bool HasSignatureAt(int offset, params byte[] signature) =>
+                bytes.Length >= offset + signature.Length
+                && signature.SequenceEqual(bytes.Skip(offset).Take(signature.Length));
+
+            if (HasSignatureAt(0, 0xFF, 0xD8, 0xFF))
+                return ImageFileFormat.Jpeg;
+            // "\x89PNG": the first half of the 8-byte signature is distinctive enough.
+            if (HasSignatureAt(0, 0x89, 0x50, 0x4E, 0x47))
+                return ImageFileFormat.Png;
+            if (HasSignatureAt(0, Encoding.ASCII.GetBytes("GIF8")))
+                return ImageFileFormat.Gif;
+            if (HasSignatureAt(0, Encoding.ASCII.GetBytes("BM")))
+                return ImageFileFormat.Bmp;
+            if (
+                HasSignatureAt(0, 0x49, 0x49, 0x2A, 0x00) // "II*\0", little-endian
+                || HasSignatureAt(0, 0x4D, 0x4D, 0x00, 0x2A) // "MM\0*", big-endian
+            )
+                return ImageFileFormat.Tiff;
+            if (
+                HasSignatureAt(0, Encoding.ASCII.GetBytes("RIFF"))
+                && HasSignatureAt(8, Encoding.ASCII.GetBytes("WEBP"))
+            )
+                return ImageFileFormat.WebP;
+            return ImageFileFormat.Unknown;
+        }
+
+        /// <summary>
+        /// The file extension (with its period) we use for an image of the given format, or null
+        /// if the format is unknown.
+        /// </summary>
+        public static string GetExtensionForImageFileFormat(ImageFileFormat format)
+        {
+            switch (format)
+            {
+                case ImageFileFormat.Jpeg:
+                    return ".jpg";
+                case ImageFileFormat.Png:
+                    return ".png";
+                case ImageFileFormat.Gif:
+                    return ".gif";
+                case ImageFileFormat.Bmp:
+                    return ".bmp";
+                case ImageFileFormat.Tiff:
+                    return ".tif";
+                case ImageFileFormat.WebP:
+                    return ".webp";
+                default:
+                    return null;
+            }
+        }
+
+        /// <summary>
+        /// Return true if the bytes are a WebP image that is lossy-compressed and has no
+        /// transparency or animation, i.e., the kind of picture (usually a photo) that is best
+        /// stored as a JPEG. Lossless, transparent, or animated WebP images are better stored as
+        /// PNG: line art in particular must be PNG for Bloom to make its background transparent.
+        /// See https://developers.google.com/speed/webp/docs/riff_container for the layout.
+        /// </summary>
+        internal static bool IsOpaqueLossyWebP(byte[] bytes)
+        {
+            // Walk the RIFF chunks that follow the 12-byte "RIFF<size>WEBP" header. Each chunk is
+            // a 4-character code, a little-endian unsigned 32-bit size, and the data padded to an
+            // even length. The bytes come from the internet, so a size may be garbage: offset is a
+            // long so that no size can make it overflow, wrap around, or stand still.
+            // The spec puts any ALPH chunk before the VP8 chunk, but we don't trust the bytes to
+            // follow it, so we walk every chunk and report a lossy image only if no chunk anywhere
+            // in the file indicates transparency, losslessness, or animation.
+            var sawLossyImageData = false;
+            long offset = 12;
+            while (offset + 8 <= bytes.Length)
+            {
+                var chunkType = Encoding.ASCII.GetString(bytes, (int)offset, 4);
+                switch (chunkType)
+                {
+                    case "VP8 ": // lossy image data
+                        sawLossyImageData = true;
+                        break;
+                    case "VP8L": // lossless image data
+                    case "ALPH": // alpha channel for lossy image data
+                    case "ANMF": // animation frame
+                        return false;
+                    case "VP8X": // extended format header; its first byte holds feature flags
+                        const byte alphaFlag = 0x10;
+                        const byte animationFlag = 0x02;
+                        if (offset + 8 >= bytes.Length) // truncated: no flags byte
+                            return false;
+                        if ((bytes[offset + 8] & (alphaFlag | animationFlag)) != 0)
+                            return false;
+                        break;
+                }
+                long chunkSize = BitConverter.ToUInt32(bytes, (int)offset + 4);
+                offset += 8 + chunkSize + (chunkSize & 1);
+            }
+            return sawLossyImageData;
+        }
+
+        /// <summary>
+        /// System.Drawing (and therefore PalasoImage) cannot read some image formats that web
+        /// sites commonly serve, currently WebP. If the file at sourcePath is in one of these
+        /// formats (judging by its content, not its name), use GraphicsMagick to convert it to a
+        /// JPEG (for an opaque lossy image, typically a photo) or else a PNG. The new file goes
+        /// in destFolder with the same base name as the source. Returns the new file's path, or
+        /// null if the file needs no conversion. Throws if the conversion fails.
+        /// </summary>
+        public static string ConvertWebpToJpegOrPngAsNeeded(string sourcePath, string destFolder)
+        {
+            // Sniff just the header first: this runs for every image the user chooses, and some
+            // (e.g. large scans) are far too big to read into memory for nothing.
+            if (GetImageFileFormat(sourcePath) != ImageFileFormat.WebP)
+                return null;
+            var extension = IsOpaqueLossyWebP(RobustFile.ReadAllBytes(sourcePath))
+                ? ".jpg"
+                : ".png";
+            var destPath = Path.Combine(
+                destFolder,
+                Path.GetFileNameWithoutExtension(sourcePath) + extension
+            );
+            var options = new GraphicsMagickOptions
+            {
+                Size = new Size(0, 0), // preserve current size (no scaling)
+                MakeOpaque = false,
+                // Set explicitly because a source named "*.jpg" would otherwise ask
+                // GraphicsMagick to preserve JPEG settings that a WebP file does not have.
+                JpegQuality = 90,
+                ProfilesToStrip = null,
+            };
+            var result = RunGraphicsMagick(sourcePath, destPath, options);
+            if (result.ExitCode != 0)
+            {
+                LogGraphicsMagickFailure(result);
+                throw new ApplicationException(
+                    $"Bloom could not convert the WebP image {Path.GetFileName(sourcePath)} to {extension}: {result.StandardError}"
+                );
+            }
+            return destPath;
         }
 
         public static void ReportImageMetadataProblem(string filePath, Exception ex)
@@ -1223,7 +1384,10 @@ namespace Bloom.ImageProcessing
             // know when to just replace the existing one with the same name... some other process will have
             // to remove unused images.
             string basename;
-            if (String.IsNullOrEmpty(imageInfo.FileName) || imageInfo.FileName.StartsWith("tmp"))
+            if (
+                String.IsNullOrEmpty(imageInfo.FileName)
+                || imageInfo.FileName.StartsWith("tmp", StringComparison.Ordinal)
+            )
             {
                 basename = "image";
             }
@@ -1359,12 +1523,14 @@ namespace Bloom.ImageProcessing
             {
                 var filePaths = Directory.GetFiles(folderPath, "*.*");
                 var pngFiles = filePaths
-                    .Where(path => path.ToLowerInvariant().EndsWith(".png"))
+                    .Where(path =>
+                        path.ToLowerInvariant().EndsWith(".png", StringComparison.Ordinal)
+                    )
                     .ToArray();
                 var jpgFiles = filePaths
                     .Where(path =>
-                        path.ToLowerInvariant().EndsWith(".jpg")
-                        || path.ToLowerInvariant().EndsWith(".jpeg")
+                        path.ToLowerInvariant().EndsWith(".jpg", StringComparison.Ordinal)
+                        || path.ToLowerInvariant().EndsWith(".jpeg", StringComparison.Ordinal)
                     )
                     .ToArray();
                 foreach (string path in pngFiles)
@@ -1484,12 +1650,12 @@ namespace Bloom.ImageProcessing
             // in a system independent way.
             var filePaths = Directory.GetFiles(folderPath, "*.*");
             var pngFiles = filePaths
-                .Where(path => path.ToLowerInvariant().EndsWith(".png"))
+                .Where(path => path.ToLowerInvariant().EndsWith(".png", StringComparison.Ordinal))
                 .ToArray();
             var jpgFiles = filePaths
                 .Where(path =>
-                    path.ToLowerInvariant().EndsWith(".jpg")
-                    || path.ToLowerInvariant().EndsWith(".jpeg")
+                    path.ToLowerInvariant().EndsWith(".jpg", StringComparison.Ordinal)
+                    || path.ToLowerInvariant().EndsWith(".jpeg", StringComparison.Ordinal)
                 )
                 .ToArray();
             int completed = 0;
@@ -2162,6 +2328,10 @@ namespace Bloom.ImageProcessing
             internal int JpegQuality; // 0 means use input jpeg's quality
             internal string ProfilesToStrip; // null means don't strip any profiles
             internal Rectangle cropRectangle;
+
+            // Applied before any crop, so the crop rectangle is in the coordinates of the
+            // mirrored and rotated image. Default (all zero/false) leaves the pixels alone.
+            internal PictureTransform Transform;
         }
 
         public static bool TryGetImageSize(string path, out Size size)
@@ -2176,7 +2346,7 @@ namespace Bloom.ImageProcessing
                     try
                     {
                         var arguments = "identify -format %P \"" + safePath + "\"";
-                        var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                        var result = CommandLineRunner.Run(
                             GetGraphicsMagickPath(),
                             arguments,
                             "",
@@ -2234,6 +2404,38 @@ namespace Bloom.ImageProcessing
             return result;
         }
 
+        /// <summary>
+        /// Mirror and rotate the image as <paramref name="transform"/> says, then crop the result
+        /// to <paramref name="cropRectangle"/> (in the coordinates of the mirrored and rotated
+        /// image; Rectangle.Empty means no crop). The output needs no transform to look as the
+        /// original did with the transform applied.
+        /// </summary>
+        public static ExecutionResult TransformAndCropImage(
+            string sourcePath,
+            string destPath,
+            PictureTransform transform,
+            Rectangle cropRectangle
+        )
+        {
+            var options = new GraphicsMagickOptions
+            {
+                Size = new Size(0, 0), // preserve current size (no scaling)
+                MakeOpaque = false,
+                JpegQuality = 0, // same as input
+                ProfilesToStrip = null,
+                cropRectangle = cropRectangle,
+                Transform = transform,
+            };
+            var result = RunGraphicsMagick(sourcePath, destPath, options);
+            if (result.ExitCode != 0)
+            {
+                LogGraphicsMagickFailure(result);
+                return result;
+            }
+            CopyCoreMetadata(sourcePath, destPath);
+            return result;
+        }
+
         private static ExecutionResult RunGraphicsMagick(
             string sourcePath,
             string destPath,
@@ -2252,6 +2454,20 @@ namespace Bloom.ImageProcessing
                             argsBldr.AppendFormat("convert \"{0}\"", safeSourcePath);
                             if (options.MakeOpaque)
                                 argsBldr.Append(" -background white -extent 0x0 +matte");
+                            // GraphicsMagick applies these in the order given, which is the order
+                            // CSS applies `rotate(...) scale(...)`: mirror first, then rotate.
+                            if (options.Transform.FlipX)
+                                argsBldr.Append(" -flop");
+                            if (options.Transform.FlipY)
+                                argsBldr.Append(" -flip");
+                            if (options.Transform.QuarterRotations != 0)
+                                argsBldr.AppendFormat(
+                                    " -rotate {0}",
+                                    options.Transform.QuarterRotations * 90
+                                );
+                            // Rotation can leave a page offset that -crop would measure from.
+                            if (!options.Transform.IsIdentity)
+                                argsBldr.Append(" +repage");
                             if (options.cropRectangle != Rectangle.Empty)
                             {
                                 argsBldr.AppendFormat(
@@ -2261,6 +2477,11 @@ namespace Bloom.ImageProcessing
                                     options.cropRectangle.X,
                                     options.cropRectangle.Y
                                 );
+                                // The crop leaves its offset in the page geometry, which PNG then
+                                // stores. Output that must need no transform must carry no offset
+                                // either. Untransformed crops keep their existing output.
+                                if (!options.Transform.IsIdentity)
+                                    argsBldr.Append(" +repage");
                             }
 
                             // http://www.graphicsmagick.org/GraphicsMagick.html#details-profile states:
@@ -2287,7 +2508,10 @@ namespace Bloom.ImageProcessing
                                 )
                             )
                             {
-                                if (options.JpegQuality == 0 && sourcePath.EndsWith(".jpg"))
+                                if (
+                                    options.JpegQuality == 0
+                                    && sourcePath.EndsWith(".jpg", StringComparison.Ordinal)
+                                )
                                     argsBldr.Append(" -define jpeg:preserve-settings"); // preserve input quality and sampling factor
                                 else if (options.JpegQuality > 0)
                                     argsBldr.AppendFormat(" -quality {0}", options.JpegQuality);
@@ -2305,7 +2529,7 @@ namespace Bloom.ImageProcessing
                             argsBldr.AppendFormat(" \"{0}\"", safeDestPath);
                             var arguments = argsBldr.ToString();
 
-                            var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                            var result = CommandLineRunner.Run(
                                 GetGraphicsMagickPath(),
                                 arguments,
                                 "",
@@ -2747,9 +2971,13 @@ namespace Bloom.ImageProcessing
                 // files).
                 // BL-9533: these errors keep happening, but we can't help users who respond to a toast and send in an error report.
                 // Logging it will allow us to possibly correlate an error here with another problem that does get reported.
+                var details = MiscUtils.GetExtendedFileCopyErrorInformation(
+                    imagePath,
+                    out var likelyCause
+                );
                 var message = $"Could not update PNG image (BL-3227) at {imagePath}";
-                string details;
-                details = MiscUtils.GetExtendedFileCopyErrorInformation(imagePath);
+                if (likelyCause != null)
+                    message += " " + likelyCause;
                 NonFatalProblem.Report(
                     ModalIf.None,
                     PassiveIf.All,
@@ -2910,7 +3138,8 @@ namespace Bloom.ImageProcessing
                 if (string.IsNullOrWhiteSpace(src) || IsPlaceholderImageFilename(src))
                     continue;
                 var style = img.GetAttribute("style");
-                if (!SignifiesCropping(style))
+                // A mirrored or rotated picture gets a new file just as a cropped one does.
+                if (!SignifiesCropping(style) && GetPictureTransform(style).IsIdentity)
                 {
                     uncroppedSrcNames.Add(src);
                 }
@@ -2929,7 +3158,8 @@ namespace Bloom.ImageProcessing
                 var imgContainer = img.ParentNode as SafeXmlElement;
                 var canvasElement = imgContainer?.ParentNode as SafeXmlElement;
                 var canvasElementStyle = canvasElement?.GetAttribute("style");
-                if (!SignifiesCropping(style) || canvasElementStyle == null)
+                var isTransformed = !GetPictureTransform(style).IsIdentity;
+                if (!isTransformed && (!SignifiesCropping(style) || canvasElementStyle == null))
                 {
                     if (alsoTrimMetadataForUncroppedImages)
                         TrimTheMetadata(
@@ -2955,7 +3185,9 @@ namespace Bloom.ImageProcessing
                         img,
                         src,
                         style,
-                        canvasElementStyle,
+                        // A mirrored or rotated picture outside a canvas element has no crop,
+                        // but its pixels still need mirroring and rotating.
+                        canvasElementStyle ?? "",
                         bloomDataDivEntriesByDataBook
                     );
                 }
@@ -3013,6 +3245,7 @@ namespace Bloom.ImageProcessing
                     fileName,
                     preserveCropStyleForUpload
                 );
+                SyncDataDivStyle(img, bloomDataDivEntriesByDataBook);
                 return;
             }
 
@@ -3024,7 +3257,8 @@ namespace Bloom.ImageProcessing
                 imageDestFolder,
                 needNewName,
                 preserveCropStyleForUpload,
-                bloomDataDivEntriesByDataBook
+                bloomDataDivEntriesByDataBook,
+                out var cropSucceeded
             );
 
             // Track if we replaced an original file with a new one
@@ -3032,7 +3266,10 @@ namespace Bloom.ImageProcessing
             {
                 replacedOriginals.Add(src);
             }
-            cropped[key] = croppedFileName;
+            // Don't let a duplicate treat a failed crop as done; that would take the duplicate
+            // path, which syncs the data-div as if the file had been cropped.
+            if (cropSucceeded)
+                cropped[key] = croppedFileName;
         }
 
         private static void UpdateCropStyleForAlreadyCroppedImage(
@@ -3240,11 +3477,13 @@ namespace Bloom.ImageProcessing
             string imageDestFolder,
             bool useNewName,
             bool preserveCropStyleForUpload,
-            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook
+            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook,
+            out bool cropSucceeded
         )
         {
             var cropMetadata = preserveCropStyleForUpload ? TryGetCropMetadata(img) : null;
             var croppedImagePath = MakeCroppedImage(img, imageSourceFolder, imageDestFolder);
+            cropSucceeded = croppedImagePath != null;
             var src = img.GetAttribute("src");
             // a good default if we can't produce a cropped image for any reason.
             // (The tests in MakeCroppedImage are a bit more robust than the ones we do before
@@ -3292,11 +3531,20 @@ namespace Bloom.ImageProcessing
             {
                 UpdateStyleToCoverCanvasElement(img, cropMetadata, croppedImageSize);
             }
+            else if (!cropSucceeded && preserveCropStyleForUpload)
+            {
+                // The file is unchanged, so the crop style is still right; keeping it is the only
+                // way the uploaded book shows this image cropped at all.
+            }
             else
             {
                 // so nothing can possibly think it needs more cropping
                 img.RemoveAttribute("style");
             }
+
+            // If the crop failed, the file is unchanged, so leave the data-div's crop style alone.
+            if (cropSucceeded)
+                SyncDataDivStyle(img, bloomDataDivEntriesByDataBook);
 
             return result;
         }
@@ -3338,13 +3586,13 @@ namespace Bloom.ImageProcessing
             var left = (cropMetadata.CanvasElementWidth - scaledWidth) / 2;
             var top = (cropMetadata.CanvasElementHeight - scaledHeight) / 2;
 
+            // The image file already has any mirror and rotation applied to its pixels.
+            var currentStyle = img.GetAttribute("style");
+            if (!GetPictureTransform(currentStyle).IsIdentity)
+                currentStyle = RemoveTransformFromStyle(currentStyle);
             // It's particularly important that we keep a width, because that's what
             // our CSS looks for to suppress the old object-fit:contain rule.
-            var updatedStyle = ReplaceOrAppendPxStyle(
-                img.GetAttribute("style"),
-                "width",
-                scaledWidth
-            );
+            var updatedStyle = ReplaceOrAppendPxStyle(currentStyle, "width", scaledWidth);
             updatedStyle = ReplaceOrAppendPxStyle(updatedStyle, "left", left);
             updatedStyle = ReplaceOrAppendPxStyle(updatedStyle, "top", top);
             img.SetAttribute("style", updatedStyle);
@@ -3418,10 +3666,48 @@ namespace Bloom.ImageProcessing
         }
 
         /// <summary>
+        /// After cropping has changed or removed the style of an img, give its bloomDataDiv entry
+        /// (if any) the same style. Otherwise, the next time the book is opened, the data-div's old
+        /// crop style gets copied back onto the img, where it crops the already-cropped image
+        /// again (BL-16907).
+        /// An img on a custom layout page is different: its style fits the custom layout, while the
+        /// data-div entry describes the standard layout's crop of the original file, in a canvas
+        /// element sized for the original file's shape (BL-16357). Neither applies to the cropped
+        /// file, so the entry loses them. If the book goes back to the standard layout, BookData
+        /// then copies only the src onto the template's plain img, and the picture shows whole;
+        /// the editor lays it out afresh, as for a newly chosen picture.
+        /// </summary>
+        private static void SyncDataDivStyle(
+            SafeXmlElement img,
+            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook
+        )
+        {
+            var dataBook = img.GetAttribute("data-book");
+            if (string.IsNullOrWhiteSpace(dataBook))
+                return;
+
+            if (!bloomDataDivEntriesByDataBook.TryGetValue(dataBook, out var dataDivElement))
+                return;
+            if (HtmlDom.IsInCustomLayoutPage(img))
+            {
+                dataDivElement.RemoveAttribute("style");
+                foreach (var name in HtmlDom.BackgroundImgTupleNames)
+                    dataDivElement.RemoveAttribute(name);
+            }
+            else if (img.HasAttribute("style"))
+                dataDivElement.SetAttribute("style", img.GetAttribute("style"));
+            else
+                dataDivElement.RemoveAttribute("style");
+        }
+
+        /// <summary>
         /// If the specified img is cropped, and we can find and successfully crop the
         /// appropriate image file, make a new file containing the cropped image in imageDestFolder
         /// and return the path to it.
-        /// If anything prevents doing this successfully, including that the image is not cropped, return null.
+        /// If the img's style has a picture rotation or mirror, the new
+        /// file is mirrored and rotated as well, cropped to what the element shows, and it is made even
+        /// when the img is not cropped.
+        /// If anything prevents doing this successfully, including that there is nothing to do, return null.
         /// </summary>
         /// <param name="img">An img element, which might need cropping if we find it in the right context.</param>
         /// <param name="imageSourceFolder">The folder where image files live; can be combined with the src
@@ -3436,7 +3722,8 @@ namespace Bloom.ImageProcessing
         )
         {
             var cropMetadata = TryGetCropMetadata(img);
-            if (cropMetadata == null)
+            var transform = GetPictureTransform(img.GetAttribute("style"));
+            if (cropMetadata == null && transform.IsIdentity)
                 return null;
 
             var src = img.GetAttribute("src");
@@ -3452,13 +3739,30 @@ namespace Bloom.ImageProcessing
                 return null; // can't crop the image if we can't get its size.
             }
 
-            var cropRectangle = ComputeCropRectangle(cropMetadata, size);
             var ext = Path.GetExtension(srcPath).ToLowerInvariant();
             var tempPath = Path.ChangeExtension(
                 Path.Combine(imageDestFolder, Guid.NewGuid().ToString()),
                 ext
             );
-            var result = ImageUtils.CropImage(srcPath, tempPath, cropRectangle);
+            ExecutionResult result;
+            if (transform.IsIdentity)
+            {
+                var cropRectangle = ComputeCropRectangle(cropMetadata, size);
+                result = ImageUtils.CropImage(srcPath, tempPath, cropRectangle);
+            }
+            else
+            {
+                var cropRectangle =
+                    cropMetadata == null
+                        ? Rectangle.Empty
+                        : ComputeShownCropRectangle(cropMetadata, size, transform);
+                result = ImageUtils.TransformAndCropImage(
+                    srcPath,
+                    tempPath,
+                    transform,
+                    cropRectangle
+                );
+            }
             if (result.ExitCode == 0)
                 return tempPath;
             return null;
@@ -3510,6 +3814,25 @@ namespace Bloom.ImageProcessing
                 || rectangle.Top > tolerance
                 || rectangle.Right < imageSize.Width - tolerance
                 || rectangle.Bottom < imageSize.Height - tolerance;
+        }
+
+        /// <summary>
+        /// A picture's own rotation and mirror, as its img's inline transform expresses them.
+        /// The mirrors apply first, along the picture's own axes, and then the rotation.
+        /// </summary>
+        public struct PictureTransform
+        {
+            /// <summary>Number of 90-degree clockwise rotations, 0 to 3.</summary>
+            public int QuarterRotations;
+
+            /// <summary>Mirrored left to right (negative x scale).</summary>
+            public bool FlipX;
+
+            /// <summary>Mirrored top to bottom (negative y scale).</summary>
+            public bool FlipY;
+
+            /// <summary>True if the transform leaves the picture as it is.</summary>
+            public bool IsIdentity => QuarterRotations == 0 && !FlipX && !FlipY;
         }
 
         /// <summary>
@@ -3589,10 +3912,103 @@ namespace Bloom.ImageProcessing
             );
         }
 
+        /// <summary>
+        /// Compute the crop rectangle for a mirrored or rotated picture, in the pixel coordinates
+        /// of the image after the mirror and rotation are applied to it. This is the arithmetic of
+        /// getShownContentRectangle in CanvasElementHandleDragInteractions.ts: the img's box (its
+        /// left, top and width, with the height that follows from the image's own shape) rotates
+        /// about its centre, so the element shows a rectangle the size of the box with its two
+        /// dimensions swapped for 90 and 270 degrees, centred where the box's centre is. A mirror
+        /// does not move that rectangle.
+        /// </summary>
+        private static Rectangle ComputeShownCropRectangle(
+            CropMetadata cropMetadata,
+            Size imageSize,
+            PictureTransform transform
+        )
+        {
+            var scale = cropMetadata.ImgWidth / imageSize.Width;
+            var boxWidth = cropMetadata.ImgWidth;
+            var boxHeight = boxWidth * imageSize.Height / imageSize.Width;
+            var isQuarterRotation = transform.QuarterRotations % 2 == 1;
+            var shownWidth = isQuarterRotation ? boxHeight : boxWidth;
+            var shownHeight = isQuarterRotation ? boxWidth : boxHeight;
+            var shownLeft = cropMetadata.ImgLeft + boxWidth / 2 - shownWidth / 2;
+            var shownTop = cropMetadata.ImgTop + boxHeight / 2 - shownHeight / 2;
+
+            return new Rectangle(
+                Convert.ToInt32(-shownLeft / scale),
+                Convert.ToInt32(-shownTop / scale),
+                Convert.ToInt32(cropMetadata.CanvasElementWidth / scale),
+                Convert.ToInt32(cropMetadata.CanvasElementHeight / scale)
+            );
+        }
+
+        private static readonly System.Text.RegularExpressions.Regex kTransformPattern =
+            new System.Text.RegularExpressions.Regex(@"(?:^|;)\s*transform\s*:\s*([^;]*)");
+        private static readonly System.Text.RegularExpressions.Regex kRotatePattern =
+            new System.Text.RegularExpressions.Regex(@"rotate\(\s*(-?[0-9]*\.?[0-9]+)deg\s*\)");
+        private static readonly System.Text.RegularExpressions.Regex kScalePattern =
+            new System.Text.RegularExpressions.Regex(
+                @"scale\(\s*(-?[0-9]*\.?[0-9]+)\s*(?:,\s*(-?[0-9]*\.?[0-9]+)\s*)?\)"
+            );
+
+        /// <summary>
+        /// Read the picture's own rotation and mirror from an img's inline style, in the grammar
+        /// that getImageContentTransform in imageContentTransform.ts reads:
+        /// `transform: rotate(Ndeg) scale(sx, sy)`, the rotation rounded to a multiple of 90
+        /// degrees and each mirror given by the sign of its scale factor.
+        /// </summary>
+        internal static PictureTransform GetPictureTransform(string imgStyle)
+        {
+            var result = new PictureTransform();
+            if (string.IsNullOrEmpty(imgStyle))
+                return result;
+            var transformMatch = kTransformPattern.Match(imgStyle);
+            if (!transformMatch.Success)
+                return result;
+            var transform = transformMatch.Groups[1].Value;
+            var rotateMatch = kRotatePattern.Match(transform);
+            if (rotateMatch.Success)
+            {
+                var degrees = double.Parse(
+                    rotateMatch.Groups[1].Value,
+                    CultureInfo.InvariantCulture
+                );
+                result.QuarterRotations = (((int)Math.Round(degrees / 90) % 4) + 4) % 4;
+            }
+            var scaleMatch = kScalePattern.Match(transform);
+            if (scaleMatch.Success)
+            {
+                var sx = double.Parse(scaleMatch.Groups[1].Value, CultureInfo.InvariantCulture);
+                // A one-argument scale() scales both axes by the same amount.
+                var sy = scaleMatch.Groups[2].Success
+                    ? double.Parse(scaleMatch.Groups[2].Value, CultureInfo.InvariantCulture)
+                    : sx;
+                result.FlipX = sx < 0;
+                result.FlipY = sy < 0;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Remove the transform declaration from an inline style, leaving the rest as it was.
+        /// </summary>
+        private static string RemoveTransformFromStyle(string style)
+        {
+            var parts = style
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(p => p.Trim())
+                .Where(p => p.Length > 0 && !kTransformPattern.IsMatch(p));
+            return string.Join("; ", parts) + ";";
+        }
+
         internal static double GetNumberFromPx(string label, string input)
         {
             var parts = input.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-            var part = parts.FirstOrDefault(p => p.Trim().StartsWith(label + ":"));
+            var part = parts.FirstOrDefault(p =>
+                p.Trim().StartsWith(label + ":", StringComparison.Ordinal)
+            );
             if (part == null)
                 return 0;
             var number = part.Trim().Substring(label.Length + 1);

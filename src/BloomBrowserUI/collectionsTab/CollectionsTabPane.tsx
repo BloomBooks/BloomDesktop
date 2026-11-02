@@ -31,7 +31,6 @@ import { BloomTooltip } from "../react_components/BloomToolTip";
 import { Link } from "../react_components/link";
 import { ForumInvitationDialogLauncher } from "../react_components/forumInvitationDialog";
 import { SignInInvitationDialogLauncher } from "../react_components/signInInvitationDialog";
-import { CollectionSettingsDialog } from "../collection/CollectionSettingsDialog";
 import { BooksOnBlorgProgressBar } from "../booksOnBlorg/BooksOnBlorgProgressBar";
 import { SubscriptionStatus } from "./SubscriptionStatus";
 import {
@@ -40,7 +39,6 @@ import {
 } from "../react_components/makeReaderTemplateBloomPackDialog";
 import { AboutDialogLauncher } from "../react_components/aboutDialog";
 import { RadioChoiceDialog } from "./RadioChoiceDialog";
-import { ExternalBusyOverlay } from "./ExternalBusyOverlay";
 import { CollectionChooserDialog } from "../collection/CollectionChooserDialog";
 import {
     kMinPaneSizePx,
@@ -750,10 +748,8 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             <SignInInvitationDialogLauncher />
             <RegistrationDialogEventLauncher />
             <AboutDialogLauncher />
-            <CollectionSettingsDialog />
             <EmbeddedProgressDialog id="collectionTab" />
             <MakeReaderTemplateBloomPackDialog />
-            <ExternalBusyOverlay />
             <CollectionChooserDialog
                 open={collectionChooserOpen}
                 onClose={() => setCollectionChooserOpen(false)}

@@ -4,9 +4,11 @@ import {
     getTheOneToolbox,
     applyToolboxStateToUpdatedPage,
     removeToolboxMarkup,
+} from "./toolbox";
+import {
     scheduleMarkupUpdateAfterPaste,
     updateMarkupAfterUndoOrRedo,
-} from "./toolbox";
+} from "./pageEditingMarkup";
 import { simulateBlurOnPageFrameMouseDown } from "../../utils/menuCloseOnBlur";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
 import { ToolBox } from "./toolbox";
@@ -16,9 +18,16 @@ import { setActiveDragActivityTab } from "./games/GameTool";
 import { registerAllToolboxTools } from "./registerAllToolboxTools";
 // Explicit imports needed so that these symbols are in local scope for the window.toolboxBundle object
 import {
+    beginLoadSynphonySettings,
+    classifySampleTextFiles,
+    getDecodableStageMatchingWords,
+    getSynphonyAlwaysMatchSymbols,
+    addSampleTextFilesChangedListener,
     addWordListChangedListener,
     beginSaveChangedSettings,
     makeLetterWordList,
+    removeSampleTextFilesChangedListener,
+    removeWordListChangedListener,
 } from "./readers/readerTools";
 import { activateLongPressFor } from "../js/bloomEditing";
 import { IAudioRecorder } from "./talkingBook/IAudioRecorder";
@@ -26,10 +35,40 @@ import { theOneAudioRecorder } from "./talkingBook/audioRecording";
 import { renderToolboxRoot } from "./ToolboxRoot";
 
 export interface IToolboxFrameExports {
+    /**
+     * Loads the collection's reader settings into the one ReaderToolsModel, if they are not
+     * already in the model actually in hand. Cheap when they are. (BL-16732)
+     */
+    beginLoadSynphonySettings(): JQueryPromise<void>;
+
+    beginSaveChangedSettings(
+        settings: import("./readers/ReaderSettings").ReaderSettings,
+        previousMoreWords: string,
+        previousLetters: string,
+        previousUseAllowedWords?: number,
+    ): Promise<void>;
+
     addWordListChangedListener(
         listenerNameAndContext: string,
         callback: () => void,
     ): void;
+
+    removeWordListChangedListener(listenerNameAndContext: string): void;
+
+    getDecodableStageMatchingWords(knownGpcs: string[]): string[];
+
+    getSynphonyAlwaysMatchSymbols(): string[];
+
+    classifySampleTextFiles(
+        paths: string[],
+    ): { path: string; validType: boolean; hasExtension: boolean }[];
+
+    addSampleTextFilesChangedListener(
+        listenerNameAndContext: string,
+        callback: () => void,
+    ): void;
+
+    removeSampleTextFilesChangedListener(listenerNameAndContext: string): void;
 
     activateLongPressFor(jQuerySetOfMatchedElements): void;
 
@@ -40,6 +79,7 @@ export interface IToolboxFrameExports {
 
     canUndo(): boolean;
     undo(): void;
+    readerToolsHandleUndoKeys(): boolean;
 
     applyToolboxStateToPage(): void;
 
@@ -57,9 +97,16 @@ export {
     closeSetupDialog,
 } from "./readers/readerSetup/readerSetupDialog";
 export {
+    beginLoadSynphonySettings,
+    classifySampleTextFiles,
+    getDecodableStageMatchingWords,
+    getSynphonyAlwaysMatchSymbols,
+    addSampleTextFilesChangedListener,
     addWordListChangedListener,
     beginSaveChangedSettings,
     makeLetterWordList,
+    removeSampleTextFilesChangedListener,
+    removeWordListChangedListener,
 } from "./readers/readerTools";
 export { activateLongPressFor } from "../js/bloomEditing";
 export { TalkingBookTool }; // one function is called by CSharp.
@@ -82,6 +129,15 @@ export function canUndo(): boolean {
         readerToolsModel.shouldHandleUndo() &&
         readerToolsModel.canUndo()
     );
+}
+
+/**
+ * Whether the reader tools take Ctrl+Z and Ctrl+Y in a text block. Their key handler on each
+ * editable claims both keys whenever a markup tool is selected (see decodableReaderTool.tsx), and
+ * the page's own handlers of those keys must leave them to it then.
+ */
+export function readerToolsHandleUndoKeys(): boolean {
+    return !!getTheOneReaderToolsModel()?.shouldHandleUndo();
 }
 
 export function undo() {
@@ -126,14 +182,21 @@ const toolboxBundle: ToolboxBundleApi = {
     showSetupDialog,
     initializeReaderSetupDialog,
     closeSetupDialog,
+    beginLoadSynphonySettings,
+    classifySampleTextFiles,
+    getDecodableStageMatchingWords,
+    getSynphonyAlwaysMatchSymbols,
+    addSampleTextFilesChangedListener,
     addWordListChangedListener,
     beginSaveChangedSettings,
     makeLetterWordList,
+    removeSampleTextFilesChangedListener,
+    removeWordListChangedListener,
     activateLongPressFor,
     TalkingBookTool,
     canUndo,
     undo,
-    applyToolboxStateToPageLegacy: applyToolboxStateToPage,
+    readerToolsHandleUndoKeys,
     setActiveDragActivityTab,
     getTheOneAudioRecorderForExportOnly,
     copyLeveledReaderStatsToClipboard,

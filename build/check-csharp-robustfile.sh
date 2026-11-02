@@ -48,6 +48,10 @@ if [ -s $filesToCheck ]; then
       /PublishTab\.Android\.File\./ {
         next;
       }
+      # TagLib.File is a TagLib# class, not System.IO.File.
+      /TagLib\.File\./ {
+        next;
+      }
       /(^|[^A-Za-z0-9_])File\.[A-Z]/ ||
       /(^|[^A-Za-z0-9_])Directory\.(Move|Delete)([^A-Za-z0-9_]|$)/ ||
       /(^|[^A-Za-z0-9_])(Document|Metadata)\.FromFile([^A-Za-z0-9_]|$)/ {

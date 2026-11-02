@@ -73,6 +73,11 @@ import {
     ICanvasElementClipboardHost,
 } from "./CanvasElementClipboard";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
+import {
+    getCanvasElementRotation,
+    kRotatedClass,
+    setCanvasElementRotation,
+} from "./canvasElementRotation";
 
 const pastedImageInfo = {
     imageId: "makeNewCanvasElement",
@@ -221,6 +226,68 @@ describe("CanvasElementClipboard paste refreshes the metadata button (BL-16605)"
         expect(host.adjustContainerAspectRatio).toHaveBeenCalledTimes(1);
         expect(host.adjustBackgroundImageSize).not.toHaveBeenCalled();
         expect(SetupMetadataButton).not.toHaveBeenCalled();
+    });
+});
+
+describe("CanvasElementClipboard paste into a turned or cropped picture (BL-16741)", () => {
+    beforeEach(() => {
+        document.body.innerHTML = "";
+    });
+
+    test("the pasted picture comes in upright and uncropped", () => {
+        const { bloomCanvas } = makeCanvasWithPlaceholder(true);
+        bloomCanvas
+            .getElementsByTagName("img")[0]
+            .setAttribute("src", "realBackground.png");
+        const overlay = document.createElement("div");
+        overlay.classList.add(kCanvasElementClass);
+        overlay.innerHTML =
+            '<div class="bloom-imageContainer"><img src="old.png" /></div>';
+        bloomCanvas.appendChild(overlay);
+        const overlayImg = overlay.getElementsByTagName("img")[0];
+        overlayImg.style.transform = "rotate(90deg) scaleX(-1)";
+        overlayImg.style.width = "150px";
+        overlayImg.style.left = "-25px";
+        overlayImg.style.top = "-30px";
+        const host = makeHost(bloomCanvas, overlay);
+
+        // Sanity check: the old picture is turned, mirrored and cropped.
+        expect(overlayImg.style.transform).toBe("rotate(90deg) scaleX(-1)");
+        expect(overlayImg.style.width).toBe("150px");
+
+        makeClipboard(host).finishPasteImageFromClipboard(pastedImageInfo);
+
+        expect(overlayImg.getAttribute("src")).toBe("pasted.png");
+        expect(overlayImg.style.transform).toBe("");
+        expect(overlayImg.style.width).toBe("");
+        expect(overlayImg.style.left).toBe("");
+        expect(overlayImg.style.top).toBe("");
+    });
+
+    test("the pasted picture's box comes in straight, whatever turned the old one", () => {
+        const { bloomCanvas } = makeCanvasWithPlaceholder(true);
+        bloomCanvas
+            .getElementsByTagName("img")[0]
+            .setAttribute("src", "realBackground.png");
+        const overlay = document.createElement("div");
+        overlay.classList.add(kCanvasElementClass);
+        overlay.innerHTML =
+            '<div class="bloom-imageContainer"><img src="old.png" /></div>';
+        bloomCanvas.appendChild(overlay);
+        // What Rotate right does to an overlay picture: it turns the box.
+        setCanvasElementRotation(overlay, 90);
+        const host = makeHost(bloomCanvas, overlay);
+
+        // Sanity check: the box is turned.
+        expect(getCanvasElementRotation(overlay)).toBe(90);
+
+        makeClipboard(host).finishPasteImageFromClipboard(pastedImageInfo);
+
+        expect(overlay.getElementsByTagName("img")[0].getAttribute("src")).toBe(
+            "pasted.png",
+        );
+        expect(getCanvasElementRotation(overlay)).toBe(0);
+        expect(overlay.classList.contains(kRotatedClass)).toBe(false);
     });
 });
 

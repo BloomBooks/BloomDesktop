@@ -976,7 +976,7 @@ namespace Bloom.Publish
             foreach (SafeXmlElement elt in pageElt.SafeSelectNodes(kSelectThingsThatCanBeHidden))
             {
                 var id = elt.GetAttribute("id");
-                if (id != null && id.StartsWith(kTempIdMarker))
+                if (id != null && id.StartsWith(kTempIdMarker, StringComparison.Ordinal))
                     elt.RemoveAttribute("id");
             }
         }
@@ -1806,7 +1806,7 @@ namespace Bloom.Publish
                         );
                     // Assumes only one font file per font; if we embed multiple font files, will need to enhance this.
                     var size = new FileInfo(fontFile).Length;
-                    var sizeToReport = (size / 1000000.0).ToString("F2"); // purposely locale-specific; might be e.g. 1,2
+                    var sizeToReport = (size / 1000000.0).ToString("F2", UserCulture.Current); // purposely locale-specific; might be e.g. 1,2
                     progress.MessageWithParams(
                         "PublishTab.Android.File.Progress.Embedding",
                         "{1} is a number with two decimal places, the number of megabytes the font file takes up",

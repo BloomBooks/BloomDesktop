@@ -17,6 +17,7 @@ import { CanvasElementType } from "../../toolbox/canvas/canvasElementTypes";
 import { kDraggableIdAttribute } from "../../toolbox/canvas/canvasElementDraggables";
 import { changeImageInfo } from "../bloomEditing";
 import { addSkeletonIfEmpty } from "../linkGrid";
+import { AttachNewTableThatFillsItsSpace } from "../tableEditing";
 import { kImageContainerClass, kImageContainerSelector } from "../bloomImages";
 import { getExactClientSize } from "../../../utils/elementUtils";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
@@ -26,6 +27,11 @@ import { putBubbleBefore } from "./CanvasElementBubbleLevelUtils";
 import { setCanvasElementPosition } from "./CanvasElementPositioning";
 import type { ITextColorInfo } from "./CanvasElementSharedTypes";
 import $ from "jquery";
+
+// A new table gets a size that shows its two columns and two rows clearly,
+// without covering much of the page.
+const kDefaultTableWidth = 300;
+const kDefaultTableHeight = 200;
 
 export interface IFinishAddingCanvasElementOptions {
     comicalBubbleStyle?: string;
@@ -41,6 +47,9 @@ export interface IFinishAddingCanvasElementOptions {
     size?: { width: number; height: number };
     doAfterElementCreated?: (newElement: HTMLElement) => void;
     limitToCanvasBounds?: boolean;
+    // Classes the new element has from the start, before it is selected. What the control frame
+    // offers depends on them: a navigation button, for one, gets no rotation knob.
+    classes?: string[];
 }
 
 export interface ICanvasElementFactoriesHost {
@@ -264,6 +273,13 @@ export class CanvasElementFactories {
         }
         if (canvasElementType === "rectangle") {
             return this.addRectangleCanvasElement(
+                positionInBloomCanvas,
+                bloomCanvas,
+                rightTopOffset,
+            );
+        }
+        if (canvasElementType === "table") {
+            return this.addTableCanvasElement(
                 positionInBloomCanvas,
                 bloomCanvas,
                 rightTopOffset,
@@ -563,6 +579,7 @@ export class CanvasElementFactories {
         userDefinedStyleName?: string,
         rightTopOffset?: string,
         limitToCanvasBounds: boolean = false,
+        classes?: string[],
     ): HTMLElement {
         const transGroupHtml = this.makeTranslationGroup(userDefinedStyleName);
 
@@ -574,6 +591,7 @@ export class CanvasElementFactories {
                 comicalBubbleStyle: style,
                 rightTopOffset,
                 limitToCanvasBounds,
+                classes,
             },
         );
     }
@@ -689,9 +707,9 @@ export class CanvasElementFactories {
                 size: { width: 120, height: 120 },
                 doAfterElementCreated,
                 limitToCanvasBounds: true,
+                classes: [kBloomButtonClass],
             },
         );
-        result.classList.add(kBloomButtonClass);
         return result;
     }
 
@@ -720,10 +738,9 @@ export class CanvasElementFactories {
                 imageInfo,
                 size: { width: 120, height: 120 },
                 limitToCanvasBounds: true,
+                classes: [kBloomButtonClass, "bloom-noAutoHeight"],
             },
         );
-        result.classList.add(kBloomButtonClass);
-        result.classList.add("bloom-noAutoHeight");
         return result;
     }
 
@@ -739,9 +756,8 @@ export class CanvasElementFactories {
             "navigation-label-button",
             rightTopOffset,
             true,
+            [kBloomButtonClass, "bloom-noAutoHeight"],
         );
-        result.classList.add(kBloomButtonClass);
-        result.classList.add("bloom-noAutoHeight");
         // The methods used in the other two get to set a size; here we just do it.
         // We need to make it a bit higher than the default so it doesn't overflow
         // with the additional padding that buttons get.
@@ -843,6 +859,54 @@ export class CanvasElementFactories {
         );
         // Keep z-ordering as before by moving rectangles behind other overlays.
         this.reorderRectangleCanvasElement(result, bloomCanvasJQuery.get(0));
+        return result;
+    }
+
+    /**
+     * Make a canvas element that holds a table. The element starts out empty;
+     * AttachNewTableThatFillsItsSpace fills it with a two-by-two grid of cells
+     * whose every row and column grows to share the space, and installs the
+     * in-page affordances (pills, edge insert buttons, right-click menus).
+     */
+    public addTableCanvasElement(
+        location: Point,
+        bloomCanvasJQuery: JQuery,
+        rightTopOffset?: string,
+    ): HTMLElement {
+        // The tabindex here is necessary to allow the table to be focused.
+        const html =
+            "<div tabindex='0' class='bloom-table bloom-leadingElement'></div>";
+        const result = this.finishAddingCanvasElement(
+            bloomCanvasJQuery,
+            html,
+            location,
+            {
+                comicalBubbleStyle: "none",
+                setElementActive: true,
+                rightTopOffset,
+                size: {
+                    width: kDefaultTableWidth,
+                    height: kDefaultTableHeight,
+                },
+                limitToCanvasBounds: true,
+                // Build the table here, and not after finishAddingCanvasElement returns.
+                // finishAddingCanvasElement ends with refreshCanvasElementEditing, which
+                // finds an empty bloom-table div and attaches a table of its own, with the
+                // library's default rows that hug their content. That table is then already
+                // attached, so a later call here would add a second two rows and two columns
+                // to it and could not make it render the growing sizes.
+                doAfterElementCreated: (newElement: HTMLElement) => {
+                    // The cells hold translationGroups, so without this the element would
+                    // grow and shrink with the text in them, fighting the row heights that
+                    // the table itself maintains.
+                    newElement.classList.add("bloom-noAutoHeight");
+                    const tableDiv = newElement.getElementsByClassName(
+                        "bloom-table",
+                    )[0] as HTMLElement;
+                    AttachNewTableThatFillsItsSpace(tableDiv);
+                },
+            },
+        );
         return result;
     }
 
@@ -1039,6 +1103,7 @@ export class CanvasElementFactories {
             lastChildOfBloomCanvas,
         );
         const canvasElement = canvasElementJQuery.get(0);
+        canvasElement.classList.add(...(options?.classes ?? []));
         if (options?.imageInfo) {
             const img = canvasElement.getElementsByTagName("img")[0];
             if (img) {
