@@ -9,8 +9,8 @@
 # Each suite publishes its own check run / job-summary section, so the commit shows five
 # independent results rather than one merged total. See the "Test reports" steps at the end.
 #
-# Every night is then reported to Zulip -- pass or fail, all in one topic -- with each suite's
-# counts and how long it took. See "The nightly report" at the end.
+# Every night is then reported to Zulip and Slack -- pass or fail, all in one topic -- with each
+# suite's counts and how long it took. See "The nightly report" at the end.
 #
 # Schedule: 04:00 UTC daily. GitHub cron is always UTC (== GMT, no DST), so this is a
 # literal 4am GMT. Note GitHub may delay scheduled runs during peak load; exact timing is
@@ -70,7 +70,7 @@ on:
                 type: boolean
                 default: true
             post_to_zulip:
-                description: "Post report to Zulip"
+                description: "Post report to Zulip and Slack"
                 type: boolean
                 default: false
 
@@ -1009,3 +1009,35 @@ jobs:
                   to: developers
                   topic: ${{ steps.zulip_message.outputs.topic }}
                   content: ${{ steps.zulip_message.outputs.content }}
+
+            # The same report, to Slack's #bloom-team-developers, while the team moves from Zulip
+            # to Slack. Slack's `markdown` block renders the report's Markdown (bold, the list, the
+            # quoted link) as written; `text` is what a notification shows. Link previews are off
+            # for the same reason the report quotes its link for Zulip.
+            #
+            # Needs the repository secret BLOOM_SLACK_BOT_TOKEN, the Bot User OAuth Token (xoxb-) of
+            # the "Bloom bot" Slack app, which must be a member of the channel. The channel is
+            # private, so it is named by id.
+            - name: Post the nightly report to Slack
+              if: ${{ always() && steps.zulip_message.outcome == 'success' }}
+              shell: pwsh
+              env:
+                  BLOOM_SLACK_BOT_TOKEN: ${{ secrets.BLOOM_SLACK_BOT_TOKEN }}
+                  CONTENT: ${{ steps.zulip_message.outputs.content }}
+              run: |
+                  if (-not $env:BLOOM_SLACK_BOT_TOKEN) {
+                      throw "BLOOM_SLACK_BOT_TOKEN is not set as a repository secret, so the nightly could not be reported to Slack."
+                  }
+                  $body = @{
+                      channel      = "C0CE75BEJTU" # bloom-team-developers
+                      text         = $env:CONTENT
+                      blocks       = @(@{ type = "markdown"; text = $env:CONTENT })
+                      unfurl_links = $false
+                      unfurl_media = $false
+                  } | ConvertTo-Json -Depth 5
+                  $reply = Invoke-RestMethod -Method Post -Uri "https://slack.com/api/chat.postMessage" `
+                      -Headers @{ Authorization = "Bearer $($env:BLOOM_SLACK_BOT_TOKEN)" } `
+                      -ContentType "application/json; charset=utf-8" `
+                      -Body ([System.Text.Encoding]::UTF8.GetBytes($body))
+                  # Slack answers HTTP 200 even when it refuses a message; `ok` says which.
+                  if (-not $reply.ok) { throw "Slack refused the nightly report: $($reply.error)" }
