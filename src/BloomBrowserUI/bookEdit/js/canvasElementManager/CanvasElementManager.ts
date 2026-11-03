@@ -1350,6 +1350,17 @@ export class CanvasElementManager {
                 // clicking in a text block that is not a canvas element)
                 window.getSelection()?.removeAllRanges();
             }
+            // A first click on a canvas element that is not selected deliberately does not
+            // move the focus (CanvasElementPointerInteractions prevents the default of the
+            // mouse events), so it would stay in the text of whatever element we were typing
+            // in. Then typing would go into that element, and keys meant for the newly
+            // selected one (arrows, Delete, Layer shortcuts) would be ignored (BL-17006).
+            const focusedCanvasElement = document.activeElement?.closest(
+                kCanvasElementSelector,
+            );
+            if (focusedCanvasElement && focusedCanvasElement !== element) {
+                this.removeFocus();
+            }
             this.removeFocusClass();
         }
         // Some of this could probably be avoided if this.activeElement is not changing.
