@@ -47,6 +47,11 @@ namespace Bloom.Publish.BloomPub
         // True to remove activities, quiz pages...stuff that's inappropriate for making videos.
         public bool RemoveInteractivePages;
 
+        // True to embed Andika like any other font, and to point text in Andika New Basic at it.
+        // Bloom Reader and other hosts supply Andika themselves, but a Reading App Builder app
+        // does not (BL-17007).
+        public bool EmbedDefaultFont;
+
         public BloomPubPublishSettings()
         {
             ImagePublishSettings = new ImagePublishSettings();

@@ -1949,36 +1949,35 @@ namespace Bloom.Publish
         {
             // Note that the font may be referred to in defaultLangStyles.css, in customCollectionStyles.css, or in a style defined in the HTML.
             // This method handles the .css files.
-            var defaultLangStyles = Path.Combine(cssFolderPath, "defaultLangStyles.css");
-            if (RobustFile.Exists(defaultLangStyles))
+            foreach (
+                var cssFileName in new[] { "defaultLangStyles.css", "customCollectionStyles.css" }
+            )
             {
-                var cssTextOrig = RobustFile.ReadAllText(defaultLangStyles);
+                var cssPath = Path.Combine(cssFolderPath, cssFileName);
+                if (!RobustFile.Exists(cssPath))
+                    continue;
+                var cssTextOrig = RobustFile.ReadAllText(cssPath);
                 var cssText = cssTextOrig;
                 foreach (var font in badFonts)
                 {
                     var cssRegex = new System.Text.RegularExpressions.Regex(
-                        $"font-family:\\s*'?{font}'?;"
+                        $"font-family:\\s*{QuotedOrBareFontName(font)}\\s*;"
                     );
                     cssText = cssRegex.Replace(cssText, $"font-family: '{defaultFont}';");
                 }
                 if (cssText != cssTextOrig)
-                    RobustFile.WriteAllText(defaultLangStyles, cssText);
+                    RobustFile.WriteAllText(cssPath, cssText);
             }
-            var customCollectionStyles = Path.Combine(cssFolderPath, "customCollectionStyles.css");
-            if (RobustFile.Exists(customCollectionStyles))
-            {
-                var cssTextOrig = RobustFile.ReadAllText(customCollectionStyles);
-                var cssText = cssTextOrig;
-                foreach (var font in badFonts)
-                {
-                    var cssRegex = new System.Text.RegularExpressions.Regex(
-                        $"font-family:\\s*'?{font}'?;"
-                    );
-                    cssText = cssRegex.Replace(cssText, $"font-family: '{defaultFont}';");
-                }
-                if (cssText != cssTextOrig)
-                    RobustFile.WriteAllText(customCollectionStyles, cssText);
-            }
+        }
+
+        /// <summary>
+        /// A regular expression that matches the font name with single quotes, double quotes, or
+        /// no quotes around it. Bloom writes language fonts in single quotes, but other styles in
+        /// a book may use double quotes or none.
+        /// </summary>
+        private static string QuotedOrBareFontName(string font)
+        {
+            return $"(['\"]?){System.Text.RegularExpressions.Regex.Escape(font)}\\1";
         }
 
         /// <summary>
@@ -2018,7 +2017,7 @@ namespace Bloom.Publish
                 foreach (var font in badFonts)
                 {
                     var cssRegex = new System.Text.RegularExpressions.Regex(
-                        $"font-family:\\s*{font}\\s*!\\s*important;"
+                        $"font-family:\\s*{QuotedOrBareFontName(font)}\\s*!\\s*important;"
                     );
                     cssText = cssRegex.Replace(cssText, $"font-family: {defaultFont} !important;");
                 }

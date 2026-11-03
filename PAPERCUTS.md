@@ -19,6 +19,12 @@ House rules:
 
 ---
 
+## 2026-10-10 — RabRealBuildTests cannot pass on a ReFS drive
+
+- **Cut:** The opt-in real RAB build test creates its collection under the source tree (`src/BloomTests/Publish/Rab/ManualWork/Kasɩm Books`) and relies on an 8.3 short name to give that non-ASCII folder an ASCII path. ReFS has no 8.3 names, so on a worktree on a ReFS dev drive (D: on Hatton's machine) it fails in setup with "contains non-standard characters" before RAB ever runs.
+- **Idea:** Let the test take its work root from an env var, or default it to a folder on a drive that has 8.3 names, or skip with a clear message when `GetShortPathName` returns no ASCII alias.
+- **Context:** `/preflight` of PR 8461 (BL-17007); the same test passed on Andrew's machine at the same HEAD.
+
 ## 2026-10-08 — `CI=true` to satisfy pnpm silently turns off `--dont-disturb`
 - **Cut:** pnpm refuses to run a script when a worktree's deps are stale (`Aborted removal of modules directory due to no TTY`) and the way past it is `CI=true`. The e2e fixture reads that same variable: it then launched Bloom *without* `--dont-disturb` ("Bloom's windows take the foreground as they would for a user"), so a preflight e2e run seized the developer's screen for two minutes. Two unrelated tools, one overloaded variable.
 - **Idea:** key the disturb decision off a `BLOOM_E2E_*` variable rather than bare `CI`, or keep `--dont-disturb` unless the run is really on a CI runner (`GITHUB_ACTIONS`/`TEAMCITY_VERSION` present). Failing that, name the trap in `src/BloomE2E/README.md` beside the existing `CI` note.
