@@ -10,11 +10,14 @@ vi.mock("../../utils/bloomApi", async (importOriginal) => ({
 // A paste holds a page-content delay until it ends, so that a save waits for the picture.
 // bloomEditing imports bloomImages, so a mock built on importOriginal would load the real
 // bloomEditing, and through it bloomImages, before the mock existed. Nothing here needs the rest
-// of bloomEditing, so the mock is only these two.
+// of bloomEditing, so its mock is empty; the delays live in pageContentDelays, and those two are
+// watched there.
 const delays = vi.hoisted(() => ({ add: vi.fn(), remove: vi.fn() }));
-vi.mock("./bloomEditing", () => ({
+vi.mock("./bloomEditing", () => ({}));
+vi.mock("./pageContentDelays", () => ({
     addRequestPageContentDelay: delays.add,
     removeRequestPageContentDelay: delays.remove,
+    wrapWithRequestPageContentDelay: <T>(work: () => Promise<T>) => work(),
 }));
 // Showing a failed paste's message needs Bloom's message box, which is not here.
 vi.mock("../../utils/bloomMessageBoxSupport", () => ({

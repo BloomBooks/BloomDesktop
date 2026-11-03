@@ -3764,6 +3764,40 @@ namespace BloomTests.Book
             Assert.That(classes2, Does.Contain("bloom-postAudioSplit"));
         }
 
+        // An empty class attribute on either side must not become an empty class name, which
+        // would leave a stray space in the class that the browser then drops: the page would look
+        // edited on every visit.
+        [Test]
+        public void SynchronizeDataItemsThroughoutDOM_EmptyClassOnEitherSide_AddsNoStraySpace()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					 <div data-book='outside-back-cover-branding-bottom-html' lang='*' class=''><img src='badge.svg' alt=''/></div>
+					 <div data-book='credits-page-branding-bottom-html' lang='*' class='branding-block'><img src='logo.svg' alt=''/></div>
+				</div>
+				<div class='bloom-page'>
+					 <div findMe='pageHasClass' data-book='outside-back-cover-branding-bottom-html' lang='*' class='bloom-force-publish'></div>
+					 <div findMe='pageHasNone' data-book='credits-page-branding-bottom-html' lang='*' class=''></div>
+				</div>
+				</body></html>"
+            );
+            var pageHasClass = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='pageHasClass']");
+            var pageHasNone = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='pageHasNone']");
+            Assert.That(pageHasClass.GetAttribute("class"), Is.EqualTo("bloom-force-publish"));
+            Assert.That(pageHasNone.GetAttribute("class"), Is.EqualTo(""));
+
+            var data = new BookData(dom, _collectionSettings, null);
+            data.SynchronizeDataItemsThroughoutDOM();
+
+            Assert.That(pageHasClass.GetAttribute("class"), Is.EqualTo("bloom-force-publish"));
+            Assert.That(pageHasNone.GetAttribute("class"), Is.EqualTo("branding-block"));
+            // sanity check that the data was copied at all
+            Assert.That(pageHasClass.InnerXml, Does.Contain("badge.svg"));
+        }
+
         [Test]
         public void SynchronizeDataItemsThroughoutDOM_StripsDisplayFromStyleAttribute()
         {

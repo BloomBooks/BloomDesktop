@@ -7,6 +7,9 @@ vi.mock("comicaljs", () => ({
             return { spec: "none", tails: [] };
         }
         mergeWithNewBubbleProps() {}
+        isTransparent() {
+            return true;
+        }
     },
     Comical: { update: vi.fn() },
 }));
