@@ -1064,7 +1064,31 @@ namespace Bloom.ImageProcessing
             }
         }
 
-        private static bool IsIndexedColorPngFile(string filePath)
+        /// <summary>
+        /// The 8 bytes every PNG file starts with ("\x89PNG\r\n\x1a\n").
+        /// </summary>
+        internal static readonly byte[] kPngSignature =
+        {
+            0x89,
+            0x50,
+            0x4E,
+            0x47,
+            0x0D,
+            0x0A,
+            0x1A,
+            0x0A,
+        };
+
+        // PNG colour types (the byte after the bit depth in the IHDR chunk).
+        private const byte kPngColorTypeIndexed = 3;
+        private const byte kPngColorTypeGrayscaleWithAlpha = 4;
+        private const byte kPngColorTypeRgbWithAlpha = 6;
+
+        /// <summary>
+        /// Whether the file at <paramref name="filePath"/> is a PNG that stores its colours in a
+        /// palette. False for anything that isn't a PNG or can't be read.
+        /// </summary>
+        internal static bool IsIndexedColorPngFile(string filePath)
         {
             var header = new byte[26];
             try
@@ -1075,25 +1099,78 @@ namespace Bloom.ImageProcessing
                 }
 
                 // Check PNG Signature (First 8 bytes == "\x89PNG\r\n\x1a\n")
-                var isPng =
-                    header[0] == 0x89
-                    && header[1] == 0x50
-                    && header[2] == 0x4E
-                    && header[3] == 0x47
-                    && header[4] == 0x0D
-                    && header[5] == 0x0A
-                    && header[6] == 0x1A
-                    && header[7] == 0x0A;
-                if (!isPng)
+                if (!header.Take(kPngSignature.Length).SequenceEqual(kPngSignature))
                     return false;
 
-                // Check Color Type byte (3 = indexed color) from the IHDR chunk (Offset 25)
-                var colorType = header[25];
-                return colorType == 3;
+                // Check Color Type byte from the IHDR chunk (Offset 25)
+                return header[25] == kPngColorTypeIndexed;
             }
             catch
             {
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Whether the PNG at <paramref name="path"/> could have transparent pixels, judged from
+        /// its header alone, which is cheap even for a huge picture. A PNG can only be transparent
+        /// if its colour type includes an alpha channel or it has a tRNS chunk (which must come
+        /// before the image data). False means "certainly opaque"; true means only "might be".
+        /// Anything we can't make sense of counts as "might be".
+        /// </summary>
+        internal static bool PngCanHaveTransparency(string path)
+        {
+            try
+            {
+                using var stream = RobustFile.OpenRead(path);
+                using var reader = new BinaryReader(stream);
+                if (!reader.ReadBytes(kPngSignature.Length).SequenceEqual(kPngSignature))
+                    return true;
+                var sawHeader = false;
+                // Each chunk is a 4-byte big-endian length, a 4-byte type, the data, and a 4-byte CRC.
+                while (stream.Position + 8 <= stream.Length)
+                {
+                    var lengthBytes = reader.ReadBytes(4);
+                    var length =
+                        (lengthBytes[0] << 24)
+                        | (lengthBytes[1] << 16)
+                        | (lengthBytes[2] << 8)
+                        | lengthBytes[3];
+                    var type = Encoding.ASCII.GetString(reader.ReadBytes(4));
+                    if (length < 0)
+                        return true;
+                    switch (type)
+                    {
+                        case "IHDR":
+                            if (length < 10)
+                                return true;
+                            reader.ReadBytes(9); // width, height, bit depth
+                            var colorType = reader.ReadByte();
+                            if (
+                                colorType == kPngColorTypeGrayscaleWithAlpha
+                                || colorType == kPngColorTypeRgbWithAlpha
+                            )
+                                return true;
+                            sawHeader = true;
+                            stream.Seek(length - 10 + 4, SeekOrigin.Current);
+                            break;
+                        case "tRNS":
+                            return true;
+                        case "IDAT":
+                        case "IEND":
+                            // tRNS can't come after the image data, so we have seen all we need.
+                            return !sawHeader;
+                        default:
+                            stream.Seek((long)length + 4, SeekOrigin.Current);
+                            break;
+                    }
+                }
+                return true;
+            }
+            catch (Exception error)
+                when (error is IOException || error is UnauthorizedAccessException)
+            {
+                return true;
             }
         }
 

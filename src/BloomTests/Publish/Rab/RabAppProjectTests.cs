@@ -2473,33 +2473,6 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task ResetBloomPubCacheForScreenSession_DeletesExistingBloomPubs()
-        {
-            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
-            var paths = new RabWorkspacePaths(tempFolder.Path);
-            var trackedBooks = new List<RabBookPublishInfo>
-            {
-                new RabBookPublishInfo
-                {
-                    BookId = "book-1",
-                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
-                    Title = "Flower",
-                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "Flower.bloompub"),
-                },
-            };
-            Directory.CreateDirectory(trackedBooks[0].FolderPath);
-
-            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-
-            await service.PrepareAsync();
-            Assert.That(RobustFile.Exists(trackedBooks[0].BloomPubPath), Is.True);
-
-            service.ResetBloomPubCacheForScreenSession();
-
-            Assert.That(RobustFile.Exists(trackedBooks[0].BloomPubPath), Is.False);
-        }
-
-        [Test]
         public async Task GetStatus_BuildNeededTracksSettingsAndBookOrderChanges()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
@@ -2978,7 +2951,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void GetSizeEstimates_UsesBookFolderSizesAndSharedLimits()
+        public void GetSizeEstimates_CountsOnlyFilesThatGoIntoTheBloomPub()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2986,12 +2959,19 @@ namespace BloomTests.Publish.Rab
             var secondBookFolder = Path.Combine(tempFolder.Path, "book-2");
             Directory.CreateDirectory(firstBookFolder);
             Directory.CreateDirectory(secondBookFolder);
-            RobustFile.WriteAllBytes(Path.Combine(firstBookFolder, "a.bin"), new byte[1500]);
-            Directory.CreateDirectory(Path.Combine(secondBookFolder, "images"));
+            var htmlPath = Path.Combine(firstBookFolder, "book-1.htm");
+            RobustFile.WriteAllText(htmlPath, "<html><head></head><body></body></html>");
+            var htmlBytes = new FileInfo(htmlPath).Length;
+            RobustFile.WriteAllBytes(Path.Combine(firstBookFolder, "a.css"), new byte[1500]);
+            // A BloomPUB leaves these out, so the estimate must too (BL-17062).
+            RobustFile.WriteAllBytes(Path.Combine(firstBookFolder, "book-1.pdf"), new byte[50000]);
+            RobustFile.WriteAllBytes(Path.Combine(firstBookFolder, "book-1.bak"), new byte[7000]);
+            Directory.CreateDirectory(Path.Combine(firstBookFolder, "junk"));
             RobustFile.WriteAllBytes(
-                Path.Combine(secondBookFolder, "images", "b.bin"),
-                new byte[2500]
+                Path.Combine(firstBookFolder, "junk", "c.css"),
+                new byte[3000]
             );
+            RobustFile.WriteAllBytes(Path.Combine(secondBookFolder, "b.css"), new byte[2500]);
 
             var trackedBooks = new List<RabBookPublishInfo>
             {
@@ -3023,7 +3003,7 @@ namespace BloomTests.Publish.Rab
             Assert.That(estimates.Books, Has.Length.EqualTo(2));
             Assert.That(
                 estimates.Books.Single(book => book.BookId == "book-1").SizeBytes,
-                Is.EqualTo(1500)
+                Is.EqualTo(htmlBytes + 1500)
             );
             Assert.That(
                 estimates.Books.Single(book => book.BookId == "book-2").SizeBytes,
@@ -3043,18 +3023,16 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(firstBookFolder);
             Directory.CreateDirectory(secondBookFolder);
             // Folder content sizes (should be ignored for book-1 when bloompub exists)
-            RobustFile.WriteAllBytes(Path.Combine(firstBookFolder, "a.bin"), new byte[1500]);
-            Directory.CreateDirectory(Path.Combine(secondBookFolder, "images"));
-            RobustFile.WriteAllBytes(
-                Path.Combine(secondBookFolder, "images", "b.bin"),
-                new byte[2500]
-            );
+            RobustFile.WriteAllText(Path.Combine(firstBookFolder, "book-1.htm"), "<html></html>");
+            RobustFile.WriteAllBytes(Path.Combine(firstBookFolder, "a.css"), new byte[1500]);
+            RobustFile.WriteAllBytes(Path.Combine(secondBookFolder, "b.css"), new byte[2500]);
 
-            // Create a bloompub file only for book-1
+            // Create a bloompub file, with the record that says it is current, only for book-1
             Directory.CreateDirectory(paths.BloomPubRoot);
-            RobustFile.WriteAllBytes(
+            WriteCurrentBloomPub(
                 Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
-                new byte[4000]
+                firstBookFolder,
+                4000
             );
 
             var trackedBooks = new List<RabBookPublishInfo>
@@ -3086,12 +3064,173 @@ namespace BloomTests.Publish.Rab
                 Is.EqualTo(4000)
             );
             Assert.That(estimates.Books.Single(book => book.BookId == "book-1").IsActual, Is.True);
-            // book-2 has no bloompub: fall back to folder size and mark as estimate
+            // book-2 has no bloompub: fall back to an estimate and mark it so
             Assert.That(
                 estimates.Books.Single(book => book.BookId == "book-2").SizeBytes,
                 Is.EqualTo(2500)
             );
             Assert.That(estimates.Books.Single(book => book.BookId == "book-2").IsActual, Is.False);
+        }
+
+        [Test]
+        public void GetSizeEstimates_BloomPubOutOfDateOrUnrecorded_UsesEstimate()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var editedBookFolder = Path.Combine(tempFolder.Path, "book-1");
+            var unrecordedBookFolder = Path.Combine(tempFolder.Path, "book-2");
+            Directory.CreateDirectory(editedBookFolder);
+            Directory.CreateDirectory(unrecordedBookFolder);
+            var editedHtmlPath = Path.Combine(editedBookFolder, "book-1.htm");
+            RobustFile.WriteAllText(editedHtmlPath, "<html><body>old</body></html>");
+            RobustFile.WriteAllText(
+                Path.Combine(unrecordedBookFolder, "book-2.htm"),
+                "<html></html>"
+            );
+            Directory.CreateDirectory(paths.BloomPubRoot);
+            var editedBloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub");
+            WriteCurrentBloomPub(editedBloomPubPath, editedBookFolder, 4000);
+            // A BloomPUB with no record, as an older Bloom would have left behind.
+            var unrecordedBloomPubPath = Path.Combine(paths.BloomPubRoot, "book-2.bloompub");
+            RobustFile.WriteAllBytes(unrecordedBloomPubPath, new byte[5000]);
+
+            RobustFile.WriteAllText(editedHtmlPath, "<html><body>new text</body></html>");
+
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = editedBookFolder,
+                    Title = "Book One",
+                    BloomPubPath = editedBloomPubPath,
+                },
+                new RabBookPublishInfo
+                {
+                    BookId = "book-2",
+                    FolderPath = unrecordedBookFolder,
+                    Title = "Book Two",
+                    BloomPubPath = unrecordedBloomPubPath,
+                },
+            };
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+
+            var estimates = service.GetSizeEstimates();
+
+            var edited = estimates.Books.Single(book => book.BookId == "book-1");
+            var unrecorded = estimates.Books.Single(book => book.BookId == "book-2");
+            Assert.That(edited.IsActual, Is.False);
+            Assert.That(edited.SizeBytes, Is.EqualTo(new FileInfo(editedHtmlPath).Length));
+            Assert.That(unrecorded.IsActual, Is.False);
+            Assert.That(unrecorded.SizeBytes, Is.LessThan(5000));
+        }
+
+        [Test]
+        public void GetSizeEstimates_RenamedAppBook_UsesTheBloomPubNameExportUses()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            // The book was added to the app as "Old Name", then its folder was renamed. Export
+            // keeps making "Old Name.bloompub" (ResolveBloomPubPath keeps the recorded name).
+            var bookFolder = Path.Combine(tempFolder.Path, "New Name");
+            Directory.CreateDirectory(bookFolder);
+            RobustFile.WriteAllText(Path.Combine(bookFolder, "New Name.htm"), "<html></html>");
+            Directory.CreateDirectory(paths.BloomPubRoot);
+            var recordedBloomPubPath = Path.Combine(paths.BloomPubRoot, "Old Name.bloompub");
+            WriteCurrentBloomPub(recordedBloomPubPath, bookFolder, 4000);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = bookFolder,
+                    Title = "Book One",
+                    BloomPubPath = recordedBloomPubPath,
+                },
+            };
+            Directory.CreateDirectory(Path.GetDirectoryName(paths.PrepareStatePath));
+            RobustFile.WriteAllText(
+                paths.PrepareStatePath,
+                JsonConvert.SerializeObject(new RabPrepareState { Books = trackedBooks })
+            );
+            Assert.That(
+                RobustFile.Exists(Path.Combine(paths.BloomPubRoot, "New Name.bloompub")),
+                Is.False,
+                "test setup: there should be no BloomPUB under the new folder name"
+            );
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+
+            var estimate = service.GetSizeEstimates().Books.Single();
+
+            Assert.That(estimate.IsActual, Is.True);
+            Assert.That(estimate.SizeBytes, Is.EqualTo(4000));
+        }
+
+        [Test]
+        public void GetSizeEstimates_RenamedAppBookStillSavedUnderOldFolder_MatchesByBookId()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            // After a rename, the app's saved record still has the old folder path; export finds
+            // the book by its id and keeps making the old-named BloomPUB (Greptile, PR 8531).
+            var bookFolder = Path.Combine(tempFolder.Path, "New Name");
+            Directory.CreateDirectory(bookFolder);
+            RobustFile.WriteAllText(Path.Combine(bookFolder, "New Name.htm"), "<html></html>");
+            Directory.CreateDirectory(paths.BloomPubRoot);
+            var recordedBloomPubPath = Path.Combine(paths.BloomPubRoot, "Old Name.bloompub");
+            WriteCurrentBloomPub(recordedBloomPubPath, bookFolder, 4000);
+            Directory.CreateDirectory(Path.GetDirectoryName(paths.PrepareStatePath));
+            RobustFile.WriteAllText(
+                paths.PrepareStatePath,
+                JsonConvert.SerializeObject(
+                    new RabPrepareState
+                    {
+                        Books = new List<RabBookPublishInfo>
+                        {
+                            new RabBookPublishInfo
+                            {
+                                BookId = "book-1",
+                                FolderPath = Path.Combine(tempFolder.Path, "Old Name"),
+                                Title = "Book One",
+                                BloomPubPath = recordedBloomPubPath,
+                            },
+                        },
+                    }
+                )
+            );
+            var collectionBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = bookFolder,
+                    Title = "Book One",
+                },
+            };
+            var service = new TestRabProjectService(paths, "Sample App", collectionBooks);
+
+            var estimate = service.GetSizeEstimates().Books.Single();
+
+            Assert.That(estimate.IsActual, Is.True);
+            Assert.That(estimate.SizeBytes, Is.EqualTo(4000));
+        }
+
+        /// <summary>
+        /// Write a stand-in BloomPUB of the given size, and the cache record saying it was made from
+        /// the book in <paramref name="bookFolder"/> as it is now (with the test service's null
+        /// settings key).
+        /// </summary>
+        private static void WriteCurrentBloomPub(string bloomPubPath, string bookFolder, int size)
+        {
+            var cache = new RabBloomPubCache();
+            var snapshot = cache.TakeSnapshot(bookFolder);
+            RobustFile.WriteAllBytes(bloomPubPath, new byte[size]);
+            cache.RecordNewBloomPub(bloomPubPath, snapshot, null);
+            Assert.That(
+                cache.IsCurrent(bloomPubPath, bookFolder, null),
+                Is.True,
+                "test setup: the BloomPUB should start out current"
+            );
         }
 
         [Test]

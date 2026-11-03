@@ -169,15 +169,6 @@ namespace Bloom.Publish.Rab
                 false,
                 requiresSync: false
             );
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "reset-bloompub-cache",
-                request =>
-                {
-                    _rabProjectService.ResetBloomPubCacheForScreenSession();
-                    request.PostSucceeded();
-                },
-                true
-            );
             apiHandler.RegisterAsyncEndpointHandler(
                 kApiUrlPart + "open",
                 async request =>
@@ -286,6 +277,52 @@ namespace Bloom.Publish.Rab
                             _rabProjectService.ClearAction();
                             SetWorkspaceTabsEnabled(true);
                             _rabProjectService.SendActionCompleteEvent("build", succeeded);
+                        }
+                    });
+                    request.PostSucceeded();
+                },
+                false,
+                requiresSync: false
+            );
+            // Makes the app's missing BloomPUBs so the size bar can show actual sizes (BL-17062).
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + RabProjectService.kMeasureAction,
+                request =>
+                {
+                    if (!_rabProjectService.TryBeginAction(RabProjectService.kMeasureAction))
+                    {
+                        request.Failed("A prepare/build/install action is already running.");
+                        return;
+                    }
+                    SetWorkspaceTabsEnabled(false);
+                    _ = Task.Run(async () =>
+                    {
+                        var succeeded = false;
+                        try
+                        {
+                            try
+                            {
+                                await _rabProjectService.MeasureBookSizesAsync();
+                                succeeded = true;
+                            }
+                            catch (OperationCanceledException)
+                                when (_rabProjectService.IsCancellationRequested)
+                            {
+                                _rabProjectService.ReportCancellation("Measure");
+                            }
+                            catch (Exception error)
+                            {
+                                _rabProjectService.ReportFailure("Measure", error);
+                            }
+                        }
+                        finally
+                        {
+                            _rabProjectService.ClearAction();
+                            SetWorkspaceTabsEnabled(true);
+                            _rabProjectService.SendActionCompleteEvent(
+                                RabProjectService.kMeasureAction,
+                                succeeded
+                            );
                         }
                     });
                     request.PostSucceeded();

@@ -27,6 +27,7 @@ import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { ActionLogAccordion } from "./ActionLogAccordion";
 import {
     ActualApkSizeText,
+    countEstimatedBooks,
     EstimatedAppSizeIndicator,
 } from "./AppSizeIndicator";
 import { AppBuilderSettingsDialog } from "./AppBuilderSettingsDialog";
@@ -110,6 +111,10 @@ const AppPublisherScreenContents: React.FunctionComponent<{
     const chooseBooksTooltip = useL10n(
         "Choose which books to include in the app and the order they should appear.",
         "PublishTab.Apps.ChooseBooks.Tooltip",
+    );
+    const measureBooksTooltip = useL10n(
+        "Make the BloomPUB files for the app's books now, so that their exact sizes are shown. Build will use them too.",
+        "PublishTab.Apps.MeasureBooks.Tooltip",
     );
     const settingsTooltip = useL10n(
         "Edit the Reading App Builder app settings for this collection.",
@@ -262,6 +267,16 @@ const AppPublisherScreenContents: React.FunctionComponent<{
     const canUseConfiguredProject = prepareIsReady && !busyAction;
     const canRunBuild = !busyAction && screenState.hasRequiredBuildSettings;
     const canUseCurrentApk = apkIsCurrent && !busyAction;
+    const appBooksForSize = screenState.status.trackedBooks.map((book) => ({
+        bookId: book.bookId,
+        folderPath: book.folderPath,
+        title: book.title,
+    }));
+    // Books with no current BloomPUB, whose size bar shows only an estimate (BL-17062).
+    const estimatedBookCount = countEstimatedBooks(
+        screenState.sizeEstimates,
+        appBooksForSize,
+    );
     const activePrepareStepId = getPrepareStepIdForStage(
         busyAction,
         screenState.progressStageCode,
@@ -466,15 +481,74 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                                             sizeEstimates={
                                                 screenState.sizeEstimates
                                             }
-                                            books={screenState.status.trackedBooks.map(
-                                                (book) => ({
-                                                    bookId: book.bookId,
-                                                    folderPath: book.folderPath,
-                                                    title: book.title,
-                                                }),
-                                            )}
+                                            books={appBooksForSize}
                                         />
                                     )}
+                                {(estimatedBookCount > 0 ||
+                                    busyAction === "measure") &&
+                                    screenState.status.trackedBooks.length >
+                                        0 && (
+                                        <div
+                                            css={css`
+                                                display: flex;
+                                                flex-wrap: wrap;
+                                                gap: 12px;
+                                                margin-top: 12px;
+                                            `}
+                                        >
+                                            <AppActionButton
+                                                enabled={
+                                                    canUseConfiguredProject
+                                                }
+                                                l10nKey="PublishTab.Apps.MeasureBooks"
+                                                onClick={() =>
+                                                    screenState.runAction(
+                                                        "measure",
+                                                    )
+                                                }
+                                                variant="outlined"
+                                                tooltip={measureBooksTooltip}
+                                            >
+                                                Measure exact sizes
+                                            </AppActionButton>
+                                            {busyAction === "measure" && (
+                                                <AppActionButton
+                                                    enabled={true}
+                                                    l10nKey="Common.Cancel"
+                                                    onClick={() =>
+                                                        screenState.cancelAction()
+                                                    }
+                                                    variant="outlined"
+                                                >
+                                                    Cancel
+                                                </AppActionButton>
+                                            )}
+                                        </div>
+                                    )}
+                                <InlineProgressStatus
+                                    showProgress={
+                                        busyAction === "measure" &&
+                                        !!currentProgressStageLabel
+                                    }
+                                    progressLabel={
+                                        busyAction === "measure"
+                                            ? currentProgressStageLabel
+                                            : undefined
+                                    }
+                                    progressPercent={
+                                        screenState.progressPercent
+                                    }
+                                />
+                                <ActionLogAccordion
+                                    controller={screenState.measureLog}
+                                    isActive={busyAction === "measure"}
+                                    webSocketContext={
+                                        busyAction === "measure"
+                                            ? kAppBuilderWebSocketContext
+                                            : undefined
+                                    }
+                                    dataTestId="measure-log-accordion"
+                                />
                             </StepContent>
                         </Step>
                         <Step expanded={true} completed={false}>

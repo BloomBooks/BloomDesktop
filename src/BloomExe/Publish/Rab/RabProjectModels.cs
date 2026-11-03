@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using Bloom.Book;
 using SIL.IO;
 
 namespace Bloom.Publish.Rab
@@ -95,6 +96,25 @@ namespace Bloom.Publish.Rab
         public string BookId { get; set; }
         public string FolderPath { get; set; }
         public string Title { get; set; }
+
+        /// <summary>
+        /// The resolution the book's pictures are shrunk to in a BloomPUB, used to estimate the
+        /// BloomPUB's size. Internal so it isn't sent to the browser along with the rest.
+        /// </summary>
+        internal ImagePublishSettings ImageSettings { get; set; } = new ImagePublishSettings();
+
+        /// <summary>
+        /// The book's appearance settings, which give the cover color that decides whether cover
+        /// pictures are made transparent when published. Internal so it isn't sent to the browser.
+        /// </summary>
+        internal AppearanceSettings AppearanceSettings { get; set; }
+
+        /// <summary>
+        /// The book's BloomPUB publish settings, as made by
+        /// <see cref="RabBloomPubCache.MakeSettingsKey"/>, used to tell whether a BloomPUB made
+        /// earlier is still current. Internal so it isn't sent to the browser.
+        /// </summary>
+        internal string BloomPubSettingsKey { get; set; }
     }
 
     internal class RabPrepareState
