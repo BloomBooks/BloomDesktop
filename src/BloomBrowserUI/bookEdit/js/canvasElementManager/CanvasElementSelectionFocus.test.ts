@@ -19,7 +19,14 @@ vi.mock("comicaljs", () => ({
     },
 }));
 
-// This import deliberately comes after the vi.mock call above, so that the module graph
+// Selecting an element draws its toolbar, a React component whose hooks ask Bloom's server
+// about features and languages. Unit tests must not reach the network, and the toolbar has
+// nothing to do with where the focus goes.
+vi.mock("./CanvasElementContextControls", () => ({
+    renderCanvasElementContextControls: vi.fn(),
+}));
+
+// This import deliberately comes after the vi.mock calls above, so that the module graph
 // it pulls in gets the stubbed comicaljs.
 import { CanvasElementManager } from "./CanvasElementManager";
 
