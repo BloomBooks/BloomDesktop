@@ -1056,3 +1056,28 @@ So read a green nightly as "Bloom run from source works", not "the installed app
 
 Idea: a periodic run of the suites against an installed Bloom.
 (Found 2026-09-25.)
+
+## The browser's own copy and paste use the Windows clipboard
+
+Under `--e2e`, Bloom keeps an in-memory clipboard instead of the Windows one: its C# goes through
+`BloomClipboard`, its pages through `utils/bloomClipboard.ts`, and a test fills and reads it with
+`copyToClipboard`, `getClipboard` and `pasteFromClipboard` (`helpers/clipboard.ts`, over the
+`e2e/clipboard` hook). That keeps a test off the developer's clipboard and off any other e2e run's.
+
+Two things still reach the Windows clipboard, because no Bloom code stands between them and it:
+
+- **A real Ctrl+C, Ctrl+X or Ctrl+V in a page.** WebView2 copies the selection to the Windows
+  clipboard, or reads the Windows clipboard into the paste event, before any of Bloom's code runs.
+  `talking-book-paste.spec.ts` and the Ctrl+C/Ctrl+V step of `tables-extended.spec.ts` press them.
+  Such a test replaces whatever the developer had copied, and a second e2e run that copies at the
+  same moment can paste the first one's text.
+- **Copying or pasting in a WinForms text box**, such as the Settings dialog's.
+
+A paste a test needs goes through `pasteFromClipboard`, which sends the page the paste event
+Ctrl+V would have produced, filled from Bloom's clipboard. It cannot paste into a plain input box,
+where nothing but the browser handles the event. A copy has no such stand-in yet: the test that
+needs "copy this text" either presses Ctrl+C and accepts the Windows clipboard, or sets Bloom's
+clipboard with `copyToClipboard` when the copy is not what it measures. Fix direction: a
+`copyFromSelection` helper that sends the page a copy event and stores what the page put in its
+clipboardData on Bloom's clipboard; and converting the two specs above.
+(Found 2026-11-02 while automating BL-17014.)
