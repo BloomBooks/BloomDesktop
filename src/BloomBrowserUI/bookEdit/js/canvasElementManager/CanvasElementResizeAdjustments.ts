@@ -2,7 +2,11 @@
 // underlying bloom-canvas changes size.
 
 import { Bubble, Comical, TailSpec } from "comicaljs";
-import { getImageFromCanvasElement, isPlaceHolderImage } from "../bloomImages";
+import {
+    getBackgroundCanvasElementFromBloomCanvas,
+    getImageFromCanvasElement,
+    isPlaceHolderImage,
+} from "../bloomImages";
 import {
     kBackgroundImageClass,
     kCanvasElementClass,
@@ -237,9 +241,8 @@ export function adjustCanvasElementChildrenIfSizeChanged(
     // The above algorithm works for the background image most of the time,
     // but we've found cases where we still need a final readjustment.
     // So we readjust here to be sure.
-    const backgroundCanvasElement = bloomCanvas.getElementsByClassName(
-        kBackgroundImageClass,
-    )[0] as HTMLElement;
+    const backgroundCanvasElement =
+        getBackgroundCanvasElementFromBloomCanvas(bloomCanvas);
     if (backgroundCanvasElement) {
         adjustBackgroundImageSize(bloomCanvas, backgroundCanvasElement, false);
     }

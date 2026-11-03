@@ -1,16 +1,24 @@
 import { describe, expect, test, vi } from "vitest";
 
-// comicaljs draws bubbles on a canvas, which jsdom lacks; these tests only need positions.
+// comicaljs draws bubbles on a canvas, which jsdom lacks. The resize code only reads
+// bubble specs and writes tails back, so a bubble with no tails is enough.
 vi.mock("comicaljs", () => ({
     Bubble: class {
         static getBubbleSpec() {
             return { spec: "none", tails: [] };
         }
-        mergeWithNewBubbleProps() {}
+        mergeWithNewBubbleProps() {
+            // the tests don't look at bubble props
+        }
     },
-    Comical: { update: vi.fn() },
+    Comical: {
+        setSelectorForBubblesWhichTailMidpointMayOverlap: () => {},
+        activateElement: () => {},
+        update: vi.fn(),
+    },
 }));
-vi.mock("../bloomImages", () => ({
+vi.mock("../bloomImages", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../bloomImages")>()),
     getImageFromCanvasElement: (element: HTMLElement) =>
         element.getElementsByTagName("img")[0],
     isPlaceHolderImage: () => false,
@@ -19,6 +27,8 @@ vi.mock("./CanvasElementAlternates", () => ({
     adjustCanvasElementAlternates: vi.fn(),
 }));
 
+// This import deliberately comes after the vi.mock calls above, so that the module graph
+// it pulls in gets the stubbed modules.
 import { adjustCanvasElementChildrenIfSizeChanged } from "./CanvasElementResizeAdjustments";
 
 // jsdom has no layout, so give each element the box the browser would report.
@@ -42,6 +52,70 @@ function setBox(
 }
 
 describe("adjustCanvasElementChildrenIfSizeChanged", () => {
+    test("does not refit a nested bloom-canvas's background image against the outer bloom-canvas", () => {
+        // The outer canvas has no background image of its own; its only child is a
+        // canvas element that holds another bloom-canvas, which does have one.
+        // jsdom reports a clientWidth/clientHeight of 0, so any recorded size other
+        // than "0,0" counts as a size change.
+        document.body.innerHTML = `
+            <div class="bloom-canvas" id="outer" data-imgsizebasedon="400,300">
+                <div class="bloom-canvas-element" style="left: 10px; top: 10px; width: 100px; height: 100px">
+                    <div class="bloom-canvas" id="inner">
+                        <div class="bloom-canvas-element bloom-backgroundImage" style="left: 0px; top: 0px">
+                            <div class="bloom-imageContainer">
+                                <img src="rabbit.png" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        const outer = document.getElementById("outer") as HTMLElement;
+        const innerBackground = document.querySelector(
+            "#inner .bloom-backgroundImage",
+        ) as HTMLElement;
+        expect(innerBackground).not.toBeNull();
+        const adjustBackgroundImageSize = vi.fn();
+
+        adjustCanvasElementChildrenIfSizeChanged(
+            outer,
+            adjustBackgroundImageSize,
+        );
+
+        // Sanity check that the resize actually ran, rather than stopping at the
+        // "size unchanged" check.
+        expect(outer.getAttribute("data-imgsizebasedon")).toBe("0,0");
+        expect(adjustBackgroundImageSize).not.toHaveBeenCalled();
+    });
+
+    test("refits the bloom-canvas's own background image after a resize", () => {
+        document.body.innerHTML = `
+            <div class="bloom-canvas" id="outer" data-imgsizebasedon="400,300">
+                <div class="bloom-canvas-element bloom-backgroundImage" style="left: 0px; top: 0px">
+                    <div class="bloom-imageContainer">
+                        <img src="rabbit.png" />
+                    </div>
+                </div>
+                <div class="bloom-canvas-element" style="left: 10px; top: 10px; width: 100px; height: 100px"></div>
+            </div>`;
+        const outer = document.getElementById("outer") as HTMLElement;
+        const ownBackground = document.querySelector(
+            ".bloom-backgroundImage",
+        ) as HTMLElement;
+        const adjustBackgroundImageSize = vi.fn();
+
+        adjustCanvasElementChildrenIfSizeChanged(
+            outer,
+            adjustBackgroundImageSize,
+        );
+
+        expect(outer.getAttribute("data-imgsizebasedon")).toBe("0,0");
+        expect(adjustBackgroundImageSize).toHaveBeenLastCalledWith(
+            outer,
+            ownBackground,
+            false,
+        );
+    });
+
     test("an overlay keeps its place on a background picture that overhangs its bloom-canvas", () => {
         // A 400 x 300 picture area whose background picture overhangs each edge by 1px
         // (adjustBackgroundImageSize's bleed), with a text overlay at x = 100.
