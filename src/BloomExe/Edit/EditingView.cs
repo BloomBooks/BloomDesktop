@@ -714,7 +714,7 @@ namespace Bloom.Edit
                     if (imageIsGif)
                     {
                         // The only way we currently support copying and pasting a gif is through a text path.
-                        var path = PortableClipboard.GetText();
+                        var path = BloomClipboard.GetText();
                         if (
                             string.IsNullOrEmpty(path)
                             || !RobustFile.Exists(path)
@@ -741,7 +741,7 @@ namespace Bloom.Edit
                     }
                     try
                     {
-                        clipboardImage = PortableClipboard.GetImageFromClipboardWithExceptions();
+                        clipboardImage = BloomClipboard.GetImageFromClipboardWithExceptions();
                     }
                     catch (Exception ex)
                     {
@@ -895,7 +895,7 @@ namespace Bloom.Edit
 
         private static PalasoImage GetImageFromClipboard()
         {
-            return PortableClipboard.GetImageFromClipboard();
+            return BloomClipboard.GetImageFromClipboard();
         }
 
         // Extensions that suggest the user intended a file or path to be understood as an
@@ -928,10 +928,10 @@ namespace Bloom.Edit
         {
             try
             {
-                string[] fileDropPaths = Clipboard.ContainsFileDropList()
-                    ? Clipboard.GetFileDropList().Cast<string>().ToArray()
+                string[] fileDropPaths = BloomClipboard.ContainsFileDropList()
+                    ? BloomClipboard.GetFileDropList()
                     : null;
-                var text = PortableClipboard.ContainsText() ? PortableClipboard.GetText() : null;
+                var text = BloomClipboard.ContainsText() ? BloomClipboard.GetText() : null;
                 return ClipboardContentsSuggestImage(fileDropPaths, text);
             }
             catch (Exception)
@@ -992,12 +992,12 @@ namespace Bloom.Edit
                     // Haven't been able to find a way to copy the Gif itself into the clipboard.
                     // Possibly we could also copy the first frame as an actual image.
                     // For now, at least we can copy one GIF canvas element to another, and nothing bad happens
-                    PortableClipboard.SetText(path);
+                    BloomClipboard.SetText(path);
                     return true;
                 }
                 using (var image = PalasoImage.FromFileRobustly(path))
                 {
-                    PortableClipboard.CopyImageToClipboard(image);
+                    BloomClipboard.CopyImageToClipboard(image);
                 }
                 return true;
             }

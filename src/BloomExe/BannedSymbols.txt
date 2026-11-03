@@ -9,3 +9,5 @@ M:System.DateTime.ToShortDateString;Shows a date in the invariant culture (BL-16
 M:System.DateTime.ToLongDateString;Shows a date in the invariant culture (BL-16981). Use ToString("D", UserCulture.Current) for the user, or an explicit invariant format for data.
 M:System.DateTime.ToShortTimeString;Shows a time in the invariant culture (BL-16981). Use ToString("t", UserCulture.Current) for the user, or an explicit invariant format for data.
 M:System.DateTime.ToLongTimeString;Shows a time in the invariant culture (BL-16981). Use ToString("T", UserCulture.Current) for the user, or an explicit invariant format for data.
+T:SIL.Windows.Forms.Miscellaneous.PortableClipboard;Use Bloom.Utils.BloomClipboard, which keeps an e2e run off the Windows clipboard.
+T:System.Windows.Forms.Clipboard;Use Bloom.Utils.BloomClipboard, which keeps an e2e run off the Windows clipboard.

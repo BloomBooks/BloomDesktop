@@ -3,9 +3,10 @@
 // Most programs that copy a picture also put text on the clipboard beside it: Bloom's own Copy
 // Image puts the file's path there. Before BL-17014 a Ctrl+V in a text block was left to the
 // browser and CKEditor, which pasted that text, so the person got a file path instead of their
-// picture. The clipboard here holds both, as such a copy does, and the key pressed is the real
-// Ctrl+V, so the paste goes through the page's own paste listener (inlineImagePaste.ts) and the
-// round trip through C# that brings the picture into the book.
+// picture. Bloom's clipboard here holds both, as such a copy does. The paste is the event Ctrl+V
+// produces (see pasteFromClipboard in helpers/clipboard.ts), so it goes through the page's own
+// paste listener (inlineImagePaste.ts) and the round trip through C# that brings the picture
+// into the book.
 
 import * as fs from "node:fs";
 import * as Path from "node:path";
@@ -20,7 +21,7 @@ import {
     makeBookFromTemplate,
     typeInGroup,
 } from "../helpers/bookMaking";
-import { copyPictureWithPathToClipboard } from "../helpers/clipboard";
+import { copyToClipboard } from "../helpers/clipboard";
 import {
     getBlockText,
     getInlineImageInEveryLanguage,
@@ -64,7 +65,8 @@ test("pasting a picture into a text block adds it as an inline image, not as its
     expect(blocksBefore.flatMap((block) => block.images)).toEqual([]);
     expect(await getBlockText(page, BLOCK, LANG)).toBe(TEXT);
 
-    copyPictureWithPathToClipboard(PICTURE);
+    // The path goes beside the picture, as Bloom's own Copy Image puts it there.
+    await copyToClipboard(page, { picture: PICTURE, text: PICTURE });
     const imageId = await pastePictureIntoText(page, BLOCK, LANG);
 
     // The path that came with the picture is not in the text, and the text is otherwise as it was.

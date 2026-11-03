@@ -112,6 +112,10 @@ import { resetAbovePageControls } from "./AbovePageControls";
 import { trackCkeditorChanges } from "../undo/ckeditorChanges";
 import { theOneUndoStack } from "../undo/UndoStack";
 import { recordFractionOfPageOnImageSlots } from "./imageTargetResolution";
+import {
+    readClipboardText,
+    writeClipboardText,
+} from "../../utils/bloomClipboard";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -1857,12 +1861,10 @@ async function copyImpl() {
         // whitespace. But there's a greater chance they **don't** want unintended
         // trailing line breaks. This ".trimEnd()" works around an issue where multiple
         // copy/pastes can result in an extra line break being added. See BL-14051.
-        navigator.clipboard.writeText(
-            activeCanvasElementEditable.innerText.trimEnd(),
-        );
+        writeClipboardText(activeCanvasElementEditable.innerText.trimEnd());
         return;
     }
-    navigator.clipboard.writeText(sel.toString());
+    writeClipboardText(sel.toString());
 }
 
 // See comment on copySelection
@@ -1873,7 +1875,7 @@ export const cutSelection = () => {
 async function cutSelectionImpl() {
     const sel = document.getSelection();
     if (!sel) return;
-    await navigator.clipboard.writeText(sel.toString());
+    await writeClipboardText(sel.toString());
     // Using ckeditor here because it's the only way I've found to integrate clipboard
     // ops into an Undo stack that we can operate from an external button.
     // We do a Save before and after to make sure that the cut is distinct from
@@ -1999,7 +2001,7 @@ async function pasteImpl(imageAvailable: boolean) {
         document.activeElement as HTMLElement | null
     )?.closest(".bloom-cell");
 
-    const textToPaste = await navigator.clipboard.readText();
+    const textToPaste = await readClipboardText();
     if (!textToPaste) {
         return;
     }

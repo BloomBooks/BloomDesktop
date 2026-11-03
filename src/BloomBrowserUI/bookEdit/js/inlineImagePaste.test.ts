@@ -33,6 +33,12 @@ vi.mock("../../utils/bloomApi", async (importOriginal) => {
     return {
         ...actual,
         postJson: api.postJson,
+        // utils/bloomClipboard asks this to learn whether Bloom runs under --e2e. These tests
+        // are about a normal run, which uses navigator.clipboard.
+        getAsync: (urlSuffix: string) =>
+            urlSuffix === "common/instanceInfo"
+                ? Promise.resolve({ data: { runningE2eTests: false } })
+                : actual.getAsync(urlSuffix),
         useApiObject: <T>(urlSuffix: string, defaultValue: T) =>
             urlSuffix === "settings/languageNames"
                 ? defaultValue

@@ -28,6 +28,7 @@ import * as Path from "node:path";
 import { apiPost } from "./api";
 import { bookHtmlPath } from "./bookHtml";
 import { clickInGroup, editablePageFrame } from "./bookMaking";
+import { pasteFromClipboard } from "./clipboard";
 import type { IRect } from "./geometry";
 import { realClick, realClickAt } from "./realClick";
 
@@ -346,17 +347,19 @@ export async function addInlineImage(
 }
 
 /**
- * Paste the picture on the clipboard into a text block the way a person does: click in the
- * block's text and press Ctrl+V. Put the picture there first, e.g. with
- * copyPictureWithPathToClipboard in helpers/clipboard.ts. Returns the data-bloom-inline-image-id
- * of the inline image the paste makes.
+ * Paste the picture on Bloom's clipboard into a text block the way a person does: click in the
+ * block's text and paste. Put the picture there first with copyToClipboard in
+ * helpers/clipboard.ts. Returns the data-bloom-inline-image-id of the inline image the paste
+ * makes.
  *
- * The picture reaches the page by a round trip through C# (editView/pasteImage copies it into the
- * book folder), and the image is added only when it arrives, already holding the picture, in
- * every language's block at once, the prototype included. This waits until every block has a new
- * image whose picture is not the placeholder. If that never happens, the error says what the
- * group holds and what text the block now has, because a paste that inserted the picture's path
- * as text is the failure this guards against (BL-17014).
+ * The paste is the event a Ctrl+V produces, sent by pasteFromClipboard, which says why it does
+ * not press the keys. The picture reaches the page by a round trip through C#
+ * (editView/pasteImage copies it into the book folder), and the image is added only when it
+ * arrives, already holding the picture, in every language's block at once, the prototype
+ * included. This waits until every block has a new image whose picture is not the placeholder.
+ * If that never happens, the error says what the group holds and what text the block now has,
+ * because a paste that inserted the picture's path as text is the failure this guards against
+ * (BL-17014).
  */
 export async function pastePictureIntoText(
     page: Page,
@@ -370,7 +373,7 @@ export async function pastePictureIntoText(
     const isNewPicture = (image: IInlineImageState) =>
         !known.has(image.id) && image.fileName !== "placeHolder.png";
     await clickInGroup(page, groupSelector, languageTag);
-    await page.keyboard.press("Control+v");
+    await pasteFromClipboard(page);
     const wanted = before.length;
     try {
         await expect
@@ -384,7 +387,7 @@ export async function pastePictureIntoText(
             .toBe(wanted);
     } catch {
         throw new Error(
-            `Ctrl+V did not put a new inline image holding the pasted picture in all ${wanted} ` +
+            `Pasting did not put a new inline image holding the pasted picture in all ${wanted} ` +
                 `language blocks of "${groupSelector}". The group holds: ` +
                 `${describeBlocks(await getInlineImages(page, groupSelector))}. The ` +
                 `"${languageTag}" block's text is now: ` +

@@ -22,6 +22,7 @@
 // usually does, is pasted as text, as before. The picture there is usually just a rendering of
 // that same text.
 import { postJson } from "../../utils/bloomApi";
+import { readClipboardHtml } from "../../utils/bloomClipboard";
 import {
     doImageCommand,
     endImagePaste,
@@ -139,10 +140,7 @@ export function dataTransferHoldsJustAPicture(
  * to look at.
  */
 export async function clipboardHoldsJustAPicture(): Promise<boolean> {
-    const items = await navigator.clipboard.read();
-    for (const item of items) {
-        if (!item.types.includes("text/html")) continue;
-        const html = await (await item.getType("text/html")).text();
+    for (const html of await readClipboardHtml()) {
         if (!htmlIsJustAPicture(html)) return false;
     }
     return true;

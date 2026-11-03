@@ -11,6 +11,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.MiscUI;
+using Bloom.Utils;
 using Bloom.web;
 using Bloom.Workspace;
 using L10NSharp;
@@ -126,7 +127,7 @@ namespace Bloom.web.controllers
                             {
                                 try
                                 {
-                                    result = PortableClipboard.GetText();
+                                    result = BloomClipboard.GetText();
                                 }
                                 catch (Exception e)
                                 {
@@ -164,7 +165,7 @@ namespace Bloom.web.controllers
                                 {
                                     try
                                     {
-                                        PortableClipboard.SetText(content);
+                                        BloomClipboard.SetText(content);
                                     }
                                     catch (Exception e)
                                     {
@@ -500,7 +501,10 @@ namespace Bloom.web.controllers
                     throw new ApplicationException("No clipboard data could be set.");
                 }
 
+                // This endpoint sets the Windows clipboard itself, whatever BloomClipboard would do.
+#pragma warning disable RS0030
                 Clipboard.SetDataObject(dataObject, true, 10, 50);
+#pragma warning restore RS0030
             }
             finally
             {
