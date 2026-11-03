@@ -2232,8 +2232,13 @@ namespace Bloom.Edit
             request.ReplyWithHtml(translationGroupHtml);
         }
 
+        /// <summary>
+        /// Puts the picture into the book's folder and the image with this id on the page.
+        /// Returns false if that failed; the user has then been told about the problem, and the
+        /// page was not told about any new picture.
+        /// </summary>
         /// <param name="source">For analytics; passed on to UpdateImageInBrowser.</param>
-        public void ChangePicture(
+        public bool ChangePicture(
             string imageId,
             UrlPathString priorImageSrc,
             PalasoImage imageInfo,
@@ -2255,6 +2260,7 @@ namespace Bloom.Edit
                     undoable: true // All image changes made here are undoable.
                 );
                 UpdateImageInBrowser(args, source);
+                return true;
             }
             catch (Exception e)
             {
@@ -2264,6 +2270,7 @@ namespace Bloom.Edit
                 );
                 e.Data["ProblemImagePath"] = imageInfo.OriginalFilePath;
                 ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
+                return false;
             }
         }
 

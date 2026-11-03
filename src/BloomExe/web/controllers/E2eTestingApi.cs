@@ -7,6 +7,7 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.MiscUI;
 using Bloom.SubscriptionAndFeatures;
+using Bloom.Utils;
 using SIL.IO;
 using SIL.Progress;
 
@@ -193,6 +194,44 @@ namespace Bloom.web.controllers
                 kApiUrlPart + "nextFileToChoose",
                 HandleSetNextFileToChoose,
                 false // does not need the UI thread
+            );
+
+            // GET e2e/clipboard: what Bloom's clipboard holds. POST: replace it. Under --e2e,
+            // BloomClipboard and the page's utils/bloomClipboard.ts use an in-memory clipboard
+            // instead of the Windows one, so this is how a test copies something for Bloom to
+            // paste, and how it sees what a copy in Bloom produced. Off the UI thread: it only
+            // reads or stores an object.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "clipboard",
+                HandleClipboard,
+                false // does not need the UI thread
+            );
+        }
+
+        /// <summary>
+        /// GET or POST e2e/clipboard (see the registration above). The JSON has the fields text,
+        /// html, picturePath and files, each of them null when the clipboard does not hold that
+        /// form; a POST replaces all of them.
+        /// </summary>
+        private void HandleClipboard(ApiRequest request)
+        {
+            if (request.HttpMethod == HttpMethods.Post)
+            {
+                BloomClipboard.SetE2eContents(
+                    request.RequiredPostObject<BloomClipboard.E2eContents>()
+                );
+                request.PostSucceeded();
+                return;
+            }
+            var contents = BloomClipboard.GetE2eContents();
+            request.ReplyWithJson(
+                new
+                {
+                    text = contents.Text,
+                    html = contents.Html,
+                    picturePath = contents.PicturePath,
+                    files = contents.Files,
+                }
             );
         }
 

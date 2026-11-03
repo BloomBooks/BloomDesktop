@@ -714,7 +714,7 @@ namespace Bloom.Edit
                     if (imageIsGif)
                     {
                         // The only way we currently support copying and pasting a gif is through a text path.
-                        var path = PortableClipboard.GetText();
+                        var path = BloomClipboard.GetText();
                         if (
                             string.IsNullOrEmpty(path)
                             || !RobustFile.Exists(path)
@@ -741,7 +741,7 @@ namespace Bloom.Edit
                     }
                     try
                     {
-                        clipboardImage = PortableClipboard.GetImageFromClipboardWithExceptions();
+                        clipboardImage = BloomClipboard.GetImageFromClipboardWithExceptions();
                     }
                     catch (Exception ex)
                     {
@@ -789,14 +789,13 @@ namespace Bloom.Edit
                             "[Paste Image] Pasting jpeg image {0}",
                             clipboardImage.OriginalFilePath
                         );
-                        _model.ChangePicture(
+                        pictureChanged = _model.ChangePicture(
                             imageId,
                             priorImageSrc,
                             clipboardImage,
                             "clipboard",
                             pageBackgroundColor
                         );
-                        pictureChanged = true;
                     }
                     else
                     {
@@ -806,14 +805,13 @@ namespace Bloom.Edit
                             Logger.WriteMinorEvent(
                                 "[Paste Image] Pasting image directly from clipboard (e.g. screenshot)"
                             );
-                            _model.ChangePicture(
+                            pictureChanged = _model.ChangePicture(
                                 imageId,
                                 priorImageSrc,
                                 clipboardImage,
                                 "clipboard",
                                 pageBackgroundColor
                             );
-                            pictureChanged = true;
                         }
                         //they pasted a path to a png
                         else if (
@@ -825,14 +823,13 @@ namespace Bloom.Edit
                                 "[Paste Image] Pasting png file {0}",
                                 clipboardImage.OriginalFilePath
                             );
-                            _model.ChangePicture(
+                            pictureChanged = _model.ChangePicture(
                                 imageId,
                                 priorImageSrc,
                                 clipboardImage,
                                 "clipboard",
                                 pageBackgroundColor
                             );
-                            pictureChanged = true;
                         }
                         else // they pasted a path to some other bitmap format
                         {
@@ -861,14 +858,13 @@ namespace Bloom.Edit
 
                                 using (var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
                                 {
-                                    _model.ChangePicture(
+                                    pictureChanged = _model.ChangePicture(
                                         imageId,
                                         priorImageSrc,
                                         palasoImage,
                                         "clipboard",
                                         pageBackgroundColor
                                     );
-                                    pictureChanged = true;
                                 }
                             }
                         }
@@ -899,7 +895,7 @@ namespace Bloom.Edit
 
         private static PalasoImage GetImageFromClipboard()
         {
-            return PortableClipboard.GetImageFromClipboard();
+            return BloomClipboard.GetImageFromClipboard();
         }
 
         // Extensions that suggest the user intended a file or path to be understood as an
@@ -932,10 +928,10 @@ namespace Bloom.Edit
         {
             try
             {
-                string[] fileDropPaths = Clipboard.ContainsFileDropList()
-                    ? Clipboard.GetFileDropList().Cast<string>().ToArray()
+                string[] fileDropPaths = BloomClipboard.ContainsFileDropList()
+                    ? BloomClipboard.GetFileDropList()
                     : null;
-                var text = PortableClipboard.ContainsText() ? PortableClipboard.GetText() : null;
+                var text = BloomClipboard.ContainsText() ? BloomClipboard.GetText() : null;
                 return ClipboardContentsSuggestImage(fileDropPaths, text);
             }
             catch (Exception)
@@ -996,12 +992,12 @@ namespace Bloom.Edit
                     // Haven't been able to find a way to copy the Gif itself into the clipboard.
                     // Possibly we could also copy the first frame as an actual image.
                     // For now, at least we can copy one GIF canvas element to another, and nothing bad happens
-                    PortableClipboard.SetText(path);
+                    BloomClipboard.SetText(path);
                     return true;
                 }
                 using (var image = PalasoImage.FromFileRobustly(path))
                 {
-                    PortableClipboard.CopyImageToClipboard(image);
+                    BloomClipboard.CopyImageToClipboard(image);
                 }
                 return true;
             }
@@ -1241,14 +1237,13 @@ namespace Bloom.Edit
             {
                 if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(imageInfo))
                     return;
-                _model.ChangePicture(
+                imageChanged = _model.ChangePicture(
                     imageId,
                     priorImageSrc,
                     imageInfo,
                     "clipboard",
                     pageBackgroundColor
                 );
-                imageChanged = true;
             }
             catch (System.IO.IOException error)
             {
