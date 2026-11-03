@@ -4,6 +4,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
+using Bloom.ImageProcessing;
 using Bloom.Publish.Rab;
 using NUnit.Framework;
 using SIL.IO;
@@ -314,7 +315,7 @@ namespace BloomTests.Publish.Rab
             var pngPath = Path.Combine(_bookFolder, "rgb.png");
             WriteNoisyImage(pngPath, 1440, 1440, PixelFormat.Format24bppRgb, ImageFormat.Png);
             Assert.That(
-                BloomPubSizeEstimator.PngCanHaveTransparency(pngPath),
+                ImageUtils.PngCanHaveTransparency(pngPath),
                 Is.False,
                 "test setup: GDI+ should save a 24-bit picture as a PNG with no alpha channel"
             );
@@ -340,7 +341,7 @@ namespace BloomTests.Publish.Rab
             var pngPath = Path.Combine(_bookFolder, "opaque.png");
             WriteNoisyImage(pngPath, 1440, 1440, PixelFormat.Format32bppArgb, ImageFormat.Png);
             Assert.That(
-                BloomPubSizeEstimator.PngCanHaveTransparency(pngPath),
+                ImageUtils.PngCanHaveTransparency(pngPath),
                 Is.True,
                 "test setup: GDI+ should save a 32-bit picture as a PNG with an alpha channel"
             );
@@ -359,43 +360,6 @@ namespace BloomTests.Publish.Rab
             );
 
             Assert.That(estimate, Is.EqualTo(_htmlBytes + ifTransparent));
-        }
-
-        [TestCase((byte)2, false, ExpectedResult = false, TestName = "RGB is opaque")]
-        [TestCase((byte)0, false, ExpectedResult = false, TestName = "Grayscale is opaque")]
-        [TestCase((byte)3, false, ExpectedResult = false, TestName = "Palette is opaque")]
-        [TestCase((byte)6, false, ExpectedResult = true, TestName = "RGBA might be transparent")]
-        [TestCase(
-            (byte)4,
-            false,
-            ExpectedResult = true,
-            TestName = "Gray+alpha might be transparent"
-        )]
-        [TestCase(
-            (byte)2,
-            true,
-            ExpectedResult = true,
-            TestName = "RGB with tRNS might be transparent"
-        )]
-        [TestCase(
-            (byte)3,
-            true,
-            ExpectedResult = true,
-            TestName = "Palette with tRNS might be transparent"
-        )]
-        public bool PngCanHaveTransparency_JudgesFromHeader(byte colorType, bool withTrns)
-        {
-            var path = Path.Combine(_tempFolder.Path, "test.png");
-            RobustFile.WriteAllBytes(path, MakeMinimalPng(colorType, withTrns));
-            return BloomPubSizeEstimator.PngCanHaveTransparency(path);
-        }
-
-        [Test]
-        public void PngCanHaveTransparency_NotReallyAPng_SaysItMight()
-        {
-            var path = Path.Combine(_tempFolder.Path, "fake.png");
-            RobustFile.WriteAllBytes(path, new byte[] { 1, 2, 3 });
-            Assert.That(BloomPubSizeEstimator.PngCanHaveTransparency(path), Is.True);
         }
 
         [Test]
@@ -427,41 +391,6 @@ namespace BloomTests.Publish.Rab
                 new ImagePublishSettings()
             );
             Assert.That(estimate, Is.EqualTo(0));
-        }
-
-        /// <summary>
-        /// The bytes of a PNG with just the chunks the header check looks at: IHDR (with the given
-        /// colour type), an optional tRNS, an empty IDAT and IEND. The CRCs are zeros, since the
-        /// check doesn't read them.
-        /// </summary>
-        private static byte[] MakeMinimalPng(byte colorType, bool withTrns)
-        {
-            using var stream = new MemoryStream();
-            stream.Write(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 });
-            void WriteChunk(string type, byte[] data)
-            {
-                stream.Write(
-                    new[]
-                    {
-                        (byte)(data.Length >> 24),
-                        (byte)(data.Length >> 16),
-                        (byte)(data.Length >> 8),
-                        (byte)data.Length,
-                    }
-                );
-                stream.Write(System.Text.Encoding.ASCII.GetBytes(type));
-                stream.Write(data);
-                stream.Write(new byte[4]);
-            }
-            // width 1, height 1, bit depth 8, colour type, compression, filter, interlace
-            WriteChunk("IHDR", new byte[] { 0, 0, 0, 1, 0, 0, 0, 1, 8, colorType, 0, 0, 0 });
-            if (colorType == 3)
-                WriteChunk("PLTE", new byte[] { 255, 0, 0 });
-            if (withTrns)
-                WriteChunk("tRNS", new byte[] { 0 });
-            WriteChunk("IDAT", Array.Empty<byte>());
-            WriteChunk("IEND", Array.Empty<byte>());
-            return stream.ToArray();
         }
 
         /// <summary>

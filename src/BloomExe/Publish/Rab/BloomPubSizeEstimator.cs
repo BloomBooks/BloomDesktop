@@ -2,13 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.Publish.BloomPub;
 using Bloom.SafeXml;
 using Bloom.web.controllers;
-using SIL.IO;
 
 namespace Bloom.Publish.Rab
 {
@@ -35,11 +33,6 @@ namespace Bloom.Publish.Rab
     /// </summary>
     public class BloomPubSizeEstimator
     {
-        // PNG colour types (the byte after the bit depth in the IHDR chunk).
-        private const byte kPngColorTypeGrayscaleWithAlpha = 4;
-        private const byte kPngColorTypeRgbWithAlpha = 6;
-        private static readonly byte[] kPngSignature = { 137, 80, 78, 71, 13, 10, 26, 10 };
-
         /// <summary>
         /// The size we assume an opaque PNG takes per pixel once publishing has turned it into a
         /// JPEG. For the paintings and photos that make PNGs big that is typically 0.2-0.5 bytes
@@ -270,7 +263,7 @@ namespace Bloom.Publish.Rab
         /// The approximate size a picture is likely to have in a BloomPUB (see
         /// <see cref="EstimatePublishedImageBytes(int, int, long, bool, bool, bool, int, int)"/>). A
         /// PNG counts as transparent unless its header shows it can't be (see
-        /// <see cref="PngCanHaveTransparency"/>). A picture publishing may make transparent
+        /// <see cref="ImageUtils.PngCanHaveTransparency"/>). A picture publishing may make transparent
         /// (<paramref name="mayBeMadeTransparent"/>) counts as a transparent PNG whatever its
         /// format. If we can't read the dimensions, count the file as it is.
         /// </summary>
@@ -306,72 +299,9 @@ namespace Bloom.Publish.Rab
             var ifOpaque = Estimate(false);
             if (!isPng)
                 return ifOpaque;
-            if (ifOpaque == ifTransparent || !PngCanHaveTransparency(file.FullName))
+            if (ifOpaque == ifTransparent || !ImageUtils.PngCanHaveTransparency(file.FullName))
                 return ifOpaque;
             return ifTransparent;
-        }
-
-        /// <summary>
-        /// Whether the PNG at <paramref name="path"/> could have transparent pixels, judged from
-        /// its header alone, which is cheap even for a huge picture. A PNG can only be transparent
-        /// if its colour type includes an alpha channel or it has a tRNS chunk (which must come
-        /// before the image data). False means "certainly opaque"; true means only "might be".
-        /// Anything we can't make sense of counts as "might be".
-        /// </summary>
-        internal static bool PngCanHaveTransparency(string path)
-        {
-            try
-            {
-                using var stream = RobustFile.OpenRead(path);
-                using var reader = new BinaryReader(stream);
-                if (!reader.ReadBytes(kPngSignature.Length).SequenceEqual(kPngSignature))
-                    return true;
-                var sawHeader = false;
-                // Each chunk is a 4-byte big-endian length, a 4-byte type, the data, and a 4-byte CRC.
-                while (stream.Position + 8 <= stream.Length)
-                {
-                    var lengthBytes = reader.ReadBytes(4);
-                    var length =
-                        (lengthBytes[0] << 24)
-                        | (lengthBytes[1] << 16)
-                        | (lengthBytes[2] << 8)
-                        | lengthBytes[3];
-                    var type = Encoding.ASCII.GetString(reader.ReadBytes(4));
-                    if (length < 0)
-                        return true;
-                    switch (type)
-                    {
-                        case "IHDR":
-                            if (length < 10)
-                                return true;
-                            reader.ReadBytes(9); // width, height, bit depth
-                            var colorType = reader.ReadByte();
-                            if (
-                                colorType == kPngColorTypeGrayscaleWithAlpha
-                                || colorType == kPngColorTypeRgbWithAlpha
-                            )
-                                return true;
-                            sawHeader = true;
-                            stream.Seek(length - 10 + 4, SeekOrigin.Current);
-                            break;
-                        case "tRNS":
-                            return true;
-                        case "IDAT":
-                        case "IEND":
-                            // tRNS can't come after the image data, so we have seen all we need.
-                            return !sawHeader;
-                        default:
-                            stream.Seek((long)length + 4, SeekOrigin.Current);
-                            break;
-                    }
-                }
-                return true;
-            }
-            catch (Exception error)
-                when (error is IOException || error is UnauthorizedAccessException)
-            {
-                return true;
-            }
         }
 
         /// <summary>
