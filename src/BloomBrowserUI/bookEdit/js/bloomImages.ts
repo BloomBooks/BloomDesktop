@@ -982,21 +982,25 @@ export function getImageFromCanvasElement(
 // There are enough common behaviors to make it useful to use the same structure, and I
 // (JohnT) at least find it useful to think of it as a background canvas element.
 //
-// A descendant search is not enough to find it, because a bloom-canvas can be nested inside
-// another (a table's picture cell holds one, and a table can sit on a canvas page): the outer
-// canvas would find the inner canvas's background image and treat it as its own. A direct-child
-// search is not enough either, because the Image Description tool temporarily wraps the
-// background image in a bloom-describedImage. So we take the first background image whose
-// nearest bloom-canvas is this one.
+// We search descendants rather than direct children, because the Image Description tool
+// temporarily wraps the background image in a bloom-describedImage. A bloom-canvas can also be
+// nested inside another (a table's picture cell holds one, and a table can sit on a canvas page).
+// On a real page the background image is the first canvas element, so the first match is always
+// this bloom-canvas's own; we check that its nearest bloom-canvas is this one just for robustness,
+// so an outer canvas never treats a nested canvas's background image as its own. Looping over the
+// live collection lets the search stop at the first match, as a plain [0] would.
 export function getBackgroundCanvasElementFromBloomCanvas(
     bloomCanvas: HTMLElement,
 ): HTMLElement | undefined {
-    return Array.from(
-        bloomCanvas.getElementsByClassName(kBackgroundImageClass),
-    ).find(
-        (candidate) =>
-            candidate.closest(`.${kBloomCanvasClass}`) === bloomCanvas,
-    ) as HTMLElement | undefined;
+    const candidates = bloomCanvas.getElementsByClassName(
+        kBackgroundImageClass,
+    );
+    for (let i = 0; i < candidates.length; i++) {
+        if (candidates[i].closest(`.${kBloomCanvasClass}`) === bloomCanvas) {
+            return candidates[i] as HTMLElement;
+        }
+    }
+    return undefined;
 }
 
 // Shortcut to get the img element from the background canvas element (if any) of a bloom-canvas.
