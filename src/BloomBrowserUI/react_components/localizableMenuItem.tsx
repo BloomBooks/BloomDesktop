@@ -73,7 +73,7 @@ export interface INestedMenuItemProps extends IBaseLocalizableMenuItemProps {
     children?: ReactNode;
     // Whether the menu this row is in is open. Defaults to true. A menu that stays mounted while
     // shut (keepMounted) must pass its open state, or a submenu that was open when the menu shut
-    // stays drawn until the pointer moves.
+    // stays drawn until the pointer moves, and may open again with the menu.
     parentMenuOpen?: boolean;
 }
 
@@ -406,6 +406,22 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<
         props.l10nParam0,
     );
     const subLabel = useL10n("", props.subLabelL10nId ?? null);
+    // NestedMenuItem keeps to itself whether its submenu is open, and forgets it only when the
+    // pointer leaves the row. A menu can shut without that: the canvas element menu shuts on an
+    // Escape that Bloom stops before the submenu hears it, and the submenu, which covered the row,
+    // is gone before the pointer next moves. parentMenuOpen then hides the submenu, but the row
+    // still thinks it open, and a keepMounted menu opens next time with that submenu already
+    // showing, drawn over its own row when there is no room beside the menu. So each time the
+    // parent menu shuts, start a fresh NestedMenuItem, which starts with its submenu shut.
+    const parentMenuOpen = props.parentMenuOpen ?? true;
+    const [timesParentMenuShut, setTimesParentMenuShut] = useState(0);
+    const [parentMenuWasOpen, setParentMenuWasOpen] = useState(parentMenuOpen);
+    if (parentMenuOpen !== parentMenuWasOpen) {
+        // Adjusted while rendering rather than in an effect, so that the old NestedMenuItem
+        // never renders again, not even once, with the menu open.
+        setParentMenuWasOpen(parentMenuOpen);
+        if (!parentMenuOpen) setTimesParentMenuShut(timesParentMenuShut + 1);
+    }
     if (!props.children) {
         return <React.Fragment />;
     }
@@ -444,7 +460,7 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<
                     //padding: 4px 6px 0 6px !important; // adjust for denser layout
                     justify-content: space-between !important; // move sub-menu arrow to right
                 `}
-                key={props.l10nId}
+                key={timesParentMenuShut}
                 // As on LocalizableMenuItem, the localization id doubles as the test id, so a
                 // test can hover the row to open its submenu without matching on English.
                 data-testid={props.l10nId}
@@ -477,7 +493,7 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<
                         </Fragment>
                     )
                 }
-                parentMenuOpen={props.parentMenuOpen ?? true}
+                parentMenuOpen={parentMenuOpen}
                 //icon={props.icon}
             >
                 {props.children}
