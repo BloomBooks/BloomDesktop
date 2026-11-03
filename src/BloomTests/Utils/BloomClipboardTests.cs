@@ -150,5 +150,21 @@ namespace BloomTests.Utils
                 Assert.That(BloomClipboard.GetImageFromClipboard(), Is.Null);
             }
         }
+
+        [Test]
+        public void CanGetImage_PictureFileThatIsGone_CountsAsNoPicture()
+        {
+            string gonePath;
+            using (var picture = MakePicture(2, 2))
+                gonePath = picture.Path;
+            Assert.That(RobustFile.Exists(gonePath), Is.False, "Sanity check.");
+
+            BloomClipboard.SetE2eContents(
+                new BloomClipboard.E2eContents { PicturePath = gonePath }
+            );
+
+            Assert.That(BloomClipboard.CanGetImage(), Is.False);
+            Assert.That(BloomClipboard.GetImageFromClipboardWithExceptions(), Is.Null);
+        }
     }
 }

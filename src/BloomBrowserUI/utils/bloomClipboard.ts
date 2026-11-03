@@ -18,11 +18,19 @@ interface IE2eClipboardContents {
 
 let runningE2eTests: Promise<boolean> | undefined;
 
-/** Whether this Bloom runs under --e2e. Asked once and remembered. */
+/**
+ * Whether this Bloom runs under --e2e. Asked once and remembered, unless asking fails: a failure
+ * is not remembered, so that one failed request cannot break every later copy and paste on the
+ * page.
+ */
 function isRunningE2eTests(): Promise<boolean> {
     if (!runningE2eTests) {
         runningE2eTests = getAsync("common/instanceInfo").then(
             (response) => !!response.data.runningE2eTests,
+            (error) => {
+                runningE2eTests = undefined;
+                throw error;
+            },
         );
     }
     return runningE2eTests;

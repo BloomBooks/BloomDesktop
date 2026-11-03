@@ -211,13 +211,17 @@ namespace Bloom.Utils
         /// <summary>
         /// Where the in-memory clipboard's picture is, looked for in the order WindowsClipboard
         /// looks: the picture itself, then a copied file, then a text path to a file. Null when
-        /// none of these names an existing file. As in WindowsClipboard, CanGetImage
+        /// none of these names an existing file, so a picture whose file has gone counts as no
+        /// picture. As in WindowsClipboard, CanGetImage
         /// (`requirePictureExtension` true) counts only a file with a picture's extension, while
         /// pasting takes any existing file and fails if it is not a picture.
         /// </summary>
         private static string GetE2ePicturePath(E2eContents contents, bool requirePictureExtension)
         {
-            if (!string.IsNullOrEmpty(contents.PicturePath))
+            if (
+                !string.IsNullOrEmpty(contents.PicturePath)
+                && RobustFile.Exists(contents.PicturePath)
+            )
                 return contents.PicturePath;
             bool Qualifies(string path) =>
                 !string.IsNullOrEmpty(path)
