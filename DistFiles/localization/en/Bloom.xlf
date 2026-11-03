@@ -5304,6 +5304,21 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">This book is available for editing</source>
         <note>ID: TeamCollection.Available</note>
       </trans-unit>
+      <trans-unit id="TeamCollection.SharedFolderChangesPaused" sil:dynamic="true" translate="no">
+        <source xml:lang="en">The administrator of this collection has paused changes to it. For now, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection.</source>
+        <note>ID: TeamCollection.SharedFolderChangesPaused</note>
+        <note>Shown in the Team Collection status dialog (its message log), and in the book status panel in place of the usual "Disconnected" explanation, while the administrator has stopped all changes to the shared Team Collection folder and Bloom is therefore working in Disconnected mode. "Check in" and "check out" are the Team Collection actions of the same names.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckoutsPaused" sil:dynamic="true" translate="no">
+        <source xml:lang="en">The administrator of this collection has paused checkouts.</source>
+        <note>ID: TeamCollection.CheckoutsPaused</note>
+        <note>Shown in the book status panel of a Team Collection, below the disabled "Check out book" button, while the administrator has stopped new checkouts for the whole team (people can still check in books they already have checked out).</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.MovedToCloud" sil:dynamic="true" translate="no">
+        <source xml:lang="en">This collection has moved to Bloom's cloud sharing. To keep working with your team, close and reopen the collection, and Bloom will switch it over. Until then, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection.</source>
+        <note>ID: TeamCollection.MovedToCloud</note>
+        <note>Shown in the same places as TeamCollection.SharedFolderChangesPaused (the Team Collection status dialog's message log, and the book status panel while disconnected for this reason), once the Team Collection has been replaced by a collection shared through Bloom's cloud service. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
       <!--
 // Don't want these actually translated until things stabilize. Will need re-ordering.
 // NOTE: before uncommenting this section, verify the strings against the current code:
@@ -5497,6 +5512,11 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Sign in to BloomLibrary.org</source>
         <note>ID: SignInInvitationDialog.SignIn</note>
         <note>Label of the main button in the dialog inviting a Team Collection user to sign in; it opens the BloomLibrary.org login page in the user's web browser. "BloomLibrary.org" is a web address and must not be translated. Shown in capital letters by the button itself, so do not capitalize it here.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.TeamCollectionPage.SaveRenameFirst">
+        <source xml:lang="en">You have changed the collection's name. Save that first (Bloom will restart); then you can create a Team Collection with the new name.</source>
+        <note>ID: CollectionSettingsDialog.TeamCollectionPage.SaveRenameFirst</note>
+        <note>On the Team Collection page of the Collection Settings dialog, above a disabled "Create a Team Collection" button, when the user has typed a new collection name (on the Advanced page) but not saved it yet. "Team Collection" is the name of a Bloom feature.</note>
       </trans-unit>
 -->
       <trans-unit id="TemplateBooks.BookName.Arithmetic Pages" sil:dynamic="true">

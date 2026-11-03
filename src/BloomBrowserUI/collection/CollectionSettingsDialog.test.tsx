@@ -2,6 +2,7 @@ import * as React from "react";
 import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderRoot, unmountRoot } from "../utils/reactRender";
+import { administratorsAreValid } from "../teamCollection/administrators";
 import {
     ICollectionSettingsResponse,
     ICollectionSettingsValues,
@@ -41,21 +42,42 @@ const initialValues: ICollectionSettingsValues = {
         province: "",
         district: "",
     },
+    subscription: { code: "Saved-Code-123456-7890" },
+    teamCollection: { administrators: "", createInFolder: "" },
     bloomLibrary: { defaultBookshelf: "" },
     advanced: { autoUpdate: true, collectionName: "Test Collection" },
     experimental: { "team-collections": false, tables: false },
 };
 
+// The folder the Create Team Collection dialog starts with, as the GET reports it.
+const kDropboxFolder = "C:\\Users\\me\\Dropbox";
+
 const settingsResponse: ICollectionSettingsResponse = {
     values: initialValues,
     restartPaths: ["frontBackMatter.xmatter", "languages.language3.tag"],
     isTeamCollection: false,
+    xmatterPacks: [
+        {
+            value: "Traditional",
+            label: "Traditional",
+            description: "Title page and credits page inside the covers.",
+        },
+        {
+            value: "Device",
+            label: "Device",
+            description: "Made for reading on phones.",
+        },
+    ],
+    xmatterChosenByBranding: false,
+    editingABlorgBook: false,
+    defaultTeamCollectionFolder: kDropboxFolder,
     notAllowedMessage: null,
 };
 
 const {
     mockGet,
     mockPostJson,
+    mockUseApiObject,
     mockCloseDialog,
     dialogState,
     teamCollectionFeature,
@@ -64,9 +86,12 @@ const {
 } = vi.hoisted(() => ({
     mockGet: vi.fn(),
     mockPostJson: vi.fn(),
+    // Only the badge preview uses it, to get the badge's HTML from C#.
+    mockUseApiObject: vi.fn(),
     mockCloseDialog: vi.fn(),
-    // Lets a test close and re-open the dialog, which is what the real launch plumbing does.
-    dialogState: { open: true },
+    // Lets a test close and re-open the dialog, which is what the real launch plumbing does, and
+    // launch it again (a new event) while it is open.
+    dialogState: { open: true, openingEvent: {} as Record<string, unknown> },
     // Whether Bloom has answered the subscription check yet, and whether the collection's tier
     // includes Team Collections.
     teamCollectionFeature: { loaded: true, enabled: true },
@@ -106,9 +131,100 @@ vi.mock("../react_components/requiresSubscription", () => ({
     ),
 }));
 
+// The Subscription page's code editor and status talk to Bloom themselves. These
+// stand-ins show the code they were given, and let a test type a new one.
+vi.mock("./subscriptionCodeControl", () => ({
+    SubscriptionControls: (props: {
+        code: string;
+        onCodeChange: (code: string) => void;
+    }) => (
+        <div>
+            <div data-testid="subscription-code">{props.code}</div>
+            <button
+                data-testid="type-subscription-code"
+                onClick={() => props.onCodeChange(" New-Code-654321-0987 ")}
+            />
+            <button
+                data-testid="clear-subscription-code"
+                onClick={() => props.onCodeChange("")}
+            />
+        </div>
+    ),
+}));
+
+vi.mock("../collectionsTab/SubscriptionStatus", () => ({
+    SubscriptionStatus: () => null,
+}));
+
+vi.mock("../react_components/markdown", () => ({
+    Markdown: () => null,
+}));
+
+// On the Subscription page, the note box holds only the community invitation.
+vi.mock("../react_components/boxes", () => ({
+    NoteBox: () => <div data-testid="community-invitation" />,
+}));
+
+// The Team Collection page's pieces talk to Bloom themselves. These stand-ins show what they were
+// given, and let a test type administrators or choose a folder.
+vi.mock("../teamCollection/TeamCollectionSettingsPanel", () => ({
+    TeamCollectionSettings: (props: {
+        administrators: string;
+        onAdministratorsChange: (administrators: string) => void;
+        onCreateTeamCollection: () => void;
+        renameUnsaved?: boolean;
+    }) => (
+        <div>
+            <div data-testid="administrators">{props.administrators}</div>
+            <div data-testid="rename-unsaved">
+                {String(!!props.renameUnsaved)}
+            </div>
+            <button
+                data-testid="type-valid-administrators"
+                onClick={() =>
+                    props.onAdministratorsChange(
+                        " a@example.com, b@example.com ",
+                    )
+                }
+            />
+            <button
+                data-testid="type-invalid-administrators"
+                onClick={() => props.onAdministratorsChange("a@example.com, b")}
+            />
+            <button
+                data-testid="create-team-collection"
+                onClick={props.onCreateTeamCollection}
+            />
+        </div>
+    ),
+}));
+
+vi.mock("../teamCollection/CreateTeamCollection", () => ({
+    CreateTeamCollectionDialog: (props: {
+        defaultRepoFolder: string;
+        onFolderChosen: (folder: string) => void;
+        onClose: () => void;
+    }) => (
+        <div data-testid="create-dialog">
+            <div data-testid="create-dialog-folder">
+                {props.defaultRepoFolder}
+            </div>
+            <button
+                data-testid="create-dialog-ok"
+                onClick={() => props.onFolderChosen(props.defaultRepoFolder)}
+            />
+            <button
+                data-testid="create-dialog-cancel"
+                onClick={props.onClose}
+            />
+        </div>
+    ),
+}));
+
 vi.mock("../utils/bloomApi", () => ({
     get: mockGet,
     postJson: mockPostJson,
+    useApiObject: mockUseApiObject,
 }));
 
 vi.mock("../react_components/l10nHooks", () => ({
@@ -117,7 +233,7 @@ vi.mock("../react_components/l10nHooks", () => ({
 
 vi.mock("../react_components/BloomDialog/BloomDialogPlumbing", () => ({
     useEventLaunchedBloomDialog: () => ({
-        openingEvent: {},
+        openingEvent: dialogState.openingEvent,
         closeDialog: mockCloseDialog,
         propsForBloomDialog: { open: dialogState.open },
     }),
@@ -162,109 +278,201 @@ vi.mock("../react_components/BloomDialog/commonDialogComponents", () => ({
     DialogCloseButton: (props: { onClick: () => void }) => (
         <button data-testid="dialog-close" onClick={props.onClick} />
     ),
+    DialogHelpButton: (props: { helpId: string }) => (
+        <button data-testid="dialog-help" data-help-id={props.helpId} />
+    ),
 }));
 
-const { MockConfigrGroup } = vi.hoisted(() => ({
+const {
+    MockConfigrGroup,
+    MockConfigrStatic,
+    MockMountedWith,
+    MockShownPage,
+    withPaneRef,
+} = vi.hoisted(() => ({
+    // The dialog gives ConfigrPane a ref, so the stand-in must accept one; this passes it on
+    // to the stand-in as its paneRef prop.
+    withPaneRef: <P,>(Pane: React.FunctionComponent<P>) => {
+        const PaneTakingRef = Pane as unknown as React.FunctionComponent<{
+            paneRef: React.ForwardedRef<unknown>;
+        }>;
+        const MockConfigrPane = React.forwardRef((props: object, ref) => (
+            <PaneTakingRef {...props} paneRef={ref} />
+        ));
+        MockConfigrPane.displayName = "MockConfigrPane";
+        return MockConfigrPane;
+    },
+    // The page the pane shows. Like Config-r, it opens on the initially selected page, moves
+    // when the user clicks another one, and moves when the pane's handle asks it to.
+    MockShownPage: (props: {
+        paneRef: React.ForwardedRef<unknown>;
+        initialPageKey?: string;
+    }) => {
+        const [shownPageKey, setShownPageKey] = React.useState(
+            props.initialPageKey,
+        );
+        React.useImperativeHandle(props.paneRef, () => ({
+            selectTopLevelPage: setShownPageKey,
+        }));
+        return (
+            <>
+                <div data-testid="shown-page">{shownPageKey}</div>
+                <button
+                    data-testid="user-shows-bloom-library"
+                    onClick={() => setShownPageKey("bloomLibrary")}
+                />
+            </>
+        );
+    },
+    // What the pane was given as it mounted; later renders do not change it, as in Config-r.
+    MockMountedWith: (props: { collectionName: string; pageKey?: string }) => {
+        const [mountedWith] = React.useState(props);
+        return (
+            <>
+                <div data-testid="initial-collection-name">
+                    {mountedWith.collectionName}
+                </div>
+                <div data-testid="initial-page-key">{mountedWith.pageKey}</div>
+            </>
+        );
+    },
     MockConfigrGroup: (props: React.PropsWithChildren<object>) => (
+        <div>{props.children}</div>
+    ),
+    MockConfigrStatic: (props: React.PropsWithChildren<object>) => (
         <div>{props.children}</div>
     ),
 }));
 
 vi.mock("@sillsdev/config-r", () => ({
-    ConfigrPane: (props: {
-        children: React.ReactNode;
-        initialValues: ICollectionSettingsValues;
-        onChange: (values: unknown) => void;
-    }) => (
-        <div>
-            {/* Config-r captures initialValues at mount, so tests check what it was given. */}
-            <div data-testid="initial-collection-name">
-                {props.initialValues.advanced.collectionName}
-            </div>
-            <button
-                data-testid="change-restart-value"
-                onClick={() =>
-                    props.onChange({
-                        ...props.initialValues,
-                        frontBackMatter: {
-                            ...props.initialValues.frontBackMatter,
-                            xmatter: "Device",
-                        },
-                    })
-                }
-            />
-            <button
-                data-testid="add-third-language"
-                onClick={() =>
-                    props.onChange({
-                        ...props.initialValues,
-                        languages: {
-                            ...props.initialValues.languages,
-                            language3: {
-                                ...props.initialValues.languages.language1,
-                                tag: "es",
+    ConfigrPane: withPaneRef(
+        (props: {
+            children: React.ReactNode;
+            initialValues: ICollectionSettingsValues;
+            initiallySelectedTopLevelPageKey?: string;
+            onChange: (values: unknown) => void;
+            onTopLevelPageChange: (pageKey: string | undefined) => void;
+            paneRef: React.ForwardedRef<unknown>;
+        }) => (
+            <div>
+                {/* Config-R reports the page it shows; these stand for the user choosing one. */}
+                <button
+                    data-testid="show-subscription-page"
+                    onClick={() => props.onTopLevelPageChange("subscription")}
+                />
+                <button
+                    data-testid="show-advanced-page"
+                    onClick={() => props.onTopLevelPageChange("advanced")}
+                />
+                {/* Config-r reads initialValues and the page to show only as it mounts, so tests check what it was given. */}
+                <MockMountedWith
+                    collectionName={props.initialValues.advanced.collectionName}
+                    pageKey={props.initiallySelectedTopLevelPageKey}
+                />
+                <MockShownPage
+                    paneRef={props.paneRef}
+                    initialPageKey={props.initiallySelectedTopLevelPageKey}
+                />
+                <button
+                    data-testid="change-restart-value"
+                    onClick={() =>
+                        props.onChange({
+                            ...props.initialValues,
+                            frontBackMatter: {
+                                ...props.initialValues.frontBackMatter,
+                                xmatter: "Device",
                             },
-                        },
-                    })
-                }
-            />{" "}
-            <button
-                data-testid="change-other-value"
-                onClick={() =>
-                    props.onChange({
-                        ...props.initialValues,
-                        advanced: {
-                            ...props.initialValues.advanced,
-                            collectionName: "Renamed",
-                        },
-                    })
-                }
-            />
-            <button
-                data-testid="pad-country"
-                onClick={() =>
-                    props.onChange({
-                        ...props.initialValues,
-                        frontBackMatter: {
-                            ...props.initialValues.frontBackMatter,
-                            country: "  Kenya ",
-                        },
-                    })
-                }
-            />
-            <button
-                data-testid="pad-collection-name"
-                onClick={() =>
-                    props.onChange({
-                        ...props.initialValues,
-                        advanced: {
-                            ...props.initialValues.advanced,
-                            collectionName: ` ${props.initialValues.advanced.collectionName}  `,
-                        },
-                    })
-                }
-            />
-            <button
-                data-testid="choose-no-bookshelf"
-                onClick={() =>
-                    props.onChange({
-                        ...props.initialValues,
-                        bloomLibrary: { defaultBookshelf: "" },
-                    })
-                }
-            />
-            {props.children}
-        </div>
+                        })
+                    }
+                />
+                <button
+                    data-testid="add-third-language"
+                    onClick={() =>
+                        props.onChange({
+                            ...props.initialValues,
+                            languages: {
+                                ...props.initialValues.languages,
+                                language3: {
+                                    ...props.initialValues.languages.language1,
+                                    tag: "es",
+                                },
+                            },
+                        })
+                    }
+                />{" "}
+                <button
+                    data-testid="change-other-value"
+                    onClick={() =>
+                        props.onChange({
+                            ...props.initialValues,
+                            advanced: {
+                                ...props.initialValues.advanced,
+                                collectionName: "Renamed",
+                            },
+                        })
+                    }
+                />
+                <button
+                    data-testid="show-qr-code-with-caption"
+                    onClick={() =>
+                        props.onChange({
+                            ...props.initialValues,
+                            frontBackMatter: {
+                                ...props.initialValues.frontBackMatter,
+                                showQrCode: true,
+                                qrcodeCaption: "Books in {0}, free:",
+                            },
+                        })
+                    }
+                />
+                <button
+                    data-testid="pad-country"
+                    onClick={() =>
+                        props.onChange({
+                            ...props.initialValues,
+                            frontBackMatter: {
+                                ...props.initialValues.frontBackMatter,
+                                country: "  Kenya ",
+                            },
+                        })
+                    }
+                />
+                <button
+                    data-testid="pad-collection-name"
+                    onClick={() =>
+                        props.onChange({
+                            ...props.initialValues,
+                            advanced: {
+                                ...props.initialValues.advanced,
+                                collectionName: ` ${props.initialValues.advanced.collectionName}  `,
+                            },
+                        })
+                    }
+                />
+                <button
+                    data-testid="choose-no-bookshelf"
+                    onClick={() =>
+                        props.onChange({
+                            ...props.initialValues,
+                            bloomLibrary: { defaultBookshelf: "" },
+                        })
+                    }
+                />
+                {props.children}
+            </div>
+        ),
     ),
     ConfigrPage: (props: React.PropsWithChildren<{ pageKey: string }>) => {
-        // The real ConfigrPage throws (and blanks the whole UI) unless every child is a group.
+        // The real ConfigrPage throws (and blanks the whole UI) unless every child is a group or
+        // a static block.
         React.Children.forEach(props.children, (child) => {
             if (
                 !React.isValidElement(child) ||
-                child.type !== MockConfigrGroup
+                (child.type !== MockConfigrGroup &&
+                    child.type !== MockConfigrStatic)
             ) {
                 throw new Error(
-                    `ConfigrPage "${props.pageKey}" has a child that is not a ConfigrGroup`,
+                    `ConfigrPage "${props.pageKey}" has a child that is neither a ConfigrGroup nor a ConfigrStatic`,
                 );
             }
         });
@@ -275,9 +483,7 @@ vi.mock("@sillsdev/config-r", () => ({
         );
     },
     ConfigrGroup: MockConfigrGroup,
-    ConfigrStatic: (props: React.PropsWithChildren<object>) => (
-        <div>{props.children}</div>
-    ),
+    ConfigrStatic: MockConfigrStatic,
     ConfigrBoolean: (props: { path: string; disabled?: boolean }) => (
         <input
             type="checkbox"
@@ -382,6 +588,7 @@ describe("CollectionSettingsDialog", () => {
         container = document.createElement("div");
         document.body.appendChild(container);
         dialogState.open = true;
+        dialogState.openingEvent = {};
         teamCollectionFeature.loaded = true;
         teamCollectionFeature.enabled = true;
         enterpriseBookshelves.shelves = [];
@@ -394,6 +601,10 @@ describe("CollectionSettingsDialog", () => {
                 successCallback({ data: settingsResponse });
             },
         );
+        mockUseApiObject.mockReset();
+        mockUseApiObject.mockReturnValue({
+            html: '<div class="bloom-branding-wrapper">badge</div>',
+        });
         mockPostJson.mockReset();
         mockPostJson.mockImplementation(
             (
@@ -414,6 +625,13 @@ describe("CollectionSettingsDialog", () => {
     });
 
     it("asks for the settings when it opens and shows the seven pages", async () => {
+        respondWith({
+            ...settingsResponse,
+            values: {
+                ...initialValues,
+                experimental: { "team-collections": true, tables: false },
+            },
+        });
         await renderDialog();
 
         expect(mockGet).toHaveBeenCalledWith(
@@ -700,6 +918,202 @@ describe("CollectionSettingsDialog", () => {
         expect(mockPostJson.mock.calls[0][1].restartRequired).toBe(true);
     });
 
+    describe("Front & Back Matter page", () => {
+        const pageElement = (selector: string) =>
+            container.querySelector(
+                `[data-testid="configr-page"][data-page-key="frontBackMatter"] ${selector}`,
+            ) as HTMLElement | null;
+
+        const styleSelect = () => {
+            const select = pageElement(
+                '[data-path="frontBackMatter.xmatter"]',
+            ) as HTMLSelectElement | null;
+            if (!select) {
+                throw new Error(
+                    "The Front & Back Matter page has no Style list",
+                );
+            }
+            return select;
+        };
+
+        const styleChoices = () =>
+            Array.from(styleSelect().options).map((option) => [
+                option.value,
+                option.textContent,
+            ]);
+
+        // The parameters of the latest request for the badge preview's HTML.
+        const badgeRequest = () => {
+            const url = mockUseApiObject.mock.lastCall?.[0] as
+                | string
+                | undefined;
+            if (!url) throw new Error("The page never asked for the badge");
+            return new URLSearchParams(url.split("?")[1]);
+        };
+
+        const captionBox = () => {
+            const box = pageElement(
+                '[data-path="frontBackMatter.qrcodeCaption"]',
+            ) as HTMLInputElement | null;
+            if (!box) {
+                throw new Error(
+                    "The Front & Back Matter page has no Caption box",
+                );
+            }
+            return box;
+        };
+
+        it("offers the packs, and describes the one chosen", async () => {
+            expect(initialValues.frontBackMatter.xmatter).toBe("Traditional");
+
+            await renderDialog();
+
+            expect(styleChoices()).toEqual([
+                ["Traditional", "Traditional"],
+                ["Device", "Device"],
+            ]);
+            expect(styleSelect().disabled).toBe(false);
+            expect(
+                pageElement('[data-testid="configr-select-description"]')
+                    ?.textContent,
+            ).toBe("Title page and credits page inside the covers.");
+
+            click("change-restart-value");
+            await flushDeferredChange();
+
+            expect(
+                pageElement('[data-testid="configr-select-description"]')
+                    ?.textContent,
+            ).toBe("Made for reading on phones.");
+        });
+
+        it("disables the list when the branding chooses the pack", async () => {
+            respondWith({
+                ...settingsResponse,
+                xmatterPacks: [settingsResponse.xmatterPacks[0]],
+                xmatterChosenByBranding: true,
+            });
+
+            await renderDialog();
+
+            expect(styleChoices()).toEqual([["Traditional", "Traditional"]]);
+            expect(styleSelect().disabled).toBe(true);
+        });
+
+        it("asks for the plain badge, and disables the caption, when QR codes are off", async () => {
+            expect(initialValues.frontBackMatter.showQrCode).toBe(false);
+
+            await renderDialog();
+
+            expect(captionBox().disabled).toBe(true);
+            expect(badgeRequest().get("showQrCode")).toBe("false");
+        });
+
+        it("shows the badge HTML that C# builds", async () => {
+            await renderDialog();
+
+            expect(
+                pageElement(
+                    '[data-testid="qr-code-badge-preview"] .bloom-branding-wrapper',
+                )?.textContent,
+            ).toBe("badge");
+        });
+
+        it("asks for the badge with the QR code and the caption as typed", async () => {
+            await renderDialog();
+
+            click("show-qr-code-with-caption");
+            await flushDeferredChange();
+
+            expect(captionBox().disabled).toBe(false);
+            const request = badgeRequest();
+            expect(request.get("showQrCode")).toBe("true");
+            expect(request.get("caption")).toBe("Books in {0}, free:");
+            expect(request.get("tag")).toBe("xkal");
+            expect(request.get("languageName")).toBe("Kalaba");
+        });
+
+        it("names the sign language on the badge when the collection has one, as books do", async () => {
+            respondWith({
+                ...settingsResponse,
+                values: {
+                    ...initialValues,
+                    languages: {
+                        ...initialValues.languages,
+                        signLanguage: {
+                            tag: "ase",
+                            name: "American Sign Language",
+                            isCustomName: false,
+                        },
+                    },
+                    frontBackMatter: {
+                        ...initialValues.frontBackMatter,
+                        showQrCode: true,
+                    },
+                },
+            });
+
+            await renderDialog();
+
+            const request = badgeRequest();
+            expect(request.get("tag")).toBe("ase");
+            expect(request.get("languageName")).toBe("American Sign Language");
+        });
+
+        it("asks for an untouched caption of only spaces as it is, since that is saved and books show it", async () => {
+            respondWith({
+                ...settingsResponse,
+                values: {
+                    ...initialValues,
+                    frontBackMatter: {
+                        ...initialValues.frontBackMatter,
+                        showQrCode: true,
+                        qrcodeCaption: "  ",
+                    },
+                },
+            });
+
+            await renderDialog();
+
+            expect(badgeRequest().get("caption")).toBe("  ");
+        });
+    });
+
+    it("asks Help for the topic of the page Config-R says is showing", async () => {
+        const helpTopic = () =>
+            container
+                .querySelector('[data-testid="dialog-help"]')
+                ?.getAttribute("data-help-id");
+        await renderDialog();
+        expect(helpTopic()).toBe(
+            "User_Interface/Dialog_boxes/Settings_dialog_box.htm",
+        );
+
+        click("show-subscription-page");
+        expect(helpTopic()).toBe(
+            "Tasks/Basic_tasks/Enter_Subscription_Code.htm",
+        );
+
+        click("show-advanced-page");
+        expect(helpTopic()).toBe(
+            "User_Interface/Dialog_boxes/Settings_dialog_box.htm",
+        );
+    });
+
+    it("offers Help even when the user may not edit the settings", async () => {
+        respondWith({
+            ...settingsResponse,
+            notAllowedMessage: "You must be an administrator",
+        });
+        await renderDialog();
+
+        expect(
+            container
+                .querySelector('[data-testid="dialog-help"]')
+                ?.getAttribute("data-help-id"),
+        ).toBe("User_Interface/Dialog_boxes/Settings_dialog_box.htm");
+    });
+
     describe("Advanced page", () => {
         const advancedPageElement = (selector: string) =>
             container.querySelector(
@@ -872,6 +1286,340 @@ describe("CollectionSettingsDialog", () => {
                 },
                 restartRequired: false,
             });
+        });
+    });
+
+    describe("Subscription page", () => {
+        const subscriptionPageElement = (testId: string) =>
+            container.querySelector(
+                `[data-testid="configr-page"][data-page-key="subscription"] [data-testid="${testId}"]`,
+            );
+
+        const respondWithSubscriptionRestart = (code: string) => {
+            respondWith({
+                ...settingsResponse,
+                values: { ...initialValues, subscription: { code } },
+                restartPaths: [
+                    ...settingsResponse.restartPaths,
+                    "subscription.code",
+                ],
+            });
+        };
+
+        it("shows the saved code, and no community invitation", async () => {
+            await renderDialog();
+
+            expect(
+                subscriptionPageElement("subscription-code")?.textContent,
+            ).toBe("Saved-Code-123456-7890");
+            expect(subscriptionPageElement("community-invitation")).toBeNull();
+        });
+
+        it("invites a collection with no code to a community subscription", async () => {
+            respondWithSubscriptionRestart("");
+
+            await renderDialog();
+
+            expect(
+                subscriptionPageElement("community-invitation"),
+            ).not.toBeNull();
+        });
+
+        it("saves the code as typed, trimmed, and restarts", async () => {
+            respondWithSubscriptionRestart("Saved-Code-123456-7890");
+            await renderDialog();
+            expect(okButtonLabel()).toBe("OK");
+
+            click("type-subscription-code");
+            expect(
+                subscriptionPageElement("subscription-code")?.textContent,
+            ).toBe(" New-Code-654321-0987 ");
+            expect(okButtonLabel()).toBe("Restart");
+            click("dialog-ok");
+
+            expect(mockPostJson.mock.calls[0][1]).toEqual({
+                values: {
+                    ...initialValues,
+                    subscription: { code: "New-Code-654321-0987" },
+                },
+                restartRequired: true,
+            });
+        });
+
+        it("keeps a typed code when another page's value changes", async () => {
+            respondWithSubscriptionRestart("Saved-Code-123456-7890");
+            await renderDialog();
+
+            click("clear-subscription-code");
+            // Config-R's values still carry the code it was given when the dialog opened.
+            click("change-other-value");
+            await flushDeferredChange();
+            click("dialog-ok");
+
+            expect(mockPostJson.mock.calls[0][1].values.subscription).toEqual({
+                code: "",
+            });
+            expect(
+                mockPostJson.mock.calls[0][1].values.advanced.collectionName,
+            ).toBe("Renamed");
+        });
+
+        it("goes to the Subscription page, keeping the user's changes, when a badge in the open dialog asks for it", async () => {
+            await renderDialog();
+            const textOf = (testId: string) =>
+                container.querySelector(`[data-testid="${testId}"]`)
+                    ?.textContent;
+            expect(textOf("shown-page")).toBe("");
+            click("change-other-value");
+            click("type-subscription-code");
+            await flushDeferredChange();
+
+            // What a subscription badge's click becomes: the dialog is launched again.
+            dialogState.openingEvent = { initialPageKey: "subscription" };
+            await renderDialog();
+            expect(textOf("shown-page")).toBe("subscription");
+
+            // The user goes back to another page, and a badge there asks again.
+            click("user-shows-bloom-library");
+            expect(textOf("shown-page")).toBe("bloomLibrary");
+            dialogState.openingEvent = { initialPageKey: "subscription" };
+            await renderDialog();
+            expect(textOf("shown-page")).toBe("subscription");
+
+            // The pane was never mounted again, so it is still editing the changed values.
+            expect(textOf("initial-collection-name")).toBe("Test Collection");
+            click("dialog-ok");
+            expect(
+                mockPostJson.mock.calls[0][1].values.advanced.collectionName,
+            ).toBe("Renamed");
+            expect(mockPostJson.mock.calls[0][1].values.subscription).toEqual({
+                code: "New-Code-654321-0987",
+            });
+        });
+
+        it("starts a later open from the saved code, not the one typed and cancelled", async () => {
+            await renderDialog();
+            click("type-subscription-code");
+            click("dialog-cancel");
+            expect(mockPostJson).not.toHaveBeenCalled();
+
+            dialogState.open = false;
+            await renderDialog();
+            dialogState.open = true;
+            await renderDialog();
+
+            expect(
+                subscriptionPageElement("subscription-code")?.textContent,
+            ).toBe("Saved-Code-123456-7890");
+        });
+    });
+
+    describe("Team Collection page", () => {
+        const teamCollectionPageElement = (testId: string) =>
+            container.querySelector(
+                `[data-testid="configr-page"][data-page-key="teamCollection"] [data-testid="${testId}"]`,
+            );
+        const pageKeys = () =>
+            Array.from(
+                container.querySelectorAll('[data-testid="configr-page"]'),
+            ).map((page) => page.getAttribute("data-page-key"));
+        const okButton = () =>
+            container.querySelector(
+                '[data-testid="dialog-ok"]',
+            ) as HTMLButtonElement;
+
+        // A Team Collection with one administrator, whose administrators need a restart.
+        const respondAsTeamCollection = () => {
+            respondWith({
+                ...settingsResponse,
+                isTeamCollection: true,
+                values: {
+                    ...initialValues,
+                    teamCollection: {
+                        administrators: "boss@example.com",
+                        createInFolder: "",
+                    },
+                },
+                restartPaths: [
+                    ...settingsResponse.restartPaths,
+                    "teamCollection.administrators",
+                ],
+            });
+        };
+
+        // Not a Team Collection, with the feature on, so it can become one.
+        const respondReadyToCreate = () => {
+            respondWith({
+                ...settingsResponse,
+                values: {
+                    ...initialValues,
+                    experimental: { "team-collections": true, tables: false },
+                },
+                restartPaths: [
+                    ...settingsResponse.restartPaths,
+                    "teamCollection.createInFolder",
+                ],
+            });
+        };
+
+        it("is not offered while the feature is off and this is not a Team Collection", async () => {
+            expect(initialValues.experimental["team-collections"]).toBe(false);
+            expect(settingsResponse.isTeamCollection).toBe(false);
+
+            await renderDialog();
+
+            expect(pageKeys()).not.toContain("teamCollection");
+            expect(pageKeys()).toContain("experimental");
+        });
+
+        it("is offered in a Team Collection even with the feature off", async () => {
+            respondAsTeamCollection();
+
+            await renderDialog();
+
+            expect(pageKeys()).toContain("teamCollection");
+            expect(
+                teamCollectionPageElement("administrators")?.textContent,
+            ).toBe("boss@example.com");
+        });
+
+        it("is not offered in a collection holding a book downloaded for editing", async () => {
+            respondWith({
+                ...settingsResponse,
+                editingABlorgBook: true,
+                values: {
+                    ...initialValues,
+                    experimental: { "team-collections": true, tables: false },
+                },
+            });
+
+            await renderDialog();
+
+            expect(pageKeys()).not.toContain("teamCollection");
+        });
+
+        it("saves the administrators as typed, trimmed, and restarts", async () => {
+            respondAsTeamCollection();
+            await renderDialog();
+            expect(okButtonLabel()).toBe("OK");
+
+            click("type-valid-administrators");
+            expect(okButtonLabel()).toBe("Restart");
+            click("dialog-ok");
+
+            expect(mockPostJson.mock.calls[0][1]).toEqual({
+                values: {
+                    ...initialValues,
+                    teamCollection: {
+                        administrators: "a@example.com, b@example.com",
+                        createInFolder: "",
+                    },
+                },
+                restartRequired: true,
+            });
+        });
+
+        it("will not save administrators that are not valid", async () => {
+            respondAsTeamCollection();
+            await renderDialog();
+            expect(okButton().disabled).toBe(false);
+
+            click("type-invalid-administrators");
+
+            expect(okButton().disabled).toBe(true);
+        });
+
+        it("will not save administrators saved earlier under a looser rule until they are fixed", async () => {
+            expect(administratorsAreValid("admin@intranet")).toBe(false);
+            respondWith({
+                ...settingsResponse,
+                isTeamCollection: true,
+                values: {
+                    ...initialValues,
+                    teamCollection: {
+                        administrators: "admin@intranet",
+                        createInFolder: "",
+                    },
+                },
+            });
+
+            await renderDialog();
+
+            expect(okButton().disabled).toBe(true);
+        });
+
+        it("does not check the administrators of a collection that is not a Team Collection", async () => {
+            respondReadyToCreate();
+            expect(initialValues.teamCollection.administrators).toBe("");
+
+            await renderDialog();
+
+            expect(okButton().disabled).toBe(false);
+        });
+
+        it("saves at once, with the chosen folder, when the Create dialog's Create & Restart is pressed", async () => {
+            respondReadyToCreate();
+            await renderDialog();
+            click("pad-country");
+            await flushDeferredChange();
+            expect(teamCollectionPageElement("create-dialog")).toBeNull();
+
+            click("create-team-collection");
+            expect(
+                teamCollectionPageElement("create-dialog-folder")?.textContent,
+            ).toBe(kDropboxFolder);
+            expect(mockPostJson).not.toHaveBeenCalled();
+            click("create-dialog-ok");
+
+            expect(mockPostJson).toHaveBeenCalledTimes(1);
+            const posted = mockPostJson.mock.calls[0][1];
+            expect(posted.values.teamCollection).toEqual({
+                administrators: "",
+                createInFolder: kDropboxFolder,
+            });
+            // The other edits are saved with it.
+            expect(posted.values.frontBackMatter.country).toBe("Kenya");
+            expect(posted.restartRequired).toBe(true);
+            expect(mockCloseDialog).toHaveBeenCalledTimes(1);
+        });
+
+        it("saves nothing if the Create dialog is cancelled", async () => {
+            respondReadyToCreate();
+            await renderDialog();
+
+            click("create-team-collection");
+            click("create-dialog-cancel");
+
+            expect(teamCollectionPageElement("create-dialog")).toBeNull();
+            expect(mockPostJson).not.toHaveBeenCalled();
+            expect(okButtonLabel()).toBe("OK");
+        });
+
+        it("tells the panel when a new collection name is unsaved", async () => {
+            respondReadyToCreate();
+            await renderDialog();
+            expect(
+                teamCollectionPageElement("rename-unsaved")?.textContent,
+            ).toBe("false");
+
+            click("change-other-value");
+            await flushDeferredChange();
+
+            expect(
+                teamCollectionPageElement("rename-unsaved")?.textContent,
+            ).toBe("true");
+        });
+
+        it("does not count spaces typed around the name as a rename", async () => {
+            respondReadyToCreate();
+            await renderDialog();
+
+            click("pad-collection-name");
+            await flushDeferredChange();
+
+            expect(
+                teamCollectionPageElement("rename-unsaved")?.textContent,
+            ).toBe("false");
         });
     });
 

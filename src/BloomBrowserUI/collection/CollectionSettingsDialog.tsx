@@ -2,10 +2,8 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import {
     ConfigrValues,
-    ConfigrGroup,
-    ConfigrPage,
+    type ConfigrPaneHandle,
     ConfigrPane,
-    ConfigrStatic,
 } from "@sillsdev/config-r";
 import {
     BloomDialog,
@@ -23,6 +21,7 @@ import { useEventLaunchedBloomDialog } from "../react_components/BloomDialog/Blo
 import {
     DialogCancelButton,
     DialogCloseButton,
+    DialogHelpButton,
     DialogOkButton,
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../react_components/l10nHooks";
@@ -34,21 +33,21 @@ import {
 import { useAdvancedPage } from "./settingsPages/AdvancedPage";
 import { useBloomLibraryPage } from "./settingsPages/BloomLibraryPage";
 import { useExperimentalPage } from "./settingsPages/ExperimentalPage";
-
-// Temporary content for every page. Each of the seven tab cards replaces its page's group with
-// real controls, so this text is deliberately plain English and is never localized.
-const PagePlaceholder: React.FunctionComponent = () => (
-    <div
-        css={css`
-            font-size: 0.9em;
-            color: #555;
-        `}
-    >
-        Settings for this section are not available yet.
-    </div>
-);
+import { useFrontBackMatterPage } from "./settingsPages/FrontBackMatterPage";
+import { usePlaceholderPage } from "./settingsPages/PlaceholderPage";
+import { useSubscriptionPage } from "./settingsPages/SubscriptionPage";
+import { useTeamCollectionPage } from "./settingsPages/TeamCollectionPage";
+import {
+    ISettingsPage,
+    ISettingsPageContext,
+} from "./settingsPages/settingsPage";
 
 const kCollectionSettingsDialogId = "CollectionSettingsDialog";
+
+// Help's topic for a page with none of its own (see ISettingsPage.helpTopic), and when no page is
+// showing.
+const kGeneralSettingsHelpTopic =
+    "User_Interface/Dialog_boxes/Settings_dialog_box.htm";
 
 // Walks a dotted restart path such as "languages.language3.tag" into the values. A path through a
 // null branch (no third language) yields undefined, so adding or removing one shows as a change.
@@ -110,6 +109,14 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const [currentValues, setCurrentValues] =
         React.useState<ICollectionSettingsValues>();
     const [saving, setSaving] = React.useState(false);
+    // The sections of the values whose editors are not Config-R controls, as edited so far (see
+    // ISettingsPageContext.editValues); withOutsideEdits puts them in.
+    const [outsideEdits, setOutsideEdits] = React.useState<
+        Partial<ICollectionSettingsValues>
+    >({});
+    const paneRef = React.useRef<ConfigrPaneHandle>(null);
+    // The top-level page Config-R is showing, so Help can open that page's topic.
+    const [shownPageKey, setShownPageKey] = React.useState<string>();
 
     // Config-r can call onChange while rendering, so state updates from it are deferred; the OK
     // handler reads this ref to be sure it has the newest values.
@@ -124,7 +131,9 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             latestValuesRef.current = undefined;
             setLoadedSettings(undefined);
             setCurrentValues(undefined);
+            setOutsideEdits({});
             setSaving(false);
+            setShownPageKey(undefined);
             return;
         }
         // We don't guard against this reply arriving after a quick close and reopen: it comes from
@@ -137,49 +146,67 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         });
     }, [propsForBloomDialog.open]);
 
+    // A launch that arrives while the dialog is already open comes from a subscription badge on
+    // one of its own pages, asking for the Subscription page. This effect hands that launch on to
+    // the open pane, which switches page keeping the user's edits. A launch that opens the dialog
+    // finds no pane yet; the pane opens on its page through initiallySelectedTopLevelPageKey.
+    React.useEffect(() => {
+        if (initialPageKey) paneRef.current?.selectTopLevelPage(initialPageKey);
+        // Only a new launch should do this.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [openingEvent]);
+
     const dialogTitle = useL10n(
         "Collection Settings",
         "CollectionSettingsDialog.Title",
-    );
-    const languagesLabel = useL10n(
-        "Languages",
-        "CollectionSettingsDialog.LanguageTab.LanguageTabLabel",
-    );
-    const frontBackMatterLabel = useL10n(
-        "Front & Back Matter",
-        "CollectionSettingsDialog.FrontBackMatterPage",
-    );
-    const subscriptionLabel = useL10n(
-        "Subscription",
-        "CollectionSettingsDialog.SubscriptionPage",
-    );
-    const teamCollectionLabel = useL10n(
-        "Team Collection",
-        "TeamCollection.TeamCollection",
     );
     const restartMessage = useL10n(
         "Bloom will close and re-open this project with the new settings.",
         "CollectionSettingsDialog.RestartMessage",
     );
 
-    // C# names these pageKeys when it asks us to open on a particular page. Each built page is a
-    // hook in its own file under settingsPages/ that returns its ConfigrPage (Config-R rejects a
-    // page wrapped in a component); each placeholder below moves to one when its tab card adds it.
-    const placeholderPages = [
-        { pageKey: "languages", label: languagesLabel },
-        { pageKey: "frontBackMatter", label: frontBackMatterLabel },
-        { pageKey: "subscription", label: subscriptionLabel },
-        { pageKey: "teamCollection", label: teamCollectionLabel },
+    // Config-R's values with the sections edited outside Config-R in place of the ones loaded.
+    function withOutsideEdits(
+        values: ICollectionSettingsValues,
+    ): ICollectionSettingsValues {
+        return { ...values, ...outsideEdits };
+    }
+    // The values as the user is editing them, and as OK would save them now. Both are checked: a
+    // deferred onChange can set currentValues after a close has already cleared loadedSettings.
+    // (A user who may not edit the settings gets null values.)
+    const currentValuesEdited =
+        (currentValues && loadedSettings && withOutsideEdits(currentValues)) ||
+        undefined;
+    const currentValuesToSave =
+        currentValuesEdited &&
+        withEditedTextTrimmed(currentValuesEdited, loadedSettings!.values);
+
+    const pageContext: ISettingsPageContext = {
+        dialogOpen: propsForBloomDialog.open,
+        settings: loadedSettings,
+        values: currentValuesEdited,
+        valuesToSave: currentValuesToSave,
+        // Merged into the latest edits, so two edits before a render both count.
+        editValues: (edit) =>
+            setOutsideEdits((edits) => ({ ...edits, ...edit })),
+        saveNow: saveAndCloseDialog,
+    };
+    // In the order the dialog lists them. Each is a hook in its own file under settingsPages/ (see
+    // ISettingsPage).
+    const pages: ISettingsPage[] = [
+        usePlaceholderPage(
+            "languages",
+            "Languages",
+            "CollectionSettingsDialog.LanguageTab.LanguageTabLabel",
+            "Tasks/Basic_tasks/Change_languages.htm",
+        ),
+        useFrontBackMatterPage(pageContext),
+        useSubscriptionPage(pageContext),
+        useTeamCollectionPage(pageContext),
+        useBloomLibraryPage(pageContext),
+        useAdvancedPage(pageContext),
+        useExperimentalPage(pageContext),
     ];
-    const bloomLibraryPage = useBloomLibraryPage({
-        dialogOpen: propsForBloomDialog.open,
-        settings: loadedSettings,
-    });
-    const advancedPage = useAdvancedPage({ settings: loadedSettings });
-    const experimentalPage = useExperimentalPage({
-        dialogOpen: propsForBloomDialog.open,
-        settings: loadedSettings,
-    });
 
     // A Team Collection member who is not an administrator gets this instead of any settings.
     const notAllowedMessage = loadedSettings?.notAllowedMessage;
@@ -201,15 +228,10 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             )
         );
     }
-    // Both are checked: a deferred onChange can set currentValues after a close has already
-    // cleared loadedSettings.
-    const needsRestart = restartNeededFor(
-        currentValues &&
-            loadedSettings &&
-            withEditedTextTrimmed(currentValues, loadedSettings.values),
-    );
+    const needsRestart = restartNeededFor(currentValuesToSave);
 
-    function saveAndCloseDialog() {
+    // `edit` replaces sections of the values being edited (see ISettingsPageContext.saveNow).
+    function saveAndCloseDialog(edit: Partial<ICollectionSettingsValues> = {}) {
         // Block the button while the save is in flight, so a second click cannot save (and
         // perhaps restart Bloom) a second time.
         setSaving(true);
@@ -218,7 +240,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         // the restart flag is worked out from it too.
         // OK is enabled only once the values have loaded.
         const valuesToSave = withEditedTextTrimmed(
-            latestValuesRef.current!,
+            { ...withOutsideEdits(latestValuesRef.current!), ...edit },
             loadedSettings!.values,
         );
         postJson(
@@ -272,6 +294,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                 )}
                 {loadedSettings && !notAllowedMessage && (
                     <ConfigrPane
+                        ref={paneRef}
                         className={kConfigrPaneClassName}
                         label={dialogTitle}
                         showAppBar={false}
@@ -281,6 +304,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         }
                         themeOverrides={kConfigrThemeOverrides}
                         initiallySelectedTopLevelPageKey={initialPageKey}
+                        onTopLevelPageChange={setShownPageKey}
                         onChange={(newValues) => {
                             const values =
                                 newValues as unknown as ICollectionSettingsValues;
@@ -291,29 +315,32 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                             }, 0);
                         }}
                     >
-                        {placeholderPages.map((page) => (
-                            <ConfigrPage
-                                key={page.pageKey}
-                                label={page.label}
-                                pageKey={page.pageKey}
-                                topLevel={true}
-                            >
-                                <ConfigrGroup label={page.label}>
-                                    <ConfigrStatic>
-                                        <PagePlaceholder />
-                                    </ConfigrStatic>
-                                </ConfigrGroup>
-                            </ConfigrPage>
-                        ))}
-                        {bloomLibraryPage}
-                        {advancedPage}
-                        {experimentalPage}
+                        {/* A list of elements needs keys; each page's pageKey is unique. */}
+                        {pages.flatMap((page) =>
+                            page.element
+                                ? [
+                                      React.cloneElement(page.element, {
+                                          key: page.element.props.pageKey,
+                                      }),
+                                  ]
+                                : [],
+                        )}
                     </ConfigrPane>
                 )}
             </ConfigrDialogMiddle>
             <DialogBottomButtons>
-                {needsRestart && (
-                    <DialogBottomLeftButtons>
+                <DialogBottomLeftButtons>
+                    <DialogHelpButton
+                        id="collectionSettingsHelpButton"
+                        helpId={
+                            pages.find(
+                                (page) =>
+                                    page.element?.props.pageKey ===
+                                    shownPageKey,
+                            )?.helpTopic ?? kGeneralSettingsHelpTopic
+                        }
+                    />
+                    {needsRestart && (
                         <div
                             css={css`
                                 align-self: center;
@@ -321,22 +348,27 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         >
                             {restartMessage}
                         </div>
-                    </DialogBottomLeftButtons>
-                )}
+                    )}
+                </DialogBottomLeftButtons>
                 {notAllowedMessage ? (
                     <DialogCloseButton onClick={closeDialog} />
                 ) : (
                     <React.Fragment>
                         <DialogOkButton
                             default={true}
-                            enabled={currentValues !== undefined && !saving}
+                            enabled={
+                                currentValues !== undefined &&
+                                !saving &&
+                                // A page that refuses shows what is wrong.
+                                pages.every((page) => page.canSave !== false)
+                            }
                             l10nKey={
                                 needsRestart
                                     ? "CollectionSettingsDialog.Restart"
                                     : undefined
                             }
                             englishText={needsRestart ? "Restart" : undefined}
-                            onClick={saveAndCloseDialog}
+                            onClick={() => saveAndCloseDialog()}
                         />
                         <DialogCancelButton />
                     </React.Fragment>

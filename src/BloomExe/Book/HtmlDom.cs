@@ -2590,7 +2590,10 @@ namespace Bloom.Book
             const string kBR = "LINEBREAKHERE";
             var withBreaksHidden = form.Replace("<br />", kBR).Replace("<br/>", kBR);
 
-            var match = new Regex(".*(<cite[^>]*>).*</cite>.*").Match(withBreaksHidden);
+            // Singleline, because titles from older books can contain a line break (BL-17031).
+            var match = new Regex(".*(<cite[^>]*>).*</cite>.*", RegexOptions.Singleline).Match(
+                withBreaksHidden
+            );
             const string kCiteBegin = "BEGINCITEHERE";
             const string kCiteEnd = "ENDCITEHERE";
             if (match.Success)

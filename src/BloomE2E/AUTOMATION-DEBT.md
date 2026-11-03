@@ -21,7 +21,6 @@ and ask its author.
 
 | Pull request | Branch | What it pays down |
 | --- | --- | --- |
-| #8299 | `BL-16799-page-change` | `editView/jumpToPage` refuses a jump it cannot do, and every page-changing helper waits for the Edit tab to settle. |
 | #8300 | `BL-16799-collection-languages` | The `e2e/setCollectionLanguages` hook, so no test composes `.bloomCollection` XML. |
 | #8306 | `e2e-real-library-login` | A test can sign in to dev.bloomlibrary.org for real, with a test account whose credentials the run supplies, so the upload cases can run to the end. Branches off `e2e-private-user-settings`, which gave every Bloom a test launches a settings folder of its own and removed its entry from this file. |
 
@@ -178,6 +177,18 @@ seen again 2026-10-06 (`collection-settings-advanced.spec.ts`, BL-16737): once i
 of that file, and this time *after* its first test had passed, so a worker can also die between
 tests, not only at startup. The next five runs of the same file were green.
 
+seen again 2026-10-20 (`collection-settings-subscription.spec.ts`, BL-16734), and this time it
+followed one test: its first test, which makes a book from Basic Book and right-clicks it on the
+Collections tab, crashed its worker in about one run in ten (four times in some thirty runs, alone
+or with the rest of the file), always reported at 0ms. Run on its own eight times each, the same
+file's cancel test (no book, never leaves the Collections tab) and
+`collection-settings-bloom-library.spec.ts` never crashed. With `DEBUG=pw:*` the book test passed
+eight runs in a row, so the extra logging hides it, and `NODE_OPTIONS=--report-on-fatalerror`
+wrote no report: the worker dies by a fail-fast that skips Node's own reporting. Later the same
+day it struck `collection-settings-bloom-library.spec.ts`'s first test, which makes no book and
+had passed eight times alone, so making a book is not the trigger. The next thing to try is a
+Windows crash dump of the worker (WER LocalDumps for node.exe needs an administrator).
+
 ## An api that captures CollectionSettings.Subscription cannot see a subscription change
 
 `FeatureStatusApi` used to snapshot `collectionSettings.Subscription` in its constructor, so
@@ -332,10 +343,10 @@ would look like the same flake. Fix direction: have `jumpToPage` queue the reque
 until the Edit tab is ready, or report that it refused it.
 (Found 2026-09-01 automating Test Case ID 169.)
 
-being fixed on `BL-16799-page-change` (#8299): it reports that it refused the jump, rather than
-queueing it, and the helpers wait for the Edit tab to settle before asking. Queueing was
-tried first and made things worse. That branch adds an entry for the Bloom defect behind
-this one, which it does not fix.
+Answered for tests, 2026-09-02: `editView/jumpToPage` no longer replies success to a jump
+it drops. It refuses the jump and says why, and every helper that changes the page waits for
+`waitForEditTabSettled` first. What remains is the Bloom defect itself, in the section "A page
+change asked for while the Edit tab is still loading a page can be lost" below.
 
 seen again 2026-09-02 (Test Case ID 72, `derivative-keeps-template-pages.spec.ts`): the
 same drop hits `addPage`. Every action that saves the page first goes through
@@ -628,6 +639,54 @@ What remains: nobody knows why a run has a second workspace root document at all
 creates one `_workspaceReactControl`. Worth finding, because the duplicate is what makes
 the test-side check necessary.
 (Found 2026-09-01 while making `jumpToPage` queue a jump.)
+
+## A page change asked for while the Edit tab is still loading a page can be lost
+
+A page change that reaches the Edit tab between two announcements of one page load wedges
+that tab: it stays in SavePending and refuses every later page change. The caller waits 60
+seconds for a page that never comes, and a user who clicks a page thumbnail in that window
+cannot change pages at all until they leave the tab.
+
+The cause is a page that announces itself to Bloom twice. Bloom's own log, from the run
+that found this on 2026-09-02:
+
+```
+Navigating(f45a2ef8) --> editing(f45a2ef8)
+Editing(f45a2ef8) --> savePending()
+Ignoring edit() request while in SavePending(f45a2ef8)
+```
+
+The first announcement moves the tab to Editing. The page change then asks the browser for
+the page content so it can save the page it is leaving. The second announcement arrives, is
+refused because a save is in flight, and the browser never answers the save request. The
+tab stays in SavePending. The same three lines in the order that works read `--> editing`,
+`Ignoring edit()`, then `--> savePending`, and the save completes.
+
+Any request that changes the page does this, not only a jump. The run that found it lost a
+language change from `setContentLanguages`, and the Edit tab then held the tab switch that
+followed, so a Publish test failed instead.
+
+A first attempt at this, on 2026-09-02, had `JumpToPage` queue a jump that arrived while
+the tab was navigating and release it on the next page-load announcement. That made the
+wedge easier to reach rather than harder, because the released jump is itself a page change
+arriving in exactly the window above. `JumpToPage` now refuses such a jump and says so, so
+the caller can wait and ask again.
+
+Worked around for tests, 2026-09-02: `e2e/editState` reports what the Edit tab is doing and
+how many times the page it shows has announced itself, and every helper that changes the
+page waits for `waitForEditTabSettled` first. That keeps the request out of the window. The
+wait reads the state twice, 1500 ms apart, and needs Editing both times with the count
+unchanged: the state alone reads Editing between the two announcements, when a request
+would still be lost, and the gap between them has been seen to reach a second. No test can
+see any of this from the DOM, because Bloom leaves the previous page in the frame while it
+loads the next one.
+
+What remains: the Bloom defect itself, which is older than this suite. A user hits it
+whenever something asks for a page change in that window, and the Edit tab then stops
+responding to page changes altogether. Fix direction: either stop the browser announcing a
+page twice, or make the state machine treat a second announcement of the page it is saving
+as a reason to discard that save (`DiscardInFlightSave` already exists for BL-16766). Both
+change production save behavior, so this needs a decision rather than a quiet fix.
 
 ## A table's own menus can only be found by their English words
 
@@ -964,6 +1023,17 @@ failure is a refused connect or a reset, and what else the runner was doing at t
 How to react meanwhile: **do not re-run and move on without first looking for the trace
 artifact** (`component-tester-traces` on the nightly run). A second occurrence with no trace
 collected is a wasted one.
+
+The second occurrence (2026-10-27, `bookgridsetup-extended.uitest.ts:365`) left a trace. It
+failed about 15 ms into the navigation, which is too fast to be a refused connect on Windows.
+Chromium uses ERR_CONNECTION_FAILED for a socket error it has no specific name for, and the trace
+doesn't record which. Ten local runs of the suite (1,460 tests) did not reproduce it. So
+`setTestComponent` now catches a failed `net::ERR_` navigation and adds to its message what
+`describeConnectionFailure.ts` finds: a raw TCP connect and an HTTP GET to the dev server from
+Node, and netstat's count of TCP connections by state. If Node gets through, look inside Chromium
+next: run it with `--log-net-log` (about 425 MB for a full suite, before compression). If Node
+fails too, or TIME_WAIT is huge, look at the runner: trace Windows' TCPIP provider into a ring
+buffer.
 (Found 2026-09-21.)
 
 ## The suites test Bloom run from the source tree, not the app a user installs

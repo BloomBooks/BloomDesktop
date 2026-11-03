@@ -31,10 +31,43 @@ namespace Bloom.web.controllers
         public bool IsTeamCollection;
 
         /// <summary>
+        /// Whether the collection holds a book downloaded from Bloom Library for editing, which
+        /// must not become a Team Collection.
+        /// </summary>
+        public bool EditingABlorgBook;
+
+        /// <summary>
+        /// The folder the Create Team Collection dialog starts with: the user's Dropbox folder, or
+        /// "" if we cannot find one.
+        /// </summary>
+        public string DefaultTeamCollectionFolder;
+
+        /// <summary>
+        /// The front/back matter packs the collection may use; only the branding's when the
+        /// branding chooses the pack.
+        /// </summary>
+        public XmatterPack[] XmatterPacks;
+
+        public bool XmatterChosenByBranding;
+
+        /// <summary>
         /// Set only when the user may not edit the collection settings (a Team Collection member
         /// who is not an administrator); the other fields are then null.
         /// </summary>
         public string NotAllowedMessage;
+    }
+
+    /// <summary>
+    /// A front/back matter pack, as the dialog's Style list offers it.
+    /// </summary>
+    public class XmatterPack
+    {
+        /// <summary>
+        /// The pack's key, e.g. "Traditional", as FrontBackMatterValues.Xmatter holds it.
+        /// </summary>
+        public string Value;
+        public string Label;
+        public string Description;
     }
 
     /// <summary>
@@ -47,9 +80,8 @@ namespace Bloom.web.controllers
     /// The editable settings, grouped by the page of the dialog that shows them. Most of them
     /// are a live view of a CollectionSettings: serializing reads the collection's values, and
     /// populating from the posted JSON writes them straight back, so a simple setting is spelled
-    /// out once here, as a property that reads and writes it. The languages are the exception;
-    /// see Languages. The subscription and the team collection administrators have endpoints of
-    /// their own and so are not here.
+    /// out once here, as a property that reads and writes it. The languages, the subscription
+    /// and the Team Collection values are the exceptions; see those properties.
     /// </summary>
     public class CollectionSettingsValues
     {
@@ -63,6 +95,12 @@ namespace Bloom.web.controllers
         )
         {
             _settings = settings;
+            Subscription = new SubscriptionValues { Code = settings.Subscription.Code ?? "" };
+            TeamCollection = new TeamCollectionValues
+            {
+                Administrators = settings.AdministratorsDisplayString,
+                CreateInFolder = "",
+            };
             FrontBackMatter = new FrontBackMatterValues(settings);
             BloomLibrary = new BloomLibraryValues(settings);
             Advanced = new AdvancedValues(settings, queueRenameOfCollection);
@@ -80,6 +118,21 @@ namespace Bloom.web.controllers
             get => LanguagesValues.From(_settings);
             set => CollectionSettingsUpdater.ApplyLanguages(value, _settings);
         }
+
+        /// <summary>
+        /// The subscription is not written as it is read, because its rules need the bookshelf
+        /// too: this is a copy of the collection's code, which populating overwrites with the
+        /// posted one, and CollectionSettingsUpdater.Apply hands it to ApplySubscriptionAndBookshelf
+        /// once all the values are in.
+        /// </summary>
+        public SubscriptionValues Subscription { get; }
+
+        /// <summary>
+        /// Like the subscription, the Team Collection values are not written as they are read:
+        /// this is a copy, which populating overwrites with the posted values, and
+        /// CollectionSettingsUpdater.Apply applies them once the rest of the collection is saved.
+        /// </summary>
+        public TeamCollectionValues TeamCollection { get; }
 
         public FrontBackMatterValues FrontBackMatter { get; }
         public BloomLibraryValues BloomLibrary { get; }
@@ -231,8 +284,9 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// CollectionSettingsUpdater.Apply replaces a pack that is not available once all the
-        /// values are in.
+        /// Opening the collection makes this one the Style list offers
+        /// (CollectionSettings.CheckAndFixDependencies). CollectionSettingsUpdater.Apply replaces a
+        /// pack that is not available once all the values are in.
         /// </summary>
         [RequiresRestart]
         public string Xmatter
@@ -260,14 +314,18 @@ namespace Bloom.web.controllers
             set => _settings.ShowBlorgLanguageQrCode = value;
         }
 
+        /// <summary>
+        /// The caption on the badge's QR code. An empty BadgeQrCodeLabel means Bloom's default
+        /// caption, translated for each book. The dialog is given that default filled in, so the
+        /// user can tweak it, and it is stored only if changed: storing it untouched would freeze
+        /// it in today's translation and language.
+        /// </summary>
         [RequiresRestart]
         public string QrcodeCaption
         {
             get => _settings.BadgeQrCodeLabelLocalized;
             set
             {
-                // The caption shown by default follows the current UI language, so store it only
-                // if the user actually changed it; otherwise it would be frozen in that language.
                 if (value != _qrcodeCaptionBeforeChanges)
                     _settings.BadgeQrCodeLabel = value;
             }
@@ -289,6 +347,39 @@ namespace Bloom.web.controllers
             get => _settings.District ?? "";
             set => _settings.District = value;
         }
+    }
+
+    /// <summary>
+    /// The Subscription page's value.
+    /// </summary>
+    public class SubscriptionValues
+    {
+        /// <summary>
+        /// The subscription code as the user typed it ("" for none). The branding, and so the
+        /// look of every book, comes from it.
+        /// </summary>
+        [RequiresRestart]
+        public string Code;
+    }
+
+    /// <summary>
+    /// The Team Collection page's values.
+    /// </summary>
+    public class TeamCollectionValues
+    {
+        /// <summary>
+        /// A Team Collection's administrators, separated by commas or spaces. The dialog checks
+        /// them (the rules of CollectionSettings.ValidateAdministrators) before it posts them.
+        /// </summary>
+        [RequiresRestart]
+        public string Administrators;
+
+        /// <summary>
+        /// The folder the user chose to make this collection a Team Collection in, or "" for
+        /// none. The collection becomes one as it is saved.
+        /// </summary>
+        [RequiresRestart]
+        public string CreateInFolder;
     }
 
     /// <summary>

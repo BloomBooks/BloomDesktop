@@ -3001,58 +3001,102 @@ namespace Bloom.Book
             var qrWrappers = dom.SafeSelectNodes(
                     "//div[contains(@class, 'bloom-branding-wrapper')]"
                 )
-                .Cast<SafeXmlElement>();
-            var url = "https://bloomlibrary.org/language:" + langCode;
-            // The address we actually show to the reader on the badge. We deliberately drop the
-            // "https://" and use the friendlier capitalization, but keep the same path as the real
-            // link and QR code target above.
-            var displayUrl = "BloomLibrary.org/language:" + langCode;
+                .Cast<SafeXmlElement>()
+                .ToList();
 
-            string qrFileName = null;
-            const string kQrFileName = "lang-qr-code.png";
-            var qrFilePath = Path.Combine(bookFolderPath, kQrFileName);
+            if (
+                shouldHaveQrCode
+                && qrWrappers.Count > 0
+                && (
+                    updateQrCodeFileEvenIfItExists
+                    || !RobustFile.Exists(Path.Combine(bookFolderPath, kQrFileName))
+                )
+            )
+                GenerateQrCodeImage(bookFolderPath, langCode);
 
+            // change both data-div and back page
             foreach (var qrWrapper in qrWrappers)
-            {
-                var anchor =
-                    qrWrapper.ChildNodes.FirstOrDefault(n =>
-                        n is SafeXmlElement element && element.Name.ToLowerInvariant() == "a"
-                    ) as SafeXmlElement;
-                if (anchor == null)
-                    continue; // html structure is corrupt/empty: nothing we can do
-
-                var imgBranding = FindChildElement(anchor, "img", "branding");
-                var imgQr = FindChildElement(anchor, "img", kQrCodeClass);
-                var label = FindChildElement(anchor, "div", "bloom-lang-on-blorg");
-
-                if (!shouldHaveQrCode)
-                {
-                    AdjustHtmlForNoQrCode(qrWrapper, anchor, imgBranding, imgQr, label);
-                    continue; // change both data-div and back page
-                }
-
-                anchor.SetAttribute("href", url + "?utm_source=badgeclick");
-
-                if (qrFileName == null)
-                {
-                    if (updateQrCodeFileEvenIfItExists || !RobustFile.Exists(qrFilePath))
-                        qrFileName = GenerateQrCodeImage(bookFolderPath, url + "?utm_source=qr");
-                    else
-                        qrFileName = kQrFileName;
-                }
-
-                AdjustHtmlForHavingQrCode(
+                UpdateBadge(
                     qrWrapper,
-                    anchor,
-                    imgBranding,
-                    imgQr,
-                    label,
-                    qrFileName,
+                    shouldHaveQrCode,
+                    langCode,
                     badgeCaptionPattern,
                     languageName,
-                    displayUrl
+                    kQrFileName
                 );
+        }
+
+        /// <summary>
+        /// Makes one "Made with Bloom" badge (a .bloom-branding-wrapper) show the QR code, the
+        /// caption and the language's link, or be the plain badge when it should have no QR code.
+        /// </summary>
+        private static void UpdateBadge(
+            SafeXmlElement qrWrapper,
+            bool shouldHaveQrCode,
+            string langCode,
+            string badgeCaptionPattern,
+            string languageName,
+            string qrCodeSrc
+        )
+        {
+            var anchor =
+                qrWrapper.ChildNodes.FirstOrDefault(n =>
+                    n is SafeXmlElement element && element.Name.ToLowerInvariant() == "a"
+                ) as SafeXmlElement;
+            if (anchor == null)
+                return; // html structure is corrupt/empty: nothing we can do
+
+            var imgBranding = FindChildElement(anchor, "img", "branding");
+            var imgQr = FindChildElement(anchor, "img", kQrCodeClass);
+            var label = FindChildElement(anchor, "div", "bloom-lang-on-blorg");
+
+            if (!shouldHaveQrCode)
+            {
+                AdjustHtmlForNoQrCode(qrWrapper, anchor, imgBranding, imgQr, label);
+                return;
             }
+
+            anchor.SetAttribute("href", GetLanguagePageUrl(langCode) + "?utm_source=badgeclick");
+
+            AdjustHtmlForHavingQrCode(
+                qrWrapper,
+                anchor,
+                imgBranding,
+                imgQr,
+                label,
+                qrCodeSrc,
+                badgeCaptionPattern,
+                languageName,
+                // The address we actually show to the reader on the badge. We deliberately drop
+                // the "https://" and use the friendlier capitalization, but keep the same path as
+                // the real link and QR code target.
+                "BloomLibrary.org/language:" + langCode
+            );
+        }
+
+        /// <summary>
+        /// The HTML of the default "Made with Bloom" badge as UpdateQrCode makes it in a book, for
+        /// the Collection Settings dialog's preview. Since there is no book folder, the badge
+        /// picture comes from imageFolderUrl and the QR code from qrCodeSrc. The preview has no
+        /// link, because following one would take the dialog away from Bloom.
+        /// </summary>
+        public static string MakeBadgePreviewHtml(
+            bool showQrCode,
+            string langCode,
+            string captionPattern,
+            string languageName,
+            string imageFolderUrl,
+            string qrCodeSrc
+        )
+        {
+            var dom = new HtmlDom("<html><body>" + kBloomBadgeDefaultHtml + "</body></html>");
+            var wrapper = dom.SelectSingleNode("//div[contains(@class, 'bloom-branding-wrapper')]");
+            UpdateBadge(wrapper, showQrCode, langCode, captionPattern, languageName, qrCodeSrc);
+            var anchor = (SafeXmlElement)wrapper.SelectSingleNode("a");
+            anchor.RemoveAttribute("href");
+            var imgBranding = FindChildElement(anchor, "img", "branding");
+            imgBranding.SetAttribute("src", imageFolderUrl + imgBranding.GetAttribute("src"));
+            return wrapper.OuterXml;
         }
 
         private static SafeXmlElement FindChildElement(
@@ -3183,45 +3227,60 @@ namespace Bloom.Book
                 captionDiv.AppendChild(doc.CreateTextNode(after));
         }
 
-        private static string GenerateQrCodeImage(string bookFolderPath, string url)
+        // The file in the book folder that holds the badge's QR code.
+        private const string kQrFileName = "lang-qr-code.png";
+
+        private static void GenerateQrCodeImage(string bookFolderPath, string langCode)
         {
-            string qrFileName;
+            using (var qrBitmap = MakeLanguageQrCodeBitmap(langCode))
+            {
+                // Reports a failure to write the file as a NonFatalProblem rather than
+                // throwing, so the book can still be selected (BL-16915).
+                ImageUtils.SaveOrDeletePngImageToPath(
+                    qrBitmap,
+                    Path.Combine(bookFolderPath, kQrFileName)
+                );
+            }
+        }
+
+        private static string GetLanguagePageUrl(string langCode)
+        {
+            return "https://bloomlibrary.org/language:" + langCode;
+        }
+
+        /// <summary>
+        /// The QR code of a badge whose link goes to the given language's page on
+        /// BloomLibrary.org, as UpdateQrCode puts it in a book. The Collection Settings dialog
+        /// shows it in its preview of the badge. The caller disposes of the bitmap.
+        /// </summary>
+        public static Bitmap MakeLanguageQrCodeBitmap(string langCode)
+        {
+            var url = GetLanguagePageUrl(langCode) + "?utm_source=qr";
             using (var qrGenerator = new QRCodeGenerator())
             {
                 using (var qrData = qrGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q))
                 {
                     using (var qrCode = new ArtQRCode(qrData))
                     {
-                        using (
-                            var qrBitmap = qrCode.GetGraphic(
-                                20,
-                                Color.FromArgb(255, 91, 91, 91), // medium dark gray
-                                Color.White,
-                                Color.White,
-                                null,
-                                1,
-                                false
-                            )
-                        )
-                        {
-                            // Modify image to make corner detection pattern centers red
-                            // (TODO) Round off corners of detection squares
-                            // (These first two might be possible to do with the QR code library.  GetGraphic has
-                            // a "finderPatternImage" parameter that might work for these.)
-                            // Also make center square white to overlay Bloom logo and overlay the Bloom logo
-                            TweakQrCodeBitmap(qrBitmap);
-                            qrFileName = "lang-qr-code.png";
-                            // Reports a failure to write the file as a NonFatalProblem rather than
-                            // throwing, so the book can still be selected (BL-16915).
-                            ImageUtils.SaveOrDeletePngImageToPath(
-                                qrBitmap,
-                                Path.Combine(bookFolderPath, qrFileName)
-                            );
-                        }
+                        var qrBitmap = qrCode.GetGraphic(
+                            20,
+                            Color.FromArgb(255, 91, 91, 91), // medium dark gray
+                            Color.White,
+                            Color.White,
+                            null,
+                            1,
+                            false
+                        );
+                        // Modify image to make corner detection pattern centers red
+                        // (TODO) Round off corners of detection squares
+                        // (These first two might be possible to do with the QR code library.  GetGraphic has
+                        // a "finderPatternImage" parameter that might work for these.)
+                        // Also make center square white to overlay Bloom logo and overlay the Bloom logo
+                        TweakQrCodeBitmap(qrBitmap);
+                        return qrBitmap;
                     }
                 }
             }
-            return qrFileName;
         }
 
         public static void TweakQrCodeBitmap(Bitmap qrBitmap)

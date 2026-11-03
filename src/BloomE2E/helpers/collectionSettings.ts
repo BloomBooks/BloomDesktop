@@ -94,9 +94,10 @@ export async function restartWithCollectionSettings(
 
 /**
  * Put the collection under this branding, e.g. "Story-Producer-App", and bring the selected book up
- * to date with it. This stands for entering a subscription code in the Settings dialog, which a
- * test cannot do: the dialog is WinForms, and a real code carries a checksum. The e2e/setBranding
- * hook exists for exactly this.
+ * to date with it. This stands for entering that branding's subscription code on the Subscription
+ * page of the Settings dialog, which a test cannot do: a real code carries a checksum, and the
+ * only code tests may use is kEnterpriseSubscriptionCode. The e2e/setBranding hook exists for
+ * exactly this.
  *
  * The change lives in memory only. A restart puts the collection back under the branding its
  * .bloomCollection names.
@@ -237,6 +238,107 @@ export async function showCollectionSettingsPage(
     await expect(tab).toHaveAttribute("aria-selected", "true");
 }
 
+/**
+ * The name of the page the Collection Settings dialog is showing, e.g. "Subscription", or
+ * undefined while the dialog is not open. A test that expects some action to open the dialog on a
+ * page polls this.
+ */
+export async function getShowingCollectionSettingsPage(
+    page: Page,
+): Promise<string | undefined> {
+    const selected = collectionSettingsDialog(page).locator(
+        '[role="tab"][aria-selected="true"]',
+    );
+    if ((await selected.count()) !== 1) return undefined;
+    return (await selected.innerText()).trim();
+}
+
+/** What the Subscription page of the Collection Settings dialog shows. */
+export interface ISubscriptionPageState {
+    /** The text in the Subscription Code box. */
+    code: string;
+    /**
+     * The tier the code gives, e.g. "Enterprise", shown only for a valid, current code; otherwise
+     * undefined.
+     */
+    tier: string | undefined;
+    /** Whether the page invites the user to apply for a free community subscription. */
+    communityInvitation: boolean;
+}
+
+/** The Subscription Code box on the Subscription page of the dialog. */
+function subscriptionCodeBox(page: Page): Locator {
+    return collectionSettingsDialog(page).locator("#subscriptionCodeInput");
+}
+
+/**
+ * Read the Subscription page of the Collection Settings dialog, which must be showing. Bloom works
+ * out the tier from the code after the code changes, so poll this for a tier that is expected to
+ * appear.
+ */
+export async function getSubscriptionPage(
+    page: Page,
+): Promise<ISubscriptionPageState> {
+    const dialog = collectionSettingsDialog(page);
+    const box = subscriptionCodeBox(page);
+    await expect(
+        box,
+        "the Collection Settings dialog is not showing its Subscription page",
+    ).toHaveCount(1);
+    const tier = dialog.getByTestId("subscription-tier");
+    return {
+        code: await box.inputValue(),
+        tier:
+            (await tier.count()) === 1
+                ? (await tier.innerText()).trim()
+                : undefined,
+        communityInvitation:
+            (await dialog
+                .locator('a[href="https://bloomlibrary.org/subscriptions"]')
+                .count()) > 0,
+    };
+}
+
+/**
+ * Type a subscription code into the Subscription page of the Collection Settings dialog, replacing
+ * what the box held, as a person does by typing or pasting one. Returns once the box shows it.
+ * Nothing is saved until OK.
+ */
+export async function typeSubscriptionCode(
+    page: Page,
+    code: string,
+): Promise<void> {
+    const box = subscriptionCodeBox(page);
+    await box.fill(code);
+    await expect(box).toHaveValue(code);
+}
+
+/**
+ * The subscription code the collection's settings file holds, or undefined when it holds none.
+ * Read from the .bloomCollection on disk, which is where a save puts it.
+ */
+export function readSavedSubscriptionCode(
+    collectionDir: string,
+): string | undefined {
+    const settingsFile = fs
+        .readdirSync(collectionDir)
+        .find((name) => name.endsWith(".bloomCollection"));
+    if (!settingsFile)
+        throw new Error(`There is no .bloomCollection in ${collectionDir}.`);
+    const xml = fs.readFileSync(Path.join(collectionDir, settingsFile), "utf8");
+    return /<SubscriptionCode>([^<]+)<\/SubscriptionCode>/.exec(xml)?.[1];
+}
+
+/**
+ * Click the subscription badge on the showing page of the Collection Settings dialog, as a person
+ * does whose tier lacks the feature beside it. That asks Bloom to show the Subscription page.
+ */
+export async function clickCollectionSettingsSubscriptionBadge(
+    page: Page,
+): Promise<void> {
+    await realClick(collectionSettingsSubscriptionBadge(page));
+}
+
 /** The checkbox of the setting with this label on the showing page of the dialog. */
 function collectionSettingsCheckbox(page: Page, label: string): Locator {
     // Config-R puts the setting's label on the element that wraps its checkbox.
@@ -289,11 +391,12 @@ export async function setCollectionSettingsCheckbox(
 /** The text box of the setting with this label on the showing page of the dialog. */
 function collectionSettingsTextBox(page: Page, label: string): Locator {
     // Config-R names the box after the setting's path, not its label; the label is a heading
-    // in the same row.
+    // in the same row. A box that allows several lines is an MUI textarea, which comes with a
+    // hidden twin it uses to measure the text.
     return collectionSettingsDialog(page)
         .locator("li")
         .filter({ has: page.locator("h4").getByText(label, { exact: true }) })
-        .locator('input[type="text"]');
+        .locator('input[type="text"], textarea:not([aria-hidden="true"])');
 }
 
 /** What a text setting in the Collection Settings dialog shows. */
@@ -456,6 +559,13 @@ export async function chooseCollectionSettingsListChoice(
         .toBe(choice);
 }
 
+/** The subscription badge on the showing page of the dialog: its icon and its words. */
+function collectionSettingsSubscriptionBadge(page: Page): Locator {
+    return collectionSettingsDialog(page)
+        .locator('img[src*="bloom-enterprise-badge"]')
+        .locator("xpath=..");
+}
+
 /**
  * What the subscription badge on the showing page of the Collection Settings dialog says:
  * "Available with your Bloom Subscription" when the collection's tier includes the feature, or
@@ -465,9 +575,7 @@ export async function chooseCollectionSettingsListChoice(
 export async function getCollectionSettingsSubscriptionBadge(
     page: Page,
 ): Promise<string> {
-    const badge = collectionSettingsDialog(page)
-        .locator('img[src*="bloom-enterprise-badge"]')
-        .locator("xpath=..");
+    const badge = collectionSettingsSubscriptionBadge(page);
     await expect(
         badge,
         "the showing Collection Settings page has no subscription badge",
@@ -490,6 +598,44 @@ export function readSavedBookshelf(collectionDir: string): string | undefined {
 }
 
 /**
+ * The text of a setting the collection's settings file holds in an element of its own, e.g.
+ * "XMatterPack" or "Country", or undefined when the file has no such element. Read from the
+ * .bloomCollection on disk, which is where a save puts it.
+ */
+export function readSavedCollectionSetting(
+    collectionDir: string,
+    elementName: string,
+): string | undefined {
+    const settingsFile = fs
+        .readdirSync(collectionDir)
+        .find((name) => name.endsWith(".bloomCollection"));
+    if (!settingsFile)
+        throw new Error(`There is no .bloomCollection in ${collectionDir}.`);
+    const xml = fs.readFileSync(Path.join(collectionDir, settingsFile), "utf8");
+    return new RegExp(`<${elementName}>([^<]*)</${elementName}>`).exec(
+        xml,
+    )?.[1];
+}
+
+/**
+ * The caption the badge preview on the Front & Back Matter page shows, with the language name
+ * filled in, as the books' badges will show it. The page must be showing, with QR codes on.
+ */
+export async function getQrCodeBadgePreviewCaption(
+    page: Page,
+): Promise<string> {
+    // The preview is the badge HTML books get, so its caption has the class books' captions have.
+    const caption = collectionSettingsDialog(page)
+        .getByTestId("qr-code-badge-preview")
+        .locator(".bloom-blorg-caption");
+    await expect(
+        caption,
+        "the showing page has no badge preview with a caption",
+    ).toHaveCount(1);
+    return (await caption.innerText()).trim();
+}
+
+/**
  * Click OK when it says "OK" (so no restart is coming): Bloom saves the settings and the dialog
  * closes. Returns once it has closed. For a change that needs a restart, use
  * restartFromCollectionSettings.
@@ -503,6 +649,38 @@ export async function saveCollectionSettings(page: Page): Promise<void> {
     ).toBeEnabled();
     await realClick(ok);
     await expect(dialog, "the dialog did not close after OK").toBeHidden();
+}
+
+/**
+ * Click the dialog's Help button and return the help topic it asks Bloom to open, such as
+ * "Tasks/Basic_tasks/Change_languages.htm". The request is answered here and never reaches Bloom,
+ * so no help window opens on the machine running the test.
+ */
+export async function clickCollectionSettingsHelp(page: Page): Promise<string> {
+    const helpRequest = /\/bloom\/api\/help\?/;
+    let requestedTopic: string | undefined;
+    await page.route(helpRequest, async (route) => {
+        requestedTopic =
+            new URL(route.request().url()).searchParams.get("topic") ??
+            "(no topic)";
+        await route.fulfill({ status: 200, body: "" });
+    });
+    try {
+        await realClick(
+            collectionSettingsDialog(page).getByRole("button", {
+                name: "Help",
+                exact: true,
+            }),
+        );
+        await expect
+            .poll(() => requestedTopic, {
+                message: "Help never asked Bloom for a topic",
+            })
+            .toBeDefined();
+    } finally {
+        await page.unroute(helpRequest);
+    }
+    return requestedTopic!;
 }
 
 /** Click Cancel: the dialog closes and nothing is saved. Returns once it has closed. */
@@ -549,13 +727,28 @@ export async function restartFromCollectionSettings(
         restart,
         "OK does not say Restart, so pressing it would not reopen the collection",
     ).toBeVisible();
+    return clickAndFollowRestart(bloomApp, restart, renamedTo);
+}
+
+/**
+ * Click a button that makes Bloom save and reopen the whole collection (such as the settings
+ * dialog's Restart, or the Create Team Collection dialog's Create & Restart), which destroys the
+ * shell page. Waits out the reopen, re-finds the shell page (bloomApp.page from here on) and returns
+ * it once the collection is ready again. `renamedTo` is as for restartFromCollectionSettings.
+ */
+export async function clickAndFollowRestart(
+    bloomApp: IBloomApp,
+    button: Locator,
+    renamedTo?: string,
+): Promise<Page> {
+    const page = bloomApp.page;
     const pageClosed = page.waitForEvent("close", { timeout: 60000 });
     // Pre-handled so a click failing for another reason cannot surface later as an unhandled
     // rejection charged to some other test.
     pageClosed.catch(() => undefined);
     // Bloom can tear the page down before Playwright finishes its click; a "closed" error means
     // the click landed. (If it never landed, the pageClosed wait times out.)
-    await realClick(restart).catch((error) => {
+    await realClick(button).catch((error) => {
         if (!/closed/i.test(String(error))) throw error;
     });
     await pageClosed;
