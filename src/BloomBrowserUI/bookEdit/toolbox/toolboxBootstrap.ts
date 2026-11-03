@@ -80,6 +80,7 @@ export interface IToolboxFrameExports {
     canUndo(): boolean;
     undo(): void;
     readerToolsHandleUndoKeys(): boolean;
+    restartReaderToolsHistoryIn(container: HTMLElement): void;
 
     applyToolboxStateToPage(): void;
 
@@ -140,6 +141,15 @@ export function readerToolsHandleUndoKeys(): boolean {
     return !!getTheOneReaderToolsModel()?.shouldHandleUndo();
 }
 
+/**
+ * Starts the reader tools' undo history again if the text block it belongs to is inside
+ * `container`. The inline image code calls this after a picture change (see
+ * ReaderToolsModel.restartHistoryIn).
+ */
+export function restartReaderToolsHistoryIn(container: HTMLElement): void {
+    getTheOneReaderToolsModel()?.restartHistoryIn(container);
+}
+
 export function undo() {
     const readerToolsModel = getTheOneReaderToolsModel();
     if (readerToolsModel) {
@@ -197,6 +207,7 @@ const toolboxBundle: ToolboxBundleApi = {
     canUndo,
     undo,
     readerToolsHandleUndoKeys,
+    restartReaderToolsHistoryIn,
     setActiveDragActivityTab,
     getTheOneAudioRecorderForExportOnly,
     copyLeveledReaderStatsToClipboard,

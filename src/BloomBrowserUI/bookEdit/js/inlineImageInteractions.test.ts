@@ -23,11 +23,15 @@ vi.mock("../../react_components/featureStatus", () => ({
 }));
 // There is no toolbox frame in these tests. A test that needs the reader tools to have a markup
 // tool selected sets readerToolsHandleUndoKeys.
-const toolboxStub = vi.hoisted(() => ({ readerToolsHandleUndoKeys: false }));
+const toolboxStub = vi.hoisted(() => ({
+    readerToolsHandleUndoKeys: false,
+    restartReaderToolsHistoryIn: vi.fn(),
+}));
 vi.mock("./workspaceFrames", async (importOriginal) => ({
     ...(await importOriginal<typeof import("./workspaceFrames")>()),
     getToolboxBundleExports: () => ({
         readerToolsHandleUndoKeys: () => toolboxStub.readerToolsHandleUndoKeys,
+        restartReaderToolsHistoryIn: toolboxStub.restartReaderToolsHistoryIn,
     }),
 }));
 // Unit tests must not reach the network (see vitest.setup.ts). The image menu asks Bloom for the
@@ -1743,6 +1747,23 @@ describe("inlineImageInteractions", () => {
             } finally {
                 toolboxStub.readerToolsHandleUndoKeys = false;
             }
+        });
+
+        // The reader tools' Ctrl+Z restores a snapshot of one block's HTML, pictures included, so
+        // a snapshot from before a picture change would put the old picture back in one language.
+        it("starts the reader tools' history again after a picture change", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            const img = wrapper.querySelector("img") as HTMLElement;
+            toolboxStub.restartReaderToolsHistoryIn.mockClear();
+
+            img.setAttribute("src", "flower.jpg");
+            inlineImagePictureChanged(img);
+
+            expect(
+                toolboxStub.restartReaderToolsHistoryIn,
+            ).toHaveBeenCalledWith(group);
         });
     });
 

@@ -796,7 +796,8 @@ export function setupInlineImageInteractions(container: HTMLElement): void {
 // stops the event, so CKEditor and the other key handlers never see it.
 // In Change Layout mode origami owns both keys, so this leaves them alone. So do the reader
 // tools, in a text block, while one of their markup tools is selected: they keep their own
-// history of the marked text and take both keys on the editable.
+// history of the marked text and take both keys on the editable. That history starts again after
+// a picture change (see resetCkeditorHistories), so their Ctrl+Z cannot put an old picture back.
 function onUndoOrRedoKeyDown(event: KeyboardEvent): void {
     const doc = (event.target as Node).ownerDocument ?? document;
     if (isInChangeLayoutMode(doc)) return;
@@ -1329,7 +1330,11 @@ function makeContentOnlySnapshot(editor: unknown): object {
 // count that no keyup clears.
 //
 // An editor that has not recorded a snapshot yet has no history to reset.
+//
+// The reader tools keep a history of the same kind for the block that last had the focus, and use
+// it in place of CKEditor's while one of their markup tools is selected, so it starts again too.
 function resetCkeditorHistories(translationGroup: HTMLElement): void {
+    getToolboxBundleExports()?.restartReaderToolsHistoryIn(translationGroup);
     getEditables(translationGroup).forEach((editable) => {
         const editor = (
             editable as HTMLElement & {

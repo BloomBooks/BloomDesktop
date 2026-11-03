@@ -412,41 +412,14 @@ export class EditableDivUtils {
         // EditableDivUtils.logElementsInnerHtml([div]);
 
         // Inline images (inlineImages.ts) are contenteditable=false, so CKEditor cannot have
-        // changed anything inside them, and their menus, toolbar, handles and load handlers hold
-        // the live elements. Rebuilding them from CKEditor's data would detach all of those: with
-        // the Decodable or Leveled Reader open this runs whenever the text loses focus, so Change
-        // image or Delete then acted on an element no longer on the page. CKEditor's data also
-        // carries the src the img had when the page loaded (data-cke-saved-src), not the current
-        // one. So the live wrappers replace their rebuilt copies. The selectors are written out
-        // here because importing inlineImages.ts would make an import cycle.
-        const liveInlineImages = Array.from(
-            div.querySelectorAll<HTMLElement>(":scope > .bloom-inlineImage"),
+        // changed anything inside them. CKEditor's data carries the src each img had when the page
+        // loaded (data-cke-saved-src), not the current one, and with the Decodable or Leveled
+        // Reader open this runs whenever the text loses focus. See
+        // replaceContentKeepingLiveInlineImages.
+        EditableDivUtils.replaceContentKeepingLiveInlineImages(
+            div,
+            ckEditorData,
         );
-
-        div.innerHTML = ckEditorData;
-
-        liveInlineImages.forEach((live) => {
-            const id = live.getAttribute("data-bloom-inline-image-id");
-            if (!id) return;
-            const rebuilt = div.querySelector(
-                `:scope > .bloom-inlineImage[data-bloom-inline-image-id="${id}"]`,
-            );
-            if (!rebuilt) return;
-            // CKEditor's data never carries its own data-cke-* attributes, and the page is
-            // saved from what this leaves, so they must not come back with the live wrapper.
-            // A data-cke-saved-src saved in the book would outlive any later change to the src.
-            [live, ...Array.from(live.querySelectorAll("*"))].forEach(
-                (element) =>
-                    Array.from(element.attributes)
-                        .filter((attribute) =>
-                            attribute.name.startsWith("data-cke-"),
-                        )
-                        .forEach((attribute) =>
-                            element.removeAttribute(attribute.name),
-                        ),
-            );
-            rebuilt.replaceWith(live);
-        });
 
         // console.log("safelyReplaceContentWithCkEditorData, after getData replacement: ");
         // EditableDivUtils.logElementsInnerHtml([div]);
@@ -476,6 +449,52 @@ export class EditableDivUtils {
         }
 
         EditableDivUtils.fixUpEmptyishParagraphs(div);
+    }
+
+    /**
+     * Sets the content of an editable from saved HTML, but keeps the inline images that are on the
+     * page now in place of their copies in that HTML, matched by data-bloom-inline-image-id.
+     *
+     * An inline image's menus, toolbar, handles and load handlers hold the live wrapper, so a
+     * rebuilt copy would leave them acting on an element no longer on the page: Change image and
+     * Delete would then do nothing. And every language's editable has a copy of each picture, kept
+     * the same by the inline image code, so HTML saved earlier would put an older picture back in
+     * this one language alone. The callers restore text: CKEditor's data when the reader tools tidy
+     * a block, and the reader tools' own undo history. The selectors are written out here because
+     * importing inlineImages.ts would make an import cycle.
+     */
+    public static replaceContentKeepingLiveInlineImages(
+        div: HTMLElement,
+        html: string,
+    ): void {
+        const liveInlineImages = Array.from(
+            div.querySelectorAll<HTMLElement>(":scope > .bloom-inlineImage"),
+        );
+
+        div.innerHTML = html;
+
+        liveInlineImages.forEach((live) => {
+            const id = live.getAttribute("data-bloom-inline-image-id");
+            if (!id) return;
+            const rebuilt = div.querySelector(
+                `:scope > .bloom-inlineImage[data-bloom-inline-image-id="${id}"]`,
+            );
+            if (!rebuilt) return;
+            // CKEditor's data never carries its own data-cke-* attributes, and the page is
+            // saved from what this leaves, so they must not come back with the live wrapper.
+            // A data-cke-saved-src saved in the book would outlive any later change to the src.
+            [live, ...Array.from(live.querySelectorAll("*"))].forEach(
+                (element) =>
+                    Array.from(element.attributes)
+                        .filter((attribute) =>
+                            attribute.name.startsWith("data-cke-"),
+                        )
+                        .forEach((attribute) =>
+                            element.removeAttribute(attribute.name),
+                        ),
+            );
+            rebuilt.replaceWith(live);
+        });
     }
 
     private static isNodeCkEditorBookmark(node: Node): boolean {
