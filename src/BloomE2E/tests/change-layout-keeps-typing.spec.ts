@@ -67,7 +67,14 @@ test("typing straight before changing the layout is kept too [Test Case ID 843]"
     const bookFolder = await makeBookFromTemplate(page, "Basic Book");
     const custom = await addCustomTextPage(page);
 
-    await typeInGroup(page, ".bloom-translationGroup", "en", "Typed just now.");
+    await typeInGroup(
+        page,
+        ".bloom-translationGroup",
+        "en",
+        "Typed just now.",
+        0,
+        false,
+    );
     await setChangeLayoutMode(page, true);
     await splitSection(page, "right");
     await setChangeLayoutMode(page, false);

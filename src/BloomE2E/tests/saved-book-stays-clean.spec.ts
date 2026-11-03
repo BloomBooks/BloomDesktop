@@ -10,6 +10,13 @@
 // The leftovers test automates "Clean Saved Book HTML" (Test Case ID 663); the unchanged-book tests
 // automate "Looking at Pages Does Not Rewrite the Book" (Test Case ID 842).
 //
+// What they do NOT catch. The leftovers test looks for a fixed list of known leftovers (see
+// findEditorLeftovers), with three particular tools open, so it cannot notice markup that a new
+// tool or feature adds under a name of its own. The unchanged-book tests need no list: anything
+// that showing a page adds and saving does not take off makes the visit write, whatever it is
+// called. But they open no tools, so they say nothing about what a tool adds when it is opened,
+// and nothing about markup that only appears when the user does something.
+//
 // The tests are serial because each one works on the book the first one builds.
 
 import * as fs from "node:fs";

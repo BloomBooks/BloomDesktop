@@ -1143,12 +1143,19 @@ async function killAndWaitForBloomToExit(
     killProcessTree(running.pids);
     // Confirm rather than assume: taskkill has been seen to under-kill.
     const deadline = Date.now() + 15000;
+    // "Dark" means OUR Bloom no longer answers there. Another run's Bloom, started side by side with
+    // this one, can take the port the moment ours lets it go, and that is no survivor of ours. A
+    // Bloom that does not report its process id is taken to be ours.
     let portIsDark = false;
     while (!portIsDark && Date.now() < deadline) {
-        portIsDark = !(await readInstanceInfo(
+        const answering = await readInstanceInfo(
             running.httpPort,
             probeTimeoutBefore(deadline),
-        ));
+        );
+        portIsDark =
+            !answering ||
+            (answering.processId !== undefined &&
+                answering.processId !== running.servingPid);
         if (!portIsDark) await delay(500);
     }
     if (!portIsDark)

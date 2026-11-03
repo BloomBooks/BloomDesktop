@@ -892,6 +892,16 @@ export async function clickInGroup(
  */
 export async function waitForPageToSettle(page: Page): Promise<void> {
     await page.waitForTimeout(1050);
+    await waitForSnapshotStreamIdle(page);
+}
+
+/**
+ * Wait until the page being edited has nothing left to send Bloom: no change waiting out the quiet
+ * time, no gather under way, and no post unanswered (isSnapshotStreamIdle in pageSnapshot.ts).
+ * Only for a page known to be loaded and editable; a frame still loading its page has no stream to
+ * ask, and this fails rather than guess.
+ */
+async function waitForSnapshotStreamIdle(page: Page): Promise<void> {
     await expect
         .poll(
             () =>
@@ -953,6 +963,8 @@ export async function waitForBloomToHaveTyping(
  * Pass an empty string to clear the box; that is how a test makes a translation incomplete. A
  * newline in `text` presses Enter, which starts a new paragraph, as it does for a person.
  * Nothing reaches the file until the book leaves this page — see goToPage.
+ *
+ * Returns once Bloom has the page with the text in it, unless `thenWaitForBloomToHaveIt` is false.
  */
 export async function typeInGroup(
     page: Page,
@@ -960,6 +972,7 @@ export async function typeInGroup(
     languageTag: string,
     text: string,
     groupIndex = 0,
+    thenWaitForBloomToHaveIt = true,
 ): Promise<void> {
     // Click in, select what is there, and type over it. A box here is a CKEditor surface, and
     // filling it directly leaves part of the old text behind.
@@ -985,6 +998,12 @@ export async function typeInGroup(
     // later failure cannot be blamed on text that never arrived. innerText, rather than textContent,
     // so that a paragraph break reads back as the newline that made it.
     await expect(box).toHaveText(text, { timeout: 15000, useInnerText: true });
+    // Then wait until the browser has sent Bloom the page with the text in it, the moment a person
+    // takes before doing anything else. Every save takes the page from that copy, which goes a
+    // moment after the last change (see kQuietMs in pageSnapshot.ts), and the text above went in
+    // as one change, so a save straight after it would lose all of it. A test whose subject is an
+    // action taken straight after typing passes false.
+    if (thenWaitForBloomToHaveIt) await waitForSnapshotStreamIdle(page);
 }
 
 /**
