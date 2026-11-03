@@ -210,10 +210,9 @@ test.describe("canvas element Layer order [Test Case ID 840]", () => {
         const errors = watchForScriptErrors(page);
         try {
             // bubbleB is at the back, with its child; bringing it to the front brings the child.
-            // The picture is selected first because Add Child Bubble leaves the caret in the new
-            // child's text, and a click on the parent alone selects the parent but leaves the caret
-            // there, where Bloom ignores a Layer shortcut. Selecting another element clears it.
-            await selectStackedCanvasElement(page, picture);
+            // Add Child Bubble leaves the caret in the new child's text, so this also checks that
+            // clicking the parent takes the caret out of it, or the shortcut would be ignored
+            // (BL-17006).
             await selectStackedCanvasElement(page, bubbleB);
             await pressLayerShortcut(page, "Bring to Front");
             await expectStack(
