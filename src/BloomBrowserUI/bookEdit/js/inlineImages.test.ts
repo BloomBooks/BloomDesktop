@@ -871,6 +871,39 @@ describe("inlineImages", () => {
             expect(editableFor(group, "fr").textContent).toBe("b");
         });
 
+        // A pasted picture is put into the new image before the insert's entry is recorded, so
+        // one Undo takes back the paste, and Redo brings back the picture, not a placeholder.
+        it("makes an insert with a picture one entry that undoes and redoes with the picture", () => {
+            const group = makeTranslationGroup([
+                { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
+                { lang: "fr", content: "<p>b</p>" },
+            ]);
+            const srcIn = (lang: string) =>
+                getInlineImageInEditable(editableFor(group, lang))
+                    ?.querySelector("img")
+                    ?.getAttribute("src");
+
+            insertInlineImage(group, (img) => {
+                img.setAttribute("src", "pasted.png");
+                syncInlineImagesFromEditable(
+                    img.closest(".bloom-editable") as HTMLElement,
+                );
+            });
+            // Sanity check: every copy has the picture, and the paste is the one entry.
+            expect(srcIn("en")).toBe("pasted.png");
+            expect(srcIn("fr")).toBe("pasted.png");
+            expect(theOneUndoStack.getEntryCount()).toBe(1);
+
+            theOneUndoStack.undo();
+
+            expect(getInlineImages(group).length).toBe(0);
+
+            theOneUndoStack.redo();
+
+            expect(srcIn("en")).toBe("pasted.png");
+            expect(srcIn("fr")).toBe("pasted.png");
+        });
+
         it("undoes a remove, restoring the image to every editable", () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },

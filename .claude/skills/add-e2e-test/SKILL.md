@@ -230,6 +230,13 @@ Rules that hold regardless of the final API:
   test's chooser. When a dialog the hook does not cover has to be driven, or a run has to read
   an unexpected message box, `winformsUia.ps1` in the `run-bloom` skill does it over UI
   Automation (proven on Bloom's image picker); arming is still the first choice in a test.
+- NEVER put anything on the Windows clipboard or read it. Under `--e2e` Bloom uses an in-memory
+  clipboard instead, so a test cannot disturb the developer's clipboard or another run's. Set it
+  with `copyToClipboard`, read it with `getClipboard`, and paste with `pasteFromClipboard`
+  (helpers/clipboard.ts, over the `e2e/clipboard` hook); `pasteFromClipboard` sends the paste
+  event Ctrl+V would produce, filled from that clipboard. A real Ctrl+C or Ctrl+V still goes to
+  the Windows clipboard (AUTOMATION-DEBT.md, "The browser's own copy and paste use the Windows
+  clipboard"), so press those keys only when the key press itself is what the test measures.
 - NEVER submit a problem report. The fixture fails the test with gathered detail when
   a "Bloom had a problem" dialog appears; do not loop-dismiss it.
 - Waits are event/state-based (poll an API, await a selector), never fixed sleeps.

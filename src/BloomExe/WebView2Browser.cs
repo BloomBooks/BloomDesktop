@@ -1232,7 +1232,7 @@ namespace Bloom
                 PalasoImage clipboardImage = null;
                 try
                 {
-                    clipboardImage = PortableClipboard.GetImageFromClipboardWithExceptions();
+                    clipboardImage = BloomClipboard.GetImageFromClipboardWithExceptions();
                 }
                 catch (Exception) // anything goes wrong, just assume it's not an image
                 { }
@@ -1291,7 +1291,7 @@ namespace Bloom
                     _cutCommand.Enabled = isTextSelection;
                     _copyCommand.Enabled = isTextSelection;
                     _pasteCommand.Enabled =
-                        PortableClipboard.ContainsText() || PortableClipboard.CanGetImage();
+                        BloomClipboard.ContainsText() || BloomClipboard.CanGetImage();
 
                     _undoCommand.Enabled = await CanUndoAsync();
                 }
