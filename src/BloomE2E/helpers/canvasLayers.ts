@@ -255,8 +255,8 @@ export async function chooseLayerCommand(
 /**
  * Give the selected canvas element a Layer command with its keyboard shortcut (Ctrl+] and the
  * like), pressed for real. The caret must not be in any text box: Bloom ignores the shortcut there.
- * selectStackedCanvasElement normally leaves it so, but not always (a click on a bubble's parent
- * leaves the caret in a child's text), so this checks first and throws naming where the caret is.
+ * selectStackedCanvasElement should leave it so, even when the caret was in another element's text,
+ * but this checks first and throws naming where the caret is, so a failure says why.
  * Waits until the stacking order has changed, so use it only for a command that should move the
  * element.
  */
