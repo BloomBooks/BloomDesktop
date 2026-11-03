@@ -3215,53 +3215,6 @@ namespace BloomTests.Publish.Rab
             Assert.That(estimate.SizeBytes, Is.EqualTo(4000));
         }
 
-        [Test]
-        public void GetSizeEstimates_UncheckedPng_CountsLargeThenShrinksAfterBackgroundCheck()
-        {
-            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
-            var paths = new RabWorkspacePaths(tempFolder.Path);
-            var bookFolder = Path.Combine(tempFolder.Path, "book-1");
-            Directory.CreateDirectory(bookFolder);
-            BloomPubSizeEstimatorTests.WriteBookHtml(bookFolder, "picture.png");
-            // An opaque painting saved with an alpha channel: only decoding it shows it can become
-            // a JPEG.
-            BloomPubSizeEstimatorTests.WriteNoisyImage(
-                Path.Combine(bookFolder, "picture.png"),
-                1440,
-                1440,
-                System.Drawing.Imaging.PixelFormat.Format32bppArgb,
-                System.Drawing.Imaging.ImageFormat.Png
-            );
-            var trackedBooks = new List<RabBookPublishInfo>
-            {
-                new RabBookPublishInfo
-                {
-                    BookId = "book-1",
-                    FolderPath = bookFolder,
-                    Title = "Book One",
-                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
-                },
-            };
-            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-
-            var first = service.GetSizeEstimates().Books.Single().SizeBytes;
-            Assert.That(
-                service.SizeEstimatesChanged.Wait(TimeSpan.FromSeconds(30)),
-                Is.True,
-                "the background picture check should finish and announce better estimates"
-            );
-            var second = service.GetSizeEstimates().Books.Single().SizeBytes;
-
-            Assert.That(second, Is.LessThan(first));
-            Assert.That(
-                RobustFile.Exists(
-                    Path.Combine(paths.RabRoot, RabProjectService.kPngTransparencyCacheFileName)
-                ),
-                Is.True,
-                "the answers should be saved for next time"
-            );
-        }
-
         /// <summary>
         /// Write a stand-in BloomPUB of the given size, and the cache record saying it was made from
         /// the book in <paramref name="bookFolder"/> as it is now (with the test service's null
@@ -4447,15 +4400,6 @@ namespace BloomTests.Publish.Rab
             internal override RabWorkspacePaths GetPaths()
             {
                 return _paths;
-            }
-
-            // Set when the background picture check says better size estimates are ready.
-            public ManualResetEventSlim SizeEstimatesChanged { get; } =
-                new ManualResetEventSlim(false);
-
-            internal override void SendSizeEstimatesChangedEvent()
-            {
-                SizeEstimatesChanged.Set();
             }
 
             internal override string GetAppName()

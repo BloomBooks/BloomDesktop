@@ -23,10 +23,6 @@ namespace Bloom.Publish.Rab
         /// </summary>
         public const string kWebSocketEventId_ActionComplete = "actionComplete";
 
-        // Sent when better size estimates are available, e.g. once pictures have been checked
-        // for transparency in the background (BL-17062).
-        public const string kWebSocketEventId_SizeEstimatesChanged = "sizeEstimatesChanged";
-
         private readonly RabProjectService _rabProjectService;
         private readonly PublishView _publishView;
 

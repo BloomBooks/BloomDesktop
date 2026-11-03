@@ -106,19 +106,6 @@ namespace Bloom.Publish.Rab
         private readonly IWebSocketProgress _progress;
         private readonly BloomPubSizeEstimator _bloomPubSizeEstimator = new BloomPubSizeEstimator();
         private readonly RabBloomPubCache _bloomPubCache = new RabBloomPubCache();
-
-        // Whether each PNG has transparency, which the size estimates need (BL-17062). Kept in a
-        // file in the collection's Bloom App Data folder; see GetPngTransparencyCache.
-        private PngTransparencyCache _pngTransparencyCache;
-        private readonly object _pngCheckLock = new object();
-
-        // PNGs waiting to be checked for transparency in the background, and whether the
-        // background check is running. Both guarded by _pngCheckLock.
-        private readonly HashSet<string> _pngsToCheck = new HashSet<string>(
-            StringComparer.OrdinalIgnoreCase
-        );
-        private bool _pngCheckRunning;
-        internal const string kPngTransparencyCacheFileName = "png-transparency-cache.json";
         private volatile string _activeProgressAction;
         private int _lastBuildProgressPercent;
         private volatile string _lastLoggedProgressStage;
@@ -503,15 +490,12 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
-        /// Estimates per-book and overall app size using available BloomPUB exports when possible.
-        /// PNGs that haven't yet been checked for transparency are counted at their larger
-        /// (transparent) size and checked in the background; when that finishes, the Apps screen
-        /// is told to ask again (see <see cref="SendSizeEstimatesChangedEvent"/>).
+        /// Estimates per-book and overall app size using available BloomPUB exports when possible,
+        /// and <see cref="BloomPubSizeEstimator"/> for the other books.
         /// </summary>
         public RabAppSizeEstimates GetSizeEstimates()
         {
             var paths = GetPaths();
-            var transparencyCache = GetPngTransparencyCache(paths);
             // The app's books keep the BloomPUB name recorded when they were added, even if the
             // book folder has since been renamed, so look them up the same way export does: by
             // book id first (the saved folder path is the old one after a rename), then by folder.
@@ -528,8 +512,7 @@ namespace Bloom.Publish.Rab
                     group => group.First(),
                     StringComparer.OrdinalIgnoreCase
                 );
-            var uncheckedPngs = new List<string>();
-            var estimates = new RabAppSizeEstimates()
+            return new RabAppSizeEstimates()
             {
                 Books = GetCollectionBooksForSizeEstimates()
                     .Select(book =>
@@ -546,25 +529,21 @@ namespace Bloom.Publish.Rab
                             ? GetBloomPubSizeIfPresent(bloomPubPath)
                             : null;
                         if (!bloomPubSize.HasValue)
-                        {
-                            var estimate = _bloomPubSizeEstimator.EstimateBloomPubSize(
-                                book.FolderPath,
-                                book.ImageSettings,
-                                transparencyCache,
-                                book.AppearanceSettings
+                            return MakeBookSizeEstimate(
+                                book,
+                                _bloomPubSizeEstimator.EstimateBloomPubSize(
+                                    book.FolderPath,
+                                    book.ImageSettings,
+                                    book.AppearanceSettings
+                                ),
+                                false
                             );
-                            uncheckedPngs.AddRange(estimate.UncheckedPngPaths);
-                            return MakeBookSizeEstimate(book, estimate.SizeBytes, false);
-                        }
                         return MakeBookSizeEstimate(book, bloomPubSize.Value, true);
                     })
                     .ToArray(),
                 EstimatedAppOverheadBytes = kEstimatedAppOverheadBytes,
                 MaxAppSizeBytes = kMaxAppSizeBytes,
             };
-            if (uncheckedPngs.Count > 0)
-                CheckPngTransparencyInBackground(transparencyCache, uncheckedPngs);
-            return estimates;
         }
 
         /// <summary>
@@ -604,101 +583,6 @@ namespace Bloom.Publish.Rab
                 SizeBytes = sizeBytes,
                 IsActual = isActual,
             };
-        }
-
-        /// <summary>
-        /// The transparency cache for this collection's Apps workspace, loading it from its file
-        /// the first time.
-        /// </summary>
-        private PngTransparencyCache GetPngTransparencyCache(RabWorkspacePaths paths)
-        {
-            lock (_pngCheckLock)
-            {
-                _pngTransparencyCache ??= new PngTransparencyCache(
-                    Path.Combine(paths.RabRoot, kPngTransparencyCacheFileName)
-                );
-                return _pngTransparencyCache;
-            }
-        }
-
-        /// <summary>
-        /// Check <paramref name="pngPaths"/> for transparency on a background thread, one at a
-        /// time (each decode briefly needs tens of MB), then save the answers and tell the Apps
-        /// screen its size estimates may have changed. If a check is already running, the new
-        /// paths just join its queue.
-        /// </summary>
-        private void CheckPngTransparencyInBackground(
-            PngTransparencyCache cache,
-            IEnumerable<string> pngPaths
-        )
-        {
-            lock (_pngCheckLock)
-            {
-                _pngsToCheck.UnionWith(pngPaths);
-                if (_pngCheckRunning || _pngsToCheck.Count == 0)
-                    return;
-                _pngCheckRunning = true;
-            }
-            Task.Run(() => CheckQueuedPngs(cache));
-        }
-
-        /// <summary>
-        /// The body of the background transparency check; see
-        /// <see cref="CheckPngTransparencyInBackground"/>. Internal so tests can run it directly.
-        /// </summary>
-        internal void CheckQueuedPngs(PngTransparencyCache cache)
-        {
-            try
-            {
-                while (true)
-                {
-                    string next;
-                    lock (_pngCheckLock)
-                    {
-                        next = _pngsToCheck.FirstOrDefault();
-                        if (next != null)
-                            _pngsToCheck.Remove(next);
-                    }
-                    if (next != null)
-                    {
-                        cache.CheckAndRemember(next);
-                        continue;
-                    }
-                    // Save while still marked as running, so no second worker starts until this
-                    // one is completely done; then stop only if nothing was queued meanwhile.
-                    cache.Save();
-                    lock (_pngCheckLock)
-                    {
-                        if (_pngsToCheck.Count == 0)
-                        {
-                            _pngCheckRunning = false;
-                            break;
-                        }
-                    }
-                }
-            }
-            catch (Exception error)
-            {
-                // Nothing the user did can cause this, and the estimates simply stay on the
-                // larger side, so log it rather than interrupting them.
-                lock (_pngCheckLock)
-                {
-                    _pngCheckRunning = false;
-                }
-                Logger.WriteError("Checking pictures for the app size estimates failed", error);
-            }
-            SendSizeEstimatesChangedEvent();
-        }
-
-        /// <summary>
-        /// Tell the Apps screen that asking for the size estimates again would give better ones.
-        /// </summary>
-        internal virtual void SendSizeEstimatesChangedEvent()
-        {
-            _webSocketServer.SendEvent(
-                kWebSocketContext,
-                RabPublishApi.kWebSocketEventId_SizeEstimatesChanged
-            );
         }
 
         /// <summary>

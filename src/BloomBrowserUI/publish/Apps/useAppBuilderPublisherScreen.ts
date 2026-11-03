@@ -17,7 +17,6 @@ import {
     IAppBuilderSizeEstimatesApi,
     kAppBuilderWebSocketContext,
     kAppBuilderActionCompleteEventId,
-    kAppBuilderSizeEstimatesChangedEventId,
     normalizeSizeEstimates,
     normalizeStatus,
     AppBuilderAction,
@@ -435,19 +434,6 @@ export function useAppBuilderPublisherScreen(
                 completedAction,
                 completedAction === "prepare" && succeeded,
             );
-        },
-    );
-
-    // The server checks pictures for transparency in the background and tells us when better
-    // size estimates are ready (BL-17062). The event carries no message, so this must not use
-    // useSubscribeToWebSocketForStringMessage, which ignores events without one.
-    useSubscribeToWebSocketForEvent(
-        kAppBuilderWebSocketContext,
-        kAppBuilderSizeEstimatesChangedEventId,
-        () => {
-            if (isMountedRef.current) {
-                refreshSizeEstimates();
-            }
         },
     );
 

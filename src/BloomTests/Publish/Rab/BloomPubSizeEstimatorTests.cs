@@ -24,8 +24,6 @@ namespace BloomTests.Publish.Rab
         private TemporaryFolder _tempFolder;
         private string _bookFolder;
         private long _htmlBytes;
-        private PngTransparencyCache _transparencyCache;
-        private string _transparencyCachePath;
 
         [SetUp]
         public void SetUp()
@@ -43,8 +41,6 @@ namespace BloomTests.Publish.Rab
                 "opaque.png",
                 "transparent.png"
             );
-            _transparencyCachePath = Path.Combine(_tempFolder.Path, "transparency.json");
-            _transparencyCache = new PngTransparencyCache(_transparencyCachePath);
         }
 
         /// <summary>
@@ -52,7 +48,7 @@ namespace BloomTests.Publish.Rab
         /// Bloom pages are, and return the file's size. A name starting with "keep:" is marked
         /// bloom-preserveResolution.
         /// </summary>
-        internal static long WriteBookHtml(string bookFolder, params string[] pictures)
+        private static long WriteBookHtml(string bookFolder, params string[] pictures)
         {
             var pages = string.Concat(
                 pictures.Select(picture =>
@@ -90,11 +86,10 @@ namespace BloomTests.Publish.Rab
 
             var estimate = new BloomPubSizeEstimator().EstimateBloomPubSize(
                 _bookFolder,
-                new ImagePublishSettings(),
-                _transparencyCache
+                new ImagePublishSettings()
             );
 
-            Assert.That(estimate.SizeBytes, Is.EqualTo(htmlBytes + keptBytes + unusedBytes));
+            Assert.That(estimate, Is.EqualTo(htmlBytes + keptBytes + unusedBytes));
         }
 
         [Test]
@@ -300,41 +295,37 @@ namespace BloomTests.Publish.Rab
 
             var estimate = new BloomPubSizeEstimator().EstimateBloomPubSize(
                 _bookFolder,
-                new ImagePublishSettings(),
-                _transparencyCache
+                new ImagePublishSettings()
             );
 
             var expected =
                 _htmlBytes + Estimate(2560, 1440, bigJpegBytes, false, false) + smallJpegBytes;
-            Assert.That(estimate.SizeBytes, Is.EqualTo(expected));
+            Assert.That(estimate, Is.EqualTo(expected));
             Assert.That(
-                estimate.SizeBytes,
+                estimate,
                 Is.LessThan(_htmlBytes + bigJpegBytes + smallJpegBytes),
                 "the big picture should count at less than its full size"
             );
-            Assert.That(estimate.UncheckedPngPaths, Is.Empty);
         }
 
         [Test]
-        public void EstimateBloomPubSize_PngWithNoAlphaChannel_NeedsNoCheck()
+        public void EstimateBloomPubSize_PngWithNoAlphaChannel_CountsAsOpaque()
         {
             var pngPath = Path.Combine(_bookFolder, "rgb.png");
             WriteNoisyImage(pngPath, 1440, 1440, PixelFormat.Format24bppRgb, ImageFormat.Png);
             Assert.That(
-                PngTransparencyCache.PngCanHaveTransparency(pngPath),
+                BloomPubSizeEstimator.PngCanHaveTransparency(pngPath),
                 Is.False,
                 "test setup: GDI+ should save a 24-bit picture as a PNG with no alpha channel"
             );
 
             var estimate = new BloomPubSizeEstimator().EstimateBloomPubSize(
                 _bookFolder,
-                new ImagePublishSettings(),
-                _transparencyCache
+                new ImagePublishSettings()
             );
 
-            Assert.That(estimate.UncheckedPngPaths, Is.Empty);
             Assert.That(
-                estimate.SizeBytes,
+                estimate,
                 Is.EqualTo(
                     _htmlBytes + Estimate(1440, 1440, new FileInfo(pngPath).Length, true, false)
                 )
@@ -342,10 +333,17 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void EstimateBloomPubSize_OpaquePngWithAlphaChannel_CountsLargeUntilChecked()
+        public void EstimateBloomPubSize_OpaquePngWithAlphaChannel_CountsAsTransparent()
         {
+            // The picture is opaque, but only decoding it could tell us that, so it counts at the
+            // larger, transparent size; "Measure exact sizes" gives the real one (BL-17062).
             var pngPath = Path.Combine(_bookFolder, "opaque.png");
             WriteNoisyImage(pngPath, 1440, 1440, PixelFormat.Format32bppArgb, ImageFormat.Png);
+            Assert.That(
+                BloomPubSizeEstimator.PngCanHaveTransparency(pngPath),
+                Is.True,
+                "test setup: GDI+ should save a 32-bit picture as a PNG with an alpha channel"
+            );
             var pngBytes = new FileInfo(pngPath).Length;
             var ifTransparent = Estimate(1440, 1440, pngBytes, true, true);
             var ifOpaque = Estimate(1440, 1440, pngBytes, true, false);
@@ -354,84 +352,13 @@ namespace BloomTests.Publish.Rab
                 Is.LessThan(ifTransparent),
                 "test setup: the answer should matter"
             );
-            var estimator = new BloomPubSizeEstimator();
 
-            var before = estimator.EstimateBloomPubSize(
-                _bookFolder,
-                new ImagePublishSettings(),
-                _transparencyCache
-            );
-            Assert.That(before.UncheckedPngPaths, Is.EqualTo(new[] { pngPath }));
-            Assert.That(before.SizeBytes, Is.EqualTo(_htmlBytes + ifTransparent));
-
-            Assert.That(_transparencyCache.CheckAndRemember(pngPath), Is.False);
-            var after = estimator.EstimateBloomPubSize(
-                _bookFolder,
-                new ImagePublishSettings(),
-                _transparencyCache
-            );
-
-            Assert.That(after.UncheckedPngPaths, Is.Empty);
-            Assert.That(after.SizeBytes, Is.EqualTo(_htmlBytes + ifOpaque));
-        }
-
-        [Test]
-        public void EstimateBloomPubSize_TransparentPng_StaysLargeAfterCheck()
-        {
-            var pngPath = Path.Combine(_bookFolder, "transparent.png");
-            WriteNoisyImage(
-                pngPath,
-                1440,
-                1440,
-                PixelFormat.Format32bppArgb,
-                ImageFormat.Png,
-                transparentCorner: true
-            );
-            var pngBytes = new FileInfo(pngPath).Length;
-
-            Assert.That(_transparencyCache.CheckAndRemember(pngPath), Is.True);
             var estimate = new BloomPubSizeEstimator().EstimateBloomPubSize(
                 _bookFolder,
-                new ImagePublishSettings(),
-                _transparencyCache
+                new ImagePublishSettings()
             );
 
-            Assert.That(estimate.UncheckedPngPaths, Is.Empty);
-            Assert.That(
-                estimate.SizeBytes,
-                Is.EqualTo(_htmlBytes + Estimate(1440, 1440, pngBytes, true, true))
-            );
-        }
-
-        [Test]
-        public void PngTransparencyCache_SavedAnswersSurviveReload_UntilPictureChanges()
-        {
-            var pngPath = Path.Combine(_bookFolder, "opaque.png");
-            WriteNoisyImage(pngPath, 100, 100, PixelFormat.Format32bppArgb, ImageFormat.Png);
-            _transparencyCache.CheckAndRemember(pngPath);
-            _transparencyCache.Save();
-
-            var reloaded = new PngTransparencyCache(_transparencyCachePath);
-            Assert.That(reloaded.GetCachedAnswer(new FileInfo(pngPath)), Is.False);
-
-            File.SetLastWriteTimeUtc(pngPath, DateTime.UtcNow.AddMinutes(5));
-            Assert.That(
-                reloaded.GetCachedAnswer(new FileInfo(pngPath)),
-                Is.Null,
-                "a changed picture must be checked again"
-            );
-        }
-
-        [Test]
-        public void PngTransparencyCache_DamagedFile_StartsEmpty()
-        {
-            RobustFile.WriteAllText(_transparencyCachePath, "{ not json");
-            var pngPath = Path.Combine(_bookFolder, "opaque.png");
-            WriteNoisyImage(pngPath, 100, 100, PixelFormat.Format32bppArgb, ImageFormat.Png);
-
-            var cache = new PngTransparencyCache(_transparencyCachePath);
-
-            Assert.That(cache.GetCachedAnswer(new FileInfo(pngPath)), Is.Null);
+            Assert.That(estimate, Is.EqualTo(_htmlBytes + ifTransparent));
         }
 
         [TestCase((byte)2, false, ExpectedResult = false, TestName = "RGB is opaque")]
@@ -460,7 +387,7 @@ namespace BloomTests.Publish.Rab
         {
             var path = Path.Combine(_tempFolder.Path, "test.png");
             RobustFile.WriteAllBytes(path, MakeMinimalPng(colorType, withTrns));
-            return PngTransparencyCache.PngCanHaveTransparency(path);
+            return BloomPubSizeEstimator.PngCanHaveTransparency(path);
         }
 
         [Test]
@@ -468,7 +395,7 @@ namespace BloomTests.Publish.Rab
         {
             var path = Path.Combine(_tempFolder.Path, "fake.png");
             RobustFile.WriteAllBytes(path, new byte[] { 1, 2, 3 });
-            Assert.That(PngTransparencyCache.PngCanHaveTransparency(path), Is.True);
+            Assert.That(BloomPubSizeEstimator.PngCanHaveTransparency(path), Is.True);
         }
 
         [Test]
@@ -479,17 +406,17 @@ namespace BloomTests.Publish.Rab
             var estimator = new BloomPubSizeEstimator();
             var settings = new ImagePublishSettings();
 
-            var first = estimator.EstimateBloomPubSize(_bookFolder, settings, _transparencyCache);
+            var first = estimator.EstimateBloomPubSize(_bookFolder, settings);
             Assert.That(
-                estimator.EstimateBloomPubSize(_bookFolder, settings, _transparencyCache).SizeBytes,
-                Is.EqualTo(first.SizeBytes),
+                estimator.EstimateBloomPubSize(_bookFolder, settings),
+                Is.EqualTo(first),
                 "an unchanged book should give the same estimate"
             );
 
             RobustFile.WriteAllBytes(cssPath, new byte[5000]);
-            var second = estimator.EstimateBloomPubSize(_bookFolder, settings, _transparencyCache);
+            var second = estimator.EstimateBloomPubSize(_bookFolder, settings);
 
-            Assert.That(second.SizeBytes - first.SizeBytes, Is.EqualTo(4000));
+            Assert.That(second - first, Is.EqualTo(4000));
         }
 
         [Test]
@@ -497,10 +424,9 @@ namespace BloomTests.Publish.Rab
         {
             var estimate = new BloomPubSizeEstimator().EstimateBloomPubSize(
                 Path.Combine(_tempFolder.Path, "no-such-book"),
-                new ImagePublishSettings(),
-                _transparencyCache
+                new ImagePublishSettings()
             );
-            Assert.That(estimate.SizeBytes, Is.EqualTo(0));
+            Assert.That(estimate, Is.EqualTo(0));
         }
 
         /// <summary>
@@ -540,16 +466,14 @@ namespace BloomTests.Publish.Rab
 
         /// <summary>
         /// Write a picture full of random (opaque) colors, so it doesn't compress to almost
-        /// nothing. With <paramref name="transparentCorner"/>, the top-left corner is clear, which
-        /// is where Bloom's transparency check looks first.
+        /// nothing.
         /// </summary>
-        internal static void WriteNoisyImage(
+        private static void WriteNoisyImage(
             string path,
             int width,
             int height,
             PixelFormat pixelFormat,
-            ImageFormat format,
-            bool transparentCorner = false
+            ImageFormat format
         )
         {
             const int kBlock = 8;
@@ -566,12 +490,6 @@ namespace BloomTests.Publish.Rab
                         );
                         graphics.FillRectangle(brush, x, y, kBlock, kBlock);
                     }
-                }
-                if (transparentCorner)
-                {
-                    graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
-                    using var clear = new SolidBrush(Color.Transparent);
-                    graphics.FillRectangle(clear, 0, 0, 40, 40);
                 }
             }
             bitmap.Save(path, format);

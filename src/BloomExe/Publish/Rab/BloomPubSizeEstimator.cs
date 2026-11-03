@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.Publish.BloomPub;
 using Bloom.SafeXml;
 using Bloom.web.controllers;
+using SIL.IO;
 
 namespace Bloom.Publish.Rab
 {
@@ -23,16 +25,21 @@ namespace Bloom.Publish.Rab
     /// picture's dimensions only touches its header, so this is fast.
     ///
     /// A PNG's published size depends on whether it has transparent pixels: publishing turns an
-    /// opaque PNG into a much smaller JPEG, but keeps a transparent one as a PNG. Finding out means
-    /// decoding the picture, which is too slow to do while the Apps screen waits, so the answers
-    /// come from a <see cref="PngTransparencyCache"/>. A PNG with no answer yet counts as
-    /// transparent (the larger estimate) and is listed in
-    /// <see cref="BookSizeEstimate.UncheckedPngPaths"/> for the caller to check in the background.
+    /// opaque PNG into a much smaller JPEG, but keeps a transparent one as a PNG. The PNG's header
+    /// often settles it (no alpha channel and no tRNS chunk means opaque). When it doesn't, finding
+    /// out means decoding the picture, about 0.1 seconds each, which would hold up the Apps screen
+    /// for many seconds on a large collection. So such a PNG counts as transparent, the larger
+    /// estimate; the user can get the exact size with "Measure exact sizes" (BL-17062).
     ///
-    /// Complete results are remembered per book until one of the book's files changes.
+    /// Results are remembered per book until one of the book's files changes.
     /// </summary>
     public class BloomPubSizeEstimator
     {
+        // PNG colour types (the byte after the bit depth in the IHDR chunk).
+        private const byte kPngColorTypeGrayscaleWithAlpha = 4;
+        private const byte kPngColorTypeRgbWithAlpha = 6;
+        private static readonly byte[] kPngSignature = { 137, 80, 78, 71, 13, 10, 26, 10 };
+
         /// <summary>
         /// The size we assume an opaque PNG takes per pixel once publishing has turned it into a
         /// JPEG. For the paintings and photos that make PNGs big that is typically 0.2-0.5 bytes
@@ -48,24 +55,9 @@ namespace Bloom.Publish.Rab
         /// </summary>
         internal const double kAssumedResizedPngBytesPerPixel = 2.0;
 
-        /// <summary>
-        /// The estimated size of one book's BloomPUB.
-        /// </summary>
-        public class BookSizeEstimate
-        {
-            public long SizeBytes;
-
-            /// <summary>
-            /// PNGs that were counted as transparent only because they haven't been checked yet.
-            /// Once they are (<see cref="PngTransparencyCache.CheckAndRemember"/>), estimating
-            /// again may give a smaller size.
-            /// </summary>
-            public List<string> UncheckedPngPaths = new List<string>();
-        }
-
         private readonly object _cacheLock = new object();
 
-        // Book folder path → the (complete) estimate, plus the key it was computed for.
+        // Book folder path → the estimate, plus the key it was computed for.
         private readonly Dictionary<string, (string Key, long SizeBytes)> _cache = new Dictionary<
             string,
             (string, long)
@@ -73,21 +65,19 @@ namespace Bloom.Publish.Rab
 
         /// <summary>
         /// Estimate the size of the BloomPUB that would be made from the book in
-        /// <paramref name="bookFolderPath"/>, with pictures limited to
-        /// <paramref name="imageSettings"/>, taking PNG transparency from
-        /// <paramref name="transparencyCache"/>. <paramref name="appearanceSettings"/> (may be null)
+        /// <paramref name="bookFolderPath"/>, in bytes, with pictures limited to
+        /// <paramref name="imageSettings"/>. <paramref name="appearanceSettings"/> (may be null)
         /// gives the cover color, which decides whether cover pictures are made transparent. The
         /// size is 0 if the folder doesn't exist.
         /// </summary>
-        public BookSizeEstimate EstimateBloomPubSize(
+        public long EstimateBloomPubSize(
             string bookFolderPath,
             ImagePublishSettings imageSettings,
-            PngTransparencyCache transparencyCache,
             AppearanceSettings appearanceSettings = null
         )
         {
             if (!Directory.Exists(bookFolderPath))
-                return new BookSizeEstimate();
+                return 0;
             // BookFileFilter works out relative paths by chopping the folder path off the front of
             // each file's full path, so the two must be spelled the same way.
             bookFolderPath = Path.GetFullPath(bookFolderPath)
@@ -101,24 +91,18 @@ namespace Bloom.Publish.Rab
             lock (_cacheLock)
             {
                 if (_cache.TryGetValue(bookFolderPath, out var cached) && cached.Key == key)
-                    return new BookSizeEstimate { SizeBytes = cached.SizeBytes };
+                    return cached.SizeBytes;
             }
 
             var estimate = ComputeEstimate(
                 bookFolderPath,
                 files,
                 imageSettings,
-                transparencyCache,
                 appearanceSettings
             );
-            // An estimate that still has unchecked PNGs will improve once they are checked, so
-            // only remember it once it is complete.
-            if (estimate.UncheckedPngPaths.Count == 0)
+            lock (_cacheLock)
             {
-                lock (_cacheLock)
-                {
-                    _cache[bookFolderPath] = (key, estimate.SizeBytes);
-                }
+                _cache[bookFolderPath] = (key, estimate);
             }
             return estimate;
         }
@@ -147,11 +131,10 @@ namespace Bloom.Publish.Rab
                 + string.Join("\n", keyParts);
         }
 
-        private static BookSizeEstimate ComputeEstimate(
+        private static long ComputeEstimate(
             string bookFolderPath,
             List<FileInfo> files,
             ImagePublishSettings imageSettings,
-            PngTransparencyCache transparencyCache,
             AppearanceSettings appearanceSettings
         )
         {
@@ -167,7 +150,7 @@ namespace Bloom.Publish.Rab
                 appearanceSettings
             );
 
-            var result = new BookSizeEstimate();
+            long result = 0;
             foreach (var file in files)
             {
                 if (!filter.ShouldAllow(file.FullName))
@@ -180,21 +163,19 @@ namespace Bloom.Publish.Rab
                         out var mayBeMadeTransparent
                     )
                 )
-                    result.SizeBytes += EstimatePublishedImageBytes(
+                    result += EstimatePublishedImageBytes(
                         file,
                         extension,
                         mayBeMadeTransparent,
                         maxShortSide,
-                        maxLongSide,
-                        transparencyCache,
-                        result.UncheckedPngPaths
+                        maxLongSide
                     );
                 else
                     // Everything else (the book's HTML, CSS, fonts, audio, video, and pictures
                     // publishing leaves alone) goes in about as it is. Zipping shrinks the text
                     // files some, but they are rarely what makes a book big, and media files
                     // barely compress.
-                    result.SizeBytes += file.Length;
+                    result += file.Length;
             }
             return result;
         }
@@ -287,20 +268,18 @@ namespace Bloom.Publish.Rab
 
         /// <summary>
         /// The approximate size a picture is likely to have in a BloomPUB (see
-        /// <see cref="EstimatePublishedImageBytes(int, int, long, bool, bool, bool, int, int)"/>). For a
-        /// PNG whose transparency matters to the answer and isn't known yet, assume it is
-        /// transparent and add it to <paramref name="uncheckedPngPaths"/>. A picture publishing may
-        /// make transparent (<paramref name="mayBeMadeTransparent"/>) counts as a transparent PNG
-        /// whatever its format. If we can't read the dimensions, count the file as it is.
+        /// <see cref="EstimatePublishedImageBytes(int, int, long, bool, bool, bool, int, int)"/>). A
+        /// PNG counts as transparent unless its header shows it can't be (see
+        /// <see cref="PngCanHaveTransparency"/>). A picture publishing may make transparent
+        /// (<paramref name="mayBeMadeTransparent"/>) counts as a transparent PNG whatever its
+        /// format. If we can't read the dimensions, count the file as it is.
         /// </summary>
         private static long EstimatePublishedImageBytes(
             FileInfo file,
             string lowerCaseExtension,
             bool mayBeMadeTransparent,
             int maxShortSide,
-            int maxLongSide,
-            PngTransparencyCache transparencyCache,
-            List<string> uncheckedPngPaths
+            int maxLongSide
         )
         {
             var (width, height) = ImageGalleryApi.GetImageDimensions(file.FullName);
@@ -327,18 +306,72 @@ namespace Bloom.Publish.Rab
             var ifOpaque = Estimate(false);
             if (!isPng)
                 return ifOpaque;
-            // Only decode the picture when the answer makes a difference and its header doesn't
-            // already rule out transparency.
-            if (
-                ifOpaque == ifTransparent
-                || !PngTransparencyCache.PngCanHaveTransparency(file.FullName)
-            )
+            if (ifOpaque == ifTransparent || !PngCanHaveTransparency(file.FullName))
                 return ifOpaque;
-            var knownAnswer = transparencyCache.GetCachedAnswer(file);
-            if (knownAnswer.HasValue)
-                return knownAnswer.Value ? ifTransparent : ifOpaque;
-            uncheckedPngPaths.Add(file.FullName);
             return ifTransparent;
+        }
+
+        /// <summary>
+        /// Whether the PNG at <paramref name="path"/> could have transparent pixels, judged from
+        /// its header alone, which is cheap even for a huge picture. A PNG can only be transparent
+        /// if its colour type includes an alpha channel or it has a tRNS chunk (which must come
+        /// before the image data). False means "certainly opaque"; true means only "might be".
+        /// Anything we can't make sense of counts as "might be".
+        /// </summary>
+        internal static bool PngCanHaveTransparency(string path)
+        {
+            try
+            {
+                using var stream = RobustFile.OpenRead(path);
+                using var reader = new BinaryReader(stream);
+                if (!reader.ReadBytes(kPngSignature.Length).SequenceEqual(kPngSignature))
+                    return true;
+                var sawHeader = false;
+                // Each chunk is a 4-byte big-endian length, a 4-byte type, the data, and a 4-byte CRC.
+                while (stream.Position + 8 <= stream.Length)
+                {
+                    var lengthBytes = reader.ReadBytes(4);
+                    var length =
+                        (lengthBytes[0] << 24)
+                        | (lengthBytes[1] << 16)
+                        | (lengthBytes[2] << 8)
+                        | lengthBytes[3];
+                    var type = Encoding.ASCII.GetString(reader.ReadBytes(4));
+                    if (length < 0)
+                        return true;
+                    switch (type)
+                    {
+                        case "IHDR":
+                            if (length < 10)
+                                return true;
+                            reader.ReadBytes(9); // width, height, bit depth
+                            var colorType = reader.ReadByte();
+                            if (
+                                colorType == kPngColorTypeGrayscaleWithAlpha
+                                || colorType == kPngColorTypeRgbWithAlpha
+                            )
+                                return true;
+                            sawHeader = true;
+                            stream.Seek(length - 10 + 4, SeekOrigin.Current);
+                            break;
+                        case "tRNS":
+                            return true;
+                        case "IDAT":
+                        case "IEND":
+                            // tRNS can't come after the image data, so we have seen all we need.
+                            return !sawHeader;
+                        default:
+                            stream.Seek((long)length + 4, SeekOrigin.Current);
+                            break;
+                    }
+                }
+                return true;
+            }
+            catch (Exception error)
+                when (error is IOException || error is UnauthorizedAccessException)
+            {
+                return true;
+            }
         }
 
         /// <summary>

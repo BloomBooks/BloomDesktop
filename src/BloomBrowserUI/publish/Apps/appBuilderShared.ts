@@ -151,10 +151,6 @@ export const kAppBuilderWebSocketContext = "publish-rab";
 /// The message payload is "{action}:success" or "{action}:failure".
 export const kAppBuilderActionCompleteEventId = "actionComplete";
 
-/// Websocket event id sent by the C# side when better size estimates are available, e.g. once
-/// pictures have been checked for transparency in the background (BL-17062).
-export const kAppBuilderSizeEstimatesChangedEventId = "sizeEstimatesChanged";
-
 /// "measure" makes the app's missing BloomPUBs, so their actual sizes can be shown (BL-17062).
 export type AppBuilderAction = "prepare" | "build" | "install" | "measure";
 
