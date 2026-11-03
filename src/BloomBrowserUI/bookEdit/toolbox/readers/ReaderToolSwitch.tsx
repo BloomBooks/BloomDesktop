@@ -4,7 +4,11 @@ import { applyToolboxStateToUpdatedPage } from "../toolbox";
 import { getPageIframeBody } from "../../../utils/shared";
 import { BloomSwitch } from "../../../react_components/BloomSwitch";
 import { postBoolean } from "../../../utils/bloomApi";
-import { isReaderToolEnabledOnCurrentPage } from "./readerToolPageState";
+import {
+    isReaderToolEnabledOnCurrentPage,
+    updateReaderNumbersOnCurrentPage,
+} from "./readerToolPageState";
+import { getTheOneReaderToolsModel } from "./readerToolsModel";
 
 export const ReaderToolSwitch: React.FunctionComponent<{
     isForLeveled: boolean;
@@ -55,6 +59,14 @@ export const ReaderToolSwitch: React.FunctionComponent<{
                 getPageIframeBody()?.classList.toggle(
                     `${prefix}-reader`,
                     checked,
+                );
+
+                // The class alone is not enough: a branding stylesheet reads the level and
+                // the stage from the page body, so those have to follow the switch.
+                const model = getTheOneReaderToolsModel();
+                updateReaderNumbersOnCurrentPage(
+                    model.levelNumber,
+                    model.stageNumber,
                 );
 
                 // If we toggle the reader tool, we need to update the markup.
