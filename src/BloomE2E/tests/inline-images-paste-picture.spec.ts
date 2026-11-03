@@ -48,7 +48,7 @@ const PICTURE = Path.resolve(
     "bird.png",
 );
 
-test("pasting a picture into a text block adds it as an inline image, not as its path", async ({
+test("pasting a picture into a text block adds it as an inline image, not as its path [Test Case ID 815]", async ({
     page,
 }) => {
     test.setTimeout(300000);
