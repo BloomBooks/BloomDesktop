@@ -1686,8 +1686,9 @@ namespace Bloom.Edit
             var currentLevel = _currentlyDisplayedBook.OurHtmlDom.Body.GetAttribute(
                 "data-leveledreaderlevel"
             );
-            var correctLevel =
-                _currentlyDisplayedBook.BookInfo.MetaData.LeveledReaderLevel.ToString();
+            var correctLevel = _currentlyDisplayedBook
+                .LevelToRecordOnBody(_currentlyDisplayedBook.OurHtmlDom)
+                .ToString();
             if (correctLevel != currentLevel)
             {
                 MergeCurrentPageThenSave(() =>

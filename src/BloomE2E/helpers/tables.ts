@@ -497,24 +497,11 @@ export async function clickCell(
     // A real press: Bloom lays a drawing surface over the page, which Playwright's own click
     // treats as something covering the cell and so refuses to click through.
     //
-    // Two places, because a press in the middle of a cell lands on the cell's own text box, and
-    // for that one case the table library leaves the browser to move the focus, taking the
-    // selection from the focusin that follows (see clickIsInOwnEditor in
-    // selection-highlight.ts). When something else on the page has swallowed the focus -- after
-    // Bloom has replaced the picture in another cell, the page's focus sits on its body -- no
-    // focusin follows and the cell is never marked. A press in the cell's padding, just inside
-    // its top left corner, is not in the text box, and the library then selects the cell itself.
-    // A person clicking twice gets there the same way.
-    //
-    // That first press being swallowed is a product finding, not just automation cost: a person who
-    // clicks a cell of a table Bloom has just rebuilt (after a page reload, or after a picture went
-    // into a cell) has that click do nothing, and only the second one works. It is in the report
-    // that goes with these specs.
-    const places = [
-        { x: box.x + box.width / 2, y: box.y + box.height / 2 },
-        { x: box.x + 3, y: box.y + 3 },
-        { x: box.x + box.width / 2, y: box.y + box.height / 2 },
-    ];
+    // One press only: a cell that takes a second click to select is a bug a person would hit
+    // (BL-16815). A press in the middle of a cell lands on the cell's own text box, and for that
+    // one case the table library leaves the browser to move the focus and takes the selection
+    // from the focusin that follows (see clickIsInOwnEditor in selection-highlight.ts).
+    const at = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
     // A cell of a table inside a cell takes a double-click. The table library gives a single
     // press to the cell at the level of the table already selected, which is the outer cell, and
     // a double-click goes one level in (clickTargetCell and doubleClickTargetCell in the library).
@@ -525,33 +512,25 @@ export async function clickCell(
                 .closest(".bloom-table")
                 ?.parentElement?.closest(".bloom-table"),
     );
-    let selected = false;
-    for (let attempt = 0; attempt < places.length && !selected; attempt++) {
-        await page.mouse.move(places[attempt].x, places[attempt].y);
-        if (isInNestedTable)
-            await page.mouse.dblclick(places[attempt].x, places[attempt].y);
-        else {
-            await page.mouse.down();
-            await page.mouse.up();
-        }
-        // A press that lands marks the cell within a frame or two, so one second is plenty.
-        //
-        // The polling runs here, not in the page: Bloom runs with --dont-disturb, so its window
-        // is hidden and the browser throttles the page's timers to about once a minute. A
-        // setTimeout loop inside the page turned this one-second wait into several minutes.
-        selected = await expect(target)
-            .toHaveClass(/\bcell--selected\b/, { timeout: 1000 })
-            .then(() => true)
-            .catch(() => false);
+    await page.mouse.move(at.x, at.y);
+    if (isInNestedTable) await page.mouse.dblclick(at.x, at.y);
+    else {
+        await page.mouse.down();
+        await page.mouse.up();
     }
-    if (!selected)
+    // The polling runs here, not in the page: Bloom runs with --dont-disturb, so its window is
+    // hidden and the browser throttles the page's timers to about once a minute. A setTimeout loop
+    // inside the page turned a one-second wait into several minutes.
+    try {
+        await expect(target).toHaveClass(/\bcell--selected\b/, {
+            timeout: 5000,
+        });
+    } catch {
         throw new Error(
-            `Clicking the cell at row ${row}, column ${column} did not select it. ` +
-                (await describePressPoint(page, target, {
-                    x: box.x + box.width / 2,
-                    y: box.y + box.height / 2,
-                })),
+            `One click on the cell at row ${row}, column ${column} did not select it. ` +
+                (await describePressPoint(page, target, at)),
         );
+    }
     return target;
 }
 
@@ -618,7 +597,7 @@ async function describePressPoint(
  * Press once in the middle of the picture box in a picture cell, the way a person does to get at
  * the picture, and wait until the table marks that cell selected and the picture is the selected
  * canvas element, which is what puts the picture's own toolbar (Choose image and the rest) below
- * the table. One press only, unlike clickCell: a picture that takes a second press to answer is
+ * the table. One press only, as in clickCell: a picture that takes a second press to answer is
  * the failure this is for.
  */
 export async function clickCellPicture(
@@ -660,9 +639,8 @@ export async function clickCellPicture(
 
 /**
  * Press once in the middle of one language's text box in a cell, the way a person does to start
- * typing there, and wait until the box has the focus. One press only, unlike clickCell and
- * typeInCell, which press again when the first does not take: a text cell that ignores the first
- * click is the failure this is for.
+ * typing there, and wait until the box has the focus. One press only, as in clickCell and
+ * typeInCell: a text cell that ignores the first click is the failure this is for.
  */
 export async function clickCellText(
     page: Page,
@@ -709,13 +687,9 @@ export async function cellTextBox(
 }
 
 /**
- * Put the caret in one language's box in a cell, and hand the box back.
- *
- * A plain click is enough once the cell is selected, and is not enough before that: Bloom lays a
- * drawing surface over the page, and a press aimed at a cell that the table does not yet hold
- * selected can land there instead, leaving the focus wherever it was. So when the first press
- * fails to take the focus, select the cell the way clickCell does and press again. Seen when the
- * table has just been dragged onto a canvas and nothing in it has been clicked yet.
+ * Put the caret in one language's box in a cell with one click (after the double-click into the
+ * inner table, for a cell of a table inside a cell), and hand the box back. A box that takes a
+ * second click to get the caret is a bug a person would hit (BL-16815).
  */
 async function focusCellTextBox(
     page: Page,
@@ -730,20 +704,33 @@ async function focusCellTextBox(
     // before it was ready (AUTOMATION-DEBT.md, "CKEditor discards what you type while it is
     // still starting up").
     await waitForCkEditorToTakeTheBox(box);
+    // A single press in a table inside a cell goes to the outer cell; a person double-clicks to
+    // get into the inner table first, which clickCell does.
+    const isInNestedTable = await box.evaluate(
+        (element) =>
+            !!element
+                .closest(".bloom-table")
+                ?.parentElement?.closest(".bloom-table"),
+    );
+    if (isInNestedTable) await clickCell(page, row, column, tableIndex);
     await realClick(box);
-    const hasFocus = async () =>
-        box.evaluate(
-            (element) => element === element.ownerDocument.activeElement,
+    try {
+        await expect(box).toBeFocused({ timeout: 5000 });
+    } catch {
+        const cellBox = await requireBox(box, "the text box");
+        throw new Error(
+            `One click on the "${languageTag}" box in the cell at row ${row}, column ${column} ` +
+                `did not give it the focus. ` +
+                (await describePressPoint(
+                    page,
+                    await cell(page, row, column, tableIndex),
+                    {
+                        x: cellBox.x + cellBox.width / 2,
+                        y: cellBox.y + cellBox.height / 2,
+                    },
+                )),
         );
-    if (!(await hasFocus())) {
-        await clickCell(page, row, column, tableIndex);
-        await realClick(box);
     }
-    await expect(
-        box,
-        `Clicking the "${languageTag}" box in the cell at row ${row}, column ${column} did not ` +
-            `give it the focus.`,
-    ).toBeFocused({ timeout: 15000 });
     return box;
 }
 

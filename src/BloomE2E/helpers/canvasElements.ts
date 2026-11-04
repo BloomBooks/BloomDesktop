@@ -831,10 +831,16 @@ export async function dragRotateHandle(
  * can give a row as it opens, closes only on Escape or ArrowLeft. The focus goes to the menu first:
  * a closing submenu gives the focus back to whatever had it, and if that is its own row, the row
  * opens it again. That Escape may shut the menu as well, which is fine here.
+ *
+ * Before any of that the pointer leaves the menus. A row remembers that its submenu is open until
+ * the pointer leaves the row (mui-nested-menu-item), even across the menu closing, and the next time
+ * the menu opens, that submenu opens with it, covering the rows beside it. A pointer left resting on
+ * the row would enter it again as the submenu vanished from under it, so the row would remember.
  */
 export async function closeCanvasElementMenu(page: Page): Promise<void> {
     const menu = editablePageFrame(page).locator(MENU).first();
     if (!(await menu.isVisible().catch(() => false))) return;
+    await moveMouseOffMenus(page);
     if ((await getOpenCanvasElementMenuCount(page)) > 1) {
         await menu.focus();
         await editablePageFrame(page).locator(MENU).last().press("Escape");
