@@ -2,6 +2,7 @@
 using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.Edit;
 using SIL.IO;
 
 namespace BloomTests.web.controllers
@@ -12,6 +13,11 @@ namespace BloomTests.web.controllers
     public class ToolboxApi
     {
         private readonly BookSelection _bookSelection;
+
+        /// <summary>
+        /// Set by the EditingView, as for the other APIs that need it.
+        /// </summary>
+        public EditingModel Model { get; set; }
 
         // Called by autofac, which creates the one instance and registers it with the server.
         public ToolboxApi(BookSelection _bookSelection)
@@ -33,6 +39,9 @@ namespace BloomTests.web.controllers
                 (request, b) =>
                 {
                     CurrentBook.SetIsDecodable(b);
+                    // That changed the book's body, outside the page, so the page's own save
+                    // would not write it.
+                    Model.NoteBookChangedOutsideThePage();
                 },
                 true
             );
@@ -42,6 +51,9 @@ namespace BloomTests.web.controllers
                 (request, b) =>
                 {
                     CurrentBook.SetIsLeveled(b);
+                    // That changed the book's body, outside the page, so the page's own save
+                    // would not write it.
+                    Model.NoteBookChangedOutsideThePage();
                 },
                 true
             );
