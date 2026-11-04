@@ -131,14 +131,42 @@ namespace Bloom.Edit
                 return null;
             try
             {
-                return ImageUtils.GetImageFileFormat(candidate) == ImageFileFormat.WebP
-                    ? candidate
-                    : null;
+                return IsWebPFile(candidate) ? candidate : null;
             }
             catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
             {
                 return null;
             }
+        }
+
+        // The last file whose format IsWebPFile() read, so that polling (the Paste button's
+        // enabled state is updated about every 110 ms) doesn't open the same copied file over
+        // and over, which could pause editing if it is on a slow network share.
+        private static string _lastSniffedPath;
+        private static DateTime _lastSniffedWriteTimeUtc;
+        private static bool _lastSniffedIsWebP;
+        private static readonly object _sniffLock = new object();
+
+        /// <summary>
+        /// True if the existing file at path is WebP, judged by its content. The answer for the
+        /// most recently checked file is remembered until its path or modification time changes.
+        /// </summary>
+        private static bool IsWebPFile(string path)
+        {
+            var writeTimeUtc = RobustFile.GetLastWriteTimeUtc(path);
+            lock (_sniffLock)
+            {
+                if (path == _lastSniffedPath && writeTimeUtc == _lastSniffedWriteTimeUtc)
+                    return _lastSniffedIsWebP;
+            }
+            var isWebP = ImageUtils.GetImageFileFormat(path) == ImageFileFormat.WebP;
+            lock (_sniffLock)
+            {
+                _lastSniffedPath = path;
+                _lastSniffedWriteTimeUtc = writeTimeUtc;
+                _lastSniffedIsWebP = isWebP;
+            }
+            return isWebP;
         }
 
         private static string[] GetFileDropPaths()
