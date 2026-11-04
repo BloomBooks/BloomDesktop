@@ -495,7 +495,7 @@ export async function waitForEditablePage(
 
 /** What e2e/editState replies with: what the Edit tab is doing. */
 interface IEditTabState {
-    /** A name from Bloom's State enum: NoPage, Navigating, Editing, SavePending, SavedAndStripped. */
+    /** A name from Bloom's State enum: NoPage, Navigating, Editing. */
     state: string;
     /** The page that state is about, or "". */
     pageId: string;
@@ -518,12 +518,11 @@ const kEditTabQuietPeriodMs = 1500;
  * announcing that the page has loaded.
  *
  * Ask this before any request that changes the page. The Edit tab refuses such a request while it
- * navigates, and a page announces itself to Bloom more than once, so a request that arrives
- * between two of those announcements starts a save that the second announcement leaves unanswered
- * (AUTOMATION-DEBT.md: "A page change asked for while the Edit tab is still loading a page can be
- * lost"). Waiting for the Editing state alone is therefore not enough. The condition this waits
- * for is that the page and the count of announcements have both held still for
- * kEditTabQuietPeriodMs, so it returns as soon as that holds.
+ * navigates, and a page announces itself to Bloom more than once, so the Editing state can show
+ * between two announcements of one load, before the page has finished arriving. Waiting for the
+ * Editing state alone is therefore not enough. The condition this waits for is that the page and
+ * the count of announcements have both held still for kEditTabQuietPeriodMs, so it returns as
+ * soon as that holds.
  *
  * The DOM is no help here. Bloom leaves the previous page in the frame while it loads the next
  * one, so a test looking at the frame sees a settled Edit tab throughout.
@@ -714,10 +713,8 @@ export async function reloadPageBeingEdited(page: Page): Promise<void> {
  * it is leaving, so text typed into a box reaches the file only once the book moves off that page.
  */
 export async function goToPage(page: Page, pageId: string): Promise<void> {
-    // Wait for the Edit tab first. A jump asked for while it is still loading a page is refused,
-    // and one asked for between two announcements of one page load wedges it (see
-    // waitForEditTabSettled). Asking at a moment when the tab acts on the jump at once avoids
-    // both.
+    // Wait for the Edit tab first. A jump asked for while it is still loading a page is refused
+    // (see waitForEditTabSettled), so ask at a moment when the tab acts on the jump at once.
     // Then ask, and ask again if the tab was busy after all. The tab answers with an error when
     // it cannot jump (EditingModel.JumpToPage), rather than dropping the jump and reporting
     // success as it used to, so a refusal is visible here instead of turning into a 60-second
@@ -763,8 +760,8 @@ export async function goToPage(page: Page, pageId: string): Promise<void> {
         const drivenShell = await apiGet(page, "e2e/shellUrl")
             .then((response) => response.body)
             .catch((error) => `(could not be read: ${error})`);
-        // The state the Edit tab is stuck in says which of the two failures this is: a jump that
-        // wedged the tab leaves it in SavePending or Navigating on the page it already had.
+        // The state the Edit tab is in says how far the jump got: still Navigating, or Editing
+        // the page it already had.
         const editState = await apiGet(page, "e2e/editState")
             .then((response) => response.body)
             .catch((error) => `(could not be read: ${error})`);
@@ -883,6 +880,82 @@ export async function clickInGroup(
 }
 
 /**
+ * Wait until the page being shown has finished what it does by itself after loading, and Bloom has
+ * received the page as it then stands. Use it where a test visits a page and moves on, and the
+ * page's saved form matters.
+ *
+ * One fixed wait, for a specific reason: OverflowChecker.AdjustSizeOrMarkOverflowSoon checks each
+ * text box exactly 1000 ms after the page loads (and may set its min-height), on a timer the delay
+ * register does not track. A person reading the page lets it run; so does this. After that, wait
+ * on state: the page's snapshot stream has nothing left to send (isSnapshotStreamIdle in
+ * pageSnapshot.ts).
+ */
+export async function waitForPageToSettle(page: Page): Promise<void> {
+    await page.waitForTimeout(1050);
+    await waitForSnapshotStreamIdle(page);
+}
+
+/**
+ * Wait until the page being edited has nothing left to send Bloom: no change waiting out the quiet
+ * time, no gather under way, and no post unanswered (isSnapshotStreamIdle in pageSnapshot.ts).
+ * Only for a page known to be loaded and editable; a frame still loading its page has no stream to
+ * ask, and this fails rather than guess.
+ */
+async function waitForSnapshotStreamIdle(page: Page): Promise<void> {
+    await expect
+        .poll(
+            () =>
+                editablePageFrame(page).evaluate(() =>
+                    (
+                        window as unknown as {
+                            editablePageBundle: {
+                                isSnapshotStreamIdle: () => boolean;
+                            };
+                        }
+                    ).editablePageBundle.isSnapshotStreamIdle(),
+                ),
+            {
+                timeout: 15000,
+                message:
+                    "The page being edited never finished sending itself to Bloom.",
+            },
+        )
+        .toBe(true);
+}
+
+/**
+ * Wait until Bloom has received the page being edited with `text` in it.
+ *
+ * Every save takes the page from the copy the browser sends Bloom a moment after typing settles
+ * (its "snapshot"), so this is the wait a test needs between typing and an action that saves --
+ * the moment a person takes before moving on. Acting within that moment saves the page as it was
+ * just before the last keystroke, which is a deliberate trade, not a bug (see kQuietMs in
+ * src/BloomBrowserUI/bookEdit/js/pageSnapshot.ts). Reads Bloom's e2e/pageSnapshotIncludes hook
+ * rather than waiting a fixed time.
+ */
+export async function waitForBloomToHaveTyping(
+    page: Page,
+    text: string,
+    timeoutMs = 15000,
+): Promise<void> {
+    await expect
+        .poll(
+            async () =>
+                (
+                    await apiGet(
+                        page,
+                        `e2e/pageSnapshotIncludes?text=${encodeURIComponent(text)}`,
+                    )
+                ).body,
+            {
+                timeout: timeoutMs,
+                message: `Bloom never received the page being edited with "${text}" in it.`,
+            },
+        )
+        .toBe("true");
+}
+
+/**
  * Type text into one language's box of one translation group on the page being shown, the way a
  * person does. `groupSelector` picks the group, e.g. ".bookTitle" for the cover title; when the
  * page has several groups that match, `groupIndex` says which one, in document order.
@@ -890,6 +963,8 @@ export async function clickInGroup(
  * Pass an empty string to clear the box; that is how a test makes a translation incomplete. A
  * newline in `text` presses Enter, which starts a new paragraph, as it does for a person.
  * Nothing reaches the file until the book leaves this page — see goToPage.
+ *
+ * Returns once Bloom has the page with the text in it, unless `thenWaitForBloomToHaveIt` is false.
  */
 export async function typeInGroup(
     page: Page,
@@ -897,6 +972,7 @@ export async function typeInGroup(
     languageTag: string,
     text: string,
     groupIndex = 0,
+    thenWaitForBloomToHaveIt = true,
 ): Promise<void> {
     // Click in, select what is there, and type over it. A box here is a CKEditor surface, and
     // filling it directly leaves part of the old text behind.
@@ -922,6 +998,12 @@ export async function typeInGroup(
     // later failure cannot be blamed on text that never arrived. innerText, rather than textContent,
     // so that a paragraph break reads back as the newline that made it.
     await expect(box).toHaveText(text, { timeout: 15000, useInnerText: true });
+    // Then wait until the browser has sent Bloom the page with the text in it, the moment a person
+    // takes before doing anything else. Every save takes the page from that copy, which goes a
+    // moment after the last change (see kQuietMs in pageSnapshot.ts), and the text above went in
+    // as one change, so a save straight after it would lose all of it. A test whose subject is an
+    // action taken straight after typing passes false.
+    if (thenWaitForBloomToHaveIt) await waitForSnapshotStreamIdle(page);
 }
 
 /**

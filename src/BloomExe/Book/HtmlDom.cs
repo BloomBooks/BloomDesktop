@@ -2329,31 +2329,30 @@ namespace Bloom.Book
             element.SetAttribute("style", string.Join("; ", filteredSegments) + ";");
         }
 
+        /// <summary>
+        /// Undo what C# itself adds to a page when it hands the page to the editor, which the
+        /// browser does not know to remove: template mode (MakeEditableDomShowAsTemplate) and the
+        /// image-processing parameter on picture sources (AddTransparencyParamToImages). Anything
+        /// new that C# adds to a page only for editing belongs here too. Doing it twice is harmless.
+        /// </summary>
+        public static void RemoveMarkupBloomAddedForEditing(SafeXmlElement pageDiv)
+        {
+            RemoveTemplateEditingMarkup(pageDiv);
+            RemoveTransparencyParamFromImages(pageDiv);
+        }
+
         public static void ProcessPageAfterEditing(
             SafeXmlElement destinationPageDiv,
             SafeXmlElement edittedPageDiv
         )
         {
-            // strip out any elements that are part of bloom's UI; we don't want to save them in the document or show them in thumbnails etc.
-            // Thanks to http://stackoverflow.com/questions/1390568/how-to-match-attributes-that-contain-a-certain-string for the xpath.
-            // The idea is to match class attributes which have class bloom-ui, but may have other classes. We don't want to match
-            // classes where bloom-ui is a substring, though, if there should be any. So we wrap spaces around the class attribute
-            // and then see whether it contains bloom-ui surrounded by spaces.
-            // However, we need to do this in the edited page before copying to the storage page, since we are about to suck
-            // info from the edited page into the dataDiv and we don't want the bloom-ui elements in there either!
-            // Note that EditingView.GetCleanCurrentPageFromBrowser() also removes bits
-            // of html that are used during editing but are not saved to disk.  (It calls javascript to deal with items inserted
-            // by javascript.)
-            string[] classNamesToUnion = new string[] { "bloom-ui", "ui-resizable-handle" };
-            var selectorsToUnion = classNamesToUnion.Select(className =>
-                $"//*[contains(concat(' ', @class, ' '), ' {className} ')]"
-            );
-            var unionedXPathExpression = String.Join(" | ", selectorsToUnion);
-            foreach (var node in edittedPageDiv.SafeSelectNodes(unionedXPathExpression))
-                node.ParentNode.RemoveChild(node);
-            RemoveTemplateEditingMarkup(edittedPageDiv);
-            RemoveCkEditorMarkup(edittedPageDiv);
-            RemoveTransparencyParamFromImages(edittedPageDiv);
+            // The editor's own chrome is already gone: anything marked bloom-ui or
+            // ui-resizable-handle, CKEditor's cke_ classes, and Change Layout mode
+            // (origami-layout-mode). Every page we are given was gathered from a clone the browser
+            // cleaned first (removeEditorChromeFromClone and removeEditingDebrisFromClone), for the
+            // live editor and the off-screen page layout update alike. What remains is what the
+            // browser does not know to remove: what C# itself added.
+            RemoveMarkupBloomAddedForEditing(edittedPageDiv);
 
             destinationPageDiv.InnerXml = edittedPageDiv.InnerXml;
 
@@ -2426,17 +2425,6 @@ namespace Bloom.Book
                 destinationPageDiv.SetAttribute(dataActivityName, dataActivity);
             }
 
-            // Upon save, make sure we are not in layout mode.  Otherwise we show the sliders.
-            foreach (
-                var node in destinationPageDiv.SafeSelectNodes(
-                    ".//*[contains(concat(' ', @class, ' '), ' origami-layout-mode ')]"
-                )
-            )
-            {
-                string currentValue = node.GetAttribute("class");
-                node.SetAttribute("class", currentValue.Replace("origami-layout-mode", ""));
-            }
-
             // Remove any empty <a> elements left by editing.  These cause trouble when the book/page is reopened.
             // Also remove the extraneous data-cke-saved-href attribute gratuitously inserted.
             CleanupAnchorElements(destinationPageDiv);
@@ -2464,26 +2452,6 @@ namespace Bloom.Book
                     element.ParentNode.RemoveChild(element);
                 else if (element.HasAttribute("data-cke-saved-href"))
                     element.RemoveAttribute("data-cke-saved-href");
-            }
-        }
-
-        internal static void RemoveCkEditorMarkup(SafeXmlElement edittedPageDiv)
-        {
-            foreach (
-                SafeXmlElement elt in edittedPageDiv.SafeSelectNodes(
-                    "//*[contains(@class, 'cke_')]"
-                )
-            )
-            {
-                elt.SetAttribute(
-                    "class",
-                    String.Join(
-                        " ",
-                        elt.GetAttribute("class")
-                            .Split(' ')
-                            .Where(c => !c.StartsWith("cke_", StringComparison.Ordinal))
-                    )
-                );
             }
         }
 

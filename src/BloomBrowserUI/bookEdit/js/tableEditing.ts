@@ -6,6 +6,7 @@ import {
     detachTable,
     getTableInfo,
     registerCellContentType,
+    removeTableEditingMarkup,
     setColumnWidth,
     setDefaultCellContentTypeId,
     setRowHeight,
@@ -437,8 +438,26 @@ export function AttachNewTableThatFillsItsSpace(tableDiv: HTMLElement): void {
 }
 
 /**
+ * Take table editing's markup out of `clonedPage`, the detached copy of the page that is about to
+ * be saved, leaving the live tables as they are. A save happens whenever the page changes, so it
+ * must not end Paint Format or Border Brush mode, which bloom-table's removeTableEditingArtifacts
+ * does before stripping. So this uses the library's markup-only part, removeTableEditingMarkup,
+ * and adds our own data-table-attached.
+ */
+export function removeTableEditingMarkupFromClone(
+    clonedPage: HTMLElement,
+): void {
+    removeTableEditingMarkup(clonedPage);
+    clonedPage
+        .querySelectorAll<HTMLElement>(".bloom-table")
+        .forEach((table) => table.removeAttribute("data-table-attached"));
+}
+
+/**
  * Detach table editing from all bloom-table elements within `container`.
- * Called from removeEditingDebris in bloomEditing.ts before navigating away.
+ * The editor itself never needs this: a page is left by loading a new document, which takes the
+ * listeners with it, and a save works on a clone (removeTableEditingMarkupFromClone). Tests use it
+ * to start each test afresh.
  */
 export function TeardownTableEditing(container: HTMLElement): void {
     container.ownerDocument.removeEventListener(
