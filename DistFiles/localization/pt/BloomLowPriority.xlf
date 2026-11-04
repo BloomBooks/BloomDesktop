@@ -464,6 +464,11 @@
         <target xml:lang="pt-PT" state="translated">Bloom não conseguiu reduzir o tamanho das imagens deste livro. Uma nova tentativa será feita na próxima atualização do livro.</target>
         <note>ID: ImageUtils.ShrinkingImagesFailed</note>
       </trans-unit>
+      <trans-unit id="Shell.SavingBeforeWindowsShutsDown" translate="no">
+        <source xml:lang="en">Bloom is saving your book</source>
+        <target xml:lang="pt-PT" state="needs-translation">Bloom is saving your book</target>
+        <note>ID: Shell.SavingBeforeWindowsShutsDown</note>
+      </trans-unit>
       <trans-unit id="AiImageEditor.Credits.AccountCreditsUsed">
         <source xml:lang="en">{0} used of {1} account credits</source>
         <target xml:lang="pt-PT" state="translated">{0} usados de {1} em créditos da conta</target>
