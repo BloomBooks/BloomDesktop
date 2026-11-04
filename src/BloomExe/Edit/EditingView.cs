@@ -709,6 +709,8 @@ namespace Bloom.Edit
             using (var measure = PerformanceMeasurement.Global.Measure("Paste Image"))
             {
                 PalasoImage clipboardImage = null;
+                // Holds the converted file when a WebP image is pasted; it must outlive ChangePicture.
+                BloomTemp.TemporaryFolder conversionFolder = null;
                 try
                 {
                     if (imageIsGif)
@@ -741,7 +743,9 @@ namespace Bloom.Edit
                     }
                     try
                     {
-                        clipboardImage = PortableClipboard.GetImageFromClipboardWithExceptions();
+                        clipboardImage = BloomClipboard.GetImageFromClipboardWithExceptions(
+                            out conversionFolder
+                        );
                     }
                     catch (Exception ex)
                     {
@@ -889,6 +893,7 @@ namespace Bloom.Edit
                 {
                     if (clipboardImage != null)
                         clipboardImage.Dispose();
+                    conversionFolder?.Dispose();
                     if (!pictureChanged)
                         RemoveUnneededImageId(imageId);
                 }

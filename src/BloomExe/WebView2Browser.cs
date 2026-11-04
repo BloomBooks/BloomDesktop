@@ -1112,16 +1112,22 @@ namespace Bloom
             // result (we only care about the side effects on the document).
             _pasteCommand.Implementer = () =>
             {
-                PalasoImage clipboardImage = null;
-                try
+                // A WebP file counts as an image even though PortableClipboard can't load it:
+                // pasting it will convert it (see BloomClipboard). Don't convert it just to check.
+                var haveImage = BloomClipboard.ContainsWebPImageFile();
+                if (!haveImage)
                 {
-                    clipboardImage = PortableClipboard.GetImageFromClipboardWithExceptions();
+                    PalasoImage clipboardImage = null;
+                    try
+                    {
+                        clipboardImage = PortableClipboard.GetImageFromClipboardWithExceptions();
+                    }
+                    catch (Exception) // anything goes wrong, just assume it's not an image
+                    { }
+                    haveImage = clipboardImage != null;
+                    clipboardImage?.Dispose();
                 }
-                catch (Exception) // anything goes wrong, just assume it's not an image
-                { }
-                var haveClipboardImage = clipboardImage == null ? "false" : "true";
-
-                clipboardImage?.Dispose();
+                var haveClipboardImage = haveImage ? "true" : "false";
 
                 RunJavascriptFireAndForget(
                     $"workspaceBundle?.getEditablePageBundleExports()?.pasteClipboard({haveClipboardImage})"
@@ -1174,7 +1180,7 @@ namespace Bloom
                     _cutCommand.Enabled = isTextSelection;
                     _copyCommand.Enabled = isTextSelection;
                     _pasteCommand.Enabled =
-                        PortableClipboard.ContainsText() || PortableClipboard.CanGetImage();
+                        PortableClipboard.ContainsText() || BloomClipboard.CanGetImage();
 
                     _undoCommand.Enabled = await CanUndoAsync();
                 }
