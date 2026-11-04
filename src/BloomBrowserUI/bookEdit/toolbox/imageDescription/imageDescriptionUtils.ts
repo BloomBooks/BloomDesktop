@@ -32,14 +32,20 @@ export function hideImageDescriptions(bodyOfPageIframe: HTMLElement) {
     // removing the class and wrapper should be done first; resume may not work
     // right while the extra wrapper is present.
     bodyOfPageIframe.classList.remove("bloom-showImageDescriptions");
-    // unwrap the contents of each bloom-describedImage
+    unwrapDescribedImages(bodyOfPageIframe);
+    canvasElementManager?.resumeComicEditing();
+}
+
+// Undo the bloom-describedImage wrapper that showImageDescriptions() adds around the non-description
+// contents of each bloom-canvas. It touches only the DOM under 'root', so the tools' removeToolMarkup
+// can run it on a clone of the page being saved.
+export function unwrapDescribedImages(root: HTMLElement) {
     for (const describedImage of Array.from(
-        bodyOfPageIframe.getElementsByClassName("bloom-describedImage"),
+        root.getElementsByClassName("bloom-describedImage"),
     )) {
         for (const child of Array.from(describedImage.children)) {
             describedImage.parentElement!.appendChild(child);
         }
         describedImage.remove();
     }
-    canvasElementManager?.resumeComicEditing();
 }

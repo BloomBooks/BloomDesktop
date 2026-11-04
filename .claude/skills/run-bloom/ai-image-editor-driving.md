@@ -62,15 +62,17 @@ Right-click the canvas element → **"Edit with AI…"**. Loading the iframe dir
 `aiImageEditorOverlay.ts`'s postMessage handler, so the commit + current-page save path wouldn't run.
 
 **The overlay does not appear on the same tick as the click.** The menu command posts
-`aiImageEditor/saveThenLaunch`, which makes C# save the current page — reloading the `page`
-frame — and then, *once the reloaded page reports back*, call
+`aiImageEditor/saveThenLaunch`, which makes C# save the current page and then call
 `workspaceBundle.openAiImageEditor(...)` in the shell (BL-16682; the saved book DOM has to be
-current or the editor opens with an empty "Image to Edit" slot). So the wait spans a whole page
-load: **wait for the overlay**, e.g. `await page.waitForSelector("#ai-image-editor-overlay iframe")`,
-and don't re-use any content-frame handle taken before the click — that frame is gone.
+current or the editor opens with an empty "Image to Edit" slot). **Wait for the overlay**, e.g.
+`await page.waitForSelector("#ai-image-editor-overlay iframe")`.
 
-Note also that the overlay itself belongs to the **shell**, not the `page` frame, so it survives
-page reloads: a commit saves the page immediately and the ✕ keeps working across that reload.
+The save does not navigate, so the page frame stays put and handles to it taken before the click
+stay good; the wait is only for the save and the round trip. Don't wait for a page load: none
+happens.
+
+Note also that the overlay itself belongs to the **shell**, not the `page` frame, so it survives a
+reload when one does happen.
 (It does *not* survive a reload of the whole workspace root, which
 `EditingView.StartNavigationToEditPage` does once `MemoryUtils.SystemIsShortOfMemory()` — Bloom's
 own private bytes past ~2GB, i.e. a long session on a big book. That closes the overlay like any

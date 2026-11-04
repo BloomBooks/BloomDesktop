@@ -54,10 +54,13 @@ const delays = vi.hoisted(() => ({
 }));
 // bloomEditing imports this module, so a mock built on importOriginal would load the real
 // bloomEditing, and through it this module, before the mock existed. Nothing here needs the rest
-// of bloomEditing, so the mock is only these two.
-vi.mock("./bloomEditing", () => ({
+// of bloomEditing, so its mock is empty; the delays live in pageContentDelays, and those two are
+// watched there.
+vi.mock("./bloomEditing", () => ({}));
+vi.mock("./pageContentDelays", () => ({
     addRequestPageContentDelay: delays.add,
     removeRequestPageContentDelay: delays.remove,
+    wrapWithRequestPageContentDelay: <T>(work: () => Promise<T>) => work(),
 }));
 // Showing the failure's message needs Bloom's message box, which is not here. Replacing a
 // selected image's picture goes through doImageCommand, as its Paste image button does; the

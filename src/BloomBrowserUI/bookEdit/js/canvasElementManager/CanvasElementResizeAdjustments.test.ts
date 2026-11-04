@@ -10,6 +10,9 @@ vi.mock("comicaljs", () => ({
         mergeWithNewBubbleProps() {
             // the tests don't look at bubble props
         }
+        isTransparent() {
+            return true;
+        }
     },
     Comical: {
         setSelectorForBubblesWhichTailMidpointMayOverlap: () => {},

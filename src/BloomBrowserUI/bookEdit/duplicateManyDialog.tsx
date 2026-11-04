@@ -3,9 +3,11 @@ import { IBloomDialogEnvironmentParams } from "../react_components/BloomDialog/B
 import { useL10n } from "../react_components/l10nHooks";
 import { NumberChooserDialog } from "../react_components/numberChooserDialog";
 import { postData } from "../utils/bloomApi";
-import { WireUpForWinforms } from "../utils/WireUpWinform";
+import { ShowEditViewDialog } from "./workspaceRoot";
 
 export const DuplicateManyDialog: React.FunctionComponent<{
+    // The page the dialog was opened for. C# duplicates only if it is still the current page.
+    pageId: string;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = (props) => {
     const title = useL10n(
@@ -26,6 +28,7 @@ export const DuplicateManyDialog: React.FunctionComponent<{
     const clickHandler = (value: number) => {
         postData("editView/duplicatePageMany", {
             numberOfTimes: value,
+            pageId: props.pageId,
         });
     };
     return (
@@ -40,4 +43,16 @@ export const DuplicateManyDialog: React.FunctionComponent<{
     );
 };
 
-WireUpForWinforms(DuplicateManyDialog);
+// Shown in the Edit tab, from the page list's context menu, so nothing reaches C# until the user
+// clicks OK. (A C# modal opened from the page list's request would hold the API lock.)
+export function showDuplicateManyDialog(pageId: string) {
+    ShowEditViewDialog(
+        <DuplicateManyDialog
+            pageId={pageId}
+            dialogEnvironment={{
+                initiallyOpen: true,
+                dialogFrameProvidedExternally: false,
+            }}
+        />,
+    );
+}

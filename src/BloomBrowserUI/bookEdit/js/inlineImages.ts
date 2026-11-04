@@ -889,9 +889,9 @@ const getTranslationGroupOf = (element: HTMLElement): HTMLElement | undefined =>
  * is on the wrapper that is part of the book, and removing bloom-ui elements would remove the
  * picture too. So nothing else removes it before saving. If the book were saved with a picture
  * selected, the class would go into the book's HTML, and from there into spreadsheet exports
- * and published books. removeEditingDebris removes the other things that only matter while
- * editing, such as origami-layout-mode and the textBox-identifier labels, for the same
- * reason, so removeEditingDebris is where this should be called.
+ * and published books. removeEditingDebrisFromClone removes the other things that only matter
+ * while editing, such as origami-layout-mode and the textBox-identifier labels, from the copy of
+ * the page that is saved, so that is where this is called; the live page keeps the selection.
  */
 export function clearInlineImageSelection(container: HTMLElement): void {
     container
