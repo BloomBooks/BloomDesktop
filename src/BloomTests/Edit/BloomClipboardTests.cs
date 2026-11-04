@@ -106,48 +106,51 @@ namespace BloomTests.Edit
         }
 
         /// <summary>
-        /// If we can't read the file, leave the paste to PortableClipboard, as before
-        /// BloomClipboard existed: the clipboard may also hold bitmap data it can use.
+        /// If we can't read the file when pasting, leave the paste to PortableClipboard, as before
+        /// BloomClipboard existed: the clipboard may also hold bitmap data it can use. That holds
+        /// even when the Paste button's polling already remembered the file as WebP, since
+        /// locking a file doesn't change its modification time.
         /// </summary>
         [Test]
-        public void FindWebPImagePath_UnreadableWebPFile_ReturnsNull()
+        public void FindWebPImagePath_WebPFileLockedAfterPolling_ReturnsNull()
         {
             using (var folder = new TemporaryFolder("BloomClipboardTests_Locked"))
             {
-                // Two copies, so the sanity check on one doesn't leave a remembered answer
-                // for the one we lock.
-                var unlockedPath = Path.Combine(folder.FolderPath, "unlocked.webp");
-                var lockedPath = Path.Combine(folder.FolderPath, "locked.webp");
-                RobustFile.Copy(GetTestImagePath("bird-lossless.webp"), unlockedPath);
-                RobustFile.Copy(GetTestImagePath("bird-lossless.webp"), lockedPath);
+                var path = Path.Combine(folder.FolderPath, "locked.webp");
+                RobustFile.Copy(GetTestImagePath("bird-lossless.webp"), path);
                 Assert.That(
-                    BloomClipboard.FindWebPImagePath(new[] { unlockedPath }, null),
-                    Is.EqualTo(unlockedPath),
-                    "setup: an unlocked copy should be found"
+                    BloomClipboard.FindWebPImagePath(
+                        new[] { path },
+                        null,
+                        allowRememberedAnswer: true
+                    ),
+                    Is.EqualTo(path),
+                    "setup: polling should find the unlocked file"
                 );
-                using (new FileStream(lockedPath, FileMode.Open, FileAccess.Read, FileShare.None))
+                using (new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None))
                 {
-                    Assert.That(
-                        BloomClipboard.FindWebPImagePath(new[] { lockedPath }, null),
-                        Is.Null
-                    );
+                    Assert.That(BloomClipboard.FindWebPImagePath(new[] { path }, null), Is.Null);
                 }
             }
         }
 
         /// <summary>
-        /// The answer for a file is remembered (the Paste button polls frequently), but a file
-        /// that has since been replaced with different content is checked again.
+        /// Polling remembers the answer for a file, but checks again once the file's
+        /// modification time changes.
         /// </summary>
         [Test]
-        public void FindWebPImagePath_FileReplacedWithNonWebP_ChecksItAgain()
+        public void FindWebPImagePath_PollingAfterFileReplaced_ChecksItAgain()
         {
             using (var folder = new TemporaryFolder("BloomClipboardTests_Replaced"))
             {
                 var path = Path.Combine(folder.FolderPath, "picture.webp");
                 RobustFile.Copy(GetTestImagePath("bird-lossless.webp"), path);
                 Assert.That(
-                    BloomClipboard.FindWebPImagePath(new[] { path }, null),
+                    BloomClipboard.FindWebPImagePath(
+                        new[] { path },
+                        null,
+                        allowRememberedAnswer: true
+                    ),
                     Is.EqualTo(path),
                     "setup: the WebP file should be found"
                 );
@@ -155,6 +158,51 @@ namespace BloomTests.Edit
                 RobustFile.Copy(GetTestImagePath("man.png"), path, true);
                 // Make sure the modification time differs, whatever the file system's resolution.
                 File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddMinutes(1));
+
+                Assert.That(
+                    BloomClipboard.FindWebPImagePath(
+                        new[] { path },
+                        null,
+                        allowRememberedAnswer: true
+                    ),
+                    Is.Null
+                );
+            }
+        }
+
+        /// <summary>
+        /// A paste reads the file afresh, so a WebP file replaced by a PNG that kept the same
+        /// modification time is not mistaken for WebP (which would make the paste fail).
+        /// </summary>
+        [Test]
+        public void FindWebPImagePath_PasteAfterReplacementKeepingModificationTime_ReadsFileAgain()
+        {
+            using (var folder = new TemporaryFolder("BloomClipboardTests_SameTime"))
+            {
+                var path = Path.Combine(folder.FolderPath, "picture.webp");
+                RobustFile.Copy(GetTestImagePath("bird-lossless.webp"), path);
+                var originalWriteTimeUtc = RobustFile.GetLastWriteTimeUtc(path);
+                Assert.That(
+                    BloomClipboard.FindWebPImagePath(
+                        new[] { path },
+                        null,
+                        allowRememberedAnswer: true
+                    ),
+                    Is.EqualTo(path),
+                    "setup: polling should find the WebP file"
+                );
+
+                RobustFile.Copy(GetTestImagePath("man.png"), path, true);
+                File.SetLastWriteTimeUtc(path, originalWriteTimeUtc);
+                Assert.That(
+                    BloomClipboard.FindWebPImagePath(
+                        new[] { path },
+                        null,
+                        allowRememberedAnswer: true
+                    ),
+                    Is.EqualTo(path),
+                    "setup: polling should still be using its remembered answer"
+                );
 
                 Assert.That(BloomClipboard.FindWebPImagePath(new[] { path }, null), Is.Null);
             }

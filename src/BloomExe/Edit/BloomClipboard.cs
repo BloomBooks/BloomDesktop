@@ -60,7 +60,8 @@ namespace Bloom.Edit
         {
             try
             {
-                return FindWebPImagePath(GetFileDropPaths(), GetText()) != null;
+                return FindWebPImagePath(GetFileDropPaths(), GetText(), allowRememberedAnswer: true)
+                    != null;
             }
             catch (Exception)
             {
@@ -115,10 +116,13 @@ namespace Bloom.Edit
         /// whitespace, as Explorer's "Copy as path" does. A file that exists but can't be read
         /// (e.g., it is locked) is treated as not WebP, leaving the paste to PortableClipboard
         /// exactly as before this wrapper existed; the clipboard may hold usable bitmap data too.
+        /// Set allowRememberedAnswer only when polling (see IsWebPFile); a paste must always look
+        /// at the file as it is now.
         /// </summary>
         internal static string FindWebPImagePath(
             IEnumerable<string> fileDropPaths,
-            string clipboardText
+            string clipboardText,
+            bool allowRememberedAnswer = false
         )
         {
             string candidate;
@@ -131,7 +135,7 @@ namespace Bloom.Edit
                 return null;
             try
             {
-                return IsWebPFile(candidate) ? candidate : null;
+                return IsWebPFile(candidate, allowRememberedAnswer) ? candidate : null;
             }
             catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
             {
@@ -148,16 +152,22 @@ namespace Bloom.Edit
         private static readonly object _sniffLock = new object();
 
         /// <summary>
-        /// True if the existing file at path is WebP, judged by its content. The answer for the
-        /// most recently checked file is remembered until its path or modification time changes.
+        /// True if the existing file at path is WebP, judged by its content. Every check updates
+        /// a remembered answer for that file. If allowRememberedAnswer is true and the file's path
+        /// and modification time match the remembered ones, that answer is returned without
+        /// opening the file. That is good enough for enabling a Paste button, but a modification
+        /// time can survive a replacement or a lock, so pasting reads the file afresh.
         /// </summary>
-        private static bool IsWebPFile(string path)
+        private static bool IsWebPFile(string path, bool allowRememberedAnswer)
         {
             var writeTimeUtc = RobustFile.GetLastWriteTimeUtc(path);
-            lock (_sniffLock)
+            if (allowRememberedAnswer)
             {
-                if (path == _lastSniffedPath && writeTimeUtc == _lastSniffedWriteTimeUtc)
-                    return _lastSniffedIsWebP;
+                lock (_sniffLock)
+                {
+                    if (path == _lastSniffedPath && writeTimeUtc == _lastSniffedWriteTimeUtc)
+                        return _lastSniffedIsWebP;
+                }
             }
             var isWebP = ImageUtils.GetImageFileFormat(path) == ImageFileFormat.WebP;
             lock (_sniffLock)
