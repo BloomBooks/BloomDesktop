@@ -662,6 +662,11 @@
         <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage2</note>
         <note>On the Languages page of the Collection Settings dialog: the heading of the collection's second language.</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage3" translate="no">
+        <source xml:lang="en">Written Language 3</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage3</note>
+        <note>On the Languages page of the Collection Settings dialog: the heading of the collection's third language, which a collection need not have.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
         <source xml:lang="en">Change...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChangeLanguageLink</note>

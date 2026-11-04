@@ -1033,13 +1033,22 @@ describe("CollectionSettingsDialog", () => {
                 "languages.language2",
                 "languages.language3",
                 "languages.signLanguage",
-                "languages.language1.fontName",
-                "languages.language2.fontName",
             ]) {
                 expect(
                     pageElements(`[data-path="${path}"]`),
                     `a control for ${path}`,
                 ).toHaveLength(1);
+            }
+            // The font is on the language's card and again on its More page.
+            for (const languageNumber of [1, 2]) {
+                const fontSelector = `[data-path="languages.language${languageNumber}.fontName"]`;
+                expect(
+                    pageElements(fontSelector),
+                    `a font control for language ${languageNumber} on its card and on More`,
+                ).toHaveLength(2);
+                expect(
+                    moreElement(languageNumber, fontSelector),
+                ).not.toBeNull();
             }
             expect(
                 pageElements('[data-path="languages.language3.fontName"]'),
@@ -1053,7 +1062,7 @@ describe("CollectionSettingsDialog", () => {
 
             expect(
                 pageElements('[data-path="languages.language3.fontName"]'),
-            ).toHaveLength(1);
+            ).toHaveLength(2);
             expect(
                 moreElement(
                     3,

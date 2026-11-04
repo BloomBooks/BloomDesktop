@@ -308,8 +308,12 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
         "CollectionSettingsDialog.LanguagesPage.WrittenLanguage2.Description",
     );
     const language3Heading = useL10n(
-        "Language 3 (e.g. Regional Language)   (Optional)",
-        "CollectionSettingsDialog.LanguageTab._language3Label",
+        "Written Language 3",
+        "CollectionSettingsDialog.LanguagesPage.WrittenLanguage3",
+    );
+    const language3Description = useL10n(
+        "Example: regional language",
+        "CollectionSettingsDialog.LanguagesPage.WrittenLanguage3.Description",
     );
     const signLanguageLabel = useL10n(
         "Sign Language",
@@ -516,6 +520,13 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
                         pageKey={`language${language.number}More`}
                     >
                         <ConfigrGroup label={fontsLabel}>
+                            {/* The same font as on the language's card, repeated here as the
+                                design shows. */}
+                            <ConfigrCustomStringInput
+                                path={`${path}.fontName`}
+                                label={defaultFontLabel}
+                                control={fontControls[language.number - 1]}
+                            />
                             <ConfigrCustomNumberInput
                                 path={`${path}.baseUIFontSizeInPoints`}
                                 label={toolFontSizeLabel}
@@ -597,7 +608,11 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
                 heading: language2Heading,
                 description: language2Description,
             })}
-            {writtenLanguageGroup({ number: 3, heading: language3Heading })}
+            {writtenLanguageGroup({
+                number: 3,
+                heading: language3Heading,
+                description: language3Description,
+            })}
             <ConfigrGroup label={signLanguageLabel}>
                 <ConfigrCustomObjectInput<ICollectionSettingsSignLanguage | null>
                     path="languages.signLanguage"

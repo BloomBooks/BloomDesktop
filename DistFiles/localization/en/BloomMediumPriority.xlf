@@ -115,6 +115,11 @@
         <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage2.Description</note>
         <note>On the Languages page of the Collection Settings dialog, under the heading "Written Language 2": an example of what the second language usually is.</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage3.Description" translate="no">
+        <source xml:lang="en">Example: regional language</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage3.Description</note>
+        <note>On the Languages page of the Collection Settings dialog, under the heading "Written Language 3": an example of what the third language usually is.</note>
+      </trans-unit>
       <trans-unit id="Feature.AiImageEditing">
         <source xml:lang="en">Edit Images with AI</source>
         <note>ID: Feature.AiImageEditing</note>
