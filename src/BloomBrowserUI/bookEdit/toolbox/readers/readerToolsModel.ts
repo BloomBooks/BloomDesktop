@@ -662,6 +662,19 @@ export class ReaderToolsModel {
         });
     }
 
+    /**
+     * Starts the undo history again from the current content of the text block that last had the
+     * focus, if that block is inside `container`. The history holds snapshots of the block's HTML,
+     * inline images included, and every language's block has a copy of each picture, so after a
+     * picture change an older snapshot would put the old picture back in one language alone. The
+     * inline image code calls this after each picture change, as it does for CKEditor's history.
+     * Typing done before the picture change can then no longer be undone with Ctrl+Z.
+     */
+    public restartHistoryIn(container: HTMLElement): void {
+        if (this.activeElement && container.contains(this.activeElement))
+            this.noteFocus(this.activeElement);
+    }
+
     public shouldHandleUndo(): boolean {
         return this.currentMarkupType !== MarkupType.None;
     }
@@ -675,8 +688,10 @@ export class ReaderToolsModel {
         ) {
             this.redoStack.push(this.undoStack.pop());
         }
-        this.activeElement.innerHTML =
-            this.undoStack[this.undoStack.length - 1].html;
+        EditableDivUtils.replaceContentKeepingLiveInlineImages(
+            this.activeElement,
+            this.undoStack[this.undoStack.length - 1].html,
+        );
         const restoreOffset = this.undoStack[this.undoStack.length - 1].offset;
         if (restoreOffset < 0) return;
         EditableDivUtils.makeSelectionIn(
@@ -708,8 +723,10 @@ export class ReaderToolsModel {
         if (this.redoStack.length > 0) {
             this.undoStack.push(this.redoStack.pop());
         }
-        this.activeElement.innerHTML =
-            this.undoStack[this.undoStack.length - 1].html;
+        EditableDivUtils.replaceContentKeepingLiveInlineImages(
+            this.activeElement,
+            this.undoStack[this.undoStack.length - 1].html,
+        );
         const restoreOffset = this.undoStack[this.undoStack.length - 1].offset;
         if (restoreOffset < 0) return;
         EditableDivUtils.makeSelectionIn(
