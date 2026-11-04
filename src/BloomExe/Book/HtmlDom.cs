@@ -2329,6 +2329,18 @@ namespace Bloom.Book
             element.SetAttribute("style", string.Join("; ", filteredSegments) + ";");
         }
 
+        /// <summary>
+        /// Undo what C# itself adds to a page when it hands the page to the editor, which the
+        /// browser does not know to remove: template mode (MakeEditableDomShowAsTemplate) and the
+        /// image-processing parameter on picture sources (AddTransparencyParamToImages). Anything
+        /// new that C# adds to a page only for editing belongs here too. Doing it twice is harmless.
+        /// </summary>
+        public static void RemoveMarkupBloomAddedForEditing(SafeXmlElement pageDiv)
+        {
+            RemoveTemplateEditingMarkup(pageDiv);
+            RemoveTransparencyParamFromImages(pageDiv);
+        }
+
         public static void ProcessPageAfterEditing(
             SafeXmlElement destinationPageDiv,
             SafeXmlElement edittedPageDiv
@@ -2338,11 +2350,9 @@ namespace Bloom.Book
             // ui-resizable-handle, CKEditor's cke_ classes, and Change Layout mode
             // (origami-layout-mode). Every page we are given was gathered from a clone the browser
             // cleaned first (removeEditorChromeFromClone and removeEditingDebrisFromClone), for the
-            // live editor and the off-screen page layout update alike. What remains here is what
-            // the browser does not know to remove: markup C# itself added (template mode) and the
-            // image-processing parameter.
-            RemoveTemplateEditingMarkup(edittedPageDiv);
-            RemoveTransparencyParamFromImages(edittedPageDiv);
+            // live editor and the off-screen page layout update alike. What remains is what the
+            // browser does not know to remove: what C# itself added.
+            RemoveMarkupBloomAddedForEditing(edittedPageDiv);
 
             destinationPageDiv.InnerXml = edittedPageDiv.InnerXml;
 

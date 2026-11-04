@@ -1922,7 +1922,7 @@ namespace Bloom.Edit
                 return SaveOutcome.Declined;
             }
             var outcome = _stateMachine.SaveThenNavigate(
-                TakeCurrentPageSnapshot(),
+                GetCurrentPageSnapshot(),
                 () =>
                 {
                     if (actionChangesTheBook)
@@ -1981,7 +1981,7 @@ namespace Bloom.Edit
         ///
         /// Pass false when we cannot afford to wait at all (Windows is shutting down).
         /// </summary>
-        private string TakeCurrentPageSnapshot(bool waitForInFlightPageWork = true)
+        private string GetCurrentPageSnapshot(bool waitForInFlightPageWork = true)
         {
             var pageId = _pageSelection?.CurrentSelection?.Id;
             var maxWaitMs = waitForInFlightPageWork ? kMaxWaitForBusyPageMs : 0;
@@ -2029,7 +2029,7 @@ namespace Bloom.Edit
                 return true;
             var pageContent =
                 scope == SaveScope.PageAndBook
-                    ? TakeCurrentPageSnapshot(waitForInFlightPageWork)
+                    ? GetCurrentPageSnapshot(waitForInFlightPageWork)
                     : null;
             UpdateBookDomFromBrowserPageContent(pageContent);
             // Set by that merge only when the page differs from what the book held (the browser
@@ -2228,16 +2228,14 @@ namespace Bloom.Edit
             //OK, looks safe, time to save.
             var editedDom = new HtmlDom(docFromBrowser);
             LogCoverTitleArrivingFromBrowser(editedDom);
-            // The page as edited carries editing-only ?transparent= parameters on image srcs (see
-            // HtmlDom.AddTransparencyParamToImages). ProcessPageAfterEditing removes them from what
-            // is saved; remove them before comparing the page's book-wide data too, or a cover whose
-            // picture is book-wide data (coverImage) looks changed on every visit and forces a full
-            // save.
-            var editedPageDiv =
-                editedDom.RawDom.SelectSingleNode("//div[contains(@class,'bloom-page')]")
-                as SafeXmlElement;
-            if (editedPageDiv != null)
-                HtmlDom.RemoveTransparencyParamFromImages(editedPageDiv);
+            // Take off what we added to the page for editing before anything reads it, not just
+            // before it is saved (ProcessPageAfterEditing does it again there). Otherwise the
+            // comparison of book-wide data below sees it too: a cover whose picture is book-wide
+            // data (coverImage) would look changed on every visit and force a full save.
+            HtmlDom.RemoveMarkupBloomAddedForEditing(
+                (SafeXmlElement)
+                    editedDom.RawDom.SelectSingleNode("//div[contains(@class,'bloom-page')]")
+            );
             var newPageData = GetPageData(editedDom.RawDom);
             // True when something OUTSIDE the page HTML we are about to hand over wants saving: a
             // data-derived value some dialog changed, altered feature requirements, or a caller
