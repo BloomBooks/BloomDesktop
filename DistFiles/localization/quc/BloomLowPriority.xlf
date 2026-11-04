@@ -464,6 +464,11 @@
         <target xml:lang="quc" state="needs-translation">Bloom could not make this book's pictures smaller. It will try again the next time the book is updated.</target>
         <note>ID: ImageUtils.ShrinkingImagesFailed</note>
       </trans-unit>
+      <trans-unit id="Shell.SavingBeforeWindowsShutsDown" translate="no">
+        <source xml:lang="en">Bloom is saving your book</source>
+        <target xml:lang="quc" state="needs-translation">Bloom is saving your book</target>
+        <note>ID: Shell.SavingBeforeWindowsShutsDown</note>
+      </trans-unit>
       <trans-unit id="AiImageEditor.Credits.AccountCreditsUsed">
         <source xml:lang="en">{0} used of {1} account credits</source>
         <target xml:lang="quc" state="needs-translation">{0} used of {1} account credits</target>
