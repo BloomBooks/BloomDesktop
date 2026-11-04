@@ -70,6 +70,21 @@
         <note>ID: CollectionSettingsDialog.BloomLibraryPage.BookshelfDescription</note>
         <note>Explains the bookshelf list on the Bloom Library page of the Collection Settings dialog. "Bloom Enterprise" and "Bloom Library" are product names and should not be translated.</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage.Places" translate="no">
+        <source xml:lang="en">Places</source>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Places</note>
+        <note>On the Front &amp; Back Matter page of the Collection Settings dialog: the heading of a group of boxes for the country, province and district where the books are made.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage.Places.Description" translate="no">
+        <source xml:lang="en">Some front matters will show the following place names. If there are any that you don't want to show, leave them empty.</source>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Places.Description</note>
+        <note>Explains the Places group on the Front &amp; Back Matter page of the Collection Settings dialog. "Front matter" is the pages at the start of a book, such as the title and credits pages.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage.Style" translate="no">
+        <source xml:lang="en">Style</source>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Style</note>
+        <note>On the Front &amp; Back Matter page of the Collection Settings dialog: the label of the list of front and back matter styles (such as "Traditional" or "Paper Saver"), which decide which pages come at the start and end of every book.</note>
+      </trans-unit>
       <trans-unit id="Feature.AiImageEditing">
         <source xml:lang="en">Edit Images with AI</source>
         <note>ID: Feature.AiImageEditing</note>

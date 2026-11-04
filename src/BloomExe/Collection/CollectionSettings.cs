@@ -519,24 +519,25 @@ namespace Bloom.Collection
         public string PrimaryLanguageWithSignPrioritized =>
             string.IsNullOrEmpty(SignLanguageTag) ? Language1.Name : SignLanguage.Name;
 
-        public string BadgeQrCodeLabelLocalized
-        {
-            get
-            {
-                var pattern = BadgeQrCodeLabel; // may or may not have {0}. We'll fill in if present.
-                if (string.IsNullOrEmpty(BadgeQrCodeLabel))
-                {
-                    pattern = LocalizationManager.GetString(
-                        "CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2",
-                        "More books in {0} language:",
-                        "",
-                        new string[] { Language1Tag, Language2Tag, Language3Tag, "en" },
-                        out string _
-                    );
-                }
+        public string BadgeQrCodeLabelLocalized => GetBadgeCaptionPattern(BadgeQrCodeLabel);
 
-                return pattern;
-            }
+        /// <summary>
+        /// The caption pattern a badge gets for the given BadgeQrCodeLabel: the label itself, or
+        /// the default caption when it is empty. The pattern may or may not have {0}; it is
+        /// filled in if present. The Collection Settings dialog previews a caption not yet saved
+        /// with this.
+        /// </summary>
+        public string GetBadgeCaptionPattern(string badgeQrCodeLabel)
+        {
+            if (!string.IsNullOrEmpty(badgeQrCodeLabel))
+                return badgeQrCodeLabel;
+            return LocalizationManager.GetString(
+                "CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2",
+                "More books in {0} language:",
+                "",
+                new string[] { Language1Tag, Language2Tag, Language3Tag, "en" },
+                out string _
+            );
         }
 
         internal void SaveColorPalettesToJsonFile()
@@ -1364,7 +1365,13 @@ namespace Bloom.Collection
         /// So this should be called as soon as it is OK to show some UI. It will find any dependencies it can't meet,
         /// revert them to defaults, and notify the user.
         /// </summary>
-        public void CheckAndFixDependencies(BloomFileLocator bloomFileLocator)
+        /// <param name="mayChangeSettings">false on the command line, and for a Team Collection
+        /// member who is not an administrator, who must not change the team's settings</param>
+        public void CheckAndFixDependencies(
+            BloomFileLocator bloomFileLocator,
+            XMatterPackFinder xmatterPackFinder,
+            bool mayChangeSettings
+        )
         {
             var errorTemplate = LocalizationManager.GetString(
                 "Errors.XMatterNotFound",
@@ -1385,6 +1392,28 @@ namespace Bloom.Collection
             {
                 this.XMatterPackName = kDefaultXmatterName;
                 Save();
+            }
+
+            // Likewise a project-specific pack that no branding chooses, as when the subscription
+            // whose branding chose it has expired. Otherwise books would keep it while the settings
+            // dialogs show, and their next save quietly switches to, another. In a Team Collection
+            // only an administrator makes this change, since it goes to the whole team.
+            if (
+                mayChangeSettings
+                && GetXMatterPackNameSpecifiedByBrandingOrNull() == null
+                && xmatterPackFinder.IsOfferedOnlyByBranding(XMatterPackName)
+            )
+            {
+                XMatterPackName = xmatterPackFinder.FactoryDefault.Key;
+                // While the subscription is expired its bookshelf is only in ExpiredBookshelf,
+                // which Save() leaves out; it must stay in the file so that renewing the
+                // subscription brings it back (BL-15056), as CollectionSettingsUpdater.Apply also
+                // makes sure.
+                var bookshelf = DefaultBookshelf;
+                if (string.IsNullOrEmpty(DefaultBookshelf))
+                    DefaultBookshelf = ExpiredBookshelf;
+                Save();
+                DefaultBookshelf = bookshelf;
             }
         }
 

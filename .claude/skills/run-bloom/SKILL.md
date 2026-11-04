@@ -59,8 +59,11 @@ inside the iframe named `page`. Drive the UI by clicking and typing; use Bloom's
 scripted batch setup, from inside the page (`reference.md`, "Driving Bloom HTTP APIs over CDP").
 To build an Android app on Publish > Apps (Build stays disabled until Customize's required
 settings are filled in), follow `reference.md`, "Building an app (Publish > Apps)".
-Never send a request to a live Bloom just to see whether an endpoint exists: an unknown endpoint
-raises a modal error dialog on the developer's screen. Grep `src/BloomExe/web` instead.
+**Never guess an endpoint name**, not even a plausible one like `book/info`, and never send a
+request just to see whether an endpoint exists: an unknown endpoint raises a modal "Cannot Find API
+Endpoint" dialog on the developer's screen. Before calling any endpoint, find where it is
+registered (grep `src/BloomExe`, not just `web/`, for `Register\w*EndpointHandler`) and copy the
+name from there, including any prefix constant it is built from (e.g. `kApiUrlPart + "books"`).
 
 If a **"Bloom had a problem"** dialog appears, never leave it or click past it:
 `node .claude/skills/run-bloom/dismissProblemDialog.mjs --http-port <httpPort> --json` gathers the

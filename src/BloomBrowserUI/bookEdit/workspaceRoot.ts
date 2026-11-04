@@ -47,7 +47,6 @@ export interface IWorkspaceExports {
         // The split and applyTimingsFile calls both return a list of new timings,
         // such as we might find in data-audioRecordingEndTimes
         split: (timingFilePath: string) => Promise<string | undefined>,
-        editTimingsFile: (timingsFilePath?: string) => Promise<void>,
         applyTimingsFile: (
             timingsFilePath?: string,
         ) => Promise<string | undefined>,

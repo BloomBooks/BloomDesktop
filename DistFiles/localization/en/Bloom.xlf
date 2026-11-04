@@ -5513,6 +5513,11 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: SignInInvitationDialog.SignIn</note>
         <note>Label of the main button in the dialog inviting a Team Collection user to sign in; it opens the BloomLibrary.org login page in the user's web browser. "BloomLibrary.org" is a web address and must not be translated. Shown in capital letters by the button itself, so do not capitalize it here.</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.TeamCollectionPage.SaveRenameFirst">
+        <source xml:lang="en">You have changed the collection's name. Save that first (Bloom will restart); then you can create a Team Collection with the new name.</source>
+        <note>ID: CollectionSettingsDialog.TeamCollectionPage.SaveRenameFirst</note>
+        <note>On the Team Collection page of the Collection Settings dialog, above a disabled "Create a Team Collection" button, when the user has typed a new collection name (on the Advanced page) but not saved it yet. "Team Collection" is the name of a Bloom feature.</note>
+      </trans-unit>
 -->
       <trans-unit id="TemplateBooks.BookName.Arithmetic Pages" sil:dynamic="true">
         <source xml:lang="en">Arithmetic Pages</source>

@@ -14,8 +14,9 @@ namespace Bloom.Collection
     /// <summary>
     /// Applies the values the React Collection Settings dialog posts. Most of them write
     /// themselves into the collection as they are read (see CollectionSettingsValues); this class
-    /// holds the rules that need more than one value: the languages, the xmatter check, and the
-    /// subscription, bookshelf and administrator rules ported from the WinForms OK handler.
+    /// holds the rules that need more than one value: the languages, the xmatter check, the
+    /// subscription, bookshelf and administrator rules, and making the collection a Team
+    /// Collection.
     /// </summary>
     public static class CollectionSettingsUpdater
     {
@@ -24,12 +25,15 @@ namespace Bloom.Collection
         /// </summary>
         /// <param name="queueRenameOfCollection">called with the new (sanitized) folder name when
         /// the user renamed the collection</param>
+        /// <param name="createTeamCollection">called, once the collection is saved, with the
+        /// folder the user chose to make it a Team Collection in</param>
         public static void Apply(
             JObject postedValues,
             CollectionSettings settings,
             bool currentCollectionIsTeamCollection,
             XMatterPackFinder xmatterPackFinder,
-            Action<string> queueRenameOfCollection
+            Action<string> queueRenameOfCollection,
+            Action<string> createTeamCollection
         )
         {
             Logger.WriteEvent("React Collection Settings dialog: saving");
@@ -49,12 +53,15 @@ namespace Bloom.Collection
             // newBookshelf means. This runs on every save, even with the subscription unchanged:
             // it is what keeps an expired subscription's bookshelf in the file (BL-15056). It
             // comes before the xmatter check because the new subscription's branding may
-            // specify the pack.
+            // specify the pack. A collection about to become a Team Collection gets the Team
+            // Collection rules, so it cannot take a Pro subscription with it. (If the create then
+            // fails, the Pro code is lost too and must be typed again: rare, and accepted.)
             var clearDefaultBookshelfAfterSaving = ApplySubscriptionAndBookshelf(
                 GetChangedSubscription(settings, values.Subscription.Code),
                 null,
                 settings,
                 currentCollectionIsTeamCollection
+                    || !string.IsNullOrEmpty(values.TeamCollection.CreateInFolder)
             );
 
             // A pack that is no longer available, or one the branding overrides, is replaced.
@@ -65,10 +72,19 @@ namespace Bloom.Collection
 
             Settings.Default.Save(); // AutoUpdate is a user-level setting
 
-            // The dialog does not post the administrators yet (their tab card will), so this
-            // runs with "unchanged".
-            ApplyAdministrators(null, settings, currentCollectionIsTeamCollection);
+            // The dialog has already checked the administrators. Outside a Team Collection it does
+            // not offer them, so they come back as they were loaded.
+            settings.Administrators = CollectionSettings.ParseAdministratorString(
+                values.TeamCollection.Administrators
+            );
             settings.Save();
+
+            // Making a Team Collection copies the collection's files, settings included, into
+            // the shared folder, so it comes after the save. It also saves the settings again, so
+            // it comes before an expired bookshelf is hidden in memory, or that save would drop
+            // the bookshelf from the file.
+            if (!string.IsNullOrEmpty(values.TeamCollection.CreateInFolder))
+                createTeamCollection(values.TeamCollection.CreateInFolder);
 
             if (clearDefaultBookshelfAfterSaving)
                 settings.DefaultBookshelf = "";
@@ -83,21 +99,6 @@ namespace Bloom.Collection
         public static Subscription GetChangedSubscription(CollectionSettings settings, string code)
         {
             return settings.Subscription.IsDifferent(code) ? new Subscription(code) : null;
-        }
-
-        /// <summary>
-        /// Writes the administrators of a Team Collection.
-        /// </summary>
-        /// <param name="newAdministrators">as the user typed them (already validated by the
-        /// client), or null if unchanged</param>
-        internal static void ApplyAdministrators(
-            string newAdministrators,
-            CollectionSettings settings,
-            bool currentCollectionIsTeamCollection
-        )
-        {
-            if (currentCollectionIsTeamCollection && newAdministrators != null)
-                settings.ModifyAdministrators(newAdministrators);
         }
 
         /// <summary>
@@ -143,13 +144,19 @@ namespace Bloom.Collection
                     originalSubscription = settings.Subscription;
                     settings.Subscription = pendingSubscription;
 
-                    // This comparison is always false: settings.Subscription was just assigned from
-                    // pendingSubscription. So the bookshelf is never cleared here. Kept as it was; BL-16904.
-                    if (pendingSubscription.Descriptor != settings.Subscription.Descriptor)
+                    // A renewed (or mistyped) code for the same subscription keeps its bookshelf.
+                    if (
+                        !IsPendingSubscriptionSameAsOriginalSubscription(
+                            originalSubscription,
+                            pendingSubscription
+                        )
+                    )
                     {
-                        // The user has entered a different subscription code than what was previously saved.
+                        // The user has entered a code for a different subscription than what was previously saved.
                         // We need to clear out the Bookshelf, since the new branding may not have the same bookshelf as the old one.
-                        // (We don't know if it does or not, so we have to assume it doesn't.)
+                        // (We don't know if it does or not, so we have to assume it doesn't.) The dialog's list of
+                        // bookshelves comes from the saved subscription, so a shelf chosen alongside the new code
+                        // belongs to the old subscription too. (BL-16904)
                         pendingDefaultBookshelf = string.Empty;
                     }
                 }
@@ -220,9 +227,10 @@ namespace Bloom.Collection
         /// possibly a renewed version of the same subscription.
         /// </summary>
         /// <remarks>
-        /// Call this only if pendingSubscription is not null.
+        /// Call this only if pendingSubscription is not null. The legacy WinForms
+        /// CollectionSettingsDialog uses this too.
         /// </remarks>
-        private static bool IsPendingSubscriptionSameAsOriginalSubscription(
+        internal static bool IsPendingSubscriptionSameAsOriginalSubscription(
             Subscription originalSubscription,
             Subscription pendingSubscription
         )
@@ -231,6 +239,14 @@ namespace Bloom.Collection
                 return false; // no subscription, so can't be the same
             if (originalSubscription.Descriptor == pendingSubscription.Descriptor)
                 return true;
+            // Two well-formed codes with different descriptors are different subscriptions, even
+            // when one descriptor extends the other (e.g. "Fake" and "Fake-LC"), each with its
+            // own bookshelves. (BL-16904)
+            if (
+                originalSubscription.GetIntegrityLabel() == "ok"
+                && pendingSubscription.GetIntegrityLabel() == "ok"
+            )
+                return false;
             if (
                 pendingSubscription.Descriptor.StartsWith(
                     originalSubscription.Descriptor + "-",

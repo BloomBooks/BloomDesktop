@@ -55,16 +55,16 @@ What a page card builds on:
   control. The POST populates the view from the posted JSON, then `CollectionSettingsUpdater.Apply`
   runs the rules that span values and saves.
 - **Rules that span values** live in `CollectionSettingsUpdater`: the languages (applied together,
-  reusing `UpdateLanguageSettings`), the xmatter check, and, ported from the WinForms OK handler
-  and waiting for their cards, `ApplySubscriptionAndBookshelf` (Pro tier refused in a Team
-  Collection; the BL-15056 expired-bookshelf cases) and `ApplyAdministrators`. `Apply` already
-  calls the last two with "unchanged" on every save, which keeps an expired subscription's
-  bookshelf in the file.
-- **Pages.** Each built page is a hook in its own file under `collection/settingsPages/` that
-  returns its `ConfigrPage` (Config-R throws, blanking the UI, if a pane's child is not a
-  `ConfigrPage` or a page's child is not a `ConfigrGroup`, so a page cannot be a component of its
-  own). `ExperimentalPage.tsx` is the first; each card moves its page out of the placeholders in
-  `CollectionSettingsDialog.tsx` the same way.
+  reusing `UpdateLanguageSettings`), the xmatter check, making a Team Collection, and, ported
+  from the WinForms OK handler, `ApplySubscriptionAndBookshelf` (Pro tier refused in a Team Collection; the BL-15056
+  expired-bookshelf cases) and the administrators (only in a Team Collection). `Apply` calls the first on every save,
+  which keeps an expired subscription's bookshelf in the file.
+- **Pages.** Each page is a hook in its own file under `collection/settingsPages/` that takes the
+  dialog's `ISettingsPageContext` and returns an `ISettingsPage` holding its `ConfigrPage`
+  (Config-R throws, blanking the UI, if a pane's child is not a `ConfigrPage` or a page's child is
+  not a `ConfigrGroup`, so a page cannot be a component of its own). The dialog only lists the
+  pages: anything one page needs goes through the context, so a page added or changed touches
+  the dialog only to list it. Each card replaces its `usePlaceholderPage` entry the same way.
 - **Validation and clean-up belong in the client** (Config-R can validate a field; it does not
   trim, so add that to Config-R if a page needs it). The POST has no validation reply.
 - **Restart.** The dialog compares `restartPaths`, shows the restart reminder and relabels OK; C#
@@ -91,6 +91,7 @@ reuses one decides how its edits reach the React POST. BL-16734 did it for the s
 dialog keeps the code being typed in its own state (the editor is not a Config-R control), puts it
 into `values.subscription.code` for the restart check and the POST, and the reused components
 describe it with a stateless `GET settings/subscription?code=`, so Cancel has nothing to reset.
+BL-16735 did the same for the Team Collection values.
 
 ## 4. Decisions
 
@@ -104,7 +105,8 @@ describe it with a stateless `GET settings/subscription?code=`, so Cancel has no
 
 **Tentative (John, 2026-09-22; may be overridden):**
 
-- **Q5 Page Numbering Style:** stays per collection, on Front & Back Matter next to Style.
+- **Q5 Page Numbering Style:** stays per collection, and goes with the Languages page
+  (BL-16739), as the mockup shows (Andrew, 2026-10-21). It is not on Front & Back Matter.
 - **Q6 New per-language fields:** UI Font, Keyboard, Common Name are out (no backing data).
   Alphabet and Sentence ending punctuation are in BL-16739; they are reader-tool settings stored
   per language in `ReaderToolsSettings-<tag>.json` under app data, not in the collection, so
@@ -119,8 +121,10 @@ describe it with a stateless `GET settings/subscription?code=`, so Cancel has no
   at every startup, never shown) and stays out.
 - **Q10 Subscription gating on pages:** the badge beside the control, as in Book Settings.
 - **Q11 Language "Change…":** the ethnolib chooser in a nested React dialog.
-- **Q12 Creating a Team Collection from the dialog:** a pending change applied on OK, so Cancel
-  abandons it (today it restarts immediately).
+- **Q12 Creating a Team Collection from the dialog:** Create happens, and Bloom restarts, when the
+  user confirms the Create dialog, as in the old dialog. That dialog is already a deliberate
+  confirmation (a folder and four acknowledgements), so users expect the Team Collection then;
+  its own Cancel is the place to back out.
 - **Q13 Size:** fixed 900×720 (built). **Q14 Rename:** behaves as today; disabled in a Team
   Collection with the existing explanation. **Q15:** no file-format migration is needed for
   anything here except Q6's fields.
@@ -130,10 +134,16 @@ describe it with a stateless `GET settings/subscription?code=`, so Cancel has no
 Each is one card, independent once the shell is in. For each: what it contains, and what must not
 get lost.
 
-**BL-16733 Front & Back Matter.** Style (xmatter select with description, honoring a
-branding-forced pack), QR Codes (show, caption, and a new live badge preview: C# builds the badge
-today, so the preview needs an endpoint), Places (Country, Province, District, trimmed in the
-client), Page Numbering Style (Q5). Values for xmatter, QR and places already exist in the model.
+**BL-16733 Front & Back Matter.** Built: Style (the packs, and whether the branding chose one,
+come in the GET collection/settings reply, and the value is the pack the books really get; the
+chosen one's description shows beneath), QR Codes (show, caption, and a live badge preview: C# builds
+its HTML with the code that puts the badge in books, from the dialog's values via
+`GET collection/qrBadge`, so the preview can follow a language being edited, and the dialog
+styles it with `bloom-badge.less`, which books use too), Places
+(Country, Province, District). Page Numbering Style is not on this page; it goes with Languages
+(Q5). The packs offered follow the saved subscription; a typed code whose branding chooses a pack
+gets it as C# saves. The caption box opens with the default caption filled in and C# stores it
+only if changed (see FrontBackMatterValues.QrcodeCaption).
 
 **BL-16737 Advanced.** Automatically update Bloom (a user-level setting), Collection Name
 (disabled in a Team Collection; the model already queues the rename; trim in the client).
@@ -156,12 +166,21 @@ pages switches the open pane to the Subscription page, keeping the edits so far,
 through the page control Config-R gains in BL-17032.
 The other pages' gating still follows the saved subscription, not a code typed but not saved.
 
-**BL-16735 Team Collection.** Reuse `TeamCollectionSettingsPanel` with its overlay and warning.
-Validate administrator emails in the client (`CollectionSettings.ValidateAdministrators` has the
-rules) and hand them to `ApplyAdministrators` (`Apply` calls it with null today, which does
-nothing; it is there for this card). Hide the page when the feature is off and this is
-not a TC, and when editing a Bloom Library book (as `CollectionSettingsDialog.cs` does). Creating
-a TC per Q12.
+**BL-16735 Team Collection.** Built. Reuses the WinForms tab's panel (`TeamCollectionSettings`,
+with its overlay and warning). Like the subscription code, its values (`teamCollection`:
+administrators, and the folder to create a TC in) are not Config-R values; the page edits them
+through the page context's `editValues`. The administrators are checked in the client
+(`teamCollection/administrators.ts`, the rules of `CollectionSettings.ValidateAdministrators`): the
+page reports it cannot save, so OK is disabled, and the field says why. A change goes
+to `Apply`. The page is hidden when the feature is off (as saved) and this is not a
+TC, and in a collection holding a Bloom Library book downloaded for editing (`editingABlorgBook`
+in the GET). Creating a TC (Q12): "Create a Team Collection" opens the existing dialog in
+the browser; its Create & Restart has the settings dialog save at once with the chosen folder, and
+`Apply` makes the TC after saving the user's other edits (so they reach the shared copy), through
+`TeamCollectionApi.CreateTeamCollection`, then Bloom restarts. While the collection name has an
+unsaved edit, Create is disabled with a note to save the rename first: the rename only happens as
+Bloom restarts, so the TC would get the old name, which is also the name the Create dialog asks
+the user to approve.
 
 **BL-16739 Languages.** The large one. L1, L2, L3, Sign Language: name with "Change…" (Q11),
 Default Font, "Remove" for L3 and Sign Language, and "More" (Q3) with fonts, line spacing, tool

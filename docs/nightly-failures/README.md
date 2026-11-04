@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-10-26 (nightlies through the 2026-10-26 run have been triaged)
+**Last updated:** 2026-11-04 (nightlies through the 2026-11-04 run, 41823419987, have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -9,72 +9,37 @@ accept a flaky test, and a test is flaky from its first unexplained failure (roo
 Testing). So "wait and see whether it recurs" is never an entry's plan. To bring this up to date,
 use the `nightly-triage` skill.
 
-## Collection rename test: Bloom still running after the test
+## Canvas element menu: the Layer submenu covers its own row
 
-- **Failed:** 2026-10-24, 2026-10-25, 2026-10-26 (every run since it first failed).
-  `BloomE2E/tests/collection-settings-advanced.spec.ts` "renaming the collection on the Advanced
-  page renames its folder and reopens it" (Test Case 838): timed out after 180 s with "A Bloom is
-  still answering on port 8089 after teardown" (`fixtures/launchBloom.ts`, `killAndWaitForPortToGoDark`).
-- **Cause:** a bug in the test fixture, not in Bloom.
-  [#8405](https://github.com/BloomBooks/BloomDesktop/pull/8405) (BL-16922, merged 2026-10-23) gave
-  the fixture's probes a required deadline but missed the two calls in `waitForRelaunchedBloom`.
-  Their timeout became `NaN`, so every probe threw and read as "nothing here". The fixture never
-  found the Bloom that relaunched itself under the new name, and that Bloom outlived the run on
-  port 8089. Reproduced locally. Nothing type-checks `src/BloomE2E`, which is how it reached
-  master.
-- **Status:** fixed on master on 2026-10-26, in the commit that also makes the pre-commit hook
-  type-check the e2e tests. Remove this entry once a nightly has passed on it.
+- **Failed:** 2026-11-03. `BloomE2E/tests/canvas-layer-order.spec.ts` "the Layer menu enables
+  only the moves the element can make" (Test Case 840): `parent.hover()` on the Layer row timed
+  out after 30 s in `openCanvasElementSubmenu` (`helpers/canvasElements.ts:524`), because the
+  Layer submenu's "Send Backwards" row intercepted the pointer.
+- **What the trace shows (first look):** the first check (bubble A) opened and closed the menus
+  cleanly. For bubble B the helper opened a fresh "..." menu and hovered Layer. The first try
+  found the menu still moving; on the next, the Layer submenu was already open, drawn over the
+  Layer row itself, so the hover could never land on the row. The screenshot shows that. What
+  opened the submenu before the pointer reached its row is not known: keyboard focus (the cause of
+  the 11-01 Flip failure that [#8528](https://github.com/BloomBooks/BloomDesktop/pull/8528) fixed),
+  or the pointer passing over the row while the menu was still moving. Why the submenu was drawn
+  over its parent row rather than beside it is not known either.
+- **Status:** bot draft PR [#8533](https://github.com/BloomBooks/BloomDesktop/pull/8533) (open),
+  "Shut a menu row's submenu for good when its keepMounted menu shuts". No card. The test passed
+  on 2026-11-04 without that PR, which settles nothing.
 
-## Bulk upload test: two different failures against dev.bloomlibrary.org
+## E2E teardown: EPERM deleting Bloom's temp folder after the collection rename test
 
-- **Failed:** 2026-10-11 and 2026-10-15. `BloomE2E/tests/bulk-upload-quick-test.spec.ts` "bulk
-  upload: refused without a bookshelf, then new / skipped / updated / moved to another bookshelf"
-  (Test Case 211).
-- **What the trace shows (first look):** on 10-11, the upload-agreement checkbox was still
-  unchecked 15 s after it was clicked. On 10-15, moving the collection to another bookshelf did
-  not update all four books. The 10-15 run's C# upload test also failed against the same service
-  that morning (see the C# upload entry), so the service may have been having trouble; whether
-  that explains either symptom is not known.
-- **Status:** [#8405](https://github.com/BloomBooks/BloomDesktop/pull/8405)
-  ([BL-16922](https://issues.bloomlibrary.org/youtrack/issue/BL-16922)), merged 2026-10-23, makes the
-  test check the bookshelf in what Bloom uploaded rather than in the harvested record, which
-  addresses the 10-15 symptom. The test has passed every night since. The 10-11 symptom is not
-  explained.
-
-## E2E teardown: the test's temp folder cannot be deleted
-
-- **Failed:** 2026-10-12 and 2026-10-13. No test failed; the suite failed on "1 error was not a
-  part of any test".
-- **What the trace shows (first look):** after a spec finished, the fixture's cleanup
-  (`fixtures/launchBloom.ts:1111`) failed with "EPERM, Permission denied" deleting the test's
-  `bloom-e2e-*` temp folder, after a different spec each night
-  (`collection-settings-advanced`, `toolbox-tools`). The code comment there already expects
-  Bloom to let go of files slightly after it dies, and retries; here the retries ran out. What
-  still held the folder is not known.
-- **Status:** no card or PR.
-
-## Nightly setup: a setup step fails, and the rest of the run is skipped
-
-- **Failed:** 2026-10-10 and 2026-10-14. Both nights the component-tester suite also reported
-  "no results file": it runs even when setup fails, and without `pnpm install` it cannot resolve
-  its imports (`axios`, `@emotion/react`).
-- **Cause:** two different setup failures.
-  - 10-10: `src/BloomE2E/scripts/install-test-fonts.ps1` installed Alef and Luciole, but GDI+ then
-    did not list them, and the script stops the run when that happens. Why GDI+ missed them is not
-    known.
-  - 10-14: build.palaso.org (TeamCity) returned HTTP 502 for `ghostscript-win32.zip`, so getting
-    the binary dependencies failed. That is outside Bloom.
-- **Status:** no card or PR.
-
-## Publish: the Text Languages list is missing after a restart
-
-- **Failed:** 2026-10-07. `BloomE2E/tests/publish-text-languages.spec.ts` "keeps the choice a
-  person makes, across screens and across a restart" (Test Case 169): the Spanish row's
-  `checked` was `undefined`, not `false`, so the row was not found at all.
-- **What the trace shows (first look):** on the BloomPUB screen after the restart, the right-hand
-  panel shows Features and Help but no text-languages list. Whether the list was slow to appear
-  or never came is not known. It is the test's only failure so far; #8388 (settings shell,
-  BL-16902) landed the day before, and nobody has checked whether it is involved.
+- **Failed:** 2026-11-04. All 258 e2e tests passed, but the step failed on "1 error was not a
+  part of any test": the worker's teardown after `collection-settings-advanced.spec.ts` (the
+  "renaming the collection on the Advanced page renames its folder and reopens it" test, Test
+  Case 838) threw `EPERM, Permission denied` from `fs.rmSync` on its
+  `%TEMP%\bloom-e2e-*` folder (`fixtures/launchBloom.ts:1187`, from `bloomTest.ts:540`).
+- **What the log shows (first look):** `stop()` already waits for Bloom to exit before deleting
+  (`8233fa93e`, 10-30), but `killAndWaitForBloomToExit` waits only for the serving pid. This test
+  makes Bloom relaunch itself on the renamed collection (`followRelaunch`), so something other
+  than the serving Bloom may still have held a file in the folder: a WebView2 child process, or
+  another Bloom process. Which process held what is not known; the `bloom-diagnostics` artifact
+  has not been looked at.
 - **Status:** no card or PR.
 
 ## Link chooser: the preselected page is not scrolled into view
@@ -90,19 +55,23 @@ use the `nightly-triage` skill.
 
 ## Component tests: lost connection to the dev server
 
-- **Failed:** once in September. The cause is unknown.
-- **Status:** the run is now instrumented so the next occurrence says more. See "A component
-  test lost its connection to the dev server" in `src/BloomE2E/AUTOMATION-DEBT.md`.
+- **Failed:** once in September; again 2026-10-27, `bookgridsetup-extended.uitest.ts` "After
+  adding a book, the next available book is automatically selected":
+  `page.goto: net::ERR_CONNECTION_FAILED at http://127.0.0.1:5183/`.
+- **What the trace shows (first look, 10-27):** the first navigation of the test failed about
+  15 ms after it started, with ERR_CONNECTION_FAILED rather than a refused or reset connection.
+  The log shows no Vite restart, and the other 145 tests passed. A local stress run (the suite 10
+  times, 2 workers, 1,460 tests) did not reproduce it. The cause is unknown.
+- **Status:** no card or PR. Since 2026-10-27, a failed first navigation also reports a raw TCP
+  connect and an HTTP GET to the dev server from Node, and the machine's TCP connections by state
+  (`component-tester/describeConnectionFailure.ts`). That says whether the server was reachable
+  and whether the runner was short of ports. Background: "A component test lost its connection to
+  the dev server" in `src/BloomE2E/AUTOMATION-DEBT.md`.
 
 ## C# upload integration tests: the live service was slow
 
-- **Failed:** 2026-09-28. `BookUploadAndDownloadTests` failed while the live upload service was
-  slow, for a few minutes around 10:40 UTC.
-- **Seen again:** 2026-10-15, `DownloadUrl_NoCollectionSettings_GetsDocument_AndSettings`: "Unable
-  to initiate book upload on the server."
-- **Cause:** outside Bloom: the live service.
-- **Status:** the tests now report the uploader's error instead of a bare failure (`d8c050a2ef`).
-  Open question: should these tests depend on the live service at all?
+Failed 2026-09-28, 10-15 and 10-27. A bloom-functions fix is in production, not yet measured. See
+[DETAILS.md](DETAILS.md#c-upload-integration-tests-the-live-service-was-slow).
 
 ## Open questions
 

@@ -28,6 +28,8 @@ const kTopicByPage: [string, string][] = [
 
 test.use({
     collectionSpec: { name: "settings-help", languages: ["en"] },
+    // The Team Collection page shows only while Team Collections is turned on.
+    experimentalFeatures: ["team-collections"],
 });
 
 test("Help in the Collection Settings dialog opens the topic for the page showing [Test Case ID 850]", async ({

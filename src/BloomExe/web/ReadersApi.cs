@@ -15,6 +15,7 @@ using Bloom.Properties;
 using Bloom.SafeXml;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
+using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.Workspace;
 using L10NSharp;
@@ -236,7 +237,7 @@ namespace Bloom.Api
                 // It's in the json data, but not asked for in the clipboard copying.
                 var stringToSave =
                     headerBldr.ToString() + Environment.NewLine + dataBldr.ToString();
-                PortableClipboard.SetText(stringToSave);
+                BloomClipboard.SetText(stringToSave);
             }
             catch (IOException e)
             {
