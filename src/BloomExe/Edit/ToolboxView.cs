@@ -152,6 +152,10 @@ namespace Bloom.Edit
         /// - may be passed 'current' followed by the name of one of the toolbox tools. ('current' is the
         /// persisted word for the tool the toolbox has open.)
         /// - may be passed 'state' followed by the name of one of the tools and its current state string.
+        /// - may be passed 'visibility' followed by "visible" if the toolbox is open.
+        /// All of these live in the book's meta.json, which is written at once. Waiting for the
+        /// book's next save is not enough: the edit view writes nothing when the page has not
+        /// changed, so a setting changed on an untouched page would never reach the file.
         /// </summary>
         public static void SaveToolboxSettings(Book.Book book, string data)
         {
@@ -170,24 +174,21 @@ namespace Bloom.Edit
                             : args[1],
                         args[2] == "1"
                     );
-                    return;
+                    break;
 
                 case "current":
                     book.BookInfo.CurrentTool = args[1];
-                    return;
+                    break;
 
                 case "state":
                     UpdateToolState(book, args[1], args[2]);
-                    return;
+                    break;
                 case "visibility":
-                    UpdateToolboxVisibility(book, args[1]);
-                    return;
+                    book.BookInfo.ToolboxIsOpen = (args[1] == "visible");
+                    break;
+                default:
+                    throw new ArgumentException("Unknown toolbox setting: " + args[0]);
             }
-        }
-
-        private static void UpdateToolboxVisibility(Book.Book book, string visibility)
-        {
-            book.BookInfo.ToolboxIsOpen = (visibility == "visible");
             book.BookInfo.Save();
         }
 
