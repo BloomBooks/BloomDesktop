@@ -1,6 +1,6 @@
 # Fails a PR from a bot/ branch that adds, removes or bumps a dependency.
 #
-# The Bloom bot (bloom-bot/ in bloom-team-skills) writes the changes on bot/ branches. It might pick
+# The Bloom bot (the private BloomBooks/bloom-bot repo) writes the changes on bot/ branches. It might pick
 # a typosquatted or compromised package on its own, with no attacker steering it, and a change to a
 # lockfile is easy to skim past in review. The bot already refuses to push such a change; this is
 # the check that does not depend on the bot's own code. A person adds or bumps packages.
