@@ -127,7 +127,10 @@ namespace Bloom.Edit
 
         /// <summary>
         /// The reader tools settings a collection starts with, for a first language with the given
-        /// tag. The literal string here defines our default reader settings for a collection.
+        /// tag. The literal string here defines our default reader settings for a collection; there
+        /// is no other copy of these values. Its keys must match the fields of ReaderSettings and
+        /// ReaderLevel in src/BloomBrowserUI/bookEdit/toolbox/readers/ReaderSettings.ts, which the
+        /// reader tools and Reader Setup read this file into.
         /// </summary>
         public static string GetDefaultSettingsJson(string languageTag)
         {

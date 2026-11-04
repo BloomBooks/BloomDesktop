@@ -1140,12 +1140,14 @@ describe("CollectionSettingsDialog", () => {
             ).toBe("a  b,c");
         });
 
-        it("offers the page numbering styles Bloom knows", async () => {
+        it("offers the page numbering styles Bloom knows, once, on the first language's More page", async () => {
             await renderDialog();
 
-            const select = pageElements(
-                '[data-path="languages.pageNumberStyle"]',
-            )[0] as HTMLSelectElement;
+            const selector = '[data-path="languages.pageNumberStyle"]';
+            expect(pageElements(selector).length).toBe(1);
+            expect(moreElement(2, selector)).toBeNull();
+            const select = moreElement(1, selector) as HTMLSelectElement;
+            expect(select).not.toBeNull();
             expect(
                 Array.from(select.options).map((option) => option.value),
             ).toEqual(["Decimal", "Devanagari"]);

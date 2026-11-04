@@ -96,14 +96,24 @@
         <note>On the "More" page of the first language in the Collection Settings dialog, shown under the alphabet and sentence punctuation (which cannot be edited) after the user has chosen a different first language. "OK" is the dialog's OK button.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguagesPage.RightToLeft.Description" translate="no">
-        <source xml:lang="en">If you are not sure, leave this off. If your language is written starting on the right and moving left, you will know.</source>
+        <source xml:lang="en">If you are not **SURE**, then do not turn this on. If your language is written starting on the right and moving left, you will **KNOW**.</source>
         <note>ID: CollectionSettingsDialog.LanguagesPage.RightToLeft.Description</note>
-        <note>Explains the checkbox for a language written right to left, on the "More" page of one language in the Collection Settings dialog.</note>
+        <note>Explains the checkbox for a language written right to left, on the "More" page of one language in the Collection Settings dialog. The asterisks around SURE and KNOW show emphasis; keep them around the matching words in your language.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguagesPage.ToolFontSize.Description" translate="no">
         <source xml:lang="en">Use this to increase the font size when this language is shown in places like the Decodable Reader Tool.</source>
         <note>ID: CollectionSettingsDialog.LanguagesPage.ToolFontSize.Description</note>
         <note>Explains the "Font size when displayed in tools" list on the "More" page of one language in the Collection Settings dialog. "Decodable Reader Tool" is the name of a Bloom tool.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage1.Description" translate="no">
+        <source xml:lang="en">Example: the local language</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage1.Description</note>
+        <note>On the Languages page of the Collection Settings dialog, under the heading "Written Language 1": an example of what the first language usually is.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage2.Description" translate="no">
+        <source xml:lang="en">Example: national language</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage2.Description</note>
+        <note>On the Languages page of the Collection Settings dialog, under the heading "Written Language 2": an example of what the second language usually is.</note>
       </trans-unit>
       <trans-unit id="Feature.AiImageEditing">
         <source xml:lang="en">Edit Images with AI</source>

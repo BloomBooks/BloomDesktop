@@ -257,6 +257,7 @@ const SignLanguageControl: React.FunctionComponent<{
 interface IWrittenLanguage {
     number: 1 | 2 | 3;
     heading: string;
+    description?: string;
 }
 
 /**
@@ -282,8 +283,8 @@ export function withEditedLettersCleaned(
 
 /**
  * The Languages page of the Collection Settings dialog: the collection's written languages and
- * sign language, each language's font, its script settings on a "More" page of its own, and the
- * page numbering style.
+ * sign language, each language's font, and its script settings on a "More" page of its own; the
+ * first language's More page also has the reader tools' settings and the page numbering style.
  */
 export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
     const label = useL10n(
@@ -291,20 +292,28 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
         "CollectionSettingsDialog.LanguageTab.LanguageTabLabel",
     );
     const language1Heading = useL10n(
-        "Local Language",
-        "CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel",
+        "Written Language 1",
+        "CollectionSettingsDialog.LanguagesPage.WrittenLanguage1",
+    );
+    const language1Description = useL10n(
+        "Example: the local language",
+        "CollectionSettingsDialog.LanguagesPage.WrittenLanguage1.Description",
     );
     const language2Heading = useL10n(
-        "Language 2 (e.g. National Language)",
-        "CollectionSettingsDialog.LanguageTab._language2Label",
+        "Written Language 2",
+        "CollectionSettingsDialog.LanguagesPage.WrittenLanguage2",
+    );
+    const language2Description = useL10n(
+        "Example: national language",
+        "CollectionSettingsDialog.LanguagesPage.WrittenLanguage2.Description",
     );
     const language3Heading = useL10n(
         "Language 3 (e.g. Regional Language)   (Optional)",
         "CollectionSettingsDialog.LanguageTab._language3Label",
     );
-    const signLanguageHeading = useL10n(
-        "Sign Language   (Optional)",
-        "CollectionSettingsDialog.LanguageTab.SignLanguageOptional",
+    const signLanguageLabel = useL10n(
+        "Sign Language",
+        "CollectionSettingsDialog.LanguagesPage.SignLanguage",
     );
     const languageLabel = useL10n(
         "Language",
@@ -347,28 +356,25 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
         "ScriptSettingsDialog.LineBreakCheckBox",
     );
     const rightToLeftLabel = useL10n(
-        "This script is written right to left like Arabic, Hebrew, and Urdu",
-        "ScriptSettingsDialog.RightToLeftScriptCheckBox",
+        "This is a right to left script",
+        "CollectionSettingsDialog.LanguagesPage.RightToLeft",
     );
     const rightToLeftDescription = useL10n(
-        "If you are not sure, leave this off. If your language is written starting on the right and moving left, you will know.",
+        "If you are not **SURE**, then do not turn this on. If your language is written starting on the right and moving left, you will **KNOW**.",
         "CollectionSettingsDialog.LanguagesPage.RightToLeft.Description",
     );
-    const readerToolsLabel = useL10n(
-        "Reader Tools",
-        "CollectionSettingsDialog.LanguagesPage.ReaderTools",
-    );
+    const otherLabel = useL10n("Other", "Common.Other");
     const lettersLabel = useL10n(
-        "Letters and Letter Combinations",
-        "ReaderSetup.Letters.Header",
+        "Alphabet",
+        "CollectionSettingsDialog.LanguagesPage.Alphabet",
     );
     const lettersHelp = useL10n(
         "Separate each letter or letter combination with a space. For example, here is what we might use for the English language:",
         "ReaderSetup.Letters.LetterHelp1",
     );
     const sentencePunctLabel = useL10n(
-        "Special Sentence-Ending Punctuation",
-        "ReaderSetup.SentencePunctuation.Header",
+        "Sentence ending punctuation",
+        "CollectionSettingsDialog.LanguagesPage.SentenceEndingPunctuation",
     );
     const sentencePunctHelp = useL10n(
         "Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \\U0020 to tell Bloom that normal spaces are used to break sentences.",
@@ -483,7 +489,11 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
         const present =
             language.number !== 3 || !!context.values?.languages.language3;
         return (
-            <ConfigrGroup key={path} label={language.heading}>
+            <ConfigrGroup
+                key={path}
+                label={language.heading}
+                description={language.description}
+            >
                 <ConfigrCustomObjectInput<ICollectionSettingsLanguage | null>
                     path={path}
                     label={languageLabel}
@@ -519,20 +529,10 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
                                 control={LineSpacingSelect}
                             />
                         </ConfigrGroup>
-                        <ConfigrGroup label={scriptLabel}>
-                            <ConfigrBoolean
-                                path={`${path}.breaksLinesOnlyAtSpaces`}
-                                label={lineBreakLabel}
-                            />
-                            <ConfigrBoolean
-                                path={`${path}.isRightToLeft`}
-                                label={rightToLeftLabel}
-                                description={rightToLeftDescription}
-                            />
-                        </ConfigrGroup>
-                        {/* The reader tools work only in the first language. */}
+                        {/* The reader tools (the alphabet and the sentence punctuation) work
+                            only in the first language. */}
                         {language.number === 1 && (
-                            <ConfigrGroup label={readerToolsLabel}>
+                            <ConfigrGroup label={otherLabel}>
                                 <ConfigrInput
                                     path="readerTools.letters"
                                     label={lettersLabel}
@@ -544,6 +544,10 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
                                     allowNewLines={true}
                                     maxLinesToShowBeforeScrolling={3}
                                 />
+                            </ConfigrGroup>
+                        )}
+                        <ConfigrGroup label={scriptLabel}>
+                            {language.number === 1 && (
                                 <ConfigrInput
                                     path="readerTools.sentencePunct"
                                     label={sentencePunctLabel}
@@ -553,8 +557,28 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
                                     }
                                     disabled={!!readerToolsLockedReason}
                                 />
-                            </ConfigrGroup>
-                        )}
+                            )}
+                            <ConfigrBoolean
+                                path={`${path}.breaksLinesOnlyAtSpaces`}
+                                label={lineBreakLabel}
+                            />
+                            <ConfigrBoolean
+                                path={`${path}.isRightToLeft`}
+                                label={rightToLeftLabel}
+                                description={rightToLeftDescription}
+                            />
+                            {/* One style for the whole collection, so it is shown once, with
+                                the first language. */}
+                            {language.number === 1 && (
+                                <ConfigrSelect
+                                    label={pageNumberingLabel}
+                                    path="languages.pageNumberStyle"
+                                    options={
+                                        context.settings?.pageNumberStyles ?? []
+                                    }
+                                />
+                            )}
+                        </ConfigrGroup>
                     </ConfigrPage>
                 )}
             </ConfigrGroup>
@@ -563,21 +587,22 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
 
     const element = (
         <ConfigrPage label={label} pageKey="languages" topLevel={true}>
-            {writtenLanguageGroup({ number: 1, heading: language1Heading })}
-            {writtenLanguageGroup({ number: 2, heading: language2Heading })}
+            {writtenLanguageGroup({
+                number: 1,
+                heading: language1Heading,
+                description: language1Description,
+            })}
+            {writtenLanguageGroup({
+                number: 2,
+                heading: language2Heading,
+                description: language2Description,
+            })}
             {writtenLanguageGroup({ number: 3, heading: language3Heading })}
-            <ConfigrGroup label={signLanguageHeading}>
+            <ConfigrGroup label={signLanguageLabel}>
                 <ConfigrCustomObjectInput<ICollectionSettingsSignLanguage | null>
                     path="languages.signLanguage"
-                    label={languageLabel}
+                    label={signLanguageLabel}
                     control={SignLanguageControl}
-                />
-            </ConfigrGroup>
-            <ConfigrGroup>
-                <ConfigrSelect
-                    label={pageNumberingLabel}
-                    path="languages.pageNumberStyle"
-                    options={context.settings?.pageNumberStyles ?? []}
                 />
             </ConfigrGroup>
         </ConfigrPage>

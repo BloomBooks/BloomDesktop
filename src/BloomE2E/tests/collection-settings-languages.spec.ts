@@ -31,9 +31,9 @@ import {
 } from "../helpers/readerSetup";
 import { switchTab } from "../helpers/workspace";
 
-const kLanguage1 = "Local Language";
+const kLanguage1 = "Written Language 1";
 const kLineSpacing = "Default line spacing";
-const kAlphabet = "Letters and Letter Combinations";
+const kAlphabet = "Alphabet";
 // The alphabet useKnownReaderStages gives, with "zh" added.
 const kNewAlphabet =
     "a b c ch d e f g h i j k l m n ng o p q r s sh t th u v w x y z zh";

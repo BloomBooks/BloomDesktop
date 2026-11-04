@@ -107,7 +107,8 @@ BL-16735 did the same for the Team Collection values.
 **Tentative (John, 2026-09-22; may be overridden):**
 
 - **Q5 Page Numbering Style:** stays per collection, and goes with the Languages page
-  (BL-16739), as the mockup shows (Andrew, 2026-10-21). It is not on Front & Back Matter.
+  (BL-16739), as the mockup shows (Andrew, 2026-10-21). It is not on Front & Back Matter. It
+  is shown once, in Language 1's "More > Script" (Andrew, 2026-11-04).
 - **Q6 New per-language fields:** UI Font, Keyboard, Common Name are out (no backing data).
   Alphabet and Sentence ending punctuation are in BL-16739 (Andrew, 2026-10-23), for the first
   language only: they live in `ReaderToolsSettings-<L1 tag>.json` in the collection folder
@@ -190,7 +191,7 @@ Language), Default Font (the font picker with suitability), and a "More" sub-pag
 size, line spacing, Asian breaking, RTL, and for L1 the reader tools' alphabet and sentence
 punctuation (Q6), which cannot be edited while L1 itself is being changed. A missing L3 shows
 only its language row, since Config-R would give a missing language's settings default values.
-Page Numbering Style is a group at the bottom (Q5); in the values it moved to `languages`. A
+Page Numbering Style is in Language 1's More page (Q5); in the values it moved to `languages`. A
 new L3 gets `defaultFontName` from the GET. `ScriptSettingsDialog` and the Book Making font
 controls are superseded, and go at cutover. Note: `UpdateLanguageSettings` still takes the fonts
 as a separate array, a WinForms leftover (fonts were on another tab there); in the values the

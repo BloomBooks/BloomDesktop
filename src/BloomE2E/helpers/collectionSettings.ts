@@ -787,12 +787,12 @@ export async function clickAndFollowRestart(
 
 /**
  * The group of rows for one language on the Languages page of the dialog, found by its heading,
- * e.g. "Local Language" or "Language 2 (e.g. National Language)". Config-R draws a group as its
- * heading followed by the box that holds its rows.
+ * e.g. "Written Language 1" or "Written Language 2". Config-R draws a group as its
+ * heading, then its description if it has one (a caption), then the box that holds its rows.
  */
 function languageGroup(page: Page, heading: string): Locator {
     return collectionSettingsDialog(page).locator(
-        `xpath=.//h3[normalize-space(.)="${heading}"]/following-sibling::*[1]`,
+        `xpath=.//h3[normalize-space(.)="${heading}"]/following-sibling::*[not(contains(@class,"MuiTypography-caption"))][1]`,
     );
 }
 
