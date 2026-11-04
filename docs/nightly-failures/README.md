@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-11-03 (nightlies through the 2026-11-03 run, 41627784517, have been triaged)
+**Last updated:** 2026-11-04 (nightlies through the 2026-11-04 run, 41823419987, have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -23,8 +23,24 @@ use the `nightly-triage` skill.
   the 11-01 Flip failure that [#8528](https://github.com/BloomBooks/BloomDesktop/pull/8528) fixed),
   or the pointer passing over the row while the menu was still moving. Why the submenu was drawn
   over its parent row rather than beside it is not known either.
-- **Status:** no card or PR. #8528 (in this run) changed only how a submenu is closed, not how it
-  is opened.
+- **Status:** bot draft PR [#8533](https://github.com/BloomBooks/BloomDesktop/pull/8533) (open),
+  "Shut a menu row's submenu for good when its keepMounted menu shuts". No card. The test passed
+  on 2026-11-04 without that PR, which settles nothing.
+
+## E2E teardown: EPERM deleting Bloom's temp folder after the collection rename test
+
+- **Failed:** 2026-11-04. All 258 e2e tests passed, but the step failed on "1 error was not a
+  part of any test": the worker's teardown after `collection-settings-advanced.spec.ts` (the
+  "renaming the collection on the Advanced page renames its folder and reopens it" test, Test
+  Case 838) threw `EPERM, Permission denied` from `fs.rmSync` on its
+  `%TEMP%\bloom-e2e-*` folder (`fixtures/launchBloom.ts:1187`, from `bloomTest.ts:540`).
+- **What the log shows (first look):** `stop()` already waits for Bloom to exit before deleting
+  (`8233fa93e`, 10-30), but `killAndWaitForBloomToExit` waits only for the serving pid. This test
+  makes Bloom relaunch itself on the renamed collection (`followRelaunch`), so something other
+  than the serving Bloom may still have held a file in the folder: a WebView2 child process, or
+  another Bloom process. Which process held what is not known; the `bloom-diagnostics` artifact
+  has not been looked at.
+- **Status:** no card or PR.
 
 ## Link chooser: the preselected page is not scrolled into view
 
