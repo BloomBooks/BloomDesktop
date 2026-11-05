@@ -2608,6 +2608,38 @@ namespace BloomTests.Book
             );
         }
 
+        // BL-16759: HalfLetter Landscape was laid out for folding, while the print
+        // instructions told the user to cut and stack, so the pages came out in the wrong order.
+        [TestCase("HalfLetterLandscape", PublishModel.BookletLayoutMethod.CutAndStack)]
+        [TestCase("HalfLetterPortrait", PublishModel.BookletLayoutMethod.SideFold)]
+        [TestCase("A4Landscape", PublishModel.BookletLayoutMethod.SideFold)]
+        [TestCase("QuarterLetterLandscape", PublishModel.BookletLayoutMethod.SideFold)]
+        public void GetBookletLayoutMethod_NotCalendar_DependsOnSizeAndOrientation(
+            string sizeAndOrientation,
+            PublishModel.BookletLayoutMethod expected
+        )
+        {
+            _bookDom = new HtmlDom(
+                @"<html ><head>
+									</head><body></body></html>"
+            );
+            var book = CreateBook();
+            var layout = new Layout()
+            {
+                SizeAndOrientation = SizeAndOrientation.FromString(sizeAndOrientation),
+            };
+            Assert.That(
+                layout.SizeAndOrientation.ToString(),
+                Is.EqualTo(sizeAndOrientation),
+                "test setup: the layout name did not parse as expected"
+            );
+            Assert.AreEqual(
+                expected,
+                book.GetBookletLayoutMethod(layout),
+                $"wrong booklet layout for {sizeAndOrientation}"
+            );
+        }
+
         [Test]
         public void GetDefaultBookletLayoutMethod_NotSpecified_Fold()
         {
