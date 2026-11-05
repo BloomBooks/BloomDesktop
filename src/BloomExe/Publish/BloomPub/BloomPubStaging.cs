@@ -22,6 +22,11 @@ namespace Bloom.Publish.BloomPub
     {
         private const string kRootFolderName = "bps";
 
+        // Created in each staging folder by the Bloom that claims it. Creating it is what makes the
+        // claim exclusive, and DeleteOldFolders only deletes folders that have it, so it never
+        // touches anything another program keeps under %TEMP%\bps.
+        private const string kOwnerMarkerFileName = ".bloom-staging";
+
         // Long enough that no BloomPUB, even one for a large app build, can still be in progress.
         // A Publish-tab preview keeps its folder until the next preview, so a preview another Bloom
         // has left open for over a day can lose its files when this Bloom exits; reopening the
@@ -34,8 +39,8 @@ namespace Bloom.Publish.BloomPub
         public static string RootPath => Path.Combine(Path.GetTempPath(), kRootFolderName);
 
         /// <summary>
-        /// Make a new, empty staging folder that no other BloomPUB is using.
-        /// Disposing the result deletes the folder.
+        /// Make a new staging folder that no other BloomPUB is using. It holds nothing but the
+        /// marker file that claims it. Disposing the result deletes the folder.
         /// </summary>
         public static TemporaryFolder CreateFolder()
         {
@@ -47,7 +52,24 @@ namespace Bloom.Publish.BloomPub
                 var path = Path.Combine(RootPath, Path.GetRandomFileName().Substring(0, 5));
                 if (Directory.Exists(path))
                     continue;
+                // CreateDirectory succeeds even if another process made the folder a moment ago,
+                // so the folder is ours only if we are the one that creates the marker in it.
                 Directory.CreateDirectory(path);
+                try
+                {
+                    // robustfile-hook: allow FileStream
+                    // FileMode.CreateNew is the exclusive claim; RobustFile has no equivalent.
+                    new FileStream(
+                        Path.Combine(path, kOwnerMarkerFileName),
+                        FileMode.CreateNew,
+                        FileAccess.Write,
+                        FileShare.None
+                    ).Dispose();
+                }
+                catch (IOException)
+                {
+                    continue; // another process claimed this name first
+                }
                 return TemporaryFolder.TrackExisting(path);
             }
         }
@@ -75,7 +97,8 @@ namespace Bloom.Publish.BloomPub
         }
 
         /// <summary>
-        /// Delete the staging folders created before the given (UTC) time.
+        /// Delete the staging folders created before the given (UTC) time. Folders without
+        /// Bloom's marker file belong to something else and are left alone.
         /// </summary>
         internal static void DeleteFoldersOlderThan(DateTime cutoffUtc)
         {
@@ -83,6 +106,8 @@ namespace Bloom.Publish.BloomPub
                 return;
             foreach (var folder in Directory.EnumerateDirectories(RootPath))
             {
+                if (!RobustFile.Exists(Path.Combine(folder, kOwnerMarkerFileName)))
+                    continue;
                 if (Directory.GetCreationTimeUtc(folder) >= cutoffUtc)
                     continue;
                 // If something still has a file open this returns false; we will try again the

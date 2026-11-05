@@ -249,7 +249,7 @@ namespace Bloom.Publish.BloomPub
             // style/src still points to it.
             var claimedFilenames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            using (var tempDir = new TemporaryFolder("BloomPubImageAdjust"))
+            using (var tempDir = BloomPubStaging.CreateFolder())
             {
                 foreach (
                     SafeXmlElement pageDiv in dom.SafeSelectNodes(
