@@ -711,7 +711,7 @@ namespace Bloom.web.controllers
 
             // We don't use the folder found here, but this method does some checks we want done.
             BookStorage.FindBookHtmlInFolder(book.FolderPath);
-            _stagingFolder = BloomPubStaging.CreateFolder();
+            _stagingFolder = PublishStaging.CreateFolder();
             // I'd prefer this to include the book folder, but we need it before PrepareBookForBloomReader returns.
             // I believe we only ever have one book being made there, so it works.
             CurrentPublicationFolder = _stagingFolder.FolderPath;

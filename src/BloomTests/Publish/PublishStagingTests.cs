@@ -1,13 +1,13 @@
 using System;
 using System.IO;
 using System.Linq;
-using Bloom.Publish.BloomPub;
+using Bloom.Publish;
 using NUnit.Framework;
 
-namespace BloomTests.Publish.BloomPub
+namespace BloomTests.Publish
 {
     [TestFixture]
-    public class BloomPubStagingTests
+    public class PublishStagingTests
     {
         /// <summary>
         /// Two BloomPUBs made one after the other get different folders, each directly under the
@@ -16,8 +16,8 @@ namespace BloomTests.Publish.BloomPub
         [Test]
         public void CreateFolder_MakesDistinctFoldersHoldingOnlyTheMarker()
         {
-            using (var first = BloomPubStaging.CreateFolder())
-            using (var second = BloomPubStaging.CreateFolder())
+            using (var first = PublishStaging.CreateFolder())
+            using (var second = PublishStaging.CreateFolder())
             {
                 Assert.That(first.FolderPath, Is.Not.EqualTo(second.FolderPath));
                 foreach (var folder in new[] { first.FolderPath, second.FolderPath })
@@ -30,7 +30,7 @@ namespace BloomTests.Publish.BloomPub
                     );
                     Assert.That(
                         Path.GetDirectoryName(folder),
-                        Is.EqualTo(BloomPubStaging.RootPath.TrimEnd(Path.DirectorySeparatorChar))
+                        Is.EqualTo(PublishStaging.RootPath.TrimEnd(Path.DirectorySeparatorChar))
                     );
                     Assert.That(Path.GetFileName(folder).Length, Is.EqualTo(5), folder);
                 }
@@ -44,7 +44,7 @@ namespace BloomTests.Publish.BloomPub
         public void CreateFolder_DisposeDeletesTheFolder()
         {
             string path;
-            using (var folder = BloomPubStaging.CreateFolder())
+            using (var folder = PublishStaging.CreateFolder())
             {
                 path = folder.FolderPath;
                 File.WriteAllText(Path.Combine(path, "index.htm"), "<html></html>");
@@ -59,17 +59,17 @@ namespace BloomTests.Publish.BloomPub
         [Test]
         public void IsInStagingFolder_RecognizesPathsInsideTheRootOnly()
         {
-            var root = BloomPubStaging.RootPath.TrimEnd(Path.DirectorySeparatorChar);
+            var root = PublishStaging.RootPath.TrimEnd(Path.DirectorySeparatorChar);
             var inside = Path.Combine(root, "abcde", "My Book", "index.htm");
-            Assert.That(BloomPubStaging.IsInStagingFolder(inside), Is.True);
-            Assert.That(BloomPubStaging.IsInStagingFolder(inside.Replace('\\', '/')), Is.True);
-            Assert.That(BloomPubStaging.IsInStagingFolder(inside.ToUpperInvariant()), Is.True);
+            Assert.That(PublishStaging.IsInStagingFolder(inside), Is.True);
+            Assert.That(PublishStaging.IsInStagingFolder(inside.Replace('\\', '/')), Is.True);
+            Assert.That(PublishStaging.IsInStagingFolder(inside.ToUpperInvariant()), Is.True);
             Assert.That(
-                BloomPubStaging.IsInStagingFolder(root + "x" + Path.DirectorySeparatorChar + "a"),
+                PublishStaging.IsInStagingFolder(root + "x" + Path.DirectorySeparatorChar + "a"),
                 Is.False
             );
             Assert.That(
-                BloomPubStaging.IsInStagingFolder(Path.Combine(Path.GetTempPath(), "other")),
+                PublishStaging.IsInStagingFolder(Path.Combine(Path.GetTempPath(), "other")),
                 Is.False
             );
         }
@@ -81,15 +81,15 @@ namespace BloomTests.Publish.BloomPub
         [Test]
         public void DeleteOldFolders_DeletesOnlyFoldersOlderThanADay()
         {
-            var old = BloomPubStaging.CreateFolder();
-            using (var recent = BloomPubStaging.CreateFolder())
+            var old = PublishStaging.CreateFolder();
+            using (var recent = PublishStaging.CreateFolder())
             {
                 try
                 {
                     File.WriteAllText(Path.Combine(old.FolderPath, "leftover.txt"), "x");
                     BackDate(old.FolderPath);
 
-                    BloomPubStaging.DeleteOldFolders();
+                    PublishStaging.DeleteOldFolders();
 
                     Assert.That(Directory.Exists(old.FolderPath), Is.False);
                     Assert.That(Directory.Exists(recent.FolderPath), Is.True);
@@ -108,14 +108,14 @@ namespace BloomTests.Publish.BloomPub
         [Test]
         public void DeleteOldFolders_LeavesFoldersBloomDidNotCreate()
         {
-            var foreign = Path.Combine(BloomPubStaging.RootPath, "other-program");
+            var foreign = Path.Combine(PublishStaging.RootPath, "other-program");
             Directory.CreateDirectory(foreign);
             try
             {
                 File.WriteAllText(Path.Combine(foreign, "work.dat"), "x");
                 BackDate(foreign);
 
-                BloomPubStaging.DeleteOldFolders();
+                PublishStaging.DeleteOldFolders();
 
                 Assert.That(File.Exists(Path.Combine(foreign, "work.dat")), Is.True);
             }

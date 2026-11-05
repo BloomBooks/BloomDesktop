@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -89,7 +89,7 @@ namespace Bloom.Publish.BloomPub
             string creator = kCreatorBloom
         )
         {
-            using (var temp = BloomPubStaging.CreateFolder())
+            using (var temp = PublishStaging.CreateFolder())
             {
                 CreateBloomPub(
                     settings,
@@ -249,7 +249,7 @@ namespace Bloom.Publish.BloomPub
             // style/src still points to it.
             var claimedFilenames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            using (var tempDir = BloomPubStaging.CreateFolder())
+            using (var tempDir = PublishStaging.CreateFolder())
             {
                 foreach (
                     SafeXmlElement pageDiv in dom.SafeSelectNodes(

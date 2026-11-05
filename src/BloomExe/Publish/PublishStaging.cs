@@ -4,13 +4,14 @@ using System.IO;
 using BloomTemp;
 using SIL.IO;
 
-namespace Bloom.Publish.BloomPub
+namespace Bloom.Publish
 {
     /// <summary>
-    /// Where Bloom stages the files of a BloomPUB it is making, both for the preview in the
-    /// Publish tab and for a real .bloompub. Each BloomPUB gets its own folder,
-    /// %TEMP%\bps\&lt;five random characters&gt;, so that two BloomPUBs being made at once,
-    /// whether by one Bloom or by several, never share (and delete) each other's files.
+    /// Where Bloom stages the files of a BloomPUB or ePUB it is making, both for a preview in the
+    /// Publish tab and for the real thing. Each one gets its own folder,
+    /// %TEMP%\bps\&lt;five random characters&gt; ("bps" for Bloom publish staging), so that two
+    /// publications being made at once, whether by one Bloom or by several, never share (and
+    /// delete) each other's files.
     /// </summary>
     /// <remarks>
     /// The parent folder deliberately does not start with "bloom": TempFile.CleanupTempFolder,
@@ -19,7 +20,7 @@ namespace Bloom.Publish.BloomPub
     /// down, or an automation instance) is still using. Instead, DeleteOldFolders removes only
     /// staging folders old enough that nothing can still be using them.
     /// </remarks>
-    public static class BloomPubStaging
+    public static class PublishStaging
     {
         private const string kRootFolderName = "bps";
 
@@ -28,7 +29,7 @@ namespace Bloom.Publish.BloomPub
         // touches anything another program keeps under %TEMP%\bps.
         private const string kOwnerMarkerFileName = ".bloom-staging";
 
-        // Long enough that no BloomPUB, even one for a large app build, can still be in progress.
+        // Long enough that no publication, even a large app build, can still be in progress.
         // A Publish-tab preview keeps its folder until the next preview, so a preview another Bloom
         // has left open for over a day can lose its files when this Bloom exits; reopening the
         // preview remakes them.
@@ -40,7 +41,7 @@ namespace Bloom.Publish.BloomPub
         public static string RootPath => Path.Combine(Path.GetTempPath(), kRootFolderName);
 
         /// <summary>
-        /// Make a new staging folder that no other BloomPUB is using. It holds nothing but the
+        /// Make a new staging folder that no other publication is using. It holds nothing but the
         /// marker file that claims it. Disposing the result deletes the folder.
         /// </summary>
         public static TemporaryFolder CreateFolder()
@@ -91,7 +92,7 @@ namespace Bloom.Publish.BloomPub
         }
 
         /// <summary>
-        /// Delete the staging folders that were made more than a day ago. Each BloomPUB normally
+        /// Delete the staging folders that were made more than a day ago. Each publication normally
         /// deletes its own folder when it is finished, so these are left over from a Bloom that
         /// crashed or was killed. Folders that cannot be deleted are left for next time.
         /// </summary>
@@ -127,7 +128,7 @@ namespace Bloom.Publish.BloomPub
             }
             catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
             {
-                Debug.WriteLine($"Could not finish deleting old BloomPUB staging folders: {e}");
+                Debug.WriteLine($"Could not finish deleting old publish staging folders: {e}");
             }
         }
     }
