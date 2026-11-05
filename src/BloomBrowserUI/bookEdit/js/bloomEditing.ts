@@ -2095,7 +2095,7 @@ export function attachToCkEditor(element) {
         return;
     }
 
-    // Cover-title investigation (src/BloomE2E/AUTOMATION-DEBT.md): when an editor becomes ready it
+    // Cover-title investigation (BL-17022): when an editor becomes ready it
     // writes its copy of the box back into the box, and keepTypingWhenCkEditorLoads makes that copy
     // include a title typed before then (BL-17022). These two lines
     // announce every attach on a title box, with what the box holds going in and what it holds

@@ -711,171 +711,6 @@ file across runs as a real problem in that file rather than this entry. Fix dire
 `findShellPage` say what Bloom's process was doing when it gave up (it has the pid), so the next
 occurrence distinguishes a slow start from a Bloom that never got there.
 
-## A title typed on the cover of a new book can fail to reach the collection
-
-`import-recording.spec.ts` made a book under the Sample-Pro branding (`e2e/setBranding`,
-then `makeBookFromTemplate`), typed a title on the cover as soon as the Edit tab reported
-`Editing`, and added a page, which saves the cover. Locally the collection then lists the
-book under that title, its folder renamed to match. On the CI runner, in the first nightly
-run that had the test (2026-09-05), the collection went on listing the book under the name
-Bloom made up for it (`Book-3d943766`) for the whole 30 seconds `findBookFolder` waited, and
-the cover thumbnail showed no title. The typing itself was confirmed: `typeInGroup` saw the
-title in the box. Every other spec that types a cover title the same way passes on that
-runner; none of them makes the book under a branding. So something between the typing and
-the save loses the text, or the save does not carry it, only when the book is new under a
-branding and the machine is slow. Not reproduced locally.
-
-Worked around in the test, 2026-09-05: it no longer types a title, and keeps the folder
-`makeBookFromTemplate` returns, which is stable as long as the book has no title. A test
-whose subject is the title, or the folder rename, cannot take that route.
-
-seen again: 2026-09-10 and 2026-09-11, in `bulk-upload-quick-test.spec.ts`, which cannot
-take that workaround because it needs four books findable by title. Both nightlies died on
-the first book, identically, so on the runner this is close to deterministic.
-
-seen again: 2026-09-11 (the second run that day, on `53eb325a4b`), in
-`xmatter-packs.spec.ts:77` — and NOT in `bulk-upload-quick-test`, which got all four titles
-that run and then failed further on, at the upload itself. So it is not tied to one spec: it
-moves between whichever specs type a cover title on a new book.
-
-What the 2026-09-11 evidence adds — the first failure since #8343 started keeping the
-collection and Bloom's log on a failed test, so for once we can see the wreckage:
-
-- **Only the cover title is lost.** In the kept collection every `data-book="bookTitle"`
-  div is empty, `<title>` is empty, and `meta.json` has `"title": ""` — while the page
-  added straight afterwards, the "Hello." typed on it, and the copyright set later through
-  the Publish dialog are all saved. One edit is being dropped, not a save failing.
-- **The signature in Bloom's log is an absence.** Locally `InsertTemplatePage` is followed
-  by `Renaming html … -> '<title>.htm'` and `Renaming folder …` before
-  `BookStorage.Saving…`. On the runner those two lines are missing: the `SaveThen` that
-  `OnInsertPage` wraps the insert in got page content back from the browser with no title
-  in it, so there was nothing to rename to. That absence is the cheapest way to spot this
-  failure in a nightly log.
-- **Not reproducible on a fast machine.** Twelve attempts on a developer box — six at full
-  speed, six with the WebView renderer throttled 6x over CDP — all renamed the folder and
-  saved the title. Renderer slowness alone is not the trigger.
-
-**Answered, 2026-09-11**, by two instruments landed in #8352 — a throwaway probe spec that
-made the same book three times, typing the title a different way each time, and the
-`Cover-title investigation:` line `EditingModel.UpdateBookDomFromBrowserPageContent` logs —
-read from the nightly run on `53eb325a4b`. Three things are now ruled out and one is pinned
-down.
-
-- **Not how we type.** All three probe variants — `insertText`, real key presses, and
-  `insertText` then an explicit blur — reached the collection on the runner. The theory that
-  `insertText`'s missing key events were to blame is dead, and `typeInGroup` does not need to
-  change.
-- **Not branding.** The run's actual loss was in `xmatter-packs.spec.ts:77`, whose collection
-  is `<BrandingProjectName>Default</BrandingProjectName>` with an empty `SubscriptionCode`.
-  The earlier guess that this only happens "under a branding" was an artifact of the two
-  specs that had hit it, and is wrong.
-- **Not Bloom's save.** The log line for that failure reads `page content from the browser
-  carries bookTitle en="", z=""`. The DOM the browser handed back for the save had no title
-  in it, so nothing in `SaveThen`, `UpdateDomFromEditedPage` or `BookStorage` lost anything —
-  there was nothing there to lose. The empty `bookTitle` in the kept collection's HTML agrees.
-- **It is the browser, between the typing and the capture.** `typeInGroup` asserts
-  `toHaveText` after typing, so the text demonstrably reached the box; a few seconds later
-  `requestPageContent()` returned a page without it.
-
-**The mechanism, proven 2026-09-11: CKEditor discards what you type while it is still
-starting up.** `bootstrap()` calls `CKEDITOR.inline()` on every field `ckeditableSelector`
-matches and returns at once, but the editor only finishes initialising some time later — and
-when it does, it writes the snapshot it took at `inline()` time over whatever the element
-holds by then. Watching a real Bloom's DOM over CDP while a developer typed by hand:
-
-```
-ms=0     installed                 text=""      cke_editable=false
-ms=942   mut:childList+charData    text="a"     cke_editable=false
-ms=944   mut:characterData         text="af"    cke_editable=false
-ms=944   mut:characterData         text="afd"   cke_editable=false
-ms=1215  mut:attributes+childList  text=""      cke_editable=true
-```
-
-The class going on and the content being wiped are one and the same DOM mutation, so there is
-no inference left in this: that is the editor becoming ready and overwriting the typing. A
-detach/re-attach experiment gives the same result deterministically — text put in after
-`inline()` and before `instanceReady` is gone once the editor is ready.
-
-**This is a Bloom defect, and a user-facing one**: type a title fast enough after making a
-book and it silently disappears. It was reproduced by hand, twice, on a normal developer
-machine, with a window of about 1.2 seconds; a loaded machine widens it, which is why the
-runner hit it so reliably. **Fixed in Bloom, 2026-11-05 (BL-17022)**: see "The fix in Bloom"
-below.
-
-**The suite's workaround did NOT stop it, 2026-09-11 (second run of the night).**
-`clickInGroup` now waits for the `cke_editable` class before touching a box, on the boxes that
-get an editor at all (it asks the page the same three questions `bloomEditing.ts` asks:
-matches `ckeditableSelector`, no `.bloom-canvas` on the page, not read-only). Every typing path
-funnels through it, so no spec needed changing. The very next nightly still lost two titles:
-
-- `publish-talking-book-languages.spec.ts:82` — `has no book called "Talking Book Languages
-  Test". It has: "Book-bbd2b161"`.
-- `publish-text-languages.spec.ts:46` — `has no book called "Text Languages Test". It has:
-  "Title Missing"` — a **new** end state; every earlier loss left the book as `Book-<hex>`.
-
-Both type through `typeInGroup`, so the wait ran and the title went anyway. Note what the run
-does NOT show: `xmatter-packs`, which lost its title the run before, passed, and
-`bulk-upload-quick-test` again got all four books titled. The loss keeps moving between specs
-(`import-recording` → `bulk-upload` → `xmatter-packs` → these two), which is what it did before
-the wait existed. So the wait may have narrowed the window without closing it, or may be doing
-nothing; one run cannot tell those apart. **It is kept for now** rather than reverted, because
-removing it would only make the next run harder to interpret.
-
-**Why it did not work, answered 2026-09-12 by the instrumentation.** The wait was keyed on the
-wrong signal. `cke_editable` reaches the element *before* the editor is ready, so the wait
-returned while the box was still inside the window where the editor would overwrite it. The
-console trace from the failing run shows it plainly, in order:
-
-```
-[cover-title] attaching an editor; box holds ""
-    … the test's three insertText calls land here …
-[cover-title] editor ready; box now holds ""
-```
-
-and Bloom's own log agrees that nothing ever reached the save: `bookTitle en=""; the book's
-title is currently "Book-c12aeca0"`. No second attach was needed to explain it — the simpler
-reading was right, and the earlier guess (a re-attach) was wrong.
-
-**Fixed by asking CKEditor instead of the DOM**: the wait now polls `editor.status === "ready"`
-on the instance bound to that box, which is true from the moment it fires `instanceReady`. It
-also no longer tries to predict whether a box will get an editor by copying `bloomEditing.ts`'s
-three conditions — that copy could drift out of step, and guessing "no editor" wrongly skips the
-wait entirely, which is the failure that looks exactly like no bug. It waits for an editor to
-appear and, if none is bound after a short grace period, concludes none is coming.
-
-Beware the trap that hid this twice: a verification run where the box is **already** ready
-proves the wait costs nothing, NOT that it works. Only a run that starts from `unloaded` and
-blocks to `ready` demonstrates anything.
-
-**The fix in Bloom, 2026-11-05 (BL-17022).** `attachToCkEditor` now calls
-`keepTypingWhenCkEditorLoads` (`bookEdit/js/keepTypingWhenCkEditorLoads.ts`). Just before the
-editor writes its copy back into the box, that refreshes the copy from what the box holds, and
-it keeps the caret where it was. `typing-before-ckeditor-is-ready.spec.ts` proves it
-deterministically: it holds back CKEditor's `config.js`, so the editor cannot finish loading,
-types while the editor is still loading (and checks that it is), and then lets it load. Without
-the fix that test sees the box emptied. So the tests' wait for the editor (`clickInGroup`'s
-`waitForCkEditorToTakeTheBox`, also used by the table helpers) is gone: the nightly's
-title-typing specs now exercise the fix.
-
-**What is instrumented now**, and why it should stay until the nightly goes several runs without
-losing a title:
-
-- `EditingModel.UpdateBookDomFromBrowserPageContent` logs `Cover-title investigation:` — the
-  bookTitle the browser handed the save, and what the book already believes its title is. An
-  empty box with a known title means something cleared it after an earlier save; both empty
-  means it never arrived.
-- `attachToCkEditor` logs `[cover-title]` on every attach to a title box, with the text going in
-  and the text once the editor is ready. If a title is lost again, a box that held the title
-  going in and is empty once ready says the fix above has a gap. Playwright keeps the page
-  console in its trace, so a failed run carries it.
-
-This instrumentation was once removed as soon as the mechanism looked understood, and was needed
-again the next night. Do not remove it on the strength of one green run.
-
-Independently of all this, `findBookFolder` could look a book up by its id
-(`collections/books` reports one) so that no test depends on the rename at all.
-(Found 2026-09-05 in the nightly run; diagnosed 2026-09-11.)
-
 ## The canvas e2e suite is attach-only, so nothing runs it unattended
 
 `bookEdit/canvas-e2e-tests` drives `http://localhost:8089/bloom/CURRENTPAGE` — a Bloom a
@@ -914,7 +749,7 @@ it and nobody unzips anything. (Found 2026-09-15.)
 
 ## Nothing reproduces a loaded-runner race on a developer machine
 
-Three investigations this month — the cover-title loss, the font-chooser pane, and BL-16873 —
+Three investigations this month — a lost cover title (BL-17022), the font-chooser pane, and BL-16873 —
 all turned on a failure that the CI runner produces and a developer box does not, and in each
 one "try it locally" was the first thing tried and the least informative. For BL-16873 the local
 attempts were worse than uninformative: of about a dozen runs, only six actually completed an
@@ -922,8 +757,8 @@ import (all correct), because the two more interesting setups never got that far
 change the Import button was not clickable within 5s, and under CDP `Emulation.setCPUThrottlingRate`
 at 20x the *By Whole Text Box* radio stayed disabled, so the run died before the step under test.
 Throttling the renderer hard enough to widen the race also disables the controls the test needs,
-which is why the cover-title entry's "six with the WebView renderer throttled 6x" found nothing
-either.
+which is why six attempts at the lost cover title with the WebView renderer throttled 6x found
+nothing either.
 
 So the suite has no honest way to ask "does this fail when the machine is busy?", and a negative
 local result gets reported with more confidence than it earns.
