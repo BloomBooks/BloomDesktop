@@ -36,7 +36,7 @@ export const PageViewChooser: React.FunctionComponent = () => {
         setView(newView);
         getWorkspaceBundleExports().storeShowingOtherPages(newView === "all");
         getEditablePageBundleExports()?.setShowingOtherPages(newView === "all");
-        if (newView === "all") zoomOutToFitASpread();
+        switchToZoomOfView(view, newView);
     };
 
     return (
@@ -123,12 +123,55 @@ export const PageViewChooser: React.FunctionComponent = () => {
     );
 };
 
+type ZoomInfo = { zoom: number; minZoom: number };
+
+// Each view keeps the zoom the user last had in it, so that going back to one page undoes the
+// zooming out that seeing all the pages may have needed. Bloom's own zoom setting is the zoom of
+// the view showing now; the zoom of the other view is kept here, across Bloom sessions.
+function switchToZoomOfView(oldView: PageView, newView: PageView): void {
+    get("workspace/topRight/zoom", (result) => {
+        const zoomInfo = result.data as ZoomInfo;
+        storeZoomOfView(oldView, zoomInfo.zoom);
+        const zoomOfNewView = getStoredZoomOfView(newView);
+        if (zoomOfNewView !== undefined) {
+            if (zoomOfNewView !== zoomInfo.zoom) {
+                postJson("workspace/topRight/zoom", { zoom: zoomOfNewView });
+            }
+        } else if (newView === "all") {
+            zoomOutToFitASpread(zoomInfo);
+        }
+    });
+}
+
+function getZoomKeyOfView(view: PageView): string {
+    return `bloom-edit-zoom-${view}`;
+}
+
+// The zoom the user last had in this view, or undefined if they have never left it.
+function getStoredZoomOfView(view: PageView): number | undefined {
+    try {
+        const zoom = localStorage.getItem(getZoomKeyOfView(view));
+        return zoom ? parseInt(zoom, 10) : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+// Remember the zoom the user had in this view, for when they come back to it.
+function storeZoomOfView(view: PageView, zoom: number): void {
+    try {
+        localStorage.setItem(getZoomKeyOfView(view), zoom.toString());
+    } catch {
+        // Without storage the view keeps whatever zoom it is switched to.
+    }
+}
+
 // Seeing all the pages is meant to show at least the whole spread holding the page being edited
 // (two pages side by side, except in calendars and books sized for a screen; see
 // bookGridLayout.ts), so if the page frame is too narrow for it at the current zoom, zoom out until
 // it is not (to a whole step of 10%, and no further than Bloom allows). The full height of the
 // spread does not have to fit.
-function zoomOutToFitASpread(): void {
+function zoomOutToFitASpread(zoomInfo: ZoomInfo): void {
     const frame = document.getElementById("page") as HTMLIFrameElement;
     const pageDocument = frame.contentDocument!;
     const page = pageDocument.querySelector(
@@ -144,14 +187,11 @@ function zoomOutToFitASpread(): void {
         kSpreadGap;
     // The width the zoomed page can use; see setZoom() in workspaceRoot.ts.
     const availableWidth = pageDocument.body.clientWidth - 5;
-    get("workspace/topRight/zoom", (result) => {
-        const zoomInfo = result.data as { zoom: number; minZoom: number };
-        const fittingZoom = Math.max(
-            zoomInfo.minZoom,
-            Math.floor((availableWidth / spreadWidth) * 10) * 10,
-        );
-        if (fittingZoom < zoomInfo.zoom) {
-            postJson("workspace/topRight/zoom", { zoom: fittingZoom });
-        }
-    });
+    const fittingZoom = Math.max(
+        zoomInfo.minZoom,
+        Math.floor((availableWidth / spreadWidth) * 10) * 10,
+    );
+    if (fittingZoom < zoomInfo.zoom) {
+        postJson("workspace/topRight/zoom", { zoom: fittingZoom });
+    }
 }
