@@ -787,12 +787,14 @@ export async function clickAndFollowRestart(
 
 /**
  * The group of rows for one language on the Languages page of the dialog, found by its heading,
- * e.g. "Written Language 1" or "Written Language 2". Config-R draws a group as its
- * heading, then its description if it has one (a caption), then the box that holds its rows.
+ * e.g. "Written Language 1" or "Sign Language". Config-R draws a group as its heading (wrapped
+ * with any heading action, such as Remove, in a line of their own), then its description if it
+ * has one, then the box that holds its rows, which is an MUI Paper: so the box is the first
+ * Paper after the heading.
  */
 function languageGroup(page: Page, heading: string): Locator {
     return collectionSettingsDialog(page).locator(
-        `xpath=.//h3[normalize-space(.)="${heading}"]/following-sibling::*[not(contains(@class,"MuiTypography-caption"))][1]`,
+        `xpath=.//h3[normalize-space(.)="${heading}"]/following::*[contains(concat(" ",normalize-space(@class)," ")," MuiPaper-root ")][1]`,
     );
 }
 

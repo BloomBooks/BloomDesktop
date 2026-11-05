@@ -32,6 +32,7 @@ import {
 import { switchTab } from "../helpers/workspace";
 
 const kLanguage1 = "Written Language 1";
+const kLanguage3 = "Written Language 3";
 const kLineSpacing = "Default line spacing";
 const kAlphabet = "Alphabet";
 // The alphabet useKnownReaderStages gives, with "zh" added.
@@ -62,6 +63,9 @@ test("changing a language's font, line spacing and alphabet saves them and reope
     expect(await getCollectionSettingsLanguage(page, kLanguage1)).toBe(
         "English (en)",
     );
+    // A group with a heading action (Remove) is laid out differently; the collection has no
+    // third language, so its group is found and shows none.
+    expect(await getCollectionSettingsLanguage(page, kLanguage3)).toBe("");
     // Polled: the fonts arrive after the page shows.
     await expect
         .poll(() => getCollectionSettingsLanguageFont(page, kLanguage1))
