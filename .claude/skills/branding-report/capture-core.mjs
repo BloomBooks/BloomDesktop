@@ -146,9 +146,9 @@ export async function selectBook(base, target) {
 
 export async function getCurrentXmatter(base) {
     try {
-        // GET settings/xmatter -> { currentXmatter, xmatterOfferings:[{internalName,...}] }
-        const data = robustJson(await apiGet(base, "settings/xmatter"));
-        return data.currentXmatter || null;
+        // GET collection/settings -> { values: { frontBackMatter: { xmatter } }, xmatterPacks:[{value,...}] }
+        const data = robustJson(await apiGet(base, "collection/settings"));
+        return data.values?.frontBackMatter?.xmatter || null;
     } catch {
         return null;
     }

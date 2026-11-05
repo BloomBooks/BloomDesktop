@@ -13,6 +13,7 @@ import {
 import { Button } from "@mui/material";
 import { useL10n } from "../../react_components/l10nHooks";
 import { get } from "../../utils/bloomApi";
+import { useMountEffect } from "../../utils/useMountEffect";
 import FontSelectComponent, {
     IFontMetaData,
 } from "../../bookEdit/StyleEditor/fontSelectComponent";
@@ -162,10 +163,6 @@ const LanguageChooserControl = <
             </Button>
             {choosing && (
                 <LanguageChooserDialog
-                    dialogEnvironment={{
-                        dialogFrameProvidedExternally: false,
-                        initiallyOpen: true,
-                    }}
                     initialLanguageTag={props.value?.tag}
                     initialCustomName={props.value?.name}
                     onChosen={(chosen) =>
@@ -347,12 +344,11 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
     // Asked for when the dialog first opens, not when Config-R mounts this page, so that it is
     // usually in before anyone looks. Once is enough: Bloom reads the fonts only at startup.
     const [fontMetadata, setFontMetadata] = React.useState<IFontMetaData[]>();
-    React.useEffect(() => {
-        if (!context.dialogOpen || fontMetadata) return;
+    useMountEffect(() => {
         get("fonts/metadata", (result) => {
             setFontMetadata(result.data as IFontMetaData[]);
         });
-    }, [context.dialogOpen, fontMetadata]);
+    });
 
     // The font picker needs the font list, so it is made again (and Config-R mounts it again)
     // only when the list arrives.
@@ -398,7 +394,7 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
 
     // A written language the user adds (only Language 3 can be missing) starts with Bloom's
     // default font, which C# tells us.
-    const defaultFontName = context.settings?.defaultFontName ?? "";
+    const defaultFontName = context.settings.defaultFontName;
     const WrittenLanguageControl = React.useMemo(() => {
         const Control: React.FunctionComponent<{
             value: ICollectionSettingsLanguage | null;
@@ -424,12 +420,12 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
     // The reader tools' file is named for the first language, so its values cannot be edited
     // while the user is changing that language: they would go to the language being replaced.
     const language1TagChanged =
-        context.values?.languages.language1.tag !==
-        context.settings?.values?.languages.language1.tag;
+        context.values.languages.language1.tag !==
+        context.settings.values.languages.language1.tag;
     // Why the reader tools' values cannot be edited just now, if they cannot. A damaged file
     // would be written over, losing the stages and levels Bloom could not read.
     let readerToolsLockedReason: string | undefined;
-    if (context.settings?.values?.readerTools.isUnreadable)
+    if (context.settings.values.readerTools.isUnreadable)
         readerToolsLockedReason = readerToolsUnreadable;
     else if (language1TagChanged)
         readerToolsLockedReason = readerToolsLanguage1Changed;
@@ -440,7 +436,7 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
     function writtenLanguageGroup(language: IWrittenLanguage) {
         const path = `languages.language${language.number}`;
         const present =
-            language.number !== 3 || !!context.values?.languages.language3;
+            language.number !== 3 || !!context.values.languages.language3;
         return (
             <ConfigrGroup
                 key={path}
@@ -533,8 +529,7 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
                                     label={pageNumberingLabel}
                                     path="languages.pageNumberStyle"
                                     options={
-                                        context.settings
-                                            ?.pageNumberStyleChoices ?? []
+                                        context.settings.pageNumberStyleChoices
                                     }
                                 />
                             )}
@@ -580,6 +575,6 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
         element: languagesPage,
         helpTopic: "Tasks/Basic_tasks/Change_languages.htm",
         valuesToSave: (values) =>
-            withEditedLettersCleaned(values, context.settings!.values),
+            withEditedLettersCleaned(values, context.settings.values),
     };
 }

@@ -6,11 +6,13 @@ import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
 import { useL10n } from "../../react_components/l10nHooks";
 import {
     get,
-    post,
+    postData,
     useApiBoolean,
+    useApiOneWayState,
     useApiString,
-    useWatchString,
 } from "../../utils/bloomApi";
+import { LanguageChooserDialog } from "../../collection/LanguageChooserDialog";
+import { ILanguageData } from "../../collection/languageData";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import { ILanguagePublishInfo } from "./PublishLanguagesGroup";
 import { Link as MuiLink } from "@mui/material";
@@ -84,19 +86,24 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
     }, [props.generation]);
     const [hasVideo] = useApiBoolean("publish/hasVideo", false);
 
-    const showSignLanguageChooser = () => {
-        post("publish/chooseSignLanguage");
-    };
-
-    const signLanguageNameOriginal = useApiString(
-        "publish/signLanguageName",
-        "",
-    );
-    const signLanguageName = useWatchString(
-        signLanguageNameOriginal,
-        "publish",
-        "signLang",
-    );
+    const [signLanguage, setSignLanguage] = useApiOneWayState<{
+        tag: string;
+        name: string;
+    }>("publish/collectionSignLanguage", { tag: "", name: "" });
+    const signLanguageName = signLanguage.name;
+    const [choosingSignLanguage, setChoosingSignLanguage] =
+        React.useState(false);
+    const showSignLanguageChooser = () => setChoosingSignLanguage(true);
+    function onSignLanguageChosen(chosen: ILanguageData) {
+        // Set the name only once C# has saved the choice: the Sign Language checkbox below asks
+        // C# for its value again when a sign language is first set (its key changes then).
+        postData("publish/collectionSignLanguage", chosen, () =>
+            setSignLanguage({
+                tag: chosen.LanguageTag!,
+                name: chosen.DesiredName!,
+            }),
+        );
+    }
 
     const l1Name = useApiString("publish/l1Name", "");
 
@@ -288,6 +295,14 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                         disabled={!signLanguageEnabled}
                     />
                 </BloomTooltip>
+                {choosingSignLanguage && (
+                    <LanguageChooserDialog
+                        initialLanguageTag={signLanguage.tag || undefined}
+                        initialCustomName={signLanguage.name || undefined}
+                        onChosen={onSignLanguageChosen}
+                        onClose={() => setChoosingSignLanguage(false)}
+                    />
+                )}
                 <BloomTooltip key={"games-tooltip"} tip={gamesTooltip}>
                     <BloomCheckbox
                         label="Game"
