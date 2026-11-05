@@ -529,10 +529,29 @@ namespace Bloom.web.controllers
                 IsTeamCollection = CurrentCollectionIsTeamCollection,
                 EditingABlorgBook = _collectionSettings.EditingABlorgBook,
                 DefaultTeamCollectionFolder = DropboxUtils.GetDropboxFolderPath() ?? "",
+                DefaultFontName = WritingSystem.GetDefaultFontName(),
+                PageNumberStyles = GetPageNumberStyles(),
                 XmatterPacks = GetXmatterPacks(xmatterKeyForcedByBranding),
                 XmatterChosenByBranding = xmatterKeyForcedByBranding != null,
             };
             request.ReplyWithJson(JsonConvert.SerializeObject(response, kCamelCaseSettings));
+        }
+
+        /// <summary>
+        /// The page numbering styles, with their names as the user sees them.
+        /// </summary>
+        private static PageNumberStyleOption[] GetPageNumberStyles()
+        {
+            return CollectionSettings
+                .CssNumberStylesToCultureOrDigits.Keys.Select(styleKey => new PageNumberStyleOption
+                {
+                    Value = styleKey,
+                    Label = LocalizationManager.GetString(
+                        "CollectionSettingsDialog.BookMakingTab.PageNumberingStyle." + styleKey,
+                        styleKey
+                    ),
+                })
+                .ToArray();
         }
 
         /// <summary>
