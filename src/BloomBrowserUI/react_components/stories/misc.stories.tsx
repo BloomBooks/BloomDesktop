@@ -1,11 +1,10 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import { Typography, MenuItem } from "@mui/material";
+import { MenuItem } from "@mui/material";
 import SmallNumberPicker from "../smallNumberPicker";
 import { BloomAvatar } from "../bloomAvatar";
 import { RadioGroup } from "../RadioGroup";
 import WinFormsStyleSelect from "../winFormsStyleSelect";
-import BookMakingSettingsControl from "../../collection/bookMakingSettingsControl";
 import BloomButton from "../bloomButton";
 
 import { Meta, StoryObj } from "@storybook/react-vite";
@@ -192,21 +191,6 @@ export const WinFormsImitatingSelectStory: Story = {
             >
                 {selectTestChildren}
             </WinFormsStyleSelect>
-        </div>
-    ),
-};
-
-export const BookMakingTabPaneStory: Story = {
-    name: "Book Making tab pane",
-    render: () => (
-        <div>
-            <div style={frameDivStyle}>
-                <BookMakingSettingsControl />
-            </div>
-            <Typography>
-                Have Bloom running while testing this and the api calls will
-                work.
-            </Typography>
         </div>
     ),
 };
