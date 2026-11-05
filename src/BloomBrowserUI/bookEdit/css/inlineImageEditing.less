@@ -45,6 +45,17 @@
         );
     }
 
+    // Because of the z-index above, the wrapper is on top of the text, and the text runs
+    // through the offset padding above the image. A click on that text would land on the
+    // wrapper and select the image instead of putting the caret in the text (BL-17077).
+    // Clipping the wrapper to the image's box fixes that, because a click outside an
+    // element's clip-path goes through to whatever is underneath. Nothing the wrapper shows
+    // while editing is outside the image's box: the handles and the placeholder flower all sit
+    // on it. A cropped image already gets this same clip from inlineImages.less.
+    clip-path: inset(
+        var(--inline-image-box-top) var(--inline-image-box-inset) 0
+    );
+
     // Until a real image has been chosen, draw the usual flower placeholder on the image's
     // box. If it were drawn on the wrapper's box, the flower would float up into the offset
     // padding where the text goes, away from the handles.
