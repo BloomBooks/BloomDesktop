@@ -46,7 +46,8 @@ namespace Bloom.web.controllers
         public string DefaultTeamCollectionFolder;
 
         /// <summary>
-        /// The font a language gets when the user adds it (a third language).
+        /// Bloom's default font, which a written language the user sets up in the dialog starts
+        /// with (today, a newly added Language 3).
         /// </summary>
         public string DefaultFontName;
 

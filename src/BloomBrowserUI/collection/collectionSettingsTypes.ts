@@ -105,7 +105,8 @@ export interface ICollectionSettingsResponse {
     editingABlorgBook: boolean;
     // The folder the Create Team Collection dialog starts with: the user's Dropbox folder, or "".
     defaultTeamCollectionFolder: string;
-    // The font a language gets when the user adds it (a third language).
+    // Bloom's default font, which a written language the user sets up in the dialog starts with
+    // (today, a newly added Language 3).
     defaultFontName: string;
     // The page numbering styles; value is the key values.languages.pageNumberStyle holds.
     pageNumberStyles: { value: string; label: string }[];
