@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-11-04 (nightlies through the 2026-11-04 run, 41823419987, have been triaged)
+**Last updated:** 2026-11-05 (nightlies through the 2026-11-05 run, 42021196009, have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -8,24 +8,6 @@ once its fix lands and the nightly has stayed green on it. The rule they are all
 accept a flaky test, and a test is flaky from its first unexplained failure (root `AGENTS.md`,
 Testing). So "wait and see whether it recurs" is never an entry's plan. To bring this up to date,
 use the `nightly-triage` skill.
-
-## Canvas element menu: the Layer submenu covers its own row
-
-- **Failed:** 2026-11-03. `BloomE2E/tests/canvas-layer-order.spec.ts` "the Layer menu enables
-  only the moves the element can make" (Test Case 840): `parent.hover()` on the Layer row timed
-  out after 30 s in `openCanvasElementSubmenu` (`helpers/canvasElements.ts:524`), because the
-  Layer submenu's "Send Backwards" row intercepted the pointer.
-- **What the trace shows (first look):** the first check (bubble A) opened and closed the menus
-  cleanly. For bubble B the helper opened a fresh "..." menu and hovered Layer. The first try
-  found the menu still moving; on the next, the Layer submenu was already open, drawn over the
-  Layer row itself, so the hover could never land on the row. The screenshot shows that. What
-  opened the submenu before the pointer reached its row is not known: keyboard focus (the cause of
-  the 11-01 Flip failure that [#8528](https://github.com/BloomBooks/BloomDesktop/pull/8528) fixed),
-  or the pointer passing over the row while the menu was still moving. Why the submenu was drawn
-  over its parent row rather than beside it is not known either.
-- **Status:** bot draft PR [#8533](https://github.com/BloomBooks/BloomDesktop/pull/8533) (open),
-  "Shut a menu row's submenu for good when its keepMounted menu shuts". No card. The test passed
-  on 2026-11-04 without that PR, which settles nothing.
 
 ## E2E teardown: EPERM deleting Bloom's temp folder after the collection rename test
 
