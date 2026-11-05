@@ -9,6 +9,7 @@ import {
     ConfigrInput,
     ConfigrPage,
     ConfigrSelect,
+    useConfigrValue,
 } from "@sillsdev/config-r";
 import { Button, MenuItem, Select } from "@mui/material";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -147,8 +148,30 @@ function signLanguageFromChooser(
 }
 
 /**
- * The language row's control: the language's name and tag, a button that opens the language
- * chooser in a dialog of its own, and, for a language the collection need not have, Remove.
+ * The Remove button at the right of the heading of a language the collection need not have (the
+ * third and the sign language). It shows only while the collection has that language.
+ */
+const RemoveLanguageButton: React.FunctionComponent<{
+    path: string;
+}> = (props) => {
+    const removeLabel = useL10n(
+        "Remove",
+        "CollectionSettingsDialog.LanguageTab.RemoveLanguageLink",
+    );
+    const [language, setLanguage] = useConfigrValue<
+        ICollectionSettingsLanguage | ICollectionSettingsSignLanguage | null
+    >(props.path);
+    if (!language) return null;
+    return (
+        <Button size="small" onClick={() => setLanguage(null)}>
+            {removeLabel}
+        </Button>
+    );
+};
+
+/**
+ * The language row's control: the language's name and tag, and a button that opens the language
+ * chooser in a dialog of its own.
  */
 const LanguageChooserControl = <
     T extends ICollectionSettingsLanguage | ICollectionSettingsSignLanguage,
@@ -156,8 +179,6 @@ const LanguageChooserControl = <
     value: T | null;
     disabled?: boolean;
     onChange: (value: T | null) => void;
-    // Whether the collection may be without this language (the third and the sign language).
-    removable: boolean;
     // The language as it should be once the user picks one in the chooser.
     fromChooser: (chosen: ILanguageData, previous: T | null) => T;
 }): React.ReactElement => {
@@ -168,10 +189,6 @@ const LanguageChooserControl = <
     const setLabel = useL10n(
         "Set...",
         "CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink",
-    );
-    const removeLabel = useL10n(
-        "Remove",
-        "CollectionSettingsDialog.LanguageTab.RemoveLanguageLink",
     );
     const [choosing, setChoosing] = React.useState(false);
     return (
@@ -194,14 +211,6 @@ const LanguageChooserControl = <
             >
                 {props.value ? changeLabel : setLabel}
             </Button>
-            {props.removable && props.value && (
-                <Button
-                    disabled={props.disabled}
-                    onClick={() => props.onChange(null)}
-                >
-                    {removeLabel}
-                </Button>
-            )}
             {choosing && (
                 <LanguageChooserDialog
                     dialogEnvironment={{
@@ -230,7 +239,6 @@ const RequiredLanguageControl: React.FunctionComponent<{
         value={props.value}
         disabled={props.disabled}
         onChange={props.onChange}
-        removable={false}
         // A required language always has a previous value, so there are no defaults to need.
         fromChooser={(chosen, previous) =>
             languageFromChooser(chosen, previous, "")
@@ -246,7 +254,6 @@ const SignLanguageControl: React.FunctionComponent<{
         value={props.value}
         disabled={props.disabled}
         onChange={props.onChange}
-        removable={true}
         fromChooser={signLanguageFromChooser}
     />
 );
@@ -364,7 +371,7 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
         "CollectionSettingsDialog.LanguagesPage.RightToLeft",
     );
     const rightToLeftDescription = useL10n(
-        "If you are not SURE, then do not turn this on. If your language is written starting on the right and moving left, you will KNOW.",
+        "If you are not **SURE**, then do not turn this on. If your language is written starting on the right and moving left, you will **KNOW**.",
         "CollectionSettingsDialog.LanguagesPage.RightToLeft.Description",
     );
     const otherLabel = useL10n("Other", "Common.Other");
@@ -461,7 +468,6 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
                 value={controlProps.value}
                 disabled={controlProps.disabled}
                 onChange={controlProps.onChange}
-                removable={true}
                 fromChooser={(chosen, previous) =>
                     languageFromChooser(chosen, previous, defaultFontName)
                 }
@@ -497,6 +503,11 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
                 key={path}
                 label={language.heading}
                 description={language.description}
+                headerAction={
+                    language.number === 3 ? (
+                        <RemoveLanguageButton path={path} />
+                    ) : undefined
+                }
             >
                 <ConfigrCustomObjectInput<ICollectionSettingsLanguage | null>
                     path={path}
@@ -613,7 +624,12 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
                 heading: language3Heading,
                 description: language3Description,
             })}
-            <ConfigrGroup label={signLanguageLabel}>
+            <ConfigrGroup
+                label={signLanguageLabel}
+                headerAction={
+                    <RemoveLanguageButton path="languages.signLanguage" />
+                }
+            >
                 <ConfigrCustomObjectInput<ICollectionSettingsSignLanguage | null>
                     path="languages.signLanguage"
                     label={signLanguageLabel}
