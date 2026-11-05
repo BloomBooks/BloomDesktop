@@ -5,22 +5,25 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Bloom.Book;
-using Bloom.Publish.BloomPub;
+using Bloom.SubscriptionAndFeatures;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SIL.IO;
 
-namespace Bloom.Publish.Rab
+namespace Bloom.Publish.BloomPub
 {
     /// <summary>
-    /// Decides whether a BloomPUB that the Apps screen made earlier still matches its book, so it
-    /// can be reused, and its size reported as the actual size, instead of being made again
-    /// (BL-17062). Before this, every BloomPUB was thrown away each time the Apps screen opened.
+    /// Decides whether a BloomPUB made earlier still matches its book, so it can be reused (and,
+    /// on the Apps screen, its size reported as the actual size) instead of being made again
+    /// (BL-17062). <see cref="BloomPubMaker.GetOrCreateCachedBloomPub"/> is the usual way in.
+    /// Kept BloomPUBs live in <see cref="GetCacheFolder"/>, outside the collection, so that file
+    /// syncing services don't copy them around.
     ///
     /// Next to each BloomPUB we keep a small record (<c>name.bloompub.cache.json</c>) of what it
     /// was made from:
     /// - the version of Bloom that made it, since a different Bloom may make a different BloomPUB;
-    /// - the publish settings that affect it (languages, motion book, picture resolution);
+    /// - the publish settings that affect it, the tool that made it and the collection's
+    ///   subscription (see <see cref="MakeSettingsKey"/>);
     /// - the book's content hash, the same one BloomPUBs carry in version.txt and Team
     ///   Collections use to notice changes (<see cref="Book.Book.ComputeHashForAllBookRelatedFiles"/>);
     /// - a cheap "signature" of the book's files (names, sizes and modified times).
@@ -34,7 +37,7 @@ namespace Bloom.Publish.Rab
     /// keeps a hash of meta.json without its editor-state fields (see ComputeMetadataHash). Both
     /// leave out PDFs, which a BloomPUB leaves out too.
     /// </remarks>
-    public class RabBloomPubCache
+    public static class BloomPubCache
     {
         internal const string kRecordSuffix = ".cache.json";
 
@@ -71,7 +74,7 @@ namespace Bloom.Publish.Rab
         // just each release.
         private static readonly Lazy<string> s_bloomVersion = new Lazy<string>(() =>
         {
-            var assembly = typeof(RabBloomPubCache).Assembly;
+            var assembly = typeof(BloomPubCache).Assembly;
             return assembly.GetName().Version
                 + "|"
                 + new FileInfo(assembly.Location).LastWriteTimeUtc.Ticks;
@@ -82,10 +85,53 @@ namespace Bloom.Publish.Rab
         /// </summary>
         public static string GetRecordPath(string bloomPubPath) => bloomPubPath + kRecordSuffix;
 
+        // Not starting with "bloom": when Bloom exits, TempFile.CleanupTempFolder deletes everything
+        // in the temp folder whose name starts with TempFile.NamePrefix ("bloom"), and kept
+        // BloomPUBs must last from one run of Bloom to the next.
+        private static readonly string[] kCacheFolderParents = { "SIL", "Bloom", "bloompub-cache" };
+
         /// <summary>
-        /// A string that changes whenever a publish setting that affects the BloomPUB changes.
+        /// The folder that holds every collection's <see cref="GetCacheFolder"/>.
         /// </summary>
-        public static string MakeSettingsKey(BloomPubPublishSettings settings)
+        public static string CacheRoot =>
+            Path.Combine(new[] { Path.GetTempPath() }.Concat(kCacheFolderParents).ToArray());
+
+        /// <summary>
+        /// Where to keep the BloomPUBs made from the books of the collection in
+        /// <paramref name="collectionFolderPath"/>: a folder in the user's temp folder that lasts
+        /// between runs of Bloom. Each collection gets its own subfolder, named after the
+        /// collection folder (in ASCII, for Reading App Builder's sake) plus a short hash of its
+        /// full path, so that two collections with the same name don't share one. Windows may
+        /// clear the temp folder, which only means the BloomPUBs get made again.
+        /// </summary>
+        public static string GetCacheFolder(string collectionFolderPath)
+        {
+            var fullPath = Path.GetFullPath(collectionFolderPath)
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            var name = new string(
+                Path.GetFileName(fullPath)
+                    .Select(c => c < 128 && !Path.GetInvalidFileNameChars().Contains(c) ? c : '_')
+                    .ToArray()
+            );
+            using var sha = SHA256.Create();
+            var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(fullPath.ToLowerInvariant()));
+            var suffix = string.Concat(hash.Take(4).Select(b => b.ToString("x2")));
+            return Path.Combine(CacheRoot, $"{name}-{suffix}");
+        }
+
+        /// <summary>
+        /// A string that changes whenever anything besides the book itself that affects the
+        /// BloomPUB changes: the publish settings, the tool that makes it
+        /// (<paramref name="creator"/>, which goes into the BloomPUB), and the collection's
+        /// <paramref name="subscription"/>, because publishing leaves out subscription features and
+        /// branding once a subscription has expired, which happens by date with no file changing
+        /// (Greptile, PR 8531).
+        /// </summary>
+        public static string MakeSettingsKey(
+            BloomPubPublishSettings settings,
+            string creator,
+            Subscription subscription
+        )
         {
             return string.Join(
                 "|",
@@ -99,7 +145,16 @@ namespace Bloom.Publish.Rab
                 ),
                 settings.PublishAsMotionBookIfApplicable,
                 settings.ImagePublishSettings.MaxWidth,
-                settings.ImagePublishSettings.MaxHeight
+                settings.ImagePublishSettings.MaxHeight,
+                settings.DistributionTag,
+                settings.BookshelfTag,
+                settings.PublishingMedium,
+                settings.WantPageLabels,
+                settings.RemoveInteractivePages,
+                creator,
+                subscription.Tier,
+                subscription.IsExpired(),
+                subscription.BrandingKey
             );
         }
 
@@ -108,7 +163,7 @@ namespace Bloom.Publish.Rab
         /// making a BloomPUB from it, so an edit made while the BloomPUB is being made shows up as
         /// a change next time.
         /// </summary>
-        public BookSnapshot TakeSnapshot(string bookFolderPath)
+        public static BookSnapshot TakeSnapshot(string bookFolderPath)
         {
             return new BookSnapshot
             {
@@ -123,7 +178,7 @@ namespace Bloom.Publish.Rab
         /// <paramref name="snapshot"/> describes, with publish settings
         /// <paramref name="settingsKey"/> (from <see cref="MakeSettingsKey"/>).
         /// </summary>
-        public void RecordNewBloomPub(
+        public static void RecordNewBloomPub(
             string bloomPubPath,
             BookSnapshot snapshot,
             string settingsKey
@@ -157,7 +212,11 @@ namespace Bloom.Publish.Rab
         /// Bloom, with publish settings <paramref name="settingsKey"/>, from the book in
         /// <paramref name="bookFolderPath"/> as it is now.
         /// </summary>
-        public bool IsCurrent(string bloomPubPath, string bookFolderPath, string settingsKey)
+        public static bool IsCurrent(
+            string bloomPubPath,
+            string bookFolderPath,
+            string settingsKey
+        )
         {
             if (!RobustFile.Exists(bloomPubPath))
                 return false;

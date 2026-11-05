@@ -105,7 +105,6 @@ namespace Bloom.Publish.Rab
         private readonly BloomWebSocketServer _webSocketServer;
         private readonly IWebSocketProgress _progress;
         private readonly BloomPubSizeEstimator _bloomPubSizeEstimator = new BloomPubSizeEstimator();
-        private readonly RabBloomPubCache _bloomPubCache = new RabBloomPubCache();
         private volatile string _activeProgressAction;
         private int _lastBuildProgressPercent;
         private volatile string _lastLoggedProgressStage;
@@ -556,7 +555,7 @@ namespace Bloom.Publish.Rab
         {
             try
             {
-                return _bloomPubCache.IsCurrent(
+                return BloomPubCache.IsCurrent(
                     bloomPubPath,
                     book.FolderPath,
                     book.BloomPubSettingsKey
@@ -1150,7 +1149,7 @@ namespace Bloom.Publish.Rab
                 "building an app with Reading App Builder"
             );
 
-            // Build reuses BloomPUBs made earlier that still match their books (see RabBloomPubCache)
+            // Build reuses BloomPUBs made earlier that still match their books (see BloomPubCache)
             // and makes only the missing or out-of-date ones.
             var paths = GetPaths();
             EnsureWorkspaceFolders(paths);
@@ -1680,11 +1679,35 @@ namespace Bloom.Publish.Rab
         {
             Directory.CreateDirectory(paths.RabRoot);
             Directory.CreateDirectory(paths.BloomPubRoot);
+            DeleteOldBloomPubFolder(paths);
             Directory.CreateDirectory(paths.BuildRoot);
             Directory.CreateDirectory(paths.ApkRoot);
             Directory.CreateDirectory(paths.KeystoreRoot);
             Directory.CreateDirectory(paths.ProjectAssetsRoot);
             Directory.CreateDirectory(paths.LauncherIconRoot);
+        }
+
+        /// <summary>
+        /// Before BL-17062 the Apps screen made its BloomPUBs in the collection's own
+        /// "Bloom App Data/bloompubs" folder; they are now kept in
+        /// <see cref="BloomPubCache.GetCacheFolder"/>. The old ones would only ever be made again,
+        /// so remove them rather than leave them for file-syncing services to copy around.
+        /// </summary>
+        private static void DeleteOldBloomPubFolder(RabWorkspacePaths paths)
+        {
+            var oldFolder = Path.Combine(paths.RabRoot, "bloompubs");
+            if (!Directory.Exists(oldFolder))
+                return;
+            try
+            {
+                RobustIO.DeleteDirectoryAndContents(oldFolder);
+            }
+            catch (Exception error)
+                when (error is IOException || error is UnauthorizedAccessException)
+            {
+                // Something has a file open; we'll try again next time.
+                Logger.WriteError($"Could not delete the old BloomPUB folder {oldFolder}", error);
+            }
         }
 
         internal virtual List<RabBookPublishInfo> ExportPrepareBooks(RabWorkspacePaths paths)
@@ -1835,27 +1858,14 @@ namespace Bloom.Publish.Rab
                     _bookServer,
                     bookInfo
                 );
-                var settingsKey = MakeBloomPubSettingsKey(settings);
-                if (_bloomPubCache.IsCurrent(bloomPubPath, bookInfo.FolderPath, settingsKey))
-                {
-                    _progress.MessageWithoutLocalizing(
-                        $"Reusing existing BloomPUB for {bookTitle}..."
-                    );
-                }
-                else
-                {
-                    _progress.MessageWithoutLocalizing($"Creating BloomPUB for {bookTitle}...");
-                    RabBloomPubCache.Delete(bloomPubPath);
-                    var snapshot = _bloomPubCache.TakeSnapshot(bookInfo.FolderPath);
-                    BloomPubMaker.CreateBloomPub(
-                        settings,
-                        bloomPubPath,
-                        book,
-                        _bookServer,
-                        _progress
-                    );
-                    _bloomPubCache.RecordNewBloomPub(bloomPubPath, snapshot, settingsKey);
-                }
+                BloomPubMaker.GetOrCreateCachedBloomPub(
+                    settings,
+                    bloomPubPath,
+                    book,
+                    _bookServer,
+                    _progress,
+                    bookTitle
+                );
                 ReportBloomPubStageProgress(index + 1, booksToExport.Count);
 
                 var bloomPubContent = ReadBloomPubContentInfo(bloomPubPath);
@@ -1950,21 +1960,21 @@ namespace Bloom.Publish.Rab
                 if (bloomPubPathsToKeep.Contains(existingBloomPubPath))
                     continue;
 
-                RabBloomPubCache.Delete(existingBloomPubPath);
+                BloomPubCache.Delete(existingBloomPubPath);
             }
 
             // Also clear out records whose BloomPUB is gone (e.g. a build that was cancelled).
             foreach (
                 var recordPath in Directory.GetFiles(
                     bloomPubRoot,
-                    "*" + BloomPubMaker.BloomPubExtensionWithDot + RabBloomPubCache.kRecordSuffix,
+                    "*" + BloomPubMaker.BloomPubExtensionWithDot + BloomPubCache.kRecordSuffix,
                     SearchOption.TopDirectoryOnly
                 )
             )
             {
                 var bloomPubPath = recordPath.Substring(
                     0,
-                    recordPath.Length - RabBloomPubCache.kRecordSuffix.Length
+                    recordPath.Length - BloomPubCache.kRecordSuffix.Length
                 );
                 if (!RobustFile.Exists(bloomPubPath))
                     RobustFile.Delete(recordPath);
@@ -4450,17 +4460,18 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
-        /// The key that says which settings a kept BloomPUB was made with (see
-        /// <see cref="RabBloomPubCache"/>). Besides the book's publish settings it includes the
-        /// collection's effective subscription, because publishing leaves out subscription
-        /// features and branding once a subscription has expired, and that happens by date, with no
-        /// file changing (Greptile, PR 8531).
+        /// The key that says what besides the book a kept BloomPUB was made with (see
+        /// <see cref="BloomPubCache.MakeSettingsKey"/>). It must match the key
+        /// <see cref="BloomPubMaker.GetOrCreateCachedBloomPub"/> uses when export makes the
+        /// BloomPUB, so it uses the same creator and the collection's subscription.
         /// </summary>
         private string MakeBloomPubSettingsKey(BloomPubPublishSettings settings)
         {
-            var subscription = _collectionSettings.Subscription;
-            return RabBloomPubCache.MakeSettingsKey(settings)
-                + $"|{subscription.Tier}|{subscription.IsExpired()}|{subscription.BrandingKey}";
+            return BloomPubCache.MakeSettingsKey(
+                settings,
+                BloomPubMaker.kCreatorBloom,
+                _collectionSettings.Subscription
+            );
         }
 
         /// <summary>

@@ -5258,7 +5258,7 @@ namespace Bloom.Book
         /// book's), can change how the collection's books come out: the collection settings and
         /// the collection's custom styles. <see cref="MakeVersionCode"/> includes these in a
         /// book's version code, and anything that checks for changes more cheaply must watch the
-        /// same files (e.g. Publish.Rab.RabBloomPubCache).
+        /// same files (e.g. Publish.BloomPub.BloomPubCache).
         /// </summary>
         public static bool IsCollectionFileThatAffectsBooks(string fileName)
         {

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Bloom.Book;
+using Bloom.Publish.BloomPub;
 using SIL.IO;
 
 namespace Bloom.Publish.Rab
@@ -111,7 +112,7 @@ namespace Bloom.Publish.Rab
 
         /// <summary>
         /// The book's BloomPUB publish settings, as made by
-        /// <see cref="RabBloomPubCache.MakeSettingsKey"/>, used to tell whether a BloomPUB made
+        /// <see cref="BloomPubCache.MakeSettingsKey"/>, used to tell whether a BloomPUB made
         /// earlier is still current. Internal so it isn't sent to the browser.
         /// </summary>
         internal string BloomPubSettingsKey { get; set; }
@@ -284,7 +285,14 @@ namespace Bloom.Publish.Rab
             SafeWorkRoot = GetSafeWorkRoot(collectionRoot);
             RabRoot = Path.Combine(collectionRoot, "Bloom App Data");
             SafeRabRoot = Path.Combine(SafeCollectionRoot, "Bloom App Data");
-            BloomPubRoot = Path.Combine(RabRoot, "bloompubs");
+            // Kept outside the collection (BL-17062). Reading App Builder is given these paths,
+            // so use the ASCII-safe alias when the user's temp folder isn't plain ASCII. The
+            // folder is made first because Windows only gives a whole path a short alias once it
+            // exists, and the root must come out the same every time.
+            var bloomPubCacheFolder = BloomPubCache.GetCacheFolder(collectionRoot);
+            Directory.CreateDirectory(bloomPubCacheFolder);
+            BloomPubRoot =
+                RabSafePathPolicy.ResolveSafePathOrNull(bloomPubCacheFolder) ?? bloomPubCacheFolder;
             BuildRoot = Path.Combine(RabRoot, "build");
             ApkRoot = Path.Combine(RabRoot, "apk");
             SafeApkRoot = Path.Combine(SafeRabRoot, "apk");

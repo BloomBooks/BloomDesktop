@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Bloom.Collection;
+using Bloom.Publish.BloomPub;
 using Bloom.Publish.Rab;
 using BloomTests.TeamCollection;
 using BloomTests.TestDoubles.CollectionTab;
@@ -26,6 +27,16 @@ namespace BloomTests.Publish.Rab
 {
     public class RabAppProjectTests
     {
+        // Kept BloomPUBs live in the temp folder, keyed by the collection's path, and these tests
+        // reuse the same collection path; start each test with none (this run has its own temp
+        // folder, see TestTempDirectory).
+        [SetUp]
+        public void ClearBloomPubCache()
+        {
+            if (Directory.Exists(BloomPubCache.CacheRoot))
+                RobustIO.DeleteDirectoryAndContents(BloomPubCache.CacheRoot);
+        }
+
         private const string kSampleAppDef =
             @"<?xml version='1.0' encoding='utf-8'?>
 <app-definition type='RAB' program-version='13.4'>
@@ -3222,12 +3233,11 @@ namespace BloomTests.Publish.Rab
         /// </summary>
         private static void WriteCurrentBloomPub(string bloomPubPath, string bookFolder, int size)
         {
-            var cache = new RabBloomPubCache();
-            var snapshot = cache.TakeSnapshot(bookFolder);
+            var snapshot = BloomPubCache.TakeSnapshot(bookFolder);
             RobustFile.WriteAllBytes(bloomPubPath, new byte[size]);
-            cache.RecordNewBloomPub(bloomPubPath, snapshot, null);
+            BloomPubCache.RecordNewBloomPub(bloomPubPath, snapshot, null);
             Assert.That(
-                cache.IsCurrent(bloomPubPath, bookFolder, null),
+                BloomPubCache.IsCurrent(bloomPubPath, bookFolder, null),
                 Is.True,
                 "test setup: the BloomPUB should start out current"
             );
