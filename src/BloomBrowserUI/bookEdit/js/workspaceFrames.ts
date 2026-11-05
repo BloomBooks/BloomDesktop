@@ -36,6 +36,8 @@ export function getEditablePageBundleExports(): IPageFrameExports | null {
         null
     );
 }
+// What the page list's frame offers other frames (see IPageListFrameExports), or null while that
+// frame is missing or still loading.
 export function getPageListBundleExports(): IPageListFrameExports | null {
     const frameWindow = getFrame("pageList") as
         | (Window & { [key: string]: unknown })
