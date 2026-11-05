@@ -799,9 +799,8 @@ detach/re-attach experiment gives the same result deterministically — text put
 **This is a Bloom defect, and a user-facing one**: type a title fast enough after making a
 book and it silently disappears. It was reproduced by hand, twice, on a normal developer
 machine, with a window of about 1.2 seconds; a loaded machine widens it, which is why the
-runner hit it so reliably. **It is deliberately not being fixed** — CKEditor is being retired
-(the `retireCkEditor` work), so the fix is that removal. The attach site in
-`bookEdit/js/bloomEditing.ts` carries a note pointing back here, for whoever does it.
+runner hit it so reliably. **Fixed in Bloom, 2026-11-05 (BL-17022)**: see "The fix in Bloom"
+below.
 
 **The suite's workaround did NOT stop it, 2026-09-11 (second run of the night).**
 `clickInGroup` now waits for the `cke_editable` class before touching a box, on the boxes that
@@ -848,6 +847,16 @@ Beware the trap that hid this twice: a verification run where the box is **alrea
 proves the wait costs nothing, NOT that it works. Only a run that starts from `unloaded` and
 blocks to `ready` demonstrates anything.
 
+**The fix in Bloom, 2026-11-05 (BL-17022).** `attachToCkEditor` now calls
+`keepTypingWhenCkEditorLoads` (`bookEdit/js/keepTypingWhenCkEditorLoads.ts`). Just before the
+editor writes its copy back into the box, that refreshes the copy from what the box holds, and
+it keeps the caret where it was. `typing-before-ckeditor-is-ready.spec.ts` proves it
+deterministically: it holds back CKEditor's `config.js`, so the editor cannot finish loading,
+types while the editor is still loading (and checks that it is), and then lets it load. Without
+the fix that test sees the box emptied. So the tests' wait for the editor (`clickInGroup`'s
+`waitForCkEditorToTakeTheBox`, also used by the table helpers) is gone: the nightly's
+title-typing specs now exercise the fix.
+
 **What is instrumented now**, and why it should stay until the nightly goes several runs without
 losing a title:
 
@@ -856,8 +865,9 @@ losing a title:
   empty box with a known title means something cleared it after an earlier save; both empty
   means it never arrived.
 - `attachToCkEditor` logs `[cover-title]` on every attach to a title box, with the text going in
-  and the text once the editor is ready. Two attaches in one page load would confirm the
-  hypothesis above. Playwright keeps the page console in its trace, so a failed run carries it.
+  and the text once the editor is ready. If a title is lost again, a box that held the title
+  going in and is empty once ready says the fix above has a gap. Playwright keeps the page
+  console in its trace, so a failed run carries it.
 
 This instrumentation was once removed as soon as the mechanism looked understood, and was needed
 again the next night. Do not remove it on the strength of one green run.

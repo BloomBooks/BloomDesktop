@@ -1,0 +1,179 @@
+import { describe, expect, it } from "vitest";
+import {
+    ILoadingCkEditor,
+    keepTypingWhenCkEditorLoads,
+} from "./keepTypingWhenCkEditorLoads";
+
+/**
+ * Just enough of CKEditor's inline creation (CKEDITOR.inline in lib/ckeditor/ckeditor.js) to show
+ * the problem: the editor copies the box's content when it is made, and when it has loaded it
+ * writes its copy back into the box, from a "loaded" listener at priority 10000, and then fires
+ * instanceReady. Listeners run in priority order, lowest first; the default is 10.
+ */
+class FakeInlineEditor implements ILoadingCkEditor {
+    private data: string;
+    private listeners: {
+        eventName: string;
+        listener: () => void;
+        priority: number;
+    }[] = [];
+
+    /**
+     * `dropWhitespaceNodes` imitates CKEditor's parser, which leaves out text nodes of nothing but
+     * whitespace, such as the line breaks between paragraphs in a book's HTML.
+     */
+    constructor(
+        private element: HTMLElement,
+        dropWhitespaceNodes = false,
+    ) {
+        this.data = element.innerHTML;
+        this.on(
+            "loaded",
+            () => {
+                // The real one replaces the box's nodes (editable.setHtml), which loses the caret.
+                this.element.innerHTML = dropWhitespaceNodes
+                    ? this.data.replace(/>\s+</g, "><").trim()
+                    : this.data;
+                window.getSelection()!.removeAllRanges();
+                this.fire("instanceReady");
+            },
+            null,
+            null,
+            10000,
+        );
+    }
+
+    public on(
+        eventName: string,
+        listener: () => void,
+        _scope?: unknown,
+        _listenerData?: unknown,
+        priority = 10,
+    ): void {
+        this.listeners.push({ eventName, listener, priority });
+    }
+
+    public setData(data: string, options: null, internal: boolean): void {
+        expect(internal, "only the internal form of setData is expected").toBe(
+            true,
+        );
+        this.data = data;
+    }
+
+    public fire(eventName: string): void {
+        this.listeners
+            .filter((l) => l.eventName === eventName)
+            .sort((a, b) => a.priority - b.priority)
+            .forEach((l) => l.listener());
+    }
+}
+
+function makeBox(html: string): HTMLElement {
+    const box = document.createElement("div");
+    box.setAttribute("contenteditable", "true");
+    box.innerHTML = html;
+    document.body.appendChild(box);
+    return box;
+}
+
+function putCaret(node: Node, offset: number) {
+    const range = document.createRange();
+    range.setStart(node, offset);
+    range.collapse(true);
+    window.getSelection()!.removeAllRanges();
+    window.getSelection()!.addRange(range);
+}
+
+describe("keepTypingWhenCkEditorLoads", () => {
+    it("without it, the fake editor loses what was typed while it loaded (sanity check of the fake)", () => {
+        const box = makeBox("<p>a</p>");
+        const editor = new FakeInlineEditor(box);
+        box.innerHTML = "<p>a typed</p>";
+        editor.fire("loaded");
+        expect(box.innerHTML).toBe("<p>a</p>");
+    });
+
+    it("keeps text typed while the editor loads", () => {
+        const box = makeBox("<p>a</p>");
+        const editor = new FakeInlineEditor(box);
+        keepTypingWhenCkEditorLoads(editor, box);
+        box.innerHTML = "<p>a typed</p><p>more</p>";
+        expect(box.innerHTML).toBe("<p>a typed</p><p>more</p>");
+        editor.fire("loaded");
+        expect(box.innerHTML).toBe("<p>a typed</p><p>more</p>");
+    });
+
+    it("puts the caret back where it was", () => {
+        const box = makeBox("<p>a</p>");
+        const editor = new FakeInlineEditor(box);
+        keepTypingWhenCkEditorLoads(editor, box);
+        box.innerHTML = "<p>first</p><p>second</p>";
+        const secondText = box.childNodes[1].firstChild!;
+        putCaret(secondText, 3);
+        editor.fire("loaded");
+        const selection = window.getSelection()!;
+        expect(selection.rangeCount).toBe(1);
+        expect(
+            selection.focusNode,
+            "the caret should be in the new copy of the second paragraph's text",
+        ).toBe(box.childNodes[1].firstChild);
+        expect(selection.focusNode).not.toBe(secondText);
+        expect(selection.focusOffset).toBe(3);
+    });
+
+    it("puts the caret back in the right paragraph when the rewrite drops whitespace between paragraphs", () => {
+        const box = makeBox("\n<p>first</p>\n<p>second</p>\n<p>third</p>\n");
+        const editor = new FakeInlineEditor(box, true);
+        keepTypingWhenCkEditorLoads(editor, box);
+        // Sanity check: the whitespace nodes are there to begin with.
+        expect(box.childNodes.length).toBe(7);
+        putCaret(box.childNodes[3].firstChild!, 2); // in "second"
+        editor.fire("loaded");
+        expect(box.childNodes.length, "the rewrite dropped them").toBe(3);
+        const selection = window.getSelection()!;
+        expect(selection.focusNode).toBe(box.childNodes[1].firstChild);
+        expect(selection.focusNode!.textContent).toBe("second");
+        expect(selection.focusOffset).toBe(2);
+    });
+
+    it("keeps a caret that sits between paragraphs in the same place", () => {
+        const box = makeBox("\n<p>first</p>\n<p>second</p>\n");
+        const editor = new FakeInlineEditor(box, true);
+        keepTypingWhenCkEditorLoads(editor, box);
+        // Between the two paragraphs: in the whitespace node, and as a box offset just past it.
+        putCaret(box.childNodes[2], 1);
+        editor.fire("loaded");
+        const selection = window.getSelection()!;
+        expect(selection.focusNode).toBe(box);
+        expect(selection.focusOffset, "just before the second paragraph").toBe(
+            1,
+        );
+    });
+
+    it("puts the caret at the end of the box if the markup changed under it", () => {
+        const box = makeBox("<p>a</p>");
+        const editor = new FakeInlineEditor(box);
+        keepTypingWhenCkEditorLoads(editor, box);
+        box.innerHTML = "<p>first</p><p>second</p>";
+        putCaret(box.childNodes[1].firstChild!, 3);
+        // An editor that normalized the markup differently from how it arrived.
+        editor.setData = () => {};
+        editor.fire("loaded");
+        // The fake wrote back "<p>a</p>", where the saved path leads nowhere.
+        const selection = window.getSelection()!;
+        expect(box.innerHTML).toBe("<p>a</p>");
+        expect(selection.focusNode).toBe(box);
+        expect(selection.focusOffset).toBe(box.childNodes.length);
+    });
+
+    it("leaves the selection alone when the caret was not in the box", () => {
+        const box = makeBox("<p>a</p>");
+        const elsewhere = makeBox("<p>elsewhere</p>");
+        const editor = new FakeInlineEditor(box);
+        keepTypingWhenCkEditorLoads(editor, box);
+        putCaret(elsewhere.firstChild!.firstChild!, 2);
+        editor.fire("loaded");
+        // The fake clears the selection; nothing should have put one back in the box.
+        expect(window.getSelection()!.rangeCount).toBe(0);
+    });
+});
