@@ -473,11 +473,11 @@ export async function waitForEditablePage(
     await expect(
         editablePageFrame(page).locator("html.bloom-page-ready-for-input"),
         "The page never became ready to use, so it would not take any input.",
-    ).toHaveCount(1, { timeout: timeoutMs });
+    ).toHaveCount(1);
     await expect(
         page.locator("#page-loading-cover"),
         "The Edit tab never took away the cover that keeps the user out of a page being loaded.",
-    ).toHaveCount(0, { timeout: timeoutMs });
+    ).toHaveCount(0);
     // The page's script (updateLanguageVisibility) adds bloom-visibility-code-on to each box it
     // decides to show, and the CSS hides every box that lacks it.
     const groupCount = await editablePageFrame(page)
