@@ -773,6 +773,9 @@ namespace Bloom
                 ReleaseBloomToken();
 
                 _sentry?.Dispose();
+                // Safe whether or not we own the token: it only removes BloomPUB staging folders
+                // too old for any running Bloom to be using.
+                Bloom.Publish.BloomPub.BloomPubStaging.DeleteOldFolders();
                 // In a debug build we want to be able to see if we're leaving garbage around. (Note: this doesn't seem to be working.)
 #if !Debug
                 // We should not clean up garbage if we didn't get the token.

@@ -411,7 +411,7 @@ namespace Bloom.Api
                 )
             )
                 return false; // ePUB export files should not be cached.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-6253.
-            if (folderToCheck.Contains(PublishApi.kStagingFolder))
+            if (Bloom.Publish.BloomPub.BloomPubStaging.IsInStagingFolder(folderToCheck))
                 return false; // Don't cache when showing BloomPUB preview
             if (BookStorage.CssFilesThatAreDynamicallyUpdated.Contains(Path.GetFileName(path)))
                 return false;

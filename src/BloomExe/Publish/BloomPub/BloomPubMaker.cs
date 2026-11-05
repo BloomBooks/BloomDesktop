@@ -31,7 +31,6 @@ namespace Bloom.Publish.BloomPub
     {
         public const string BloomPubExtensionWithDot = ".bloompub";
         public const string kQuestionFileName = "questions.json";
-        public const string BRExportFolder = "BloomReaderExport";
         internal const string kDistributionFileName = ".distribution";
         internal const string kDistributionBloomDirect = "bloom-direct";
         internal const string kDistributionBloomWeb = "bloom-web";
@@ -79,7 +78,7 @@ namespace Bloom.Publish.BloomPub
             );
         }
 
-        // Create a BloomReader book while also creating the temporary folder for it (according to the specified parameter) and disposing of it
+        // Create a BloomReader book while also creating a staging folder of its own for it and disposing of it
         public static void CreateBloomPub(
             BloomPubPublishSettings settings,
             string outputPath,
@@ -87,11 +86,10 @@ namespace Bloom.Publish.BloomPub
             BookServer bookServer,
             IWebSocketProgress progress,
             bool isTemplateBook,
-            string tempFolderName = BRExportFolder,
             string creator = kCreatorBloom
         )
         {
-            using (var temp = new TemporaryFolder(tempFolderName))
+            using (var temp = BloomPubStaging.CreateFolder())
             {
                 CreateBloomPub(
                     settings,
