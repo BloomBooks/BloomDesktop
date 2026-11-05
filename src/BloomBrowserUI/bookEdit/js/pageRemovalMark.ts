@@ -46,6 +46,7 @@ function bringIntoView(pageBox: HTMLElement): void {
     if (dx || dy) window.scrollBy(dx, dy);
 }
 
+// A red X across the given rectangle of the window, drawn over everything and taking no clicks.
 function makeX(rect: DOMRect): SVGSVGElement {
     const svg = document.createElementNS(kSvgNamespace, "svg");
     // bloom-ui marks it as editing furniture, never part of the page.
@@ -67,6 +68,7 @@ function makeX(rect: DOMRect): SVGSVGElement {
     return svg;
 }
 
+// One stroke of the X, from (x1, y1) to (x2, y2).
 function makeLine(
     x1: number,
     y1: number,

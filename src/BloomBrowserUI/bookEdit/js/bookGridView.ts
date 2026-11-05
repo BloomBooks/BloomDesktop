@@ -296,6 +296,8 @@ function repositionBubbles(): void {
     ).qtip("reposition", undefined, false);
 }
 
+// The element holding the controls shown above the page (Change Layout, the game tabs), if this
+// page has any.
 function getControlsContainer(): HTMLElement | undefined {
     return document.getElementsByClassName(
         "above-page-control-container",
@@ -327,6 +329,8 @@ export function setupControlsBar(): void {
     );
 }
 
+// Move the controls shown above the page into a bar fixed across the top of the page frame, so they
+// stay put while the pages scroll under them.
 function moveControlsToBar(): void {
     const controls = getControlsContainer();
     if (!controls || controls.parentElement === document.body) return;
@@ -342,6 +346,9 @@ function getEditedPage(): HTMLElement {
     return document.querySelector(".bloom-page") as HTMLElement;
 }
 
+// Lay out a cell for every page of the book, the page being edited among them, and keep the layout
+// and the drawing of the other pages up to date as the view scrolls, zooms or resizes. Resolves when
+// the other pages that are on screen have been drawn.
 function buildGrid(pages: IGridPage[]): Promise<void> {
     const container = getScalingContainer()!;
     const editedPage = getEditedPage();
@@ -488,6 +495,7 @@ function makeBlankPageCell(): HTMLElement {
     return cell;
 }
 
+// True if any part of the element is inside the page frame's window.
 function isOnScreen(element: HTMLElement): boolean {
     const rect = element.getBoundingClientRect();
     return (
@@ -701,6 +709,7 @@ function getPageContent(
     });
 }
 
+// Start the next waiting request for a page's content, if fewer than kMaxPageRequests are running.
 function startNextPageRequest(): void {
     if (activePageRequests < kMaxPageRequests) queuedPageRequests.shift()?.();
 }
@@ -735,6 +744,8 @@ function getStylesheetsForPageFrames(): string {
         .join("");
 }
 
+// The style sheet's rules as they are now, including any added or changed by script since the
+// <style> element's own text was written.
 function getRulesText(sheet: CSSStyleSheet): string {
     return Array.from(sheet.cssRules)
         .map((rule) => rule.cssText)
@@ -779,6 +790,8 @@ function getBodyAttributesForPageFrames(): string {
         .join(" ");
 }
 
+// A click on one of the other pages: remember where on it the user clicked, so the opened page can
+// replay the click, and ask Bloom to open it the way the page list does.
 function onClickOtherPage(
     e: MouseEvent,
     cell: HTMLElement,
@@ -888,6 +901,8 @@ export async function replayTheClickThatOpenedThisPage(): Promise<void> {
     }
 }
 
+// Send the click that opened this page to whatever is under it now, and put the text cursor there
+// if it is text. See replayTheClickThatOpenedThisPage().
 async function replayOpeningClick(): Promise<void> {
     if (!openingClick) return;
     const editedPage = getEditedPage();
@@ -921,6 +936,7 @@ async function replayOpeningClick(): Promise<void> {
     if (editable) placeCaretAt(editable, x, y);
 }
 
+// Resolves once CKEditor has finished starting up on the text box, at once if it has already.
 function whenCkEditorIsReady(editable: HTMLElement): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const editor = (editable as any).bloomCkEditor;
