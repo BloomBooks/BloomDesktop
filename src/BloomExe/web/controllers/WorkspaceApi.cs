@@ -28,12 +28,6 @@ namespace Bloom.web.controllers
         {
             ReopenCollectionWhenIdle = () => Application.Idle += ReopenCollection;
 
-            apiHandler.RegisterEndpointHandler(
-                "workspace/showLegacySettingsDialog",
-                HandleShowLegacySettingsDialog,
-                true
-            );
-
             apiHandler.RegisterEndpointHandler("workspace/helpAction", HandleHelpAction, true);
             apiHandler.RegisterEndpointHandler(
                 "workspace/reportProblem",
@@ -55,24 +49,6 @@ namespace Bloom.web.controllers
                 false
             );
             apiHandler.RegisterEndpointHandler("toast/test", HandleToastTest, false);
-        }
-
-        private void HandleShowLegacySettingsDialog(ApiRequest request)
-        {
-            // We used to launch the dialog directly from here, but that caused problems because
-            // request was synchronous and wouldn't complete until the dialog was closed.  So now
-            // we return success immediately, and then launch the dialog when the application is idle.
-            // This avoids tying up a thread waiting for the dialog to close, and also avoids having
-            // that thread lock the API processing.  (BL-15858)
-            Application.Idle += ShowLegacySettingsDialog;
-
-            request.PostSucceeded();
-        }
-
-        private void ShowLegacySettingsDialog(object sender, EventArgs e)
-        {
-            Application.Idle -= ShowLegacySettingsDialog;
-            WorkspaceView.OpenLegacySettingsDialog();
         }
 
         private void ReopenCollection(object sender, EventArgs e)
