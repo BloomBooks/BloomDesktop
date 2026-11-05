@@ -25,7 +25,7 @@ import {
     kSpreadGap,
     makeGridLayout,
 } from "./bookGridLayout";
-import { kBloomYellow } from "../../bloomMaterialUITheme";
+import { kBloomPurple } from "../../bloomMaterialUITheme";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
 interface IGridPage {
@@ -78,7 +78,7 @@ const kGridStyles = `
     background-color: white;
 }
 /* The page being edited sits in this cell itself; the cell must neither hide it nor take its clicks.
-   A mark at each corner, in the colour the page list uses for the selected page, sets it apart from
+   A mark at each corner, in Bloom purple, sets it apart from
    the other pages. Each mark is two rounded bars just outside the page, one along each edge. The
    z-index puts the marks over the facing page's cell, where the two pages meet. */
 .bloom-book-grid-cell.bloom-book-grid-edited {
@@ -95,7 +95,7 @@ const kGridStyles = `
 .bloom-book-grid-corner::after {
     content: "";
     position: absolute;
-    background-color: ${kBloomYellow};
+    background-color: ${kBloomPurple};
     border-radius: var(--bloom-edited-page-corner-thickness);
 }
 .bloom-book-grid-corner::before {
