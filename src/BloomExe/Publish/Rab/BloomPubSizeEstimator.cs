@@ -81,7 +81,7 @@ namespace Bloom.Publish.Rab
                 .EnumerateFiles("*", SearchOption.AllDirectories)
                 .OrderBy(file => file.FullName, StringComparer.OrdinalIgnoreCase)
                 .ToList();
-            var key = MakeCacheKey(files, imageSettings, appearanceSettings);
+            var key = MakeCacheKey(files, imageSettings);
             lock (_cacheLock)
             {
                 if (_cache.TryGetValue(bookFolderPath, out var cached) && cached.Key == key)
@@ -103,25 +103,17 @@ namespace Bloom.Publish.Rab
 
         /// <summary>
         /// A string that changes whenever a file in the book is added, removed, resized or
-        /// rewritten, or the publish resolution or the cover color changes. Checking it costs only
-        /// a directory listing. (The cover color normally lives in the book's appearance.json, so a
-        /// change shows up in the file list anyway; it is in the key too so that the estimate
-        /// can't depend on it without the key doing so; Devin, PR 8531.)
+        /// rewritten, or the publish resolution changes. Checking it costs only a directory listing.
+        /// The appearance settings the estimate uses (the cover color and theme) need no place in
+        /// it: changing them rewrites the book's appearance.json, which changes the file list
+        /// (JohnThomson, PR 8531).
         /// </summary>
-        private static string MakeCacheKey(
-            List<FileInfo> files,
-            ImagePublishSettings imageSettings,
-            AppearanceSettings appearanceSettings
-        )
+        private static string MakeCacheKey(List<FileInfo> files, ImagePublishSettings imageSettings)
         {
             var keyParts = files.Select(file =>
                 $"{file.FullName}|{file.Length}|{file.LastWriteTimeUtc.Ticks}"
             );
-            var coverColor = appearanceSettings?.GetStringPropertyValueOrDefault(
-                "cover-background-color",
-                null
-            );
-            return $"{imageSettings.MaxWidth}x{imageSettings.MaxHeight}|{appearanceSettings?.CssThemeName}|{coverColor}\n"
+            return $"{imageSettings.MaxWidth}x{imageSettings.MaxHeight}\n"
                 + string.Join("\n", keyParts);
         }
 
@@ -232,7 +224,8 @@ namespace Bloom.Publish.Rab
             void Add(SafeXmlElement element, string name)
             {
                 // Matches BloomPubMaker.FindImagesToPreserveResolution, which looks only inside
-                // the page's marginBox.
+                // the page's marginBox. That limit may not have been intended (JohnThomson, PR
+                // 8531), but the estimate has to follow what publishing actually does.
                 if (
                     string.IsNullOrEmpty(name)
                     || element.HasClass("bloom-preserveResolution")
@@ -270,19 +263,9 @@ namespace Bloom.Publish.Rab
                     UrlPathString.CreateFromUrlEncodedString(img.GetAttribute("src")).NotEncoded
                 );
             }
-            // Some older books already hold a page picture as a background-image style, which
-            // CompressImages processes just the same (Devin, PR 8531).
-            foreach (
-                var div in dom.SafeSelectNodes(
-                        "//div[contains(@class,'bloom-page')]//div[contains(@class,'bloom-background-image-in-style-attr')]"
-                    )
-                    .Cast<SafeXmlElement>()
-            )
-            {
-                var style = div.GetAttribute("style") ?? "";
-                if (style.Contains("background-image:url"))
-                    Add(div, BloomPubMaker.ExtractFilenameFromBackgroundImageStyleUrl(style));
-            }
+            // A few very old books hold a page picture as a background-image style instead, which
+            // CompressImages also shrinks. We don't look for those: books are normally brought up
+            // to date, and missing one only makes its estimate a little high (JohnThomson, PR 8531).
             return result;
         }
 

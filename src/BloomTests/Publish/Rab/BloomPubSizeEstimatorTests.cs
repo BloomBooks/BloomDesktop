@@ -81,6 +81,11 @@ namespace BloomTests.Publish.Rab
             var keptBytes = new FileInfo(keptPath).Length;
             var unusedBytes = new FileInfo(unusedPath).Length;
             Assert.That(
+                unusedBytes,
+                Is.GreaterThan(0),
+                "test setup: the unused picture has a size"
+            );
+            Assert.That(
                 Estimate(2560, 1440, keptBytes, false, false),
                 Is.LessThan(keptBytes),
                 "test setup: shrinking these pictures would have made them smaller"
@@ -91,11 +96,6 @@ namespace BloomTests.Publish.Rab
                 new ImagePublishSettings()
             );
 
-            Assert.That(
-                unusedBytes,
-                Is.GreaterThan(0),
-                "test setup: the unused picture has a size"
-            );
             Assert.That(estimate, Is.EqualTo(htmlBytes + keptBytes));
         }
 
@@ -108,23 +108,6 @@ namespace BloomTests.Publish.Rab
 
             Assert.That(found.Keys, Is.EquivalentTo(new[] { "a picture.png", "b.jpg" }));
             Assert.That(found.Values, Has.All.False, "plain pictures on white pages stay opaque");
-        }
-
-        [Test]
-        public void FindPicturesPublishingProcesses_FindsBackgroundImageStylePictures()
-        {
-            // Some older books hold a page picture this way (Devin, PR 8531).
-            RobustFile.WriteAllText(
-                Path.Combine(_bookFolder, "book.htm"),
-                "<html><head></head><body><div class=\"bloom-page\"><div class=\"marginBox\">"
-                    + "<div class=\"bloom-imageContainer bloom-background-image-in-style-attr\" "
-                    + "style=\"background-image:url('my%20cover.jpg')\"></div>"
-                    + "</div></div></body></html>"
-            );
-
-            var found = BloomPubSizeEstimator.FindPicturesPublishingProcesses(_bookFolder);
-
-            Assert.That(found.Keys, Is.EquivalentTo(new[] { "my cover.jpg" }));
         }
 
         [TestCase(
