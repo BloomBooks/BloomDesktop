@@ -35,7 +35,6 @@ const kInsetFromCorners = 30;
 test("the page to be removed scrolls into view with a red X across it, and Cancel takes the X away [Test Case ID 836]", async ({
     page,
 }) => {
-    test.setTimeout(300000);
     await makeBookFromTemplate(page, "Basic Book");
     // Enough pages that, with all of them showing, the first content page can be scrolled out of
     // view: four rows of spreads at two to a row, where the view is about one and a half pages tall.

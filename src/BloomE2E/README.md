@@ -209,7 +209,9 @@ real bug in the code under test; read the message and fix it rather than working
 
 Two things a test must never do: trigger a native OS dialog (file pickers, the WinForms Image
 Toolbox, video capture), because Playwright cannot dismiss one and the run hangs; and wait on a
-fixed sleep instead of a state (`expect.poll` an API, or await a selector).
+fixed sleep instead of a state (`expect.poll` an API, or await a selector). A deadline of the
+test's own on a wait, or a raised time limit for a test, needs the developer's approval too: see
+"No timeouts in tests" in the root `AGENTS.md`.
 
 ## The Notion test inventory
 

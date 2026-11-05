@@ -37,9 +37,7 @@ export async function choosePageView(
     await expect(
         editablePageFrame(page).locator(".bloom-book-grid-cell"),
         `The page frame never showed ${view === "all" ? "all the pages" : "one page"}.`,
-    ).toHaveCount(view === "all" ? (await getPages(page)).length : 0, {
-        timeout: 30000,
-    });
+    ).toHaveCount(view === "all" ? (await getPages(page)).length : 0);
 }
 
 /**
@@ -196,7 +194,6 @@ export async function waitForClickedPageToSettle(page: Page): Promise<void> {
                     )
                     .catch(() => false),
             {
-                timeout: 30000,
                 message:
                     "The page being edited never finished dealing with the click that opened it.",
             },

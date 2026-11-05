@@ -170,7 +170,6 @@ test.describe("showing the other pages of the book", () => {
     test("builds a book with six text pages [Test Case ID 835]", async ({
         page,
     }) => {
-        test.setTimeout(300000);
         bookFolder = await makeBookFromTemplate(page, "Basic Book");
         await addPage(page, "Just Text", 6);
         const contentPages = await getContentPages(page);
@@ -271,7 +270,7 @@ test.describe("showing the other pages of the book", () => {
                 )
                 .locator(".bloom-editable[lang='en']")
                 .first(),
-        ).toHaveText(textOfPage(facingContentIndex), { timeout: 15000 });
+        ).toHaveText(textOfPage(facingContentIndex));
     });
 
     test("All Pages stays chosen for the next page, and saving a page leaves the others out of the book [Test Case ID 835]", async ({
@@ -316,7 +315,7 @@ test.describe("showing the other pages of the book", () => {
             )
             .locator(".bloom-editable[lang='en']")
             .first();
-        await expect(textBox).toBeVisible({ timeout: 15000 });
+        await expect(textBox).toBeVisible();
         const cellBox = await boxOf(targetCell, "The page to click");
         const textBoxBox = await boxOf(textBox, "The text box to click");
 
@@ -326,9 +325,7 @@ test.describe("showing the other pages of the book", () => {
             textBoxBox.y + textBoxBox.height / 2,
         );
 
-        await expect
-            .poll(() => getShownPageId(page), { timeout: 30000 })
-            .toBe(target.id);
+        await expect.poll(() => getShownPageId(page)).toBe(target.id);
         await waitForEditablePage(page);
         const newPageBox = await boxOf(
             editablePageFrame(page).locator(".bloom-page"),
@@ -345,15 +342,13 @@ test.describe("showing the other pages of the book", () => {
         expect((await pageListPlacement(page)).scrolled).toBe("");
         // And the click put the text cursor in the text box that was clicked.
         await expect
-            .poll(
-                () =>
-                    editablePageFrame(page).evaluate(
-                        () =>
-                            document.activeElement
-                                ?.closest(".bloom-editable")
-                                ?.getAttribute("lang") ?? "",
-                    ),
-                { timeout: 10000 },
+            .poll(() =>
+                editablePageFrame(page).evaluate(
+                    () =>
+                        document.activeElement
+                            ?.closest(".bloom-editable")
+                            ?.getAttribute("lang") ?? "",
+                ),
             )
             .toBe("en");
     });
@@ -367,9 +362,7 @@ test.describe("showing the other pages of the book", () => {
         const target = pages[facingIndex(leavingIndex)];
         const targetCell = cell(page, target.id);
         await targetCell.scrollIntoViewIfNeeded();
-        await expect(targetCell).toHaveClass(/bloom-book-grid-rendered/, {
-            timeout: 15000,
-        });
+        await expect(targetCell).toHaveClass(/bloom-book-grid-rendered/);
 
         // On every animation frame, look at whichever page frame is on top (the page being left
         // stays on top until the new one is ready) and record where the two pages are on screen
@@ -421,13 +414,9 @@ test.describe("showing the other pages of the book", () => {
 
         // THE ACTION UNDER TEST: a real click on the other page.
         await realClick(targetCell.locator(".bloom-book-grid-veil"));
-        await expect
-            .poll(() => getShownPageId(page), { timeout: 30000 })
-            .toBe(target.id);
+        await expect.poll(() => getShownPageId(page)).toBe(target.id);
         await waitForEditablePage(page);
-        await expect(page.locator("#page-outgoing")).toHaveCount(0, {
-            timeout: 15000,
-        });
+        await expect(page.locator("#page-outgoing")).toHaveCount(0);
 
         const samples = (await page.evaluate(() => {
             const w = window as unknown as Record<string, unknown>;
@@ -503,7 +492,7 @@ test.describe("showing the other pages of the book", () => {
             )
             .locator(".bloom-canvas-element:has(img)")
             .first();
-        await expect(picture).toBeVisible({ timeout: 15000 });
+        await expect(picture).toBeVisible();
         const pictureBox = await boxOf(picture, "The picture to click");
 
         // THE ACTION UNDER TEST: a real click on the picture on the other page.
@@ -512,14 +501,12 @@ test.describe("showing the other pages of the book", () => {
             pictureBox.y + pictureBox.height / 2,
         );
 
-        await expect
-            .poll(() => getShownPageId(page), { timeout: 30000 })
-            .toBe(target.id);
+        await expect.poll(() => getShownPageId(page)).toBe(target.id);
         await waitForEditablePage(page);
         const selected = editablePageFrame(page).locator(
             '.bloom-canvas-element[data-bloom-active="true"]',
         );
-        await expect(selected).toHaveCount(1, { timeout: 10000 });
+        await expect(selected).toHaveCount(1);
         await expect(selected.locator("img")).toHaveCount(1);
         const selectedBox = await boxOf(selected, "The selected picture");
         expect(Math.abs(selectedBox.x - pictureBox.x)).toBeLessThan(3);
@@ -529,7 +516,6 @@ test.describe("showing the other pages of the book", () => {
     test("in a long book only the pages near the screen are rendered [Test Case ID 835]", async ({
         page,
     }) => {
-        test.setTimeout(300000);
         await addPage(page, "Just Text", 14);
         const pages = await getPages(page);
         expect(pages.length).toBeGreaterThan(20);
@@ -541,7 +527,7 @@ test.describe("showing the other pages of the book", () => {
         const rendered = frame.locator(
             ".bloom-book-grid-cell.bloom-book-grid-rendered",
         );
-        await expect(rendered.first()).toBeAttached({ timeout: 15000 });
+        await expect(rendered.first()).toBeAttached();
         const renderedAtTop = await rendered.count();
         expect(renderedAtTop).toBeLessThan(pages.length - 1);
         const lastCell = cell(page, pages[pages.length - 1].id);
@@ -550,13 +536,10 @@ test.describe("showing the other pages of the book", () => {
         await frame.evaluate(() =>
             window.scrollTo(0, document.documentElement.scrollHeight),
         );
-        await expect(lastCell).toHaveClass(/bloom-book-grid-rendered/, {
-            timeout: 15000,
-        });
+        await expect(lastCell).toHaveClass(/bloom-book-grid-rendered/);
         // And the pages at the top, now far away, have been dropped.
         await expect(cell(page, pages[0].id)).not.toHaveClass(
             /bloom-book-grid-rendered/,
-            { timeout: 15000 },
         );
     });
 
@@ -604,7 +587,6 @@ test.describe("showing the other pages of the book", () => {
 
         await expect
             .poll(() => getShownPageId(page), {
-                timeout: 30000,
                 message:
                     "The clicked page never became the page being edited, or Bloom went on to other pages by itself",
             })
@@ -647,9 +629,7 @@ test.describe("showing the other pages of the book", () => {
         await goToPage(page, credits!.id);
         expect(await chosenPageView(page)).toBe("all");
         await expect
-            .poll(async () => (await pageAndBubbles(page)).bubbles.length, {
-                timeout: 15000,
-            })
+            .poll(async () => (await pageAndBubbles(page)).bubbles.length)
             .toBeGreaterThan(0);
         await expectBubblesBesidePage(page, "With All Pages");
 
