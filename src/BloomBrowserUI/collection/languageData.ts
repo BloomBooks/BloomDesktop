@@ -5,7 +5,7 @@ import {
 } from "@ethnolib/language-chooser-react-mui";
 
 export interface ILanguageData {
-    // Should be kept in sync with the LanguageChangeEventArgs class
+    // Should be kept in sync with the ChosenLanguage class
     LanguageTag: string | null;
     DefaultName: string | null;
     DesiredName: string | null;
