@@ -18,9 +18,9 @@ namespace Bloom
         /// but under --e2e only what the command line asked for (--experimental-features), which
         /// may be nothing.
         ///
-        /// A test cannot turn a feature on the way a person does: they live in the Advanced tab of
-        /// the collection Settings dialog, which is a WinForms surface CDP cannot reach. Nor can it
-        /// write the setting, because Settings.Default lives in one user.config per build version,
+        /// A person turns a feature on in the Experimental page of the Collection Settings dialog,
+        /// which a test can drive too (collection-settings-experimental.spec.ts). A test cannot
+        /// simply write the setting, though, because Settings.Default lives in one user.config per build version,
         /// shared with the developer's own Bloom (see AUTOMATION-DEBT.md, "Every Bloom of one build
         /// shares one user.config"), so a test that saved a feature would leave it on for them.
         /// So under --e2e the command line is the whole answer: nothing is saved, the setting dies

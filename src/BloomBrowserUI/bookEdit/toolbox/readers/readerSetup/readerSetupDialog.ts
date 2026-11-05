@@ -238,7 +238,8 @@ function getSettingsForbidden(title: string, message: any): string | JQuery {
     ).appendTo($(parentDocument()).find("body"));
 
     // overide some styles from Dialog to make it compatible with the main title.
-    const html = `<div style="padding: 10px; color: black;font-size:10pt;">${message}</div>`;
+    // The message is plain text whose line breaks must show.
+    const html = `<div style="padding: 10px; color: black;font-size:10pt;white-space:pre-line;">${message}</div>`;
 
     dialogContents.append(html);
 
