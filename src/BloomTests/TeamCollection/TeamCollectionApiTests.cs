@@ -262,8 +262,6 @@ namespace BloomTests.TeamCollection
 
         // TODO: HandleChooseFolderLoaction
 
-        // TODO: HandleCreateTeamCollection
-
         #region HandleCurrentBookStatus
         [Test]
         public void HandleCurrentBookStatus_InsufficientRegistration_RequestFails()
