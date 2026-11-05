@@ -116,24 +116,6 @@ export const RequiresSubscriptionAdjacentIconWrapper = (props: {
         </div>
     );
 };
-export const BloomEnterpriseIconWithTooltip: React.FunctionComponent<{
-    featureName: string;
-}> = (props) => {
-    const featureStatus = useGetFeatureStatus(props.featureName);
-    const featureMessage = useGetFeatureAvailabilityMessage(featureStatus);
-
-    return (
-        <img
-            css={css`
-                height: 1.5em;
-                margin-left: 1em;
-            `}
-            {...props} // let caller override the size and whatever
-            src={badgeUrl}
-            title={featureMessage}
-        />
-    );
-};
 
 // This component displays the bloom subscription badge, and is used
 // primarily for the tool options that appear in the settings and the

@@ -286,8 +286,6 @@ namespace Bloom.web
 
             var bundleToViteModulePathMap = new Dictionary<string, string>
             {
-                { "advancedSettingsBundle", "/collection/AdvancedSettingsPanel.entry.tsx" },
-                { "bookMakingSettingsBundle", "/collection/bookMakingSettingsControl.entry.tsx" },
                 {
                     "autoUpdateSoftwareDlgBundle",
                     "/react_components/AutoUpdateSoftwareDialog.entry.tsx"
@@ -297,14 +295,9 @@ namespace Bloom.web
                     "/bookEdit/copyrightAndLicense/CopyrightAndLicenseDialog.entry.tsx"
                 },
                 {
-                    "createTeamCollectionDialogBundle",
-                    "/teamCollection/CreateTeamCollection.entry.tsx"
-                },
-                {
                     "joinTeamCollectionDialogBundle",
                     "/teamCollection/JoinTeamCollectionDialog.entry.tsx"
                 },
-                { "languageChooserBundle", "/collection/LanguageChooserDialog.entry.tsx" },
                 { "messageBoxBundle", "/utils/BloomMessageBox.entry.tsx" },
                 {
                     "newCollectionLanguageChooserBundle",
@@ -315,11 +308,6 @@ namespace Bloom.web
                 {
                     "registrationDialogBundle",
                     "/react_components/registration/registrationDialog.entry.tsx"
-                },
-                { "subscriptionSettingsBundle", "/collection/subscriptionSettingsTab.entry.tsx" },
-                {
-                    "teamCollectionSettingsBundle",
-                    "/teamCollection/TeamCollectionSettingsPanel.entry.tsx"
                 },
                 {
                     "accessibilityCheckBundle",
