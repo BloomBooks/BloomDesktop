@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using BloomTemp;
 using SIL.IO;
@@ -103,19 +104,30 @@ namespace Bloom.Publish.BloomPub
         /// Delete the staging folders created before the given (UTC) time. Folders without
         /// Bloom's marker file belong to something else and are left alone.
         /// </summary>
+        /// <remarks>
+        /// This runs while Bloom is shutting down, so a filesystem error here must not escape:
+        /// it would skip the rest of shutdown, including saving the user's settings. Anything
+        /// this cannot delete is left for the next time a Bloom exits.
+        /// </remarks>
         internal static void DeleteFoldersOlderThan(DateTime cutoffUtc)
         {
             if (!Directory.Exists(RootPath))
                 return;
-            foreach (var folder in Directory.EnumerateDirectories(RootPath))
+            try
             {
-                if (!RobustFile.Exists(Path.Combine(folder, kOwnerMarkerFileName)))
-                    continue;
-                if (Directory.GetCreationTimeUtc(folder) >= cutoffUtc)
-                    continue;
-                // If something still has a file open this returns false; we will try again the
-                // next time Bloom exits.
-                RobustIO.DeleteDirectoryAndContents(folder);
+                foreach (var folder in Directory.EnumerateDirectories(RootPath))
+                {
+                    if (!RobustFile.Exists(Path.Combine(folder, kOwnerMarkerFileName)))
+                        continue;
+                    if (Directory.GetCreationTimeUtc(folder) >= cutoffUtc)
+                        continue;
+                    // If something still has a file open this returns false.
+                    RobustIO.DeleteDirectoryAndContents(folder);
+                }
+            }
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+            {
+                Debug.WriteLine($"Could not finish deleting old BloomPUB staging folders: {e}");
             }
         }
     }
