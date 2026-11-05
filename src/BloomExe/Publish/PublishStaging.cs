@@ -77,7 +77,17 @@ namespace Bloom.Publish
                     // say) is not a collision, and trying more names would never succeed.
                     continue;
                 }
-                Directory.CreateDirectory(path);
+                try
+                {
+                    Directory.CreateDirectory(path);
+                }
+                catch (Exception)
+                {
+                    // Give the name back rather than leave a marker held open that nobody owns.
+                    marker.Dispose();
+                    RobustFile.Delete(markerPath);
+                    throw;
+                }
                 return TemporaryFolder.TrackExisting(
                     path,
                     () => ReleaseClaim(marker, markerPath, path)
