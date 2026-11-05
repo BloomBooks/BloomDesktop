@@ -74,6 +74,28 @@ document.addEventListener("DOMContentLoaded", () => {
     void tellCSharpPageDomLoaded();
 });
 
+// Resolves once the page looks the way it will: its pictures and the fonts it uses are in, and a
+// frame has been drawn with them. Call it after the page has been set up for editing.
+//
+// It deliberately does not wait for the window's load event. That waits for every script, and once
+// the page is set up CKEditor loads its configuration, language and plugin files one after another,
+// which takes hundreds of milliseconds and changes nothing on screen. Nothing done when the page is
+// shown needs CKEditor: replaying the click that opened the page waits for it separately.
+function whenPageIsDrawn(): Promise<void> {
+    const pictures = Array.from(
+        document.querySelectorAll<HTMLImageElement>(".bloom-page img"),
+    ).map((img) =>
+        // A picture that cannot be shown is drawn as missing; that is how the page looks.
+        img.decode().catch(() => undefined),
+    );
+    return Promise.all([...pictures, document.fonts.ready]).then(
+        () =>
+            new Promise<void>((resolve) =>
+                requestAnimationFrame(() => resolve()),
+            ),
+    );
+}
+
 // This allows strong typing to be done for exported functions.
 // Note: although these function are exported, which I think is necessary to make this cross-iframe
 // calling possible, they MUST not simply be imported. Doing so will pull this file into the importing
@@ -468,16 +490,9 @@ $(document).ready(() => {
     if (window.frameElement?.id === "page") {
         updateAbovePageControls({});
         setupControlsBar();
-        // The page being left stays on screen until this one is loaded and laid out (see
+        // The page being left stays on screen until this one looks the way it will (see
         // switchContentPage), so the Edit tab holds steady while it changes pages.
-        const loaded = new Promise<void>((resolve) => {
-            if (document.readyState === "complete") resolve();
-            else
-                window.addEventListener("load", () => resolve(), {
-                    once: true,
-                });
-        });
-        Promise.all([loaded, setupBookGridView()]).then(() => {
+        Promise.all([whenPageIsDrawn(), setupBookGridView()]).then(() => {
             tryGetWorkspaceBundleExports()?.pageFrameIsReadyToShow(window);
             replayTheClickThatOpenedThisPage();
         });

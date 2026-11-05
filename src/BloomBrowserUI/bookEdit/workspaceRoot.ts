@@ -260,6 +260,14 @@ function startLoadingPageFrameBehindCurrentOne(
     return frame;
 }
 
+// Load newSource into the page frame on screen, replacing the page in it, and return the frame.
+function navigatePageFrame(newSource: string): HTMLIFrameElement {
+    const frame = document.getElementById(kPageFrameId) as HTMLIFrameElement;
+    // The page really leaves, so its own beforeunload handlers run without help.
+    frame.src = newSource;
+    return frame;
+}
+
 /**
  * Called by a page frame once it looks the way it will (laid out, scrolled, and with the other
  * pages drawn if they are showing), to replace the page that was covering it.
@@ -295,7 +303,17 @@ export function switchContentPage(newSource: string) {
             // swallow
         }
     }
-    const iframe = startLoadingPageFrameBehindCurrentOne(newSource);
+    // Showing one page, the new page replaces the old one in the same frame and is seen as soon as
+    // it is drawn, while it finishes setting itself up. Holding the old page on screen until the new
+    // one was ready made every page change feel slow. With the other pages showing, the old page
+    // stays until the new one and the pages around it are drawn, so the whole view does not flash.
+    // (A change already under way has two frames, and keeps them until it is done.)
+    const holdOldPage =
+        isShowingOtherPages() ||
+        !!document.getElementById(kOutgoingPageFrameId);
+    const iframe = holdOldPage
+        ? startLoadingPageFrameBehindCurrentOne(newSource)
+        : navigatePageFrame(newSource);
     // We want to call getToolboxBundleExports().applyToolboxStateToPage() to allow
     // any tool that is active to update its state to match the new page content.
     // This gets a bit complicated because we want the tool to actually see the new
