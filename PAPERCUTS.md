@@ -19,6 +19,12 @@ House rules:
 
 ---
 
+## 2026-11-05 — The C# formatting hook fails a merge commit on a passing index lock
+
+- **Cut:** `build/run-csharpier.sh` runs csharpier and then `git add` once per staged `.cs` file. A merge of master stages every C# file master changed (about 100 here), so the hook takes minutes, and two of those `git add` calls hit an `index.lock` that another process held for a moment. The commit failed with "Unable to create … index.lock: File exists", and the formatter had changed nothing.
+- **Idea:** Format all the files in one csharpier call and stage them with one `git add` of only the files it changed; or skip the files a merge brings in unchanged from the other parent.
+- **Context:** BL-16929-side-by-side-editing, merging master with BL-13502. Claude Opus 5.5 during preflight.
+
 ## 2026-11-02 — `pnpm typecheck` passes when `node_modules` is missing
 - **Cut:** `scripts/typecheck.js` runs `node_modules\.bin\tsgo.cmd` through a shell, so a missing binary is a "not recognized" message and a non-zero exit, not a spawn error. The script ignores the exit status, finds no diagnostics, and prints "Type check passed". In a worktree whose `node_modules` had been cleaned it reported a pass while lint and vitest could not even start.
 - **Idea:** fail when `result.status` is non-zero and no diagnostic lines were parsed, printing the tool's own output.
