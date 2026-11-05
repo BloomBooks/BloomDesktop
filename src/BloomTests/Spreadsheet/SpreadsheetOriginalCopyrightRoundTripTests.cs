@@ -56,6 +56,11 @@ namespace BloomTests.Spreadsheet
 
         private HtmlDom _importedDom;
 
+        /// <summary>
+        /// Export the source book, write the spreadsheet to a real .xlsx file and read it back
+        /// (where the escaping happens), then import it into a blank book that every test
+        /// examines.
+        /// </summary>
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
         {
@@ -90,6 +95,10 @@ namespace BloomTests.Spreadsheet
             }
         }
 
+        /// <summary>
+        /// Each value the source book held in its data div arrives in the imported book exactly
+        /// as it was: markup still markup, and an ampersand escaped once, not twice.
+        /// </summary>
         [TestCase("originalTitle", "Zebras &amp; other cool animals")]
         [TestCase("originalCopyright", "Copyright © 2010, First Copyright Owner")]
         [TestCase("originalLicenseUrl", "http://creativecommons.org/licenses/by/4.0/")]
