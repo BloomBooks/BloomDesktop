@@ -6,7 +6,7 @@ import * as React from "react";
 import { kBloomBlue } from "../../../../utils/colorUtils";
 import { ReaderSettings, ReaderStage } from "../ReaderSettings";
 import { updateSettings } from "./readerDialogShared";
-import { cleanSpaceDelimitedList } from "./decodableStagesUtils";
+import { cleanSpaceDelimitedList } from "./spaceDelimitedList";
 import {
     closestCenter,
     DndContext,

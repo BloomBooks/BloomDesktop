@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
+import { cleanSpaceDelimitedList } from "./spaceDelimitedList";
 import {
-    cleanSpaceDelimitedList,
     cloneReaderSettings,
     hasOnlyKnownGraphemes,
     prepareSettingsForSave,
