@@ -132,7 +132,7 @@ async function sendCommandToPage(
 
 /** The spec name the caption shows: "tables-core" from ".../tests/tables-core.spec.ts". */
 export function specNameFromFile(specFile: string): string {
-    return path.basename(specFile).replace(/\.spec\.[tj]sx?$/i, "");
+    return path.basename(specFile).replace(/\.(spec|manual)\.[tj]sx?$/i, "");
 }
 
 /** Tell the caption a test has started. The fixture calls this; a spec does not. */

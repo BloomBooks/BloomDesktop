@@ -154,7 +154,10 @@ namespace Bloom.Api
                     var assembly = Assembly.GetEntryAssembly();
                     var file = PathHelper.StripFilePrefix(assembly.Location);
                     var fi = new FileInfo(file);
-                    request.ReplyWithText(fi.LastWriteTimeUtc.ToString("dd-MMM-yyyy"));
+                    // Shown in the About dialog, so the month name follows the user's format.
+                    request.ReplyWithText(
+                        fi.LastWriteTimeUtc.ToString("dd-MMM-yyyy", UserCulture.Current)
+                    );
                 },
                 false
             );

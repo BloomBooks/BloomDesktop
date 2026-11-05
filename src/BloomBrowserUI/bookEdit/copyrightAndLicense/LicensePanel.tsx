@@ -149,11 +149,62 @@ export const LicensePanel: React.FunctionComponent<{
     }
 
     return (
-        <div>
+        <div
+            css={css`
+                // ---- License-tab typography & rhythm (scoped to this panel) ----
+
+                // Body scale for radio and checkbox labels: 14px regular with enough
+                // line-height that the long multi-line options (e.g. "make new versions…"
+                // and "No one can modify…") stay readable rather than cramped.
+                .MuiFormControlLabel-label,
+                .bloom-checkbox-label {
+                    font-size: 14px;
+                    font-weight: 400;
+                    line-height: 1.4;
+                }
+
+                // Give each radio option ~7px vertical padding and a subtle hover pad so the
+                // options read as distinct, comfortable targets with air between them. The
+                // negative left margin lets the hover highlight bleed left while keeping the
+                // control aligned with the intro text. Checkboxes carry their own class, so
+                // they are excluded here.
+                .MuiFormControlLabel-root:not(
+                    .bloom-checkbox-form-control-label
+                ) {
+                    padding: 7px 8px;
+                    margin-left: -8px;
+                    border-radius: 6px;
+                    &:hover {
+                        background-color: rgba(0, 0, 0, 0.04);
+                    }
+                }
+
+                // Size the radio and checkbox glyphs up to 18px, nudged down 1px to sit on
+                // the first line of label text.
+                .MuiRadio-root .MuiSvgIcon-root,
+                .MuiCheckbox-root .MuiSvgIcon-root {
+                    font-size: 18px;
+                }
+                .MuiCheckbox-root {
+                    margin-top: 1px;
+                }
+
+                // Visually group the CC block (radio 2 + its checkboxes) by putting a ~12px
+                // gap above the "No one…" radio, which structurally follows the CC checkbox
+                // sub-panel (a bare <div> child of the radio group).
+                .MuiFormGroup-root > div + .MuiFormControlLabel-root {
+                    margin-top: 12px;
+                }
+            `}
+        >
             <Div
                 l10nKey={getL10nIdForBookOrImage(
                     "License.CopyrightHolderAllows",
                 )}
+                css={css`
+                    font-size: 14px;
+                    line-height: 1.4;
+                `}
             >
                 The copyright holder allows others to use the {getBookOrImage()}{" "}
                 in this way:
@@ -182,7 +233,11 @@ export const LicensePanel: React.FunctionComponent<{
                 <SubPanel>
                     <div
                         css={css`
-                            max-width: 350px;
+                            // Cap the measure so the long CC checkbox labels wrap into a
+                            // tidy column under "Everyone is allowed to:".
+                            max-width: 360px;
+                            // Pull the checkbox column up snug under "Everyone is allowed to:".
+                            margin-top: -8px;
                         `}
                     >
                         <BloomCheckbox
@@ -276,9 +331,6 @@ export const LicensePanel: React.FunctionComponent<{
                     // tslint:disable-next-line:max-line-length
                     label="No one can modify or copy it without explicit permission. We will not be sharing it via Bloom Reader or BloomLibrary.org."
                     l10nKey="License.AllRightsReserved.Description"
-                    css={css`
-                        margin-top: 20px;
-                    `}
                 />
                 <Radio value={"custom"} label="Other" l10nKey="Common.Other" />
                 {licenseType === LicenseType.Custom && (
@@ -333,7 +385,10 @@ const CustomNote: React.FunctionComponent<{
             <Div
                 l10nKey={props.l10nKey}
                 css={css`
-                    font-size: 0.75em;
+                    font-size: 12px;
+                    color: ${kMutedTextGray};
+                    line-height: 1.45;
+                    margin-top: 12px; // separate the helper text from the options above it
                 `}
             >
                 {props.label}
@@ -345,6 +400,13 @@ const CustomNote: React.FunctionComponent<{
                 fullWidth
                 value={props.value}
                 onChange={(e) => props.onChange(e.target.value)}
+                css={css`
+                    margin-top: 4px; // small gap below the helper text
+                    .MuiInputBase-root {
+                        min-height: 60px;
+                        align-items: flex-start;
+                    }
+                `}
             />
         </React.Fragment>
     );

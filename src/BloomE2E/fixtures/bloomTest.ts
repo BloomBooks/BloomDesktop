@@ -20,6 +20,7 @@ import {
 import {
     launchBloom,
     launchBloomIntoChooser,
+    LAUNCH_DEADLINE_MS,
     type ILaunchedBloom,
     type ILaunchedChooserBloom,
     type ICollectionSpec,
@@ -56,8 +57,8 @@ interface IBloomAppBase {
 
 /**
  * A Bloom launched on a collection (the normal case). Every field except collectionDir is
- * replaced by restart(), so read them from this object each time rather than copying them into
- * a local.
+ * replaced by restart(), and followRelaunch() replaces collectionDir too, so read them from this
+ * object each time rather than copying them into a local.
  */
 export interface IBloomApp extends IBloomAppBase {
     mode: "collection";
@@ -101,6 +102,13 @@ export interface IBloomApp extends IBloomAppBase {
      * or this can find the outgoing page.
      */
     reattachToShell: () => Promise<Page>;
+    /**
+     * Follow Bloom to the new copy of itself that it starts on `newCollectionDir`, as it does to
+     * finish renaming a collection, and return that copy's shell page. Updates every field here,
+     * collectionDir included, and teardown then stops the new copy. The caller makes sure the old
+     * Bloom is on its way out first (wait for the old page's "close" event).
+     */
+    followRelaunch: (newCollectionDir: string) => Promise<Page>;
 }
 
 /**
@@ -529,6 +537,21 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                         );
                         return app.page;
                     },
+                    followRelaunch: async (newCollectionDir) => {
+                        // The old connection points into a process that is exiting.
+                        await browser?.close();
+                        browser = undefined;
+                        await launched!.followRelaunch(newCollectionDir);
+                        app.page = await reconnectAndFind(
+                            launched!.cdpPort,
+                            (b) => findShellPage(b, launched!.httpPort),
+                        );
+                        app.httpPort = launched!.httpPort;
+                        app.cdpPort = launched!.cdpPort;
+                        app.bloomPid = launched!.bloomPid;
+                        app.collectionDir = launched!.collectionDir;
+                        return app.page;
+                    },
                 };
                 await use(app);
             } finally {
@@ -538,7 +561,14 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                 await launched?.stop();
             }
         },
-        { scope: "worker" },
+        // Longer than every wait in the setup above put together: the launch's own deadline, then
+        // connecting over CDP and finding the shell or chooser page, each allowed
+        // SHELL_READY_TIMEOUT_MS, plus a minute for the rest. Whichever of those gives up first
+        // then says why, rather than being cut off by Playwright's timeout.
+        {
+            scope: "worker",
+            timeout: LAUNCH_DEADLINE_MS + 2 * SHELL_READY_TIMEOUT_MS + 60000,
+        },
     ],
 
     // The typed views of _launchedApp. Using the one that does not match the launch mode fails

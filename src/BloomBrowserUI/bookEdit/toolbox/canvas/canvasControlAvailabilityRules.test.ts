@@ -213,3 +213,30 @@ describe("imageAvailabilityRules.rotateRight", () => {
         ).toBe(false);
     });
 });
+
+describe("imageAvailabilityRules.resetImage", () => {
+    const rule = imageAvailabilityRules.resetImage as Exclude<
+        typeof imageAvailabilityRules.resetImage,
+        "exclude" | undefined
+    >;
+
+    const untouched = {
+        hasImage: true,
+        isCropped: false,
+        isImageContentTransformed: false,
+        isBoxRotated: false,
+    };
+
+    test("disabled for an untouched picture", () => {
+        expect(evaluate(rule.enabled, makeCtx(untouched))).toBe(false);
+    });
+
+    test("enabled for a picture whose box is turned", () => {
+        expect(
+            evaluate(
+                rule.enabled,
+                makeCtx({ ...untouched, isBoxRotated: true }),
+            ),
+        ).toBe(true);
+    });
+});

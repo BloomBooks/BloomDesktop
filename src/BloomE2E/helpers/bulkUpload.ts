@@ -7,9 +7,11 @@
 // are ticked, which is the same gate a single upload passes.
 //
 // The upload itself runs in a second Bloom that Bloom starts (BloomLibraryPublishModel.BulkUpload),
-// so the result does not come back through the screen. That second Bloom writes BloomBulkUploadLog.txt
-// into the collection folder, and its last lines say how many books were uploaded, updated and
-// skipped. A test reads that, which is also how a person reads a bulk upload's result.
+// so the result does not come back through the screen. That second Bloom writes two files into the
+// collection folder: BloomBulkUploadLog.txt, the log a person reads, and, when it has finished,
+// BloomBulkUploadResults.json (BulkUploader.ResultsFileName), the same outcome in a form a program
+// can read: the tallies, and for each book its outcome and where its files went. A test reads the
+// results file, and keeps the log only to explain a failure.
 
 import { expect, type Page } from "@playwright/test";
 import * as fs from "node:fs";
@@ -19,7 +21,23 @@ import { acceptAllAgreements, openPublishToWeb } from "./libraryPublish";
 /** The name of the log the bulk-upload child process writes into the collection folder. */
 const BULK_UPLOAD_LOG = "BloomBulkUploadLog.txt";
 
-/** What one bulk upload did, read from its log's final tally. */
+/** The results file it writes beside the log once it has finished (BulkUploader.ResultsFileName). */
+const BULK_UPLOAD_RESULTS = "BloomBulkUploadResults.json";
+
+/** What happened to one book in a bulk upload, as the results file records it. */
+export interface IBulkUploadBookResult {
+    /** The book's folder, as the uploading Bloom saw it. */
+    folder: string;
+    outcome: "new" | "updated" | "skipped" | "failed";
+    /**
+     * Where the book's files were uploaded, a baseUrl in the form a book's record holds; null
+     * unless the book was uploaded. Read uploaded files from here rather than from the book's record
+     * on the server, which can point at an older upload (BL-16921).
+     */
+    baseUrl: string | null;
+}
+
+/** What one bulk upload did, read from its results file. */
 export interface IBulkUploadResult {
     /** Books uploaded for the first time. */
     newBooks: number;
@@ -27,7 +45,11 @@ export interface IBulkUploadResult {
     updated: number;
     /** Books skipped because nothing had changed since the last upload. */
     skipped: number;
-    /** The whole log, for a failure message when the tally is not what a test expected. */
+    /** Books that could not be uploaded. */
+    failed: number;
+    /** Each book the upload looked at. */
+    books: IBulkUploadBookResult[];
+    /** The whole log, for a failure message when the result is not what a test expected. */
     log: string;
 }
 
@@ -36,12 +58,18 @@ function logPath(collectionDir: string): string {
     return Path.join(collectionDir, BULK_UPLOAD_LOG);
 }
 
+/** The path of the bulk-upload results file in a collection folder. */
+function resultsPath(collectionDir: string): string {
+    return Path.join(collectionDir, BULK_UPLOAD_RESULTS);
+}
+
 /**
- * Remove the bulk-upload log, so the next upload's result is read fresh rather than from a tally an
- * earlier round left. Call before each upload; each round writes the whole log again.
+ * Remove the bulk-upload log and results file, so the next upload's result is read fresh rather
+ * than from what an earlier round left. Call before each upload; each round writes both again.
  */
 export function clearBulkUploadLog(collectionDir: string): void {
     fs.rmSync(logPath(collectionDir), { force: true });
+    fs.rmSync(resultsPath(collectionDir), { force: true });
 }
 
 /**
@@ -83,9 +111,9 @@ export async function startCollectionUpload(page: Page): Promise<void> {
 const kBulkUploadTimeoutMs = 300000;
 
 /**
- * Wait until the bulk-upload child process has finished and return its tally. It writes the log as
- * it goes and ends with the three counts, so this polls for the "Skipped ... books" line — the last
- * of the three — then reads all three.
+ * Wait until the bulk-upload child process has finished and return what it did. It writes its
+ * results file only once it has finished, so this polls for that file (and for it to parse, since
+ * a read can catch it half-written).
  *
  * When it does not finish in time, the failure says how far the upload actually got. That is the
  * thing worth knowing and it used to be missing: "stuck inside Compressing PDF on book 1" and
@@ -97,12 +125,22 @@ export async function waitForBulkUploadResult(
     timeoutMs = kBulkUploadTimeoutMs,
 ): Promise<IBulkUploadResult> {
     const file = logPath(collectionDir);
-    const skippedLine = /Skipped (\d+) books/;
     const readLog = () =>
         fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
+    let results: Omit<IBulkUploadResult, "log"> | undefined;
+    const readResults = (): boolean => {
+        const resultsFile = resultsPath(collectionDir);
+        if (!fs.existsSync(resultsFile)) return false;
+        try {
+            results = JSON.parse(fs.readFileSync(resultsFile, "utf8"));
+            return true;
+        } catch {
+            return false; // caught while it was being written; the next poll reads it whole
+        }
+    };
     const startedAt = Date.now();
     try {
-        await expect.poll(readLog, { timeout: timeoutMs }).toMatch(skippedLine);
+        await expect.poll(readResults, { timeout: timeoutMs }).toBe(true);
         // Report how long a round that worked actually took. Nobody knows yet what a bulk upload
         // costs on the runner — the first measurement anyone had was of a round that never
         // finished — and the timeout above cannot be right-sized until a few real numbers come
@@ -120,26 +158,12 @@ export async function waitForBulkUploadResult(
             : "(the child Bloom never wrote a line — it may not have started at all)";
         throw new Error(
             `The bulk upload did not finish within ${Math.round(timeoutMs / 1000)}s: ` +
-                `${file} never reported its final tally.\n` +
+                `it never wrote ${BULK_UPLOAD_RESULTS}.\n` +
                 `  How far it got, from the end of that log:\n    ${howFar}`,
         );
     }
 
-    const log = fs.readFileSync(file, "utf8");
-    const count = (pattern: RegExp): number => {
-        const match = log.match(pattern);
-        if (!match)
-            throw new Error(
-                `The bulk-upload log did not report "${pattern.source}". Log:\n${log}`,
-            );
-        return Number(match[1]);
-    };
-    return {
-        newBooks: count(/Uploaded (\d+) new books/),
-        updated: count(/Updated (\d+) books/),
-        skipped: count(/Skipped (\d+) books/),
-        log,
-    };
+    return { ...results!, log: readLog() };
 }
 
 /**

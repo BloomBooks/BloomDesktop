@@ -61,6 +61,10 @@ namespace Bloom.Edit
         }
 
         public bool Visible;
+
+        // A page a JumpToPage call asked for while the Edit tab was not showing. OnBecomeVisible
+        // displays this page instead of the one it would otherwise choose. See JumpToPage.
+        private string _pageIdToShowWhenVisible;
         private Book.Book _currentlyDisplayedBook;
         private Book.Book _bookForToolboxContent;
         private EditingView _view;
@@ -123,7 +127,6 @@ namespace Bloom.Edit
             _server = server;
             _webSocketServer = webSocketServer;
             _sourceCollectionsList = sourceCollectionsList;
-
             _stateMachine = new EditingStateMachine(
                 // navigate,
                 (string pageId) =>
@@ -144,6 +147,13 @@ namespace Bloom.Edit
                     }
                 }
             );
+
+            // A run has one EditingModel, and E2eTestingApi has no way to be handed it: the
+            // container builds that api before any book is selected. So hand it over here, the
+            // same way WorkspaceView hands over its browser for e2e/shellUrl. This must come after
+            // _stateMachine exists, because e2e/editState reads it off the UI thread.
+            if (Program.RunningE2eTests)
+                ModelForE2eTests = this;
 
             bookSelection.SelectionChanged += OnBookSelectionChanged;
             templateInsertionCommand.InsertPage += OnInsertPage;
@@ -438,6 +448,8 @@ namespace Bloom.Edit
             // This edit tab can ignore changes that don't actually involve selecting a different book.
             if (_bookSelection.CurrentSelection == _currentlyDisplayedBook)
                 return;
+            // A jump queued for a page of the book we are leaving means nothing in the new one.
+            _pageIdToShowWhenVisible = null;
             //prevent trying to save this page in whatever comes next
             var hadPageToSave = _havePageToSave;
             _havePageToSave = false;
@@ -793,6 +805,18 @@ namespace Bloom.Edit
         }
 
         /// <summary>
+        /// Something changed the book outside the page being edited (a class on the book's body,
+        /// say) and left the writing to us. The next save writes the whole book, even if the page
+        /// itself has not changed: a save of just the page copies everything else from the old
+        /// file, and a save of an untouched page writes nothing at all.
+        /// </summary>
+        public void NoteBookChangedOutsideThePage()
+        {
+            _bookDomHasUnwrittenChanges = true;
+            _nextSaveMustBeFull = true;
+        }
+
+        /// <summary>
         /// user has selected or de-selected a content language
         /// </summary>
         public void ContentLanguagesSelectionChanged()
@@ -894,11 +918,23 @@ namespace Bloom.Edit
 
             ErrorReportUtils.CheckForFakeTestErrorsIfNotRealUser(_currentlyDisplayedBook.Title);
 
-            // BL-2339: try to choose the last edited page
-            var page =
-                _currentlyDisplayedBook.GetPageByIndex(
-                    _currentlyDisplayedBook.UserPrefs.MostRecentPage
-                ) ?? _currentlyDisplayedBook.FirstPage;
+            // A jump asked for while this tab was not showing wins over the remembered page: it is
+            // the more recent request. See JumpToPage.
+            var requestedPageId = _pageIdToShowWhenVisible;
+            _pageIdToShowWhenVisible = null;
+            IPage page = null;
+            if (requestedPageId != null)
+                page = _currentlyDisplayedBook
+                    .GetPages()
+                    .FirstOrDefault(p => p.Id == requestedPageId);
+            if (page == null)
+            {
+                // BL-2339: try to choose the last edited page
+                page =
+                    _currentlyDisplayedBook.GetPageByIndex(
+                        _currentlyDisplayedBook.UserPrefs.MostRecentPage
+                    ) ?? _currentlyDisplayedBook.FirstPage;
+            }
 
             if (page != null)
                 _view.GoToPage(page);
@@ -1140,8 +1176,8 @@ namespace Bloom.Edit
             catch (Exception)
             {
                 // It's very important that we succeed in navigating to SOME page; otherwise, we may well be left
-                // in a state where the page UI isn't fully set up, and the state machine is in the SavedAndStripped
-                // state, which will prevent saving any future changes. So if something went wrong here, see if
+                // in a state where the page UI isn't fully set up, and the state machine is still Navigating,
+                // which refuses every save, so no future changes would be saved. So if something went wrong here, see if
                 // we can navigate to some other page. Arbitrarily, we'll try the first page, but only if that isn't
                 // what we were already doing...that could lead to an infinite recursion. I can't think of anything
                 // that feels useful to try if we can't navigate to the first page that is really in the current book.
@@ -1662,8 +1698,9 @@ namespace Bloom.Edit
             var currentLevel = _currentlyDisplayedBook.OurHtmlDom.Body.GetAttribute(
                 "data-leveledreaderlevel"
             );
-            var correctLevel =
-                _currentlyDisplayedBook.BookInfo.MetaData.LeveledReaderLevel.ToString();
+            var correctLevel = _currentlyDisplayedBook
+                .LevelToRecordOnBody(_currentlyDisplayedBook.OurHtmlDom)
+                .ToString();
             if (correctLevel != currentLevel)
             {
                 MergeCurrentPageThenSave(() =>
@@ -1759,6 +1796,95 @@ namespace Bloom.Edit
             request.PostSucceeded();
         }
 
+        /// <summary>
+        /// The one EditingModel of an e2e run, or null outside such a run. See the constructor.
+        /// </summary>
+        public static EditingModel ModelForE2eTests;
+
+        /// <summary>
+        /// What the Edit tab is doing, for the e2e suite to wait on (see e2e/editState). Editing
+        /// is the only state in which the tab accepts a request without deferring it.
+        /// </summary>
+        public State EditTabState => _stateMachine.CurrentState;
+
+        /// <summary>
+        /// The page EditTabState is about, or null.
+        /// </summary>
+        public string EditTabStatePageId => _stateMachine.CurrentPageId;
+
+        // How many times the page named by _announcedPageId has told us its DOM had loaded. See
+        // HandlePageDomLoadedEvent.
+        private string _announcedPageId;
+        private int _pageLoadAnnouncements;
+
+        /// <summary>
+        /// How many times the page now being shown has announced that its DOM had loaded. A page
+        /// does that more than once, so the e2e suite waits for this to stop rising before it
+        /// treats the page as loaded. For automation only.
+        /// </summary>
+        public int PageLoadAnnouncements => _pageLoadAnnouncements;
+
+        /// <summary>
+        /// Show the page with this id in the Edit tab. The page being left is saved on the way,
+        /// which is how anything typed on it reaches the file.
+        ///
+        /// A jump that arrives before the Edit tab is showing is remembered, and OnBecomeVisible
+        /// displays that page instead of the one it would otherwise choose.
+        ///
+        /// Otherwise the jump either happens at once or is refused: this returns false when the
+        /// Edit tab is still loading a page, when there is no book, and when the save cannot start
+        /// (see MergeCurrentPageThenSave), so that the caller knows to wait and ask again.
+        /// </summary>
+        public bool JumpToPage(string pageId)
+        {
+            if (CurrentBook == null || string.IsNullOrEmpty(pageId))
+                return false;
+
+            // A page the book does not have. Both paths below would otherwise show some other
+            // page and report success: OnBecomeVisible falls back to the most recently edited
+            // page, and a save-then-navigate lands wherever the id takes it. The caller would
+            // then wait for a page that cannot appear.
+            if (CurrentBook.GetPage(pageId) == null)
+            {
+                Logger.WriteEvent(
+                    $"EditingModel.JumpToPage({pageId}): the book has no such page, so the jump was refused."
+                );
+                return false;
+            }
+
+            if (!Visible)
+            {
+                // The Edit tab is not showing, so there is nothing to save and nowhere to
+                // navigate. OnBecomeVisible chooses the page to display, so hand it this one.
+                _pageIdToShowWhenVisible = pageId;
+                return true;
+            }
+
+            // The Edit tab is still loading a page, so there is no settled page to save. Say so
+            // rather than queue the jump: a queued jump has to be released by some signal that the
+            // tab is ready, and the only one available is a page announcing that its DOM has
+            // loaded, which a page does more than once.
+            if (_stateMachine.Navigating)
+            {
+                Logger.WriteEvent(
+                    $"EditingModel.JumpToPage({pageId}): the edit tab was loading a page, so the jump was refused."
+                );
+                return false;
+            }
+
+            var outcome = MergeCurrentPageThenSave(
+                () => pageId,
+                ifNotInAStateToSave: () =>
+                    Logger.WriteEvent(
+                        $"EditingModel.JumpToPage({pageId}): the edit tab was not in a state to save, so the jump was refused."
+                    ),
+                // The action only names the page to go to.
+                actionChangesTheBook: false
+            );
+            // A failed save has reported itself, and leaves the page where it was.
+            return outcome == SaveOutcome.Saved;
+        }
+
         private bool CannotSavePage()
         {
             return _bookSelection == null
@@ -1808,7 +1934,7 @@ namespace Bloom.Edit
                 return SaveOutcome.Declined;
             }
             var outcome = _stateMachine.SaveThenNavigate(
-                TakeCurrentPageSnapshot(),
+                GetCurrentPageSnapshot(),
                 () =>
                 {
                     if (actionChangesTheBook)
@@ -1867,7 +1993,7 @@ namespace Bloom.Edit
         ///
         /// Pass false when we cannot afford to wait at all (Windows is shutting down).
         /// </summary>
-        private string TakeCurrentPageSnapshot(bool waitForInFlightPageWork = true)
+        private string GetCurrentPageSnapshot(bool waitForInFlightPageWork = true)
         {
             var pageId = _pageSelection?.CurrentSelection?.Id;
             var maxWaitMs = waitForInFlightPageWork ? kMaxWaitForBusyPageMs : 0;
@@ -1898,8 +2024,7 @@ namespace Bloom.Edit
         /// failed save would edit stale images. Having nothing to save is not a failure.
         ///
         /// This cannot save a change made in the last few tens of milliseconds, which the browser
-        /// has not posted yet. See "The freshness window" in SavingWithoutReloading.md for why
-        /// that is the accepted trade.
+        /// has not posted yet; kQuietMs in pageSnapshot.ts says why that is the accepted trade.
         /// </summary>
         public bool SaveCurrentPageAndBook(bool waitForInFlightPageWork = true)
         {
@@ -1916,7 +2041,7 @@ namespace Bloom.Edit
                 return true;
             var pageContent =
                 scope == SaveScope.PageAndBook
-                    ? TakeCurrentPageSnapshot(waitForInFlightPageWork)
+                    ? GetCurrentPageSnapshot(waitForInFlightPageWork)
                     : null;
             UpdateBookDomFromBrowserPageContent(pageContent);
             // Set by that merge only when the page differs from what the book held (the browser
@@ -2115,16 +2240,14 @@ namespace Bloom.Edit
             //OK, looks safe, time to save.
             var editedDom = new HtmlDom(docFromBrowser);
             LogCoverTitleArrivingFromBrowser(editedDom);
-            // The page as edited carries editing-only ?transparent= parameters on image srcs (see
-            // HtmlDom.AddTransparencyParamToImages). ProcessPageAfterEditing removes them from what
-            // is saved; remove them before comparing the page's book-wide data too, or a cover whose
-            // picture is book-wide data (coverImage) looks changed on every visit and forces a full
-            // save.
-            var editedPageDiv =
-                editedDom.RawDom.SelectSingleNode("//div[contains(@class,'bloom-page')]")
-                as SafeXmlElement;
-            if (editedPageDiv != null)
-                HtmlDom.RemoveTransparencyParamFromImages(editedPageDiv);
+            // Take off what we added to the page for editing before anything reads it, not just
+            // before it is saved (ProcessPageAfterEditing does it again there). Otherwise the
+            // comparison of book-wide data below sees it too: a cover whose picture is book-wide
+            // data (coverImage) would look changed on every visit and force a full save.
+            HtmlDom.RemoveMarkupBloomAddedForEditing(
+                (SafeXmlElement)
+                    editedDom.RawDom.SelectSingleNode("//div[contains(@class,'bloom-page')]")
+            );
             var newPageData = GetPageData(editedDom.RawDom);
             // True when something OUTSIDE the page HTML we are about to hand over wants saving: a
             // data-derived value some dialog changed, altered feature requirements, or a caller
@@ -2218,8 +2341,13 @@ namespace Bloom.Edit
             request.ReplyWithHtml(translationGroupHtml);
         }
 
+        /// <summary>
+        /// Puts the picture into the book's folder and the image with this id on the page.
+        /// Returns false if that failed; the user has then been told about the problem, and the
+        /// page was not told about any new picture.
+        /// </summary>
         /// <param name="source">For analytics; passed on to UpdateImageInBrowser.</param>
-        public void ChangePicture(
+        public bool ChangePicture(
             string imageId,
             UrlPathString priorImageSrc,
             PalasoImage imageInfo,
@@ -2241,6 +2369,7 @@ namespace Bloom.Edit
                     undoable: true // All image changes made here are undoable.
                 );
                 UpdateImageInBrowser(args, source);
+                return true;
             }
             catch (Exception e)
             {
@@ -2250,6 +2379,7 @@ namespace Bloom.Edit
                 );
                 e.Data["ProblemImagePath"] = imageInfo.OriginalFilePath;
                 ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
+                return false;
             }
         }
 
@@ -2550,6 +2680,16 @@ namespace Bloom.Edit
 
         public void HandlePageDomLoadedEvent(string pageId, string loadId = null)
         {
+            // Count the announcement before acting on it. A page announces itself more than once,
+            // and the e2e suite has to know that the last one has been and gone before it asks
+            // this tab for anything (see the editState endpoint and PageLoadAnnouncements).
+            if (pageId != _announcedPageId)
+            {
+                _announcedPageId = pageId;
+                _pageLoadAnnouncements = 0;
+            }
+            _pageLoadAnnouncements++;
+
             var nowEditing = _stateMachine.ToEditing(pageId);
             // Only for a notification we accepted, i.e. for the page we are now editing; see
             // PageSnapshot.AcceptSnapshotsFromLoad for why a late one must not be adopted.

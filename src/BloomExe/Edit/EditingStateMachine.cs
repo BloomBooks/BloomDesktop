@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using SIL.Reporting;
 
 // The states the Edit tab can be in.
 public enum State
@@ -148,6 +149,18 @@ public class EditingStateMachine
     /// one, such as duplicating or deleting the page) will be acted on rather than ignored.
     /// </summary>
     public bool Editing => _currentState == State.Editing;
+
+    /// <summary>
+    /// The state we are in, and the page it is about. These exist for automation: the e2e suite
+    /// waits until the Edit tab is settled before it asks that tab for anything, and the DOM
+    /// cannot tell it that (see E2eTestingApi's editState endpoint). Read only.
+    /// </summary>
+    public State CurrentState => _currentState;
+
+    /// <summary>
+    /// The page the current state is about, or null. See CurrentState.
+    /// </summary>
+    public string CurrentPageId => _pageId;
 
     /// <summary>
     /// Called to initiate navigation to a new page (or the same one again).
@@ -344,6 +357,11 @@ public class EditingStateMachine
     private void Log(string message)
     {
         Debug.WriteLine("[EditingStateMachine] " + message);
+        // Under --e2e these go into Bloom's log as well. A test that waits for a page the edit tab
+        // never shows is otherwise a mystery: nothing else records which state the tab was in or
+        // which request it turned down.
+        if (Bloom.Program.RunningE2eTests)
+            Logger.WriteEvent("[EditingStateMachine] " + message);
     }
 
     private void LogTransition(string nextState, string nextPageId)

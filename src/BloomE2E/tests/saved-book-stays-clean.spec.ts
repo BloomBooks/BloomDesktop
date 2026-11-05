@@ -2,13 +2,20 @@
 // leftovers when they do edit.
 //
 // Saving builds the page from a copy of the live page with the editor's markup taken off, and
-// Bloom writes a page only when that copy says something the book does not already say (BL-13502;
-// see src/BloomExe/Edit/SavingWithoutReloading.md). Two ways that can go wrong: something the
+// Bloom writes a page only when that copy says something the book does not already say
+// (Book.UpdateDomFromEditedPage). Two ways that can go wrong: something the
 // editor adds makes an untouched page look edited, so merely looking at a book rewrites it; or
 // something the editor adds is not taken off, and ends up in the book.
 //
 // The leftovers test automates "Clean Saved Book HTML" (Test Case ID 663); the unchanged-book tests
 // automate "Looking at Pages Does Not Rewrite the Book" (Test Case ID 842).
+//
+// What they do NOT catch. The leftovers test looks for a fixed list of known leftovers (see
+// findEditorLeftovers), with three particular tools open, so it cannot notice markup that a new
+// tool or feature adds under a name of its own. The unchanged-book tests need no list: anything
+// that showing a page adds and saving does not take off makes the visit write, whatever it is
+// called. But they open no tools, so they say nothing about what a tool adds when it is opened,
+// and nothing about markup that only appears when the user does something.
 //
 // The tests are serial because each one works on the book the first one builds.
 
@@ -32,9 +39,9 @@ import {
 } from "../helpers/bookHtml";
 import { selectBook } from "../helpers/collection";
 import { selectPage } from "../helpers/pageThumbnails";
-import { openReaderTool } from "../helpers/readerTools";
+import { expandReaderTool } from "../helpers/readerTools";
 import { openToolboxWithTalkingBook } from "../helpers/talkingBook";
-import { enableToolForBook, openTool } from "../helpers/toolbox";
+import { enableToolForBook, expandTool } from "../helpers/toolbox";
 import { switchTab } from "../helpers/workspace";
 import type { Page } from "@playwright/test";
 
@@ -150,8 +157,8 @@ test.describe("the saved book stays clean", () => {
         await waitForBloomToHaveTyping(page, "Two sentences.");
 
         await selectPage(page, second.id);
-        await openTool(page, "imageDescription", ".imgDescLabelBlock");
-        await openReaderTool(page, "leveledReader");
+        await expandTool(page, "imageDescription", ".imgDescLabelBlock");
+        await expandReaderTool(page, "leveledReader");
         // The page's own text box, not the image description group the tool adds in front of it.
         await typeInGroup(
             page,

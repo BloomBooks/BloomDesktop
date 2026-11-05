@@ -21,7 +21,6 @@ and ask its author.
 
 | Pull request | Branch | What it pays down |
 | --- | --- | --- |
-| #8299 | `BL-16799-page-change` | `editView/jumpToPage` refuses a jump it cannot do, and every page-changing helper waits for the Edit tab to settle. |
 | #8300 | `BL-16799-collection-languages` | The `e2e/setCollectionLanguages` hook, so no test composes `.bloomCollection` XML. |
 | #8306 | `e2e-real-library-login` | A test can sign in to dev.bloomlibrary.org for real, with a test account whose credentials the run supplies, so the upload cases can run to the end. Branches off `e2e-private-user-settings`, which gave every Bloom a test launches a settings folder of its own and removed its entry from this file. |
 
@@ -52,16 +51,6 @@ about six seconds and loses whatever the editor had not yet saved.
 being fixed on `BL-16799-collection-languages` (#8300): the `e2e/setCollectionLanguages` hook
 does the work of the Settings dialog's OK button, so no test composes `.bloomCollection`
 XML. The dialog itself stays on this entry: nothing can drive or screenshot it.
-
-seen again 2026-09-01 (Test Case ID 349, `duplicate-page.spec.ts`): "Duplicate Page Many
-Times..." asks how many copies in `DuplicateManyDialog`, which is `WireUpForWinforms`, so the
-one step of that manual test that uses it ("make 3 duplicates") is not automated. The dialog
-only posts `editView/duplicatePageMany`, which `duplicateCurrentPage` already calls for setup,
-so the fix is the same as for every other WinForms dialog: host it in the web UI.
-
-fixed 2026-10-06 on `BL-13502-save-without-reload` (#8209): the dialog now opens inside the Edit
-tab (`duplicateManyDialog.tsx`), and `duplicate-page-many-times.spec.ts` drives it with
-`openDuplicatePageManyTimes` / `finishDuplicatePageManyTimes` (helpers/pageList.ts).
 
 seen again 2026-09-02 (Test Case ID 66, `xmatter-packs.spec.ts`): the case tries each
 front/back matter pack, and the pack is chosen only in the same dialog. `settings/xmatter`
@@ -177,6 +166,22 @@ changed top-level import genuinely can kill it, and that would look identical. S
 ask is whether it reproduces: a crash that follows a particular file across runs, or that appears
 right after that file gained an import, is a real problem in that file. One that lands on a
 different file each time, on files the branch never touched, is this entry.
+
+seen again 2026-10-06 (`collection-settings-advanced.spec.ts`, BL-16737): once in about twenty runs
+of that file, and this time *after* its first test had passed, so a worker can also die between
+tests, not only at startup. The next five runs of the same file were green.
+
+seen again 2026-10-20 (`collection-settings-subscription.spec.ts`, BL-16734), and this time it
+followed one test: its first test, which makes a book from Basic Book and right-clicks it on the
+Collections tab, crashed its worker in about one run in ten (four times in some thirty runs, alone
+or with the rest of the file), always reported at 0ms. Run on its own eight times each, the same
+file's cancel test (no book, never leaves the Collections tab) and
+`collection-settings-bloom-library.spec.ts` never crashed. With `DEBUG=pw:*` the book test passed
+eight runs in a row, so the extra logging hides it, and `NODE_OPTIONS=--report-on-fatalerror`
+wrote no report: the worker dies by a fail-fast that skips Node's own reporting. Later the same
+day it struck `collection-settings-bloom-library.spec.ts`'s first test, which makes no book and
+had passed eight times alone, so making a book is not the trigger. The next thing to try is a
+Windows crash dump of the worker (WER LocalDumps for node.exe needs an administrator).
 
 ## An api that captures CollectionSettings.Subscription cannot see a subscription change
 
@@ -332,10 +337,12 @@ would look like the same flake. Fix direction: have `jumpToPage` queue the reque
 until the Edit tab is ready, or report that it refused it.
 (Found 2026-09-01 automating Test Case ID 169.)
 
-being fixed on `BL-16799-page-change` (#8299): it reports that it refused the jump, rather than
-queueing it, and the helpers wait for the Edit tab to settle before asking. Queueing was
-tried first and made things worse. That branch adds an entry for the Bloom defect behind
-this one, which it does not fix.
+Answered for tests, 2026-09-02: `editView/jumpToPage` no longer replies success to a jump
+it drops. It refuses the jump and says why, and every helper that changes the page waits for
+`waitForEditTabSettled` first. The Bloom defect behind it, a page change arriving between two
+announcements of one page load and leaving the tab stuck waiting for a save the browser never
+answered, went with that waiting state (BL-13502): a save now uses the page the browser has
+already sent, so nothing is left in flight for a late announcement to strand.
 
 seen again 2026-09-02 (Test Case ID 72, `derivative-keeps-template-pages.spec.ts`): the
 same drop hits `addPage`. Every action that saves the page first goes through
@@ -392,31 +399,6 @@ only. Bloom also marks a box as overflowing from a `keyup` or a `paste`
 overflow mark at all, and one that appears to is riding on the keyup from the select-all and
 Delete that cleared the box first.
 (Found 2026-09-04, writing the table suites.)
-
-## The page menu offers commands that silently do nothing while a page is loading
-
-Copy Page and Paste Page go through `EditingModel.SaveThen`, which quietly gives up when the
-editing state machine is not in Editing or NoPage (`EditingStateMachine.ToSavePending` returns
-false and `CopyPage` passes `() => { }` as its "wrong state" action). The menu does not know
-this: `PageThumbnailList.IsContextMenuCommandEnabled` disables commands during SavePending, but
-NOT during Navigating, so while a page is still loading both commands look available and both
-do nothing at all, with no error and no message. Copy Page itself then saves and reloads the
-page, which reopens the same window for the very next click.
-
-Cost, twice over. For a person: click Copy Page and then Paste Page quickly and the paste is
-lost with no feedback. For a test: `src/BloomE2E/helpers/pageThumbnails.ts` has to carry
-`markEditablePage` / `waitForEditablePageReload`, which stamp the page's document and wait for
-Bloom to replace it, purely to know when the model has come back to Editing — the page url
-cannot answer it, because Bloom reloads a page to the same in-memory url. Fix direction: make
-the enabled test cover the Navigating state too, so a command that cannot run is greyed out;
-or, better, queue the command instead of dropping it. Either would let the helper drop the
-document-marking dance.
-(Found 2026-09-01 while automating Test Case ID 348, copy page preserves everything.)
-
-fixed 2026-10-09 on `BL-13502-save-without-reload` (#8209): `SaveThen` is gone, a page-menu
-command waits its turn instead of being dropped, and Copy Page saves without reloading the page.
-The document-marking helpers are gone too; a test that copies a page waits for Paste Page to be
-enabled (`runPageMenuCommand` does this), as `copy-page.spec.ts` and `tables-extended.spec.ts` do.
 
 ## Copying a page between two Bloom instances cannot be tested at all
 
@@ -711,6 +693,24 @@ that refuses to start while a foreign e2e Bloom is up, would turn a slow flake i
 message. Worth doing if agents keep running two worktrees at once.
 (Found 2026-09-05, gating the table specs.)
 
+## A launched Bloom sometimes exposes no debugging target at all
+
+Once in a nine-file run on 2026-09-07, `inline-images-zoom.spec.ts` failed before any test code
+ran: `Bloom's WebView2 never exposed the shell document it is driving within 90s`, with
+`Targets seen: none` -- so it is not the wrong-document case above (that one lists the documents
+it found), and not the worker crash either (the worker was alive and reported the failure). The
+spec passed on its own immediately afterwards, and the other eight files in the same run were
+green.
+
+`Targets seen: none` says the debugging listener answered but had nothing on it, which points at
+Bloom still starting rather than at anything the test did. Whether the 90 seconds is simply too
+short on a loaded machine is not known; nobody has caught it with Bloom's own log alongside.
+
+How to react, until it is understood: **re-run the file**, and treat a failure that follows one
+file across runs as a real problem in that file rather than this entry. Fix direction: have
+`findShellPage` say what Bloom's process was doing when it gave up (it has the pid), so the next
+occurrence distinguishes a slow start from a Bloom that never got there.
+
 ## A title typed on the cover of a new book can fail to reach the collection
 
 `import-recording.spec.ts` made a book under the Sample-Pro branding (`e2e/setBranding`,
@@ -951,6 +951,17 @@ failure is a refused connect or a reset, and what else the runner was doing at t
 How to react meanwhile: **do not re-run and move on without first looking for the trace
 artifact** (`component-tester-traces` on the nightly run). A second occurrence with no trace
 collected is a wasted one.
+
+The second occurrence (2026-10-27, `bookgridsetup-extended.uitest.ts:365`) left a trace. It
+failed about 15 ms into the navigation, which is too fast to be a refused connect on Windows.
+Chromium uses ERR_CONNECTION_FAILED for a socket error it has no specific name for, and the trace
+doesn't record which. Ten local runs of the suite (1,460 tests) did not reproduce it. So
+`setTestComponent` now catches a failed `net::ERR_` navigation and adds to its message what
+`describeConnectionFailure.ts` finds: a raw TCP connect and an HTTP GET to the dev server from
+Node, and netstat's count of TCP connections by state. If Node gets through, look inside Chromium
+next: run it with `--log-net-log` (about 425 MB for a full suite, before compression). If Node
+fails too, or TIME_WAIT is huge, look at the runner: trace Windows' TCPIP provider into a ring
+buffer.
 (Found 2026-09-21.)
 
 ## The suites test Bloom run from the source tree, not the app a user installs
@@ -973,3 +984,28 @@ So read a green nightly as "Bloom run from source works", not "the installed app
 
 Idea: a periodic run of the suites against an installed Bloom.
 (Found 2026-09-25.)
+
+## The browser's own copy and paste use the Windows clipboard
+
+Under `--e2e`, Bloom keeps an in-memory clipboard instead of the Windows one: its C# goes through
+`BloomClipboard`, its pages through `utils/bloomClipboard.ts`, and a test fills and reads it with
+`copyToClipboard`, `getClipboard` and `pasteFromClipboard` (`helpers/clipboard.ts`, over the
+`e2e/clipboard` hook). That keeps a test off the developer's clipboard and off any other e2e run's.
+
+Two things still reach the Windows clipboard, because no Bloom code stands between them and it:
+
+- **A real Ctrl+C, Ctrl+X or Ctrl+V in a page.** WebView2 copies the selection to the Windows
+  clipboard, or reads the Windows clipboard into the paste event, before any of Bloom's code runs.
+  `talking-book-paste.spec.ts` and the Ctrl+C/Ctrl+V step of `tables-extended.spec.ts` press them.
+  Such a test replaces whatever the developer had copied, and a second e2e run that copies at the
+  same moment can paste the first one's text.
+- **Copying or pasting in a WinForms text box**, such as the Settings dialog's.
+
+A paste a test needs goes through `pasteFromClipboard`, which sends the page the paste event
+Ctrl+V would have produced, filled from Bloom's clipboard. It cannot paste into a plain input box,
+where nothing but the browser handles the event. A copy has no such stand-in yet: the test that
+needs "copy this text" either presses Ctrl+C and accepts the Windows clipboard, or sets Bloom's
+clipboard with `copyToClipboard` when the copy is not what it measures. Fix direction: a
+`copyFromSelection` helper that sends the page a copy event and stores what the page put in its
+clipboardData on Bloom's clipboard; and converting the two specs above.
+(Found 2026-11-02 while automating BL-17014.)

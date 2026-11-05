@@ -4,12 +4,14 @@ import $ from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import {
     cleanupImages,
+    endImagePaste,
     getImageTransparencyMode,
     getOwningPageBackgroundColor,
     HandleImageError,
     normalizeCoverImageDesignation,
     buildSrcWithTransparentParam,
     pageBackgroundNeedsTransparency,
+    refreshTransparencyIfBackgroundImage,
     SetupMetadataButton,
     SetupResizableElement,
     SetupImagesInContainer,
@@ -19,6 +21,28 @@ import {
     SetupVideoEditing,
 } from "./bloomVideo";
 import { SetupWidgetEditing } from "./bloomWidgets";
+import {
+    clearInlineImageSelection,
+    commitInlineImageUndoForImageChange,
+    kInlineImageClass,
+    prepareInlineImageUndoForImageChange,
+    setupInlineImages,
+} from "./inlineImages";
+import {
+    cleanupInlineImageInteractions,
+    adjustInlineImageOffsetsIfBlockSizeChanged,
+    inlineImagePictureChanged,
+    keepInlineImageSelectionOutOfCkeditorSnapshots,
+    setupInlineImageInteractions,
+} from "./inlineImageInteractions";
+import {
+    clipboardHoldsJustAPicture,
+    finishPasteImageAsInlineImage,
+    getInlineImagePasteTarget,
+    isInlineImagePasteId,
+    pasteClipboardImage,
+    pasteImageIntoTextAsInlineImage,
+} from "./inlineImagePaste";
 import { setupOrigami, cleanupOrigami } from "./origami";
 import {
     SetupTableEditing,
@@ -64,6 +88,7 @@ import {
     doWhenWorkspaceBundleLoaded,
     getToolboxBundleExports,
 } from "./workspaceFrames";
+import { handleUndo } from "../undo/pageUndo";
 import { showInvisibles, hideInvisibles } from "./showInvisibles";
 
 //promise may be needed to run tests with phantomjs
@@ -97,12 +122,16 @@ import { setupBookLinkGrids } from "./linkGrid";
 import { fitImageOverTextSplits } from "./autoFitImageOverTextSplits";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
-import { handleUndo } from "../workspaceRoot";
 import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
 import { setupTextContextMenu } from "../textContextMenu/TextContextMenu";
 import { resetAbovePageControls } from "./AbovePageControls";
-import { noteCkeditorChange } from "./undoOrdering";
+import { trackCkeditorChanges } from "../undo/ckeditorChanges";
+import { theOneUndoStack } from "../undo/UndoStack";
 import { recordFractionOfPageOnImageSlots } from "./imageTargetResolution";
+import {
+    readClipboardText,
+    writeClipboardText,
+} from "../../utils/bloomClipboard";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -204,6 +233,9 @@ function Cleanup() {
     // themselves, not just the traces they leave in the DOM (which is all removeNiceScrollArtifacts
     // can do, since that has to work on a detached clone).
     cleanupNiceScroll();
+    // The inline image handles are bloom-ui, so they have already been removed. The class that
+    // marks an inline image as selected is on the wrapper itself, which is saved with the book.
+    cleanupInlineImageInteractions();
 }
 
 //add a delete button which shows up when you hover
@@ -454,12 +486,16 @@ export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
 
 // called by C# to remove the id attribute from the image element
 export function removeImageId(imageId: string) {
+    // C# calls this when a paste ends without a picture, so a save waiting for it can go ahead.
+    endImagePaste(imageId);
     const imgOrImageContainer = document.getElementById(imageId);
     imgOrImageContainer?.removeAttribute("id");
 }
 
 export interface IImageInfo {
-    imageId: string; // the id of the image element, or "makeNewCanvasElement" to paste an image from the clipboard
+    // the id of the image element, or "makeNewCanvasElement" or an id starting with
+    // "makeNewInlineImage" (see inlineImagePaste.ts) to paste an image from the clipboard
+    imageId: string;
     src: string; // must already appropriately URL-encoded.
     copyright: string;
     creator: string;
@@ -471,7 +507,7 @@ export const kMakeNewCanvasElement = "makeNewCanvasElement";
 
 export function notifyToolOfChangedImage(img?: HTMLImageElement) {
     const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
-    toolbox?.getCurrentTool()?.imageUpdated(img);
+    toolbox?.getExpandedTool()?.imageUpdated(img);
 }
 
 // called by c# so be careful about changing the signature, including names of parameters
@@ -485,6 +521,13 @@ export function changeImage(imageInfo: IImageInfo) {
         //notifyToolOfChangedImage();
         return;
     }
+    if (isInlineImagePasteId(imageInfo.imageId)) {
+        // The new inline image's undo entry covers its picture too, so none is recorded here.
+        finishPasteImageAsInlineImage(imageInfo.imageId, (img) =>
+            changeImageInfo(img, imageInfo),
+        );
+        return;
+    }
     const imgOrImageContainer = document.getElementById(imageInfo.imageId);
     if (!imgOrImageContainer) {
         throw new Error(
@@ -492,7 +535,19 @@ export function changeImage(imageInfo: IImageInfo) {
         );
     }
     if (imageInfo.undoable === "true") {
-        prepareUndoForImageOperation(imgOrImageContainer);
+        // An inline image's undo is an entry on the one undo stack, because undoing a change to it
+        // means restoring the wrapper in every language's editable as well as this img's src.
+        // prepareInlineImageUndoForImageChange returns true when it has taken charge of the
+        // undo, and then prepareUndoForImageOperation must not be called.
+        if (!prepareInlineImageUndoForImageChange(imgOrImageContainer)) {
+            prepareUndoForImageOperation(imgOrImageContainer);
+        }
+    } else if (imgOrImageContainer.closest("." + kInlineImageClass)) {
+        // This does for inline images what clearImageOperationUndoState() above does for other
+        // images. After a change that cannot be undone, undo must not be able to reach older
+        // inline image entries behind it. The stack can't skip an entry, so it is cleared, which
+        // leaves CKEditor's typing undoable.
+        theOneUndoStack.clear();
     }
     changeImageInfo(imgOrImageContainer, imageInfo);
     // id is just a temporary expedient to find the right image easily in this method.
@@ -500,7 +555,11 @@ export function changeImage(imageInfo: IImageInfo) {
     theOneCanvasElementManager.updateCanvasElementForChangedImage(
         imgOrImageContainer,
     );
-    commitPendingImageOperationUndo(imgOrImageContainer);
+    if (!commitInlineImageUndoForImageChange(imgOrImageContainer)) {
+        commitPendingImageOperationUndo(imgOrImageContainer);
+    }
+    // If this was a paste, a save waiting for the picture can go ahead now.
+    endImagePaste(imageInfo.imageId);
     notifyToolOfChangedImage();
 }
 
@@ -516,14 +575,21 @@ export function changeImageByElement(
     if (imageInfo.undoable !== "true") {
         clearImageOperationUndoState();
     }
+    // See changeImage for why an inline image handles its own undo here.
     if (imageInfo.undoable === "true") {
-        prepareUndoForImageOperation(imgOrImageContainer);
+        if (!prepareInlineImageUndoForImageChange(imgOrImageContainer)) {
+            prepareUndoForImageOperation(imgOrImageContainer);
+        }
+    } else if (imgOrImageContainer.closest("." + kInlineImageClass)) {
+        theOneUndoStack.clear();
     }
     changeImageInfo(imgOrImageContainer, imageInfo as IImageInfo);
     theOneCanvasElementManager.updateCanvasElementForChangedImage(
         imgOrImageContainer,
     );
-    commitPendingImageOperationUndo(imgOrImageContainer);
+    if (!commitInlineImageUndoForImageChange(imgOrImageContainer)) {
+        commitPendingImageOperationUndo(imgOrImageContainer);
+    }
     notifyToolOfChangedImage();
 }
 
@@ -558,6 +624,9 @@ export function changeImageInfo(
         );
         (imgOrImageContainer as HTMLImageElement).src =
             buildSrcWithTransparentParam(imageInfo.src, mode);
+        // A new (or newly placeholder) background image changes whether the overlays on
+        // its canvas need transparency.
+        refreshTransparencyIfBackgroundImage(imgOrImageContainer);
     }
     // else if it has class bloom-imageContainer or bloom-canvas, we need to set the background-image on the container
     else if (
@@ -572,6 +641,14 @@ export function changeImageInfo(
     imgOrImageContainer.setAttribute("data-copyright", imageInfo.copyright);
     imgOrImageContainer.setAttribute("data-creator", imageInfo.creator);
     imgOrImageContainer.setAttribute("data-license", imageInfo.license);
+
+    // An inline image is inside a bloom-editable, and every language's editable in the
+    // translation group has its own copy of it, so a new picture has to be copied to the other
+    // editables, and the image selected again. Both changeImage and changeImageByElement call
+    // this function, so this is the only place that has to do it.
+    if (imgOrImageContainer.closest("." + kInlineImageClass)) {
+        inlineImagePictureChanged(imgOrImageContainer);
+    }
 
     const page = imgOrImageContainer.closest(
         ".bloom-page",
@@ -606,6 +683,19 @@ export function SetupElements(
     CanvasElementManager.recordInitialZoom(container);
 
     SetupImagesInContainer(container);
+    // SetupImagesInContainer does not handle inline images, because they are not in a
+    // bloom-canvas or bloom-imageContainer. setupInlineImages makes each language's copy match
+    // and watches for the images to load.
+    setupInlineImages(container);
+    // This sets up the right-click menu that adds and removes inline images, and selecting,
+    // dragging and resizing them.
+    setupInlineImageInteractions(container);
+    // An inline image's offset is a distance in pixels. If the block has changed size since the
+    // offset was measured (another page size, another layout for the page, or a pane dragged in
+    // Change Layout), the offset has to be worked out again, or the text after the picture is
+    // pushed off the end of the block. This must run after setupInlineImages, which makes the
+    // languages' copies match.
+    adjustInlineImageOffsetsIfBlockSizeChanged(container);
 
     SetupVideoEditing(container);
     SetupWidgetEditing(container);
@@ -1262,13 +1352,9 @@ export function bootstrap() {
     // configure ckeditor
     if (typeof CKEDITOR === "undefined") return; // this happens during unit testing
 
-    if ($(this).find(".bloom-canvas").length) {
-        // We would *like* to wire up ckeditor, but would need to get it to stop interfering
-        // with the embedded image. See https://silbloom.myjetbrains.com/youtrack/issue/BL-3125.
-        // Currently this is only possible in the grade 4 Uganda books by SIL-LEAD.
-        // So for now, we just going to say that you don't get ckeditor inside fields that have an embedded image.
-        return;
-    }
+    // ckeditor is attached even to fields that hold an embedded image. A contenteditable=false
+    // element inside a field that ckeditor manages works (the format cog is one), and inline
+    // images depend on that.
 
     // Attach ckeditor to the fields that can have styled editable text.
     // (See comment above on ckeditableSelector for what fields those are.)
@@ -1396,6 +1482,10 @@ function removeEditingDebrisFromClone(clonedPage: HTMLElement) {
         textLabel.remove();
     }
     removeTransientVideoTimestampParams(clonedPage);
+    // If a picture is selected when the page is saved, this removes the class that marks it as
+    // selected. Otherwise the class would be saved in the book's HTML, and from there go into
+    // spreadsheet exports and published books.
+    clearInlineImageSelection(clonedPage);
     removeTableEditingMarkupFromClone(clonedPage);
     removeEditorChromeFromClone(clonedPage);
 }
@@ -1426,7 +1516,7 @@ export async function getPageContentForSaveWhenReady(): Promise<string> {
 }
 
 // Produce the HTML of the .bloom-page element as it should be saved. All the cleanup is done on a
-// CLONE, so the live page is untouched and stays editable without a reload (BL-13502).
+// CLONE, so the live page is untouched and the user goes on editing it.
 //
 // Caution: We don't want this to become an async method because we don't want any other event
 // handlers running between cleaning up the page and getting the content to save. (Or think hard
@@ -1670,6 +1760,7 @@ export function topBarButtonClick(button: { command: string }) {
             cutSelection();
             break;
         case "undo":
+            // The one undo stack lives in this, the page frame (undo/pageUndo.ts).
             handleUndo();
             break;
         // We don't handle paste this way. We need code on the C# side to decide if we have
@@ -1728,12 +1819,10 @@ async function copyImpl() {
         // whitespace. But there's a greater chance they **don't** want unintended
         // trailing line breaks. This ".trimEnd()" works around an issue where multiple
         // copy/pastes can result in an extra line break being added. See BL-14051.
-        navigator.clipboard.writeText(
-            activeCanvasElementEditable.innerText.trimEnd(),
-        );
+        writeClipboardText(activeCanvasElementEditable.innerText.trimEnd());
         return;
     }
-    navigator.clipboard.writeText(sel.toString());
+    writeClipboardText(sel.toString());
 }
 
 // See comment on copySelection
@@ -1744,7 +1833,7 @@ export const cutSelection = () => {
 async function cutSelectionImpl() {
     const sel = document.getSelection();
     if (!sel) return;
-    await navigator.clipboard.writeText(sel.toString());
+    await writeClipboardText(sel.toString());
     // Using ckeditor here because it's the only way I've found to integrate clipboard
     // ops into an Undo stack that we can operate from an external button.
     // We do a Save before and after to make sure that the cut is distinct from
@@ -1810,6 +1899,14 @@ function pasteHandler(e: Event) {
 // Set up a global document-level paste handler. This works even if there is no
 // focused element that allows the ctrl-V handler to be called.
 document.addEventListener("paste", pasteHandler);
+// Pasting a picture into a text block makes it an inline image there (BL-17014). This has to be
+// in the capture phase, to run before CKEditor takes the paste and inserts the text that came
+// with the picture, usually its path. Capture caused text to be pasted twice when it was tried
+// for pasteHandler (see below), but this listener does nothing unless it pastes a picture, and
+// then it stops the event, so the paste can't happen twice.
+document.addEventListener("paste", pasteImageIntoTextAsInlineImage, {
+    capture: true,
+});
 // We also need a handler on ctrl-V. The pasteHandler does not get invoked by
 // the code above when ctrl-V is pressed in a contenteditable element,
 // probably because some CkEditor code intercepts it and prevents default,
@@ -1828,6 +1925,17 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
 });
 
 async function pasteImpl(imageAvailable: boolean) {
+    // With an inline image selected, or the focus in a text block, a picture goes to inline
+    // images (it replaces the selected image's picture, or goes into that block as a new inline
+    // image), as it does for Ctrl+V (see pasteImageIntoTextAsInlineImage), even on a page that
+    // has a canvas.
+    if (imageAvailable) {
+        const target = getInlineImagePasteTarget();
+        if (target && (await clipboardHoldsJustAPicture())) {
+            pasteClipboardImage(target);
+            return;
+        }
+    }
     const canvasElementManager = theOneCanvasElementManager;
     if (
         imageAvailable &&
@@ -1851,7 +1959,7 @@ async function pasteImpl(imageAvailable: boolean) {
         document.activeElement as HTMLElement | null
     )?.closest(".bloom-cell");
 
-    const textToPaste = await navigator.clipboard.readText();
+    const textToPaste = await readClipboardText();
     if (!textToPaste) {
         return;
     }
@@ -2132,13 +2240,11 @@ export function attachToCkEditor(element) {
         }
     });
 
-    // A table's own undo stack is separate from this one, and whichever of the two was written
-    // to last is the one the next Undo belongs to. See undoOrdering.ts. The undoable() test keeps
-    // the changes ckeditor makes while it attaches itself to a box out of the reckoning: only a
-    // change a person could undo counts as a change the person made.
-    ckedit.on("change", () => {
-        if (ckedit.undoManager?.undoable()) noteCkeditorChange();
-    });
+    // A table's operations are entries on the one undo stack, separate from this history, and
+    // whichever of the two was written to last is the one the next Undo belongs to; and typing
+    // abandons anything the stack could redo. See undo/ckeditorChanges.ts.
+    trackCkeditorChanges(ckedit);
+    keepInlineImageSelectionOutOfCkeditorSnapshots(ckedit);
 
     // hide the toolbar when ckeditor starts
     ckedit.on("instanceReady", (evt) => {

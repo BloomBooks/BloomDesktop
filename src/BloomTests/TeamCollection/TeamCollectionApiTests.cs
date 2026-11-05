@@ -406,16 +406,13 @@ namespace BloomTests.TeamCollection
         public void HandleCurrentBookStatus_NotLockedUnderSaudiFormat_ReturnsEmptyWhen()
         {
             var originalEmail = Bloom.Registration.Registration.Default.Email;
-            var originalCulture = CultureInfo.CurrentCulture;
-            var originalDefaultCulture = CultureInfo.DefaultThreadCurrentCulture;
+            var originalUserCulture = UserCulture.Current;
             try
             {
                 Bloom.Registration.Registration.Default.Email = "me@example.com";
-                // The request is handled on the server's thread, so set the default as well.
                 var saudi = new CultureInfo("ar-SA");
                 Assert.That(saudi.Calendar, Is.InstanceOf<UmAlQuraCalendar>());
-                CultureInfo.DefaultThreadCurrentCulture = saudi;
-                CultureInfo.CurrentCulture = saudi;
+                UserCulture.SetForTests(saudi);
 
                 var apiBuilder = new TeamCollectionApiBuilder().WithDefaultMocks(true);
                 var api = apiBuilder.Build();
@@ -440,8 +437,7 @@ namespace BloomTests.TeamCollection
             {
                 // Cleanup
                 Bloom.Registration.Registration.Default.Email = originalEmail;
-                CultureInfo.CurrentCulture = originalCulture;
-                CultureInfo.DefaultThreadCurrentCulture = originalDefaultCulture;
+                UserCulture.SetForTests(originalUserCulture);
             }
         }
 
@@ -458,22 +454,24 @@ namespace BloomTests.TeamCollection
             string expected
         )
         {
-            var originalCulture = CultureInfo.CurrentCulture;
+            var originalUserCulture = UserCulture.Current;
             try
             {
-                CultureInfo.CurrentCulture = new CultureInfo("ar-SA");
-                Assert.That(CultureInfo.CurrentCulture.Calendar, Is.InstanceOf<UmAlQuraCalendar>());
+                UserCulture.SetForTests(new CultureInfo("ar-SA"));
+                Assert.That(UserCulture.Current.Calendar, Is.InstanceOf<UmAlQuraCalendar>());
                 var whenLocked = new DateTime(year, 6, 15, 12, 0, 0, DateTimeKind.Utc);
                 var result = TeamCollectionApi.FormatLockDate(whenLocked);
                 Assert.That(
                     result,
-                    Is.EqualTo(expected ?? whenLocked.ToLocalTime().ToShortDateString())
+                    Is.EqualTo(
+                        expected ?? whenLocked.ToLocalTime().ToString("d", UserCulture.Current)
+                    )
                 );
                 Assert.That(TeamCollectionApi.FormatLockDate(DateTime.MaxValue), Is.EqualTo(""));
             }
             finally
             {
-                CultureInfo.CurrentCulture = originalCulture;
+                UserCulture.SetForTests(originalUserCulture);
             }
         }
 

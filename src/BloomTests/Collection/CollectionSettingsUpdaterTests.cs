@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bloom;
@@ -26,6 +27,7 @@ namespace BloomTests.Collection
         private string _originalEnabledFeatures;
         private bool _originalAutoUpdate;
         private List<string> _renameRequests;
+        private List<string> _teamCollectionRequests;
 
         [OneTimeSetUp]
         public void FixtureSetup()
@@ -53,6 +55,7 @@ namespace BloomTests.Collection
             _originalEnabledFeatures = Settings.Default.EnabledExperimentalFeatures;
             _originalAutoUpdate = Settings.Default.AutoUpdate;
             _renameRequests = new List<string>();
+            _teamCollectionRequests = new List<string>();
         }
 
         [TearDown]
@@ -85,14 +88,28 @@ namespace BloomTests.Collection
             );
         }
 
-        private void Apply(JObject postedValues, CollectionSettings settings)
+        /// <summary>
+        /// Apply, recording any rename or Team Collection it asks for. onCreateTeamCollection also
+        /// runs when it makes a Team Collection, to look at the collection at that moment.
+        /// </summary>
+        private void Apply(
+            JObject postedValues,
+            CollectionSettings settings,
+            bool currentCollectionIsTeamCollection = false,
+            Action<string> onCreateTeamCollection = null
+        )
         {
             CollectionSettingsUpdater.Apply(
                 postedValues,
                 settings,
-                currentCollectionIsTeamCollection: false,
+                currentCollectionIsTeamCollection,
                 _xmatterPackFinder,
-                newName => _renameRequests.Add(newName)
+                newName => _renameRequests.Add(newName),
+                folder =>
+                {
+                    _teamCollectionRequests.Add(folder);
+                    onCreateTeamCollection?.Invoke(folder);
+                }
             );
         }
 
@@ -165,6 +182,7 @@ namespace BloomTests.Collection
                 $"The values should not have moved.\nBefore: {before}\nAfter: {after}"
             );
             Assert.That(_renameRequests, Is.Empty);
+            Assert.That(_teamCollectionRequests, Is.Empty);
         }
 
         [Test]
@@ -340,32 +358,265 @@ namespace BloomTests.Collection
             Assert.That(settings.ExpiredBookshelf, Is.EqualTo("rememberedShelf"));
         }
 
+        /// <summary>
+        /// The file is checked rather than a reloaded collection, because loading keeps the
+        /// bookshelf only for an Enterprise subscription, which a test collection has not got.
+        /// </summary>
         [Test]
-        public void ApplyAdministrators_OnlyInATeamCollection()
+        public void Apply_ChangedBookshelf_SavedToTheFile()
         {
-            var settings = CreateCollectionSettings("ApplyAdministrators");
+            var settings = CreateCollectionSettings("ApplySavesBookshelf");
+            var values = CurrentValuesJson(settings);
             Assert.That(
-                settings.AdministratorsDisplayString,
+                (string)values["bloomLibrary"]["defaultBookshelf"],
+                Is.Empty,
+                "Sanity check: a new collection should have no bookshelf"
+            );
+            values["bloomLibrary"]["defaultBookshelf"] = "chosenShelf";
+
+            Apply(values, settings);
+
+            Assert.That(settings.DefaultBookshelf, Is.EqualTo("chosenShelf"));
+            Assert.That(
+                RobustFile.ReadAllText(settings.SettingsFilePath),
+                Does.Contain("bookshelf:chosenShelf")
+            );
+        }
+
+        [Test]
+        public void Apply_NewSubscriptionCode_SavedToTheFile()
+        {
+            const string kTestEnterpriseCode = "Test-727011-1339";
+            var settings = CreateCollectionSettings("ApplySavesSubscription");
+            var values = CurrentValuesJson(settings);
+            Assert.That(
+                (string)values["subscription"]["code"],
+                Is.Empty,
+                "Sanity check: a new collection should have no subscription code"
+            );
+            values["subscription"]["code"] = kTestEnterpriseCode;
+
+            Apply(values, settings);
+
+            Assert.That(settings.Subscription.Code, Is.EqualTo(kTestEnterpriseCode));
+            Assert.That(settings.Subscription.Tier, Is.EqualTo(SubscriptionTier.Enterprise));
+            Assert.That(
+                new CollectionSettings(settings.SettingsFilePath).Subscription.Code,
+                Is.EqualTo(kTestEnterpriseCode),
+                "Apply should have saved the new code to disk"
+            );
+        }
+
+        /// <summary>
+        /// A book downloaded from Bloom Library for editing gets its subscription with the right to
+        /// its branding even when expired, which the code alone does not say. Posting the same code
+        /// back must not replace that subscription with one made from the code.
+        /// </summary>
+        [Test]
+        public void Apply_UnchangedSubscriptionCode_KeepsTheCollectionsSubscription()
+        {
+            var settings = CreateCollectionSettings("ApplyKeepsSubscription");
+            var downloadedForEditing = Subscription.FromCollectionSettingsInfo(
+                "Test-Expired-005691-4935",
+                "Default",
+                editingABlorgBook: true
+            );
+            settings.Subscription = downloadedForEditing;
+            Assert.That(
+                new Subscription(downloadedForEditing.Code).EditingBlorgBook,
+                Is.False,
+                "Sanity check: a subscription made from the code alone should lose the editing right"
+            );
+
+            Apply(CurrentValuesJson(settings), settings);
+
+            Assert.That(settings.Subscription, Is.SameAs(downloadedForEditing));
+        }
+
+        /// <summary>
+        /// A bookshelf belongs to a subscription, so a code for a different subscription clears it
+        /// (BL-16904), even when its descriptor extends the old one. A code with the same
+        /// descriptor (renewed), or a mistyped code that looks like the same subscription, keeps it.
+        /// </summary>
+        [TestCase(
+            "Test-727011-1339",
+            "Sample-361769-1209",
+            "",
+            TestName = "DifferentSubscription_ClearsBookshelf"
+        )]
+        [TestCase(
+            "Fake-009926-0521",
+            "Fake-LC-009926-1483",
+            "",
+            TestName = "ValidCodeWhoseDescriptorExtendsTheOld_ClearsBookshelf"
+        )]
+        [TestCase(
+            "Test-727011-1339",
+            "Test-727011-1338",
+            "oldShelf",
+            TestName = "SameDescriptor_KeepsBookshelf"
+        )]
+        [TestCase(
+            "Test-727011-1339",
+            "Test-727011-133",
+            "oldShelf",
+            TestName = "MistypedCodeForTheSameSubscription_KeepsBookshelf"
+        )]
+        public void Apply_ChangedSubscriptionCode_Bookshelf(
+            string originalCode,
+            string newCode,
+            string expectedShelf
+        )
+        {
+            var settings = CreateCollectionSettings("ApplyChangedSubscriptionBookshelf");
+            settings.Subscription = new Subscription(originalCode);
+            settings.DefaultBookshelf = "oldShelf";
+            settings.Save();
+            Assert.That(
+                RobustFile.ReadAllText(settings.SettingsFilePath),
+                Does.Contain("bookshelf:oldShelf"),
+                "Sanity check: the file should start with a bookshelf"
+            );
+            Assert.That(
+                settings.Subscription.GetIntegrityLabel(),
+                Is.EqualTo("ok"),
+                "Sanity check: the original code should be well-formed"
+            );
+            var values = CurrentValuesJson(settings);
+            values["subscription"]["code"] = newCode;
+
+            Apply(values, settings);
+
+            Assert.That(settings.Subscription.Code, Is.EqualTo(newCode));
+            Assert.That(settings.DefaultBookshelf, Is.EqualTo(expectedShelf));
+            var savedFile = RobustFile.ReadAllText(settings.SettingsFilePath);
+            if (expectedShelf == "")
+                Assert.That(savedFile, Does.Not.Contain("bookshelf:"));
+            else
+                Assert.That(savedFile, Does.Contain("bookshelf:" + expectedShelf));
+        }
+
+        [Test]
+        public void Apply_BookshelfSetToNone_RemovedFromTheFile()
+        {
+            var settings = CreateCollectionSettings("ApplyRemovesBookshelf");
+            settings.DefaultBookshelf = "oldShelf";
+            settings.Save();
+            Assert.That(
+                RobustFile.ReadAllText(settings.SettingsFilePath),
+                Does.Contain("bookshelf:oldShelf"),
+                "Sanity check: the file should start with a bookshelf"
+            );
+            var values = CurrentValuesJson(settings);
+            values["bloomLibrary"]["defaultBookshelf"] = "";
+
+            Apply(values, settings);
+
+            Assert.That(settings.DefaultBookshelf, Is.Empty);
+            Assert.That(
+                RobustFile.ReadAllText(settings.SettingsFilePath),
+                Does.Not.Contain("bookshelf:")
+            );
+        }
+
+        [Test]
+        public void Apply_ChangedAdministratorsInATeamCollection_SavedToTheFile()
+        {
+            var settings = CreateCollectionSettings("ApplySavesAdministrators");
+            var values = CurrentValuesJson(settings);
+            Assert.That(
+                (string)values["teamCollection"]["administrators"],
                 Is.Empty,
                 "Sanity check: a new collection has no administrators"
             );
+            values["teamCollection"]["administrators"] = "someone@example.com another@example.com";
 
-            CollectionSettingsUpdater.ApplyAdministrators(
-                "someone@example.com",
-                settings,
-                currentCollectionIsTeamCollection: false
-            );
-            Assert.That(settings.AdministratorsDisplayString, Is.Empty);
+            Apply(values, settings, currentCollectionIsTeamCollection: true);
 
-            CollectionSettingsUpdater.ApplyAdministrators(
-                "someone@example.com, another@example.com",
-                settings,
-                currentCollectionIsTeamCollection: true
-            );
             Assert.That(
-                settings.AdministratorsDisplayString,
+                new CollectionSettings(settings.SettingsFilePath).AdministratorsDisplayString,
                 Is.EqualTo("someone@example.com, another@example.com")
             );
+        }
+
+        /// <summary>
+        /// Making a Team Collection copies the settings file into the shared folder, so it comes
+        /// after the save; and it saves the settings again (ConnectToTeamCollection), so it comes
+        /// before an expired subscription's bookshelf is hidden in memory (BL-15056).
+        /// </summary>
+        [Test]
+        public void Apply_CreateInFolder_CreatesTeamCollectionAfterSavingAndBeforeHidingTheBookshelf()
+        {
+            const string kSharedFolder = @"C:\Dropbox";
+            var settings = CreateCollectionSettings("ApplyCreatesTeamCollection");
+            // What loading a collection with an expired subscription and a bookshelf leaves.
+            settings.DefaultBookshelf = "";
+            settings.ExpiredBookshelf = "rememberedShelf";
+            var values = CurrentValuesJson(settings);
+            Assert.That(
+                (string)values["teamCollection"]["createInFolder"],
+                Is.Empty,
+                "Sanity check: the GET should not ask for a Team Collection"
+            );
+            values["frontBackMatter"]["country"] = "Kenya";
+            values["teamCollection"]["createInFolder"] = kSharedFolder;
+            string countryInFileWhenCreated = null;
+            string fileAfterCreating = null;
+
+            Apply(
+                values,
+                settings,
+                onCreateTeamCollection: folder =>
+                {
+                    countryInFileWhenCreated = new CollectionSettings(
+                        settings.SettingsFilePath
+                    ).Country;
+                    // As ConnectToTeamCollection does.
+                    settings.Save();
+                    fileAfterCreating = RobustFile.ReadAllText(settings.SettingsFilePath);
+                }
+            );
+
+            Assert.That(_teamCollectionRequests, Is.EqualTo(new[] { kSharedFolder }));
+            Assert.That(
+                countryInFileWhenCreated,
+                Is.EqualTo("Kenya"),
+                "the collection should have been saved before the Team Collection was made"
+            );
+            Assert.That(
+                fileAfterCreating,
+                Does.Contain("bookshelf:rememberedShelf"),
+                "the save made while creating the Team Collection should keep the bookshelf"
+            );
+            Assert.That(
+                settings.DefaultBookshelf,
+                Is.Empty,
+                "in memory it should stay hidden while the subscription is expired"
+            );
+        }
+
+        /// <summary>
+        /// Pro tier is not allowed in a Team Collection, so a collection becoming one in the same
+        /// save keeps its old subscription.
+        /// </summary>
+        [Test]
+        public void Apply_ProSubscriptionWhileCreatingTeamCollection_IsRefused()
+        {
+            const string kProCode = "Fake-Pro-009926-2146";
+            var settings = CreateCollectionSettings("ApplyProWhileCreatingTeamCollection");
+            Assert.That(
+                new Subscription(kProCode).Tier,
+                Is.EqualTo(SubscriptionTier.Pro),
+                "Sanity check: the code should be a Pro one"
+            );
+            var values = CurrentValuesJson(settings);
+            values["subscription"]["code"] = kProCode;
+            values["teamCollection"]["createInFolder"] = @"C:\Dropbox";
+
+            Apply(values, settings);
+
+            Assert.That(settings.Subscription.Code, Is.Not.EqualTo(kProCode));
+            Assert.That(_teamCollectionRequests, Is.EqualTo(new[] { @"C:\Dropbox" }));
         }
 
         /// <summary>

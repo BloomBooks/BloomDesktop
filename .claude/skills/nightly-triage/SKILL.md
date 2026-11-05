@@ -54,7 +54,12 @@ new PR opened).
 
 A first look means about one level down, no deeper. Usually that is the error and the trace,
 plus the screenshot or the Bloom log from the run's artifacts (`e2e-report`,
-`component-tester-traces`):
+`component-tester-traces`, `bloom-diagnostics`). `bloom-diagnostics` is uploaded on every run
+that reached the visual-regression suite, green ones included. It holds Bloom's own logs
+(`Log*.txt` from `%TEMP%\SIL\Bloom`, one per Bloom the e2e and visual-regression suites
+launched), the Windows application event log, and the hung-Bloom watchdog's samples. It does not
+hold anything from the C# tests: they point `TEMP` at a folder of their own, which the nightly
+does not upload.
 
 ```
 gh run download <id> --repo BloomBooks/BloomDesktop -n <artifact> -D <scratchpad folder>
@@ -75,15 +80,17 @@ there. Delete the downloaded artifacts when you are done; they have deep paths, 
 
 ## 5. Post a brief summary to Zulip
 
-Every triage ends with a very short post in the nightly report's own thread (channel
-`developers`, topic "Nightly run"), so the team sees that the nights were looked at. Running
-this skill is the developer's permission to post; don't ask first.
+A triage that found something ends with a very short post in the nightly report's own thread
+(channel `developers`, topic "Nightly run"), so the team sees that the nights were looked at.
+Running this skill is the developer's permission to post; don't ask first. If every run passed
+and there is nothing else worth telling the team, don't post: the nightly's own report already
+says it passed.
 
 Keep it to a few lines: `[Claude triage]` on a line of its own, then which runs were covered,
 then one line per failure saying whether it is new, seen again, or fixed, with a short name and
 any PR or card. Always end with the doc on master, on a line of its own, as
 `[All open nightly failures](https://github.com/BloomBooks/BloomDesktop/blob/master/docs/nightly-failures/README.md)`.
-If every run passed, one line saying so is enough before that link. For example:
+For example:
 
 ```
 [Claude triage]

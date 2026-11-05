@@ -56,6 +56,7 @@ type IAppearanceUIOptions = {
 // Not yet complete
 export interface IAppearanceSettings {
     cssThemeName: string;
+    fullBleed?: boolean;
 }
 
 // Stuff we get from the book/settings api.
@@ -365,10 +366,22 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         // we cannot send.
     }
 
+    // Shows another page of the dialog, keeping whatever the user has changed so far.
+    function goToConfigrPage(pageKey: string) {
+        if (latestSettingsRef.current) {
+            setSettingsToReturnLater(latestSettingsRef.current);
+        }
+        setPageSelectionRequest((currentRequest) => ({
+            pageKey,
+            requestId: (currentRequest?.requestId ?? 0) + 1,
+        }));
+    }
+
     const bookSettingsArea = useBookSettingsAreaDefinition({
         appearanceDisabled,
         tierAllowsFullBleed,
         pageSizeSupportsFullBleed,
+        fullBleed: liveAppearance?.fullBleed ?? false,
         settings,
         settingsToReturnLater,
         getAdditionalProps,
@@ -377,15 +390,8 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         migratedTheme,
         deleteCustomBookStyles,
         saveSettingsAndCloseDialog,
-        onGoToThemeAndLayout: () => {
-            if (latestSettingsRef.current) {
-                setSettingsToReturnLater(latestSettingsRef.current);
-            }
-            setPageSelectionRequest((currentRequest) => ({
-                pageKey: "themeAndLayout",
-                requestId: (currentRequest?.requestId ?? 0) + 1,
-            }));
-        },
+        onGoToThemeAndLayout: () => goToConfigrPage("themeAndLayout"),
+        onGoToPrintPublishing: () => goToConfigrPage("printPublishing"),
         onColorPickerVisibilityChanged: setDialogVisibleWhileColorPickerOpen,
         themeNames: appearanceUIOptions.themeNames,
         unusedLanguageDataExists: unusedLanguageDataExists,

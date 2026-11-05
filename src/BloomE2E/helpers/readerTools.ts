@@ -3,7 +3,7 @@
 // dialog is readerSetup.ts.)
 //
 // Both tools render the same stepper ("Stage 3 of 10" / "Level 2 of 5", with two arrow buttons),
-// and it shows only while the tool's switch is on, so everything here opens the tool with its
+// and it shows only while the tool's switch is on, so everything here expands the tool with its
 // switch on first. The stepper's number is read from data attributes it carries for this suite,
 // because its visible text is localized.
 
@@ -12,7 +12,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiGet } from "./api";
 import { makeBookFromTemplate } from "./bookMaking";
-import { enableToolForBook, openTool, toolboxFrame } from "./toolbox";
+import { enableToolForBook, expandTool, toolboxFrame } from "./toolbox";
 
 /** The two reader tools, by the `data-toolid` their toolbox headers carry. */
 export type ReaderTool = "decodableReader" | "leveledReader";
@@ -47,7 +47,7 @@ function describeTool(tool: ReaderTool): string {
 }
 
 /**
- * Open a reader tool in the toolbox, the way a person does, turn on its switch if it is off, and
+ * Expand a reader tool in the toolbox, the way a person does, turn on its switch if it is off, and
  * wait until its stepper is showing with the collection's stages or levels loaded. The tool has to
  * be one the toolbox is offering (see toolbox.ts, enableToolForBook).
  *
@@ -57,11 +57,11 @@ function describeTool(tool: ReaderTool): string {
  * The stepper appears before the tool has finished restoring the book's stage or level, so what it
  * shows at first can be stale; see waitForReaderToolToRestore.
  */
-export async function openReaderTool(
+export async function expandReaderTool(
     page: Page,
     tool: ReaderTool,
 ): Promise<Frame> {
-    const frame = await openTool(page, tool, SWITCH[tool]);
+    const frame = await expandTool(page, tool, SWITCH[tool]);
     const box = frame.locator(SWITCH[tool]);
     if (!(await box.isChecked())) await box.click();
     await expect(
@@ -88,7 +88,7 @@ async function getPhaseCount(frame: Frame, tool: ReaderTool): Promise<number> {
 
 /**
  * The stage (Decodable Reader) or level (Leveled Reader) the tool's panel is showing. The panel
- * has to be showing; see openReaderTool.
+ * has to be showing; see expandReaderTool.
  */
 export async function getReaderPhase(
     page: Page,
@@ -97,7 +97,7 @@ export async function getReaderPhase(
     const box = toolboxFrame(page).locator(stepper(tool));
     if ((await box.count()) === 0)
         throw new Error(
-            `${describeTool(tool)} is not showing its stepper; open it with openReaderTool first.`,
+            `${describeTool(tool)} is not showing its stepper; expand it with expandReaderTool first.`,
         );
     return Number(await box.first().getAttribute("data-phase-number"));
 }
@@ -105,7 +105,7 @@ export async function getReaderPhase(
 /**
  * Move a reader tool to this stage or level with its arrow buttons, the way a person does, one
  * click at a time, waiting after each click until the stepper shows the next number, and then
- * until Bloom has saved the choice. Opens the tool first. Throws, naming how many there are, when
+ * until Bloom has saved the choice. Expands the tool first. Throws, naming how many there are, when
  * the collection has no such stage or level.
  *
  * The stepper shows the new number at once, but Bloom saves it half a second later, so that a
@@ -123,7 +123,7 @@ export async function setReaderPhase(
     tool: ReaderTool,
     target: number,
 ): Promise<void> {
-    const frame = await openReaderTool(page, tool);
+    const frame = await expandReaderTool(page, tool);
     const count = await getPhaseCount(frame, tool);
     if (target < 1 || target > count)
         throw new Error(
@@ -209,7 +209,7 @@ function getSavedReaderPhase(
 }
 
 /**
- * Make a new Basic Book with one of the reader tools turned on and open, its switch on, and return
+ * Make a new Basic Book with one of the reader tools turned on and expanded, its switch on, and return
  * the book's folder, once the tool has restored the stage or level a new book starts on. Setup for
  * tests about what a reader book remembers; the tool is turned on by the fast route
  * (enableToolForBook), not through "More...".
@@ -220,14 +220,14 @@ export async function makeBasicBookWithReaderTool(
 ): Promise<string> {
     const bookFolder = await makeBookFromTemplate(page, "Basic Book");
     await enableToolForBook(page, bookFolder, tool);
-    await openReaderTool(page, tool);
+    await expandReaderTool(page, tool);
     await waitForReaderToolToRestore(page, tool, bookFolder);
     return bookFolder;
 }
 
 /**
  * Wait until a reader tool shows this stage or level, and fail with `message` if it never does.
- * For assertions after a book is opened: the tool restores the book's stage or level a moment
+ * For assertions after a book is expanded: the tool restores the book's stage or level a moment
  * after it appears, so reading the stepper once can catch it before the restore.
  */
 export async function expectReaderToolToShow(

@@ -584,14 +584,23 @@ test.describe("showing the other pages of the book", () => {
         // Start two rows away, so the page to click is one of the other pages.
         await goToPage(page, pages[targetIndex - 4].id);
         expect(await chosenPageView(page)).toBe("all");
-        const placed = await scrollPageTopAboveView(page, target.id, 380);
+        // The distances are shares of the page's height, since how tall a page is on screen
+        // depends on the size of Bloom's window: over half the page above the view, and the click
+        // in the part below that.
+        const unscrolled = await getPagePlacement(page, target.id);
+        const pageHeight = unscrolled.page.bottom - unscrolled.page.top;
+        const placed = await scrollPageTopAboveView(
+            page,
+            target.id,
+            Math.round(pageHeight * 0.55),
+        );
         expect(
             placed.page.top,
             "Sanity check: the top of the page to click should be above the view",
         ).toBeLessThan(placed.visible.top);
 
         // THE ACTION UNDER TEST: a real click on the part of that page that is on screen.
-        await clickPageInGrid(page, target.id, 150);
+        await clickPageInGrid(page, target.id, Math.round(pageHeight * 0.2));
 
         await expect
             .poll(() => getShownPageId(page), {
@@ -610,6 +619,22 @@ test.describe("showing the other pages of the book", () => {
         // And the page is still where it was clicked.
         const after = await getPagePlacement(page, target.id);
         expect(Math.abs(after.page.top - placed.page.top)).toBeLessThan(3);
+        // Sanity check: the page's first text box is wholly above the view, which is what made
+        // the browser want to scroll it into view when Bloom focused it.
+        const firstBoxBottom = await editablePageFrame(page).evaluate(() => {
+            const shown = Array.from(
+                document.querySelectorAll(".bloom-page .bloom-editable"),
+            )
+                .map((box) => box.getBoundingClientRect())
+                .filter((r) => r.height > 0);
+            if (shown.length === 0)
+                throw new Error("The opened page shows no text box.");
+            return shown[0].bottom;
+        });
+        expect(
+            firstBoxBottom,
+            "Sanity check: the opened page's first text box should be above the view",
+        ).toBeLessThanOrEqual(after.visible.top);
     });
 
     test("the page's bubbles stay beside it in All Pages and after going back to One Page [Test Case ID 835]", async ({

@@ -22,12 +22,17 @@
             )
             scale(var(--full-bleed-scale));
 
-        &.numberedPage {
-            // Page numbers need to adjust for full-bleed if they're showing.
-            // This assumes that page numbers are at the bottom of the page,
-            // which they normally are in our layouts and themes.  (BL-13685)
-            --pageNumber-full-bleed-bottom-adjustment: @bleed;
-        }
+        // The transform above enlarges the page and moves part of it past the cut line, so a
+        // margin set in the page's own coordinates would end up smaller, measured from the cut,
+        // than the theme intended. basePage.less uses these to turn a theme margin into page
+        // padding that leaves the same distance from the cut line: (margin + add) / scale.
+        --fullBleed-margin-add-x: calc(
+            @bleed + var(--full-bleed-excess-width) / 2
+        );
+        --fullBleed-margin-add-y: calc(
+            @bleed + var(--full-bleed-excess-height) / 2
+        );
+        --fullBleed-margin-scale: var(--full-bleed-scale);
     }
 }
 

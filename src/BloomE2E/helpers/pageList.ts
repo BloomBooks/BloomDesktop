@@ -15,7 +15,7 @@ import {
     editablePageFrame,
     getPages,
     getShownPageId,
-    waitForEditablePage,
+    waitForEditTabSettled,
     type IBookPage,
 } from "./bookMaking";
 import { runPageMenuCommand, selectPage } from "./pageThumbnails";
@@ -64,7 +64,7 @@ async function waitForOneNewPage(
             },
         )
         .toBe(before.length + 1);
-    await waitForEditablePage(page);
+    await waitForEditTabSettled(page);
     return added!;
 }
 
@@ -73,6 +73,9 @@ async function waitForOneNewPage(
  * return the new page. The copy lands right after the page it was made from.
  */
 export async function duplicatePageWithButton(page: Page): Promise<IBookPage> {
+    // Duplicating saves the page being shown, so this must not be asked for while the Edit tab is
+    // still loading one. See waitForEditTabSettled.
+    await waitForEditTabSettled(page);
     const before = await getPages(page);
     const button = pageListFrame(page).getByTestId("duplicate-page-button");
     await button.waitFor({ state: "visible", timeout: 30000 });
@@ -92,6 +95,9 @@ export async function duplicatePageWithContextMenu(
     page: Page,
     pageId: string,
 ): Promise<IBookPage> {
+    // Duplicating saves the page being shown, so this must not be asked for while the Edit tab is
+    // still loading one. See waitForEditTabSettled.
+    await waitForEditTabSettled(page);
     const before = await getPages(page);
     const target = thumbnail(page, pageId);
     await target.waitFor({ state: "visible", timeout: 30000 });
@@ -126,6 +132,9 @@ export async function movePageToSlotOf(
     pageId: string,
     targetPageId: string,
 ): Promise<void> {
+    // Moving a page saves the page being shown, so this must not be asked for while the Edit tab
+    // is still loading one. See waitForEditTabSettled.
+    await waitForEditTabSettled(page);
     const before = await getPages(page);
     const targetIndex = before.findIndex((p) => p.id === targetPageId);
     if (targetIndex < 0 || !before.some((p) => p.id === pageId))
@@ -200,7 +209,7 @@ export async function movePageToSlotOf(
             message: `Bloom never listed page ${pageId} in the slot of ${targetPageId}.`,
         })
         .toBe(pageId);
-    await waitForEditablePage(page);
+    await waitForEditTabSettled(page);
 }
 
 /**
@@ -214,6 +223,9 @@ export async function duplicateCurrentPage(
     page: Page,
     times = 1,
 ): Promise<void> {
+    // Duplicating saves the page being shown, so this must not be asked for while the Edit tab is
+    // still loading one. See waitForEditTabSettled.
+    await waitForEditTabSettled(page);
     const before = (await getPages(page)).length;
     // Bloom duplicates only the page the request names, and only if it is still the current page.
     const pageId = await getShownPageId(page);
@@ -233,7 +245,7 @@ export async function duplicateCurrentPage(
             message: "Bloom never added the duplicated page(s).",
         })
         .toBe(before + times);
-    await waitForEditablePage(page);
+    await waitForEditTabSettled(page);
 }
 
 /**
@@ -272,7 +284,7 @@ export async function finishDuplicatePageManyTimes(
             message: `Bloom never had ${times} more pages after Duplicate Page Many Times.`,
         })
         .toBe(before + times);
-    await waitForEditablePage(page);
+    await waitForEditTabSettled(page);
 }
 
 /** Close the open Duplicate Page Many Times dialog with Cancel, and wait for it to go away. */

@@ -845,8 +845,8 @@ namespace Bloom.Publish.BloomLibrary
             var existingId = existingBookInfo.id.ToString();
             var existingBookUrl = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(existingId);
 
-            var createdDate = createdDateTime.ToString("d", CultureInfo.CurrentCulture);
-            var updatedDate = updatedDateTime.ToString("d", CultureInfo.CurrentCulture);
+            var createdDate = createdDateTime.ToString("d", UserCulture.Current);
+            var updatedDate = updatedDateTime.ToString("d", UserCulture.Current);
             var existingThumbUrl = GetBloomLibraryThumbnailUrl(existingBookInfo);
 
             // "brandingProjectName" is the raw field name from parse. We can't change it now for historical reasons.

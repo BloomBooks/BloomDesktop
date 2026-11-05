@@ -181,6 +181,75 @@ export async function waitForEditablePage(
         .toBe("true");
 }
 
+// Property name put on the editable page's document so a later poll can tell whether it is still
+// the same document or a reload has replaced it. Bloom reloads a page to the SAME url (the
+// in-memory file is named after the page id), so the url cannot answer that question.
+const RELOAD_MARKER = "__bloomE2eEditablePageMarker";
+
+/**
+ * Mark the document now showing in the Edit tab, so waitForEditablePageReload can tell when
+ * Bloom has replaced it. Call this before a command that reloads the page.
+ */
+export async function markEditablePage(page: Page): Promise<void> {
+    await page.evaluate((marker) => {
+        const document_ = (
+            document.querySelector("#page") as HTMLIFrameElement | null
+        )?.contentDocument;
+        if (!document_)
+            throw new Error(
+                "The Edit tab is not showing a page, so there is nothing to mark.",
+            );
+        (document_ as unknown as Record<string, boolean>)[marker] = true;
+    }, RELOAD_MARKER);
+}
+
+/**
+ * Wait out the page reload that follows a command which makes Bloom rebuild the page, and for
+ * the reloaded page to finish loading. An ordinary save does not reload the page, but a change
+ * Bloom has to show by rebuilding it does: changing the book's content languages, for one.
+ *
+ * Call markEditablePage() before the command.
+ */
+export async function waitForEditablePageReload(
+    page: Page,
+    pageId: string,
+    timeoutMs = 60000,
+): Promise<void> {
+    await expect
+        .poll(
+            () =>
+                page.evaluate(
+                    (options) => {
+                        const document_ = (
+                            document.querySelector(
+                                "#page",
+                            ) as HTMLIFrameElement | null
+                        )?.contentDocument;
+                        if (!document_) return "no document";
+                        if (
+                            (document_ as unknown as Record<string, boolean>)[
+                                options.marker
+                            ]
+                        )
+                            return "not reloaded yet";
+                        if (
+                            !document_.querySelector(
+                                `.bloom-page[id="${options.pageId}"]`,
+                            )
+                        )
+                            return "showing some other page";
+                        return document_.readyState;
+                    },
+                    { marker: RELOAD_MARKER, pageId },
+                ),
+            {
+                timeout: timeoutMs,
+                message: `The Edit tab never reloaded page ${pageId}.`,
+            },
+        )
+        .toBe("complete");
+}
+
 /**
  * Wait until Bloom would enable `command` for `pageId`. This is the same question the menu asks
  * as it opens, and it has to be settled first, because the commands run asynchronously: Copy
@@ -241,7 +310,15 @@ export async function runPageMenuCommand(
 /**
  * The menu item for a command, in the shell page (the menu is portaled out of the iframe).
  * Exported so a test can assert on a command's enabled state without running it.
+ *
+ * A command whose menu entry has addEllipsis (Choose Different Layout) is shown with "..." after
+ * it. The match accepts an optional trailing "...", so callers do not need to know which commands
+ * open a dialog.
  */
 export function pageMenuItem(page: Page, command: PageMenuCommand): Locator {
-    return page.getByRole("menuitem", { name: command, exact: true });
+    // No PageMenuCommand contains a regular-expression metacharacter, so the label can go into
+    // the pattern without escaping.
+    return page.getByRole("menuitem", {
+        name: new RegExp("^" + command + "(\\.\\.\\.)?$"),
+    });
 }

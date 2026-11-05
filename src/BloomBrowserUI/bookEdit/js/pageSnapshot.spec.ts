@@ -22,7 +22,7 @@ let postHook: (() => Promise<unknown>) | undefined;
 // What C# answers. A real post resolves to the axios response, and this endpoint answers with a
 // boolean, so `{ data: true }` is an ordinary success. `{ data: false }` is a refusal: the snapshot
 // was for a page load it is not showing. And `undefined` -- no response at all -- is what a FAILED
-// post looks like, because postStringQuietly goes through wrapAxios, which turns a rejected request
+// post looks like, because postString goes through wrapAxios, which turns a rejected request
 // into a resolved promise carrying nothing.
 let postReply: unknown = { data: true };
 
@@ -32,7 +32,7 @@ vi.mock("../../lib/errorHandler", () => ({
 }));
 
 vi.mock("../../utils/bloomApi", () => ({
-    postStringQuietly: (url: string, body: string) => {
+    postString: (url: string, body: string) => {
         posted.push({ url, body });
         return postHook ? postHook() : Promise.resolve(postReply);
     },

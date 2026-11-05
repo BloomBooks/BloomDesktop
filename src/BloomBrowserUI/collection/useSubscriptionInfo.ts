@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { get } from "../utils/bloomApi";
 import { useL10n2 } from "../react_components/l10nHooks";
 
@@ -20,9 +20,10 @@ interface SubscriptionData {
     EditingBlorgBook: boolean;
 }
 
-// This hook supplies information about the Subscription as it is in the Collection Settings Dialog.
-// It automatically refreshes the values when it anything raises the "subscriptionCodeChanged" event.
-export const useSubscriptionInfo = () => {
+// This hook supplies information about a subscription. Given a code, it describes that code, and
+// asks again whenever the code changes; the Collection Settings dialogs use this for the code being
+// typed. Without one, it describes the collection's subscription.
+export const useSubscriptionInfo = (code?: string) => {
     const [subscriptionData, setSubscriptionData] = useState<SubscriptionData>({
         Code: "",
         Tier: "",
@@ -35,33 +36,24 @@ export const useSubscriptionInfo = () => {
     });
     const [haveData, setHaveData] = useState(false);
 
-    // This is called once initially, then each time the user types in the subscription code field or does a paste
-    const querySubscriptionInfo = useCallback(() => {
-        get("settings/subscription", (result) => {
-            setSubscriptionData(result.data);
-            setHaveData(true);
-        });
-    }, [setSubscriptionData]);
-
-    // refresh when the subscription code changes
+    // This effect fetches from Bloom: once, then again for each change of the code (each keystroke
+    // or paste). An answer that arrives after a newer question was asked is dropped.
     useEffect(() => {
-        document.addEventListener(
-            "subscriptionCodeChanged",
-            querySubscriptionInfo,
+        let isCurrent = true;
+        get(
+            code === undefined
+                ? "settings/subscription"
+                : `settings/subscription?code=${encodeURIComponent(code)}`,
+            (result) => {
+                if (!isCurrent) return;
+                setSubscriptionData(result.data);
+                setHaveData(true);
+            },
         );
-
         return () => {
-            document.removeEventListener(
-                "subscriptionCodeChanged",
-                querySubscriptionInfo,
-            );
+            isCurrent = false;
         };
-    }, [querySubscriptionInfo]);
-
-    // get initial info once at startup
-    useEffect(() => {
-        querySubscriptionInfo();
-    }, [querySubscriptionInfo]);
+    }, [code]);
 
     return {
         code: subscriptionData.Code,

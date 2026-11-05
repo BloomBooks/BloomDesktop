@@ -25,7 +25,11 @@ import { EditableDivUtils } from "./editableDivUtils";
 import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
 import { changeImage, IImageInfo } from "./bloomEditing";
-import { wrapWithRequestPageContentDelay } from "./pageContentDelays";
+import {
+    addRequestPageContentDelay,
+    removeRequestPageContentDelay,
+    wrapWithRequestPageContentDelay,
+} from "./pageContentDelays";
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import $ from "jquery";
@@ -325,7 +329,8 @@ function getPasteImageApiErrorMessage(
     return undefined;
 }
 
-function handlePasteImageApiError(responseOrError: unknown): void {
+/** Tells the user why an editView/pasteImage request failed. */
+export function handlePasteImageApiError(responseOrError: unknown): void {
     const message =
         getPasteImageApiErrorMessage(responseOrError) ??
         theOneLocalizationManager.getText(
@@ -335,6 +340,40 @@ function handlePasteImageApiError(responseOrError: unknown): void {
     BloomMessageBoxSupport.CreateAndShowSimpleMessageBoxWithLocalizedText(
         message,
     );
+}
+
+// The pastes of a picture (editView/pasteImage) that are waiting for C# to answer, by the imageId
+// each one sent. C# answers with that id, by calling changeImage with the picture or removeImageId
+// when there is none, including when importing the picture fails (EditingView.OnPasteImage always
+// does one or the other), and both call endImagePaste. Each pending paste holds a page-content
+// delay with its imageId as the delay's id, so that a save made before the picture arrives waits
+// for it. If an answer were ever lost, saves of this page would wait out requestPageContent's
+// limit and later pastes onto that image would be ignored (see startImagePaste), until the page
+// is loaded again.
+const imagePastesAwaitingPicture = new Set<string>();
+
+/**
+ * Records that a paste has asked C# for the picture on the clipboard, with this imageId, and makes
+ * page saves wait until endImagePaste is called with the same id. Returns false, and does nothing,
+ * if a paste with this id is already waiting: C# would answer both with the one id, and the first
+ * answer takes a temporary id off its img (changeImage), so the second could not find it. The
+ * second paste would only put the same clipboard picture there again, so the caller drops it.
+ */
+export function startImagePaste(imageId: string): boolean {
+    if (imagePastesAwaitingPicture.has(imageId)) return false;
+    imagePastesAwaitingPicture.add(imageId);
+    addRequestPageContentDelay(imageId);
+    return true;
+}
+
+/**
+ * Ends the paste that is waiting with this imageId, if there is one, and lets a waiting save go
+ * ahead. changeImage and removeImageId call it for every id C# sends them, once the page is up to
+ * date, so it does nothing for an id that no paste is waiting for.
+ */
+export function endImagePaste(imageId: string): void {
+    if (imagePastesAwaitingPicture.delete(imageId))
+        removeRequestPageContentDelay(imageId);
 }
 
 export function doImageCommand(
@@ -354,6 +393,10 @@ export function doImageCommand(
             imageId = EditableDivUtils.createUuid();
             img.setAttribute("id", imageId);
         }
+        // A second paste over this image before C# has answered the first is dropped; see
+        // startImagePaste.
+        if (!startImagePaste(imageId)) return;
+        const pasteId = imageId;
         const topDiv = img.closest(kCanvasElementSelector);
         const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
         const pageBackgroundColor = getOwningPageBackgroundColor(img);
@@ -361,7 +404,10 @@ export function doImageCommand(
             "editView/pasteImage",
             { imageId, imageSrc, imageIsGif, pageBackgroundColor },
             undefined,
-            handlePasteImageApiError,
+            (error) => {
+                endImagePaste(pasteId);
+                handlePasteImageApiError(error);
+            },
         );
         return;
     }
@@ -513,14 +559,57 @@ export function getOwningPageBackgroundColor(element: HTMLElement): string {
 }
 
 // Transparency mode for a single img, mirroring the C# ImageTransparencyMode enum.
-// "none"  = no transparent param (bloom-opaque, or white page)
+// "none"  = no transparent param (bloom-opaque, or white page and not an overlay on a background image)
 // "auto"  = transparent=yes (auto-detect line art)
 // "force" = transparent=force (bloom-transparent: always apply, skip line-art check)
 type TransparencyMode = "none" | "auto" | "force";
 
+// Returns true when `bloomCanvas` has a real (not placeholder) background image, i.e., the image
+// in its background canvas element. (Every bloom-canvas on a page being edited has one, since
+// the canvas element manager converts any legacy background img when the page is set up.)
+// Mirrors the C# HtmlDom.BloomCanvasHasRealBackgroundImage, which must also handle the legacy
+// form because publishing converts back to it.
+export function bloomCanvasHasRealBackgroundImage(
+    bloomCanvas: HTMLElement,
+): boolean {
+    const src =
+        getBackgroundImageFromBloomCanvas(bloomCanvas)?.getAttribute("src");
+    return !!src && !isPlaceHolderImage(src);
+}
+
+// Returns true when `img` is in a canvas element layered over a real background image
+// (i.e., in any canvas element other than the background image, on a canvas whose background
+// image is not a placeholder). A white line-art background on such an overlay would hide the
+// picture beneath it, so it needs transparency even on a white page (BL-16993).
+// Mirrors the C# HtmlDom.IsInCanvasOverlayOnBackgroundImage.
+export function isOverlayOnBackgroundImage(img: HTMLElement): boolean {
+    // On a custom-layout cover the branding logo and QR code are canvas elements beside the
+    // cover picture. They are not pictures layered over it, and making a QR code transparent
+    // could make it harder to scan.
+    if (
+        img.classList.contains("branding") ||
+        img.classList.contains("bloom-qrcode")
+    ) {
+        return false;
+    }
+    const canvasElement = img.closest(kCanvasElementSelector);
+    if (
+        !canvasElement ||
+        canvasElement.classList.contains(kBackgroundImageClass)
+    ) {
+        return false;
+    }
+    const bloomCanvas = canvasElement.closest(
+        kBloomCanvasSelector,
+    ) as HTMLElement | null;
+    return !!bloomCanvas && bloomCanvasHasRealBackgroundImage(bloomCanvas);
+}
+
 // Returns the transparency mode for an img element given whether the owning page
 // has a colored background. bloom-transparent/bloom-opaque are explicit user overrides
-// that take precedence over the page-background gate.
+// that take precedence over the page-background gate. Images in canvas overlays on a real
+// background image get "auto" even on a white page, since they would otherwise hide the
+// picture beneath them (BL-16993).
 export function getImageTransparencyMode(
     img: HTMLElement,
     pageNeedsTransparent: boolean,
@@ -531,7 +620,8 @@ export function getImageTransparencyMode(
     // that don't look (at least to our algorithm) like line art.
     // This can also 'erase' very light-colored parts of an image, even on a white page.
     if (img.classList.contains("bloom-transparent")) return "force";
-    if (!pageNeedsTransparent) return "none";
+    if (!pageNeedsTransparent && !isOverlayOnBackgroundImage(img))
+        return "none";
     return "auto";
 }
 
@@ -583,6 +673,53 @@ export function setImgTransparentParam(
     if (!src) return;
     const newSrc = buildSrcWithTransparentParam(src, mode);
     if (newSrc !== src) img.setAttribute("src", newSrc);
+}
+
+// Recompute and apply the transparent param for a single img from its classes, its role
+// on the canvas (overlay or not), and its owning page's background color. Call after
+// changing any of those for one img. Like updateImageTransparencyForPage, it leaves
+// branding and QR code images alone.
+export function refreshImgTransparentParam(img: HTMLElement): void {
+    if (
+        img.classList.contains("branding") ||
+        img.classList.contains("bloom-qrcode")
+    )
+        return;
+    setImgTransparentParam(
+        img,
+        getImageTransparencyMode(
+            img,
+            pageBackgroundNeedsTransparency(getOwningPageBackgroundColor(img)),
+        ),
+    );
+}
+
+// Recompute the transparent param of every canvas element image on `bloomCanvas`. Call after
+// anything that can change whether the canvas has a real background image (choosing, pasting,
+// deleting or swapping it), since that decides whether its overlays get Auto transparency.
+export function refreshTransparentParamsInBloomCanvas(
+    bloomCanvas: HTMLElement,
+): void {
+    for (const img of Array.from(
+        bloomCanvas.querySelectorAll(`${kCanvasElementSelector} img`),
+    )) {
+        refreshImgTransparentParam(img as HTMLElement);
+    }
+}
+
+// If `img` is the background image of a canvas, recompute the transparent params on that
+// canvas, since its overlays depend on whether there is a real background image.
+export function refreshTransparencyIfBackgroundImage(img: HTMLElement): void {
+    const canvasElement = img.closest(kCanvasElementSelector);
+    if (!canvasElement?.classList.contains(kBackgroundImageClass)) {
+        return;
+    }
+    const bloomCanvas = canvasElement.closest(
+        kBloomCanvasSelector,
+    ) as HTMLElement | null;
+    if (bloomCanvas) {
+        refreshTransparentParamsInBloomCanvas(bloomCanvas);
+    }
 }
 
 // Update img src attributes on `page` to add or remove the transparent query
@@ -843,12 +980,26 @@ export function getImageFromCanvasElement(
 // (It also has bloom-backgroundImage).
 // There are enough common behaviors to make it useful to use the same structure, and I
 // (JohnT) at least find it useful to think of it as a background canvas element.
+//
+// We search descendants rather than direct children, because the Image Description tool
+// temporarily wraps the background image in a bloom-describedImage. A bloom-canvas can also be
+// nested inside another (a table's picture cell holds one, and a table can sit on a canvas page).
+// On a real page the background image is the first canvas element, so the first match is always
+// this bloom-canvas's own; we check that its nearest bloom-canvas is this one just for robustness,
+// so an outer canvas never treats a nested canvas's background image as its own. Looping over the
+// live collection lets the search stop at the first match, as a plain [0] would.
 export function getBackgroundCanvasElementFromBloomCanvas(
     bloomCanvas: HTMLElement,
-): HTMLElement | null {
-    return bloomCanvas.getElementsByClassName(
+): HTMLElement | undefined {
+    const candidates = bloomCanvas.getElementsByClassName(
         kBackgroundImageClass,
-    )[0] as HTMLElement;
+    );
+    for (let i = 0; i < candidates.length; i++) {
+        if (candidates[i].closest(`.${kBloomCanvasClass}`) === bloomCanvas) {
+            return candidates[i] as HTMLElement;
+        }
+    }
+    return undefined;
 }
 
 // Shortcut to get the img element from the background canvas element (if any) of a bloom-canvas.

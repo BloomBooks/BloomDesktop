@@ -13,6 +13,7 @@ using Bloom.Publish.PDF;
 using Bloom.SubscriptionAndFeatures;
 using BloomTemp;
 using L10NSharp;
+using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Progress;
 
@@ -38,6 +39,66 @@ namespace Bloom.WebLibraryIntegration
         private int _collectionsWithErrors;
 
         public const string HashInfoFromLastUpload = ".lastUploadInfo"; // this filename must begin with a period
+
+        /// <summary>
+        /// The machine-readable results a bulk upload writes beside its log (BloomBulkUploadLog.txt),
+        /// for a script or test to read instead of the log's wording: the tallies, and one entry per
+        /// book with its folder, what happened to it, and, for a book that was uploaded, where its
+        /// files went. The location matters because each upload goes to a new place, and the book's
+        /// record on the server can later point somewhere else (BL-16921).
+        /// </summary>
+        public const string ResultsFileName = "BloomBulkUploadResults.json";
+
+        // What happened to each book this run looked at, for ResultsFileName.
+        private readonly List<BookResult> _bookResults = new List<BookResult>();
+
+        private class BookResult
+        {
+            [JsonProperty("folder")]
+            public string Folder;
+
+            // "new", "updated", "skipped" or "failed"
+            [JsonProperty("outcome")]
+            public string Outcome;
+
+            // Where the book's files were uploaded (a baseUrl, as the book's record holds one);
+            // null unless the outcome is "new" or "updated".
+            [JsonProperty("baseUrl")]
+            public string BaseUrl;
+        }
+
+        /// <summary>
+        /// Record what happened to one book, counting it in the matching tally.
+        /// </summary>
+        private void RecordBook(string folder, string outcome, string baseUrl = null)
+        {
+            switch (outcome)
+            {
+                case "new":
+                    ++_newBooksUploaded;
+                    break;
+                case "updated":
+                    ++_booksUpdated;
+                    break;
+                case "skipped":
+                    ++_booksSkipped;
+                    break;
+                case "failed":
+                    ++_booksWithErrors;
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown bulk upload outcome {outcome}");
+            }
+            _bookResults.Add(
+                new BookResult
+                {
+                    Folder = folder,
+                    Outcome = outcome,
+                    BaseUrl = baseUrl,
+                }
+            );
+        }
+
         public bool LoggedIn => _singleBookUploader.BloomLibraryBookApiClient.LoggedIn;
 
         public BulkUploader(BookUpload singleBookUploader)
@@ -127,6 +188,7 @@ namespace Bloom.WebLibraryIntegration
                     _booksSkipped = 0;
                     _booksWithErrors = 0;
                     _collectionsWithErrors = 0;
+                    _bookResults.Clear();
 
                     progress.WriteMessageWithColor(
                         "green",
@@ -183,6 +245,22 @@ namespace Bloom.WebLibraryIntegration
                             logFilePath
                         );
                     }
+
+                    RobustFile.WriteAllText(
+                        Path.Combine(options.Path, ResultsFileName),
+                        JsonConvert.SerializeObject(
+                            new
+                            {
+                                newBooks = _newBooksUploaded,
+                                updated = _booksUpdated,
+                                skipped = _booksSkipped,
+                                failed = _booksWithErrors,
+                                collectionsSkipped = _collectionsWithErrors,
+                                books = _bookResults,
+                            },
+                            Formatting.Indented
+                        )
+                    );
 
                     return _booksWithErrors == 0
                         && _collectionsWithErrors == 0
@@ -312,7 +390,7 @@ namespace Bloom.WebLibraryIntegration
                         );
                         progress.WriteError(msg);
                         progress.WriteException(e);
-                        ++_booksWithErrors;
+                        RecordBook(sub, "failed");
                     }
                 }
                 else
@@ -322,7 +400,7 @@ namespace Bloom.WebLibraryIntegration
                         progress.WriteError(
                             $"{sub} has {htmlFileCount} html files. One of them should be removed."
                         );
-                        ++_booksWithErrors;
+                        RecordBook(sub, "failed");
                     }
                     else
                     {
@@ -384,7 +462,7 @@ namespace Bloom.WebLibraryIntegration
                 progress.WriteError(
                     "Skipping book because no collection file was found in its parent directory."
                 );
-                ++_booksWithErrors;
+                RecordBook(uploadParams.Folder, "failed");
                 return context;
             }
             _collectionFoldersUploaded.Add(collectionPath);
@@ -428,7 +506,7 @@ namespace Bloom.WebLibraryIntegration
                     progress.WriteError(
                         $"Did not upload '{Path.GetFileName(uploadParams.Folder)}' because there is already at least one book with the same ID ('{book.BookInfo.Id}') in BloomLibrary. You can get more information by uploading it individually."
                     );
-                    ++_booksWithErrors;
+                    RecordBook(uploadParams.Folder, "failed");
                     return context;
                 }
                 progress.WriteMessageWithColor(
@@ -472,7 +550,7 @@ namespace Bloom.WebLibraryIntegration
                         "green",
                         $"Skipping '{Path.GetFileName(uploadParams.Folder)}' because it has not changed since being uploaded."
                     );
-                    ++_booksSkipped;
+                    RecordBook(uploadParams.Folder, "skipped");
                     return context; // skip this one; we already uploaded it earlier.
                 }
             }
@@ -566,7 +644,7 @@ namespace Bloom.WebLibraryIntegration
                 if (string.IsNullOrEmpty(uploadResult) || uploadResult == "quiet")
                 {
                     progress.WriteError("{0} was not uploaded.", uploadParams.Folder);
-                    ++_booksWithErrors;
+                    RecordBook(uploadParams.Folder, "failed");
                 }
                 else
                 {
@@ -575,10 +653,11 @@ namespace Bloom.WebLibraryIntegration
                         "{0} has been uploaded",
                         uploadParams.Folder
                     );
-                    if (updatingBook)
-                        ++_booksUpdated;
-                    else
-                        ++_newBooksUploaded;
+                    RecordBook(
+                        uploadParams.Folder,
+                        updatingBook ? "updated" : "new",
+                        _singleBookUploader.LastUploadBaseUrl
+                    );
                 }
             }
             else
@@ -586,7 +665,7 @@ namespace Bloom.WebLibraryIntegration
                 // report to the user why we are not uploading their book
                 var reason = blPublishModel.GetReasonForNotUploadingBook();
                 progress.WriteError("{0} was not uploaded.  {1}", uploadParams.Folder, reason);
-                ++_booksWithErrors;
+                RecordBook(uploadParams.Folder, "failed");
             }
 
             return context;

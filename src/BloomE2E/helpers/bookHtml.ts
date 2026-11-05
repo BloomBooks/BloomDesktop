@@ -334,9 +334,10 @@ export async function readBookIgnoringOrder(
 }
 
 /**
- * Editing-only markup that has no business in a saved book, as Test Case ID 663 ("Clean Saved Book
- * HTML") asks: any mention of ckeditor, and the editor's other leftovers. One line per finding,
- * naming what was found and on what; an empty list means the book is clean.
+ * Known editing-only markup that has no business in a saved book, as Test Case ID 663 ("Clean
+ * Saved Book HTML") asks: any mention of ckeditor, and the other leftovers listed below. One line
+ * per finding, naming what was found and on what; an empty list means none of these was found. It
+ * is a list, so it cannot find a leftover nobody has put on it yet.
  *
  * `allowedClasses` lets a test tolerate leftovers that are known and tracked elsewhere: the card
  * says to ignore BL-9992, whose classes are ui-draggable, ui-resizable, hoverUp and

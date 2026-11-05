@@ -6,6 +6,7 @@ import {
     detachTable,
     getTableInfo,
     registerCellContentType,
+    removeTableEditingMarkup,
     setColumnWidth,
     setDefaultCellContentTypeId,
     setRowHeight,
@@ -35,7 +36,7 @@ import {
     refreshTableFeatureStatus,
     tablesMayBeRestructured,
 } from "./tableFeature";
-import { noteTableHistoryUpdate } from "./undoOrdering";
+import { noteTableHistoryUpdate } from "../undo/tableUndo";
 
 // The library's own "something changed in a table" notification. It fires on the
 // page's document at the end of every operation that goes through the table's
@@ -440,46 +441,16 @@ export function AttachNewTableThatFillsItsSpace(tableDiv: HTMLElement): void {
  * Take table editing's markup out of `clonedPage`, the detached copy of the page that is about to
  * be saved, leaving the live tables as they are. A save happens whenever the page changes, so it
  * must not end Paint Format or Border Brush mode, which bloom-table's removeTableEditingArtifacts
- * does before stripping. This is what its markup-only part (stripEditTimeMarkup, which bloom-table
- * does not export) removes, plus our own data-table-attached.
+ * does before stripping. So this uses the library's markup-only part, removeTableEditingMarkup,
+ * and adds our own data-table-attached.
  */
 export function removeTableEditingMarkupFromClone(
     clonedPage: HTMLElement,
 ): void {
-    const modeClasses = ["bloom-paint-format", "bloom-border-brush"];
-    clonedPage.classList.remove(...modeClasses);
-    clonedPage
-        .querySelectorAll("[data-table-overlay]")
-        .forEach((overlay) => overlay.remove());
-    clonedPage.querySelectorAll<HTMLElement>(".bloom-cell").forEach((cell) => {
-        [
-            "--hint-top-color",
-            "--hint-right-color",
-            "--hint-bottom-color",
-            "--hint-left-color",
-        ].forEach((property) => cell.style.removeProperty(property));
-        cell.classList.remove(
-            "cell--selected",
-            "bloom-pulse-fill",
-            "bloom-pulse-border",
-        );
-    });
-    clonedPage
-        .querySelectorAll<HTMLElement>("[data-btable-anchor-name]")
-        .forEach((element) => {
-            element.style.removeProperty("anchor-name");
-            delete element.dataset.btableAnchorName;
-        });
+    removeTableEditingMarkup(clonedPage);
     clonedPage
         .querySelectorAll<HTMLElement>(".bloom-table")
-        .forEach((table) => {
-            table.classList.remove(
-                "table--selected",
-                "bloom-pointer-near",
-                "bloom-current-table",
-            );
-            table.removeAttribute("data-table-attached");
-        });
+        .forEach((table) => table.removeAttribute("data-table-attached"));
 }
 
 /**

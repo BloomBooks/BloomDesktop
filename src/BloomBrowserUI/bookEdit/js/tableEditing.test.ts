@@ -1,10 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import {
-    addRow,
-    getTableInfo,
-    removeTableEditingArtifacts,
-    setupContentsOfCell,
-} from "bloom-table";
+import { addRow, getTableInfo, setupContentsOfCell } from "bloom-table";
 // A new video cell asks the server to put the video placeholder in the book
 // folder; there is no server here, and the call is also what proves the wiring
 // ran.
@@ -17,6 +12,14 @@ vi.mock("../../utils/bloomApi", async (importOriginal) => ({
     // remembered answer stays whatever setTablesMayBeRestructuredForTests set, rather
     // than a real status arriving mid-test.
     get: () => {},
+}));
+// Every new cell editor gets long-press, which asks the server whether it is on, with axios
+// directly, so the mock above does not catch it. With no server here each request fails a
+// moment later and logs; when that lands after vitest has torn this file's environment down,
+// vitest fails the whole run although every test passed. Nothing here is about long-press.
+vi.mock("./bloomEditing", async (importOriginal) => ({
+    ...((await importOriginal()) as object),
+    activateLongPressFor: () => {},
 }));
 
 import {
@@ -215,9 +218,8 @@ describe("video cells", () => {
     });
 });
 
-// A save cleans a copy of the page, and must not do what bloom-table's own cleanup also does to the
-// live page (end Paint Format and Border Brush). So Bloom strips the markup itself, and this checks
-// that it strips what the library does, plus the attribute only Bloom adds.
+// A save cleans a copy of the page with bloom-table's markup-only cleanup (bloom-table's own tests
+// check that it leaves Paint Format and Border Brush running), plus the attribute only Bloom adds.
 describe("removeTableEditingMarkupFromClone", () => {
     const pageWithEditingMarkup = `
         <div class="bloom-page bloom-paint-format">
@@ -236,21 +238,37 @@ describe("removeTableEditingMarkupFromClone", () => {
         return holder.firstElementChild as HTMLElement;
     };
 
-    it("removes what bloom-table's cleanup removes, and data-table-attached", () => {
-        const ours = makePage();
-        const libraries = makePage();
-        expect(ours.outerHTML).toContain("cell--selected"); // the markup to strip is there
+    it("removes table editing's markup, and data-table-attached", () => {
+        const page = makePage();
+        const editingMarkup = [
+            "bloom-paint-format",
+            "table--selected",
+            "bloom-pointer-near",
+            "bloom-current-table",
+            "data-table-attached",
+            "cell--selected",
+            "bloom-pulse-fill",
+            "bloom-pulse-border",
+            "--hint-top-color",
+            "--hint-left-color",
+            "data-btable-anchor-name",
+            "anchor-name",
+            "data-table-overlay",
+        ];
+        for (const markup of editingMarkup) {
+            expect(page.outerHTML, "the test page should have it").toContain(
+                markup,
+            );
+        }
 
-        removeTableEditingMarkupFromClone(ours);
-        removeTableEditingArtifacts(libraries);
-        libraries
-            .querySelectorAll(".bloom-table")
-            .forEach((table) => table.removeAttribute("data-table-attached"));
+        removeTableEditingMarkupFromClone(page);
 
-        expect(ours.outerHTML).toBe(libraries.outerHTML);
-        expect(ours.outerHTML).not.toContain("data-table-attached");
+        for (const markup of editingMarkup) {
+            expect(page.outerHTML).not.toContain(markup);
+        }
         // what belongs to the book stays
-        expect(ours.outerHTML).toContain('data-column-widths="fill"');
-        expect(ours.outerHTML).toContain("color: green");
+        expect(page.outerHTML).toContain('data-column-widths="fill"');
+        expect(page.outerHTML).toContain("color: green");
+        expect(page.outerHTML).toContain("text");
     });
 });

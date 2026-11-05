@@ -336,16 +336,22 @@ namespace Bloom.web.controllers
             });
         }
 
+        /// <summary>
+        /// Show the page whose id is in the POST body. The reply comes after asking the model, so
+        /// that a jump the Edit tab cannot do is reported as a failure rather than as a success
+        /// that shows nothing. EditingModel.JumpToPage refuses a jump that arrives while the Edit
+        /// tab is loading a page, so the caller has to wait and ask again.
+        ///
+        /// A failure here is a matter of timing, not of anything a user could put right, so the
+        /// front end posts to this endpoint with error reporting turned off.
+        /// </summary>
         private void HandleJumpToPage(ApiRequest request)
         {
             var pageId = request.GetPostStringOrNull();
-            request.PostSucceeded();
-            View.Model.MergeCurrentPageThenSave(
-                () => pageId,
-                () => { },
-                // The action only names the page to go to.
-                actionChangesTheBook: false
-            );
+            if (View.Model.JumpToPage(pageId))
+                request.PostSucceeded();
+            else
+                request.Failed($"The edit tab could not show page {pageId}.");
         }
 
         /// <summary>

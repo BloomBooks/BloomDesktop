@@ -119,11 +119,37 @@ export default [
             "react/no-unescaped-entities": "off", // Complains about some special chars that sort of work, but due to the burden that enocded chars present to localizers, we'd prefer not to encode them if not necessary.
             "react/prop-types": "off", // Seems to require validation on the props parameter itself, but Typescript can already figure out the types through annotations in different places, seems unnecessary
             "no-irregular-whitespace": "off",
+            "no-restricted-properties": [
+                "error",
+                {
+                    object: "navigator",
+                    property: "clipboard",
+                    message:
+                        "Use utils/bloomClipboard.ts, which keeps an e2e run off the Windows clipboard.",
+                },
+            ],
             // If you want to temporarily reduce warnings, these four account for 100% as of Aug 2025
             // "@typescript-eslint/no-explicit-any": "off",
             // "@typescript-eslint/no-unused-vars": "off",
             // eqeqeq: "off",
             // "react-hooks/exhaustive-deps": "off"
+        },
+    },
+    {
+        // The one module that wraps navigator.clipboard, and test code, which stubs or drives it.
+        files: [
+            "utils/bloomClipboard.ts",
+            "**/*.test.ts",
+            "**/*.test.tsx",
+            "**/*.spec.ts",
+            "**/*.spec.tsx",
+            "**/*Spec.ts",
+            "**/*.uitest.ts",
+            "**/canvas-e2e-tests/**",
+            "**/component-tests/**",
+        ],
+        rules: {
+            "no-restricted-properties": "off",
         },
     }, // Add a specific override for Storybook files
     {

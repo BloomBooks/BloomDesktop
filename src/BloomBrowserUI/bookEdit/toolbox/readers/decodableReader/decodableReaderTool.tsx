@@ -5,7 +5,6 @@ import { getTheOneReaderToolsModel, MarkupType } from "../readerToolsModel";
 import { removeReaderMarkup } from "../removeReaderMarkup";
 import { get } from "../../../../utils/bloomApi";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
-import { renderRoot } from "../../../../utils/reactRender";
 import { isLongPressEvaluating, IToolboxSettings } from "../../toolbox";
 import { updateMarkupAfterUndoOrRedo } from "../../pageEditingMarkup";
 import StyleEditor from "../../../StyleEditor/StyleEditor";
@@ -14,16 +13,17 @@ import $ from "jquery";
 // This class renders the DecodableReaderToolControls React component
 // in the toolbox, and implements all the functionality/logic needed
 // for detaching the tool, reattaching the tool, updating the markup,
-// restoring the current tool state (which includes the saved stage
+// restoring the tool's state (which includes the saved stage
 // number, sorting type, and current graphemes and words for that stage),
 // and handling certain events such as focsuing in an element (such as
 // a textbox), focusing out of an element, and undo/redo.
 export class DecodableReaderTool extends ToolboxToolReactAdaptor {
-    public makeRootElement(): HTMLDivElement {
-        const root = document.createElement("div");
-
-        renderRoot(<DecodableReaderToolControls />, root);
-        return root as HTMLDivElement;
+    public renderPanel(): JSX.Element {
+        return (
+            <div>
+                <DecodableReaderToolControls />
+            </div>
+        );
     }
     public id(): string {
         return "decodableReader";
@@ -64,6 +64,9 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
     public async beginRestoreSettings(
         settings: IToolboxSettings,
     ): Promise<void> {
+        // This restore supersedes any stage still waiting for the settings; see
+        // forgetStageAwaitingSynphony().
+        getTheOneReaderToolsModel().forgetStageAwaitingSynphony();
         await beginInitializeDecodableReaderTool();
         const model = getTheOneReaderToolsModel();
         // settings can be undefined/null at runtime for a book with no saved toolbox

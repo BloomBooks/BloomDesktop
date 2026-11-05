@@ -71,10 +71,13 @@ export async function setChangeLayoutMode(
     // about to be replaced. The rebuilt page is a new element, so mark the current one, in a
     // property that is not markup and so cannot be saved into the book, and wait for a page
     // element that does not carry the mark. (A text box is not a usable signal: a page whose
-    // sections are all pictures or videos has none.)
-    const pageElement = frame.locator(".bloom-page").first();
+    // sections are all pictures or videos has none.) The rebuilt page comes in a new iframe that
+    // takes over the name "page" (see switchContentPage in workspaceRoot.ts), so the frame is looked
+    // up again each time rather than held.
+    const pageElement = () =>
+        editablePageFrame(page).locator(".bloom-page").first();
     if (!on)
-        await pageElement.evaluate((el) => {
+        await pageElement().evaluate((el) => {
             (
                 el as unknown as { __e2eBeforeLeavingLayoutMode: boolean }
             ).__e2eBeforeLeavingLayoutMode = true;
@@ -92,7 +95,7 @@ export async function setChangeLayoutMode(
         await expect
             .poll(
                 async () =>
-                    pageElement
+                    pageElement()
                         .evaluate(
                             (el) =>
                                 !(

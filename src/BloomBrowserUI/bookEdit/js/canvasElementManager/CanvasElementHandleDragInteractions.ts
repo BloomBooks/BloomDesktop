@@ -21,6 +21,13 @@ import {
 import { pushUndoForCanvasElementRotation } from "../ImageUndoManager";
 import { getImageContentTransform } from "../imageContentTransform";
 import { EditableDivUtils } from "../editableDivUtils";
+import {
+    clampCropPosition,
+    cropOneSide,
+    CropSide,
+    getCroppedSides,
+    getShownContentRectangle,
+} from "../imageCrop";
 
 export interface ICanvasElementHandleDragInteractionsHost {
     getActiveElement: () => HTMLElement | undefined;
@@ -47,125 +54,6 @@ export interface ICanvasElementHandleDragInteractionsHost {
 
     startMoving: () => void;
     stopMoving: () => void;
-}
-
-// Where a picture lands inside the canvas element that holds it, in the element's own
-// coordinates.
-//
-// The picture's own box may be rotated inside the element, by the Rotate Right command on a page
-// background. A CSS transform rotates the box about its own centre and leaves the layout alone, so
-// what the element shows is a rectangle the size of the box with its two dimensions swapped for
-// an odd number of 90-degree rotations, centred where the layout put the box's centre. Every crop
-// measurement has to use this rectangle. The box itself, which the picture's `left`, `top` and
-// `width` describe, is the right answer only for a picture that is not rotated.
-export function getShownContentRectangle(
-    boxLeft: number,
-    boxTop: number,
-    boxWidth: number,
-    boxHeight: number,
-    quarterRotations: number,
-): { left: number; top: number; width: number; height: number } {
-    const isQuarterRotation = quarterRotations % 2 === 1;
-    const width = isQuarterRotation ? boxHeight : boxWidth;
-    const height = isQuarterRotation ? boxWidth : boxHeight;
-    return {
-        left: boxLeft + boxWidth / 2 - width / 2,
-        top: boxTop + boxHeight / 2 - height / 2,
-        width,
-        height,
-    };
-}
-
-// True if the picture the element shows is bigger than the element in either direction, which is
-// when the picture is cropped and the move-crop handle is wanted. The size compared is that of
-// the rectangle the element shows, as in getCroppedSides, so a picture rotated 90 degrees whose
-// box lies across its element is not mistaken for a cropped one.
-export function shownPictureIsBiggerThanElement(
-    elementWidth: number,
-    elementHeight: number,
-    boxWidth: number,
-    boxHeight: number,
-    quarterRotations: number,
-    // Client values are whole pixels, and rounding easily produces a spurious difference of one.
-    slop = 1,
-): boolean {
-    const shown = getShownContentRectangle(
-        0,
-        0,
-        boxWidth,
-        boxHeight,
-        quarterRotations,
-    );
-    return (
-        shown.width > elementWidth + slop || shown.height > elementHeight + slop
-    );
-}
-
-// Which sides of a picture are cropped, so that the marks go on the right handles.
-export function getCroppedSides(
-    elementWidth: number,
-    elementHeight: number,
-    boxLeft: number,
-    boxTop: number,
-    boxWidth: number,
-    boxHeight: number,
-    quarterRotations: number,
-    // Client values are whole pixels, and rounding easily produces a spurious difference of one.
-    slop = 1,
-): { n: boolean; e: boolean; s: boolean; w: boolean } {
-    const shown = getShownContentRectangle(
-        boxLeft,
-        boxTop,
-        boxWidth,
-        boxHeight,
-        quarterRotations,
-    );
-    return {
-        n: shown.top < -slop,
-        e: shown.left + shown.width > elementWidth + slop,
-        s: shown.top + shown.height > elementHeight + slop,
-        w: shown.left < -slop,
-    };
-}
-
-// Where to put a picture's box so that the picture keeps covering its canvas element while the
-// author drags it about inside the crop. The wanted position is what the pointer asks for; the
-// result is that position pulled back far enough that no blank band appears at an edge.
-//
-// The box is what we write, but the element shows the rotated rectangle, so the limits belong to
-// that rectangle. On a picture whose two dimensions differ, and which is rotated, the two frames
-// disagree by half the difference, which is enough to hold the picture still through a whole
-// drag.
-export function clampCropPosition(
-    elementWidth: number,
-    elementHeight: number,
-    wantedBoxLeft: number,
-    wantedBoxTop: number,
-    boxWidth: number,
-    boxHeight: number,
-    quarterRotations: number,
-): { left: number; top: number } {
-    const shown = getShownContentRectangle(
-        wantedBoxLeft,
-        wantedBoxTop,
-        boxWidth,
-        boxHeight,
-        quarterRotations,
-    );
-    const clampedShownLeft = Math.max(
-        Math.min(shown.left, 0),
-        elementWidth - shown.width,
-    );
-    const clampedShownTop = Math.max(
-        Math.min(shown.top, 0),
-        elementHeight - shown.height,
-    );
-    // The rotation moves the box and the rectangle it shows by the same amount, so one difference
-    // carries the clamp back into the box's own frame.
-    return {
-        left: wantedBoxLeft + clampedShownLeft - shown.left,
-        top: wantedBoxTop + clampedShownTop - shown.top,
-    };
 }
 
 // Turn a movement of the pointer, in screen pixels, into the same movement in the unscaled,
@@ -913,16 +801,8 @@ export class CanvasElementHandleDragInteractions {
             event.clientX - this.startSideDragX,
             event.clientY - this.startSideDragY,
         );
-        let deltaX = unrotatedDelta.x;
-        let deltaY = unrotatedDelta.y;
         if (event.movementX === 0 && event.movementY === 0) return;
 
-        let newCanvasElementWidth = this.oldWidth;
-        let newCanvasElementHeight = this.oldHeight;
-        // Where this drag puts the box. Only the n and w handles move it, but the rotation
-        // correction needs both numbers; see compensateForRotationDuringResize.
-        let newLeft = this.oldLeft;
-        let newTop = this.oldTop;
         let shouldSnapForBackground = "";
         let backgroundSnapDelta = 0;
         if (
@@ -971,9 +851,6 @@ export class CanvasElementHandleDragInteractions {
             }
         }
 
-        const minWidth = this.host.getMinWidth();
-        const minHeight = this.host.getMinHeight();
-
         // How far each edge can travel is a property of the rectangle the element shows, not of
         // the picture's own box, and the two differ on a rotated picture. The n and w handles move
         // the picture as well as the edge, so they measure from where the picture was when this
@@ -995,89 +872,37 @@ export class CanvasElementHandleDragInteractions {
             quarterRotations,
         );
 
-        switch (this.currentDragSide) {
-            case "n":
-                deltaY = this.adjustDeltaForSnap(
-                    shouldSnapForBackground === "y",
-                    deltaY,
-                    backgroundSnapDelta,
-                    "n",
-                );
-                if (shownNow.top - deltaY > 0) {
-                    deltaY = shownNow.top;
-                }
-                newCanvasElementHeight = Math.max(
-                    this.oldHeight - deltaY,
-                    minHeight,
-                );
-                deltaY = this.oldHeight - newCanvasElementHeight;
-                newTop = this.oldTop + deltaY;
-                activeElement.style.height = `${newCanvasElementHeight}px`;
-                activeElement.style.top = `${newTop}px`;
-                img.style.top = `${this.oldImageTop - deltaY}px`;
-                break;
-            case "s":
-                deltaY = this.adjustDeltaForSnap(
-                    shouldSnapForBackground === "y",
-                    deltaY,
-                    backgroundSnapDelta,
-                    "s",
-                );
-                if (
-                    shownAtFirst.top + shownAtFirst.height <
-                    this.oldHeight + deltaY
-                ) {
-                    deltaY =
-                        shownAtFirst.top + shownAtFirst.height - this.oldHeight;
-                }
-                newCanvasElementHeight = Math.max(
-                    this.oldHeight + deltaY,
-                    minHeight,
-                );
-                deltaY = newCanvasElementHeight - this.oldHeight;
-                activeElement.style.height = `${newCanvasElementHeight}px`;
-                break;
-            case "e":
-                deltaX = this.adjustDeltaForSnap(
-                    shouldSnapForBackground === "x",
-                    deltaX,
-                    backgroundSnapDelta,
-                    "e",
-                );
-                if (
-                    shownAtFirst.left + shownAtFirst.width <
-                    this.oldWidth + deltaX
-                ) {
-                    deltaX =
-                        shownAtFirst.left + shownAtFirst.width - this.oldWidth;
-                }
-                newCanvasElementWidth = Math.max(
-                    this.oldWidth + deltaX,
-                    minWidth,
-                );
-                deltaX = newCanvasElementWidth - this.oldWidth;
-                activeElement.style.width = `${newCanvasElementWidth}px`;
-                break;
-            case "w":
-                deltaX = this.adjustDeltaForSnap(
-                    shouldSnapForBackground === "x",
-                    deltaX,
-                    backgroundSnapDelta,
-                    "w",
-                );
-                if (shownNow.left > deltaX) {
-                    deltaX = shownNow.left;
-                }
-                newCanvasElementWidth = Math.max(
-                    this.oldWidth - deltaX,
-                    minWidth,
-                );
-                deltaX = this.oldWidth - newCanvasElementWidth;
-                newLeft = this.oldLeft + deltaX;
-                activeElement.style.width = `${newCanvasElementWidth}px`;
-                activeElement.style.left = `${newLeft}px`;
-                img.style.left = `${this.oldImageLeft - deltaX}px`;
-                break;
+        const side = this.currentDragSide as CropSide;
+        const horizontal = side === "e" || side === "w";
+        const delta = this.adjustDeltaForSnap(
+            shouldSnapForBackground === (horizontal ? "x" : "y"),
+            horizontal ? unrotatedDelta.x : unrotatedDelta.y,
+            backgroundSnapDelta,
+            side,
+        );
+        const cropped = cropOneSide(
+            side,
+            delta,
+            this.oldWidth,
+            this.oldHeight,
+            side === "n" || side === "w" ? shownNow : shownAtFirst,
+            horizontal ? this.host.getMinWidth() : this.host.getMinHeight(),
+        );
+        // Where this drag puts the box. Only the n and w handles move it, but the rotation
+        // correction needs both numbers; see compensateForRotationDuringResize.
+        const newLeft = this.oldLeft + cropped.left;
+        const newTop = this.oldTop + cropped.top;
+        if (horizontal) {
+            activeElement.style.width = `${cropped.width}px`;
+        } else {
+            activeElement.style.height = `${cropped.height}px`;
+        }
+        if (side === "n") {
+            activeElement.style.top = `${newTop}px`;
+            img.style.top = `${this.oldImageTop - cropped.top}px`;
+        } else if (side === "w") {
+            activeElement.style.left = `${newLeft}px`;
+            img.style.left = `${this.oldImageLeft - cropped.left}px`;
         }
         this.compensateForRotationDuringResize(activeElement, newLeft, newTop);
         this.host.adjustStuffRelatedToImage(activeElement, img);

@@ -237,6 +237,7 @@ namespace Bloom.Workspace
             StartupScreenManager.ClearStartupMilestone("collectionButtonsDrawn");
             StartupScreenManager.ClearStartupMilestone("teamSyncCompleted");
             StartupScreenManager.ClearStartupMilestone("startupBookSelectionReady");
+            StartupScreenManager.ClearStartupMilestone("startupBookSelected");
             if (_tcManager?.CurrentCollectionEvenIfDisconnected == null)
             {
                 StartupScreenManager.StartupMilestoneReached("teamSyncCompleted");
@@ -670,6 +671,12 @@ window.showWorkspaceInitializationFailure = function(message) {
                 SaveCurrentBookPath(null);
 
                 MiscUtils.SuppressUnusedExceptionVarWarning(e);
+            }
+            finally
+            {
+                // Until now this has been clearing and restoring the selection, so anything that
+                // selects a book of its own (an e2e test) must wait for this (see isCollectionReady).
+                StartupScreenManager.StartupMilestoneReached("startupBookSelected");
             }
         }
 
@@ -1153,12 +1160,11 @@ window.showWorkspaceInitializationFailure = function(message) {
             // until L10nSharp changes to allow dynamic response to setting change
             // Skip the restart at startup (no project loaded); CollectionChooserApi
             // handles that case by reopening the dialog to refresh the language list.
-            // Skip it in e2e test mode too: a self-restart would relaunch Bloom without the
-            // --e2e/--automation flags, the --user-settings-folder and the collection argument
-            // it was started with, giving the test an instance it cannot track (and, without
-            // --automation, one that collides with any Bloom the developer has open). The e2e fixture provides the
-            // restart instead (bloomApp.restart in src/BloomE2E), and the setting is already
-            // saved above, so the relaunched Bloom picks it up at startup.
+            // Skip it in e2e test mode too: a self-restart keeps the launch options
+            // (Program.StartupArgumentsToForward) but not the collection argument, and starts a
+            // new process the test is not following. The e2e fixture provides the restart
+            // instead (bloomApp.restart in src/BloomE2E), and the setting is already saved
+            // above, so the relaunched Bloom picks it up at startup.
             if (Current != null && !Program.RunningE2eTests)
                 Program.RestartBloom(false);
         }
@@ -1339,10 +1345,10 @@ window.showWorkspaceInitializationFailure = function(message) {
 
             // Get the language name in its own language if at all possible.
             // Add an English name suffix if it's not in a Latin script.
-            var menuText = IetfLanguageTagExtra.GetNativeLanguageNameWithEnglishSubtitle(code);
+            var menuText = IetfLanguageTag.GetNativeLanguageNameWithEnglishSubtitle(code);
             var englishName = IetfLanguageTag.GetManuallyOverriddenEnglishNameIfNeeded(
                 code,
-                () => IetfLanguageTagExtra.GetLocalizedLanguageName(code, "en")
+                () => IetfLanguageTag.GetLocalizedLanguageName(code, "en")
             );
             return new LanguageItem
             {
@@ -1547,6 +1553,18 @@ window.showWorkspaceInitializationFailure = function(message) {
         }
 
         /// <summary>
+        /// Opens the React Collection Settings dialog (rendered by the workspace's App), on the
+        /// page with the given key if there is one.
+        /// </summary>
+        public void OpenSettingsDialog(string pageKey = null)
+        {
+            dynamic dialogParameters = new DynamicJson();
+            if (pageKey != null)
+                dialogParameters.initialPageKey = pageKey;
+            _webSocketServer.LaunchDialog("CollectionSettingsDialog", dialogParameters);
+        }
+
+        /// <summary>
         /// Closes the collection and opens it again, as the Settings dialog does when a change
         /// needs a restart.
         /// </summary>
@@ -1565,7 +1583,7 @@ window.showWorkspaceInitializationFailure = function(message) {
             StartupScreenManager.AddStartupAction(
                 () =>
                 {
-                    OpenLegacySettingsDialog("subscription", forFixingEnterpriseSubscription: true);
+                    OpenSettingsDialog("subscription");
                 },
                 shouldHideSplashScreen: true,
                 lowPriority: true

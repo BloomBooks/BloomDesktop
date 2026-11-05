@@ -19,6 +19,11 @@ House rules:
 
 ---
 
+## 2026-11-02 — `pnpm typecheck` passes when `node_modules` is missing
+- **Cut:** `scripts/typecheck.js` runs `node_modules\.bin\tsgo.cmd` through a shell, so a missing binary is a "not recognized" message and a non-zero exit, not a spawn error. The script ignores the exit status, finds no diagnostics, and prints "Type check passed". In a worktree whose `node_modules` had been cleaned it reported a pass while lint and vitest could not even start.
+- **Idea:** fail when `result.status` is non-zero and no diagnostic lines were parsed, printing the tool's own output.
+- **Context:** BL-16775 preflight, after the worktree's dependencies had been deleted to free disk space.
+
 ## 2026-10-08 — `CI=true` to satisfy pnpm silently turns off `--dont-disturb`
 - **Cut:** pnpm refuses to run a script when a worktree's deps are stale (`Aborted removal of modules directory due to no TTY`) and the way past it is `CI=true`. The e2e fixture reads that same variable: it then launched Bloom *without* `--dont-disturb` ("Bloom's windows take the foreground as they would for a user"), so a preflight e2e run seized the developer's screen for two minutes. Two unrelated tools, one overloaded variable.
 - **Idea:** key the disturb decision off a `BLOOM_E2E_*` variable rather than bare `CI`, or keep `--dont-disturb` unless the run is really on a CI runner (`GITHUB_ACTIONS`/`TEAMCITY_VERSION` present). Failing that, name the trap in `src/BloomE2E/README.md` beside the existing `CI` note.
@@ -28,6 +33,7 @@ House rules:
 - **Cut:** Master's page-size work made C# read `output/browser/pageSizesLookup.json`, which only `pnpm build` writes. In a worktree whose `output/browser` predates that, 30 C# tests failed and every Bloom an agent started raised a "Could not locate the required file" Debug.Assert dialog on the developer's screen, and agents are told never to run `pnpm build`.
 - **Idea:** Have `go.sh`, `build/agent-dotnet.sh` and the e2e fixture run `pnpm --dir src/content run build:pageSizes` (instant) when the file is missing or older than `DistFiles/pageSizes.json`, or name that command in `src/BloomBrowserUI/AGENTS.md`.
 - **Context:** BL-16818-tables preflight, after merging master.
+- **Seen again 2026-10-12:** a fresh worktree (BL-16741-rotate-fixes preflight) whose `output/browser` was never fully built. With `BLOOM_E2E_VITE_PORT` set, the fixture skips its bundle-age check, so the e2e Bloom launched anyway, stopped on this dialog, and the spec failed as "The Edit tab never showed a page", which looks like a product bug.
 
 ## 2026-10-07 — The pre-commit hook commits files that were left unstaged
 - **Cut:** Committing a merge with only the conflict files staged also committed four modified files that were never `git add`ed. The hook runs lint-staged with `--no-stash` and then a C# formatter; which step added them is not yet known. Nothing in the output says the commit grew.
@@ -47,6 +53,16 @@ House rules:
 - **Cut:** eslint (so `pnpm lint` and the pre-commit hook, which blocks every commit) died with `Cannot find module 'object-keys'`. The lockfile was fine: `node_modules/.pnpm/object-keys@1.1.1/node_modules/object-keys` existed but was empty, and `pnpm install --frozen-lockfile` answered "Already up to date" even after that folder was deleted. Copying the folder from another worktree fixed it.
 - **Idea:** Document the repair (delete the package's `.pnpm` folder and run `pnpm install --force`, or copy it from a healthy worktree), or have `init.sh` check for empty package folders after installing.
 - **Context:** BL-16893 worktree, 2026-09-25; the empty folder dated from the worktree's install on 2026-09-24.
+
+## 2026-09-17 — agent-vite.ps1 reports exit code 1 for a successful build
+- **Cut:** Under Windows PowerShell 5.1, `build/agent-vite.ps1` sets `$ErrorActionPreference = 'Stop'`,
+  so the first stderr line from `pnpm exec vite build` (Vite's "[plugin commonjs] The namedExports
+  option ... is deprecated" warning) becomes a NativeCommandError and the script exits 1, although the
+  bundle and post-build step complete. Running the same `vite build` directly with `BLOOM_UI_OUTDIR`
+  set exits 0, so an agent trusting the wrapper's verdict wrongly concludes the bundle is broken.
+- **Idea:** Drop the `Stop` preference around the native call (or run it via `cmd /c` / check only
+  `$LASTEXITCODE`), and/or silence the deprecated `namedExports` option in vite.config.mts.
+- **Context:** BL-15992 branch, Canvas-element-z-order worktree.
 
 ## 2026-09-16 — The React component tests log 249 errors in a fully green run
 - **Cut:** A passing nightly (35076535729) carries 249 `[WebServer] Error reported from component:
@@ -120,6 +136,22 @@ House rules:
 - **Idea:** Find what keeps the process alive after teardown. Until then, document the workaround: run one directory at a time under `timeout` (e.g. `timeout 200 pnpm --dir src/BloomBrowserUI exec vitest run bookEdit/toolbox`) and read the ✓ lines; `timeout` does not kill the pnpm child, so a loop over directories must be watched.
 - **Context:** preflight on BL-16859; the whole front-end suite (~350 tests) was green this way but took an hour to establish.
 
+## 2026-09-06 — The e2e suite can hijack and then kill the developer's own Bloom
+
+- **Cut:** Running `pnpm exec playwright test` while a Bloom from the same worktree is running
+  ended that Bloom, its `dotnet watch`, the go.sh launcher and the Vite dev server. Bloom hands a
+  collection off to an already-running instance of itself (the case `launchBloom.ts:666` allows
+  for), so the developer's Bloom became the one serving the test collection, discovery matched it,
+  and `stopBloom` killed its whole process tree. Nothing warns about this: `launchBloom.ts` says
+  it "ALWAYS launches its own Bloom", and the README's only note about a running Bloom is about
+  port 5173.
+- **Idea:** Refuse to start when a Bloom from this repo root is already running (the
+  `bloom-automation` skill's `bloomProcessStatus.mjs` already detects it), or make discovery
+  refuse a serving pid that is not a descendant of the pid we spawned. At the least, say it in
+  README.md and in `launchBloom.ts`.
+- **Context:** branch inline-images, while running the whole suite for the inline-image toolbar
+  tests.
+
 ## 2026-09-04 — Launcher times out waiting for BLOOM_AUTOMATION_READY while a direct dotnet watch works
 - **Cut:** `go.mjs` / `launcherControl.mjs --ensure-running` built Bloom in ~6s, printed `dotnet watch ⌚ Loaded 2 project(s)`, then never saw the ready marker and tore the whole stack down after the 120s `launchTimeoutMs` in `scripts/watchBloomExe.mjs` — three times in a row. Running `dotnet watch run --project src/BloomExe/BloomExe.csproj --non-interactive -- --automation` by hand from the same shell started Bloom and printed `BLOOM_AUTOMATION_READY` within seconds (alongside a running BetaInternal, so it was not the single-instance token).
 - **Idea:** Find what differs when `watchBloomExe.mjs` spawns dotnet watch (`--vite-port`/`--label` args, control-port env, stdout piping) and make the launcher print dotnet watch's later output or the Bloom PID's window titles when it gives up, so the failure is diagnosable. Consider making the timeout configurable.
@@ -151,6 +183,14 @@ House rules:
   `Bloom.dll`, is older than its source, and names the newer file (`assertBuildIsNotStale` in
   `src/BloomE2E/fixtures/launchBloom.ts`). The stale build still has to be rebuilt by hand, or
   bypassed with `BLOOM_E2E_VITE_PORT`, but it can no longer fail a test in silence.
+- **Seen again 2026-09-07:** the `BLOOM_E2E_VITE_PORT` escape covers only the front end. A C#
+  edit makes `Bloom.dll` stale, and `build/agent-dotnet.sh` cannot clear it: it builds into a
+  private per-terminal tree by design, while `assertBuildIsNotStale` reads
+  `output\Debug\AnyCPU\Bloom.dll`. So the only way through is a plain
+  `dotnet build src/BloomExe/BloomExe.csproj`, which needs the developer's Bloom stopped first
+  (MSB3027) -- the one thing AGENTS.md otherwise arranges for agents never to have to do. Cost
+  here: 16 failed tests and a full suite run. Worth saying in the fixture's error text, which
+  names the file but not how to rebuild it.
 
 ## 2026-09-03 — The e2e fixture launches a stale Bloom.exe when output/Debug/x64 is older than AnyCPU
 
@@ -262,6 +302,49 @@ want first in `MruProjects`, or delete the entries so Bloom shows the collection
 the branch rather than the version in that path.
 
 **Context:** BL-16781, after re-basing the `dev-blorgswitch` worktree onto Version6.5.
+
+## 2026-08-28 — An xmatter LESS edit does not reach a running Bloom on its own
+
+The dev server pushes `.less` changes into the running Bloom, but an xmatter stylesheet does not
+travel that route. Bloom serves `output/browser/templates/xMatter/.../<pack>.css`, and it also
+*stamps a copy into each book folder*, re-stamping when the book is reopened. So after editing
+`ABC-Reader-XMatter.less` you have to compile it yourself and copy the result over both:
+
+```bash
+node src/BloomBrowserUI/node_modules/less/bin/lessc \
+  src/content/templates/xMatter/project-specific/ABC-Reader-XMatter/ABC-Reader-XMatter.less \
+  output/browser/templates/xMatter/project-specific/ABC-Reader-XMatter/ABC-Reader-XMatter.css
+cp output/browser/.../ABC-Reader-XMatter.css <collection>/<book>/ABC-Reader-XMatter.css
+```
+
+Nothing warns you. The book keeps showing the old rules, which reads as "my fix does not work"
+rather than "my fix is not there yet". A previous session in this repo drew exactly that wrong
+conclusion.
+
+**Idea:** have `go.sh` watch `src/content/**/*.less` and recompile the xmatter packs, the way the
+dev server already handles the rest of the front end.
+
+**Context:** BL-16775, the ABC-Reader grade circle.
+
+## 2026-08-27 — No way to make Bloom open a specific collection from an agent
+
+To verify branding/xmatter behaviour you usually need a *particular* collection (here, one with
+an ABC-BARMM subscription so the ABC-Reader xmatter is in play). `launcherControl.mjs` has
+`--start`, `--restart`, `--ensure-running`, but no way to say *which* collection to open, and
+`bloom-automation` documents no other route. Bloom just reopens whatever it had last.
+
+The workaround was to quit Bloom, hand-edit the `MruProjects` list at the top of
+`%LOCALAPPDATA%\SIL\Bloom\<version>\user.config`, then `--start`. That works, but it mutates
+the developer's own recent-collections list, and it only works while Bloom is stopped (Bloom
+rewrites the file on exit). Two smaller traps inside it: the file wants Windows paths, and a
+`\a` in the path (`D:\abc-grade-test`) turns into a BEL character in both `sed` and a Python
+heredoc — forward slashes (`D:/abc-grade-test/…`) sidestep it and Bloom accepts them.
+
+**Idea:** give `launcherControl.mjs` a `--collection <path>` option that passes the path
+through to `Bloom.exe` (it already takes a collection path on its command line), so an agent
+can open a throwaway test collection without touching the developer's settings.
+
+**Context:** BL-16775, verifying how the ABC-Reader grade circle picks its number.
 
 ## 2026-08-26 — A Bloom launched by ./go.sh cannot be watched by the Freeze Doctor
 

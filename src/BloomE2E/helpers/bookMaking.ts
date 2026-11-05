@@ -13,6 +13,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiGet, apiGetJson, apiPost } from "./api";
 import { selectBook, waitForCollectionReady } from "./collection";
+import { markEditablePage, waitForEditablePageReload } from "./pageThumbnails";
 import { switchTab } from "./workspace";
 
 /** One book as collections/books reports it. Only the fields used here. */
@@ -324,15 +325,22 @@ async function listEditableBooks(page: Page): Promise<IBookInfo[]> {
 
 /**
  * Set exactly which of the collection's languages the book shows, by the same route as the Edit
- * tab's One/Two/Three Languages dropdown. Language 1 is always shown and cannot be turned off.
+ * tab's Monolingual/Bilingual/Trilingual dropdown. Any language can be turned off, Language 1
+ * included, as long as one other stays on.
  *
- * Each change is confirmed before the next is sent. Sending two in quick succession has been seen
- * to lose one, and a state wait is both the honest fix and faster than a fixed pause.
+ * Each change makes Bloom save the page and then reload it, but only if Bloom is editing the page
+ * at that moment. If the change arrives while the page is still loading, or while an earlier save
+ * is still running, Bloom neither saves nor reloads (EditingModel.SaveThen), and the book records
+ * the new languages while the Edit tab goes on showing the old ones. So before each change this
+ * waits for the page to be ready for editing, and after it this waits for the reload to finish.
  */
 export async function setContentLanguages(
     page: Page,
     tags: string[],
 ): Promise<void> {
+    // Each change makes Bloom reload the page, so this is a page-changing request and must not
+    // arrive while the Edit tab is still loading one. See waitForEditTabSettled.
+    await waitForEditTabSettled(page);
     const usage = await apiGetJson<IContentLanguageUsage>(
         page,
         "editView/topBar/contentLanguageUsage",
@@ -340,6 +348,15 @@ export async function setContentLanguages(
     for (const language of usage.languages) {
         const wanted = tags.includes(language.id);
         if (language.isUsedForContent === wanted) continue;
+        await waitForEditablePage(page);
+        const pageId = await editablePageFrame(page)
+            .locator(".bloom-page")
+            .getAttribute("id");
+        if (!pageId)
+            throw new Error(
+                "The page in the Edit tab has no id, so its reload cannot be awaited.",
+            );
+        await markEditablePage(page);
         await apiPost(
             page,
             "editView/topBar/contentLanguageUsageChange",
@@ -365,8 +382,9 @@ export async function setContentLanguages(
                 },
             )
             .toBe(wanted);
+        await waitForEditablePageReload(page, pageId);
     }
-    await waitForEditablePage(page);
+    await waitForEditTabSettled(page);
 }
 
 /** The Edit tab's frame holding the page being edited. Throws if the Edit tab is not showing. */
@@ -392,6 +410,18 @@ export function editablePageFrame(page: Page): Frame {
  * any command that begins with saving it (add a page, duplicate, delete, jump elsewhere). The page
  * can look ready in the DOM a moment before Bloom is, so this asks Bloom as well, through the e2e
  * hook that reports its editing state.
+ *
+ * It also waits for the iframe element itself to have a size in Bloom's window. The other checks
+ * look at the document inside the frame, and that document can be fully laid out while the iframe
+ * has no box yet, because switching back to the Edit tab rebuilds the view around it. Playwright
+ * cannot measure an element inside an iframe that has no box, even when the page's own script
+ * reports a perfectly good rectangle for it. Without this wait, a helper that measures an inline
+ * image would fail in a test that is about something else.
+ *
+ * Finally, Bloom reports that it is editing before the page's own script has decided which
+ * language boxes to show. Until it has, every box on the page is hidden, so an inline image inside
+ * one is in the DOM but has no box on the screen, and measuring it fails in the same misleading
+ * way. So when the page has text boxes, this waits until one of them is showing.
  */
 export async function waitForEditablePage(
     page: Page,
@@ -420,6 +450,119 @@ export async function waitForEditablePage(
                 "Bloom never finished loading the page in the Edit tab (its editing state never became Editing).",
         })
         .toBe("true");
+    await expect
+        .poll(
+            async () => {
+                const box = await page
+                    .locator("iframe#page")
+                    .boundingBox()
+                    .catch(() => null);
+                return box ? Math.min(box.width, box.height) : 0;
+            },
+            {
+                timeout: timeoutMs,
+                message:
+                    "The Edit tab's page frame never got a box of its own in Bloom's window, so " +
+                    "nothing inside it can be measured.",
+            },
+        )
+        .toBeGreaterThan(0);
+    // The page's script (updateLanguageVisibility) adds bloom-visibility-code-on to each box it
+    // decides to show, and the CSS hides every box that lacks it.
+    const groupCount = await editablePageFrame(page)
+        .locator(".bloom-page .bloom-translationGroup")
+        .count()
+        .catch(() => 0);
+    if (groupCount === 0) return;
+    await expect
+        .poll(
+            async () =>
+                await editablePageFrame(page)
+                    .locator(
+                        ".bloom-page .bloom-editable.bloom-visibility-code-on",
+                    )
+                    .count()
+                    .catch(() => 0),
+            {
+                timeout: timeoutMs,
+                message:
+                    "The page's script never decided which language boxes to show, so every box " +
+                    "on the page is still hidden.",
+            },
+        )
+        .toBeGreaterThan(0);
+}
+
+/** What e2e/editState replies with: what the Edit tab is doing. */
+interface IEditTabState {
+    /** A name from Bloom's State enum: NoPage, Navigating, Editing. */
+    state: string;
+    /** The page that state is about, or "". */
+    pageId: string;
+    /** Whether the Edit tab is the tab being shown. */
+    visible: boolean;
+    /** How many times the page now shown has told Bloom its DOM had loaded. */
+    pageLoadAnnouncements: number;
+}
+
+/**
+ * How long the Edit tab must report the same page, with no new announcement, before this counts
+ * as settled. It has to cover the gap between the two announcements of one page load, which has
+ * been seen to reach a second. John approved this wait on 2026-09-03, as
+ * src/BloomBrowserUI/AGENTS.md asks.
+ */
+const kEditTabQuietPeriodMs = 1500;
+
+/**
+ * Wait until the Edit tab is settled on a page: showing it, in the Editing state, and done
+ * announcing that the page has loaded.
+ *
+ * Ask this before any request that changes the page. The Edit tab refuses such a request while it
+ * navigates, and a page announces itself to Bloom more than once, so the Editing state can show
+ * between two announcements of one load, before the page has finished arriving. Waiting for the
+ * Editing state alone is therefore not enough. The condition this waits for is that the page and
+ * the count of announcements have both held still for kEditTabQuietPeriodMs, so it returns as
+ * soon as that holds.
+ *
+ * The DOM is no help here. Bloom leaves the previous page in the frame while it loads the next
+ * one, so a test looking at the frame sees a settled Edit tab throughout.
+ */
+export async function waitForEditTabSettled(
+    page: Page,
+    timeoutMs = 90000,
+): Promise<void> {
+    let lastReading = "";
+    let unchangedSince = 0;
+    await expect
+        .poll(
+            async () => {
+                const now = await apiGetJson<IEditTabState>(
+                    page,
+                    "e2e/editState",
+                );
+                if (!now.visible || now.state !== "Editing") {
+                    lastReading = "";
+                    return now.state;
+                }
+                const reading = `${now.pageId} ${now.pageLoadAnnouncements}`;
+                if (reading !== lastReading) {
+                    lastReading = reading;
+                    unchangedSince = Date.now();
+                }
+                const quietFor = Date.now() - unchangedSince;
+                if (quietFor < kEditTabQuietPeriodMs)
+                    return `Editing, but page ${now.pageId} last announced itself ${quietFor}ms ago`;
+                return "Editing";
+            },
+            {
+                // Poll often, so that the wait is only as long as the quiet period needs.
+                intervals: [250],
+                timeout: timeoutMs,
+                message:
+                    "The Edit tab never settled on a page, so a request to change pages could be lost.",
+            },
+        )
+        .toBe("Editing");
 }
 
 /** One page of the selected book, as e2e/pages reports it. */
@@ -482,9 +625,12 @@ export async function addPage(
         page,
         "e2e/templatePages",
     );
+    // Compare trimmed: a template book writes its page label as HTML, so a label defined over
+    // several lines (every page in the Games template) arrives wrapped in newlines and indentation.
+    const wanted = templatePageLabel.trim();
     const template = templates.find(
         (t) =>
-            t.label === templatePageLabel &&
+            t.label.trim() === wanted &&
             (!templateBookTitle || t.templateBookTitle === templateBookTitle),
     );
     if (!template)
@@ -493,7 +639,7 @@ export async function addPage(
                 (templateBookTitle ? ` in "${templateBookTitle}"` : "") +
                 `. On offer: ` +
                 templates
-                    .map((t) => `${t.templateBookTitle}: ${t.label}`)
+                    .map((t) => `${t.templateBookTitle}: ${t.label.trim()}`)
                     .join(", ") +
                 ".",
         );
@@ -521,7 +667,7 @@ export async function addPage(
             message: `Bloom never added the "${templatePageLabel}" page(s).`,
         })
         .toBe(before + times);
-    await waitForEditablePage(page);
+    await waitForEditTabSettled(page);
 }
 
 /**
@@ -567,31 +713,73 @@ export async function reloadPageBeingEdited(page: Page): Promise<void> {
  * it is leaving, so text typed into a box reaches the file only once the book moves off that page.
  */
 export async function goToPage(page: Page, pageId: string): Promise<void> {
-    // The Edit tab drops a jump that arrives while it is still loading a page, so wait for it to
-    // be showing one before asking for another.
-    await waitForEditablePage(page);
-
-    // Ask up to three times. Coming back from the Publish tab, the Edit tab can still swallow a
-    // jump after it looks ready, and asking again costs a few seconds where failing costs the run.
+    // Wait for the Edit tab first. A jump asked for while it is still loading a page is refused
+    // (see waitForEditTabSettled), so ask at a moment when the tab acts on the jump at once.
+    // Then ask, and ask again if the tab was busy after all. The tab answers with an error when
+    // it cannot jump (EditingModel.JumpToPage), rather than dropping the jump and reporting
+    // success as it used to, so a refusal is visible here instead of turning into a 60-second
+    // wait for a page that is not coming. Three tries, because the wait above closes the window
+    // for a refusal without quite shutting it: the tab can start loading the page list in the
+    // moment between the wait finishing and this request arriving.
+    let refusal: unknown;
+    for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt > 0) await waitForEditTabSettled(page);
+        refusal = undefined;
+        await apiPost(page, "editView/jumpToPage", pageId, "text/plain").catch(
+            (error) => {
+                refusal = error;
+            },
+        );
+        if (refusal === undefined) break;
+    }
+    if (refusal !== undefined)
+        throw new Error(
+            `The Edit tab refused to show page ${pageId} three times running: ${refusal}`,
+        );
     const showing = async () =>
         (await page
             .frame({ name: "page" })
             ?.locator(`.bloom-page[id="${pageId}"]`)
             .count()
             .catch(() => 0)) ?? 0;
-    for (let attempt = 1; attempt <= 3; attempt++) {
-        await apiPost(page, "editView/jumpToPage", pageId, "text/plain");
-        try {
-            await expect.poll(showing, { timeout: 20000 }).toBe(1);
-            await waitForEditablePage(page);
-            return;
-        } catch {
-            // fall through and ask again
-        }
+    try {
+        await expect.poll(showing, { timeout: 60000 }).toBe(1);
+    } catch {
+        // Say what the frame does hold. "Bloom never showed the page" on its own cannot tell a
+        // page that never arrived from a page that arrived and was replaced by another one.
+        const frame = page.frame({ name: "page" });
+        const heldPageIds = frame
+            ? await frame
+                  .locator(".bloom-page")
+                  .evaluateAll((pages) => pages.map((p) => p.id))
+                  .catch(() => ["(could not read the frame)"])
+            : [];
+        // Read this the forgiving way. A shell document Bloom is not driving is one of the
+        // failures this message exists to explain, and in exactly that case the request can
+        // fail. Letting it throw here would replace the whole diagnostic with its own error.
+        const drivenShell = await apiGet(page, "e2e/shellUrl")
+            .then((response) => response.body)
+            .catch((error) => `(could not be read: ${error})`);
+        // The state the Edit tab is in says how far the jump got: still Navigating, or Editing
+        // the page it already had.
+        const editState = await apiGet(page, "e2e/editState")
+            .then((response) => response.body)
+            .catch((error) => `(could not be read: ${error})`);
+        throw new Error(
+            `Bloom never showed page ${pageId} in the Edit tab. ` +
+                `The Edit tab is at ${editState}. ` +
+                (frame
+                    ? `The 'page' frame is at ${frame.url()} and holds [${heldPageIds.join(", ")}].`
+                    : `There is no 'page' frame.`) +
+                ` Bloom drives the shell at ${drivenShell}; ` +
+                `this test is watching ${page.url()}. If those name different documents, the test ` +
+                `attached to the wrong one and nothing Bloom does will ever appear (see AUTOMATION-DEBT.md).`,
+        );
     }
-    throw new Error(
-        `Bloom never showed page ${pageId} in the Edit tab, after three attempts.`,
-    );
+    // The page being in the frame is not the whole of arriving: Bloom is still setting it up, and
+    // it re-navigates the page list too. Leave the Edit tab settled, so whatever the test does
+    // next is not working against a frame that is about to be replaced.
+    await waitForEditTabSettled(page);
 }
 
 /**
@@ -704,6 +892,16 @@ export async function clickInGroup(
  */
 export async function waitForPageToSettle(page: Page): Promise<void> {
     await page.waitForTimeout(1050);
+    await waitForSnapshotStreamIdle(page);
+}
+
+/**
+ * Wait until the page being edited has nothing left to send Bloom: no change waiting out the quiet
+ * time, no gather under way, and no post unanswered (isSnapshotStreamIdle in pageSnapshot.ts).
+ * Only for a page known to be loaded and editable; a frame still loading its page has no stream to
+ * ask, and this fails rather than guess.
+ */
+async function waitForSnapshotStreamIdle(page: Page): Promise<void> {
     await expect
         .poll(
             () =>
@@ -731,9 +929,9 @@ export async function waitForPageToSettle(page: Page): Promise<void> {
  * Every save takes the page from the copy the browser sends Bloom a moment after typing settles
  * (its "snapshot"), so this is the wait a test needs between typing and an action that saves --
  * the moment a person takes before moving on. Acting within that moment saves the page as it was
- * just before the last keystroke, which is a deliberate trade, not a bug (see "The freshness
- * window" in src/BloomExe/Edit/SavingWithoutReloading.md). Reads Bloom's e2e/pageSnapshotIncludes
- * hook rather than waiting a fixed time.
+ * just before the last keystroke, which is a deliberate trade, not a bug (see kQuietMs in
+ * src/BloomBrowserUI/bookEdit/js/pageSnapshot.ts). Reads Bloom's e2e/pageSnapshotIncludes hook
+ * rather than waiting a fixed time.
  */
 export async function waitForBloomToHaveTyping(
     page: Page,
@@ -765,6 +963,8 @@ export async function waitForBloomToHaveTyping(
  * Pass an empty string to clear the box; that is how a test makes a translation incomplete. A
  * newline in `text` presses Enter, which starts a new paragraph, as it does for a person.
  * Nothing reaches the file until the book leaves this page — see goToPage.
+ *
+ * Returns once Bloom has the page with the text in it, unless `thenWaitForBloomToHaveIt` is false.
  */
 export async function typeInGroup(
     page: Page,
@@ -772,6 +972,7 @@ export async function typeInGroup(
     languageTag: string,
     text: string,
     groupIndex = 0,
+    thenWaitForBloomToHaveIt = true,
 ): Promise<void> {
     // Click in, select what is there, and type over it. A box here is a CKEditor surface, and
     // filling it directly leaves part of the old text behind.
@@ -797,6 +998,12 @@ export async function typeInGroup(
     // later failure cannot be blamed on text that never arrived. innerText, rather than textContent,
     // so that a paragraph break reads back as the newline that made it.
     await expect(box).toHaveText(text, { timeout: 15000, useInnerText: true });
+    // Then wait until the browser has sent Bloom the page with the text in it, the moment a person
+    // takes before doing anything else. Every save takes the page from that copy, which goes a
+    // moment after the last change (see kQuietMs in pageSnapshot.ts), and the text above went in
+    // as one change, so a save straight after it would lose all of it. A test whose subject is an
+    // action taken straight after typing passes false.
+    if (thenWaitForBloomToHaveIt) await waitForSnapshotStreamIdle(page);
 }
 
 /**
