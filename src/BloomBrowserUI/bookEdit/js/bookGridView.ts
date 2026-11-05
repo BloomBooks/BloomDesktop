@@ -277,6 +277,7 @@ export function removeBookGridView(): void {
     editedPagePlace = undefined;
     gridLayer?.remove();
     gridLayer = undefined;
+    settleLoadsOfDroppedFrames();
     gridStyle?.remove();
     gridStyle = undefined;
     const container = getScalingContainer();
@@ -463,6 +464,7 @@ function buildGrid(pages: IGridPage[]): Promise<void> {
                     renderPageInCell(cell, bodyAttributes);
                 } else {
                     cell.querySelector("iframe")?.remove();
+                    settleLoadsOfDroppedFrames();
                     cell.classList.remove("bloom-book-grid-rendered");
                 }
             });
@@ -631,6 +633,18 @@ function keepEditedPageInPlace(): void {
     if (Math.abs(dx) >= 1 || Math.abs(dy) >= 1) window.scrollBy(dx, dy);
 }
 
+// For each page frame still loading, what renderPageInCell waits on. A frame that is removed before
+// it loads never fires its load event, and the page being edited waits for the frames first shown
+// before it takes input (see setupBookGridView), so settleLoadsOfDroppedFrames must end the wait.
+const pendingFrameLoads = new Map<HTMLIFrameElement, () => void>();
+
+// End the wait for every page frame that was removed while it was loading.
+function settleLoadsOfDroppedFrames(): void {
+    pendingFrameLoads.forEach((settle, frame) => {
+        if (!frame.isConnected) settle();
+    });
+}
+
 // Draw one page in its cell. The promise resolves when the page and its pictures have loaded, or
 // when the cell has scrolled away and been dropped before that.
 function renderPageInCell(
@@ -657,7 +671,12 @@ function renderPageInCell(
             return;
         }
         return new Promise<void>((resolve) => {
-            frame.addEventListener("load", () => resolve(), { once: true });
+            const settle = () => {
+                pendingFrameLoads.delete(frame);
+                resolve();
+            };
+            pendingFrameLoads.set(frame, settle);
+            frame.addEventListener("load", settle, { once: true });
             // Written into the frame rather than put in srcdoc, so that saving the page being
             // edited, which serializes this whole document, does not carry every page's HTML
             // along in an attribute.
