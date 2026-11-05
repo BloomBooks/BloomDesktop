@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.Publish.BloomPub;
@@ -138,15 +139,29 @@ namespace Bloom.Publish.Rab
             var maxShortSide = (int)imageSettings.MaxHeight;
             var maxLongSide = (int)imageSettings.MaxWidth;
 
-            var picturesPublishingProcesses = FindPicturesPublishingProcesses(
-                bookFolderPath,
-                appearanceSettings
-            );
+            var dom = LoadBookDom(bookFolderPath);
+            var picturesPublishingProcesses =
+                dom == null
+                    ? new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
+                    : FindPicturesPublishingProcesses(dom, appearanceSettings);
+            var picturesPublishingDeletes =
+                dom == null
+                    ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                    : FindPicturesPublishingDeletes(bookFolderPath, dom);
 
             long result = 0;
             foreach (var file in files)
             {
                 if (!filter.ShouldAllow(file.FullName))
+                    continue;
+                if (
+                    picturesPublishingDeletes.Contains(file.Name)
+                    && string.Equals(
+                        file.DirectoryName,
+                        bookFolderPath,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
                     continue;
                 var extension = file.Extension.ToLowerInvariant();
                 if (
@@ -164,8 +179,8 @@ namespace Bloom.Publish.Rab
                         maxLongSide
                     );
                 else
-                    // Everything else (the book's HTML, CSS, fonts, audio, video, and pictures
-                    // publishing leaves alone) goes in about as it is. Zipping shrinks the text
+                    // Everything else (the book's HTML, CSS, fonts, audio, video, and the pictures
+                    // publishing keeps but leaves alone) goes in about as it is. Zipping shrinks the text
                     // files some, but they are rarely what makes a book big, and media files
                     // barely compress.
                     result += file.Length;
@@ -178,8 +193,9 @@ namespace Bloom.Publish.Rab
         /// re-encode: those that are the picture of an image container or canvas on a page (which
         /// <see cref="BloomPubMaker.ConvertImagesToBackground"/> turns into the background images
         /// CompressImages processes), less those marked bloom-preserveResolution. Any other picture
-        /// in the book (branding, a file the pages no longer use, ...) goes into the BloomPUB at
-        /// its full size, so it must be counted that way.
+        /// the book still uses (branding, ...) goes into the BloomPUB at its full size, so it must
+        /// be counted that way; pictures it doesn't use are left out altogether (see
+        /// <see cref="FindPicturesPublishingDeletes"/>).
         /// Each name maps to whether publishing may make that picture transparent, which turns it
         /// into a PNG whatever its format (see BloomPubMaker.GetElementTransparencyMode): it has
         /// bloom-transparent, or sits on a colored page or as an overlay on a background picture.
@@ -191,11 +207,22 @@ namespace Bloom.Publish.Rab
             AppearanceSettings appearanceSettings = null
         )
         {
+            var dom = LoadBookDom(bookFolderPath);
+            return dom == null
+                ? new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
+                : FindPicturesPublishingProcesses(dom, appearanceSettings);
+        }
+
+        /// <summary>
+        /// <see cref="FindPicturesPublishingProcesses(string, AppearanceSettings)"/> for a book
+        /// whose HTML is already loaded.
+        /// </summary>
+        private static Dictionary<string, bool> FindPicturesPublishingProcesses(
+            SafeXmlDocument dom,
+            AppearanceSettings appearanceSettings
+        )
+        {
             var result = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
-            var htmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
-            if (string.IsNullOrEmpty(htmlPath))
-                return result;
-            var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlPath, false);
             // Motion books in landscape have an all-black background, where publishing makes
             // nothing transparent (BL-6564).
             var body = dom.SafeSelectNodes("//body").Cast<SafeXmlElement>().FirstOrDefault();
@@ -259,6 +286,78 @@ namespace Bloom.Publish.Rab
             return result;
         }
 
+        // The rules BookStorage.CleanupUnusedImageFiles applies when publishing
+        // (keepFilesForEditing: false): which top-level picture files it considers, and which it
+        // keeps even though the book doesn't reference them.
+        private static readonly string[] kCleanupPictureExtensions =
+        {
+            ".jpg",
+            ".png",
+            ".svg",
+            ".gif",
+        };
+        private static readonly string[] kCleanupIgnoredNameStarts =
+        {
+            "thumbnail",
+            "license",
+            "video-placeholder",
+            "coverImage200",
+            "widget-placeholder",
+        };
+        private static readonly string[] kCleanupAlwaysKept =
+        {
+            "epub-thumbnail.png",
+            "custom-thumbnail-256.png",
+        };
+
+        /// <summary>
+        /// The names of the picture files in the book's folder that publishing deletes as unused
+        /// before making the BloomPUB (BloomPubMaker calls BookStorage.CleanupUnusedSupportFiles),
+        /// so they must not be counted (JohnThomson, PR 8531). This follows
+        /// BookStorage.CleanupUnusedImageFiles. Publishing checks the copy of the book it has just
+        /// brought up to date, while we check the book as saved; the two reference the same
+        /// pictures unless updating the front or back matter adds one.
+        /// </summary>
+        internal static HashSet<string> FindPicturesPublishingDeletes(
+            string bookFolderPath,
+            SafeXmlDocument dom
+        )
+        {
+            var used = new HashSet<string>(
+                BookStorage
+                    .GetImagePathsRelativeToBook(dom.DocumentElement)
+                    .Select(path => path.Normalize(NormalizationForm.FormC)),
+                StringComparer.OrdinalIgnoreCase
+            );
+            return new HashSet<string>(
+                Directory
+                    .EnumerateFiles(bookFolderPath)
+                    .Select(Path.GetFileName)
+                    .Where(name =>
+                        kCleanupPictureExtensions.Contains(
+                            Path.GetExtension(name).ToLowerInvariant()
+                        )
+                        && !kCleanupIgnoredNameStarts.Any(start =>
+                            name.StartsWith(start, StringComparison.OrdinalIgnoreCase)
+                        )
+                        && !kCleanupAlwaysKept.Contains(name, StringComparer.OrdinalIgnoreCase)
+                        && !used.Contains(name.Normalize(NormalizationForm.FormC))
+                    ),
+                StringComparer.OrdinalIgnoreCase
+            );
+        }
+
+        /// <summary>
+        /// The book's HTML, or null if the folder has none.
+        /// </summary>
+        private static SafeXmlDocument LoadBookDom(string bookFolderPath)
+        {
+            var htmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
+            return string.IsNullOrEmpty(htmlPath)
+                ? null
+                : XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlPath, false);
+        }
+
         /// <summary>
         /// The approximate size a picture is likely to have in a BloomPUB (see
         /// <see cref="EstimatePublishedImageBytes(int, int, long, bool, bool, bool, int, int)"/>). A
@@ -293,15 +392,18 @@ namespace Bloom.Publish.Rab
                     maxLongSide
                 );
 
-            var ifTransparent = Estimate(true);
+            var sizeIfTransparent = Estimate(true);
             if (mayBeMadeTransparent)
-                return ifTransparent;
-            var ifOpaque = Estimate(false);
+                return sizeIfTransparent;
+            var sizeIfOpaque = Estimate(false);
             if (!isPng)
-                return ifOpaque;
-            if (ifOpaque == ifTransparent || !ImageUtils.PngCanHaveTransparency(file.FullName))
-                return ifOpaque;
-            return ifTransparent;
+                return sizeIfOpaque;
+            if (
+                sizeIfOpaque == sizeIfTransparent
+                || !ImageUtils.PngCanHaveTransparency(file.FullName)
+            )
+                return sizeIfOpaque;
+            return sizeIfTransparent;
         }
 
         /// <summary>

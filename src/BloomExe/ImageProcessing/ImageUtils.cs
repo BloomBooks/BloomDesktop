@@ -1161,6 +1161,11 @@ namespace Bloom.ImageProcessing
                             // tRNS can't come after the image data, so we have seen all we need.
                             return !sawHeader;
                         default:
+                            // Any other chunk before the image data (PLTE, gAMA, pHYs, text, ...)
+                            // can't make the picture transparent: the PNG specification puts
+                            // transparency only in the colour type (read from IHDR above) and in
+                            // tRNS. That holds even for chunk types we don't know, so we can skip
+                            // them and still be sure. Skip the data and the 4-byte CRC.
                             stream.Seek((long)length + 4, SeekOrigin.Current);
                             break;
                     }

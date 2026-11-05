@@ -68,10 +68,11 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void EstimateBloomPubSize_PicturesPublishingDoesNotShrink_CountAtFullSize()
+        public void EstimateBloomPubSize_PicturesPublishingDoesNotShrink_CountAtFullSize_UnusedOnesNotAtAll()
         {
-            // An unused file, and a picture the author asked to keep at full resolution, both go
-            // into the BloomPUB as they are (Devin, PR 8531).
+            // A picture the author asked to keep at full resolution goes into the BloomPUB as it is
+            // (Devin, PR 8531); one the book doesn't use is deleted before the BloomPUB is made
+            // (JohnThomson, PR 8531).
             var htmlBytes = WriteBookHtml(_bookFolder, "keep:kept.jpg");
             var keptPath = Path.Combine(_bookFolder, "kept.jpg");
             var unusedPath = Path.Combine(_bookFolder, "unused.jpg");
@@ -90,7 +91,12 @@ namespace BloomTests.Publish.Rab
                 new ImagePublishSettings()
             );
 
-            Assert.That(estimate, Is.EqualTo(htmlBytes + keptBytes + unusedBytes));
+            Assert.That(
+                unusedBytes,
+                Is.GreaterThan(0),
+                "test setup: the unused picture has a size"
+            );
+            Assert.That(estimate, Is.EqualTo(htmlBytes + keptBytes));
         }
 
         [Test]
