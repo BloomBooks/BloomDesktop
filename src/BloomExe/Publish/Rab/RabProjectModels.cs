@@ -278,6 +278,29 @@ namespace Bloom.Publish.Rab
             return RabSafePathPolicy.GetCollectionWorkRoot(collectionRoot);
         }
 
+        /// <summary>
+        /// Where the Apps screen keeps its BloomPUBs: outside the collection, in
+        /// <paramref name="cacheFolder"/> (normally <see cref="BloomPubCache.GetCacheFolder"/>;
+        /// BL-17062). Reading App Builder is given these paths and can't cope with non-ASCII ones,
+        /// so when the user's temp folder isn't plain ASCII we use its short alias, and if Windows
+        /// can't give one (e.g. short names are turned off on that drive) we fall back to a folder
+        /// under <paramref name="safeWorkRoot"/>, which is known to be ASCII-safe. The cache
+        /// folder is made first because Windows only gives a whole path a short alias once it
+        /// exists, and the root must come out the same every time.
+        /// </summary>
+        internal static string GetBloomPubRoot(
+            string cacheFolder,
+            string safeWorkRoot,
+            Func<string, string> shortPathResolver = null
+        )
+        {
+            if (RabSafePathPolicy.IsAscii(Path.GetFullPath(cacheFolder)))
+                return cacheFolder;
+            Directory.CreateDirectory(cacheFolder);
+            return RabSafePathPolicy.ResolveSafePathOrNull(cacheFolder, shortPathResolver)
+                ?? Path.Combine(safeWorkRoot, "bloompubs");
+        }
+
         public RabWorkspacePaths(string collectionRoot, string bloomOwnedRabRoot = null)
         {
             CollectionRoot = collectionRoot;
@@ -285,14 +308,10 @@ namespace Bloom.Publish.Rab
             SafeWorkRoot = GetSafeWorkRoot(collectionRoot);
             RabRoot = Path.Combine(collectionRoot, "Bloom App Data");
             SafeRabRoot = Path.Combine(SafeCollectionRoot, "Bloom App Data");
-            // Kept outside the collection (BL-17062). Reading App Builder is given these paths,
-            // so use the ASCII-safe alias when the user's temp folder isn't plain ASCII. The
-            // folder is made first because Windows only gives a whole path a short alias once it
-            // exists, and the root must come out the same every time.
-            var bloomPubCacheFolder = BloomPubCache.GetCacheFolder(collectionRoot);
-            Directory.CreateDirectory(bloomPubCacheFolder);
-            BloomPubRoot =
-                RabSafePathPolicy.ResolveSafePathOrNull(bloomPubCacheFolder) ?? bloomPubCacheFolder;
+            BloomPubRoot = GetBloomPubRoot(
+                BloomPubCache.GetCacheFolder(collectionRoot),
+                SafeWorkRoot
+            );
             BuildRoot = Path.Combine(RabRoot, "build");
             ApkRoot = Path.Combine(RabRoot, "apk");
             SafeApkRoot = Path.Combine(SafeRabRoot, "apk");

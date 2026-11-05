@@ -2094,6 +2094,53 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public void GetBloomPubRoot_AsciiCacheFolder_UsesItAsIs()
+        {
+            var cacheFolder = Path.Combine(Path.GetTempPath(), "SIL", "Bloom", "plain-1234");
+            Assert.That(
+                RabWorkspacePaths.GetBloomPubRoot(
+                    cacheFolder,
+                    @"C:\Safe\Bloom App Data\RabWork",
+                    _ => throw new AssertionException("should not need a short path")
+                ),
+                Is.EqualTo(cacheFolder)
+            );
+        }
+
+        [Test]
+        public void GetBloomPubRoot_NonAsciiCacheFolderWithShortAlias_UsesTheAlias()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var cacheFolder = Path.Combine(tempFolder.Path, "Usuário", "bloompub-cache");
+            Assert.That(
+                RabWorkspacePaths.GetBloomPubRoot(
+                    cacheFolder,
+                    @"C:\Safe\Bloom App Data\RabWork",
+                    _ => @"C:\USUARI~1\BLOOMP~1"
+                ),
+                Is.EqualTo(@"C:\USUARI~1\BLOOMP~1")
+            );
+            Assert.That(Directory.Exists(cacheFolder), Is.True, "the folder is made first");
+        }
+
+        [Test]
+        public void GetBloomPubRoot_NonAsciiCacheFolderWithoutShortAlias_FallsBackToSafeWorkRoot()
+        {
+            // Reading App Builder can't read non-ASCII paths, and short names can be turned off
+            // (Devin, PR 8531).
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var cacheFolder = Path.Combine(tempFolder.Path, "Usuário", "bloompub-cache");
+            Assert.That(
+                RabWorkspacePaths.GetBloomPubRoot(
+                    cacheFolder,
+                    @"C:\Safe\Bloom App Data\RabWork",
+                    _ => null
+                ),
+                Is.EqualTo(@"C:\Safe\Bloom App Data\RabWork\bloompubs")
+            );
+        }
+
+        [Test]
         public void ResolveBloomPubPath_RewritesStaleDirectoryToCurrentBloomPubRoot()
         {
             var currentBloomPubRoot =
