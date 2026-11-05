@@ -86,6 +86,10 @@ const kGridStyles = `
     pointer-events: none;
     z-index: 1;
 }
+/* The page the Edit tab is opening, which takes the corner marks at once; see showPageBeingOpened(). */
+.bloom-book-grid-cell.bloom-book-grid-opening {
+    z-index: 1;
+}
 .bloom-book-grid-corner {
     position: absolute;
     width: var(--bloom-edited-page-corner-length);
@@ -240,7 +244,9 @@ export function setupBookGridView(): Promise<void> {
                     resolve();
                     return;
                 }
-                buildGrid(pages).then(resolve);
+                // Resolve even if building the grid fails, so the page is still shown and becomes
+                // usable; the failure itself still goes on to be reported as unhandled.
+                void buildGrid(pages).finally(resolve);
             },
             // get() also sends here anything buildGrid throws. Either way the page must still be
             // shown, but only a failed request is expected: anything else is a bug to report.
@@ -792,6 +798,44 @@ function getBodyAttributesForPageFrames(): string {
 
 // A click on one of the other pages: remember where on it the user clicked, so the opened page can
 // replay the click, and ask Bloom to open it the way the page list does.
+/**
+ * Show at once that the Edit tab is opening this page, while the page document that will edit it
+ * loads out of sight: the corner marks move to the page, and if it is not where the user can see
+ * it, the view scrolls to put it where the new page document will (see restoreScrollPosition()).
+ * Opening a page takes seconds on a slow machine, and this way the user sees it start. Does nothing
+ * unless the other pages are showing.
+ */
+export function showPageBeingOpened(pageId: string): void {
+    if (!gridLayer) return;
+    const cell = gridLayer.querySelector<HTMLElement>(
+        `.bloom-book-grid-cell[data-page-id="${pageId}"]`,
+    );
+    if (!cell || cell.classList.contains("bloom-book-grid-edited")) return;
+    cell.classList.add("bloom-book-grid-opening");
+    cell.append(
+        ...Array.from(gridLayer.querySelectorAll(".bloom-book-grid-corner")),
+    );
+    if (!wasClickedInTheGrid(pageId)) {
+        // The new page document centres the page in the view; put it there now.
+        const rect = cell.getBoundingClientRect();
+        window.scrollBy(
+            rect.left - (window.innerWidth - rect.width) / 2,
+            rect.top - (window.innerHeight - rect.height) / 2,
+        );
+    }
+}
+
+// True if the user opened this page by clicking it in the grid of this page document, which left
+// a record of where it was (see onClickOtherPage()).
+function wasClickedInTheGrid(pageId: string): boolean {
+    try {
+        const saved = sessionStorage.getItem(kClickedPageKey);
+        return !!saved && JSON.parse(saved).pageId === pageId;
+    } catch {
+        return false;
+    }
+}
+
 function onClickOtherPage(
     e: MouseEvent,
     cell: HTMLElement,
@@ -813,6 +857,7 @@ function onClickOtherPage(
     } catch {
         // Without storage the new page just scrolls into view.
     }
+    showPageBeingOpened(page.key);
     // Exactly as if the page had been clicked in the page list.
     whenPageListIsReady((pageList) =>
         pageList.postPageClicked(page.key, page.caption),

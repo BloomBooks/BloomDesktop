@@ -2,6 +2,7 @@ import * as React from "react";
 import { css } from "@emotion/react";
 import { get } from "../utils/bloomApi";
 import {
+    coverPageUntilReadyForInput,
     createPageFrame,
     setToolboxEnabledHandler,
 } from "../bookEdit/workspaceRoot";
@@ -59,11 +60,15 @@ export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
         const frame = document.getElementById("page") as
             | HTMLIFrameElement
             | undefined;
-        if (frame) {
-            frame.src = sources.pageSrc;
+        let pageFrame = frame;
+        if (pageFrame) {
+            pageFrame.src = sources.pageSrc;
         } else {
-            host.appendChild(createPageFrame(sources.pageSrc));
+            pageFrame = createPageFrame(sources.pageSrc);
+            host.appendChild(pageFrame);
         }
+        // The page is visible, and its text boxes editable, before its script has set it up.
+        coverPageUntilReadyForInput(pageFrame);
     }, [sources.pageSrc]);
 
     React.useEffect(() => {

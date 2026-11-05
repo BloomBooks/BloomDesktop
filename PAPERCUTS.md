@@ -19,6 +19,12 @@ House rules:
 
 ---
 
+## 2026-11-05 — No supported way to run a worktree's Bloom on the production bundle
+
+- **Cut:** `go.sh` (and so the run-bloom skill) always serves the front end from the Vite dev server, which loads about 600 separate modules for every page document. That makes page changes several times slower than a released Bloom's, so measuring or feeling performance needs the built bundle. The only way to get it was to run `output/Debug/AnyCPU/Bloom.exe` directly, which AGENTS.md forbids because it may be stale; the e2e fixture runs it that way, with a staleness check.
+- **Idea:** A `go.sh --built` (or a run-bloom option) that builds the bundle, checks it and `Bloom.dll` are current as the e2e fixture does, and starts Bloom without `--vite-port`.
+- **Context:** BL-16929, timing page changes and running a Bloom slowed 5× for the developer. Claude Opus 5.5 following a prompt from Hatton.
+
 ## 2026-11-05 — The C# formatting hook fails a merge commit on a passing index lock
 
 - **Cut:** `build/run-csharpier.sh` runs csharpier and then `git add` once per staged `.cs` file. A merge of master stages every C# file master changed (about 100 here), so the hook takes minutes, and two of those `git add` calls hit an `index.lock` that another process held for a moment. The commit failed with "Unable to create … index.lock: File exists", and the formatter had changed nothing.
