@@ -55,20 +55,23 @@ namespace Bloom.Publish.BloomPub
                 // CreateDirectory succeeds even if another process made the folder a moment ago,
                 // so the folder is ours only if we are the one that creates the marker in it.
                 Directory.CreateDirectory(path);
+                var markerPath = Path.Combine(path, kOwnerMarkerFileName);
                 try
                 {
                     // robustfile-hook: allow FileStream
                     // FileMode.CreateNew is the exclusive claim; RobustFile has no equivalent.
                     new FileStream(
-                        Path.Combine(path, kOwnerMarkerFileName),
+                        markerPath,
                         FileMode.CreateNew,
                         FileAccess.Write,
                         FileShare.None
                     ).Dispose();
                 }
-                catch (IOException)
+                catch (IOException) when (RobustFile.Exists(markerPath))
                 {
-                    continue; // another process claimed this name first
+                    // Another process claimed this name first. Any other failure (a full disk,
+                    // say) is not a collision, and trying more names would never succeed.
+                    continue;
                 }
                 return TemporaryFolder.TrackExisting(path);
             }
