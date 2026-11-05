@@ -364,7 +364,7 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
         "CollectionSettingsDialog.LanguagesPage.RightToLeft",
     );
     const rightToLeftDescription = useL10n(
-        "If you are not **SURE**, then do not turn this on. If your language is written starting on the right and moving left, you will **KNOW**.",
+        "If you are not SURE, then do not turn this on. If your language is written starting on the right and moving left, you will KNOW.",
         "CollectionSettingsDialog.LanguagesPage.RightToLeft.Description",
     );
     const otherLabel = useL10n("Other", "Common.Other");

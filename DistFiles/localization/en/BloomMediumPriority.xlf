@@ -96,9 +96,9 @@
         <note>On the "More" page of the first language in the Collection Settings dialog, shown under the alphabet and sentence punctuation (which cannot be edited) after the user has chosen a different first language. "OK" is the dialog's OK button.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguagesPage.RightToLeft.Description" translate="no">
-        <source xml:lang="en">If you are not **SURE**, then do not turn this on. If your language is written starting on the right and moving left, you will **KNOW**.</source>
+        <source xml:lang="en">If you are not SURE, then do not turn this on. If your language is written starting on the right and moving left, you will KNOW.</source>
         <note>ID: CollectionSettingsDialog.LanguagesPage.RightToLeft.Description</note>
-        <note>Explains the checkbox for a language written right to left, on the "More" page of one language in the Collection Settings dialog. The asterisks around SURE and KNOW show emphasis; keep them around the matching words in your language.</note>
+        <note>Explains the checkbox for a language written right to left, on the "More" page of one language in the Collection Settings dialog. SURE and KNOW are in capitals for emphasis.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguagesPage.ToolFontSize.Description" translate="no">
         <source xml:lang="en">Use this to increase the font size when this language is shown in places like the Decodable Reader Tool.</source>
