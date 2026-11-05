@@ -6,7 +6,8 @@ import {
 
 /**
  * Remove the whitespace-only text nodes CKEditor's parser leaves out: those next to the start or
- * end of a block (here, a box or a paragraph), but not a space between two inline elements.
+ * end of a block (here, a box or a paragraph) and those just before a line break, but not a space
+ * between two inline elements.
  */
 function dropBoundaryWhitespace(root: Node) {
     const isBoundary = (n: Node | null) =>
@@ -15,7 +16,9 @@ function dropBoundaryWhitespace(root: Node) {
         if (
             child.nodeType === Node.TEXT_NODE &&
             !/\S/.test(child.textContent!) &&
-            (isBoundary(child.previousSibling) || isBoundary(child.nextSibling))
+            (isBoundary(child.previousSibling) ||
+                isBoundary(child.nextSibling) ||
+                child.nextSibling?.nodeName === "BR")
         )
             child.remove();
         else dropBoundaryWhitespace(child);
@@ -37,8 +40,8 @@ class FakeInlineEditor implements ILoadingCkEditor {
     }[] = [];
 
     /**
-     * `dropWhitespaceNodes` imitates CKEditor's parser, which leaves out text nodes of nothing but
-     * whitespace, such as the line breaks between paragraphs in a book's HTML.
+     * `dropWhitespaceNodes` imitates CKEditor's parser, which leaves out some text nodes of nothing
+     * but whitespace, such as the line breaks between paragraphs in a book's HTML.
      */
     constructor(
         private element: HTMLElement,
@@ -101,6 +104,11 @@ function putCaret(node: Node, offset: number) {
     window.getSelection()!.addRange(range);
 }
 
+/** Whether anything in the document still carries the caret marker. */
+function markerLeft(): boolean {
+    return !!document.querySelector("[data-bloom-caret-marker]");
+}
+
 describe("keepTypingWhenCkEditorLoads", () => {
     it("without it, the fake editor loses what was typed while it loaded (sanity check of the fake)", () => {
         const box = makeBox("<p>a</p>");
@@ -120,7 +128,7 @@ describe("keepTypingWhenCkEditorLoads", () => {
         expect(box.innerHTML).toBe("<p>a typed</p><p>more</p>");
     });
 
-    it("puts the caret back where it was", () => {
+    it("puts the caret back where it was, and leaves the markup as it was", () => {
         const box = makeBox("<p>a</p>");
         const editor = new FakeInlineEditor(box);
         keepTypingWhenCkEditorLoads(editor, box);
@@ -128,6 +136,10 @@ describe("keepTypingWhenCkEditorLoads", () => {
         const secondText = box.childNodes[1].firstChild!;
         putCaret(secondText, 3);
         editor.fire("loaded");
+        expect(box.innerHTML, "no marker left, text joined again").toBe(
+            "<p>first</p><p>second</p>",
+        );
+        expect(box.childNodes[1].childNodes.length).toBe(1);
         const selection = window.getSelection()!;
         expect(selection.rangeCount).toBe(1);
         expect(
@@ -151,20 +163,7 @@ describe("keepTypingWhenCkEditorLoads", () => {
         expect(selection.focusNode).toBe(box.childNodes[1].firstChild);
         expect(selection.focusNode!.textContent).toBe("second");
         expect(selection.focusOffset).toBe(2);
-    });
-
-    it("keeps a caret that sits between paragraphs in the same place", () => {
-        const box = makeBox("\n<p>first</p>\n<p>second</p>\n");
-        const editor = new FakeInlineEditor(box, true);
-        keepTypingWhenCkEditorLoads(editor, box);
-        // Between the two paragraphs: in the whitespace node, and as a box offset just past it.
-        putCaret(box.childNodes[2], 1);
-        editor.fire("loaded");
-        const selection = window.getSelection()!;
-        expect(selection.focusNode).toBe(box);
-        expect(selection.focusOffset, "just before the second paragraph").toBe(
-            1,
-        );
+        expect(markerLeft()).toBe(false);
     });
 
     it("keeps a caret in a space between two sentence spans, which the rewrite keeps", () => {
@@ -185,18 +184,64 @@ describe("keepTypingWhenCkEditorLoads", () => {
         expect(selection.focusNode).toBe(paragraph.childNodes[1]);
         expect(selection.focusNode!.textContent).toBe(" ");
         expect(selection.focusOffset).toBe(0);
+        expect(markerLeft()).toBe(false);
     });
 
-    it("puts the caret at the end of the box if the markup changed under it", () => {
+    it("keeps a caret after a line break when the rewrite drops the space before it", () => {
+        const box = makeBox("<p><span>one</span> <br><span>two</span></p>");
+        const editor = new FakeInlineEditor(box, true);
+        keepTypingWhenCkEditorLoads(editor, box);
+        const two = box.querySelectorAll("span")[1].firstChild!;
+        putCaret(two, 1);
+        editor.fire("loaded");
+        expect(
+            box.innerHTML,
+            "the rewrite dropped the space before the line break",
+        ).toBe("<p><span>one</span><br><span>two</span></p>");
+        const selection = window.getSelection()!;
+        expect(selection.focusNode).toBe(
+            box.querySelectorAll("span")[1].firstChild,
+        );
+        expect(selection.focusNode!.textContent).toBe("two");
+        expect(selection.focusOffset).toBe(1);
+    });
+
+    it("keeps a caret in an empty paragraph", () => {
+        const box = makeBox("<p>a</p>");
+        const editor = new FakeInlineEditor(box);
+        keepTypingWhenCkEditorLoads(editor, box);
+        box.innerHTML = "<p>a</p><p><br></p>";
+        putCaret(box.childNodes[1], 0);
+        editor.fire("loaded");
+        expect(box.innerHTML).toBe("<p>a</p><p><br></p>");
+        const selection = window.getSelection()!;
+        expect(selection.focusNode).toBe(box.childNodes[1]);
+        expect(selection.focusOffset).toBe(0);
+    });
+
+    it("puts a caret that sat between paragraphs at the end of the box, without a marker", () => {
+        const box = makeBox("\n<p>first</p>\n<p>second</p>\n");
+        const editor = new FakeInlineEditor(box, true);
+        keepTypingWhenCkEditorLoads(editor, box);
+        putCaret(box.childNodes[2], 1);
+        editor.fire("loaded");
+        expect(box.innerHTML, "no stray paragraph or marker").toBe(
+            "<p>first</p><p>second</p>",
+        );
+        const selection = window.getSelection()!;
+        expect(selection.focusNode).toBe(box);
+        expect(selection.focusOffset).toBe(box.childNodes.length);
+    });
+
+    it("puts the caret at the end of the box if the editor's markup has no marker", () => {
         const box = makeBox("<p>a</p>");
         const editor = new FakeInlineEditor(box);
         keepTypingWhenCkEditorLoads(editor, box);
         box.innerHTML = "<p>first</p><p>second</p>";
         putCaret(box.childNodes[1].firstChild!, 3);
-        // An editor that normalized the markup differently from how it arrived.
+        // An editor whose copy did not take the refresh, so it writes back "<p>a</p>".
         editor.setData = () => {};
         editor.fire("loaded");
-        // The fake wrote back "<p>a</p>", where the saved path leads nowhere.
         const selection = window.getSelection()!;
         expect(box.innerHTML).toBe("<p>a</p>");
         expect(selection.focusNode).toBe(box);
@@ -212,5 +257,7 @@ describe("keepTypingWhenCkEditorLoads", () => {
         editor.fire("loaded");
         // The fake clears the selection; nothing should have put one back in the box.
         expect(window.getSelection()!.rangeCount).toBe(0);
+        expect(markerLeft()).toBe(false);
+        expect(elsewhere.innerHTML).toBe("<p>elsewhere</p>");
     });
 });

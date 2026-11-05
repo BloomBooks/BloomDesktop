@@ -10,8 +10,16 @@
 // inline() registers its handler at priority 10000, so a handler at the default priority runs
 // first. Ours refreshes the editor's copy from the box, with the same call inline() uses, so the
 // rewrite writes back what the person typed. The rewrite still replaces the box's nodes, which
-// loses the caret, so we note where the caret is first and put it back once the editor is ready
-// (instanceReady fires at the end of that same handler, before any further keystroke).
+// loses the caret. So before refreshing the copy we put a marker element at the caret; the rewrite
+// carries it through like any other markup, and once the editor is ready (instanceReady fires at
+// the end of that same handler, before any further keystroke) we put the caret where the marker is
+// and remove it. Marking the caret in the markup, rather than recording a position, means we need
+// not predict how CKEditor's rewrite tidies the markup (it drops some whitespace, for instance).
+//
+// The marker is made the way CKEditor makes its own bookmarks, which its parser keeps; Bloom turns
+// CKEditor's content filter off (allowedContent in lib/ckeditor/config.js), so nothing strips it.
+// CKEditor takes no undo snapshot until it is ready, and our instanceReady listener is registered
+// before the undo plugin's, so no snapshot ever holds the marker.
 
 /** The part of a CKEditor instance this module uses. */
 export interface ILoadingCkEditor {
@@ -25,62 +33,8 @@ export interface ILoadingCkEditor {
     setData(data: string, options: null, internal: boolean): void;
 }
 
-/**
- * Where the caret was: the path from the box to its node, and the offset in it. CKEditor's rewrite
- * drops whitespace-only text nodes at block boundaries (such as the line breaks between paragraphs
- * in a book's HTML), so the path's indexes, and the offset when the node is an element, count only
- * the other nodes, which the rewrite keeps.
- */
-interface ISavedCaret {
-    path: number[];
-    nodeName: string;
-    offset: number;
-}
-
-const kBlockElements = new Set([
-    "P",
-    "DIV",
-    "H1",
-    "H2",
-    "H3",
-    "H4",
-    "H5",
-    "H6",
-    "UL",
-    "OL",
-    "LI",
-    "TABLE",
-    "TBODY",
-    "THEAD",
-    "TR",
-    "TD",
-    "TH",
-    "BLOCKQUOTE",
-]);
-
-/** Whether `node` is missing or a block element: what ends a run of inline content. */
-function isBlockBoundary(node: Node | null): boolean {
-    return !node || kBlockElements.has(node.nodeName);
-}
-
-/**
- * Whether CKEditor's rewrite may drop this node: a text node of nothing but whitespace at the start
- * or end of a run of inline content. A space between two inline elements, such as the spans of two
- * recorded sentences, is kept.
- */
-function isDroppable(node: Node): boolean {
-    return (
-        node.nodeType === Node.TEXT_NODE &&
-        !/\S/.test(node.textContent!) &&
-        (isBlockBoundary(node.previousSibling) ||
-            isBlockBoundary(node.nextSibling))
-    );
-}
-
-/** The children of `node` that CKEditor's rewrite keeps. */
-function keptChildren(node: Node): Node[] {
-    return Array.from(node.childNodes).filter((n) => !isDroppable(n));
-}
+/** The attribute that tells our caret marker apart from any CKEditor bookmark. */
+const kCaretMarkerAttribute = "data-bloom-caret-marker";
 
 /**
  * Make sure that whatever `element` holds when `editor` finishes loading, which may include text
@@ -91,86 +45,78 @@ export function keepTypingWhenCkEditorLoads(
     editor: ILoadingCkEditor,
     element: HTMLElement,
 ): void {
-    let savedCaret: ISavedCaret | undefined;
+    let caretWasInBox = false;
     editor.on("loaded", () => {
+        caretWasInBox = markCaretIn(element);
         editor.setData(element.innerHTML, null, true);
-        savedCaret = saveCaretIn(element);
     });
     editor.on("instanceReady", () => {
-        if (savedCaret) restoreCaretIn(element, savedCaret);
-        savedCaret = undefined;
+        if (caretWasInBox) restoreCaretIn(element);
+        caretWasInBox = false;
     });
-}
-
-/** Record where the caret is, if the document's selection is a caret inside `element`. */
-function saveCaretIn(element: HTMLElement): ISavedCaret | undefined {
-    const selection = element.ownerDocument.getSelection();
-    if (!selection || selection.rangeCount === 0 || !selection.isCollapsed)
-        return undefined;
-    let node = selection.focusNode;
-    if (!node || !element.contains(node)) return undefined;
-    let offset = selection.focusOffset;
-    if (isDroppable(node)) {
-        // Stand in the parent instead, just before where this node is.
-        offset = keptChildren(node.parentNode!).filter(
-            (n) =>
-                n.compareDocumentPosition(node!) &
-                Node.DOCUMENT_POSITION_FOLLOWING,
-        ).length;
-        node = node.parentNode!;
-    } else if (node.nodeType !== Node.TEXT_NODE) {
-        offset = Array.from(node.childNodes)
-            .slice(0, offset)
-            .filter((n) => !isDroppable(n)).length;
-    }
-    const path: number[] = [];
-    for (let n: Node = node; n !== element; n = n.parentNode!) {
-        path.unshift(keptChildren(n.parentNode!).indexOf(n));
-    }
-    return { path, nodeName: node.nodeName, offset };
 }
 
 /**
- * Put the caret back where saveCaretIn() found it. The box should hold the same markup it did then;
- * if its structure has changed so that the path no longer leads to a node of the same kind with
- * room for the offset, the caret goes to the end of the box, where the person was most likely
- * typing.
+ * If the document's selection is a caret inside `element`, put a marker element there and return
+ * true. A caret that sits directly in a box that holds paragraphs (between two of them, say) gets
+ * no marker, because there CKEditor would wrap the marker in a paragraph of its own; it still
+ * counts as in the box, and restoreCaretIn() puts it at the end.
  */
-function restoreCaretIn(element: HTMLElement, saved: ISavedCaret): void {
-    let node: Node | undefined = element;
-    for (const index of saved.path) {
-        node = keptChildren(node)[index];
-        if (!node) break;
-    }
+function markCaretIn(element: HTMLElement): boolean {
+    const selection = element.ownerDocument.getSelection();
+    if (!selection || selection.rangeCount === 0 || !selection.isCollapsed)
+        return false;
+    const range = selection.getRangeAt(0);
+    const container = range.startContainer;
+    if (!element.contains(container)) return false;
+    const host =
+        container.nodeType === Node.TEXT_NODE
+            ? container.parentNode
+            : container;
+    if (host === element && element.querySelector(":scope > p, :scope > div"))
+        return true;
+    const marker = element.ownerDocument.createElement("span");
+    marker.setAttribute("data-cke-bookmark", "1");
+    marker.setAttribute(kCaretMarkerAttribute, "1");
+    marker.style.display = "none";
+    marker.innerHTML = "&nbsp;";
+    range.insertNode(marker);
+    return true;
+}
+
+/**
+ * Put the caret where markCaretIn() left its marker, and remove the marker, joining the text on
+ * either side of it again. If there is no marker (the editor's markup came from somewhere else, or
+ * the caret was between paragraphs), the caret goes to the end of the box, where the person was
+ * most likely typing.
+ */
+function restoreCaretIn(element: HTMLElement): void {
     const range = element.ownerDocument.createRange();
-    if (
-        node &&
-        node.nodeName === saved.nodeName &&
-        saved.offset <= keptLength(node)
-    ) {
-        range.setStart(node, domOffset(node, saved.offset));
+    const marker = element.querySelector(`[${kCaretMarkerAttribute}]`);
+    if (marker) {
+        const before = marker.previousSibling;
+        const after = marker.nextSibling;
+        const parent = marker.parentNode!;
+        const index = Array.prototype.indexOf.call(parent.childNodes, marker);
+        marker.remove();
+        if (before?.nodeType === Node.TEXT_NODE) {
+            const beforeText = before as Text;
+            const caretOffset = beforeText.length;
+            if (after?.nodeType === Node.TEXT_NODE) {
+                beforeText.appendData((after as Text).data);
+                after.remove();
+            }
+            range.setStart(beforeText, caretOffset);
+        } else if (after?.nodeType === Node.TEXT_NODE) {
+            range.setStart(after, 0);
+        } else {
+            range.setStart(parent, index);
+        }
     } else {
         range.selectNodeContents(element);
-        range.collapse(false);
     }
-    range.collapse(true);
+    range.collapse(false);
     const selection = element.ownerDocument.getSelection()!;
     selection.removeAllRanges();
     selection.addRange(range);
-}
-
-/** The largest offset a saved caret can have in `node`. */
-function keptLength(node: Node): number {
-    return node.nodeType === Node.TEXT_NODE
-        ? (node as Text).length
-        : keptChildren(node).length;
-}
-
-/** The range offset in `node` for a saved caret offset, which counts only kept children. */
-function domOffset(node: Node, savedOffset: number): number {
-    if (node.nodeType === Node.TEXT_NODE) return savedOffset;
-    const kept = keptChildren(node);
-    return savedOffset < kept.length
-        ? Array.from(node.childNodes).indexOf(kept[savedOffset] as ChildNode)
-        : node.childNodes.length;
 }

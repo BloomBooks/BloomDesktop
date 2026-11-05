@@ -74,6 +74,11 @@ test("text typed while CKEditor is still loading survives its arrival (BL-17022)
     const typed = "Typed before the editor was ready.";
     await page.keyboard.insertText(typed);
     await expect(box).toHaveText(typed, { useInnerText: true });
+    // Leave the caret in the middle of the text, just after "Typed", so that the end of the box,
+    // where a lost caret would be put, is not where it belongs.
+    await page.keyboard.press("Home");
+    for (let i = 0; i < "Typed".length; i++)
+        await page.keyboard.press("ArrowRight");
 
     // Sanity check: the editor for this box exists and is not ready yet, so the typing really did
     // go in during the window this test is about.
@@ -110,20 +115,20 @@ test("text typed while CKEditor is still loading survives its arrival (BL-17022)
         "The text typed before the editor was ready should still be in the box.",
     ).toHaveText(typed, { useInnerText: true });
 
-    // The caret stayed where the typing left it, so more typing carries on from there.
-    const typedAfter = " Typed after.";
-    await page.keyboard.insertText(typedAfter);
+    // The caret stayed where it was left, so more typing goes in there.
+    const expected = "Typed (and more) before the editor was ready.";
+    await page.keyboard.insertText(" (and more)");
     await expect(
         box,
-        "Typing after the editor was ready should carry on where the earlier typing ended.",
-    ).toHaveText(typed + typedAfter, { useInnerText: true });
+        "Typing after the editor was ready should go in where the caret was left before it.",
+    ).toHaveText(expected, { useInnerText: true });
 
     // And it is what Bloom saves.
     await waitForEditTabSettled(page);
-    await waitForBloomToHaveTyping(page, typed + typedAfter);
+    await waitForBloomToHaveTyping(page, expected);
     await switchTab(page, "collection");
     const saved = (await readBook(page, bookFolder)).pages.find(
         (p) => p.id === contentPage.id,
     );
-    expect(saved?.text).toContain(typed + typedAfter);
+    expect(saved?.text).toContain(expected);
 });
