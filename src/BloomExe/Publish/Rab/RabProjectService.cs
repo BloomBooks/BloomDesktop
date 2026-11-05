@@ -174,35 +174,12 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
-        /// Prepares the collection-owned Reading App Builder workspace so the project can be customized or built.
-        /// </summary>
-        public Task PrepareAsync()
-        {
-            Prepare();
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Builds a fresh APK from the current prepared project state.
-        /// </summary>
-        public Task BuildAsync()
-        {
-            Build();
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
         /// Makes the BloomPUBs that are missing or out of date for the app's books, without
         /// building the app, so that the Apps screen can show their actual sizes instead of
-        /// estimates (BL-17062). A later Build reuses them.
+        /// estimates (BL-17062). A later Build reuses them. Runs synchronously; the API runs it on
+        /// a background thread.
         /// </summary>
-        public Task MeasureBookSizesAsync()
-        {
-            MeasureBookSizes();
-            return Task.CompletedTask;
-        }
-
-        private void MeasureBookSizes()
+        public void MeasureBookSizes()
         {
             using var _longOperation = FreezeDoctorSupport.LongOperation(
                 "making BloomPUBs to measure the books in an app"
@@ -217,15 +194,6 @@ namespace Bloom.Publish.Rab
             ExportTrackedBooks(paths, LoadState(paths) ?? new RabPrepareState());
             ReportProgressStage("complete", 100);
             _progress.MessageWithoutLocalizing("Measuring complete.", ProgressKind.Heading);
-        }
-
-        /// <summary>
-        /// Installs the latest APK on a connected Android device and launches it.
-        /// </summary>
-        public Task InstallAsync()
-        {
-            Install();
-            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -747,7 +715,11 @@ namespace Bloom.Publish.Rab
                 _progress.MessageWithoutLocalizing($"Bloom log: {Logger.LogPath}");
         }
 
-        private void Prepare()
+        /// <summary>
+        /// Prepares the collection-owned Reading App Builder workspace so the project can be
+        /// customized or built. Runs synchronously; the API runs it on a background thread.
+        /// </summary>
+        public void Prepare()
         {
             var paths = GetPaths();
             ReportProgressStage("checking-installer", 0);
@@ -1140,7 +1112,11 @@ namespace Bloom.Publish.Rab
             }
         }
 
-        private void Build()
+        /// <summary>
+        /// Builds a fresh APK from the current prepared project state. Runs synchronously; the
+        /// API runs it on a background thread.
+        /// </summary>
+        public void Build()
         {
             // The longest deliberate operation Bloom has: a Gradle build exceeds a minute even on a fast
             // machine. BloomPubMaker marks its own work nested inside this; the scope counts depth, so the
@@ -1416,7 +1392,11 @@ namespace Bloom.Publish.Rab
             return cleaned.Skip(Math.Max(0, cleaned.Count - kTailLineCount)).ToList();
         }
 
-        private void Install()
+        /// <summary>
+        /// Installs the latest APK on a connected Android device and launches it. Runs
+        /// synchronously; the API runs it on a background thread.
+        /// </summary>
+        public void Install()
         {
             // Install re-reads package/app metadata from the project so launching uses the same identity that was built.
             var paths = GetPaths();

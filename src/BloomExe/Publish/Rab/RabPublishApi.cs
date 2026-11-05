@@ -195,14 +195,14 @@ namespace Bloom.Publish.Rab
                     // Lock the workspace tabs for the duration so the action is modal (see
                     // SetWorkspaceTabsEnabled); re-enabled in the finally below.
                     SetWorkspaceTabsEnabled(false);
-                    _ = Task.Run(async () =>
+                    _ = Task.Run(() =>
                     {
                         var succeeded = false;
                         try
                         {
                             try
                             {
-                                await _rabProjectService.PrepareAsync();
+                                _rabProjectService.Prepare();
                                 succeeded = true;
                             }
                             catch (OperationCanceledException)
@@ -248,7 +248,7 @@ namespace Bloom.Publish.Rab
                         return;
                     }
                     SetWorkspaceTabsEnabled(false);
-                    _ = Task.Run(async () =>
+                    _ = Task.Run(() =>
                     {
                         var succeeded = false;
                         var stopwatch = Stopwatch.StartNew();
@@ -256,7 +256,7 @@ namespace Bloom.Publish.Rab
                         {
                             try
                             {
-                                await _rabProjectService.BuildAsync();
+                                _rabProjectService.Build();
                                 succeeded = true;
                                 TrackRabAction("build", "success", stopwatch);
                             }
@@ -295,14 +295,14 @@ namespace Bloom.Publish.Rab
                         return;
                     }
                     SetWorkspaceTabsEnabled(false);
-                    _ = Task.Run(async () =>
+                    _ = Task.Run(() =>
                     {
                         var succeeded = false;
                         try
                         {
                             try
                             {
-                                await _rabProjectService.MeasureBookSizesAsync();
+                                _rabProjectService.MeasureBookSizes();
                                 succeeded = true;
                             }
                             catch (OperationCanceledException)
@@ -340,7 +340,7 @@ namespace Bloom.Publish.Rab
                         return;
                     }
                     SetWorkspaceTabsEnabled(false);
-                    _ = Task.Run(async () =>
+                    _ = Task.Run(() =>
                     {
                         var succeeded = false;
                         var stopwatch = Stopwatch.StartNew();
@@ -348,7 +348,7 @@ namespace Bloom.Publish.Rab
                         {
                             try
                             {
-                                await _rabProjectService.InstallAsync();
+                                _rabProjectService.Install();
                                 succeeded = true;
                                 TrackRabAction("install", "success", stopwatch);
                             }
