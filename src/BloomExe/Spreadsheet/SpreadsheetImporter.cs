@@ -425,6 +425,8 @@ namespace Bloom.Spreadsheet
             if (_collectionSettings != null && _book != null)
             {
                 ImportLanguageNames();
+                // The import changed the data div behind the book's back (BL-17070).
+                _book.RereadDataFromDom();
                 _book.BringBookUpToDate(new NullProgress());
             }
 
