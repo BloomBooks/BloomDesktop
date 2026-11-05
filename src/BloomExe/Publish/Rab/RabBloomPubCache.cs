@@ -5,7 +5,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Bloom.Book;
-using Bloom.Collection;
 using Bloom.Publish.BloomPub;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -257,13 +256,7 @@ namespace Bloom.Publish.Rab
             var collectionFolder = new DirectoryInfo(Path.GetDirectoryName(bookFolderPath));
             var collectionFiles = collectionFolder
                 .EnumerateFiles("*", SearchOption.TopDirectoryOnly)
-                .Where(file =>
-                    file.Name == "customCollectionStyles.css"
-                    || file.Name.EndsWith(
-                        CollectionSettings.kFileExtension,
-                        StringComparison.Ordinal
-                    )
-                );
+                .Where(file => Book.Book.IsCollectionFileThatAffectsBooks(file.Name));
             var lines = new DirectoryInfo(bookFolderPath)
                 .EnumerateFiles("*", SearchOption.AllDirectories)
                 .Concat(collectionFiles)
