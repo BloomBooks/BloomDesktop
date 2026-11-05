@@ -49,8 +49,7 @@ Two more things are decided at launch, because Bloom reads them once and keeps t
   keep the Subscription they were built with, so a tier set later would be invisible to them.
 - **Experimental features.** `test.use({ experimentalFeatures: ["team-collections"] })` names
   the features this Bloom has on, by the tokens in `ExperimentalFeatures.cs`. The launcher passes
-  them as `--experimental-features`, which Bloom accepts only beside `--e2e`, so nothing is saved
-  and the developer's own Bloom, which shares the saved setting, is untouched.
+  them as `--experimental-features`, which Bloom accepts only beside `--e2e`.
 
 Either way the fixture launches Bloom on a temp copy and attaches to the WebView2. One Bloom
 serves every test in a worker, because launching takes several seconds.
@@ -85,10 +84,11 @@ the Bloom it started really is using the folder, so a stale `Bloom.exe` fails th
 than quietly sharing settings.
 
 `restart(betweenStopAndStart)` is how a test changes something Bloom only reads at startup. The
-collection's languages are the case that needed it: the collection Settings dialog is a WinForms
-surface CDP cannot reach, and `collectionSettings/changeLanguage` only answers while that dialog
-is open, so the way to change a language is to stop Bloom, rewrite the `.bloomCollection` with
-`makeCollectionXml`, and start again. Bloom is killed rather than asked to quit, so leave the
+collection's languages are the case that needed it: a test whose subject is not the Collection
+Settings dialog changes a language by stopping Bloom, rewriting the `.bloomCollection` with
+`makeCollectionXml`, and starting again (`helpers/collectionSettings.ts`,
+`restartWithCollectionSettings`). The dialog itself is React and reachable; its own tests drive it
+with the helpers in that same file. Bloom is killed rather than asked to quit, so leave the
 page being edited before restarting or what was typed on it is lost. Use the page `restart`
 returns; the old one is closed.
 

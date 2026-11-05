@@ -165,7 +165,13 @@ const DecodableReaderSetupDialogLauncher: React.FunctionComponent<{
                     `}
                 >
                     {props.editingForbiddenMessage ? (
-                        <div>{props.editingForbiddenMessage}</div>
+                        <div
+                            css={css`
+                                white-space: pre-line;
+                            `}
+                        >
+                            {props.editingForbiddenMessage}
+                        </div>
                     ) : (
                         <DecodableStagesSetup
                             settings={settings}

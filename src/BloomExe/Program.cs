@@ -124,7 +124,7 @@ namespace Bloom
 
         // Experimental features an e2e run asked for, passed as
         // --experimental-features <comma-separated tokens>, or null when none were asked for.
-        // Only accepted together with --e2e; see ExperimentalFeatures.TokensFromE2eCommandLine.
+        // Only accepted together with --e2e; see ExperimentalFeatures.TokensOfEnabledFeatures.
         internal static string StartupExperimentalFeatures { get; private set; }
 
         // Control port of the dev launcher (scripts/watchBloomExe.mjs) that started
@@ -2333,8 +2333,6 @@ namespace Bloom
             // Sometimes after closing the splash screen the project window
             // looses focus, so do this.
             _projectContext.ProjectWindow.Activate();
-
-            (_projectContext.ProjectWindow as Shell).CheckForInvalidBranding();
         }
 
         /// ------------------------------------------------------------------------------------
