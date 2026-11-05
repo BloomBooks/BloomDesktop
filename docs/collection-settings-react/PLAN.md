@@ -109,7 +109,8 @@ BL-16735 did the same for the Team Collection values.
 - **Q5 Page Numbering Style:** stays per collection, and goes with the Languages page
   (BL-16739), as the mockup shows (Andrew, 2026-10-21). It is not on Front & Back Matter. It
   is shown once, in Language 1's "More > Script" (Andrew, 2026-11-04).
-- **Q6 New per-language fields:** UI Font, Keyboard, Common Name are out (no backing data).
+- **Q6 New per-language fields:** UI Font, Keyboard, Common Name are out (no backing data); BL-17076
+  tracks them.
   Alphabet and Sentence ending punctuation are in BL-16739 (Andrew, 2026-10-23), for the first
   language only: they live in `ReaderToolsSettings-<L1 tag>.json` in the collection folder
   (app data only holds BloomPack copies), and the reader tools work only in L1. The dialog edits
