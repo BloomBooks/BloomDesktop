@@ -24,10 +24,15 @@ namespace Bloom.Publish
     {
         private const string kRootFolderName = "bps";
 
-        // Created in each staging folder by the Bloom that claims it. Creating it is what makes the
-        // claim exclusive, and DeleteOldFolders only deletes folders that have it, so it never
-        // touches anything another program keeps under %TEMP%\bps.
-        private const string kOwnerMarkerFileName = ".bloom-staging";
+        // The Bloom that claims a staging folder first creates an empty marker file beside it,
+        // %TEMP%\bps\<name>.bloom-staging. Creating it is what makes the claim exclusive.
+        // DeleteOldFolders only deletes folders that have one, so it never touches anything
+        // another program keeps under %TEMP%\bps, and dates a folder by its marker. The marker is
+        // beside the folder rather than in it so that disposing a folder that cannot be deleted
+        // completely (a file still in use) cannot delete the marker and leave the folder where
+        // no cleanup would ever find it. Markers are not deleted with their folders; the
+        // cleanup removes them a day later.
+        private const string kOwnerMarkerExtension = ".bloom-staging";
 
         // Long enough that no publication, even a large app build, can still be in progress.
         // A Publish-tab preview keeps its folder until the next preview, so a preview another Bloom
@@ -41,8 +46,8 @@ namespace Bloom.Publish
         public static string RootPath => Path.Combine(Path.GetTempPath(), kRootFolderName);
 
         /// <summary>
-        /// Make a new staging folder that no other publication is using. It holds nothing but the
-        /// marker file that claims it. Disposing the result deletes the folder.
+        /// Make a new, empty staging folder that no other publication is using. Disposing the
+        /// result deletes the folder.
         /// </summary>
         public static TemporaryFolder CreateFolder()
         {
@@ -52,12 +57,10 @@ namespace Bloom.Publish
                 // GetRandomFileName gives random lowercase letters and digits (then a dot and an
                 // extension); five of them allow over 33 million names.
                 var path = Path.Combine(RootPath, Path.GetRandomFileName().Substring(0, 5));
-                if (Directory.Exists(path))
+                var markerPath = path + kOwnerMarkerExtension;
+                if (Directory.Exists(path) || RobustFile.Exists(markerPath))
                     continue;
-                // CreateDirectory succeeds even if another process made the folder a moment ago,
-                // so the folder is ours only if we are the one that creates the marker in it.
-                Directory.CreateDirectory(path);
-                var markerPath = Path.Combine(path, kOwnerMarkerFileName);
+                // The name is ours only if we are the one that creates its marker.
                 try
                 {
                     // robustfile-hook: allow FileStream
@@ -75,6 +78,7 @@ namespace Bloom.Publish
                     // say) is not a collision, and trying more names would never succeed.
                     continue;
                 }
+                Directory.CreateDirectory(path);
                 return TemporaryFolder.TrackExisting(path);
             }
         }
@@ -102,8 +106,8 @@ namespace Bloom.Publish
         }
 
         /// <summary>
-        /// Delete the staging folders created before the given (UTC) time. Folders without
-        /// Bloom's marker file belong to something else and are left alone.
+        /// Delete the staging folders claimed before the given (UTC) time, and their markers.
+        /// Folders without Bloom's marker belong to something else and are left alone.
         /// </summary>
         /// <remarks>
         /// This runs while Bloom is shutting down, so a filesystem error here must not escape:
@@ -116,14 +120,24 @@ namespace Bloom.Publish
                 return;
             try
             {
-                foreach (var folder in Directory.EnumerateDirectories(RootPath))
+                foreach (
+                    var markerPath in Directory.EnumerateFiles(
+                        RootPath,
+                        "*" + kOwnerMarkerExtension
+                    )
+                )
                 {
-                    if (!RobustFile.Exists(Path.Combine(folder, kOwnerMarkerFileName)))
+                    if (new FileInfo(markerPath).CreationTimeUtc >= cutoffUtc)
                         continue;
-                    if (Directory.GetCreationTimeUtc(folder) >= cutoffUtc)
+                    var folder = markerPath.Substring(
+                        0,
+                        markerPath.Length - kOwnerMarkerExtension.Length
+                    );
+                    // If something still has a file open this returns false, and we keep the
+                    // marker so a later cleanup tries again.
+                    if (Directory.Exists(folder) && !RobustIO.DeleteDirectoryAndContents(folder))
                         continue;
-                    // If something still has a file open this returns false.
-                    RobustIO.DeleteDirectoryAndContents(folder);
+                    RobustFile.Delete(markerPath);
                 }
             }
             catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
