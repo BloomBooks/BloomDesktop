@@ -5,6 +5,24 @@ import {
 } from "./keepTypingWhenCkEditorLoads";
 
 /**
+ * Remove the whitespace-only text nodes CKEditor's parser leaves out: those next to the start or
+ * end of a block (here, a box or a paragraph), but not a space between two inline elements.
+ */
+function dropBoundaryWhitespace(root: Node) {
+    const isBoundary = (n: Node | null) =>
+        !n || n.nodeName === "P" || n.nodeName === "DIV";
+    for (const child of Array.from(root.childNodes)) {
+        if (
+            child.nodeType === Node.TEXT_NODE &&
+            !/\S/.test(child.textContent!) &&
+            (isBoundary(child.previousSibling) || isBoundary(child.nextSibling))
+        )
+            child.remove();
+        else dropBoundaryWhitespace(child);
+    }
+}
+
+/**
  * Just enough of CKEditor's inline creation (CKEDITOR.inline in lib/ckeditor/ckeditor.js) to show
  * the problem: the editor copies the box's content when it is made, and when it has loaded it
  * writes its copy back into the box, from a "loaded" listener at priority 10000, and then fires
@@ -31,9 +49,8 @@ class FakeInlineEditor implements ILoadingCkEditor {
             "loaded",
             () => {
                 // The real one replaces the box's nodes (editable.setHtml), which loses the caret.
-                this.element.innerHTML = dropWhitespaceNodes
-                    ? this.data.replace(/>\s+</g, "><").trim()
-                    : this.data;
+                this.element.innerHTML = this.data;
+                if (dropWhitespaceNodes) dropBoundaryWhitespace(this.element);
                 window.getSelection()!.removeAllRanges();
                 this.fire("instanceReady");
             },
@@ -148,6 +165,26 @@ describe("keepTypingWhenCkEditorLoads", () => {
         expect(selection.focusOffset, "just before the second paragraph").toBe(
             1,
         );
+    });
+
+    it("keeps a caret in a space between two sentence spans, which the rewrite keeps", () => {
+        const box = makeBox(
+            '\n<p><span class="audio-sentence">one</span> <span class="audio-sentence">two</span></p>\n',
+        );
+        const editor = new FakeInlineEditor(box, true);
+        keepTypingWhenCkEditorLoads(editor, box);
+        const space = box.childNodes[1].childNodes[1];
+        expect(space.textContent, "test setup: the space").toBe(" ");
+        putCaret(space, 0);
+        editor.fire("loaded");
+        const paragraph = box.childNodes[0];
+        expect(paragraph.nodeName, "the rewrite dropped the line breaks").toBe(
+            "P",
+        );
+        const selection = window.getSelection()!;
+        expect(selection.focusNode).toBe(paragraph.childNodes[1]);
+        expect(selection.focusNode!.textContent).toBe(" ");
+        expect(selection.focusOffset).toBe(0);
     });
 
     it("puts the caret at the end of the box if the markup changed under it", () => {

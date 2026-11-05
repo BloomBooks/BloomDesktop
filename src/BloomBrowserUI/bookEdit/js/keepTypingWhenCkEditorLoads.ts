@@ -27,9 +27,9 @@ export interface ILoadingCkEditor {
 
 /**
  * Where the caret was: the path from the box to its node, and the offset in it. CKEditor's rewrite
- * drops whitespace-only text nodes (such as the line breaks between paragraphs in a book's HTML),
- * so the path's indexes, and the offset when the node is an element, count only the other nodes,
- * which the rewrite keeps.
+ * drops whitespace-only text nodes at block boundaries (such as the line breaks between paragraphs
+ * in a book's HTML), so the path's indexes, and the offset when the node is an element, count only
+ * the other nodes, which the rewrite keeps.
  */
 interface ISavedCaret {
     path: number[];
@@ -37,9 +37,44 @@ interface ISavedCaret {
     offset: number;
 }
 
-/** Whether CKEditor's rewrite may drop this node: a text node of nothing but whitespace. */
+const kBlockElements = new Set([
+    "P",
+    "DIV",
+    "H1",
+    "H2",
+    "H3",
+    "H4",
+    "H5",
+    "H6",
+    "UL",
+    "OL",
+    "LI",
+    "TABLE",
+    "TBODY",
+    "THEAD",
+    "TR",
+    "TD",
+    "TH",
+    "BLOCKQUOTE",
+]);
+
+/** Whether `node` is missing or a block element: what ends a run of inline content. */
+function isBlockBoundary(node: Node | null): boolean {
+    return !node || kBlockElements.has(node.nodeName);
+}
+
+/**
+ * Whether CKEditor's rewrite may drop this node: a text node of nothing but whitespace at the start
+ * or end of a run of inline content. A space between two inline elements, such as the spans of two
+ * recorded sentences, is kept.
+ */
 function isDroppable(node: Node): boolean {
-    return node.nodeType === Node.TEXT_NODE && !/\S/.test(node.textContent!);
+    return (
+        node.nodeType === Node.TEXT_NODE &&
+        !/\S/.test(node.textContent!) &&
+        (isBlockBoundary(node.previousSibling) ||
+            isBlockBoundary(node.nextSibling))
+    );
 }
 
 /** The children of `node` that CKEditor's rewrite keeps. */
