@@ -805,6 +805,18 @@ namespace Bloom.Edit
         }
 
         /// <summary>
+        /// Something changed the book outside the page being edited (a class on the book's body,
+        /// say) and left the writing to us. The next save writes the whole book, even if the page
+        /// itself has not changed: a save of just the page copies everything else from the old
+        /// file, and a save of an untouched page writes nothing at all.
+        /// </summary>
+        public void NoteBookChangedOutsideThePage()
+        {
+            _bookDomHasUnwrittenChanges = true;
+            _nextSaveMustBeFull = true;
+        }
+
+        /// <summary>
         /// user has selected or de-selected a content language
         /// </summary>
         public void ContentLanguagesSelectionChanged()

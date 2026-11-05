@@ -22,6 +22,7 @@ using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.Workspace;
+using BloomTests.web.controllers;
 using L10NSharp;
 using SIL.IO;
 using SIL.Reporting;
@@ -117,6 +118,7 @@ namespace Bloom.Edit
             PageListApi pageListApi,
             BookRenamedEvent bookRenamedEvent,
             CopyrightAndLicenseApi copyrightAndLicenseApi,
+            ToolboxApi toolboxApi,
             LocalizationChangedEvent localizationChangedEvent
         )
         {
@@ -153,6 +155,7 @@ namespace Bloom.Edit
             _copyrightAndLicenseApi = copyrightAndLicenseApi;
             copyrightAndLicenseApi.Model = _model;
             copyrightAndLicenseApi.View = this;
+            toolboxApi.Model = _model;
 
             controlKeyEvent.Subscribe(HandleControlKeyEvent);
 
