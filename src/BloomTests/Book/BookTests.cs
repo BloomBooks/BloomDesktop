@@ -2628,6 +2628,11 @@ namespace BloomTests.Book
             {
                 SizeAndOrientation = SizeAndOrientation.FromString(sizeAndOrientation),
             };
+            Assert.That(
+                layout.SizeAndOrientation.ToString(),
+                Is.EqualTo(sizeAndOrientation),
+                "test setup: the layout name did not parse as expected"
+            );
             Assert.AreEqual(
                 expected,
                 book.GetBookletLayoutMethod(layout),
