@@ -1,5 +1,4 @@
 import { CreateTeamCollectionDialog } from "./CreateTeamCollection";
-import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialogPlumbing";
 
 export default {
     title: "Collection/Team Collection/CreateTeamCollection",
@@ -7,9 +6,10 @@ export default {
 
 export const _CreateTeamCollectionDialog = () => (
     <CreateTeamCollectionDialog
-        dialogEnvironment={normalDialogEnvironmentForStorybook}
+        collectionName="Sample Collection"
         onFolderChosen={() => {}}
         onClose={() => {}}
+        defaultRepoFolder=""
     />
 );
 
@@ -19,7 +19,7 @@ _CreateTeamCollectionDialog.story = {
 
 export const CreateTeamCollectionDialogShowingPath = () => (
     <CreateTeamCollectionDialog
-        dialogEnvironment={normalDialogEnvironmentForStorybook}
+        collectionName="Sample Collection"
         onFolderChosen={() => {}}
         onClose={() => {}}
         defaultRepoFolder="z:\Enim aute dolore ex voluptate commodo\"
@@ -32,9 +32,10 @@ CreateTeamCollectionDialogShowingPath.story = {
 
 export const CreateTeamCollectionDialogShowingError = () => (
     <CreateTeamCollectionDialog
-        dialogEnvironment={normalDialogEnvironmentForStorybook}
+        collectionName="Sample Collection"
         onFolderChosen={() => {}}
         onClose={() => {}}
+        defaultRepoFolder=""
         errorForTesting="Commodo veniam laboris ut ut ea laboris Lorem Lorem laborum enim minim velit."
     />
 );
