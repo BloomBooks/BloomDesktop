@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using Bloom.Publish;
 using NUnit.Framework;
 
@@ -35,10 +34,27 @@ namespace BloomTests.Publish
         }
 
         /// <summary>
-        /// Disposing a staging folder deletes it, along with whatever the publication put in it.
+        /// While a staging folder is in use its marker is held open, so nobody else can take it
+        /// over; that is what tells other Blooms the folder is in use.
         /// </summary>
         [Test]
-        public void CreateFolder_DisposeDeletesTheFolder()
+        public void CreateFolder_HoldsTheMarkerOpenUntilDisposed()
+        {
+            using (var folder = PublishStaging.CreateFolder())
+            {
+                Assert.Throws<IOException>(
+                    () => OpenExclusively(Marker(folder.FolderPath)).Dispose(),
+                    "the marker of a folder in use should not open exclusively"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Disposing a staging folder deletes it, along with whatever the publication put in it,
+        /// and its marker.
+        /// </summary>
+        [Test]
+        public void CreateFolder_DisposeDeletesTheFolderAndItsMarker()
         {
             string path;
             using (var folder = PublishStaging.CreateFolder())
@@ -47,6 +63,7 @@ namespace BloomTests.Publish
                 File.WriteAllText(Path.Combine(path, "index.htm"), "<html></html>");
             }
             Assert.That(Directory.Exists(path), Is.False);
+            Assert.That(File.Exists(Marker(path)), Is.False);
         }
 
         /// <summary>
@@ -72,68 +89,68 @@ namespace BloomTests.Publish
         }
 
         /// <summary>
-        /// The exit cleanup deletes Bloom's staging folders claimed more than a day ago, and their
-        /// markers, and keeps newer ones, which another running Bloom may still be using.
+        /// The exit cleanup deletes a folder whose marker no Bloom holds (left by a Bloom that
+        /// crashed), and its marker, but keeps a folder another Bloom is still using, however old
+        /// its marker: a preview left open for days must keep its files.
         /// </summary>
         [Test]
-        public void DeleteOldFolders_DeletesOnlyFoldersOlderThanADay()
+        public void DeleteAbandonedFolders_DeletesOnlyFoldersNoBloomIsUsing()
         {
-            var old = PublishStaging.CreateFolder();
-            using (var recent = PublishStaging.CreateFolder())
+            var abandoned = MakeAbandonedFolder("abnd1");
+            using (var inUse = PublishStaging.CreateFolder())
             {
-                try
-                {
-                    File.WriteAllText(Path.Combine(old.FolderPath, "leftover.txt"), "x");
-                    BackDate(Marker(old.FolderPath));
+                File.WriteAllText(Path.Combine(inUse.FolderPath, "page.png"), "x");
+                File.SetCreationTimeUtc(
+                    Marker(inUse.FolderPath),
+                    DateTime.UtcNow - TimeSpan.FromDays(30)
+                );
 
-                    PublishStaging.DeleteOldFolders();
+                PublishStaging.DeleteAbandonedFolders();
 
-                    Assert.That(Directory.Exists(old.FolderPath), Is.False);
-                    Assert.That(File.Exists(Marker(old.FolderPath)), Is.False);
-                    Assert.That(Directory.Exists(recent.FolderPath), Is.True);
-                    Assert.That(File.Exists(Marker(recent.FolderPath)), Is.True);
-                }
-                finally
-                {
-                    old.Dispose();
-                }
+                Assert.That(Directory.Exists(abandoned), Is.False);
+                Assert.That(File.Exists(Marker(abandoned)), Is.False);
+                Assert.That(File.Exists(Path.Combine(inUse.FolderPath, "page.png")), Is.True);
+                Assert.That(File.Exists(Marker(inUse.FolderPath)), Is.True);
             }
         }
 
         /// <summary>
-        /// Disposing a folder leaves its marker behind; once the marker is a day old, the cleanup
-        /// removes it.
+        /// If an abandoned folder cannot be deleted yet (a file in it is still open), the cleanup
+        /// keeps its marker, so a later cleanup finishes the job once the file is released.
         /// </summary>
         [Test]
-        public void DeleteOldFolders_RemovesOldMarkersWhoseFoldersAreGone()
+        public void DeleteAbandonedFolders_KeepsTheMarkerOfAFolderItCannotDeleteYet()
         {
-            string path;
-            using (var folder = PublishStaging.CreateFolder())
-                path = folder.FolderPath;
-            Assert.That(Directory.Exists(path), Is.False, "setup: disposing deletes the folder");
-            Assert.That(File.Exists(Marker(path)), Is.True, "setup: the marker outlives it");
-            BackDate(Marker(path));
+            var abandoned = MakeAbandonedFolder("abnd2");
+            var lockedFile = Path.Combine(abandoned, "video.mp4");
+            File.WriteAllText(lockedFile, "x");
+            using (OpenExclusively(lockedFile))
+            {
+                PublishStaging.DeleteAbandonedFolders();
 
-            PublishStaging.DeleteOldFolders();
+                Assert.That(File.Exists(Marker(abandoned)), Is.True);
+            }
 
-            Assert.That(File.Exists(Marker(path)), Is.False);
+            PublishStaging.DeleteAbandonedFolders();
+
+            Assert.That(Directory.Exists(abandoned), Is.False);
+            Assert.That(File.Exists(Marker(abandoned)), Is.False);
         }
 
         /// <summary>
         /// A folder under the staging root that Bloom did not create (no marker file) is left
-        /// alone however old it is, since another program may own it.
+        /// alone, since another program may own it.
         /// </summary>
         [Test]
-        public void DeleteOldFolders_LeavesFoldersBloomDidNotCreate()
+        public void DeleteAbandonedFolders_LeavesFoldersBloomDidNotCreate()
         {
             var foreign = Path.Combine(PublishStaging.RootPath, "other-program");
             Directory.CreateDirectory(foreign);
             try
             {
                 File.WriteAllText(Path.Combine(foreign, "work.dat"), "x");
-                Directory.SetCreationTimeUtc(foreign, DateTime.UtcNow - TimeSpan.FromDays(2));
 
-                PublishStaging.DeleteOldFolders();
+                PublishStaging.DeleteAbandonedFolders();
 
                 Assert.That(File.Exists(Path.Combine(foreign, "work.dat")), Is.True);
             }
@@ -146,14 +163,18 @@ namespace BloomTests.Publish
         // The marker file that claims a staging folder sits beside it.
         private static string Marker(string folder) => folder + ".bloom-staging";
 
-        private static void BackDate(string markerPath)
+        private static FileStream OpenExclusively(string path) =>
+            new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+
+        // What a Bloom that crashed leaves behind: a folder with files in it and a marker nobody
+        // holds open.
+        private static string MakeAbandonedFolder(string name)
         {
-            File.SetCreationTimeUtc(markerPath, DateTime.UtcNow - TimeSpan.FromDays(2));
-            Assert.That(
-                File.GetCreationTimeUtc(markerPath),
-                Is.LessThan(DateTime.UtcNow - TimeSpan.FromDays(1)),
-                "setup should have back-dated the marker"
-            );
+            var folder = Path.Combine(PublishStaging.RootPath, name);
+            Directory.CreateDirectory(folder);
+            File.WriteAllText(Path.Combine(folder, "index.htm"), "<html></html>");
+            File.WriteAllText(Marker(folder), "");
+            return folder;
         }
     }
 }
