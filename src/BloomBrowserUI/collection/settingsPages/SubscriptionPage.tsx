@@ -29,8 +29,8 @@ export function useSubscriptionPage(
         "CollectionSettingsDialog.SubscriptionPage",
     );
 
-    // As typed; undefined until the values have loaded.
-    const code = context.values?.subscription.code;
+    // As typed.
+    const code = context.values.subscription.code;
 
     const element = (
         <ConfigrPage label={label} pageKey="subscription" topLevel={true}>
@@ -67,8 +67,7 @@ export function useSubscriptionPage(
                         ]}
                     >
                         <SubscriptionControls
-                            // The dialog shows its pages only once the settings have loaded.
-                            code={code!}
+                            code={code}
                             onCodeChange={(newCode) =>
                                 context.editValues({
                                     subscription: { code: newCode },
@@ -77,7 +76,7 @@ export function useSubscriptionPage(
                         />
                         <SubscriptionStatus minimalUI code={code} />
                         {/* A blank code means the collection has no subscription. */}
-                        {code?.trim() === "" && (
+                        {code.trim() === "" && (
                             <NoteBox
                                 css={css`
                                     p {

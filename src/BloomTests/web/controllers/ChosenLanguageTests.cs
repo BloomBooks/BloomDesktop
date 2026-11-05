@@ -10,11 +10,11 @@ namespace BloomTests.web.controllers
     /// though the user had asked for it.
     /// </summary>
     [TestFixture]
-    public class LanguageChangeEventArgsTests
+    public class ChosenLanguageTests
     {
-        private static LanguageChangeEventArgs Selection(string defaultName, string desiredName)
+        private static ChosenLanguage Selection(string defaultName, string desiredName)
         {
-            return new LanguageChangeEventArgs
+            return new ChosenLanguage
             {
                 LanguageTag = "de",
                 DefaultName = defaultName,
@@ -78,7 +78,7 @@ namespace BloomTests.web.controllers
             // What the chooser sends for mzc when the user accepts the name it offers. The front
             // end sets DesiredName = customDisplayName || defaultName (see languageData.ts), so
             // with nothing typed these are identical by construction.
-            var args = new LanguageChangeEventArgs
+            var args = new ChosenLanguage
             {
                 LanguageTag = "mzc",
                 DefaultName = "Malagasy Sign Language",
@@ -107,7 +107,7 @@ namespace BloomTests.web.controllers
         [Test]
         public void IsCustomName_TypedNameMatchingLibPalasos_IsStillCustom()
         {
-            var args = new LanguageChangeEventArgs
+            var args = new ChosenLanguage
             {
                 LanguageTag = "mzc",
                 DefaultName = "Malagasy Sign Language",

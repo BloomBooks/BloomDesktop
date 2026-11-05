@@ -56,11 +56,6 @@ namespace Bloom.Collection
         private const int kDefaultAudioRecordingTrimEndMilliseconds = 40;
         private const int kDefaultBooksOnWebGoal = 200;
 
-        /// <summary>
-        /// The branding the user wanted, but not confirmed by current SubscriptionCode, if any.
-        /// </summary>
-        public string InvalidBranding { get; private set; }
-
         public string DefaultBookshelf = "";
 
         /// <summary>
@@ -736,7 +731,6 @@ namespace Bloom.Collection
                     : null;
                 if (downloadInfoPath != null)
                 {
-                    IgnoreExpiration = true;
                     var editSettings = JObject.Parse(RobustFile.ReadAllText(downloadInfoPath));
 
                     // BloomProblemReport.json's have an issueID that will be better for us to use as a collection name
@@ -921,7 +915,6 @@ namespace Bloom.Collection
         // a mode that restricts you to this one book in your collection but also allows you to retain
         // whatever you branding was at the time, even it has expired.
         public bool EditingABlorgBook;
-        public bool IgnoreExpiration;
 
         private void DoOneTimeCheck()
         {
@@ -1551,12 +1544,6 @@ namespace Bloom.Collection
         {
             string[] administratorList = ParseAdministratorString(newAdminString);
             return administratorList.Length > 0 && administratorList.All(MiscUtils.IsValidEmail);
-        }
-
-        public void ModifyAdministrators(string newAdminString)
-        {
-            Administrators = ParseAdministratorString(newAdminString);
-            Save();
         }
     }
 }
