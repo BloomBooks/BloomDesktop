@@ -71,14 +71,14 @@ namespace BloomTests
         )
         {
             // Setup
-            string fileName = $@"C:\PathToTemp\PlaceForStagingBook\{bookTitle}\meta.json";
+            string fileName = $@"C:\PathToTemp\bps\x7k2q\{bookTitle}\meta.json";
 
             // System under test
             string result = fileName.ToLocalhost();
 
             // Verification
             string expectedResult =
-                $@"http://localhost:{BloomServer.portForHttp}/bloom/C%3A/PathToTemp/PlaceForStagingBook/{expectedEscapedTitle}/meta.json";
+                $@"http://localhost:{BloomServer.portForHttp}/bloom/C%3A/PathToTemp/bps/x7k2q/{expectedEscapedTitle}/meta.json";
             Assert.That(result, Is.EqualTo(expectedResult));
         }
 
