@@ -76,7 +76,8 @@ test("text typed while CKEditor is still loading survives its arrival (BL-17022)
     await expect(box).toHaveText(typed, { useInnerText: true });
     // Leave the caret in the middle of the text, just after "Typed", so that the end of the box,
     // where a lost caret would be put, is not where it belongs.
-    await page.keyboard.press("Home");
+    // Control+Home, not Home: the start of the box, wherever the sentence happens to wrap.
+    await page.keyboard.press("Control+Home");
     for (let i = 0; i < "Typed".length; i++)
         await page.keyboard.press("ArrowRight");
 
