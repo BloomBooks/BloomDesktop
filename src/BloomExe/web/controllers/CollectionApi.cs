@@ -975,7 +975,11 @@ namespace Bloom.web.controllers
         private void OpenBookOnBloomLibrary(ApiRequest apiRequest)
         {
             var status = GetBloomLibraryStatus(apiRequest.RequiredParam("book-id"));
-            ProcessExtra.SafeStartInFront(status.GetBloomLibraryBookUrl());
+            // The status can briefly be missing even though the badge is showing: when the collection's
+            // book list is rebuilt, the new BookInfos get their statuses from a background fetch.
+            // The badge will be refreshed when that completes, so just ignore the click.
+            if (status != null)
+                ProcessExtra.SafeStartInFront(status.GetBloomLibraryBookUrl());
             apiRequest.PostSucceeded();
         }
 

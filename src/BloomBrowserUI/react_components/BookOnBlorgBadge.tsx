@@ -86,7 +86,12 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
                         placement={"right"}
                         enableClickInTooltip={true}
                         tip={
-                            <div>
+                            <div
+                                // The tooltip is rendered in a portal, but React still bubbles its clicks
+                                // to the BookButton, which would select the book. Opening the book's page
+                                // on Bloom Library should not do that.
+                                onClick={(e) => e.stopPropagation()}
+                            >
                                 <span
                                     css={css`
                                         font-variant: all-small-caps;
