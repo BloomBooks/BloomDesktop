@@ -555,8 +555,7 @@ namespace Bloom.WebLibraryIntegration
         /// and 'rebrand' is not true and 'inCirculation' is not false and 'draft' is not true.</remarks>
         public int GetBookCountByLanguage(string languageTag)
         {
-            if (!UrlLookup.CheckGeneralInternetAvailability(false))
-                return -1;
+            // No separate check for internet access first: this request fails just as well without it.
             var request = MakeGetRequest();
             request.AddQueryParameter("lang", languageTag);
             request.AddQueryParameter("limit", "0");
@@ -680,35 +679,30 @@ namespace Bloom.WebLibraryIntegration
         /// an entry for each book that has been uploaded to Bloom Library. The keys are the book instance ids
         /// from the BookInfo objects.
         /// Books with no entry in the dictionary have not been uploaded to Bloom Library. Books that have
-        /// multiple uploads with the same bookInstanceId are flagged as having a problem by having an empty
-        /// string for the BloomLibraryStatus.BloomLibraryBookUrl field. (The other fields are meaningless
-        /// in that case.)
+        /// multiple uploads with the same bookInstanceId are flagged as having a problem by having a
+        /// HarvesterState of Multiple. (The other fields are meaningless in that case.)
+        /// Returns null if we could not find out, e.g., because there is no internet.
         /// </summary>
         /// <remarks>
-        /// We want to minimize the number of queries we make to the API, so we batch up the book instance
-        /// ids as much as possible.
+        /// We want to minimize the number of queries we make to the API, so all the ids go in one query.
+        /// There is no separate check for internet access first: the query itself fails if there is none.
         /// </remarks>
         public Dictionary<string, BloomLibraryStatus> GetLibraryStatusForBooks(
-            List<BookInfo> bookInfos,
+            List<string> bookInstanceIds,
             bool forceUseProductionData = false
         )
         {
-            System.Diagnostics.Debug.WriteLine(
-                $"DEBUG BloomLibraryBookApiClient.GetLibraryStatusForBooks(): {bookInfos.Count} books"
-            );
             var bloomLibraryStatusesById = new Dictionary<string, BloomLibraryStatus>();
-            if (!UrlLookup.CheckGeneralInternetAvailability(true))
-                return bloomLibraryStatusesById;
-
-            List<string> bookInstanceIds = bookInfos.Select(book => book.Id).ToList();
             var request = MakePostRequest("", forceUseProductionData);
+            // This only feeds the badges, so don't let a connection that never answers tie up a thread.
+            request.Timeout = 60000;
             var requestBody = new { instanceIds = bookInstanceIds };
             request.AddJsonBody(requestBody);
             var response = AzureRestClient.Execute(request);
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 LogApiError(request, response);
-                return bloomLibraryStatusesById;
+                return null;
             }
 
             dynamic rawResult = JObject.Parse(response.Content);
@@ -721,15 +715,11 @@ namespace Bloom.WebLibraryIntegration
                 {
                     if (bloomLibraryStatusesById.ContainsKey(bookInstanceId))
                     {
-                        bloomLibraryStatusesById[bookInstanceId] = new BloomLibraryStatus(
-                            false,
-                            false,
-                            HarvesterState.Multiple,
-                            BloomLibraryUrls.BloomLibraryBooksWithMatchingIdListingUrl(
+                        bloomLibraryStatusesById[bookInstanceId] =
+                            BloomLibraryStatus.ForMultipleUploads(
                                 bookInstanceId,
                                 forceUseProductionData
-                            )
-                        );
+                            );
                     }
                     else
                     {
