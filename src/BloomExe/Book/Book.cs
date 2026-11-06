@@ -4247,6 +4247,17 @@ namespace Bloom.Book
             );
         }
 
+        /// <summary>
+        /// Read the book's values afresh from its DOM. Needed after something rewrites the DOM
+        /// directly, as a spreadsheet import does: the values are otherwise read only when the
+        /// book is loaded, and bringing the book up to date from the old ones undoes the import.
+        /// </summary>
+        public void RereadDataFromDom()
+        {
+            ClearCachedDataFromDom();
+            _bookData = new BookData(OurHtmlDom, CollectionSettings, UpdateImageMetadataAttributes);
+        }
+
         private void ClearCachedDataFromDom()
         {
             _pagesCache = null;
