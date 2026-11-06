@@ -192,6 +192,8 @@ for (const generated of ["index.html", "img", "full"])
     fs.rmSync(path.join(pageDir, generated), { recursive: true, force: true });
 fs.mkdirSync(path.join(pageDir, "img"), { recursive: true });
 let totalBytes = 0;
+// A method or picture name can contain spaces, which a published path cannot.
+const pathSafe = (name) => name.replace(/[^A-Za-z0-9._-]+/g, "-");
 function copyInto(sourceFile, relativeTarget) {
     const target = path.join(pageDir, relativeTarget);
     fs.mkdirSync(path.dirname(target), { recursive: true });
@@ -215,7 +217,7 @@ for (const image of images) {
             id: "original",
             src: copyInto(
                 originalPreview,
-                path.join("img", "original", `${image.id}.png`),
+                path.join("img", "original", `${pathSafe(image.id)}.png`),
             ),
         });
     }
@@ -234,7 +236,11 @@ for (const image of images) {
             id: algorithm.id,
             src: copyInto(
                 preview,
-                path.join("img", algorithm.id, `${image.id}.png`),
+                path.join(
+                    "img",
+                    pathSafe(algorithm.id),
+                    `${pathSafe(image.id)}.png`,
+                ),
             ),
             stats,
         });
@@ -258,8 +264,8 @@ for (const section of sections) {
                 : path.join(outDir, row.id, `${section.id}.png`);
         const target = path.join(
             "full",
-            row.id,
-            section.id + path.extname(source),
+            pathSafe(row.id),
+            pathSafe(section.id) + path.extname(source),
         );
         fullSizeFiles.push({
             row,
@@ -332,6 +338,10 @@ a { color: var(--accent); }
 .filters legend { font-weight: 600; padding: 0; margin-right: 8px; float: left; }
 .filters label { white-space: nowrap; font-size: 14px; }
 .filters .size { font-size: 13px; color: var(--muted); }
+#picture-filter summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+#picture-filter .picture-boxes { display: flex; flex-wrap: wrap; gap: 2px 12px; padding-top: 4px; max-height: 30vh; overflow-y: auto; }
+#picture-filter[open] { flex-basis: 100%; }
+thead th .picture-name { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
 section.colour { border-top: 2px solid var(--line); padding: 16px 0 8px; }
 .swatch { display: inline-block; width: 28px; height: 28px; border: 1px solid var(--muted); border-radius: 4px; }
 .meta { color: var(--muted); margin: 4px 0 10px; font-size: 14px; }
@@ -373,6 +383,7 @@ ${forArtifact ? "" : "</head>\n<body>"}
 <fieldset id="kind-filter"><legend>Picture kind</legend></fieldset>
 <fieldset id="algorithm-filter"><legend>Methods</legend></fieldset>
 <fieldset id="lightness-filter"><legend>Background lightness</legend></fieldset>
+<details id="picture-filter"><summary></summary><div class="picture-boxes"></div></details>
 <span class="size">Ctrl + mouse wheel: picture size <span id="size-readout"></span></span>
 </div>
 <main id="sections"></main>
@@ -418,7 +429,7 @@ const dated = data.algorithms.filter((a) => a.date).sort((a, b) => a.date.locale
 for (const a of dated) {
     const when = new Date(a.date + "T00:00:00").toLocaleDateString("en", { year: "numeric", month: "short", day: "numeric" });
     let kind = "unreleased";
-    if (a.id.startsWith("proposed")) kind = "now";
+    if (a.where.startsWith("This branch")) kind = "now";
     else if (a.released) kind = "released";
     const li = el("li", { class: kind },
         el("span", { class: "when" }, when),
@@ -463,12 +474,46 @@ for (const k of kinds) addCheckbox(document.getElementById("kind-filter"), k, k)
 for (const a of data.algorithms)
     addCheckbox(document.getElementById("algorithm-filter"), a.id, a.id, data.methodsShown.includes(a.id));
 for (const b of lightnessBands) addCheckbox(document.getElementById("lightness-filter"), b.id, b.label);
+// The pictures' checkboxes are folded away, because there are too many to keep on screen.
+const pictureBoxes = document.querySelector("#picture-filter .picture-boxes");
+pictures.forEach((p, pi) => addCheckbox(pictureBoxes, String(pi), p.id));
+
+// What this viewer has hidden is kept in the browser, so a regenerated or republished page opens
+// with the same pictures, methods, kinds and colours hidden. Only hidden items are kept, so a new
+// picture or method shows up.
+const hiddenStoreKey = "transparency-report-hidden";
+const filterGroups = {
+    kinds: { fieldset: "kind-filter", idOf: (value) => value },
+    methods: { fieldset: "algorithm-filter", idOf: (value) => value },
+    bands: { fieldset: "lightness-filter", idOf: (value) => value },
+    pictures: { fieldset: "picture-filter", idOf: (value) => pictures[+value].id },
+};
+function saveHidden() {
+    const hidden = {};
+    for (const [name, group] of Object.entries(filterGroups))
+        hidden[name] = [...document.querySelectorAll("#" + group.fieldset + " input:not(:checked)")].map((i) => group.idOf(i.value));
+    try { localStorage.setItem(hiddenStoreKey, JSON.stringify(hidden)); } catch {}
+}
+function restoreHidden() {
+    let hidden = null;
+    try { hidden = JSON.parse(localStorage.getItem(hiddenStoreKey)); } catch {}
+    if (!hidden) return;
+    for (const [name, group] of Object.entries(filterGroups))
+        for (const box of document.querySelectorAll("#" + group.fieldset + " input"))
+            box.checked = !(hidden[name] || []).includes(group.idOf(box.value));
+}
+restoreHidden();
 
 // The standard "eye with a slash" icon, meaning hide.
 const eyeOffIcon = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
 // Hiding a method from its row is the same as unchecking it under Methods at the top.
 function hideMethod(id) {
     document.querySelector("#algorithm-filter input[value='" + id + "']").checked = false;
+    applyFilters();
+}
+// Hiding a picture from its column heading is the same as unchecking it under Pictures at the top.
+function hidePicture(pictureIndex) {
+    pictureBoxes.querySelector("input[value='" + pictureIndex + "']").checked = false;
     applyFilters();
 }
 
@@ -481,7 +526,11 @@ data.backgrounds.forEach((bg, bgIndex) => {
     const table = el("table");
     const headRow = el("tr", {}, el("th", {}, ""));
     pictures.forEach((p, pi) => {
-        const th = el("th", { "data-kind": p.kind, "data-picture": String(pi), title: (p.note || "") }, el("b", {}, p.id));
+        const hide = el("button", { class: "hide-method", type: "button", title: "Hide " + p.id + " everywhere (same as unchecking it under Pictures)" });
+        hide.innerHTML = eyeOffIcon;
+        hide.addEventListener("click", () => hidePicture(pi));
+        const th = el("th", { "data-kind": p.kind, "data-picture": String(pi), title: (p.note || "") },
+            el("span", { class: "picture-name" }, el("b", {}, p.id), hide));
         const warning = pictureWarning(p);
         if (warning) { th.append(el("span", { class: "flag" }, "see note")); th.title = warning + " " + th.title; }
         headRow.append(th);
@@ -503,7 +552,7 @@ data.backgrounds.forEach((bg, bgIndex) => {
         pictures.forEach((p, pi) => {
             const row = p.rows.find((r) => r.id === rowId);
             if (!row || !row.src) {
-                tr.append(el("td", { class: "error", "data-kind": p.kind }, "Failed: " + (row ? row.error : "no output")));
+                tr.append(el("td", { class: "error", "data-kind": p.kind, "data-picture": String(pi) }, "Failed: " + (row ? row.error : "no output")));
                 return;
             }
             const img = el("img", { src: row.src, alt: p.id + " " + rowId + " on " + bg.hex, loading: "lazy" });
@@ -531,8 +580,12 @@ function applyFilters() {
         s.classList.toggle("hidden", !bandsOn.has(s.dataset.band));
     for (const tr of document.querySelectorAll("tr[data-algorithm]"))
         tr.classList.toggle("hidden", tr.dataset.algorithm !== "original" && !algorithmsOn.has(tr.dataset.algorithm));
-    for (const c of document.querySelectorAll("[data-kind]"))
-        c.classList.toggle("hidden", !kindsOn.has(c.dataset.kind));
+    const picturesOn = checkedValues("picture-filter");
+    for (const c of document.querySelectorAll("[data-picture]"))
+        c.classList.toggle("hidden", !kindsOn.has(c.dataset.kind) || !picturesOn.has(c.dataset.picture));
+    document.querySelector("#picture-filter summary").textContent =
+        "Pictures (" + picturesOn.size + " of " + pictures.length + " shown)";
+    saveHidden();
 }
 
 // Start with only the methods ticked above showing.
@@ -593,7 +646,8 @@ document.addEventListener("keydown", (e) => {
     const kindsOn = checkedValues("kind-filter");
     const algorithmsOn = checkedValues("algorithm-filter");
     const bandsOn = checkedValues("lightness-filter");
-    const visiblePictures = pictures.map((p, i) => i).filter((i) => kindsOn.has(pictures[i].kind) && pictures[i].rows.some((r) => r.id === current.rowId && r.src));
+    const picturesOn = checkedValues("picture-filter");
+    const visiblePictures = pictures.map((p, i) => i).filter((i) => kindsOn.has(pictures[i].kind) && picturesOn.has(String(i)) && pictures[i].rows.some((r) => r.id === current.rowId && r.src));
     const visibleRows = rowIds.filter((id) => (id === "original" || algorithmsOn.has(id)) && pictures[current.pictureIndex].rows.some((r) => r.id === id && r.src));
     const visibleBgs = data.backgrounds.map((b, i) => i).filter((i) => bandsOn.has(bandOf(data.backgrounds[i].lightness)));
     if (e.key === "ArrowRight" || e.key === "ArrowLeft") current.pictureIndex = step(visiblePictures, current.pictureIndex, e.key === "ArrowRight" ? 1 : -1);

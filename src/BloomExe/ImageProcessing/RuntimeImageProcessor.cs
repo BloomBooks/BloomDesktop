@@ -526,6 +526,10 @@ namespace Bloom.ImageProcessing
         /// looks unchanged on white, and on a coloured page a light gray becomes a lighter shade of
         /// that page colour rather than a gray tinted towards it (BL-16778). Anti-aliased edges
         /// get partial opacity, so no white fringe is left.
+        /// A scan's paper is seldom white: it is usually a gray with grain, which ink over white would
+        /// keep as a faint wash over the page colour. So the picture's paper is found first (see
+        /// <see cref="FindPaperBrightening"/>), and when it is gray every pixel is brightened by the
+        /// same factor until the paper and its grain are white.
         /// The transparency comparison report in docs/transparency-report shows this alongside
         /// the earlier methods on many pictures and page colours.
         /// </summary>
@@ -549,15 +553,16 @@ namespace Bloom.ImageProcessing
             var pixels = new byte[stride * height];
             Marshal.Copy(srcData.Scan0, pixels, 0, pixels.Length);
             source.UnlockBits(srcData);
+            var brighten = FindPaperBrightening(pixels, width, height, stride);
             // The pixels are converted in place, so a large picture needs no second full-size array.
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
                     int idx = y * stride + x * 4;
-                    byte b = pixels[idx];
-                    byte g = pixels[idx + 1];
-                    byte r = pixels[idx + 2];
+                    byte b = brighten[pixels[idx]];
+                    byte g = brighten[pixels[idx + 1]];
+                    byte r = brighten[pixels[idx + 2]];
                     // pixels[idx + 3] is source alpha, always 255 for opaque input.
                     byte minChannel = Math.Min(r, Math.Min(g, b));
                     // alpha is 0 for pure white and 255 for black.
@@ -584,6 +589,48 @@ namespace Bloom.ImageProcessing
             Marshal.Copy(pixels, 0, dstData.Scan0, pixels.Length);
             result.UnlockBits(dstData);
             return result;
+        }
+
+        // The darkest value of a pixel's darkest colour channel that can count as paper. Scans
+        // seen so far have paper at 228 to 236; allowing darker values let a drawing that is mostly
+        // mid gray be taken for gray paper and washed out.
+        private const int kDarkestPossiblePaper = 215;
+
+        // Paper at least this light is treated as white and the picture is not brightened.
+        private const int kWhitePaper = 250;
+
+        // How far below the paper's level scanner grain reaches; it is brightened to white too.
+        private const int kPaperGrain = 10;
+
+        /// <summary>
+        /// Returns a table that maps each channel value of the picture to its brightened value.
+        /// The paper is the most common value of the darkest colour channel among the picture's
+        /// pixels from <see cref="kDarkestPossiblePaper"/> up. When it is below
+        /// <see cref="kWhitePaper"/>, every channel is multiplied by 255 / (paper - grain), the
+        /// same factor for all three so colours keep their hue; otherwise the table changes nothing.
+        /// </summary>
+        private static byte[] FindPaperBrightening(byte[] pixels, int width, int height, int stride)
+        {
+            var histogram = new int[256];
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int idx = y * stride + x * 4;
+                    histogram[Math.Min(pixels[idx], Math.Min(pixels[idx + 1], pixels[idx + 2]))]++;
+                }
+            }
+            int paper = 255;
+            for (int v = kDarkestPossiblePaper; v < 256; v++)
+            {
+                if (histogram[v] > histogram[paper])
+                    paper = v;
+            }
+            double scale = paper < kWhitePaper ? 255.0 / (paper - kPaperGrain) : 1.0;
+            var table = new byte[256];
+            for (int v = 0; v < 256; v++)
+                table[v] = (byte)Math.Min(255, Math.Round(v * scale));
+            return table;
         }
 
         private static ColorPalette GivePaletteTransparentBackground(Image bitmap)

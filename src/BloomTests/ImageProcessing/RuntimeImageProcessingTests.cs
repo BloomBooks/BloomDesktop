@@ -172,6 +172,102 @@ namespace BloomTests.RuntimeImageProcessing
             }
         }
 
+        /// <summary>
+        /// A scan's paper is gray with grain. When most of a picture's light pixels sit at one gray
+        /// level from 215 up, that level is its paper: the paper and grain within 10 of it become
+        /// fully transparent, and darker pixels are brightened by the same factor first (BL-16778).
+        /// </summary>
+        [Test]
+        public void MakePngBackgroundTransparent_ClearsGrayScannedPaper()
+        {
+            var paper = Color.FromArgb(232, 232, 232);
+            var grain = Color.FromArgb(224, 224, 224);
+            var black = Color.FromArgb(0, 0, 0);
+            var pencil = Color.FromArgb(120, 120, 120);
+            using (var source = new Bitmap(10, 10, PixelFormat.Format24bppRgb))
+            {
+                for (var x = 0; x < 10; x++)
+                for (var y = 0; y < 10; y++)
+                    source.SetPixel(x, y, paper);
+                source.SetPixel(1, 0, grain);
+                source.SetPixel(2, 0, black);
+                source.SetPixel(3, 0, pencil);
+                Assert.That(
+                    source.GetPixel(0, 0).ToArgb(),
+                    Is.EqualTo(paper.ToArgb()),
+                    "setup: most of the picture should be gray paper"
+                );
+                using (var palasoImage = PalasoImage.FromImage(source))
+                using (
+                    var result = (Bitmap)
+                        RuntimeImageProcessor.MakePngBackgroundTransparent(palasoImage)
+                )
+                {
+                    Assert.That(
+                        result.GetPixel(0, 0).A,
+                        Is.EqualTo(0),
+                        "the gray paper should be fully transparent"
+                    );
+                    Assert.That(
+                        result.GetPixel(1, 0).A,
+                        Is.EqualTo(0),
+                        "grain within 10 of the paper should be fully transparent"
+                    );
+                    Assert.That(
+                        result.GetPixel(2, 0).ToArgb(),
+                        Is.EqualTo(Color.FromArgb(255, 0, 0, 0).ToArgb()),
+                        "black should stay opaque black"
+                    );
+                    // 120 * 255 / (232 - 10) = 137.8, which rounds to 138, so its opacity is 255 - 138.
+                    Assert.That(
+                        result.GetPixel(3, 0).A,
+                        Is.EqualTo(117),
+                        "pencil gray 120 should be brightened by the same factor as the paper before its opacity is set"
+                    );
+                }
+            }
+        }
+
+        /// <summary>
+        /// A drawing that is mostly mid gray, darker than 215, is not mistaken for gray paper: it is
+        /// not brightened, so its grays keep the opacity that ink over white gives them (BL-16778).
+        /// </summary>
+        [Test]
+        public void MakePngBackgroundTransparent_DoesNotTakeMidGrayForPaper()
+        {
+            var midGray = Color.FromArgb(200, 200, 200);
+            var white = Color.FromArgb(255, 255, 255);
+            using (var source = new Bitmap(10, 10, PixelFormat.Format24bppRgb))
+            {
+                for (var x = 0; x < 10; x++)
+                for (var y = 0; y < 10; y++)
+                    source.SetPixel(x, y, midGray);
+                source.SetPixel(0, 0, white);
+                Assert.That(
+                    source.GetPixel(5, 5).ToArgb(),
+                    Is.EqualTo(midGray.ToArgb()),
+                    "setup: most of the picture should be mid gray"
+                );
+                using (var palasoImage = PalasoImage.FromImage(source))
+                using (
+                    var result = (Bitmap)
+                        RuntimeImageProcessor.MakePngBackgroundTransparent(palasoImage)
+                )
+                {
+                    Assert.That(
+                        result.GetPixel(5, 5).A,
+                        Is.EqualTo(55),
+                        "mid gray 200 should keep the 55/255 opacity of ink over white"
+                    );
+                    Assert.That(
+                        result.GetPixel(0, 0).A,
+                        Is.EqualTo(0),
+                        "white should be fully transparent"
+                    );
+                }
+            }
+        }
+
         private TempFile MakeTempPNGImage(int width, int height)
         {
             var file = TempFile.WithExtension(".png");

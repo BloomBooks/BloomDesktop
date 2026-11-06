@@ -57,7 +57,17 @@ namespace BloomTests.ImageProcessing
         {
             new TransparencyAlgorithm
             {
-                Id = "original-6.5",
+                Id = "Before 6.5",
+                Released = true,
+                Date = "2017-11-27",
+                Where = "Bloom 6.4 and earlier (in the code by 2017, commit b396ab1e1c)",
+                Description =
+                    "What Bloom 6.4 and earlier do: only pixels whose red, green and blue are all 253 or more become see-through, and every other pixel stays solid.",
+                Run = ColorKey253,
+            },
+            new TransparencyAlgorithm
+            {
+                Id = "6.5 beta initial",
                 Released = true,
                 Date = "2026-06-04",
                 Where = "Bloom 6.5 (commit ac1d454619, BL-16336)",
@@ -68,22 +78,22 @@ namespace BloomTests.ImageProcessing
             },
             new TransparencyAlgorithm
             {
-                Id = "proposed-6.5",
+                Id = "6.5 Final",
                 Date = "2026-11-06",
                 Where = "This branch, for 6.5 (BL-16778)",
                 Description =
-                    "Bloom's own code, as this branch changes it for 6.5 (BL-16778): each pixel is treated as ink over white paper. The darker its darkest colour channel, the more solid it is, and its colour becomes the ink that would give that pixel when laid over white. This is what Bloom did on May 19 2026 (commit 625c7891ff), brought back for BL-16778.",
+                    "Bloom's own code, as this branch changes it for 6.5 (BL-16778): each pixel is treated as ink over the picture's paper. The paper is the most common value of the darkest colour channel among pixels from 215 up; when it is below 250 (a scan of gray paper), the picture is first brightened, the same factor for all three channels, so that anything within 10 of the paper becomes white. Then the darker a pixel's darkest colour channel, the more solid it is, and its colour becomes the ink that would give that pixel when laid over white. On white paper this is what Bloom did on May 19 2026 (commit 625c7891ff).",
                 Run = RuntimeImageProcessor.MakePngBackgroundTransparent,
             },
             new TransparencyAlgorithm
             {
-                Id = "colorkey-253",
-                Released = true,
-                Date = "2017-11-27",
-                Where = "Bloom 6.4 and earlier (in the code by 2017, commit b396ab1e1c)",
+                Id = "ink-over-white",
+                Date = "2026-05-19",
+                Where =
+                    "BL-16336 work in May (commit 625c7891ff), merged into 6.4 and reverted on June 8",
                 Description =
-                    "What Bloom 6.4 and earlier do: only pixels whose red, green and blue are all 253 or more become see-through, and every other pixel stays solid.",
-                Run = ColorKey253,
+                    "Each pixel is treated as ink over white paper, with no search for the paper: 6.5 Final without its brightening of gray scanned paper.",
+                Run = img => LikeProduction(img, source => PaperLevel(source, 256)),
             },
             new TransparencyAlgorithm
             {
@@ -101,7 +111,7 @@ namespace BloomTests.ImageProcessing
                 Date = "2026-05-22",
                 Where = "BL-16336 work in May (commit 7e8bdde10c), on a branch never merged",
                 Description =
-                    "The original-6.5 rule, except that partly see-through pixels that are nearly grey are made exactly grey.",
+                    "The 6.5 beta initial rule, except that partly see-through pixels that are nearly grey are made exactly grey.",
                 Run = img => LikeProduction(img, RampForceGrey),
             },
             new TransparencyAlgorithm
@@ -109,7 +119,7 @@ namespace BloomTests.ImageProcessing
                 Id = "narrow-ramp",
                 Where = "Proposed on BL-16778",
                 Description =
-                    "The original-6.5 rule, but only very light pixels become see-through, and pixels a little darker stay solid.",
+                    "The 6.5 beta initial rule, but only very light pixels become see-through, and pixels a little darker stay solid.",
                 Run = img => LikeProduction(img, NarrowRamp),
             },
             new TransparencyAlgorithm
@@ -117,7 +127,7 @@ namespace BloomTests.ImageProcessing
                 Id = "edge-fill",
                 Where = "Proposed on BL-16778",
                 Description =
-                    "Uses the original-6.5 rule only on the light area that connects to the edge of the picture (plus two pixels around it), so light areas enclosed by lines stay solid.",
+                    "Uses the 6.5 beta initial rule only on the light area that connects to the edge of the picture (plus two pixels around it), so light areas enclosed by lines stay solid.",
                 Run = img => LikeProduction(img, EdgeFill),
             },
         };
@@ -265,6 +275,77 @@ namespace BloomTests.ImageProcessing
                 }
             }
             return processedBitmap;
+        }
+
+        /// <summary>
+        /// Ink over white, as in the production RemoveWhiteBackground, but against the picture's
+        /// own paper. The paper is the most common darkest-channel value from
+        /// <paramref name="darkestPossiblePaper"/> up; when it is below 250, every channel is
+        /// multiplied by 255 / (paper - 10), so the paper and its scanner grain become white
+        /// before the ink is worked out. A <paramref name="darkestPossiblePaper"/> of 256 never
+        /// brightens, which gives plain ink over white.
+        /// </summary>
+        public static Image PaperLevel(Bitmap source, int darkestPossiblePaper)
+        {
+            var width = source.Width;
+            var height = source.Height;
+            var result = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+            var rect = new Rectangle(0, 0, width, height);
+            var srcData = source.LockBits(
+                rect,
+                ImageLockMode.ReadOnly,
+                PixelFormat.Format32bppArgb
+            );
+            var stride = Math.Abs(srcData.Stride);
+            var pixels = new byte[stride * height];
+            Marshal.Copy(srcData.Scan0, pixels, 0, pixels.Length);
+            source.UnlockBits(srcData);
+
+            var histogram = new int[256];
+            for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++)
+            {
+                int idx = y * stride + x * 4;
+                histogram[Math.Min(pixels[idx], Math.Min(pixels[idx + 1], pixels[idx + 2]))]++;
+            }
+            int paper = 255;
+            for (int v = darkestPossiblePaper; v < 256; v++)
+                if (histogram[v] > histogram[paper])
+                    paper = v;
+            double scale = paper < 250 ? 255.0 / (paper - 10) : 1.0;
+
+            for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++)
+            {
+                int idx = y * stride + x * 4;
+                int b = (int)Math.Min(255, Math.Round(pixels[idx] * scale));
+                int g = (int)Math.Min(255, Math.Round(pixels[idx + 1] * scale));
+                int r = (int)Math.Min(255, Math.Round(pixels[idx + 2] * scale));
+                int minChannel = Math.Min(r, Math.Min(g, b));
+                int alpha = 255 - minChannel;
+                pixels[idx + 3] = (byte)alpha;
+                if (alpha > 0)
+                {
+                    pixels[idx] = (byte)Math.Round((b - minChannel) * 255.0 / alpha);
+                    pixels[idx + 1] = (byte)Math.Round((g - minChannel) * 255.0 / alpha);
+                    pixels[idx + 2] = (byte)Math.Round((r - minChannel) * 255.0 / alpha);
+                }
+                else
+                {
+                    pixels[idx] = 0;
+                    pixels[idx + 1] = 0;
+                    pixels[idx + 2] = 0;
+                }
+            }
+
+            var dstData = result.LockBits(
+                rect,
+                ImageLockMode.WriteOnly,
+                PixelFormat.Format32bppArgb
+            );
+            Marshal.Copy(pixels, 0, dstData.Scan0, pixels.Length);
+            result.UnlockBits(dstData);
+            return result;
         }
 
         /// <summary>
@@ -475,7 +556,7 @@ namespace BloomTests.ImageProcessing
         }
 
         /// <summary>
-        /// Proposed on BL-16778: the original-6.5 rule with the ramp moved up, so pixels at
+        /// Proposed on BL-16778: the 6.5 beta initial rule with the ramp moved up, so pixels at
         /// brightness 245 or more are transparent and pixels at 225 or less are opaque.
         /// </summary>
         public static Image NarrowRamp(Bitmap source)

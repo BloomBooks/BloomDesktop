@@ -198,5 +198,61 @@
         "source": "src/BloomTests/ImageProcessing/images/line-art-tests/yes/bee-keeper.png",
         "note": "Bloom's own line-art test image (images/line-art-tests/yes); from BL-16336.",
         "originalName": "bee-keeper.png"
+    },
+    {
+        "id": "Scan showing paper",
+        "file": "28-gray-shaded-scan-La-p11-x80.png",
+        "kind": "gray-shaded",
+        "source": "docs/transparency-report/scans/La-p11-x80.png",
+        "note": "Raw scan of a pencil drawing on gray paper (about 238), a few pure-white JPEG specks. From 'La création' (Tamajeq), BloomBridge's scanned test PDFs.",
+        "originalName": "La-p11-x80.png"
+    },
+    {
+        "id": "s1-gray-sky-wash",
+        "file": "s1-gray-sky-wash.png",
+        "kind": "synthetic",
+        "source": "docs/transparency-report/synthetic/s1-gray-sky-wash.png",
+        "note": "Drawn to fail: a light gray sky (228) covers more of the picture than the white paper, so the search for the paper may take the sky for paper.",
+        "originalName": "s1-gray-sky-wash.png"
+    },
+    {
+        "id": "s2-pale-yellow-field",
+        "file": "s2-pale-yellow-field.png",
+        "kind": "synthetic",
+        "source": "docs/transparency-report/synthetic/s2-pale-yellow-field.png",
+        "note": "Drawn to fail: a pale yellow field (darkest channel 200) is larger than the white paper.",
+        "originalName": "s2-pale-yellow-field.png"
+    },
+    {
+        "id": "s3-mostly-mid-gray",
+        "file": "s3-mostly-mid-gray.png",
+        "kind": "synthetic",
+        "source": "docs/transparency-report/synthetic/s3-mostly-mid-gray.png",
+        "note": "Drawn to fail: a shaded room that is mostly mid gray (170), with little white.",
+        "originalName": "s3-mostly-mid-gray.png"
+    },
+    {
+        "id": "s4-scan-uneven-light",
+        "file": "s4-scan-uneven-light.png",
+        "kind": "synthetic",
+        "source": "docs/transparency-report/synthetic/s4-scan-uneven-light.png",
+        "note": "Drawn to fail: a scan lit unevenly, paper from 250 on the left to 205 on the right, with grain.",
+        "originalName": "s4-scan-uneven-light.png"
+    },
+    {
+        "id": "s5-scan-faint-pencil",
+        "file": "s5-scan-faint-pencil.png",
+        "kind": "synthetic",
+        "source": "docs/transparency-report/synthetic/s5-scan-faint-pencil.png",
+        "note": "Drawn to fail: gray scan paper (232) with pencil swatches at 226, 220, 212, 200 and 185 and hatching at 218.",
+        "originalName": "s5-scan-faint-pencil.png"
+    },
+    {
+        "id": "s6-scan-cream-paper",
+        "file": "s6-scan-cream-paper.png",
+        "kind": "synthetic",
+        "source": "docs/transparency-report/synthetic/s6-scan-cream-paper.png",
+        "note": "Drawn to fail: a scan on cream paper (245, 235, 205), not gray.",
+        "originalName": "s6-scan-cream-paper.png"
     }
 ]

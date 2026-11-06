@@ -42,7 +42,7 @@ BL-16778 was built with:
 
 ```bash
 node docs/transparency-report/make-report.mjs --colours "#51C7E9,white,#B0DEE4,#FEBF00" \
-  --methods-shown original-6.5,proposed-6.5 --artifact --page-dir <folder>
+  --methods-shown "6.5 beta initial,6.5 Final" --artifact --page-dir <folder>
 ```
 
 `--artifact` leaves out `<html>`, `<head>` and `<body>`, which a claude.ai artifact supplies.
@@ -57,7 +57,7 @@ Add an entry to `docs/transparency-report/images.json`:
   "note": "What this picture is here to show." }
 ```
 
-`kind` is `ink` or `gray-shaded`; the report's filter lists whatever kinds it finds. `fetch-images.mjs`
+`kind` is `ink`, `gray-shaded` or `synthetic`; the report's filter lists whatever kinds it finds. `fetch-images.mjs`
 downloads the file named `originalName` from the files of the Bloom Library book in `source`; when
 `source` is not a Bloom Library book, it copies `source` as a path relative to the repository root. Then run all three commands again. Do not edit
 `output/transparency-report/images.json` by hand; the fetch script overwrites it.
@@ -85,7 +85,18 @@ page needs no change.
 
 ## The methods compared
 
-- `proposed-6.5` calls Bloom's `RuntimeImageProcessor.MakePngBackgroundTransparent` itself, so it is what this code does now.
-- `original-6.5`, `colorkey-253`, `deficit-keep-rgb` and `ramp-force-grey` are
+- `6.5 Final` calls Bloom's `RuntimeImageProcessor.MakePngBackgroundTransparent` itself, so it is what this code does now.
+- `Before 6.5`, `6.5 beta initial`, `ink-over-white`, `deficit-keep-rgb` and `ramp-force-grey` are
   earlier versions copied from git; each function's comment names its commit.
 - `narrow-ramp` and `edge-fill` were proposed on BL-16778 and are in no commit.
+
+## The synthetic pictures
+
+The pictures whose kind is `synthetic` were drawn to make the search for a scan's paper go wrong:
+a gray sky larger than the white paper, a drawing that is mostly mid gray, unevenly lit and cream
+scans, and pencil only a little darker than the paper. `make-synthetic.py` draws them into
+`docs/transparency-report/synthetic/`; it needs Python with numpy and Pillow, and only needs running
+again to change a picture.
+
+The page remembers, in the viewer's browser, which pictures, methods, kinds and colours were
+hidden, so regenerating or republishing it keeps them hidden.
