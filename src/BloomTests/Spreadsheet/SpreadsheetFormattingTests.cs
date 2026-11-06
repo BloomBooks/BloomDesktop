@@ -702,6 +702,34 @@ namespace BloomTests.Spreadsheet
                 superscripted: false,
                 underlined: false
             );
+
+            // A CR+LF split between two runs, then another LF in a third run: a blank paragraph.
+            ExcelRange tenthCell = _worksheet.Cells[10, 10];
+            tenthCell.IsRichText = true;
+            AddRunToCell(
+                tenthCell,
+                "A_x000d_",
+                bolded: false,
+                italicized: false,
+                superscripted: false,
+                underlined: false
+            );
+            AddRunToCell(
+                tenthCell,
+                "\n",
+                bolded: true,
+                italicized: false,
+                superscripted: false,
+                underlined: false
+            );
+            AddRunToCell(
+                tenthCell,
+                "\nB",
+                bolded: false,
+                italicized: true,
+                superscripted: false,
+                underlined: false
+            );
         }
 
         [OneTimeTearDown]
@@ -849,6 +877,23 @@ namespace BloomTests.Spreadsheet
             );
             string xmlString = SpreadsheetIO.BuildXmlString(ninthCell);
             Assert.That(xmlString, Is.EqualTo("<p>First</p><p><em>Second</em></p>"));
+        }
+
+        /// <summary>
+        /// Once a CR at the end of one run has paired with an LF at the start of the next,
+        /// a further LF in a later run is a break of its own, so the blank paragraph stays.
+        /// </summary>
+        [Test]
+        public void BuildsXmlParagraphs_CrLfSplitAcrossRuns_ThenAnotherLf()
+        {
+            ExcelRange tenthCell = _worksheet.Cells[10, 10];
+            Assert.That(
+                tenthCell.RichText.Count,
+                Is.EqualTo(3),
+                "test setup: the CR, the first LF and the second LF should be in separate runs"
+            );
+            string xmlString = SpreadsheetIO.BuildXmlString(tenthCell);
+            Assert.That(xmlString, Is.EqualTo("<p>A</p><p></p><p><em>B</em></p>"));
         }
 
         [Test]

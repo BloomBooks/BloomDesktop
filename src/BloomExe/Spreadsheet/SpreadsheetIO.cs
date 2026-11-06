@@ -525,8 +525,8 @@ namespace Bloom.Spreadsheet
             // still need to get colors from it. cell.RichText still contains the information we need even when cell.isRichText=false
             var content = cell.RichText;
             var cellLevelFormatting = cell.Style.Font;
-            // True when the previous run ended with a carriage return, which we have already
-            // counted as a line break.
+            // True when the text so far ends with a carriage return that we have already
+            // counted as a line break and that has not yet been paired with a line feed.
             var previousRunEndedWithCr = false;
             foreach (var run in content)
             {
@@ -538,8 +538,12 @@ namespace Bloom.Spreadsheet
                 // A CR+LF may be split between two runs. The CR already made a break, so the
                 // LF must not make another one (which would add an empty paragraph).
                 if (previousRunEndedWithCr && runText.StartsWith("\n", StringComparison.Ordinal))
+                {
                     runText = runText.Substring(1);
-                // A run that is empty (or was only that LF) leaves any pending CR still pending.
+                    // That CR is now paired, so a further LF is a break of its own.
+                    previousRunEndedWithCr = false;
+                }
+                // An empty run leaves an unpaired CR still waiting for its LF.
                 if (runText.Length > 0)
                     previousRunEndedWithCr = runText.EndsWith("\r", StringComparison.Ordinal);
                 var splits = runText.Split(whitespaceSplitters, StringSplitOptions.None);
