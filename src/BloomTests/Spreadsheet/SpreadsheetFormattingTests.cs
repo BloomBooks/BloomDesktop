@@ -658,6 +658,30 @@ namespace BloomTests.Spreadsheet
                 superscripted: false,
                 underlined: false
             );
+
+            // BL-16185: a title exported as two lines, after another spreadsheet program
+            // re-saved it with a lowercase escape for the carriage return. EPPlus leaves the
+            // lowercase escape in the cell's text, so that's what we put in the cell here.
+            ExcelRange seventhCell = _worksheet.Cells[7, 7];
+            AddRunToCell(
+                seventhCell,
+                "- 1 - _x000d_\nBeginning with God",
+                bolded: false,
+                italicized: false,
+                superscripted: false,
+                underlined: false
+            );
+
+            // The same, but with only the carriage return marking the line break.
+            ExcelRange eighthCell = _worksheet.Cells[8, 8];
+            AddRunToCell(
+                eighthCell,
+                "- 1 - _x000d_Beginning with God",
+                bolded: false,
+                italicized: false,
+                superscripted: false,
+                underlined: false
+            );
         }
 
         [OneTimeTearDown]
@@ -755,6 +779,39 @@ namespace BloomTests.Spreadsheet
                     "<p>One.</p><p>Two.<span class=\"bloom-linebreak\"></span>\xfeffThree.</p><p>Four.</p>"
                 )
             );
+        }
+
+        /// <summary>
+        /// BL-16185: a lowercase-escaped carriage return followed by a line feed makes exactly
+        /// two paragraphs, with no escape text left in either.
+        /// </summary>
+        [Test]
+        public void BuildsXmlParagraphs_LowercaseEscapedCrLf()
+        {
+            ExcelRange seventhCell = _worksheet.Cells[7, 7];
+            Assert.That(
+                seventhCell.Text,
+                Does.Contain("_x000d_"),
+                "test setup: the cell should hold the raw lowercase escape"
+            );
+            string xmlString = SpreadsheetIO.BuildXmlString(seventhCell);
+            Assert.That(xmlString, Is.EqualTo("<p>- 1 - </p><p>Beginning with God</p>"));
+        }
+
+        /// <summary>
+        /// BL-16185: a lowercase-escaped carriage return on its own also makes a paragraph break.
+        /// </summary>
+        [Test]
+        public void BuildsXmlParagraphs_LowercaseEscapedLoneCr()
+        {
+            ExcelRange eighthCell = _worksheet.Cells[8, 8];
+            Assert.That(
+                eighthCell.Text,
+                Does.Contain("_x000d_"),
+                "test setup: the cell should hold the raw lowercase escape"
+            );
+            string xmlString = SpreadsheetIO.BuildXmlString(eighthCell);
+            Assert.That(xmlString, Is.EqualTo("<p>- 1 - </p><p>Beginning with God</p>"));
         }
 
         [Test]

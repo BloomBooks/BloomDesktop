@@ -454,19 +454,20 @@ namespace Bloom.Spreadsheet
             bool wantXmlEscaping = true
         )
         {
-            string plainString = escapedString;
-            string pattern = "_x([0-9A-F]{4})_";
-            Regex rgx = new Regex(pattern);
-            Match match = rgx.Match(plainString);
-            while (match.Success)
-            {
-                string x = match.Groups[1].Value;
-                int value = Convert.ToInt32(x, 16);
-                char charValue = (char)value;
-                plainString = plainString.Replace(match.Value, charValue.ToString());
-
-                match = rgx.Match(plainString);
-            }
+            // OOXML escapes a character as _xHHHH_. Excel writes the hex digits in uppercase,
+            // but the standard doesn't require that, and other programs (e.g., LibreOffice) may
+            // write lowercase, such as _x000d_ for a carriage return (BL-16185). EPPlus only
+            // decodes the uppercase form, so we must decode both.
+            // We decode in a single pass, so that _x005F_x000D_ (the escape for the literal text
+            // "_x000D_") becomes that text rather than a carriage return. (In a real import,
+            // EPPlus has usually decoded uppercase escapes before we see the text, so literal
+            // escape-like text in a book is not fully protected; that's a rare case.)
+            string plainString = Regex.Replace(
+                escapedString,
+                "_x([0-9A-F]{4})_",
+                match => new string((char)Convert.ToInt32(match.Groups[1].Value, 16), 1),
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant
+            );
             if (wantXmlEscaping)
                 // Note: ampersand must be handled first! Otherwise it will modify the output of the other replaces.
                 return plainString.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
@@ -486,7 +487,10 @@ namespace Bloom.Spreadsheet
                 return ""; // otherwise we'd wrap a paragraph around it, making it harder to detect empty cells.
 
             StringBuilder markedupStringBuilder = new StringBuilder();
-            var whitespaceSplitters = new string[] { "\n", "\r\n" };
+            // A lone \r is included because a spreadsheet saved by another program may mark a
+            // line break with only a carriage return (BL-16185). "\r\n" must come before "\r"
+            // so that a CRLF is one break, not two.
+            var whitespaceSplitters = new string[] { "\r\n", "\n", "\r" };
 
             // When a cell has no bold/italics/undelining/superscripting it may have cell.RichText=false  but we may
             // still need to get colors from it. cell.RichText still contains the information we need even when cell.isRichText=false
