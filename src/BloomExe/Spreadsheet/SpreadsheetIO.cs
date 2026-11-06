@@ -139,6 +139,11 @@ namespace Bloom.Spreadsheet
                             // Since export is creating a new spreadsheet, cells we want to write will always be empty initially.
                             if (currentCell.Value == null)
                             {
+                                // The * column holds data-div values as XML (so "&" is "&amp;").
+                                // Import escapes whatever it reads from this column, so it must
+                                // see the plain text here, or every round trip doubles the escaping.
+                                if (!retainMarkup && IsAsteriskContentCell(row, c))
+                                    content = System.Net.WebUtility.HtmlDecode(content);
                                 currentCell.Value = content;
                             }
                         }
@@ -346,6 +351,17 @@ namespace Bloom.Spreadsheet
             }
         );
 
+        // Rows whose content in the * column is formatted text rather than a plain value.
+        private static readonly HashSet<string> wysiwygRowsInAsteriskColumn = new HashSet<string>(
+            new[]
+            {
+                "[ISBN]",
+                InternalSpreadsheet.MapDataBookLabelToRowLabel(
+                    Bloom.Book.BookCopyrightAndLicense.kUserOriginalCopyrightAndLicense
+                ),
+            }
+        );
+
         /// <summary>
         /// Combines the tests for IsWysiwygFormattedColumn and IsWysiwygFormattedRow
         /// with any special case combinations.
@@ -360,10 +376,22 @@ namespace Bloom.Spreadsheet
             var colKey = row.Spreadsheet.Header.GetRow(0).GetCell(index).Content;
             var rowKey = row.MetadataKey;
             // ISBNs are wysiwyg formatted even in the * column.
-            // enhance: can make a dictionary if we get more exceptions.
-            if (colKey == "[*]" && rowKey == "[ISBN]")
+            // So is the user's own wording of the sentence about the original book, which is
+            // paragraphs of text with the original title in italics (BL-17070).
+            if (colKey == "[*]" && wysiwygRowsInAsteriskColumn.Contains(rowKey))
                 return true;
             return IsWysiwygFormattedColumn(row, index) && IsWysiwygFormattedRow(row);
+        }
+
+        /// <summary>
+        /// True for a cell holding a book's value in the * column, as opposed to that column's
+        /// header cells.
+        /// </summary>
+        private static bool IsAsteriskContentCell(SpreadsheetRow row, int index)
+        {
+            return !row.IsHeader
+                && index > 0
+                && row.Spreadsheet.Header.GetRow(0).GetCell(index).Content == "[*]";
         }
 
         private static bool WantXmlEscaping(SpreadsheetRow row, int index)
