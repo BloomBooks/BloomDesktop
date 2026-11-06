@@ -4869,13 +4869,25 @@ namespace Bloom.Book
                 return PublishModel.BookletLayoutMethod.Calendar;
             else
             {
-                if (
-                    layout.SizeAndOrientation.IsLandScape
-                    && layout.SizeAndOrientation.PageSizeName == "A5"
-                )
+                if (UsesCutAndStackBooklet(layout.SizeAndOrientation))
                     return PublishModel.BookletLayoutMethod.CutAndStack;
                 return PublishModel.BookletLayoutMethod.SideFold;
             }
+        }
+
+        /// <summary>
+        /// True for the landscape sizes whose booklets are printed two pages to a portrait sheet
+        /// (A5 on A4, HalfLetter on Letter), then cut horizontally and stacked rather than folded.
+        /// The print instructions on the Publish tab (PublishPdfApi.HandlePrintSettingsHelp) rely
+        /// on this too, so the layout we make and the instructions we give always agree (BL-16759).
+        /// </summary>
+        public static bool UsesCutAndStackBooklet(SizeAndOrientation sizeAndOrientation)
+        {
+            return sizeAndOrientation.IsLandScape
+                && (
+                    sizeAndOrientation.PageSizeName == "A5"
+                    || sizeAndOrientation.PageSizeName == "HalfLetter"
+                );
         }
 
         /// <summary>

@@ -45,11 +45,28 @@ namespace BloomTemp
     {
         private string _path;
 
+        // Run (once) by Dispose after it has tried to delete the folder.
+        private Action _afterDispose;
+
+        /// <summary>
+        /// Track an existing folder, which Dispose will delete.
+        /// </summary>
         public static TemporaryFolder TrackExisting(string path)
         {
             Debug.Assert(Directory.Exists(path));
             TemporaryFolder f = new TemporaryFolder();
             f._path = path;
+            return f;
+        }
+
+        /// <summary>
+        /// Track an existing folder, which Dispose will delete, and then call afterDispose
+        /// (once, whether or not the folder could be deleted).
+        /// </summary>
+        public static TemporaryFolder TrackExisting(string path, Action afterDispose)
+        {
+            var f = TrackExisting(path);
+            f._afterDispose = afterDispose;
             return f;
         }
 
@@ -89,6 +106,9 @@ namespace BloomTemp
         public void Dispose()
         {
             DeleteFolderThatMayBeInUseAndIfNotFailSilently(_path);
+            var afterDispose = _afterDispose;
+            _afterDispose = null;
+            afterDispose?.Invoke();
 
             GC.SuppressFinalize(this);
         }
