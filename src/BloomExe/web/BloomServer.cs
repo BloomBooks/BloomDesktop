@@ -2375,16 +2375,11 @@ namespace Bloom.Api
                 )
             )
                 return false;
-            // Likewise if it's part of the current book we're publishing. If we didn't give a message about something being
-            // missing while creating the book, it's just confusing to do so when they create a publication preview. See BL-9738
-            // for one example.
-            if (
-                PublishApi.CurrentPublicationFolder != null
-                && localPath.StartsWith(
-                    PublishApi.CurrentPublicationFolder.Replace("\\", "/"),
-                    StringComparison.Ordinal
-                )
-            )
+            // Likewise if it's part of a BloomPUB or ePUB we're making, whether for a preview or for real. If we didn't
+            // give a message about something being missing while creating the book, it's just confusing to do so when
+            // they create a publication preview. See BL-9738 for one example. (This also covers the Readium files an
+            // ePUB preview asks for that we don't ship, because they support controls we hide.)
+            if (PublishStaging.IsInStagingFolder(localPath))
             {
                 return false;
             }
@@ -2440,10 +2435,6 @@ namespace Bloom.Api
                 ".well-known/appspecific/com.chrome.devtools.json",
                 // Just like we skip missing files within the book folder and missing book files when we're create a preview in the if cases above,
                 // we don't want to complain about missing parts of the book now when we're saving publication files.
-                // There is also readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation
-                // of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
-                EpubMaker.kEPUBExportFolder.ToLowerInvariant(),
-                BloomPubMaker.BRExportFolder.ToLowerInvariant(),
                 BookUpload.kUploadStagingFolder.ToLowerInvariant(),
                 // old quiz pages ask for this script, but it's now bundled with rest of edit code
                 "simplecomprehensionquiz.js",

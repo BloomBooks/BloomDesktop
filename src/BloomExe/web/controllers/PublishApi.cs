@@ -44,7 +44,6 @@ namespace Bloom.web.controllers
 
         // This constant must match the ID that is used for the listener set up in the client
         private const string kWebSocketEventId_Preview = "bloomPubPreview";
-        public const string kStagingFolder = "PlaceForStagingBook";
 
         // This constant must match the ID used for the useWatchString called by the React component MethodChooser.
         private const string kWebSocketState_LicenseOK = "publish/licenseOK";
@@ -712,7 +711,7 @@ namespace Bloom.web.controllers
 
             // We don't use the folder found here, but this method does some checks we want done.
             BookStorage.FindBookHtmlInFolder(book.FolderPath);
-            _stagingFolder = new TemporaryFolder(kStagingFolder);
+            _stagingFolder = PublishStaging.CreateFolder();
             // I'd prefer this to include the book folder, but we need it before PrepareBookForBloomReader returns.
             // I believe we only ever have one book being made there, so it works.
             CurrentPublicationFolder = _stagingFolder.FolderPath;
@@ -767,7 +766,7 @@ namespace Bloom.web.controllers
         /// <summary>
         /// For automated/e2e testing only (see src/BloomVisualRegressionTests): stage
         /// <paramref name="book"/> exactly as the interactive Publish:BloomPub preview does
-        /// (full PrepareBookForBloomReader + image compression + save into PlaceForStagingBook)
+        /// (full PrepareBookForBloomReader + image compression + save into a new staging folder)
         /// and return the localhost URL of the staged book's .htm file, ready to be loaded in
         /// bloom-player. bloom-player is designed to render the files staging produces (the same
         /// set an unzipped .bloompub contains), so this is the only way to get a faithful player

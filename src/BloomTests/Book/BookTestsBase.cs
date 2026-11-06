@@ -70,7 +70,12 @@ namespace BloomTests.Book
             return storage;
         }
 
-        protected virtual string GetTestFolderName() => "BookTests";
+        /// <summary>
+        /// The name of the temporary folder each test works in. It is the name of the concrete
+        /// fixture class, so no two fixtures derived from this one share a folder (and
+        /// TemporaryFolder deletes any existing folder of the same name).
+        /// </summary>
+        protected string GetTestFolderName() => GetType().Name;
 
         [SetUp]
         public virtual void Setup()
