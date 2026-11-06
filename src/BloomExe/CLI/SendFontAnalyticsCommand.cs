@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Bloom.Book;
@@ -7,6 +8,7 @@ using Bloom.Publish.BloomPub;
 using BloomTemp;
 using CommandLine;
 using L10NSharp;
+using SIL.IO;
 using SIL.Reporting;
 
 namespace Bloom.CLI
@@ -19,6 +21,7 @@ namespace Bloom.CLI
         Success = 0,
         UnhandledException = 1,
         NoFontsFound = 2,
+        BadArguments = 4,
     }
 
     public class SendFontAnalyticsCommand
@@ -31,6 +34,8 @@ namespace Bloom.CLI
             Program.SetUpErrorHandling();
             try
             {
+                if (!CheckPaths(options))
+                    return Task.FromResult((int)SendFontAnalyticsExitCode.BadArguments);
                 using (var applicationContainer = new ApplicationContainer())
                 {
                     LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage); // Unclear if this line is needed or not.
@@ -65,6 +70,37 @@ namespace Bloom.CLI
                 Console.WriteLine(ex);
                 return Task.FromResult((int)SendFontAnalyticsExitCode.UnhandledException);
             }
+        }
+
+        /// <summary>
+        /// Check that the book and collection named on the command line exist, writing a plain
+        /// message to the console if not. A path to the book's .htm file is accepted as meaning
+        /// its folder, and BookPath is changed to that folder.
+        /// </summary>
+        /// <returns>true if the paths are usable</returns>
+        internal static bool CheckPaths(SendFontAnalyticsParameters options)
+        {
+            if (
+                RobustFile.Exists(options.BookPath)
+                && Path.GetExtension(options.BookPath)
+                    .StartsWith(".htm", StringComparison.OrdinalIgnoreCase)
+            )
+                options.BookPath = Path.GetDirectoryName(Path.GetFullPath(options.BookPath));
+            if (!Directory.Exists(options.BookPath))
+            {
+                Console.WriteLine(
+                    $"Error: The book folder '{options.BookPath}' does not exist. Give the path to the folder that holds the book."
+                );
+                return false;
+            }
+            if (!RobustFile.Exists(options.CollectionPath))
+            {
+                Console.WriteLine(
+                    $"Error: The collection file '{options.CollectionPath}' does not exist."
+                );
+                return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -174,7 +210,7 @@ namespace Bloom.CLI
             0,
             MetaName = "bookPath",
             Required = true,
-            HelpText = "Path to the folder of the book to get font analytics from."
+            HelpText = "Path to the folder of the book to get font analytics from (or to the book's .htm file)."
         )]
         public string BookPath { get; set; }
 
