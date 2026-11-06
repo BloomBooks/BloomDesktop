@@ -413,6 +413,14 @@ namespace Bloom.web.controllers
                 GetBookOnBloomBadgeInfo,
                 false
             );
+            // Building the url may need a blocking server lookup of the Bloom Library url prefix,
+            // so keep it off the UI thread and the API lock. It only reads the book info and opens a browser.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "openBookOnBloomLibrary",
+                OpenBookOnBloomLibrary,
+                false,
+                false
+            );
             // This one can take quite a long time and lock up the browser if no other thread can do anything. And it doesn't manipulate any
             // shared data. So we'll allow it to run on a background thread without locking.
             apiHandler.RegisterEndpointHandler(
@@ -918,37 +926,57 @@ namespace Bloom.web.controllers
             request.ReplyWithFileContent(filePath);
         }
 
+        /// <summary>
+        /// The BloomLibraryStatus of the book in the editable collection with the given id,
+        /// or null if it has none (not uploaded, or the status has not been fetched yet).
+        /// </summary>
+        private BloomLibraryStatus GetBloomLibraryStatus(string bookId)
+        {
+            // There should only ever be one or zero, since we go to great trouble in CollectionTabView.CheckForDuplicatesAndRepair
+            // to make sure the main editable collection does NOT have duplicate book IDs.
+            // If by any chance there is more than one book with the same ID in the collection, we'll just take the first one.
+            // Since the data is derived from the ID, it should be the same for all of them anyway.
+            return _collectionModel
+                .TheOneEditableCollection.GetBookInfos()
+                .FirstOrDefault(info => info.Id == bookId && info.BloomLibraryStatus != null)
+                ?.BloomLibraryStatus;
+        }
+
+        /// <summary>
+        /// Tell the badge on a book button whether the book is on Bloom Library and what state it is in there.
+        /// This deliberately does not include the book's url: every badge asks for this while the collection
+        /// loads, often during startup, when building the url could mean a blocking server lookup (BL-16726).
+        /// OpenBookOnBloomLibrary builds the url when the user actually clicks the link.
+        /// </summary>
         private void GetBookOnBloomBadgeInfo(ApiRequest apiRequest)
         {
-            var bookId = apiRequest.RequiredParam("book-id");
-
-            var infos = _collectionModel
-                .TheOneEditableCollection.GetBookInfos()
-                .Where(info => info.Id == bookId && info.BloomLibraryStatus != null)
-                .ToList();
-            if (infos.Count == 0)
+            var status = GetBloomLibraryStatus(apiRequest.RequiredParam("book-id"));
+            if (status == null)
             {
-                apiRequest.ReplyWithJson(new { bookUrl = "" });
+                apiRequest.ReplyWithJson(new { onBloomLibrary = false });
             }
             else
             {
-                // There should only ever be one or zero, since we go to great trouble in CollectionTabView.CheckForDuplicatesAndRepair
-                // to make sure the main editable collection does NOT have duplicate book IDs.
-                // If by any chance there is more than one book with the same ID in the collection, we'll just take the first one.
-                // Since the data is derived from the ID, it should be the same for all of them anyway.
-                var info = infos[0];
                 apiRequest.ReplyWithJson(
                     new
                     {
-                        bookUrl = info.BloomLibraryStatus.BloomLibraryBookUrl,
-                        draft = info.BloomLibraryStatus.Draft,
-                        inCirculation = !info.BloomLibraryStatus.NotInCirculation,
-                        harvestState = info
-                            .BloomLibraryStatus.HarvesterState.ToString()
-                            .ToLowerInvariant(),
+                        onBloomLibrary = true,
+                        draft = status.Draft,
+                        inCirculation = !status.NotInCirculation,
+                        harvestState = status.HarvesterState.ToString().ToLowerInvariant(),
                     }
                 );
             }
+        }
+
+        /// <summary>
+        /// Open the book's Bloom Library page in the user's browser.
+        /// </summary>
+        private void OpenBookOnBloomLibrary(ApiRequest apiRequest)
+        {
+            var status = GetBloomLibraryStatus(apiRequest.RequiredParam("book-id"));
+            ProcessExtra.SafeStartInFront(status.GetBloomLibraryBookUrl());
+            apiRequest.PostSucceeded();
         }
 
         /// <summary>

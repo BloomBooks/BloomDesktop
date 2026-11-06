@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 
 import * as React from "react";
-import { get } from "../utils/bloomApi";
+import { get, post } from "../utils/bloomApi";
 import { useState } from "react";
 import { useMountEffect } from "../utils/useMountEffect";
 import { BloomTooltip } from "./BloomToolTip";
@@ -12,8 +12,6 @@ import { LocalizedString } from "./l10nComponents";
 export const BookOnBlorgBadge: React.FunctionComponent<{
     book: any;
 }> = (props) => {
-    const [bookOnBlorgUrl, setBookOnBlorgUrl] = useState("");
-
     enum BadgeType {
         None,
         Harvesting,
@@ -28,9 +26,7 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
         get(
             `collections/getBookOnBloomBadgeInfo?book-id=${props.book.id}`,
             (result) => {
-                if (result.data.bookUrl) {
-                    setBookOnBlorgUrl(result.data.bookUrl);
-
+                if (result.data.onBloomLibrary) {
                     if (
                         // if inCirculation is null or undefined, book is in circulation
                         result.data.inCirculation === false ||
@@ -119,7 +115,13 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
                                 </span>
                                 <Link
                                     l10nKey="CollectionTab.OnBlorgBadge.ViewOnBlorg"
-                                    href={bookOnBlorgUrl}
+                                    // Bloom builds the url only when the link is clicked, since that
+                                    // can need a server lookup we don't want while the collection loads.
+                                    onClick={() =>
+                                        post(
+                                            `collections/openBookOnBloomLibrary?book-id=${props.book.id}`,
+                                        )
+                                    }
                                     css={css`
                                         text-decoration: underline;
                                     `}

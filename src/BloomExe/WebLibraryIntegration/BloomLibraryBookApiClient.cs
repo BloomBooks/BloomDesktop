@@ -680,9 +680,8 @@ namespace Bloom.WebLibraryIntegration
         /// an entry for each book that has been uploaded to Bloom Library. The keys are the book instance ids
         /// from the BookInfo objects.
         /// Books with no entry in the dictionary have not been uploaded to Bloom Library. Books that have
-        /// multiple uploads with the same bookInstanceId are flagged as having a problem by having an empty
-        /// string for the BloomLibraryStatus.BloomLibraryBookUrl field. (The other fields are meaningless
-        /// in that case.)
+        /// multiple uploads with the same bookInstanceId are flagged as having a problem by having a
+        /// HarvesterState of Multiple. (The other fields are meaningless in that case.)
         /// </summary>
         /// <remarks>
         /// We want to minimize the number of queries we make to the API, so we batch up the book instance
@@ -721,15 +720,11 @@ namespace Bloom.WebLibraryIntegration
                 {
                     if (bloomLibraryStatusesById.ContainsKey(bookInstanceId))
                     {
-                        bloomLibraryStatusesById[bookInstanceId] = new BloomLibraryStatus(
-                            false,
-                            false,
-                            HarvesterState.Multiple,
-                            BloomLibraryUrls.BloomLibraryBooksWithMatchingIdListingUrl(
+                        bloomLibraryStatusesById[bookInstanceId] =
+                            BloomLibraryStatus.ForMultipleUploads(
                                 bookInstanceId,
                                 forceUseProductionData
-                            )
-                        );
+                            );
                     }
                     else
                     {
