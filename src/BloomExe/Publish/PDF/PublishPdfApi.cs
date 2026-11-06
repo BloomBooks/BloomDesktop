@@ -199,7 +199,7 @@ namespace Bloom.Publish.PDF
             var needA4Paper = false;
             var needLandscape = false;
             var needLongEdge = false;
-            var needCutAndStack = false;
+            var needCutAndStack = Book.Book.UsesCutAndStackBooklet(PageLayout.SizeAndOrientation);
             var needCutAndFold = false;
             var needHelps = true;
             dynamic result = new ExpandoObject();
@@ -210,7 +210,6 @@ namespace Bloom.Publish.PDF
                     if (PageLayout.SizeAndOrientation.IsLandScape) // Portrait, long edge, A4; cut and stack
                     {
                         needLongEdge = true;
-                        needCutAndStack = true;
                     }
                     else // Landscape, short edge, A4
                     {
@@ -229,7 +228,6 @@ namespace Bloom.Publish.PDF
                     if (PageLayout.SizeAndOrientation.IsLandScape) // Portrait, long edge, Letter; cut and stack
                     {
                         needLongEdge = true;
-                        needCutAndStack = true;
                     }
                     else // Landscape, short edge, Letter
                     {

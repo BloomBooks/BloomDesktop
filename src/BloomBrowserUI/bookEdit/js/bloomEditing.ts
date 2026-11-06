@@ -1731,6 +1731,14 @@ export const pageUnloading = () => {
     // newPageReady() the tool gets for the next page. Saving never touches the live page, so
     // nothing else detaches the tool, and without this every page change would leak its hooks.
     getToolboxBundleExports()?.removeToolboxMarkup();
+    // Let the toolbox let go of this page's elements. It bound handlers to them with its own
+    // frame's jQuery when we called configureElementsForTools, and it outlives this page, so
+    // it has to be told now, while the elements are still here. See releaseElementsForTools.
+    // This comes after detaching the tool, so whatever the tool does as it detaches still finds
+    // its jQuery handlers and data in place.
+    getToolboxBundleExports()
+        ?.getTheOneToolbox()
+        ?.releaseElementsForTools(document.body);
     // Unmount the React root for the controls above the page and re-enable the toolbox (the
     // Change Layout toggle disables it).
     resetAbovePageControls();
