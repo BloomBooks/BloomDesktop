@@ -1,0 +1,202 @@
+[
+    {
+        "id": "01-gray-shaded-U0QhGUFJaV",
+        "file": "01-gray-shaded-U0QhGUFJaV.jpg",
+        "kind": "gray-shaded",
+        "source": "https://bloomlibrary.org/book/U0QhGUFJaV",
+        "note": "The cover picture from the BL-16778 report: soft digital gray shading.",
+        "originalName": "a1.jpg"
+    },
+    {
+        "id": "02-gray-shaded-U0QhGUFJaV",
+        "file": "02-gray-shaded-U0QhGUFJaV.jpg",
+        "kind": "gray-shaded",
+        "source": "https://bloomlibrary.org/book/U0QhGUFJaV",
+        "note": "Same book: large dark-gray shadow next to light-gray thatch.",
+        "originalName": "f.jpg"
+    },
+    {
+        "id": "03-gray-shaded-rJOaWQsqwZ",
+        "file": "03-gray-shaded-rJOaWQsqwZ.jpg",
+        "kind": "gray-shaded",
+        "source": "https://bloomlibrary.org/book/rJOaWQsqwZ",
+        "note": "Pencil on slightly blue-gray scanned paper; the paper is not pure white.",
+        "originalName": "sitting_pusi2.jpg"
+    },
+    {
+        "id": "04-gray-shaded-rJOaWQsqwZ",
+        "file": "04-gray-shaded-rJOaWQsqwZ.jpg",
+        "kind": "gray-shaded",
+        "source": "https://bloomlibrary.org/book/rJOaWQsqwZ",
+        "note": "Pencil landscape: wide range of grays, mostly light.",
+        "originalName": "pusi_chasing_rat_3.jpg"
+    },
+    {
+        "id": "05-gray-shaded-rJOaWQsqwZ",
+        "file": "05-gray-shaded-rJOaWQsqwZ.jpg",
+        "kind": "gray-shaded",
+        "source": "https://bloomlibrary.org/book/rJOaWQsqwZ",
+        "note": "Pencil with a white cat drawn by leaving the paper bare inside shaded areas.",
+        "originalName": "pusi_on_chair2.jpg"
+    },
+    {
+        "id": "06-gray-shaded-U0QhGUFJaV",
+        "file": "06-gray-shaded-U0QhGUFJaV.jpg",
+        "kind": "gray-shaded",
+        "source": "https://bloomlibrary.org/book/U0QhGUFJaV",
+        "note": "Same book as the report: a thatched roof in many light grays, almost no black.",
+        "originalName": "d.jpg"
+    },
+    {
+        "id": "07-gray-shaded-6P6ySc3CxO",
+        "file": "07-gray-shaded-6P6ySc3CxO.jpg",
+        "kind": "gray-shaded",
+        "source": "https://bloomlibrary.org/book/6P6ySc3CxO",
+        "note": "Guinea fowl painted in dark gray wash, with soft gray ground; small coloured patches on the head.",
+        "originalName": "image11.jpg"
+    },
+    {
+        "id": "08-gray-shaded-q71sNOvuqr",
+        "file": "08-gray-shaded-q71sNOvuqr.jpg",
+        "kind": "gray-shaded",
+        "source": "https://bloomlibrary.org/book/q71sNOvuqr",
+        "note": "Drip-irrigation drawing: mostly pale gray lines, with a few black ones.",
+        "originalName": "image2.jpg"
+    },
+    {
+        "id": "09-gray-shaded-Qp4MiEFhM2",
+        "file": "09-gray-shaded-Qp4MiEFhM2.png",
+        "kind": "gray-shaded",
+        "source": "https://bloomlibrary.org/book/Qp4MiEFhM2",
+        "note": "Dense stippling and hatching that read as gray at a distance.",
+        "originalName": "Lady-10b.png"
+    },
+    {
+        "id": "10-gray-shaded-YP8Dx1bi4l",
+        "file": "10-gray-shaded-YP8Dx1bi4l.png",
+        "kind": "gray-shaded",
+        "source": "https://bloomlibrary.org/book/YP8Dx1bi4l",
+        "note": "Art Of Reading whale stored as a grayscale image, with gray water lines (BL-16871).",
+        "originalName": "aor_Nab226.png"
+    },
+    {
+        "id": "11-ink-r0no9SzRGy",
+        "file": "11-ink-r0no9SzRGy.jpg",
+        "kind": "ink",
+        "source": "https://bloomlibrary.org/book/r0no9SzRGy",
+        "note": "Paving stones: black marks saved as JPEG, so there is speckle around the lines.",
+        "originalName": "image3.jpg"
+    },
+    {
+        "id": "12-ink-qVYjwEe885",
+        "file": "12-ink-qVYjwEe885.jpg",
+        "kind": "ink",
+        "source": "https://bloomlibrary.org/book/qVYjwEe885",
+        "note": "Woman with pumpkins: bold outlines, large white areas inside them, JPEG.",
+        "originalName": "image1.jpg"
+    },
+    {
+        "id": "13-ink-rYVSK51hu5",
+        "file": "13-ink-rYVSK51hu5.png",
+        "kind": "ink",
+        "source": "https://bloomlibrary.org/book/rYVSK51hu5",
+        "note": "Zebras: black stripes next to white stripes, many small shapes.",
+        "originalName": "ASP_44_counting_Page_07_Image_0001.png"
+    },
+    {
+        "id": "14-ink-uYOaTWi8ij",
+        "file": "14-ink-uYOaTWi8ij.jpg",
+        "kind": "ink",
+        "source": "https://bloomlibrary.org/book/uYOaTWi8ij",
+        "note": "Oyster mushrooms: thick outlines around large white areas, JPEG, with a caption.",
+        "originalName": "image.jpg"
+    },
+    {
+        "id": "15-ink-bG6zlSTjAZ",
+        "file": "15-ink-bG6zlSTjAZ.png",
+        "kind": "ink",
+        "source": "https://bloomlibrary.org/book/bG6zlSTjAZ",
+        "note": "Crowd with striped robes: many small enclosed white areas.",
+        "originalName": "Image1.png"
+    },
+    {
+        "id": "16-ink-pUZi9qrDnc",
+        "file": "16-ink-pUZi9qrDnc.png",
+        "kind": "ink",
+        "source": "https://bloomlibrary.org/book/pUZi9qrDnc",
+        "note": "Lion face: fine hatching that reads as gray from a distance.",
+        "originalName": "bwcw10.png"
+    },
+    {
+        "id": "17-ink-5uOwKFoX4W",
+        "file": "17-ink-5uOwKFoX4W.png",
+        "kind": "ink",
+        "source": "https://bloomlibrary.org/book/5uOwKFoX4W",
+        "note": "Art Of Reading turtle saved as a full-colour PNG: dense shell markings.",
+        "originalName": "AOR_atg02021.png"
+    },
+    {
+        "id": "18-ink-nAWdN9cKTO",
+        "file": "18-ink-nAWdN9cKTO.png",
+        "kind": "ink",
+        "source": "https://bloomlibrary.org/book/nAWdN9cKTO",
+        "note": "Screenshot of a drawing: thin pale-gray lines rather than black.",
+        "originalName": "Captura_de_pantalla_2024-11-18_175713.png"
+    },
+    {
+        "id": "19-ink-GLY4gET2CO",
+        "file": "19-ink-GLY4gET2CO.png",
+        "kind": "ink",
+        "source": "https://bloomlibrary.org/book/GLY4gET2CO",
+        "note": "Art Of Reading tomato, indexed-colour PNG, with a large solid black shadow (BL-15105).",
+        "originalName": "aor_ELK-100.png"
+    },
+    {
+        "id": "20-ink-GLY4gET2CO",
+        "file": "20-ink-GLY4gET2CO.png",
+        "kind": "ink",
+        "source": "https://bloomlibrary.org/book/GLY4gET2CO",
+        "note": "Pot on a fire: heavy hatching, full-colour PNG (BL-15105).",
+        "originalName": "cooking_pot_not_boiling.png"
+    },
+    {
+        "id": "21-ink-YP8Dx1bi4l",
+        "file": "21-ink-YP8Dx1bi4l.png",
+        "kind": "ink",
+        "source": "https://bloomlibrary.org/book/YP8Dx1bi4l",
+        "note": "Art Of Reading cat, indexed-colour PNG, fur drawn with many short strokes (BL-16871).",
+        "originalName": "aor_Cat3.png"
+    },
+    {
+        "id": "22-ink-SgTDkq9UaE",
+        "file": "22-ink-SgTDkq9UaE.png",
+        "kind": "ink",
+        "source": "https://bloomlibrary.org/book/SgTDkq9UaE",
+        "note": "Honeycomb: solid black cells next to white ones (BL-16871).",
+        "originalName": "ai-image13.png"
+    },
+    {
+        "id": "23-ink-SgTDkq9UaE",
+        "file": "23-ink-SgTDkq9UaE.png",
+        "kind": "ink",
+        "source": "https://bloomlibrary.org/book/SgTDkq9UaE",
+        "note": "Bee-keeper: thin even lines, the drawing from BL-16336 (BL-16871).",
+        "originalName": "ai-image1.png"
+    },
+    {
+        "id": "24-ink-test-aor_oce003m",
+        "file": "24-ink-test-aor_oce003m.png",
+        "kind": "ink",
+        "source": "src/BloomTests/ImageProcessing/images/line-art-tests/yes/aor_oce003m.png",
+        "note": "Bloom's own line-art test image (images/line-art-tests/yes).",
+        "originalName": "aor_oce003m.png"
+    },
+    {
+        "id": "25-ink-test-bee-keeper",
+        "file": "25-ink-test-bee-keeper.png",
+        "kind": "ink",
+        "source": "src/BloomTests/ImageProcessing/images/line-art-tests/yes/bee-keeper.png",
+        "note": "Bloom's own line-art test image (images/line-art-tests/yes); from BL-16336.",
+        "originalName": "bee-keeper.png"
+    }
+]

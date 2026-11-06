@@ -519,9 +519,15 @@ namespace Bloom.ImageProcessing
         }
 
         /// <summary>
-        /// Converts a white-background bitmap to one with a transparent background using per-pixel
-        /// alpha unmixing. Anti-aliased edge pixels get partial alpha rather than being left as
-        /// opaque white, eliminating the white fringe visible against colored page backgrounds.
+        /// Converts a white-background bitmap to one with a transparent background by treating
+        /// each pixel as ink laid over white paper. A pixel's opacity is set by its darkest colour
+        /// channel (pure white becomes fully transparent, black stays fully opaque), and its colour
+        /// becomes the ink that, laid over white, gives back the original pixel. So the picture
+        /// looks unchanged on white, and on a coloured page a light gray becomes a lighter shade of
+        /// that page colour rather than a gray tinted towards it (BL-16778). Anti-aliased edges
+        /// get partial opacity, so no white fringe is left.
+        /// The transparency comparison report in docs/transparency-report shows this alongside
+        /// the earlier methods on many pictures and page colours.
         /// </summary>
         private static Image RemoveWhiteBackground(Bitmap source)
         {
@@ -543,89 +549,31 @@ namespace Bloom.ImageProcessing
             var pixels = new byte[stride * height];
             Marshal.Copy(srcData.Scan0, pixels, 0, pixels.Length);
             source.UnlockBits(srcData);
-            // 1. Find the lightest color in the image (max R+G+B sum)
-            int maxR = 0,
-                maxG = 0,
-                maxB = 0;
-            int maxSum = 0;
+            var output = new byte[stride * height];
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
                     int idx = y * stride + x * 4;
-                    int b = pixels[idx];
-                    int g = pixels[idx + 1];
-                    int r = pixels[idx + 2];
-                    int sum = r + g + b;
-                    if (sum > maxSum)
-                    {
-                        maxSum = sum;
-                        maxR = r;
-                        maxG = g;
-                        maxB = b;
-                    }
-                }
-            }
-
-            // 2. Build brightness thresholds for a transparency ramp.
-            // t0: pixels at/above this brightness become fully transparent.
-            // t1: pixels at/below this brightness stay fully opaque.
-            // Values between t1..t0 get linearly ramped alpha.
-            //
-            // For a white background (detected ~255) t0=220, t1=180, giving the standard 40-unit ramp.
-            // For darker backgrounds t0 is pulled down to match, and t1 follows to keep the ramp
-            // kMinRampWidth wide — but t1 is never allowed below kMinOpaqueBrightnessThreshold so
-            // that dark content pixels stay fully opaque even on dark backgrounds.  This may produce
-            // a narrower ramp than kMinRampWidth on very dark images, which is the right trade-off.
-            // On extremely dark images, we may not make anything transparent.
-            const double kTransparentBrightnessThreshold = 220.0;
-            const double kOpaqueBrightnessThreshold = 180.0;
-            const double kMinRampWidth = 40.0;
-            const double kMinOpaqueBrightnessThreshold = 60.0;
-            var detectedBackgroundBrightness = 0.299 * maxR + 0.587 * maxG + 0.114 * maxB;
-            var transparentBrightnessThreshold = Math.Min(
-                kTransparentBrightnessThreshold,
-                detectedBackgroundBrightness
-            );
-            var opaqueBrightnessThreshold = Math.Max(
-                kMinOpaqueBrightnessThreshold,
-                Math.Min(kOpaqueBrightnessThreshold, transparentBrightnessThreshold - kMinRampWidth)
-            );
-
-            // 3. For each pixel, set alpha from perceptual brightness using t0/t1 ramp.
-            // Keep this pass after the two read-only analysis passes above: we mutate pixels in place.
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    int idx = y * stride + x * 4;
-                    int b = pixels[idx];
-                    int g = pixels[idx + 1];
-                    int r = pixels[idx + 2];
+                    byte b = pixels[idx];
+                    byte g = pixels[idx + 1];
+                    byte r = pixels[idx + 2];
                     // pixels[idx + 3] is source alpha, always 255 for opaque input.
-                    var brightness = 0.299 * r + 0.587 * g + 0.114 * b;
-                    byte newAlpha;
-                    if (brightness >= transparentBrightnessThreshold)
+                    byte minChannel = Math.Min(r, Math.Min(g, b));
+                    // alpha is 0 for pure white and 255 for black.
+                    int alpha = 255 - minChannel;
+                    output[idx + 3] = (byte)alpha;
+                    if (alpha > 0)
                     {
-                        newAlpha = 0;
+                        // The ink that gives this pixel over white: pixel = alpha * ink + (1 - alpha) * white,
+                        // so ink = (pixel - minChannel) * 255 / alpha. A fully transparent pixel keeps RGB 0.
+                        output[idx] = (byte)Math.Min(255, (b - minChannel) * 255 / alpha);
+                        output[idx + 1] = (byte)Math.Min(255, (g - minChannel) * 255 / alpha);
+                        output[idx + 2] = (byte)Math.Min(255, (r - minChannel) * 255 / alpha);
                     }
-                    else if (brightness <= opaqueBrightnessThreshold)
-                    {
-                        newAlpha = 255;
-                    }
-                    else
-                    {
-                        newAlpha = (byte)(
-                            255.0
-                            * (transparentBrightnessThreshold - brightness)
-                            / (transparentBrightnessThreshold - opaqueBrightnessThreshold)
-                        );
-                    }
-                    pixels[idx + 3] = newAlpha;
-                    // Keep RGB as-is to preserve color intensity (e.g. pure red stays red).
                 }
             }
-            Marshal.Copy(pixels, 0, dstData.Scan0, pixels.Length);
+            Marshal.Copy(output, 0, dstData.Scan0, output.Length);
             result.UnlockBits(dstData);
             return result;
         }

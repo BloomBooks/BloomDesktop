@@ -1,10 +1,12 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using Bloom;
 using Bloom.ImageProcessing;
 using NUnit.Framework;
 using SIL.IO;
+using SIL.Windows.Forms.ImageToolbox;
 
 namespace BloomTests.RuntimeImageProcessing
 {
@@ -77,6 +79,93 @@ namespace BloomTests.RuntimeImageProcessing
                 )
                 {
                     Assert.AreEqual(10, img.Width);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Making the white background of a line drawing transparent treats each pixel as ink over
+        /// white paper (BL-16778): white becomes fully transparent, black stays opaque, a light gray
+        /// becomes partly transparent black (so on a coloured page it shows as a shade of that
+        /// colour, not as a gray tinted towards it), and every pixel drawn over white gives back
+        /// the original colour.
+        /// </summary>
+        [Test]
+        public void MakePngBackgroundTransparent_TreatsPixelsAsInkOverWhite()
+        {
+            var white = Color.FromArgb(255, 255, 255);
+            var black = Color.FromArgb(0, 0, 0);
+            var lightGray = Color.FromArgb(200, 200, 200);
+            var paleRed = Color.FromArgb(255, 155, 155);
+            var colours = new[] { white, black, lightGray, paleRed };
+            using (var source = new Bitmap(colours.Length, 1, PixelFormat.Format24bppRgb))
+            {
+                for (var x = 0; x < colours.Length; x++)
+                    source.SetPixel(x, 0, colours[x]);
+                Assert.That(
+                    source.GetPixel(2, 0).ToArgb(),
+                    Is.EqualTo(lightGray.ToArgb()),
+                    "setup: the light gray pixel should be in place before processing"
+                );
+                using (var palasoImage = PalasoImage.FromImage(source))
+                using (
+                    var result = (Bitmap)
+                        RuntimeImageProcessor.MakePngBackgroundTransparent(palasoImage)
+                )
+                {
+                    Assert.That(
+                        result.GetPixel(0, 0).A,
+                        Is.EqualTo(0),
+                        "white should be fully transparent"
+                    );
+                    Assert.That(
+                        result.GetPixel(1, 0).ToArgb(),
+                        Is.EqualTo(Color.FromArgb(255, 0, 0, 0).ToArgb()),
+                        "black should stay opaque black"
+                    );
+
+                    var gray = result.GetPixel(2, 0);
+                    Assert.That(
+                        gray.A,
+                        Is.EqualTo(55),
+                        "light gray 200 should become 55/255 opaque"
+                    );
+                    Assert.That(
+                        new[] { gray.R, gray.G, gray.B },
+                        Is.EqualTo(new byte[] { 0, 0, 0 }),
+                        "light gray should become partly transparent black ink"
+                    );
+
+                    var red = result.GetPixel(3, 0);
+                    Assert.That(
+                        red.A,
+                        Is.EqualTo(100),
+                        "pale red's darkest channel (155) should set its opacity to 100/255"
+                    );
+                    Assert.That(
+                        new[] { red.R, red.G, red.B },
+                        Is.EqualTo(new byte[] { 255, 0, 0 }),
+                        "pale red should become partly transparent pure red ink"
+                    );
+
+                    for (var x = 0; x < colours.Length; x++)
+                    {
+                        var p = result.GetPixel(x, 0);
+                        var overWhite = new[] { p.R, p.G, p.B }
+                            .Select(c =>
+                                (int)System.Math.Round((c * p.A + 255 * (255 - p.A)) / 255.0)
+                            )
+                            .ToArray();
+                        Assert.That(
+                            overWhite,
+                            Is.EqualTo(
+                                new[] { colours[x].R, colours[x].G, colours[x].B }
+                                    .Select(c => (int)c)
+                                    .ToArray()
+                            ),
+                            "pixel " + x + " drawn over white should give back the original colour"
+                        );
+                    }
                 }
             }
         }
