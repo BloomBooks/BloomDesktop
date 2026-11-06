@@ -1182,6 +1182,11 @@
         <note>ID: BookSettings.Fonts.All</note>
         <note>flags that the same font is used for all languages for the given style</note>
       </trans-unit>
+      <trans-unit id="BookSettings.Fonts.NoLanguage" translate="no">
+        <source xml:lang="en">(no language)</source>
+        <note>ID: BookSettings.Fonts.NoLanguage</note>
+        <note>In the Language column of the Fonts table in Book Settings. Flags a font used only by a field that is not in any language, such as the ISBN on the credits page.</note>
+      </trans-unit>
       <trans-unit id="BookSettings.Fonts.PageNumber" sil:dynamic="true">
         <source xml:lang="en">Page {0}</source>
         <note>ID: BookSettings.Fonts.PageNumber</note>
