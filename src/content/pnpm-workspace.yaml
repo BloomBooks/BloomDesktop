@@ -12,3 +12,13 @@ savePrefix: ""
 # funding notice, so we skip it.
 allowBuilds:
     core-js: false
+
+overrides:
+    "ajv@<6": "6.15.0"
+    "form-data@<3": "2.5.6"
+    "shell-quote@<1.11.0": "1.11.0"
+    "brace-expansion@1 <1.1.21": "1.1.21"
+    "brace-expansion@2 <2.1.7": "2.1.7"
+    "decode-uri-component@<0.5.1": "0.5.1"
+    "qs@6 <6.16.1": "6.16.1"
+    "pug@3 <3.0.3": "3.0.3"
