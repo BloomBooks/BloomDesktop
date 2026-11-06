@@ -13,8 +13,6 @@ namespace BloomTests.FeatureStatusTests
     {
         private const string kPlaygroundTemplateId = "aeb176bc-76fa-44e2-bb9d-6350698fce47";
 
-        protected override string GetTestFolderName() => "FeatureStatusPlaygroundTests";
-
         private Bloom.Book.Book CreatePlaygroundBook()
         {
             var book = CreateBook();

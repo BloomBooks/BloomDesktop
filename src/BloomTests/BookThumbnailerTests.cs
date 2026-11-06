@@ -14,8 +14,6 @@ namespace BloomTests
     [TestFixture]
     class BookThumbnailerTests : BookTestsBase
     {
-        protected override string GetTestFolderName() => "BookThumbnailerTests";
-
         private Bloom.Book.Book SetupBook(
             string coverImageFilename,
             int coverImageWidth,
