@@ -18,6 +18,11 @@ export interface IWorkspaceExports {
         options: JQueryUI.DialogOptions,
     ): JQuery;
     closeDialog(id: string): void;
+    pageFrameIsReadyToShow(pageLoadNumber: number): void;
+    pageIsReadyForInput(pageLoadNumber: number): void;
+    showPageLoadingCover(): void;
+    isShowingOtherPages(): boolean;
+    storeShowingOtherPages(show: boolean): void;
     setToolboxEnabled(enabled: boolean): void;
     toolboxIsShowing(): boolean;
     doWhenToolboxLoaded(
@@ -82,6 +87,7 @@ export function SayHello() {
 // edit pane root bundle, but now it is just included by the app bundle, since it no longer
 // has a private iframe.)
 import { getToolboxBundleExports } from "./js/workspaceFrames";
+import { kPageLoadNumberAttribute } from "./js/pageInputBlock";
 export { getToolboxBundleExports };
 import { getEditablePageBundleExports } from "./js/workspaceFrames";
 export { getEditablePageBundleExports };
@@ -148,7 +154,230 @@ export function switchThumbnailPage(newSource: string) {
     updateWorkspaceUrlParam("pageListSrc", newSource);
 }
 
+const kPageFrameId = "page";
+const kOutgoingPageFrameId = "page-outgoing";
+const kPageLoadingCoverId = "page-loading-cover";
+const kMaxWaitForPageReadyAfterLoadMs = 3000;
+// How long after a page change starts the new page may take to say it is ready for input before the
+// cover comes off anyway. A page normally says so in under a second on a fast machine, and in a few
+// seconds on a machine five times slower; one that never does has a broken script (or a load event
+// that never fires, see switchContentPage), and the user must not be locked out of the Edit tab by
+// it. The page's own wait has a shorter limit (kMaxWaitForReadyForInputMs in editablePage.ts), so
+// this one only matters when the page's script is not running at all.
+const kMaxWaitForPageReadyForInputMs = 30000;
+const kMaxWaitForPageChangeToStartMs = 5000;
+const kShowOtherPagesKey = "bloom-edit-showOtherPages";
+
+// The cursor shown while the Edit tab changes pages: a plain clock face, rather than the spinning
+// circle Windows draws for the standard "wait" cursor. Falls back to that standard cursor.
+const kClockSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">' +
+    '<circle cx="12" cy="12" r="10" fill="white" stroke="#333" stroke-width="2"/>' +
+    '<path d="M12 12V6.5M12 12l3.5 2" stroke="#333" stroke-width="2" stroke-linecap="round"/>' +
+    "</svg>";
+const kWaitCursor = `url("data:image/svg+xml,${encodeURIComponent(
+    kClockSvg,
+)}") 12 12, wait`;
+
+/**
+ * Whether the user wants to see the other pages of the book around the page being edited (see
+ * bookGridView.ts). Remembered for every page, and across Bloom sessions.
+ */
+export function isShowingOtherPages(): boolean {
+    try {
+        return localStorage.getItem(kShowOtherPagesKey) === "true";
+    } catch {
+        return false;
+    }
+}
+
+/** Remember whether the user wants to see the other pages of the book. */
+export function storeShowingOtherPages(show: boolean): void {
+    try {
+        localStorage.setItem(kShowOtherPagesKey, show ? "true" : "false");
+    } catch {
+        // Without storage the choice lasts only until the next page is loaded.
+    }
+}
+
+// While a page is loading into the page frame and is not yet ready to use, that frame, and the
+// number of the load, so that a timer left from an earlier load cannot uncover a later one.
+let frameAwaitedForInput: HTMLIFrameElement | undefined;
+
+// Telling the toolbox about the page loading into this frame, once the page is there; see
+// switchContentPage.
+let toolboxUpdateForNewPage:
+    | { frame: HTMLIFrameElement; update: () => void }
+    | undefined;
+let pageLoadNumber = 0;
+
+/**
+ * Cover the page frame with the wait cursor, taking its clicks and the keyboard focus, from the start
+ * of a page change until the new page is ready to use (see pageIsReadyForInput). A click on another
+ * page in All Pages puts it up before C# has started the change; if no page change follows, it is
+ * taken away again.
+ */
+export function showPageLoadingCover(): void {
+    let cover = document.getElementById(kPageLoadingCoverId);
+    if (!cover) {
+        const host = document.getElementById(kPageFrameId)!.parentElement!;
+        cover = document.createElement("div");
+        cover.id = kPageLoadingCoverId;
+        cover.style.position = "absolute";
+        cover.style.inset = "0";
+        cover.style.zIndex = "2";
+        cover.style.cursor = kWaitCursor;
+        cover.style.outline = "none";
+        // It takes the focus, so that keys typed during the change reach neither the page being
+        // left, whose edits are no longer saved, nor the new page before it is ready.
+        cover.tabIndex = -1;
+        host.appendChild(cover);
+        setToolboxBlocked(true);
+        window.setTimeout(() => {
+            if (!frameAwaitedForInput) uncoverPage();
+        }, kMaxWaitForPageChangeToStartMs);
+    }
+    cover.focus({ preventScroll: true });
+}
+
+// The toolbox's tools act on the page, so while the page is covered the toolbox takes no clicks
+// either, and shows the same wait cursor. (The keyboard cannot reach it: the cover has the focus.)
+function setToolboxBlocked(blocked: boolean): void {
+    const toolbox = document.getElementById(
+        "toolbox",
+    ) as HTMLIFrameElement | null;
+    if (!toolbox) return;
+    toolbox.style.pointerEvents = blocked ? "none" : "";
+    toolbox.parentElement!.style.cursor = blocked ? kWaitCursor : "";
+}
+
+/**
+ * Keep the user out of the page loading into this frame until it is ready to use: until it calls
+ * pageIsReadyForInput(), or, if it never does, until kMaxWaitForPageReadyForInputMs have passed.
+ */
+export function coverPageUntilReadyForInput(frame: HTMLIFrameElement): void {
+    frameAwaitedForInput = frame;
+    const thisLoad = ++pageLoadNumber;
+    // The page reads this when its script starts, and passes it back when it is ready.
+    frame.setAttribute(kPageLoadNumberAttribute, String(thisLoad));
+    showPageLoadingCover();
+    window.setTimeout(() => {
+        if (thisLoad === pageLoadNumber) uncoverPage();
+    }, kMaxWaitForPageReadyForInputMs);
+}
+
+function uncoverPage(): void {
+    frameAwaitedForInput = undefined;
+    document.getElementById(kPageLoadingCoverId)?.remove();
+    setToolboxBlocked(false);
+}
+
+/**
+ * Make the iframe that holds the page being edited. The Edit tab has one, except while it changes
+ * pages, when the page being left stays on screen over the new one until the new one is ready
+ * (see switchContentPage), so the view holds steady instead of blanking and rebuilding.
+ */
+export function createPageFrame(src: string): HTMLIFrameElement {
+    const frame = document.createElement("iframe");
+    frame.id = kPageFrameId;
+    // The name must be set before the frame is in the document, so the frame is created with it.
+    frame.name = kPageFrameId;
+    frame.title = "page";
+    frame.src = src;
+    frame.style.display = "block";
+    frame.style.width = "100%";
+    frame.style.height = "100%";
+    frame.style.border = "0 none";
+    return frame;
+}
+
+// Put a new page frame, loading newSource, underneath the one on screen, and return it. The old
+// frame keeps showing, frozen, until the new page calls pageFrameIsReadyToShow(). If an earlier
+// switch is still waiting, the frame the user sees is already the outgoing one, so the frame that
+// was loading underneath is simply replaced.
+function startLoadingPageFrameBehindCurrentOne(
+    newSource: string,
+): HTMLIFrameElement {
+    const current = document.getElementById(kPageFrameId) as HTMLIFrameElement;
+    const host = current.parentElement!;
+    if (document.getElementById(kOutgoingPageFrameId)) {
+        current.remove();
+    } else {
+        // Over both frames until the new page is ready: the wait cursor, and no clicks on a page
+        // that is going away or one that is not ready. (It finds its place by the frame's id, so
+        // before that changes.)
+        showPageLoadingCover();
+        current.id = kOutgoingPageFrameId;
+        current.name = kOutgoingPageFrameId;
+        current.style.position = "absolute";
+        current.style.left = "0";
+        current.style.top = "0";
+        current.style.zIndex = "1";
+        current.style.pointerEvents = "none";
+        // What the page's own beforeunload handlers would do if it were really leaving now.
+        current.contentWindow?.dispatchEvent(new Event("beforeunload"));
+    }
+    const frame = createPageFrame(newSource);
+    host.appendChild(frame);
+    return frame;
+}
+
+// Load newSource into the page frame on screen, replacing the page in it, and return the frame.
+function navigatePageFrame(newSource: string): HTMLIFrameElement {
+    const frame = document.getElementById(kPageFrameId) as HTMLIFrameElement;
+    // The page really leaves, so its own beforeunload handlers run without help.
+    frame.src = newSource;
+    return frame;
+}
+
+/**
+ * Called by a page frame once it looks the way it will (laid out, scrolled, and with the other
+ * pages drawn if they are showing), to replace the page that was covering it. pageLoadNumber is
+ * the one the frame was given for loading this page (see coverPageUntilReadyForInput).
+ */
+export function pageFrameIsReadyToShow(loadNumber: number): void {
+    if (loadNumber !== pageLoadNumber) {
+        // A page that has already been replaced by a newer one, or is being replaced.
+        return;
+    }
+    document.getElementById(kOutgoingPageFrameId)?.remove();
+    const current = document.getElementById(kPageFrameId);
+    if (toolboxUpdateForNewPage?.frame === current) {
+        toolboxUpdateForNewPage.update();
+        toolboxUpdateForNewPage = undefined;
+    }
+}
+
+/**
+ * Called by a page frame once the page can be used: everything that sets it up has finished, CKEditor
+ * included. Takes away the cover that kept the user out of it (see coverPageUntilReadyForInput).
+ * pageLoadNumber is the one the frame was given for loading this page.
+ */
+export function pageIsReadyForInput(loadNumber: number): void {
+    if (!frameAwaitedForInput || loadNumber !== pageLoadNumber) {
+        // A page that has already been replaced by a newer one, or is being replaced.
+        return;
+    }
+    uncoverPage();
+}
+
+// The id of the page that a page frame source shows. C# names the file after it (see the
+// "-memsim-" files in BloomServer).
+function getPageIdOfSource(source: string): string | undefined {
+    return /page-memsim-([0-9a-fA-F-]+)\.html?/.exec(source)?.[1];
+}
+
 export function switchContentPage(newSource: string) {
+    // With the other pages showing, the page being left shows at once which page is opening.
+    const newPageId = getPageIdOfSource(newSource);
+    if (newPageId) {
+        try {
+            getEditablePageBundleExports()?.showPageBeingOpened(newPageId);
+        } catch (e) {
+            // Only a visual hint; it must not stop the page change.
+            console.error(e);
+        }
+    }
     try {
         const editablePageBundle = getEditablePageBundleExports();
         if (editablePageBundle?.pageUnloading) {
@@ -167,36 +396,65 @@ export function switchContentPage(newSource: string) {
             // swallow
         }
     }
-    const iframe = <HTMLIFrameElement>document.getElementById("page");
+    // Showing one page, the new page replaces the old one in the same frame and is seen as soon as
+    // it is drawn, while it finishes setting itself up. Holding the old page on screen until the new
+    // one was ready made every page change feel slow. With the other pages showing, the old page
+    // stays until the new one and the pages around it are drawn, so the whole view does not flash.
+    // (A change already under way has two frames, and keeps them until it is done.)
+    const holdOldPage =
+        isShowingOtherPages() ||
+        !!document.getElementById(kOutgoingPageFrameId);
+    const iframe = holdOldPage
+        ? startLoadingPageFrameBehindCurrentOne(newSource)
+        : navigatePageFrame(newSource);
+    coverPageUntilReadyForInput(iframe);
+    // In One Page the frame stays the same from one change to the next, so what is set up below
+    // must only act on this change: a later one has its own.
+    const thisLoad = pageLoadNumber;
+    const isStillThisChange = () => thisLoad === pageLoadNumber;
     // We want to call getToolboxBundleExports().applyToolboxStateToPage() to allow
     // any tool that is active to update its state to match the new page content.
-    // This gets a bit complicated because we want the tool to actually see the new
-    // content in the DOM, and it won't be present right when we set the src attribute.
-    // The normal way to deal with this is to wait and call the function after the new
-    // page is loaded. But sometimes (see comment below) the load event doesn't get
-    // raised, so we have a fall-back.
-    // Enhance: Should this use DOMContentLoaded instead of load?
+    // The tool has to see the new page, which is not there when we set the src attribute. So
+    // this waits for the new page's load event, or for the page to say it is ready to show (see
+    // pageFrameIsReadyToShow), whichever comes first. The page says so even in the cases where
+    // its load event never fires (see the comment below). A fixed wait is no good: on a slow
+    // machine a page can take several seconds to load, and a tool that looks for the page
+    // before it is there fails.
     let handlerCalled = false;
     const handler = () => {
+        if (handlerCalled || !isStillThisChange()) return;
         handlerCalled = true;
         iframe.removeEventListener("load", handler);
         doWhenToolboxLoaded((toolboxFrameExports: IToolboxFrameExports) => {
             toolboxFrameExports.applyToolboxStateToPage();
         });
     };
-    iframe.removeEventListener("load", handler);
     iframe.addEventListener("load", handler);
-    iframe.src = newSource;
+    toolboxUpdateForNewPage = { frame: iframe, update: handler };
+    iframe.addEventListener(
+        "load",
+        () =>
+            // If the page never says it is ready (say an error stopped its script), don't leave
+            // the old page covering it for good.
+            window.setTimeout(() => {
+                if (isStillThisChange())
+                    document.getElementById(kOutgoingPageFrameId)?.remove();
+            }, kMaxWaitForPageReadyAfterLoadMs),
+        { once: true },
+    );
     updateWorkspaceUrlParam("pageSrc", newSource);
     // When we don't already have a video (either a new page, or it has been deleted),
     // and record a new one, we switchContentPage to make the new video show up.
     // And for no known reason, the load event never fires. There may possibly be
-    // other cases since I have no explanation. Rather than leaving control state
-    // permanently wrong, if the event is delayed much longer than expected we just
-    // call the handler.
+    // other cases since I have no explanation. Taking down the page being left waits for load
+    // too, in the fallback above, so if the load event is delayed much longer than expected it
+    // gets the same rescue from here.
     window.setTimeout(() => {
-        if (!handlerCalled) {
-            handler();
+        if (!handlerCalled && isStillThisChange()) {
+            window.setTimeout(() => {
+                if (isStillThisChange())
+                    document.getElementById(kOutgoingPageFrameId)?.remove();
+            }, kMaxWaitForPageReadyAfterLoadMs);
         }
     }, 1500);
 }
@@ -432,6 +690,11 @@ interface WorkspaceBundleApi {
     handleUndo: typeof handleUndo;
     switchThumbnailPage: typeof switchThumbnailPage;
     switchContentPage: typeof switchContentPage;
+    pageFrameIsReadyToShow: typeof pageFrameIsReadyToShow;
+    pageIsReadyForInput: typeof pageIsReadyForInput;
+    showPageLoadingCover: typeof showPageLoadingCover;
+    isShowingOtherPages: typeof isShowingOtherPages;
+    storeShowingOtherPages: typeof storeShowingOtherPages;
     showDialog: typeof showDialog;
     closeDialog: typeof closeDialog;
     setToolboxEnabled: typeof setToolboxEnabled;
@@ -482,6 +745,11 @@ window.workspaceBundle = {
     handleUndo,
     switchThumbnailPage,
     switchContentPage,
+    pageFrameIsReadyToShow,
+    pageIsReadyForInput,
+    showPageLoadingCover,
+    isShowingOtherPages,
+    storeShowingOtherPages,
     showDialog,
     closeDialog,
     setToolboxEnabled,

@@ -6,7 +6,7 @@
 // Currently that is done using a regular script tag in the HTML, not via an import here.
 
 import $ from "jquery";
-import { bootstrap, IImageInfo } from "./js/bloomEditing";
+import { bootstrap, delayedSetupFinished, IImageInfo } from "./js/bloomEditing";
 import { EditableDivUtils } from "./js/editableDivUtils";
 import "../lib/long-press/jquery.longpress.js";
 import "../lib/jquery.i18n.custom"; // side-effect: adds .localize() to $.fn (kept via sideEffects allow-list)
@@ -16,7 +16,24 @@ import {
     CanvasElementManager,
 } from "./js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
-import { renderDragActivityTabControl } from "./js/AbovePageControls";
+import {
+    renderDragActivityTabControl,
+    updateAbovePageControls,
+} from "./js/AbovePageControls";
+import {
+    replayTheClickThatOpenedThisPage,
+    setupBookGridView,
+    setupControlsBar,
+    setShowingOtherPages,
+    showPageBeingOpened,
+} from "./js/bookGridView";
+import { markPageForRemoval } from "./js/pageRemovalMark";
+import { tryGetWorkspaceBundleExports } from "./js/workspaceFrames";
+import {
+    blockInputUntilPageIsReady,
+    kPageLoadNumberAttribute,
+    markPageReadyForInput,
+} from "./js/pageInputBlock";
 import {
     getPageLoadId,
     isSnapshotStreamIdle,
@@ -63,6 +80,58 @@ document.addEventListener("DOMContentLoaded", () => {
     void tellCSharpPageDomLoaded();
 });
 
+// The live Edit tab's page takes no input until it is ready to use (see pageInputBlock.ts). This runs
+// when the page's script first runs, before the page is set up. (The same code also loads pages
+// off-screen to process them, where nobody is typing.)
+if (window.frameElement?.id === "page") {
+    blockInputUntilPageIsReady();
+}
+
+// Which load of the page frame this page is, as the workspace numbered it (see
+// coverPageUntilReadyForInput). The page passes it back when it says it is ready, because the
+// workspace cannot tell from the window: in One Page the frame is reused, and its window is the same
+// object for the page being left and the page replacing it.
+const kPageLoadNumber = Number(
+    window.frameElement?.getAttribute(kPageLoadNumberAttribute),
+);
+
+// How long the page waits for the work that sets it up to finish before taking input anyway. That
+// work normally finishes in under a second on a fast machine and in a few seconds on one five times
+// slower; this limit is for a page where some of it never finishes, which would otherwise keep the
+// user out of the page for good.
+const kMaxWaitForReadyForInputMs = 15000;
+
+// Resolves once the page is ready to use: the part of its setup that runs after a delay has finished
+// (the source bubbles, choosing where the caret goes), and so has every piece of work registered as
+// still changing the page, which includes every CKEditor finishing starting (see attachToCkEditor in
+// bloomEditing.ts) and sizing the pictures. Call it after bootstrap().
+async function whenPageIsReadyForInput(): Promise<void> {
+    await delayedSetupFinished;
+    await whenNoActiveDelays(kMaxWaitForReadyForInputMs);
+}
+
+// Resolves once the page looks the way it will: its pictures and the fonts it uses are in, and a
+// frame has been drawn with them. Call it after the page has been set up for editing.
+//
+// It deliberately does not wait for the window's load event. That waits for every script, and once
+// the page is set up CKEditor loads its configuration, language and plugin files one after another,
+// which takes hundreds of milliseconds and changes nothing on screen. Nothing done when the page is
+// shown needs CKEditor: replaying the click that opened the page waits for it separately.
+function whenPageIsDrawn(): Promise<void> {
+    const pictures = Array.from(
+        document.querySelectorAll<HTMLImageElement>(".bloom-page img"),
+    ).map((img) =>
+        // A picture that cannot be shown is drawn as missing; that is how the page looks.
+        img.decode().catch(() => undefined),
+    );
+    return Promise.all([...pictures, document.fonts.ready]).then(
+        () =>
+            new Promise<void>((resolve) =>
+                requestAnimationFrame(() => resolve()),
+            ),
+    );
+}
+
 // This allows strong typing to be done for exported functions.
 // Note: although these function are exported, which I think is necessary to make this cross-iframe
 // calling possible, they MUST not simply be imported. Doing so will pull this file into the importing
@@ -78,6 +147,12 @@ export interface IPageFrameExports {
     // disturbing the live page.
     getPageContentForSaveWhenReady(): Promise<string>;
     pageUnloading(): void;
+    // Show or hide the other pages of the book around the page being edited.
+    setShowingOtherPages(show: boolean): void;
+    showPageBeingOpened(pageId: string): void;
+    // Bring the page being edited into view and draw a red X across it, while the user confirms
+    // removing it. Returns a function that takes the X away.
+    markPageForRemoval(): () => void;
     // See pageSnapshot.ts.
     notePageContentMayHaveChanged(): void;
     // See pageSnapshot.ts. For the e2e suite.
@@ -171,6 +246,7 @@ import {
 import {
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
+    whenNoActiveDelays,
 } from "./js/pageContentDelays";
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
 // Called from the AI Image Editor overlay in the top window, which owns the session but
@@ -444,9 +520,42 @@ window["RelockOriginalCredits"] = () => {
     void EditableDivUtils.relockOriginalCredits();
 };
 
+// Let the user into the page, now that it is ready to use. Lift the page's own block before
+// replaying the click that opened it, whose events the block would swallow; the workspace's cover
+// keeps the user out until the replay is done.
+async function letUserIntoPage(): Promise<void> {
+    markPageReadyForInput();
+    await replayTheClickThatOpenedThisPage();
+    tryGetWorkspaceBundleExports()?.pageIsReadyForInput(kPageLoadNumber);
+}
+
 $(document).ready(() => {
     $("body").find("*[data-i18n]").localize();
-    bootstrap();
+    try {
+        bootstrap();
+    } catch (e) {
+        // A page whose setup failed is still better usable than blocked for good. The error still
+        // goes on to be reported.
+        if (window.frameElement?.id === "page") void letUserIntoPage();
+        throw e;
+    }
+    // Only the live Edit tab has the controls above the page and the book's other pages; the
+    // same code also loads pages off-screen to process them.
+    if (window.frameElement?.id === "page") {
+        updateAbovePageControls({});
+        setupControlsBar();
+        // The page being left stays on screen until this one looks the way it will (see
+        // switchContentPage), so the Edit tab holds steady while it changes pages.
+        void Promise.all([whenPageIsDrawn(), setupBookGridView()])
+            .then(async () => {
+                tryGetWorkspaceBundleExports()?.pageFrameIsReadyToShow(
+                    kPageLoadNumber,
+                );
+                await whenPageIsReadyForInput();
+            })
+            // Also when something above failed, which still goes on to be reported.
+            .finally(letUserIntoPage);
+    }
     // Step 1 of the off-screen page-capture handshake (see __bloomEditablePageReady in the
     // `declare global` block below): bootstrap()/SetupElements() has now run. That applies the
     // load-time DOM fix-ups (canvas-element layout, image sizing, etc.) — but note that some of them,
@@ -487,6 +596,9 @@ interface EditablePageBundleApi {
     captureContentForExternalProcessing: typeof captureContentForExternalProcessing;
     getPageContentForSaveWhenReady: typeof getPageContentForSaveWhenReady;
     pageUnloading: typeof pageUnloading;
+    setShowingOtherPages: typeof setShowingOtherPages;
+    showPageBeingOpened: typeof showPageBeingOpened;
+    markPageForRemoval: typeof markPageForRemoval;
     notePageContentMayHaveChanged: typeof notePageContentMayHaveChanged;
     copySelection: typeof copySelection;
     cutSelection: typeof cutSelection;
@@ -573,6 +685,9 @@ window.editablePageBundle = {
     captureContentForExternalProcessing,
     getPageContentForSaveWhenReady,
     pageUnloading,
+    setShowingOtherPages,
+    showPageBeingOpened,
+    markPageForRemoval,
     notePageContentMayHaveChanged,
     copySelection,
     cutSelection,

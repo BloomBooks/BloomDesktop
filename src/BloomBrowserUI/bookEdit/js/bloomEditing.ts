@@ -2,6 +2,7 @@
 /// <reference path="../../typings/jquery.qtip.d.ts" />
 import $ from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
+import { isPageReadyForInput } from "./pageInputBlock";
 import {
     cleanupImages,
     endImagePaste,
@@ -104,6 +105,10 @@ import {
     getHexColorsForPalette,
 } from "../../react_components/color-picking/bloomPalette";
 import { ckeditableSelector } from "../../utils/shared";
+import {
+    isShowingOtherPagesHere,
+    wasOpenedByClickingItInTheGrid,
+} from "./bookGridView";
 import { EditableDivUtils } from "./editableDivUtils";
 import {
     externalCaptureErrorForPendingWork,
@@ -147,6 +152,16 @@ export function makeElement(
         result.draggable(draggableArgs);
     }
     return result;
+}
+
+// Focus the text box Bloom picks for the user when a page loads. With the other pages of the book
+// showing, the page is where the user clicked it (see bookGridView.ts), and the browser's usual
+// scroll to a focused box that is off screen would move the page out from under the click that
+// opened it.
+function focusTextBoxOnNewPage(textBox: Element): void {
+    (textBox as HTMLElement).focus({
+        preventScroll: isShowingOtherPagesHere(),
+    });
 }
 
 function isBrOrWhitespace(node) {
@@ -660,6 +675,13 @@ function hasOrigami(container: HTMLElement) {
 // can add new elements (such as during layout mode) and call this on only newly added elements.
 // Now document.load calls this with $('body') as the container.
 // REVIEW: Some of these would be better off in OneTimeSetup, but too much risk to try to decide right now.
+// Resolves once the first SetupElements() of this page has finished the part it delays: making the
+// source bubbles and choosing which text box gets the caret. Until then the page is not ready to use.
+let resolveDelayedSetupFinished: () => void;
+export const delayedSetupFinished = new Promise<void>((resolve) => {
+    resolveDelayedSetupFinished = resolve;
+});
+
 export function SetupElements(
     container: HTMLElement,
     // undefined means it will do its best to find something to focus. "none" means don't focus anything.
@@ -932,154 +954,177 @@ export function SetupElements(
     // For getting focus set reliably, it seems best to do this whole loop inside one delay, rather than
     // have separate delays invoked each time through the loop.
     setTimeout(() => {
-        makeSourceBubblesIntoQtips(bubbleDivs, divsThatHaveSourceBubbles);
-        BloomSourceBubbles.setupSizeChangedHandling(divsThatHaveSourceBubbles);
-        if (theOneCanvasElementManager.isCanvasElementEditingOn) {
-            // If we saved the page with an indication that a particular element should be
-            // active, and calling code is not specifying one, restore the one we saved.
-            // This is especially useful when the page is unexpectedly reloaded, for example,
-            // changing a picture.
-            // Later: we decided we only want to do this if we're on the same page as last time.
-            if (!elementToFocus) {
-                const currentPageId = document
-                    .getElementsByClassName("bloom-page")[0]
-                    ?.getAttribute("id");
-                const topWindow = window.top as
-                    | (Window & {
-                          lastPageId?: string;
-                      })
-                    | null;
-                if (currentPageId === topWindow?.lastPageId) {
-                    elementToFocus = Array.from(
-                        document.getElementsByClassName(kCanvasElementClass),
-                    ).find((e) =>
-                        e.hasAttribute("data-bloom-active"),
-                    ) as HTMLElement;
-                } else {
-                    // remember this page!
-                    if (topWindow) {
-                        topWindow.lastPageId = currentPageId ?? undefined;
-                    }
-                }
-            }
-            // If we don't have some specific reason to focus on a particular canvas element, we
-            // don't want to arbitrarily select one. It seems the browser will try
-            // to focus something, and sometimes it doesn't make a good choice, especially after
-            // changing zoom, which for some unknown reason seems to make it want to focus the
-            // first thing on the page that CAN be focused. And usually we automatically activate
-            // a canvas element that gets focus.
-            // Prior to /4d9ff2a0860d78ecd96771a93a839ce60ab7a8d3, we made a call here to CanvasElementManager
-            // to tell it to ignore the next focusIn event. That was dubious and fragile.
-            // Then just prior to this commit, we were explicitly setting the active element to undefined
-            // here, but (since this is in a timeout) that could undo (for example) the sign language tool's
-            // attempt to pick some video as the one it applies to.
-            // In this commit, I've added code to specifically ignore focus events that immediately
-            // follow change of zoom. As far as I can tell, it is therefore no longer necessary
-            // to set the active element to undefined here. When we're loading a page, active element
-            // will be unset initially. If something (e.g., sign language tool) sets an initial
-            // active element, we don't want to unset it.
-            // There may, of course, be other circumstances we haven't discovered yet where the
-            // browser tries to focus the wrong thing. But if we restore this, we need to find
-            // some other way that the sign language tool can set an initial active element
-            // that will not be undone by this code. It's possible that data-bloom-active could be
-            // used, but note that currently it only applies if we're re-loading the same page.
-            // The sign language tool wants to be able to select a video (if any) on any page we load.
-            // if (!elementToFocus) {
-            //     // Make sure the active element is cleared if we're not setting it.
-            //     theOneCanvasElementManager.setActiveElement(undefined);
-            // }
-
-            // A field the server has just opened for editing in response to a click, such as
-            // the sentence about the original book on the credits page. The user asked for it,
-            // so it wins over the guesses below, and the caret goes to the start of it.
-            const fieldJustOpened = container.querySelector(
-                "[data-bloom-focus-when-shown]",
-            ) as HTMLElement | null;
-            if (fieldJustOpened && elementToFocus !== "none") {
-                fieldJustOpened.removeAttribute("data-bloom-focus-when-shown");
-                fieldJustOpened.focus();
-                EditableDivUtils.makeSelectionIn(fieldJustOpened, 0, -1, true);
-                return;
-            }
-
-            if (elementToFocus !== "none") {
-                // the check for visibility-code-on here prevents focusing a bloom-editable that we are just
-                // showing as a prompt.
-                const focusable = elementToFocus
-                    ? $(elementToFocus).find(
-                          ".bloom-visibility-code-on:focusable",
-                      )
-                    : undefined;
-                // If we were passed an element to focus, it could be a new canvas element, and we'd like to
-                // be all set to type in it. So we focus it.
-                // I'm not sure whether this is desirable when we found one from data-bloom-active,
-                // but there may be a case where the page gets reloaded while a text-editable canvas element is active.
-                if (elementToFocus && focusable) {
-                    focusable.focus();
-                    // Ideally calling focus above has this as a side effect.
-                    // However, the focusin event handler doesn't seem to get called at this point
-                    // for image containers, even though we have set tabindex to zero,
-                    // so make sure it becomes the active element at least.
-                    theOneCanvasElementManager.setActiveElement(elementToFocus);
-                    // see similar code below
-                    BloomSourceBubbles.ShowSourceBubbleForElement(
-                        elementToFocus,
-                    );
-                } else {
-                    // It's OK not to focus anything.  The priority for focusing text boxes is:
-                    // 1) empty canvas element "Text Box" which has no border to indicate that it's there
-                    // 2) empty text box, whether canvas element or origami
-                    // 3) origami text box, empty or not
-                    // Note that image description text boxes are never focused here since we can't
-                    // tell whether they're actually visible or not.
-                    // See BL-14265 and the earlier BL-14109.
-                    const allEditables = container.querySelectorAll(
-                        "textarea, div.bloom-editable.bloom-visibility-code-on",
-                    ); // :visible and :not don't work in this context
-                    if (allEditables.length === 0) {
-                        return;
-                    }
-                    const visibleEditables = Array.from(allEditables).filter(
-                        (e) =>
-                            e.closest(".box-header-off") === null && // these are invisible (BL-14109)
-                            e.closest(".bloom-imageDescription") === null, // these may be invisible
-                    );
-                    if (visibleEditables.length === 0) {
-                        return;
-                    }
-                    const emptyEditables = visibleEditables.filter(
-                        (e) => !e.textContent?.trim(),
-                    );
-                    if (emptyEditables.length) {
-                        const emptyTextBlockCanvasElement = emptyEditables.find(
-                            (e) => {
-                                const div = e.closest(kCanvasElementSelector);
-                                if (div === null) return false;
-                                return div
-                                    .getAttribute("data-bubble")
-                                    ?.includes("`style`:`none`");
-                            },
-                        );
-                        if (emptyTextBlockCanvasElement) {
-                            // We want to focus on the first empty canvas element text with style "none".
-                            $(emptyTextBlockCanvasElement).focus();
-                            return;
-                        } else {
-                            // otherwise, focus on the first empty text box, whether canvas element or origami.
-                            $(emptyEditables[0]).focus();
-                            return;
+        try {
+            makeSourceBubblesIntoQtips(bubbleDivs, divsThatHaveSourceBubbles);
+            BloomSourceBubbles.setupSizeChangedHandling(
+                divsThatHaveSourceBubbles,
+            );
+            if (theOneCanvasElementManager.isCanvasElementEditingOn) {
+                // If we saved the page with an indication that a particular element should be
+                // active, and calling code is not specifying one, restore the one we saved.
+                // This is especially useful when the page is unexpectedly reloaded, for example,
+                // changing a picture.
+                // Later: we decided we only want to do this if we're on the same page as last time.
+                if (!elementToFocus) {
+                    const currentPageId = document
+                        .getElementsByClassName("bloom-page")[0]
+                        ?.getAttribute("id");
+                    const topWindow = window.top as
+                        | (Window & {
+                              lastPageId?: string;
+                          })
+                        | null;
+                    if (currentPageId === topWindow?.lastPageId) {
+                        elementToFocus = Array.from(
+                            document.getElementsByClassName(
+                                kCanvasElementClass,
+                            ),
+                        ).find((e) =>
+                            e.hasAttribute("data-bloom-active"),
+                        ) as HTMLElement;
+                    } else {
+                        // remember this page!
+                        if (topWindow) {
+                            topWindow.lastPageId = currentPageId ?? undefined;
                         }
                     }
-                    // don't want canvas elements selected here
-                    const editable = visibleEditables.find(
-                        (e) => e.closest(kCanvasElementSelector) === null,
+                }
+                // If we don't have some specific reason to focus on a particular canvas element, we
+                // don't want to arbitrarily select one. It seems the browser will try
+                // to focus something, and sometimes it doesn't make a good choice, especially after
+                // changing zoom, which for some unknown reason seems to make it want to focus the
+                // first thing on the page that CAN be focused. And usually we automatically activate
+                // a canvas element that gets focus.
+                // Prior to /4d9ff2a0860d78ecd96771a93a839ce60ab7a8d3, we made a call here to CanvasElementManager
+                // to tell it to ignore the next focusIn event. That was dubious and fragile.
+                // Then just prior to this commit, we were explicitly setting the active element to undefined
+                // here, but (since this is in a timeout) that could undo (for example) the sign language tool's
+                // attempt to pick some video as the one it applies to.
+                // In this commit, I've added code to specifically ignore focus events that immediately
+                // follow change of zoom. As far as I can tell, it is therefore no longer necessary
+                // to set the active element to undefined here. When we're loading a page, active element
+                // will be unset initially. If something (e.g., sign language tool) sets an initial
+                // active element, we don't want to unset it.
+                // There may, of course, be other circumstances we haven't discovered yet where the
+                // browser tries to focus the wrong thing. But if we restore this, we need to find
+                // some other way that the sign language tool can set an initial active element
+                // that will not be undone by this code. It's possible that data-bloom-active could be
+                // used, but note that currently it only applies if we're re-loading the same page.
+                // The sign language tool wants to be able to select a video (if any) on any page we load.
+                // if (!elementToFocus) {
+                //     // Make sure the active element is cleared if we're not setting it.
+                //     theOneCanvasElementManager.setActiveElement(undefined);
+                // }
+
+                // A field the server has just opened for editing in response to a click, such as
+                // the sentence about the original book on the credits page. The user asked for it,
+                // so it wins over the guesses below, and the caret goes to the start of it.
+                const fieldJustOpened = container.querySelector(
+                    "[data-bloom-focus-when-shown]",
+                ) as HTMLElement | null;
+                if (fieldJustOpened && elementToFocus !== "none") {
+                    fieldJustOpened.removeAttribute(
+                        "data-bloom-focus-when-shown",
                     );
-                    if (editable) {
-                        // focus on the first available origami text box
-                        $(editable).focus();
+                    fieldJustOpened.focus();
+                    EditableDivUtils.makeSelectionIn(
+                        fieldJustOpened,
+                        0,
+                        -1,
+                        true,
+                    );
+                    return;
+                }
+
+                if (elementToFocus !== "none") {
+                    // the check for visibility-code-on here prevents focusing a bloom-editable that we are just
+                    // showing as a prompt.
+                    const focusable = elementToFocus
+                        ? $(elementToFocus).find(
+                              ".bloom-visibility-code-on:focusable",
+                          )
+                        : undefined;
+                    // If we were passed an element to focus, it could be a new canvas element, and we'd like to
+                    // be all set to type in it. So we focus it.
+                    // I'm not sure whether this is desirable when we found one from data-bloom-active,
+                    // but there may be a case where the page gets reloaded while a text-editable canvas element is active.
+                    if (elementToFocus && focusable) {
+                        focusable.each((_, e) => focusTextBoxOnNewPage(e));
+                        // Ideally calling focus above has this as a side effect.
+                        // However, the focusin event handler doesn't seem to get called at this point
+                        // for image containers, even though we have set tabindex to zero,
+                        // so make sure it becomes the active element at least.
+                        theOneCanvasElementManager.setActiveElement(
+                            elementToFocus,
+                        );
+                        // see similar code below
+                        BloomSourceBubbles.ShowSourceBubbleForElement(
+                            elementToFocus,
+                        );
+                    } else if (!wasOpenedByClickingItInTheGrid()) {
+                        // (A page opened by clicking it in the grid gets the focus from that click.)
+                        // It's OK not to focus anything.  The priority for focusing text boxes is:
+                        // 1) empty canvas element "Text Box" which has no border to indicate that it's there
+                        // 2) empty text box, whether canvas element or origami
+                        // 3) origami text box, empty or not
+                        // Note that image description text boxes are never focused here since we can't
+                        // tell whether they're actually visible or not.
+                        // See BL-14265 and the earlier BL-14109.
+                        const allEditables = container.querySelectorAll(
+                            "textarea, div.bloom-editable.bloom-visibility-code-on",
+                        ); // :visible and :not don't work in this context
+                        if (allEditables.length === 0) {
+                            return;
+                        }
+                        const visibleEditables = Array.from(
+                            allEditables,
+                        ).filter(
+                            (e) =>
+                                e.closest(".box-header-off") === null && // these are invisible (BL-14109)
+                                e.closest(".bloom-imageDescription") === null, // these may be invisible
+                        );
+                        if (visibleEditables.length === 0) {
+                            return;
+                        }
+                        const emptyEditables = visibleEditables.filter(
+                            (e) => !e.textContent?.trim(),
+                        );
+                        if (emptyEditables.length) {
+                            const emptyTextBlockCanvasElement =
+                                emptyEditables.find((e) => {
+                                    const div = e.closest(
+                                        kCanvasElementSelector,
+                                    );
+                                    if (div === null) return false;
+                                    return div
+                                        .getAttribute("data-bubble")
+                                        ?.includes("`style`:`none`");
+                                });
+                            if (emptyTextBlockCanvasElement) {
+                                // We want to focus on the first empty canvas element text with style "none".
+                                focusTextBoxOnNewPage(
+                                    emptyTextBlockCanvasElement,
+                                );
+                                return;
+                            } else {
+                                // otherwise, focus on the first empty text box, whether canvas element or origami.
+                                focusTextBoxOnNewPage(emptyEditables[0]);
+                                return;
+                            }
+                        }
+                        // don't want canvas elements selected here
+                        const editable = visibleEditables.find(
+                            (e) => e.closest(kCanvasElementSelector) === null,
+                        );
+                        if (editable) {
+                            // focus on the first available origami text box
+                            focusTextBoxOnNewPage(editable);
+                        }
                     }
                 }
             }
+        } finally {
+            resolveDelayedSetupFinished();
         }
     }, bloomQtipUtils.horizontalOverlappingBubblesDelay);
 
@@ -1353,7 +1398,8 @@ export function bootstrap() {
     // after making a book and you lose it; a loaded machine widens the window. Written up in
     // src/BloomE2E/AUTOMATION-DEBT.md, "A title typed on the cover of a new book can fail to
     // reach the collection", which also has the e2e suite's workaround. If CKEditor ends up
-    // staying, that entry is the place to start.
+    // staying, that entry is the place to start. In the live Edit tab a person can no longer type
+    // in that window: the page takes no input until every editor is ready (pageInputBlock.ts).
     $("div.bloom-page")
         .find(ckeditableSelector)
         .each((index: number, element: Element) => {
@@ -1745,6 +1791,8 @@ export const pageUnloading = () => {
 };
 
 export function topBarButtonClick(button: { command: string }) {
+    // Cut and Undo would change a page that is not ready to use; see pageInputBlock.ts.
+    if (!isPageReadyForInput()) return;
     switch (button.command) {
         case "copy":
             copySelection();
