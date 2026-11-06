@@ -12,6 +12,11 @@
         <note>This isn't used by code, but rather we harvest some of these for use in making the GIF that shows when the software is installing.</note>
         <note> In English, given the context, just "Installing..." is enough. But your translation can be verbose, like "Software Installation in Progress...".</note>
       </trans-unit>
+      <trans-unit id="Errors.FolderNotWritable" translate="no">
+        <source xml:lang="en">You may not have permission to change files there, or the folder may be read-only. Move the collection to a folder you can change, such as Documents, or ask whoever manages this computer or network for permission.</source>
+        <note>ID: Errors.FolderNotWritable</note>
+        <note>Second paragraph of a message whose first line is "This program cannot write to the folder {0}." (Errors.DefenderFolderProtectionHeading). Shown when Bloom cannot open a collection because it is not allowed to save in the collection's folder. "Documents" is the Windows Documents folder.</note>
+      </trans-unit>
       <trans-unit id="Errors.CorruptImageFile">
         <source xml:lang="en">The image file {0} is corrupt and needs to be replaced. ({1})</source>
         <note>ID: Errors.CorruptImageFile</note>
