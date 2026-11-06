@@ -77,7 +77,7 @@ Two consequences worth knowing:
 
 ## The opt-in Reading App Builder real-build test
 
-`BloomTests.Publish.Rab.RabRealBuildTests.SetupAndBuildAsync_RealReadingAppBuilderBuild_CreatesValidApk`
+`BloomTests.Publish.Rab.RabRealBuildTests.SetupAndBuild_RealReadingAppBuilderBuild_CreatesValidApk`
 is the only test that exercises a real Reading App Builder installation end to end: it builds a
 BloomPUB into an actual signed Android APK with RAB and Gradle, and checks the result. **It is worth
 running after any change under `src/BloomExe/Publish/Rab/`** — nothing else covers that path for

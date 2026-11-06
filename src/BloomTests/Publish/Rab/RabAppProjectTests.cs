@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Bloom.Collection;
+using Bloom.Publish.BloomPub;
 using Bloom.Publish.Rab;
 using BloomTests.TeamCollection;
 using BloomTests.TestDoubles.CollectionTab;
@@ -26,6 +27,16 @@ namespace BloomTests.Publish.Rab
 {
     public class RabAppProjectTests
     {
+        // Kept BloomPUBs live in the temp folder, keyed by the collection's path, and these tests
+        // reuse the same collection path; start each test with none (this run has its own temp
+        // folder, see TestTempDirectory).
+        [SetUp]
+        public void ClearBloomPubCache()
+        {
+            if (Directory.Exists(BloomPubCache.CacheRoot))
+                RobustIO.DeleteDirectoryAndContents(BloomPubCache.CacheRoot);
+        }
+
         private const string kSampleAppDef =
             @"<?xml version='1.0' encoding='utf-8'?>
 <app-definition type='RAB' program-version='13.4'>
@@ -673,7 +684,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void PrepareAsync_Fails_AndNamesTheOtherFolder_WhenRabUsesAnAndroidSdkElsewhere()
+        public void Prepare_Fails_AndNamesTheOtherFolder_WhenRabUsesAnAndroidSdkElsewhere()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -692,9 +703,7 @@ namespace BloomTests.Publish.Rab
                 "setup: the build tools should not be installed yet"
             );
 
-            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
-                await service.PrepareAsync()
-            );
+            var error = Assert.Throws<ApplicationException>(() => service.Prepare());
 
             Assert.That(
                 error.Message,
@@ -725,7 +734,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void PrepareAsync_Fails_AndNamesTheOtherFolder_WhenRabUsesAJdkElsewhere()
+        public void Prepare_Fails_AndNamesTheOtherFolder_WhenRabUsesAJdkElsewhere()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -743,9 +752,7 @@ namespace BloomTests.Publish.Rab
             );
             service.InstallSdksOutputLines.Add("JDK folder: " + otherJdk);
 
-            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
-                await service.PrepareAsync()
-            );
+            var error = Assert.Throws<ApplicationException>(() => service.Prepare());
 
             Assert.That(
                 error.Message,
@@ -761,7 +768,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void PrepareAsync_Fails_AndNamesBloomsFolders_WhenRabInstallsNeitherToolAndSaysWhereNeitherIs()
+        public void Prepare_Fails_AndNamesBloomsFolders_WhenRabInstallsNeitherToolAndSaysWhereNeitherIs()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -775,9 +782,7 @@ namespace BloomTests.Publish.Rab
                 InstallSdksCreatesAndroidSdk = false,
             };
 
-            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
-                await service.PrepareAsync()
-            );
+            var error = Assert.Throws<ApplicationException>(() => service.Prepare());
 
             Assert.That(
                 error.Message,
@@ -795,7 +800,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task BuildAsync_Fails_WhenTheAndroidSdkGoesMissingAndRabReportsBloomsOwnFolder()
+        public void Build_Fails_WhenTheAndroidSdkGoesMissingAndRabReportsBloomsOwnFolder()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -804,7 +809,7 @@ namespace BloomTests.Publish.Rab
                 "Sample App",
                 MakeOneTrackedBook(tempFolder, paths)
             );
-            await service.PrepareAsync();
+            service.Prepare();
             Assert.That(
                 service.AreRabBuildToolsInstalled(),
                 Is.True,
@@ -820,9 +825,7 @@ namespace BloomTests.Publish.Rab
             );
             var commandCountBeforeBuild = service.Commands.Count;
 
-            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
-                await service.BuildAsync()
-            );
+            var error = Assert.Throws<ApplicationException>(() => service.Build());
 
             Assert.That(
                 error.Message,
@@ -1026,7 +1029,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task BuildAsync_WhenRabWritesNoNewApk_FailsInsteadOfReportingThePreviousApk()
+        public void Build_WhenRabWritesNoNewApk_FailsInsteadOfReportingThePreviousApk()
         {
             // BL-16959: RAB failed ("A required file for this app is missing") but its exit code
             // was lost, so Bloom reported "Build complete" with the APK from an earlier build.
@@ -1045,8 +1048,8 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
-            await service.BuildAsync();
+            service.Prepare();
+            service.Build();
             var previousApk = service.FindLatestApkPath(paths);
             Assert.That(previousApk, Is.Not.Null, "setup: the first build should leave an APK");
             // In real use the previous APK is from an earlier build, minutes old.
@@ -1054,9 +1057,7 @@ namespace BloomTests.Publish.Rab
             var previousWriteTime = RobustFile.GetLastWriteTimeUtc(previousApk);
 
             service.SkipApkOnNextBuild = true;
-            var exception = Assert.ThrowsAsync<ApplicationException>(async () =>
-                await service.BuildAsync()
-            );
+            var exception = Assert.Throws<ApplicationException>(() => service.Build());
 
             Assert.That(exception.Message, Does.Contain("without producing an Android app"));
             Assert.That(exception.Message, Does.Contain("A required file for this app is missing"));
@@ -1068,7 +1069,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task BuildAsync_UsesSafeApkPathWithinCollectionAlias()
+        public void Build_UsesSafeApkPathWithinCollectionAlias()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var collectionRoot = Path.Combine(tempFolder.Path, "Kasɩm Books");
@@ -1086,8 +1087,8 @@ namespace BloomTests.Publish.Rab
             };
             var service = new TestRabProjectService(paths, "Kasɩm Books", trackedBooks);
 
-            await service.PrepareAsync();
-            await service.BuildAsync();
+            service.Prepare();
+            service.Build();
 
             var buildCommand = service.Commands.Last(command => command.Contains("-build"));
             Assert.That(buildCommand, Does.Contain($"apk.output={paths.SafeApkRoot}"));
@@ -1335,7 +1336,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task InstallAsync_UninstallsAndRetriesWhenExistingPackageHasDifferentSignature()
+        public void Install_UninstallsAndRetriesWhenExistingPackageHasDifferentSignature()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -1352,8 +1353,8 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
-            await service.BuildAsync();
+            service.Prepare();
+            service.Build();
             service.InstallApkResults.Enqueue(
                 (
                     1,
@@ -1364,7 +1365,7 @@ namespace BloomTests.Publish.Rab
 
             var builtPackageName = RabAppProject.Load(service.GetStatus().AppDefPath).PackageName;
 
-            await service.InstallAsync();
+            service.Install();
 
             Assert.That(service.UninstallCommands.Count, Is.EqualTo(1));
             Assert.That(
@@ -1382,7 +1383,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task InstallAsync_DoesNotUninstallWhenInstallFailsForAnotherReason()
+        public void Install_DoesNotUninstallWhenInstallFailsForAnotherReason()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -1399,8 +1400,8 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
-            await service.BuildAsync();
+            service.Prepare();
+            service.Build();
             service.InstallApkResults.Enqueue(
                 (
                     1,
@@ -1408,9 +1409,7 @@ namespace BloomTests.Publish.Rab
                 )
             );
 
-            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
-                await service.InstallAsync()
-            );
+            var error = Assert.Throws<ApplicationException>(() => service.Install());
 
             Assert.That(error.Message, Is.EqualTo("adb.exe exited with code 1."));
             Assert.That(service.UninstallCommands, Is.Empty);
@@ -1418,7 +1417,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task InstallAsync_WhenCancelledBeforeRetry_DoesNotUninstallExistingApp()
+        public void Install_WhenCancelledBeforeRetry_DoesNotUninstallExistingApp()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -1435,8 +1434,8 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
-            await service.BuildAsync();
+            service.Prepare();
+            service.Build();
 
             // The first install attempt reports the differently-signed-package failure that would
             // normally trigger the uninstall-and-retry recovery.
@@ -1451,9 +1450,7 @@ namespace BloomTests.Publish.Rab
             Assert.That(service.TryBeginAction("install"), Is.True);
             service.RequestCancellation();
 
-            Assert.ThrowsAsync<OperationCanceledException>(async () =>
-                await service.InstallAsync()
-            );
+            Assert.Throws<OperationCanceledException>(() => service.Install());
 
             // We bailed before the destructive uninstall, so the phone's existing app is left
             // untouched and no second install was attempted.
@@ -1464,7 +1461,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task InstallAsync_WhenCancelledDuringReplace_StillReinstallsBeforeHonoringCancel()
+        public void Install_WhenCancelledDuringReplace_StillReinstallsBeforeHonoringCancel()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -1481,8 +1478,8 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
-            await service.BuildAsync();
+            service.Prepare();
+            service.Build();
 
             service.InstallApkResults.Enqueue(
                 (
@@ -1496,9 +1493,7 @@ namespace BloomTests.Publish.Rab
             // Simulate the user cancelling at the moment the old app has just been uninstalled.
             service.DuringUninstall = () => service.RequestCancellation();
 
-            Assert.ThrowsAsync<OperationCanceledException>(async () =>
-                await service.InstallAsync()
-            );
+            Assert.Throws<OperationCanceledException>(() => service.Install());
 
             // Even though the cancel landed mid-recovery, we finished the reinstall (one uninstall
             // followed by a second install) before honoring the cancellation, so the phone is never
@@ -1510,7 +1505,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task BuildAsync_WhenBuildFails_DeletesIntermediateApkButKeepsPreviousGoodApk()
+        public void Build_WhenBuildFails_DeletesIntermediateApkButKeepsPreviousGoodApk()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -1527,8 +1522,8 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
-            await service.BuildAsync();
+            service.Prepare();
+            service.Build();
 
             // Sanity check: a successful build produced a signed app in SafeApkRoot and left no
             // stray .apk under the build folder.
@@ -1547,7 +1542,7 @@ namespace BloomTests.Publish.Rab
 
             // A rebuild that fails after Gradle wrote an unsigned intermediate under BuildRoot.
             service.FailNextBuild = true;
-            Assert.ThrowsAsync<ApplicationException>(async () => await service.BuildAsync());
+            Assert.Throws<ApplicationException>(() => service.Build());
 
             // The intermediate under BuildRoot is deleted so it can't later be mistaken for a
             // finished app by FindLatestApkPath...
@@ -1566,7 +1561,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task BuildAsync_WhenKilledWhileWritingDeliverableApk_DeletesTruncatedApkButKeepsUntouchedApk()
+        public void Build_WhenKilledWhileWritingDeliverableApk_DeletesTruncatedApkButKeepsUntouchedApk()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -1583,8 +1578,8 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
-            await service.BuildAsync();
+            service.Prepare();
+            service.Build();
 
             var deliverableApk = service.FindLatestApkPath(paths);
             Assert.That(
@@ -1618,7 +1613,7 @@ namespace BloomTests.Publish.Rab
             // deliverable name.
             service.FailNextBuild = true;
             service.TruncateSafeApkOnFailedBuild = true;
-            Assert.ThrowsAsync<ApplicationException>(async () => await service.BuildAsync());
+            Assert.Throws<ApplicationException>(() => service.Build());
 
             // The truncated deliverable this attempt rewrote is deleted, so GetStatus/Install (which
             // scan the directory) cannot mistake it for a finished app...
@@ -1639,7 +1634,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task BuildAsync_WhenAbnormalAfterApkFinished_KeepsTheCompletedApk()
+        public void Build_WhenAbnormalAfterApkFinished_KeepsTheCompletedApk()
         {
             // Guards the late-cancel case (Devin): RunProcess throws OperationCanceledException after
             // WaitForExit whenever a cancel was requested, even when RAB already exited cleanly having
@@ -1660,8 +1655,8 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
-            await service.BuildAsync();
+            service.Prepare();
+            service.Build();
 
             var deliverableApk = service.FindLatestApkPath(paths);
             Assert.That(
@@ -1673,7 +1668,7 @@ namespace BloomTests.Publish.Rab
             // A rebuild that wrote a complete, valid new APK and only then ended abnormally.
             service.FailNextBuild = true;
             service.CompleteSafeApkBeforeFailure = true;
-            Assert.ThrowsAsync<ApplicationException>(async () => await service.BuildAsync());
+            Assert.Throws<ApplicationException>(() => service.Build());
 
             // The completed APK this attempt wrote is kept (it is a usable app), so "Try on phone"
             // still has something to install rather than the user being left with nothing.
@@ -1693,7 +1688,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task BuildAsync_WhenAbnormalAfterApkFinished_RecordsItSoBuildIsNotStillNeeded()
+        public void Build_WhenAbnormalAfterApkFinished_RecordsItSoBuildIsNotStillNeeded()
         {
             // Item 2 (Devin): a late cancel/failure unwinds out of Build() before the tail that saves
             // the build signature, so a freshly-built (and kept) APK would otherwise leave GetStatus
@@ -1714,7 +1709,7 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
+            service.Prepare();
 
             // Sanity check: with nothing built yet, a build is needed.
             Assert.That(
@@ -1726,7 +1721,7 @@ namespace BloomTests.Publish.Rab
             // A first build that wrote a complete APK and only then ended abnormally (late cancel).
             service.FailNextBuild = true;
             service.CompleteSafeApkBeforeFailure = true;
-            Assert.ThrowsAsync<ApplicationException>(async () => await service.BuildAsync());
+            Assert.Throws<ApplicationException>(() => service.Build());
 
             Assert.That(
                 service.FindLatestApkPath(paths),
@@ -1788,7 +1783,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task BuildAsync_WhenFailedWithAnOlderApkInApkRoot_DoesNotRecordItAsFreshlyBuilt()
+        public void Build_WhenFailedWithAnOlderApkInApkRoot_DoesNotRecordItAsFreshlyBuilt()
         {
             // Devin: the pre-build snapshot must span the same roots FindLatestApkPath searches
             // (ApkRoot + SafeApkRoot). Otherwise a pre-existing APK in ApkRoot is not in the snapshot,
@@ -1809,7 +1804,7 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
+            service.Prepare();
 
             // A complete but stale APK, predating this build, living in ApkRoot (not SafeApkRoot).
             Directory.CreateDirectory(paths.ApkRoot);
@@ -1825,7 +1820,7 @@ namespace BloomTests.Publish.Rab
 
             // A build that fails without producing a new complete APK for this attempt.
             service.FailNextBuild = true;
-            Assert.ThrowsAsync<ApplicationException>(async () => await service.BuildAsync());
+            Assert.Throws<ApplicationException>(() => service.Build());
 
             Assert.That(
                 RobustFile.Exists(staleApk),
@@ -1925,7 +1920,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task SetupAndBuildAsync_CreatesTrackedProjectState_AndValidApk()
+        public void SetupAndBuild_CreatesTrackedProjectState_AndValidApk()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -1946,9 +1941,9 @@ namespace BloomTests.Publish.Rab
             Assert.That(service.GetStatus().ProjectExists, Is.False);
             Assert.That(service.GetStatus().ApkExists, Is.False);
 
-            await service.PrepareAsync();
+            service.Prepare();
             Assert.That(service.GetStatus().BuildNeeded, Is.True);
-            await service.BuildAsync();
+            service.Build();
 
             var status = service.GetStatus();
             Assert.That(status.RabInstalled, Is.True);
@@ -2019,7 +2014,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task BuildAsync_UsesRabBuildOutputToAdvanceProgress_AndTimestampLogLines()
+        public void Build_UsesRabBuildOutputToAdvanceProgress_AndTimestampLogLines()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2037,15 +2032,15 @@ namespace BloomTests.Publish.Rab
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
 
-            await service.PrepareAsync();
+            service.Prepare();
 
-            // RabPublishApi claims the "build" action slot before running BuildAsync; mirror that
+            // RabPublishApi claims the "build" action slot before running Build; mirror that
             // here so RAB build output is recognized as build progress (TryAdvanceBuildProgressFromOutput
             // only advances while the active action is "build").
             Assert.That(service.TryBeginAction("build"), Is.True);
             try
             {
-                await service.BuildAsync();
+                service.Build();
             }
             finally
             {
@@ -2095,6 +2090,53 @@ namespace BloomTests.Publish.Rab
             Assert.That(
                 RabProjectService.GetBuildProgressPercentFromOutput("> Task :packageRelease"),
                 Is.EqualTo(95)
+            );
+        }
+
+        [Test]
+        public void GetBloomPubRoot_AsciiCacheFolder_UsesItAsIs()
+        {
+            var cacheFolder = Path.Combine(Path.GetTempPath(), "SIL", "Bloom", "plain-1234");
+            Assert.That(
+                RabWorkspacePaths.GetBloomPubRoot(
+                    cacheFolder,
+                    @"C:\Safe\Bloom App Data\RabWork",
+                    _ => throw new AssertionException("should not need a short path")
+                ),
+                Is.EqualTo(cacheFolder)
+            );
+        }
+
+        [Test]
+        public void GetBloomPubRoot_NonAsciiCacheFolderWithShortAlias_UsesTheAlias()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var cacheFolder = Path.Combine(tempFolder.Path, "Usuário", "bloompub-cache");
+            Assert.That(
+                RabWorkspacePaths.GetBloomPubRoot(
+                    cacheFolder,
+                    @"C:\Safe\Bloom App Data\RabWork",
+                    _ => @"C:\USUARI~1\BLOOMP~1"
+                ),
+                Is.EqualTo(@"C:\USUARI~1\BLOOMP~1")
+            );
+            Assert.That(Directory.Exists(cacheFolder), Is.True, "the folder is made first");
+        }
+
+        [Test]
+        public void GetBloomPubRoot_NonAsciiCacheFolderWithoutShortAlias_FallsBackToSafeWorkRoot()
+        {
+            // Reading App Builder can't read non-ASCII paths, and short names can be turned off
+            // (Devin, PR 8531).
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var cacheFolder = Path.Combine(tempFolder.Path, "Usuário", "bloompub-cache");
+            Assert.That(
+                RabWorkspacePaths.GetBloomPubRoot(
+                    cacheFolder,
+                    @"C:\Safe\Bloom App Data\RabWork",
+                    _ => null
+                ),
+                Is.EqualTo(@"C:\Safe\Bloom App Data\RabWork\bloompubs")
             );
         }
 
@@ -2198,7 +2240,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task PrepareAsync_DeletesBrokenJdkInstallBeforeInstallingBuildTools()
+        public void Prepare_DeletesBrokenJdkInstallBeforeInstallingBuildTools()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2225,14 +2267,14 @@ namespace BloomTests.Publish.Rab
                 "java"
             );
 
-            await service.PrepareAsync();
+            service.Prepare();
 
             Assert.That(service.JavaExistsBeforeInstallSdksCommand, Is.False);
             Assert.That(service.TzdbExistsBeforeInstallSdksCommand, Is.False);
         }
 
         [Test]
-        public async Task BuildAsync_RemovesGeneratedBookDataBeforeReloadingProject()
+        public void Build_RemovesGeneratedBookDataBeforeReloadingProject()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2249,7 +2291,7 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
+            service.Prepare();
 
             var appDefPath = service.GetStatus().AppDefPath;
             var booksRoot = Path.Combine(
@@ -2261,7 +2303,7 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(Path.GetDirectoryName(staleBookPath));
             RobustFile.WriteAllText(staleBookPath, "{\"title\":\"butterfly\"}");
 
-            await service.BuildAsync();
+            service.Build();
 
             Assert.That(RobustFile.Exists(staleBookPath), Is.True);
             Assert.That(RobustFile.ReadAllText(staleBookPath), Does.Contain("Flower"));
@@ -2270,7 +2312,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task BuildAsync_RefreshesProjectFontsFromExportedBloomPubs()
+        public void Build_RefreshesProjectFontsFromExportedBloomPubs()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2290,8 +2332,8 @@ namespace BloomTests.Publish.Rab
             service.FontsCssByFolderPath[trackedBooks[0].FolderPath] =
                 "@font-face {font-family:'ABeeZee'; font-weight:normal; font-style:normal; src:url('ABeeZee-Regular.woff2') format('woff2');}";
 
-            await service.PrepareAsync();
-            await service.BuildAsync();
+            service.Prepare();
+            service.Build();
 
             var document = XDocument.Load(service.GetStatus().AppDefPath);
             var fonts = document.Root.Element("fonts")?.Elements("font").ToList();
@@ -2307,7 +2349,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task BuildAsync_CopiesEmbeddedFontFilesIntoProjectFontsFolder()
+        public void Build_CopiesEmbeddedFontFilesIntoProjectFontsFolder()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2326,7 +2368,7 @@ namespace BloomTests.Publish.Rab
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
             service.FontsCssByFolderPath[trackedBooks[0].FolderPath] = kCharisRegularAndBoldCss;
 
-            await service.PrepareAsync();
+            service.Prepare();
             var appDefPath = service.GetStatus().AppDefPath;
             var fontsFolder = Path.Combine(
                 Path.GetDirectoryName(appDefPath),
@@ -2336,7 +2378,7 @@ namespace BloomTests.Publish.Rab
             // Simulate a font that the project did not have when it was created.
             Directory.Delete(fontsFolder, true);
 
-            await service.BuildAsync();
+            service.Build();
 
             var fontFileNames = XDocument
                 .Load(appDefPath)
@@ -2357,7 +2399,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task BuildAsync_RemovesStaleBloomPubExportsForUntrackedBooks()
+        public void Build_RemovesStaleBloomPubExportsForUntrackedBooks()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2377,8 +2419,8 @@ namespace BloomTests.Publish.Rab
             RobustFile.WriteAllText(staleBloomPubPath, "BloomPUB for Butterfly");
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
-            await service.BuildAsync();
+            service.Prepare();
+            service.Build();
 
             Assert.That(RobustFile.Exists(staleBloomPubPath), Is.False);
             Assert.That(RobustFile.Exists(trackedBooks[0].BloomPubPath), Is.True);
@@ -2389,7 +2431,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task BuildAsync_ReusesExistingBloomPubsWithinCurrentScreenSession()
+        public void Build_ReusesExistingBloomPubsWithinCurrentScreenSession()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2407,13 +2449,13 @@ namespace BloomTests.Publish.Rab
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
 
-            await service.PrepareAsync();
+            service.Prepare();
             var writesAfterPrepare = service.BloomPubWriteCount;
 
-            await service.BuildAsync();
+            service.Build();
             var writesAfterFirstBuild = service.BloomPubWriteCount;
 
-            await service.BuildAsync();
+            service.Build();
 
             Assert.That(service.BloomPubWriteCount, Is.EqualTo(writesAfterFirstBuild));
             Assert.That(writesAfterFirstBuild, Is.EqualTo(writesAfterPrepare));
@@ -2424,7 +2466,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task BuildAsync_ReusedBloomPubRefreshesTrackedThumbnailFileName()
+        public void Build_ReusedBloomPubRefreshesTrackedThumbnailFileName()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2443,12 +2485,12 @@ namespace BloomTests.Publish.Rab
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
 
-            await service.PrepareAsync();
+            service.Prepare();
 
             RewriteBloomPubThumbnail(trackedBooks[0].BloomPubPath, "thumbnail.jpg");
             Assert.That(trackedBooks[0].ThumbnailFileName, Is.EqualTo("thumbnail.png"));
 
-            await service.BuildAsync();
+            service.Build();
 
             var prepareState = JsonConvert.DeserializeObject<RabPrepareState>(
                 RobustFile.ReadAllText(paths.PrepareStatePath)
@@ -2473,34 +2515,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task ResetBloomPubCacheForScreenSession_DeletesExistingBloomPubs()
-        {
-            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
-            var paths = new RabWorkspacePaths(tempFolder.Path);
-            var trackedBooks = new List<RabBookPublishInfo>
-            {
-                new RabBookPublishInfo
-                {
-                    BookId = "book-1",
-                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
-                    Title = "Flower",
-                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "Flower.bloompub"),
-                },
-            };
-            Directory.CreateDirectory(trackedBooks[0].FolderPath);
-
-            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-
-            await service.PrepareAsync();
-            Assert.That(RobustFile.Exists(trackedBooks[0].BloomPubPath), Is.True);
-
-            service.ResetBloomPubCacheForScreenSession();
-
-            Assert.That(RobustFile.Exists(trackedBooks[0].BloomPubPath), Is.False);
-        }
-
-        [Test]
-        public async Task GetStatus_BuildNeededTracksSettingsAndBookOrderChanges()
+        public void GetStatus_BuildNeededTracksSettingsAndBookOrderChanges()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2525,8 +2540,8 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[1].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
-            await service.BuildAsync();
+            service.Prepare();
+            service.Build();
 
             Assert.That(service.GetStatus().BuildNeeded, Is.False);
 
@@ -2534,7 +2549,7 @@ namespace BloomTests.Publish.Rab
 
             Assert.That(service.GetStatus().BuildNeeded, Is.True);
 
-            await service.BuildAsync();
+            service.Build();
 
             Assert.That(service.GetStatus().BuildNeeded, Is.False);
 
@@ -2562,7 +2577,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task SaveTrackedBooks_RefreshesPersistedThumbnailFileNameFromExistingBloomPub()
+        public void SaveTrackedBooks_RefreshesPersistedThumbnailFileNameFromExistingBloomPub()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2580,8 +2595,8 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
-            await service.BuildAsync();
+            service.Prepare();
+            service.Build();
 
             RewriteBloomPubThumbnail(trackedBooks[0].BloomPubPath, "thumbnail.jpg");
 
@@ -2604,7 +2619,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task SaveAppSettings_UpdatesProjectWithoutRunningRabCommand()
+        public void SaveAppSettings_UpdatesProjectWithoutRunningRabCommand()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2621,7 +2636,7 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
+            service.Prepare();
             service.Commands.Clear();
 
             service.SaveAppSettings(
@@ -2649,7 +2664,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task SaveAppSettings_DoesNotPersistShadowSettingsAfterProjectExists()
+        public void SaveAppSettings_DoesNotPersistShadowSettingsAfterProjectExists()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2666,7 +2681,7 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
+            service.Prepare();
 
             service.SaveAppSettings(
                 new RabAppSettings
@@ -2681,7 +2696,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task PrepareAsync_NewProject_StoresSigningKeyInBloomOwnedFolder()
+        public void Prepare_NewProject_StoresSigningKeyInBloomOwnedFolder()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var bloomOwnedRabRoot = Path.Combine(tempFolder.Path, "user", "ReadingAppBuilder");
@@ -2700,7 +2715,7 @@ namespace BloomTests.Publish.Rab
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
 
-            await service.PrepareAsync();
+            service.Prepare();
 
             var prepareState = JsonConvert.DeserializeObject<RabPrepareState>(
                 RobustFile.ReadAllText(paths.PrepareStatePath)
@@ -2718,7 +2733,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task PrepareAsync_Reprepare_KeepsUsingBloomOwnedSigningKey()
+        public void Prepare_Reprepare_KeepsUsingBloomOwnedSigningKey()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var bloomOwnedRabRoot = Path.Combine(tempFolder.Path, "user", "ReadingAppBuilder");
@@ -2737,8 +2752,8 @@ namespace BloomTests.Publish.Rab
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
 
-            await service.PrepareAsync();
-            await service.PrepareAsync();
+            service.Prepare();
+            service.Prepare();
 
             var prepareState = JsonConvert.DeserializeObject<RabPrepareState>(
                 RobustFile.ReadAllText(paths.PrepareStatePath)
@@ -2785,7 +2800,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task OpenInRab_SeedsRabSettingsAndLaunchesUi()
+        public void OpenInRab_SeedsRabSettingsAndLaunchesUi()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2802,7 +2817,7 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
+            service.Prepare();
 
             service.OpenInRab();
 
@@ -2827,7 +2842,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task OpenInRab_WhenRabAlreadyRunning_BringsItToFrontWithoutLaunching()
+        public void OpenInRab_WhenRabAlreadyRunning_BringsItToFrontWithoutLaunching()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2847,7 +2862,7 @@ namespace BloomTests.Publish.Rab
             {
                 TryBringRunningRabToFrontResult = true,
             };
-            await service.PrepareAsync();
+            service.Prepare();
 
             service.OpenInRab();
 
@@ -2857,7 +2872,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task OpenInRab_PreservesExistingSettingsWhenReplacingOpenApps()
+        public void OpenInRab_PreservesExistingSettingsWhenReplacingOpenApps()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2874,7 +2889,7 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
+            service.Prepare();
 
             Directory.CreateDirectory(Path.GetDirectoryName(service.GetRabSettingsFilePath()));
             new XDocument(
@@ -2914,7 +2929,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task OpenInRab_WhenRabSettingsXmlIsCorrupt_RecreatesSettingsFile()
+        public void OpenInRab_WhenRabSettingsXmlIsCorrupt_RecreatesSettingsFile()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2931,7 +2946,7 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
+            service.Prepare();
 
             Directory.CreateDirectory(Path.GetDirectoryName(service.GetRabSettingsFilePath()));
             RobustFile.WriteAllText(service.GetRabSettingsFilePath(), "<settings><apps>");
@@ -2952,7 +2967,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task OpenInRab_DoesNotWriteToProgress()
+        public void OpenInRab_DoesNotWriteToProgress()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2969,7 +2984,7 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
+            service.Prepare();
 
             service.Progress.Messages.Clear();
             service.OpenInRab();
@@ -2978,7 +2993,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void GetSizeEstimates_UsesBookFolderSizesAndSharedLimits()
+        public void GetSizeEstimates_CountsOnlyFilesThatGoIntoTheBloomPub()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -2986,12 +3001,19 @@ namespace BloomTests.Publish.Rab
             var secondBookFolder = Path.Combine(tempFolder.Path, "book-2");
             Directory.CreateDirectory(firstBookFolder);
             Directory.CreateDirectory(secondBookFolder);
-            RobustFile.WriteAllBytes(Path.Combine(firstBookFolder, "a.bin"), new byte[1500]);
-            Directory.CreateDirectory(Path.Combine(secondBookFolder, "images"));
+            var htmlPath = Path.Combine(firstBookFolder, "book-1.htm");
+            RobustFile.WriteAllText(htmlPath, "<html><head></head><body></body></html>");
+            var htmlBytes = new FileInfo(htmlPath).Length;
+            RobustFile.WriteAllBytes(Path.Combine(firstBookFolder, "a.css"), new byte[1500]);
+            // A BloomPUB leaves these out, so the estimate must too (BL-17062).
+            RobustFile.WriteAllBytes(Path.Combine(firstBookFolder, "book-1.pdf"), new byte[50000]);
+            RobustFile.WriteAllBytes(Path.Combine(firstBookFolder, "book-1.bak"), new byte[7000]);
+            Directory.CreateDirectory(Path.Combine(firstBookFolder, "junk"));
             RobustFile.WriteAllBytes(
-                Path.Combine(secondBookFolder, "images", "b.bin"),
-                new byte[2500]
+                Path.Combine(firstBookFolder, "junk", "c.css"),
+                new byte[3000]
             );
+            RobustFile.WriteAllBytes(Path.Combine(secondBookFolder, "b.css"), new byte[2500]);
 
             var trackedBooks = new List<RabBookPublishInfo>
             {
@@ -3023,7 +3045,7 @@ namespace BloomTests.Publish.Rab
             Assert.That(estimates.Books, Has.Length.EqualTo(2));
             Assert.That(
                 estimates.Books.Single(book => book.BookId == "book-1").SizeBytes,
-                Is.EqualTo(1500)
+                Is.EqualTo(htmlBytes + 1500)
             );
             Assert.That(
                 estimates.Books.Single(book => book.BookId == "book-2").SizeBytes,
@@ -3043,18 +3065,16 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(firstBookFolder);
             Directory.CreateDirectory(secondBookFolder);
             // Folder content sizes (should be ignored for book-1 when bloompub exists)
-            RobustFile.WriteAllBytes(Path.Combine(firstBookFolder, "a.bin"), new byte[1500]);
-            Directory.CreateDirectory(Path.Combine(secondBookFolder, "images"));
-            RobustFile.WriteAllBytes(
-                Path.Combine(secondBookFolder, "images", "b.bin"),
-                new byte[2500]
-            );
+            RobustFile.WriteAllText(Path.Combine(firstBookFolder, "book-1.htm"), "<html></html>");
+            RobustFile.WriteAllBytes(Path.Combine(firstBookFolder, "a.css"), new byte[1500]);
+            RobustFile.WriteAllBytes(Path.Combine(secondBookFolder, "b.css"), new byte[2500]);
 
-            // Create a bloompub file only for book-1
+            // Create a bloompub file, with the record that says it is current, only for book-1
             Directory.CreateDirectory(paths.BloomPubRoot);
-            RobustFile.WriteAllBytes(
+            WriteCurrentBloomPub(
                 Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
-                new byte[4000]
+                firstBookFolder,
+                4000
             );
 
             var trackedBooks = new List<RabBookPublishInfo>
@@ -3086,12 +3106,172 @@ namespace BloomTests.Publish.Rab
                 Is.EqualTo(4000)
             );
             Assert.That(estimates.Books.Single(book => book.BookId == "book-1").IsActual, Is.True);
-            // book-2 has no bloompub: fall back to folder size and mark as estimate
+            // book-2 has no bloompub: fall back to an estimate and mark it so
             Assert.That(
                 estimates.Books.Single(book => book.BookId == "book-2").SizeBytes,
                 Is.EqualTo(2500)
             );
             Assert.That(estimates.Books.Single(book => book.BookId == "book-2").IsActual, Is.False);
+        }
+
+        [Test]
+        public void GetSizeEstimates_BloomPubOutOfDateOrUnrecorded_UsesEstimate()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var editedBookFolder = Path.Combine(tempFolder.Path, "book-1");
+            var unrecordedBookFolder = Path.Combine(tempFolder.Path, "book-2");
+            Directory.CreateDirectory(editedBookFolder);
+            Directory.CreateDirectory(unrecordedBookFolder);
+            var editedHtmlPath = Path.Combine(editedBookFolder, "book-1.htm");
+            RobustFile.WriteAllText(editedHtmlPath, "<html><body>old</body></html>");
+            RobustFile.WriteAllText(
+                Path.Combine(unrecordedBookFolder, "book-2.htm"),
+                "<html></html>"
+            );
+            Directory.CreateDirectory(paths.BloomPubRoot);
+            var editedBloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub");
+            WriteCurrentBloomPub(editedBloomPubPath, editedBookFolder, 4000);
+            // A BloomPUB with no record, as an older Bloom would have left behind.
+            var unrecordedBloomPubPath = Path.Combine(paths.BloomPubRoot, "book-2.bloompub");
+            RobustFile.WriteAllBytes(unrecordedBloomPubPath, new byte[5000]);
+
+            RobustFile.WriteAllText(editedHtmlPath, "<html><body>new text</body></html>");
+
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = editedBookFolder,
+                    Title = "Book One",
+                    BloomPubPath = editedBloomPubPath,
+                },
+                new RabBookPublishInfo
+                {
+                    BookId = "book-2",
+                    FolderPath = unrecordedBookFolder,
+                    Title = "Book Two",
+                    BloomPubPath = unrecordedBloomPubPath,
+                },
+            };
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+
+            var estimates = service.GetSizeEstimates();
+
+            var edited = estimates.Books.Single(book => book.BookId == "book-1");
+            var unrecorded = estimates.Books.Single(book => book.BookId == "book-2");
+            Assert.That(edited.IsActual, Is.False);
+            Assert.That(edited.SizeBytes, Is.EqualTo(new FileInfo(editedHtmlPath).Length));
+            Assert.That(unrecorded.IsActual, Is.False);
+            Assert.That(unrecorded.SizeBytes, Is.LessThan(5000));
+        }
+
+        [Test]
+        public void GetSizeEstimates_RenamedAppBook_UsesTheBloomPubNameExportUses()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            // The book was added to the app as "Old Name", then its folder was renamed. Export
+            // keeps making "Old Name.bloompub" (ResolveBloomPubPath keeps the recorded name).
+            var bookFolder = Path.Combine(tempFolder.Path, "New Name");
+            Directory.CreateDirectory(bookFolder);
+            RobustFile.WriteAllText(Path.Combine(bookFolder, "New Name.htm"), "<html></html>");
+            Directory.CreateDirectory(paths.BloomPubRoot);
+            var recordedBloomPubPath = Path.Combine(paths.BloomPubRoot, "Old Name.bloompub");
+            WriteCurrentBloomPub(recordedBloomPubPath, bookFolder, 4000);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = bookFolder,
+                    Title = "Book One",
+                    BloomPubPath = recordedBloomPubPath,
+                },
+            };
+            Directory.CreateDirectory(Path.GetDirectoryName(paths.PrepareStatePath));
+            RobustFile.WriteAllText(
+                paths.PrepareStatePath,
+                JsonConvert.SerializeObject(new RabPrepareState { Books = trackedBooks })
+            );
+            Assert.That(
+                RobustFile.Exists(Path.Combine(paths.BloomPubRoot, "New Name.bloompub")),
+                Is.False,
+                "test setup: there should be no BloomPUB under the new folder name"
+            );
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+
+            var estimate = service.GetSizeEstimates().Books.Single();
+
+            Assert.That(estimate.IsActual, Is.True);
+            Assert.That(estimate.SizeBytes, Is.EqualTo(4000));
+        }
+
+        [Test]
+        public void GetSizeEstimates_RenamedAppBookStillSavedUnderOldFolder_MatchesByBookId()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            // After a rename, the app's saved record still has the old folder path; export finds
+            // the book by its id and keeps making the old-named BloomPUB (Greptile, PR 8531).
+            var bookFolder = Path.Combine(tempFolder.Path, "New Name");
+            Directory.CreateDirectory(bookFolder);
+            RobustFile.WriteAllText(Path.Combine(bookFolder, "New Name.htm"), "<html></html>");
+            Directory.CreateDirectory(paths.BloomPubRoot);
+            var recordedBloomPubPath = Path.Combine(paths.BloomPubRoot, "Old Name.bloompub");
+            WriteCurrentBloomPub(recordedBloomPubPath, bookFolder, 4000);
+            Directory.CreateDirectory(Path.GetDirectoryName(paths.PrepareStatePath));
+            RobustFile.WriteAllText(
+                paths.PrepareStatePath,
+                JsonConvert.SerializeObject(
+                    new RabPrepareState
+                    {
+                        Books = new List<RabBookPublishInfo>
+                        {
+                            new RabBookPublishInfo
+                            {
+                                BookId = "book-1",
+                                FolderPath = Path.Combine(tempFolder.Path, "Old Name"),
+                                Title = "Book One",
+                                BloomPubPath = recordedBloomPubPath,
+                            },
+                        },
+                    }
+                )
+            );
+            var collectionBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = bookFolder,
+                    Title = "Book One",
+                },
+            };
+            var service = new TestRabProjectService(paths, "Sample App", collectionBooks);
+
+            var estimate = service.GetSizeEstimates().Books.Single();
+
+            Assert.That(estimate.IsActual, Is.True);
+            Assert.That(estimate.SizeBytes, Is.EqualTo(4000));
+        }
+
+        /// <summary>
+        /// Write a stand-in BloomPUB of the given size, and the cache record saying it was made from
+        /// the book in <paramref name="bookFolder"/> as it is now (with the test service's null
+        /// settings key).
+        /// </summary>
+        private static void WriteCurrentBloomPub(string bloomPubPath, string bookFolder, int size)
+        {
+            var snapshot = BloomPubCache.TakeSnapshot(bookFolder);
+            RobustFile.WriteAllBytes(bloomPubPath, new byte[size]);
+            BloomPubCache.RecordNewBloomPub(bloomPubPath, snapshot, null);
+            Assert.That(
+                BloomPubCache.IsCurrent(bloomPubPath, bookFolder, null),
+                Is.True,
+                "test setup: the BloomPUB should start out current"
+            );
         }
 
         [Test]
@@ -3142,7 +3322,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task GetStatus_RequiresPrepare_WhenTheInstalledRabIsOlderThanBloomNeeds()
+        public void GetStatus_RequiresPrepare_WhenTheInstalledRabIsOlderThanBloomNeeds()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -3151,7 +3331,7 @@ namespace BloomTests.Publish.Rab
                 "Sample App",
                 MakeOneTrackedBook(tempFolder, paths)
             );
-            await service.PrepareAsync();
+            service.Prepare();
             Assert.That(
                 service.GetStatus().PrepareSteps.All(step => step.Complete),
                 Is.True,
@@ -3176,7 +3356,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task GetStatus_ReportsCompletedPrepareSteps_AfterPrepareAsync()
+        public void GetStatus_ReportsCompletedPrepareSteps_AfterPrepare()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -3194,7 +3374,7 @@ namespace BloomTests.Publish.Rab
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
 
-            await service.PrepareAsync();
+            service.Prepare();
 
             var status = service.GetStatus();
 
@@ -3224,7 +3404,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task PrepareAsync_InstallsRabSilently_AndContinues_WhenRegistryInstallIsMissingAndInstallerExists()
+        public void Prepare_InstallsRabSilently_AndContinues_WhenRegistryInstallIsMissingAndInstallerExists()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -3251,7 +3431,7 @@ namespace BloomTests.Publish.Rab
                 RabSetupInstallerPathToReturn = installerPath,
             };
 
-            await service.PrepareAsync();
+            service.Prepare();
 
             Assert.That(service.InstalledRabFromSetupPaths, Is.EqualTo(new[] { installerPath }));
             Assert.That(service.Commands, Is.Not.Empty);
@@ -3295,7 +3475,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task PrepareAsync_InstallsTheNewerRab_WhenAnOlderVersionIsInstalled()
+        public void Prepare_InstallsTheNewerRab_WhenAnOlderVersionIsInstalled()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -3325,7 +3505,7 @@ namespace BloomTests.Publish.Rab
                 "setup: the Apps screen should ask for the update"
             );
 
-            await service.PrepareAsync();
+            service.Prepare();
 
             Assert.That(service.InstalledRabFromSetupPaths, Is.EqualTo(new[] { installerPath }));
             Assert.That(
@@ -3342,7 +3522,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void PrepareAsync_Fails_WhenTheInstalledVersionIsStillOldAfterTheUpdate()
+        public void Prepare_Fails_WhenTheInstalledVersionIsStillOldAfterTheUpdate()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -3362,9 +3542,7 @@ namespace BloomTests.Publish.Rab
                 RabSetupInstallerPathToReturn = installerPath,
             };
 
-            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
-                await service.PrepareAsync()
-            );
+            var error = Assert.Throws<ApplicationException>(() => service.Prepare());
 
             Assert.That(service.InstalledRabFromSetupPaths, Is.EqualTo(new[] { installerPath }));
             Assert.That(
@@ -3381,7 +3559,7 @@ namespace BloomTests.Publish.Rab
 
         [TestCase("999.0")]
         [TestCase(null)]
-        public async Task PrepareAsync_DoesNotReinstallRab_WhenTheInstalledVersionIsCurrentOrUnknown(
+        public void Prepare_DoesNotReinstallRab_WhenTheInstalledVersionIsCurrentOrUnknown(
             string installedVersionText
         )
         {
@@ -3396,7 +3574,7 @@ namespace BloomTests.Publish.Rab
                 InstalledRabVersionText = installedVersionText,
             };
 
-            await service.PrepareAsync();
+            service.Prepare();
 
             Assert.That(service.InstalledRabFromSetupPaths, Is.Empty);
             Assert.That(
@@ -3406,7 +3584,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task PrepareAsync_Stops_WhenTheUpdateCannotBeDownloaded()
+        public void Prepare_Stops_WhenTheUpdateCannotBeDownloaded()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -3421,7 +3599,7 @@ namespace BloomTests.Publish.Rab
                 RabSetupInstallerDownloadPathToReturn = null,
             };
 
-            await service.PrepareAsync();
+            service.Prepare();
 
             Assert.That(service.InstalledRabFromSetupPaths, Is.Empty);
             Assert.That(
@@ -3438,7 +3616,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void PrepareAsync_Fails_WhenTheUpdateInstallerFails_EvenThoughTheOldRabIsStillThere()
+        public void Prepare_Fails_WhenTheUpdateInstallerFails_EvenThoughTheOldRabIsStillThere()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -3460,9 +3638,7 @@ namespace BloomTests.Publish.Rab
                 ),
             };
 
-            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
-                await service.PrepareAsync()
-            );
+            var error = Assert.Throws<ApplicationException>(() => service.Prepare());
 
             Assert.That(
                 service.IsRabInstalledForPrepare(),
@@ -3486,7 +3662,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void PrepareAsync_GivesAPlainMessage_WhenInstallingRabFails()
+        public void Prepare_GivesAPlainMessage_WhenInstallingRabFails()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -3508,9 +3684,7 @@ namespace BloomTests.Publish.Rab
                 ),
             };
 
-            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
-                await service.PrepareAsync()
-            );
+            var error = Assert.Throws<ApplicationException>(() => service.Prepare());
 
             Assert.That(
                 error.Message,
@@ -3521,7 +3695,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void PrepareAsync_GivesThePlainBuildToolsMessage_WhenTheInstallSdksCommandFails()
+        public void Prepare_GivesThePlainBuildToolsMessage_WhenTheInstallSdksCommandFails()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -3536,9 +3710,7 @@ namespace BloomTests.Publish.Rab
                 InstallSdksFailure = rabFailure,
             };
 
-            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
-                await service.PrepareAsync()
-            );
+            var error = Assert.Throws<ApplicationException>(() => service.Prepare());
 
             Assert.That(
                 error.Message,
@@ -3601,7 +3773,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void PrepareAsync_KeepsTheOriginalError_WhenRabItselfCannotBeFound()
+        public void Prepare_KeepsTheOriginalError_WhenRabItselfCannotBeFound()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -3619,9 +3791,7 @@ namespace BloomTests.Publish.Rab
                 RabLauncherPathToReturn = null,
             };
 
-            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
-                await service.PrepareAsync()
-            );
+            var error = Assert.Throws<ApplicationException>(() => service.Prepare());
 
             Assert.That(
                 error,
@@ -3631,7 +3801,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void PrepareAsync_KeepsTheOriginalError_WhenTheInstallSdksCommandFailsButTheToolsAreThere()
+        public void Prepare_KeepsTheOriginalError_WhenTheInstallSdksCommandFailsButTheToolsAreThere()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -3645,9 +3815,7 @@ namespace BloomTests.Publish.Rab
                 InstallSdksFailure = rabFailure,
             };
 
-            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
-                await service.PrepareAsync()
-            );
+            var error = Assert.Throws<ApplicationException>(() => service.Prepare());
 
             Assert.That(
                 error,
@@ -3657,7 +3825,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void PrepareAsync_Fails_WhenTheUpdateDownloadTimesOut()
+        public void Prepare_Fails_WhenTheUpdateDownloadTimesOut()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -3673,9 +3841,7 @@ namespace BloomTests.Publish.Rab
                 DownloadFailure = new TaskCanceledException("The request timed out."),
             };
 
-            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
-                await service.PrepareAsync()
-            );
+            var error = Assert.Throws<ApplicationException>(() => service.Prepare());
 
             Assert.That(service.InstalledRabFromSetupPaths, Is.Empty);
             Assert.That(
@@ -3840,7 +4006,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task PrepareAsync_DoesNotFail_WhenInstallerLaunchIsCanceledByUser()
+        public void Prepare_DoesNotFail_WhenInstallerLaunchIsCanceledByUser()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -3864,7 +4030,7 @@ namespace BloomTests.Publish.Rab
                 ),
             };
 
-            Assert.DoesNotThrowAsync(async () => await service.PrepareAsync());
+            Assert.DoesNotThrow(() => service.Prepare());
 
             Assert.That(service.Commands, Is.Empty);
             Assert.That(service.InstalledRabFromSetupPaths, Is.EqualTo(new[] { installerPath }));
@@ -4038,7 +4204,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task PrepareAsync_DownloadsInstaller_WhenRegistryInstallAndInstallerAreMissing()
+        public void Prepare_DownloadsInstaller_WhenRegistryInstallAndInstallerAreMissing()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -4058,7 +4224,7 @@ namespace BloomTests.Publish.Rab
                 RabSetupInstallerDownloadPathToReturn = downloadedInstallerPath,
             };
 
-            await service.PrepareAsync();
+            service.Prepare();
 
             Assert.That(
                 service.DownloadedRabSetupInstallerPaths,
@@ -4083,7 +4249,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task GetStatus_ShowsExistingProjectAsNotCurrentWhenRabIsUninstalled()
+        public void GetStatus_ShowsExistingProjectAsNotCurrentWhenRabIsUninstalled()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -4100,8 +4266,8 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.PrepareAsync();
-            await service.BuildAsync();
+            service.Prepare();
+            service.Build();
             service.IsRabInstalledForPrepareResult = false;
 
             var status = service.GetStatus();

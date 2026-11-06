@@ -90,6 +90,9 @@ namespace Bloom.Publish.Rab
             (512, @"drawable-web\ic_launcher.png"),
         };
         internal const long kEstimatedAppOverheadBytes = 12L * 1000 * 1000;
+
+        // The name of the background action that makes BloomPUBs just to measure them (BL-17062).
+        internal const string kMeasureAction = "measure";
         public const long kMaxAppSizeBytes = 100L * 1000 * 1000;
         private static readonly (
             string organizationName,
@@ -101,6 +104,7 @@ namespace Bloom.Publish.Rab
         private readonly CollectionSettings _collectionSettings;
         private readonly BloomWebSocketServer _webSocketServer;
         private readonly IWebSocketProgress _progress;
+        private readonly BloomPubSizeEstimator _bloomPubSizeEstimator = new BloomPubSizeEstimator();
         private volatile string _activeProgressAction;
         private int _lastBuildProgressPercent;
         private volatile string _lastLoggedProgressStage;
@@ -170,43 +174,26 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
-        /// Prepares the collection-owned Reading App Builder workspace so the project can be customized or built.
+        /// Makes the BloomPUBs that are missing or out of date for the app's books, without
+        /// building the app, so that the Apps screen can show their actual sizes instead of
+        /// estimates (BL-17062). A later Build reuses them. Runs synchronously; the API runs it on
+        /// a background thread.
         /// </summary>
-        public Task PrepareAsync()
+        public void MeasureBookSizes()
         {
-            Prepare();
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Builds a fresh APK from the current prepared project state.
-        /// </summary>
-        public Task BuildAsync()
-        {
-            Build();
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Clears cached BloomPUB exports that are only intended to live for the current Apps screen session.
-        /// </summary>
-        public void ResetBloomPubCacheForScreenSession()
-        {
+            using var _longOperation = FreezeDoctorSupport.LongOperation(
+                "making BloomPUBs to measure the books in an app"
+            );
             var paths = GetPaths();
             EnsureWorkspaceFolders(paths);
-            DeleteStaleBloomPubExports(
-                paths.BloomPubRoot,
-                new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            ReportProgressStage("exporting-bloompubs", 0);
+            _progress.MessageWithoutLocalizing(
+                "Making BloomPUBs to measure the app's books...",
+                ProgressKind.Heading
             );
-        }
-
-        /// <summary>
-        /// Installs the latest APK on a connected Android device and launches it.
-        /// </summary>
-        public Task InstallAsync()
-        {
-            Install();
-            return Task.CompletedTask;
+            ExportTrackedBooks(paths, LoadState(paths) ?? new RabPrepareState());
+            ReportProgressStage("complete", 100);
+            _progress.MessageWithoutLocalizing("Measuring complete.", ProgressKind.Heading);
         }
 
         /// <summary>
@@ -470,38 +457,98 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
-        /// Estimates per-book and overall app size using available BloomPUB exports when possible.
+        /// Estimates per-book and overall app size using available BloomPUB exports when possible,
+        /// and <see cref="BloomPubSizeEstimator"/> for the other books.
         /// </summary>
         public RabAppSizeEstimates GetSizeEstimates()
         {
             var paths = GetPaths();
+            // The app's books keep the BloomPUB name recorded when they were added, even if the
+            // book folder has since been renamed, so look them up the same way export does: by
+            // book id first (the saved folder path is the old one after a rename), then by folder.
+            var trackedBooks = LoadState(paths)?.Books ?? new List<RabBookPublishInfo>();
+            var trackedById = trackedBooks
+                .Where(book => !string.IsNullOrWhiteSpace(book.BookId))
+                .GroupBy(book => book.BookId)
+                .ToDictionary(group => group.Key, group => group.First());
+            var trackedByFolder = trackedBooks
+                .Where(book => !string.IsNullOrWhiteSpace(book.FolderPath))
+                .GroupBy(book => book.FolderPath, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group.First(),
+                    StringComparer.OrdinalIgnoreCase
+                );
             return new RabAppSizeEstimates()
             {
                 Books = GetCollectionBooksForSizeEstimates()
                     .Select(book =>
                     {
-                        var bloomPubPath = Path.Combine(
+                        if (!trackedById.TryGetValue(book.BookId ?? "", out var tracked))
+                            trackedByFolder.TryGetValue(book.FolderPath ?? "", out tracked);
+                        var bloomPubPath = ResolveBloomPubPath(
                             paths.BloomPubRoot,
                             Path.GetFileName(book.FolderPath)
-                                + BloomPubMaker.BloomPubExtensionWithDot
+                                + BloomPubMaker.BloomPubExtensionWithDot,
+                            tracked?.BloomPubPath
                         );
-                        var hasBloomPub =
-                            !string.IsNullOrWhiteSpace(bloomPubPath)
-                            && RobustFile.Exists(bloomPubPath);
-                        return new RabBookSizeEstimate()
-                        {
-                            BookId = book.BookId,
-                            FolderPath = book.FolderPath,
-                            Title = book.Title,
-                            SizeBytes = hasBloomPub
-                                ? new FileInfo(bloomPubPath).Length
-                                : GetFolderSizeBytes(book.FolderPath),
-                            IsActual = hasBloomPub,
-                        };
+                        var bloomPubSize = IsBloomPubCurrentForSizeEstimate(bloomPubPath, book)
+                            ? GetBloomPubSizeIfPresent(bloomPubPath)
+                            : null;
+                        if (!bloomPubSize.HasValue)
+                            return MakeBookSizeEstimate(
+                                book,
+                                _bloomPubSizeEstimator.EstimateBloomPubSize(
+                                    book.FolderPath,
+                                    book.ImageSettings,
+                                    book.AppearanceSettings
+                                ),
+                                false
+                            );
+                        return MakeBookSizeEstimate(book, bloomPubSize.Value, true);
                     })
                     .ToArray(),
                 EstimatedAppOverheadBytes = kEstimatedAppOverheadBytes,
                 MaxAppSizeBytes = kMaxAppSizeBytes,
+            };
+        }
+
+        /// <summary>
+        /// Whether the BloomPUB at <paramref name="bloomPubPath"/> can be reported as the book's
+        /// actual size. Checking reads the book's files, and one can vanish or be locked part way
+        /// through, e.g. while a Measure or Build in the background rewrites meta.json; then we
+        /// show the estimate this time rather than fail the whole size request (BL-17062).
+        /// </summary>
+        private bool IsBloomPubCurrentForSizeEstimate(string bloomPubPath, RabTrackedBookInfo book)
+        {
+            try
+            {
+                return BloomPubCache.IsCurrent(
+                    bloomPubPath,
+                    book.FolderPath,
+                    book.BloomPubSettingsKey
+                );
+            }
+            catch (Exception error)
+                when (error is IOException || error is UnauthorizedAccessException)
+            {
+                return false;
+            }
+        }
+
+        private static RabBookSizeEstimate MakeBookSizeEstimate(
+            RabTrackedBookInfo book,
+            long sizeBytes,
+            bool isActual
+        )
+        {
+            return new RabBookSizeEstimate()
+            {
+                BookId = book.BookId,
+                FolderPath = book.FolderPath,
+                Title = book.Title,
+                SizeBytes = sizeBytes,
+                IsActual = isActual,
             };
         }
 
@@ -668,7 +715,11 @@ namespace Bloom.Publish.Rab
                 _progress.MessageWithoutLocalizing($"Bloom log: {Logger.LogPath}");
         }
 
-        private void Prepare()
+        /// <summary>
+        /// Prepares the collection-owned Reading App Builder workspace so the project can be
+        /// customized or built. Runs synchronously; the API runs it on a background thread.
+        /// </summary>
+        public void Prepare()
         {
             var paths = GetPaths();
             ReportProgressStage("checking-installer", 0);
@@ -1061,7 +1112,11 @@ namespace Bloom.Publish.Rab
             }
         }
 
-        private void Build()
+        /// <summary>
+        /// Builds a fresh APK from the current prepared project state. Runs synchronously; the
+        /// API runs it on a background thread.
+        /// </summary>
+        public void Build()
         {
             // The longest deliberate operation Bloom has: a Gradle build exceeds a minute even on a fast
             // machine. BloomPubMaker marks its own work nested inside this; the scope counts depth, so the
@@ -1070,7 +1125,8 @@ namespace Bloom.Publish.Rab
                 "building an app with Reading App Builder"
             );
 
-            // Build reuses BloomPUBs created during the current Apps-screen session and regenerates only missing ones.
+            // Build reuses BloomPUBs made earlier that still match their books (see BloomPubCache)
+            // and makes only the missing or out-of-date ones.
             var paths = GetPaths();
             EnsureWorkspaceFolders(paths);
             _lastBuildProgressPercent = 0;
@@ -1336,7 +1392,11 @@ namespace Bloom.Publish.Rab
             return cleaned.Skip(Math.Max(0, cleaned.Count - kTailLineCount)).ToList();
         }
 
-        private void Install()
+        /// <summary>
+        /// Installs the latest APK on a connected Android device and launches it. Runs
+        /// synchronously; the API runs it on a background thread.
+        /// </summary>
+        public void Install()
         {
             // Install re-reads package/app metadata from the project so launching uses the same identity that was built.
             var paths = GetPaths();
@@ -1599,11 +1659,35 @@ namespace Bloom.Publish.Rab
         {
             Directory.CreateDirectory(paths.RabRoot);
             Directory.CreateDirectory(paths.BloomPubRoot);
+            DeleteOldBloomPubFolder(paths);
             Directory.CreateDirectory(paths.BuildRoot);
             Directory.CreateDirectory(paths.ApkRoot);
             Directory.CreateDirectory(paths.KeystoreRoot);
             Directory.CreateDirectory(paths.ProjectAssetsRoot);
             Directory.CreateDirectory(paths.LauncherIconRoot);
+        }
+
+        /// <summary>
+        /// Before BL-17062 the Apps screen made its BloomPUBs in the collection's own
+        /// "Bloom App Data/bloompubs" folder; they are now kept in
+        /// <see cref="BloomPubCache.GetCacheFolder"/>. The old ones would only ever be made again,
+        /// so remove them rather than leave them for file-syncing services to copy around.
+        /// </summary>
+        private static void DeleteOldBloomPubFolder(RabWorkspacePaths paths)
+        {
+            var oldFolder = Path.Combine(paths.RabRoot, "bloompubs");
+            if (!Directory.Exists(oldFolder))
+                return;
+            try
+            {
+                RobustIO.DeleteDirectoryAndContents(oldFolder);
+            }
+            catch (Exception error)
+                when (error is IOException || error is UnauthorizedAccessException)
+            {
+                // Something has a file open; we'll try again next time.
+                Logger.WriteError($"Could not delete the old BloomPUB folder {oldFolder}", error);
+            }
         }
 
         internal virtual List<RabBookPublishInfo> ExportPrepareBooks(RabWorkspacePaths paths)
@@ -1714,6 +1798,16 @@ namespace Bloom.Publish.Rab
                 )
                     bloomPubPathsToKeep.Add(bloomPubPath);
             }
+            // Keep the BloomPUBs of the collection's other books too, so their sizes stay known
+            // and a later app with those books can reuse them (BL-17062). Only BloomPUBs of
+            // books that are gone (deleted or renamed) are left to be cleaned up.
+            foreach (var book in GetCollectionBooksForSizeEstimates())
+                bloomPubPathsToKeep.Add(
+                    Path.Combine(
+                        paths.BloomPubRoot,
+                        Path.GetFileName(book.FolderPath) + BloomPubMaker.BloomPubExtensionWithDot
+                    )
+                );
 
             DeleteStaleBloomPubExports(paths.BloomPubRoot, bloomPubPathsToKeep);
 
@@ -1740,27 +1834,18 @@ namespace Bloom.Publish.Rab
                     existing?.BloomPubPath
                 );
 
-                if (RobustFile.Exists(bloomPubPath))
-                {
-                    _progress.MessageWithoutLocalizing(
-                        $"Reusing existing BloomPUB for {bookTitle}..."
-                    );
-                }
-                else
-                {
-                    _progress.MessageWithoutLocalizing($"Creating BloomPUB for {bookTitle}...");
-                    var settings = BloomPubPublishSettings.GetPublishSettingsForBook(
-                        _bookServer,
-                        bookInfo
-                    );
-                    BloomPubMaker.CreateBloomPub(
-                        settings,
-                        bloomPubPath,
-                        book,
-                        _bookServer,
-                        _progress
-                    );
-                }
+                var settings = BloomPubPublishSettings.GetPublishSettingsForBook(
+                    _bookServer,
+                    bookInfo
+                );
+                BloomPubMaker.GetOrCreateCachedBloomPub(
+                    settings,
+                    bloomPubPath,
+                    book,
+                    _bookServer,
+                    _progress,
+                    bookTitle
+                );
                 ReportBloomPubStageProgress(index + 1, booksToExport.Count);
 
                 var bloomPubContent = ReadBloomPubContentInfo(bloomPubPath);
@@ -1855,7 +1940,24 @@ namespace Bloom.Publish.Rab
                 if (bloomPubPathsToKeep.Contains(existingBloomPubPath))
                     continue;
 
-                RobustFile.Delete(existingBloomPubPath);
+                BloomPubCache.Delete(existingBloomPubPath);
+            }
+
+            // Also clear out records whose BloomPUB is gone (e.g. a build that was cancelled).
+            foreach (
+                var recordPath in Directory.GetFiles(
+                    bloomPubRoot,
+                    "*" + BloomPubMaker.BloomPubExtensionWithDot + BloomPubCache.kRecordSuffix,
+                    SearchOption.TopDirectoryOnly
+                )
+            )
+            {
+                var bloomPubPath = recordPath.Substring(
+                    0,
+                    recordPath.Length - BloomPubCache.kRecordSuffix.Length
+                );
+                if (!RobustFile.Exists(bloomPubPath))
+                    RobustFile.Delete(recordPath);
             }
         }
 
@@ -2200,8 +2302,16 @@ namespace Bloom.Publish.Rab
                 return;
 
             // Keep the prepare/build progress bar moving during per-book export work instead of jumping straight to the next stage.
-            var startPercent = _activeProgressAction == "build" ? 10 : 10;
-            var endPercent = _activeProgressAction == "build" ? 30 : 45;
+            // Measuring does nothing but export, so it uses the whole bar.
+            var startPercent = 10;
+            var endPercent = 45;
+            if (_activeProgressAction == "build")
+                endPercent = 30;
+            else if (_activeProgressAction == kMeasureAction)
+            {
+                startPercent = 0;
+                endPercent = 100;
+            }
             var percent =
                 startPercent
                 + (int)
@@ -4321,44 +4431,46 @@ namespace Bloom.Publish.Rab
                     BookId = book.Id,
                     FolderPath = book.FolderPath,
                     Title = string.IsNullOrWhiteSpace(book.Title) ? book.FolderName : book.Title,
+                    ImageSettings = book.PublishSettings.BloomPub.ImageSettings,
+                    AppearanceSettings = book.AppearanceSettings,
+                    BloomPubSettingsKey = MakeBloomPubSettingsKey(
+                        BloomPubPublishSettings.FromBookInfo(book)
+                    ),
                 });
         }
 
-        private static long GetFolderSizeBytes(string folderPath)
+        /// <summary>
+        /// The key that says what besides the book a kept BloomPUB was made with (see
+        /// <see cref="BloomPubCache.MakeSettingsKey"/>). It must match the key
+        /// <see cref="BloomPubMaker.GetOrCreateCachedBloomPub"/> uses when export makes the
+        /// BloomPUB, so it uses the same creator and the collection's subscription.
+        /// </summary>
+        private string MakeBloomPubSettingsKey(BloomPubPublishSettings settings)
         {
-            if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath))
-                return 0;
+            return BloomPubCache.MakeSettingsKey(
+                settings,
+                BloomPubMaker.kCreatorBloom,
+                _collectionSettings.Subscription
+            );
+        }
 
-            long totalBytes = 0;
-
+        /// <summary>
+        /// The size of an already-made BloomPUB, or null if there isn't one. The file can vanish
+        /// between checking for it and reading its size, e.g. when a build replaces it while the
+        /// size estimates are being worked out (BL-17062); that counts as not having one.
+        /// </summary>
+        private static long? GetBloomPubSizeIfPresent(string bloomPubPath)
+        {
+            if (!RobustFile.Exists(bloomPubPath))
+                return null;
             try
             {
-                foreach (
-                    var filePath in Directory.EnumerateFiles(
-                        folderPath,
-                        "*",
-                        SearchOption.AllDirectories
-                    )
-                )
-                {
-                    try
-                    {
-                        totalBytes += new FileInfo(filePath).Length;
-                    }
-                    catch (Exception error)
-                        when (error is IOException
-                            || error is UnauthorizedAccessException
-                            || error is NotSupportedException
-                        ) { }
-                }
+                return new FileInfo(bloomPubPath).Length;
             }
-            catch (Exception error)
-                when (error is IOException
-                    || error is UnauthorizedAccessException
-                    || error is NotSupportedException
-                ) { }
-
-            return totalBytes;
+            catch (FileNotFoundException)
+            {
+                return null;
+            }
         }
 
         private static string FirstNonEmpty(params string[] values)
