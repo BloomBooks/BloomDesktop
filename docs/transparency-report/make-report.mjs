@@ -175,7 +175,9 @@ backgrounds.sort((a, b) => b.lightness - a.lightness);
 
 // ---- Copy images ----
 
-fs.rmSync(pageDir, { recursive: true, force: true });
+// Remove only what an earlier run generated, so a --page-dir that holds other files keeps them.
+for (const generated of ["index.html", "img", "full"])
+    fs.rmSync(path.join(pageDir, generated), { recursive: true, force: true });
 fs.mkdirSync(path.join(pageDir, "img"), { recursive: true });
 let totalBytes = 0;
 function copyInto(sourceFile, relativeTarget) {

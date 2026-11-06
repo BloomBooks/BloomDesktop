@@ -97,7 +97,9 @@ namespace BloomTests.RuntimeImageProcessing
             var black = Color.FromArgb(0, 0, 0);
             var lightGray = Color.FromArgb(200, 200, 200);
             var paleRed = Color.FromArgb(255, 155, 155);
-            var colours = new[] { white, black, lightGray, paleRed };
+            // Its ink's red is 128.8, which comes back over white as 156 only when it is rounded, not truncated.
+            var mutedRed = Color.FromArgb(156, 55, 55);
+            var colours = new[] { white, black, lightGray, paleRed, mutedRed };
             using (var source = new Bitmap(colours.Length, 1, PixelFormat.Format24bppRgb))
             {
                 for (var x = 0; x < colours.Length; x++)

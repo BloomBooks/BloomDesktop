@@ -549,7 +549,7 @@ namespace Bloom.ImageProcessing
             var pixels = new byte[stride * height];
             Marshal.Copy(srcData.Scan0, pixels, 0, pixels.Length);
             source.UnlockBits(srcData);
-            var output = new byte[stride * height];
+            // The pixels are converted in place, so a large picture needs no second full-size array.
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
@@ -562,18 +562,26 @@ namespace Bloom.ImageProcessing
                     byte minChannel = Math.Min(r, Math.Min(g, b));
                     // alpha is 0 for pure white and 255 for black.
                     int alpha = 255 - minChannel;
-                    output[idx + 3] = (byte)alpha;
+                    pixels[idx + 3] = (byte)alpha;
                     if (alpha > 0)
                     {
                         // The ink that gives this pixel over white: pixel = alpha * ink + (1 - alpha) * white,
-                        // so ink = (pixel - minChannel) * 255 / alpha. A fully transparent pixel keeps RGB 0.
-                        output[idx] = (byte)Math.Min(255, (b - minChannel) * 255 / alpha);
-                        output[idx + 1] = (byte)Math.Min(255, (g - minChannel) * 255 / alpha);
-                        output[idx + 2] = (byte)Math.Min(255, (r - minChannel) * 255 / alpha);
+                        // so ink = (pixel - minChannel) * 255 / alpha, rounded to the nearest level so that
+                        // the ink drawn over white gives back the original pixel.
+                        pixels[idx] = (byte)Math.Round((b - minChannel) * 255.0 / alpha);
+                        pixels[idx + 1] = (byte)Math.Round((g - minChannel) * 255.0 / alpha);
+                        pixels[idx + 2] = (byte)Math.Round((r - minChannel) * 255.0 / alpha);
+                    }
+                    else
+                    {
+                        // A fully transparent pixel has RGB 0.
+                        pixels[idx] = 0;
+                        pixels[idx + 1] = 0;
+                        pixels[idx + 2] = 0;
                     }
                 }
             }
-            Marshal.Copy(output, 0, dstData.Scan0, output.Length);
+            Marshal.Copy(pixels, 0, dstData.Scan0, pixels.Length);
             result.UnlockBits(dstData);
             return result;
         }
