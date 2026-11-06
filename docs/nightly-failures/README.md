@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-11-05 (nightlies through the 2026-11-05 run, 42021196009, have been triaged)
+**Last updated:** 2026-11-06 (nightlies through the 2026-11-06 run, 42212060682, have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
