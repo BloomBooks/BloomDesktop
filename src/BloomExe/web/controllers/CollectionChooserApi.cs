@@ -397,7 +397,15 @@ namespace Bloom.web.controllers
             try
             {
                 var apiClient = new BloomLibraryBookApiClient();
-                var statuses = apiClient.GetLibraryStatusForBooks(bookInfos);
+                var statuses = apiClient.GetLibraryStatusForBooks(
+                    bookInfos.Select(bi => bi.Id).ToList()
+                );
+                if (statuses == null)
+                {
+                    // We couldn't reach Bloom Library (e.g., offline). Show no count rather than a wrong one.
+                    request.ReplyWithJson(new { });
+                    return;
+                }
 
                 // A book is "unpublished" if it has no entry on the server, or if its entry is
                 // marked as a draft (not yet publicly visible).

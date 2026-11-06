@@ -84,6 +84,20 @@ namespace Bloom.Book
             );
         }
 
+        /// <summary>
+        /// What the badge on a book button needs to choose its icon. This deliberately has no url,
+        /// since statuses are sent to the badges while the collection loads (see GetBloomLibraryBookUrl).
+        /// </summary>
+        public object GetBadgeInfo()
+        {
+            return new
+            {
+                draft = Draft,
+                inCirculation = !NotInCirculation,
+                harvestState = HarvesterState.ToString().ToLowerInvariant(),
+            };
+        }
+
         public static BloomLibraryStatus FromDynamicJson(
             dynamic bookState,
             bool forceUseProductionData

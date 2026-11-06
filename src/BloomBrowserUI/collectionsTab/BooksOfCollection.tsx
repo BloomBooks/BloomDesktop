@@ -4,7 +4,9 @@ import Grid from "@mui/material/Grid";
 import * as React from "react";
 import { useState, useEffect } from "react";
 import "./BooksOfCollection.less";
-import { post, useApiData, useWatchApiData } from "../utils/bloomApi";
+import { get, post, useApiData, useWatchApiData } from "../utils/bloomApi";
+import { useSubscribeToWebSocketForObjectInMessageParam } from "../utils/WebSocketManager";
+import { IBloomLibraryBadgeInfo } from "../react_components/BookOnBlorgBadge";
 import {
     BookButton,
     bookButtonHeight,
@@ -85,6 +87,35 @@ export const BooksOfCollection: React.FunctionComponent<{
         // unset the reloadParameter so we don't keep reloading the book-on-blorg statuses
         setReloadParameter("");
     }, [unfilteredBooks, props.filter]);
+
+    // For the badges: the Bloom Library state of each book that is on Bloom Library, by book id.
+    // Bloom finds this out in the background and broadcasts it for the whole collection. Keeping it
+    // here means a book button that renders later (e.g., when scrolled into view) still gets it; the
+    // get covers a broadcast that happened before this component started listening.
+    const [bloomLibraryBadges, setBloomLibraryBadges] = useState<
+        Record<string, IBloomLibraryBadgeInfo>
+    >({});
+    const gotBadgeBroadcast = React.useRef(false);
+    useSubscribeToWebSocketForObjectInMessageParam<
+        Record<string, IBloomLibraryBadgeInfo>
+    >("bookCollection", "bloomLibraryBadges", (badges) => {
+        if (props.isEditableCollection) {
+            gotBadgeBroadcast.current = true;
+            setBloomLibraryBadges(badges);
+        }
+    });
+    // An effect because this syncs with the server: it asks for what Bloom already knows when the list appears.
+    useEffect(() => {
+        if (!props.isEditableCollection) {
+            return;
+        }
+        get("collections/bloomLibraryBadges", (result) => {
+            // A broadcast that arrived first is at least as new as this.
+            if (!gotBadgeBroadcast.current) {
+                setBloomLibraryBadges(result.data);
+            }
+        });
+    }, [props.isEditableCollection]);
 
     // Notify the backend that the collection pane is ready to receive book label updates.
     // Using a ref callback so this happens after the DOM is rendered, without needing useEffect.
@@ -175,6 +206,9 @@ export const BooksOfCollection: React.FunctionComponent<{
                                         key={book.id}
                                         book={book}
                                         collection={collection}
+                                        bloomLibraryBadge={
+                                            bloomLibraryBadges[book.id]
+                                        }
                                         manager={props.manager}
                                         lockedToOneDownloadedBook={
                                             props.lockedToOneDownloadedBook

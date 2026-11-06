@@ -11,6 +11,7 @@ using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.WebLibraryIntegration;
+using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.FileSystem;
@@ -356,11 +357,13 @@ namespace Bloom.Collection
                         }
                         if (Type == CollectionType.TheOneEditableCollection)
                         {
-                            // We can't afford to run this synchronously, since GetBookInfos is part of the critical
-                            // path for starting up Bloom. It would be nice if we could, because then we'd
-                            // have the status when we first display a book and would not need to update them individually.
-                            // But sometimes these queries are quite slow, so we really need to do them in the background.
-                            Task.Run(() => UpdateBloomLibraryStatusOfBooks(_bookInfos));
+                            // The list is rebuilt whenever something invalidates it (e.g., a Team Collection
+                            // sync), but statuses are kept across rebuilds, so only books we have never
+                            // asked about need a query: normally all of them the first time, then none.
+                            FetchBloomLibraryStatusInBackground(
+                                _bookInfos.Select(info => info.Id),
+                                onlyIfNeverRequested: true
+                            );
                         }
                     }
                     finally
@@ -601,63 +604,130 @@ namespace Bloom.Collection
             DebounceFolderChanged(fileSystemEventArgs.FullPath);
         }
 
+        // The Bloom Library status of each book in this collection that is on Bloom Library, by book id.
+        // Kept apart from _bookInfos so that rebuilding the book list does not lose it.
+        private readonly Dictionary<string, BloomLibraryStatus> _bloomLibraryStatuses =
+            new Dictionary<string, BloomLibraryStatus>();
+
+        // The ids of the books whose status has been asked for (or is being fetched).
+        private readonly HashSet<string> _bloomLibraryStatusRequested = new HashSet<string>();
+        private readonly object _bloomLibraryStatusLock = new object();
+
         /// <summary>
-        /// Update the badges that show which books are in BloomLibrary and in what state.
-        /// This can be quite time-consuming, so it should be done in the background.
+        /// The Bloom Library status of the book with this id, or null if it is not on Bloom Library
+        /// (or we have not found out yet).
         /// </summary>
-        public void UpdateBloomLibraryStatusOfBooks(List<BookInfo> bookInfos)
+        public BloomLibraryStatus GetBloomLibraryStatus(string bookId)
         {
-            if (bookInfos == null || bookInfos.Count == 0)
-                return;
-            // This queries the book record database for the status of each book in bookInfos, adds (or clears)
-            // the status to each BookInfo, and signals the UI to update the thumbnail badge
-            // (unless told not to).
-            var bloomLibraryApiClient = new BloomLibraryBookApiClient();
-            var bloomLibraryStatusesById = bloomLibraryApiClient.GetLibraryStatusForBooks(
-                bookInfos,
-                forceUseProductionData: true
-            );
-            var sandboxBloomLibraryStatusesById = new Dictionary<string, BloomLibraryStatus>();
-            if (BookUpload.UseSandbox)
+            lock (_bloomLibraryStatusLock)
             {
-                sandboxBloomLibraryStatusesById = bloomLibraryApiClient.GetLibraryStatusForBooks(
-                    bookInfos,
-                    forceUseProductionData: false
+                return _bloomLibraryStatuses.TryGetValue(bookId, out var status) ? status : null;
+            }
+        }
+
+        /// <summary>
+        /// What the badges on the book buttons need, for every book known to be on Bloom Library:
+        /// a map from book id to BloomLibraryStatus.GetBadgeInfo(). Books not in it get no badge.
+        /// </summary>
+        public Dictionary<string, object> GetBloomLibraryBadgeInfo()
+        {
+            lock (_bloomLibraryStatusLock)
+            {
+                return _bloomLibraryStatuses.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value.GetBadgeInfo()
                 );
             }
-            // Now to store the data into the BookInfos and signal the UI to update.
-            foreach (var bookInfo in bookInfos)
+        }
+
+        /// <summary>
+        /// Find out from Bloom Library which of these books are there and in what state, then send
+        /// the badge info for the whole collection to the UI in one websocket message. The query runs
+        /// in the background and can take a while; it is only for the badges, so nothing waits for it.
+        /// </summary>
+        /// <param name="onlyIfNeverRequested">If true, skip books whose status has already been
+        /// asked for since the collection was opened.</param>
+        public void FetchBloomLibraryStatusInBackground(
+            IEnumerable<string> bookIds,
+            bool onlyIfNeverRequested = false
+        )
+        {
+            List<string> idsToFetch;
+            lock (_bloomLibraryStatusLock)
             {
-                bool updateThumbnailBadge = false;
-                if (
-                    // This gives precedence to the production status, if the book is in both places.
-                    // We decided not to switch the status to multiple if it is in fact in both production and sandbox.
-                    // It's not a problem to have an extra upload in the sandbox,
-                    // since it won't create any ambiguity about which one to overwrite;
-                    // this is not the kind of duplicate ID usage that 'multiple' is meant to warn about.
-                    bloomLibraryStatusesById.TryGetValue(bookInfo.Id, out var status)
-                    || sandboxBloomLibraryStatusesById.TryGetValue(bookInfo.Id, out status)
-                )
-                {
-                    if (
-                        bookInfo.BloomLibraryStatus == null
-                        || bookInfo.BloomLibraryStatus != status
+                idsToFetch = bookIds
+                    .Distinct()
+                    .Where(id =>
+                        !onlyIfNeverRequested || !_bloomLibraryStatusRequested.Contains(id)
                     )
-                    {
-                        bookInfo.BloomLibraryStatus = status;
-                        updateThumbnailBadge = true;
-                    }
-                }
-                else if (bookInfo.BloomLibraryStatus != null)
+                    .ToList();
+                _bloomLibraryStatusRequested.UnionWith(idsToFetch);
+            }
+            if (idsToFetch.Count == 0)
+                return;
+            Task.Run(() => FetchBloomLibraryStatus(idsToFetch));
+        }
+
+        /// <summary>
+        /// The body of FetchBloomLibraryStatusInBackground: query Bloom Library (two queries in
+        /// sandbox mode), record the results, and broadcast the collection's badge info.
+        /// </summary>
+        private void FetchBloomLibraryStatus(List<string> bookIds)
+        {
+            Dictionary<string, BloomLibraryStatus> statusesById = null;
+            var sandboxStatusesById = new Dictionary<string, BloomLibraryStatus>();
+            try
+            {
+                var bloomLibraryApiClient = new BloomLibraryBookApiClient();
+                statusesById = bloomLibraryApiClient.GetLibraryStatusForBooks(
+                    bookIds,
+                    forceUseProductionData: true
+                );
+                if (statusesById != null && BookUpload.UseSandbox)
                 {
-                    bookInfo.BloomLibraryStatus = null;
-                    updateThumbnailBadge = true;
-                }
-                if (updateThumbnailBadge)
-                {
-                    _webSocketServer.SendString("bookCollection", "updateBookBadge", bookInfo.Id);
+                    sandboxStatusesById = bloomLibraryApiClient.GetLibraryStatusForBooks(
+                        bookIds,
+                        forceUseProductionData: false
+                    );
                 }
             }
+            catch (Exception e)
+            {
+                // E.g., an unexpected response. This only feeds the badges, so treat it like any other failure.
+                Logger.WriteEvent("Getting the Bloom Library status of books failed: " + e.Message);
+                statusesById = null;
+            }
+            if (statusesById == null || sandboxStatusesById == null)
+            {
+                // We couldn't find out (e.g., offline). Leave the badges as they are, and let the next
+                // rebuild of the book list try these books again.
+                lock (_bloomLibraryStatusLock)
+                    _bloomLibraryStatusRequested.ExceptWith(bookIds);
+                return;
+            }
+            lock (_bloomLibraryStatusLock)
+            {
+                foreach (var id in bookIds)
+                {
+                    if (
+                        // This gives precedence to the production status, if the book is in both places.
+                        // We decided not to switch the status to multiple if it is in fact in both production and sandbox.
+                        // It's not a problem to have an extra upload in the sandbox,
+                        // since it won't create any ambiguity about which one to overwrite;
+                        // this is not the kind of duplicate ID usage that 'multiple' is meant to warn about.
+                        statusesById.TryGetValue(id, out var status)
+                        || sandboxStatusesById.TryGetValue(id, out status)
+                    )
+                        _bloomLibraryStatuses[id] = status;
+                    else
+                        _bloomLibraryStatuses.Remove(id);
+                }
+            }
+            _webSocketServer.SendString(
+                "bookCollection",
+                "bloomLibraryBadges",
+                JsonConvert.SerializeObject(GetBloomLibraryBadgeInfo())
+            );
         }
 
         public BookInfo GetBookInfoByFolderPath(string path)

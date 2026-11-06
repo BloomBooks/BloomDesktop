@@ -28,6 +28,26 @@ namespace BloomTests.Book
             Assert.That(url, Does.StartWith("http"));
         }
 
+        /// <summary>
+        /// The badge info is broadcast to the Collections tab while the collection loads, so it carries
+        /// only what the badge needs to pick its icon, and no url.
+        /// </summary>
+        [Test]
+        public void GetBadgeInfo_HasStateFieldsAndNoUrl()
+        {
+            dynamic bookRecord = JObject.Parse(
+                @"{""id"":""rec123"",""instanceId"":""inst456"",""draft"":true,""inCirculation"":false,""harvestState"":""inProgress""}"
+            );
+            BloomLibraryStatus status = BloomLibraryStatus.FromDynamicJson(bookRecord, true);
+
+            var json = JObject.FromObject(status.GetBadgeInfo());
+
+            Assert.That((bool)json["draft"], Is.True);
+            Assert.That((bool)json["inCirculation"], Is.False);
+            Assert.That((string)json["harvestState"], Is.EqualTo("inprogress"));
+            Assert.That(json.Count, Is.EqualTo(3), json.ToString());
+        }
+
         [Test]
         public void ForMultipleUploads_BuildsListingUrlForInstanceId()
         {
@@ -41,8 +61,7 @@ namespace BloomTests.Book
         }
 
         /// <summary>
-        /// BookCollection compares statuses to decide whether a book's badge needs updating,
-        /// so two statuses built from the same record must be equal, and a different record must not be.
+        /// Statuses compare as values: two built from the same record are equal, and a different record is not.
         /// </summary>
         [Test]
         public void Equality_DependsOnIdsAndState()
