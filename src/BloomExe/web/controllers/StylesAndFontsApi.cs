@@ -524,7 +524,13 @@ namespace Bloom.web.controllers
                     // ENHANCE: distinguish first pages for each language.
                     stylesInBook.Add(style, MakePageInfo(pageDiv));
                 }
-                if (div.GetAttribute("lang") == "*" && !stylesUsedWithLangStar.ContainsKey(style))
+                // An empty language-independent field, such as the ISBN of a book that has none,
+                // shows no text, so its font isn't used.
+                if (
+                    div.GetAttribute("lang") == "*"
+                    && !stylesUsedWithLangStar.ContainsKey(style)
+                    && HtmlDom.DivHasContent((SafeXmlElement)div)
+                )
                     stylesUsedWithLangStar.Add(style, MakePageInfo(pageDiv));
             }
             return stylesInBook;

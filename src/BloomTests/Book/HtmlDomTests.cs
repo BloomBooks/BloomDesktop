@@ -2410,6 +2410,35 @@ p {
             Assert.That(fonts, Is.EquivalentTo(new[] { "ABeeZee", "Charis SIL" }));
         }
 
+        /// <summary>
+        /// Default fonts for language tags containing digits (e.g., es-419) used to be missed
+        /// (BL-16851). The rule for lang="*" content must still never match: see the comment in
+        /// CollectionSettings where that rule is written.
+        /// </summary>
+        [Test]
+        public void DefaultLangStylesCssRegex_MatchesTagsWithDigitsButNotStar()
+        {
+            const string css =
+                @"[lang='es-419'] { font-family: 'Charis SIL'; direction: ltr; }
+[lang='en'] { font-family: Andika; }
+.bloom-page:not(.bloom-frontMatter):not(.bloom-backMatter) [lang='*'] { font-family: 'Noto Sans'; }";
+
+            var langToFont = HtmlDom
+                .DefaultLangStylesCssRegex.Matches(css)
+                .ToDictionary(m => m.Groups[2].Value, m => m.Groups[4].Value.Trim(' ', '\''));
+
+            Assert.That(
+                langToFont,
+                Is.EquivalentTo(
+                    new Dictionary<string, string>
+                    {
+                        { "es-419", "Charis SIL" },
+                        { "en", "Andika" },
+                    }
+                )
+            );
+        }
+
         [Test]
         public void MigrateChildren_MigratesCanvasElements_DoesNotLoseCanvasElements()
         {

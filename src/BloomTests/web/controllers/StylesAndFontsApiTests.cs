@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
+using Bloom.SafeXml;
 using Bloom.web.controllers;
 using BloomTests.Book;
 using NUnit.Framework;
@@ -90,15 +91,52 @@ namespace BloomTests.web.controllers
         }
 
         /// <summary>
+        /// The real xmatter leaves the ISBN field empty. An empty field shows no text, so its font
+        /// is not used and must not get a row.
+        /// </summary>
+        [Test]
+        public void GetDataRows_LangStarFieldHasUserFontButIsEmpty_HasNoRow()
+        {
+            var bookSelection = SetUpBookWithIsbnFont(
+                "Charis SIL",
+                "Andika",
+                "Charis SIL",
+                isbn: null
+            );
+            var rules = HtmlDom
+                .GetUserModifiedStyleElement(bookSelection.CurrentSelection.OurHtmlDom.Head)
+                .InnerText;
+            Assert.That(
+                rules,
+                Does.Contain("ABeeZee"),
+                "test setup: the ISBN style should still have its font rule"
+            );
+
+            var rows = new StylesAndFontsApi(bookSelection).GetDataRows("current");
+
+            Assert.That(rows.Any(r => r.fontName == "ABeeZee"), Is.False);
+            Assert.That(
+                rows.Any(r => r.style == "Credits-Page" && r.languageTag == "en"),
+                Is.True,
+                "test setup: the credits page's English text should still have a row"
+            );
+        }
+
+        /// <summary>
         /// Make a book whose credits page has the language-independent ISBN field, with a
         /// [lang="*"] rule giving that field's style the font ABeeZee, and select it.
-        /// </summary>
         /// The collection's languages are xyz, en and fr, each with text on a content page.
         /// </summary>
         /// <param name="xyzFont">the collection's default font for xyz (Language 1)</param>
         /// <param name="enFont">the collection's default font for English (Language 2)</param>
         /// <param name="frFont">the collection's default font for French (Language 3)</param>
-        private BookSelection SetUpBookWithIsbnFont(string xyzFont, string enFont, string frFont)
+        /// <param name="isbn">the ISBN to put in the field, or null to leave it empty</param>
+        private BookSelection SetUpBookWithIsbnFont(
+            string xyzFont,
+            string enFont,
+            string frFont,
+            string isbn = "978-0-00-000000-2"
+        )
         {
             SetDom(
                 // Loading the book adds the real xmatter, whose credits page has the ISBN field.
@@ -140,16 +178,23 @@ namespace BloomTests.web.controllers
                 ),
                 "test setup: defaultLangStyles.css should give each language its font"
             );
-            var creditsPage = book.OurHtmlDom.SelectSingleNode(
-                "//div[contains(@class,'bloom-page') and @data-xmatter-page='credits']"
+            var isbnField = (SafeXmlElement)
+                book.OurHtmlDom.SelectSingleNode(
+                    "//div[contains(@class,'bloom-page') and @data-xmatter-page='credits']"
+                        + "//div[contains(@class,'Credits-Page-style') and @lang='*' and @data-book='ISBN']"
+                );
+            Assert.That(
+                isbnField,
+                Is.Not.Null,
+                "test setup: the credits page should have the language-independent ISBN field"
             );
             Assert.That(
-                creditsPage.SelectSingleNode(
-                    ".//div[contains(@class,'Credits-Page-style') and @lang='*']"
-                ),
-                Is.Not.Null,
-                "test setup: the credits page should have a language-independent Credits-Page-style field"
+                isbnField.InnerText.Trim(),
+                Is.Empty,
+                "test setup: the xmatter's ISBN field should start out empty"
             );
+            if (isbn != null)
+                isbnField.InnerText = isbn;
             return bookSelection;
         }
     }

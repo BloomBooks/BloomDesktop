@@ -2639,12 +2639,13 @@ namespace Bloom.Book
         /// </code>
         /// Group 0 is the entire CSS rule matched by the regular expression.
         /// Group 1 is the opening quote for the language code(used internally in the regular expression).
-        /// Group 2 is the language code.
+        /// Group 2 is the language code. This may contain digits (e.g., "es-419"), but never matches
+        /// "*" (see CollectionSettings, where the rule for lang="*" content is written).
         /// Group 3 is the entire set of CSS value settings associated with the language code.
         /// Group 4 is the font-family value associated with the language code.
         /// </summary>
         public static Regex DefaultLangStylesCssRegex = new Regex(
-            @"\[\s*lang\s*=\s*(['""])([-a-zA-Z]*)\1\s*\]\s*{([^}]*font-family:([^;]*);[^}]*)}",
+            @"\[\s*lang\s*=\s*(['""])([-a-zA-Z0-9]*)\1\s*\]\s*{([^}]*font-family:([^;]*);[^}]*)}",
             RegexOptions.Singleline | RegexOptions.Compiled
         );
 
