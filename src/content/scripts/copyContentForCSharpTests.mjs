@@ -168,6 +168,8 @@ function renameWhenFree(from, to) {
 /**
  * Deletes a stale folder. It is first renamed to a name of this process's own, which only one
  * concurrent run can do; two runs deleting the same tree at once fail with EPERM on Windows.
+ * A folder that some process (a running Bloom, say) keeps busy is left, with a warning: the tests
+ * should not be held up by a folder that this checkout does not use.
  */
 function deleteFolder(folderPath) {
     const renamed = `${folderPath}.${process.pid}${temporarySuffix}`;
@@ -176,6 +178,12 @@ function deleteFolder(folderPath) {
     } catch (error) {
         if (error.code === "ENOENT") {
             return false; // another run got there first
+        }
+        if (["EPERM", "EBUSY", "EACCES"].includes(error.code)) {
+            console.warn(
+                `[agent-dotnet] left ${folderPath}, which this checkout does not have, because it is in use (${error.code})`,
+            );
+            return false;
         }
         throw error;
     }
