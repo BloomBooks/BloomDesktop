@@ -229,13 +229,14 @@ namespace BloomTests.RuntimeImageProcessing
         }
 
         /// <summary>
-        /// A drawing that is mostly mid gray, darker than 215, is not mistaken for gray paper: it is
+        /// A drawing that is mostly a light gray just darker than 215 is not mistaken for gray paper: it is
         /// not brightened, so its grays keep the opacity that ink over white gives them (BL-16778).
         /// </summary>
         [Test]
         public void MakePngBackgroundTransparent_DoesNotTakeMidGrayForPaper()
         {
-            var midGray = Color.FromArgb(200, 200, 200);
+            // 214 is the lightest gray that must not count as paper.
+            var midGray = Color.FromArgb(214, 214, 214);
             var white = Color.FromArgb(255, 255, 255);
             using (var source = new Bitmap(10, 10, PixelFormat.Format24bppRgb))
             {
@@ -256,8 +257,8 @@ namespace BloomTests.RuntimeImageProcessing
                 {
                     Assert.That(
                         result.GetPixel(5, 5).A,
-                        Is.EqualTo(55),
-                        "mid gray 200 should keep the 55/255 opacity of ink over white"
+                        Is.EqualTo(41),
+                        "gray 214 should keep the 41/255 opacity of ink over white"
                     );
                     Assert.That(
                         result.GetPixel(0, 0).A,

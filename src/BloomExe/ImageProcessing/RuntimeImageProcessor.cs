@@ -607,7 +607,9 @@ namespace Bloom.ImageProcessing
         /// The paper is the most common value of the darkest colour channel among the picture's
         /// pixels from <see cref="kDarkestPossiblePaper"/> up. When it is below
         /// <see cref="kWhitePaper"/>, every channel is multiplied by 255 / (paper - grain), the
-        /// same factor for all three so colours keep their hue; otherwise the table changes nothing.
+        /// same factor for all three, and a channel that would pass 255 stops at 255, so a colour
+        /// lighter than the paper in some channel loses a little saturation; otherwise the table
+        /// changes nothing.
         /// </summary>
         private static byte[] FindPaperBrightening(byte[] pixels, int width, int height, int stride)
         {

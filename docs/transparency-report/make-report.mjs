@@ -460,7 +460,10 @@ for (const p of pictures) {
     if (p.note) li.append(p.note + " ");
     const warning = pictureWarning(p);
     if (warning) li.append(el("span", { class: "verdict-no" }, warning + " "));
-    if (p.source) li.append(el("a", { href: p.source, target: "_blank", rel: "noopener" }, "source"));
+    // A Bloom Library book is linked; a picture stored in the repository is linked to its copy in the report.
+    const original = p.rows.find((r) => r.id === "original");
+    if (/^https?:/.test(p.source)) li.append(el("a", { href: p.source, target: "_blank", rel: "noopener" }, "source"));
+    else if (original) li.append(el("a", { href: original.full || original.src, target: "_blank", rel: "noopener" }, "picture"));
     pictureList.append(li);
 }
 
