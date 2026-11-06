@@ -2275,13 +2275,11 @@ namespace Bloom.Edit
         /// sent us, and what the book's title is on our side at that moment — but only when the
         /// page has a title box at all, so this stays quiet for every other page.
         ///
-        /// This is here for the investigation written up in src/BloomE2E/AUTOMATION-DEBT.md, "A
-        /// title typed on the cover of a new book can fail to reach the collection": a title typed
-        /// on a brand-new book's cover is sometimes missing from the saved book, and this is the
-        /// line that says whether the text was already gone from the browser's page (it was, the
-        /// one time we caught it) or was lost afterwards. It was removed once, when the question
-        /// looked settled, and had to come back the next night — so leave it until the nightly has
-        /// gone several runs without losing a title.
+        /// This is here for the investigation of BL-17022, a title typed on a brand-new book's
+        /// cover going missing from the saved book: this is the line that says whether the text
+        /// was already gone from the browser's page or was lost afterwards. Leave it until the
+        /// nightly has gone several runs without losing a title (the reminder is the cover-title
+        /// entry in docs/nightly-failures/README.md).
         /// </summary>
         private void LogCoverTitleArrivingFromBrowser(HtmlDom editedDom)
         {
