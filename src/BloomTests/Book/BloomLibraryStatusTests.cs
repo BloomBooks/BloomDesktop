@@ -35,7 +35,8 @@ namespace BloomTests.Book
 
             Assert.That(status.HarvesterState, Is.EqualTo(HarvesterState.Multiple));
             string url = status.GetBloomLibraryBookUrl();
-            Assert.That(url, Does.EndWith(":search:bookInstanceId%253Ainst456"));
+            // Opened directly in the browser, so the colon is encoded once, as the site's search expects.
+            Assert.That(url, Does.EndWith("/:search:bookInstanceId%3Ainst456"));
             Assert.That(url, Does.StartWith("http"));
         }
 
