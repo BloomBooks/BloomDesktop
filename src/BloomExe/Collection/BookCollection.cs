@@ -361,7 +361,8 @@ namespace Bloom.Collection
                             // sync), but statuses are kept across rebuilds, so only books we have never
                             // asked about need a query: normally all of them the first time, then none.
                             // So a change on Bloom Library itself (e.g., a teammate uploads one of these
-                            // books) shows up the next time the collection is opened, like any other
+                            // books) shows up the next time Bloom loads this collection (switching back to
+                            // the Collections tab does not count), like any other
                             // change there (e.g., the harvester finishing) that Bloom does not poll for.
                             FetchBloomLibraryStatusInBackground(
                                 _bookInfos.Select(info => info.Id),

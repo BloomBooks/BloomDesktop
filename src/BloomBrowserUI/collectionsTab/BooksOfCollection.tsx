@@ -5,7 +5,11 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import "./BooksOfCollection.less";
 import { get, post, useApiData, useWatchApiData } from "../utils/bloomApi";
-import { useSubscribeToWebSocketForObjectInMessageParam } from "../utils/WebSocketManager";
+import {
+    useSubscribeToWebSocketForEvent,
+    useSubscribeToWebSocketForObjectInMessageParam,
+} from "../utils/WebSocketManager";
+import { useMountEffect } from "../utils/useMountEffect";
 import { IBloomLibraryBadgeInfo } from "../react_components/BookOnBlorgBadge";
 import {
     BookButton,
@@ -90,32 +94,39 @@ export const BooksOfCollection: React.FunctionComponent<{
 
     // For the badges: the Bloom Library state of each book that is on Bloom Library, by book id.
     // Bloom finds this out in the background and broadcasts it for the whole collection. Keeping it
-    // here means a book button that renders later (e.g., when scrolled into view) still gets it; the
-    // get covers a broadcast that happened before this component started listening.
+    // here means a book button that renders later (e.g., when scrolled into view) still gets it.
+    // We also ask for what Bloom already knows when the list appears and whenever the websocket
+    // (re)opens, which covers a broadcast sent while we were not yet (or no longer) connected.
     const [bloomLibraryBadges, setBloomLibraryBadges] = useState<
         Record<string, IBloomLibraryBadgeInfo>
     >({});
-    const gotBadgeBroadcast = React.useRef(false);
+    // Counts broadcasts, so that a get answered before the latest broadcast doesn't overwrite it.
+    const badgeBroadcastCount = React.useRef(0);
+    const fetchBloomLibraryBadges = () => {
+        if (!props.isEditableCollection) {
+            return;
+        }
+        const broadcastsBeforeGet = badgeBroadcastCount.current;
+        get("collections/bloomLibraryBadges", (result) => {
+            if (badgeBroadcastCount.current === broadcastsBeforeGet) {
+                setBloomLibraryBadges(result.data);
+            }
+        });
+    };
     useSubscribeToWebSocketForObjectInMessageParam<
         Record<string, IBloomLibraryBadgeInfo>
     >("bookCollection", "bloomLibraryBadges", (badges) => {
         if (props.isEditableCollection) {
-            gotBadgeBroadcast.current = true;
+            badgeBroadcastCount.current++;
             setBloomLibraryBadges(badges);
         }
     });
-    // An effect because this syncs with the server: it asks for what Bloom already knows when the list appears.
-    useEffect(() => {
-        if (!props.isEditableCollection) {
-            return;
-        }
-        get("collections/bloomLibraryBadges", (result) => {
-            // A broadcast that arrived first is at least as new as this.
-            if (!gotBadgeBroadcast.current) {
-                setBloomLibraryBadges(result.data);
-            }
-        });
-    }, [props.isEditableCollection]);
+    useSubscribeToWebSocketForEvent(
+        "bookCollection",
+        "websocket/open/bookCollection",
+        fetchBloomLibraryBadges,
+    );
+    useMountEffect(fetchBloomLibraryBadges);
 
     // Notify the backend that the collection pane is ready to receive book label updates.
     // Using a ref callback so this happens after the DOM is rendered, without needing useEffect.
