@@ -29,16 +29,28 @@ const listingCache = new Map();
 /** Returns the S3 keys of the files at the top level of a book's folder on Bloom Library. */
 async function listBookFiles(bookId) {
     if (!listingCache.has(bookId)) {
-        const response = await fetch(
-            `${bucket}?prefix=${bookId}/&max-keys=1000`,
+        // S3 returns at most 1000 keys per request; a book with many audio files needs more
+        // than one page, each starting after the last key of the one before.
+        const keys = [];
+        let marker = "";
+        while (true) {
+            const response = await fetch(
+                `${bucket}?prefix=${bookId}/&max-keys=1000&marker=${encodeURIComponent(marker)}`,
+            );
+            if (!response.ok)
+                throw new Error(`Listing ${bookId} failed: ${response.status}`);
+            const xml = await response.text();
+            const pageKeys = [...xml.matchAll(/<Key>([^<]*)<\/Key>/g)].map(
+                (m) => m[1].replace(/&amp;/g, "&"),
+            );
+            keys.push(...pageKeys);
+            if (!/<IsTruncated>true<\/IsTruncated>/.test(xml)) break;
+            marker = pageKeys[pageKeys.length - 1];
+        }
+        listingCache.set(
+            bookId,
+            keys.filter((k) => k.split("/").length === 4),
         );
-        if (!response.ok)
-            throw new Error(`Listing ${bookId} failed: ${response.status}`);
-        const xml = await response.text();
-        const keys = [...xml.matchAll(/<Key>([^<]*)<\/Key>/g)]
-            .map((m) => m[1].replace(/&amp;/g, "&"))
-            .filter((k) => k.split("/").length === 4);
-        listingCache.set(bookId, keys);
     }
     return listingCache.get(bookId);
 }
