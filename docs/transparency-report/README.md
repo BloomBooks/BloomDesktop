@@ -37,6 +37,16 @@ The third command builds `output/transparency-report/report/`: `index.html` plus
 uses, with relative paths, so the folder can be opened from disk or published as it is. It refuses
 to write more than 60 MB of images; the large view uses the full-size results only when they fit.
 
+The options at the top of `make-report.mjs` make a smaller page to share. The copy linked on
+BL-16778 was built with:
+
+```bash
+node docs/transparency-report/make-report.mjs --colours "#51C7E9,white,#B0DEE4,#FEBF00" \
+  --methods-shown original-6.5,proposed-6.5 --artifact --page-dir <folder>
+```
+
+`--artifact` leaves out `<html>`, `<head>` and `<body>`, which a claude.ai artifact supplies.
+
 ## Adding a picture
 
 Add an entry to `docs/transparency-report/images.json`:
@@ -75,7 +85,7 @@ page needs no change.
 
 ## The methods compared
 
-- `current` calls Bloom's `RuntimeImageProcessor.MakePngBackgroundTransparent` itself.
-- `colorkey-253`, `brightness-ramp`, `deficit-keep-rgb` and `ramp-force-grey` are
+- `proposed-6.5` calls Bloom's `RuntimeImageProcessor.MakePngBackgroundTransparent` itself, so it is what this code does now.
+- `original-6.5`, `colorkey-253`, `deficit-keep-rgb` and `ramp-force-grey` are
   earlier versions copied from git; each function's comment names its commit.
 - `narrow-ramp` and `edge-fill` were proposed on BL-16778 and are in no commit.

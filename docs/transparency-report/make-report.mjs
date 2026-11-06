@@ -14,7 +14,10 @@ const repoRoot = path.resolve(
 const reportRoot = path.join(repoRoot, "output", "transparency-report");
 const outDir = path.join(reportRoot, "out");
 // Options:
-//   --colours <list>   only these backgrounds, a comma-separated list of "#RRGGBB" or "white"
+//   --colours <list>   only these backgrounds, a comma-separated list of "#RRGGBB" or "white",
+//                      shown in the order given (otherwise backgrounds run lightest first)
+//   --methods-shown <list>  tick only these methods when the page opens (comma-separated ids);
+//                      the others can still be ticked in the page
 //   --page-dir <dir>   write the page here instead of output/transparency-report/report
 //   --artifact         write the page body only (no <html>, <head> or <body>), for publishing
 //                      as a claude.ai artifact, which supplies those itself
@@ -29,6 +32,9 @@ const chosenColours = optionValue("--colours")
         c.trim().toLowerCase() === "white" ? "#FFFFFF" : c.trim().toUpperCase(),
     );
 const forArtifact = args.includes("--artifact");
+const methodsShown = optionValue("--methods-shown")
+    ?.split(",")
+    .map((m) => m.trim());
 const pageDir = path.resolve(
     optionValue("--page-dir") ?? path.join(reportRoot, "report"),
 );
@@ -171,7 +177,7 @@ if (chosenColours) {
 }
 for (const bg of backgrounds)
     bg.lightness = Math.round(lightnessOfHex(bg.hex) * 10) / 10;
-backgrounds.sort((a, b) => b.lightness - a.lightness);
+if (!chosenColours) backgrounds.sort((a, b) => b.lightness - a.lightness);
 
 // ---- Copy images ----
 
@@ -265,8 +271,14 @@ if (includeFullSize) {
 
 // ---- Page ----
 
+for (const id of methodsShown ?? [])
+    if (!algorithms.some((a) => a.id === id))
+        throw new Error(
+            `--methods-shown names "${id}", which results.json does not have`,
+        );
 const data = {
     algorithms,
+    methodsShown: methodsShown ?? algorithms.map((a) => a.id),
     backgrounds,
     sections,
     generated: results.generated,
@@ -301,6 +313,16 @@ a { color: var(--accent); }
 .intro summary { cursor: pointer; font-weight: 600; }
 .intro ol { margin: 6px 0; padding-left: 2.5em; }
 .intro ol li { margin: 3px 0; }
+.timeline { list-style: none; margin: 12px 0 4px; padding: 0; display: flex; flex-wrap: wrap; gap: 0; }
+.timeline li { position: relative; flex: 1 1 150px; min-width: 0; padding: 18px 12px 6px 0; border-top: 3px solid var(--line); font-size: 13px; display: flex; flex-direction: column; gap: 2px; }
+.timeline li::before { content: ""; position: absolute; top: -8px; left: 0; width: 13px; height: 13px; border-radius: 50%; background: var(--bg); border: 3px solid var(--muted); }
+.timeline li.now { border-top-color: var(--accent); }
+.timeline li.now::before { border-color: var(--accent); background: var(--accent); }
+.timeline .when { color: var(--muted); font-variant-numeric: tabular-nums; }
+.timeline b { font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+.timeline .where { color: var(--muted); overflow-wrap: anywhere; }
+.ideas { color: var(--muted); font-size: 13px; margin: 4px 0 12px; }
+.ideas b { font-family: ui-monospace, Consolas, monospace; }
 .candidate { background: var(--flag-bg); color: var(--flag-text); border-radius: 3px; padding: 0 4px; font-weight: 600; font-family: system-ui, sans-serif; font-size: 12px; }
 .filters { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; margin: 12px 0 20px; display: flex; flex-wrap: wrap; gap: 8px 28px; align-items: center; }
 .filters fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: center; }
@@ -336,7 +358,9 @@ td.error { font-size: 12px; color: var(--warn); padding: 6px; width: var(--cell)
 ${forArtifact ? "" : "</head>\n<body>"}
 <div class="intro">
 <h1>Making white backgrounds transparent: how each method looks on many colours</h1>
-<p>Each picture was run through Bloom's own C# code for each method. There is one section per background colour, from lightest to darkest; the browser draws each result over that colour, as Bloom does. In each section, the rows are the methods and the columns are the pictures. Each section's heading gives the colour's lightness (CIE L*, where 100 is white and 0 is black).</p>
+<ol id="timeline" class="timeline" aria-label="When each method was used"></ol>
+<p id="ideas" class="ideas"></p>
+<p>Each picture was run through Bloom's own C# code for each method. There is one section per background colour; the browser draws each result over that colour, as Bloom does. In each section, the rows are the methods and the columns are the pictures. Each section's heading gives the colour's lightness (CIE L*, where 100 is white and 0 is black).</p>
 <p><b>Hold Ctrl and turn the mouse wheel</b> to make the pictures larger or smaller; the text stays the same size. Click any picture to see it large: then Left and Right move to the next picture, Up and Down to the next method, Page Up and Page Down to the next colour, and Escape closes it.</p>
 <dl id="algorithm-list"></dl>
 <p>The first row of each section shows the original picture, with its white background, for reference.</p>
@@ -384,6 +408,25 @@ function pictureWarning(p) {
     return null;
 }
 
+// The timeline: every method with a date, oldest first; the ideas that were never committed follow it.
+const timeline = document.getElementById("timeline");
+const dated = data.algorithms.filter((a) => a.date).sort((a, b) => a.date.localeCompare(b.date));
+for (const a of dated) {
+    const when = new Date(a.date + "T00:00:00").toLocaleDateString("en", { year: "numeric", month: "short", day: "numeric" });
+    const li = el("li", { class: a.isNewCandidate || a.id.startsWith("proposed") ? "now" : "" },
+        el("span", { class: "when" }, when),
+        el("b", {}, a.id),
+        el("span", { class: "where" }, a.where));
+    timeline.append(li);
+}
+const ideas = data.algorithms.filter((a) => !a.date);
+if (ideas.length) {
+    const p = document.getElementById("ideas");
+    p.append("Never in a version: ");
+    ideas.forEach((a, i) => p.append(i ? ", " : "", el("b", {}, a.id), " (" + a.where + ")"));
+    p.append(".");
+}
+
 const list = document.getElementById("algorithm-list");
 for (const a of data.algorithms) {
     list.append(el("dt", {}, a.id));
@@ -402,14 +445,15 @@ for (const p of pictures) {
     pictureList.append(li);
 }
 
-function addCheckbox(fieldset, value, label) {
-    const box = el("input", { type: "checkbox", checked: true, value });
+function addCheckbox(fieldset, value, label, checked = true) {
+    const box = el("input", { type: "checkbox", checked, value });
     box.addEventListener("change", applyFilters);
     fieldset.append(el("label", {}, box, " " + label));
 }
 const kinds = [...new Set(pictures.map((p) => p.kind))];
 for (const k of kinds) addCheckbox(document.getElementById("kind-filter"), k, k);
-for (const a of data.algorithms) addCheckbox(document.getElementById("algorithm-filter"), a.id, a.id);
+for (const a of data.algorithms)
+    addCheckbox(document.getElementById("algorithm-filter"), a.id, a.id, data.methodsShown.includes(a.id));
 for (const b of lightnessBands) addCheckbox(document.getElementById("lightness-filter"), b.id, b.label);
 
 // The standard "eye with a slash" icon, meaning hide.
@@ -482,6 +526,9 @@ function applyFilters() {
     for (const c of document.querySelectorAll("[data-kind]"))
         c.classList.toggle("hidden", !kindsOn.has(c.dataset.kind));
 }
+
+// Start with only the methods ticked above showing.
+applyFilters();
 
 // Ctrl + mouse wheel changes only the picture size (the --cell variable), not the page zoom.
 let cellSize = 160;

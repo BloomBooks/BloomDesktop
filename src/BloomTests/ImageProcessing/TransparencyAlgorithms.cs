@@ -24,6 +24,15 @@ namespace BloomTests.ImageProcessing
         /// <summary>True for the algorithm the report should point out as the new candidate.</summary>
         public bool IsNewCandidate;
 
+        /// <summary>
+        /// When this rule was written or shipped, as yyyy-MM-dd, for the report's timeline; null for
+        /// an idea that was never committed.
+        /// </summary>
+        public string Date;
+
+        /// <summary>Which Bloom version, or which piece of work, the rule belongs to, for the timeline.</summary>
+        public string Where;
+
         /// <summary>Takes the original image and returns what Bloom would display.</summary>
         public Func<PalasoImage, Image> Run;
     }
@@ -45,29 +54,38 @@ namespace BloomTests.ImageProcessing
         {
             new TransparencyAlgorithm
             {
-                Id = "current",
+                Id = "original-6.5",
+                Date = "2026-06-04",
+                Where = "Bloom 6.5 (commit ac1d454619, BL-16336)",
                 Description =
-                    "What Bloom does now (its own code, called directly): each pixel is treated as ink over white paper. The darker its darkest colour channel, the more solid it is, and its colour becomes the ink that would give that pixel when laid over white. This is what Bloom did on May 19 2026 (commit 625c7891ff), brought back for BL-16778.",
-                Run = RuntimeImageProcessor.MakePngBackgroundTransparent,
-            },
-            new TransparencyAlgorithm
-            {
-                Id = "colorkey-253",
-                Description =
-                    "What Bloom did before May 2026: only pixels whose red, green and blue are all 253 or more become see-through, and every other pixel stays solid.",
-                Run = ColorKey253,
-            },
-            new TransparencyAlgorithm
-            {
-                Id = "brightness-ramp",
-                Description =
-                    "What Bloom did from June 2026 until BL-16778: pixels lighter than a set brightness become fully see-through, darker pixels stay solid, and pixels in between become partly see-through but keep their own colour.",
+                    "What Bloom 6.5 does before BL-16778 (since June 2026): pixels lighter than a set brightness become fully see-through, darker pixels stay solid, and pixels in between become partly see-through but keep their own colour.",
                 Run = img =>
                     LikeProduction(img, source => BrightnessRamp(source, 220.0, 180.0, null)),
             },
             new TransparencyAlgorithm
             {
+                Id = "proposed-6.5",
+                Date = "2026-11-06",
+                Where = "This branch, for 6.5 (BL-16778)",
+                Description =
+                    "Bloom's own code, as this branch changes it for 6.5 (BL-16778): each pixel is treated as ink over white paper. The darker its darkest colour channel, the more solid it is, and its colour becomes the ink that would give that pixel when laid over white. This is what Bloom did on May 19 2026 (commit 625c7891ff), brought back for BL-16778.",
+                Run = RuntimeImageProcessor.MakePngBackgroundTransparent,
+            },
+            new TransparencyAlgorithm
+            {
+                Id = "colorkey-253",
+                Date = "2017-11-27",
+                Where = "Bloom 6.4 and earlier (in the code by 2017, commit b396ab1e1c)",
+                Description =
+                    "What Bloom 6.4 and earlier do: only pixels whose red, green and blue are all 253 or more become see-through, and every other pixel stays solid.",
+                Run = ColorKey253,
+            },
+            new TransparencyAlgorithm
+            {
                 Id = "deficit-keep-rgb",
+                Date = "2026-05-21",
+                Where =
+                    "BL-16336 work in May (commit 2a7377b9fe), merged into 6.4 and reverted on June 8",
                 Description =
                     "A pixel is more solid the further its weakest colour channel falls below the lightest colour in the image, and it keeps its own colour.",
                 Run = img => LikeProduction(img, DeficitKeepRgb),
@@ -75,22 +93,26 @@ namespace BloomTests.ImageProcessing
             new TransparencyAlgorithm
             {
                 Id = "ramp-force-grey",
+                Date = "2026-05-22",
+                Where = "BL-16336 work in May (commit 7e8bdde10c), on a branch never merged",
                 Description =
-                    "The brightness-ramp rule, except that partly see-through pixels that are nearly grey are made exactly grey.",
+                    "The original-6.5 rule, except that partly see-through pixels that are nearly grey are made exactly grey.",
                 Run = img => LikeProduction(img, RampForceGrey),
             },
             new TransparencyAlgorithm
             {
                 Id = "narrow-ramp",
+                Where = "Proposed on BL-16778",
                 Description =
-                    "The brightness-ramp rule, but only very light pixels become see-through, and pixels a little darker stay solid.",
+                    "The original-6.5 rule, but only very light pixels become see-through, and pixels a little darker stay solid.",
                 Run = img => LikeProduction(img, NarrowRamp),
             },
             new TransparencyAlgorithm
             {
                 Id = "edge-fill",
+                Where = "Proposed on BL-16778",
                 Description =
-                    "Uses the brightness-ramp rule only on the light area that connects to the edge of the picture (plus two pixels around it), so light areas enclosed by lines stay solid.",
+                    "Uses the original-6.5 rule only on the light area that connects to the edge of the picture (plus two pixels around it), so light areas enclosed by lines stay solid.",
                 Run = img => LikeProduction(img, EdgeFill),
             },
         };
@@ -448,7 +470,7 @@ namespace BloomTests.ImageProcessing
         }
 
         /// <summary>
-        /// Proposed on BL-16778: the brightness-ramp rule with the ramp moved up, so pixels at
+        /// Proposed on BL-16778: the original-6.5 rule with the ramp moved up, so pixels at
         /// brightness 245 or more are transparent and pixels at 225 or less are opaque.
         /// </summary>
         public static Image NarrowRamp(Bitmap source)
