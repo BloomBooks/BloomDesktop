@@ -2101,7 +2101,8 @@ export function attachToCkEditor(element) {
     // announce every attach on a title box, with what the box holds going in and what it holds
     // once the editor is ready, so that if the nightly loses a title again, its trace (Playwright
     // keeps the page's console) shows whether this is still where. Remove with the rest of this
-    // investigation once the nightly has gone several runs without losing a title.
+    // investigation once the nightly has gone several runs without losing a title (the reminder
+    // is the cover-title entry in docs/nightly-failures/README.md).
     const isBookTitleBox =
         !!element.getAttribute &&
         element.getAttribute("data-book") === "bookTitle";
