@@ -2382,6 +2382,34 @@ p {
             );
         }
 
+        /// <summary>
+        /// StyleEditor writes a font for a language-independent field such as the ISBN as a rule
+        /// on [lang="*"], and language tags may contain digits. Both used to be missed (BL-16851).
+        /// </summary>
+        [Test]
+        public void FindFontsUsedInCss_FindsFontsForLangStarAndTagsWithDigits()
+        {
+            const string htmlContent =
+                @"<html>
+<head>
+<style type=""text/css"" title=""userModifiedStyles"">
+.Credits-Page-style[lang=""*""] { font-family: ABeeZee !important; }
+.normal-style[lang=""es-419""] { font-family: ""Charis SIL"" !important; }
+.Heading1-style[lang=""*""] { font-family: Unused Font !important; }
+</style>
+</head>
+<body>
+<div class=""bloom-page""><div class=""bloom-editable Credits-Page-style"" lang=""*"">ISBN 123</div>
+<div class=""bloom-editable normal-style"" lang=""es-419"">hola</div>
+<div class=""bloom-editable Heading1-style"" lang=""en"">not language-independent</div></div>
+</body>
+</html>";
+
+            var fonts = new HashSet<string>();
+            HtmlDom.FindFontsUsedInCss(htmlContent, fonts, true);
+            Assert.That(fonts, Is.EquivalentTo(new[] { "ABeeZee", "Charis SIL" }));
+        }
+
         [Test]
         public void MigrateChildren_MigratesCanvasElements_DoesNotLoseCanvasElements()
         {
