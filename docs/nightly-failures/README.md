@@ -9,6 +9,18 @@ accept a flaky test, and a test is flaky from its first unexplained failure (roo
 Testing). So "wait and see whether it recurs" is never an entry's plan. To bring this up to date,
 use the `nightly-triage` skill.
 
+## E2E: a title typed on a new book's cover is lost
+
+- **Cause:** text typed while CKEditor was still loading was overwritten when it finished
+  (BL-17022). The e2e helpers used to hide this by waiting for CKEditor before typing.
+- **Status:** fixed by [#8542](https://github.com/BloomBooks/BloomDesktop/pull/8542), which also
+  drops that wait, so every spec that types now depends on the fix. The PR keeps temporary
+  `[cover-title]` / "Cover-title investigation" logging, which says whether a lost title was gone
+  from the page or lost after it left. When removing this entry, after several nightlies with no
+  lost title, also remove that logging: `attachToCkEditor` in
+  `src/BloomBrowserUI/bookEdit/js/bloomEditing.ts`, and the bookTitle report in
+  `src/BloomExe/Edit/EditingModel.cs`.
+
 ## E2E teardown: EPERM deleting Bloom's temp folder after the collection rename test
 
 - **Failed:** 2026-11-04. All 258 e2e tests passed, but the step failed on "1 error was not a
