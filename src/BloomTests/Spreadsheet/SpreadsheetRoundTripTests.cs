@@ -575,6 +575,8 @@ namespace BloomTests.Spreadsheet
         // escaped, so the result is that literal text, not the character it looks like.
         [TestCase("foo_x005F_x000D_bar", "foo_x000D_bar")]
         [TestCase("foo_x005f_x000d_bar", "foo_x000d_bar")]
+        // The "x" of an escape is always lowercase, so this is plain text.
+        [TestCase("foo_X000D_bar", "foo_X000D_bar")]
         public void UndoExcelEscapedChars(string input, string expected)
         {
             Assert.That(

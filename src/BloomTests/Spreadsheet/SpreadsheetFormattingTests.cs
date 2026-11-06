@@ -682,6 +682,26 @@ namespace BloomTests.Spreadsheet
                 superscripted: false,
                 underlined: false
             );
+
+            // A CR+LF split between two differently formatted runs.
+            ExcelRange ninthCell = _worksheet.Cells[9, 9];
+            ninthCell.IsRichText = true;
+            AddRunToCell(
+                ninthCell,
+                "First_x000d_",
+                bolded: false,
+                italicized: false,
+                superscripted: false,
+                underlined: false
+            );
+            AddRunToCell(
+                ninthCell,
+                "\nSecond",
+                bolded: false,
+                italicized: true,
+                superscripted: false,
+                underlined: false
+            );
         }
 
         [OneTimeTearDown]
@@ -812,6 +832,23 @@ namespace BloomTests.Spreadsheet
             );
             string xmlString = SpreadsheetIO.BuildXmlString(eighthCell);
             Assert.That(xmlString, Is.EqualTo("<p>- 1 - </p><p>Beginning with God</p>"));
+        }
+
+        /// <summary>
+        /// A CR at the end of one run and an LF at the start of the next make one break,
+        /// not two (which would add an empty paragraph).
+        /// </summary>
+        [Test]
+        public void BuildsXmlParagraphs_CrLfSplitAcrossRuns()
+        {
+            ExcelRange ninthCell = _worksheet.Cells[9, 9];
+            Assert.That(
+                ninthCell.RichText.Count,
+                Is.EqualTo(2),
+                "test setup: the CR and LF should be in separate runs"
+            );
+            string xmlString = SpreadsheetIO.BuildXmlString(ninthCell);
+            Assert.That(xmlString, Is.EqualTo("<p>First</p><p><em>Second</em></p>"));
         }
 
         [Test]

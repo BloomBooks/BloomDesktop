@@ -485,16 +485,17 @@ namespace Bloom.Spreadsheet
             // OOXML escapes a character as _xHHHH_. Excel writes the hex digits in uppercase,
             // but the standard doesn't require that, and other programs (e.g., LibreOffice) may
             // write lowercase, such as _x000d_ for a carriage return (BL-16185). EPPlus only
-            // decodes the uppercase form, so we must decode both.
+            // decodes the uppercase form, so we must decode both. The "x" itself is always
+            // lowercase in the escape, so text like "_X000D_" is left alone.
             // We decode in a single pass, so that _x005F_x000D_ (the escape for the literal text
             // "_x000D_") becomes that text rather than a carriage return. (In a real import,
             // EPPlus has usually decoded uppercase escapes before we see the text, so literal
             // escape-like text in a book is not fully protected; that's a rare case.)
             string plainString = Regex.Replace(
                 escapedString,
-                "_x([0-9A-F]{4})_",
+                "_x([0-9A-Fa-f]{4})_",
                 match => new string((char)Convert.ToInt32(match.Groups[1].Value, 16), 1),
-                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant
+                RegexOptions.CultureInvariant
             );
             if (wantXmlEscaping)
                 // Note: ampersand must be handled first! Otherwise it will modify the output of the other replaces.
@@ -524,13 +525,24 @@ namespace Bloom.Spreadsheet
             // still need to get colors from it. cell.RichText still contains the information we need even when cell.isRichText=false
             var content = cell.RichText;
             var cellLevelFormatting = cell.Style.Font;
+            // True when the previous run ended with a carriage return, which we have already
+            // counted as a line break.
+            var previousRunEndedWithCr = false;
             foreach (var run in content)
             {
                 if (run.Text.Length > 0)
                 {
                     run.Text = ReplaceExcelEscapedCharsAndEscapeXmlOnes(run.Text);
                 }
-                var splits = run.Text.Split(whitespaceSplitters, StringSplitOptions.None);
+                var runText = run.Text;
+                // A CR+LF may be split between two runs. The CR already made a break, so the
+                // LF must not make another one (which would add an empty paragraph).
+                if (previousRunEndedWithCr && runText.StartsWith("\n", StringComparison.Ordinal))
+                    runText = runText.Substring(1);
+                // A run that is empty (or was only that LF) leaves any pending CR still pending.
+                if (runText.Length > 0)
+                    previousRunEndedWithCr = runText.EndsWith("\r", StringComparison.Ordinal);
+                var splits = runText.Split(whitespaceSplitters, StringSplitOptions.None);
                 string pending = "";
                 foreach (var split in splits)
                 {
