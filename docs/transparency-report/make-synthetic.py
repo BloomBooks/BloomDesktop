@@ -54,3 +54,17 @@ im = Image.new("RGB", (W,H), (245,235,205)); d = ImageDraw.Draw(im)
 d.ellipse([460,40,540,120], fill=(240,170,40)); scene(d)
 a = np.asarray(im).astype(float) + rng.normal(0,3,(H,W,1))
 save("s6-scan-cream-paper", Image.fromarray(np.clip(a,0,255).astype(np.uint8)))
+
+# 7. A picture with no white at all: a coloured scene with a few small highlights at 230.
+im = Image.new("RGB", (W,H), (70,130,110)); d = ImageDraw.Draw(im)
+d.rectangle([0,0,W,200], fill=(60,90,170)); d.rectangle([220,200,360,330], fill=(170,90,60))
+scene(d)
+for x, y in [(80,60),(160,90),(330,50),(420,110),(520,70),(250,250),(300,280)]:
+    d.ellipse([x-6,y-6,x+6,y+6], fill=(230,230,230))
+save("s7-no-white-highlights", im)
+
+# 8. A scan on gray paper (232) with grain, saved as a palette PNG of at most 256 colours.
+im = Image.new("L", (W,H), 232); d = ImageDraw.Draw(im); scene(d, ink=0)
+a = np.asarray(im).astype(float) + rng.normal(0,3,(H,W))
+pal = Image.fromarray(np.clip(a,0,255).astype(np.uint8)).convert("RGB").convert("P", palette=Image.ADAPTIVE, colors=256)
+pal.save(f"{out}/s8-scan-palette.png"); print("s8-scan-palette")

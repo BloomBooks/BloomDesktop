@@ -254,5 +254,21 @@
         "source": "docs/transparency-report/synthetic/s6-scan-cream-paper.png",
         "note": "Drawn to fail: a scan on cream paper (245, 235, 205), not gray.",
         "originalName": "s6-scan-cream-paper.png"
+    },
+    {
+        "id": "s7-no-white-highlights",
+        "file": "s7-no-white-highlights.png",
+        "kind": "synthetic",
+        "source": "docs/transparency-report/synthetic/s7-no-white-highlights.png",
+        "note": "Drawn to fail: a coloured scene with no white, where a few small highlights at 230 are the most common light value, so they may be taken for paper and the whole picture brightened.",
+        "originalName": "s7-no-white-highlights.png"
+    },
+    {
+        "id": "s8-scan-palette",
+        "file": "s8-scan-palette.png",
+        "kind": "synthetic",
+        "source": "docs/transparency-report/synthetic/s8-scan-palette.png",
+        "note": "Drawn to fail: a scan on gray paper (232) saved as a palette PNG, which Bloom handles separately from other pictures.",
+        "originalName": "s8-scan-palette.png"
     }
 ]

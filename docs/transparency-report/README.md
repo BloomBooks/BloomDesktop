@@ -94,7 +94,8 @@ page needs no change.
 
 The pictures whose kind is `synthetic` were drawn to make the search for a scan's paper go wrong:
 a gray sky larger than the white paper, a drawing that is mostly mid gray, unevenly lit and cream
-scans, and pencil only a little darker than the paper. `make-synthetic.py` draws them into
+scans, pencil only a little darker than the paper, a coloured scene with no white but a few light
+highlights, and a scan saved as a palette PNG. `make-synthetic.py` draws them into
 `docs/transparency-report/synthetic/`; it needs Python with numpy and Pillow, and only needs running
 again to change a picture.
 
