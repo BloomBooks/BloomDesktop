@@ -661,9 +661,9 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
     // opens from it (chooserApp.collectionToOpen), which is the only one that Bloom has.
     //
     // The collection folder is copied rather than described because the failures this is for are
-    // the ones where Bloom's state on disk disagrees with what the test saw: a title typed on the
-    // cover that the collection never learned (AUTOMATION-DEBT.md). The book's HTML and meta.json
-    // say which side lost it.
+    // the ones where Bloom's state on disk disagrees with what the test saw, such as a title typed
+    // on the cover that the collection never learned. The book's HTML and meta.json say which side
+    // lost it.
     //
     // The user-settings folder is deliberately NOT kept. These artifacts are public (the repository
     // is), and user.config is where a Bloom that signed in to Bloom Library for real
