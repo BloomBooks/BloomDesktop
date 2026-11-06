@@ -11,8 +11,6 @@ namespace BloomTests.web.controllers
     [TestFixture]
     public class StylesAndFontsApiTests : BookTestsBase
     {
-        protected override string GetTestFolderName() => "StylesAndFontsApiTests";
-
         /// <summary>
         /// The ISBN field on the credits page is language-independent (lang="*"). When the user
         /// gives it a font, StyleEditor writes a [lang="*"] rule, and the Fonts table used to leave
