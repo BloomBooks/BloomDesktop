@@ -22,7 +22,8 @@ enum BadgeType {
     Problem,
 }
 
-const getBadgeType = (status: IBloomLibraryBadgeInfo | undefined) => {
+// Which badge to show for a book, given what Bloom knows about it on Bloom Library.
+function getBadgeType(status: IBloomLibraryBadgeInfo | undefined): BadgeType {
     if (!status) {
         return BadgeType.None;
     }
@@ -41,7 +42,7 @@ const getBadgeType = (status: IBloomLibraryBadgeInfo | undefined) => {
         return BadgeType.Draft;
     }
     return BadgeType.Published;
-};
+}
 
 export const BookOnBlorgBadge: React.FunctionComponent<{
     book: any;
