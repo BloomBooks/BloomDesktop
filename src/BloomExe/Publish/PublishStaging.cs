@@ -58,25 +58,11 @@ namespace Bloom.Publish
                     continue;
                 // The name is ours only if we are the one that creates its marker, and we keep the
                 // marker open to show the folder is in use.
-                FileStream marker;
-                try
-                {
-                    // robustfile-hook: allow FileStream
-                    // FileMode.CreateNew is the exclusive claim, and FileShare.None is what other
-                    // Blooms see as "in use"; RobustFile has no equivalent.
-                    marker = new FileStream(
-                        markerPath,
-                        FileMode.CreateNew,
-                        FileAccess.Write,
-                        FileShare.None
-                    );
-                }
-                catch (IOException) when (RobustFile.Exists(markerPath))
-                {
-                    // Another process claimed this name first. Any other failure (a full disk,
-                    // say) is not a collision, and trying more names would never succeed.
-                    continue;
-                }
+                // Any failure other than a collision (a full disk, say) throws: trying more names
+                // would never succeed.
+                var marker = RobustFileIO.TryCreateNewExclusive(markerPath);
+                if (marker == null)
+                    continue; // another process claimed this name first
                 try
                 {
                     Directory.CreateDirectory(path);
@@ -152,6 +138,9 @@ namespace Bloom.Publish
                     {
                         // robustfile-hook: allow FileStream
                         // Opening the marker exclusively fails while its owner holds it open.
+                        // This deliberately does not retry: failing is the normal answer for a
+                        // folder in use, and retrying would delay shutdown for each one. If
+                        // something else held it briefly, the next Bloom to exit cleans it up.
                         probe = new FileStream(
                             markerPath,
                             FileMode.Open,

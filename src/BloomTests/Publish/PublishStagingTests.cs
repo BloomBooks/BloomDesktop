@@ -50,6 +50,25 @@ namespace BloomTests.Publish
         }
 
         /// <summary>
+        /// The exclusive create that claims a staging folder gives null, rather than an error or
+        /// a stream, when the file already exists (another Bloom claimed that name first).
+        /// </summary>
+        [Test]
+        public void TryCreateNewExclusive_ReturnsNullWhenTheFileExists()
+        {
+            using (var folder = PublishStaging.CreateFolder())
+            {
+                var path = Path.Combine(folder.FolderPath, "claim.txt");
+                using (var first = Bloom.RobustFileIO.TryCreateNewExclusive(path))
+                {
+                    Assert.That(first, Is.Not.Null);
+                    Assert.That(Bloom.RobustFileIO.TryCreateNewExclusive(path), Is.Null);
+                }
+                Assert.That(Bloom.RobustFileIO.TryCreateNewExclusive(path), Is.Null);
+            }
+        }
+
+        /// <summary>
         /// Disposing a staging folder deletes it, along with whatever the publication put in it,
         /// and its marker.
         /// </summary>
