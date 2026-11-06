@@ -13,9 +13,9 @@
 // the text inside a CKEditor bookmark save-and-restore, and the restore put the focus straight back
 // into the box, where CKEditor's own focus-out handler then locked its selection. The box never
 // lost the focus again, so nothing unlocked it, and every later markup pass recorded the caret
-// where the lock said it was. That handler now keeps the bookmarks only when the focus leaves the
-// page's document altogether. Clicking in the toolbox is that case: the restore cannot pull the
-// focus back across frames, so it never had the bug, and its test is here to keep it that way.
+// where the lock said it was. That handler now keeps the bookmarks only when the focus leaves Bloom's
+// window. Clicking in the toolbox never had the bug (the restore did not pull the focus back across
+// frames), and now skips the bookmarks too, so its test is here to keep it working.
 //
 // Each test types, then checks both where the caret is once the markup pass has run and where the
 // next character lands. Knowing the pass has run: the Leveled Reader's "words on this page" count

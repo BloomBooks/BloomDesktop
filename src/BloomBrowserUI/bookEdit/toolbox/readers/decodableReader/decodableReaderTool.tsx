@@ -147,9 +147,12 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
                 // markup pass then records the caret where the lock says it is, and so puts the
                 // caret back where it was before the click away, wherever the user has clicked
                 // or typed since (BL-16916).
-                // Bookmarks are only worth having when the focus leaves the page's document
-                // altogether (for the toolbox, say, or another program), from where the user can
-                // come back without clicking in the text to put the caret somewhere.
+                // Bookmarks are only worth having when the focus leaves Bloom's window (for
+                // another program), from where it can come back to this box without a click
+                // that puts the caret somewhere. A click anywhere in the window, the toolbox
+                // included, counts as staying: while this event runs, the page's document
+                // still has the focus, since the browser hands it to the toolbox's frame only
+                // afterwards.
                 if (event.target.ownerDocument.hasFocus())
                     createCkEditorBookMarks = false;
                 // If the Format (Styles) dialog is showing, then we don't want to create
