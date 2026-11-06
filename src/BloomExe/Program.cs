@@ -743,7 +743,14 @@ namespace Bloom
                             Environment.Exit(-1);
                         }
 
-                        if (!DefenderFolderProtectionCheck.CanWriteToDirectory())
+                        // With a collection to open, opening it checks its folder and, if Bloom
+                        // can't write there, reports that and offers the collection chooser
+                        // (BL-16728). Exiting here would deny the user that choice, so only check
+                        // Documents, where a new collection would go, when there is none.
+                        if (
+                            string.IsNullOrEmpty(Settings.Default.MruProjects.Latest)
+                            && !DefenderFolderProtectionCheck.CanWriteToDirectory()
+                        )
                         {
                             Environment.Exit(-1);
                         }
@@ -2447,6 +2454,17 @@ namespace Bloom
                     $"Error loading collection (e2e): {errorFilePath}{Environment.NewLine}{originalError}"
                 );
                 Environment.Exit(1);
+            }
+
+            // We know what is wrong and what the user can do about it; a generic "problem loading"
+            // report would only hide that. (BL-16728)
+            if (originalError is CollectionFolderNotWritableException notWritable)
+            {
+                DefenderFolderProtectionCheck.ReportProblem(
+                    notWritable.InnerException,
+                    notWritable.FolderPath
+                );
+                return;
             }
 
             // Normally, NotifyUserOfProblem would take an exception and do this special-exception processing for us.
