@@ -482,19 +482,21 @@ namespace Bloom.Spreadsheet
             bool wantXmlEscaping = true
         )
         {
-            string plainString = escapedString;
-            string pattern = "_x([0-9A-F]{4})_";
-            Regex rgx = new Regex(pattern);
-            Match match = rgx.Match(plainString);
-            while (match.Success)
-            {
-                string x = match.Groups[1].Value;
-                int value = Convert.ToInt32(x, 16);
-                char charValue = (char)value;
-                plainString = plainString.Replace(match.Value, charValue.ToString());
-
-                match = rgx.Match(plainString);
-            }
+            // OOXML escapes a character as _xHHHH_. Excel writes the hex digits in uppercase,
+            // but the standard doesn't require that, and other programs (e.g., LibreOffice) may
+            // write lowercase, such as _x000d_ for a carriage return (BL-16185). EPPlus only
+            // decodes the uppercase form, so we must decode both. The "x" itself is always
+            // lowercase in the escape, so text like "_X000D_" is left alone.
+            // We decode in a single pass, so that _x005F_x000D_ (the escape for the literal text
+            // "_x000D_") becomes that text rather than a carriage return. (In a real import,
+            // EPPlus has usually decoded uppercase escapes before we see the text, so literal
+            // escape-like text in a book is not fully protected; that's a rare case.)
+            string plainString = Regex.Replace(
+                escapedString,
+                "_x([0-9A-Fa-f]{4})_",
+                match => new string((char)Convert.ToInt32(match.Groups[1].Value, 16), 1),
+                RegexOptions.CultureInvariant
+            );
             if (wantXmlEscaping)
                 // Note: ampersand must be handled first! Otherwise it will modify the output of the other replaces.
                 return plainString.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
@@ -514,19 +516,37 @@ namespace Bloom.Spreadsheet
                 return ""; // otherwise we'd wrap a paragraph around it, making it harder to detect empty cells.
 
             StringBuilder markedupStringBuilder = new StringBuilder();
-            var whitespaceSplitters = new string[] { "\n", "\r\n" };
+            // A lone \r is included because a spreadsheet saved by another program may mark a
+            // line break with only a carriage return (BL-16185). "\r\n" must come before "\r"
+            // so that a CRLF is one break, not two.
+            var whitespaceSplitters = new string[] { "\r\n", "\n", "\r" };
 
             // When a cell has no bold/italics/undelining/superscripting it may have cell.RichText=false  but we may
             // still need to get colors from it. cell.RichText still contains the information we need even when cell.isRichText=false
             var content = cell.RichText;
             var cellLevelFormatting = cell.Style.Font;
+            // True when the text so far ends with a carriage return that we have already
+            // counted as a line break and that has not yet been paired with a line feed.
+            var previousRunEndedWithCr = false;
             foreach (var run in content)
             {
                 if (run.Text.Length > 0)
                 {
                     run.Text = ReplaceExcelEscapedCharsAndEscapeXmlOnes(run.Text);
                 }
-                var splits = run.Text.Split(whitespaceSplitters, StringSplitOptions.None);
+                var runText = run.Text;
+                // A CR+LF may be split between two runs. The CR already made a break, so the
+                // LF must not make another one (which would add an empty paragraph).
+                if (previousRunEndedWithCr && runText.StartsWith("\n", StringComparison.Ordinal))
+                {
+                    runText = runText.Substring(1);
+                    // That CR is now paired, so a further LF is a break of its own.
+                    previousRunEndedWithCr = false;
+                }
+                // An empty run leaves an unpaired CR still waiting for its LF.
+                if (runText.Length > 0)
+                    previousRunEndedWithCr = runText.EndsWith("\r", StringComparison.Ordinal);
+                var splits = runText.Split(whitespaceSplitters, StringSplitOptions.None);
                 string pending = "";
                 foreach (var split in splits)
                 {

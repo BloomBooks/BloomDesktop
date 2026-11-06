@@ -658,6 +658,78 @@ namespace BloomTests.Spreadsheet
                 superscripted: false,
                 underlined: false
             );
+
+            // BL-16185: a title exported as two lines, after another spreadsheet program
+            // re-saved it with a lowercase escape for the carriage return. EPPlus leaves the
+            // lowercase escape in the cell's text, so that's what we put in the cell here.
+            ExcelRange seventhCell = _worksheet.Cells[7, 7];
+            AddRunToCell(
+                seventhCell,
+                "- 1 - _x000d_\nBeginning with God",
+                bolded: false,
+                italicized: false,
+                superscripted: false,
+                underlined: false
+            );
+
+            // The same, but with only the carriage return marking the line break.
+            ExcelRange eighthCell = _worksheet.Cells[8, 8];
+            AddRunToCell(
+                eighthCell,
+                "- 1 - _x000d_Beginning with God",
+                bolded: false,
+                italicized: false,
+                superscripted: false,
+                underlined: false
+            );
+
+            // A CR+LF split between two differently formatted runs.
+            ExcelRange ninthCell = _worksheet.Cells[9, 9];
+            ninthCell.IsRichText = true;
+            AddRunToCell(
+                ninthCell,
+                "First_x000d_",
+                bolded: false,
+                italicized: false,
+                superscripted: false,
+                underlined: false
+            );
+            AddRunToCell(
+                ninthCell,
+                "\nSecond",
+                bolded: false,
+                italicized: true,
+                superscripted: false,
+                underlined: false
+            );
+
+            // A CR+LF split between two runs, then another LF in a third run: a blank paragraph.
+            ExcelRange tenthCell = _worksheet.Cells[10, 10];
+            tenthCell.IsRichText = true;
+            AddRunToCell(
+                tenthCell,
+                "A_x000d_",
+                bolded: false,
+                italicized: false,
+                superscripted: false,
+                underlined: false
+            );
+            AddRunToCell(
+                tenthCell,
+                "\n",
+                bolded: true,
+                italicized: false,
+                superscripted: false,
+                underlined: false
+            );
+            AddRunToCell(
+                tenthCell,
+                "\nB",
+                bolded: false,
+                italicized: true,
+                superscripted: false,
+                underlined: false
+            );
         }
 
         [OneTimeTearDown]
@@ -755,6 +827,73 @@ namespace BloomTests.Spreadsheet
                     "<p>One.</p><p>Two.<span class=\"bloom-linebreak\"></span>\xfeffThree.</p><p>Four.</p>"
                 )
             );
+        }
+
+        /// <summary>
+        /// BL-16185: a lowercase-escaped carriage return followed by a line feed makes exactly
+        /// two paragraphs, with no escape text left in either.
+        /// </summary>
+        [Test]
+        public void BuildsXmlParagraphs_LowercaseEscapedCrLf()
+        {
+            ExcelRange seventhCell = _worksheet.Cells[7, 7];
+            Assert.That(
+                seventhCell.Text,
+                Does.Contain("_x000d_"),
+                "test setup: the cell should hold the raw lowercase escape"
+            );
+            string xmlString = SpreadsheetIO.BuildXmlString(seventhCell);
+            Assert.That(xmlString, Is.EqualTo("<p>- 1 - </p><p>Beginning with God</p>"));
+        }
+
+        /// <summary>
+        /// BL-16185: a lowercase-escaped carriage return on its own also makes a paragraph break.
+        /// </summary>
+        [Test]
+        public void BuildsXmlParagraphs_LowercaseEscapedLoneCr()
+        {
+            ExcelRange eighthCell = _worksheet.Cells[8, 8];
+            Assert.That(
+                eighthCell.Text,
+                Does.Contain("_x000d_"),
+                "test setup: the cell should hold the raw lowercase escape"
+            );
+            string xmlString = SpreadsheetIO.BuildXmlString(eighthCell);
+            Assert.That(xmlString, Is.EqualTo("<p>- 1 - </p><p>Beginning with God</p>"));
+        }
+
+        /// <summary>
+        /// A CR at the end of one run and an LF at the start of the next make one break,
+        /// not two (which would add an empty paragraph).
+        /// </summary>
+        [Test]
+        public void BuildsXmlParagraphs_CrLfSplitAcrossRuns()
+        {
+            ExcelRange ninthCell = _worksheet.Cells[9, 9];
+            Assert.That(
+                ninthCell.RichText.Count,
+                Is.EqualTo(2),
+                "test setup: the CR and LF should be in separate runs"
+            );
+            string xmlString = SpreadsheetIO.BuildXmlString(ninthCell);
+            Assert.That(xmlString, Is.EqualTo("<p>First</p><p><em>Second</em></p>"));
+        }
+
+        /// <summary>
+        /// Once a CR at the end of one run has paired with an LF at the start of the next,
+        /// a further LF in a later run is a break of its own, so the blank paragraph stays.
+        /// </summary>
+        [Test]
+        public void BuildsXmlParagraphs_CrLfSplitAcrossRuns_ThenAnotherLf()
+        {
+            ExcelRange tenthCell = _worksheet.Cells[10, 10];
+            Assert.That(
+                tenthCell.RichText.Count,
+                Is.EqualTo(3),
+                "test setup: the CR, the first LF and the second LF should be in separate runs"
+            );
+            string xmlString = SpreadsheetIO.BuildXmlString(tenthCell);
+            Assert.That(xmlString, Is.EqualTo("<p>A</p><p></p><p><em>B</em></p>"));
         }
 
         [Test]
