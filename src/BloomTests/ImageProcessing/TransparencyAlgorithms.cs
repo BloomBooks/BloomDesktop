@@ -33,6 +33,9 @@ namespace BloomTests.ImageProcessing
         /// <summary>Which Bloom version, or which piece of work, the rule belongs to, for the timeline.</summary>
         public string Where;
 
+        /// <summary>True when a released version of Bloom used this rule.</summary>
+        public bool Released;
+
         /// <summary>Takes the original image and returns what Bloom would display.</summary>
         public Func<PalasoImage, Image> Run;
     }
@@ -55,6 +58,7 @@ namespace BloomTests.ImageProcessing
             new TransparencyAlgorithm
             {
                 Id = "original-6.5",
+                Released = true,
                 Date = "2026-06-04",
                 Where = "Bloom 6.5 (commit ac1d454619, BL-16336)",
                 Description =
@@ -74,6 +78,7 @@ namespace BloomTests.ImageProcessing
             new TransparencyAlgorithm
             {
                 Id = "colorkey-253",
+                Released = true,
                 Date = "2017-11-27",
                 Where = "Bloom 6.4 and earlier (in the code by 2017, commit b396ab1e1c)",
                 Description =

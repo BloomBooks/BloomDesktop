@@ -26,6 +26,23 @@ await mkdir(imagesDir, { recursive: true });
 
 const listingCache = new Map();
 
+/** Turns the text of an XML element back into the string it encodes (S3 escapes keys this way). */
+function decodeXmlText(text) {
+    return text.replace(
+        /&(amp|lt|gt|quot|apos|#\d+|#x[0-9A-Fa-f]+);/g,
+        (whole, name) => {
+            if (name === "amp") return "&";
+            if (name === "lt") return "<";
+            if (name === "gt") return ">";
+            if (name === "quot") return '"';
+            if (name === "apos") return "'";
+            if (name.startsWith("#x"))
+                return String.fromCodePoint(parseInt(name.slice(2), 16));
+            return String.fromCodePoint(parseInt(name.slice(1), 10));
+        },
+    );
+}
+
 /** Returns the S3 keys of the files at the top level of a book's folder on Bloom Library. */
 async function listBookFiles(bookId) {
     if (!listingCache.has(bookId)) {
@@ -41,7 +58,7 @@ async function listBookFiles(bookId) {
                 throw new Error(`Listing ${bookId} failed: ${response.status}`);
             const xml = await response.text();
             const pageKeys = [...xml.matchAll(/<Key>([^<]*)<\/Key>/g)].map(
-                (m) => m[1].replace(/&amp;/g, "&"),
+                (m) => decodeXmlText(m[1]),
             );
             keys.push(...pageKeys);
             if (!/<IsTruncated>true<\/IsTruncated>/.test(xml)) break;

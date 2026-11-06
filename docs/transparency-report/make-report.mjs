@@ -47,6 +47,12 @@ const results = JSON.parse(
     fs.readFileSync(path.join(reportRoot, "results.json"), "utf8"),
 );
 const resultsById = new Map(results.images.map((r) => [r.id, r]));
+// Check the options before anything in the output folder is removed.
+for (const id of methodsShown ?? [])
+    if (!results.algorithms.some((a) => a.id === id))
+        throw new Error(
+            `--methods-shown names "${id}", which results.json does not have`,
+        );
 
 // ---- Background colours ----
 
@@ -271,11 +277,6 @@ if (includeFullSize) {
 
 // ---- Page ----
 
-for (const id of methodsShown ?? [])
-    if (!algorithms.some((a) => a.id === id))
-        throw new Error(
-            `--methods-shown names "${id}", which results.json does not have`,
-        );
 const data = {
     algorithms,
     methodsShown: methodsShown ?? algorithms.map((a) => a.id),
@@ -316,6 +317,8 @@ a { color: var(--accent); }
 .timeline { list-style: none; margin: 12px 0 4px; padding: 0; display: flex; flex-wrap: wrap; gap: 0; }
 .timeline li { position: relative; flex: 1 1 150px; min-width: 0; padding: 18px 12px 6px 0; border-top: 3px solid var(--line); font-size: 13px; display: flex; flex-direction: column; gap: 2px; }
 .timeline li::before { content: ""; position: absolute; top: -8px; left: 0; width: 13px; height: 13px; border-radius: 50%; background: var(--bg); border: 3px solid var(--muted); }
+.timeline li.unreleased::before { border-style: dashed; border-width: 2px; }
+.timeline li.unreleased b { color: var(--muted); }
 .timeline li.now { border-top-color: var(--accent); }
 .timeline li.now::before { border-color: var(--accent); background: var(--accent); }
 .timeline .when { color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -358,7 +361,7 @@ td.error { font-size: 12px; color: var(--warn); padding: 6px; width: var(--cell)
 ${forArtifact ? "" : "</head>\n<body>"}
 <div class="intro">
 <h1>Making white backgrounds transparent: how each method looks on many colours</h1>
-<ol id="timeline" class="timeline" aria-label="When each method was used"></ol>
+<ol id="timeline" class="timeline" aria-label="When each method was written"></ol>
 <p id="ideas" class="ideas"></p>
 <p>Each picture was run through Bloom's own C# code for each method. There is one section per background colour; the browser draws each result over that colour, as Bloom does. In each section, the rows are the methods and the columns are the pictures. Each section's heading gives the colour's lightness (CIE L*, where 100 is white and 0 is black).</p>
 <p><b>Hold Ctrl and turn the mouse wheel</b> to make the pictures larger or smaller; the text stays the same size. Click any picture to see it large: then Left and Right move to the next picture, Up and Down to the next method, Page Up and Page Down to the next colour, and Escape closes it.</p>
@@ -408,21 +411,26 @@ function pictureWarning(p) {
     return null;
 }
 
-// The timeline: every method with a date, oldest first; the ideas that were never committed follow it.
+// The timeline: every method with a date, oldest first. A hollow dashed marker means no released
+// Bloom used it; the ideas that were never committed follow the timeline.
 const timeline = document.getElementById("timeline");
 const dated = data.algorithms.filter((a) => a.date).sort((a, b) => a.date.localeCompare(b.date));
 for (const a of dated) {
     const when = new Date(a.date + "T00:00:00").toLocaleDateString("en", { year: "numeric", month: "short", day: "numeric" });
-    const li = el("li", { class: a.isNewCandidate || a.id.startsWith("proposed") ? "now" : "" },
+    let kind = "unreleased";
+    if (a.id.startsWith("proposed")) kind = "now";
+    else if (a.released) kind = "released";
+    const li = el("li", { class: kind },
         el("span", { class: "when" }, when),
         el("b", {}, a.id),
         el("span", { class: "where" }, a.where));
+    if (kind === "unreleased") li.append(el("span", { class: "where" }, "Not in any released Bloom."));
     timeline.append(li);
 }
 const ideas = data.algorithms.filter((a) => !a.date);
 if (ideas.length) {
     const p = document.getElementById("ideas");
-    p.append("Never in a version: ");
+    p.append("Never committed: ");
     ideas.forEach((a, i) => p.append(i ? ", " : "", el("b", {}, a.id), " (" + a.where + ")"));
     p.append(".");
 }

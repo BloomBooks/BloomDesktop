@@ -151,6 +151,7 @@ namespace BloomTests.ImageProcessing
                         ["isNewCandidate"] = algorithm.IsNewCandidate,
                         ["date"] = algorithm.Date,
                         ["where"] = algorithm.Where,
+                        ["released"] = algorithm.Released,
                     }
                 );
             }
