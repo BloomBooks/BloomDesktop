@@ -530,8 +530,6 @@ namespace Bloom.ImageProcessing
         /// keep as a faint wash over the page colour. So the picture's paper is found first (see
         /// <see cref="FindPaperBrightening"/>), and when it is gray every pixel is brightened by the
         /// same factor until the paper and its grain are white.
-        /// The transparency comparison report in docs/transparency-report shows this alongside
-        /// the earlier methods on many pictures and page colours.
         /// </summary>
         private static Image RemoveWhiteBackground(Bitmap source)
         {
