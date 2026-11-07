@@ -11,7 +11,7 @@ import {
     getEditablePageBundleExports,
     getWorkspaceBundleExports,
 } from "../../../bookEdit/js/workspaceFrames";
-import { get, postJson } from "../../../utils/bloomApi";
+import { getAsync, postJsonAsync } from "../../../utils/bloomApi";
 import {
     getSpreadShape,
     kSpreadGap,
@@ -128,19 +128,37 @@ type ZoomInfo = { zoom: number; minZoom: number };
 // Each view keeps the zoom the user last had in it, so that going back to one page undoes the
 // zooming out that seeing all the pages may have needed. Bloom's own zoom setting is the zoom of
 // the view showing now; the zoom of the other view is kept here, across Bloom sessions.
+// Switches run one after another: each reads Bloom's zoom as the switch before it left it, so a
+// quick change of view and back cannot store one view's zoom as the other's.
 function switchToZoomOfView(oldView: PageView, newView: PageView): void {
-    get("workspace/topRight/zoom", (result) => {
-        const zoomInfo = result.data as ZoomInfo;
-        storeZoomOfView(oldView, zoomInfo.zoom);
-        const zoomOfNewView = getStoredZoomOfView(newView);
-        if (zoomOfNewView !== undefined) {
-            if (zoomOfNewView !== zoomInfo.zoom) {
-                postJson("workspace/topRight/zoom", { zoom: zoomOfNewView });
-            }
-        } else if (newView === "all") {
-            zoomOutToFitASpread(zoomInfo);
+    // A switch that fails rejects, and is reported as an unhandled rejection before any later
+    // switch is asked for; the later switch then ignores it and goes ahead.
+    zoomSwitchesDone = zoomSwitchesDone
+        .catch(() => undefined)
+        .then(() => switchZoomNow(oldView, newView));
+}
+
+// Settles when every zoom switch asked for so far has reached Bloom.
+let zoomSwitchesDone: Promise<void> = Promise.resolve();
+
+// Store the zoom of the view being left, and give Bloom the zoom of the view being shown.
+async function switchZoomNow(
+    oldView: PageView,
+    newView: PageView,
+): Promise<void> {
+    const zoomInfo = (await getAsync("workspace/topRight/zoom"))
+        .data as ZoomInfo;
+    storeZoomOfView(oldView, zoomInfo.zoom);
+    const zoomOfNewView = getStoredZoomOfView(newView);
+    if (zoomOfNewView !== undefined) {
+        if (zoomOfNewView !== zoomInfo.zoom) {
+            await postJsonAsync("workspace/topRight/zoom", {
+                zoom: zoomOfNewView,
+            });
         }
-    });
+    } else if (newView === "all") {
+        await zoomOutToFitASpread(zoomInfo);
+    }
 }
 
 function getZoomKeyOfView(view: PageView): string {
@@ -171,7 +189,7 @@ function storeZoomOfView(view: PageView, zoom: number): void {
 // bookGridLayout.ts), so if the page frame is too narrow for it at the current zoom, zoom out until
 // it is not (to a whole step of 10%, and no further than Bloom allows). The full height of the
 // spread does not have to fit.
-function zoomOutToFitASpread(zoomInfo: ZoomInfo): void {
+async function zoomOutToFitASpread(zoomInfo: ZoomInfo): Promise<void> {
     const frame = document.getElementById("page") as HTMLIFrameElement;
     const pageDocument = frame.contentDocument!;
     const page = pageDocument.querySelector(
@@ -192,6 +210,6 @@ function zoomOutToFitASpread(zoomInfo: ZoomInfo): void {
         Math.floor((availableWidth / spreadWidth) * 10) * 10,
     );
     if (fittingZoom < zoomInfo.zoom) {
-        postJson("workspace/topRight/zoom", { zoom: fittingZoom });
+        await postJsonAsync("workspace/topRight/zoom", { zoom: fittingZoom });
     }
 }
