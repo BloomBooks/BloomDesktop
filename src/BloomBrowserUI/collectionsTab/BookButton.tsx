@@ -29,7 +29,10 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { useL10n } from "../react_components/l10nHooks";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { showBookSettingsDialog } from "../bookEdit/bookAndPageSettings/BookAndPageSettingsDialog";
-import { BookOnBlorgBadge } from "../react_components/BookOnBlorgBadge";
+import {
+    BookOnBlorgBadge,
+    IBloomLibraryBadgeInfo,
+} from "../react_components/BookOnBlorgBadge";
 
 export const bookButtonHeight = 120;
 export const bookButtonWidth = 90;
@@ -37,6 +40,8 @@ export const bookButtonWidth = 90;
 export const BookButton: React.FunctionComponent<{
     book: IBookInfo;
     collection: ICollection;
+    // Undefined if the book is not on Bloom Library (or we don't know yet).
+    bloomLibraryBadge?: IBloomLibraryBadgeInfo;
     //selected: boolean;
     manager: BookSelectionManager;
     lockedToOneDownloadedBook: boolean;
@@ -538,7 +543,10 @@ export const BookButton: React.FunctionComponent<{
                             src={`/bloom/api/collections/book/thumbnail?book-id=${props.book.id}&${collectionQuery}&reload=${reload}`}
                         />
                         {props.collection.isEditableCollection && (
-                            <BookOnBlorgBadge book={props.book} />
+                            <BookOnBlorgBadge
+                                book={props.book}
+                                status={props.bloomLibraryBadge}
+                            />
                         )}
                     </div>
                 }

@@ -25,7 +25,7 @@
 // asserts a pixel size as a number a test compares with a constant.
 
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
-import { editablePageFrame, waitForCkEditorToTakeTheBox } from "./bookMaking";
+import { editablePageFrame } from "./bookMaking";
 import { kTableEditingMarkupSelectors } from "./bookHtml";
 import { getCanvasRect } from "./canvasElements";
 import {
@@ -700,10 +700,6 @@ async function focusCellTextBox(
 ): Promise<Locator> {
     const box = await cellTextBox(page, row, column, languageTag, tableIndex);
     await box.waitFor({ state: "visible", timeout: kTableWaitMs });
-    // A cell made a moment ago gets its CKEditor late, and the editor wipes whatever was typed
-    // before it was ready (AUTOMATION-DEBT.md, "CKEditor discards what you type while it is
-    // still starting up").
-    await waitForCkEditorToTakeTheBox(box);
     // A single press in a table inside a cell goes to the outer cell; a person double-clicks to
     // get into the inner table first, which clickCell does.
     const isInNestedTable = await box.evaluate(

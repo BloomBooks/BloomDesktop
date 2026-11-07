@@ -96,7 +96,33 @@ function writeJsonAtomic(filePath, data) {
     ensureDir(path.dirname(filePath));
     const tmpPath = `${filePath}.tmp`;
     fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2));
-    fs.renameSync(tmpPath, filePath);
+    renameWithRetry(tmpPath, filePath);
+}
+
+// On Windows, another process (antivirus, the search indexer) often opens a file
+// just after it is written, and while it holds the file open renaming over it
+// fails with EPERM, EBUSY or EACCES. Such holds last milliseconds, so retry briefly
+// (about a second in all) before giving up.
+function renameWithRetry(fromPath, toPath) {
+    const maxAttempts = 10;
+    for (let attempt = 1; ; attempt++) {
+        try {
+            fs.renameSync(fromPath, toPath);
+            return;
+        } catch (error) {
+            const transient = ["EPERM", "EBUSY", "EACCES"].includes(error.code);
+            if (!isWindows || !transient || attempt >= maxAttempts) {
+                throw error;
+            }
+            // A synchronous sleep, since our callers are synchronous.
+            Atomics.wait(
+                new Int32Array(new SharedArrayBuffer(4)),
+                0,
+                0,
+                20 * attempt,
+            );
+        }
+    }
 }
 
 function pathToRepoRelative(repoRoot, absPath) {

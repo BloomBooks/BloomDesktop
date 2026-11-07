@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-11-05 (nightlies through the 2026-11-05 run, 42021196009, have been triaged)
+**Last updated:** 2026-11-07 (nightlies through the 2026-11-07 run, 42365421609, have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -8,6 +8,19 @@ once its fix lands and the nightly has stayed green on it. The rule they are all
 accept a flaky test, and a test is flaky from its first unexplained failure (root `AGENTS.md`,
 Testing). So "wait and see whether it recurs" is never an entry's plan. To bring this up to date,
 use the `nightly-triage` skill.
+
+## E2E: a title typed on a new book's cover is lost
+
+- **Cause:** text typed while CKEditor was still loading was overwritten when it finished
+  (BL-17022). The e2e helpers used to hide this by waiting for CKEditor before typing.
+- **Status:** fixed by [#8542](https://github.com/BloomBooks/BloomDesktop/pull/8542) (merged
+  2026-11-06; the 2026-11-07 nightly, the first on it, passed), which also
+  drops that wait, so every spec that types now depends on the fix. The PR keeps temporary
+  `[cover-title]` / "Cover-title investigation" logging, which says whether a lost title was gone
+  from the page or lost after it left. When removing this entry, after several nightlies with no
+  lost title, also remove that logging: `attachToCkEditor` in
+  `src/BloomBrowserUI/bookEdit/js/bloomEditing.ts`, and the bookTitle report in
+  `src/BloomExe/Edit/EditingModel.cs`.
 
 ## E2E teardown: EPERM deleting Bloom's temp folder after the collection rename test
 

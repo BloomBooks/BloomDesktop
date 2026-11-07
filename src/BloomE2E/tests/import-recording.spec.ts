@@ -44,9 +44,7 @@ test.describe.configure({ mode: "serial" });
 
 // The book both tests work on, and where its audio would go. The book is given no title: it is
 // left in the folder Bloom made for it, so that folder is where the audio goes for the rest of
-// the file. (Bloom renames a book's folder after its title. On the CI runner a title typed on the
-// cover of a book made under this branding never reached the collection; see AUTOMATION-DEBT.md,
-// "A title typed on the cover of a new book can fail to reach the collection".)
+// the file. (Bloom renames a book's folder after its title.)
 let bookFolder: string;
 let audioFolder: string;
 

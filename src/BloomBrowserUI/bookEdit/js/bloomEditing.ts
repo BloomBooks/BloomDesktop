@@ -127,6 +127,7 @@ import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
 import { setupTextContextMenu } from "../textContextMenu/TextContextMenu";
 import { resetAbovePageControls } from "./AbovePageControls";
 import { trackCkeditorChanges } from "../undo/ckeditorChanges";
+import { keepTypingWhenCkEditorLoads } from "./keepTypingWhenCkEditorLoads";
 import { theOneUndoStack } from "../undo/UndoStack";
 import { recordFractionOfPageOnImageSlots } from "./imageTargetResolution";
 import {
@@ -1389,17 +1390,9 @@ export function bootstrap() {
     // Attach ckeditor to the fields that can have styled editable text.
     // (See comment above on ckeditableSelector for what fields those are.)
     //
-    // KNOWN DEFECT, not fixed because CKEditor is being retired (the retireCkEditor work): each
-    // CKEDITOR.inline() below returns before its editor is ready, and when the editor does become
-    // ready it writes the snapshot it took here over whatever the element holds by then. So
-    // anything a person types in that window is silently destroyed. Measured on a developer
-    // machine by watching the DOM: a title typed at 942ms after the page loaded was gone at
-    // 1215ms, in the same mutation that added the cke_editable class. Type a title fast enough
-    // after making a book and you lose it; a loaded machine widens the window. Written up in
-    // src/BloomE2E/AUTOMATION-DEBT.md, "A title typed on the cover of a new book can fail to
-    // reach the collection", which also has the e2e suite's workaround. If CKEditor ends up
-    // staying, that entry is the place to start. In the live Edit tab a person can no longer type
-    // in that window: the page takes no input until every editor is ready (pageInputBlock.ts).
+    // Each CKEDITOR.inline() returns before its editor is ready, and a person can type in the box
+    // in the meantime; attachToCkEditor makes sure the editor keeps that typing when it becomes
+    // ready (keepTypingWhenCkEditorLoads.ts, BL-17022).
     $("div.bloom-page")
         .find(ckeditableSelector)
         .each((index: number, element: Element) => {
@@ -1777,6 +1770,14 @@ export const pageUnloading = () => {
     // newPageReady() the tool gets for the next page. Saving never touches the live page, so
     // nothing else detaches the tool, and without this every page change would leak its hooks.
     getToolboxBundleExports()?.removeToolboxMarkup();
+    // Let the toolbox let go of this page's elements. It bound handlers to them with its own
+    // frame's jQuery when we called configureElementsForTools, and it outlives this page, so
+    // it has to be told now, while the elements are still here. See releaseElementsForTools.
+    // This comes after detaching the tool, so whatever the tool does as it detaches still finds
+    // its jQuery handlers and data in place.
+    getToolboxBundleExports()
+        ?.getTheOneToolbox()
+        ?.releaseElementsForTools(document.body);
     // Unmount the React root for the controls above the page and re-enable the toolbox (the
     // Change Layout toggle disables it).
     resetAbovePageControls();
@@ -2149,13 +2150,14 @@ export function attachToCkEditor(element) {
         return;
     }
 
-    // Cover-title investigation (src/BloomE2E/AUTOMATION-DEBT.md): an editor wipes the box when it
-    // becomes ready, so a title typed before that is lost. Waiting for the first editor did not
-    // stop the nightly losing titles, and the open question is whether a SECOND attach is landing
-    // on a box somebody has already typed in. These two lines answer that: every attach on a title
-    // box is announced, with what the box holds going in and what it holds once the editor is
-    // ready. Playwright keeps the page's console in its trace, so a failed run carries the answer.
-    // Remove with the rest of this investigation.
+    // Cover-title investigation (BL-17022): when an editor becomes ready it
+    // writes its copy of the box back into the box, and keepTypingWhenCkEditorLoads makes that copy
+    // include a title typed before then (BL-17022). These two lines
+    // announce every attach on a title box, with what the box holds going in and what it holds
+    // once the editor is ready, so that if the nightly loses a title again, its trace (Playwright
+    // keeps the page's console) shows whether this is still where. Remove with the rest of this
+    // investigation once the nightly has gone several runs without losing a title (the reminder
+    // is the cover-title entry in docs/nightly-failures/README.md).
     const isBookTitleBox =
         !!element.getAttribute &&
         element.getAttribute("data-book") === "bookTitle";
@@ -2178,6 +2180,7 @@ export function attachToCkEditor(element) {
     // see bl-12448. Here we add a rule blocking visibility of the toolbar
     $("body").addClass("hideAllCKEditors");
     const ckedit = CKEDITOR.inline(element);
+    keepTypingWhenCkEditorLoads(ckedit, element);
 
     // Until this editor is ready, a gather reads the box from the DOM rather than from getData(),
     // and they differ: SetupElements puts an empty <p></p> into an empty editable, which getData()
