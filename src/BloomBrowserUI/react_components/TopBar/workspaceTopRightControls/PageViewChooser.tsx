@@ -12,6 +12,7 @@ import {
     getWorkspaceBundleExports,
 } from "../../../bookEdit/js/workspaceFrames";
 import { getAsync, postJsonAsync } from "../../../utils/bloomApi";
+import { reportError } from "../../../lib/errorHandler";
 import {
     getSpreadShape,
     kSpreadGap,
@@ -131,11 +132,10 @@ type ZoomInfo = { zoom: number; minZoom: number };
 // Switches run one after another: each reads Bloom's zoom as the switch before it left it, so a
 // quick change of view and back cannot store one view's zoom as the other's.
 function switchToZoomOfView(oldView: PageView, newView: PageView): void {
-    // A switch that fails rejects, and is reported as an unhandled rejection before any later
-    // switch is asked for; the later switch then ignores it and goes ahead.
+    // A switch that fails is reported, and the switches after it still run.
     zoomSwitchesDone = zoomSwitchesDone
-        .catch(() => undefined)
-        .then(() => switchZoomNow(oldView, newView));
+        .then(() => switchZoomNow(oldView, newView))
+        .catch((e: Error) => reportError(e.message, e.stack));
 }
 
 // Settles when every zoom switch asked for so far has reached Bloom.
