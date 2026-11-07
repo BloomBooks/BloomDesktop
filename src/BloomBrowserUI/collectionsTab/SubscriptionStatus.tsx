@@ -109,7 +109,7 @@ export const SubscriptionStatus: React.FunctionComponent<{
     const kDaysBeforeWarningForNormalExpiration = 60;
 
     if (subscriptionTier === "Pro" && isTeamCollection) {
-        // reasons for this are currently documented in the CollectionSettingsDialog okButton_Clicked function
+        // reasons for this are documented in CollectionSettingsUpdater.ApplySubscriptionAndBookshelf
         return (
             <BoxWithIconAndText
                 backgroundColor={kBloomWarning}

@@ -94,7 +94,13 @@ export interface IXmatterPack {
     description: string;
 }
 
-// The reply to GET collection/settings.
+// The reply to GET collection/settings: the settings, or, for a user who may not edit them (a Team
+// Collection member who is not an administrator), only why not.
+export type ICollectionSettingsReply =
+    | ICollectionSettingsResponse
+    | { notAllowedMessage: string };
+
+// The reply to GET collection/settings for a user who may edit the settings.
 export interface ICollectionSettingsResponse {
     values: ICollectionSettingsValues;
     // Dotted paths into `values`; a change to any of them means Bloom must restart.
@@ -112,7 +118,4 @@ export interface ICollectionSettingsResponse {
     // The packs the collection may use; just the one when the branding chooses it.
     xmatterPacks: IXmatterPack[];
     xmatterChosenByBranding: boolean;
-    // Non-null when the user may not edit the settings (a Team Collection member who is not an
-    // administrator). Then the other fields are null.
-    notAllowedMessage: string | null;
 }

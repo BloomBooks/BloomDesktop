@@ -449,7 +449,8 @@ namespace Bloom
         /// <summary>
         /// Works around a WebView2 bug (BL-16876) that truncates our content whenever the browser is
         /// hosted in one of the dialogs that LegacyDpiDialogLauncher shows under a SYSTEM_AWARE thread
-        /// DPI context (see that class, and WorkspaceView.OpenLegacySettingsDialog).
+        /// DPI context (see that class; the ones that host a browser are Configurator's ConfigurationDialog
+        /// and Program's LicenseDialog).
         ///
         /// WebView2 ties DPI awareness to the msedgewebview2.exe browser process, which inherits the
         /// awareness of the HWND that hosts it. Bloom's process is PerMonitorV2, so a browser created for

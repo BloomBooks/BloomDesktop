@@ -107,8 +107,8 @@ after a Bloom restart regardless.
   books differ. Vary `--layouts` or use a portrait book to see both.
 - **xmatter-coupled brandings** (e.g. Kyrgyzstan2020) place content in slots that only exist in
   their own xmatter; on a foreign xmatter their pages look empty. **But** `--xmatters` can only
-  apply packs the collection actually offers (see `GET /bloom/api/settings/xmatter` →
-  `xmatterOfferings`: typically Factory, Device, Traditional, SuperPaperSaver, SIL-PNG).
+  apply packs the collection actually offers (see `GET /bloom/api/collection/settings` →
+  `xmatterPacks`: typically Factory, Device, Traditional, SuperPaperSaver, SIL-PNG).
   Project-specific packs like `Kyrgyzstan2020` aren't offered and silently fall back — to survey
   such a branding faithfully, open a collection that provides its xmatter.
 - **Local-Community** needs personalization; `survey.mjs` sends it a `Sample-Community-LC`
