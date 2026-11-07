@@ -6,6 +6,7 @@ import {
     installRedoKeyBinding,
     IRedoTarget,
     isRedoKeystroke,
+    isUndoKeystroke,
 } from "./redoKeyBinding";
 
 function keydown(init: KeyboardEventInit): KeyboardEvent {
@@ -40,6 +41,46 @@ describe("redoKeyBinding", () => {
             expect(
                 isRedoKeystroke(
                     keydown({ key: "y", ctrlKey: true, altKey: true }),
+                ),
+            ).toBe(false);
+        });
+    });
+
+    describe("isUndoKeystroke", () => {
+        it("is Ctrl+Z, either case", () => {
+            expect(isUndoKeystroke(keydown({ key: "z", ctrlKey: true }))).toBe(
+                true,
+            );
+            expect(isUndoKeystroke(keydown({ key: "Z", ctrlKey: true }))).toBe(
+                true,
+            );
+        });
+
+        it("goes by the typed key, not the physical one", () => {
+            // On a German keyboard the physical KeyZ key types Y, so Ctrl on it is a Redo.
+            expect(
+                isUndoKeystroke(
+                    keydown({ key: "y", code: "KeyZ", ctrlKey: true }),
+                ),
+            ).toBe(false);
+            // On a French keyboard KeyW types Z, so Ctrl on it is an Undo.
+            expect(
+                isUndoKeystroke(
+                    keydown({ key: "z", code: "KeyW", ctrlKey: true }),
+                ),
+            ).toBe(true);
+        });
+
+        it("is not Z alone or Ctrl+Z with another modifier", () => {
+            expect(isUndoKeystroke(keydown({ key: "z" }))).toBe(false);
+            expect(
+                isUndoKeystroke(
+                    keydown({ key: "z", ctrlKey: true, shiftKey: true }),
+                ),
+            ).toBe(false);
+            expect(
+                isUndoKeystroke(
+                    keydown({ key: "z", ctrlKey: true, altKey: true }),
                 ),
             ).toBe(false);
         });

@@ -84,6 +84,7 @@ export function SayHello() {
 import { getToolboxBundleExports } from "./js/workspaceFrames";
 export { getToolboxBundleExports };
 import { getEditablePageBundleExports } from "./js/workspaceFrames";
+import { isUndoKeystroke } from "./undo/redoKeyBinding";
 export { getEditablePageBundleExports };
 import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
 export { showPageChooserDialog };
@@ -140,6 +141,28 @@ const showAdjustTimingsDialogFromWorkspaceRoot = showAdjustTimingsDialog;
 export function handleUndo(): void {
     getEditablePageBundleExports()?.handleUndo();
 }
+
+// Ctrl+Z when the keystroke arrives here rather than in the page. That is where it arrives
+// right after the AI Image Editor closes, because the editor's overlay lives in this window,
+// so without this the key did nothing until the user clicked back into the page (BL-16868).
+// The page has the same handler for when it has the focus; both do what the Undo button does,
+// through the page's one undo stack. A dialog's own text field keeps the browser's native undo.
+document.addEventListener("keydown", (e: KeyboardEvent) => {
+    if (!isUndoKeystroke(e)) return;
+    const target = e.target as HTMLElement | null;
+    const contentWindow = getEditablePageBundleExports();
+    if (!contentWindow) return;
+    if (target?.closest?.(contentWindow.kNotOurUndoSelector)) return;
+    // Not while a dialog or the AI Image Editor is open over the page: those live in THIS
+    // document, so without the check a keystroke meant for the thing on top would replace the
+    // picture behind it.
+    if (contentWindow.isModalOpen(document)) return;
+    // Origami's own handler is bound to the page frame's html element, so it never sees this
+    // event; the stack's origami entry comes first, so layout mode's undo still wins here.
+    if (!contentWindow.canUndo()) return;
+    e.preventDefault();
+    contentWindow.handleUndo();
+});
 
 // We need this update to maintain relative paths to images for the thumbnails. (BL-15906)
 export function switchThumbnailPage(newSource: string) {

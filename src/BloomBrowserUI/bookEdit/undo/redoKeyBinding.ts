@@ -38,6 +38,21 @@ export function isRedoKeystroke(e: KeyboardEvent): boolean {
     );
 }
 
+/**
+ * Whether this keydown is the Undo gesture: Ctrl+Z with no other modifier. It goes by the key the
+ * user typed, never by `e.code`: `code` names the physical key, and on a German keyboard that key
+ * is Y, so matching it would make Ctrl+Y an undo.
+ */
+export function isUndoKeystroke(e: KeyboardEvent): boolean {
+    return (
+        e.ctrlKey &&
+        !e.altKey &&
+        !e.metaKey &&
+        !e.shiftKey &&
+        (e.key === "z" || e.key === "Z" || e.keyCode === 90)
+    );
+}
+
 /** Whether the page is in Change Layout mode, where origami owns Ctrl+Z and Ctrl+Y. */
 export function isInChangeLayoutMode(doc: Document): boolean {
     return !!doc.querySelector(".marginBox.origami-layout-mode");

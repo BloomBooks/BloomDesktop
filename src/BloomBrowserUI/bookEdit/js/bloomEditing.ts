@@ -89,6 +89,7 @@ import {
     getToolboxBundleExports,
 } from "./workspaceFrames";
 import { handleUndo } from "../undo/pageUndo";
+import { isInChangeLayoutMode, isUndoKeystroke } from "../undo/redoKeyBinding";
 import { showInvisibles, hideInvisibles } from "./showInvisibles";
 
 //promise may be needed to run tests with phantomjs
@@ -688,6 +689,7 @@ export function SetupElements(
     SetupWidgetEditing(container);
     SetupTableEditing(container);
     initializeCanvasElementManager();
+    listenForImageUndoKey();
     initChoiceWidgetsForEditing();
 
     $(container)
@@ -1910,6 +1912,56 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
         pasteHandler(e);
     }
 });
+
+// Where Ctrl+Z belongs to something other than the image undo: a text field or a rich-text
+// editable keeps the undo that comes with it (native for a form field, ckeditor for a
+// bloom-editable).
+export const kNotOurUndoSelector = "input, textarea, [contenteditable=true]";
+
+// Is a modal open over the page? While one is, the thing the user is typing into or looking
+// at is the modal, not the picture behind it, so Ctrl+Z must not reach past it and replace a
+// picture they cannot even see. Bloom puts modals up three ways and this has to catch all of
+// them: the React dialogs (MUI renders a .MuiDialog-container), the older jQuery UI ones such
+// as Reader Setup (.ui-dialog, with .ui-widget-overlay behind it), and the AI Image Editor,
+// whose own content is an iframe but whose frame and close button are elements of the host
+// document.
+export function isModalOpen(doc: Document): boolean {
+    return !!doc.querySelector(
+        ".MuiDialog-container, .ui-dialog, .ui-widget-overlay, #ai-image-editor-overlay",
+    );
+}
+
+// Ctrl+Z outside text. Text gets its undo from the ckeditor instance that has focus, and
+// the origami layout mode binds its own handler, but an image change had neither: the only
+// way to undo replacing a picture was the Undo button in the top bar, and the keystroke did
+// nothing (BL-16868). Outside text the keystroke now does exactly what the Undo button does,
+// through the one undo stack, so the two never disagree about which change comes back next.
+// Only the page frame may listen: the toolbox frame loads this module too, and it has no
+// undo stack, so the handler would throw there.
+let listeningForImageUndoKey = false;
+function listenForImageUndoKey() {
+    if (listeningForImageUndoKey) return;
+    listeningForImageUndoKey = true;
+    document.addEventListener("keydown", handleImageUndoKey);
+}
+
+function handleImageUndoKey(e: KeyboardEvent) {
+    if (!isUndoKeystroke(e)) return;
+    // Something earlier in the bubble already claimed this keystroke.
+    if (e.defaultPrevented) return;
+    const target = e.target as HTMLElement | null;
+    if (target?.closest?.(kNotOurUndoSelector)) return;
+    if (isModalOpen(document)) return;
+    // Origami's handler is bound to this frame's html element, which the keystroke reaches
+    // before it reaches this document, so by now origami has already done its undo. Asking
+    // the stack here would be asking too late: after the last layout step is undone origami
+    // has nothing left, the stack would move on to the next mechanism, and one keystroke
+    // would run two undos. So while layout mode is on, the key is origami's.
+    if (isInChangeLayoutMode(document)) return;
+    if (!theOneUndoStack.canUndo()) return;
+    e.preventDefault();
+    handleUndo();
+}
 
 async function pasteImpl(imageAvailable: boolean) {
     // With an inline image selected, or the focus in a text block, a picture goes to inline
