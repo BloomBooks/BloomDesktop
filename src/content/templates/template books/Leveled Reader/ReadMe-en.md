@@ -25,10 +25,10 @@ So how do leveled reader *levels* fit in decodable reader *stages*? The two conc
     <tr>    <td>1</td>    <td>4</td>  </tr>
     <tr>    <td>1</td>    <td>5</td>  </tr>
     <tr>    <td>1</td>    <td>6</td>  </tr>
-    <tr>    <td>2</td>    <td>n/a</td>  </tr>
-    <tr>    <td>3</td>    <td>n/a</td>  </tr>
-    <tr>    <td>4</td>    <td>n/a</td>  </tr>
-    <tr>    <td>5</td>    <td>n/a</td>  </tr>
+    <tr>    <td>2</td>    <td i18n="leveled.decodable.notapplicable">n/a</td>  </tr>
+    <tr>    <td>3</td>    <td i18n="leveled.decodable.notapplicable">n/a</td>  </tr>
+    <tr>    <td>4</td>    <td i18n="leveled.decodable.notapplicable">n/a</td>  </tr>
+    <tr>    <td>5</td>    <td i18n="leveled.decodable.notapplicable">n/a</td>  </tr>
 </table>
 
 
