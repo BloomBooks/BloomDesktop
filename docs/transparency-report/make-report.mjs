@@ -429,7 +429,7 @@ const dated = data.algorithms.filter((a) => a.date).sort((a, b) => a.date.locale
 for (const a of dated) {
     const when = new Date(a.date + "T00:00:00").toLocaleDateString("en", { year: "numeric", month: "short", day: "numeric" });
     let kind = "unreleased";
-    if (a.where.startsWith("This branch")) kind = "now";
+    if (a === dated[dated.length - 1]) kind = "now";
     else if (a.released) kind = "released";
     const li = el("li", { class: kind },
         el("span", { class: "when" }, when),

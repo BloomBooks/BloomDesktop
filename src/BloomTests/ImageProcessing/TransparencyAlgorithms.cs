@@ -41,8 +41,8 @@ namespace BloomTests.ImageProcessing
     }
 
     /// <summary>
-    /// The algorithms compared by the transparency report (BL-16778): the production one, earlier
-    /// versions copied from git history, and ideas proposed on the card. Each per-pixel rule is a
+    /// The algorithms compared by the transparency report (BL-16778): the production one and
+    /// earlier versions copied from git history. Each per-pixel rule is a
     /// function from a 32bpp ARGB bitmap to a new 32bpp ARGB bitmap, and all but the oldest go
     /// through <see cref="LikeProduction"/>, so the results differ only in that rule.
     ///
@@ -67,22 +67,11 @@ namespace BloomTests.ImageProcessing
             },
             new TransparencyAlgorithm
             {
-                Id = "6.5 beta initial",
-                Released = true,
-                Date = "2026-06-04",
-                Where = "Bloom 6.5 (commit ac1d454619, BL-16336)",
-                Description =
-                    "What Bloom 6.5 does before BL-16778 (since June 2026): pixels lighter than a set brightness become fully see-through, darker pixels stay solid, and pixels in between become partly see-through but keep their own colour.",
-                Run = img =>
-                    LikeProduction(img, source => BrightnessRamp(source, 220.0, 180.0, null)),
-            },
-            new TransparencyAlgorithm
-            {
-                Id = "6.5 Final",
+                Id = "Bloom 6.5",
                 Date = "2026-11-06",
-                Where = "This branch, for 6.5 (BL-16778)",
+                Where = "Bloom 6.5 (BL-16778)",
                 Description =
-                    "Bloom's own code, as this branch changes it for 6.5 (BL-16778): each pixel is treated as ink over the picture's paper. The paper is the most common value of the darkest colour channel among pixels from 215 up; when it is below 250 (a scan of gray paper), the picture is first brightened, the same factor for all three channels, so that anything within 10 of the paper becomes white. Then the darker a pixel's darkest colour channel, the more solid it is, and its colour becomes the ink that would give that pixel when laid over white. On white paper this is what Bloom did on May 19 2026 (commit 625c7891ff).",
+                    "Bloom's own code: each pixel is treated as ink over the picture's paper. The paper is the most common value of the darkest colour channel among pixels from 215 up; when it is below 250 (a scan of gray paper), the picture is first brightened, the same factor for all three channels, so that anything within 10 of the paper becomes white. Then the darker a pixel's darkest colour channel, the more solid it is, and its colour becomes the ink that would give that pixel when laid over white. On white paper this is what Bloom did on May 19 2026 (commit 625c7891ff).",
                 Run = RuntimeImageProcessor.MakePngBackgroundTransparent,
             },
             new TransparencyAlgorithm
@@ -92,7 +81,7 @@ namespace BloomTests.ImageProcessing
                 Where =
                     "BL-16336 work in May (commit 625c7891ff), merged into 6.4 and reverted on June 8",
                 Description =
-                    "Each pixel is treated as ink over white paper, with no search for the paper: 6.5 Final without its brightening of gray scanned paper.",
+                    "Each pixel is treated as ink over white paper, with no search for the paper: Bloom 6.5 without its brightening of gray scanned paper.",
                 Run = img => LikeProduction(img, source => PaperLevel(source, 256)),
             },
             new TransparencyAlgorithm
@@ -104,31 +93,6 @@ namespace BloomTests.ImageProcessing
                 Description =
                     "A pixel is more solid the further its weakest colour channel falls below the lightest colour in the image, and it keeps its own colour.",
                 Run = img => LikeProduction(img, DeficitKeepRgb),
-            },
-            new TransparencyAlgorithm
-            {
-                Id = "ramp-force-grey",
-                Date = "2026-05-22",
-                Where = "BL-16336 work in May (commit 7e8bdde10c), on a branch never merged",
-                Description =
-                    "The 6.5 beta initial rule, except that partly see-through pixels that are nearly grey are made exactly grey.",
-                Run = img => LikeProduction(img, RampForceGrey),
-            },
-            new TransparencyAlgorithm
-            {
-                Id = "narrow-ramp",
-                Where = "Proposed on BL-16778",
-                Description =
-                    "The 6.5 beta initial rule, but only very light pixels become see-through, and pixels a little darker stay solid.",
-                Run = img => LikeProduction(img, NarrowRamp),
-            },
-            new TransparencyAlgorithm
-            {
-                Id = "edge-fill",
-                Where = "Proposed on BL-16778",
-                Description =
-                    "Uses the 6.5 beta initial rule only on the light area that connects to the edge of the picture (plus two pixels around it), so light areas enclosed by lines stay solid.",
-                Run = img => LikeProduction(img, EdgeFill),
             },
         };
 
@@ -432,332 +396,6 @@ namespace BloomTests.ImageProcessing
                     byte newAlpha = (byte)(255.0 * deficit / maxDeficit);
                     pixels[idx + 3] = newAlpha;
                     // Keep RGB as-is to preserve color intensity (e.g. pure red stays red).
-                }
-            }
-            Marshal.Copy(pixels, 0, dstData.Scan0, pixels.Length);
-            result.UnlockBits(dstData);
-            return result;
-        }
-
-        /// <summary>
-        /// RemoveWhiteBackground from commit 7e8bdde10c (John Thomson, May 22 2026, on a branch
-        /// that was not merged): a brightness ramp (transparent at 220 or lighter, opaque at 180
-        /// or darker) that keeps RGB, except that partly transparent pixels whose channels differ
-        /// by 6 or less are set to exactly grey. The Debug.WriteLine timing lines are left out.
-        /// </summary>
-        public static Image RampForceGrey(Bitmap source)
-        {
-            var width = source.Width;
-            var height = source.Height;
-            var result = new Bitmap(width, height, PixelFormat.Format32bppArgb);
-            var rect = new Rectangle(0, 0, width, height);
-            var srcData = source.LockBits(
-                rect,
-                ImageLockMode.ReadOnly,
-                PixelFormat.Format32bppArgb
-            );
-            var dstData = result.LockBits(
-                rect,
-                ImageLockMode.WriteOnly,
-                PixelFormat.Format32bppArgb
-            );
-            var stride = Math.Abs(srcData.Stride);
-            var pixels = new byte[stride * height];
-            Marshal.Copy(srcData.Scan0, pixels, 0, pixels.Length);
-            source.UnlockBits(srcData);
-
-            // 1. Find the lightest color in the image (max R+G+B sum)
-            int maxR = 0,
-                maxG = 0,
-                maxB = 0;
-            int maxSum = 0;
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    int idx = y * stride + x * 4;
-                    int b = pixels[idx];
-                    int g = pixels[idx + 1];
-                    int r = pixels[idx + 2];
-                    int sum = r + g + b;
-                    if (sum > maxSum)
-                    {
-                        maxSum = sum;
-                        maxR = r;
-                        maxG = g;
-                        maxB = b;
-                    }
-                }
-            }
-
-            // 2. Build brightness thresholds for a transparency ramp.
-            // t0: pixels at/above this brightness become fully transparent.
-            // t1: pixels at/below this brightness stay fully opaque.
-            // Values between t1..t0 get linearly ramped alpha.
-            const double kTransparentBrightnessThreshold = 220.0;
-            const double kOpaqueBrightnessThreshold = 180.0;
-            var detectedBackgroundBrightness = 0.299 * maxR + 0.587 * maxG + 0.114 * maxB;
-            var transparentBrightnessThreshold = Math.Min(
-                kTransparentBrightnessThreshold,
-                detectedBackgroundBrightness
-            );
-            var opaqueBrightnessThreshold = Math.Min(
-                kOpaqueBrightnessThreshold,
-                transparentBrightnessThreshold - 1.0
-            );
-
-            // 3. For each pixel, set alpha from perceptual brightness using t0/t1 ramp.
-            // Keep this pass after the two read-only analysis passes above: we mutate pixels in place.
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    int idx = y * stride + x * 4;
-                    int b = pixels[idx];
-                    int g = pixels[idx + 1];
-                    int r = pixels[idx + 2];
-                    // pixels[idx + 3] is source alpha, always 255 for opaque input.
-                    var brightness = 0.299 * r + 0.587 * g + 0.114 * b;
-                    byte newAlpha;
-                    if (brightness >= transparentBrightnessThreshold)
-                    {
-                        newAlpha = 0;
-                    }
-                    else if (brightness <= opaqueBrightnessThreshold)
-                    {
-                        newAlpha = 255;
-                    }
-                    else
-                    {
-                        newAlpha = (byte)(
-                            255.0
-                            * (transparentBrightnessThreshold - brightness)
-                            / (transparentBrightnessThreshold - opaqueBrightnessThreshold)
-                        );
-                    }
-                    pixels[idx + 3] = newAlpha;
-                    if (newAlpha > 0 && newAlpha < 255)
-                    {
-                        var maxChannel = Math.Max(r, Math.Max(g, b));
-                        var minChannel = Math.Min(r, Math.Min(g, b));
-                        if (maxChannel - minChannel <= 6)
-                        {
-                            var luma = (byte)Math.Round(brightness);
-                            pixels[idx] = luma;
-                            pixels[idx + 1] = luma;
-                            pixels[idx + 2] = luma;
-                        }
-                    }
-                }
-            }
-            Marshal.Copy(pixels, 0, dstData.Scan0, pixels.Length);
-            result.UnlockBits(dstData);
-            return result;
-        }
-
-        /// <summary>
-        /// Proposed on BL-16778: the 6.5 beta initial rule with the ramp moved up, so pixels at
-        /// brightness 245 or more are transparent and pixels at 225 or less are opaque.
-        /// </summary>
-        public static Image NarrowRamp(Bitmap source)
-        {
-            return BrightnessRamp(source, 245.0, 225.0, null);
-        }
-
-        /// <summary>
-        /// Proposed on BL-16778: flood-fill (4-connected) from every border pixel through pixels
-        /// with brightness 230 or more, grow the filled area by 2 pixels in every direction, and
-        /// apply the 220 to 180 brightness ramp only inside it. Pixels outside it stay opaque.
-        /// </summary>
-        public static Image EdgeFill(Bitmap source)
-        {
-            const double kFillBrightness = 230.0;
-            const int kGrowBy = 2;
-            var width = source.Width;
-            var height = source.Height;
-            var rect = new Rectangle(0, 0, width, height);
-            var srcData = source.LockBits(
-                rect,
-                ImageLockMode.ReadOnly,
-                PixelFormat.Format32bppArgb
-            );
-            var stride = Math.Abs(srcData.Stride);
-            var pixels = new byte[stride * height];
-            Marshal.Copy(srcData.Scan0, pixels, 0, pixels.Length);
-            source.UnlockBits(srcData);
-
-            var light = new bool[width * height];
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    int idx = y * stride + x * 4;
-                    var brightness =
-                        0.299 * pixels[idx + 2] + 0.587 * pixels[idx + 1] + 0.114 * pixels[idx];
-                    light[y * width + x] = brightness >= kFillBrightness;
-                }
-            }
-
-            var filled = new bool[width * height];
-            var queue = new Queue<int>();
-            void Seed(int x, int y)
-            {
-                var i = y * width + x;
-                if (light[i] && !filled[i])
-                {
-                    filled[i] = true;
-                    queue.Enqueue(i);
-                }
-            }
-            for (int x = 0; x < width; x++)
-            {
-                Seed(x, 0);
-                Seed(x, height - 1);
-            }
-            for (int y = 0; y < height; y++)
-            {
-                Seed(0, y);
-                Seed(width - 1, y);
-            }
-            while (queue.Count > 0)
-            {
-                var i = queue.Dequeue();
-                int x = i % width;
-                int y = i / width;
-                if (x > 0)
-                    Seed(x - 1, y);
-                if (x < width - 1)
-                    Seed(x + 1, y);
-                if (y > 0)
-                    Seed(x, y - 1);
-                if (y < height - 1)
-                    Seed(x, y + 1);
-            }
-
-            // Grow the filled area: every pixel within kGrowBy pixels (horizontally and
-            // vertically, so a square neighbourhood) of a filled pixel is included.
-            var grown = new bool[width * height];
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    if (!filled[y * width + x])
-                        continue;
-                    for (int dy = -kGrowBy; dy <= kGrowBy; dy++)
-                    {
-                        int ny = y + dy;
-                        if (ny < 0 || ny >= height)
-                            continue;
-                        for (int dx = -kGrowBy; dx <= kGrowBy; dx++)
-                        {
-                            int nx = x + dx;
-                            if (nx >= 0 && nx < width)
-                                grown[ny * width + nx] = true;
-                        }
-                    }
-                }
-            }
-            return BrightnessRamp(source, 220.0, 180.0, grown);
-        }
-
-        /// <summary>
-        /// The brightness ramp that RuntimeImageProcessor.RemoveWhiteBackground used from June 2026 (commits ac1d454619 and 2c7ec06e6c) until BL-16778, with its
-        /// two thresholds as parameters. When <paramref name="onlyHere"/> is given, pixels where it
-        /// is false are left fully opaque. The ramp is never narrower than the distance between
-        /// the two thresholds given (that version hard-coded that distance as 40).
-        /// </summary>
-        private static Image BrightnessRamp(
-            Bitmap source,
-            double kTransparentBrightnessThreshold,
-            double kOpaqueBrightnessThreshold,
-            bool[] onlyHere
-        )
-        {
-            var width = source.Width;
-            var height = source.Height;
-            var result = new Bitmap(width, height, PixelFormat.Format32bppArgb);
-            var rect = new Rectangle(0, 0, width, height);
-            var srcData = source.LockBits(
-                rect,
-                ImageLockMode.ReadOnly,
-                PixelFormat.Format32bppArgb
-            );
-            var dstData = result.LockBits(
-                rect,
-                ImageLockMode.WriteOnly,
-                PixelFormat.Format32bppArgb
-            );
-            var stride = Math.Abs(srcData.Stride);
-            var pixels = new byte[stride * height];
-            Marshal.Copy(srcData.Scan0, pixels, 0, pixels.Length);
-            source.UnlockBits(srcData);
-            int maxR = 0,
-                maxG = 0,
-                maxB = 0;
-            int maxSum = 0;
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    int idx = y * stride + x * 4;
-                    int b = pixels[idx];
-                    int g = pixels[idx + 1];
-                    int r = pixels[idx + 2];
-                    int sum = r + g + b;
-                    if (sum > maxSum)
-                    {
-                        maxSum = sum;
-                        maxR = r;
-                        maxG = g;
-                        maxB = b;
-                    }
-                }
-            }
-
-            double kMinRampWidth = kTransparentBrightnessThreshold - kOpaqueBrightnessThreshold;
-            const double kMinOpaqueBrightnessThreshold = 60.0;
-            var detectedBackgroundBrightness = 0.299 * maxR + 0.587 * maxG + 0.114 * maxB;
-            var transparentBrightnessThreshold = Math.Min(
-                kTransparentBrightnessThreshold,
-                detectedBackgroundBrightness
-            );
-            var opaqueBrightnessThreshold = Math.Max(
-                kMinOpaqueBrightnessThreshold,
-                Math.Min(kOpaqueBrightnessThreshold, transparentBrightnessThreshold - kMinRampWidth)
-            );
-
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    int idx = y * stride + x * 4;
-                    if (onlyHere != null && !onlyHere[y * width + x])
-                    {
-                        pixels[idx + 3] = 255;
-                        continue;
-                    }
-                    int b = pixels[idx];
-                    int g = pixels[idx + 1];
-                    int r = pixels[idx + 2];
-                    var brightness = 0.299 * r + 0.587 * g + 0.114 * b;
-                    byte newAlpha;
-                    if (brightness >= transparentBrightnessThreshold)
-                    {
-                        newAlpha = 0;
-                    }
-                    else if (brightness <= opaqueBrightnessThreshold)
-                    {
-                        newAlpha = 255;
-                    }
-                    else
-                    {
-                        newAlpha = (byte)(
-                            255.0
-                            * (transparentBrightnessThreshold - brightness)
-                            / (transparentBrightnessThreshold - opaqueBrightnessThreshold)
-                        );
-                    }
-                    pixels[idx + 3] = newAlpha;
                 }
             }
             Marshal.Copy(pixels, 0, dstData.Scan0, pixels.Length);

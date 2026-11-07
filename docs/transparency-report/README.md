@@ -42,7 +42,7 @@ BL-16778 was built with:
 
 ```bash
 node docs/transparency-report/make-report.mjs --colours "#51C7E9,white,#B0DEE4,#FEBF00" \
-  --methods-shown "6.5 beta initial,6.5 Final" --artifact --page-dir <folder>
+  --methods-shown "Before 6.5,Bloom 6.5" --artifact --page-dir <folder>
 ```
 
 `--artifact` leaves out `<html>`, `<head>` and `<body>`, which a claude.ai artifact supplies.
@@ -85,10 +85,9 @@ page needs no change.
 
 ## The methods compared
 
-- `6.5 Final` calls Bloom's `RuntimeImageProcessor.MakePngBackgroundTransparent` itself, so it is what this code does now.
-- `Before 6.5`, `6.5 beta initial`, `ink-over-white`, `deficit-keep-rgb` and `ramp-force-grey` are
-  earlier versions copied from git; each function's comment names its commit.
-- `narrow-ramp` and `edge-fill` were proposed on BL-16778 and are in no commit.
+- `Bloom 6.5` calls Bloom's `RuntimeImageProcessor.MakePngBackgroundTransparent` itself, so it is what this code does now.
+- `Before 6.5`, `ink-over-white` and `deficit-keep-rgb` are earlier versions copied from git; each
+  function's comment names its commit.
 
 ## The synthetic pictures
 
