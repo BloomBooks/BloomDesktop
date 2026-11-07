@@ -19,7 +19,6 @@ export interface IWorkspaceExports {
     ): JQuery;
     closeDialog(id: string): void;
     pageFrameIsReadyToShow(pageLoadNumber: number): void;
-    pageIsReadyForInput(pageLoadNumber: number): void;
     showPageLoadingCover(): void;
     isShowingOtherPages(): boolean;
     storeShowingOtherPages(show: boolean): void;
@@ -87,7 +86,7 @@ export function SayHello() {
 // edit pane root bundle, but now it is just included by the app bundle, since it no longer
 // has a private iframe.)
 import { getToolboxBundleExports } from "./js/workspaceFrames";
-import { kPageLoadNumberAttribute } from "./js/pageInputBlock";
+import { kPageLoadNumberAttribute } from "./js/workspaceFrames";
 export { getToolboxBundleExports };
 import { getEditablePageBundleExports } from "./js/workspaceFrames";
 export { getEditablePageBundleExports };
@@ -158,13 +157,6 @@ const kPageFrameId = "page";
 const kOutgoingPageFrameId = "page-outgoing";
 const kPageLoadingCoverId = "page-loading-cover";
 const kMaxWaitForPageReadyAfterLoadMs = 3000;
-// How long after a page change starts the new page may take to say it is ready for input before the
-// cover comes off anyway. A page normally says so in under a second on a fast machine, and in a few
-// seconds on a machine five times slower; one that never does has a broken script (or a load event
-// that never fires, see switchContentPage), and the user must not be locked out of the Edit tab by
-// it. The page's own wait has a shorter limit (kMaxWaitForReadyForInputMs in editablePage.ts), so
-// this one only matters when the page's script is not running at all.
-const kMaxWaitForPageReadyForInputMs = 30000;
 const kMaxWaitForPageChangeToStartMs = 5000;
 const kShowOtherPagesKey = "bloom-edit-showOtherPages";
 
@@ -200,76 +192,46 @@ export function storeShowingOtherPages(show: boolean): void {
     }
 }
 
-// While a page is loading into the page frame and is not yet ready to use, that frame, and the
-// number of the load, so that a timer left from an earlier load cannot uncover a later one.
-let frameAwaitedForInput: HTMLIFrameElement | undefined;
-
 // Telling the toolbox about the page loading into this frame, once the page is there; see
 // switchContentPage.
 let toolboxUpdateForNewPage:
     | { frame: HTMLIFrameElement; update: () => void }
     | undefined;
+// The number of the latest load of the page frame (see numberPageLoad).
 let pageLoadNumber = 0;
 
 /**
- * Cover the page frame with the wait cursor, taking its clicks and the keyboard focus, from the start
- * of a page change until the new page is ready to use (see pageIsReadyForInput). A click on another
- * page in All Pages puts it up before C# has started the change; if no page change follows, it is
- * taken away again.
+ * Cover the page frame with the wait cursor, and take its clicks, from a click on another page until
+ * that page shows (see pageFrameIsReadyToShow). If no page change follows, take the cover away again.
  */
 export function showPageLoadingCover(): void {
-    let cover = document.getElementById(kPageLoadingCoverId);
-    if (!cover) {
-        const host = document.getElementById(kPageFrameId)!.parentElement!;
-        cover = document.createElement("div");
-        cover.id = kPageLoadingCoverId;
-        cover.style.position = "absolute";
-        cover.style.inset = "0";
-        cover.style.zIndex = "2";
-        cover.style.cursor = kWaitCursor;
-        cover.style.outline = "none";
-        // It takes the focus, so that keys typed during the change reach neither the page being
-        // left, whose edits are no longer saved, nor the new page before it is ready.
-        cover.tabIndex = -1;
-        host.appendChild(cover);
-        setToolboxBlocked(true);
-        window.setTimeout(() => {
-            if (!frameAwaitedForInput) uncoverPage();
-        }, kMaxWaitForPageChangeToStartMs);
-    }
-    cover.focus({ preventScroll: true });
-}
-
-// The toolbox's tools act on the page, so while the page is covered the toolbox takes no clicks
-// either, and shows the same wait cursor. (The keyboard cannot reach it: the cover has the focus.)
-function setToolboxBlocked(blocked: boolean): void {
-    const toolbox = document.getElementById(
-        "toolbox",
-    ) as HTMLIFrameElement | null;
-    if (!toolbox) return;
-    toolbox.style.pointerEvents = blocked ? "none" : "";
-    toolbox.parentElement!.style.cursor = blocked ? kWaitCursor : "";
+    if (document.getElementById(kPageLoadingCoverId)) return;
+    const host = document.getElementById(kPageFrameId)!.parentElement!;
+    const cover = document.createElement("div");
+    cover.id = kPageLoadingCoverId;
+    cover.style.position = "absolute";
+    cover.style.inset = "0";
+    cover.style.zIndex = "2";
+    cover.style.cursor = kWaitCursor;
+    host.appendChild(cover);
+    window.setTimeout(() => {
+        if (!document.getElementById(kOutgoingPageFrameId)) cover.remove();
+    }, kMaxWaitForPageChangeToStartMs);
 }
 
 /**
- * Keep the user out of the page loading into this frame until it is ready to use: until it calls
- * pageIsReadyForInput(), or, if it never does, until kMaxWaitForPageReadyForInputMs have passed.
+ * Give the page about to load into this frame the next load number. The page passes it back when it
+ * is ready to show, so that a page that has since been replaced is ignored: in One Page the frame is
+ * reused, and its window is the same object for the page being left and the page replacing it.
  */
-export function coverPageUntilReadyForInput(frame: HTMLIFrameElement): void {
-    frameAwaitedForInput = frame;
-    const thisLoad = ++pageLoadNumber;
-    // The page reads this when its script starts, and passes it back when it is ready.
-    frame.setAttribute(kPageLoadNumberAttribute, String(thisLoad));
-    showPageLoadingCover();
-    window.setTimeout(() => {
-        if (thisLoad === pageLoadNumber) uncoverPage();
-    }, kMaxWaitForPageReadyForInputMs);
+export function numberPageLoad(frame: HTMLIFrameElement): void {
+    frame.setAttribute(kPageLoadNumberAttribute, String(++pageLoadNumber));
 }
 
-function uncoverPage(): void {
-    frameAwaitedForInput = undefined;
+// Take away the page being left, and the cover over it, so the new page shows.
+function takeDownPageBeingLeft(): void {
+    document.getElementById(kOutgoingPageFrameId)?.remove();
     document.getElementById(kPageLoadingCoverId)?.remove();
-    setToolboxBlocked(false);
 }
 
 /**
@@ -303,9 +265,9 @@ function startLoadingPageFrameBehindCurrentOne(
     if (document.getElementById(kOutgoingPageFrameId)) {
         current.remove();
     } else {
-        // Over both frames until the new page is ready: the wait cursor, and no clicks on a page
-        // that is going away or one that is not ready. (It finds its place by the frame's id, so
-        // before that changes.)
+        // Over both frames until the new page shows: the wait cursor, and no clicks on a page that
+        // is going away or one that is not ready. (It finds its place by the frame's id, so before
+        // that changes.)
         showPageLoadingCover();
         current.id = kOutgoingPageFrameId;
         current.name = kOutgoingPageFrameId;
@@ -332,33 +294,20 @@ function navigatePageFrame(newSource: string): HTMLIFrameElement {
 
 /**
  * Called by a page frame once it looks the way it will (laid out, scrolled, and with the other
- * pages drawn if they are showing), to replace the page that was covering it. pageLoadNumber is
- * the one the frame was given for loading this page (see coverPageUntilReadyForInput).
+ * pages drawn if they are showing), to replace the page that was covering it. loadNumber is the
+ * one the frame was given for loading this page (see numberPageLoad).
  */
 export function pageFrameIsReadyToShow(loadNumber: number): void {
     if (loadNumber !== pageLoadNumber) {
         // A page that has already been replaced by a newer one, or is being replaced.
         return;
     }
-    document.getElementById(kOutgoingPageFrameId)?.remove();
+    takeDownPageBeingLeft();
     const current = document.getElementById(kPageFrameId);
     if (toolboxUpdateForNewPage?.frame === current) {
         toolboxUpdateForNewPage.update();
         toolboxUpdateForNewPage = undefined;
     }
-}
-
-/**
- * Called by a page frame once the page can be used: everything that sets it up has finished, CKEditor
- * included. Takes away the cover that kept the user out of it (see coverPageUntilReadyForInput).
- * pageLoadNumber is the one the frame was given for loading this page.
- */
-export function pageIsReadyForInput(loadNumber: number): void {
-    if (!frameAwaitedForInput || loadNumber !== pageLoadNumber) {
-        // A page that has already been replaced by a newer one, or is being replaced.
-        return;
-    }
-    uncoverPage();
 }
 
 // The id of the page that a page frame source shows. C# names the file after it (see the
@@ -407,7 +356,7 @@ export function switchContentPage(newSource: string) {
     const iframe = holdOldPage
         ? startLoadingPageFrameBehindCurrentOne(newSource)
         : navigatePageFrame(newSource);
-    coverPageUntilReadyForInput(iframe);
+    numberPageLoad(iframe);
     // In One Page the frame stays the same from one change to the next, so what is set up below
     // must only act on this change: a later one has its own.
     const thisLoad = pageLoadNumber;
@@ -437,8 +386,7 @@ export function switchContentPage(newSource: string) {
             // If the page never says it is ready (say an error stopped its script), don't leave
             // the old page covering it for good.
             window.setTimeout(() => {
-                if (isStillThisChange())
-                    document.getElementById(kOutgoingPageFrameId)?.remove();
+                if (isStillThisChange()) takeDownPageBeingLeft();
             }, kMaxWaitForPageReadyAfterLoadMs),
         { once: true },
     );
@@ -452,8 +400,7 @@ export function switchContentPage(newSource: string) {
     window.setTimeout(() => {
         if (!handlerCalled && isStillThisChange()) {
             window.setTimeout(() => {
-                if (isStillThisChange())
-                    document.getElementById(kOutgoingPageFrameId)?.remove();
+                if (isStillThisChange()) takeDownPageBeingLeft();
             }, kMaxWaitForPageReadyAfterLoadMs);
         }
     }, 1500);
@@ -691,7 +638,6 @@ interface WorkspaceBundleApi {
     switchThumbnailPage: typeof switchThumbnailPage;
     switchContentPage: typeof switchContentPage;
     pageFrameIsReadyToShow: typeof pageFrameIsReadyToShow;
-    pageIsReadyForInput: typeof pageIsReadyForInput;
     showPageLoadingCover: typeof showPageLoadingCover;
     isShowingOtherPages: typeof isShowingOtherPages;
     storeShowingOtherPages: typeof storeShowingOtherPages;
@@ -746,7 +692,6 @@ window.workspaceBundle = {
     switchThumbnailPage,
     switchContentPage,
     pageFrameIsReadyToShow,
-    pageIsReadyForInput,
     showPageLoadingCover,
     isShowingOtherPages,
     storeShowingOtherPages,

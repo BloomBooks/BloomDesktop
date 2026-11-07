@@ -467,16 +467,11 @@ export async function waitForEditablePage(
             },
         )
         .toBeGreaterThan(0);
-    // The page takes no input until it is ready to use (pageInputBlock.ts): until then a click or a
-    // key press is swallowed, and the Edit tab covers the page. So wait for the page to say it is
-    // ready, and for the cover to go.
-    await expect(
-        editablePageFrame(page).locator("html.bloom-page-ready-for-input"),
-        "The page never became ready to use, so it would not take any input.",
-    ).toHaveCount(1);
+    // With all pages showing, the Edit tab covers the page frame, taking its clicks, until the new
+    // page shows (showPageLoadingCover in workspaceRoot.ts).
     await expect(
         page.locator("#page-loading-cover"),
-        "The Edit tab never took away the cover that keeps the user out of a page being loaded.",
+        "The Edit tab never took away the cover it puts over the pages while it changes pages.",
     ).toHaveCount(0);
     // The page's script (updateLanguageVisibility) adds bloom-visibility-code-on to each box it
     // decides to show, and the CSS hides every box that lacks it.

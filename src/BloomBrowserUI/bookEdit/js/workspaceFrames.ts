@@ -18,6 +18,11 @@ import type { IWorkspaceExports } from "../workspaceRoot";
 import type { IToolboxFrameExports } from "../toolbox/toolboxBootstrap";
 import type { IPageListFrameExports } from "../pageThumbnailList/pageThumbnailList";
 
+// On the page frame: the number the workspace gave the load now under way in it (see numberPageLoad
+// in workspaceRoot.ts). The page reads it when its script starts, and passes it back when it is ready
+// to show.
+export const kPageLoadNumberAttribute = "data-bloom-page-load";
+
 export function getToolboxBundleExports(): IToolboxFrameExports | null {
     const frameWindow = getFrame("toolbox") as
         | (Window & { [key: string]: unknown })
