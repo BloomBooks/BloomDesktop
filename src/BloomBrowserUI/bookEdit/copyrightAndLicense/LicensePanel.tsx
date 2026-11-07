@@ -4,7 +4,9 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { RadioGroup, TextField } from "@mui/material";
 
-import { kMutedTextGray } from "../../bloomMaterialUITheme";
+import { default as AttentionIcon } from "@mui/icons-material/ErrorOutline";
+
+import { kBloomBlue, kMutedTextGray } from "../../bloomMaterialUITheme";
 import { Div, LocalizedString } from "../../react_components/l10nComponents";
 import { NoteBox } from "../../react_components/boxes";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
@@ -163,15 +165,14 @@ export const LicensePanel: React.FunctionComponent<{
                     line-height: 1.4;
                 }
 
-                // Give each radio option ~7px vertical padding and a subtle hover pad so the
-                // options read as distinct, comfortable targets with air between them. The
-                // negative left margin lets the hover highlight bleed left while keeping the
-                // control aligned with the intro text. Checkboxes carry their own class, so
-                // they are excluded here.
+                // Give each radio option a little vertical padding and a subtle hover pad so
+                // the options read as distinct targets. The negative left margin lets the
+                // hover highlight bleed left while keeping the control aligned with the intro
+                // text. Checkboxes carry their own class, so they are excluded here.
                 .MuiFormControlLabel-root:not(
                     .bloom-checkbox-form-control-label
                 ) {
-                    padding: 7px 8px;
+                    padding: 4px 8px;
                     margin-left: -8px;
                     border-radius: 6px;
                     &:hover {
@@ -187,6 +188,14 @@ export const LicensePanel: React.FunctionComponent<{
                 }
                 .MuiCheckbox-root {
                     margin-top: 1px;
+                }
+                // MUI pads the radio glyph by 9px on every side, which made each radio row
+                // much taller than its label. Trim the top and bottom margins by the same
+                // amount: trimming only one of them moves the glyph off the label's first line.
+                // (The top is -1px rather than 0 in MuiRadio, hence -8/-7.)
+                .MuiRadio-root {
+                    margin-top: -8px !important;
+                    margin-bottom: -7px;
                 }
 
                 // Visually group the CC block (radio 2 + its checkboxes) by putting a ~12px
@@ -218,6 +227,9 @@ export const LicensePanel: React.FunctionComponent<{
                 css={css`
                     // BL-15625
                     padding-left: 1px;
+                    // Keeps the gap between the intro sentence and the first option. The panel's
+                    // rules pull each radio row's top edge up, which would otherwise shrink it.
+                    margin-top: 17px;
                 `}
             >
                 <Radio
@@ -348,10 +360,18 @@ export const LicensePanel: React.FunctionComponent<{
             {props.derivativeInfo?.isBookDerivative && (
                 <div
                     css={css`
-                        margin-top: 30px;
-                        color: ${kMutedTextGray};
+                        margin-top: 12px;
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                        color: ${kBloomBlue};
                     `}
                 >
+                    <AttentionIcon
+                        css={css`
+                            font-size: 18px;
+                        `}
+                    />
                     {originalLicenseSentence}
                 </div>
             )}
@@ -403,7 +423,8 @@ const CustomNote: React.FunctionComponent<{
                 css={css`
                     margin-top: 4px; // small gap below the helper text
                     .MuiInputBase-root {
-                        min-height: 60px;
+                        // MUI's outlined multiline field pads its text by 16.5px top and bottom.
+                        padding: 6px 10px;
                         align-items: flex-start;
                     }
                 `}
