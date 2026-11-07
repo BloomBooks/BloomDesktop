@@ -69,6 +69,14 @@ export const ConfigrDialogMiddle: React.FunctionComponent<{
             // row was barely visible. Limited to checkbox rows because those are the ones known
             // to fade their own contents. The extra class outranks MUI's own rule, which
             // otherwise wins whenever its stylesheet happens to load after ours.
+            // Config-R lines a row's control up with the top of its label, but a checkbox has 9px
+            // of padding around its 24px box, so the box sat about 12px lower than the label's
+            // first line (BL-16957). Move it up without changing the row's height.
+            .MuiListItemButton-root .MuiCheckbox-root {
+                position: relative;
+                top: -12px;
+            }
+
             .MuiListItemButton-root.Mui-disabled:has(.MuiCheckbox-root) {
                 opacity: 1;
                 // Links in the description don't fade their own color, so fade them here as
