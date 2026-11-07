@@ -6,9 +6,9 @@
 // existed, so the stack can become the single entry point with no behaviour change at all.
 //
 // Know what that order governs. handleUndo() has one caller: the toolbar Undo button. Ctrl+Z is
-// claimed in the *page* frame — by origami in Change Layout mode, by the reader tools in any
-// editable while a markup tool is active (they preventDefault), and otherwise by CKEditor — and
-// never enters handleUndo() at all. So this file unifies the button, and the keyboard stays as it
+// claimed in the *page* frame — by origami in Change Layout mode, and otherwise by CKEditor (in an
+// editable while a reader markup tool is active, the reader tools' handler leaves the key to
+// CKEditor and keeps the document's handlers out) — and never enters handleUndo() at all. So this file unifies the button, and the keyboard stays as it
 // was until those page-frame handlers are converted. See PLAN.md 3's correction.
 //
 // Why no conversions yet: the four mechanisms are contextually exclusive in practice (origami only
@@ -55,12 +55,13 @@ export const origamiUndoProvider: ILegacyUndoProvider = {
  *
  * Despite living in the toolbox, this is a text undo, not a "reader setup" undo: it snapshots
  * `{html, text, caretOffset}` per editable and pushes on markup-changing keystrokes. It is
- * consulted *before* CKEditor on purpose — while a reader tool is active it must shadow CKEditor's
- * undo, which would otherwise restore stale decodable/leveled markup.
+ * consulted *before* CKEditor, as the old handleUndo() did, so that while a reader tool is active
+ * the Undo button undoes typing through it.
  *
- * It is also the one legacy mechanism with a Redo (`readerToolsModel.redo`), reached by
- * Ctrl+Y/Ctrl+Shift+Z from the reader tools' own per-editable handler. The shared stack does not
- * offer it: that handler keeps working, and this adapter covers only the button's undo.
+ * Its redo (`readerToolsModel.redo`) is not offered: Ctrl+Z and Ctrl+Y in a box go to CKEditor
+ * (see decodableReaderTool.tsx), and this adapter covers only the button's undo. After either key,
+ * the reader tools' history starts again from the box as CKEditor left it, so the Undo button then
+ * reaches CKEditor's undo until there is new typing.
  *
  * `canUndo` is called through an existence check because the old `canUndo()` did the same, and it
  * is polled on a timer by C#: a throw here would fire repeatedly. `undo` is not, also matching the
