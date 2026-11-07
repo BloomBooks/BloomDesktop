@@ -2254,9 +2254,9 @@
         <target xml:lang="pt-PT" state="translated">Manter a proporção da imagem</target>
         <note>ID: AiImageEditor.Shape.MatchImage</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Shape.MatchImageTooltip">
+      <trans-unit id="AiImageEditor.Shape.MatchImageTooltip" approved="yes">
         <source xml:lang="en">This image is {0} x {1}</source>
-        <target xml:lang="pt-PT" state="translated">Esta imagem mede {0} x {1}</target>
+        <target xml:lang="pt-PT" state="final">Esta imagem mede {0} x {1}</target>
         <note>ID: AiImageEditor.Shape.MatchImageTooltip</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Slot.DropOrPasteToEdit" approved="yes">
@@ -2329,9 +2329,9 @@
         <target xml:lang="pt-PT" state="final">Favoritas</target>
         <note>ID: AiImageEditor.Strip.starred.Label</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Strip.starred.Tip">
+      <trans-unit id="AiImageEditor.Strip.starred.Tip" approved="yes">
         <source xml:lang="en">Star images to keep them handy.</source>
-        <target xml:lang="pt-PT" state="translated">Marque imagens com uma estrela para deixá-las em destaque.</target>
+        <target xml:lang="pt-PT" state="final">Marque imagens com uma estrela para deixá-las em destaque.</target>
         <note>ID: AiImageEditor.Strip.starred.Tip</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.apply_localized_characters.Param.furtherInstructions.Placeholder">
@@ -2369,9 +2369,9 @@
         <target xml:lang="pt-PT" state="final">Texto novo</target>
         <note>ID: AiImageEditor.Tool.change_text.Param.replace</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.change_text.Param.replace.Placeholder">
+      <trans-unit id="AiImageEditor.Tool.change_text.Param.replace.Placeholder" approved="yes">
         <source xml:lang="en">e.g. "In a galaxy far away"</source>
-        <target xml:lang="pt-PT" state="translated">ex: "Em uma galáxia muito distante"</target>
+        <target xml:lang="pt-PT" state="final">ex: "Em uma galáxia muito distante"</target>
         <note>ID: AiImageEditor.Tool.change_text.Param.replace.Placeholder</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.change_text.Title" approved="yes">
@@ -2404,9 +2404,9 @@
         <target xml:lang="pt-PT" state="final">Livro de colorir</target>
         <note>ID: AiImageEditor.Tool.coloring_book.Title</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.custom.Description">
+      <trans-unit id="AiImageEditor.Tool.custom.Description" approved="yes">
         <source xml:lang="en">Edit the image, optionally with additional reference images.</source>
-        <target xml:lang="pt-PT" state="translated">Editar a imagem (opcionalmente, com imagens de referência adicionais).</target>
+        <target xml:lang="pt-PT" state="final">Editar a imagem (opcionalmente, com imagens de referência adicionais).</target>
         <note>ID: AiImageEditor.Tool.custom.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.custom.Param.prompt.Placeholder" approved="yes">
