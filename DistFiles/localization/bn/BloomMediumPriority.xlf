@@ -70,6 +70,21 @@
         <target xml:lang="bn" state="needs-translation">Projects that have Bloom Enterprise subscriptions can arrange for one or more bookshelves on the Bloom Library. All books uploaded from this collection will go into the selected bookshelf.</target>
         <note>ID: CollectionSettingsDialog.BloomLibraryPage.BookshelfDescription</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage.Places" translate="no">
+        <source xml:lang="en">Places</source>
+        <target xml:lang="bn" state="needs-translation">Places</target>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Places</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage.Places.Description" translate="no">
+        <source xml:lang="en">Some front matters will show the following place names. If there are any that you don't want to show, leave them empty.</source>
+        <target xml:lang="bn" state="needs-translation">Some front matters will show the following place names. If there are any that you don't want to show, leave them empty.</target>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Places.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage.Style" translate="no">
+        <source xml:lang="en">Style</source>
+        <target xml:lang="bn" state="needs-translation">Style</target>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Style</note>
+      </trans-unit>
       <trans-unit id="Feature.AiImageEditing">
         <source xml:lang="en">Edit Images with AI</source>
         <target xml:lang="bn" state="needs-translation">Edit Images with AI</target>

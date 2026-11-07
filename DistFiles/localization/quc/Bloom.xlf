@@ -2843,9 +2843,9 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="needs-translation">All Usable Words: {0}</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportAllUsableWords</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters" approved="yes">
         <source xml:lang="en">Letters: {0}</source>
-        <target xml:lang="quc" state="translated">Uwach taq tz'ib': {0}</target>
+        <target xml:lang="quc" state="final">Uwach taq tz'ib': {0}</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage" approved="yes">
