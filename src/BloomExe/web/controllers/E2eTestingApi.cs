@@ -7,6 +7,7 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.MiscUI;
 using Bloom.SubscriptionAndFeatures;
+using Bloom.Utils;
 using SIL.IO;
 using SIL.Progress;
 
@@ -115,6 +116,22 @@ namespace Bloom.web.controllers
                 false // does not need the UI thread
             );
 
+            // GET ?text=... returns true once the content the browser last sent for the page being
+            // edited (its snapshot; see PageSnapshot) contains that text. Every save takes the page
+            // from that snapshot, which the browser sends a moment after typing settles, so a test
+            // that types and then leaves the page waits on this rather than on a fixed delay: it
+            // stands for the moment a person takes before moving on. Read-only.
+            apiHandler.RegisterBooleanEndpointHandler(
+                kApiUrlPart + "pageSnapshotIncludes",
+                request =>
+                    _editingModel
+                        .GetCurrentPageSnapshotForTests()
+                        ?.Contains(request.RequiredParam("text"), StringComparison.Ordinal)
+                    ?? false,
+                null, // read only
+                false // does not need the UI thread
+            );
+
             // GET returns the selected book's pages as JSON: id, caption, and whether the page is
             // front or back matter. A test needs page ids to navigate (editView/jumpToPage takes
             // one), and the page-list thumbnails do not expose which pages are xmatter, so without
@@ -146,11 +163,11 @@ namespace Bloom.web.controllers
 
             // GET returns what the Edit tab is doing, as
             // {state, pageId, visible, pageLoadAnnouncements}. A test must not ask that tab to
-            // change pages while it is still loading one: a page announces itself more than once,
-            // and a page change that arrives between the first announcement and the second starts
-            // a save that the second one leaves unanswered. The tab changes no pages after that (see src/BloomE2E/AUTOMATION-DEBT.md). The DOM cannot tell a test
-            // any of this, because the frame still holds the page from before the tab switch, so
-            // the count of announcements is how a test knows the last one has been and gone. Off
+            // change pages while it is still loading one, and a page announces itself more than
+            // once, so the Editing state can show before the page has finished arriving. The DOM
+            // cannot tell a test any of this, because the frame still holds the page from before
+            // the tab switch, so the count of announcements is how a test knows the last one has
+            // been and gone. Off
             // the UI thread on purpose: this reads three fields, and a test asks for them exactly
             // when the UI thread is busy.
             apiHandler.RegisterEndpointHandler(
@@ -193,6 +210,44 @@ namespace Bloom.web.controllers
                 kApiUrlPart + "nextFileToChoose",
                 HandleSetNextFileToChoose,
                 false // does not need the UI thread
+            );
+
+            // GET e2e/clipboard: what Bloom's clipboard holds. POST: replace it. Under --e2e,
+            // BloomClipboard and the page's utils/bloomClipboard.ts use an in-memory clipboard
+            // instead of the Windows one, so this is how a test copies something for Bloom to
+            // paste, and how it sees what a copy in Bloom produced. Off the UI thread: it only
+            // reads or stores an object.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "clipboard",
+                HandleClipboard,
+                false // does not need the UI thread
+            );
+        }
+
+        /// <summary>
+        /// GET or POST e2e/clipboard (see the registration above). The JSON has the fields text,
+        /// html, picturePath and files, each of them null when the clipboard does not hold that
+        /// form; a POST replaces all of them.
+        /// </summary>
+        private void HandleClipboard(ApiRequest request)
+        {
+            if (request.HttpMethod == HttpMethods.Post)
+            {
+                BloomClipboard.SetE2eContents(
+                    request.RequiredPostObject<BloomClipboard.E2eContents>()
+                );
+                request.PostSucceeded();
+                return;
+            }
+            var contents = BloomClipboard.GetE2eContents();
+            request.ReplyWithJson(
+                new
+                {
+                    text = contents.Text,
+                    html = contents.Html,
+                    picturePath = contents.PicturePath,
+                    files = contents.Files,
+                }
             );
         }
 

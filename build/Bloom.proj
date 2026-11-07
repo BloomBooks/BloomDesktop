@@ -181,7 +181,9 @@
     <Exec Command='dotnet build "$(RootDir)\src\BloomFreezeDoctor\BloomFreezeDoctor.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
   <!--If the number of directories between output and OutDir changes, we need a corresponding
     change in BloomFileLocatorTests.kRelativePathToBrowserFolder and XMatterHelperTests.OneTimeSetup-->
-    <Exec Command='dotnet build "$(RootDir)\src\BloomTests\BloomTests.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\Tests\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\Tests\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
+    <!-- SkipBloomTests=true leaves the test assembly out, for a run that only launches Bloom
+    (bot-verify.yml when it was asked for no C# tests). -->
+    <Exec Condition="'$(SkipBloomTests)' != 'true'" Command='dotnet build "$(RootDir)\src\BloomTests\BloomTests.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\Tests\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\Tests\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
 
     <CallTarget Targets="CheckForConflictingDependencyVersions"/>
 

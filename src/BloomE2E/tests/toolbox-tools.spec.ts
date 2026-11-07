@@ -10,6 +10,7 @@
 import * as fs from "fs";
 import * as Path from "path";
 import { expect, test } from "../fixtures/bloomTest";
+import { bookHtmlPath } from "../helpers/bookHtml";
 import { editBook, makeBookFromTemplate } from "../helpers/bookMaking";
 import { expandReaderTool } from "../helpers/readerTools";
 import {
@@ -124,4 +125,38 @@ test("the book remembers which tool was expanded [Test Case ID 830]", async ({
         "leveledReader",
         "Coming back to the book should reopen the tool that was expanded when it was left.",
     );
+});
+
+test("turning a reader tool on reaches the book file without typing anything [Test Case ID 830]", async ({
+    page,
+}) => {
+    const bookFolder = await makeBookFromTemplate(page, "Basic Book");
+    await enableToolForBook(page, bookFolder, "leveledReader");
+    // The switch records its choice as a class on the book's body, outside every page, so the
+    // save that follows sees no change on the page.
+    const bodyClasses = () => {
+        const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+        const body = /<body[^>]*\bclass="([^"]*)"/.exec(html);
+        return (body ? body[1] : "").split(/\s+/);
+    };
+    // sanity check: the book is not already a leveled reader
+    expect(
+        bodyClasses(),
+        "A new Basic Book should not already be a leveled reader.",
+    ).not.toContain("leveled-reader");
+    await showToolbox(page);
+    // The switch tells Bloom without waiting for an answer; wait for the answer here, as a person
+    // is never fast enough to leave the book before it comes.
+    const bloomHasTheSwitch = page.waitForResponse((response) =>
+        response.url().includes("/toolbox/leveled"),
+    );
+    await expandReaderTool(page, "leveledReader");
+    await bloomHasTheSwitch;
+
+    await editBook(page, bookFolder);
+
+    expect(
+        bodyClasses(),
+        "Turning on the Leveled Reader's switch should make the saved book a leveled reader, though no page was edited.",
+    ).toContain("leveled-reader");
 });

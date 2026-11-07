@@ -385,7 +385,7 @@ export default class WebSocketManager {
             "book", // via useWatchString
             "workspace", // top-level workspace UI has multiple valid watchers
             "bookTeamCollectionStatus", // via useTColBookStatus
-            "bookCollection", // one BookOnBlorgBadge per book subscribes here
+            "bookCollection", // each BooksOfCollection subscribes here for the Bloom Library badges
             // each book collection subscribes to this
             "editableCollectionList",
             // dialog launchers and app builder screens legitimately keep several listeners mounted

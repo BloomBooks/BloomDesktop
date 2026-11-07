@@ -1,0 +1,376 @@
+# Runs a few chosen tests on Windows, as many times as asked, and hands back what happened.
+#
+# The Bloom bot writes fixes for nightly failures on bot/... branches from a Mac, which cannot run
+# Bloom. To show that a fix works it needs the failing test run on the machine the nightly runs on,
+# and for an intermittent failure it needs it run many times. A whole nightly costs most of an hour;
+# this builds only what the chosen tests need and runs only them.
+#
+# Dispatch it on the branch that holds the fix:
+#
+#   gh workflow run bot-verify.yml --ref bot/xyz -f e2e_specs="font-chooser.spec.ts" -f repeat=10 \
+#       -f label="BL-12345 attempt 2"
+#
+# The run's title is the `label`, so a bot that gives each dispatch a unique label finds its run with
+# `gh run list --workflow bot-verify.yml --branch bot/xyz --json databaseId,displayTitle` and then
+# downloads the "verify-results" artifact.
+# summary.json in that artifact answers whether the tests passed; build/ci/summarize-bot-verify.ps1
+# describes its fields.
+#
+# The machine setup is the nightly's own, through .github/actions/bloom-setup, so a fix proved here is
+# proved on the setup the nightly failed on. The builds are repeated from nightly.yml rather than
+# shared (that action says why); when you change how the nightly builds, change it here too.
+
+name: Bot verify
+
+# The label alone, so the bot can match the displayTitle exactly. A dispatch without one gets a title
+# that still says what the run is.
+run-name: ${{ inputs.label || format('Bot verify on {0}', github.ref_name) }}
+
+on:
+    workflow_dispatch:
+        inputs:
+            e2e_specs:
+                description: >-
+                    BloomE2E spec files to run, space separated, named as in src/BloomE2E/tests
+                    (e.g. "font-chooser.spec.ts copy-page.spec.ts:40"). Empty runs none.
+                type: string
+                default: ""
+            visual_specs:
+                description: >-
+                    Visual regression tests to run: a vitest test-name pattern (a regular
+                    expression) for src/BloomVisualRegressionTests. "." runs them all. Empty runs none.
+                type: string
+                default: ""
+            component_specs:
+                description: >-
+                    React component tests to run: filters for the component-tester's Playwright run,
+                    space separated (e.g. "bloomtabs-regression"). Empty runs none.
+                type: string
+                default: ""
+            csharp_filter:
+                description: >-
+                    C# tests to run: a `dotnet test --filter` expression for BloomTests
+                    (e.g. "FullyQualifiedName~BookStorageTests"). Empty runs none.
+                type: string
+                default: ""
+            repeat:
+                description: How many times to run each chosen test (1-100).
+                type: string
+                default: "1"
+            stop_at_first_failure:
+                description: Stop a suite at its first failing test instead of running every repeat.
+                type: boolean
+                default: false
+            label:
+                description: Free text, echoed into the run's name and summary.json, so the bot can match a run to its request.
+                type: string
+                default: ""
+
+# One run at a time per branch, so two runs never fight over a runner's Bloom windows within a branch
+# and their results stay apart. Its own group, not the nightly's: a verify run must neither wait for
+# a nightly nor hold one up.
+#
+# GitHub keeps at most ONE run waiting in a concurrency group. A third dispatch on the same branch
+# while one runs and one waits cancels the waiting one, which then reports as cancelled with no
+# artifact. So the bot should wait for a run to finish before dispatching the next on that branch.
+concurrency:
+    group: bot-verify-${{ github.ref }}
+    cancel-in-progress: false
+
+jobs:
+    verify:
+        runs-on: windows-latest
+        # Room for a high repeat count of a slow spec. A job killed at this limit uploads nothing,
+        # so the bot should size `repeat` to finish well inside it.
+        timeout-minutes: 180
+
+        permissions:
+            contents: read
+
+        env:
+            # Same throwaway build number as the nightly; nothing here publishes.
+            BUILD_NUMBER: 0.0.${{ github.run_number }}.0
+            # Inputs reach the scripts through the environment, never by ${{ }} inside a script:
+            # a spec name or filter containing a quote would otherwise become shell code. "Plan the
+            # run" checks and trims them and hands them on as E2E_SPECS, VISUAL_SPECS,
+            # COMPONENT_SPECS, CSHARP_FILTER and REPEAT. Those get names of their own because a job-level env value
+            # takes precedence over one a step writes to GITHUB_ENV.
+            REQUESTED_E2E_SPECS: ${{ inputs.e2e_specs }}
+            REQUESTED_VISUAL_SPECS: ${{ inputs.visual_specs }}
+            REQUESTED_COMPONENT_SPECS: ${{ inputs.component_specs }}
+            REQUESTED_CSHARP_FILTER: ${{ inputs.csharp_filter }}
+            REQUESTED_REPEAT: ${{ inputs.repeat }}
+            STOP_AT_FIRST_FAILURE: ${{ inputs.stop_at_first_failure }}
+            LABEL: ${{ inputs.label }}
+
+        steps:
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+            # Decide what to build from what was asked for, and refuse a request that cannot mean
+            # anything (no tests at all, or a repeat that is not a number) before paying for a build.
+            # Trims the inputs, so a stray space does not turn "no e2e specs" into "run e2e".
+            - name: Plan the run
+              id: plan
+              shell: pwsh
+              run: |
+                  $e2e = "$env:REQUESTED_E2E_SPECS".Trim()
+                  $visual = "$env:REQUESTED_VISUAL_SPECS".Trim()
+                  $component = "$env:REQUESTED_COMPONENT_SPECS".Trim()
+                  $csharp = "$env:REQUESTED_CSHARP_FILTER".Trim()
+                  if (-not $e2e -and -not $visual -and -not $component -and -not $csharp) {
+                      throw "Nothing to run: give at least one of e2e_specs, visual_specs, component_specs, csharp_filter."
+                  }
+                  $repeat = 0
+                  if (-not [int]::TryParse("$env:REQUESTED_REPEAT".Trim(), [System.Globalization.NumberStyles]::None, [cultureinfo]::InvariantCulture, [ref] $repeat) -or $repeat -lt 1 -or $repeat -gt 100) {
+                      throw "repeat must be a whole number from 1 to 100; it is '$env:REQUESTED_REPEAT'."
+                  }
+                  # Specs are checked here rather than left to Playwright, whose answer to a typo is a
+                  # bare "No tests found" after the whole build.
+                  foreach ($spec in ($e2e -split "\s+" | Where-Object { $_ })) {
+                      $file = ($spec -replace "^src/BloomE2E/", "" -replace "^tests/", "") -replace ":\d+(:\d+)?$", ""
+                      if (-not (Test-Path -LiteralPath "src/BloomE2E/tests/$file")) {
+                          throw "e2e_specs names '$spec', but there is no src/BloomE2E/tests/$file on this branch."
+                      }
+                  }
+                  $bloom = [bool] ($e2e -or $visual)
+                  # The component tests need no build: their own Vite dev server serves the components.
+                  $build = [bool] ($bloom -or $csharp)
+                  $lines = @(
+                      "e2e=$([bool] $e2e)".ToLowerInvariant(),
+                      "visual=$([bool] $visual)".ToLowerInvariant(),
+                      "component=$([bool] $component)".ToLowerInvariant(),
+                      "csharp=$([bool] $csharp)".ToLowerInvariant(),
+                      "bloom=$bloom".ToLowerInvariant(),
+                      "build=$build".ToLowerInvariant(),
+                      "repeat=$repeat"
+                  )
+                  [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, ($lines -join "`n") + "`n", [System.Text.UTF8Encoding]::new($false))
+                  # The trimmed values, for every later step.
+                  $envLines = @("E2E_SPECS=$e2e", "VISUAL_SPECS=$visual", "COMPONENT_SPECS=$component", "CSHARP_FILTER=$csharp", "REPEAT=$repeat")
+                  [System.IO.File]::AppendAllText($env:GITHUB_ENV, ($envLines -join "`n") + "`n", [System.Text.UTF8Encoding]::new($false))
+                  $lines | ForEach-Object { Write-Host $_ }
+
+            # ----- Toolchains and dependencies (shared with the nightly) -----
+            # The pnpm store is cached by setup-node inside this action, under the same key the
+            # nightly uses, so a branch's first run restores the nightly's cache from master.
+            - name: Set up toolchains and dependencies
+              uses: ./.github/actions/bloom-setup
+              with:
+                  testing-inputs: ${{ steps.plan.outputs.bloom }}
+                  test-fonts: ${{ steps.plan.outputs.e2e }}
+
+            # The nightly does not cache NuGet packages, so this is ours. Restore and save are separate
+            # steps because the combined actions/cache saves only when the whole job succeeds, and the
+            # runs that most need a warm cache are the ones whose tests are still failing.
+            - name: Restore NuGet packages from cache
+              id: nuget_cache
+              if: ${{ steps.plan.outputs.build == 'true' }}
+              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: ~/.nuget/packages
+                  key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props', '.nuget/NuGet.Config', 'build/Bloom.proj') }}
+                  restore-keys: nuget-${{ runner.os }}-
+
+            # ----- Builds (repeated from nightly.yml) -----
+            # Every suite but the component tests needs the front end: the Bloom-driving suites load
+            # Bloom's UI from it, and the C# tests find content by walking up to it from their own
+            # folder. A run of component tests alone builds nothing.
+            - name: Build browser UI (production)
+              id: build_frontend
+              if: ${{ steps.plan.outputs.build == 'true' }}
+              working-directory: src/BloomBrowserUI
+              run: pnpm run build-prod
+
+            # See the nightly's "Restore MSBuild build tasks" for why this is its own invocation.
+            - name: Restore MSBuild build tasks
+              id: restore_build_tasks
+              if: ${{ steps.plan.outputs.build == 'true' }}
+              working-directory: build
+              shell: pwsh
+              run: msbuild Bloom.proj /t:RestoreBuildTasks /p:RestartBuild=false
+
+            # The nightly's Build, less the test assembly when no C# test was asked for. Bloom still
+            # needs BloomPdfMaker.exe beside it even for a test that makes no PDF, because
+            # BloomIntegrityChecker refuses to start without it, so the app is always built whole.
+            - name: Build
+              id: build_csharp
+              if: ${{ steps.plan.outputs.build == 'true' }}
+              working-directory: build
+              shell: pwsh
+              env:
+                  BUILD_TESTS: ${{ steps.plan.outputs.csharp }}
+              run: |
+                  $skip = if ($env:BUILD_TESTS -eq "true") { "false" } else { "true" }
+                  msbuild Bloom.proj /t:Build /m /p:BUILD_NUMBER=$env:BUILD_NUMBER /p:SkipBloomTests=$skip
+
+            - name: Save NuGet packages to cache
+              if: ${{ !cancelled() && steps.nuget_cache.outputs.cache-hit != 'true' && steps.build_csharp.outcome == 'success' }}
+              uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: ~/.nuget/packages
+                  key: ${{ steps.nuget_cache.outputs.cache-primary-key }}
+
+            # ----- The tests -----
+            # In the nightly's order. Each suite runs even when an earlier one failed (!cancelled()),
+            # since each is its own request. A failing test fails its step, and so the job; nothing
+            # after this point skips on that account, because every later step says !cancelled().
+
+            # The nightly runs the whole suite with the C# runner wrapped in Bloom.proj's RunNUnit;
+            # this runs dotnet test on the built assembly the same way (from its own folder, which
+            # tests rely on to find content) with the bot's filter. SkipOnTeamCity stays left out as
+            # in the nightly, so a test the nightly never runs cannot be "proved" here. TRX rather
+            # than NUnit xml, because each repeat writes its own file and the summary reads them.
+            - name: Run C# tests
+              id: csharp_tests
+              if: ${{ !cancelled() && steps.build_csharp.outcome == 'success' && steps.plan.outputs.csharp == 'true' }}
+              working-directory: output/Tests/Release/x64
+              shell: pwsh
+              run: |
+                  $resultsDir = Join-Path $env:GITHUB_WORKSPACE "output/Tests/verify/csharp"
+                  New-Item -ItemType Directory -Force -Path $resultsDir | Out-Null
+                  $filter = "($env:CSHARP_FILTER)&TestCategory!=SkipOnTeamCity"
+                  $anyFailed = $false
+                  for ($i = 1; $i -le [int] $env:REPEAT; $i++) {
+                      Write-Host "::group::C# run $i of $env:REPEAT"
+                      dotnet test BloomTests.dll --nologo --filter $filter --results-directory $resultsDir --logger "trx;LogFileName=run-$i.trx"
+                      $exit = $LASTEXITCODE
+                      Write-Host "::endgroup::"
+                      if ($exit -ne 0) {
+                          Write-Host "C# run $i failed (dotnet test returned $exit)"
+                          $anyFailed = $true
+                          if ($env:STOP_AT_FIRST_FAILURE -eq "true") { break }
+                      }
+                  }
+                  if ($anyFailed) { exit 1 }
+
+            # src/BloomE2E/README.md, "In CI", and the nightly's "Run BloomE2E tests" say what a run
+            # needs: both builds, the testing inputs and fonts fetched by the setup action, and no
+            # `playwright install` (the fixture attaches to Bloom's WebView2 over CDP).
+            - name: Set up BloomE2E tests
+              id: setup_e2e_tests
+              if: ${{ !cancelled() && steps.build_csharp.outcome == 'success' && steps.plan.outputs.e2e == 'true' }}
+              working-directory: src/BloomE2E
+              shell: bash
+              run: pnpm install --frozen-lockfile
+
+            # The environment is the nightly's, so the test sees what it saw there. No
+            # BLOOM_E2E_VIEWPORT: the runner's own window already is the size that variable emulates
+            # on a developer's machine, and the nightly sets none.
+            - name: Run BloomE2E tests
+              id: e2e_tests
+              if: ${{ !cancelled() && steps.setup_e2e_tests.outcome == 'success' }}
+              working-directory: src/BloomE2E
+              shell: bash
+              env:
+                  PLAYWRIGHT_JUNIT_OUTPUT_NAME: ../../output/Tests/verify/e2e-junit.xml
+                  PLAYWRIGHT_HTML_OPEN: never
+                  BLOOM_AUTOMATION_MONITOR: headless
+                  BLOOM_E2E_TESTER_EMAIL_BLORG_PASSWORD: ${{ secrets.BLOOM_E2E_TESTER_EMAIL_BLORG_PASSWORD }}
+              run: |
+                  # Playwright reads each spec argument as a pattern over file paths, so a bare file
+                  # name is enough; drop any leading folders the request carried.
+                  read -r -a requested <<< "$E2E_SPECS"
+                  specs=()
+                  for spec in "${requested[@]}"; do
+                      spec="${spec#src/BloomE2E/}"
+                      specs+=("${spec#tests/}")
+                  done
+                  args=(--reporter=list,junit,html --repeat-each "$REPEAT")
+                  if [ "$STOP_AT_FIRST_FAILURE" = "true" ]; then args+=(--max-failures 1); fi
+                  pnpm exec playwright test "${specs[@]}" "${args[@]}"
+
+            # As the nightly runs them, including its --timeout (that step says why), with the bot's
+            # filters, repeat and stop added. Gated on nothing but the request, since no build feeds it.
+            - name: Set up component-tester tests
+              id: setup_component_tests
+              if: ${{ !cancelled() && steps.plan.outputs.component == 'true' }}
+              working-directory: src/BloomBrowserUI/react_components/component-tester
+              shell: bash
+              run: |
+                  pnpm install --frozen-lockfile
+                  pnpm exec playwright install chromium
+
+            - name: Run component-tester tests
+              id: component_tests
+              if: ${{ !cancelled() && steps.setup_component_tests.outcome == 'success' }}
+              working-directory: src/BloomBrowserUI/react_components/component-tester
+              shell: bash
+              env:
+                  PLAYWRIGHT_JUNIT_OUTPUT_NAME: ../../../../output/Tests/verify/component-junit.xml
+              run: |
+                  read -r -a specs <<< "$COMPONENT_SPECS"
+                  args=(--timeout=120000 --reporter=list,junit --repeat-each "$REPEAT")
+                  if [ "$STOP_AT_FIRST_FAILURE" = "true" ]; then args+=(--max-failures 1); fi
+                  pnpm test "${args[@]}" "${specs[@]}"
+
+            - name: Set up visual regression tests
+              id: setup_visual_regression
+              if: ${{ !cancelled() && steps.build_csharp.outcome == 'success' && steps.plan.outputs.visual == 'true' }}
+              working-directory: src/BloomVisualRegressionTests
+              shell: bash
+              run: |
+                  pnpm install --frozen-lockfile
+                  # The suite drives a headless chromium (Playwright) to capture bloom-player pages.
+                  pnpm exec playwright install chromium
+
+            # This suite is vitest, which has no repeat flag, so it is run once per repeat, each run
+            # writing its own JUnit file. Every run launches its own Bloom, as a nightly run would.
+            - name: Run visual regression tests
+              id: visual_regression
+              if: ${{ !cancelled() && steps.setup_visual_regression.outcome == 'success' }}
+              working-directory: src/BloomVisualRegressionTests
+              shell: bash
+              run: |
+                  mkdir -p ../../output/Tests/verify/visual
+                  status=0
+                  for i in $(seq 1 "$REPEAT"); do
+                      echo "::group::Visual regression run $i of $REPEAT"
+                      args=(run -t "$VISUAL_SPECS" --reporter=default --reporter=junit --outputFile="../../output/Tests/verify/visual/run-$i-junit.xml")
+                      if [ "$STOP_AT_FIRST_FAILURE" = "true" ]; then args+=(--bail 1); fi
+                      set +e
+                      pnpm exec vitest "${args[@]}"
+                      code=$?
+                      set -e
+                      echo "::endgroup::"
+                      if [ "$code" -ne 0 ]; then
+                          echo "Visual regression run $i failed (vitest returned $code)"
+                          status=1
+                          if [ "$STOP_AT_FIRST_FAILURE" = "true" ]; then break; fi
+                      fi
+                  done
+                  exit "$status"
+
+            # ----- What the bot reads -----
+            # always(), so a failed build or test still produces the summary that says so: a run that
+            # leaves no artifact cannot be told apart from one the bot failed to find.
+            - name: Summarize the run
+              id: summary
+              if: ${{ always() }}
+              shell: pwsh
+              env:
+                  REF: ${{ github.ref_name }}
+                  SHA: ${{ github.sha }}
+                  FRONTEND_BUILD: ${{ steps.build_frontend.outcome }}
+                  CSHARP_BUILD: ${{ steps.build_csharp.outcome }}
+                  CSHARP_OUTCOME: ${{ steps.csharp_tests.outcome }}
+                  E2E_OUTCOME: ${{ steps.e2e_tests.outcome }}
+                  COMPONENT_OUTCOME: ${{ steps.component_tests.outcome }}
+                  VISUAL_OUTCOME: ${{ steps.visual_regression.outcome }}
+              run: ./build/ci/summarize-bot-verify.ps1 -OutDir verify-results -RepoRoot $env:GITHUB_WORKSPACE
+
+            - name: Upload verify results
+              if: ${{ always() }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: verify-results
+                  path: verify-results/**
+                  retention-days: 7
+                  if-no-files-found: error
+
+            # The job's conclusion is the bot's first answer, so make it agree with summary.json even
+            # where no step failed: a filter that matched no test passes every step and proves nothing.
+            - name: Fail if the tests did not pass
+              if: ${{ always() && steps.summary.outputs.verdict != 'pass' }}
+              shell: pwsh
+              run: |
+                  throw "The requested tests did not all pass; see summary.json in the verify-results artifact."

@@ -21,13 +21,16 @@ import { getRgbaColorStringFromColorAndOpacity } from "../../../utils/colorUtils
 import {
     IImageInfo,
     SetupElements,
-    addRequestPageContentDelay,
     attachToCkEditor,
     notifyToolOfChangedImage,
-    removeRequestPageContentDelay,
 } from "../bloomEditing";
 import {
+    addRequestPageContentDelay,
+    removeRequestPageContentDelay,
+} from "../pageContentDelays";
+import {
     EnableAllImageEditing,
+    getBackgroundCanvasElementFromBloomCanvas,
     getImageFromCanvasElement,
     kImageContainerClass,
     normalizeCoverImageDesignation,
@@ -1350,6 +1353,17 @@ export class CanvasElementManager {
                 // clicking in a text block that is not a canvas element)
                 window.getSelection()?.removeAllRanges();
             }
+            // A first click on a canvas element that is not selected deliberately does not
+            // move the focus (CanvasElementPointerInteractions prevents the default of the
+            // mouse events), so it would stay in the text of whatever element we were typing
+            // in. Then typing would go into that element, and keys meant for the newly
+            // selected one (arrows, Delete, Layer shortcuts) would be ignored (BL-17006).
+            const focusedCanvasElement = document.activeElement?.closest(
+                kCanvasElementSelector,
+            );
+            if (focusedCanvasElement && focusedCanvasElement !== element) {
+                this.removeFocus();
+            }
             this.removeFocusClass();
         }
         // Some of this could probably be avoided if this.activeElement is not changing.
@@ -2633,6 +2647,52 @@ export class CanvasElementManager {
         );
     }
 
+    // Put into 'clonedPage', a detached copy of the live .bloom-page, what
+    // turnOffCanvasElementEditing() would put into the page, leaving the live page still editable.
+    // Only three of the things that method does affect what gets saved:
+    //  * Comical's editing <canvas> becomes the <svg> that draws the bubbles without Javascript.
+    //    exportSvgToCopiesOfParents writes it into the copy without disturbing the live editing.
+    //  * Canvas element positions are recorded as the current language's alternate. That only
+    //    reads and writes attributes, so it works on a clone, which has no layout.
+    //  * The bloom-focusedCanvasElement class comes off; it is not bloom-ui, so C# would keep it.
+    // The rest (control frame, image editing buttons, listeners) is bloom-ui or live-only.
+    public prepareCloneOfPageForSave(clonedPage: HTMLElement): void {
+        const liveBloomCanvases = this.getAllBloomCanvasesOnPage();
+        const clonedBloomCanvases = Array.from(
+            clonedPage.getElementsByClassName(kBloomCanvasClass),
+        ) as HTMLElement[];
+        if (liveBloomCanvases.length !== clonedBloomCanvases.length) {
+            throw new Error(
+                `prepareCloneOfPageForSave(): the clone has ${clonedBloomCanvases.length} bloom-canvases but the live page has ${liveBloomCanvases.length}. The clone must be an untouched copy of the live page.`,
+            );
+        }
+
+        Comical.exportSvgToCopiesOfParents(
+            liveBloomCanvases.map((liveBloomCanvas, index) => [
+                liveBloomCanvas,
+                clonedBloomCanvases[index],
+            ]),
+        );
+
+        clonedBloomCanvases.forEach((clonedBloomCanvas) =>
+            this.saveCurrentCanvasElementStateAsCurrentLangAlternate(
+                clonedBloomCanvas,
+            ),
+        );
+
+        Array.from(
+            clonedPage.getElementsByClassName("bloom-focusedCanvasElement"),
+        ).forEach((element) =>
+            element.classList.remove("bloom-focusedCanvasElement"),
+        );
+
+        // Comical takes one canvas out of each bloom-canvas's copy, but a drawing surface it has
+        // forgotten can be another (see removeOrphanedDrawingSurfaces), and must not be saved.
+        Array.from(
+            clonedPage.querySelectorAll("canvas.comical-generated"),
+        ).forEach((surface) => surface.remove());
+    }
+
     /**
      * Take out any drawing surface Comical left behind.
      *
@@ -3145,9 +3205,16 @@ export class CanvasElementManager {
         theOneCanvasElementManager.handleResizeAdjustments();
     }
     /**
-     * Re-fit the background image of every bloom-canvas on the page to its container.
+     * Run the same adjustments on every bloom-canvas on the page that an origami splitter
+     * drag runs on its panes: convert a legacy background image to a canvas element if
+     * needed, then rescale every canvas element to the size the bloom-canvas has now.
      * Table editing calls this when a cell changes size, because a cell's picture must
      * follow the cell the way an origami image follows its pane.
+     *
+     * The rescale only touches canvas elements that already have a position. A background
+     * image whose bloom-canvas had no size when it was created never got one (see the
+     * zero-area guard in adjustBackgroundImageSizeToFit), so this method leaves it alone;
+     * use refitBackgroundImage for that canvas.
      */
     public adjustAfterContainerResize(): void {
         this.handleResizeAdjustments();
@@ -3471,12 +3538,17 @@ export class CanvasElementManager {
      * cells with JavaScript, so the cell's bloom-canvas gets its real size after the
      * page-load pass has run.
      */
-    public refitBackgroundImage(bloomCanvas: HTMLElement): void {
-        const bgCanvasElement = bloomCanvas.getElementsByClassName(
-            kBackgroundImageClass,
-        )[0] as HTMLElement;
-        if (!bgCanvasElement) return;
-        this.adjustBackgroundImageSize(bloomCanvas, bgCanvasElement, false);
+    public refitBackgroundImage(bloomCanvas: HTMLElement): Promise<void> {
+        const bgCanvasElement =
+            getBackgroundCanvasElementFromBloomCanvas(bloomCanvas);
+        if (!bgCanvasElement) return Promise.resolve();
+        // The promise settles once the image has loaded and been fitted, so a caller
+        // that lays out other things around the picture can wait for it.
+        return this.adjustBackgroundImageSize(
+            bloomCanvas,
+            bgCanvasElement,
+            false,
+        );
     }
 
     public AdjustChildrenIfSizeChanged(bloomCanvas: HTMLElement): void {

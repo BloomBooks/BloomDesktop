@@ -36,6 +36,12 @@ namespace Bloom.Edit
     ///			- create one instance and publish it to get the tool known to the toolbox and include its
     ///				code in the toolbox bundle: in toolboxBootstrap.ts, add a line like
     ///				ToolBox.registerTool(new MyWonderfulTool());
+    ///			- if the tool adds markup to the page for editing that should not be saved into the book,
+    ///				implement removeToolMarkup(pageOrClone). That one method is used BOTH to clean the copy
+    ///				we save (on every save, while the user keeps editing) and to clean the live page when
+    ///				it goes away, so it must be pure DOM surgery inside the element it is handed. Put
+    ///				live-only teardown in detachFromPage(), which must then call super.detachFromPage().
+    ///				See the comments on ITool in toolbox.ts.
     ///		- Make a new xlf entry with ID EditTab.Toolbox.{UCToolId}Tool, where UCToolId is the
     ///			capitalized version of your tool Id, e.g., "Music", giving the key
     ///			"EditTab.Toolbox.MusicTool". We currently assume the default English value of this
@@ -146,6 +152,10 @@ namespace Bloom.Edit
         /// - may be passed 'current' followed by the name of one of the toolbox tools. ('current' is the
         /// persisted word for the tool the toolbox has open.)
         /// - may be passed 'state' followed by the name of one of the tools and its current state string.
+        /// - may be passed 'visibility' followed by "visible" if the toolbox is open.
+        /// All of these live in the book's meta.json, which is written at once. Waiting for the
+        /// book's next save is not enough: the edit view writes nothing when the page has not
+        /// changed, so a setting changed on an untouched page would never reach the file.
         /// </summary>
         public static void SaveToolboxSettings(Book.Book book, string data)
         {
@@ -164,24 +174,21 @@ namespace Bloom.Edit
                             : args[1],
                         args[2] == "1"
                     );
-                    return;
+                    break;
 
                 case "current":
                     book.BookInfo.CurrentTool = args[1];
-                    return;
+                    break;
 
                 case "state":
                     UpdateToolState(book, args[1], args[2]);
-                    return;
+                    break;
                 case "visibility":
-                    UpdateToolboxVisibility(book, args[1]);
-                    return;
+                    book.BookInfo.ToolboxIsOpen = (args[1] == "visible");
+                    break;
+                default:
+                    throw new ArgumentException("Unknown toolbox setting: " + args[0]);
             }
-        }
-
-        private static void UpdateToolboxVisibility(Book.Book book, string visibility)
-        {
-            book.BookInfo.ToolboxIsOpen = (visibility == "visible");
             book.BookInfo.Save();
         }
 

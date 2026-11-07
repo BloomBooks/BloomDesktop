@@ -17,11 +17,14 @@ vi.mock("../bloomImages", () => ({
     isPlaceHolderImage: (src: string | null) =>
         !!src && src.toLowerCase().includes("placeholder.png"),
     SetupMetadataButton: vi.fn(),
-    // Mirrors the real helper in bloomImages.ts: the first bloom-backgroundImage in the canvas.
+    // Mirrors the real helper in bloomImages.ts: the first bloom-backgroundImage whose nearest
+    // bloom-canvas is this one.
     getBackgroundCanvasElementFromBloomCanvas: (bloomCanvas: HTMLElement) =>
-        bloomCanvas.getElementsByClassName(
-            "bloom-backgroundImage",
-        )[0] as HTMLElement,
+        Array.from(
+            bloomCanvas.getElementsByClassName("bloom-backgroundImage"),
+        ).find(
+            (candidate) => candidate.closest(".bloom-canvas") === bloomCanvas,
+        ) as HTMLElement | undefined,
 }));
 
 vi.mock("../bloomEditing", () => ({
@@ -35,6 +38,9 @@ vi.mock("../bloomEditing", () => ({
         },
     ),
     notifyToolOfChangedImage: vi.fn(),
+}));
+
+vi.mock("../pageContentDelays", () => ({
     wrapWithRequestPageContentDelay: vi.fn(),
 }));
 
@@ -64,10 +70,8 @@ vi.mock("../../toolbox/canvas/CanvasElementItem", () => ({
 }));
 
 import { SetupMetadataButton } from "../bloomImages";
-import {
-    changeImageInfo,
-    wrapWithRequestPageContentDelay,
-} from "../bloomEditing";
+import { changeImageInfo } from "../bloomEditing";
+import { wrapWithRequestPageContentDelay } from "../pageContentDelays";
 import {
     CanvasElementClipboard,
     ICanvasElementClipboardHost,

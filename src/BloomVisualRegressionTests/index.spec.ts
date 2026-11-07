@@ -303,7 +303,7 @@ describe("All books", () => {
         // Park the capture pages before we mutate this book. Otherwise the previous case's still-open
         // book-preview / bloom-player page keeps requesting book and staged-BloomPUB files while this
         // case rewrites them, which caused mid-run "file is being used by another process" and
-        // "PlaceForStagingBook not found" errors (and, under a debugger, timeouts).
+        // "staging folder not found" errors (and, under a debugger, timeouts).
         await parkCapturePages();
         // Bloom does not expect the selected book to change while in the publish tab (a previous
         // case's player capture leaves us there), and switching to the collection tab reloads it.
@@ -378,8 +378,8 @@ describe("All books", () => {
     }
 
     // Navigate both capture pages to about:blank so neither keeps requesting book files or staged
-    // BloomPUB files. Bloom rewrites a book's files when it is brought up to date, and re-creates
-    // the single PlaceForStagingBook folder for each new BloomPUB preview; a page still pointed at
+    // BloomPUB files. Bloom rewrites a book's files when it is brought up to date, and deletes the
+    // previous preview's staging folder when it makes a new BloomPUB preview; a page still pointed at
     // the old content will re-request files mid-rewrite (file-lock IOException) or after the staging
     // folder is gone (DirectoryNotFoundException). Park them whenever we are about to mutate.
     async function parkCapturePages() {

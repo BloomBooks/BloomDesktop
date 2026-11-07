@@ -90,14 +90,14 @@ namespace Bloom.Edit
 
         private void InvokePageSelectedChanged(IPage page)
         {
-            EventHandler handler = PageSelectedChanged;
+            var handler = PageSelectedChanged;
             if (
                 handler != null
                 && /*REVIEW */
                 page != null
             )
             {
-                handler(page, null);
+                handler(page, EventArgs.Empty);
             }
         }
 
@@ -240,18 +240,20 @@ namespace Bloom.Edit
             }
         }
 
+        /// <summary>
+        /// Run one of the thumbnail context menu's commands.
+        /// </summary>
         internal void ExecuteContextMenuCommand(IPage page, string commandId)
         {
             if (!IsContextMenuCommandEnabled(page, commandId))
                 return;
 
+            // "duplicatePageManyTimes" and "chooseDifferentLayout" never come here: the page list
+            // opens their dialogs itself (see PageListApi.HandleContextMenuItemClickedRequest).
             switch (commandId)
             {
                 case "duplicatePage":
                     Model.DuplicatePage(page);
-                    break;
-                case "duplicatePageManyTimes":
-                    Model.DuplicateManyPages(page);
                     break;
                 case "copyPage":
                     Model.CopyPage(page);
@@ -262,10 +264,6 @@ namespace Bloom.Edit
                 case "removePage":
                     // The browser side has already confirmed with the user (BL-16421).
                     Model.DeletePage(page);
-                    break;
-                case "chooseDifferentLayout":
-                    Model.GetEditingBrowser().Focus();
-                    Model.ChangePageLayout(page);
                     break;
             }
         }
@@ -291,18 +289,18 @@ namespace Bloom.Edit
                 WebSocketServer.SendString("pageThumbnailList", "pageListNeedsReset", "");
                 return;
             }
-            Model.SaveThen(
-                () =>
-                {
-                    var relocatePageInfo = new RelocatePageInfo(movedPage, newPageIndex);
-                    RelocatePageEvent.Raise(relocatePageInfo);
-                    UpdateItems(movedPage.Book.GetPages());
-                    PageSelectedChanged(movedPage, new EventArgs());
-                    return movedPage.Id;
-                },
-                () => { }, // wrong state, do nothing
-                forceFullSave: true
-            );
+            var outcome = Model.MergeCurrentPageThenSave(() =>
+            {
+                var relocatePageInfo = new RelocatePageInfo(movedPage, newPageIndex);
+                RelocatePageEvent.Raise(relocatePageInfo);
+                UpdateItems(movedPage.Book.GetPages());
+                PageSelectedChanged(movedPage, EventArgs.Empty);
+                return movedPage.Id;
+            });
+            // The drag has already rearranged the thumbnails. If the move did not happen -- it was
+            // declined because the editor was mid-navigation, or it failed -- put them back.
+            if (outcome != SaveOutcome.Saved)
+                WebSocketServer.SendString("pageThumbnailList", "pageListNeedsReset", "");
         }
 
         public void UpdateThumbnailAsync(IPage page)

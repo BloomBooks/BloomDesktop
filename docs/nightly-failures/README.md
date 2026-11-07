@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-11-02 (nightlies through the 2026-11-02 run have been triaged)
+**Last updated:** 2026-11-07 (nightlies through the 2026-11-07 run, 42365421609, have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -9,39 +9,33 @@ accept a flaky test, and a test is flaky from its first unexplained failure (roo
 Testing). So "wait and see whether it recurs" is never an entry's plan. To bring this up to date,
 use the `nightly-triage` skill.
 
-## Canvas element menu: the Flip submenu stays open
+## E2E: a title typed on a new book's cover is lost
 
-- **Failed:** 2026-11-01. `BloomE2E/tests/rotate-and-flip-images.spec.ts` "Change Image gives a
-  turned and mirrored picture an upright, unmirrored new one" (Test Case 827): "Moving the pointer
-  off the submenu did not close it" (`helpers/canvasElements.ts:836`, two menus still open after
-  30 s).
-- **Cause:** the Flip submenu was opened by keyboard focus, not by the pointer. The screenshot shows
-  the menu with its Flip row highlighted and the submenu open. Bloom's submenus
-  (`mui-nested-menu-item` 1.2.6) open on mouse-enter or on focus, and close only on mouse-leave
-  or ArrowLeft. The menu can give its first rows focus as it opens, so a submenu opened that way
-  never sees a mouse-leave, and `closeCanvasElementMenu` (`helpers/canvasElements.ts`), which
-  closes a submenu by moving the pointer off it, cannot close it. `clickCanvasElementMenuItem`
-  already notes that a focus-opened submenu stays open wherever the pointer goes. Why focus
-  landed on Flip this time is not known; focus events need Bloom's window to have focus, which it
-  has on CI but not in a local `--dont-disturb` run.
-- **Status:** fix in [#8528](https://github.com/BloomBooks/BloomDesktop/pull/8528): the helper closes a submenu
-  with Escape instead.
+- **Cause:** text typed while CKEditor was still loading was overwritten when it finished
+  (BL-17022). The e2e helpers used to hide this by waiting for CKEditor before typing.
+- **Status:** fixed by [#8542](https://github.com/BloomBooks/BloomDesktop/pull/8542) (merged
+  2026-11-06; the 2026-11-07 nightly, the first on it, passed), which also
+  drops that wait, so every spec that types now depends on the fix. The PR keeps temporary
+  `[cover-title]` / "Cover-title investigation" logging, which says whether a lost title was gone
+  from the page or lost after it left. When removing this entry, after several nightlies with no
+  lost title, also remove that logging: `attachToCkEditor` in
+  `src/BloomBrowserUI/bookEdit/js/bloomEditing.ts`, and the bookTitle report in
+  `src/BloomExe/Edit/EditingModel.cs`.
 
-## Visual regression: staging the BloomPUB preview found no book selected
+## E2E teardown: EPERM deleting Bloom's temp folder after the collection rename test
 
-- **Failed:** 2026-11-02. `BloomVisualRegressionTests/index.spec.ts` "16x9 Landscape
-  branding:Default": the test-only `e2e/makeBloomPubPreview` call failed.
-- **Cause:** a race with Bloom's startup. This was the run's first case, right after launch. The
-  test waits for `e2e/isCollectionReady`, which is true once the collection's books can be listed,
-  then selects its book. But Bloom's own startup selection (`WorkspaceView.SelectBookAtStartup`)
-  runs later, once the collection's buttons are drawn: it clears the selection, then reloads the
-  last-selected book (here the same one) and brings it up to date. The test's
-  `e2e/makeBloomPubPreview` came in that window, found no selected book, and threw a
-  NullReferenceException in `BloomLibraryPublishModel.InitializeLanguages`. The log shows the book
-  being reloaded at the moment of the error. Only a run's first case can lose this race; the
-  night before it passed.
-- **Status:** fix in [#8528](https://github.com/BloomBooks/BloomDesktop/pull/8528): `isCollectionReady` waits for
-  the startup selection to finish.
+- **Failed:** 2026-11-04. All 258 e2e tests passed, but the step failed on "1 error was not a
+  part of any test": the worker's teardown after `collection-settings-advanced.spec.ts` (the
+  "renaming the collection on the Advanced page renames its folder and reopens it" test, Test
+  Case 838) threw `EPERM, Permission denied` from `fs.rmSync` on its
+  `%TEMP%\bloom-e2e-*` folder (`fixtures/launchBloom.ts:1187`, from `bloomTest.ts:540`).
+- **What the log shows (first look):** `stop()` already waits for Bloom to exit before deleting
+  (`8233fa93e`, 10-30), but `killAndWaitForBloomToExit` waits only for the serving pid. This test
+  makes Bloom relaunch itself on the renamed collection (`followRelaunch`), so something other
+  than the serving Bloom may still have held a file in the folder: a WebView2 child process, or
+  another Bloom process. Which process held what is not known; the `bloom-diagnostics` artifact
+  has not been looked at.
+- **Status:** no card or PR.
 
 ## Link chooser: the preselected page is not scrolled into view
 

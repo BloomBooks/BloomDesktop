@@ -41,6 +41,7 @@ import {
     allPromiseSettled,
     setTimeoutPromise,
 } from "../../../utils/asyncUtils";
+import { updateReaderNumbersOnCurrentPage } from "./readerToolPageState";
 import { isToolboxUiMounted } from "../toolboxState";
 
 const SortType = {
@@ -242,6 +243,7 @@ export class ReaderToolsModel {
         this.stageNumber = stage;
         this.hasBeenGivenAPhase = true;
         this.updateStageNumberIfNeeded(); // May change the stage number
+        updateReaderNumbersOnCurrentPage(this.levelNumber, this.stageNumber);
 
         return setTimeoutPromise(async () => {
             if (this.stageNumber === stage) {
@@ -315,6 +317,8 @@ export class ReaderToolsModel {
         this.levelNumber = val;
         this.hasBeenGivenAPhase = true;
         this.updateLevelNumberIfNeeded(); // May change the level number
+        // A branding stylesheet draws its grade from these attributes on the page body.
+        updateReaderNumbersOnCurrentPage(this.levelNumber, this.stageNumber);
         if (!skipSave) {
             this.saveState();
             // When we're actually changing the level is the only time we want
