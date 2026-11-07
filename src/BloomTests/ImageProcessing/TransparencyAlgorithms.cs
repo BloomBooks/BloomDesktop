@@ -42,9 +42,11 @@ namespace BloomTests.ImageProcessing
 
     /// <summary>
     /// The algorithms compared by the transparency report (BL-16778): the production one and
-    /// earlier versions copied from git history. Each per-pixel rule is a
-    /// function from a 32bpp ARGB bitmap to a new 32bpp ARGB bitmap, and all but the oldest go
-    /// through <see cref="LikeProduction"/>, so the results differ only in that rule.
+    /// earlier versions copied from git history. The production one runs Bloom's own
+    /// <c>RuntimeImageProcessor.MakePngBackgroundTransparent</c>. Each earlier per-pixel rule
+    /// except the oldest is a function from a 32bpp ARGB bitmap to a new 32bpp ARGB bitmap that
+    /// goes through <see cref="LikeProduction"/>, which wraps it the way that method wraps its
+    /// own rule, so the results differ only in the rule.
     ///
     /// To add an algorithm, write one more rule function and add one line to <see cref="All"/>.
     /// </summary>
