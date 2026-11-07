@@ -917,7 +917,8 @@ assessed** — likely to merge before us, and it matters to us more than expecte
 - **Stage 2a's citations will be wrong.** `SaveThen` is now `MergeCurrentPageThenSave`, delete-page
   receives its content from the page list and the "capture inside the SaveThen callback" reasoning
   changes. **Do Stage 2a after BL-13502 merges**, re-deriving from the new code.
-- **It answers the Stage 0 timing item.** Their `SavingWithoutReloading.md` measured a page change at
+- **It answers the Stage 0 timing item.** Its design notes (since folded into code comments, the
+  per-keystroke figures at `kQuietMs` in `pageSnapshot.ts`) measured a page change at
   ~790 ms, ~80% of it building the new page; gather is 0.4–0.7 ms; and "one keystroke produces ~9
   MutationObserver batches because CKEditor does a lot of DOM work per key". Adopt those numbers as
   the baseline (with their `benchPageChange.mjs`) rather than re-measuring; the ~9 batches per key is

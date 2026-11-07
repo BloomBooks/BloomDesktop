@@ -27,6 +27,7 @@ import {
     AttachNewTableThatFillsItsSpace,
     SetupTableEditing,
     TeardownTableEditing,
+    removeTableEditingMarkupFromClone,
 } from "./tableEditing";
 
 // jsdom has no ResizeObserver, which attachSingleTable installs to keep cell
@@ -214,5 +215,60 @@ describe("video cells", () => {
         expect(postMock).not.toHaveBeenCalled();
 
         TeardownTableEditing(document.body);
+    });
+});
+
+// A save cleans a copy of the page with bloom-table's markup-only cleanup (bloom-table's own tests
+// check that it leaves Paint Format and Border Brush running), plus the attribute only Bloom adds.
+describe("removeTableEditingMarkupFromClone", () => {
+    const pageWithEditingMarkup = `
+        <div class="bloom-page bloom-paint-format">
+            <div class="bloom-table table--selected bloom-pointer-near bloom-current-table"
+                 data-table-attached="1" data-column-widths="fill" data-row-heights="fill">
+                <div class="bloom-cell cell--selected bloom-pulse-fill bloom-pulse-border"
+                     style="--hint-top-color: red; --hint-left-color: blue; color: green">
+                    <div data-btable-anchor-name="--a1" style="anchor-name: --a1; color: green">text</div>
+                </div>
+                <div data-table-overlay="edge">overlay</div>
+            </div>
+        </div>`;
+    const makePage = (): HTMLElement => {
+        const holder = document.createElement("div");
+        holder.innerHTML = pageWithEditingMarkup;
+        return holder.firstElementChild as HTMLElement;
+    };
+
+    it("removes table editing's markup, and data-table-attached", () => {
+        const page = makePage();
+        const editingMarkup = [
+            "bloom-paint-format",
+            "table--selected",
+            "bloom-pointer-near",
+            "bloom-current-table",
+            "data-table-attached",
+            "cell--selected",
+            "bloom-pulse-fill",
+            "bloom-pulse-border",
+            "--hint-top-color",
+            "--hint-left-color",
+            "data-btable-anchor-name",
+            "anchor-name",
+            "data-table-overlay",
+        ];
+        for (const markup of editingMarkup) {
+            expect(page.outerHTML, "the test page should have it").toContain(
+                markup,
+            );
+        }
+
+        removeTableEditingMarkupFromClone(page);
+
+        for (const markup of editingMarkup) {
+            expect(page.outerHTML).not.toContain(markup);
+        }
+        // what belongs to the book stays
+        expect(page.outerHTML).toContain('data-column-widths="fill"');
+        expect(page.outerHTML).toContain("color: green");
+        expect(page.outerHTML).toContain("text");
     });
 });

@@ -23,8 +23,12 @@
         // Since the font-size differs in all 3 locations that we show the grade, we have to set it individually in each place.
     }
 
-    &:after {
-        content: "1"; // will get overridden for grades 2 and 3
+    // A book with neither a leveled-reader level nor a decodable stage leaves this element
+    // empty. Until 2022 such a book showed no grade at all; :not(:empty) restores that, so the
+    // number appears only when the book really has a level or a stage. The ReaderLevel() rules
+    // at the end of this file override the "1" for grades 2 and 3.
+    &:not(:empty):after {
+        content: "1";
     }
 }
 
@@ -165,6 +169,17 @@ div.bloomPlayer-page {
     }
 }
 
+// The same restoration for the circle itself. Until 2022 a book with neither a level nor a
+// stage got no background colour and no label here, so the circle was invisible. The box stays,
+// which keeps the title at the width it has today.
+.numberCircle:has(.abcLevel:empty) {
+    background-color: transparent;
+
+    .numberLabel {
+        visibility: hidden;
+    }
+}
+
 /* -----------------------------------------------------------------------------
    Rules for the Title Page
    ----------------------------------------------------------------------------*/
@@ -186,7 +201,8 @@ div.bloomPlayer-page {
         font-size: 14px; // the actual grade number
     }
 
-    .abcLevel:before {
+    // Without a number there is nothing to label, so do not leave a bare "Grade " behind.
+    .abcLevel:not(:empty):before {
         content: "Grade " !important;
     }
 
@@ -306,7 +322,12 @@ div.bloomPlayer-page {
     }
 }
 
-.outsideBackCover .levelOrStageAndNumberRow div[data-book]:empty:after {
+// A book with no leveled-reader level and no decodable stage has an empty levelOrStageNumber.
+// On the back cover the customer wants that to read "Kindergarten" instead of the default "1".
+// The selector must match the markup that ABC-Reader-XMatter.pug actually emits, which is a
+// .backCoverRow holding the .abcLevel div. (It used to name .levelOrStageAndNumberRow, a class
+// this xmatter never emits, so the rule never applied.)
+.outsideBackCover .backCoverRow .abcLevel:empty:after {
     content: "Kindergarten";
 }
 
@@ -381,14 +402,22 @@ div.bloomPlayer-page {
    Override the various "Grade 1" labels as needed
    ----------------------------------------------------------------------------*/
 .ReaderLevel(@level, @grade, @color) {
-    body,
-    div.bloomPlayer-page {
+    // The "leveled-reader" class is what says the book has a level at all, and the Leveled
+    // Reader tool switch adds and removes it on the page as soon as the user clicks it. The
+    // level attribute alone is not enough: the tool keeps its level after the switch goes off,
+    // so a decodable book that was once at level 7 kept its grade 2 circle (BL-16775).
+    body.leveled-reader,
+    div.bloomPlayer-page.leveled-reader {
         &[data-leveledreaderlevel="@{level}"] {
             .numberCircle {
                 background-color: @color;
             }
 
-            .abcLevel:after {
+            // The value is the one source of truth for whether the book has a grade at all.
+            // Turning off the "this book is leveled" button clears the value but leaves
+            // data-leveledreaderlevel alone, so without :not(:empty) the book stayed stuck on
+            // the grade it had (BL-16775).
+            .abcLevel:not(:empty):after {
                 content: "@{grade}";
             }
         }

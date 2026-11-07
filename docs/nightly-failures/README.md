@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-11-03 (nightlies through the 2026-11-03 run, 41627784517, have been triaged)
+**Last updated:** 2026-11-07 (nightlies through the 2026-11-07 run, 42365421609, have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -9,22 +9,33 @@ accept a flaky test, and a test is flaky from its first unexplained failure (roo
 Testing). So "wait and see whether it recurs" is never an entry's plan. To bring this up to date,
 use the `nightly-triage` skill.
 
-## Canvas element menu: the Layer submenu covers its own row
+## E2E: a title typed on a new book's cover is lost
 
-- **Failed:** 2026-11-03. `BloomE2E/tests/canvas-layer-order.spec.ts` "the Layer menu enables
-  only the moves the element can make" (Test Case 840): `parent.hover()` on the Layer row timed
-  out after 30 s in `openCanvasElementSubmenu` (`helpers/canvasElements.ts:524`), because the
-  Layer submenu's "Send Backwards" row intercepted the pointer.
-- **What the trace shows (first look):** the first check (bubble A) opened and closed the menus
-  cleanly. For bubble B the helper opened a fresh "..." menu and hovered Layer. The first try
-  found the menu still moving; on the next, the Layer submenu was already open, drawn over the
-  Layer row itself, so the hover could never land on the row. The screenshot shows that. What
-  opened the submenu before the pointer reached its row is not known: keyboard focus (the cause of
-  the 11-01 Flip failure that [#8528](https://github.com/BloomBooks/BloomDesktop/pull/8528) fixed),
-  or the pointer passing over the row while the menu was still moving. Why the submenu was drawn
-  over its parent row rather than beside it is not known either.
-- **Status:** no card or PR. #8528 (in this run) changed only how a submenu is closed, not how it
-  is opened.
+- **Cause:** text typed while CKEditor was still loading was overwritten when it finished
+  (BL-17022). The e2e helpers used to hide this by waiting for CKEditor before typing.
+- **Status:** fixed by [#8542](https://github.com/BloomBooks/BloomDesktop/pull/8542) (merged
+  2026-11-06; the 2026-11-07 nightly, the first on it, passed), which also
+  drops that wait, so every spec that types now depends on the fix. The PR keeps temporary
+  `[cover-title]` / "Cover-title investigation" logging, which says whether a lost title was gone
+  from the page or lost after it left. When removing this entry, after several nightlies with no
+  lost title, also remove that logging: `attachToCkEditor` in
+  `src/BloomBrowserUI/bookEdit/js/bloomEditing.ts`, and the bookTitle report in
+  `src/BloomExe/Edit/EditingModel.cs`.
+
+## E2E teardown: EPERM deleting Bloom's temp folder after the collection rename test
+
+- **Failed:** 2026-11-04. All 258 e2e tests passed, but the step failed on "1 error was not a
+  part of any test": the worker's teardown after `collection-settings-advanced.spec.ts` (the
+  "renaming the collection on the Advanced page renames its folder and reopens it" test, Test
+  Case 838) threw `EPERM, Permission denied` from `fs.rmSync` on its
+  `%TEMP%\bloom-e2e-*` folder (`fixtures/launchBloom.ts:1187`, from `bloomTest.ts:540`).
+- **What the log shows (first look):** `stop()` already waits for Bloom to exit before deleting
+  (`8233fa93e`, 10-30), but `killAndWaitForBloomToExit` waits only for the serving pid. This test
+  makes Bloom relaunch itself on the renamed collection (`followRelaunch`), so something other
+  than the serving Bloom may still have held a file in the folder: a WebView2 child process, or
+  another Bloom process. Which process held what is not known; the `bloom-diagnostics` artifact
+  has not been looked at.
+- **Status:** no card or PR.
 
 ## Link chooser: the preselected page is not scrolled into view
 

@@ -19,6 +19,11 @@ House rules:
 
 ---
 
+## 2026-11-02 — `pnpm typecheck` passes when `node_modules` is missing
+- **Cut:** `scripts/typecheck.js` runs `node_modules\.bin\tsgo.cmd` through a shell, so a missing binary is a "not recognized" message and a non-zero exit, not a spawn error. The script ignores the exit status, finds no diagnostics, and prints "Type check passed". In a worktree whose `node_modules` had been cleaned it reported a pass while lint and vitest could not even start.
+- **Idea:** fail when `result.status` is non-zero and no diagnostic lines were parsed, printing the tool's own output.
+- **Context:** BL-16775 preflight, after the worktree's dependencies had been deleted to free disk space.
+
 ## 2026-10-08 — `CI=true` to satisfy pnpm silently turns off `--dont-disturb`
 - **Cut:** pnpm refuses to run a script when a worktree's deps are stale (`Aborted removal of modules directory due to no TTY`) and the way past it is `CI=true`. The e2e fixture reads that same variable: it then launched Bloom *without* `--dont-disturb` ("Bloom's windows take the foreground as they would for a user"), so a preflight e2e run seized the developer's screen for two minutes. Two unrelated tools, one overloaded variable.
 - **Idea:** key the disturb decision off a `BLOOM_E2E_*` variable rather than bare `CI`, or keep `--dont-disturb` unless the run is really on a CI runner (`GITHUB_ACTIONS`/`TEAMCITY_VERSION` present). Failing that, name the trap in `src/BloomE2E/README.md` beside the existing `CI` note.
@@ -297,6 +302,49 @@ want first in `MruProjects`, or delete the entries so Bloom shows the collection
 the branch rather than the version in that path.
 
 **Context:** BL-16781, after re-basing the `dev-blorgswitch` worktree onto Version6.5.
+
+## 2026-08-28 — An xmatter LESS edit does not reach a running Bloom on its own
+
+The dev server pushes `.less` changes into the running Bloom, but an xmatter stylesheet does not
+travel that route. Bloom serves `output/browser/templates/xMatter/.../<pack>.css`, and it also
+*stamps a copy into each book folder*, re-stamping when the book is reopened. So after editing
+`ABC-Reader-XMatter.less` you have to compile it yourself and copy the result over both:
+
+```bash
+node src/BloomBrowserUI/node_modules/less/bin/lessc \
+  src/content/templates/xMatter/project-specific/ABC-Reader-XMatter/ABC-Reader-XMatter.less \
+  output/browser/templates/xMatter/project-specific/ABC-Reader-XMatter/ABC-Reader-XMatter.css
+cp output/browser/.../ABC-Reader-XMatter.css <collection>/<book>/ABC-Reader-XMatter.css
+```
+
+Nothing warns you. The book keeps showing the old rules, which reads as "my fix does not work"
+rather than "my fix is not there yet". A previous session in this repo drew exactly that wrong
+conclusion.
+
+**Idea:** have `go.sh` watch `src/content/**/*.less` and recompile the xmatter packs, the way the
+dev server already handles the rest of the front end.
+
+**Context:** BL-16775, the ABC-Reader grade circle.
+
+## 2026-08-27 — No way to make Bloom open a specific collection from an agent
+
+To verify branding/xmatter behaviour you usually need a *particular* collection (here, one with
+an ABC-BARMM subscription so the ABC-Reader xmatter is in play). `launcherControl.mjs` has
+`--start`, `--restart`, `--ensure-running`, but no way to say *which* collection to open, and
+`bloom-automation` documents no other route. Bloom just reopens whatever it had last.
+
+The workaround was to quit Bloom, hand-edit the `MruProjects` list at the top of
+`%LOCALAPPDATA%\SIL\Bloom\<version>\user.config`, then `--start`. That works, but it mutates
+the developer's own recent-collections list, and it only works while Bloom is stopped (Bloom
+rewrites the file on exit). Two smaller traps inside it: the file wants Windows paths, and a
+`\a` in the path (`D:\abc-grade-test`) turns into a BEL character in both `sed` and a Python
+heredoc — forward slashes (`D:/abc-grade-test/…`) sidestep it and Bloom accepts them.
+
+**Idea:** give `launcherControl.mjs` a `--collection <path>` option that passes the path
+through to `Bloom.exe` (it already takes a collection path on its command line), so an agent
+can open a throwaway test collection without touching the developer's settings.
+
+**Context:** BL-16775, verifying how the ABC-Reader grade circle picks its number.
 
 ## 2026-08-26 — A Bloom launched by ./go.sh cannot be watched by the Freeze Doctor
 

@@ -439,8 +439,8 @@ namespace Bloom.CLI
             {
                 // A potential "enhancement" is that we could try to re-use the thumbnail generated when making an ePUB.
                 //   That could be helpful if creating new thumbnails was a big enough cost
-                // The ePub Path looks like this: $"%TEMP%\\ePUB_export\\{i}\\{book.Title}\\thumbnail-{height}.png"
-                // (where i is an integer between 0-19. Depends on whether it's been locked or not.)
+                // The ePub Path looks like this: $"%TEMP%\\bps\\{five random characters}\\{book.Title}\\thumbnail-{height}.png"
+                // (a new random folder for each ePUB; see PublishStaging.)
                 //
                 // For now, we'll just create the thumbnail every time
                 // It makes the code simpler than having fallback logic not to mention the complications of determining which folder the ePub is in, whether it's really up-to-date, etc.

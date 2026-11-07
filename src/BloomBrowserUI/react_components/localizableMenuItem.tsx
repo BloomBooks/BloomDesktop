@@ -406,6 +406,20 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<
         props.l10nParam0,
     );
     const subLabel = useL10n("", props.subLabelL10nId ?? null);
+    // NestedMenuItem remembers that its submenu is open until the pointer leaves the row. Choosing
+    // a submenu command shuts the menu with the pointer still inside the row (React counts the
+    // submenu as part of it), so in a keepMounted menu the submenu would open again, already
+    // highlighted, the next time the menu opens. Giving the row a fresh key whenever the menu shuts
+    // remounts it, so it forgets.
+    const parentMenuOpen = props.parentMenuOpen ?? true;
+    const [wasParentMenuOpen, setWasParentMenuOpen] = useState(parentMenuOpen);
+    const [timesParentMenuShut, setTimesParentMenuShut] = useState(0);
+    if (parentMenuOpen !== wasParentMenuOpen) {
+        setWasParentMenuOpen(parentMenuOpen);
+        if (!parentMenuOpen) {
+            setTimesParentMenuShut(timesParentMenuShut + 1);
+        }
+    }
     if (!props.children) {
         return <React.Fragment />;
     }
@@ -444,7 +458,7 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<
                     //padding: 4px 6px 0 6px !important; // adjust for denser layout
                     justify-content: space-between !important; // move sub-menu arrow to right
                 `}
-                key={props.l10nId}
+                key={`${props.l10nId}-${timesParentMenuShut}`}
                 // As on LocalizableMenuItem, the localization id doubles as the test id, so a
                 // test can hover the row to open its submenu without matching on English.
                 data-testid={props.l10nId}
@@ -477,7 +491,7 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<
                         </Fragment>
                     )
                 }
-                parentMenuOpen={props.parentMenuOpen ?? true}
+                parentMenuOpen={parentMenuOpen}
                 //icon={props.icon}
             >
                 {props.children}

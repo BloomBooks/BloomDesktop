@@ -22,10 +22,8 @@ import {
 import { selectBook } from "../helpers/collection";
 import {
     getPageIds,
-    markEditablePage,
     runPageMenuCommand,
     selectPage,
-    waitForEditablePageReload,
     waitForPageCount,
 } from "../helpers/pageThumbnails";
 import { switchTab } from "../helpers/workspace";
@@ -116,11 +114,9 @@ test("copying a page preserves everything, within and between books [Test Case I
     ).toContain(original.id);
 
     await selectPage(page, original.id);
-    await markEditablePage(page);
     await runPageMenuCommand(page, original.id, "Copy Page");
-    // Copy Page saves the book first, which makes Bloom reload the page. Pasting before that
-    // finishes does nothing at all, so wait for the page to come back.
-    await waitForEditablePageReload(page, original.id);
+    // Copy Page saves the book and stays on the page; runPageMenuCommand waits for Paste Page to
+    // be enabled, which it is once the copy is done.
     await runPageMenuCommand(page, original.id, "Paste Page");
     await waitForPageCount(page, pageIdsBefore.length + 1);
 

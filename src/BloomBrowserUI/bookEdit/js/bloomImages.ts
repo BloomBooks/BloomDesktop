@@ -24,13 +24,12 @@ import { farthest } from "../../utils/elementUtils";
 import { EditableDivUtils } from "./editableDivUtils";
 import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
+import { changeImage, IImageInfo } from "./bloomEditing";
 import {
     addRequestPageContentDelay,
-    changeImage,
-    IImageInfo,
     removeRequestPageContentDelay,
     wrapWithRequestPageContentDelay,
-} from "./bloomEditing";
+} from "./pageContentDelays";
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import $ from "jquery";
@@ -981,12 +980,26 @@ export function getImageFromCanvasElement(
 // (It also has bloom-backgroundImage).
 // There are enough common behaviors to make it useful to use the same structure, and I
 // (JohnT) at least find it useful to think of it as a background canvas element.
+//
+// We search descendants rather than direct children, because the Image Description tool
+// temporarily wraps the background image in a bloom-describedImage. A bloom-canvas can also be
+// nested inside another (a table's picture cell holds one, and a table can sit on a canvas page).
+// On a real page the background image is the first canvas element, so the first match is always
+// this bloom-canvas's own; we check that its nearest bloom-canvas is this one just for robustness,
+// so an outer canvas never treats a nested canvas's background image as its own. Looping over the
+// live collection lets the search stop at the first match, as a plain [0] would.
 export function getBackgroundCanvasElementFromBloomCanvas(
     bloomCanvas: HTMLElement,
-): HTMLElement | null {
-    return bloomCanvas.getElementsByClassName(
+): HTMLElement | undefined {
+    const candidates = bloomCanvas.getElementsByClassName(
         kBackgroundImageClass,
-    )[0] as HTMLElement;
+    );
+    for (let i = 0; i < candidates.length; i++) {
+        if (candidates[i].closest(`.${kBloomCanvasClass}`) === bloomCanvas) {
+            return candidates[i] as HTMLElement;
+        }
+    }
+    return undefined;
 }
 
 // Shortcut to get the img element from the background canvas element (if any) of a bloom-canvas.
@@ -1446,9 +1459,22 @@ export function getDisplayNameFromImageUrl(rawImageUrl: string): string {
     }
 }
 
+// The same test as EpubMaker.IsBranding in C#: marked as branding itself, or inside a data-book
+// element that holds branding, such as "outside-back-cover-branding-bottom-html".
+export function isBrandingImage(img: HTMLElement): boolean {
+    return (
+        img.classList.contains("branding") ||
+        !!img.closest("[data-book*='branding']")
+    );
+}
+
 // Instead of "missing", we want to show it in the right ui language. We also want the text
 // to indicate that it might not be missing, just didn't load (this happens on slow machines)
 function SetAlternateTextOnImages(element) {
+    // Every branding image is optional, so one that is not there is not worth a message. Its alt
+    // comes from the branding and is book-wide data: changing it here would get saved, and make
+    // every visit to the page look like an edit to the whole book.
+    if (isBrandingImage(element)) return;
     const rawImageUrl = GetRawImageUrl(element);
     if (rawImageUrl.length > 0) {
         if (isPlaceHolderImage(rawImageUrl)) {

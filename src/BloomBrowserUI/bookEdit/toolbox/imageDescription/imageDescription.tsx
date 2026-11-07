@@ -15,6 +15,7 @@ import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
 import {
     hideImageDescriptions,
     showImageDescriptions,
+    unwrapDescribedImages,
 } from "./imageDescriptionUtils";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
@@ -368,11 +369,18 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         );
     }
 
+    // The only thing this tool adds inside the page div is the bloom-describedImage wrapper. The
+    // bloom-showImageDescriptions class is on the body, so detachFromPage removes it.
+    public removeToolMarkup(pageOrClone: HTMLElement): void {
+        unwrapDescribedImages(pageOrClone);
+    }
+
     public detachFromPage() {
-        const page = getPageIframeBody();
-        if (page) {
-            hideImageDescriptions(page);
-        }
+        const bodyOfPageIframe = getPageIframeBody();
+        if (bodyOfPageIframe) hideImageDescriptions(bodyOfPageIframe);
+        // hideImageDescriptions has already unwrapped the images, so removeToolMarkup finds nothing
+        // more; calling super is still how the toolbox knows the markup came off.
+        super.detachFromPage();
     }
 
     public id(): string {

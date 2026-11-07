@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-// A faithful stand-in for the requestPageContent delay bookkeeping in bloomEditing.ts, which we
-// can't import here (it pulls in the whole editing world). What matters for this suite is the
+// A faithful stand-in for the page-content delay register in pageContentDelays.ts, modelling the
+// save it gates. What matters for this suite is the
 // ordering the real code has: a save requested while delays are active is captured
 // SYNCHRONOUSLY, the instant the last delay is released, before any promise continuation of
 // the work that held the delay gets to run. vi.hoisted so the mock factory below (which vitest
@@ -32,7 +32,7 @@ const saveTracker = vi.hoisted(() => ({
     },
 }));
 
-vi.mock("../bloomEditing", () => ({
+vi.mock("../pageContentDelays", () => ({
     wrapWithRequestPageContentDelay: async <T>(
         fn: () => Promise<T>,
         _delayId: string,
@@ -60,6 +60,14 @@ vi.mock("../bloomImages", () => {
             ? getImageFromContainer(container as HTMLElement)
             : null;
     };
+    const getBackgroundCanvasElementFromBloomCanvas = (
+        bloomCanvas: HTMLElement,
+    ) =>
+        Array.from(
+            bloomCanvas.getElementsByClassName("bloom-backgroundImage"),
+        ).find(
+            (candidate) => candidate.closest(".bloom-canvas") === bloomCanvas,
+        ) as HTMLElement | undefined;
     return {
         isPlaceHolderImage: (src: string | null) =>
             !!src && src.toLowerCase().includes("placeholder.png"),
@@ -67,10 +75,9 @@ vi.mock("../bloomImages", () => {
         SetupMetadataButton: vi.fn(),
         getImageFromContainer,
         getImageFromCanvasElement,
+        getBackgroundCanvasElementFromBloomCanvas,
         getBackgroundImageFromBloomCanvas: (bloomCanvas: HTMLElement) => {
-            const bg = bloomCanvas.getElementsByClassName(
-                "bloom-backgroundImage",
-            )[0] as HTMLElement | undefined;
+            const bg = getBackgroundCanvasElementFromBloomCanvas(bloomCanvas);
             return bg ? getImageFromCanvasElement(bg) : null;
         },
     };

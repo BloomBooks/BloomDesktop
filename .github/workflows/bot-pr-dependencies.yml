@@ -1,0 +1,40 @@
+# Fails a PR from a bot/ branch that adds, removes or bumps a dependency.
+#
+# The Bloom bot (the private BloomBooks/bloom-bot repo) writes the changes on bot/ branches. It might pick
+# a typosquatted or compromised package on its own, with no attacker steering it, and a change to a
+# lockfile is easy to skim past in review. The bot already refuses to push such a change; this is
+# the check that does not depend on the bot's own code. A person adds or bumps packages.
+
+name: Bot PR dependencies
+
+on:
+    pull_request:
+
+permissions:
+    contents: read
+
+jobs:
+    no-dependency-changes:
+        if: startsWith(github.head_ref, 'bot/')
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+            - name: Fail if the PR changes a dependency
+              env:
+                  BASE: ${{ github.event.pull_request.base.sha }}
+                  HEAD: ${{ github.event.pull_request.head.sha }}
+              run: |
+                  changed=$(git diff --name-only "$BASE" "$HEAD")
+                  bad=$(printf '%s\n' "$changed" | grep -Ei '(^|/)(package\.json|package-lock\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|yarn\.lock|\.npmrc|packages\.config|Directory\.Packages\.props|NuGet\.config|[^/]+\.nuspec)$' || true)
+                  for f in $(printf '%s\n' "$changed" | grep -Ei '\.(cs|fs|vb)proj$|\.props$|\.targets$' || true); do
+                      if git diff "$BASE" "$HEAD" -- "$f" | grep -Eq '^[+-].*PackageReference'; then bad="$bad"$'\n'"$f"; fi
+                  done
+                  bad=$(printf '%s\n' "$bad" | sed '/^$/d')
+                  if [ -n "$bad" ]; then
+                      echo "::error::A bot PR may not change dependencies. A person has to add or bump a package. Changed:"
+                      printf '%s\n' "$bad"
+                      exit 1
+                  fi
+                  echo "No dependency changes."
