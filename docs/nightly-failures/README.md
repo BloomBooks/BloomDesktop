@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-11-06 (nightlies through the 2026-11-06 run, 42212060682, have been triaged)
+**Last updated:** 2026-11-07 (nightlies through the 2026-11-07 run, 42365421609, have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -13,7 +13,8 @@ use the `nightly-triage` skill.
 
 - **Cause:** text typed while CKEditor was still loading was overwritten when it finished
   (BL-17022). The e2e helpers used to hide this by waiting for CKEditor before typing.
-- **Status:** fixed by [#8542](https://github.com/BloomBooks/BloomDesktop/pull/8542), which also
+- **Status:** fixed by [#8542](https://github.com/BloomBooks/BloomDesktop/pull/8542) (merged
+  2026-11-06; the 2026-11-07 nightly, the first on it, passed), which also
   drops that wait, so every spec that types now depends on the fix. The PR keeps temporary
   `[cover-title]` / "Cover-title investigation" logging, which says whether a lost title was gone
   from the page or lost after it left. When removing this entry, after several nightlies with no
