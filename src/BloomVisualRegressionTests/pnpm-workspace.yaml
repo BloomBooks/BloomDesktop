@@ -12,3 +12,12 @@ savePrefix: ""
 # platform-specific binary; nothing else here needs a build script.
 allowBuilds:
     esbuild: true
+
+overrides:
+    "sharp@<0.35.5": "0.35.5"
+    "nanoid@<3.3.18": "3.3.18"
+    "postcss@<8.5.23": "8.5.23"
+    "source-map-js@<1.2.2": "1.2.2"
+    "vitest@<4.1.11": "4.1.11"
+    "@vitest/mocker@<4.1.12": "4.1.12"
+    "vite@7 <7.3.7": "7.3.7"
