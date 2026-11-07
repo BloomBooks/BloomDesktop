@@ -43,6 +43,24 @@ if ($args.Count -eq 0 -or $args[0] -ne 'test') {
     exit $LASTEXITCODE
 }
 
+# The tests read appearance themes, appearance migrations, templates and branding from
+# output/browser, which only a front-end build fills; bring them up to date from src/content
+# before every test run so they come from this checkout. See the same step in agent-dotnet.sh.
+# The try is for node missing from PATH, which throws here rather than setting $LASTEXITCODE.
+try {
+    & node (Join-Path $repoRoot 'src/content/scripts/copyContentForCSharpTests.mjs')
+    $copyFailed = $LASTEXITCODE -ne 0
+}
+catch {
+    Write-Host $_
+    $copyFailed = $true
+}
+if ($copyFailed) {
+    Write-Host ""
+    Write-Host "[agent-dotnet] *** TEST RUN NOT STARTED: copying this checkout's content files into output/browser failed (see above). ***"
+    exit 1
+}
+
 $markersFile = Join-Path $PSScriptRoot 'test-abort-markers.txt'
 if (-not (Test-Path $markersFile)) {
     Write-Host "[agent-dotnet] cannot find $markersFile, so a truncated test run could not be detected"
