@@ -1,0 +1,31 @@
+{
+    "presets": [
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='Global-Partners-Logo.svg'/><img class='branding bloom-badge' src='made-with-bloom-badge.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "copyright",
+            "lang": "*",
+            "//": "A default the user can overwrite. With no '©', 'copyright' or year here, BookData.MergeBrandingSettings expands it to 'Copyright © <current year> Global Partners'.",
+            "content": "Global Partners",
+            "condition": "ifEmpty"
+        },
+        {
+            "data-book": "licenseNotes",
+            "lang": "*",
+            "//": "ifAllCopyrightEmpty so only genuinely new books get these notes, not translations of other publishers' shells. Must be lang '*' (SetMetadata rewrites the notes as '*'), and only <br/> survives as markup. Their opening 'You are free to use...' paragraph is covered by Bloom's standard CC BY text.",
+            "content": "Translations outside of Global Partners<br/>If you create a translation of this work, please include the following disclaimer along with the attribution: This translation was not created by Global Partners. Global Partners is not responsible for and does not accept liability for any content, omissions, or errors in this translation.<br/><br/>Adaptations<br/>If you create an adaptation of this work, please include the following statement along with the attribution: This work is an adaptation of an original work by Global Partners. The views and opinions expressed in this adaptation are solely those of the author(s) and do not necessarily reflect or represent the views of Global Partners.",
+            "condition": "ifAllCopyrightEmpty"
+        },
+        {
+            "data-book": "outsideBackCover",
+            "lang": "*",
+            "//": "lang '*' so it shows in any collection; the user's edit is stored under their Language 2 and shown instead.",
+            "content": "Global Partners' library helps readers of all ages develop strong reading and comprehension skills while nurturing a lifelong love of reading.",
+            "condition": "ifEmpty"
+        }
+    ]
+}
