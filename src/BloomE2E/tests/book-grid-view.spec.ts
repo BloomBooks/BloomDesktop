@@ -790,7 +790,6 @@ test.describe("showing the other pages of the book", () => {
     test("All Pages brings the book's page layout up to date at once: when chosen, and after a page size change [Test Case ID 835]", async ({
         page,
     }) => {
-        test.setTimeout(240000);
         expect(await chosenPageView(page)).toBe("all");
         const startingSize = await getPageSize(page);
         expect(
@@ -808,7 +807,6 @@ test.describe("showing the other pages of the book", () => {
         await setPageSize(page, "A5Landscape");
         await expect
             .poll(() => savedBook().size, {
-                timeout: 30000,
                 message: "The new page size never reached the saved book.",
             })
             .toBe("A5Landscape");
@@ -821,7 +819,6 @@ test.describe("showing the other pages of the book", () => {
         await choosePageView(page, "all");
         await expect
             .poll(() => savedBook().layoutUpdateLevel, {
-                timeout: 120000,
                 message:
                     "Choosing All Pages never brought the book's page layout up to date.",
             })
@@ -838,7 +835,6 @@ test.describe("showing the other pages of the book", () => {
         await setPageSize(page, "A5Portrait");
         await expect
             .poll(() => savedBook(), {
-                timeout: 120000,
                 message:
                     "After a page size change in All Pages, the book's page layout was never brought up to date.",
             })
