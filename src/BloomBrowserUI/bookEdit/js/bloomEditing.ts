@@ -10,6 +10,7 @@ import {
     normalizeCoverImageDesignation,
     buildSrcWithTransparentParam,
     pageBackgroundNeedsTransparency,
+    refreshTransparencyIfBackgroundImage,
     SetupMetadataButton,
     SetupResizableElement,
     SetupImagesInContainer,
@@ -526,6 +527,9 @@ export function changeImageInfo(
         );
         (imgOrImageContainer as HTMLImageElement).src =
             buildSrcWithTransparentParam(imageInfo.src, mode);
+        // A new (or newly placeholder) background image changes whether the overlays on
+        // its canvas need transparency.
+        refreshTransparencyIfBackgroundImage(imgOrImageContainer);
     }
     // else if it has class bloom-imageContainer or bloom-canvas, we need to set the background-image on the container
     else if (

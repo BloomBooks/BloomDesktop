@@ -3,6 +3,7 @@ import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
 import SettingsIcon from "@mui/icons-material/Settings";
 import {
+    Alert,
     Button,
     Step,
     StepContent,
@@ -26,6 +27,7 @@ import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { ActionLogAccordion } from "./ActionLogAccordion";
 import {
     ActualApkSizeText,
+    countEstimatedBooks,
     EstimatedAppSizeIndicator,
 } from "./AppSizeIndicator";
 import { AppBuilderSettingsDialog } from "./AppBuilderSettingsDialog";
@@ -48,7 +50,7 @@ const apkToPhoneIconUrl = new URL(
 
 // Keep this URL in sync with kRabSetupDownloadUrl in BloomExe/Publish/Rab/RabProjectService.cs.
 export const rabInstallerDownloadUrl =
-    "https://bloomlibrary.org/RAB/installers/Reading-App-Builder-For-Bloom-14-0-Setup.exe";
+    "https://bloomlibrary.org/RAB/installers/Reading-App-Builder-For-Bloom-14-0-1-Setup.exe";
 
 const AppActionButton: React.FunctionComponent<{
     enabled: boolean;
@@ -110,6 +112,10 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         "Choose which books to include in the app and the order they should appear.",
         "PublishTab.Apps.ChooseBooks.Tooltip",
     );
+    const measureBooksTooltip = useL10n(
+        "Make the BloomPUB files for the app's books now, so that their exact sizes are shown. Build will use them too.",
+        "PublishTab.Apps.MeasureBooks.Tooltip",
+    );
     const settingsTooltip = useL10n(
         "Edit the Reading App Builder app settings for this collection.",
         "PublishTab.Apps.SettingsButton.Tooltip",
@@ -119,12 +125,18 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         "PublishTab.Apps.Build.Tooltip",
     );
     const buildDoneTooltip = useL10n(
-        "The APK is current. Try on phone will use the latest build.",
+        "The app is already up to date. You only need to build again after you change books or settings.",
         "PublishTab.Apps.Build.DoneTooltip",
     );
     const prepareRequiredTooltip = useL10n(
         "Run Prepare before using this step.",
         "PublishTab.Apps.PrepareRequiredTooltip",
+    );
+    const rabUpdateNeededMessage = useL10n(
+        "This version of Bloom needs Reading App Builder %0. Click Prepare to update.",
+        "PublishTab.Apps.RabUpdateNeeded",
+        undefined,
+        screenState.status.rabUpdateVersion ?? "",
     );
     const buildNeedsPrepareTooltip = useL10n(
         "Run Prepare before building the app.",
@@ -255,6 +267,16 @@ const AppPublisherScreenContents: React.FunctionComponent<{
     const canUseConfiguredProject = prepareIsReady && !busyAction;
     const canRunBuild = !busyAction && screenState.hasRequiredBuildSettings;
     const canUseCurrentApk = apkIsCurrent && !busyAction;
+    const appBooksForSize = screenState.status.trackedBooks.map((book) => ({
+        bookId: book.bookId,
+        folderPath: book.folderPath,
+        title: book.title,
+    }));
+    // Books with no current BloomPUB, whose size bar shows only an estimate (BL-17062).
+    const estimatedBookCount = countEstimatedBooks(
+        screenState.sizeEstimates,
+        appBooksForSize,
+    );
     const activePrepareStepId = getPrepareStepIdForStage(
         busyAction,
         screenState.progressStageCode,
@@ -403,6 +425,18 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                                 </div>
                             </StepLabel>
                             <StepContent>
+                                {screenState.status.rabUpdateVersion && (
+                                    <Alert
+                                        severity="warning"
+                                        data-testid="rab-update-needed"
+                                        css={css`
+                                            margin-bottom: 12px;
+                                            width: min(640px, 100%);
+                                        `}
+                                    >
+                                        {rabUpdateNeededMessage}
+                                    </Alert>
+                                )}
                                 <PrepareAppStepper
                                     steps={prepareSteps}
                                     activeStepId={activePrepareStepId}
@@ -447,15 +481,74 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                                             sizeEstimates={
                                                 screenState.sizeEstimates
                                             }
-                                            books={screenState.status.trackedBooks.map(
-                                                (book) => ({
-                                                    bookId: book.bookId,
-                                                    folderPath: book.folderPath,
-                                                    title: book.title,
-                                                }),
-                                            )}
+                                            books={appBooksForSize}
                                         />
                                     )}
+                                {(estimatedBookCount > 0 ||
+                                    busyAction === "measure") &&
+                                    screenState.status.trackedBooks.length >
+                                        0 && (
+                                        <div
+                                            css={css`
+                                                display: flex;
+                                                flex-wrap: wrap;
+                                                gap: 12px;
+                                                margin-top: 12px;
+                                            `}
+                                        >
+                                            <AppActionButton
+                                                enabled={
+                                                    canUseConfiguredProject
+                                                }
+                                                l10nKey="PublishTab.Apps.MeasureBooks"
+                                                onClick={() =>
+                                                    screenState.runAction(
+                                                        "measure",
+                                                    )
+                                                }
+                                                variant="outlined"
+                                                tooltip={measureBooksTooltip}
+                                            >
+                                                Measure exact sizes
+                                            </AppActionButton>
+                                            {busyAction === "measure" && (
+                                                <AppActionButton
+                                                    enabled={true}
+                                                    l10nKey="Common.Cancel"
+                                                    onClick={() =>
+                                                        screenState.cancelAction()
+                                                    }
+                                                    variant="outlined"
+                                                >
+                                                    Cancel
+                                                </AppActionButton>
+                                            )}
+                                        </div>
+                                    )}
+                                <InlineProgressStatus
+                                    showProgress={
+                                        busyAction === "measure" &&
+                                        !!currentProgressStageLabel
+                                    }
+                                    progressLabel={
+                                        busyAction === "measure"
+                                            ? currentProgressStageLabel
+                                            : undefined
+                                    }
+                                    progressPercent={
+                                        screenState.progressPercent
+                                    }
+                                />
+                                <ActionLogAccordion
+                                    controller={screenState.measureLog}
+                                    isActive={busyAction === "measure"}
+                                    webSocketContext={
+                                        busyAction === "measure"
+                                            ? kAppBuilderWebSocketContext
+                                            : undefined
+                                    }
+                                    dataTestId="measure-log-accordion"
+                                />
                             </StepContent>
                         </Step>
                         <Step expanded={true} completed={false}>
