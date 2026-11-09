@@ -4357,6 +4357,15 @@ namespace Bloom.Book
             if (needToDoFullSave)
             {
                 _bookData.SuckInDataFromEditedDom(editedPageDom, BookInfo); //this will do an updatetitle
+                // An emptied field for the sentence about the original book hands it back to
+                // Bloom. Harvesting the page does not always see that: a paragraph that kept its
+                // formatting, such as centering, counts as a value even with no text in it.
+                if (
+                    BookCopyrightAndLicense.UserEmptiedOriginalCopyrightNotice(editedPageDom.RawDom)
+                )
+                    _bookData.RemoveAllForms(
+                        BookCopyrightAndLicense.kUserOriginalCopyrightAndLicense
+                    );
                 // The data div now holds the user's wording of the sentence about the original
                 // book, or, if they emptied the field, no longer holds it at all. In that case
                 // the page still has the empty field they left, and it must get Bloom's sentence

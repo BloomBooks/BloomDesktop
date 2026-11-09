@@ -1106,8 +1106,12 @@ namespace BloomTests.Book
             Assert.That(changed, Is.False);
         }
 
-        [Test]
-        public void UpdateDomFromEditedPage_UsersOriginalCopyrightEmptied_PageGetsBloomsSentenceBack()
+        // What the editor leaves when the user deletes all the text, plain or after formatting it.
+        [TestCase("<p></p>")]
+        [TestCase("<p style=\"text-align: center;\"><br /></p>")]
+        public void UpdateDomFromEditedPage_UsersOriginalCopyrightEmptied_PageGetsBloomsSentenceBack(
+            string emptiedField
+        )
         {
             // Emptying the unlocked field is how the user gives the sentence about the original
             // book back to Bloom. Saving that page must leave Bloom's generated sentence on it, not
@@ -1151,8 +1155,7 @@ namespace BloomTests.Book
                     "//div[@data-book='userOriginalCopyrightAndLicense' and @lang='*']"
                 ) as SafeXmlElement;
             Assert.That(editable, Is.Not.Null, "test setup: the sentence should be editable");
-            // What the editor leaves when the user deletes all the text.
-            editable.InnerXml = "<p></p>";
+            editable.InnerXml = emptiedField;
 
             book.UpdateDomFromEditedPage(
                 unlocked,
