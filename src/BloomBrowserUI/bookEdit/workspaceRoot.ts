@@ -18,6 +18,13 @@ export interface IWorkspaceExports {
         options: JQueryUI.DialogOptions,
     ): JQuery;
     closeDialog(id: string): void;
+    pageFrameIsReadyToShow(pageLoadNumber: number): void;
+    showPageLoadingCover(): void;
+    isShowingOtherPages(): boolean;
+    storeShowingOtherPages(show: boolean): void;
+    getStoredZoomOfMode(mode: PageViewMode): number | undefined;
+    storeZoomOfMode(mode: PageViewMode, zoom: number): void;
+    listenForPageViewModeSetting(listener: () => void): () => void;
     setToolboxEnabled(enabled: boolean): void;
     toolboxIsShowing(): boolean;
     doWhenToolboxLoaded(
@@ -96,6 +103,27 @@ import { showBookGridSetupDialog } from "../react_components/BookGridSetup/BookG
 export { showBookGridSetupDialog };
 import { showDuplicateManyDialog } from "./duplicateManyDialog";
 export { showDuplicateManyDialog };
+import {
+    loadPageIntoFrame,
+    pageFrameIsReadyToShow,
+    showPageLoadingCover,
+} from "./js/pageFrame";
+export { pageFrameIsReadyToShow, showPageLoadingCover };
+import {
+    getStoredZoomOfMode,
+    isShowingOtherPages,
+    listenForPageViewModeSetting,
+    storeShowingOtherPages,
+    storeZoomOfMode,
+    type PageViewMode,
+} from "./js/pageViewModeSetting";
+export {
+    getStoredZoomOfMode,
+    isShowingOtherPages,
+    listenForPageViewModeSetting,
+    storeShowingOtherPages,
+    storeZoomOfMode,
+};
 
 import "../lib/errorHandler";
 import { showBookSettingsDialog } from "./bookAndPageSettings/BookAndPageSettingsDialog";
@@ -148,7 +176,23 @@ export function switchThumbnailPage(newSource: string) {
     updateWorkspaceUrlParam("pageListSrc", newSource);
 }
 
+// The id of the page that a page frame source shows. C# names the file after it (see the
+// "-memsim-" files in BloomServer).
+function getPageIdOfSource(source: string): string | undefined {
+    return /page-memsim-([0-9a-fA-F-]+)\.html?/.exec(source)?.[1];
+}
+
 export function switchContentPage(newSource: string) {
+    // With the other pages showing, the page being left shows at once which page is opening.
+    const newPageId = getPageIdOfSource(newSource);
+    if (newPageId) {
+        try {
+            getEditablePageBundleExports()?.showPageBeingOpened(newPageId);
+        } catch (e) {
+            // Only a visual hint; it must not stop the page change.
+            console.error(e);
+        }
+    }
     try {
         const editablePageBundle = getEditablePageBundleExports();
         if (editablePageBundle?.pageUnloading) {
@@ -167,38 +211,16 @@ export function switchContentPage(newSource: string) {
             // swallow
         }
     }
-    const iframe = <HTMLIFrameElement>document.getElementById("page");
     // We want to call getToolboxBundleExports().applyToolboxStateToPage() to allow
     // any tool that is active to update its state to match the new page content.
-    // This gets a bit complicated because we want the tool to actually see the new
-    // content in the DOM, and it won't be present right when we set the src attribute.
-    // The normal way to deal with this is to wait and call the function after the new
-    // page is loaded. But sometimes (see comment below) the load event doesn't get
-    // raised, so we have a fall-back.
-    // Enhance: Should this use DOMContentLoaded instead of load?
-    let handlerCalled = false;
-    const handler = () => {
-        handlerCalled = true;
-        iframe.removeEventListener("load", handler);
+    // The tool has to see the new page, which is not there when we set the src attribute,
+    // so loadPageIntoFrame calls this once it is.
+    loadPageIntoFrame(newSource, () =>
         doWhenToolboxLoaded((toolboxFrameExports: IToolboxFrameExports) => {
             toolboxFrameExports.applyToolboxStateToPage();
-        });
-    };
-    iframe.removeEventListener("load", handler);
-    iframe.addEventListener("load", handler);
-    iframe.src = newSource;
+        }),
+    );
     updateWorkspaceUrlParam("pageSrc", newSource);
-    // When we don't already have a video (either a new page, or it has been deleted),
-    // and record a new one, we switchContentPage to make the new video show up.
-    // And for no known reason, the load event never fires. There may possibly be
-    // other cases since I have no explanation. Rather than leaving control state
-    // permanently wrong, if the event is delayed much longer than expected we just
-    // call the handler.
-    window.setTimeout(() => {
-        if (!handlerCalled) {
-            handler();
-        }
-    }, 1500);
 }
 
 // This function allows code in the toolbox (or other) frame to create a dialog with dynamic content in the root frame
@@ -432,6 +454,13 @@ interface WorkspaceBundleApi {
     handleUndo: typeof handleUndo;
     switchThumbnailPage: typeof switchThumbnailPage;
     switchContentPage: typeof switchContentPage;
+    pageFrameIsReadyToShow: typeof pageFrameIsReadyToShow;
+    showPageLoadingCover: typeof showPageLoadingCover;
+    isShowingOtherPages: typeof isShowingOtherPages;
+    storeShowingOtherPages: typeof storeShowingOtherPages;
+    getStoredZoomOfMode: typeof getStoredZoomOfMode;
+    storeZoomOfMode: typeof storeZoomOfMode;
+    listenForPageViewModeSetting: typeof listenForPageViewModeSetting;
     showDialog: typeof showDialog;
     closeDialog: typeof closeDialog;
     setToolboxEnabled: typeof setToolboxEnabled;
@@ -482,6 +511,13 @@ window.workspaceBundle = {
     handleUndo,
     switchThumbnailPage,
     switchContentPage,
+    pageFrameIsReadyToShow,
+    showPageLoadingCover,
+    isShowingOtherPages,
+    storeShowingOtherPages,
+    getStoredZoomOfMode,
+    storeZoomOfMode,
+    listenForPageViewModeSetting,
     showDialog,
     closeDialog,
     setToolboxEnabled,

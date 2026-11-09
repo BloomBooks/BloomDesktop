@@ -1090,6 +1090,16 @@ function postPageClicked(
     postJson("pageList/pageClicked", { pageId, detail }, onSuccess);
 }
 
+// What this frame offers other frames; see getPageListBundleExports() in workspaceFrames.ts.
+export interface IPageListFrameExports {
+    // Other pages clicked in the page frame's grid (bookGridView.ts) are sent to C# the same way
+    // as clicks here.
+    postPageClicked(pageId: string, detail: string): void;
+}
+(
+    window as unknown as { pageListBundle: IPageListFrameExports }
+).pageListBundle = { postPageClicked };
+
 function ContinueAutomatedPageClicking(
     pagesRemaining: IPage[],
     count: number = 0,

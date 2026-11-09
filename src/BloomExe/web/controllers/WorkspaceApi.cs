@@ -45,7 +45,7 @@ namespace Bloom.web.controllers
                 HandleCheckForUpdates,
                 true
             );
-            apiHandler.RegisterEndpointHandler("workspace/topRight/zoom", HandleZoom, true);
+            apiHandler.RegisterEndpointHandler("workspace/zoom", HandleZoom, true);
 
             apiHandler.RegisterEndpointHandler("workspace/selectTab", HandleSelectTab, true);
             apiHandler.RegisterEndpointHandler("workspace/tabs", HandleTabs, true);
