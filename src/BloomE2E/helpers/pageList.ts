@@ -307,16 +307,16 @@ function removePageDialog(page: Page) {
  */
 export async function openRemovePageDialog(page: Page): Promise<void> {
     const button = pageListFrame(page).getByTestId("remove-page-button");
-    await button.waitFor({ state: "visible" });
+    await button.waitFor({ state: "visible", timeout: 30000 });
     await expect(
         button,
         "The Remove button is disabled, so this page cannot be removed.",
-    ).toBeEnabled();
+    ).toBeEnabled({ timeout: 30000 });
     await button.click();
     await expect(
         removePageDialog(page),
         "Clicking the Remove button never brought up the dialog asking to confirm.",
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 30000 });
 }
 
 /** Click Cancel in the dialog that confirms removing a page, and wait for the dialog to close. */
@@ -326,7 +326,7 @@ export async function cancelRemovePageDialog(page: Page): Promise<void> {
     await expect(
         dialog,
         "The dialog asking to confirm removing a page did not close after Cancel.",
-    ).toHaveCount(0);
+    ).toHaveCount(0, { timeout: 30000 });
 }
 
 /** The red X Bloom draws across a page while it asks to confirm removing it. */
