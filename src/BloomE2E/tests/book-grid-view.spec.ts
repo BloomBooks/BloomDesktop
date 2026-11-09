@@ -20,7 +20,6 @@ import {
     makeBookFromTemplate,
     typeInGroup,
     waitForEditablePage,
-    type IBookPage,
 } from "../helpers/bookMaking";
 import { bookHtmlPath } from "../helpers/bookHtml";
 import {
@@ -32,6 +31,7 @@ import {
     waitForClickedPageToSettle,
 } from "../helpers/pageView";
 import { realClick } from "../helpers/realClick";
+import { getZoom, setZoom } from "../helpers/workspace";
 import type { Page } from "@playwright/test";
 
 test.use({
@@ -160,6 +160,25 @@ async function expectBubblesBesidePage(page: Page, when: string) {
     });
 }
 
+/** Whether the page frame's view is wider than the frame, so that it scrolls sideways. */
+async function scrollsSideways(page: Page): Promise<boolean> {
+    return editablePageFrame(page).evaluate(() => {
+        const view = document.scrollingElement!;
+        // A pixel of rounding is not scrolling.
+        return view.scrollWidth > view.clientWidth + 1;
+    });
+}
+
+/** Check that the page frame does not scroll sideways, which it does when a spread is too wide. */
+async function expectNoSidewaysScrolling(page: Page, when: string) {
+    await expect
+        .poll(
+            async () => scrollsSideways(page),
+            `${when}: the page frame should not scroll sideways`,
+        )
+        .toBe(false);
+}
+
 async function boxOf(locator: ReturnType<Page["locator"]>, what: string) {
     const box = await locator.boundingBox();
     if (!box) throw new Error(`${what} has no box on screen.`);
@@ -185,6 +204,90 @@ test.describe("showing the other pages of the book", () => {
         }
         // Leaving the last page saves it.
         await goToPage(page, contentPages[0].id);
+    });
+
+    test("One Page and All Pages: the choice stays for the next page, and each view keeps its own zoom, but All Pages always fits a spread [Test Case ID 835]", async ({
+        page,
+    }) => {
+        const contentPages = await getContentPages(page);
+        await goToPage(page, contentPages[1].id);
+        // The page frame is a new frame after a page change, so it is looked up each time.
+        const grid = () =>
+            editablePageFrame(page).locator(".bloom-book-grid-cell");
+        expect(await chosenPageView(page)).toBe("one");
+        await expect(grid()).toHaveCount(0);
+        const { zoom: startingZoom, minZoom, maxZoom } = await getZoom(page);
+        const control = page.getByTestId("page-view-control");
+        const controlBox = await boxOf(control, "The page view chooser");
+
+        // One Page at the largest zoom, so that a spread cannot fit at it.
+        await setZoom(page, maxZoom);
+
+        // The first choice of All Pages zooms out until a spread fits.
+        await choosePageView(page, "all");
+        await expect
+            .poll(async () => (await getZoom(page)).zoom)
+            .toBeLessThan(maxZoom);
+        await expectNoSidewaysScrolling(page, "After choosing All Pages");
+        const fittingZoom = (await getZoom(page)).zoom;
+        expect(await boxOf(control, "The page view chooser")).toEqual(
+            controlBox,
+        );
+
+        // All Pages stays chosen, at its zoom, for the next page.
+        await goToPage(page, contentPages[2].id);
+        expect(await chosenPageView(page)).toBe("all");
+        await expect(grid()).toHaveCount((await getPages(page)).length);
+        expect((await getZoom(page)).zoom).toBe(fittingZoom);
+
+        // One Page gets its own zoom back, and All Pages gets the zoom it had.
+        await choosePageView(page, "one");
+        await expect.poll(async () => (await getZoom(page)).zoom).toBe(maxZoom);
+        expect(await boxOf(control, "The page view chooser")).toEqual(
+            controlBox,
+        );
+        await choosePageView(page, "all");
+        await expect
+            .poll(async () => (await getZoom(page)).zoom)
+            .toBe(fittingZoom);
+
+        // A zoom too large for a spread, given in All Pages, is lowered the next time All Pages is
+        // chosen.
+        await setZoom(page, maxZoom);
+        await expect
+            .poll(
+                async () => scrollsSideways(page),
+                "Sanity check: at the largest zoom a spread should be wider than the page frame",
+            )
+            .toBe(true);
+        await choosePageView(page, "one");
+        await expect.poll(async () => (await getZoom(page)).zoom).toBe(maxZoom);
+        await choosePageView(page, "all");
+        await expect
+            .poll(async () => (await getZoom(page)).zoom)
+            .toBe(fittingZoom);
+        await expectNoSidewaysScrolling(page, "After choosing All Pages again");
+
+        // A zoom smaller than the fit, given in All Pages, is kept.
+        expect(
+            minZoom,
+            "Sanity check: the smallest zoom should be below the zoom that fits a spread",
+        ).toBeLessThan(fittingZoom);
+        await setZoom(page, minZoom);
+        await choosePageView(page, "one");
+        await expect.poll(async () => (await getZoom(page)).zoom).toBe(maxZoom);
+        await choosePageView(page, "all");
+        await expect.poll(async () => (await getZoom(page)).zoom).toBe(minZoom);
+
+        // Leave All Pages at the zoom it started from, and One Page chosen at its starting zoom, for
+        // the tests after this one. One Page stays chosen for the next page.
+        await setZoom(page, startingZoom);
+        await choosePageView(page, "one");
+        await expect.poll(async () => (await getZoom(page)).zoom).toBe(maxZoom);
+        await setZoom(page, startingZoom);
+        await goToPage(page, contentPages[0].id);
+        expect(await chosenPageView(page)).toBe("one");
+        await expect(grid()).toHaveCount(0);
     });
 
     test("All Pages shows every page, with the facing page beside the page being edited [Test Case ID 835]", async ({
@@ -639,28 +742,5 @@ test.describe("showing the other pages of the book", () => {
 
         await choosePageView(page, "all");
         await expectBubblesBesidePage(page, "After choosing All Pages again");
-    });
-
-    test("choosing One Page removes the other pages [Test Case ID 835]", async ({
-        page,
-    }) => {
-        const contentPages: IBookPage[] = await getContentPages(page);
-        await goToPage(page, contentPages[0].id);
-        expect(await chosenPageView(page)).toBe("all");
-        const control = page.getByTestId("page-view-control");
-        const controlBefore = await boxOf(control, "The page view chooser");
-        await choosePageView(page, "one");
-        await expect(
-            editablePageFrame(page).locator(".bloom-book-grid-cell"),
-        ).toHaveCount(0);
-        // The chooser stays exactly where it was, in the top bar.
-        expect(await boxOf(control, "The page view chooser")).toEqual(
-            controlBefore,
-        );
-        await goToPage(page, contentPages[1].id);
-        expect(await chosenPageView(page)).toBe("one");
-        await expect(
-            editablePageFrame(page).locator(".bloom-book-grid-cell"),
-        ).toHaveCount(0);
     });
 });
