@@ -29,3 +29,9 @@ indent_size = 2
 
 [ReleaseNotes.md]
 trim_trailing_whitespace=false
+
+[*.cs]
+# Culture-sensitive string searches (IndexOf, StartsWith, EndsWith, Compare, ...) give wrong
+# answers in some cultures; e.g. Thai collation ignores punctuation (BL-16932, BL-16934).
+# Always pass a StringComparison.
+dotnet_diagnostic.CA1310.severity = error

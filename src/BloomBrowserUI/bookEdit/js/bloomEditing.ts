@@ -10,6 +10,7 @@ import {
     normalizeCoverImageDesignation,
     buildSrcWithTransparentParam,
     pageBackgroundNeedsTransparency,
+    refreshTransparencyIfBackgroundImage,
     SetupMetadataButton,
     SetupResizableElement,
     SetupImagesInContainer,
@@ -526,6 +527,9 @@ export function changeImageInfo(
         );
         (imgOrImageContainer as HTMLImageElement).src =
             buildSrcWithTransparentParam(imageInfo.src, mode);
+        // A new (or newly placeholder) background image changes whether the overlays on
+        // its canvas need transparency.
+        refreshTransparencyIfBackgroundImage(imgOrImageContainer);
     }
     // else if it has class bloom-imageContainer or bloom-canvas, we need to set the background-image on the container
     else if (
@@ -1429,7 +1433,7 @@ export function requestPageContent() {
 // removeEditingDebris(), and getBodyContentForSavePage() all strip classes, blur elements, turn off
 // canvas-element editing, and do CKEditor cleanup) and does NOT restore it afterward. Both current
 // callers tolerate this: the live editor re-navigates the page after saving, and the off-screen path
-// uses a fresh disposable browser per page. Don't call this from a context where the page must stay
+// navigates to the next page afterwards. Don't call this from a context where the page must stay
 // live and editable afterward.
 function extractAndStripPageContentForSave(): string {
     // Record how much of the page each image slot covers, while the page is still laid out.

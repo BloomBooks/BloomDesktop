@@ -483,7 +483,10 @@ namespace Bloom.TeamCollection
             // If it's in a book folder (any subfolder except the two we save as settings) ignore it.
             if (e.Name.Contains(Path.DirectorySeparatorChar))
             {
-                if (!e.Name.StartsWith("Allowed Words") && !e.Name.StartsWith("Sample Texts"))
+                if (
+                    !e.Name.StartsWith("Allowed Words", StringComparison.Ordinal)
+                    && !e.Name.StartsWith("Sample Texts", StringComparison.Ordinal)
+                )
                     return;
             }
 
@@ -1143,7 +1146,7 @@ namespace Bloom.TeamCollection
         /// <returns>A string which is the book name without the .bloom suffix</returns>
         protected static string GetBookNameWithoutSuffix(string bookName)
         {
-            if (bookName.EndsWith(".bloom"))
+            if (bookName.EndsWith(".bloom", StringComparison.Ordinal))
                 return Path.GetFileNameWithoutExtension(bookName);
 
             return bookName;
@@ -1709,7 +1712,7 @@ namespace Bloom.TeamCollection
         /// <param name="args"></param>
         public void HandleModifiedFile(BookRepoChangeEventArgs args)
         {
-            if (args.BookFileName.EndsWith(".bloom"))
+            if (args.BookFileName.EndsWith(".bloom", StringComparison.Ordinal))
             {
                 var bookBaseName = GetBookNameWithoutSuffix(args.BookFileName);
                 //Debug.WriteLine("Modified: " + bookBaseName);
@@ -1966,7 +1969,7 @@ namespace Bloom.TeamCollection
                 return;
             }
 
-            if (args.BookFileName.EndsWith(".bloom"))
+            if (args.BookFileName.EndsWith(".bloom", StringComparison.Ordinal))
             {
                 HandleNewBook(bookBaseName);
             }
@@ -2049,7 +2052,7 @@ namespace Bloom.TeamCollection
             // Don't use GetFileNameWithoutExtension here, what comes in might be a plain folder name
             // that doesn't have an extension, but might contain a period if the book title does.
             var bookFolderName = Path.GetFileName(bookName);
-            if (bookFolderName.EndsWith(".bloom"))
+            if (bookFolderName.EndsWith(".bloom", StringComparison.Ordinal))
                 bookFolderName = bookFolderName.Substring(
                     0,
                     bookFolderName.Length - ".bloom".Length
@@ -3196,7 +3199,7 @@ namespace Bloom.TeamCollection
         /// <returns></returns>
         public static string GetLocalCollectionNameFromTcName(string tcName)
         {
-            if (tcName.EndsWith(" - TC"))
+            if (tcName.EndsWith(" - TC", StringComparison.Ordinal))
                 return tcName.Substring(0, tcName.Length - 5);
             return tcName;
         }
@@ -3229,7 +3232,7 @@ namespace Bloom.TeamCollection
         public void UpdateBookStatus(string bookName, bool shouldNotifyIfNotCheckedOut)
         {
             Debug.Assert(
-                !bookName.EndsWith(".bloom"),
+                !bookName.EndsWith(".bloom", StringComparison.Ordinal),
                 $"UpdateBookStatus was passed bookName=\"{bookName}\", which has a .bloom suffix. This is probably incorrect. This function wants only the bookBaseName"
             );
 

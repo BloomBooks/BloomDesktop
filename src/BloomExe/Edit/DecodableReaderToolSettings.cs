@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using Bloom.Book;
 using Bloom.Collection;
@@ -47,7 +48,12 @@ namespace Bloom.Edit
                         Path.Combine(destFolder, readerSettingsFileName),
                         true
                     );
-                    if (readerSettingsFileName.StartsWith(ReaderToolsSettingsPrefix))
+                    if (
+                        readerSettingsFileName.StartsWith(
+                            ReaderToolsSettingsPrefix,
+                            StringComparison.Ordinal
+                        )
+                    )
                     {
                         var langCode = Path.GetFileNameWithoutExtension(
                             readerSettingsFileName.Substring(ReaderToolsSettingsPrefix.Length)

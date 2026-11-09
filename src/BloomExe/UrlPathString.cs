@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -187,7 +188,7 @@ namespace Bloom
                 // while PathOnly did not, so a query that happened to contain something shaped
                 // like an escape was decoded a second time. That looks like an oversight rather
                 // than intent -- both are slices of the same already-decoded string.)
-                var startQuery = _notEncoded.IndexOf("?");
+                var startQuery = _notEncoded.IndexOf("?", StringComparison.Ordinal);
                 if (startQuery < 0)
                     return CreateFromUnencodedString("");
                 return CreateFromUnencodedString(_notEncoded.Substring(startQuery));

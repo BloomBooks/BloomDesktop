@@ -128,12 +128,17 @@ namespace Bloom.SubscriptionAndFeatures
                 // name is still written out as "Local-Community". The final part of the test is probably not needed,
                 // but we all believe in both belt and suspenders, right?
                 if (
-                    sub.Descriptor.ToLowerInvariant().EndsWith("-lc")
-                    || (descriptor != null && descriptor.ToLowerInvariant().EndsWith("-lc"))
+                    sub.Descriptor.ToLowerInvariant().EndsWith("-lc", StringComparison.Ordinal)
+                    || (
+                        descriptor != null
+                        && descriptor.ToLowerInvariant().EndsWith("-lc", StringComparison.Ordinal)
+                    )
                     || brandingProjectName == "Local-Community"
                 )
                     sub.Tier = SubscriptionTier.LocalCommunity;
-                else if (sub.Descriptor.ToLowerInvariant().EndsWith("-pro"))
+                else if (
+                    sub.Descriptor.ToLowerInvariant().EndsWith("-pro", StringComparison.Ordinal)
+                )
                     sub.Tier = SubscriptionTier.Pro;
                 else if (
                     !string.IsNullOrWhiteSpace(sub.Descriptor)
@@ -325,7 +330,7 @@ namespace Bloom.SubscriptionAndFeatures
             if (string.IsNullOrEmpty(code))
                 return;
             // see if the last part has "***-***" like a redacted date and checksum. If so, the descriptor is what precedes it.
-            if (code.EndsWith(kRedactedCodeSuffix))
+            if (code.EndsWith(kRedactedCodeSuffix, StringComparison.Ordinal))
             {
                 descriptor = code.Replace(kRedactedCodeSuffix, "");
                 return;
@@ -402,10 +407,10 @@ namespace Bloom.SubscriptionAndFeatures
             else if (
                 descriptor == "Local-Community"
                 || descriptor == "Local Community" /* pre 4.4 */
-                || descriptor.ToLowerInvariant().EndsWith("-lc")
+                || descriptor.ToLowerInvariant().EndsWith("-lc", StringComparison.Ordinal)
             )
                 return SubscriptionTier.LocalCommunity;
-            else if (descriptor.ToLowerInvariant().EndsWith("-pro"))
+            else if (descriptor.ToLowerInvariant().EndsWith("-pro", StringComparison.Ordinal))
                 return SubscriptionTier.Pro;
             else
                 return SubscriptionTier.Enterprise;

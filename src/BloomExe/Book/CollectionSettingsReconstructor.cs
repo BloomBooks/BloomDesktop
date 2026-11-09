@@ -131,7 +131,7 @@ namespace Bloom.Book
                     return String.Empty;
                 foreach (var tag in tags)
                 {
-                    if (tag.StartsWith("bookshelf:"))
+                    if (tag.StartsWith("bookshelf:", StringComparison.Ordinal))
                         return tag;
                 }
             }
@@ -158,7 +158,7 @@ namespace Bloom.Book
             foreach (string feature in features)
             {
                 const string marker = "signLanguage:";
-                if (feature.StartsWith(marker))
+                if (feature.StartsWith(marker, StringComparison.Ordinal))
                 {
                     return feature.Substring(marker.Length);
                 }
@@ -307,7 +307,7 @@ namespace Bloom.Book
 
             string suffix = "-XMatter.css";
             var files = dirInfo.GetFiles();
-            var matches = files.Where(x => x.Name.EndsWith(suffix));
+            var matches = files.Where(x => x.Name.EndsWith(suffix, StringComparison.Ordinal));
 
             if (matches.Any())
             {

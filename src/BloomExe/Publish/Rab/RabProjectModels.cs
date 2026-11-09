@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using Bloom.Book;
+using Bloom.Publish.BloomPub;
 using SIL.IO;
 
 namespace Bloom.Publish.Rab
@@ -15,6 +17,10 @@ namespace Bloom.Publish.Rab
     public class RabProjectStatus
     {
         public bool RabInstalled { get; set; }
+
+        // The Reading App Builder for Bloom version this Bloom needs, when the installed one is
+        // older; null when no update is needed. The Apps screen tells the user to run Prepare.
+        public string RabUpdateVersion { get; set; }
         public bool ProjectExists { get; set; }
         public bool ApkExists { get; set; }
         public bool BuildNeeded { get; set; }
@@ -91,6 +97,25 @@ namespace Bloom.Publish.Rab
         public string BookId { get; set; }
         public string FolderPath { get; set; }
         public string Title { get; set; }
+
+        /// <summary>
+        /// The resolution the book's pictures are shrunk to in a BloomPUB, used to estimate the
+        /// BloomPUB's size. Internal so it isn't sent to the browser along with the rest.
+        /// </summary>
+        internal ImagePublishSettings ImageSettings { get; set; } = new ImagePublishSettings();
+
+        /// <summary>
+        /// The book's appearance settings, which give the cover color that decides whether cover
+        /// pictures are made transparent when published. Internal so it isn't sent to the browser.
+        /// </summary>
+        internal AppearanceSettings AppearanceSettings { get; set; }
+
+        /// <summary>
+        /// The book's BloomPUB publish settings, as made by
+        /// <see cref="BloomPubCache.MakeSettingsKey"/>, used to tell whether a BloomPUB made
+        /// earlier is still current. Internal so it isn't sent to the browser.
+        /// </summary>
+        internal string BloomPubSettingsKey { get; set; }
     }
 
     internal class RabPrepareState
@@ -253,6 +278,29 @@ namespace Bloom.Publish.Rab
             return RabSafePathPolicy.GetCollectionWorkRoot(collectionRoot);
         }
 
+        /// <summary>
+        /// Where the Apps screen keeps its BloomPUBs: outside the collection, in
+        /// <paramref name="cacheFolder"/> (normally <see cref="BloomPubCache.GetCacheFolder"/>;
+        /// BL-17062). Reading App Builder is given these paths and can't cope with non-ASCII ones,
+        /// so when the user's temp folder isn't plain ASCII we use its short alias, and if Windows
+        /// can't give one (e.g. short names are turned off on that drive) we fall back to a folder
+        /// under <paramref name="safeWorkRoot"/>, which is known to be ASCII-safe. The cache
+        /// folder is made first because Windows only gives a whole path a short alias once it
+        /// exists, and the root must come out the same every time.
+        /// </summary>
+        internal static string GetBloomPubRoot(
+            string cacheFolder,
+            string safeWorkRoot,
+            Func<string, string> shortPathResolver = null
+        )
+        {
+            if (RabSafePathPolicy.IsAscii(Path.GetFullPath(cacheFolder)))
+                return cacheFolder;
+            Directory.CreateDirectory(cacheFolder);
+            return RabSafePathPolicy.ResolveSafePathOrNull(cacheFolder, shortPathResolver)
+                ?? Path.Combine(safeWorkRoot, "bloompubs");
+        }
+
         public RabWorkspacePaths(string collectionRoot, string bloomOwnedRabRoot = null)
         {
             CollectionRoot = collectionRoot;
@@ -260,7 +308,10 @@ namespace Bloom.Publish.Rab
             SafeWorkRoot = GetSafeWorkRoot(collectionRoot);
             RabRoot = Path.Combine(collectionRoot, "Bloom App Data");
             SafeRabRoot = Path.Combine(SafeCollectionRoot, "Bloom App Data");
-            BloomPubRoot = Path.Combine(RabRoot, "bloompubs");
+            BloomPubRoot = GetBloomPubRoot(
+                BloomPubCache.GetCacheFolder(collectionRoot),
+                SafeWorkRoot
+            );
             BuildRoot = Path.Combine(RabRoot, "build");
             ApkRoot = Path.Combine(RabRoot, "apk");
             SafeApkRoot = Path.Combine(SafeRabRoot, "apk");

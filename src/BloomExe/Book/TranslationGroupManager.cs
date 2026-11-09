@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml;
 using Bloom.Api;
 using Bloom.SafeXml;
+using Bloom.ToPalaso;
 using L10NSharp;
 using SIL.Reporting;
 using SIL.WritingSystems;
@@ -165,7 +166,10 @@ namespace Bloom.Book
                         continue;
                     var newEditableDiv = ownerDoc.CreateElement("div");
                     newEditableDiv.SetAttribute("class", "bloom-editable");
-                    newEditableDiv.SetAttribute("lang", IetfLanguageTag.GetGeneralCode(uiLanguage));
+                    newEditableDiv.SetAttribute(
+                        "lang",
+                        IetfLanguageTagExtra.GetGeneralCode(uiLanguage)
+                    );
                     newEditableDiv.InnerText = translation;
                     editableDiv.ParentNode.AppendChild(newEditableDiv);
                 }
@@ -368,7 +372,8 @@ namespace Bloom.Book
 
                 // missing attribute or empty is treated as "auto", and this menu definitely affects those.
                 if (
-                    string.IsNullOrEmpty(defLangs) || defLangs.ToLowerInvariant().StartsWith("auto")
+                    string.IsNullOrEmpty(defLangs)
+                    || defLangs.ToLowerInvariant().StartsWith("auto", StringComparison.Ordinal)
                 )
                     return true;
 
@@ -831,7 +836,7 @@ namespace Bloom.Book
                 foreach (var node in e.ChildNodes)
                 {
                     var t = node as SafeXmlText;
-                    if (t != null && t.Value.StartsWith("{"))
+                    if (t != null && t.Value.StartsWith("{", StringComparison.Ordinal))
                         t.Value = "";
                     //otherwise html tidy will throw away spans (at least) that are empty, so we never get a chance to fill in the values.
                 }

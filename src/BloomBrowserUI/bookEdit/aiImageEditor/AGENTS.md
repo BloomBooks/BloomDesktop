@@ -2,6 +2,12 @@ This folder is the front end of the **"Edit with AI…"** integration: Bloom's s
 `bloom-ai-image-tools` web app, which we load into an iframe overlay. The C# half is
 `src/BloomExe/web/controllers/AiImageEditorApi.cs` — read its header first for the whole picture.
 
+## Naming: never call it "the editor"
+
+Bloom is itself an editor (the Bloom Editor), so "the editor" is ambiguous. Write "the AI Image
+Editor" in full in code comments, test names, commits, PRs and card comments. Once it has been
+named, "it" is fine. Bloom's side is just "Bloom".
+
 The feature is a command on the image context menu plus a dialog-like overlay — the same shape as
 `bookEdit/copyrightAndLicense/`. The canvas menu only *offers* it: `canvasControlRegistry` imports
 `launchAiImageEditor`, and `buildCanvasElementControlRegistryContext` imports
@@ -38,6 +44,23 @@ live up there (see the comments on those commands in `canvasControlRegistry.ts`)
 is *not* enough on its own: a save can also reload the whole workspace root, so C# waits for the
 page to come back before opening the overlay. `AiImageEditorApi.HandleSaveThenLaunch` explains
 that in full.
+
+## Analytics: Bloom forwards the AI Image Editor's events and knows nothing about them
+
+The AI Image Editor names its own analytics events and chooses their properties, including the
+session id that groups one visit's events and the session length. Bloom forwards each one to
+Segment exactly as sent (`case "analytics"` in `aiImageEditorOverlay.ts`). What each event means
+is documented in `lib/analyticsEvents.ts` in BloomBooks/bloom-ai-image-tools.
+
+**Don't add a list of allowed event names or properties, rename events, add properties, or send
+events of Bloom's own about the session.** Any of those means Bloom knowing the AI Image Editor's
+vocabulary, and a list fails badly: an unlisted event is silently dropped, which looks exactly
+like nobody using the feature. If a number is missing, have the AI Image Editor send it, or
+compute it in the analytics pipeline. The same goes for any library Bloom hosts.
+
+The one Bloom event here is `Change Picture` with source `ai-editor`, one per picture that
+reached the book. It is Bloom's event about the book, shared with the other ways a picture gets
+in, and only Bloom knows whether a swap on the page being edited landed.
 
 ## Localization
 

@@ -460,7 +460,9 @@ namespace Bloom.web.controllers
             {
                 var classList = div.GetAttribute("class");
                 var classes = classList.Split(' ');
-                var style = classes.First(c => c.EndsWith("-style")).Replace("-style", "");
+                var style = classes
+                    .First(c => c.EndsWith("-style", StringComparison.Ordinal))
+                    .Replace("-style", "");
                 // These are not offered by the Styles Dialog, so I guess users aren't supposed to be aware of them.
                 // Presumably xmatter developers want complete control over these.
                 if (

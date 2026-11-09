@@ -759,6 +759,33 @@ namespace BloomTests.Book
             AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[contains(@class,'QX9Landscape')]");
         }
 
+        [TestCase("QX9Landscape", "0")] // forced to A5Portrait: the pages changed size
+        [TestCase("A5Portrait", "1")] // kept: nothing to redo
+        public void BringBookUpToDate_SizeReplaced_RecordsPageLayoutChanged(
+            string sizeClass,
+            string expectedLevel
+        )
+        {
+            SetDom(
+                $@"<div class='bloom-page bloom-frontMatter {sizeClass}'></div>
+                    <div class='bloom-page {sizeClass}'></div>",
+                $@"<meta name='{BookProcessor.kPageLayoutUpdateLevelMeta}' content='1' />"
+            );
+            var book = CreateBook();
+            Assert.That(
+                book.OurHtmlDom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, ""),
+                Is.EqualTo("1"),
+                "SANITY: the book should start out up to date"
+            );
+
+            book.BringBookUpToDate(new NullProgress());
+
+            Assert.That(
+                book.OurHtmlDom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, ""),
+                Is.EqualTo(expectedLevel)
+            );
+        }
+
         //Removing extra lines is of interest in case the user was entering blank lines by hand to separate the paragraphs, which now will
         //be separated by the styling of the new paragraphs
         [Test]
@@ -2291,7 +2318,7 @@ namespace BloomTests.Book
             var result = HtmlDom.GetCoverBackgroundColorFromOldInlineStyle(document);
 
             // should look like a hex color
-            Assert.IsTrue(result.StartsWith("#"));
+            Assert.IsTrue(result.StartsWith("#", StringComparison.Ordinal));
             Assert.IsTrue(result.Length == 7);
         }
 

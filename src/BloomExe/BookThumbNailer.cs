@@ -482,8 +482,8 @@ namespace Bloom
             foreach (var part in parts)
             {
                 if (
-                    part.ToLowerInvariant().EndsWith("portrait")
-                    || part.ToLowerInvariant().EndsWith("landscape")
+                    part.ToLowerInvariant().EndsWith("portrait", StringComparison.Ordinal)
+                    || part.ToLowerInvariant().EndsWith("landscape", StringComparison.Ordinal)
                 )
                     continue;
                 if (classBldr.Length > 0)

@@ -86,10 +86,10 @@ namespace Bloom.Collection
             int x,
                 y;
             if (!int.TryParse(left, out x))
-                return left.CompareTo(right);
+                return string.Compare(left, right, StringComparison.CurrentCulture);
 
             if (!int.TryParse(right, out y))
-                return left.CompareTo(right);
+                return string.Compare(left, right, StringComparison.CurrentCulture);
 
             return x.CompareTo(y);
         }

@@ -9,7 +9,7 @@ namespace BloomTests.Book
 {
     /// <summary>
     /// The Sample Shells we ship (src/content/templates/Sample Shells) should already be fully
-    /// "updated": brought to our current maintenance levels, including the per-page browser fix-up.
+    /// "updated": brought to our current maintenance levels, including the page layout update.
     /// Otherwise every user who opens one (or makes a book from one) pays for that update, and the
     /// AI image editor and page-size changes stop to show the "Bloom needs to update the pages of
     /// this book" dialog (BL-16905).
@@ -69,18 +69,9 @@ namespace BloomTests.Book
                     book + ": mediaMaintenanceLevel is behind." + howToFix
                 );
                 Assert.That(
-                    dom.GetMetaValue(BookProcessor.kBrowserMaintenanceLevelMeta, "missing"),
-                    Is.EqualTo(BookStorage.kBrowserMaintenanceLevel.ToString()),
-                    book + ": browserMaintenanceLevel is behind." + howToFix
-                );
-                // The per-page fix-up is redone whenever the page size differs from the one it was
-                // stamped at (BookProcessor.NeedsPerPageFixup), so the stamp must match the book's.
-                Assert.That(
-                    dom.GetMetaValue(BookProcessor.kBrowserMaintenanceLayoutMeta, ""),
-                    Is.EqualTo(Layout.FromDom(dom, Layout.A5Portrait).SizeAndOrientation.ClassName),
-                    book
-                        + ": browserMaintenanceLayout does not match the book's page size."
-                        + howToFix
+                    dom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, "missing"),
+                    Is.EqualTo(BookStorage.kPageLayoutUpdateLevel.ToString()),
+                    book + ": pageLayoutUpdateLevel is behind." + howToFix
                 );
             }
         }

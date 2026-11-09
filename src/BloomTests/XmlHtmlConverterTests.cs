@@ -275,7 +275,7 @@ namespace BloomTests
             {
                 var xml = dom.DocumentElement.InnerXml;
                 found = xml.Select((c, i) => xml.Substring(i))
-                    .Count(sub => sub.StartsWith("<br />"));
+                    .Count(sub => sub.StartsWith("<br />", StringComparison.Ordinal));
             }
             Assert.AreEqual(1, found);
         }
@@ -529,7 +529,9 @@ namespace BloomTests
             );
             var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html, true);
             var xml = htmlDom.DocumentElement.InnerXml;
-            var nbspIndex = xml.IndexOf("Some text with a") + "Some text with a".Length;
+            var nbspIndex =
+                xml.IndexOf("Some text with a", StringComparison.Ordinal)
+                + "Some text with a".Length;
             Assert.That(
                 xml[nbspIndex],
                 Is.EqualTo('\u00A0'),

@@ -175,7 +175,8 @@ namespace BloomTests.Book
                 bookAppearance
                     .GetCssOwnPropsDeclaration(collectionAppearance)
                     .IndexOf(
-                        $"--boolean-test-L2-show: {AppearanceSettings.kDoShowValueForDisplay};"
+                        $"--boolean-test-L2-show: {AppearanceSettings.kDoShowValueForDisplay};",
+                        StringComparison.Ordinal
                     ) > -1
             );
 
@@ -186,8 +187,10 @@ namespace BloomTests.Book
             Assert.IsTrue(
                 bookAppearance
                     .GetCssOwnPropsDeclaration(collectionAppearance)
-                    .IndexOf($"--boolean-test-L2-show: {AppearanceSettings.kHideValueForDisplay};")
-                    > -1,
+                    .IndexOf(
+                        $"--boolean-test-L2-show: {AppearanceSettings.kHideValueForDisplay};",
+                        StringComparison.Ordinal
+                    ) > -1,
                 bookAppearance.GetCssOwnPropsDeclaration(collectionAppearance).ToString()
             );
         }
@@ -205,8 +208,10 @@ namespace BloomTests.Book
             Assert.IsTrue(
                 bookAppearance
                     .GetCssOwnPropsDeclaration(collectionAppearance)
-                    .IndexOf($"--boolean-test-L2-show: {AppearanceSettings.kHideValueForDisplay};")
-                    > -1
+                    .IndexOf(
+                        $"--boolean-test-L2-show: {AppearanceSettings.kHideValueForDisplay};",
+                        StringComparison.Ordinal
+                    ) > -1
             );
 
             collectionAppearance.UpdateFromJson("{\"boolean-test-L2-show\":true}");
@@ -217,7 +222,8 @@ namespace BloomTests.Book
                 bookAppearance
                     .GetCssOwnPropsDeclaration(collectionAppearance)
                     .IndexOf(
-                        $"--boolean-test-L2-show: {AppearanceSettings.kDoShowValueForDisplay};"
+                        $"--boolean-test-L2-show: {AppearanceSettings.kDoShowValueForDisplay};",
+                        StringComparison.Ordinal
                     ) > -1,
                 bookAppearance.GetCssOwnPropsDeclaration(collectionAppearance).ToString()
             );

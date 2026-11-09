@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Bloom;
 using Bloom.Book;
@@ -166,7 +167,7 @@ namespace BloomTests
                 "infoPages",
                 "TrainingVideos-en.htm"
             );
-            Assert.IsTrue(path.EndsWith("TrainingVideos-en.htm"));
+            Assert.IsTrue(path.EndsWith("TrainingVideos-en.htm", StringComparison.Ordinal));
         }
 
         [Test]
@@ -178,7 +179,7 @@ namespace BloomTests
                 "infoPages",
                 "TrainingVideos-en.htm"
             );
-            Assert.IsTrue(path.EndsWith("TrainingVideos-en.htm"));
+            Assert.IsTrue(path.EndsWith("TrainingVideos-en.htm", StringComparison.Ordinal));
         }
 
         [Test]

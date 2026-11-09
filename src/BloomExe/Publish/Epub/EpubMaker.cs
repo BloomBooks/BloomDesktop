@@ -924,11 +924,14 @@ namespace Bloom.Publish.Epub
             string copyrightString
         )
         {
-            if (copyrightString == null || !copyrightString.StartsWith(COPYRIGHT))
+            if (
+                copyrightString == null
+                || !copyrightString.StartsWith(COPYRIGHT, StringComparison.Ordinal)
+            )
                 return (null, null);
 
             var stripped = copyrightString.Substring(COPYRIGHT.Length);
-            var commaIndex = stripped.IndexOf(","); // Put in by ClearShare; not localized.
+            var commaIndex = stripped.IndexOf(",", StringComparison.Ordinal); // Put in by ClearShare; not localized.
             if (commaIndex < 0)
                 return (null, null);
             var rightsHolder = stripped.Substring(commaIndex + 1).Trim();
@@ -3260,9 +3263,9 @@ namespace Bloom.Publish.Epub
             foreach (var xel in xdoc.SafeSelectNodes("//*", null).Cast<SafeXmlElement>())
             {
                 if (
-                    xel.Name.StartsWith("inkscape:")
-                    || xel.Name.StartsWith("sodipodi:")
-                    || xel.Name.StartsWith("rdf:")
+                    xel.Name.StartsWith("inkscape:", StringComparison.Ordinal)
+                    || xel.Name.StartsWith("sodipodi:", StringComparison.Ordinal)
+                    || xel.Name.StartsWith("rdf:", StringComparison.Ordinal)
                     || xel.Name == "flowRoot"
                 ) // epubcheck objects to this: must be from an obsolete version of SVG?
                 {
@@ -3278,9 +3281,9 @@ namespace Bloom.Publish.Epub
                     {
                         var attr = xel.AttributePairs[i];
                         if (
-                            attr.Name.StartsWith("inkscape:")
-                            || attr.Name.StartsWith("sodipodi:")
-                            || attr.Name.StartsWith("rdf:")
+                            attr.Name.StartsWith("inkscape:", StringComparison.Ordinal)
+                            || attr.Name.StartsWith("sodipodi:", StringComparison.Ordinal)
+                            || attr.Name.StartsWith("rdf:", StringComparison.Ordinal)
                             || attr.Name == "overflow"
                         ) // epubcheck for epub 3.2 reports error: SVG version 2 doesn't have this attribute
                         {
@@ -3337,7 +3340,10 @@ namespace Bloom.Publish.Epub
             )
             {
                 var href = link.GetAttribute("href");
-                if (!string.IsNullOrEmpty(href) && Path.GetFileName(href).StartsWith("custom"))
+                if (
+                    !string.IsNullOrEmpty(href)
+                    && Path.GetFileName(href).StartsWith("custom", StringComparison.Ordinal)
+                )
                     continue;
                 if (
                     !string.IsNullOrEmpty(href)
@@ -3353,7 +3359,7 @@ namespace Bloom.Publish.Epub
                 // xmatter stylesheets for epubs.
                 if (
                     !string.IsNullOrEmpty(href)
-                    && Path.GetFileName(href).StartsWith("Kyrgyzstan2020")
+                    && Path.GetFileName(href).StartsWith("Kyrgyzstan2020", StringComparison.Ordinal)
                 )
                 {
                     // We need to get rid of the link to the standard Kyrgz xmatter and
@@ -3390,7 +3396,10 @@ namespace Bloom.Publish.Epub
             // (quite possibly the same) folder name will be added below as needed.  This
             // simplifies the processing for files being moved into a subfolder for the
             // first time, or into a folder of a different name.
-            if (fileName.StartsWith("audio/") || fileName.StartsWith("video/"))
+            if (
+                fileName.StartsWith("audio/", StringComparison.Ordinal)
+                || fileName.StartsWith("video/", StringComparison.Ordinal)
+            )
                 fileName = fileName.Substring(6);
             string dstPath = SubfolderAdjustedContentPath(subfolder, fileName);
             // We deleted the root directory at the start, so if the file is already
@@ -3438,7 +3447,10 @@ namespace Bloom.Publish.Epub
         {
             string originalFileName;
             // keep subfolder structure if possible
-            if (!string.IsNullOrEmpty(folderPath) && srcPath.StartsWith(folderPath))
+            if (
+                !string.IsNullOrEmpty(folderPath)
+                && srcPath.StartsWith(folderPath, StringComparison.Ordinal)
+            )
                 originalFileName = srcPath.Substring(folderPath.Length + 1).Replace('\\', '/');
             else
                 originalFileName = Path.GetFileName(srcPath);
@@ -3551,7 +3563,7 @@ namespace Bloom.Publish.Epub
                 RobustFile.Copy(srcPath, dstPath);
                 return dstPath;
             }
-            if (dstPath.Contains(kCssFolder) && dstPath.EndsWith(".css"))
+            if (dstPath.Contains(kCssFolder) && dstPath.EndsWith(".css", StringComparison.Ordinal))
             {
                 // ePUB 3.2 does not support direction: settings in CSS files.  We mark direction explicitly elsewhere in the .xhtml files.
                 var cssText = RobustFile.ReadAllText(srcPath);

@@ -123,14 +123,18 @@ namespace Bloom.CLI
             foreach (
                 var filePath in Directory
                     .EnumerateFiles(bookPath, "*.*")
-                    .Where(f => f.EndsWith(".css") || f.EndsWith(".htm") || f.EndsWith(".html"))
+                    .Where(f =>
+                        f.EndsWith(".css", StringComparison.Ordinal)
+                        || f.EndsWith(".htm", StringComparison.Ordinal)
+                        || f.EndsWith(".html", StringComparison.Ordinal)
+                    )
             )
             {
                 var fileContents = RobustFile.ReadAllText(filePath, Encoding.UTF8);
 
-                if (filePath.EndsWith(".htm"))
+                if (filePath.EndsWith(".htm", StringComparison.Ordinal))
                     bookHtmContent = fileContents;
-                else if (filePath.EndsWith("defaultLangStyles.css"))
+                else if (filePath.EndsWith("defaultLangStyles.css", StringComparison.Ordinal))
                 {
                     defaultLangStylesPath = filePath;
                     // Delay processing defaultLangStyles to the end when we know we have the htm content.

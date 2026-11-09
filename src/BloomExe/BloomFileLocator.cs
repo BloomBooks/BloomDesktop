@@ -332,7 +332,7 @@ namespace Bloom
             // but typically in output\Debug\x64. The "browser" folder, however, is not there but
             // directly in output. So we need to back up two levels to find the folder to test in Debug builds.
             var pathLessOne = Path.GetDirectoryName(folder);
-            if (pathLessOne.EndsWith($"{slash}output{slash}Debug"))
+            if (pathLessOne.EndsWith($"{slash}output{slash}Debug", StringComparison.Ordinal))
                 folder = Path.GetDirectoryName(pathLessOne);
 
             return filepath.Contains(folder);
