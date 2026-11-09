@@ -35,7 +35,7 @@ test.use({
 test.describe.configure({ mode: "serial" });
 
 test.describe("the booklet print instructions", () => {
-    test("stay readable above the print dialog, and close when the user leaves PDF & Print", async ({
+    test("stay readable above the print dialog, and close when the user leaves PDF & Print [Test Case ID 856]", async ({
         page,
         bloomApp,
     }) => {
@@ -75,7 +75,7 @@ test.describe("the booklet print instructions", () => {
         );
     });
 
-    test("do not appear when printing a simple PDF", async ({
+    test("do not appear when printing a simple PDF [Test Case ID 856]", async ({
         page,
         bloomApp,
     }) => {
@@ -93,7 +93,7 @@ test.describe("the booklet print instructions", () => {
         await cancelPrintDialog(bloomApp.bloomPid);
     });
 
-    test("show all their text when the page size adds a note", async ({
+    test("show all their text when the page size adds a note [Test Case ID 856]", async ({
         page,
         bloomApp,
     }) => {
