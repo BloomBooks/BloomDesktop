@@ -11,7 +11,7 @@
 // screen; the rest are empty boxes of the right size.
 
 import $ from "jquery";
-import { get } from "../../utils/bloomApi";
+import { get, post } from "../../utils/bloomApi";
 import {
     getPageListBundleExports,
     getWorkspaceBundleExports,
@@ -213,10 +213,20 @@ let observers: { disconnect(): void }[] = [];
  */
 export function setShowingOtherPages(show: boolean): void {
     if (show) {
-        setupBookGridView();
+        void setupBookGridView().then(updatePageLayoutForAllPages);
     } else {
         removeBookGridView();
     }
+}
+
+/**
+ * Ask Bloom to run the book's page layout update now if the book needs it. The other pages show
+ * each page as last saved, so one still waiting for the update would look wrong here. When Bloom
+ * runs it, it comes back to this page by loading it again, which draws the other pages afresh.
+ * Call it once the page is ready, whenever the other pages are showing.
+ */
+export function updatePageLayoutForAllPages(): void {
+    post("editView/updatePageLayoutForAllPages");
 }
 
 /**

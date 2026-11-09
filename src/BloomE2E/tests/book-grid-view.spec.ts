@@ -31,6 +31,7 @@ import {
     scrollPageTopAboveView,
     waitForClickedPageToSettle,
 } from "../helpers/pageView";
+import { getPageSize, setPageSize } from "../helpers/pageSize";
 import { realClick } from "../helpers/realClick";
 import { getZoom, setZoom } from "../helpers/workspace";
 import type { Page } from "@playwright/test";
@@ -785,4 +786,81 @@ test.describe("showing the other pages of the book", () => {
         await choosePageView(page, "all");
         await expectBubblesBesidePage(page, "After choosing All Pages again");
     });
+
+    test("All Pages brings the book's page layout up to date at once: when chosen, and after a page size change [Test Case ID 835]", async ({
+        page,
+    }) => {
+        test.setTimeout(240000);
+        expect(await chosenPageView(page)).toBe("all");
+        const startingSize = await getPageSize(page);
+        expect(
+            startingSize,
+            "Sanity check: the book should start at A5 portrait",
+        ).toBe("A5Portrait");
+        expect(
+            savedBook().layoutUpdateLevel,
+            "Sanity check: a new book starts with its page layout up to date",
+        ).toBe("1");
+
+        // With One Page, a page size change leaves the update for later (the AI image editor or a
+        // Publish tool runs it when it needs it).
+        await choosePageView(page, "one");
+        await setPageSize(page, "A5Landscape");
+        await expect
+            .poll(() => savedBook().size, {
+                timeout: 30000,
+                message: "The new page size never reached the saved book.",
+            })
+            .toBe("A5Landscape");
+        expect(
+            savedBook().layoutUpdateLevel,
+            "With One Page, the update should wait",
+        ).toBe("0");
+
+        // THE ACTION UNDER TEST: choosing All Pages runs it now.
+        await choosePageView(page, "all");
+        await expect
+            .poll(() => savedBook().layoutUpdateLevel, {
+                timeout: 120000,
+                message:
+                    "Choosing All Pages never brought the book's page layout up to date.",
+            })
+            .toBe("1");
+        await waitForEditablePage(page);
+        await expect(
+            editablePageFrame(page).locator(".bloom-book-grid-cell"),
+            "After the update, Bloom should come back to the page with all the pages around it",
+        ).toHaveCount((await getPages(page)).length);
+
+        // And with All Pages showing, a page size change runs it as soon as the page is back. A
+        // saved book at the new size and up to date can only come from an update run after the
+        // change, which records the book as needing it.
+        await setPageSize(page, "A5Portrait");
+        await expect
+            .poll(() => savedBook(), {
+                timeout: 120000,
+                message:
+                    "After a page size change in All Pages, the book's page layout was never brought up to date.",
+            })
+            .toEqual({ size: "A5Portrait", layoutUpdateLevel: "1" });
+        await waitForEditablePage(page);
+    });
 });
+
+/**
+ * What the saved book records about its page layout: the size its first page is drawn at, and the
+ * page layout update level (see BookProcessor.NeedsPageLayoutUpdate in Bloom).
+ */
+function savedBook(): { size: string; layoutUpdateLevel: string } {
+    const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    const meta = /<meta\b[^>]*\bname="pageLayoutUpdateLevel"[^>]*>/.exec(html);
+    const level = meta ? /\bcontent="([^"]*)"/.exec(meta[0]) : null;
+    const size =
+        /class="[^"]*\bbloom-page\b[^"]*\b(A5Portrait|A5Landscape)\b/.exec(
+            html,
+        );
+    return {
+        size: size ? size[1] : "none",
+        layoutUpdateLevel: level ? level[1] : "missing",
+    };
+}

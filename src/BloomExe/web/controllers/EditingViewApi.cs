@@ -168,6 +168,28 @@ namespace Bloom.web.controllers
                 HandleSavePageViewMode,
                 true
             );
+            // Not requiresSync, like aiImageEditor/saveThenLaunch: the update it may start loads
+            // pages off-screen that make their own sync-locked calls (see RunOffTheApiLock).
+            apiHandler.RegisterEndpointHandler(
+                "editView/updatePageLayoutForAllPages",
+                HandleUpdatePageLayoutForAllPages,
+                handleOnUiThread: true,
+                requiresSync: false
+            );
+        }
+
+        /// <summary>
+        /// The All Pages view is showing the other pages of the book: if the book needs its page
+        /// layout update, run it now and come back to the page (EditingModel.UpdatePageLayoutForAllPagesIfNeeded).
+        /// </summary>
+        private void HandleUpdatePageLayoutForAllPages(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Post)
+                throw new ArgumentException(
+                    "editView/updatePageLayoutForAllPages only supports POST"
+                );
+            View.Model.UpdatePageLayoutForAllPagesIfNeeded();
+            request.PostSucceeded();
         }
 
         /// <summary>

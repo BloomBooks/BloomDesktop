@@ -21,11 +21,13 @@ import {
     updateAbovePageControls,
 } from "./js/AbovePageControls";
 import {
+    isShowingOtherPagesHere,
     replayTheClickThatOpenedThisPage,
     setupBookGridView,
     setupControlsBar,
     setShowingOtherPages,
     showPageBeingOpened,
+    updatePageLayoutForAllPages,
 } from "./js/bookGridView";
 import { markPageForRemoval } from "./js/pageRemovalMark";
 import {
@@ -510,6 +512,7 @@ $(document).ready(() => {
                 kPageLoadNumber,
             );
             void replayTheClickThatOpenedThisPage();
+            if (isShowingOtherPagesHere()) updatePageLayoutForAllPages();
         });
     }
     // Step 1 of the off-screen page-capture handshake (see __bloomEditablePageReady in the
