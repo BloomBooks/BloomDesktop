@@ -31,11 +31,22 @@ export const PageViewChooser: React.FunctionComponent = () => {
         getWorkspaceBundleExports().isShowingOtherPages() ? "all" : "one";
     const [mode, setMode] = React.useState<PageViewMode>(getChosenMode);
     // The choice Bloom kept can arrive after this is first shown.
-    useMountEffect(() =>
-        getWorkspaceBundleExports().listenForPageViewModeSetting(() =>
-            setMode(getChosenMode()),
-        ),
-    );
+    useMountEffect(() => {
+        const stopListeningForSetting =
+            getWorkspaceBundleExports().listenForPageViewModeSetting(() =>
+                setMode(getChosenMode()),
+            );
+        // Bloom started, another book opened, or the window changed size since the zoom was last
+        // fitted: the spread may not fit any more.
+        const stopListeningForPages =
+            getWorkspaceBundleExports().listenForAllPagesShown(
+                fitSpreadUnlessUserZoomedIn,
+            );
+        return () => {
+            stopListeningForSetting();
+            stopListeningForPages();
+        };
+    });
 
     const choose = (newMode: PageViewMode | null) => {
         // Clicking the segment that is already chosen gives null; the choice stays as it is.
@@ -143,14 +154,38 @@ function switchToZoomOfMode(
     oldMode: PageViewMode,
     newMode: PageViewMode,
 ): void {
-    // A switch that fails is reported, and the switches after it still run.
+    queueZoomChange(() => switchZoomNow(oldMode, newMode));
+}
+
+// Run a zoom change after the ones asked for before it. One that fails is reported, and the
+// changes after it still run.
+function queueZoomChange(change: () => Promise<void>): void {
     zoomSwitchesDone = zoomSwitchesDone
-        .then(() => switchZoomNow(oldMode, newMode))
+        .then(change)
         .catch((e: Error) => reportError(e.message, e.stack));
 }
 
-// Settles when every zoom switch asked for so far has reached Bloom.
+// Settles when every zoom change asked for so far has reached Bloom.
 let zoomSwitchesDone: Promise<void> = Promise.resolve();
+
+// The zoom Bloom last left All Pages at after fitting a spread to the page frame. A zoom larger
+// than this is one the user chose since, and the sideways scrolling it gives is what they asked
+// for. Undefined until Bloom first fits a spread in this session.
+let allPagesZoomFittedByBloom: number | undefined;
+
+// When a page is shown with all the pages of the book around it, zoom out so that a spread fits,
+// unless the user has zoomed in since Bloom last fitted one.
+function fitSpreadUnlessUserZoomedIn(): void {
+    queueZoomChange(async () => {
+        const zoomInfo = (await getAsync("workspace/zoom")).data as ZoomInfo;
+        if (
+            allPagesZoomFittedByBloom !== undefined &&
+            zoomInfo.zoom > allPagesZoomFittedByBloom
+        )
+            return;
+        allPagesZoomFittedByBloom = await zoomOutToFitASpread(zoomInfo);
+    });
+}
 
 // Store the zoom of the mode being left, and give Bloom the zoom of the mode being shown.
 async function switchZoomNow(
@@ -170,7 +205,10 @@ async function switchZoomNow(
     }
     // The zoom kept for all pages may be too large for a spread of this book, or for this window.
     if (newMode === "all") {
-        await zoomOutToFitASpread({ zoom, minZoom: zoomInfo.minZoom });
+        allPagesZoomFittedByBloom = await zoomOutToFitASpread({
+            zoom,
+            minZoom: zoomInfo.minZoom,
+        });
     }
 }
 
@@ -178,8 +216,8 @@ async function switchZoomNow(
 // (two pages side by side, except in calendars and books sized for a screen; see
 // bookGridLayout.ts), so if the page frame is too narrow for it at the given zoom, zoom out until
 // it is not (to a whole step of 10%, and no further than Bloom allows). The full height of the
-// spread does not have to fit.
-async function zoomOutToFitASpread(zoomInfo: ZoomInfo): Promise<void> {
+// spread does not have to fit. Returns the zoom Bloom is left at.
+async function zoomOutToFitASpread(zoomInfo: ZoomInfo): Promise<number> {
     const frame = document.getElementById("page") as HTMLIFrameElement;
     const pageDocument = frame.contentDocument!;
     const page = pageDocument.querySelector(
@@ -187,7 +225,7 @@ async function zoomOutToFitASpread(zoomInfo: ZoomInfo): Promise<void> {
     ) as HTMLElement | null;
     // While the Edit tab is changing pages the frame does not hold a page yet. The choice itself
     // is already stored, so all that is lost is the zoom.
-    if (!page) return;
+    if (!page) return zoomInfo.zoom;
     // With the room the grid leaves at its two edges, which together is at least one kSpreadGap
     // (see layoutGrid() in bookGridView.ts).
     const spreadWidth =
@@ -201,5 +239,7 @@ async function zoomOutToFitASpread(zoomInfo: ZoomInfo): Promise<void> {
     );
     if (fittingZoom < zoomInfo.zoom) {
         await postJsonAsync("workspace/zoom", { zoom: fittingZoom });
+        return fittingZoom;
     }
+    return zoomInfo.zoom;
 }

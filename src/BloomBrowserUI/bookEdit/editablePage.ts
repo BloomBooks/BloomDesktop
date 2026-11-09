@@ -512,7 +512,10 @@ $(document).ready(() => {
                 kPageLoadNumber,
             );
             void replayTheClickThatOpenedThisPage();
-            if (isShowingOtherPagesHere()) updatePageLayoutForAllPages();
+            if (isShowingOtherPagesHere()) {
+                tryGetWorkspaceBundleExports()?.noteAllPagesShown();
+                updatePageLayoutForAllPages();
+            }
         });
     }
     // Step 1 of the off-screen page-capture handshake (see __bloomEditablePageReady in the

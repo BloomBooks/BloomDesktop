@@ -45,6 +45,25 @@ export function listenForPageViewModeSetting(listener: () => void): () => void {
     };
 }
 
+// Told each time a page has been shown with the other pages of the book around it.
+const allPagesShownListeners = new Set<() => void>();
+
+/** The page frame calls this once a page is showing with the other pages of the book around it. */
+export function noteAllPagesShown(): void {
+    allPagesShownListeners.forEach((listener) => listener());
+}
+
+/**
+ * Call `listener` each time a page has been shown with the other pages of the book around it.
+ * Returns the function that stops that.
+ */
+export function listenForAllPagesShown(listener: () => void): () => void {
+    allPagesShownListeners.add(listener);
+    return () => {
+        allPagesShownListeners.delete(listener);
+    };
+}
+
 // Send the whole setting to Bloom to keep.
 function savePageViewMode(): void {
     postString("editView/pageViewMode", JSON.stringify(pageViewModeSetting));

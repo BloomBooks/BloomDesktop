@@ -25,6 +25,8 @@ export interface IWorkspaceExports {
     getStoredZoomOfMode(mode: PageViewMode): number | undefined;
     storeZoomOfMode(mode: PageViewMode, zoom: number): void;
     listenForPageViewModeSetting(listener: () => void): () => void;
+    noteAllPagesShown(): void;
+    listenForAllPagesShown(listener: () => void): () => void;
     setToolboxEnabled(enabled: boolean): void;
     toolboxIsShowing(): boolean;
     doWhenToolboxLoaded(
@@ -112,7 +114,9 @@ export { pageFrameIsReadyToShow, showPageLoadingCover };
 import {
     getStoredZoomOfMode,
     isShowingOtherPages,
+    listenForAllPagesShown,
     listenForPageViewModeSetting,
+    noteAllPagesShown,
     storeShowingOtherPages,
     storeZoomOfMode,
     type PageViewMode,
@@ -120,7 +124,9 @@ import {
 export {
     getStoredZoomOfMode,
     isShowingOtherPages,
+    listenForAllPagesShown,
     listenForPageViewModeSetting,
+    noteAllPagesShown,
     storeShowingOtherPages,
     storeZoomOfMode,
 };
@@ -461,6 +467,8 @@ interface WorkspaceBundleApi {
     getStoredZoomOfMode: typeof getStoredZoomOfMode;
     storeZoomOfMode: typeof storeZoomOfMode;
     listenForPageViewModeSetting: typeof listenForPageViewModeSetting;
+    noteAllPagesShown: typeof noteAllPagesShown;
+    listenForAllPagesShown: typeof listenForAllPagesShown;
     showDialog: typeof showDialog;
     closeDialog: typeof closeDialog;
     setToolboxEnabled: typeof setToolboxEnabled;
@@ -518,6 +526,8 @@ window.workspaceBundle = {
     getStoredZoomOfMode,
     storeZoomOfMode,
     listenForPageViewModeSetting,
+    noteAllPagesShown,
+    listenForAllPagesShown,
     showDialog,
     closeDialog,
     setToolboxEnabled,
