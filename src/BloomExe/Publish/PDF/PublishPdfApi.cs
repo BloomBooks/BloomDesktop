@@ -239,8 +239,11 @@ namespace Bloom.Publish.PDF
             var shellArea = shell.RectangleToScreen(shell.ClientRectangle);
             // Start inside Bloom's window, so OnLoad scales by the DPI of the monitor it is on.
             window.Location = shellArea.Location;
+            // When Bloom is narrower than the window, keep its left edge (where the text starts)
+            // on the screen.
+            var screenLeft = Screen.FromControl(shell).WorkingArea.Left;
             window.PlaceAfterSizing(size => new System.Drawing.Point(
-                shellArea.Right - size.Width - shell.LogicalToDeviceUnits(30),
+                Math.Max(screenLeft, shellArea.Right - size.Width - shell.LogicalToDeviceUnits(30)),
                 shellArea.Top + shell.LogicalToDeviceUnits(5)
             ));
             window.FormClosed += (sender, args) =>

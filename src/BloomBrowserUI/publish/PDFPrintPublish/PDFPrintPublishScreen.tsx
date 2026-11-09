@@ -156,7 +156,9 @@ export const PDFPrintPublishScreen = () => {
             // settings for the current page size in a window of its own.
             post("publish/pdf/showPrintInstructions", printNow);
         } else {
-            printNow();
+            // A simple PDF needs none of the booklet settings, so don't leave them showing from
+            // an earlier booklet print.
+            post("publish/pdf/closePrintInstructions", printNow);
         }
     };
 
