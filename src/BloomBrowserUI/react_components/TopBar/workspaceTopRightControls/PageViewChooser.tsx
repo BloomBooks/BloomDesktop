@@ -127,7 +127,8 @@ export const PageViewChooser: React.FunctionComponent = () => {
 type ZoomInfo = { zoom: number; minZoom: number };
 
 // Each view keeps the zoom the user last had in it, so that going back to one page undoes the
-// zooming out that seeing all the pages may have needed. Bloom's own zoom setting is the zoom of
+// zooming out that seeing all the pages may have needed. Going to all pages zooms out further if
+// the zoom kept for it would not fit a spread. Bloom's own zoom setting is the zoom of
 // the view showing now; the zoom of the other view is kept here, across Bloom sessions.
 // Switches run one after another: each reads Bloom's zoom as the switch before it left it, so a
 // quick change of view and back cannot store one view's zoom as the other's.
@@ -150,14 +151,16 @@ async function switchZoomNow(
         .data as ZoomInfo;
     storeZoomOfView(oldView, zoomInfo.zoom);
     const zoomOfNewView = getStoredZoomOfView(newView);
-    if (zoomOfNewView !== undefined) {
-        if (zoomOfNewView !== zoomInfo.zoom) {
-            await postJsonAsync("workspace/topRight/zoom", {
-                zoom: zoomOfNewView,
-            });
-        }
-    } else if (newView === "all") {
-        await zoomOutToFitASpread(zoomInfo);
+    let zoom = zoomInfo.zoom;
+    if (zoomOfNewView !== undefined && zoomOfNewView !== zoom) {
+        await postJsonAsync("workspace/topRight/zoom", {
+            zoom: zoomOfNewView,
+        });
+        zoom = zoomOfNewView;
+    }
+    // The zoom kept for all pages may be too large for a spread of this book, or for this window.
+    if (newView === "all") {
+        await zoomOutToFitASpread({ zoom, minZoom: zoomInfo.minZoom });
     }
 }
 
@@ -186,7 +189,7 @@ function storeZoomOfView(view: PageView, zoom: number): void {
 
 // Seeing all the pages is meant to show at least the whole spread holding the page being edited
 // (two pages side by side, except in calendars and books sized for a screen; see
-// bookGridLayout.ts), so if the page frame is too narrow for it at the current zoom, zoom out until
+// bookGridLayout.ts), so if the page frame is too narrow for it at the given zoom, zoom out until
 // it is not (to a whole step of 10%, and no further than Bloom allows). The full height of the
 // spread does not have to fit.
 async function zoomOutToFitASpread(zoomInfo: ZoomInfo): Promise<void> {
