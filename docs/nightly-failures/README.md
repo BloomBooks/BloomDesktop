@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-11-08 (nightlies through the 2026-11-08 run, 42473322657, have been triaged)
+**Last updated:** 2026-11-09 (nightlies through the 2026-11-09 run, 42616007249, have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -57,11 +57,20 @@ use the `nightly-triage` skill.
   15 ms after it started, with ERR_CONNECTION_FAILED rather than a refused or reset connection.
   The log shows no Vite restart, and the other 145 tests passed. A local stress run (the suite 10
   times, 2 workers, 1,460 tests) did not reproduce it. The cause is unknown.
+- **Failed again 2026-11-09** (run 42616007249), in a different test:
+  `LinkTargetChooser/component-tests/clipboard-paste.uitest.ts` "Paste button pastes URL from
+  clipboard - direct string response", with the same `page.goto` ERR_CONNECTION_FAILED on the
+  test's first navigation, about 40 ms in. The other 145 tests passed.
+- **What the new diagnostics show (first look, 11-09):** this is the first failure since the
+  diagnostics were added. Right after the failure the server was up: a raw TCP connect from Node
+  took 3 ms and an HTTP GET returned 200 in 23 ms. Netstat showed 187 TIME_WAIT, 29 ESTABLISHED
+  and 23 LISTENING connections, so the runner was not short of ports. So the dev server was
+  reachable from Node, but the browser's connection attempt failed. Why the browser failed is
+  still unknown.
 - **Status:** no card or PR. Since 2026-10-27, a failed first navigation also reports a raw TCP
   connect and an HTTP GET to the dev server from Node, and the machine's TCP connections by state
-  (`component-tester/describeConnectionFailure.ts`). That says whether the server was reachable
-  and whether the runner was short of ports. Background: "A component test lost its connection to
-  the dev server" in `src/BloomE2E/AUTOMATION-DEBT.md`.
+  (`component-tester/describeConnectionFailure.ts`). Background: "A component test lost its
+  connection to the dev server" in `src/BloomE2E/AUTOMATION-DEBT.md`.
 
 ## C# upload integration tests: the live service was slow
 
