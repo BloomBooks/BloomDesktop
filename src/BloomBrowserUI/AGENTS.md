@@ -51,7 +51,7 @@ Tests for components under /react_components have a playwright test system based
 
 Don't check for styles in tests as a way to know the status of something. That is fragile. If necessary have components add css classes or whatever that tests can check.
 
-Don't use timeouts in tests; see "No timeouts in tests" in the root `AGENTS.md`, which covers what counts as one.
+Don't use timeouts in tests, that slows things down and is fragile. If a timeout is justified, get my approval and add a comment explaining it.
 
 Unit tests (vitest) must not reach the network. `vitest.setup.ts` refuses every request and fails the test that made it, naming the URL. Mock the call with `vi.mock` of `utils/bloomApi`, replacing just the function the code under test calls (a `bloomApi` helper that calls another one internally is not intercepted, so mock the one the code imports). Don't use `bloomApi`'s `mockReplies` for this: it is global and is never reset between tests.
 

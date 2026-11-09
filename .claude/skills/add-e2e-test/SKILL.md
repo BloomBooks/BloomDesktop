@@ -239,10 +239,7 @@ Rules that hold regardless of the final API:
   clipboard"), so press those keys only when the key press itself is what the test measures.
 - NEVER submit a problem report. The fixture fails the test with gathered detail when
   a "Bloom had a problem" dialog appears; do not loop-dismiss it.
-- Waits are event/state-based (poll an API, await a selector), never fixed sleeps, and use the
-  suite's default deadline: no `{ timeout: … }` on a wait and no `test.setTimeout`, unless the
-  developer has approved it and a comment beside it says why ("No timeouts in tests" in the root
-  `AGENTS.md`).
+- Waits are event/state-based (poll an API, await a selector), never fixed sleeps.
 
 ## A gated feature's books must be tested in the hands of a non-subscriber
 
