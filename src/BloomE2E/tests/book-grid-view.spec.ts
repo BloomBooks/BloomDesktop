@@ -821,6 +821,7 @@ test.describe("showing the other pages of the book", () => {
             .poll(() => savedBook().layoutUpdateLevel, {
                 message:
                     "Choosing All Pages never brought the book's page layout up to date.",
+                timeout: kPageLayoutUpdateTimeout,
             })
             .toBe("1");
         await waitForEditablePage(page);
@@ -837,11 +838,16 @@ test.describe("showing the other pages of the book", () => {
             .poll(() => savedBook(), {
                 message:
                     "After a page size change in All Pages, the book's page layout was never brought up to date.",
+                timeout: kPageLayoutUpdateTimeout,
             })
             .toEqual({ size: "A5Portrait", layoutUpdateLevel: "1" });
         await waitForEditablePage(page);
     });
 });
+
+// How long BL-16893's page layout update may take. It loads every page of the book off-screen, and
+// against the Vite dev server that has taken longer than the suite's 30 seconds for this book.
+const kPageLayoutUpdateTimeout = 120_000;
 
 /**
  * What the saved book records about its page layout: the size its first page is drawn at, and the
