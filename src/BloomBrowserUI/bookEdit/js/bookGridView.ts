@@ -992,8 +992,24 @@ async function replayOpeningClick(): Promise<void> {
     if (!target || !editedPage.contains(target)) return;
     const editable = target.closest(".bloom-editable") as HTMLElement | null;
     // CKEditor puts back the text it took over when it finishes starting, which would wipe out a
-    // cursor placed before then.
-    if (editable) await whenCkEditorIsReady(editable);
+    // cursor placed before then. The page is already showing during that wait, so if the user
+    // clicks or types in the meantime, they have moved on and the old click must not take the
+    // focus back.
+    if (editable) {
+        let userActedMeanwhile = false;
+        const noteUserAction = (event: Event) => {
+            if (event.isTrusted) userActedMeanwhile = true;
+        };
+        document.addEventListener("pointerdown", noteUserAction, true);
+        document.addEventListener("keydown", noteUserAction, true);
+        try {
+            await whenCkEditorIsReady(editable);
+        } finally {
+            document.removeEventListener("pointerdown", noteUserAction, true);
+            document.removeEventListener("keydown", noteUserAction, true);
+        }
+        if (userActedMeanwhile) return;
+    }
     // A real click's events, so the canvas element code selects what was clicked.
     const init = {
         bubbles: true,

@@ -12,6 +12,7 @@ import {
     getWorkspaceBundleExports,
 } from "../../../bookEdit/js/workspaceFrames";
 import { getAsync, postJsonAsync } from "../../../utils/bloomApi";
+import { useMountEffect } from "../../../utils/useMountEffect";
 import { reportError } from "../../../lib/errorHandler";
 import type { PageViewMode } from "../../../bookEdit/js/pageViewModeSetting";
 import {
@@ -30,12 +31,10 @@ export const PageViewChooser: React.FunctionComponent = () => {
         getWorkspaceBundleExports().isShowingOtherPages() ? "all" : "one";
     const [mode, setMode] = React.useState<PageViewMode>(getChosenMode);
     // The choice Bloom kept can arrive after this is first shown.
-    React.useEffect(
-        () =>
-            getWorkspaceBundleExports().listenForPageViewModeSetting(() =>
-                setMode(getChosenMode()),
-            ),
-        [],
+    useMountEffect(() =>
+        getWorkspaceBundleExports().listenForPageViewModeSetting(() =>
+            setMode(getChosenMode()),
+        ),
     );
 
     const choose = (newMode: PageViewMode | null) => {
