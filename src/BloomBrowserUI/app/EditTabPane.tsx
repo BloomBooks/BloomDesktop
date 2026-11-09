@@ -1,19 +1,16 @@
 import * as React from "react";
 import { css } from "@emotion/react";
 import { get } from "../utils/bloomApi";
-import {
-    createPageFrame,
-    numberPageLoad,
-    setToolboxEnabledHandler,
-    takePageViewSettingFromBloom,
-} from "../bookEdit/workspaceRoot";
+import { setToolboxEnabledHandler } from "../bookEdit/workspaceRoot";
+import { createPageFrame, numberPageLoad } from "../bookEdit/js/pageFrame";
+import { takePageViewSettingFromBloom } from "../bookEdit/js/pageViewSetting";
 
 interface IEditFrameSources {
     pageListSrc: string;
     pageSrc: string;
     toolboxSrc: string;
     toolboxIsShowing?: boolean;
-    // The page view setting Bloom keeps for workspaceRoot.ts.
+    // The page view setting Bloom keeps for pageViewSetting.ts.
     pageView: string;
 }
 

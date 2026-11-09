@@ -13,7 +13,7 @@ import {
 } from "../../../bookEdit/js/workspaceFrames";
 import { getAsync, postJsonAsync } from "../../../utils/bloomApi";
 import { reportError } from "../../../lib/errorHandler";
-import type { PageView } from "../../../bookEdit/workspaceRoot";
+import type { PageView } from "../../../bookEdit/js/pageViewSetting";
 import {
     getSpreadShape,
     kSpreadGap,
@@ -24,7 +24,7 @@ const kBorder = "1px solid rgba(0, 0, 0, 0.4)";
 
 // In the Edit tab, chooses between editing one page by itself and seeing all the pages of the book
 // around it. The pages are drawn in the page frame (see bookGridView.ts), so the choice is stored
-// where the next page will find it (workspaceRoot.ts) and handed to the page being edited now.
+// where the next page will find it (pageViewSetting.ts) and handed to the page being edited now.
 export const PageViewChooser: React.FunctionComponent = () => {
     const getChosenView = (): PageView =>
         getWorkspaceBundleExports().isShowingOtherPages() ? "all" : "one";
@@ -137,7 +137,7 @@ type ZoomInfo = { zoom: number; minZoom: number };
 // zooming out that seeing all the pages may have needed. Going to all pages zooms out further if
 // the zoom kept for it would not fit a spread. Bloom's own zoom setting is the zoom of
 // the view showing now; the zoom of the other view is kept with the choice of view, across Bloom
-// sessions (see workspaceRoot.ts).
+// sessions (see pageViewSetting.ts).
 // Switches run one after another: each reads Bloom's zoom as the switch before it left it, so a
 // quick change of view and back cannot store one view's zoom as the other's.
 function switchToZoomOfView(oldView: PageView, newView: PageView): void {

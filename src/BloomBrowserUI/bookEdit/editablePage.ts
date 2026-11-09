@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Which load of the page frame this page is, as the workspace numbered it (see numberPageLoad in
-// workspaceRoot.ts). The page passes it back when it says it is ready to show, because the workspace
+// pageFrame.ts). The page passes it back when it says it is ready to show, because the workspace
 // cannot tell from the window: in One Page the frame is reused, and its window is the same object for
 // the page being left and the page replacing it.
 const kPageLoadNumber = Number(
