@@ -273,13 +273,34 @@ namespace Bloom.Book
             );
             CopyItemToFieldsInPages(dom, "licenseNotes");
             CopyItemToFieldsInPages(dom, "licenseImage", valueAttribute: "src");
-            // The sentence about the original book. Bloom generates it, unless the user has
-            // taken it over, in which case their wording is in the data div under
-            // userOriginalCopyrightAndLicense. If they empty the field, the data div loses the
-            // item and Bloom generates the sentence again. Either way the book's own copy of the
-            // page holds it locked; the editable form exists only in the copy of the page sent
-            // to the editor, and only for one rendering, so that leaving the page or refreshing
-            // it locks the sentence again.
+            ShowOriginalCopyrightNoticeLocked(dom.RawDom, dom, bookData, useOriginalCopyright);
+
+            if (!String.IsNullOrEmpty(bookFolderPath)) //unit tests may not be interested in checking this part
+                UpdateBookLicenseIcon(GetMetadata(dom, bookData), bookFolderPath);
+        }
+
+        /// <summary>
+        /// Write the sentence about the original book into its place on the pages under
+        /// <paramref name="pageOrDom"/>, locked. Bloom generates it, unless the user has taken it
+        /// over, in which case their wording is in the data div under
+        /// userOriginalCopyrightAndLicense. If they empty the field, the data div loses the item
+        /// and Bloom generates the sentence again. Either way the book's own copy of the page
+        /// holds it locked; the editable form exists only in the copy of the page sent to the
+        /// editor, and only for one rendering, so that leaving the page or refreshing it locks
+        /// the sentence again.
+        /// </summary>
+        /// <param name="pageOrDom">The whole book, or the one page just saved from the editor.</param>
+        /// <param name="dom">The whole book, which the generated sentence is worked out from.</param>
+        internal static void ShowOriginalCopyrightNoticeLocked(
+            SafeXmlNode pageOrDom,
+            HtmlDom dom,
+            BookData bookData,
+            bool useOriginalCopyright
+        )
+        {
+            var spots = GetOriginalCopyrightNoticeSpots(pageOrDom).ToList();
+            if (spots.Count == 0)
+                return; // most pages; spare working out the sentence
             var usersOriginalCopyrightNotice = bookData
                 .GetVariableOrNull(kUserOriginalCopyrightAndLicense, "*")
                 ?.Xml;
@@ -300,14 +321,12 @@ namespace Bloom.Book
             {
                 originalCopyrightNotice = GetOriginalCopyrightAndLicenseNotice(bookData, dom);
             }
-            ShowOriginalCopyrightNoticeLocked(
-                dom,
-                originalCopyrightNotice,
-                !string.IsNullOrEmpty(usersOriginalCopyrightNotice)
-            );
-
-            if (!String.IsNullOrEmpty(bookFolderPath)) //unit tests may not be interested in checking this part
-                UpdateBookLicenseIcon(GetMetadata(dom, bookData), bookFolderPath);
+            foreach (var spot in spots)
+                LockOriginalCopyrightNoticeSpot(
+                    spot,
+                    originalCopyrightNotice,
+                    !string.IsNullOrEmpty(usersOriginalCopyrightNotice)
+                );
         }
 
         internal const string kOriginalCopyrightAndLicense = "originalCopyrightAndLicense";
@@ -350,21 +369,24 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Show the sentence about the original book as text the user cannot type in, which is
-        /// how it looks whenever they are not actively editing it, with the hint bubble that
-        /// offers to hand it over. An empty sentence means the line is not there at all.
+        /// True when the page just edited has the unlocked field for the sentence about the
+        /// original book and the user has deleted all its text. Emptying the field is how the
+        /// user hands the sentence back to Bloom, so the save has to reach the data div, which is
+        /// also what puts Bloom's sentence back on the page. The usual test for that, comparing
+        /// the page's data-book values before and after editing, cannot see it: the page as the
+        /// book holds it is locked and has no data-book value for the sentence, and an empty field
+        /// gives none either. This holds on every save while the field stays empty, not just the
+        /// first: a save that does not leave the page still gets the empty field from the browser.
         /// </summary>
-        /// <param name="noticeIsMarkup">True when the sentence is the user's own, which comes
-        /// out of the data div as markup and goes back in as it is. The sentence Bloom generates
-        /// instead goes through the filter that lets only a few tags through.</param>
-        private static void ShowOriginalCopyrightNoticeLocked(
-            HtmlDom dom,
-            string notice,
-            bool noticeIsMarkup
-        )
+        internal static bool UserEmptiedOriginalCopyrightNotice(SafeXmlNode page)
         {
-            foreach (var spot in GetOriginalCopyrightNoticeSpots(dom.RawDom))
-                LockOriginalCopyrightNoticeSpot(spot, notice, noticeIsMarkup);
+            var editable = page.SelectSingleNode(
+                ".//div[@data-book='"
+                    + kUserOriginalCopyrightAndLicense
+                    + "' and @lang='*'][not(ancestor::div[@id='bloomDataDiv'])]"
+            );
+            return editable != null
+                && string.IsNullOrWhiteSpace(editable.InnerText.Replace(' ', ' '));
         }
 
         /// <summary>
