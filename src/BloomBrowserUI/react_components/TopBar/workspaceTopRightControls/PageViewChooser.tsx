@@ -13,7 +13,7 @@ import {
 } from "../../../bookEdit/js/workspaceFrames";
 import { getAsync, postJsonAsync } from "../../../utils/bloomApi";
 import { reportError } from "../../../lib/errorHandler";
-import type { PageView } from "../../../bookEdit/js/pageViewSetting";
+import type { PageViewMode } from "../../../bookEdit/js/pageViewModeSetting";
 import {
     getSpreadShape,
     kSpreadGap,
@@ -24,35 +24,35 @@ const kBorder = "1px solid rgba(0, 0, 0, 0.4)";
 
 // In the Edit tab, chooses between editing one page by itself and seeing all the pages of the book
 // around it. The pages are drawn in the page frame (see bookGridView.ts), so the choice is stored
-// where the next page will find it (pageViewSetting.ts) and handed to the page being edited now.
+// where the next page will find it (pageViewModeSetting.ts) and handed to the page being edited now.
 export const PageViewChooser: React.FunctionComponent = () => {
-    const getChosenView = (): PageView =>
+    const getChosenMode = (): PageViewMode =>
         getWorkspaceBundleExports().isShowingOtherPages() ? "all" : "one";
-    const [view, setView] = React.useState<PageView>(getChosenView);
+    const [mode, setMode] = React.useState<PageViewMode>(getChosenMode);
     // The choice Bloom kept can arrive after this is first shown.
     React.useEffect(
         () =>
-            getWorkspaceBundleExports().listenForPageViewSetting(() =>
-                setView(getChosenView()),
+            getWorkspaceBundleExports().listenForPageViewModeSetting(() =>
+                setMode(getChosenMode()),
             ),
         [],
     );
 
-    const choose = (newView: PageView | null) => {
+    const choose = (newMode: PageViewMode | null) => {
         // Clicking the segment that is already chosen gives null; the choice stays as it is.
-        if (!newView || newView === view) return;
-        setView(newView);
-        getWorkspaceBundleExports().storeShowingOtherPages(newView === "all");
-        getEditablePageBundleExports()?.setShowingOtherPages(newView === "all");
-        switchToZoomOfView(view, newView);
+        if (!newMode || newMode === mode) return;
+        setMode(newMode);
+        getWorkspaceBundleExports().storeShowingOtherPages(newMode === "all");
+        getEditablePageBundleExports()?.setShowingOtherPages(newMode === "all");
+        switchToZoomOfMode(mode, newMode);
     };
 
     return (
         <ToggleButtonGroup
             exclusive
             size="small"
-            value={view}
-            onChange={(_event, newView: PageView | null) => choose(newView)}
+            value={mode}
+            onChange={(_event, newMode: PageViewMode | null) => choose(newMode)}
             data-testid="page-view-control"
             css={css`
                 height: 20px;
@@ -133,42 +133,44 @@ export const PageViewChooser: React.FunctionComponent = () => {
 
 type ZoomInfo = { zoom: number; minZoom: number };
 
-// Each view keeps the zoom the user last had in it, so that going back to one page undoes the
+// Each page view mode keeps the zoom the user last had in it, so that going back to one page undoes the
 // zooming out that seeing all the pages may have needed. Going to all pages zooms out further if
 // the zoom kept for it would not fit a spread. Bloom's own zoom setting is the zoom of
-// the view showing now; the zoom of the other view is kept with the choice of view, across Bloom
-// sessions (see pageViewSetting.ts).
+// the mode showing now; the zoom of the other mode is kept with the choice of mode, across Bloom
+// sessions (see pageViewModeSetting.ts).
 // Switches run one after another: each reads Bloom's zoom as the switch before it left it, so a
-// quick change of view and back cannot store one view's zoom as the other's.
-function switchToZoomOfView(oldView: PageView, newView: PageView): void {
+// quick change of mode and back cannot store one mode's zoom as the other's.
+function switchToZoomOfMode(
+    oldMode: PageViewMode,
+    newMode: PageViewMode,
+): void {
     // A switch that fails is reported, and the switches after it still run.
     zoomSwitchesDone = zoomSwitchesDone
-        .then(() => switchZoomNow(oldView, newView))
+        .then(() => switchZoomNow(oldMode, newMode))
         .catch((e: Error) => reportError(e.message, e.stack));
 }
 
 // Settles when every zoom switch asked for so far has reached Bloom.
 let zoomSwitchesDone: Promise<void> = Promise.resolve();
 
-// Store the zoom of the view being left, and give Bloom the zoom of the view being shown.
+// Store the zoom of the mode being left, and give Bloom the zoom of the mode being shown.
 async function switchZoomNow(
-    oldView: PageView,
-    newView: PageView,
+    oldMode: PageViewMode,
+    newMode: PageViewMode,
 ): Promise<void> {
-    const zoomInfo = (await getAsync("workspace/topRight/zoom"))
-        .data as ZoomInfo;
-    getWorkspaceBundleExports().storeZoomOfView(oldView, zoomInfo.zoom);
-    const zoomOfNewView =
-        getWorkspaceBundleExports().getStoredZoomOfView(newView);
+    const zoomInfo = (await getAsync("workspace/zoom")).data as ZoomInfo;
+    getWorkspaceBundleExports().storeZoomOfMode(oldMode, zoomInfo.zoom);
+    const zoomOfNewMode =
+        getWorkspaceBundleExports().getStoredZoomOfMode(newMode);
     let zoom = zoomInfo.zoom;
-    if (zoomOfNewView !== undefined && zoomOfNewView !== zoom) {
-        await postJsonAsync("workspace/topRight/zoom", {
-            zoom: zoomOfNewView,
+    if (zoomOfNewMode !== undefined && zoomOfNewMode !== zoom) {
+        await postJsonAsync("workspace/zoom", {
+            zoom: zoomOfNewMode,
         });
-        zoom = zoomOfNewView;
+        zoom = zoomOfNewMode;
     }
     // The zoom kept for all pages may be too large for a spread of this book, or for this window.
-    if (newView === "all") {
+    if (newMode === "all") {
         await zoomOutToFitASpread({ zoom, minZoom: zoomInfo.minZoom });
     }
 }
@@ -199,6 +201,6 @@ async function zoomOutToFitASpread(zoomInfo: ZoomInfo): Promise<void> {
         Math.floor((availableWidth / spreadWidth) * 10) * 10,
     );
     if (fittingZoom < zoomInfo.zoom) {
-        await postJsonAsync("workspace/topRight/zoom", { zoom: fittingZoom });
+        await postJsonAsync("workspace/zoom", { zoom: fittingZoom });
     }
 }

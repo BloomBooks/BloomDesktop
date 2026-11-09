@@ -22,9 +22,9 @@ export interface IWorkspaceExports {
     showPageLoadingCover(): void;
     isShowingOtherPages(): boolean;
     storeShowingOtherPages(show: boolean): void;
-    getStoredZoomOfView(view: PageView): number | undefined;
-    storeZoomOfView(view: PageView, zoom: number): void;
-    listenForPageViewSetting(listener: () => void): () => void;
+    getStoredZoomOfMode(mode: PageViewMode): number | undefined;
+    storeZoomOfMode(mode: PageViewMode, zoom: number): void;
+    listenForPageViewModeSetting(listener: () => void): () => void;
     setToolboxEnabled(enabled: boolean): void;
     toolboxIsShowing(): boolean;
     doWhenToolboxLoaded(
@@ -110,19 +110,19 @@ import {
 } from "./js/pageFrame";
 export { pageFrameIsReadyToShow, showPageLoadingCover };
 import {
-    getStoredZoomOfView,
+    getStoredZoomOfMode,
     isShowingOtherPages,
-    listenForPageViewSetting,
+    listenForPageViewModeSetting,
     storeShowingOtherPages,
-    storeZoomOfView,
-    type PageView,
-} from "./js/pageViewSetting";
+    storeZoomOfMode,
+    type PageViewMode,
+} from "./js/pageViewModeSetting";
 export {
-    getStoredZoomOfView,
+    getStoredZoomOfMode,
     isShowingOtherPages,
-    listenForPageViewSetting,
+    listenForPageViewModeSetting,
     storeShowingOtherPages,
-    storeZoomOfView,
+    storeZoomOfMode,
 };
 
 import "../lib/errorHandler";
@@ -458,9 +458,9 @@ interface WorkspaceBundleApi {
     showPageLoadingCover: typeof showPageLoadingCover;
     isShowingOtherPages: typeof isShowingOtherPages;
     storeShowingOtherPages: typeof storeShowingOtherPages;
-    getStoredZoomOfView: typeof getStoredZoomOfView;
-    storeZoomOfView: typeof storeZoomOfView;
-    listenForPageViewSetting: typeof listenForPageViewSetting;
+    getStoredZoomOfMode: typeof getStoredZoomOfMode;
+    storeZoomOfMode: typeof storeZoomOfMode;
+    listenForPageViewModeSetting: typeof listenForPageViewModeSetting;
     showDialog: typeof showDialog;
     closeDialog: typeof closeDialog;
     setToolboxEnabled: typeof setToolboxEnabled;
@@ -515,9 +515,9 @@ window.workspaceBundle = {
     showPageLoadingCover,
     isShowingOtherPages,
     storeShowingOtherPages,
-    getStoredZoomOfView,
-    storeZoomOfView,
-    listenForPageViewSetting,
+    getStoredZoomOfMode,
+    storeZoomOfMode,
+    listenForPageViewModeSetting,
     showDialog,
     closeDialog,
     setToolboxEnabled,

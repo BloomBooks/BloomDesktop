@@ -71,7 +71,7 @@ export async function switchTab(
     await waitForActiveTab(page, tab, timeoutMs);
 }
 
-/** What GET workspace/topRight/zoom replies with: the Edit tab's zoom, as a percentage. */
+/** What GET workspace/zoom replies with: the Edit tab's zoom, as a percentage. */
 export interface IZoomInfo {
     zoom: number;
     minZoom: number;
@@ -82,7 +82,7 @@ export interface IZoomInfo {
 
 /** Ask Bloom what the Edit tab's zoom is, and the range it allows. */
 export async function getZoom(page: Page): Promise<IZoomInfo> {
-    return apiGetJson<IZoomInfo>(page, "workspace/topRight/zoom");
+    return apiGetJson<IZoomInfo>(page, "workspace/zoom");
 }
 
 /**
@@ -105,7 +105,7 @@ export async function setZoom(page: Page, percent: number): Promise<void> {
         );
     await apiPost(
         page,
-        "workspace/topRight/zoom",
+        "workspace/zoom",
         JSON.stringify({ zoom: percent }),
         "application/json",
     );

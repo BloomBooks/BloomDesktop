@@ -6,7 +6,7 @@
 // module: an import would give that frame its own load counter, which never matches the one here.
 
 import { kPageLoadNumberAttribute } from "./workspaceFrames";
-import { isShowingOtherPages } from "./pageViewSetting";
+import { isShowingOtherPages } from "./pageViewModeSetting";
 
 const kPageFrameId = "page";
 const kOutgoingPageFrameId = "page-outgoing";

@@ -3,22 +3,22 @@ import { css } from "@emotion/react";
 import { get } from "../utils/bloomApi";
 import { setToolboxEnabledHandler } from "../bookEdit/workspaceRoot";
 import { createPageFrame, numberPageLoad } from "../bookEdit/js/pageFrame";
-import { takePageViewSettingFromBloom } from "../bookEdit/js/pageViewSetting";
+import { takePageViewModeSettingFromBloom } from "../bookEdit/js/pageViewModeSetting";
 
 interface IEditFrameSources {
     pageListSrc: string;
     pageSrc: string;
     toolboxSrc: string;
     toolboxIsShowing?: boolean;
-    // The page view setting Bloom keeps for pageViewSetting.ts.
-    pageView: string;
+    // The page view mode setting Bloom keeps for pageViewModeSetting.ts.
+    pageViewMode: string;
 }
 
 const defaultEditFrameSources: IEditFrameSources = {
     pageListSrc: "about:blank",
     pageSrc: "about:blank",
     toolboxSrc: "/bloom/toolboxContent",
-    pageView: "",
+    pageViewMode: "",
 };
 
 export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
@@ -42,7 +42,7 @@ export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
                     ? (JSON.parse(result.data) as IEditFrameSources)
                     : (result.data as IEditFrameSources);
             // Before the page frame is created, since the page reads it as it loads.
-            takePageViewSettingFromBloom(data.pageView);
+            takePageViewModeSettingFromBloom(data.pageViewMode);
             setSources(data);
             setToolboxIsShowing(data.toolboxIsShowing ?? true);
         });

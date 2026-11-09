@@ -17,7 +17,7 @@ export const ZoomControl: React.FunctionComponent = () => {
 
     // Fetch zoom info once on initial load.
     useEffect(() => {
-        get("workspace/topRight/zoom", (result) => {
+        get("workspace/zoom", (result) => {
             const zoomInfo = result.data as IZoomInfo;
             setZoomInfo(zoomInfo);
         });
@@ -39,7 +39,7 @@ export const ZoomControl: React.FunctionComponent = () => {
         }
         const clamped = clampZoom(zoomInfo.zoom + delta, zoomInfo);
         setZoomInfo({ ...zoomInfo, zoom: clamped });
-        postJson("workspace/topRight/zoom", { zoom: clamped });
+        postJson("workspace/zoom", { zoom: clamped });
     };
 
     if (!zoomInfo || !zoomInfo.zoomEnabled) {
