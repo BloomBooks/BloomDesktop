@@ -108,6 +108,8 @@ export const PDFPrintPublishScreen = () => {
         <SettingsPanel>
             <PDFPrintFeaturesGroup
                 onChange={(newMode: string) => {
+                    // Print instructions from an earlier print are for the old mode's PDF.
+                    post("publish/pdf/closePrintInstructions");
                     setIsProgressDialogOpen(allowPublishing);
                     setBookletMode(newMode);
                 }}
@@ -156,9 +158,7 @@ export const PDFPrintPublishScreen = () => {
             // settings for the current page size in a window of its own.
             post("publish/pdf/showPrintInstructions", printNow);
         } else {
-            // A simple PDF needs none of the booklet settings, so don't leave them showing from
-            // an earlier booklet print.
-            post("publish/pdf/closePrintInstructions", printNow);
+            printNow();
         }
     };
 
