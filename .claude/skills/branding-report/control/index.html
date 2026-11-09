@@ -649,8 +649,15 @@
                 try {
                     const s = await (await fetch("/api/state")).json();
                     S = s;
-                    if (!selInit && s.sessionReady) {
-                        // adopt server defaults once (pages=all, layouts=current)
+                    // Adopt the server's selection on first load and whenever it changes, so a
+                    // selection made through /api/selection (e.g. by an agent) shows here too.
+                    // Skipped while our own clicks are in flight, so they aren't reverted.
+                    if (
+                        s.sessionReady &&
+                        pendingPosts === 0 &&
+                        (!selInit || s.version > lastVersion)
+                    ) {
+                        sel.brandings = new Set(s.selection.brandings);
                         sel.pages = new Set(s.selection.pages);
                         sel.layouts = new Set(s.selection.layouts);
                         selInit = true;
@@ -667,7 +674,10 @@
                 setTimeout(poll, 900);
             }
 
+            // count of selection POSTs not yet answered; poll() won't overwrite local picks meanwhile
+            let pendingPosts = 0;
             function postSelection() {
+                pendingPosts++;
                 fetch("/api/selection", {
                     method: "POST",
                     headers: { "Content-Type": "text/plain" },
@@ -682,7 +692,8 @@
                         S = s;
                         lastVersion = s.version;
                         renderAll();
-                    });
+                    })
+                    .finally(() => pendingPosts--);
             }
 
             function renderAll() {
