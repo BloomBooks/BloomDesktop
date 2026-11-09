@@ -13,13 +13,11 @@ import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { darkTheme } from "../../bloomMaterialUITheme";
 import { useL10n } from "../../react_components/l10nHooks";
 import Button from "@mui/material/Button";
-import { get, post, useApiBoolean } from "../../utils/bloomApi";
+import { post, useApiBoolean } from "../../utils/bloomApi";
 import { ProgressDialog } from "../../react_components/Progress/ProgressDialog";
 import HelpLink from "../../react_components/helpLink";
 import { RequiresSubscriptionDialog } from "../../react_components/requiresSubscription";
-import { kBloomBlue } from "../../bloomMaterialUITheme";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import CloseIcon from "@mui/icons-material/Close";
+import { useMountEffect } from "../../utils/useMountEffect";
 
 // The common behavior of the Print and Save buttons.
 // There is probably some way to get this look out of BloomButton,
@@ -57,9 +55,6 @@ const PrintSaveButton: React.FunctionComponent<{
 export const PDFPrintPublishScreen = () => {
     const [path, setPath] = useState("");
     const [bookletMode, setBookletMode] = useState("");
-    const [helpVisible, setHelpVisible] = useState(false);
-    const [bookletPrintHelp, setBookletPrintHelp] = useState([""]);
-    const [bookletPrintNote, setBookletPrintNote] = useState("");
     // We need a ref to the real DOM object of the iframe that holds the print preview
     // so we can actually tell it to print.
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -77,35 +72,6 @@ export const PDFPrintPublishScreen = () => {
 
     const [isProgressDialogOpen, setIsProgressDialogOpen] = useState(false);
 
-    const settingsHelp = bookletPrintHelp?.map((help, index) => (
-        <p
-            key={index}
-            css={css`
-                margin-block-start: 0px;
-                margin-block-end: 2px;
-            `}
-        >
-            {help}
-        </p>
-    ));
-    const settingsNote = bookletPrintNote ? (
-        <p
-            css={css`
-                margin-block-start: 0px;
-                margin-block-end: 2px;
-                column-span: all;
-            `}
-        >
-            {bookletPrintNote}
-        </p>
-    ) : (
-        ""
-    );
-
-    const helpHeader = useL10n(
-        "Here are the settings you need for printing this booklet:",
-        "PublishTab.PDF.Booklet.HelpHeader",
-    );
     const mainPanel = (
         <React.Fragment>
             <PreviewPanel
@@ -169,9 +135,14 @@ export const PDFPrintPublishScreen = () => {
         </SettingsPanel>
     );
 
+    // If the user leaves this screen while the print instructions window is open, close it.
+    useMountEffect(() => () => post("publish/pdf/closePrintInstructions"));
+
     const printNow = () => {
         if (iframeRef.current) {
-            setHelpVisible(bookletMode === "cover" || bookletMode === "pages");
+            // In WebView2 this returns at once, while the print dialog is still open, and nothing
+            // (not even afterprint) tells us when the dialog closes. So the print instructions
+            // window stays until the user closes it, prints again, or leaves this screen.
             iframeRef.current.contentWindow?.print();
             // Unfortunately, we have no way to know whether the user really
             // printed, or canceled in the browser print dialog.
@@ -180,13 +151,13 @@ export const PDFPrintPublishScreen = () => {
     };
 
     const handlePrint = () => {
-        get("publish/pdf/printSettingsHelp", (response) => {
-            // This causes the localized instructions to be displayed for
-            // the current page size.
-            setBookletPrintHelp(response.data.helps);
-            setBookletPrintNote(response.data.note);
+        if (bookletMode === "cover" || bookletMode === "pages") {
+            // The print dialog covers this whole page, so Bloom shows the localized
+            // settings for the current page size in a window of its own.
+            post("publish/pdf/showPrintInstructions", printNow);
+        } else {
             printNow();
-        });
+        }
     };
 
     const rightSideControls = (
@@ -210,58 +181,9 @@ export const PDFPrintPublishScreen = () => {
         </React.Fragment>
     );
 
-    const bottomBanner = (
-        <div
-            css={css`
-                display: ${helpVisible ? "block" : "none"};
-                background-color: ${kBloomBlue};
-                color: white;
-                position: sticky;
-                border-radius: 4px;
-            `}
-        >
-            <div
-                css={css`
-                    font-weight: 600;
-                    padding-top: 5px;
-                    padding-left: 15px;
-                `}
-            >
-                <InfoOutlinedIcon
-                    css={css`
-                        padding-right: 5px;
-                        position: relative;
-                        top: 4px;
-                    `}
-                />
-                {helpHeader}
-            </div>
-            <CloseIcon
-                css={css`
-                    position: absolute;
-                    top: 5px;
-                    right: 5px;
-                `}
-                onClick={() => setHelpVisible(false)}
-            />
-            <div
-                css={css`
-                    column-count: 2;
-                    padding-left: 20px;
-                    padding-top: 10px;
-                    padding-bottom: 10px;
-                `}
-            >
-                {settingsHelp}
-                {settingsNote}
-            </div>
-        </div>
-    );
-
     return (
         <React.Fragment>
             <div
-                onClick={() => setHelpVisible(false)}
                 css={css`
                     height: 100%;
                 `}
@@ -271,7 +193,6 @@ export const PDFPrintPublishScreen = () => {
                     bannerTitleL10nId="PublishTab.PdfPrint.BannerTitle"
                     bannerRightSideControls={rightSideControls}
                     optionsPanelContents={optionsPanel}
-                    bottomBanner={bottomBanner}
                 >
                     {mainPanel}
                 </PublishScreenTemplate>

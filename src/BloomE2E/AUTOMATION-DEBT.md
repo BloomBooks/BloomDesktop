@@ -854,3 +854,24 @@ clipboard with `copyToClipboard` when the copy is not what it measures. Fix dire
 `copyFromSelection` helper that sends the page a copy event and stores what the page put in its
 clipboardData on Bloom's clipboard; and converting the two specs above.
 (Found 2026-11-02 while automating BL-17014.)
+
+## The browser's print dialog is reachable only over UI Automation
+
+The PDF & Print screen's Print button opens the browser's own print preview over the whole
+WebView2. CDP does not see it: it is not a page target, a CDP screenshot shows the screen beneath
+it, and keys sent over CDP do not reach it. While it is open, the shell document beneath it takes no
+clicks either (a workspace tab click never lands). So `helpers/pdfPrint.ts` finds the dialog, and
+presses its Cancel button, over Windows UI Automation, as the button with the class name `cancel`
+inside Bloom's window.
+
+Two things a test cannot check at all:
+
+- **When the print dialog closes.** In WebView2, `print()` on the PDF iframe returns at once, and
+  neither `beforeprint` nor `afterprint` fires, on the iframe or on the page. Bloom cannot tell when
+  the dialog closes, so neither can a test that asks Bloom.
+- **What the dialog covers.** Whether the print instructions window sits clear of the dialog's
+  settings and buttons is checked by eye, from an OS screen capture.
+
+Fix direction: none from Bloom's side short of printing through `CoreWebView2.PrintAsync` with its
+settings chosen in code, which would replace the dialog. (Found 2026-11-09 while automating
+BL-16179.)

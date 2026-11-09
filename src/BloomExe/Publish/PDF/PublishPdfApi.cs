@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.MiscUI;
 using L10NSharp;
 using SIL.Reporting;
 using Application = System.Windows.Forms.Application;
@@ -53,8 +54,17 @@ namespace Bloom.Publish.PDF
             apiHandler.RegisterEndpointHandler(kApiUrlPart + "cancel", HandleCancel, true);
             apiHandler.RegisterEndpointHandler(kApiUrlPart + "pages", HandleCreatePagesPdf, true);
             apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "printSettingsHelp",
-                HandlePrintSettingsHelp,
+                kApiUrlPart + "showPrintInstructions",
+                HandleShowPrintInstructions,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "closePrintInstructions",
+                request =>
+                {
+                    ClosePrintInstructions();
+                    request.PostSucceeded();
+                },
                 true
             );
             apiHandler.RegisterEndpointHandler(kApiUrlPart + "save", HandleSavePdf, true);
@@ -194,7 +204,65 @@ namespace Bloom.Publish.PDF
             request.PostSucceeded();
         }
 
-        private void HandlePrintSettingsHelp(ApiRequest request)
+        // The window showing the booklet print settings while the print dialog is open, if any.
+        private ReactDialog _printInstructionsWindow;
+
+        /// <summary>
+        /// Open a small window showing the print settings this booklet needs. It has to be a
+        /// window of its own: the browser's print dialog covers the whole of the WebView2 that
+        /// asked to print, so nothing in that page can be seen while it is open. The window is
+        /// owned by the Shell, so it stays above Bloom (print dialog included) without floating
+        /// over other programs. It goes at the top right of Bloom's window, where it covers
+        /// neither the print dialog's settings (on the left) nor its buttons (at the bottom).
+        /// The user can drag it or close it; otherwise it stays until they print again or leave
+        /// the PDF &amp; Print screen, since nothing tells us when the print dialog closes.
+        /// </summary>
+        private void HandleShowPrintInstructions(ApiRequest request)
+        {
+            ClosePrintInstructions();
+            var shell = Application.OpenForms.Cast<Form>().First(f => f is Shell);
+            var window = new ReactDialog(
+                "printInstructionsBundle",
+                GetPrintSettingsHelp(),
+                LocalizationManager.GetString("PublishTab.PrintButton", "Print...")
+            );
+            // A normal caption, so it can be dragged and has a full-size close button.
+            window.FormBorderStyle = FormBorderStyle.FixedDialog;
+            window.ControlBox = true;
+            window.MinimizeBox = false;
+            window.MaximizeBox = false;
+            window.ShowIcon = false;
+            window.ShowWithoutTakingFocus = true;
+            window.SetScaledSize(460, 190);
+            var shellArea = shell.RectangleToScreen(shell.ClientRectangle);
+            // Start inside Bloom's window, so OnLoad scales by the DPI of the monitor it is on.
+            window.Location = shellArea.Location;
+            window.PlaceAfterSizing(size => new System.Drawing.Point(
+                shellArea.Right - size.Width - shell.LogicalToDeviceUnits(30),
+                shellArea.Top + shell.LogicalToDeviceUnits(5)
+            ));
+            window.FormClosed += (sender, args) =>
+            {
+                if (_printInstructionsWindow == sender)
+                    _printInstructionsWindow = null;
+            };
+            _printInstructionsWindow = window;
+            window.Show(shell);
+            request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// Close the print instructions window, if it is open.
+        /// </summary>
+        private void ClosePrintInstructions()
+        {
+            _printInstructionsWindow?.Close();
+            _printInstructionsWindow = null;
+        }
+
+        // The localized print settings for the current book's page size: 'helps' (one string per
+        // setting, missing for a size not recommended for booklets) and 'note'.
+        private dynamic GetPrintSettingsHelp()
         {
             var needA4Paper = false;
             var needLandscape = false;
@@ -294,7 +362,7 @@ namespace Bloom.Publish.PDF
                     "4. More settings > Scale: \"Actual size\""
                 );
             }
-            request.ReplyWithJson(result);
+            return result;
         }
 
         private void HandlePrintAnalytics(ApiRequest request)

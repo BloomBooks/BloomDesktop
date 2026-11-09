@@ -25,7 +25,14 @@ namespace Bloom.MiscUI
         // dialog must not take the keyboard from whatever the person there is doing, the same
         // rule Shell and SplashScreen follow. Whatever drives the dialog does so over CDP, which
         // needs no focus.
-        protected override bool ShowWithoutActivation => Program.StartupDontDisturb;
+        protected override bool ShowWithoutActivation =>
+            Program.StartupDontDisturb || ShowWithoutTakingFocus;
+
+        /// <summary>
+        /// Set this before showing a window that sits beside some other UI the user is working
+        /// in (rather than asking for their attention), so it never takes the keyboard from it.
+        /// </summary>
+        public bool ShowWithoutTakingFocus { get; set; }
 
         private static readonly List<ReactDialog> _activeDialogs = new List<ReactDialog>();
 
@@ -58,6 +65,17 @@ namespace Bloom.MiscUI
         private int _desiredLogicalWidth = 0;
         private int _desiredLogicalHeight = 0;
         private System.Drawing.Rectangle? _centerWithin;
+        private Func<System.Drawing.Size, System.Drawing.Point> _placeAfterSizing;
+
+        /// <summary>
+        /// Open the dialog where this function says, given the dialog's real (DPI-scaled) size.
+        /// Like CenterWithin, the placing happens in OnLoad, after SetScaledSize's size is applied.
+        /// </summary>
+        public void PlaceAfterSizing(Func<System.Drawing.Size, System.Drawing.Point> getLocation)
+        {
+            StartPosition = FormStartPosition.Manual;
+            _placeAfterSizing = getLocation;
+        }
 
         /// <summary>
         /// Open the dialog centered in this screen area (a monitor's working area, say) rather
@@ -93,6 +111,8 @@ namespace Bloom.MiscUI
                     area.Top + (area.Height - Height) / 2
                 );
             }
+            if (_placeAfterSizing != null)
+                Location = _placeAfterSizing(Size);
         }
 
         public static void CloseCurrentModal(string labelOfUiElementUsedToCloseTheDialog = null)
