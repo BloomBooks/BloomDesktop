@@ -23,11 +23,15 @@ vi.mock("../../react_components/featureStatus", () => ({
 }));
 // There is no toolbox frame in these tests. A test that needs the reader tools to have a markup
 // tool selected sets readerToolsHandleUndoKeys.
-const toolboxStub = vi.hoisted(() => ({ readerToolsHandleUndoKeys: false }));
+const toolboxStub = vi.hoisted(() => ({
+    readerToolsHandleUndoKeys: false,
+    restartReaderToolsHistoryIn: vi.fn(),
+}));
 vi.mock("./workspaceFrames", async (importOriginal) => ({
     ...(await importOriginal<typeof import("./workspaceFrames")>()),
     getToolboxBundleExports: () => ({
         readerToolsHandleUndoKeys: () => toolboxStub.readerToolsHandleUndoKeys,
+        restartReaderToolsHistoryIn: toolboxStub.restartReaderToolsHistoryIn,
     }),
 }));
 // Unit tests must not reach the network (see vitest.setup.ts). The image menu asks Bloom for the
@@ -67,6 +71,7 @@ import {
     kInlineImageRightClass,
     kInlineImageSelectedClass,
     kInlineImageWidthVar,
+    InlineImageDock,
     prepareInlineImageUndo,
     setInlineImageDock,
     setupInlineImages,
@@ -82,7 +87,7 @@ import {
     computeBlockContentBox,
     computeInlineImageDragScrollLayoutPx,
     shouldRevertInlineImageMove,
-    computeInlineImageClusterIndex,
+    computeInlineImageFloatOrder,
     computeInlineImageDock,
     computeInlineImageWidthPercent,
     computeInlineImageMovedCrop,
@@ -571,14 +576,48 @@ describe("inlineImageInteractions", () => {
         });
     });
 
-    describe("computeInlineImageClusterIndex", () => {
-        it("counts how many neighbors sit at or above the target", () => {
-            expect(computeInlineImageClusterIndex(50, [])).toBe(0);
-            expect(computeInlineImageClusterIndex(50, [100, 300])).toBe(0);
-            expect(computeInlineImageClusterIndex(150, [100, 300])).toBe(1);
-            expect(computeInlineImageClusterIndex(500, [100, 300])).toBe(2);
-            // When two tops are equal, the image goes after the one already at that height.
-            expect(computeInlineImageClusterIndex(100, [100, 300])).toBe(1);
+    describe("computeInlineImageFloatOrder", () => {
+        const right = (top: number, height = 100) => ({
+            dock: kInlineImageRightClass as InlineImageDock,
+            wantedTopViewportPx: top,
+            heightWithMarginViewportPx: height,
+        });
+        const left = (top: number, height = 100) => ({
+            dock: kInlineImageLeftClass as InlineImageDock,
+            wantedTopViewportPx: top,
+            heightWithMarginViewportPx: height,
+        });
+        const middle = (top: number, height = 100) => ({
+            dock: kInlineImageMiddleClass as InlineImageDock,
+            wantedTopViewportPx: top,
+            heightWithMarginViewportPx: height,
+        });
+
+        it("orders images that are not in each other's way from the top down", () => {
+            expect(
+                computeInlineImageFloatOrder([left(300), right(0), right(150)]),
+            ).toEqual([1, 2, 0]);
+        });
+
+        // Steve's case: the upper right picture is dragged down to 120, onto the one below it at
+        // 150, which has to move down below the dragged one's bottom (120 + 100). The left picture
+        // wants 200, lower than the second right picture's top. Ordered by wanted top it would
+        // come after the pushed picture and be pushed down to 220 with it.
+        it("puts a picture on the other side ahead of a picture that is pushed below it", () => {
+            const floats = [right(120), right(150), left(200)];
+            // sanity check: the push reaches past the left picture's top
+            expect(floats[2].wantedTopViewportPx).toBeLessThan(120 + 100);
+            expect(computeInlineImageFloatOrder(floats)).toEqual([0, 2, 1]);
+        });
+
+        it("keeps the pictures below a middle band after it, on either side", () => {
+            expect(
+                computeInlineImageFloatOrder([
+                    left(120),
+                    middle(50),
+                    right(10),
+                ]),
+            ).toEqual([2, 1, 0]);
         });
     });
 
@@ -1708,6 +1747,23 @@ describe("inlineImageInteractions", () => {
             } finally {
                 toolboxStub.readerToolsHandleUndoKeys = false;
             }
+        });
+
+        // The reader tools' Ctrl+Z restores a snapshot of one block's HTML, pictures included, so
+        // a snapshot from before a picture change would put the old picture back in one language.
+        it("starts the reader tools' history again after a picture change", () => {
+            setupInlineImageInteractions(getTestRoot());
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            const img = wrapper.querySelector("img") as HTMLElement;
+            toolboxStub.restartReaderToolsHistoryIn.mockClear();
+
+            img.setAttribute("src", "flower.jpg");
+            inlineImagePictureChanged(img);
+
+            expect(
+                toolboxStub.restartReaderToolsHistoryIn,
+            ).toHaveBeenCalledWith(group);
         });
     });
 

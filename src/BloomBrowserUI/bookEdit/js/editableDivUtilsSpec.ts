@@ -227,6 +227,35 @@ describe("EditableDivUtils Tests", () => {
         expect(div.innerHTML).toEqual(ckEditorData);
     });
 
+    // The reader tools run doCkEditorCleanup whenever the text loses focus, which right-clicking
+    // an inline image does, and saving the page runs it too. The image's menu and toolbar hold
+    // the wrapper element, and CKEditor's data has the src the img had when the page loaded.
+    it("doCkEditorCleanup keeps the live inline image wrappers, with their current src", () => {
+        const div = document.createElement("div");
+        document.body.appendChild(div);
+        div.innerHTML =
+            '<div class="bloom-inlineImage bloom-inlineImageRight" contenteditable="false" data-bloom-inline-image-id="i1"><img src="new.png" data-cke-saved-src="new.png"></div><p>Cat​</p>';
+        const wrapper = div.querySelector(".bloom-inlineImage") as HTMLElement;
+        const ckEditorData =
+            '<div class="bloom-inlineImage bloom-inlineImageRight" contenteditable="false" data-bloom-inline-image-id="i1"><img src="old.png"></div><p>Cat</p>';
+        (div as HTMLElement & { bloomCkEditor?: object }).bloomCkEditor = {
+            getData: () => ckEditorData,
+        };
+        // sanity check the setup: the rewrite will happen
+        expect(div.innerHTML).not.toEqual(ckEditorData);
+
+        EditableDivUtils.doCkEditorCleanup([div as HTMLDivElement], false);
+
+        // The text came from CKEditor's data, so the rewrite did happen.
+        expect(div.querySelector("p")!.innerHTML).toBe("Cat");
+        expect(wrapper.isConnected).toBe(true);
+        expect(div.querySelectorAll(".bloom-inlineImage").length).toBe(1);
+        expect(div.querySelector("img")!.getAttribute("src")).toBe("new.png");
+        // The page is saved from this, and CKEditor's own attributes must not reach the book.
+        expect(div.innerHTML).not.toContain("data-cke-");
+        div.remove();
+    });
+
     // copyCkEditorDataToClone runs on every save gather of a page with a text box. These give the
     // live box a stand-in editor; without one the function returns early and none of it runs.
     const pageWithEditor = (liveHtml: string, editorData: string) => {

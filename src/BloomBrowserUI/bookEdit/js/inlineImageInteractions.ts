@@ -796,7 +796,8 @@ export function setupInlineImageInteractions(container: HTMLElement): void {
 // stops the event, so CKEditor and the other key handlers never see it.
 // In Change Layout mode origami owns both keys, so this leaves them alone. So do the reader
 // tools, in a text block, while one of their markup tools is selected: they keep their own
-// history of the marked text and take both keys on the editable.
+// history of the marked text and take both keys on the editable. That history starts again after
+// a picture change (see resetCkeditorHistories), so their Ctrl+Z cannot put an old picture back.
 function onUndoOrRedoKeyDown(event: KeyboardEvent): void {
     const doc = (event.target as Node).ownerDocument ?? document;
     if (isInChangeLayoutMode(doc)) return;
@@ -1334,7 +1335,11 @@ function makeContentOnlySnapshot(editor: unknown): object {
 // count that no keyup clears.
 //
 // An editor that has not recorded a snapshot yet has no history to reset.
+//
+// The reader tools keep a history of the same kind for the block that last had the focus, and use
+// it in place of CKEditor's while one of their markup tools is selected, so it starts again too.
 function resetCkeditorHistories(translationGroup: HTMLElement): void {
+    getToolboxBundleExports()?.restartReaderToolsHistoryIn(translationGroup);
     getEditables(translationGroup).forEach((editable) => {
         const editor = (
             editable as HTMLElement & {
@@ -1633,6 +1638,11 @@ interface IInlineImageResizeState {
     started: boolean;
     // The pointer this gesture captured; see captureGesturePointer.
     pointerId: number;
+    // Where every floating image, the resized one included, was when the resize began. A picture
+    // that grows taller pushes down every float after it in the DOM, so each move puts them
+    // back here.
+    imageTopsViewportPx: Map<HTMLElement, number>;
+    viewportPxPerLayoutPx: number;
 }
 
 // A drag of one of the crop handles, or of the move-crop handle.
@@ -1784,11 +1794,7 @@ function startDrag(
         startOffsetLayoutPx: getInlineImageOffsetLayoutPx(wrapper),
         dock: getInlineImageDock(wrapper),
         started: false,
-        neighborImageTopsViewportPx: new Map(
-            getFloatingWrappersIn(editable)
-                .filter((other) => other !== wrapper)
-                .map((other) => [other, getImageBox(other).top]),
-        ),
+        neighborImageTopsViewportPx: getNeighborImageTops(editable, wrapper),
         startScrollOverflowLayoutPx:
             editable.scrollHeight - editable.clientHeight,
         lastPointViewportPx: { x: event.clientX, y: event.clientY },
@@ -1854,11 +1860,13 @@ function continueDrag(
     // Remember how things were at the start of this move, when everything fitted inside the
     // block. Each move either ends with everything fitting or is undone back to this, so every
     // move starts from an arrangement that fits. The next sibling records where the wrapper is
-    // among the floating wrappers. It does not change during a drag, because only the dragged
-    // wrapper moves in the DOM.
+    // among the floating wrappers. reorderInFloatingCluster can move the other wrappers in the
+    // DOM too, when the dragged image pushes one of them down, so the order of all of them is
+    // recorded as well.
     const previousDock = state.dock;
     const previousOffsetLayoutPx = getInlineImageOffsetLayoutPx(state.wrapper);
     const previousNextSibling = state.wrapper.nextElementSibling;
+    const previousFloatOrder = getFloatingWrappersIn(state.editable);
     const imageCenterViewportPx = {
         x: pointViewportPx.x + state.grabOffsetXViewportPx,
         y: pointViewportPx.y + state.grabOffsetYViewportPx,
@@ -1968,6 +1976,13 @@ function continueDrag(
     ) {
         state.editable.insertBefore(state.wrapper, previousNextSibling);
         setInlineImageDock(state.wrapper, previousDock);
+        const floatsNow = getFloatingWrappersIn(state.editable);
+        if (floatsNow.length > 0) {
+            const anchor = floatsNow[floatsNow.length - 1].nextElementSibling;
+            previousFloatOrder.forEach((w) =>
+                state.editable.insertBefore(w, anchor),
+            );
+        }
         state.wrapper.style.setProperty(
             kInlineImageOffsetVar,
             `${previousOffsetLayoutPx}px`,
@@ -2012,18 +2027,6 @@ function scrollBlockToKeepDraggedImageInView(
         );
 }
 
-/**
- * Where, among the floating wrappers, an image whose top will be at targetTopViewportPx
- * belongs: after every image whose top is at or above that. Exported for tests.
- */
-export function computeInlineImageClusterIndex(
-    targetTopViewportPx: number,
-    otherImageTopsViewportPx: number[],
-): number {
-    return otherImageTopsViewportPx.filter((top) => top <= targetTopViewportPx)
-        .length;
-}
-
 // The inline images of this editable that are not in the bottom dock, in DOM order. That is
 // also their order from top to bottom, since each one starts below the earlier floats it has
 // to clear.
@@ -2059,29 +2062,122 @@ function getViewportPxPerLayoutPx(editable: HTMLElement): number {
     return EditableDivUtils.getPageScale(editable);
 }
 
-// Moves the dragged wrapper to the place among the floating wrappers that its target height
-// calls for. This only moves it in the DOM. The other images this pushes around are put back
-// in place by restoreNeighborImagePositions, which runs on every move of the drag.
+// Puts the floating wrappers in the DOM in the order that lets each image be where it should:
+// the other images where they were when the drag began, and the dragged one at its target
+// height. This only moves them in the DOM. The other images are then put back in place by
+// restoreNeighborImagePositions, which runs on every move of the drag.
 function reorderInFloatingCluster(
     state: IInlineImageDragState,
     targetTopViewportPx: number,
 ): void {
-    const floats = getFloatingWrappersIn(state.editable);
+    const wantedTops = new Map(state.neighborImageTopsViewportPx);
+    wantedTops.set(state.wrapper, targetTopViewportPx);
+    orderFloatsSoEachCanReachItsTop(
+        state.editable,
+        wantedTops,
+        state.viewportPxPerLayoutPx,
+    );
+}
+
+/** One floating image, as computeInlineImageFloatOrder needs it. All values in viewport px. */
+export interface IInlineImageFloatPlacement {
+    dock: InlineImageDock;
+    // Where the top of the image should be.
+    wantedTopViewportPx: number;
+    // The image's height plus the wrapper's bottom margin: how far below its top the next float
+    // that has to clear it may start.
+    heightWithMarginViewportPx: number;
+}
+
+/**
+ * The order (as indexes into floats) that the floating wrappers have to be in, in the DOM, so
+ * that each image can be at its wanted top, or, when another image is in the way, as close
+ * below it as it can get. Exported for tests.
+ *
+ * The CSS (inlineImages.less) puts the offset in each wrapper's top padding, so the wrapper
+ * itself starts higher than its image. Two rules of CSS floats limit where a wrapper can start:
+ * it starts below every earlier float that it clears (a left one clears left floats, a right
+ * one right floats, and a middle one all of them), and it starts no higher than any float
+ * before it in the DOM, on either side. The first rule is what stacks images down one side. The
+ * second is why the order matters. When a dragged image pushes the image below it on the same
+ * side down, that image's wrapper has to start lower. Any image after it in the DOM, even one on
+ * the other side, then cannot start above it, and gets pushed down too, although nothing
+ * touched it.
+ *
+ * So this works out, in order from the top, where each wrapper can start: below the images it
+ * clears, but no higher than its image should be. Ordered by that, every wrapper starts no
+ * higher than the ones before it, so the second rule never pushes anything, and only an image
+ * that is really in the way of another moves it.
+ */
+export function computeInlineImageFloatOrder(
+    floats: IInlineImageFloatPlacement[],
+): number[] {
+    const byWantedTop = floats
+        .map((_, index) => index)
+        .sort(
+            (a, b) =>
+                floats[a].wantedTopViewportPx - floats[b].wantedTopViewportPx,
+        );
+    const reachableTop: number[] = [];
+    const placed: number[] = [];
+    byWantedTop.forEach((index) => {
+        const float = floats[index];
+        let top = float.wantedTopViewportPx;
+        placed.forEach((other) => {
+            const otherDock = floats[other].dock;
+            const clears =
+                float.dock === kInlineImageMiddleClass ||
+                otherDock === kInlineImageMiddleClass ||
+                otherDock === float.dock;
+            if (clears)
+                top = Math.max(
+                    top,
+                    reachableTop[other] +
+                        floats[other].heightWithMarginViewportPx,
+                );
+        });
+        reachableTop[index] = top;
+        placed.push(index);
+    });
+    return byWantedTop.sort(
+        (a, b) =>
+            reachableTop[a] - reachableTop[b] ||
+            floats[a].wantedTopViewportPx - floats[b].wantedTopViewportPx,
+    );
+}
+
+// Puts the floating wrappers of the editable in the order computeInlineImageFloatOrder gives
+// for the wanted image tops (viewport px). A wrapper missing from wantedTops wants to stay where
+// its image is now.
+function orderFloatsSoEachCanReachItsTop(
+    editable: HTMLElement,
+    wantedTops: Map<HTMLElement, number>,
+    viewportPxPerLayoutPx: number,
+): void {
+    const floats = getFloatingWrappersIn(editable);
     if (floats.length < 2) return;
-    const currentIndex = floats.indexOf(state.wrapper);
-    if (currentIndex < 0) return;
-    const others = floats.filter((w) => w !== state.wrapper);
-    const desiredIndex = computeInlineImageClusterIndex(
-        targetTopViewportPx,
-        others.map((other) => getImageBox(other).top),
+    const order = computeInlineImageFloatOrder(
+        floats.map((wrapper) => {
+            const imageBox = getImageBox(wrapper);
+            const marginBottomLayoutPx =
+                parseFloat(
+                    wrapper.ownerDocument.defaultView!.getComputedStyle(wrapper)
+                        .marginBottom,
+                ) || 0;
+            return {
+                dock: getInlineImageDock(wrapper),
+                wantedTopViewportPx: wantedTops.get(wrapper) ?? imageBox.top,
+                heightWithMarginViewportPx:
+                    imageBox.height +
+                    marginBottomLayoutPx * viewportPxPerLayoutPx,
+            };
+        }),
     );
-    if (desiredIndex === currentIndex) return;
-    state.editable.insertBefore(
-        state.wrapper,
-        others[desiredIndex] ??
-            others[others.length - 1].nextElementSibling ??
-            null,
-    );
+    if (order.every((index, i) => index === i)) return;
+    // The floating wrappers are together at the start of the editable, so whatever follows
+    // the last of them is where the reordered run ends.
+    const anchor = floats[floats.length - 1].nextElementSibling;
+    order.forEach((index) => editable.insertBefore(floats[index], anchor));
 }
 
 function startResize(event: PointerEvent, handle: HTMLElement): void {
@@ -2108,6 +2204,8 @@ function startResize(event: PointerEvent, handle: HTMLElement): void {
         horizontalSign: getInlineImageHandleHorizontalSign(corner),
         started: false,
         pointerId: event.pointerId,
+        imageTopsViewportPx: getNeighborImageTops(editable, undefined),
+        viewportPxPerLayoutPx: getViewportPxPerLayoutPx(editable),
     };
     // Grabbing a handle is not the start of a text selection.
     event.preventDefault();
@@ -2134,6 +2232,21 @@ function continueResize(
         state.editableWidthViewportPx,
     );
     state.wrapper.style.setProperty(kInlineImageWidthVar, `${percent}%`);
+    // A taller picture can push the one below it on the same side down; see
+    // computeInlineImageFloatOrder for why that must not move the pictures on the other side.
+    // Reordering can move the resized wrapper in the DOM too, which changes where its offset is
+    // measured from, so it is put back where it started like the others.
+    orderFloatsSoEachCanReachItsTop(
+        state.editable,
+        state.imageTopsViewportPx,
+        state.viewportPxPerLayoutPx,
+    );
+    restoreImagePositions(
+        state.editable,
+        undefined,
+        state.imageTopsViewportPx,
+        state.viewportPxPerLayoutPx,
+    );
 }
 
 function startCrop(event: PointerEvent, handle: HTMLElement): void {
@@ -2366,17 +2479,48 @@ function normalizeFloatingClusterOrder(
 // document order is enough, because a float's position depends only on the floats before it.
 function restoreNeighborImagePositions(state: IInlineImageDragState): void {
     if (state.editableContentBoxViewportPx.height <= 0) return; // no real layout to measure (jsdom)
+    restoreImagePositions(
+        state.editable,
+        state.wrapper,
+        state.neighborImageTopsViewportPx,
+        state.viewportPxPerLayoutPx,
+    );
+}
+
+// Where the top of each floating image in the editable other than movingWrapper (all of them,
+// when it is undefined) is now, in viewport pixels, so that restoreImagePositions can put them
+// back after a gesture.
+function getNeighborImageTops(
+    editable: HTMLElement,
+    movingWrapper: HTMLElement | undefined,
+): Map<HTMLElement, number> {
+    return new Map(
+        getFloatingWrappersIn(editable)
+            .filter((other) => other !== movingWrapper)
+            .map((other) => [other, getImageBox(other).top]),
+    );
+}
+
+// Puts every floating image other than movingWrapper (all of them, when it is undefined) back at
+// the top recorded for it in wantedTops, as far as the layout allows. See
+// restoreNeighborImagePositions.
+function restoreImagePositions(
+    editable: HTMLElement,
+    movingWrapper: HTMLElement | undefined,
+    wantedTops: Map<HTMLElement, number>,
+    viewportPxPerLayoutPx: number,
+): void {
     for (let pass = 0; pass < 2; pass++) {
-        getFloatingWrappersIn(state.editable).forEach((wrapper) => {
-            if (wrapper === state.wrapper) return;
-            const wantedTop = state.neighborImageTopsViewportPx.get(wrapper);
+        getFloatingWrappersIn(editable).forEach((wrapper) => {
+            if (wrapper === movingWrapper) return;
+            const wantedTop = wantedTops.get(wrapper);
             if (wantedTop === undefined) return;
             const currentTop = getImageBox(wrapper).top;
             if (Math.abs(wantedTop - currentTop) <= 1) return;
             nudgeInlineImageOffset(
                 wrapper,
                 wantedTop - currentTop,
-                state.viewportPxPerLayoutPx,
+                viewportPxPerLayoutPx,
             );
         });
     }
