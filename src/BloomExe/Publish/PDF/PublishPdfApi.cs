@@ -233,7 +233,9 @@ namespace Bloom.Publish.PDF
             window.MaximizeBox = false;
             window.ShowIcon = false;
             window.ShowWithoutTakingFocus = true;
-            window.SetScaledSize(460, 190);
+            // Big enough for the longest text we have (the four-pages-a-sheet note, in Portuguese);
+            // the page scrolls for anything longer.
+            window.SetScaledSize(520, 250);
             var shellArea = shell.RectangleToScreen(shell.ClientRectangle);
             // Start inside Bloom's window, so OnLoad scales by the DPI of the monitor it is on.
             window.Location = shellArea.Location;

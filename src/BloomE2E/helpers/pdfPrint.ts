@@ -159,6 +159,35 @@ export async function getPrintInstructions(page: Page): Promise<string[]> {
         .filter((line) => line !== "");
 }
 
+/**
+ * Wait until the print instructions window shows all of its text, with nothing scrolled out of
+ * sight. It waits because the window's page can still be laying its text out.
+ */
+export async function expectAllPrintInstructionsShowing(
+    page: Page,
+): Promise<void> {
+    const instructions = await findPrintInstructionsPage(
+        page.context().browser()!,
+    );
+    expect(
+        instructions,
+        "The print instructions window is not open.",
+    ).toBeDefined();
+    const window = instructions!.locator(".print-instructions");
+    await expect
+        .poll(
+            () =>
+                window.evaluate(
+                    (element) => element.scrollHeight <= element.clientHeight,
+                ),
+            {
+                message:
+                    "The print instructions window is too small for its text, so part of it is scrolled out of sight.",
+            },
+        )
+        .toBe(true);
+}
+
 /** True when the print instructions window is open. Reads the state once, without waiting. */
 export async function isPrintInstructionsWindowOpen(
     page: Page,

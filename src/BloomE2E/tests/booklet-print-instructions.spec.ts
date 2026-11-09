@@ -8,19 +8,24 @@
 // cannot see the print dialog in a screenshot, so whether the window covers any of the dialog's
 // controls is checked by eye.
 //
-// The two tests share one book, so they run in order.
+// The tests share one book, so they run in order.
 
 import { expect, test } from "../fixtures/bloomTest";
-import { makeBookFromTemplate } from "../helpers/bookMaking";
+import {
+    makeBookFromTemplate,
+    waitForEditablePage,
+} from "../helpers/bookMaking";
 import {
     cancelPrintDialog,
     choosePdfMode,
     clickPrint,
+    expectAllPrintInstructionsShowing,
     expectPrintInstructionsWindowClosed,
     getPrintInstructions,
     isPrintDialogOpen,
     isPrintInstructionsWindowOpen,
 } from "../helpers/pdfPrint";
+import { setPageSize } from "../helpers/pageSize";
 import { switchTab } from "../helpers/workspace";
 
 test.use({
@@ -85,6 +90,32 @@ test.describe("the booklet print instructions", () => {
             await isPrintInstructionsWindowOpen(page),
             "A simple PDF needs no booklet settings, but the print instructions window opened.",
         ).toBe(false);
+        await cancelPrintDialog(bloomApp.bloomPid);
+    });
+
+    test("show all their text when the page size adds a note", async ({
+        page,
+        bloomApp,
+    }) => {
+        test.setTimeout(240000);
+        // A6 prints four pages to a sheet, so the settings come with the longest English note.
+        // Leaving Publish for this also gives the next PDF screen a fresh start.
+        await switchTab(page, "edit");
+        await waitForEditablePage(page);
+        await setPageSize(page, "A6Portrait");
+        await choosePdfMode(page, "Booklet Insides");
+
+        await clickPrint(page, bloomApp.bloomPid);
+
+        expect(await getPrintInstructions(page)).toEqual([
+            "Here are the settings you need for printing this booklet:",
+            "1. Layout: Portrait",
+            '2. Print on both sides: "Flip on long edge"',
+            '3. More settings > Paper size: "A4"',
+            '4. More settings > Scale: "Actual size"',
+            "This will put four pages on each sheet of paper. Cut the stack, then fold to get two booklets.",
+        ]);
+        await expectAllPrintInstructionsShowing(page);
         await cancelPrintDialog(bloomApp.bloomPid);
     });
 });

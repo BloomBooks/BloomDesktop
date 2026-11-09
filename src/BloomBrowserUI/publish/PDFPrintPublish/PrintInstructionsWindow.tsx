@@ -28,6 +28,8 @@ export const PrintInstructionsWindow: React.FunctionComponent<{
                 font-family: "Segoe UI", sans-serif;
                 font-size: 14px;
                 padding: 8px 15px;
+                // PublishPdfApi sizes the window for the longest text we have; a longer
+                // translation can still be scrolled.
                 overflow-y: auto;
             `}
         >
