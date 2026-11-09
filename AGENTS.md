@@ -28,19 +28,6 @@ The front-end uses pnpm 11.5.2. Never ever use npm or yarn.
 
 - For Typescript coding style, see ./src/BloomBrowserUI/AGENTS.md
 
-# Other agents in this worktree
-
-Several agents can be working in one worktree at once. When something happens that you did not
-cause (a file you did not edit changes, a Bloom or a dev server starts or stops, the build in
-`output` changes, the branch or the index moves), find out who else is working before you ask the
-developer about it. `ListAgents` lists the other Claude sessions on this machine, and
-`orca terminal list` shows the terminals open in each worktree. Ask the agent concerned with
-`SendMessage`: what it is changing, whether it has finished, and what it is running from this
-worktree. Then go on with what you learned.
-
-You may still need the developer's decision. If so, the question carries the whole context: what
-you saw, which other agents are active in this worktree, and what each of them told you.
-
 # Testing
 
 - Fail Fast. Don't write code that silently works around failed dependencies. If a dependency is missing we should fail. Javascript itself will fail if we try to use a missing dependency, and that's fine. E.g. if you expect a foo to be defined, don't write "if(foo){}". Just use foo and if it's null, fine, we'll get an error, which is good.
