@@ -962,7 +962,13 @@ namespace Bloom.Edit
         /// calls and would otherwise block behind the handler that got us here. Finally we navigate
         /// back and hand control on.
         /// </remarks>
-        public bool UpdatePageLayoutIfNeededThen(string pageId, Action afterPageReloaded)
+        /// <param name="passStarting">If given, runs just before the pass itself starts. It does not
+        /// run if the user went to another page first (see RunPageLayoutUpdateThenReturnToPage).</param>
+        public bool UpdatePageLayoutIfNeededThen(
+            string pageId,
+            Action afterPageReloaded,
+            Action passStarting = null
+        )
         {
             var book = CurrentBook;
             var outcome = MergeCurrentPageThenSave(
@@ -972,8 +978,50 @@ namespace Bloom.Edit
             );
             if (outcome != SaveOutcome.Saved)
                 return false;
-            RunPageLayoutUpdateThenReturnToPage(book, pageId, afterPageReloaded);
+            RunPageLayoutUpdateThenReturnToPage(book, pageId, afterPageReloaded, passStarting);
             return true;
+        }
+
+        // For each book (by id) whose page layout update the All Pages view has started, the value
+        // of BookProcessor.PageLayoutChangeCount when it did. See UpdatePageLayoutForAllPagesIfNeeded.
+        private readonly Dictionary<string, int> _pageLayoutChangeCountAtAllPagesUpdate =
+            new Dictionary<string, int>();
+
+        /// <summary>
+        /// Run the page layout update now, if the current book needs it, and then come back to the
+        /// page being edited. The All Pages view calls this each time a page is shown with the other
+        /// pages around it, and when the user chooses that view: it shows every other page as last
+        /// saved, so a page still waiting for the update (BL-16893 runs it only when the AI image
+        /// editor or a Publish tool needs it) would look wrong in front of the user. Coming back to
+        /// the page loads it afresh, which draws the other pages again from their updated content.
+        /// </summary>
+        /// <remarks>
+        /// A book whose update fails still needs it, and coming back to the page would ask again,
+        /// over and over. So once the All Pages view has started an update, it does not start
+        /// another on that book until something records a new page layout change. The AI image
+        /// editor and Publish still try every time.
+        /// </remarks>
+        public void UpdatePageLayoutForAllPagesIfNeeded()
+        {
+            var book = CurrentBook;
+            var pageId = CurrentPage?.Id;
+            // Already running (the user chose All Pages while the page was getting ready, so both
+            // asked): its pass is rewriting the book on another thread, so do not read the book.
+            if (string.IsNullOrEmpty(pageId) || BookProcessor.IsPageLayoutUpdateUnderway(book))
+                return;
+            if (!BookProcessor.NeedsPageLayoutUpdate(book))
+                return;
+            var changeCount = BookProcessor.PageLayoutChangeCount;
+            if (
+                _pageLayoutChangeCountAtAllPagesUpdate.TryGetValue(book.ID, out var countWhenTried)
+                && countWhenTried == changeCount
+            )
+                return;
+            UpdatePageLayoutIfNeededThen(
+                pageId,
+                null,
+                () => _pageLayoutChangeCountAtAllPagesUpdate[book.ID] = changeCount
+            );
         }
 
         /// <summary>
@@ -987,15 +1035,24 @@ namespace Bloom.Edit
         /// just the first line. The pass runs deferred off the API sync lock (see RunOffTheApiLock),
         /// since the off-screen pages it loads make their own sync-locked API calls; that deferral is
         /// also what puts it after the state machine has finished emptying the editor.
+        ///
+        /// A click on a page can get in before the deferred pass starts, and go to that page. The
+        /// pass then does not run, and the user stays on the page they clicked: the book is no
+        /// longer ours to rewrite, and taking them back would undo their click. Once the pass has
+        /// started, CannotSavePage refuses such clicks until it is done.
         /// </remarks>
         private void RunPageLayoutUpdateThenReturnToPage(
             Book.Book book,
             string pageId,
-            Action afterPageReloaded
+            Action afterPageReloaded,
+            Action passStarting
         )
         {
             RunOffTheApiLock(() =>
             {
+                if (CurrentBook != book || _stateMachine.CurrentState != State.NoPage)
+                    return;
+                passStarting?.Invoke();
                 BookProcessor.UpdatePageLayoutIfNeededThen(
                     book,
                     _webSocketServer,
@@ -1890,7 +1947,10 @@ namespace Bloom.Edit
             return _bookSelection == null
                 || CurrentBook == null
                 || _pageSelection.CurrentSelection == null
-                || _currentlyDisplayedBook == null;
+                || _currentlyDisplayedBook == null
+                // The page layout update is rewriting the book on another thread and must have it
+                // to itself: a click on a page then must not save the book or load a page of it.
+                || BookProcessor.IsPageLayoutUpdateUnderway(CurrentBook);
         }
 
         // We set this true for the interval between starting to navigate to a new

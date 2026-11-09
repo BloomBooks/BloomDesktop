@@ -163,6 +163,47 @@ namespace Bloom.web.controllers
                 HandleGetFrameSources,
                 true
             );
+            apiHandler.RegisterEndpointHandler(
+                "editView/pageViewMode",
+                HandleSavePageViewMode,
+                true
+            );
+            // Not requiresSync, like aiImageEditor/saveThenLaunch: the update it may start loads
+            // pages off-screen that make their own sync-locked calls (see RunOffTheApiLock).
+            apiHandler.RegisterEndpointHandler(
+                "editView/updatePageLayoutForAllPages",
+                HandleUpdatePageLayoutForAllPages,
+                handleOnUiThread: true,
+                requiresSync: false
+            );
+        }
+
+        /// <summary>
+        /// The All Pages view is showing the other pages of the book: if the book needs its page
+        /// layout update, run it now and come back to the page (EditingModel.UpdatePageLayoutForAllPagesIfNeeded).
+        /// </summary>
+        private void HandleUpdatePageLayoutForAllPages(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Post)
+                throw new ArgumentException(
+                    "editView/updatePageLayoutForAllPages only supports POST"
+                );
+            View.Model.UpdatePageLayoutForAllPagesIfNeeded();
+            request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// Keep, as a user setting, the front end's record of which page view mode the user chose
+        /// (one page, or all pages) and the zoom of each mode, so that they last across Bloom sessions.
+        /// The front end owns the format; editView/frameSources hands it back.
+        /// </summary>
+        private void HandleSavePageViewMode(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Post)
+                throw new ArgumentException("editView/pageViewMode only supports POST");
+            Settings.Default.EditTabPageViewMode = request.RequiredPostString();
+            Settings.Default.Save();
+            request.PostSucceeded();
         }
 
         private void HandleGetFrameSources(ApiRequest request)
