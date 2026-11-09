@@ -163,6 +163,21 @@ namespace Bloom.web.controllers
                 HandleGetFrameSources,
                 true
             );
+            apiHandler.RegisterEndpointHandler("editView/pageView", HandleSavePageView, true);
+        }
+
+        /// <summary>
+        /// Keep, as a user setting, the front end's record of which page view the user chose (one
+        /// page, or all pages) and the zoom of each view, so that they last across Bloom sessions.
+        /// The front end owns the format; editView/frameSources hands it back.
+        /// </summary>
+        private void HandleSavePageView(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Post)
+                throw new ArgumentException("editView/pageView only supports POST");
+            Settings.Default.EditTabPageView = request.RequiredPostString();
+            Settings.Default.Save();
+            request.PostSucceeded();
         }
 
         private void HandleGetFrameSources(ApiRequest request)

@@ -5,6 +5,7 @@ import {
     createPageFrame,
     numberPageLoad,
     setToolboxEnabledHandler,
+    takePageViewSettingFromBloom,
 } from "../bookEdit/workspaceRoot";
 
 interface IEditFrameSources {
@@ -12,12 +13,15 @@ interface IEditFrameSources {
     pageSrc: string;
     toolboxSrc: string;
     toolboxIsShowing?: boolean;
+    // The page view setting Bloom keeps for workspaceRoot.ts.
+    pageView: string;
 }
 
 const defaultEditFrameSources: IEditFrameSources = {
     pageListSrc: "about:blank",
     pageSrc: "about:blank",
     toolboxSrc: "/bloom/toolboxContent",
+    pageView: "",
 };
 
 export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
@@ -40,6 +44,8 @@ export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
                 typeof result.data === "string"
                     ? (JSON.parse(result.data) as IEditFrameSources)
                     : (result.data as IEditFrameSources);
+            // Before the page frame is created, since the page reads it as it loads.
+            takePageViewSettingFromBloom(data.pageView);
             setSources(data);
             setToolboxIsShowing(data.toolboxIsShowing ?? true);
         });

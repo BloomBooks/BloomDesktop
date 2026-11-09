@@ -12,6 +12,7 @@ import * as fs from "node:fs";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
+    editBook,
     editablePageFrame,
     getContentPages,
     getPages,
@@ -206,8 +207,9 @@ test.describe("showing the other pages of the book", () => {
         await goToPage(page, contentPages[0].id);
     });
 
-    test("One Page and All Pages: the choice stays for the next page, and each view keeps its own zoom, but All Pages always fits a spread [Test Case ID 835]", async ({
+    test("One Page and All Pages: the choice and each view's zoom last from page to page and after a restart, and All Pages always fits a spread [Test Case ID 835]", async ({
         page,
+        bloomApp,
     }) => {
         const contentPages = await getContentPages(page);
         await goToPage(page, contentPages[1].id);
@@ -279,15 +281,35 @@ test.describe("showing the other pages of the book", () => {
         await choosePageView(page, "all");
         await expect.poll(async () => (await getZoom(page)).zoom).toBe(minZoom);
 
-        // Leave All Pages at the zoom it started from, and One Page chosen at its starting zoom, for
-        // the tests after this one. One Page stays chosen for the next page.
-        await setZoom(page, startingZoom);
+        // Give All Pages the zoom that fits and One Page its starting zoom, and choose All Pages.
+        await setZoom(page, fittingZoom);
         await choosePageView(page, "one");
         await expect.poll(async () => (await getZoom(page)).zoom).toBe(maxZoom);
         await setZoom(page, startingZoom);
-        await goToPage(page, contentPages[0].id);
-        expect(await chosenPageView(page)).toBe("one");
-        await expect(grid()).toHaveCount(0);
+        await choosePageView(page, "all");
+        await expect
+            .poll(async () => (await getZoom(page)).zoom)
+            .toBe(fittingZoom);
+
+        // The choice and the zoom of each view last after Bloom is closed and opened again.
+        const shell = await bloomApp.quitAndRestart();
+        await editBook(shell, bookFolder);
+        expect(await chosenPageView(shell)).toBe("all");
+        await expect(
+            editablePageFrame(shell).locator(".bloom-book-grid-cell"),
+        ).toHaveCount((await getPages(shell)).length);
+        expect((await getZoom(shell)).zoom).toBe(fittingZoom);
+        await choosePageView(shell, "one");
+        await expect
+            .poll(async () => (await getZoom(shell)).zoom)
+            .toBe(startingZoom);
+
+        // One Page stays chosen for the next page, as the tests after this one expect.
+        await goToPage(shell, contentPages[0].id);
+        expect(await chosenPageView(shell)).toBe("one");
+        await expect(
+            editablePageFrame(shell).locator(".bloom-book-grid-cell"),
+        ).toHaveCount(0);
     });
 
     test("All Pages shows every page, with the facing page beside the page being edited [Test Case ID 835]", async ({

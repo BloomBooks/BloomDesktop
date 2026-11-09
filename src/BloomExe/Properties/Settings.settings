@@ -74,6 +74,9 @@
     <Setting Name="PageZoom" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)">1.0</Value>
     </Setting>
+    <Setting Name="EditTabPageView" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
     <Setting Name="AdobeColorProfileEula2003Accepted" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>

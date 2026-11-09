@@ -7,7 +7,7 @@ import {
     showColorPickerDialog as doShowColorPickerDialog,
     hideColorPickerDialog as doHideColorPickerDialog,
 } from "../react_components/color-picking/colorPickerDialog";
-import { postJson } from "../utils/bloomApi";
+import { postJson, postString } from "../utils/bloomApi";
 import { Link } from "../react_components/BookGridSetup/BookLinkTypes";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 import $ from "jquery";
@@ -22,6 +22,9 @@ export interface IWorkspaceExports {
     showPageLoadingCover(): void;
     isShowingOtherPages(): boolean;
     storeShowingOtherPages(show: boolean): void;
+    getStoredZoomOfView(view: PageView): number | undefined;
+    storeZoomOfView(view: PageView, zoom: number): void;
+    listenForPageViewSetting(listener: () => void): () => void;
     setToolboxEnabled(enabled: boolean): void;
     toolboxIsShowing(): boolean;
     doWhenToolboxLoaded(
@@ -158,7 +161,6 @@ const kOutgoingPageFrameId = "page-outgoing";
 const kPageLoadingCoverId = "page-loading-cover";
 const kMaxWaitForPageReadyAfterLoadMs = 3000;
 const kMaxWaitForPageChangeToStartMs = 5000;
-const kShowOtherPagesKey = "bloom-edit-showOtherPages";
 
 // The cursor shown while the Edit tab changes pages: a plain clock face, rather than the spinning
 // circle Windows draws for the standard "wait" cursor. Falls back to that standard cursor.
@@ -171,25 +173,71 @@ const kWaitCursor = `url("data:image/svg+xml,${encodeURIComponent(
     kClockSvg,
 )}") 12 12, wait`;
 
+export type PageView = "one" | "all";
+
+// Which page view the user chose, and the zoom the user last had in each view (one the user has
+// never left has none). Bloom keeps this as a user setting, as the JSON of this object: it hands it
+// over with editView/frameSources, before the first page loads (see EditTabPane.tsx), and
+// savePageView() gives it back after every change.
+interface IPageViewSetting {
+    showOtherPages: boolean;
+    zoomOfView: { [view in PageView]?: number };
+}
+let pageViewSetting: IPageViewSetting = {
+    showOtherPages: false,
+    zoomOfView: {},
+};
+
+// Told when the page view setting arrives from Bloom, which can be after they first read it.
+const pageViewSettingListeners = new Set<() => void>();
+
+/** Take the page view setting Bloom kept, as editView/frameSources hands it over. */
+export function takePageViewSettingFromBloom(setting: string): void {
+    // Empty until the user first chooses a view.
+    pageViewSetting = setting
+        ? (JSON.parse(setting) as IPageViewSetting)
+        : { showOtherPages: false, zoomOfView: {} };
+    pageViewSettingListeners.forEach((listener) => listener());
+}
+
+/**
+ * Call `listener` whenever the page view setting arrives from Bloom. Returns the function that
+ * stops that.
+ */
+export function listenForPageViewSetting(listener: () => void): () => void {
+    pageViewSettingListeners.add(listener);
+    return () => {
+        pageViewSettingListeners.delete(listener);
+    };
+}
+
+function savePageView(): void {
+    postString("editView/pageView", JSON.stringify(pageViewSetting));
+}
+
 /**
  * Whether the user wants to see the other pages of the book around the page being edited (see
  * bookGridView.ts). Remembered for every page, and across Bloom sessions.
  */
 export function isShowingOtherPages(): boolean {
-    try {
-        return localStorage.getItem(kShowOtherPagesKey) === "true";
-    } catch {
-        return false;
-    }
+    return pageViewSetting.showOtherPages;
 }
 
 /** Remember whether the user wants to see the other pages of the book. */
 export function storeShowingOtherPages(show: boolean): void {
-    try {
-        localStorage.setItem(kShowOtherPagesKey, show ? "true" : "false");
-    } catch {
-        // Without storage the choice lasts only until the next page is loaded.
-    }
+    pageViewSetting.showOtherPages = show;
+    savePageView();
+}
+
+/** The zoom the user last had in this page view, or undefined if they have never left it. */
+export function getStoredZoomOfView(view: PageView): number | undefined {
+    return pageViewSetting.zoomOfView[view];
+}
+
+/** Remember the zoom the user had in this page view, for when they come back to it. */
+export function storeZoomOfView(view: PageView, zoom: number): void {
+    pageViewSetting.zoomOfView[view] = zoom;
+    savePageView();
 }
 
 // Telling the toolbox about the page loading into this frame, once the page is there; see
@@ -641,6 +689,9 @@ interface WorkspaceBundleApi {
     showPageLoadingCover: typeof showPageLoadingCover;
     isShowingOtherPages: typeof isShowingOtherPages;
     storeShowingOtherPages: typeof storeShowingOtherPages;
+    getStoredZoomOfView: typeof getStoredZoomOfView;
+    storeZoomOfView: typeof storeZoomOfView;
+    listenForPageViewSetting: typeof listenForPageViewSetting;
     showDialog: typeof showDialog;
     closeDialog: typeof closeDialog;
     setToolboxEnabled: typeof setToolboxEnabled;
@@ -695,6 +746,9 @@ window.workspaceBundle = {
     showPageLoadingCover,
     isShowingOtherPages,
     storeShowingOtherPages,
+    getStoredZoomOfView,
+    storeZoomOfView,
+    listenForPageViewSetting,
     showDialog,
     closeDialog,
     setToolboxEnabled,

@@ -13,13 +13,12 @@ import {
 } from "../../../bookEdit/js/workspaceFrames";
 import { getAsync, postJsonAsync } from "../../../utils/bloomApi";
 import { reportError } from "../../../lib/errorHandler";
+import type { PageView } from "../../../bookEdit/workspaceRoot";
 import {
     getSpreadShape,
     kSpreadGap,
     pagesAcrossASpread,
 } from "../../../bookEdit/js/bookGridLayout";
-
-type PageView = "one" | "all";
 
 const kBorder = "1px solid rgba(0, 0, 0, 0.4)";
 
@@ -27,8 +26,16 @@ const kBorder = "1px solid rgba(0, 0, 0, 0.4)";
 // around it. The pages are drawn in the page frame (see bookGridView.ts), so the choice is stored
 // where the next page will find it (workspaceRoot.ts) and handed to the page being edited now.
 export const PageViewChooser: React.FunctionComponent = () => {
-    const [view, setView] = React.useState<PageView>(
-        getWorkspaceBundleExports().isShowingOtherPages() ? "all" : "one",
+    const getChosenView = (): PageView =>
+        getWorkspaceBundleExports().isShowingOtherPages() ? "all" : "one";
+    const [view, setView] = React.useState<PageView>(getChosenView);
+    // The choice Bloom kept can arrive after this is first shown.
+    React.useEffect(
+        () =>
+            getWorkspaceBundleExports().listenForPageViewSetting(() =>
+                setView(getChosenView()),
+            ),
+        [],
     );
 
     const choose = (newView: PageView | null) => {
@@ -129,7 +136,8 @@ type ZoomInfo = { zoom: number; minZoom: number };
 // Each view keeps the zoom the user last had in it, so that going back to one page undoes the
 // zooming out that seeing all the pages may have needed. Going to all pages zooms out further if
 // the zoom kept for it would not fit a spread. Bloom's own zoom setting is the zoom of
-// the view showing now; the zoom of the other view is kept here, across Bloom sessions.
+// the view showing now; the zoom of the other view is kept with the choice of view, across Bloom
+// sessions (see workspaceRoot.ts).
 // Switches run one after another: each reads Bloom's zoom as the switch before it left it, so a
 // quick change of view and back cannot store one view's zoom as the other's.
 function switchToZoomOfView(oldView: PageView, newView: PageView): void {
@@ -149,8 +157,9 @@ async function switchZoomNow(
 ): Promise<void> {
     const zoomInfo = (await getAsync("workspace/topRight/zoom"))
         .data as ZoomInfo;
-    storeZoomOfView(oldView, zoomInfo.zoom);
-    const zoomOfNewView = getStoredZoomOfView(newView);
+    getWorkspaceBundleExports().storeZoomOfView(oldView, zoomInfo.zoom);
+    const zoomOfNewView =
+        getWorkspaceBundleExports().getStoredZoomOfView(newView);
     let zoom = zoomInfo.zoom;
     if (zoomOfNewView !== undefined && zoomOfNewView !== zoom) {
         await postJsonAsync("workspace/topRight/zoom", {
@@ -161,29 +170,6 @@ async function switchZoomNow(
     // The zoom kept for all pages may be too large for a spread of this book, or for this window.
     if (newView === "all") {
         await zoomOutToFitASpread({ zoom, minZoom: zoomInfo.minZoom });
-    }
-}
-
-function getZoomKeyOfView(view: PageView): string {
-    return `bloom-edit-zoom-${view}`;
-}
-
-// The zoom the user last had in this view, or undefined if they have never left it.
-function getStoredZoomOfView(view: PageView): number | undefined {
-    try {
-        const zoom = localStorage.getItem(getZoomKeyOfView(view));
-        return zoom ? parseInt(zoom, 10) : undefined;
-    } catch {
-        return undefined;
-    }
-}
-
-// Remember the zoom the user had in this view, for when they come back to it.
-function storeZoomOfView(view: PageView, zoom: number): void {
-    try {
-        localStorage.setItem(getZoomKeyOfView(view), zoom.toString());
-    } catch {
-        // Without storage the view keeps whatever zoom it is switched to.
     }
 }
 

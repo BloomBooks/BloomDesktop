@@ -1701,6 +1701,9 @@ namespace Bloom.Edit
             dynamic result = new DynamicJson();
             result.toolboxSrc = "/bloom/toolboxContent";
             result.toolboxIsShowing = true;
+            // Which page view the user chose, and the zoom of each view, as the front end saved
+            // them through editView/pageView (see workspaceRoot.ts). Empty until it first does.
+            result.pageView = Settings.Default.EditTabPageView;
 
             if (!_model.HaveCurrentEditableBook)
             {
