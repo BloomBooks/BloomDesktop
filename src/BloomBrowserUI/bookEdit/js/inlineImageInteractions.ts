@@ -428,24 +428,70 @@ export function clampInlineImageWidthPercent(percent: number): number {
 }
 
 /**
+ * The widest the image may become in a corner resize, as a percentage of the editable, so that
+ * its bottom stays above imageBottomLimitViewportPx: the bottom of the block, less the room the
+ * block's other languages need for their text (see getImageBottomLimitViewportPx). A corner
+ * resize keeps the image's top where it is and its aspect ratio the same, so the space from the
+ * top of the image to that limit sets how wide it can get.
+ *
+ * Without this, only kMaxInlineImageWidthPercent limited a resize. In a tall block (a portrait
+ * page) that limit is reached first, and the image stops inside the block. In a wide, short
+ * block (a landscape page) the image becomes taller than the block long before it reaches that
+ * width, and it could be stretched past the bottom of the page (BL-17078).
+ *
+ * An image that already reaches below the block when the resize begins (one made before this
+ * limit existed, or one in a block that has since become shorter) may keep its width, so the
+ * first movement of the pointer does not make it jump smaller. It still cannot grow.
+ *
+ * Returns undefined when nothing is laid out (jsdom), so that only the width limits apply.
+ */
+export function computeInlineImageMaxWidthPercentForBlockHeight(
+    imageBoxViewportPx: IBox,
+    imageBottomLimitViewportPx: number,
+    editableWidthViewportPx: number,
+): number | undefined {
+    if (!(imageBoxViewportPx.width > 0) || !(imageBoxViewportPx.height > 0))
+        return undefined;
+    if (!(editableWidthViewportPx > 0)) return undefined;
+    const roomBelowTopViewportPx =
+        imageBottomLimitViewportPx - imageBoxViewportPx.top;
+    const widthThatFitsViewportPx =
+        (roomBelowTopViewportPx * imageBoxViewportPx.width) /
+        imageBoxViewportPx.height;
+    const widthViewportPx = Math.max(
+        widthThatFitsViewportPx,
+        imageBoxViewportPx.width,
+    );
+    // Rounded down, so that the rounding in computeInlineImageWidthPercent cannot take the
+    // image a fraction of a pixel past the bottom of the block.
+    return Math.floor((widthViewportPx / editableWidthViewportPx) * 1000) / 10;
+}
+
+/**
  * The width, as a percentage of the editable, that dragging a corner handle has reached. Only
  * the horizontal movement counts, because the wrapper's aspect ratio sets the height.
  * horizontalSign says which direction makes the image bigger for the corner being dragged (see
  * getInlineImageHandleHorizontalSign). Assumes a positive editableWidthViewportPx; startResize
- * does not begin a resize without one.
+ * does not begin a resize without one. maxPercent, when given, is a further limit on the width
+ * (see computeInlineImageMaxWidthPercentForBlockHeight); kMinInlineImageWidthPercent still wins
+ * over it.
  */
 export function computeInlineImageWidthPercent(
     startWidthViewportPx: number,
     deltaXViewportPx: number,
     horizontalSign: number,
     editableWidthViewportPx: number,
+    maxPercent?: number,
 ): number {
     const widthViewportPx =
         startWidthViewportPx + horizontalSign * deltaXViewportPx;
     const percent = (widthViewportPx / editableWidthViewportPx) * 100;
     // One decimal place is finer than a pixel in any block Bloom lays out. Rounding keeps the
     // style attribute short, and that attribute is saved and copied to every language's copy.
-    return clampInlineImageWidthPercent(Math.round(percent * 10) / 10);
+    const rounded = Math.round(percent * 10) / 10;
+    return clampInlineImageWidthPercent(
+        maxPercent === undefined ? rounded : Math.min(rounded, maxPercent),
+    );
 }
 
 /**
@@ -1629,6 +1675,8 @@ interface IInlineImageResizeState {
     startXViewportPx: number;
     startWidthViewportPx: number;
     editableWidthViewportPx: number;
+    // See computeInlineImageMaxWidthPercentForBlockHeight.
+    maxWidthPercent: number | undefined;
     horizontalSign: number;
     started: boolean;
     // The pointer this gesture captured; see captureGesturePointer.
@@ -2099,12 +2147,18 @@ function startResize(event: PointerEvent, handle: HTMLElement): void {
     if (editableWidthViewportPx <= 0) return;
     const corner = (handle.getAttribute(kInlineImageCornerAttribute) ??
         "se") as InlineImageHandleCorner;
+    const imageBox = getImageBox(wrapper);
     resizeState = {
         wrapper,
         editable,
         startXViewportPx: event.clientX,
-        startWidthViewportPx: getImageBox(wrapper).width,
+        startWidthViewportPx: imageBox.width,
         editableWidthViewportPx,
+        maxWidthPercent: computeInlineImageMaxWidthPercentForBlockHeight(
+            imageBox,
+            getImageBottomLimitViewportPx(editable, wrapper),
+            editableWidthViewportPx,
+        ),
         horizontalSign: getInlineImageHandleHorizontalSign(corner),
         started: false,
         pointerId: event.pointerId,
@@ -2132,8 +2186,90 @@ function continueResize(
         event.clientX - state.startXViewportPx,
         state.horizontalSign,
         state.editableWidthViewportPx,
+        state.maxWidthPercent,
     );
     state.wrapper.style.setProperty(kInlineImageWidthVar, `${percent}%`);
+}
+
+// How low the bottom of an image in this editable can go, in viewport pixels, and still leave
+// the other languages of the block room for their text.
+//
+// In a block that shows one language, that is the bottom of the editable's content box. In a
+// block that shows more than one, the editables share the translation group's height
+// (basePage.less gives each one flex-grow), so each is as tall as its text plus a share of the
+// empty space, and only the first language shows the image (inlineImages.less). As the image
+// grows, its editable takes the empty space from the others. So the image may go below its
+// own editable's bottom by the empty space in each of the other visible editables. Measured
+// against its own editable only, it stopped at its share of the empty space, well short of the
+// bottom of the block.
+//
+// The wrapper's own space below the picture (its bottom margin, which inlineImages.less sets)
+// has to fit in the block too, so it comes off the limit.
+function getImageBottomLimitViewportPx(
+    editable: HTMLElement,
+    wrapper: HTMLElement,
+): number {
+    const scale = getViewportPxPerLayoutPx(editable);
+    const view = editable.ownerDocument.defaultView!;
+    const style = view.getComputedStyle(editable);
+    const picture = getImageBox(wrapper);
+    const belowPictureViewportPx =
+        wrapper.getBoundingClientRect().bottom -
+        (picture.top + picture.height) +
+        parseFloat(view.getComputedStyle(wrapper).marginBottom) * scale;
+    const contentBottomViewportPx =
+        editable.getBoundingClientRect().bottom -
+        (parseFloat(style.paddingBottom) +
+            parseFloat(style.borderBottomWidth)) *
+            scale -
+        belowPictureViewportPx;
+    const group = editable.closest(".bloom-translationGroup") as HTMLElement;
+    const otherVisibleEditables = (
+        Array.from(group.children) as HTMLElement[]
+    ).filter(
+        (child) =>
+            child !== editable &&
+            child.classList.contains("bloom-editable") &&
+            view.getComputedStyle(child).display !== "none",
+    );
+    const emptySpaceInOthersViewportPx = otherVisibleEditables.reduce(
+        (sum, other) => sum + getEmptySpaceBelowTextViewportPx(other, scale),
+        0,
+    );
+    return contentBottomViewportPx + emptySpaceInOthersViewportPx;
+}
+
+// How much shorter this editable could be and still show its text: the space between the
+// bottom of its text and the bottom of its content box, less anything its min-height keeps.
+function getEmptySpaceBelowTextViewportPx(
+    editable: HTMLElement,
+    viewportPxPerLayoutPx: number,
+): number {
+    const style =
+        editable.ownerDocument.defaultView!.getComputedStyle(editable);
+    const box = editable.getBoundingClientRect();
+    const range = editable.ownerDocument.createRange();
+    range.selectNodeContents(editable);
+    const text = range.getBoundingClientRect();
+    // An editable with nothing in it measures as an empty rectangle at the origin.
+    const textBottomViewportPx =
+        text.width === 0 && text.height === 0
+            ? box.top +
+              (parseFloat(style.borderTopWidth) +
+                  parseFloat(style.paddingTop)) *
+                  viewportPxPerLayoutPx
+            : text.bottom;
+    const neededHeightViewportPx = Math.max(
+        textBottomViewportPx -
+            box.top +
+            (parseFloat(style.paddingBottom) +
+                parseFloat(style.borderBottomWidth)) *
+                viewportPxPerLayoutPx,
+        // A min-height of "auto" parses as NaN; for a flex item it means the height of its
+        // content, which the measurement above already covers.
+        (parseFloat(style.minHeight) || 0) * viewportPxPerLayoutPx,
+    );
+    return Math.max(0, box.height - neededHeightViewportPx);
 }
 
 function startCrop(event: PointerEvent, handle: HTMLElement): void {
