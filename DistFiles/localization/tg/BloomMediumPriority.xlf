@@ -1290,6 +1290,11 @@
         <target xml:lang="tg" state="needs-translation">(all)</target>
         <note>ID: BookSettings.Fonts.All</note>
       </trans-unit>
+      <trans-unit id="BookSettings.Fonts.NoLanguage" translate="no">
+        <source xml:lang="en">(no language)</source>
+        <target xml:lang="tg" state="needs-translation">(no language)</target>
+        <note>ID: BookSettings.Fonts.NoLanguage</note>
+      </trans-unit>
       <trans-unit id="BookSettings.Fonts.PageNumber" sil:dynamic="true">
         <source xml:lang="en">Page {0}</source>
         <target xml:lang="tg" state="needs-translation">Page {0}</target>
