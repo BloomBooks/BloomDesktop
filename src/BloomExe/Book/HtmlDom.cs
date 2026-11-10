@@ -2639,12 +2639,13 @@ namespace Bloom.Book
         /// </code>
         /// Group 0 is the entire CSS rule matched by the regular expression.
         /// Group 1 is the opening quote for the language code(used internally in the regular expression).
-        /// Group 2 is the language code.
+        /// Group 2 is the language code. This may contain digits (e.g., "es-419"), but never matches
+        /// "*" (see CollectionSettings, where the rule for lang="*" content is written).
         /// Group 3 is the entire set of CSS value settings associated with the language code.
         /// Group 4 is the font-family value associated with the language code.
         /// </summary>
         public static Regex DefaultLangStylesCssRegex = new Regex(
-            @"\[\s*lang\s*=\s*(['""])([-a-zA-Z]*)\1\s*\]\s*{([^}]*font-family:([^;]*);[^}]*)}",
+            @"\[\s*lang\s*=\s*(['""])([-a-zA-Z0-9]*)\1\s*\]\s*{([^}]*font-family:([^;]*);[^}]*)}",
             RegexOptions.Singleline | RegexOptions.Compiled
         );
 
@@ -2736,13 +2737,14 @@ namespace Bloom.Book
         /// Group 1 is the style name (with the -style suffix removed).
         /// Group 2 is an optional language attribute selector in its entirety.
         /// Group 3 is the opening quote for the optional language code (used internally by regular expression).
-        /// Group 4 is optional language code.
+        /// Group 4 is optional language code. This may be "*" for language-independent fields such
+        /// as the ISBN on the credits page (BL-16851), and may contain digits (e.g., "es-419").
         /// Group 5 is the complete set of CSS value settings associated with the style (and language code).
         /// Group 6 is the font-family setting associated with the style (and language code).
         /// Group 7 is the font-family value associated with the style (and language code).
         /// </summary>
         public static Regex UserModifiedStyleFontRegex = new Regex(
-            @"\.([^\s]+)-style(\[lang=(['""])([A-Za-z-]*)\3\])?\s*{([^}]*?(font-family:([^};]*))[^}]*)}",
+            @"\.([^\s]+)-style(\[lang=(['""])([A-Za-z0-9*-]*)\3\])?\s*{([^}]*?(font-family:([^};]*))[^}]*)}",
             RegexOptions.Compiled
         );
 

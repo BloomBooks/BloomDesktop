@@ -636,6 +636,9 @@ jobs:
                   JOB_STATUS: ${{ job.status }}
                   RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
                   BRANCH: ${{ github.ref_name }}
+                  # The triage's list of open failures on this branch, as it stands now rather than
+                  # at this run's commit, since the triage updates it after the run.
+                  OPEN_FAILURES_URL: ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.claude/skills/nightly-triage/open-failures.md
                   # For the timings lookup below.
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   API_URL: ${{ github.api_url }}
@@ -847,6 +850,47 @@ jobs:
                       $headline = "❌ **Nightly run failed**"
                   }
 
+                  # ---- known failures still open -------------------------------------------
+                  # A night where every suite passes says nothing about the failures from earlier
+                  # nights that nobody has fixed yet, so the report also counts the entries in the
+                  # triage's list of open failures and gives the age of the oldest. The list and the
+                  # rule this parser relies on (each entry for a real failure has a "- **Failed:**"
+                  # line that starts with the full date of its first failure) are in
+                  # .claude/skills/nightly-triage. Quoted for the same reason as the run link at the
+                  # end: a bare link in Zulip becomes a preview card.
+                  function Format-OpenFailures {
+                      $path = ".claude/skills/nightly-triage/open-failures.md"
+                      if (-not (Test-Path -LiteralPath $path)) { return "> ❓ The list of open nightly failures, $path, is missing." }
+                      $entries = [regex]::Split((Get-Content -LiteralPath $path -Raw -Encoding utf8), '(?m)^## ') | Select-Object -Skip 1
+                      $firstFailures = @()
+                      $undated = 0
+                      foreach ($entry in $entries) {
+                          $failedLine = [regex]::Match($entry, '(?m)^- \*\*Failed:\*\*\s*(.*)$')
+                          if (-not $failedLine.Success) { continue }
+                          $date = [regex]::Match($failedLine.Groups[1].Value, '^(\d{4}-\d{2}-\d{2})')
+                          if ($date.Success) {
+                              $firstFailures += [datetime]::ParseExact($date.Groups[1].Value, "yyyy-MM-dd", [cultureinfo]::InvariantCulture)
+                          } else {
+                              $undated++
+                          }
+                      }
+                      $count = $firstFailures.Count + $undated
+                      if ($count -eq 0) { return $null }
+
+                      # The same reasoning as the elapsed time below: measure to the last finished
+                      # step, so a replay against a past run's data gives that night's answer.
+                      $today = if ($lastStepEnded) { $lastStepEnded.UtcDateTime.Date } else { [datetime]::UtcNow.Date }
+                      $link = "[the list]($($env:OPEN_FAILURES_URL))"
+                      if ($count -eq 1) { $text = "**1 known nightly failure is still open**" } else { $text = "**$count known nightly failures are still open**" }
+                      if ($firstFailures.Count -gt 0) {
+                          $days = [int] ($today - ($firstFailures | Measure-Object -Minimum).Minimum).TotalDays
+                          $dayWord = if ($days -eq 1) { "day" } else { "days" }
+                          if ($count -eq 1) { $text += ", for $days $dayWord" } else { $text += ", the oldest for $days $dayWord" }
+                      }
+                      if ($undated -gt 0) { $text += " ($undated with no date of first failure)" }
+                      return "> ❌ $($text): $link"
+                  }
+
                   # How long the night took overall. Measured to the last step that has finished
                   # rather than to "now": this step is the last in the job, so the two are the same
                   # to within a second on a real run -- but only the former also gives the right
@@ -863,6 +907,8 @@ jobs:
                   # a comma-separated literal spanning several lines quietly mis-parses when one of
                   # the elements is itself a piped expression, and yields a nested array.
                   $message = @("$headline on $($env:BRANCH)$elapsed", "")
+                  $openFailures = Format-OpenFailures
+                  if ($openFailures) { $message += @($openFailures, "") }
                   $message += $lines | ForEach-Object { "* $_" }
 
                   # Where the rest of the night went, as one line in job order: none of it is a

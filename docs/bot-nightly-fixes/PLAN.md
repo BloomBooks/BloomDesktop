@@ -6,7 +6,7 @@ Status: proposal, 2026-11-03. Nothing here is built yet.
 
 Every morning the Bloom bot on the team's Mac (`poll-nightly.mjs` in the
 private BloomBooks/bloom-bot repo) triages the scheduled nightly with the `nightly-triage` skill: it names each
-failure, says whether it is new, takes a first look, commits `docs/nightly-failures/README.md` to
+failure, says whether it is new, takes a first look, commits `.claude/skills/nightly-triage/open-failures.md` to
 master, and posts a summary to Zulip and `#bloom-team-developers`.
 
 This plan adds the next step: the bot fixes the open failures and offers the fix as a draft PR,

@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-11-09 (nightlies through the 2026-11-09 run, 42616007249, have been triaged)
+**Last updated:** 2026-11-10 (nightlies through the 2026-11-10 run, 42811562983, have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -9,12 +9,15 @@ accept a flaky test, and a test is flaky from its first unexplained failure (roo
 Testing). So "wait and see whether it recurs" is never an entry's plan. To bring this up to date,
 use the `nightly-triage` skill.
 
+The nightly report reads this file: it counts the entries that have a `- **Failed:**` line and
+gives the age of the oldest, taken from the full date (`YYYY-MM-DD`) that starts each such line.
+
 ## E2E: a title typed on a new book's cover is lost
 
 - **Cause:** text typed while CKEditor was still loading was overwritten when it finished
   (BL-17022). The e2e helpers used to hide this by waiting for CKEditor before typing.
 - **Status:** fixed by [#8542](https://github.com/BloomBooks/BloomDesktop/pull/8542) (merged
-  2026-11-06; the 2026-11-07 and 11-08 nightlies, the first two on it, passed), which also
+  2026-11-06; the e2e suite has passed on every nightly since, 11-07 through 11-10), which also
   drops that wait, so every spec that types now depends on the fix. The PR keeps temporary
   `[cover-title]` / "Cover-title investigation" logging, which says whether a lost title was gone
   from the page or lost after it left. When removing this entry, after several nightlies with no
@@ -50,9 +53,9 @@ use the `nightly-triage` skill.
 
 ## Component tests: lost connection to the dev server
 
-- **Failed:** once in September; again 2026-10-27, `bookgridsetup-extended.uitest.ts` "After
-  adding a book, the next available book is automatically selected":
-  `page.goto: net::ERR_CONNECTION_FAILED at http://127.0.0.1:5183/`.
+- **Failed:** 2026-09-21 (`registration-validation.uitest.ts`), 2026-10-27, 2026-11-09. On
+  10-27, `bookgridsetup-extended.uitest.ts` "After adding a book, the next available book is
+  automatically selected": `page.goto: net::ERR_CONNECTION_FAILED at http://127.0.0.1:5183/`.
 - **What the trace shows (first look, 10-27):** the first navigation of the test failed about
   15 ms after it started, with ERR_CONNECTION_FAILED rather than a refused or reset connection.
   The log shows no Vite restart, and the other 145 tests passed. A local stress run (the suite 10
@@ -74,8 +77,9 @@ use the `nightly-triage` skill.
 
 ## C# upload integration tests: the live service was slow
 
-Failed 2026-09-28, 10-15 and 10-27. A bloom-functions fix is in production, not yet measured. See
-[DETAILS.md](DETAILS.md#c-upload-integration-tests-the-live-service-was-slow).
+- **Failed:** 2026-09-28, 10-15 and 10-27.
+- **Status:** a bloom-functions fix is in production, not yet measured. See
+  [open-failures-details.md](open-failures-details.md#c-upload-integration-tests-the-live-service-was-slow).
 
 ## Open questions
 
