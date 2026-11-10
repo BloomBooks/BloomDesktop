@@ -25,6 +25,13 @@ Page-number visibility comes from appearance.json, not from this theme file. */
 
 .numberedPage:not(.bloom-interactive-page) {
     --page-margin: 0mm;
+    /* Set the per-side margins too, not just --page-margin: custom CSS such as the Little Zebra
+       customBookStyles2.css sets them per page size (e.g. .A5Portrait), and that would otherwise
+       keep its margins under this theme (BL-17050). This rule is more specific, so it wins. */
+    --page-margin-top: var(--page-margin);
+    --page-margin-bottom: var(--page-margin);
+    --page-margin-left: var(--page-margin);
+    --page-margin-right: var(--page-margin);
 
     /* instead of a gap, we are using padding because the text should look centered between the image and edge of the screen */
     --page-verticalSplit-width: 0mm; /* we don't need this; removing it makes it simpler to just have the same spacing on left and right sides */
