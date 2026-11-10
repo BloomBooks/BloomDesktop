@@ -223,8 +223,13 @@ namespace Bloom.Publish.PDF
             ClosePrintInstructions();
             var shell = Shell.GetShellOrNull();
             var help = GetPrintSettingsHelp();
-            // No title: the page's own heading says what the window is.
+            // No title: the page's own heading says what the window is. Screen readers still get
+            // that heading as the window's name.
             var window = new ReactDialog("printInstructionsBundle", help, "");
+            window.AccessibleName = LocalizationManager.GetString(
+                "PublishTab.PDF.Booklet.HelpHeader",
+                "Here are the settings you need for printing this booklet:"
+            );
             // A normal caption, so it can be dragged and has a full-size close button.
             window.FormBorderStyle = FormBorderStyle.FixedDialog;
             window.ControlBox = true;
