@@ -89,10 +89,6 @@ namespace Bloom.CLI
                     importer.Params = SpreadsheetImportParams.FromFile(options.ParamsPath);
                 if (!importer.Validate(sheet, progress))
                     return 1;
-                // Known problem, not fixed while the verb is retired: if the spreadsheet sits beside
-                // the book and its recordings are in the book's own audio folder, ImportWithBackupAsync
-                // deletes them before the import reads them. They are only reported as missing, so
-                // the book is saved without them (it is still in the backup).
                 var hasStartedSaving = false;
                 await SpreadsheetImporter.ImportWithBackupAsync(
                     folderPath,
@@ -140,54 +136,6 @@ namespace Bloom.CLI
                 Console.WriteLine(ex);
                 return 1;
             }
-        }
-    }
-
-    /// <summary>
-    /// Writes progress messages to the console, for command-line verbs that have no progress dialog.
-    /// Problems are marked, so they stand out from ordinary progress.
-    /// (This belongs in web/WebSocketProgress.cs if it is brought back.)
-    /// </summary>
-    public class ConsoleWebSocketProgress : WebSocketProgress
-    {
-        /// <summary>
-        /// True once an Error or Fatal message has been written (warnings don't count), so a
-        /// command can exit with a code that says something went wrong.
-        /// </summary>
-        public bool HaveErrorsBeenReported { get; private set; }
-
-        /// <summary>
-        /// Write the message to the console, prefixed by its kind unless it is ordinary progress.
-        /// </summary>
-        public override void MessageWithoutLocalizing(
-            string message,
-            ProgressKind kind = ProgressKind.Progress
-        )
-        {
-            base.MessageWithoutLocalizing(message, kind);
-            switch (kind)
-            {
-                case ProgressKind.Fatal:
-                case ProgressKind.Error:
-                    HaveErrorsBeenReported = true;
-                    Console.WriteLine("Error: " + message);
-                    break;
-                case ProgressKind.Warning:
-                    Console.WriteLine("Warning: " + message);
-                    break;
-                default:
-                    Console.WriteLine(message);
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// A prefix only changes which localization ids are looked up. Like NullWebSocketProgress,
-        /// this ignores it, so messages that would have used it come out in English.
-        /// </summary>
-        public override WebSocketProgress WithL10NPrefix(string localizationIdPrefix)
-        {
-            return this;
         }
     }
 

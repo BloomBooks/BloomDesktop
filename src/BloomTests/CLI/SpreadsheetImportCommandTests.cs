@@ -1,7 +1,7 @@
-// These tests of the command-line `spreadsheetImport` verb are commented out along with the verb
-// itself (see src/BloomExe/Spreadsheet/SpreadsheetImportCommand.cs for why, and what else to
-// uncomment to bring it back). The tests of SpreadsheetImporter.ImportWithBackupAsync that used to
-// be here are in src/BloomTests/Spreadsheet/SpreadsheetImportWithBackupTests.cs.
+// The tests of the command-line `spreadsheetImport` verb: the whole block comment below, commented
+// out along with the verb itself (see src/BloomExe/Spreadsheet/SpreadsheetImportCommand.cs for why,
+// and what else to uncomment to bring it back). SpreadsheetImporter.ImportWithBackupAsync, which the
+// verb uses, is tested in src/BloomTests/Spreadsheet/SpreadsheetImportWithBackupTests.cs.
 
 /*
 using System;
