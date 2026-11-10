@@ -2253,7 +2253,10 @@ namespace Bloom.Edit
             // data-derived value some dialog changed, altered feature requirements, or a caller
             // that explicitly forced a full save. The page content test below cannot see any of
             // those, so they have to be kept separately.
-            var somethingElseNeedsSaving = _nextSaveMustBeFull || NeedToDoFullSave(newPageData);
+            var somethingElseNeedsSaving =
+                _nextSaveMustBeFull
+                || NeedToDoFullSave(newPageData)
+                || BookCopyrightAndLicense.UserEmptiedOriginalCopyrightNotice(editedDom.RawDom);
 
             _nextSaveMustBeFull = CurrentBook.UpdateDomFromEditedPage(
                 editedDom,

@@ -828,6 +828,62 @@ namespace BloomTests.Book
         }
 
         /// <summary>
+        /// Emptying the unlocked field must make the save reach the data div, though the page's
+        /// data-book values look the same before and after (BL-16859). That holds on every save
+        /// while the field stays empty, including one after the data div has already lost the
+        /// user's wording. A field holding words needs no help.
+        /// </summary>
+        [TestCase("<p></p>", true)]
+        [TestCase("<p><br /></p>", true)]
+        [TestCase("<p>New words.</p>", false)]
+        public void UserEmptiedOriginalCopyrightNotice_ReportsOnlyAnEmptiedField(
+            string fieldContent,
+            bool expected
+        )
+        {
+            var html =
+                @"<html><head></head><body>
+							<div class='bloom-page'>
+								<div class='copyright bloom-translationGroup' data-default-languages='*'>
+									<div class='bloom-editable Credits-Page-style' data-book='userOriginalCopyrightAndLicense' lang='*'>"
+                + fieldContent
+                + @"</div>
+								</div>
+							</div>
+						</body></html>";
+            var bookDom = new HtmlDom(html);
+
+            Assert.That(
+                BookCopyrightAndLicense.UserEmptiedOriginalCopyrightNotice(
+                    bookDom.RawDom.SelectSingleNode("//div[contains(@class,'bloom-page')]")
+                ),
+                Is.EqualTo(expected)
+            );
+        }
+
+        /// <summary>
+        /// The locked sentence has no field to empty, so it never forces the save.
+        /// </summary>
+        [Test]
+        public void UserEmptiedOriginalCopyrightNotice_LockedSentence_False()
+        {
+            var bookDom = new HtmlDom(
+                @"<html><head></head><body>
+					<div class='bloom-page'>
+						<div class='copyright Credits-Page-style' data-derived='originalCopyrightAndLicense' lang='*'></div>
+					</div>
+				</body></html>"
+            );
+
+            Assert.That(
+                BookCopyrightAndLicense.UserEmptiedOriginalCopyrightNotice(
+                    bookDom.RawDom.SelectSingleNode("//div[contains(@class,'bloom-page')]")
+                ),
+                Is.False
+            );
+        }
+
+        /// <summary>
         /// The copy of the page sent to the editor turns the locked sentence into an ordinary
         /// editable field, with an open padlock in the bubble and the caret waiting in it.
         /// </summary>
