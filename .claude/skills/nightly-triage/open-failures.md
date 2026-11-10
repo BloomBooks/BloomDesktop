@@ -9,6 +9,9 @@ accept a flaky test, and a test is flaky from its first unexplained failure (roo
 Testing). So "wait and see whether it recurs" is never an entry's plan. To bring this up to date,
 use the `nightly-triage` skill.
 
+The nightly report reads this file: it counts the entries that have a `- **Failed:**` line and
+gives the age of the oldest, taken from the full date (`YYYY-MM-DD`) that starts each such line.
+
 ## E2E: a title typed on a new book's cover is lost
 
 - **Cause:** text typed while CKEditor was still loading was overwritten when it finished
@@ -50,9 +53,9 @@ use the `nightly-triage` skill.
 
 ## Component tests: lost connection to the dev server
 
-- **Failed:** once in September; again 2026-10-27, `bookgridsetup-extended.uitest.ts` "After
-  adding a book, the next available book is automatically selected":
-  `page.goto: net::ERR_CONNECTION_FAILED at http://127.0.0.1:5183/`.
+- **Failed:** 2026-09-21 (`registration-validation.uitest.ts`), 2026-10-27, 2026-11-09. On
+  10-27, `bookgridsetup-extended.uitest.ts` "After adding a book, the next available book is
+  automatically selected": `page.goto: net::ERR_CONNECTION_FAILED at http://127.0.0.1:5183/`.
 - **What the trace shows (first look, 10-27):** the first navigation of the test failed about
   15 ms after it started, with ERR_CONNECTION_FAILED rather than a refused or reset connection.
   The log shows no Vite restart, and the other 145 tests passed. A local stress run (the suite 10
@@ -74,8 +77,9 @@ use the `nightly-triage` skill.
 
 ## C# upload integration tests: the live service was slow
 
-Failed 2026-09-28, 10-15 and 10-27. A bloom-functions fix is in production, not yet measured. See
-[DETAILS.md](DETAILS.md#c-upload-integration-tests-the-live-service-was-slow).
+- **Failed:** 2026-09-28, 10-15 and 10-27.
+- **Status:** a bloom-functions fix is in production, not yet measured. See
+  [open-failures-details.md](open-failures-details.md#c-upload-integration-tests-the-live-service-was-slow).
 
 ## Open questions
 

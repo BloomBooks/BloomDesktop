@@ -1,7 +1,7 @@
 # Nightly failures: details
 
-Findings that are too detailed for the entries in [README.md](README.md). Each section belongs to
-one entry there.
+Findings that are too detailed for the entries in [open-failures.md](open-failures.md). Each
+section belongs to one entry there.
 
 ## C# upload integration tests: the live service was slow
 

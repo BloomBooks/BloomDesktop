@@ -1,11 +1,11 @@
 ---
 name: nightly-fix
-description: Fix an open nightly CI failure recorded in docs/nightly-failures/README.md, as one branch ready to become a draft PR, with the tests that prove the fix named. Use when asked to "fix the nightly failures", "fix last night's failure", or "fix <a doc entry>". The Bloom bot runs it every morning after nightly-triage.
+description: Fix an open nightly CI failure recorded in .claude/skills/nightly-triage/open-failures.md, as one branch ready to become a draft PR, with the tests that prove the fix named. Use when asked to "fix the nightly failures", "fix last night's failure", or "fix <a doc entry>". The Bloom bot runs it every morning after nightly-triage.
 ---
 
 # Fix a nightly failure
 
-`docs/nightly-failures/README.md` lists the open nightly failures, each with what the triage
+`.claude/skills/nightly-triage/open-failures.md` lists the open nightly failures, each with what the triage
 found. This skill takes one piece of that list and fixes it: one change that one PR can carry.
 
 ## 1. Read the rules first
@@ -51,7 +51,7 @@ because each is fixed and proved differently:
 ## 4. Make the change and check it
 
 Keep the change to what fixes the failure. Follow the code style in `AGENTS.md`. Don't edit
-`docs/nightly-failures/README.md`; the triage keeps it.
+`.claude/skills/nightly-triage/open-failures.md`; the triage keeps it.
 
 Check what you can before handing over:
 - Changed C#: it must compile.
