@@ -82,7 +82,6 @@ namespace Bloom.Publish.Epub
     {
         public delegate EpubMaker Factory(); // autofac uses this
 
-        public const string kEPUBExportFolder = "ePUB_export";
         private const int kPathMax = 260; // maximum path length on Windows (including terminating NUL)
 
         protected const string kEpubNamespace = "http://www.idpf.org/2007/ops";
@@ -95,10 +94,6 @@ namespace Bloom.Publish.Epub
         private Guid _thumbnailRequestId;
         private Dictionary<string, int> _omittedPageLabels = new Dictionary<string, int>();
 
-        public static readonly string EpubExportRootFolder = Path.Combine(
-            Path.GetTempPath(),
-            kEPUBExportFolder
-        );
         private string _navPageLang;
 
         public Book.Book Book
@@ -275,26 +270,7 @@ namespace Bloom.Publish.Epub
             );
             _langsForLocalization = Book.BookData.GetBasicBookLanguageCodes().ToArray();
 
-            // robustly come up with a directory we can use, even if previously used directories are locked somehow
-            Directory.CreateDirectory(EpubExportRootFolder); // this is ok if it already exists
-            for (var i = 0; i < 20; i++)
-            {
-                var dir = Path.Combine(EpubExportRootFolder, i.ToString());
-
-                if (Directory.Exists(dir))
-                {
-                    // see if we can delete this old directory first
-                    if (!SIL.IO.RobustIO.DeleteDirectoryAndContents(dir))
-                    {
-                        progress.MessageWithoutLocalizing("could not remove " + dir);
-                        continue; // if not, let's change the target directory name and try again
-                    }
-                }
-
-                Directory.CreateDirectory(dir);
-                _outerStagingFolder = TemporaryFolder.TrackExisting(dir);
-                break;
-            }
+            _outerStagingFolder = PublishStaging.CreateFolder();
 
             var tempBookPath = Path.Combine(
                 _outerStagingFolder.FolderPath,
@@ -347,7 +323,7 @@ namespace Bloom.Publish.Epub
             if (Platform.IsWindows)
             {
                 // https://issues.bloomlibrary.org/youtrack/issue/BH-5988 has a book with an image file whose name is 167 characters long.
-                // "C:\Users\steve\AppData\Local\Temp\ePUB_export\0" is already 47 characters long, and usernames can certainly be longer
+                // "C:\Users\steve\AppData\Local\Temp\bps\k3x9q" is already 43 characters long, and usernames can certainly be longer
                 // than 5 characters.  So we can't really afford much more in the folder name.  Certainly adding the full GUID will make
                 // this file's path too long, throwing an exception rather than creating an ePUB.  (This may not happen on the local user's
                 // machine, but certainly will on the harvester machine.)

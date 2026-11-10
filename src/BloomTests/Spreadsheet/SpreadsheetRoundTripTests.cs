@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
@@ -567,12 +568,102 @@ namespace BloomTests.Spreadsheet
         [TestCase("foo_x000D_\nbar", "foo\r\nbar")]
         [TestCase("foo_x000D_bar\r\n_x000D_\r\nbaz_x000D_\n\n", "foo\rbar\r\n\r\r\nbaz\r\n\n")]
         [TestCase("foo_x000D_bar_x005F_baz_x000D_", "foo\rbar_baz\r")]
+        // BL-16185: programs other than Excel may write the hex digits in lowercase.
+        [TestCase("foo_x000d_\nbar", "foo\r\nbar")]
+        [TestCase("foo_x000d_bar_x00e9_", "foo\rbaré")]
+        // An escaped underscore before an escape-like sequence is how the literal text is
+        // escaped, so the result is that literal text, not the character it looks like.
+        [TestCase("foo_x005F_x000D_bar", "foo_x000D_bar")]
+        [TestCase("foo_x005f_x000d_bar", "foo_x000d_bar")]
+        // The "x" of an escape is always lowercase, so this is plain text.
+        [TestCase("foo_X000D_bar", "foo_X000D_bar")]
         public void UndoExcelEscapedChars(string input, string expected)
         {
             Assert.That(
                 SpreadsheetIO.ReplaceExcelEscapedCharsAndEscapeXmlOnes(input),
                 Is.EqualTo(expected)
             );
+        }
+
+        /// <summary>
+        /// BL-16185: a two-paragraph title exports as two lines. If another spreadsheet program
+        /// re-saves the file with a lowercase escape for a carriage return at the line break,
+        /// importing it must still give two clean paragraphs, not literal "_x000d_" text.
+        /// </summary>
+        [Test]
+        public async Task TwoParagraphTitle_ResavedWithLowercaseCrEscape_ImportsAsTwoParagraphs()
+        {
+            var origDom = new HtmlDom(roundtripTestBook, true);
+            var importDom = new HtmlDom(roundtripTestBook, true);
+            var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
+            mockLangDisplayNameResolver
+                .Setup(x => x.GetLanguageDisplayName("en"))
+                .Returns("English");
+            var exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
+            exporter.Params = new SpreadsheetExportParams();
+            var exportedSheet = exporter.Export(origDom, "fakeImagesFolderpath");
+
+            using (var tempFile = TempFile.WithExtension("xlsx"))
+            {
+                exportedSheet.WriteToFile(tempFile.Path);
+
+                // Simulate the re-save: replace the English title cell's text.
+                using (var package = new ExcelPackage(new FileInfo(tempFile.Path)))
+                {
+                    var worksheet = package.Workbook.Worksheets[0];
+                    var titleCell = FindCell(
+                        worksheet,
+                        InternalSpreadsheet.BookTitleRowLabel,
+                        "[en]"
+                    );
+                    Assert.That(
+                        titleCell.Text,
+                        Is.EqualTo("Pineapple\nFarm"),
+                        "test setup: the export should put the two title paragraphs on two lines"
+                    );
+                    titleCell.IsRichText = false;
+                    titleCell.Value = "Pineapple_x000d_\nFarm";
+                    package.Save();
+                }
+
+                var sheet = InternalSpreadsheet.ReadFromFile(tempFile.Path);
+                var importer = new TestSpreadsheetImporter(null, importDom);
+                await importer.ImportAsync(sheet);
+            }
+
+            var titleDiv = importDom
+                .SafeSelectNodes(
+                    "//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en']"
+                )
+                .Cast<SafeXmlElement>()
+                .Single();
+            var paragraphs = titleDiv.SafeSelectNodes("./p").Cast<SafeXmlElement>().ToArray();
+            Assert.That(
+                paragraphs.Select(p => p.InnerText).ToArray(),
+                Is.EqualTo(new[] { "Pineapple", "Farm" }),
+                "imported title: " + titleDiv.InnerXml
+            );
+        }
+
+        /// <summary>
+        /// Find the cell in the row whose first column is rowLabel and the column whose
+        /// first header row is columnLabel.
+        /// </summary>
+        private static ExcelRange FindCell(
+            ExcelWorksheet worksheet,
+            string rowLabel,
+            string columnLabel
+        )
+        {
+            var rowCount = worksheet.Dimension.Rows;
+            var colCount = worksheet.Dimension.Columns;
+            var row = Enumerable
+                .Range(1, rowCount)
+                .Single(r => worksheet.Cells[r, 1].Text == rowLabel);
+            var col = Enumerable
+                .Range(1, colCount)
+                .Single(c => worksheet.Cells[1, c].Text == columnLabel);
+            return worksheet.Cells[row, col];
         }
 
         // This test verifies the effect of inserting [blank] for empty cells. Without it,

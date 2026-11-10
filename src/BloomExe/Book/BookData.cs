@@ -446,7 +446,6 @@ namespace Bloom.Book
                 itemsToDelete,
                 info
             );
-            UpdateToolRelatedDataFromBookInfo(info, incomingData, itemsToDelete);
             incomingData.UpdateGenericLanguageString(
                 "contentLanguage1",
                 XmlString.FromUnencoded(Language1.Tag),
@@ -498,9 +497,13 @@ namespace Bloom.Book
             if (info == null)
                 return; // only in tests
             var tools = info.Tools;
-            var bookClass = _dom.Body.GetAttribute("class");
+            // Test for the class as a whole word. The string "leveled-reader-off" contains
+            // "leveled-reader", so a substring test said a book was leveled when the user had
+            // just said it was not (BL-16775).
+            var isLeveled = _dom.Body.HasClass("leveled-reader");
+            var isDecodable = _dom.Body.HasClass("decodable-reader");
 
-            if (!bookClass.Contains("leveled-reader") && !bookClass.Contains("decodable-reader"))
+            if (!isLeveled && !isDecodable)
             {
                 incomingData.UpdateGenericLanguageString(
                     "levelOrStageNumber",
@@ -512,7 +515,7 @@ namespace Bloom.Book
             }
 
             var levelTool = tools.FirstOrDefault(t => t.ToolId == "leveledReader");
-            if (levelTool != null && bookClass.Contains("leveled-reader"))
+            if (levelTool != null && isLeveled)
             {
                 var level = levelTool.State;
                 incomingData.UpdateGenericLanguageString(
@@ -524,7 +527,7 @@ namespace Bloom.Book
             }
 
             var decodableTool = tools.FirstOrDefault(t => t.ToolId == "decodableReader");
-            if (decodableTool != null && bookClass.Contains("decodable-reader"))
+            if (decodableTool != null && isDecodable)
             {
                 var stageString = decodableTool
                     .State?.Split(';')
@@ -1332,6 +1335,12 @@ namespace Bloom.Book
 
             MigrateData(data);
 
+            // This has to happen before we push the data out to the document. The gathered data
+            // holds whatever levelOrStageNumber the pages happen to show, so a book the user has
+            // just said is neither leveled nor decodable would otherwise be given its old number
+            // back, and go on showing that grade for ever (BL-16775).
+            UpdateToolRelatedDataFromBookInfo(info, data, itemsToDelete);
+
             //            SendDataToDebugConsole(data);
             UpdateDomFromDataSet(data, "*", _dom.RawDom, itemsToDelete);
 
@@ -1803,7 +1812,9 @@ namespace Bloom.Book
                 }
                 if (attr.Name == "class")
                 {
-                    var classes = attr.Value.Split().ToList();
+                    var classes = attr
+                        .Value.Split((char[])null, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
                     classes.RemoveAll(x =>
                         _classesNotToCopy.Contains(x)
                         || x.EndsWith("-style", StringComparison.Ordinal)
@@ -2145,8 +2156,13 @@ namespace Bloom.Book
                     var classesToRemove = new HashSet<string>(_classesToRemoveIfAbsent);
                     // There's probably a HashSet union function we could use here a little more concisely.
                     // I prefer not to disturb the order of the classes more than we have to.
-                    var newClasses = tuple.Item2.Unencoded.Split();
-                    var classes = node.GetAttribute("class").Split().ToList();
+                    var newClasses = tuple.Item2.Unencoded.Split(
+                        (char[])null,
+                        StringSplitOptions.RemoveEmptyEntries
+                    );
+                    var classes = node.GetAttribute("class")
+                        .Split((char[])null, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
                     var currentSet = new HashSet<string>(classes);
                     foreach (var newClass in newClasses)
                     {

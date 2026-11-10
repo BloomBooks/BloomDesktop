@@ -1161,8 +1161,13 @@ function withInlineImageSync(
 // and a dialog that opened by itself would get in the way of that. The picture is chosen
 // later, with "Change image" on the image's menu. insertInlineImage records its own undo entry
 // and puts a copy in every editable of the group, so nothing has to be copied here.
-function addInlineImage(translationGroup: HTMLElement): void {
-    const wrapper = insertInlineImage(translationGroup);
+// A paste (inlineImagePaste.ts) already has its picture, and passes `setUpPicture` to put it in;
+// see insertInlineImage.
+export function addInlineImage(
+    translationGroup: HTMLElement,
+    setUpPicture?: (img: HTMLElement) => void,
+): void {
+    const wrapper = insertInlineImage(translationGroup, setUpPicture);
     updateProtectedPictureCounts(translationGroup);
     resetCkeditorHistories(translationGroup);
     selectInlineImage(wrapper);

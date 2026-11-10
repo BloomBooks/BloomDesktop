@@ -181,17 +181,19 @@ export class ImpairmentVisualizerControls extends React.Component<
         }
     }
 
-    public static removeImpairmentVisualizerMarkup() {
-        const page = getPageIframeBody();
-        if (!page || !page.ownerDocument) return;
-        ImpairmentVisualizerControls.removeColorBlindnessMarkup(page);
-        const body = page.ownerDocument.body;
+    // These classes are on the page iframe's body, which is never saved, so removing them is
+    // live-only work for detachFromPage, not part of removeToolMarkup.
+    public static removeSimulationClassesFromBody() {
+        const body = getPageIframeBody();
+        if (!body) return;
         body.classList.remove("simulateColorBlindness");
         body.classList.remove("simulateCataracts");
     }
 
-    // Caller is responsible for guarding against a null page parameter.
-    private static removeColorBlindnessMarkup(page: HTMLElement) {
+    // Removes the colour-blindness overlays from 'page'. Public because the tool's adapter
+    // (ImpairmentVisualizerAdapter.removeToolMarkup) calls it too, with the live page or the copy of
+    // it about to be saved. The caller is responsible for guarding against a null page.
+    public static removeColorBlindnessMarkup(page: HTMLElement) {
         [].slice
             .call(page.getElementsByClassName("ui-cbOverlay"))
             .map((x) => x.parentElement.removeChild(x));
@@ -358,7 +360,13 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
         this.controlsElement.updateSimulations(undefined);
     }
 
+    // The colour-blindness overlays are the only markup this tool puts inside the page div.
+    public removeToolMarkup(pageOrClone: HTMLElement): void {
+        ImpairmentVisualizerControls.removeColorBlindnessMarkup(pageOrClone);
+    }
+
     public detachFromPage() {
-        ImpairmentVisualizerControls.removeImpairmentVisualizerMarkup();
+        super.detachFromPage(); // removeToolMarkup: the overlays
+        ImpairmentVisualizerControls.removeSimulationClassesFromBody();
     }
 }

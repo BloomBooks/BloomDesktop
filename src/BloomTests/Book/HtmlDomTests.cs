@@ -38,46 +38,6 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void RemoveCkEditorMarkup_RemovesCke_editable()
-        {
-            var dom = new HtmlDom(
-                @"<html><body><div>
-					<div id='middle' class='bloom-content1 cke_editable cke_focus cke_content_ltr another-style'></div>
-					<div id='end' class='bloom-content1 cke_editable cke_focus cke_content_ltr'></div>
-					<div id='start' class='cke_editable cke_focus cke_content_ltr bloom-content1'></div>
-					<div id='whole' class='cke_editable cke_focus cke_content_ltr'></div>
-					<div id='none' class='bloom-content1'></div>
-				</div></body></html>"
-            );
-            AssertThatXmlIn
-                .Dom(dom.RawDom)
-                .HasSpecifiedNumberOfMatchesForXpath("//*[contains(@class, 'cke_')]", 4); // test this xpath :-)
-            HtmlDom.RemoveCkEditorMarkup(dom.RawDom.DocumentElement);
-            var assertThatResult = AssertThatXmlIn.Dom(dom.RawDom);
-            assertThatResult.HasSpecifiedNumberOfMatchesForXpath(
-                "//div[@id='middle' and @class='bloom-content1 another-style']",
-                1
-            );
-            assertThatResult.HasSpecifiedNumberOfMatchesForXpath(
-                "//div[@id='end' and @class='bloom-content1']",
-                1
-            );
-            assertThatResult.HasSpecifiedNumberOfMatchesForXpath(
-                "//div[@id='start' and @class='bloom-content1']",
-                1
-            );
-            assertThatResult.HasSpecifiedNumberOfMatchesForXpath(
-                "//div[@id='whole' and @class='']",
-                1
-            );
-            assertThatResult.HasSpecifiedNumberOfMatchesForXpath(
-                "//div[@id='none' and @class='bloom-content1']",
-                1
-            );
-            AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//*[contains(@class, 'cke_')]"); // further verify result
-        }
-
-        [Test]
         public void RemovePageBackgroundColorStyles_RemovesOnlyPageBackgroundColor()
         {
             var dom = SafeXmlDocument.Create();
@@ -1309,6 +1269,16 @@ namespace BloomTests.Book
                 "<div>Hello <cite class=\"myClass\">world</cite> That was a citation</div>",
                 dom.InnerXml
             );
+
+            // Older books can have a line break in the original title (BL-17031).
+            HtmlDom.SetElementFromUserStringSafely(
+                target,
+                "Hello <cite data-book=\"originalTitle\">line one\nline two</cite>, Copyright"
+            );
+            Assert.AreEqual(
+                "<div>Hello <cite data-book=\"originalTitle\">line one\nline two</cite>, Copyright</div>",
+                dom.InnerXml
+            );
         }
 
         [Test]
@@ -2409,6 +2379,63 @@ p {
             Assert.IsTrue(
                 fonts.Contains("Charis SIL Second"),
                 "The html style attribute refers to Charis SIL Second as a font."
+            );
+        }
+
+        /// <summary>
+        /// StyleEditor writes a font for a language-independent field such as the ISBN as a rule
+        /// on [lang="*"], and language tags may contain digits. Both used to be missed (BL-16851).
+        /// </summary>
+        [Test]
+        public void FindFontsUsedInCss_FindsFontsForLangStarAndTagsWithDigits()
+        {
+            const string htmlContent =
+                @"<html>
+<head>
+<style type=""text/css"" title=""userModifiedStyles"">
+.Credits-Page-style[lang=""*""] { font-family: ABeeZee !important; }
+.normal-style[lang=""es-419""] { font-family: ""Charis SIL"" !important; }
+.Heading1-style[lang=""*""] { font-family: Unused Font !important; }
+</style>
+</head>
+<body>
+<div class=""bloom-page""><div class=""bloom-editable Credits-Page-style"" lang=""*"">ISBN 123</div>
+<div class=""bloom-editable normal-style"" lang=""es-419"">hola</div>
+<div class=""bloom-editable Heading1-style"" lang=""en"">not language-independent</div></div>
+</body>
+</html>";
+
+            var fonts = new HashSet<string>();
+            HtmlDom.FindFontsUsedInCss(htmlContent, fonts, true);
+            Assert.That(fonts, Is.EquivalentTo(new[] { "ABeeZee", "Charis SIL" }));
+        }
+
+        /// <summary>
+        /// Default fonts for language tags containing digits (e.g., es-419) used to be missed
+        /// (BL-16851). The rule for lang="*" content must still never match: see the comment in
+        /// CollectionSettings where that rule is written.
+        /// </summary>
+        [Test]
+        public void DefaultLangStylesCssRegex_MatchesTagsWithDigitsButNotStar()
+        {
+            const string css =
+                @"[lang='es-419'] { font-family: 'Charis SIL'; direction: ltr; }
+[lang='en'] { font-family: Andika; }
+.bloom-page:not(.bloom-frontMatter):not(.bloom-backMatter) [lang='*'] { font-family: 'Noto Sans'; }";
+
+            var langToFont = HtmlDom
+                .DefaultLangStylesCssRegex.Matches(css)
+                .ToDictionary(m => m.Groups[2].Value, m => m.Groups[4].Value.Trim(' ', '\''));
+
+            Assert.That(
+                langToFont,
+                Is.EquivalentTo(
+                    new Dictionary<string, string>
+                    {
+                        { "es-419", "Charis SIL" },
+                        { "en", "Andika" },
+                    }
+                )
             );
         }
 

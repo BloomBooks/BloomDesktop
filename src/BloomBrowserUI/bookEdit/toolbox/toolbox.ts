@@ -115,8 +115,27 @@ export interface ITool {
     // To guard against certain race conditions, we currently call this again after 600ms. Tools should
     // allow for this possibility and not repeat any work that was already done.
     newPageReady();
-    detachFromPage(); // called when a page is going away AND before hideTool
+    // Remove from 'pageOrClone' the markup this tool adds for editing that must not be saved.
+    // "Markup" here means any change the tool makes to the page's DOM for editing: elements and
+    // wrappers it adds, classes and attributes it sets, and positions it moves things to (the Game
+    // tool's play mode, for one), not just highlighting.
+    // It is given either a detached clone of the .bloom-page div, on every save while the user
+    // goes on editing (see bloomEditing.ts), or the live .bloom-page div, from detachFromPage().
+    // So it must only change the DOM inside 'pageOrClone': it may not reach into the live document
+    // or change the tool's own state, since on a save the tool is still running. Live-only work
+    // (observers, React state, caches) belongs in detachFromPage().
+    // The inherited no-op is right if all the tool's markup is bloom-ui, ui-resizable-handle, cke_*,
+    // or outside the .bloom-page div, since the save discards those anyway
+    // (removeEditorChromeFromClone, and only the page div is saved). Make that a deliberate choice.
+    removeToolMarkup(pageOrClone: HTMLElement): void;
+    // Called when a page is going away AND before hideTool. ToolboxToolReactAdaptor's
+    // implementation calls removeToolMarkup() on the live page. Override it only to add live-only
+    // teardown, and call super.detachFromPage() where the markup should come off.
+    detachFromPage(): void;
     id(): string; // the canonical id, without trailing "Tool"!
+    // True if the last detachFromPage() reached ToolboxToolReactAdaptor's implementation. Used only
+    // by detachToolFromPage() to catch an override that forgot to call super.
+    didRemoveToolMarkupWhileDetaching(): boolean;
     isAlwaysEnabled(): boolean;
     // If this is true, the tool may only be selected on pages that have data-tool-id matching this tool's id.
     requiresToolId(): boolean;
@@ -223,6 +242,36 @@ export class ToolBox {
         configurePageEditingHandlers(container, this);
     }
 
+    /// Undoes the jQuery bookkeeping that configureElementsForTools (and the
+    /// configureElements() of each tool) created on the page that is about to be replaced.
+    /// Call this while the outgoing page is still in the DOM.
+    ///
+    /// This is not optional tidying. jQuery 1.x keeps every element it has bound a handler
+    /// to in the global jQuery.cache of the frame whose jQuery did the binding, and the
+    /// entry holds a hard reference to the element (cache[n].handle.elem). We bind with the
+    /// toolbox frame's jQuery onto elements that live in the page frame's document, and
+    /// switching pages keeps the toolbox frame while navigating the page frame (see
+    /// EditingView.SwitchPage). Nothing in that navigation tells jQuery its elements are
+    /// gone, so without this every page ever visited stays in the cache, and each retained
+    /// .bloom-editable keeps its detached document, and hence that page's whole JS realm
+    /// (CKEditor, React, the page's module graph) alive for the rest of the session.
+    ///
+    /// A single sweep of the subtree is deliberate, rather than an unbind method on each
+    /// tool to pair with its configureElements: cleanData removes events and data for every
+    /// element regardless of which tool bound them, so a new tool cannot reintroduce the
+    /// leak by forgetting to clean up after itself.
+    ///
+    /// jQuery's expando key is per-jQuery-instance, so this only ever touches the toolbox
+    /// frame's own cache. The page frame's jQuery cache is untouched, and dies with the page.
+    public releaseElementsForTools(container: HTMLElement) {
+        const elements = $(container).find("*").addBack();
+        // cleanData is what jQuery itself calls when it removes elements; it is not in the
+        // published typings, hence the cast.
+        (
+            $ as unknown as { cleanData: (e: ArrayLike<Element>) => void }
+        ).cleanData(elements.get());
+    }
+
     public getTheOneGameTool(): GameTool | undefined {
         return GameTool.theOneDragActivityTool;
     }
@@ -232,7 +281,8 @@ export class ToolBox {
     // and that function has some fallback behavior in that case.
     public detachExpandedTool(): void {
         this.runTasksForClosingTool();
-        findExpandedTool()?.detachFromPage();
+        const tool = findExpandedTool();
+        if (tool) detachToolFromPage(tool);
     }
     // Runs (once) whatever was registered with addWhenClosingToolTask(). Called both by the
     // explicit detach above and by the tool's own lifecycle cleanup (useToolLifecycle.ts).
@@ -470,7 +520,19 @@ function detachExpandedTool() {
     } else if (findExpandedTool()) {
         // If the toolbox is not available, we still may be able to detach the expanded tool.
         // This is what we used to do before we had some extra behavior in the toolbox.
-        findExpandedTool()?.detachFromPage();
+        detachToolFromPage(findExpandedTool()!);
+    }
+}
+
+// Detach one tool from the live page, and complain if it overrode detachFromPage() without calling
+// super, which would leave its markup to be saved into the book. We log rather than throw because
+// this runs during a page change, and losing that would be worse than the stale markup.
+function detachToolFromPage(tool: ITool): void {
+    tool.detachFromPage();
+    if (!tool.didRemoveToolMarkupWhileDetaching()) {
+        console.error(
+            `${tool.id()}Tool.detachFromPage() did not call super.detachFromPage(), so its removeToolMarkup() never ran on the live page. See ITool.detachFromPage.`,
+        );
     }
 }
 
@@ -858,8 +920,8 @@ function restoreToolboxSettingsWhenPageReady(
     });
 }
 
-// Remove any markup the toolbox is inserting. Called by a RunJavaScript() in EditingView
-// before saving the page.
+// Remove any markup the toolbox is inserting. Called when the page is going away; it detaches the
+// current tool from the live page, which leaves the page unusable for further editing.
 export function removeToolboxMarkup() {
     detachExpandedTool();
 }
@@ -869,6 +931,13 @@ export function removeToolboxMarkup() {
 // is expanded. Cleared when a page's saved settings are restored, so that each book writes its
 // setting once even when two books in a row use the same tool.
 let lastPersistedToolId: string | undefined = undefined;
+
+// Strip from 'pageClone', a detached clone of the page div, the current tool's editing markup.
+// The rest of detaching (doWhenClosingTool, live-only teardown) is deliberately skipped: the user
+// is still on this page and still using this tool. Called from the page iframe when saving.
+export function removeToolMarkupFromPageClone(pageClone: HTMLElement): void {
+    findExpandedTool()?.removeToolMarkup(pageClone);
+}
 
 /**
  * Has Bloom remember which tool is expanded, when that has changed. The book's meta.json has

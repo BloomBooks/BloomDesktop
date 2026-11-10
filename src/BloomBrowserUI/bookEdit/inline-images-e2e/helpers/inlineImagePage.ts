@@ -28,17 +28,33 @@ export const EDITABLE_WIDTH = 400;
 export const LINE_HEIGHT = 20;
 export const FONT_SIZE = 16; // so that the CSS's 1em gap is 16px
 
-let compiledCss: string | undefined;
+// The rules that apply only while editing, such as the z-index that lets a click reach the
+// image. Tests about what a click lands on need them as well as the layout rules.
+const editingLessPath = path.join(
+    __dirname,
+    "../../css/inlineImageEditing.less",
+);
 
-/** Compile inlineImages.less once per worker. */
-const getInlineImageCss = async (): Promise<string> => {
-    if (compiledCss === undefined) {
-        const source = fs.readFileSync(lessPath, "utf8");
-        const result = await less.render(source, { filename: lessPath });
-        compiledCss = result.css;
+const compiledCss = new Map<string, string>();
+
+/** Compile a .less file once per worker. */
+async function compileLess(filePath: string): Promise<string> {
+    let css = compiledCss.get(filePath);
+    if (css === undefined) {
+        const source = fs.readFileSync(filePath, "utf8");
+        const result = await less.render(source, { filename: filePath });
+        css = result.css;
+        compiledCss.set(filePath, css);
     }
-    return compiledCss;
-};
+    return css;
+}
+
+/** The CSS for the page: the layout rules, and the editing rules too if asked for. */
+async function getInlineImageCss(editing: boolean): Promise<string> {
+    const layout = await compileLess(lessPath);
+    if (!editing) return layout;
+    return layout + "\n" + (await compileLess(editingLessPath));
+}
 
 export interface IInlineImageOptions {
     /** dock suffix: "Left" | "Right" | "Middle" | "Bottom" */
@@ -58,6 +74,11 @@ export interface IInlineImageOptions {
      * cut away on each side.
      */
     crop?: { top: number; right: number; bottom: number; left: number };
+    /**
+     * Also load inlineImageEditing.less, and make the paragraph position:relative as Bloom's
+     * paragraphs are while editing, so that what a click lands on is what it is in Bloom.
+     */
+    editing?: boolean;
 }
 
 /**
@@ -69,7 +90,7 @@ export async function loadInlineImagePage(
     page: Page,
     options: IInlineImageOptions,
 ): Promise<void> {
-    const css = await getInlineImageCss();
+    const css = await getInlineImageCss(!!options.editing);
     const vars = [
         `--inline-image-width: ${options.width ?? "40%"}`,
         `--inline-image-offset: ${options.offset ?? "0px"}`,
@@ -98,6 +119,7 @@ export async function loadInlineImagePage(
       font: ${FONT_SIZE}px/${LINE_HEIGHT}px monospace;
   }
   .bloom-editable p { margin: 0; }
+  ${options.editing ? ".bloom-editable p { position: relative; }" : ""}
   ${css}
 </style></head><body>
   <div class="bloom-translationGroup">

@@ -9,8 +9,8 @@
 # Each suite publishes its own check run / job-summary section, so the commit shows five
 # independent results rather than one merged total. See the "Test reports" steps at the end.
 #
-# Every night is then reported to Zulip -- pass or fail, all in one topic -- with each suite's
-# counts and how long it took. See "The nightly report" at the end.
+# Every night is then reported to Zulip and Slack -- pass or fail, all in one topic -- with each
+# suite's counts and how long it took. See "The nightly report" at the end.
 #
 # Schedule: 04:00 UTC daily. GitHub cron is always UTC (== GMT, no DST), so this is a
 # literal 4am GMT. Note GitHub may delay scheduled runs during peak load; exact timing is
@@ -70,7 +70,7 @@ on:
                 type: boolean
                 default: true
             post_to_zulip:
-                description: "Post report to Zulip"
+                description: "Post report to Zulip and Slack"
                 type: boolean
                 default: false
 
@@ -107,88 +107,20 @@ jobs:
         steps:
             - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-            # ----- Toolchains -----
-
-            - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+            # ----- Toolchains and dependencies -----
+            # In a composite action shared with bot-verify.yml, so that a fix the bot proves there
+            # is proved on the same setup the nightly runs on. The action says why only the setup
+            # is shared and the builds below are not. The nightly report counts this step as
+            # "setup and install", because it comes before the front-end build.
+            - name: Set up toolchains and dependencies
+              uses: ./.github/actions/bloom-setup
               with:
-                  dotnet-version: 8.0.x
-
-            - uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3
-
-            - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-              with:
-                  package_json_file: src/BloomBrowserUI/package.json
-
-            - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-              with:
-                  # Track the repo's canonical Node version (.node-version, currently
-                  # 24.13.0 — also what package.json devEngines pins) rather than a
-                  # hardcoded major, so the nightly always tests the version developers
-                  # actually use and never drifts from it.
-                  node-version-file: .node-version
-                  cache: pnpm
-                  cache-dependency-path: |
-                      src/BloomBrowserUI/pnpm-lock.yaml
-                      src/content/pnpm-lock.yaml
-                      src/BloomE2E/pnpm-lock.yaml
-                      src/BloomVisualRegressionTests/pnpm-lock.yaml
-                      src/BloomBrowserUI/react_components/component-tester/pnpm-lock.yaml
-
-            # ----- Dependencies (mirrors init.sh) -----
-
-            - name: Get binary dependencies (TeamCity artifacts, chm, ffmpeg, etc.)
-              shell: bash
-              run: ./build/getDependencies-windows.sh
-
-            # The prepared collections the BloomE2E suite opens, and the books and reference
-            # screenshots the visual-regression suite renders, live in
-            # https://github.com/BloomBooks/bloom-testing-inputs, at the commit named by
-            # build/testing-inputs.pin. This fetches that commit into output/testing-inputs. It is a
-            # shallow single-commit fetch, so it costs a couple of seconds. Done here with the other
-            # dependency fetches rather than beside the suite, so a bad pin fails early and visibly.
-            - name: Get testing inputs (test books and reference screenshots)
-              # Only the two Bloom-driving suites consume these, so a fetch failure must not block a
-              # run that has both of them switched off.
-              if: ${{ env.RUN_E2E_TESTS == 'true' || env.RUN_VISUAL_REGRESSION == 'true' }}
-              shell: bash
-              run: node build/get-testing-inputs.mjs
-
-            # The font chooser test (src/BloomE2E/tests/font-chooser.spec.ts) needs one installed
-            # font of each verdict Bloom gives, and a clean windows-latest runner has only
-            # Microsoft fonts: nothing Bloom calls "unknown", and nothing non-Microsoft it calls
-            # "unsuitable". bloom-testing-inputs carries the missing fonts under fonts/ (its
-            # fonts/README.md says which and why); this installs them for the runner's user. The
-            # script fails if GDI+ does not list them afterwards, which is what Bloom reads.
-            - name: Install test fonts
-              if: ${{ env.RUN_E2E_TESTS == 'true' }}
-              shell: powershell
-              run: ./src/BloomE2E/scripts/install-test-fonts.ps1
-
-            - name: pnpm install
-              shell: bash
-              run: |
-                  # Install the two workspaces in parallel, but wait on each PID
-                  # individually: a bare `wait` (no operands) always exits 0, so it would
-                  # mask a failed install (e.g. an out-of-date lockfile) and let the step
-                  # pass green. `wait <pid>` propagates that child's exit status instead,
-                  # so under the runner's `set -e` a failed install fails the step.
-                  (cd src/content && pnpm install --frozen-lockfile) &
-                  pid_content=$!
-                  (cd src/BloomBrowserUI && pnpm install --frozen-lockfile) &
-                  pid_ui=$!
-                  wait "$pid_content"
-                  wait "$pid_ui"
-
-            # Master/alpha builds always take the newest floating front-end deps rather
-            # than the lockfile-pinned versions (bloom-player from its alpha channel,
-            # latest comicaljs / language-chooser / image-gallery), matching the TeamCity
-            # master build.
-            - name: Update floating front-end dependencies
-              working-directory: src/BloomBrowserUI
-              shell: bash
-              run: pnpm update bloom-player@alpha comicaljs@latest "@ethnolib/language-chooser-react-mui@latest" bloom-image-gallery
+                  testing-inputs: ${{ env.RUN_E2E_TESTS == 'true' || env.RUN_VISUAL_REGRESSION == 'true' }}
+                  test-fonts: ${{ env.RUN_E2E_TESTS == 'true' }}
 
             # ----- Front-end build + tests -----
+            # bot-verify.yml repeats this build and the C# build below, so a change to how either
+            # is built belongs in both files.
 
             - name: Build browser UI (production)
               id: build_frontend
@@ -704,6 +636,9 @@ jobs:
                   JOB_STATUS: ${{ job.status }}
                   RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
                   BRANCH: ${{ github.ref_name }}
+                  # The triage's list of open failures on this branch, as it stands now rather than
+                  # at this run's commit, since the triage updates it after the run.
+                  OPEN_FAILURES_URL: ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.claude/skills/nightly-triage/open-failures.md
                   # For the timings lookup below.
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   API_URL: ${{ github.api_url }}
@@ -915,6 +850,47 @@ jobs:
                       $headline = "❌ **Nightly run failed**"
                   }
 
+                  # ---- known failures still open -------------------------------------------
+                  # A night where every suite passes says nothing about the failures from earlier
+                  # nights that nobody has fixed yet, so the report also counts the entries in the
+                  # triage's list of open failures and gives the age of the oldest. The list and the
+                  # rule this parser relies on (each entry for a real failure has a "- **Failed:**"
+                  # line that starts with the full date of its first failure) are in
+                  # .claude/skills/nightly-triage. Quoted for the same reason as the run link at the
+                  # end: a bare link in Zulip becomes a preview card.
+                  function Format-OpenFailures {
+                      $path = ".claude/skills/nightly-triage/open-failures.md"
+                      if (-not (Test-Path -LiteralPath $path)) { return "> ❓ The list of open nightly failures, $path, is missing." }
+                      $entries = [regex]::Split((Get-Content -LiteralPath $path -Raw -Encoding utf8), '(?m)^## ') | Select-Object -Skip 1
+                      $firstFailures = @()
+                      $undated = 0
+                      foreach ($entry in $entries) {
+                          $failedLine = [regex]::Match($entry, '(?m)^- \*\*Failed:\*\*\s*(.*)$')
+                          if (-not $failedLine.Success) { continue }
+                          $date = [regex]::Match($failedLine.Groups[1].Value, '^(\d{4}-\d{2}-\d{2})')
+                          if ($date.Success) {
+                              $firstFailures += [datetime]::ParseExact($date.Groups[1].Value, "yyyy-MM-dd", [cultureinfo]::InvariantCulture)
+                          } else {
+                              $undated++
+                          }
+                      }
+                      $count = $firstFailures.Count + $undated
+                      if ($count -eq 0) { return $null }
+
+                      # The same reasoning as the elapsed time below: measure to the last finished
+                      # step, so a replay against a past run's data gives that night's answer.
+                      $today = if ($lastStepEnded) { $lastStepEnded.UtcDateTime.Date } else { [datetime]::UtcNow.Date }
+                      $link = "[the list]($($env:OPEN_FAILURES_URL))"
+                      if ($count -eq 1) { $text = "**1 known nightly failure is still open**" } else { $text = "**$count known nightly failures are still open**" }
+                      if ($firstFailures.Count -gt 0) {
+                          $days = [int] ($today - ($firstFailures | Measure-Object -Minimum).Minimum).TotalDays
+                          $dayWord = if ($days -eq 1) { "day" } else { "days" }
+                          if ($count -eq 1) { $text += ", for $days $dayWord" } else { $text += ", the oldest for $days $dayWord" }
+                      }
+                      if ($undated -gt 0) { $text += " ($undated with no date of first failure)" }
+                      return "> ❌ $($text): $link"
+                  }
+
                   # How long the night took overall. Measured to the last step that has finished
                   # rather than to "now": this step is the last in the job, so the two are the same
                   # to within a second on a real run -- but only the former also gives the right
@@ -931,6 +907,8 @@ jobs:
                   # a comma-separated literal spanning several lines quietly mis-parses when one of
                   # the elements is itself a piped expression, and yields a nested array.
                   $message = @("$headline on $($env:BRANCH)$elapsed", "")
+                  $openFailures = Format-OpenFailures
+                  if ($openFailures) { $message += @($openFailures, "") }
                   $message += $lines | ForEach-Object { "* $_" }
 
                   # Where the rest of the night went, as one line in job order: none of it is a
@@ -1009,3 +987,35 @@ jobs:
                   to: developers
                   topic: ${{ steps.zulip_message.outputs.topic }}
                   content: ${{ steps.zulip_message.outputs.content }}
+
+            # The same report, to Slack's #bloom-team-developers, while the team moves from Zulip
+            # to Slack. Slack's `markdown` block renders the report's Markdown (bold, the list, the
+            # quoted link) as written; `text` is what a notification shows. Link previews are off
+            # for the same reason the report quotes its link for Zulip.
+            #
+            # Needs the repository secret BLOOM_SLACK_BOT_TOKEN, the Bot User OAuth Token (xoxb-) of
+            # the "Bloom bot" Slack app, which must be a member of the channel. The channel is
+            # private, so it is named by id.
+            - name: Post the nightly report to Slack
+              if: ${{ always() && steps.zulip_message.outcome == 'success' }}
+              shell: pwsh
+              env:
+                  BLOOM_SLACK_BOT_TOKEN: ${{ secrets.BLOOM_SLACK_BOT_TOKEN }}
+                  CONTENT: ${{ steps.zulip_message.outputs.content }}
+              run: |
+                  if (-not $env:BLOOM_SLACK_BOT_TOKEN) {
+                      throw "BLOOM_SLACK_BOT_TOKEN is not set as a repository secret, so the nightly could not be reported to Slack."
+                  }
+                  $body = @{
+                      channel      = "C0CE75BEJTU" # bloom-team-developers
+                      text         = $env:CONTENT
+                      blocks       = @(@{ type = "markdown"; text = $env:CONTENT })
+                      unfurl_links = $false
+                      unfurl_media = $false
+                  } | ConvertTo-Json -Depth 5
+                  $reply = Invoke-RestMethod -Method Post -Uri "https://slack.com/api/chat.postMessage" `
+                      -Headers @{ Authorization = "Bearer $($env:BLOOM_SLACK_BOT_TOKEN)" } `
+                      -ContentType "application/json; charset=utf-8" `
+                      -Body ([System.Text.Encoding]::UTF8.GetBytes($body))
+                  # Slack answers HTTP 200 even when it refuses a message; `ok` says which.
+                  if (-not $reply.ok) { throw "Slack refused the nightly report: $($reply.error)" }

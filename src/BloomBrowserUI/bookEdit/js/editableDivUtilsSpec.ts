@@ -1,11 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import $ from "jquery";
 import { EditableDivUtils } from "./editableDivUtils";
-import { postThatMightNavigate } from "../../utils/bloomApi";
+import {
+    postAfterSendingSnapshot,
+    saveChangesAndRethinkPage,
+} from "./pageSnapshot";
 
-vi.mock("../../utils/bloomApi", async (importOriginal) => ({
+vi.mock("./pageSnapshot", async (importOriginal) => ({
     ...((await importOriginal()) as object),
-    postThatMightNavigate: vi.fn(),
+    postAfterSendingSnapshot: vi.fn(),
+    saveChangesAndRethinkPage: vi.fn(),
 }));
 
 describe("EditableDivUtils Tests", () => {
@@ -221,6 +225,52 @@ describe("EditableDivUtils Tests", () => {
         );
 
         expect(div.innerHTML).toEqual(ckEditorData);
+    });
+
+    // copyCkEditorDataToClone runs on every save gather of a page with a text box. These give the
+    // live box a stand-in editor; without one the function returns early and none of it runs.
+    const pageWithEditor = (liveHtml: string, editorData: string) => {
+        const live = document.createElement("div");
+        live.innerHTML = `<div class="bloom-editable">${liveHtml}</div>`;
+        const liveBox = live.querySelector("div.bloom-editable")!;
+        (liveBox as HTMLElement & { bloomCkEditor?: object }).bloomCkEditor = {
+            getData: () => editorData,
+        };
+        const clone = live.cloneNode(true) as HTMLElement;
+        return { live, liveBox, clone };
+    };
+
+    it("copyCkEditorDataToClone writes the editor's data into the clone and leaves the live page alone", () => {
+        const { live, liveBox, clone } = pageWithEditor(
+            "<p>typed<span>debris</span></p>",
+            "<p>typed</p>",
+        );
+        const liveBefore = live.innerHTML;
+
+        EditableDivUtils.copyCkEditorDataToClone(live, clone);
+
+        expect(clone.querySelector("div.bloom-editable")!.innerHTML).toBe(
+            "<p>typed</p>",
+        );
+        expect(live.innerHTML, "the live page must not change").toBe(
+            liveBefore,
+        );
+        expect(liveBox.innerHTML).toBe("<p>typed<span>debris</span></p>");
+    });
+
+    it("copyCkEditorDataToClone keeps U+200B word breaks that ckeditor's getData() reports", () => {
+        const zwsp = String.fromCharCode(0x200b);
+        const wordsWithBreak = `<p>a${zwsp}b</p>`;
+        const { live, clone } = pageWithEditor(
+            `<p>a${zwsp}b${zwsp}</p>`,
+            wordsWithBreak,
+        );
+
+        EditableDivUtils.copyCkEditorDataToClone(live, clone);
+
+        expect(clone.querySelector("div.bloom-editable")!.innerHTML).toBe(
+            wordsWithBreak,
+        );
     });
 
     it("doCkEditorCleanup keeps U+200B word breaks that ckeditor's getData() reports", () => {
@@ -729,12 +779,12 @@ describe("EditableDivUtils.unlockOriginalCredits", () => {
     });
 
     // All the work happens on the server, which stores the current wording, stops generating
-    // the sentence, and reloads the page with an editable field in its place. All this side
-    // has to get right is the endpoint name.
-    it("asks the server to hand the notice over to the user", () => {
-        EditableDivUtils.unlockOriginalCredits();
+    // the sentence, and reloads the page with an editable field in its place. The server saves
+    // the page first, so it has to have the page as it is now.
+    it("asks the server to hand the notice over to the user, once it has the page", () => {
+        void EditableDivUtils.unlockOriginalCredits();
 
-        expect(postThatMightNavigate).toHaveBeenCalledWith(
+        expect(postAfterSendingSnapshot).toHaveBeenCalledWith(
             "copyrightAndLicense/unlockOriginalCopyrightNotice",
         );
     });
@@ -742,10 +792,8 @@ describe("EditableDivUtils.unlockOriginalCredits", () => {
     // The server saves the page, which stores what the user typed, and reloads it with the
     // sentence read-only again.
     it("relocking asks the server to save and reload the page", () => {
-        EditableDivUtils.relockOriginalCredits();
+        void EditableDivUtils.relockOriginalCredits();
 
-        expect(postThatMightNavigate).toHaveBeenCalledWith(
-            "common/saveChangesAndRethinkPageEvent",
-        );
+        expect(saveChangesAndRethinkPage).toHaveBeenCalled();
     });
 });
