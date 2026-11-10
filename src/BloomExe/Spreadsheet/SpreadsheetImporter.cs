@@ -168,7 +168,7 @@ namespace Bloom.Spreadsheet
         }
 
         /// <summary>
-        /// How both the in-app and the command-line import run: save a backup copy of the book, delete
+        /// How the in-app import runs (and the commented-out command-line one did): save a backup copy of the book, delete
         /// its audio folder (the spreadsheet supplies all the recordings the book will have), then run
         /// the import. If the import throws before it starts saving the book, the book's text is
         /// unchanged, so put its old recordings back from the backup before letting the exception go
@@ -300,7 +300,7 @@ namespace Bloom.Spreadsheet
                 // awaits below, so that thread has to be an STA thread with a message loop or WebView2
                 // cannot initialize at all. Two arrangements provide that, and there is no third caller:
                 // in the app, ControlForInvoke is set and the block above put us on the UI thread; in the
-                // console `spreadsheetImport` verb, ControlForInvoke is null but the command runs on the
+                // console `spreadsheetImport` verb (currently commented out), ControlForInvoke is null but the command runs on the
                 // STA main thread inside Program.RunConsoleCommandLoop's message loop, and its awaits
                 // resume there. Before that loop existed, console import was exposed to exactly the
                 // failure bulk upload hit in BL-16767. See ConsoleCommandLoopTests. (BL-16773)

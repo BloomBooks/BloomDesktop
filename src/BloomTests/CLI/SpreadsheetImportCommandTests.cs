@@ -1,8 +1,13 @@
+// These tests of the command-line `spreadsheetImport` verb are commented out along with the verb
+// itself (see src/BloomExe/Spreadsheet/SpreadsheetImportCommand.cs for why, and what else to
+// uncomment to bring it back). The tests of SpreadsheetImporter.ImportWithBackupAsync that used to
+// be here are in src/BloomTests/Spreadsheet/SpreadsheetImportWithBackupTests.cs.
+
+/*
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Bloom;
@@ -257,93 +262,6 @@ namespace BloomTests.CLI
             );
         }
 
-        /// <summary>
-        /// If the import fails after the book's audio folder was cleared, the book's text is not saved,
-        /// so its old recordings must be put back, and any the failed import added removed.
-        /// </summary>
-        [Test]
-        public void ImportWithBackupAsync_ImportFails_PutsOldRecordingsBack()
-        {
-            var (oldRecording, nestedRecording, newRecording, output) = RunFailingImport(
-                failAfterSaveStarted: false
-            );
-            Assert.That(RobustFile.ReadAllText(oldRecording), Is.EqualTo("old recording"));
-            Assert.That(RobustFile.ReadAllText(nestedRecording), Is.EqualTo("nested recording"));
-            Assert.That(
-                RobustFile.Exists(newRecording),
-                Is.False,
-                "The recording the failed import added should be gone."
-            );
-            Assert.That(output, Does.Contain("the book's recordings were put back as they were"));
-        }
-
-        /// <summary>
-        /// Once the import has started saving the book, the saved book may already point at the new
-        /// recordings, so a later failure must leave them alone and say where the backup is.
-        /// </summary>
-        [Test]
-        public void ImportWithBackupAsync_FailsWhileSaving_LeavesNewRecordingsAndReportsBackup()
-        {
-            var (oldRecording, _, newRecording, output) = RunFailingImport(
-                failAfterSaveStarted: true
-            );
-            Assert.That(RobustFile.Exists(newRecording), Is.True);
-            Assert.That(RobustFile.Exists(oldRecording), Is.False);
-            Assert.That(
-                output,
-                Does.Contain("Error: The import failed while saving the book.")
-                    .And.Contain("is in the backup at")
-            );
-        }
-
-        // Give the book some recordings, then run ImportWithBackupAsync with an import that adds a
-        // recording and throws, either before or after it says it has started saving the book.
-        private (string, string, string, string) RunFailingImport(bool failAfterSaveStarted)
-        {
-            var bookAudioFolder = Path.Combine(_bookFolder, "audio");
-            var nestedFolder = Path.Combine(bookAudioFolder, "nested");
-            Directory.CreateDirectory(nestedFolder);
-            var oldRecording = Path.Combine(bookAudioFolder, "old-recording.mp3");
-            var nestedRecording = Path.Combine(nestedFolder, "nested.mp3");
-            RobustFile.WriteAllText(oldRecording, "old recording");
-            RobustFile.WriteAllText(nestedRecording, "nested recording");
-            var newRecording = Path.Combine(bookAudioFolder, "new-recording.mp3");
-
-            var output = new StringWriter();
-            var originalOut = Console.Out;
-            Console.SetOut(output);
-            try
-            {
-                var ex = Assert.ThrowsAsync<ApplicationException>(() =>
-                    SpreadsheetImporter.ImportWithBackupAsync(
-                        _bookFolder,
-                        new ConsoleWebSocketProgress(),
-                        () =>
-                        {
-                            Assert.That(
-                                RobustFile.Exists(oldRecording),
-                                Is.False,
-                                "Sanity check: the old recordings should be cleared before the import runs."
-                            );
-                            Directory.CreateDirectory(bookAudioFolder);
-                            RobustFile.WriteAllText(newRecording, "new recording");
-                            throw new ApplicationException("import failed");
-                        },
-                        () => failAfterSaveStarted
-                    )
-                );
-                Assert.That(ex.Message, Is.EqualTo("import failed"));
-            }
-            finally
-            {
-                Console.SetOut(originalOut);
-                var backup = Regex.Match(output.ToString(), @"Backup completed \(at (.*)\)");
-                if (backup.Success)
-                    RobustFile.Delete(backup.Groups[1].Value);
-            }
-            return (oldRecording, nestedRecording, newRecording, output.ToString());
-        }
-
         // Run the verb on the test book and spreadsheet the way Program.Main does, with the real
         // browser, returning the exit code and what it wrote to the console.
         private (int, string) RunInCommandLoop()
@@ -396,3 +314,4 @@ namespace BloomTests.CLI
         }
     }
 }
+*/
