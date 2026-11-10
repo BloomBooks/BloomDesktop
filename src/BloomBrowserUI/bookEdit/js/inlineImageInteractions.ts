@@ -1677,6 +1677,10 @@ interface IInlineImageResizeState {
     editableWidthViewportPx: number;
     // See computeInlineImageMaxWidthPercentForBlockHeight.
     maxWidthPercent: number | undefined;
+    // How much the block overflowed when the resize began, and the last width, during this
+    // resize, at which it fitted as well as that. See continueResize.
+    startOverflowLayoutPx: number;
+    lastFittingWidthPercent: number;
     horizontalSign: number;
     started: boolean;
     // The pointer this gesture captured; see captureGesturePointer.
@@ -2148,6 +2152,9 @@ function startResize(event: PointerEvent, handle: HTMLElement): void {
     const corner = (handle.getAttribute(kInlineImageCornerAttribute) ??
         "se") as InlineImageHandleCorner;
     const imageBox = getImageBox(wrapper);
+    const widthVar = parseFloat(
+        wrapper.style.getPropertyValue(kInlineImageWidthVar),
+    );
     resizeState = {
         wrapper,
         editable,
@@ -2159,6 +2166,10 @@ function startResize(event: PointerEvent, handle: HTMLElement): void {
             getImageBottomLimitViewportPx(editable, wrapper),
             editableWidthViewportPx,
         ),
+        startOverflowLayoutPx: measureBlockOverflowLayoutPx(editable),
+        lastFittingWidthPercent: Number.isNaN(widthVar)
+            ? (imageBox.width / editableWidthViewportPx) * 100
+            : widthVar,
         horizontalSign: getInlineImageHandleHorizontalSign(corner),
         started: false,
         pointerId: event.pointerId,
@@ -2188,7 +2199,58 @@ function continueResize(
         state.editableWidthViewportPx,
         state.maxWidthPercent,
     );
-    state.wrapper.style.setProperty(kInlineImageWidthVar, `${percent}%`);
+    setInlineImageWidthPercent(state.wrapper, percent);
+    // The limit above keeps the picture itself inside the block, but text that comes after it
+    // in the same language may still be pushed out: below a middle-docked picture there is no
+    // room beside it, and beside a floating one there may be too little. So a resize follows
+    // the rule a drag follows (shouldRevertInlineImageMove): in a block that fitted its text
+    // when the resize began, a width that makes it overflow is not kept. Then the picture
+    // stops at the largest width that still fits, found by halving the gap between the last
+    // width that fitted and this one, so that a fast movement of the pointer does not leave
+    // it short.
+    const fits = () =>
+        !shouldRevertInlineImageMove(
+            state.startOverflowLayoutPx,
+            measureBlockOverflowLayoutPx(state.editable),
+        );
+    if (fits()) {
+        state.lastFittingWidthPercent = percent;
+        return;
+    }
+    let fitting = state.lastFittingWidthPercent;
+    let tooBig = percent;
+    for (let step = 0; step < kMaxResizeFitSteps; step++) {
+        const middle = Math.round(((fitting + tooBig) / 2) * 10) / 10;
+        if (middle === fitting || middle === tooBig) break;
+        setInlineImageWidthPercent(state.wrapper, middle);
+        if (fits()) fitting = middle;
+        else tooBig = middle;
+    }
+    setInlineImageWidthPercent(state.wrapper, fitting);
+    state.lastFittingWidthPercent = fitting;
+}
+
+// How many times continueResize may halve the gap while looking for the largest width that
+// fits. Each step measures the layout once. Eight steps narrow a gap of 85% (the whole range
+// of widths) to well under 1%.
+const kMaxResizeFitSteps = 8;
+
+function setInlineImageWidthPercent(
+    wrapper: HTMLElement,
+    percent: number,
+): void {
+    wrapper.style.setProperty(kInlineImageWidthVar, `${percent}%`);
+}
+
+// How much text the block has that it cannot show, in layout pixels: the larger of what its
+// editable and its translation group would need to scroll. In a block that shows more than one
+// language the editables grow to fit their text and the group overflows instead.
+function measureBlockOverflowLayoutPx(editable: HTMLElement): number {
+    const group = editable.closest(".bloom-translationGroup") as HTMLElement;
+    return Math.max(
+        editable.scrollHeight - editable.clientHeight,
+        group.scrollHeight - group.clientHeight,
+    );
 }
 
 // How low the bottom of an image in this editable can go, in viewport pixels, and still leave

@@ -7,6 +7,7 @@ import {
     getInlineImageInEditable,
     insertInlineImage,
     kInlineImageLeftClass,
+    kInlineImageMiddleClass,
     kInlineImageRightClass,
     kInlineImageWidthVar,
     kInlineImageAspectRatioVar,
@@ -89,10 +90,13 @@ function makeThreeByTwoPictureUrl(): string {
 // Puts a 3:2 inline image, 30% of the block's width and docked left, at the top of every
 // editable in the block, selects the copy in the first one, and returns that copy once every
 // copy's picture has loaded.
-async function setUpImage(group: HTMLElement): Promise<HTMLElement> {
+async function setUpImage(
+    group: HTMLElement,
+    dockClass: string = kInlineImageLeftClass,
+): Promise<HTMLElement> {
     const wrapper = insertInlineImage(group);
     wrapper.classList.remove(kInlineImageRightClass);
-    wrapper.classList.add(kInlineImageLeftClass);
+    wrapper.classList.add(dockClass);
     wrapper.style.setProperty(kInlineImageWidthVar, "30%");
     wrapper.style.setProperty(kInlineImageAspectRatioVar, "3 / 2");
     imgOf(wrapper).setAttribute("src", makeThreeByTwoPictureUrl());
@@ -151,6 +155,39 @@ describe("resizing an inline image with a corner handle", () => {
             "42%",
         );
         expect(group.scrollHeight).toBeLessThanOrEqual(group.clientHeight + 1);
+    });
+
+    // A middle-docked picture has text above and below it but none beside it, so growing it
+    // pushes the text after it down. It must stop before that text leaves the block.
+    it("stops before pushing the text after a middle-docked picture out of the block", async () => {
+        const group = makeTextBlock(400, 120, ["The end."]);
+        const wrapper = await setUpImage(group, kInlineImageMiddleClass);
+        const editable = group.querySelector(".bloom-editable") as HTMLElement;
+        // A range around the words, because the paragraph's own box starts at the top of the
+        // block whatever the picture does; only its lines move down below the picture.
+        const text = document.createRange();
+        text.selectNodeContents(editable.querySelector("p")!);
+        // Sanity checks: the text starts below the 80px picture, and the block fits it.
+        expect(text.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+            imgOf(wrapper).getBoundingClientRect().bottom,
+        );
+        // (The editable grows to fit its text, so it is the block, the group, that would
+        // overflow.)
+        expect(group.scrollHeight).toBeLessThanOrEqual(group.clientHeight);
+
+        await dragLowerRightCornerFarOut(wrapper);
+
+        const widthPercent = parseFloat(
+            wrapper.style.getPropertyValue(kInlineImageWidthVar),
+        );
+        expect(widthPercent).toBeGreaterThan(30);
+        expect(text.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+            group.getBoundingClientRect().bottom + 0.5,
+        );
+        expect(group.scrollHeight).toBeLessThanOrEqual(group.clientHeight + 1);
+        // It stops close to the largest width that fits: 1% more would not fit.
+        wrapper.style.setProperty(kInlineImageWidthVar, `${widthPercent + 1}%`);
+        expect(group.scrollHeight).toBeGreaterThan(group.clientHeight + 1);
     });
 
     it("still stops at the width limit in a tall, narrow block", async () => {
