@@ -864,6 +864,11 @@ clicks either (a workspace tab click never lands). So `helpers/pdfPrint.ts` find
 presses its Cancel button, over Windows UI Automation, as the button with the class name `cancel`
 inside Bloom's window.
 
+Pressing that button over UI Automation lets Bloom take the foreground as the dialog closes, even
+under `--dont-disturb`. Whatever the developer then types goes to Bloom's page, where focus is on
+the Print button, so a space opens a second print dialog that swallows the next test's clicks. So
+`cancelPrintDialog` hands the foreground back to whoever had it until the dialog is gone.
+
 Two things a test cannot check at all:
 
 - **When the print dialog closes.** In WebView2, `print()` on the PDF iframe returns at once, and

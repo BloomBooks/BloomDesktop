@@ -144,7 +144,8 @@ export const PDFPrintPublishScreen = () => {
         if (iframeRef.current) {
             // In WebView2 this returns at once, while the print dialog is still open, and nothing
             // (not even afterprint) tells us when the dialog closes. So the print instructions
-            // window stays until the user closes it, prints again, or leaves this screen.
+            // window stays until the user closes it, prints again, changes the booklet mode, or
+            // leaves this screen.
             iframeRef.current.contentWindow?.print();
             // Unfortunately, we have no way to know whether the user really
             // printed, or canceled in the browser print dialog.

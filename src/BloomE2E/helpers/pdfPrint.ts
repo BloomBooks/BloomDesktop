@@ -91,7 +91,8 @@ export async function cancelPrintDialog(bloomPid: number): Promise<void> {
 
 /**
  * Find the print dialog's Cancel button in Bloom's window over UI Automation, and optionally press
- * it (InvokePattern: no pointer or keyboard). Prints "found" or "missing".
+ * it (InvokePattern: no pointer or keyboard) and wait for the dialog to close. Prints "found" or
+ * "missing".
  */
 function runPrintDialogUia(
     bloomPid: number,
@@ -101,6 +102,15 @@ function runPrintDialogUia(
     // any Cancel button a Bloom dialog might show at the same time.
     const script = `
 Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
+Add-Type @'
+using System; using System.Runtime.InteropServices;
+public static class Fg {
+  [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+  [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
+  [DllImport("user32.dll")] public static extern int GetWindowThreadProcessId(IntPtr h, out int p);
+}
+'@
+function ForegroundPid { $p = 0; [Fg]::GetWindowThreadProcessId([Fg]::GetForegroundWindow(), [ref]$p) | Out-Null; $p }
 $A = [System.Windows.Automation.AutomationElement]
 $byPid = New-Object System.Windows.Automation.PropertyCondition($A::ProcessIdProperty, ${bloomPid})
 $byClass = New-Object System.Windows.Automation.PropertyCondition($A::ClassNameProperty, 'cancel')
@@ -108,7 +118,17 @@ foreach ($window in $A::RootElement.FindAll([System.Windows.Automation.TreeScope
   $button = $window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $byClass)
   if ($button) {
     if ('${action}' -eq 'cancel') {
+      # Pressing Cancel over UI Automation lets Bloom take the foreground when the dialog
+      # closes, and then whatever the developer types goes to Bloom (a space presses Print
+      # again). So hand the foreground straight back to whoever had it, until the dialog is gone.
+      $before = [Fg]::GetForegroundWindow()
+      $beforeWasBloom = (ForegroundPid) -eq ${bloomPid}
       $button.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+      function GiveBack { if (-not $beforeWasBloom -and (ForegroundPid) -eq ${bloomPid}) { [Fg]::SetForegroundWindow($before) | Out-Null } }
+      # Bounded, so a dialog that never closes fails cancelPrintDialog's own check instead.
+      $watch = [Diagnostics.Stopwatch]::StartNew()
+      do { GiveBack } while ($watch.ElapsedMilliseconds -lt 30000 -and $window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $byClass))
+      GiveBack
     }
     'found'; exit
   }
@@ -178,14 +198,14 @@ export async function expectAllPrintInstructionsShowing(
         .poll(
             () =>
                 window.evaluate(
-                    (element) => element.scrollHeight <= element.clientHeight,
+                    (element) => element.scrollHeight - element.clientHeight,
                 ),
             {
                 message:
-                    "The print instructions window is too small for its text, so part of it is scrolled out of sight.",
+                    "The print instructions window is too small for its text, so this many pixels of it are scrolled out of sight.",
             },
         )
-        .toBe(true);
+        .toBeLessThanOrEqual(0);
 }
 
 /** True when the print instructions window is open. Reads the state once, without waiting. */
@@ -196,14 +216,4 @@ export async function isPrintInstructionsWindowOpen(
         (await findPrintInstructionsPage(page.context().browser()!)) !==
         undefined
     );
-}
-
-/** Wait until the print instructions window has closed. */
-export async function expectPrintInstructionsWindowClosed(
-    page: Page,
-    message: string,
-): Promise<void> {
-    await expect
-        .poll(() => isPrintInstructionsWindowOpen(page), { message })
-        .toBe(false);
 }

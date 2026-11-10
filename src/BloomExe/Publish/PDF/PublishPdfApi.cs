@@ -214,16 +214,18 @@ namespace Bloom.Publish.PDF
         /// owned by the Shell, so it stays above Bloom (print dialog included) without floating
         /// over other programs. It goes at the top right of Bloom's window, where it covers
         /// neither the print dialog's settings (on the left) nor its buttons (at the bottom).
-        /// The user can drag it or close it; otherwise it stays until they print again or leave
-        /// the PDF &amp; Print screen, since nothing tells us when the print dialog closes.
+        /// The user can drag it or close it; otherwise it stays until they print again, change
+        /// the booklet mode, or leave the PDF &amp; Print screen, since nothing tells us when the
+        /// print dialog closes.
         /// </summary>
         private void HandleShowPrintInstructions(ApiRequest request)
         {
             ClosePrintInstructions();
-            var shell = Application.OpenForms.Cast<Form>().First(f => f is Shell);
+            var shell = Shell.GetShellOrNull();
+            var help = GetPrintSettingsHelp();
             var window = new ReactDialog(
                 "printInstructionsBundle",
-                GetPrintSettingsHelp(),
+                help,
                 LocalizationManager.GetString("PublishTab.PrintButton", "Print...")
             );
             // A normal caption, so it can be dragged and has a full-size close button.
@@ -233,24 +235,23 @@ namespace Bloom.Publish.PDF
             window.MaximizeBox = false;
             window.ShowIcon = false;
             window.ShowWithoutTakingFocus = true;
-            // Big enough for the longest text we have (the four-pages-a-sheet note, in Portuguese);
-            // the page scrolls for anything longer.
-            window.SetScaledSize(520, 250);
+            // The page's own blue, so it doesn't flash white while the page loads or closes.
+            window.ContentBackColor = Palette.BloomBlue;
+            // Just tall enough for the settings, with or without their note, in every translation
+            // we have (they all wrap like English); the page scrolls for anything longer.
+            var hasNote = ((IDictionary<string, object>)help).ContainsKey("note");
+            window.SetScaledSize(520, hasNote ? 214 : 170);
             var shellArea = shell.RectangleToScreen(shell.ClientRectangle);
             // Start inside Bloom's window, so OnLoad scales by the DPI of the monitor it is on.
             window.Location = shellArea.Location;
-            // When Bloom is narrower than the window, keep its left edge (where the text starts)
-            // on the screen.
             var screenLeft = Screen.FromControl(shell).WorkingArea.Left;
             window.PlaceAfterSizing(size => new System.Drawing.Point(
-                Math.Max(screenLeft, shellArea.Right - size.Width - shell.LogicalToDeviceUnits(30)),
-                shellArea.Top + shell.LogicalToDeviceUnits(5)
+                // When Bloom is narrower than the window, keep its left edge (where the text
+                // starts) on the screen.
+                Math.Max(screenLeft, shellArea.Right - size.Width - window.ScaleToDpi(30)),
+                shellArea.Top + window.ScaleToDpi(5)
             ));
-            window.FormClosed += (sender, args) =>
-            {
-                if (_printInstructionsWindow == sender)
-                    _printInstructionsWindow = null;
-            };
+            window.FormClosed += (sender, args) => _printInstructionsWindow = null;
             _printInstructionsWindow = window;
             window.Show(shell);
             request.PostSucceeded();
@@ -262,7 +263,6 @@ namespace Bloom.Publish.PDF
         private void ClosePrintInstructions()
         {
             _printInstructionsWindow?.Close();
-            _printInstructionsWindow = null;
         }
 
         // The localized print settings for the current book's page size: 'helps' (one string per

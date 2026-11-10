@@ -20,7 +20,6 @@ import {
     choosePdfMode,
     clickPrint,
     expectAllPrintInstructionsShowing,
-    expectPrintInstructionsWindowClosed,
     getPrintInstructions,
     isPrintDialogOpen,
     isPrintInstructionsWindowOpen,
@@ -58,6 +57,7 @@ test.describe("the booklet print instructions", () => {
             '3. More settings > Paper size: "A4"',
             '4. More settings > Scale: "Actual size"',
         ]);
+        await expectAllPrintInstructionsShowing(page);
         expect(isPrintDialogOpen(bloomApp.bloomPid)).toBe(true);
 
         // Nothing tells Bloom when the print dialog closes, so the window stays after it does...
@@ -69,10 +69,12 @@ test.describe("the booklet print instructions", () => {
 
         // ...and closes when the user leaves the PDF & Print screen.
         await switchTab(page, "collection");
-        await expectPrintInstructionsWindowClosed(
-            page,
-            "The print instructions window stayed open after the user left the Publish tab.",
-        );
+        await expect
+            .poll(() => isPrintInstructionsWindowOpen(page), {
+                message:
+                    "The print instructions window stayed open after the user left the Publish tab.",
+            })
+            .toBe(false);
     });
 
     test("do not appear when printing a simple PDF [Test Case ID 856]", async ({

@@ -68,6 +68,19 @@ namespace Bloom.MiscUI
         private Func<System.Drawing.Size, System.Drawing.Point> _placeAfterSizing;
 
         /// <summary>
+        /// Set this to the page's own background when that is not white. It shows wherever the
+        /// page does not, such as while the dialog opens and closes, so a white one flashes.
+        /// </summary>
+        public System.Drawing.Color ContentBackColor
+        {
+            set
+            {
+                BackColor = value;
+                reactControl.BackColor = value;
+            }
+        }
+
+        /// <summary>
         /// Open the dialog where this function says, given the dialog's real (DPI-scaled) size.
         /// Like CenterWithin, the placing happens in OnLoad, after SetScaledSize's size is applied.
         /// </summary>
@@ -91,6 +104,15 @@ namespace Bloom.MiscUI
             _centerWithin = area;
         }
 
+        /// <summary>
+        /// A length in logical (96 DPI) pixels, in this dialog's pixels on the monitor it is on.
+        /// Only right once the dialog is on its monitor, as in OnLoad or a PlaceAfterSizing function.
+        /// </summary>
+        public int ScaleToDpi(int logicalPixels)
+        {
+            return (int)Math.Round(logicalPixels * DeviceDpi / 96.0);
+        }
+
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -99,9 +121,10 @@ namespace Bloom.MiscUI
             // Scale the logical dimensions based on the actual DPI of the monitor we're on.
             if (_desiredLogicalWidth > 0 && _desiredLogicalHeight > 0)
             {
-                int scaledWidth = (int)Math.Round(_desiredLogicalWidth * DeviceDpi / 96.0);
-                int scaledHeight = (int)Math.Round(_desiredLogicalHeight * DeviceDpi / 96.0);
-                Size = new System.Drawing.Size(scaledWidth, scaledHeight);
+                Size = new System.Drawing.Size(
+                    ScaleToDpi(_desiredLogicalWidth),
+                    ScaleToDpi(_desiredLogicalHeight)
+                );
             }
             if (_centerWithin.HasValue)
             {
