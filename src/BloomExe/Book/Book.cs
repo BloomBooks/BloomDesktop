@@ -4366,10 +4366,10 @@ namespace Bloom.Book
                     _bookData.RemoveAllForms(
                         BookCopyrightAndLicense.kUserOriginalCopyrightAndLicense
                     );
-                // The data div now holds the user's wording of the sentence about the original
-                // book, or, if they emptied the field, no longer holds it at all. In that case
-                // the page still has the empty field they left, and it must get Bloom's sentence
-                // back instead.
+                // Whatever the user did to the sentence about the original book, the book's copy
+                // of the page shows it locked, worked out from the data div just as the full
+                // update does: their wording if they kept some, Bloom's own sentence in place of
+                // the empty field if they emptied it.
                 BookCopyrightAndLicense.ShowOriginalCopyrightNoticeLocked(
                     pageToSaveToDisk,
                     OurHtmlDom,

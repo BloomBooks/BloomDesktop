@@ -386,7 +386,9 @@ namespace Bloom.Book
                     + "' and @lang='*'][not(ancestor::div[@id='bloomDataDiv'])]"
             );
             return editable != null
-                && string.IsNullOrWhiteSpace(editable.InnerText.Replace(' ', ' '));
+                // IsNullOrWhiteSpace counts a non-breaking space as white space, so a field the
+                // browser left holding only &nbsp; is empty too.
+                && string.IsNullOrWhiteSpace(editable.InnerText);
         }
 
         /// <summary>

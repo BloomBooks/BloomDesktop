@@ -835,6 +835,7 @@ namespace BloomTests.Book
         /// </summary>
         [TestCase("<p></p>", true)]
         [TestCase("<p><br /></p>", true)]
+        [TestCase("<p> </p>", true)]
         [TestCase("<p>New words.</p>", false)]
         public void UserEmptiedOriginalCopyrightNotice_ReportsOnlyAnEmptiedField(
             string fieldContent,
