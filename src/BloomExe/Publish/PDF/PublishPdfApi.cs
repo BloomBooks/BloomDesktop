@@ -223,11 +223,8 @@ namespace Bloom.Publish.PDF
             ClosePrintInstructions();
             var shell = Shell.GetShellOrNull();
             var help = GetPrintSettingsHelp();
-            var window = new ReactDialog(
-                "printInstructionsBundle",
-                help,
-                LocalizationManager.GetString("PublishTab.PrintButton", "Print...")
-            );
+            // No title: the page's own heading says what the window is.
+            var window = new ReactDialog("printInstructionsBundle", help, "");
             // A normal caption, so it can be dragged and has a full-size close button.
             window.FormBorderStyle = FormBorderStyle.FixedDialog;
             window.ControlBox = true;
