@@ -2110,7 +2110,7 @@ export function attachToCkEditor(element) {
     // once the editor is ready, so that if the nightly loses a title again, its trace (Playwright
     // keeps the page's console) shows whether this is still where. Remove with the rest of this
     // investigation once the nightly has gone several runs without losing a title (the reminder
-    // is the cover-title entry in .claude/skills/nightly-triage/open-failures.md).
+    // is on BL-17022).
     const isBookTitleBox =
         !!element.getAttribute &&
         element.getAttribute("data-book") === "bookTitle";

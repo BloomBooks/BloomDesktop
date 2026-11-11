@@ -29,6 +29,7 @@
 // Nothing here knows about Playwright; fixtures/bloomTest.ts adds the CDP attachment on top.
 
 import { execFile, execFileSync, type ChildProcess } from "node:child_process";
+import { describeWhatHoldsFolder } from "./describeLockedFolder";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as Path from "node:path";
@@ -1207,6 +1208,28 @@ function removeTempRoot(tempRoot: string): void {
     }
 }
 
+/**
+ * Delete a run's temp folder once its Bloom has exited (killAndWaitForBloomToExit). When Windows
+ * refuses, the error names the files and folders that would not go and the processes that have
+ * them open, which Node's own error does not: it names only the top folder.
+ */
+function deleteTempRootAfterBloomExited(tempRoot: string): void {
+    try {
+        fs.rmSync(tempRoot, {
+            recursive: true,
+            force: true,
+            maxRetries: 20,
+            retryDelay: 500,
+        });
+    } catch (error) {
+        throw new Error(
+            `Could not delete ${tempRoot} after its Bloom exited: ${(error as Error).message}\n` +
+                describeWhatHoldsFolder(tempRoot),
+            { cause: error },
+        );
+    }
+}
+
 export async function launchBloom(
     options: ILaunchBloomOptions,
 ): Promise<ILaunchedBloom> {
@@ -1324,12 +1347,7 @@ export async function launchBloom(
             // Waits for Bloom's processes to exit: Node 24's rmSync throws EPERM at once on a
             // file a dying Bloom still holds, whatever maxRetries says.
             await killAndWaitForBloomToExit(running!);
-            fs.rmSync(tempRoot, {
-                recursive: true,
-                force: true,
-                maxRetries: 20,
-                retryDelay: 500,
-            });
+            deleteTempRootAfterBloomExited(tempRoot);
             // Only after a fully successful teardown: if anything above threw, the exit handler
             // stays armed and still kills the survivor and deletes the temp folder at process exit.
             process.removeListener("exit", cleanUpOnExit);
@@ -1417,12 +1435,7 @@ export async function launchBloomIntoChooser(
         userSettingsDir,
         stop: async () => {
             await killAndWaitForBloomToExit(running!);
-            fs.rmSync(tempRoot, {
-                recursive: true,
-                force: true,
-                maxRetries: 20,
-                retryDelay: 500,
-            });
+            deleteTempRootAfterBloomExited(tempRoot);
             // Only after a fully successful teardown, as in launchBloom's stop().
             process.removeListener("exit", cleanUpOnExit);
         },

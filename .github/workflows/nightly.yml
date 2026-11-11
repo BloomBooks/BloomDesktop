@@ -9,7 +9,7 @@
 # Each suite publishes its own check run / job-summary section, so the commit shows five
 # independent results rather than one merged total. See the "Test reports" steps at the end.
 #
-# Every night is then reported to Zulip and Slack -- pass or fail, all in one topic -- with each
+# Every night is then reported to Slack -- pass or fail, all in one channel -- with each
 # suite's counts and how long it took. See "The nightly report" at the end.
 #
 # Schedule: 04:00 UTC daily. GitHub cron is always UTC (== GMT, no DST), so this is a
@@ -69,8 +69,8 @@ on:
                 description: "Visual regression tests -- book page layout (~3 min)"
                 type: boolean
                 default: true
-            post_to_zulip:
-                description: "Post report to Zulip and Slack"
+            post_report:
+                description: "Post report to Slack"
                 type: boolean
                 default: false
 
@@ -586,25 +586,18 @@ jobs:
                   retention-days: 14
 
             # ----- The nightly report -----
-            # Post a report of EVERY night to Zulip -- channel "developers", topic "Nightly run" --
-            # rather than speaking up only when something broke. Silence on a good night is
-            # indistinguishable from a nightly that never ran at all, which is the failure that
-            # hides longest; and the timings below are worth watching on a green night too, since
-            # a suite doubling in length is news before it is a failure.
+            # Post a report of EVERY night to Slack's #bloom-team-developers, rather than speaking
+            # up only when something broke. Silence on a good night is indistinguishable from a
+            # nightly that never ran at all, which is the failure that hides longest; and the
+            # timings below are worth watching on a green night too, since a suite doubling in
+            # length is news before it is a failure. Slack's own date dividers separate the nights,
+            # so the report carries no date of its own.
             #
-            # One topic for all of them, so the nights sit together as a single thread you can
-            # follow or mute in one go, and so last night's numbers are one scroll from the night
-            # before's. Zulip's own date dividers separate them, so the report carries no date of
-            # its own.
+            # A night that dies on the job timeout reports nothing: a morning with no message in a
+            # channel that has one every other day.
             #
-            # The cost of that, worth knowing because it undoes half an argument made when this was
-            # designed: a night that dies on the job timeout reports nothing, and with a shared
-            # topic that is a gap in a thread rather than a missing topic in a list. Less visible,
-            # though still a morning with no message in a channel that has one every other day.
-            #
-            # Two steps: compose the message here, hand it to Zulip's own action below. The split is
-            # not decoration -- gathering the outcomes, counts and timings is our logic; talking to
-            # the API is theirs.
+            # Two steps: compose the message here, post it below. Gathering the outcomes, counts
+            # and timings is one job; talking to Slack's API is another.
             #
             # This pair is deliberately the LAST thing in the job, because it reports the job as it
             # stands when it runs. By this point that includes the five publish-test-results steps
@@ -612,33 +605,20 @@ jobs:
             # (action_fail_on_inconclusive). Put this any earlier and that entire class of failure --
             # the one the per-suite reports exist to catch -- would be reported as a good night.
             #
-            # Needs two repository secrets, from a Zulip bot (Zulip settings > Personal settings >
-            # Bots > Add a new bot; "Incoming webhook" is the right type -- it can only send
-            # messages, never read them):
-            #   BLOOM_ZULIP_EMAIL   - the bot's generated email
-            #   BLOOM_ZULIP_API_KEY - that bot's API key
-            #
-            # Scheduled runs always post. A manual run posts only if post_to_zulip is ticked, so
+            # Scheduled runs always post. A manual run posts only if post_report is ticked, so
             # iterating on this workflow cannot fill the channel with noise.
             - name: Compose the nightly report
-              id: zulip_message
+              id: report_message
               # always(), so a failed or cancelled night reports too -- that is the whole point.
-              if: ${{ always() && (github.event_name != 'workflow_dispatch' || inputs.post_to_zulip) }}
+              if: ${{ always() && (github.event_name != 'workflow_dispatch' || inputs.post_report) }}
               shell: pwsh
               env:
-                  # Checked here rather than left to the send step, so a missing secret says so in
-                  # plain words instead of surfacing as an API rejection.
-                  BLOOM_ZULIP_EMAIL: ${{ secrets.BLOOM_ZULIP_EMAIL }}
-                  BLOOM_ZULIP_API_KEY: ${{ secrets.BLOOM_ZULIP_API_KEY }}
                   # job.status, not success()/failure(): the status FUNCTIONS are only legal in an
                   # `if`, and using one here fails the whole workflow at parse time. The job context
                   # is legal in a step env and carries the same fact.
                   JOB_STATUS: ${{ job.status }}
                   RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
                   BRANCH: ${{ github.ref_name }}
-                  # The triage's list of open failures on this branch, as it stands now rather than
-                  # at this run's commit, since the triage updates it after the run.
-                  OPEN_FAILURES_URL: ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.claude/skills/nightly-triage/open-failures.md
                   # For the timings lookup below.
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   API_URL: ${{ github.api_url }}
@@ -655,10 +635,6 @@ jobs:
                   COMPONENT_TESTS: ${{ steps.component_tests.outcome }}
                   VISUAL_REGRESSION: ${{ steps.visual_regression.outcome }}
               run: |
-                  if (-not $env:BLOOM_ZULIP_EMAIL -or -not $env:BLOOM_ZULIP_API_KEY) {
-                      throw "BLOOM_ZULIP_EMAIL / BLOOM_ZULIP_API_KEY are not set as repository secrets, so the nightly could not be reported."
-                  }
-
                   # ---- timings -------------------------------------------------------------
                   # GitHub does not expose a step's own duration to a later step, but it does
                   # expose every step's start and end through the jobs API, including the steps of
@@ -785,7 +761,7 @@ jobs:
                   }
 
                   # ---- the message ---------------------------------------------------------
-                  # Read at a glance in the Zulip app. An outcome we did not anticipate shows as a
+                  # Read at a glance in the Slack app. An outcome we did not anticipate shows as a
                   # question mark rather than as a blank.
                   $glyphs = @{ success = "✅"; failure = "❌"; skipped = "⏭️"; cancelled = "🚫" }
                   function Format-Outcome([string] $label, [string] $outcome) {
@@ -850,47 +826,6 @@ jobs:
                       $headline = "❌ **Nightly run failed**"
                   }
 
-                  # ---- known failures still open -------------------------------------------
-                  # A night where every suite passes says nothing about the failures from earlier
-                  # nights that nobody has fixed yet, so the report also counts the entries in the
-                  # triage's list of open failures and gives the age of the oldest. The list and the
-                  # rule this parser relies on (each entry for a real failure has a "- **Failed:**"
-                  # line that starts with the full date of its first failure) are in
-                  # .claude/skills/nightly-triage. Quoted for the same reason as the run link at the
-                  # end: a bare link in Zulip becomes a preview card.
-                  function Format-OpenFailures {
-                      $path = ".claude/skills/nightly-triage/open-failures.md"
-                      if (-not (Test-Path -LiteralPath $path)) { return "> ❓ The list of open nightly failures, $path, is missing." }
-                      $entries = [regex]::Split((Get-Content -LiteralPath $path -Raw -Encoding utf8), '(?m)^## ') | Select-Object -Skip 1
-                      $firstFailures = @()
-                      $undated = 0
-                      foreach ($entry in $entries) {
-                          $failedLine = [regex]::Match($entry, '(?m)^- \*\*Failed:\*\*\s*(.*)$')
-                          if (-not $failedLine.Success) { continue }
-                          $date = [regex]::Match($failedLine.Groups[1].Value, '^(\d{4}-\d{2}-\d{2})')
-                          if ($date.Success) {
-                              $firstFailures += [datetime]::ParseExact($date.Groups[1].Value, "yyyy-MM-dd", [cultureinfo]::InvariantCulture)
-                          } else {
-                              $undated++
-                          }
-                      }
-                      $count = $firstFailures.Count + $undated
-                      if ($count -eq 0) { return $null }
-
-                      # The same reasoning as the elapsed time below: measure to the last finished
-                      # step, so a replay against a past run's data gives that night's answer.
-                      $today = if ($lastStepEnded) { $lastStepEnded.UtcDateTime.Date } else { [datetime]::UtcNow.Date }
-                      $link = "[the list]($($env:OPEN_FAILURES_URL))"
-                      if ($count -eq 1) { $text = "**1 known nightly failure is still open**" } else { $text = "**$count known nightly failures are still open**" }
-                      if ($firstFailures.Count -gt 0) {
-                          $days = [int] ($today - ($firstFailures | Measure-Object -Minimum).Minimum).TotalDays
-                          $dayWord = if ($days -eq 1) { "day" } else { "days" }
-                          if ($count -eq 1) { $text += ", for $days $dayWord" } else { $text += ", the oldest for $days $dayWord" }
-                      }
-                      if ($undated -gt 0) { $text += " ($undated with no date of first failure)" }
-                      return "> ❌ $($text): $link"
-                  }
-
                   # How long the night took overall. Measured to the last step that has finished
                   # rather than to "now": this step is the last in the job, so the two are the same
                   # to within a second on a real run -- but only the former also gives the right
@@ -907,8 +842,6 @@ jobs:
                   # a comma-separated literal spanning several lines quietly mis-parses when one of
                   # the elements is itself a piped expression, and yields a nested array.
                   $message = @("$headline on $($env:BRANCH)$elapsed", "")
-                  $openFailures = Format-OpenFailures
-                  if ($openFailures) { $message += @($openFailures, "") }
                   $message += $lines | ForEach-Object { "* $_" }
 
                   # Where the rest of the night went, as one line in job order: none of it is a
@@ -941,22 +874,11 @@ jobs:
                       $message += "Also: " + ($restTimes -join " · ")
                   }
 
-                  # Quoted deliberately. Zulip turns a bare link into a preview card -- a big
-                  # GitHub icon and the repository blurb, several times the height of the report
-                  # itself -- and there is no per-message way to turn that off. But its markdown
-                  # processor skips links inside a blockquote ("we don't do inline previews for
-                  # links inside blockquotes", zerver/lib/markdown/__init__.py), so quoting the
-                  # line suppresses the card while leaving an ordinary clickable link. The
-                  # alternative is the org-wide "Show previews of linked websites" setting, which
-                  # would change every message everyone posts.
                   $message += ""
-                  $message += "> [The run]($($env:RUN_URL))"
+                  $message += "[The run]($($env:RUN_URL))"
                   $content = $message -join "`n"
 
                   Write-Host $content
-
-                  # A fixed topic, so every night lands in the same thread.
-                  $topic = "Nightly run"
 
                   # Step outputs, so the send step below stays a pure "here is a message, post it".
                   # A multi-line value needs the delimiter form.
@@ -965,43 +887,25 @@ jobs:
                   # only in PowerShell 7 and BOM-ful in 5.1, and a BOM here is silent poison: it
                   # lands in front of the key, so the output becomes "﻿content" and the send
                   # step posts an empty message with no error anywhere.
-                  $block = "content<<ZULIP_MESSAGE_EOF`n$content`nZULIP_MESSAGE_EOF`ntopic=$topic`n"
+                  $block = "content<<REPORT_MESSAGE_EOF`n$content`nREPORT_MESSAGE_EOF`n"
                   [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, $block, [System.Text.UTF8Encoding]::new($false))
 
-            # Zulip's own documented GitHub Actions integration
-            # (https://zulip.com/integrations/doc/github-actions). Pinned by SHA like every other
-            # action here; that is v2.0.2, which the docs' `@v1` predates -- same inputs, but v1
-            # still runs on node20, which the runners are retiring.
-            #
-            # always() rather than a status check: the composing step above has already decided
-            # whether there is anything to say, so if it was skipped this is skipped with it.
-            # Naming a status here instead would drop the cancelled case.
-            - name: Post the nightly report to Zulip
-              if: ${{ always() && steps.zulip_message.outcome == 'success' }}
-              uses: zulip/github-actions-zulip/send-message@f675f2b4eb2a95fae974215476dcb7ad8dfeff6b # v2.0.2
-              with:
-                  organization-url: https://sil-bloom.zulipchat.com
-                  email: ${{ secrets.BLOOM_ZULIP_EMAIL }}
-                  api-key: ${{ secrets.BLOOM_ZULIP_API_KEY }}
-                  type: stream
-                  to: developers
-                  topic: ${{ steps.zulip_message.outputs.topic }}
-                  content: ${{ steps.zulip_message.outputs.content }}
-
-            # The same report, to Slack's #bloom-team-developers, while the team moves from Zulip
-            # to Slack. Slack's `markdown` block renders the report's Markdown (bold, the list, the
-            # quoted link) as written; `text` is what a notification shows. Link previews are off
-            # for the same reason the report quotes its link for Zulip.
+            # Slack's `markdown` block renders the report's Markdown (bold, the list, the link) as
+            # written; `text` is what a notification shows. Link previews are off: a preview card of
+            # the run would be several times the height of the report itself.
             #
             # Needs the repository secret BLOOM_SLACK_BOT_TOKEN, the Bot User OAuth Token (xoxb-) of
             # the "Bloom bot" Slack app, which must be a member of the channel. The channel is
             # private, so it is named by id.
             - name: Post the nightly report to Slack
-              if: ${{ always() && steps.zulip_message.outcome == 'success' }}
+              # always() rather than a status check: the composing step above has already decided
+              # whether there is anything to say, so if it was skipped this is skipped with it.
+              # Naming a status here instead would drop the cancelled case.
+              if: ${{ always() && steps.report_message.outcome == 'success' }}
               shell: pwsh
               env:
                   BLOOM_SLACK_BOT_TOKEN: ${{ secrets.BLOOM_SLACK_BOT_TOKEN }}
-                  CONTENT: ${{ steps.zulip_message.outputs.content }}
+                  CONTENT: ${{ steps.report_message.outputs.content }}
               run: |
                   if (-not $env:BLOOM_SLACK_BOT_TOKEN) {
                       throw "BLOOM_SLACK_BOT_TOKEN is not set as a repository secret, so the nightly could not be reported to Slack."
