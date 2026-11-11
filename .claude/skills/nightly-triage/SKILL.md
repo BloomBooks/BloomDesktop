@@ -98,9 +98,11 @@ not say yet. Don't repeat what the card already says.
 **A new card:**
 - Summary: `Nightly: ` and then what fails, in a few plain words (`Nightly: the Leveled Reader
   comes back on level 1 instead of the level the book was left on`).
-- Type **Bug**, State **Incoming**, and Kanban Board the current sprint of the **Bloom Kanban**
-  board, read from `/agiles?fields=name,currentSprint(name)`. Set them with a POST to the issue's
-  `customFields`; Kanban Board is a `SingleVersionIssueCustomField`. A command (`/commands`) can't
+- Type **Bug**, State **Incoming**, Reporter Name **Nightly Test Failure**, and Kanban Board the
+  current sprint of the **Bloom Kanban** board, read from `/agiles?fields=name,currentSprint(name)`.
+  Set them with a POST to the issue's `customFields`; Kanban Board is a
+  `SingleVersionIssueCustomField`, and Reporter Name is a `SimpleIssueCustomField` whose value is
+  the plain string. A command (`/commands`) can't
   set Kanban Board.
 - The tag **Nightly Failure**: POST `{"id":"104-289"}` to `/issues/<id>/tags`. Don't tag through a
   command: `tag {Nightly Failure}` makes a new private tag named with the braces.
