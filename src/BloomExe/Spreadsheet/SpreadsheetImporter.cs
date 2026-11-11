@@ -233,35 +233,40 @@ namespace Bloom.Spreadsheet
         /// <summary>
         /// Put the book's folder back as it was when BookStorage.SaveCopyBeforeImportOverwrite made
         /// the backup: delete the files a backup holds, so that ones the import added go too, then
-        /// copy in the backup's files. The backup is unzipped into a temporary folder first, so that
-        /// if it cannot be read, nothing in the book has been deleted.
+        /// unzip the backup. The backup is checked first, so that if it cannot be read, nothing in the
+        /// book has been deleted. Files that were read-only are read-only again afterwards.
         /// </summary>
         private static void RestoreBookFolderFromBackup(string bookFolderPath, string backupPath)
         {
-            using (
-                var unzipped = new BloomTemp.TemporaryFolder(
-                    "spreadsheet import restore " + Guid.NewGuid()
-                )
-            )
+            using (var zipFile = new ICSharpCode.SharpZipLib.Zip.ZipFile(backupPath))
             {
-                RobustZip.UnzipDirectory(unzipped.FolderPath, backupPath);
-                DeleteFilesABackupHolds(bookFolderPath);
-                Bloom.ToPalaso.DirectoryUtils.CopyFolder(unzipped.FolderPath, bookFolderPath);
+                if (!zipFile.TestArchive(true))
+                    throw new ApplicationException($"The backup {backupPath} could not be read.");
             }
+            var readOnlyFiles = new List<string>();
+            DeleteFilesABackupHolds(bookFolderPath, readOnlyFiles);
+            RobustZip.UnzipDirectory(bookFolderPath, backupPath);
+            foreach (var file in readOnlyFiles.Where(RobustFile.Exists))
+                RobustFile.SetAttributes(file, FileAttributes.ReadOnly);
         }
 
         /// <summary>
         /// Delete the files in the folder and its subfolders that BloomArchiveFile.AddDirectory would
-        /// put in a backup, read-only ones included. What it leaves out (hidden and system files, and
-        /// the AI Image Editor's folder) is not in the backup, so it must not be deleted either.
+        /// put in a backup, read-only ones included (adding those to readOnlyFiles). What it leaves out
+        /// (hidden and system files, and the AI Image Editor's folder) is not in the backup, so it
+        /// must not be deleted either.
         /// </summary>
-        private static void DeleteFilesABackupHolds(string folder)
+        private static void DeleteFilesABackupHolds(string folder, List<string> readOnlyFiles)
         {
             foreach (var file in Directory.GetFiles(folder))
             {
                 if (RobustZip.ShouldFileBeIgnored(file))
                     continue;
-                RobustFile.SetAttributes(file, FileAttributes.Normal);
+                if (RobustFile.GetAttributes(file).HasFlag(FileAttributes.ReadOnly))
+                {
+                    readOnlyFiles.Add(file);
+                    RobustFile.SetAttributes(file, FileAttributes.Normal);
+                }
                 RobustFile.Delete(file);
             }
             foreach (var subfolder in Directory.GetDirectories(folder))
@@ -273,7 +278,7 @@ namespace Bloom.Spreadsheet
                             StringComparison.OrdinalIgnoreCase
                         )
                 )
-                    DeleteFilesABackupHolds(subfolder);
+                    DeleteFilesABackupHolds(subfolder, readOnlyFiles);
             }
         }
 
