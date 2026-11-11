@@ -1,8 +1,18 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { userEvent } from "vitest/browser";
-import inlineImagesCss from "../../../content/bookLayout/inlineImages.less?inline";
-import inlineImageEditingCss from "../css/inlineImageEditing.less?inline";
+
+// Tests must not reach the network, and there is no Bloom here to answer.
+// setupInlineImageInteractions and the selected picture's menu ask which subscription features
+// are on; the mock answers that none are.
+vi.mock("../../react_components/featureStatus", () => ({
+    getFeatureStatusAsync: () => Promise.resolve(undefined),
+    useGetFeatureStatus: () => undefined,
+    useGetFeatureAvailabilityMessage: () => "",
+    openBloomSubscriptionSettings: () => {},
+}));
+import { kInlineImageTestCss } from "./inlineImageTestCss";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
+import { mockReplies } from "../../utils/bloomApi";
 import {
     insertInlineImage,
     kInlineImageLeftClass,
@@ -38,7 +48,20 @@ const kTextBlockCss = `
 
 let root: HTMLElement;
 
+// The selected picture's menu asks Bloom for the collection's language names. vi.mock cannot
+// replace bloomApi here, because the browser setup file has already loaded it, so the request
+// is answered through bloomApi's mockReplies, which each test sets and clears.
+const kLanguageNamesUrl = "settings/languageNames";
+
 beforeEach(() => {
+    mockReplies[kLanguageNamesUrl] = {
+        data: {
+            language1Name: "",
+            language1Tag: "",
+            language2Name: "",
+            language2Tag: "",
+        },
+    };
     root = document.createElement("div");
     document.body.appendChild(root);
     // Ending a resize asks for an overflow check on a one-second timer, which would fire after
@@ -53,6 +76,7 @@ afterEach(() => {
     cleanupInlineImageInteractions();
     root.remove();
     vi.restoreAllMocks();
+    delete mockReplies[kLanguageNamesUrl];
 });
 
 // Builds a page holding one text block of the given size, with one visible editable for each
@@ -64,7 +88,7 @@ function makeTextBlock(
 ): HTMLElement {
     const langs = ["en", "fr", "es"];
     root.innerHTML =
-        `<style>${inlineImagesCss}\n${inlineImageEditingCss}\n${kTextBlockCss}</style>` +
+        `<style>${kInlineImageTestCss}\n${kTextBlockCss}</style>` +
         `<div class="bloom-page" data-page-id="resize-test-page" style="position:absolute; left:0; top:0; width:410px; height:880px;">` +
         `<div class="bloom-translationGroup" id="group" style="width:${widthPx}px; height:${heightPx}px;">` +
         texts
