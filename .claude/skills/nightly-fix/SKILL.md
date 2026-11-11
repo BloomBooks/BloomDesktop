@@ -1,12 +1,15 @@
 ---
 name: nightly-fix
-description: Fix an open nightly CI failure recorded in .claude/skills/nightly-triage/open-failures.md, as one branch ready to become a draft PR, with the tests that prove the fix named. Use when asked to "fix the nightly failures", "fix last night's failure", or "fix <a doc entry>". The Bloom bot runs it every morning after nightly-triage.
+description: Fix an open nightly CI failure, recorded on a YouTrack card tagged "Nightly Failure", as one branch ready to become a draft PR, with the tests that prove the fix named. Use when asked to "fix the nightly failures", "fix last night's failure", or "fix <a Nightly Failure card>". The Bloom bot runs it every morning after nightly-triage.
 ---
 
 # Fix a nightly failure
 
-`.claude/skills/nightly-triage/open-failures.md` lists the open nightly failures, each with what the triage
-found. This skill takes one piece of that list and fixes it: one change that one PR can carry.
+Each open nightly failure has a YouTrack card tagged **Nightly Failure**, which the
+`nightly-triage` skill keeps: what failed, in which nightlies, and what a first look found. Find the
+open ones with `/issues?query=tag:%20%7BNightly%20Failure%7D%20%23Unresolved` (see the
+`youtrack-api` skill). This skill takes one or more of those cards and fixes them: one change that
+one PR can carry.
 
 ## 1. Read the rules first
 
@@ -24,8 +27,9 @@ their rules shape this whole skill:
 
 ## 2. Choose what to fix
 
-Leave out an entry that someone has already started on: its Status links an open PR, names a
-branch or commit with a possible fix, or names someone working on it. That work belongs to whoever
+Leave out a card that someone has already started on: it has an Assignee, its State is past
+Ready For Work, or its description or comments link an open PR or name a branch or commit with a
+possible fix. That work belongs to whoever
 started it, even when it is unreviewed or out of date. Also leave out any failure that an open PR
 on a `bot/` branch already covers.
 
@@ -37,7 +41,7 @@ recur first: a known failure seen again over a new one seen once.
 
 ## 3. Find the cause
 
-The doc entry is a first look. Go further: the run's log and artifacts, the trace, the code the
+The card's description and comments are a first look. Go further: the run's log and artifacts, the trace, the code the
 test drives, and `git log` for what changed around when it started. Decide which of these it is,
 because each is fixed and proved differently:
 
@@ -50,8 +54,7 @@ because each is fixed and proved differently:
 
 ## 4. Make the change and check it
 
-Keep the change to what fixes the failure. Follow the code style in `AGENTS.md`. Don't edit
-`.claude/skills/nightly-triage/open-failures.md`; the triage keeps it.
+Keep the change to what fixes the failure. Follow the code style in `AGENTS.md`.
 
 Check what you can before handing over:
 - Changed C#: it must compile.
@@ -62,7 +65,7 @@ Check what you can before handing over:
 ## 5. Report
 
 Say:
-- which doc entries the change fixes, by their headings;
+- which cards the change fixes, by their ids;
 - what the cause was and what the change does;
 - which kind from step 3 it is;
 - which tests prove it (spec files, C# test filter, component test filters);
