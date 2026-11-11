@@ -107,6 +107,11 @@ export class ReaderToolsModel {
     // still sitting on the defaults above. restoreState() uses it to tell a model that
     // nobody has told anything from one that is already showing a real choice; see there.
     private hasBeenGivenAPhase = false;
+    // How many times the user has stepped the stage or level with the arrow buttons. A
+    // restore that has to wait (for the Synphony settings, or for Bloom to say what the
+    // default is) compares this before and after, so that it can leave alone a stage or
+    // level the user chose while it waited; see getCountOfPhasesChosenByUser().
+    private countOfPhasesChosenByUser = 0;
     // A stage or level someone asked for before the Synphony settings arrived, waiting
     // for setSynphony() to apply it. See setStageNumber().
     //
@@ -183,6 +188,7 @@ export class ReaderToolsModel {
         this.levelNumber = 1;
         this.synphony = undefined;
         this.hasBeenGivenAPhase = false;
+        this.countOfPhasesChosenByUser = 0;
         this.stageAwaitingSynphony = undefined;
         this.levelAwaitingSynphony = undefined;
         this.sort = SortType.alphabetic;
@@ -211,12 +217,30 @@ export class ReaderToolsModel {
         this.ckEditorLoaded = true;
     }
 
+    /** The user clicked the arrow for the next stage. */
     public incrementStage(): void {
+        this.countOfPhasesChosenByUser++;
         this.setStageNumber(this.stageNumber + 1);
     }
 
+    /** The user clicked the arrow for the previous stage. */
     public decrementStage(): void {
+        this.countOfPhasesChosenByUser++;
         this.setStageNumber(this.stageNumber - 1);
+    }
+
+    /**
+     * How many times the user has stepped the stage or level with the arrow buttons.
+     *
+     * A tool's beginRestoreSettings() reads this when it starts and again when it is ready
+     * to apply the stage or level it found. If the number has changed, the user chose one
+     * while the restore waited. That choice is newer than anything the restore read, and
+     * is already saved in the book and as the default for new books, so the restore must
+     * leave it alone. Applying its own value would put the tool back on the old stage or
+     * level and, for a new book, save that over the user's choice.
+     */
+    public getCountOfPhasesChosenByUser(): number {
+        return this.countOfPhasesChosenByUser;
     }
 
     public async setStageNumber(
@@ -296,11 +320,15 @@ export class ReaderToolsModel {
         }
     }
 
+    /** The user clicked the arrow for the next level. */
     public incrementLevel(): void {
+        this.countOfPhasesChosenByUser++;
         this.setLevelNumber(this.levelNumber + 1);
     }
 
+    /** The user clicked the arrow for the previous level. */
     public decrementLevel(): void {
+        this.countOfPhasesChosenByUser++;
         this.setLevelNumber(this.levelNumber - 1);
     }
 

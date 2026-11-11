@@ -41,7 +41,14 @@ export class LeveledReaderTool extends ToolboxToolReactAdaptor {
     ): Promise<void> {
         // This restore supersedes any level still waiting for the settings; see
         // forgetLevelAwaitingSynphony().
-        getTheOneReaderToolsModel().forgetLevelAwaitingSynphony();
+        const model = getTheOneReaderToolsModel();
+        model.forgetLevelAwaitingSynphony();
+        // Both waits below (for the reader settings, and for Bloom to say what the default
+        // level is) can take a second or more, and the arrows work meanwhile. A level the
+        // user chooses during them wins; see getCountOfPhasesChosenByUser().
+        const choicesWhenRestoreBegan = model.getCountOfPhasesChosenByUser();
+        const userChoseSinceRestoreBegan = () =>
+            model.getCountOfPhasesChosenByUser() !== choicesWhenRestoreBegan;
         await beginInitializeLeveledReaderTool();
         // Despite the type, settings can be undefined/null at runtime when the tool is
         // activated for a book that has no saved leveled-reader settings. Guard before
@@ -50,14 +57,12 @@ export class LeveledReaderTool extends ToolboxToolReactAdaptor {
         // (Sentry BLOOM-DESKTOP-FFH).
         const leveledReaderState = settings?.["leveledReaderState"];
         if (leveledReaderState) {
+            if (userChoseSinceRestoreBegan()) return;
             // The true passed here prevents re-saving the state we just read.
             // One non-obvious implication is that simply opening a level-4 book
             // will not switch the default level for new books to 4. That only
             // happens when you CHANGE the level in the toolbox.
-            getTheOneReaderToolsModel().setLevelNumber(
-                parseInt(leveledReaderState, 10),
-                true,
-            );
+            model.setLevelNumber(parseInt(leveledReaderState, 10), true);
             return;
         }
         await new Promise<void>((resolve) => {
@@ -65,9 +70,10 @@ export class LeveledReaderTool extends ToolboxToolReactAdaptor {
                 "readers/io/defaultLevel",
                 (result) => {
                     // Presumably a brand new book. We'd better save the settings we come up with in it.
-                    getTheOneReaderToolsModel().setLevelNumber(
-                        parseInt(result.data, 10),
-                    );
+                    // Unless the user got in first: then the book already has their level,
+                    // and this answer may be the default from before they chose.
+                    if (!userChoseSinceRestoreBegan())
+                        model.setLevelNumber(parseInt(result.data, 10));
                     resolve();
                 },
                 () => resolve(),

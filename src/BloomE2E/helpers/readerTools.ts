@@ -114,9 +114,11 @@ export async function getReaderPhase(
  * default for new books in the same step that saves it into the book, and the default is what
  * Bloom will report.
  *
- * The tool must have finished restoring the book's stage or level first (see
- * waitForReaderToolToRestore; makeBasicBookWithReaderTool does it), or the restore can land after
- * these clicks and undo them.
+ * The tool should have finished restoring the book's stage or level first (see
+ * waitForReaderToolToRestore; makeBasicBookWithReaderTool does it): a restore that lands between
+ * this reading the number and clicking makes the click step from the wrong number. A restore that
+ * lands after a click leaves the click's result alone (readerToolsModel's
+ * getCountOfPhasesChosenByUser).
  */
 export async function setReaderPhase(
     page: Page,
@@ -162,7 +164,10 @@ export async function setReaderPhase(
  * Wait until a reader tool has finished restoring the stage or level of the book being edited: the
  * one saved in the book, or, for a book that has none yet, the default Bloom reports (the one last
  * chosen with the arrows). The tool shows the stepper first and restores asynchronously a moment
- * later, so a click on the stepper in between races the restore, and whichever lands second wins.
+ * later, so what the stepper shows in between is not yet the book's.
+ *
+ * This cannot tell that the restore has finished when the expected number is the one the stepper
+ * already shows, as with a new book while the default is 1.
  */
 export async function waitForReaderToolToRestore(
     page: Page,

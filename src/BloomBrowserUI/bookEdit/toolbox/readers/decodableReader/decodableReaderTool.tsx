@@ -66,9 +66,15 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
     ): Promise<void> {
         // This restore supersedes any stage still waiting for the settings; see
         // forgetStageAwaitingSynphony().
-        getTheOneReaderToolsModel().forgetStageAwaitingSynphony();
-        await beginInitializeDecodableReaderTool();
         const model = getTheOneReaderToolsModel();
+        model.forgetStageAwaitingSynphony();
+        // Both waits below (for the reader settings, and for Bloom to say what the default
+        // stage is) can take a second or more, and the arrows work meanwhile. A stage the
+        // user chooses during them wins; see getCountOfPhasesChosenByUser().
+        const choicesWhenRestoreBegan = model.getCountOfPhasesChosenByUser();
+        const userChoseSinceRestoreBegan = () =>
+            model.getCountOfPhasesChosenByUser() !== choicesWhenRestoreBegan;
+        await beginInitializeDecodableReaderTool();
         // settings can be undefined/null at runtime for a book with no saved toolbox
         // settings; guard before indexing so we fall through to the default-stage path
         // instead of throwing an unhandled rejection that aborts tool activation (the
@@ -98,14 +104,20 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
                 if (model.sort !== sort) {
                     model.setSort(sort, true);
                 }
-                if (model.stageNumber === stage) {
+                if (
+                    userChoseSinceRestoreBegan() ||
+                    model.stageNumber === stage
+                ) {
                     return;
                 }
                 await runStageRestore(() => model.setStageNumber(stage, true));
             } else {
                 // old state
                 const stage = parseInt(decodableReaderState, 10);
-                if (model.stageNumber === stage) {
+                if (
+                    userChoseSinceRestoreBegan() ||
+                    model.stageNumber === stage
+                ) {
                     return;
                 }
                 await runStageRestore(() => model.setStageNumber(stage, true));
@@ -118,8 +130,13 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
                 "readers/io/defaultStage",
                 (result) => {
                     // Presumably a brand new book. We'd better save the settings we come up with in it.
+                    // Unless the user got in first: then the book already has their stage,
+                    // and this answer may be the default from before they chose.
                     const stage = parseInt(result.data, 10);
-                    if (model.stageNumber === stage) {
+                    if (
+                        userChoseSinceRestoreBegan() ||
+                        model.stageNumber === stage
+                    ) {
                         resolve();
                         return;
                     }
