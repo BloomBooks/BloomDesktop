@@ -787,7 +787,8 @@ export async function blockIsMarkedOverflowing(
  * the middle third, the bottom dock applies once the band no longer fits the picture inside the
  * block's content, and anywhere below the block means the bottom dock whatever the horizontal
  * position. This helper aims at the middle of the region for the dock asked for, so the caller
- * only names the dock.
+ * only names the dock. The bottom dock is not offered: whether a picture dragged below the block
+ * ends up there depends on how much text the block has (see dragInlineImageBelowBlock).
  *
  * Bloom puts the image back where it started if the move would make the block overflow. When that
  * happens, the failure message gives the dock the image is still in. It means the caller's block
@@ -798,7 +799,7 @@ export async function dragInlineImageToDock(
     groupSelector: string,
     languageTag: string,
     id: string,
-    dock: InlineImageDock,
+    dock: Exclude<InlineImageDock, "bottom">,
 ): Promise<void> {
     const block = await blockRect(page, groupSelector, languageTag);
     const picture = await pictureRectInView(
@@ -819,20 +820,15 @@ export async function dragInlineImageToDock(
     ).toBeGreaterThan(0);
     // Aim at the horizontal middle of the region that means this dock, and keep the picture at
     // the height it already had, because a drop lower down the block would also change how far
-    // down the picture starts. The bottom dock is different: the drop goes just below the block,
-    // which means the bottom dock however tall the block is and whatever else is in it.
+    // down the picture starts.
     const acrossFraction = {
         left: 1 / 6,
         middle: 0.5,
         right: 5 / 6,
-        bottom: 0.5,
     }[dock];
     await dragInlineImageTo(page, groupSelector, languageTag, id, {
         x: block.x + block.width * acrossFraction,
-        y:
-            dock === "bottom"
-                ? block.y + block.height * 1.05
-                : picture.y + picture.height / 2,
+        y: picture.y + picture.height / 2,
     });
     await expect
         .poll(
