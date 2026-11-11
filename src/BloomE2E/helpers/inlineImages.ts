@@ -785,10 +785,10 @@ export async function blockIsMarkedOverflowing(
  * the mouse pointer does not matter. It divides the block's width into thirds: the left and right
  * thirds mean the left and right docks, and the middle third means the full-width band. Within
  * the middle third, the bottom dock applies once the band no longer fits the picture inside the
- * block's content, and anywhere below the block means the bottom dock whatever the horizontal
- * position. This helper aims at the middle of the region for the dock asked for, so the caller
- * only names the dock. The bottom dock is not offered: whether a picture dragged below the block
- * ends up there depends on how much text the block has (see dragInlineImageBelowBlock).
+ * block's content, but only in a block whose text fills it. This helper aims at the middle of the
+ * region for the dock asked for, so the caller only names the dock. It does not offer the bottom
+ * dock, because whether a picture dragged that low ends up there depends on how much text the
+ * block has (see dragInlineImageBelowBlock).
  *
  * Bloom puts the image back where it started if the move would make the block overflow. When that
  * happens, the failure message gives the dock the image is still in. It means the caller's block
