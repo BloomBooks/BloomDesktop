@@ -253,6 +253,13 @@ export function getInlineImageActionTarget(
  * end of the content is somewhere the band cannot go, and it is taken to mean the dock below
  * the text. Any position below the block is the bottom dock, wherever it is horizontally.
  *
+ * All of that holds only when the bottom dock is at the bottom of the block
+ * (`bottomDockReachesBlockBottom`). The bottom dock puts the picture right after the last line
+ * of text, so in a block with room to spare below the text it is higher than the other docks
+ * can put the picture, and a picture dragged down to the bottom would jump up (BL-17078). In
+ * such a block, positions low in the block and below it mean the dock of their third, which
+ * takes the picture down to the bottom of the block.
+ *
  * Two rules come from testing in the running Bloom:
  *  - In the left and right thirds, the side docks apply all the way down. If the bottom dock
  *    took over the lower corners, an image could not be placed in a lower corner at all.
@@ -266,6 +273,7 @@ export function computeInlineImageDock(
     imageCenterViewportPx: { x: number; y: number },
     editableContentBoxViewportPx: IBox,
     imageHeightViewportPx: number,
+    bottomDockReachesBlockBottom: boolean,
 ): InlineImageDock {
     // A box with no width cannot be divided into thirds, so treat the position as the middle.
     const fraction =
@@ -275,13 +283,13 @@ export function computeInlineImageDock(
             : 0.5;
     const contentBottomViewportPx =
         editableContentBoxViewportPx.top + editableContentBoxViewportPx.height;
-    if (imageCenterViewportPx.y >= contentBottomViewportPx)
-        return kInlineImageBottomClass;
     const inMiddleThird = fraction >= 1 / 3 && fraction <= 2 / 3;
     if (
-        inMiddleThird &&
-        imageCenterViewportPx.y + imageHeightViewportPx / 2 >=
-            contentBottomViewportPx
+        bottomDockReachesBlockBottom &&
+        (imageCenterViewportPx.y >= contentBottomViewportPx ||
+            (inMiddleThird &&
+                imageCenterViewportPx.y + imageHeightViewportPx / 2 >=
+                    contentBottomViewportPx))
     )
         return kInlineImageBottomClass;
     if (fraction < 1 / 3) return kInlineImageLeftClass;
@@ -1617,6 +1625,8 @@ interface IInlineImageDragState {
     // because the dragged image can fit while pushing another image out. Floats cannot
     // overlap, so a full-width band dragged to another image's level pushes that image down.
     startOverflowLayoutPx: number;
+    // See bottomDockReachesBlockBottom; undefined until a move of this drag asks.
+    bottomDockReachesBlockBottom?: boolean;
     // The last position of the pointer, so that the timer started by startEdgeScrollTimer can
     // apply the user's move again when there is no new pointer event.
     lastPointViewportPx: { x: number; y: number };
@@ -1871,11 +1881,6 @@ function continueDrag(
         x: pointViewportPx.x + state.grabOffsetXViewportPx,
         y: pointViewportPx.y + state.grabOffsetYViewportPx,
     };
-    const dock = computeInlineImageDock(
-        imageCenterViewportPx,
-        state.editableContentBoxViewportPx,
-        getImageBox(state.wrapper).height,
-    );
     // jsdom reports every box as empty. In that case this uses the simple calculation from the
     // pointer's movement that the drag tests check, and skips the measurements that need a
     // real layout.
@@ -1883,25 +1888,19 @@ function continueDrag(
     const blockBottomViewportPx =
         state.editableContentBoxViewportPx.top +
         state.editableContentBoxViewportPx.height;
+    const dock = computeInlineImageDock(
+        imageCenterViewportPx,
+        state.editableContentBoxViewportPx,
+        getImageBox(state.wrapper).height,
+        degenerate ||
+            bottomDockReachesBlockBottom(state, blockBottomViewportPx),
+    );
     if (dock !== previousDock) {
         // setInlineImageDock also moves the wrapper between the start and the end of the
         // editable, which is the only difference in the DOM between the bottom dock and the
         // others.
         setInlineImageDock(state.wrapper, dock);
         state.dock = dock;
-        // The bottom dock puts the picture right after the last line of text. In a block with
-        // room to spare below the text, that is short of the bottom of the block, higher than
-        // the other docks can put it, so a picture dragged down would jump up (BL-17078). So
-        // the picture keeps its dock when the bottom dock would leave room below it; that dock
-        // takes it to the bottom of the block below. When the text fills the block, the bottom
-        // dock is at the bottom, and it is used.
-        const picture = getImageBox(state.wrapper);
-        if (
-            !degenerate &&
-            dock === kInlineImageBottomClass &&
-            picture.top + picture.height < blockBottomViewportPx - 1
-        )
-            restorePreviousDock();
     }
     if (state.dock === kInlineImageBottomClass) {
         // The bottom dock is in normal flow at the end of the block, so it uses no offset. The
@@ -2000,6 +1999,26 @@ function continueDrag(
         restoreNeighborImagePositions(state);
     }
     scrollBlockToKeepDraggedImageInView(state);
+}
+
+// Whether the bottom dock puts the bottom of the picture at the bottom of the block, which it
+// does only when the text fills the block. The bottom dock is in normal flow right after the
+// text, and the text is laid out the same wherever the picture is dragged, so this tries the
+// bottom dock once, on the first move of the drag that asks, and remembers the answer.
+function bottomDockReachesBlockBottom(
+    state: IInlineImageDragState,
+    blockBottomViewportPx: number,
+): boolean {
+    if (state.bottomDockReachesBlockBottom === undefined) {
+        const nextSibling = state.wrapper.nextElementSibling;
+        setInlineImageDock(state.wrapper, kInlineImageBottomClass);
+        const picture = getImageBox(state.wrapper);
+        state.editable.insertBefore(state.wrapper, nextSibling);
+        setInlineImageDock(state.wrapper, state.dock);
+        state.bottomDockReachesBlockBottom =
+            picture.top + picture.height >= blockBottomViewportPx - 1;
+    }
+    return state.bottomDockReachesBlockBottom;
 }
 
 // The bottom of the wrapper's margin box, in viewport pixels: the lowest point of the space it
