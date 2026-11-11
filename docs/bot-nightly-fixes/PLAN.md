@@ -7,7 +7,7 @@ Status: proposal, 2026-11-03. Nothing here is built yet.
 Every morning the Bloom bot on the team's Mac (`poll-nightly.mjs` in the
 private BloomBooks/bloom-bot repo) triages the scheduled nightly with the `nightly-triage` skill: it names each
 failure, says whether it is new, takes a first look, commits `.claude/skills/nightly-triage/open-failures.md` to
-master, and posts a summary to Zulip and `#bloom-team-developers`.
+master, and posts a summary to `#bloom-team-developers`.
 
 This plan adds the next step: the bot fixes the open failures and offers the fix as a draft PR,
 posted to the same channels.
@@ -58,7 +58,7 @@ flowchart TD
 - **Tries:** at most two fix attempts per PR per morning. After that the bot posts what it found
   and stops.
 - **Budget:** the bot keeps its 5% of John's weekly Claude use, shared with triage and the
-  YouTrack and Zulip answers. Fix attempts come last: when the share is used up, the rest wait for
+  YouTrack and Slack answers. Fix attempts come last: when the share is used up, the rest wait for
   a morning with budget left. The post says what it left.
 
 ## Proving a fix
@@ -106,7 +106,7 @@ less should bring it to 3 to 4 minutes, plus the test runs.
   - which nightly failures it addresses, with links to the runs and the doc entry;
   - the cause, and what the fix changes;
   - for a flaky failure, the counts: failures on master out of runs, then clean runs on the fix.
-- The job posts the PR link to `#bloom-team-developers` and Zulip for any developer to pick up.
+- The job posts the PR link to `#bloom-team-developers` for any developer to pick up.
   The next morning's triage links it from the Status of the doc entries it fixes. The bot names no
   reviewer and assigns no one.
 - At most 3 PRs a morning, whatever the budget allows, so a bad morning can't flood the channel.
