@@ -85,6 +85,8 @@ const StatsRow: FunctionComponent<{
     // compared to the max at full precision, so e.g. an average of 9.04 with a
     // max of 9 counts as over the limit even though it displays as "9.0".
     isAverage?: boolean;
+    // Put on the Actual cell as its data-testid, for the rows a test needs to read.
+    actualTestId?: string;
     children: string;
 }> = (props) => {
     return (
@@ -126,6 +128,7 @@ const StatsRow: FunctionComponent<{
                     : "—"}
             </div>
             <div
+                data-testid={props.actualTestId}
                 // Says whether this value violates the level's limit, so that tests
                 // (and any future styling) have something stable to look at instead of
                 // the color. These are the names the pre-React code used; as it noted,
@@ -365,6 +368,7 @@ export const LeveledReaderStats: FunctionComponent<{
                     l10nKeySuffix="PerPage"
                     maxNum={model.maxWordsPerPage()}
                     actualNum={props.bookStats["actualWordsPerPage"]}
+                    actualTestId="leveled-reader-words-this-page"
                 >
                     per page
                 </StatsRow>
