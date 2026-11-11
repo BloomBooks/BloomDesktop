@@ -265,6 +265,11 @@
         <note>ID: Feature.Spreadsheet</note>
         <note>This is the name of a feature in Bloom</note>
       </trans-unit>
+      <trans-unit id="Feature.Table">
+        <source xml:lang="en">Table</source>
+        <note>ID: Feature.Table</note>
+        <note>This is the name of a feature in Bloom: tables on a page, whose cells hold text or pictures</note>
+      </trans-unit>
       <!-- TODO: add other features -->
 
       <trans-unit id="Spreadsheet.DataDivConflictWarning">
