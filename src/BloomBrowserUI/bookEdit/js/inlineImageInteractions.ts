@@ -2002,16 +2002,23 @@ function continueDrag(
 // does only when the text fills the block. The bottom dock is in normal flow right after the
 // text, and the text is laid out the same wherever the picture is dragged, so this tries the
 // bottom dock once, on the first move of the drag that asks, and remembers the answer.
+// Going through the middle dock first puts the picture where a drag into the bottom dock puts
+// it, after any other bottom-docked pictures, even when it is in the bottom dock already. The
+// try can make the block's content shorter, which can scroll a scrolled block back up, so the
+// scroll position is put back too.
 function measureBottomDockReachesBlockBottom(
     state: IInlineImageDragState,
     blockBottomViewportPx: number,
 ): boolean {
     if (state.bottomDockReachesBlockBottom === undefined) {
         const nextSibling = state.wrapper.nextElementSibling;
+        const scrollTop = state.editable.scrollTop;
+        setInlineImageDock(state.wrapper, kInlineImageMiddleClass);
         setInlineImageDock(state.wrapper, kInlineImageBottomClass);
         const picture = getImageBox(state.wrapper);
         state.editable.insertBefore(state.wrapper, nextSibling);
         setInlineImageDock(state.wrapper, state.dock);
+        state.editable.scrollTop = scrollTop;
         state.bottomDockReachesBlockBottom =
             picture.top + picture.height >= blockBottomViewportPx - 1;
     }

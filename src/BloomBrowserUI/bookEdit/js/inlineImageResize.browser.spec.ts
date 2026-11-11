@@ -311,6 +311,29 @@ describe("resizing and dragging an inline image", () => {
         expect(totalScrollOverflowPx(group)).toBeLessThanOrEqual(1);
     });
 
+    // A resize stops by the same measure, so it also stops before the second language's text
+    // leaves the block.
+    it("stops a resize before it pushes the second language's text out of the block", async () => {
+        // As above: the picture on the left and 20 lines of French fit in 496px with 8px to
+        // spare, and the English beside the picture is one line.
+        const french = Array(20).fill("Il était une fois.").join("<br>");
+        const group = makeTextBlock(400, 496, ["Once upon a time.", french]);
+        const wrapper = await setUpImage(group);
+        // Sanity check: the block fits both languages.
+        expect(totalScrollOverflowPx(group)).toBeLessThanOrEqual(0);
+
+        await dragLowerRightCornerFarOut(wrapper);
+
+        const widthPercent = parseFloat(
+            wrapper.style.getPropertyValue(kInlineImageWidthVar),
+        );
+        expect(widthPercent).toBeGreaterThan(30);
+        expect(totalScrollOverflowPx(group)).toBeLessThanOrEqual(1);
+        // It stops close to the largest width that fits: 1% more would not fit.
+        wrapper.style.setProperty(kInlineImageWidthVar, `${widthPercent + 1}%`);
+        expect(totalScrollOverflowPx(group)).toBeGreaterThan(1);
+    });
+
     // BL-17078: on a portrait page the image stopped a little short of the edge of the text.
     it("reaches the full width of the text in a tall, narrow block", async () => {
         const group = makeTextBlock(400, 800, ["Once upon a time."]);

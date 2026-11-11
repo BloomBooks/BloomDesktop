@@ -49,6 +49,7 @@ import {
     dragInlineImageDown,
     dragInlineImageToDock,
     getBlockLineHeightPx,
+    getBlockScrollOverflowPx,
     getRoomBelowInlineImagePx,
     readSavedInlineImages,
     resizeInlineImage,
@@ -472,6 +473,12 @@ test.describe("inline images in a text block [Test Case ID 815]", () => {
                     "bottom of the block, with less than a line of room below it.",
             })
             .toBeLessThan(lineHeightPx);
+        // Little room below the picture would also be what a picture hanging below the block
+        // leaves, so check that the text all still shows (with a pixel for rounding).
+        expect(
+            await getBlockScrollOverflowPx(page, BLOCK, LANG),
+            "The picture at the bottom of the block should not push any text out of it.",
+        ).toBeLessThanOrEqual(1);
         const copies = await getInlineImageInEveryLanguage(
             page,
             BLOCK,
