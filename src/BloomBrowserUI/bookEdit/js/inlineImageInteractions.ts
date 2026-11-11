@@ -2189,14 +2189,34 @@ function setInlineImageWidthPercent(
     wrapper.style.setProperty(kInlineImageWidthVar, `${percent}%`);
 }
 
-// How much text the block has that it cannot show, in layout pixels: the larger of what its
-// editable and its translation group would need to scroll. In a block that shows more than one
-// language the editables grow to fit their text and the group overflows instead.
+// How much text the block has that it cannot show, in layout pixels: the larger of how much the
+// editable would need to scroll and how far the visible editables reach below the bottom of the
+// translation group. In a block that shows more than one language the editables grow to fit
+// their text, so the overflow shows in the group. The group's own scrollHeight cannot be used:
+// it counts the editing controls in the group too, such as the format button, which hangs a few
+// pixels below the bottom of the block and would make every block look as if it overflowed.
 function measureBlockOverflowLayoutPx(editable: HTMLElement): number {
     const group = editable.closest(".bloom-translationGroup") as HTMLElement;
+    const view = editable.ownerDocument.defaultView!;
+    const groupStyle = view.getComputedStyle(group);
+    const groupContentBottomViewportPx =
+        group.getBoundingClientRect().bottom -
+        (parseFloat(groupStyle.paddingBottom) +
+            parseFloat(groupStyle.borderBottomWidth)) *
+            getViewportPxPerLayoutPx(editable);
+    const editablesBottomViewportPx = Math.max(
+        ...Array.from(group.children)
+            .filter(
+                (child) =>
+                    child.classList.contains("bloom-editable") &&
+                    view.getComputedStyle(child).display !== "none",
+            )
+            .map((child) => child.getBoundingClientRect().bottom),
+    );
     return Math.max(
         editable.scrollHeight - editable.clientHeight,
-        group.scrollHeight - group.clientHeight,
+        (editablesBottomViewportPx - groupContentBottomViewportPx) /
+            getViewportPxPerLayoutPx(editable),
     );
 }
 

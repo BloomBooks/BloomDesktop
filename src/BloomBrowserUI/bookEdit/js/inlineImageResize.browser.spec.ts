@@ -133,6 +133,16 @@ describe("resizing an inline image with a corner handle", () => {
         const group = makeTextBlock(400, 120, [
             "Once upon a time, there was a sweet little girl.",
         ]);
+        // Bloom's format button sits in the block's lower corner and hangs a few pixels below
+        // it. It is not text, so it must not count as the block overflowing; if it did, the
+        // block would look full before the resize began, and the resize would not be stopped.
+        group.style.position = "relative";
+        const formatButton = document.createElement("div");
+        formatButton.className = "bloom-ui";
+        formatButton.style.cssText =
+            "position:absolute; left:3px; bottom:-5px; width:25px; height:25px;";
+        group.appendChild(formatButton);
+        expect(group.scrollHeight).toBeGreaterThan(group.clientHeight);
         const wrapper = await setUpImage(group);
         const blockBottom = group.getBoundingClientRect().bottom;
         // Sanity check: the image starts 120px wide and 80px tall at the top of the block.
@@ -147,7 +157,10 @@ describe("resizing an inline image with a corner handle", () => {
 
         const after = imgOf(wrapper).getBoundingClientRect();
         expect(after.bottom).toBeLessThanOrEqual(blockBottom);
-        expect(group.scrollHeight).toBeLessThanOrEqual(group.clientHeight + 1);
+        const editable = group.querySelector(".bloom-editable") as HTMLElement;
+        const editableOverflow = () =>
+            editable.getBoundingClientRect().bottom - blockBottom;
+        expect(editableOverflow()).toBeLessThanOrEqual(1);
         // It stops close to the largest width that fits: the 120px block holds a 3:2 picture
         // up to 112px tall (with its 8px bottom margin), 168px wide, which is 42%; 1% more would
         // not fit.
@@ -156,7 +169,7 @@ describe("resizing an inline image with a corner handle", () => {
         );
         expect(widthPercent).toBeGreaterThan(40);
         wrapper.style.setProperty(kInlineImageWidthVar, `${widthPercent + 1}%`);
-        expect(group.scrollHeight).toBeGreaterThan(group.clientHeight + 1);
+        expect(editableOverflow()).toBeGreaterThan(1);
     });
 
     // A middle-docked picture has text above and below it but none beside it, so growing it
