@@ -85,7 +85,6 @@ import {
     computeInlineImageClusterIndex,
     computeInlineImageDock,
     computeInlineImageWidthPercent,
-    computeInlineImageMaxWidthPercentForBlockHeight,
     computeInlineImageMovedCrop,
     computeInlineImageSideCrop,
     deselectAllInlineImages,
@@ -690,84 +689,6 @@ describe("inlineImageInteractions", () => {
             expect(computeInlineImageWidthPercent(120, 9999, -1, 300)).toBe(
                 kMinInlineImageWidthPercent,
             );
-        });
-
-        // BL-17078: in a landscape block, the width limit alone let an image be stretched
-        // past the bottom of the page.
-        it("stops a corner drag where the image's bottom reaches the bottom of a wide, short block", () => {
-            // A 1000px-wide, 200px-tall block, like a landscape page. The image starts 50px
-            // below the top of the block, 120px wide and 80px tall (3:2).
-            const image = { left: 600, top: 50, width: 120, height: 80 };
-            const blockBottom = 200;
-            const maxPercent = computeInlineImageMaxWidthPercentForBlockHeight(
-                image,
-                blockBottom,
-                1000,
-            );
-            // 150px of room below its top lets a 3:2 image be 225px wide: 22.5% of the block,
-            // far short of the limit that a portrait block reaches first.
-            expect(maxPercent).toBe(22.5);
-            expect(maxPercent!).toBeLessThan(kMaxInlineImageWidthPercent);
-            // Without the limit, this drag reaches the width limit, making the image 950px wide
-            // and 633px tall in a 200px block.
-            expect(computeInlineImageWidthPercent(120, 9999, 1, 1000)).toBe(
-                kMaxInlineImageWidthPercent,
-            );
-            const percent = computeInlineImageWidthPercent(
-                120,
-                9999,
-                1,
-                1000,
-                maxPercent,
-            );
-            expect(percent).toBe(22.5);
-            const heightPx =
-                ((percent / 100) * 1000 * image.height) / image.width;
-            expect(image.top + heightPx).toBeLessThanOrEqual(blockBottom);
-            // Shrinking is not affected.
-            expect(
-                computeInlineImageWidthPercent(120, -20, 1, 1000, maxPercent),
-            ).toBe(10);
-        });
-
-        it("leaves the width limit in charge in a tall, narrow block", () => {
-            // A 300px-wide, 2000px-tall block, like a portrait page.
-            const maxPercent = computeInlineImageMaxWidthPercentForBlockHeight(
-                { left: 0, top: 0, width: 120, height: 80 },
-                2000,
-                300,
-            );
-            expect(maxPercent!).toBeGreaterThan(kMaxInlineImageWidthPercent);
-            expect(
-                computeInlineImageWidthPercent(120, 9999, 1, 300, maxPercent),
-            ).toBe(kMaxInlineImageWidthPercent);
-        });
-
-        it("lets an image that already reaches below the block shrink, but not grow", () => {
-            // 300px tall, starting at the top of a 200px-tall block.
-            const image = { left: 0, top: 0, width: 450, height: 300 };
-            const maxPercent = computeInlineImageMaxWidthPercentForBlockHeight(
-                image,
-                200,
-                1000,
-            );
-            expect(maxPercent).toBe(45);
-            expect(
-                computeInlineImageWidthPercent(450, 100, 1, 1000, maxPercent),
-            ).toBe(45);
-            expect(
-                computeInlineImageWidthPercent(450, -100, 1, 1000, maxPercent),
-            ).toBe(35);
-        });
-
-        it("adds no limit when nothing is laid out", () => {
-            expect(
-                computeInlineImageMaxWidthPercentForBlockHeight(
-                    { left: 0, top: 0, width: 0, height: 0 },
-                    0,
-                    0,
-                ),
-            ).toBeUndefined();
         });
 
         it("grows on an outward drag for every corner", () => {
@@ -2405,8 +2326,8 @@ describe("inlineImageInteractions", () => {
                     90,
                 );
                 expect(result.widthPercent).toBe(kMaxInlineImageWidthPercent);
-                // 80% of the picture was 90% of the block; 95% of the block is 84.44% of it.
-                expect(result.crop.left).toBeCloseTo(15.56, 2);
+                // 80% of the picture was 90% of the block; 100% of the block is 88.89% of it.
+                expect(result.crop.left).toBeCloseTo(11.11, 2);
             });
         });
 

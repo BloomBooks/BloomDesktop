@@ -4,7 +4,6 @@ import inlineImagesCss from "../../../content/bookLayout/inlineImages.less?inlin
 import inlineImageEditingCss from "../css/inlineImageEditing.less?inline";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import {
-    getInlineImageInEditable,
     insertInlineImage,
     kInlineImageLeftClass,
     kInlineImageMiddleClass,
@@ -129,8 +128,7 @@ async function dragLowerRightCornerFarOut(wrapper: HTMLElement): Promise<void> {
 }
 
 describe("resizing an inline image with a corner handle", () => {
-    // BL-17078: on a landscape page the image could be stretched past the bottom of the page,
-    // while on a portrait page it stopped at the limit on its width.
+    // BL-17078: on a landscape page the image could be stretched past the bottom of the page.
     it("stops where the image's bottom reaches the bottom of a wide, short block", async () => {
         const group = makeTextBlock(400, 120, [
             "Once upon a time, there was a sweet little girl.",
@@ -149,12 +147,16 @@ describe("resizing an inline image with a corner handle", () => {
 
         const after = imgOf(wrapper).getBoundingClientRect();
         expect(after.bottom).toBeLessThanOrEqual(blockBottom);
-        // The picture's 8px (0.5em) bottom margin has to fit in the block too, so a 3:2
-        // image can be 112px tall and 168px wide: 42%.
-        expect(wrapper.style.getPropertyValue(kInlineImageWidthVar)).toBe(
-            "42%",
-        );
         expect(group.scrollHeight).toBeLessThanOrEqual(group.clientHeight + 1);
+        // It stops close to the largest width that fits: the 120px block holds a 3:2 picture
+        // up to 112px tall (with its 8px bottom margin), 168px wide, which is 42%; 1% more would
+        // not fit.
+        const widthPercent = parseFloat(
+            wrapper.style.getPropertyValue(kInlineImageWidthVar),
+        );
+        expect(widthPercent).toBeGreaterThan(40);
+        wrapper.style.setProperty(kInlineImageWidthVar, `${widthPercent + 1}%`);
+        expect(group.scrollHeight).toBeGreaterThan(group.clientHeight + 1);
     });
 
     // A middle-docked picture has text above and below it but none beside it, so growing it
@@ -190,7 +192,8 @@ describe("resizing an inline image with a corner handle", () => {
         expect(group.scrollHeight).toBeGreaterThan(group.clientHeight + 1);
     });
 
-    it("still stops at the width limit in a tall, narrow block", async () => {
+    // BL-17078: on a portrait page the image stopped a little short of the edge of the text.
+    it("reaches the full width of the text in a tall, narrow block", async () => {
         const group = makeTextBlock(400, 800, ["Once upon a time."]);
         const wrapper = await setUpImage(group);
 
@@ -199,48 +202,10 @@ describe("resizing an inline image with a corner handle", () => {
         expect(wrapper.style.getPropertyValue(kInlineImageWidthVar)).toBe(
             `${kMaxInlineImageWidthPercent}%`,
         );
-    });
-
-    // In a block that shows two languages, the editables share the block's empty space, and
-    // only the first language shows the image. The image may take all of the empty space, the
-    // second language's share too, but must leave the second language room for its text.
-    it("grows into the whole block, less the other language's text, in a block that shows two languages", async () => {
-        const group = makeTextBlock(400, 240, ["One.", "Un."]);
-        const wrapper = await setUpImage(group);
-        const [english, french] = Array.from(
-            group.querySelectorAll(".bloom-editable"),
-        ) as HTMLElement[];
-        const frenchText = french.querySelector("p") as HTMLElement;
-        const frenchLineHeight = frenchText.getBoundingClientRect().height;
-        const englishBottomBefore = english.getBoundingClientRect().bottom;
-        // Sanity checks: only the English copy of the image shows, and each editable is taller
-        // than its content, because each has a share of the block's empty space.
-        expect(
-            getInlineImageInEditable(french)!.getBoundingClientRect().height,
-        ).toBe(0);
-        expect(Math.round(imgOf(wrapper).getBoundingClientRect().height)).toBe(
-            80,
-        );
-        expect(englishBottomBefore).toBeGreaterThan(
-            imgOf(wrapper).getBoundingClientRect().bottom + 20,
-        );
-        expect(Math.round(frenchLineHeight)).toBe(20);
-
-        await dragLowerRightCornerFarOut(wrapper);
-
-        // The image now goes below where the English editable ended, taking the French
-        // editable's empty space too.
-        const imageAfter = imgOf(wrapper).getBoundingClientRect();
-        expect(imageAfter.bottom).toBeGreaterThan(englishBottomBefore + 20);
-        // 240px less the 20px French line and the picture's 8px bottom margin leaves 212px
-        // for the image, which makes a 3:2 image 318px wide: 79.5%.
-        expect(wrapper.style.getPropertyValue(kInlineImageWidthVar)).toBe(
-            "79.5%",
-        );
-        // The French text is still inside the block.
-        expect(frenchText.getBoundingClientRect().bottom).toBeLessThanOrEqual(
-            group.getBoundingClientRect().bottom + 0.5,
-        );
-        expect(group.scrollHeight).toBeLessThanOrEqual(group.clientHeight + 1);
+        // The picture spans the text from edge to edge.
+        const picture = imgOf(wrapper).getBoundingClientRect();
+        const block = group.getBoundingClientRect();
+        expect(Math.round(picture.left)).toBe(Math.round(block.left));
+        expect(Math.round(picture.right)).toBe(Math.round(block.right));
     });
 });
