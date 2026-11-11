@@ -27,11 +27,12 @@ import {
 // big to load in a test): the group stacks its editables in a column, and each editable grows
 // to take a share of the group's empty space. The small min-height matters: it lets an editable
 // be shorter than its text, so a block with too much text makes its editable scroll, which is
-// what the drag's overflow check measures.
+// what the drag's overflow check measures. The editable hides its overflow, as Bloom's does,
+// so its scrollWidth counts a float's margin that reaches past its side.
 const kTextBlockCss = `
 .bloom-translationGroup { display: flex; flex-direction: column; overflow: hidden; }
 .bloom-editable { flex-grow: 1; height: auto; min-height: 24px; padding: 0; border: 0; margin: 0;
-    font: 16px/20px monospace; }
+    overflow: hidden; font: 16px/20px monospace; }
 .bloom-editable p { margin: 0; }
 `;
 
@@ -325,5 +326,10 @@ describe("resizing and dragging an inline image", () => {
         const block = group.getBoundingClientRect();
         expect(Math.round(picture.left)).toBe(Math.round(block.left));
         expect(Math.round(picture.right)).toBe(Math.round(block.right));
+        // Nothing reaches past the side of the text, including the space a left-docked picture
+        // keeps between itself and the text beside it. Bloom marks a block whose content is
+        // wider than the block as overflowing.
+        const editable = group.querySelector(".bloom-editable") as HTMLElement;
+        expect(editable.scrollWidth).toBeLessThanOrEqual(editable.clientWidth);
     });
 });
