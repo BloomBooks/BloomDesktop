@@ -278,6 +278,11 @@
         <target xml:lang="zh-CN" state="needs-translation">Spreadsheet Import/Export</target>
         <note>ID: Feature.Spreadsheet</note>
       </trans-unit>
+      <trans-unit id="Feature.Table">
+        <source xml:lang="en">Table</source>
+        <target xml:lang="zh-CN" state="needs-translation">Table</target>
+        <note>ID: Feature.Table</note>
+      </trans-unit>
       <!-- TODO: add other features -->
       <trans-unit id="Spreadsheet.DataDivConflictWarning">
         <source xml:lang="en">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</source>
