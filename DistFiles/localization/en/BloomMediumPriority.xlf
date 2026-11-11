@@ -641,10 +641,455 @@
         <note>ID: EditTab.Toolbox.CanvasTool.Navigation</note>
         <note>Label for an expandable section in the Canvas Tool that contains navigation-related objects (e.g. buttons and book grids) that can be dragged onto a page.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.Table" translate="no">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Table">
         <source xml:lang="en">A table whose cells can hold text or pictures</source>
         <note>ID: EditTab.Toolbox.CanvasTool.Table</note>
         <note>Tooltip on the table icon in the Canvas Tool. The user drags the icon onto a page to add a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Pill.ColumnMenu">
+        <source xml:lang="en">Column menu</source>
+        <note>ID: EditTab.Table.Pill.ColumnMenu</note>
+        <note>Tooltip on the small round button above a column of a table; clicking it opens the Column menu.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Pill.RowMenu">
+        <source xml:lang="en">Row menu</source>
+        <note>ID: EditTab.Table.Pill.RowMenu</note>
+        <note>Tooltip on the small round button beside a row of a table; clicking it opens the Row menu.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Pill.TableMenu">
+        <source xml:lang="en">Table menu</source>
+        <note>ID: EditTab.Table.Pill.TableMenu</note>
+        <note>Tooltip on the small round button at the corner of a table; clicking it opens the Table menu.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.AddButton.ColumnAtRightEdge">
+        <source xml:lang="en">Add column at the right edge</source>
+        <note>ID: EditTab.Table.AddButton.ColumnAtRightEdge</note>
+        <note>Tooltip on the + button at the right edge of a table, which adds a new column there.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.AddButton.RowAtBottomEdge">
+        <source xml:lang="en">Add row at the bottom edge</source>
+        <note>ID: EditTab.Table.AddButton.RowAtBottomEdge</note>
+        <note>Tooltip on the + button at the bottom edge of a table, which adds a new row there.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.Heading">
+        <source xml:lang="en">Row</source>
+        <note>ID: EditTab.Table.RowMenu.Heading</note>
+        <note>Heading of the Row menu of a table. In the Row menu, which opens from the round button beside a row of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.AddAbove">
+        <source xml:lang="en">Add Row Above</source>
+        <note>ID: EditTab.Table.RowMenu.AddAbove</note>
+        <note>In the Row menu, which opens from the round button beside a row of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.AddBelow">
+        <source xml:lang="en">Add Row Below</source>
+        <note>ID: EditTab.Table.RowMenu.AddBelow</note>
+        <note>In the Row menu, which opens from the round button beside a row of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.MoveUp">
+        <source xml:lang="en">Move Row Up</source>
+        <note>ID: EditTab.Table.RowMenu.MoveUp</note>
+        <note>In the Row menu, which opens from the round button beside a row of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.MoveDown">
+        <source xml:lang="en">Move Row Down</source>
+        <note>ID: EditTab.Table.RowMenu.MoveDown</note>
+        <note>In the Row menu, which opens from the round button beside a row of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.Duplicate">
+        <source xml:lang="en">Duplicate Row</source>
+        <note>ID: EditTab.Table.RowMenu.Duplicate</note>
+        <note>In the Row menu, which opens from the round button beside a row of a table. Adds a copy of the row below it.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.Delete">
+        <source xml:lang="en">Delete Row</source>
+        <note>ID: EditTab.Table.RowMenu.Delete</note>
+        <note>In the Row menu, which opens from the round button beside a row of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.Heading">
+        <source xml:lang="en">Column</source>
+        <note>ID: EditTab.Table.ColumnMenu.Heading</note>
+        <note>Heading of the Column menu of a table. In the Column menu, which opens from the round button above a column of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.AddLeft">
+        <source xml:lang="en">Add Column Left</source>
+        <note>ID: EditTab.Table.ColumnMenu.AddLeft</note>
+        <note>In the Column menu, which opens from the round button above a column of a table. Adds a new column to the left of this one.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.AddRight">
+        <source xml:lang="en">Add Column Right</source>
+        <note>ID: EditTab.Table.ColumnMenu.AddRight</note>
+        <note>In the Column menu, which opens from the round button above a column of a table. Adds a new column to the right of this one.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.MoveLeft">
+        <source xml:lang="en">Move Left</source>
+        <note>ID: EditTab.Table.ColumnMenu.MoveLeft</note>
+        <note>In the Column menu, which opens from the round button above a column of a table. Moves the column one place to the left.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.MoveRight">
+        <source xml:lang="en">Move Right</source>
+        <note>ID: EditTab.Table.ColumnMenu.MoveRight</note>
+        <note>In the Column menu, which opens from the round button above a column of a table. Moves the column one place to the right.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.Duplicate">
+        <source xml:lang="en">Duplicate Column</source>
+        <note>ID: EditTab.Table.ColumnMenu.Duplicate</note>
+        <note>In the Column menu, which opens from the round button above a column of a table. Adds a copy of the column to its right.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.Delete">
+        <source xml:lang="en">Delete Column</source>
+        <note>ID: EditTab.Table.ColumnMenu.Delete</note>
+        <note>In the Column menu, which opens from the round button above a column of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Menu.CellMenuNote">
+        <source xml:lang="en">Right click on a cell for Cell menu</source>
+        <note>ID: EditTab.Table.Menu.CellMenuNote</note>
+        <note>A note at the bottom of the Row and Column menus of a table, telling the user how to open the menu for a single cell.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.Heading">
+        <source xml:lang="en">Table</source>
+        <note>ID: EditTab.Table.TableMenu.Heading</note>
+        <note>Heading of the Table menu. In the Table menu, which opens from the round button at the corner of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.HorizontalSpace">
+        <source xml:lang="en">Horizontal space between cells</source>
+        <note>ID: EditTab.Table.TableMenu.HorizontalSpace</note>
+        <note>In the Table menu, which opens from the round button at the corner of a table. Label of a slider that sets the gap between neighbouring cells, left to right.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.VerticalSpace">
+        <source xml:lang="en">Vertical space between cells</source>
+        <note>ID: EditTab.Table.TableMenu.VerticalSpace</note>
+        <note>In the Table menu, which opens from the round button at the corner of a table. Label of a slider that sets the gap between neighbouring cells, top to bottom.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.CopyProperties">
+        <source xml:lang="en">Copy properties</source>
+        <note>ID: EditTab.Table.TableMenu.CopyProperties</note>
+        <note>In the Table menu, which opens from the round button at the corner of a table. Copies the table's formatting (borders, fill, spacing, alignment), not its content, so it can be pasted onto another table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.PasteProperties">
+        <source xml:lang="en">Paste properties</source>
+        <note>ID: EditTab.Table.TableMenu.PasteProperties</note>
+        <note>In the Table menu, which opens from the round button at the corner of a table. Applies formatting copied with "Copy properties" to this table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.CopyTable">
+        <source xml:lang="en">Copy Table</source>
+        <note>ID: EditTab.Table.TableMenu.CopyTable</note>
+        <note>In the Table menu, which opens from the round button at the corner of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.CutTable">
+        <source xml:lang="en">Cut Table</source>
+        <note>ID: EditTab.Table.TableMenu.CutTable</note>
+        <note>In the Table menu, which opens from the round button at the corner of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.DeleteTable">
+        <source xml:lang="en">Delete Table</source>
+        <note>ID: EditTab.Table.TableMenu.DeleteTable</note>
+        <note>In the Table menu, which opens from the round button at the corner of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.CellMenu.Heading">
+        <source xml:lang="en">Table Cell</source>
+        <note>ID: EditTab.Table.CellMenu.Heading</note>
+        <note>Heading of the Cell menu. In the Cell menu, which opens when the user right-clicks a cell of a table.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.CellMenu.MergeRight">
+        <source xml:lang="en">Merge with cell to the right</source>
+        <note>ID: EditTab.Table.CellMenu.MergeRight</note>
+        <note>In the Cell menu, which opens when the user right-clicks a cell of a table. Joins this cell with the cell to its right, making one bigger cell.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.CellMenu.MergeDown">
+        <source xml:lang="en">Merge with cell below</source>
+        <note>ID: EditTab.Table.CellMenu.MergeDown</note>
+        <note>In the Cell menu, which opens when the user right-clicks a cell of a table. Joins this cell with the cell below it, making one bigger cell.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.CellMenu.Split">
+        <source xml:lang="en">Split</source>
+        <note>ID: EditTab.Table.CellMenu.Split</note>
+        <note>In the Cell menu, which opens when the user right-clicks a cell of a table. Separates a merged cell back into its original cells.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.PaintFormat.Command">
+        <source xml:lang="en">Paint format</source>
+        <note>ID: EditTab.Table.PaintFormat.Command</note>
+        <note>A command in the table menus. After choosing it, the user clicks other cells to give them the same formatting as this one (like the Format Painter in word processors).</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.PaintFormat.End">
+        <source xml:lang="en">End format painting</source>
+        <note>ID: EditTab.Table.PaintFormat.End</note>
+        <note>Text on a small badge that shows while the user is painting formatting onto table cells; clicking it stops painting.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.PaintFormat.EndWithShortcut">
+        <source xml:lang="en">End format painting (Esc)</source>
+        <note>ID: EditTab.Table.PaintFormat.EndWithShortcut</note>
+        <note>Tooltip on the badge that ends format painting in a table. Esc is the Escape key on the keyboard.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Size.Label">
+        <source xml:lang="en">Size</source>
+        <note>ID: EditTab.Table.Size.Label</note>
+        <note>Label of the control in the Row and Column menus of a table that chooses how the row's height or the column's width is decided.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Size.Grow">
+        <source xml:lang="en">Grow</source>
+        <note>ID: EditTab.Table.Size.Grow</note>
+        <note>Tooltip on a button in the Size control of the Row and Column menus of a table: the row or column grows to share the space the table has.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Size.Hug">
+        <source xml:lang="en">Hug</source>
+        <note>ID: EditTab.Table.Size.Hug</note>
+        <note>Tooltip on a button in the Size control of the Row and Column menus of a table: the row or column shrinks to fit closely around its contents.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Size.Fixed">
+        <source xml:lang="en">Fixed size</source>
+        <note>ID: EditTab.Table.Size.Fixed</note>
+        <note>Tooltip on a button in the Size control of the Row and Column menus of a table: the row or column keeps a fixed size, given in millimetres.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Size.FixedButton">
+        <source xml:lang="en">mm</source>
+        <note>ID: EditTab.Table.Size.FixedButton</note>
+        <note>The text on the button that gives a table row or column a fixed size. "mm" is the abbreviation for millimetres; use your language's usual abbreviation.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Units.Pixels">
+        <source xml:lang="en">{0}px</source>
+        <note>ID: EditTab.Table.Units.Pixels</note>
+        <note>A measurement shown next to sliders in the table menus. {0} is a number of pixels; "px" is the abbreviation for pixels. Keep it short.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Units.Millimetres">
+        <source xml:lang="en">{0}mm</source>
+        <note>ID: EditTab.Table.Units.Millimetres</note>
+        <note>The size of a table row or column, shown on the fixed-size button. {0} is a number; "mm" is the abbreviation for millimetres. Keep it short.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ContentType.Label">
+        <source xml:lang="en">Content Type</source>
+        <note>ID: EditTab.Table.ContentType.Label</note>
+        <note>Label of a row of buttons in the table menus that choose what a cell holds: text, a table, an image or a video.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ContentType.Text">
+        <source xml:lang="en">Text</source>
+        <note>ID: EditTab.Table.ContentType.Text</note>
+        <note>One of the kinds of content a table cell can hold, shown as a button tooltip in the table menus.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ContentType.Table">
+        <source xml:lang="en">Table</source>
+        <note>ID: EditTab.Table.ContentType.Table</note>
+        <note>One of the kinds of content a table cell can hold (a table inside the cell), shown as a button tooltip in the table menus.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ContentType.Image">
+        <source xml:lang="en">Image</source>
+        <note>ID: EditTab.Table.ContentType.Image</note>
+        <note>One of the kinds of content a table cell can hold, shown as a button tooltip in the table menus.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ContentType.Video">
+        <source xml:lang="en">Video</source>
+        <note>ID: EditTab.Table.ContentType.Video</note>
+        <note>One of the kinds of content a table cell can hold, shown as a button tooltip in the table menus.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Heading">
+        <source xml:lang="en">Format</source>
+        <note>ID: EditTab.Table.Format.Heading</note>
+        <note>Heading of the section of the table menus that sets alignment, padding, fill, corners and borders.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Alignment">
+        <source xml:lang="en">Alignment</source>
+        <note>ID: EditTab.Table.Format.Alignment</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Label of the buttons that align the contents of a cell.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Align.Left">
+        <source xml:lang="en">Left</source>
+        <note>ID: EditTab.Table.Format.Align.Left</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Tooltip on the button that aligns a cell's contents to the left.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Align.Center">
+        <source xml:lang="en">Center</source>
+        <note>ID: EditTab.Table.Format.Align.Center</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Tooltip on the button that centres a cell's contents from left to right.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Align.Right">
+        <source xml:lang="en">Right</source>
+        <note>ID: EditTab.Table.Format.Align.Right</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Tooltip on the button that aligns a cell's contents to the right.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.VAlign.Top">
+        <source xml:lang="en">Top</source>
+        <note>ID: EditTab.Table.Format.VAlign.Top</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Tooltip on the button that puts a cell's contents at the top of the cell.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.VAlign.Middle">
+        <source xml:lang="en">Middle</source>
+        <note>ID: EditTab.Table.Format.VAlign.Middle</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Tooltip on the button that puts a cell's contents halfway between the top and bottom of the cell.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.VAlign.Bottom">
+        <source xml:lang="en">Bottom</source>
+        <note>ID: EditTab.Table.Format.VAlign.Bottom</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Tooltip on the button that puts a cell's contents at the bottom of the cell.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Padding.Text">
+        <source xml:lang="en">Padding between border and text</source>
+        <note>ID: EditTab.Table.Format.Padding.Text</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Label of a slider that sets the space between a cell's border and the text inside it.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Padding.Image">
+        <source xml:lang="en">Padding between border and image</source>
+        <note>ID: EditTab.Table.Format.Padding.Image</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Label of a slider that sets the space between a cell's border and the image inside it.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Padding.Video">
+        <source xml:lang="en">Padding between border and video</source>
+        <note>ID: EditTab.Table.Format.Padding.Video</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Label of a slider that sets the space between a cell's border and the video inside it.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Padding.Table">
+        <source xml:lang="en">Padding between border and table</source>
+        <note>ID: EditTab.Table.Format.Padding.Table</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Label of a slider that sets the space between a cell's border and the table inside it.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Padding.Cell">
+        <source xml:lang="en">Padding inside the cell</source>
+        <note>ID: EditTab.Table.Format.Padding.Cell</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Label of a slider that sets the space between the border of the cells and their contents, when the cells hold different kinds of content.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Fill">
+        <source xml:lang="en">Fill</source>
+        <note>ID: EditTab.Table.Format.Fill</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Label of the control that sets the background colour of cells.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Corners">
+        <source xml:lang="en">Corners</source>
+        <note>ID: EditTab.Table.Format.Corners</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Label of the buttons that choose how rounded the corners of the cells are.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.CornerRadius">
+        <source xml:lang="en">Corner radius {0}</source>
+        <note>ID: EditTab.Table.Format.CornerRadius</note>
+        <note>In the Format section of the table menus (Row, Column, Table and Cell). Tooltip on a button that sets how rounded the corners are. {0} is the radius, a number of pixels.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeTabs">
+        <source xml:lang="en">Which borders to change</source>
+        <note>ID: EditTab.Table.Border.ScopeTabs</note>
+        <note>In the border controls of the Format section of the table menus. Describes a row of tabs (All, Outer, Inner, Border Brush) that choose which borders the settings below them change. Read aloud by screen readers.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Scope.All">
+        <source xml:lang="en">All</source>
+        <note>ID: EditTab.Table.Border.Scope.All</note>
+        <note>In the border controls of the Format section of the table menus. A tab: change all the borders, both around the outside and between the cells.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Scope.Outer">
+        <source xml:lang="en">Outer</source>
+        <note>ID: EditTab.Table.Border.Scope.Outer</note>
+        <note>In the border controls of the Format section of the table menus. A tab: change only the borders around the outside.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Scope.Inner">
+        <source xml:lang="en">Inner</source>
+        <note>ID: EditTab.Table.Border.Scope.Inner</note>
+        <note>In the border controls of the Format section of the table menus. A tab: change only the borders between cells.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Scope.Brush">
+        <source xml:lang="en">Border Brush</source>
+        <note>ID: EditTab.Table.Border.Scope.Brush</note>
+        <note>In the border controls of the Format section of the table menus. A tab: choose a border colour, style and weight, then click individual edges in the table to give them that border.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Cell">
+        <source xml:lang="en">Every edge of this cell</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.All.Cell</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Cell menu with the All tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Row">
+        <source xml:lang="en">Every edge in this row</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.All.Row</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Row menu with the All tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Column">
+        <source xml:lang="en">Every edge in this column</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.All.Column</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Column menu with the All tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Table">
+        <source xml:lang="en">Every edge in the table</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.All.Table</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Table menu with the All tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Cell">
+        <source xml:lang="en">The four edges of this cell</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Outer.Cell</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Cell menu with the Outer tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Row">
+        <source xml:lang="en">The outside edges of this row</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Outer.Row</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Row menu with the Outer tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Column">
+        <source xml:lang="en">The outside edges of this column</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Outer.Column</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Column menu with the Outer tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Table">
+        <source xml:lang="en">The four outside edges of the table</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Outer.Table</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Table menu with the Outer tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Inner.Row">
+        <source xml:lang="en">Only the edges between cells in this row</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Inner.Row</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Row menu with the Inner tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Inner.Column">
+        <source xml:lang="en">Only the edges between cells in this column</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Inner.Column</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Column menu with the Inner tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Inner.Table">
+        <source xml:lang="en">Only the edges between cells</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Inner.Table</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown in the Table menu with the Inner tab chosen.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Brush">
+        <source xml:lang="en">Set the color, style and weight below, then click edges in the table</source>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Brush</note>
+        <note>A caption under the border tabs, saying which edges the border settings will change. Shown with the Border Brush tab chosen: the user sets the border below, then clicks edges of the table to apply it.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Color">
+        <source xml:lang="en">Border color</source>
+        <note>ID: EditTab.Table.Border.Color</note>
+        <note>In the border controls of the Format section of the table menus. Label of the control that sets the colour of the borders.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Style.Label">
+        <source xml:lang="en">Border Style</source>
+        <note>ID: EditTab.Table.Border.Style.Label</note>
+        <note>In the border controls of the Format section of the table menus. Label of the buttons that choose the kind of line a border is drawn with.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Style.None">
+        <source xml:lang="en">None</source>
+        <note>ID: EditTab.Table.Border.Style.None</note>
+        <note>In the border controls of the Format section of the table menus. Tooltip on a border style button: no border line.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Style.Solid">
+        <source xml:lang="en">Solid</source>
+        <note>ID: EditTab.Table.Border.Style.Solid</note>
+        <note>In the border controls of the Format section of the table menus. Tooltip on a border style button: a continuous line.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Style.Dashed">
+        <source xml:lang="en">Dashed</source>
+        <note>ID: EditTab.Table.Border.Style.Dashed</note>
+        <note>In the border controls of the Format section of the table menus. Tooltip on a border style button: a line made of short dashes.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Style.Dotted">
+        <source xml:lang="en">Dotted</source>
+        <note>ID: EditTab.Table.Border.Style.Dotted</note>
+        <note>In the border controls of the Format section of the table menus. Tooltip on a border style button: a line made of dots.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Style.Double">
+        <source xml:lang="en">Double</source>
+        <note>ID: EditTab.Table.Border.Style.Double</note>
+        <note>In the border controls of the Format section of the table menus. Tooltip on a border style button: two parallel lines.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Weight.Label">
+        <source xml:lang="en">Border Weight</source>
+        <note>ID: EditTab.Table.Border.Weight.Label</note>
+        <note>In the border controls of the Format section of the table menus. Label of the buttons that choose how thick a border line is.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Weight.None">
+        <source xml:lang="en">0 (None)</source>
+        <note>ID: EditTab.Table.Border.Weight.None</note>
+        <note>In the border controls of the Format section of the table menus. Tooltip on the border weight button for a thickness of zero, which means no border.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true">
         <source xml:lang="en">Set Destination</source>

@@ -496,18 +496,6 @@ export const AboutDialog: React.FunctionComponent<{
                         <strong>amazing</strong> multi-browser, multi-platform
                         testing service.
                     </p>
-                    <br></br>
-                    <p>
-                        <a
-                            href="https://zulip.com"
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            Zulip
-                        </a>
-                        , where we keep in touch all day even though we are
-                        distributed all over.
-                    </p>
                     <h3>Image Credits</h3>
                     <p>
                         "USB" icon designed Dara Ullrich from The Noun Project

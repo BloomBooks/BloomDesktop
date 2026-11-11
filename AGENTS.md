@@ -34,7 +34,7 @@ The front-end uses pnpm 11.5.2. Never ever use npm or yarn.
 - Try to make it so that test failures indicate what went wrong. For example, `fail("An error occurred in setup; we should not have gotten here")` would be better than `expect(false).toBeTruthy();` and `expect(foo).toBe(3);` would be better than `expect(foo === 3).toBe(true);`.
 - Add sanity checks to guard against falsely passing tests. For example, when unit testing a method, sanity check that the test data values are as expected before you call the method, and then after you call the method you can verify that those values have changed as expected.
 - **Never accept a flaky test.** A test that fails without a code change to explain it is flaky from its first failure; it is reporting a real race, in Bloom or in the test: find out which and fix the cause. Waiting to see whether it fails again is accepting it. Any way of working around the flakiness instead (retries, re-running until it passes, waiting to see if it recurs, a longer timeout, a fixed delay, looser assertions, skipping the test, a test hook added to Bloom) needs the developer's permission first.
-- **Nightly CI failures:** `.claude/skills/nightly-triage/open-failures.md` records what is already known about each one. To look at recent nightlies, follow `.claude/skills/nightly-triage/SKILL.md`, which keeps that doc up to date.
+- **Nightly CI failures:** each one has a YouTrack card tagged "Nightly Failure", which records what is already known about it. To look at recent nightlies, follow `.claude/skills/nightly-triage/SKILL.md`, which keeps those cards up to date.
 
 ## Don't assume the machine is running in English
 

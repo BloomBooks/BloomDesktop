@@ -2279,7 +2279,7 @@ namespace Bloom.Edit
         /// cover going missing from the saved book: this is the line that says whether the text
         /// was already gone from the browser's page or was lost afterwards. Leave it until the
         /// nightly has gone several runs without losing a title (the reminder is the cover-title
-        /// entry in .claude/skills/nightly-triage/open-failures.md).
+        /// comment on BL-17022).
         /// </summary>
         private void LogCoverTitleArrivingFromBrowser(HtmlDom editedDom)
         {

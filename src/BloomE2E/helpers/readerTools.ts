@@ -114,9 +114,9 @@ export async function getReaderPhase(
  * default for new books in the same step that saves it into the book, and the default is what
  * Bloom will report.
  *
- * The tool must have finished restoring the book's stage or level first (see
- * waitForReaderToolToRestore; makeBasicBookWithReaderTool does it), or the restore can land after
- * these clicks and undo them.
+ * The tool should have finished restoring the book's stage or level first (see
+ * waitForReaderToolToRestore; makeBasicBookWithReaderTool does it), so that the number this starts
+ * from is the book's. The arrows are disabled while a restore runs, and a click waits for them.
  */
 export async function setReaderPhase(
     page: Page,
@@ -162,7 +162,7 @@ export async function setReaderPhase(
  * Wait until a reader tool has finished restoring the stage or level of the book being edited: the
  * one saved in the book, or, for a book that has none yet, the default Bloom reports (the one last
  * chosen with the arrows). The tool shows the stepper first and restores asynchronously a moment
- * later, so a click on the stepper in between races the restore, and whichever lands second wins.
+ * later, with the arrows disabled until it finishes.
  */
 export async function waitForReaderToolToRestore(
     page: Page,
@@ -184,6 +184,10 @@ export async function waitForReaderToolToRestore(
             }.`,
         })
         .toBe(expected);
+    await expect(
+        toolboxFrame(page).locator(stepper(tool)).first(),
+        `${describeTool(tool)} still had its arrows disabled for a restore.`,
+    ).toHaveAttribute("data-restoring", "false", { timeout: 30000 });
 }
 
 /**
