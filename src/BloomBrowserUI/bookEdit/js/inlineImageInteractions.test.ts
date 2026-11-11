@@ -251,6 +251,7 @@ describe("inlineImageInteractions", () => {
                     { x, y: 10 },
                     kEditableBox,
                     kImageHeightViewportPx,
+                    true,
                 );
             expect(dockAt(1)).toBe(kInlineImageLeftClass);
             expect(dockAt(99)).toBe(kInlineImageLeftClass);
@@ -268,6 +269,7 @@ describe("inlineImageInteractions", () => {
                     { x: -500, y: 10 },
                     kEditableBox,
                     kImageHeightViewportPx,
+                    true,
                 ),
             ).toBe(kInlineImageLeftClass);
             expect(
@@ -275,6 +277,7 @@ describe("inlineImageInteractions", () => {
                     { x: 900, y: 10 },
                     kEditableBox,
                     kImageHeightViewportPx,
+                    true,
                 ),
             ).toBe(kInlineImageRightClass);
         });
@@ -290,6 +293,7 @@ describe("inlineImageInteractions", () => {
                     { x: 150, y: 179 },
                     kEditableBox,
                     kImageHeightViewportPx,
+                    true,
                 ),
             ).toBe(kInlineImageMiddleClass);
             expect(
@@ -297,12 +301,18 @@ describe("inlineImageInteractions", () => {
                     { x: 150, y: 180 },
                     kEditableBox,
                     kImageHeightViewportPx,
+                    true,
                 ),
             ).toBe(kInlineImageBottomClass);
             // A taller image runs out of room higher up, since the bottom of the image has to
             // stay inside the content.
             expect(
-                computeInlineImageDock({ x: 150, y: 150 }, kEditableBox, 100),
+                computeInlineImageDock(
+                    { x: 150, y: 150 },
+                    kEditableBox,
+                    100,
+                    true,
+                ),
             ).toBe(kInlineImageBottomClass);
             // In the left and right thirds the side docks apply all the way down, so an image
             // can be placed in a lower corner.
@@ -311,6 +321,7 @@ describe("inlineImageInteractions", () => {
                     { x: 20, y: 199 },
                     kEditableBox,
                     kImageHeightViewportPx,
+                    true,
                 ),
             ).toBe(kInlineImageLeftClass);
             expect(
@@ -318,6 +329,7 @@ describe("inlineImageInteractions", () => {
                     { x: 280, y: 199 },
                     kEditableBox,
                     kImageHeightViewportPx,
+                    true,
                 ),
             ).toBe(kInlineImageRightClass);
         });
@@ -329,10 +341,34 @@ describe("inlineImageInteractions", () => {
                         { x, y: 5000 },
                         kEditableBox,
                         kImageHeightViewportPx,
+                        true,
                     ),
                     `x=${x} below the block`,
                 ).toBe(kInlineImageBottomClass);
             });
+        });
+
+        it("keeps the dock of each third low in the block and below it when the bottom dock would leave room below the picture", () => {
+            const dockAt = (x: number, y: number) =>
+                computeInlineImageDock(
+                    { x, y },
+                    kEditableBox,
+                    kImageHeightViewportPx,
+                    false,
+                );
+            // Sanity check: with a bottom dock at the bottom, these positions mean that dock.
+            expect(
+                computeInlineImageDock(
+                    { x: 150, y: 199 },
+                    kEditableBox,
+                    kImageHeightViewportPx,
+                    true,
+                ),
+            ).toBe(kInlineImageBottomClass);
+            expect(dockAt(150, 199)).toBe(kInlineImageMiddleClass);
+            expect(dockAt(20, 5000)).toBe(kInlineImageLeftClass);
+            expect(dockAt(150, 5000)).toBe(kInlineImageMiddleClass);
+            expect(dockAt(280, 5000)).toBe(kInlineImageRightClass);
         });
 
         it("answers with the band for a block that has no width", () => {
@@ -341,6 +377,7 @@ describe("inlineImageInteractions", () => {
                     { x: 0, y: 0 },
                     { left: 0, top: 0, width: 0, height: 0 },
                     0,
+                    true,
                 ),
             ).toBe(kInlineImageBottomClass);
             expect(
@@ -348,6 +385,7 @@ describe("inlineImageInteractions", () => {
                     { x: 0, y: -10 },
                     { left: 0, top: 0, width: 0, height: 0 },
                     0,
+                    true,
                 ),
             ).toBe(kInlineImageMiddleClass);
         });
@@ -507,6 +545,7 @@ describe("inlineImageInteractions", () => {
                 },
                 kA6Report.visibleBoxViewportPx,
                 kA6Report.imageHeightViewportPx,
+                true,
             );
             // Measured against the block's rectangle, the image is below the bottom of what the
             // small page shows, so every drag of it asked for the bottom dock. That caused the
@@ -528,6 +567,7 @@ describe("inlineImageInteractions", () => {
                     },
                     contentBox,
                     kA6Report.imageHeightViewportPx,
+                    true,
                 ),
                 "The image is inside the block's text, so a drag there is an ordinary move, " +
                     "not a request for the bottom dock.",
@@ -2326,8 +2366,8 @@ describe("inlineImageInteractions", () => {
                     90,
                 );
                 expect(result.widthPercent).toBe(kMaxInlineImageWidthPercent);
-                // 80% of the picture was 90% of the block; 95% of the block is 84.44% of it.
-                expect(result.crop.left).toBeCloseTo(15.56, 2);
+                // 80% of the picture was 90% of the block; 100% of the block is 88.89% of it.
+                expect(result.crop.left).toBeCloseTo(11.11, 2);
             });
         });
 

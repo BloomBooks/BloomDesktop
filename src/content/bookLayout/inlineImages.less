@@ -147,18 +147,24 @@
     // pushes every new image below all the existing ones, so when one image has been
     // dragged low, a newly added image ends up below the text block itself. Stacking on
     // one side cannot make images overlap, and it behaves the same in every renderer.
+    //
+    // The gap between a side image and the text beside it shrinks as the image nears the full
+    // width of the text, where no text fits beside it, so that the image and its gap never
+    // reach past the side of the block. A block whose content is wider than the block is marked
+    // as overflowing. Margin and width percentages are both of the editable's width.
+    @inlineImageTextSideGap: ~"min(var(--inline-image-gap), calc(100% - var(--inline-image-width, 40%)))";
     &.bloom-inlineImageLeft {
         float: left;
         clear: left;
         width: var(--inline-image-width, 40%);
-        margin: 0 var(--inline-image-gap) 0.5em 0;
+        margin: 0 @inlineImageTextSideGap 0.5em 0;
     }
 
     &.bloom-inlineImageRight {
         float: right;
         clear: right;
         width: var(--inline-image-width, 40%);
-        margin: 0 0 0.5em var(--inline-image-gap);
+        margin: 0 0 0.5em @inlineImageTextSideGap;
     }
 
     // A middle-docked image has text above and below it. The wrapper spans the whole
