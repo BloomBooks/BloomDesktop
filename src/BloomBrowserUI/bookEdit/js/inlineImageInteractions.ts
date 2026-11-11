@@ -1929,13 +1929,20 @@ function continueDrag(
         // clears, so the room left is measured from the bottom of the wrapper as it is drawn
         // now. The distance from there to the block's bottom is how much more the current
         // offset may grow.
+        // The wrapper's bottom margin counts as part of it here: a side dock has one (the space
+        // between the picture and the text below it), and a wrapper whose margin hangs below the
+        // block makes the block overflow, so the move would be undone below. Without this, a
+        // picture moved sideways from the very bottom of the block, or dragged down a side,
+        // was put back where it started (BL-17078).
         let maxLayoutPx: number | undefined;
         const currentOffsetLayoutPx = getInlineImageOffsetLayoutPx(
             state.wrapper,
         );
         if (!degenerate) {
-            const wrapperBottomViewportPx =
-                state.wrapper.getBoundingClientRect().bottom;
+            const wrapperBottomViewportPx = getMarginBoxBottomViewportPx(
+                state.wrapper,
+                state.viewportPxPerLayoutPx,
+            );
             maxLayoutPx =
                 currentOffsetLayoutPx +
                 (blockBottomViewportPx - wrapperBottomViewportPx) /
@@ -1963,8 +1970,10 @@ function continueDrag(
             // The maximum above was measured before this move's offset was applied, so a fast
             // move can go a few pixels too far. Take back whatever is over.
             const overViewportPx =
-                state.wrapper.getBoundingClientRect().bottom -
-                blockBottomViewportPx;
+                getMarginBoxBottomViewportPx(
+                    state.wrapper,
+                    state.viewportPxPerLayoutPx,
+                ) - blockBottomViewportPx;
             if (overViewportPx > 0) {
                 state.wrapper.style.setProperty(
                     kInlineImageOffsetVar,
@@ -2001,6 +2010,22 @@ function continueDrag(
         restoreNeighborImagePositions(state);
     }
     scrollBlockToKeepDraggedImageInView(state);
+}
+
+// The bottom of the wrapper's margin box, in viewport pixels: the lowest point of the space it
+// takes up in the block.
+function getMarginBoxBottomViewportPx(
+    wrapper: HTMLElement,
+    viewportPxPerLayoutPx: number,
+): number {
+    const marginBottomLayoutPx = parseFloat(
+        wrapper.ownerDocument.defaultView!.getComputedStyle(wrapper)
+            .marginBottom,
+    );
+    return (
+        wrapper.getBoundingClientRect().bottom +
+        marginBottomLayoutPx * viewportPxPerLayoutPx
+    );
 }
 
 // Scrolls the block so that the picture being dragged stays on the screen, and moves the

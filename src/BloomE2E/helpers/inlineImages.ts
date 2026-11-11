@@ -853,6 +853,25 @@ export async function dragInlineImageToDock(
 }
 
 /**
+ * Drag an inline image to just below the middle of its block's bottom edge, the way a person
+ * drags a picture down as far as it will go. Where it ends up depends on the block: see
+ * computeInlineImageDock and continueDrag in bookEdit/js/inlineImageInteractions.ts. This only
+ * makes the drag; the caller checks the result.
+ */
+export async function dragInlineImageBelowBlock(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+): Promise<void> {
+    const block = await blockRect(page, groupSelector, languageTag);
+    await dragInlineImageTo(page, groupSelector, languageTag, id, {
+        x: block.x + block.width / 2,
+        y: block.y + block.height * 1.05,
+    });
+}
+
+/**
  * Drag an inline image down its block by `pixels`, the way a person does, and return how far
  * below the top of the block it now starts. Dragging down within a side dock moves the picture
  * past the first lines of text, and the distance is stored in the --inline-image-offset custom

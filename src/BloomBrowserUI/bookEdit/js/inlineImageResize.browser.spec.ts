@@ -25,10 +25,12 @@ import {
 
 // The layout rules of a text block that matter here, copied from basePage.less (which is too
 // big to load in a test): the group stacks its editables in a column, and each editable grows
-// to take a share of the group's empty space.
+// to take a share of the group's empty space. The small min-height matters: it lets an editable
+// be shorter than its text, so a block with too much text makes its editable scroll, which is
+// what the drag's overflow check measures.
 const kTextBlockCss = `
 .bloom-translationGroup { display: flex; flex-direction: column; overflow: hidden; }
-.bloom-editable { flex-grow: 1; height: auto; padding: 0; border: 0; margin: 0;
+.bloom-editable { flex-grow: 1; height: auto; min-height: 24px; padding: 0; border: 0; margin: 0;
     font: 16px/20px monospace; }
 .bloom-editable p { margin: 0; }
 `;
@@ -108,6 +110,24 @@ async function setUpImage(
     return wrapper;
 }
 
+// How far the block's text runs past its bottom, in pixels; zero or less when it all shows. It
+// covers both ways a block overflows: an editable that has to scroll, and an editable that
+// grows below the block.
+function overflowPx(group: HTMLElement): number {
+    const blockBottom = group.getBoundingClientRect().bottom;
+    const editables = Array.from(
+        group.querySelectorAll(".bloom-editable"),
+    ) as HTMLElement[];
+    return Math.max(
+        ...editables.map((editable) =>
+            Math.max(
+                editable.scrollHeight - editable.clientHeight,
+                editable.getBoundingClientRect().bottom - blockBottom,
+            ),
+        ),
+    );
+}
+
 function imgOf(wrapper: HTMLElement): HTMLImageElement {
     return wrapper.querySelector("img") as HTMLImageElement;
 }
@@ -127,7 +147,7 @@ async function dragLowerRightCornerFarOut(wrapper: HTMLElement): Promise<void> {
     });
 }
 
-describe("resizing an inline image with a corner handle", () => {
+describe("resizing and dragging an inline image", () => {
     // BL-17078: on a landscape page the image could be stretched past the bottom of the page.
     it("stops where the image's bottom reaches the bottom of a wide, short block", async () => {
         const group = makeTextBlock(400, 120, [
@@ -155,12 +175,12 @@ describe("resizing an inline image with a corner handle", () => {
 
         await dragLowerRightCornerFarOut(wrapper);
 
+        // The overflow check allows a pixel for rounding (shouldRevertInlineImageMove), and the
+        // block's height is measured in whole pixels, so the picture may end up to two pixels
+        // past the bottom.
         const after = imgOf(wrapper).getBoundingClientRect();
-        expect(after.bottom).toBeLessThanOrEqual(blockBottom);
-        const editable = group.querySelector(".bloom-editable") as HTMLElement;
-        const editableOverflow = () =>
-            editable.getBoundingClientRect().bottom - blockBottom;
-        expect(editableOverflow()).toBeLessThanOrEqual(1);
+        expect(after.bottom).toBeLessThanOrEqual(blockBottom + 2);
+        expect(overflowPx(group)).toBeLessThanOrEqual(1);
         // It stops close to the largest width that fits: the 120px block holds a 3:2 picture
         // up to 112px tall (with its 8px bottom margin), 168px wide, which is 42%; 1% more would
         // not fit.
@@ -169,7 +189,7 @@ describe("resizing an inline image with a corner handle", () => {
         );
         expect(widthPercent).toBeGreaterThan(40);
         wrapper.style.setProperty(kInlineImageWidthVar, `${widthPercent + 1}%`);
-        expect(editableOverflow()).toBeGreaterThan(1);
+        expect(overflowPx(group)).toBeGreaterThan(1);
     });
 
     // A middle-docked picture has text above and below it but none beside it, so growing it
@@ -186,9 +206,7 @@ describe("resizing an inline image with a corner handle", () => {
         expect(text.getBoundingClientRect().top).toBeGreaterThanOrEqual(
             imgOf(wrapper).getBoundingClientRect().bottom,
         );
-        // (The editable grows to fit its text, so it is the block, the group, that would
-        // overflow.)
-        expect(group.scrollHeight).toBeLessThanOrEqual(group.clientHeight);
+        expect(overflowPx(group)).toBeLessThanOrEqual(0);
 
         await dragLowerRightCornerFarOut(wrapper);
 
@@ -199,10 +217,10 @@ describe("resizing an inline image with a corner handle", () => {
         expect(text.getBoundingClientRect().bottom).toBeLessThanOrEqual(
             group.getBoundingClientRect().bottom + 0.5,
         );
-        expect(group.scrollHeight).toBeLessThanOrEqual(group.clientHeight + 1);
+        expect(overflowPx(group)).toBeLessThanOrEqual(1);
         // It stops close to the largest width that fits: 1% more would not fit.
         wrapper.style.setProperty(kInlineImageWidthVar, `${widthPercent + 1}%`);
-        expect(group.scrollHeight).toBeGreaterThan(group.clientHeight + 1);
+        expect(overflowPx(group)).toBeGreaterThan(1);
     });
 
     // BL-17078: dragging a picture down to the very bottom of a block with room to spare made it
