@@ -107,11 +107,6 @@ export class ReaderToolsModel {
     // still sitting on the defaults above. restoreState() uses it to tell a model that
     // nobody has told anything from one that is already showing a real choice; see there.
     private hasBeenGivenAPhase = false;
-    // How many times the user has stepped the stage or level with the arrow buttons. A
-    // restore that has to wait (for the Synphony settings, or for Bloom to say what the
-    // default is) compares this before and after, so that it can leave alone a stage or
-    // level the user chose while it waited; see getCountOfPhasesChosenByUser().
-    private countOfPhasesChosenByUser = 0;
     // A stage or level someone asked for before the Synphony settings arrived, waiting
     // for setSynphony() to apply it. See setStageNumber().
     //
@@ -131,6 +126,10 @@ export class ReaderToolsModel {
     // which is the coupling BL-16608 set out to remove. Reported by Greptile on PR #8447.
     private stageAwaitingSynphony: IPhaseRequest | undefined;
     private levelAwaitingSynphony: IPhaseRequest | undefined;
+    // How many restores (each reader tool's beginRestoreSettings) have started and not yet
+    // finished. More than one can be running: a new page starts another while the last still
+    // waits. See isRestoringPhase().
+    private restoresInProgress = 0;
     public synphony: ReadersSynphonyWrapper | undefined; // to ensure detection of async issues, don't init until we load its settings
     public sort: string = SortType.alphabetic;
     public currentMarkupType: number = MarkupType.None;
@@ -188,9 +187,9 @@ export class ReaderToolsModel {
         this.levelNumber = 1;
         this.synphony = undefined;
         this.hasBeenGivenAPhase = false;
-        this.countOfPhasesChosenByUser = 0;
         this.stageAwaitingSynphony = undefined;
         this.levelAwaitingSynphony = undefined;
+        this.restoresInProgress = 0;
         this.sort = SortType.alphabetic;
         this.currentMarkupType = MarkupType.None;
         this.allWords = {};
@@ -217,30 +216,40 @@ export class ReaderToolsModel {
         this.ckEditorLoaded = true;
     }
 
-    /** The user clicked the arrow for the next stage. */
+    /**
+     * Run a reader tool's restore of the book's stage or level, with the arrow buttons
+     * disabled until it finishes (isRestoringPhase()).
+     *
+     * A restore can wait a second or more on a busy machine, for the reader settings and, in
+     * a book with nothing saved, for Bloom to say what the default is. It then applies what
+     * it found, and for a new book saves it, both in the book and as the default for new
+     * books. A stage or level chosen with the arrows during the wait would be undone by that
+     * (BL-17099), so the arrows stay disabled until the restore is done.
+     */
+    public async whileRestoringPhase(
+        restore: () => Promise<void>,
+    ): Promise<void> {
+        this.restoresInProgress++;
+        this.refreshControls();
+        try {
+            await restore();
+        } finally {
+            this.restoresInProgress--;
+            this.refreshControls();
+        }
+    }
+
+    /** True while a restore is running (see whileRestoringPhase()); the arrows are disabled. */
+    public isRestoringPhase(): boolean {
+        return this.restoresInProgress > 0;
+    }
+
     public incrementStage(): void {
-        this.countOfPhasesChosenByUser++;
         this.setStageNumber(this.stageNumber + 1);
     }
 
-    /** The user clicked the arrow for the previous stage. */
     public decrementStage(): void {
-        this.countOfPhasesChosenByUser++;
         this.setStageNumber(this.stageNumber - 1);
-    }
-
-    /**
-     * How many times the user has stepped the stage or level with the arrow buttons.
-     *
-     * A tool's beginRestoreSettings() reads this when it starts and again when it is ready
-     * to apply the stage or level it found. If the number has changed, the user chose one
-     * while the restore waited. That choice is newer than anything the restore read, and
-     * is already saved in the book and as the default for new books, so the restore must
-     * leave it alone. Applying its own value would put the tool back on the old stage or
-     * level and, for a new book, save that over the user's choice.
-     */
-    public getCountOfPhasesChosenByUser(): number {
-        return this.countOfPhasesChosenByUser;
     }
 
     public async setStageNumber(
@@ -320,15 +329,11 @@ export class ReaderToolsModel {
         }
     }
 
-    /** The user clicked the arrow for the next level. */
     public incrementLevel(): void {
-        this.countOfPhasesChosenByUser++;
         this.setLevelNumber(this.levelNumber + 1);
     }
 
-    /** The user clicked the arrow for the previous level. */
     public decrementLevel(): void {
-        this.countOfPhasesChosenByUser++;
         this.setLevelNumber(this.levelNumber - 1);
     }
 
@@ -413,6 +418,11 @@ export class ReaderToolsModel {
     public updateControlContents(): void {
         this.updateStageNumberIfNeeded(); // May change the stage number
         this.updateLevelNumberIfNeeded(); // May change the level number
+        this.refreshControls();
+    }
+
+    /** Re-render whichever reader tool controls are showing. */
+    private refreshControls(): void {
         if (this.refreshFuncLeveled !== undefined) {
             this.refreshFuncLeveled();
         }
