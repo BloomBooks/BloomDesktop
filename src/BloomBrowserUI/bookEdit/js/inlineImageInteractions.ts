@@ -716,7 +716,7 @@ function fitInlineImageOffsetsToBlock(
     editable: HTMLElement,
     wrappers: HTMLElement[],
 ): void {
-    const measureOverflow = () => editable.scrollHeight - editable.clientHeight;
+    const measureOverflow = () => measureBlockOverflowLayoutPx(editable);
     const readOffsets = () => wrappers.map(getInlineImageOffsetLayoutPx);
     const startingOffsets = readOffsets();
     let best = {
@@ -1616,7 +1616,7 @@ interface IInlineImageDragState {
     // shouldRevertInlineImageMove checks whether the move added overflow to the whole block,
     // because the dragged image can fit while pushing another image out. Floats cannot
     // overlap, so a full-width band dragged to another image's level pushes that image down.
-    startScrollOverflowLayoutPx: number;
+    startOverflowLayoutPx: number;
     // The last position of the pointer, so that the timer started by startEdgeScrollTimer can
     // apply the user's move again when there is no new pointer event.
     lastPointViewportPx: { x: number; y: number };
@@ -1793,8 +1793,7 @@ function startDrag(
                 .filter((other) => other !== wrapper)
                 .map((other) => [other, getImageBox(other).top]),
         ),
-        startScrollOverflowLayoutPx:
-            editable.scrollHeight - editable.clientHeight,
+        startOverflowLayoutPx: measureBlockOverflowLayoutPx(editable),
         lastPointViewportPx: { x: event.clientX, y: event.clientY },
         edgeScrollTimerId: undefined,
         pointerId: event.pointerId,
@@ -1989,8 +1988,8 @@ function continueDrag(
     // be clicked.
     if (
         shouldRevertInlineImageMove(
-            state.startScrollOverflowLayoutPx,
-            state.editable.scrollHeight - state.editable.clientHeight,
+            state.startOverflowLayoutPx,
+            measureBlockOverflowLayoutPx(state.editable),
         )
     ) {
         restorePreviousDock();
@@ -2236,35 +2235,21 @@ function getInlineImageWidthPercent(
         : widthVar;
 }
 
-// How much text the block has that it cannot show, in layout pixels: the larger of how much the
-// editable would need to scroll and how far the visible editables reach below the bottom of the
-// translation group. In a block that shows more than one language the editables grow to fit
-// their text, so the overflow shows in the group. The group's own scrollHeight cannot be used:
-// it counts the editing controls in the group too, such as the format button, which hangs a few
-// pixels below the bottom of the block and would make every block look as if it overflowed.
+// How much text the block has that it cannot show, in layout pixels: how much its editables
+// together would need to scroll. The editables of a block that shows more than one language
+// share its height (basePage.less lets each shrink to a line), so when the picture's editable
+// grows, the others shrink too, and the text pushed out can be another language's. Every check
+// that a gesture keeps the text inside the block uses this.
 function measureBlockOverflowLayoutPx(editable: HTMLElement): number {
-    const group = editable.closest(".bloom-translationGroup") as HTMLElement;
-    const view = editable.ownerDocument.defaultView!;
-    const viewportPxPerLayoutPx = getViewportPxPerLayoutPx(editable);
-    const groupStyle = view.getComputedStyle(group);
-    const groupContentBottomViewportPx =
-        group.getBoundingClientRect().bottom -
-        (parseFloat(groupStyle.paddingBottom) +
-            parseFloat(groupStyle.borderBottomWidth)) *
-            viewportPxPerLayoutPx;
-    const editablesBottomViewportPx = Math.max(
-        ...Array.from(group.children)
-            .filter(
-                (child) =>
-                    child.classList.contains("bloom-editable") &&
-                    view.getComputedStyle(child).display !== "none",
-            )
-            .map((child) => child.getBoundingClientRect().bottom),
-    );
-    return Math.max(
-        editable.scrollHeight - editable.clientHeight,
-        (editablesBottomViewportPx - groupContentBottomViewportPx) /
-            viewportPxPerLayoutPx,
+    const group = editable.closest(".bloom-translationGroup");
+    const editables = group
+        ? (Array.from(
+              group.querySelectorAll(".bloom-editable"),
+          ) as HTMLElement[])
+        : [editable];
+    return editables.reduce(
+        (total, each) => total + each.scrollHeight - each.clientHeight,
+        0,
     );
 }
 

@@ -128,6 +128,17 @@ function overflowPx(group: HTMLElement): number {
     );
 }
 
+// How much text all the block's editables together hide by scrolling, in pixels.
+function totalScrollOverflowPx(group: HTMLElement): number {
+    return (
+        Array.from(group.querySelectorAll(".bloom-editable")) as HTMLElement[]
+    ).reduce(
+        (total, editable) =>
+            total + editable.scrollHeight - editable.clientHeight,
+        0,
+    );
+}
+
 function imgOf(wrapper: HTMLElement): HTMLImageElement {
     return wrapper.querySelector("img") as HTMLImageElement;
 }
@@ -247,6 +258,56 @@ describe("resizing and dragging an inline image", () => {
         expect(after.bottom).toBeLessThanOrEqual(blockBottom);
         expect(after.bottom).toBeGreaterThan(blockBottom - 12);
         expect(wrapper.classList.contains(kInlineImageMiddleClass)).toBe(true);
+    });
+
+    // A drag is undone when it pushes text out of the block. In a block that shows two languages,
+    // the editables share the block, and when one grows both shrink, each in proportion to its
+    // text. So with much more French than English, the English hides only a fraction of a pixel
+    // and the French hides the rest.
+    it("undoes a drag that pushes the second language's text out of the block", async () => {
+        // The picture on the left takes 88px with its bottom margin, with the English beside
+        // it, and the French takes 20 lines, 400px: 488px, which fits in 496px. Moved to the
+        // full-width band, the picture pushes the English below it, 100px, and the block is
+        // 4px short.
+        const french = Array(20).fill("Il était une fois.").join("<br>");
+        const group = makeTextBlock(400, 496, ["Once upon a time.", french]);
+        const wrapper = await setUpImage(group);
+        // Sanity checks: the block fits both languages, and the picture is docked left.
+        expect(totalScrollOverflowPx(group)).toBeLessThanOrEqual(0);
+        expect(wrapper.classList.contains(kInlineImageLeftClass)).toBe(true);
+        const picture = imgOf(wrapper).getBoundingClientRect();
+        // Sanity check: in the full-width band, the picture would push text out of the block,
+        // most of it the French.
+        wrapper.classList.replace(
+            kInlineImageLeftClass,
+            kInlineImageMiddleClass,
+        );
+        const [english, frenchEditable] = Array.from(
+            group.querySelectorAll(".bloom-editable"),
+        ) as HTMLElement[];
+        expect(totalScrollOverflowPx(group)).toBeGreaterThan(2);
+        expect(english.scrollHeight - english.clientHeight).toBeLessThanOrEqual(
+            1,
+        );
+        expect(
+            frenchEditable.scrollHeight - frenchEditable.clientHeight,
+        ).toBeGreaterThan(1);
+        wrapper.classList.replace(
+            kInlineImageMiddleClass,
+            kInlineImageLeftClass,
+        );
+
+        const page = root.querySelector(".bloom-page") as HTMLElement;
+        await userEvent.hover(page);
+        await userEvent.dragAndDrop(imgOf(wrapper), page, {
+            targetPosition: {
+                x: 200,
+                y: picture.top + picture.height / 2,
+            },
+        });
+
+        expect(wrapper.classList.contains(kInlineImageLeftClass)).toBe(true);
+        expect(totalScrollOverflowPx(group)).toBeLessThanOrEqual(1);
     });
 
     // BL-17078: on a portrait page the image stopped a little short of the edge of the text.
