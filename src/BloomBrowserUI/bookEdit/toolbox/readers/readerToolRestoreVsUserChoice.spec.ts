@@ -34,6 +34,7 @@ vi.mock("./readerTools", () => ({
     beginInitializeDecodableReaderTool: vi.fn(() => Promise.resolve()),
 }));
 
+import { post } from "../../../utils/bloomApi";
 import { getTheOneReaderToolsModel } from "./readerToolsModel";
 import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
 import { LeveledReaderTool } from "./leveledReader/leveledReaderTool";
@@ -61,6 +62,14 @@ function makeSynphonyWithFourOfEach(): ReadersSynphonyWrapper {
     return synphony;
 }
 
+/** The defaults for new books that the model has told Bloom to remember, oldest first. */
+function defaultsPostedToBloom(): string[] {
+    return vi
+        .mocked(post)
+        .mock.calls.map((call) => call[0])
+        .filter((url) => url.startsWith("readers/io/default"));
+}
+
 /**
  * Start `tool` restoring a book that has nothing saved, and return the restore's promise and
  * its request for the default, which is still waiting for an answer.
@@ -81,6 +90,7 @@ describe("a reader tool asking Bloom for the default while the user works the ar
         // setStageNumber() finishes its work half a second later, on a timer.
         vi.useFakeTimers();
         requestsForDefault.length = 0;
+        vi.mocked(post).mockClear();
         const model = getTheOneReaderToolsModel();
         model.clearForTest();
         model.setSynphony(makeSynphonyWithFourOfEach());
@@ -107,6 +117,10 @@ describe("a reader tool asking Bloom for the default while the user works the ar
         await restore;
 
         expect(model.levelNumber).toBe(2);
+        // The late answer must not become the default for new books either.
+        expect(defaultsPostedToBloom()).toEqual([
+            "readers/io/defaultLevel?level=2",
+        ]);
     });
 
     it("applies the default level when the user has chosen nothing", async () => {
@@ -156,6 +170,12 @@ describe("a reader tool asking Bloom for the default while the user works the ar
         await restore;
 
         expect(model.stageNumber).toBe(3);
+        // The late answer must not become the default for new books either. (Each click
+        // posts the stage the model is on when its half-second timer fires.)
+        expect(defaultsPostedToBloom()).toEqual([
+            "readers/io/defaultStage?stage=3",
+            "readers/io/defaultStage?stage=3",
+        ]);
     });
 
     it("applies the default stage when the user has chosen nothing", async () => {
