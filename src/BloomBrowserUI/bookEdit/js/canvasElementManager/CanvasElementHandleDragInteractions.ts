@@ -42,6 +42,8 @@ export interface ICanvasElementHandleDragInteractionsHost {
         bgCanvasElement: HTMLElement,
         useSizeOfNewImage: boolean,
     ) => void;
+    // Fit the box of a canvas element that holds a picture or a video to its shape.
+    adjustContainerAspectRatio: (canvasElement: HTMLElement) => void;
 
     adjustCanvasElementHeightToContentOrMarkOverflow: (
         editable: HTMLElement,
@@ -407,6 +409,18 @@ export class CanvasElementHandleDragInteractions {
         this.currentDragControl?.classList.remove("active-control");
         this.guideProvider.endDrag();
         this.snapProvider.endDrag();
+        // The drag keeps the box's shape as it was when the drag began, measured in whole
+        // pixels, so a picture's box may end up a fraction of a pixel off its picture's shape.
+        // Fitting it now makes the fit part of the resize. Otherwise the next selection of the
+        // box would fit it, a change that would then seem to come from that click. A background
+        // image is left out: its fit (adjustBackgroundImageSize) is to the bloom-canvas, not to
+        // the drag.
+        if (
+            activeElement &&
+            !activeElement.classList.contains(kBackgroundImageClass)
+        ) {
+            this.host.adjustContainerAspectRatio(activeElement);
+        }
         // If this is a button, notify the overflow checker to recheck overflow.
         if (activeElement?.classList.contains(kBloomButtonClass)) {
             activeElement.dispatchEvent(

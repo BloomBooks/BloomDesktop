@@ -794,9 +794,9 @@ export function setupInlineImageInteractions(container: HTMLElement): void {
 // has nothing of its own: typing discards what the stack could redo, and a picture change
 // clears the history of the CKEditors in its group (see resetCkeditorHistories). Either way it
 // stops the event, so CKEditor and the other key handlers never see it.
-// In Change Layout mode origami owns both keys, so this leaves them alone. So do the reader
-// tools, in a text block, while one of their markup tools is selected: they keep their own
-// history of the marked text and take both keys on the editable.
+// In Change Layout mode origami owns both keys, so this leaves them alone. In a text block, while
+// one of the reader tools' markup tools is selected, it leaves them to CKEditor
+// (readerToolsHandleUndoKeys).
 function onUndoOrRedoKeyDown(event: KeyboardEvent): void {
     const doc = (event.target as Node).ownerDocument ?? document;
     if (isInChangeLayoutMode(doc)) return;
