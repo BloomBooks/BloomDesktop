@@ -233,25 +233,36 @@ namespace Bloom.Spreadsheet
         /// <summary>
         /// Put the book's folder back as it was when BookStorage.SaveCopyBeforeImportOverwrite made
         /// the backup: delete the files a backup holds, so that ones the import added go too, then
-        /// unzip the backup.
+        /// copy in the backup's files. The backup is unzipped into a temporary folder first, so that
+        /// if it cannot be read, nothing in the book has been deleted.
         /// </summary>
         private static void RestoreBookFolderFromBackup(string bookFolderPath, string backupPath)
         {
-            DeleteFilesABackupHolds(bookFolderPath);
-            RobustZip.UnzipDirectory(bookFolderPath, backupPath);
+            using (
+                var unzipped = new BloomTemp.TemporaryFolder(
+                    "spreadsheet import restore " + Guid.NewGuid()
+                )
+            )
+            {
+                RobustZip.UnzipDirectory(unzipped.FolderPath, backupPath);
+                DeleteFilesABackupHolds(bookFolderPath);
+                Bloom.ToPalaso.DirectoryUtils.CopyFolder(unzipped.FolderPath, bookFolderPath);
+            }
         }
 
         /// <summary>
         /// Delete the files in the folder and its subfolders that BloomArchiveFile.AddDirectory would
-        /// put in a backup. What it leaves out (hidden and system files, and the AI Image Editor's
-        /// folder) is not in the backup, so it must not be deleted either.
+        /// put in a backup, read-only ones included. What it leaves out (hidden and system files, and
+        /// the AI Image Editor's folder) is not in the backup, so it must not be deleted either.
         /// </summary>
         private static void DeleteFilesABackupHolds(string folder)
         {
             foreach (var file in Directory.GetFiles(folder))
             {
-                if (!RobustZip.ShouldFileBeIgnored(file))
-                    RobustFile.Delete(file);
+                if (RobustZip.ShouldFileBeIgnored(file))
+                    continue;
+                RobustFile.SetAttributes(file, FileAttributes.Normal);
+                RobustFile.Delete(file);
             }
             foreach (var subfolder in Directory.GetDirectories(folder))
             {

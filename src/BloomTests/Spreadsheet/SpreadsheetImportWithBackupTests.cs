@@ -108,6 +108,24 @@ namespace BloomTests.Spreadsheet
         }
 
         /// <summary>
+        /// A read-only file in the book (a thumbnail, say) must not stop the book being put back.
+        /// </summary>
+        [Test]
+        public void ImportWithBackupAsync_ImportFails_PutsBackBookWithReadOnlyFile()
+        {
+            var thumbnail = Path.Combine(_bookFolder, "thumbnail.png");
+            RobustFile.WriteAllText(thumbnail, "thumbnail");
+            File.SetAttributes(thumbnail, FileAttributes.ReadOnly);
+
+            var result = RunFailingImport(failAfterSaveStarted: false);
+
+            Assert.That(result.Progress.Errors, Is.Empty);
+            Assert.That(RobustFile.ReadAllText(result.OldRecording), Is.EqualTo("old recording"));
+            Assert.That(RobustFile.ReadAllText(thumbnail), Is.EqualTo("thumbnail"));
+            Assert.That(RobustFile.Exists(result.NewPicture), Is.False);
+        }
+
+        /// <summary>
         /// Once the import has started saving the book, the save may have renamed its folder, so a
         /// later failure must leave the folder alone and say where the backup is.
         /// </summary>
