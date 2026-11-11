@@ -143,10 +143,12 @@ export const kInlineImageFrameCroppedClass = "bloom-ui-inlineImage-cropped";
 // below also apply to a crop from the left or right.
 const kMinInlineImageCropKeptPercent = 10;
 
-// Limits on an image's width, as percentages of the editable's width. A wider image leaves no
-// room for text to wrap beside it, and a narrower one is too small to be worth wrapping around.
+// Limits on an image's width, as percentages of the editable's width. A narrower image is too
+// small to be worth wrapping around. The widest an image can be is the width of the text, so
+// that dragging a corner stops at the edge of the text, as it stops at the bottom of the block
+// (see continueResize) (BL-17078).
 export const kMinInlineImageWidthPercent = 10;
-export const kMaxInlineImageWidthPercent = 95;
+export const kMaxInlineImageWidthPercent = 100;
 
 // The pointer often moves a pixel or two during a click. A movement smaller than this is
 // treated as a click, so nothing changes and no undo point is recorded.
@@ -740,7 +742,7 @@ function fitInlineImageOffsetsToBlock(
     editable: HTMLElement,
     wrappers: HTMLElement[],
 ): void {
-    const measureOverflow = () => editable.scrollHeight - editable.clientHeight;
+    const measureOverflow = () => measureBlockOverflowLayoutPx(editable);
     const readOffsets = () => wrappers.map(getInlineImageOffsetLayoutPx);
     const startingOffsets = readOffsets();
     let best = {
@@ -1645,7 +1647,7 @@ interface IInlineImageDragState {
     // shouldRevertInlineImageMove checks whether the move added overflow to the whole block,
     // because the dragged image can fit while pushing another image out. Floats cannot
     // overlap, so a full-width band dragged to another image's level pushes that image down.
-    startScrollOverflowLayoutPx: number;
+    startOverflowLayoutPx: number;
     // The last position of the pointer, so that the timer started by startEdgeScrollTimer can
     // apply the user's move again when there is no new pointer event.
     lastPointViewportPx: { x: number; y: number };
@@ -1661,6 +1663,8 @@ interface IInlineImageResizeState {
     startWidthViewportPx: number;
     editableWidthViewportPx: number;
     horizontalSign: number;
+    // How much the block overflowed when the resize began. See continueResize.
+    startOverflowLayoutPx: number;
     started: boolean;
     // The pointer this gesture captured; see captureGesturePointer.
     pointerId: number;
@@ -1832,8 +1836,7 @@ function startDrag(
         dock: getInlineImageDock(wrapper),
         started: false,
         neighborImageTopsInContent: getImageTopsInContent(editable, wrapper),
-        startScrollOverflowLayoutPx:
-            editable.scrollHeight - editable.clientHeight,
+        startOverflowLayoutPx: measureBlockOverflowLayoutPx(editable),
         lastPointViewportPx: { x: event.clientX, y: event.clientY },
         edgeScrollTimerId: undefined,
         pointerId: event.pointerId,
@@ -2108,8 +2111,8 @@ function applyMove(
     // be clicked.
     if (
         shouldRevertInlineImageMove(
-            state.startScrollOverflowLayoutPx,
-            state.editable.scrollHeight - state.editable.clientHeight,
+            state.startOverflowLayoutPx,
+            measureBlockOverflowLayoutPx(state.editable),
         )
     ) {
         restoreArrangement(state, before);
@@ -2374,6 +2377,7 @@ function startResize(event: PointerEvent, handle: HTMLElement): void {
         startWidthViewportPx: getImageBox(wrapper).width,
         editableWidthViewportPx,
         horizontalSign: getInlineImageHandleHorizontalSign(corner),
+        startOverflowLayoutPx: measureBlockOverflowLayoutPx(editable),
         started: false,
         pointerId: event.pointerId,
         imageTopsInContent: getImageTopsInContent(editable, undefined),
@@ -2403,7 +2407,51 @@ function continueResize(
         state.horizontalSign,
         state.editableWidthViewportPx,
     );
-    state.wrapper.style.setProperty(kInlineImageWidthVar, `${percent}%`);
+    // Each move leaves the image at a width that fits, so the width it has now is the last one
+    // that fitted.
+    const lastFittingPercent = getInlineImageWidthPercent(
+        state.wrapper,
+        getImageBox(state.wrapper).width,
+        state.editableWidthViewportPx,
+    );
+    applyResizeWidth(state, percent);
+    // A resize follows the rule a drag follows (shouldRevertInlineImageMove): in a block that
+    // fitted its text when the resize began, a width that makes it overflow is not kept. That
+    // stops the picture at the bottom of the block, which on a wide, short (landscape) block
+    // comes long before the width limit (BL-17078), and before it pushes the text that follows
+    // it out of the block. The picture stops at the largest width that still fits, found by
+    // halving the gap between the last width that fitted and this one, so that a fast movement
+    // of the pointer does not leave it short.
+    const fits = () =>
+        !shouldRevertInlineImageMove(
+            state.startOverflowLayoutPx,
+            measureBlockOverflowLayoutPx(state.editable),
+        );
+    if (fits()) return;
+    let fitting = lastFittingPercent;
+    let tooBig = percent;
+    for (let step = 0; step < kMaxResizeFitSteps; step++) {
+        const middle = Math.round(((fitting + tooBig) / 2) * 10) / 10;
+        if (middle === fitting || middle === tooBig) break;
+        applyResizeWidth(state, middle);
+        if (fits()) fitting = middle;
+        else tooBig = middle;
+    }
+    applyResizeWidth(state, fitting);
+}
+
+// How many times continueResize may halve the gap while looking for the largest width that
+// fits. Each step measures the layout once. Eight steps narrow a gap of 90% (the whole range
+// of widths) to well under 1%.
+const kMaxResizeFitSteps = 8;
+
+// Gives the resized image a width and puts every picture back where it was when the resize
+// began.
+function applyResizeWidth(
+    state: IInlineImageResizeState,
+    percent: number,
+): void {
+    setInlineImageWidthPercent(state.wrapper, percent);
     // A taller picture can push the one below it on the same side down; see
     // computeInlineImageFloatOrder for why that must not move the pictures on the other side.
     // Reordering can move the resized wrapper in the DOM too, which changes where its offset is
@@ -2417,6 +2465,47 @@ function continueResize(
         state.editable,
         state.imageTopsInContent,
         state.viewportPxPerLayoutPx,
+    );
+}
+
+// Sets the image's width, as a percentage of the editable's width.
+function setInlineImageWidthPercent(
+    wrapper: HTMLElement,
+    percent: number,
+): void {
+    wrapper.style.setProperty(kInlineImageWidthVar, `${percent}%`);
+}
+
+// The image's width as a percentage of the editable's width: the width it was given, or, for an
+// image that has none, the width it is shown at.
+function getInlineImageWidthPercent(
+    wrapper: HTMLElement,
+    shownWidthViewportPx: number,
+    editableWidthViewportPx: number,
+): number {
+    const widthVar = parseFloat(
+        wrapper.style.getPropertyValue(kInlineImageWidthVar),
+    );
+    return Number.isNaN(widthVar)
+        ? (shownWidthViewportPx / editableWidthViewportPx) * 100
+        : widthVar;
+}
+
+// How much text the block has that it cannot show, in layout pixels: how much its editables
+// together would need to scroll. The editables of a block that shows more than one language
+// share its height (basePage.less lets each shrink to a line), so when the picture's editable
+// grows, the others shrink too, and the text pushed out can be another language's. Drag, resize
+// and fitInlineImageOffsetsToBlock all keep the text inside the block by this measure.
+function measureBlockOverflowLayoutPx(editable: HTMLElement): number {
+    const group = editable.closest(".bloom-translationGroup");
+    const editables = group
+        ? (Array.from(
+              group.querySelectorAll(".bloom-editable"),
+          ) as HTMLElement[])
+        : [editable];
+    return editables.reduce(
+        (total, each) => total + each.scrollHeight - each.clientHeight,
+        0,
     );
 }
 
@@ -2446,9 +2535,6 @@ function startCrop(event: PointerEvent, handle: HTMLElement): void {
     const shown = getImageBox(wrapper);
     if (!(shown.width > 0) || !(shown.height > 0)) return;
     const viewportPxPerLayoutPx = getViewportPxPerLayoutPx(editable);
-    const widthVar = parseFloat(
-        wrapper.style.getPropertyValue(kInlineImageWidthVar),
-    );
     cropState = {
         wrapper,
         editable,
@@ -2458,10 +2544,11 @@ function startCrop(event: PointerEvent, handle: HTMLElement): void {
         startXViewportPx: event.clientX,
         startYViewportPx: event.clientY,
         startCrop: getInlineImageCrop(wrapper),
-        startWidthPercent: Number.isNaN(widthVar)
-            ? (shown.width / (editable.clientWidth * viewportPxPerLayoutPx)) *
-              100
-            : widthVar,
+        startWidthPercent: getInlineImageWidthPercent(
+            wrapper,
+            shown.width,
+            editable.clientWidth * viewportPxPerLayoutPx,
+        ),
         startOffsetLayoutPx: getInlineImageOffsetLayoutPx(wrapper),
         shownWidthViewportPx: shown.width,
         shownHeightViewportPx: shown.height,
@@ -2511,11 +2598,7 @@ function continueCrop(state: IInlineImageCropState, event: PointerEvent): void {
             state.startWidthPercent,
         );
         setInlineImageCrop(state.wrapper, crop);
-        if (!vertical)
-            state.wrapper.style.setProperty(
-                kInlineImageWidthVar,
-                `${widthPercent}%`,
-            );
+        if (!vertical) setInlineImageWidthPercent(state.wrapper, widthPercent);
         // On a canvas, cropping the top leaves the rest of the picture where it was. Here the
         // image's top is where its offset puts it, so the offset grows by as much as was cut
         // away. The bottom dock has no offset; there, and when the offset is already zero and

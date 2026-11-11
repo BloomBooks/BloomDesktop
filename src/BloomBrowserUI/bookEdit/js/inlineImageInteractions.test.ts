@@ -2358,8 +2358,8 @@ describe("inlineImageInteractions", () => {
                     90,
                 );
                 expect(result.widthPercent).toBe(kMaxInlineImageWidthPercent);
-                // 80% of the picture was 90% of the block; 95% of the block is 84.44% of it.
-                expect(result.crop.left).toBeCloseTo(15.56, 2);
+                // 80% of the picture was 90% of the block; 100% of the block is 88.89% of it.
+                expect(result.crop.left).toBeCloseTo(11.11, 2);
             });
         });
 
