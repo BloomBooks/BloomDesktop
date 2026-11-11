@@ -107,6 +107,10 @@ export class ReaderToolsModel {
     // still sitting on the defaults above. restoreState() uses it to tell a model that
     // nobody has told anything from one that is already showing a real choice; see there.
     private hasBeenGivenAPhase = false;
+    // How many times the user has moved the stage or level with the stepper's arrows. A
+    // tool's restore reads it when it begins and again once its own requests have answered;
+    // see userHasChosenAPhaseSince().
+    private phaseChoiceCount = 0;
     // A stage or level someone asked for before the Synphony settings arrived, waiting
     // for setSynphony() to apply it. See setStageNumber().
     //
@@ -183,6 +187,7 @@ export class ReaderToolsModel {
         this.levelNumber = 1;
         this.synphony = undefined;
         this.hasBeenGivenAPhase = false;
+        this.phaseChoiceCount = 0;
         this.stageAwaitingSynphony = undefined;
         this.levelAwaitingSynphony = undefined;
         this.sort = SortType.alphabetic;
@@ -212,11 +217,36 @@ export class ReaderToolsModel {
     }
 
     public incrementStage(): void {
+        this.phaseChoiceCount++;
         this.setStageNumber(this.stageNumber + 1);
     }
 
     public decrementStage(): void {
+        this.phaseChoiceCount++;
         this.setStageNumber(this.stageNumber - 1);
+    }
+
+    /**
+     * A marker for userHasChosenAPhaseSince(). A reader tool's restore takes one before it
+     * waits on anything.
+     */
+    public getPhaseChoiceMarker(): number {
+        return this.phaseChoiceCount;
+    }
+
+    /**
+     * Has the user moved the stage or level with the stepper since `marker` was taken (see
+     * getPhaseChoiceMarker)? A restore that waited on the server must not apply what it got
+     * back if so: the stepper shows before the restore finishes, so the user can choose a
+     * stage or level while the restore is still waiting, and applying the restore's answer
+     * then puts the stepper back and, for a book with nothing saved, saves that over the
+     * user's choice, in the book and as the default for new books. That is what made the
+     * reader-tool e2e test "each book remembers its own level" (Test Case ID 442) fail
+     * on the 2026-11-11 nightly. The user's choice has already been saved, so there is
+     * nothing left for the restore to do.
+     */
+    public userHasChosenAPhaseSince(marker: number): boolean {
+        return this.phaseChoiceCount !== marker;
     }
 
     public async setStageNumber(
@@ -297,10 +327,12 @@ export class ReaderToolsModel {
     }
 
     public incrementLevel(): void {
+        this.phaseChoiceCount++;
         this.setLevelNumber(this.levelNumber + 1);
     }
 
     public decrementLevel(): void {
+        this.phaseChoiceCount++;
         this.setLevelNumber(this.levelNumber - 1);
     }
 

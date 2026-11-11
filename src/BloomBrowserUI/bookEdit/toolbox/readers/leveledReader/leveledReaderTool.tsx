@@ -41,8 +41,12 @@ export class LeveledReaderTool extends ToolboxToolReactAdaptor {
     ): Promise<void> {
         // This restore supersedes any level still waiting for the settings; see
         // forgetLevelAwaitingSynphony().
-        getTheOneReaderToolsModel().forgetLevelAwaitingSynphony();
+        const model = getTheOneReaderToolsModel();
+        model.forgetLevelAwaitingSynphony();
+        // A level the user chooses while we wait below wins; see userHasChosenAPhaseSince().
+        const choiceMarker = model.getPhaseChoiceMarker();
         await beginInitializeLeveledReaderTool();
+        if (model.userHasChosenAPhaseSince(choiceMarker)) return;
         // Despite the type, settings can be undefined/null at runtime when the tool is
         // activated for a book that has no saved leveled-reader settings. Guard before
         // indexing so we fall through to the default-level path instead of throwing an
@@ -54,20 +58,17 @@ export class LeveledReaderTool extends ToolboxToolReactAdaptor {
             // One non-obvious implication is that simply opening a level-4 book
             // will not switch the default level for new books to 4. That only
             // happens when you CHANGE the level in the toolbox.
-            getTheOneReaderToolsModel().setLevelNumber(
-                parseInt(leveledReaderState, 10),
-                true,
-            );
+            model.setLevelNumber(parseInt(leveledReaderState, 10), true);
             return;
         }
         await new Promise<void>((resolve) => {
             get(
                 "readers/io/defaultLevel",
                 (result) => {
-                    // Presumably a brand new book. We'd better save the settings we come up with in it.
-                    getTheOneReaderToolsModel().setLevelNumber(
-                        parseInt(result.data, 10),
-                    );
+                    if (!model.userHasChosenAPhaseSince(choiceMarker)) {
+                        // Presumably a brand new book. We'd better save the settings we come up with in it.
+                        model.setLevelNumber(parseInt(result.data, 10));
+                    }
                     resolve();
                 },
                 () => resolve(),

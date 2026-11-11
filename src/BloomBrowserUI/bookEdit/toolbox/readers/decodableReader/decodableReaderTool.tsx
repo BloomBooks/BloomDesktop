@@ -67,8 +67,11 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
         // This restore supersedes any stage still waiting for the settings; see
         // forgetStageAwaitingSynphony().
         getTheOneReaderToolsModel().forgetStageAwaitingSynphony();
+        // A stage the user chooses while we wait below wins; see userHasChosenAPhaseSince().
+        const choiceMarker = getTheOneReaderToolsModel().getPhaseChoiceMarker();
         await beginInitializeDecodableReaderTool();
         const model = getTheOneReaderToolsModel();
+        if (model.userHasChosenAPhaseSince(choiceMarker)) return;
         // settings can be undefined/null at runtime for a book with no saved toolbox
         // settings; guard before indexing so we fall through to the default-stage path
         // instead of throwing an unhandled rejection that aborts tool activation (the
@@ -119,7 +122,10 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
                 (result) => {
                     // Presumably a brand new book. We'd better save the settings we come up with in it.
                     const stage = parseInt(result.data, 10);
-                    if (model.stageNumber === stage) {
+                    if (
+                        model.stageNumber === stage ||
+                        model.userHasChosenAPhaseSince(choiceMarker)
+                    ) {
                         resolve();
                         return;
                     }
