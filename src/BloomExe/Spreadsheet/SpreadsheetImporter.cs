@@ -170,15 +170,15 @@ namespace Bloom.Spreadsheet
         /// <summary>
         /// How the in-app import runs (and the commented-out command-line one did): save a backup copy of the book, delete
         /// its audio folder (the spreadsheet supplies all the recordings the book will have), then run
-        /// the import. If the import throws before it starts saving the book, the book's text is
-        /// unchanged, so put its old recordings back from the backup before letting the exception go
-        /// on; otherwise the unchanged book would point at recordings that are gone. Once saving has
-        /// started the saved book may already point at the new recordings (and the save may have
-        /// renamed the folder), so they are left alone and the user is told where the backup is.
+        /// the import. If the import throws before it starts saving the book, put the whole book folder
+        /// back as it was from the backup before letting the exception go on, undoing whatever the
+        /// import had already done to it (deleted recordings, copied pictures and so on). Once saving
+        /// has started, the save may have renamed the book's folder, so restoring into the old path
+        /// could leave two copies of the book; then nothing is restored and the user is told where the
+        /// backup is.
         /// </summary>
         /// <param name="hasStartedSaving">whether the import has begun saving the book</param>
-        /// <returns>the path of the backup</returns>
-        public static async Task<string> ImportWithBackupAsync(
+        public static async Task ImportWithBackupAsync(
             string bookFolderPath,
             IWebSocketProgress progress,
             Func<Task> import,
@@ -200,59 +200,69 @@ namespace Bloom.Spreadsheet
                 if (hasStartedSaving())
                 {
                     progress.MessageWithoutLocalizing(
-                        $"The import failed while saving the book. The original book, with its recordings, is in the backup at {backupPath}.",
+                        $"The import failed while saving the book. The original book is in the backup at {backupPath}.",
                         ProgressKind.Error
                     );
                     throw;
                 }
                 try
                 {
-                    RestoreAudioFromBackup(bookFolderPath, backupPath);
+                    RestoreBookFolderFromBackup(bookFolderPath, backupPath);
                     progress.MessageWithoutLocalizing(
-                        "The import failed, so the book's recordings were put back as they were."
+                        "The import failed, so the book was put back as it was."
                     );
                 }
                 catch (Exception restoreError)
                 {
                     // Report this, but let the import's own exception, the real problem, go on.
                     progress.MessageWithoutLocalizing(
-                        $"The import failed, and its recordings could not be put back ({restoreError.Message}). The original book, with its recordings, is in the backup at {backupPath}.",
+                        $"The import failed, and the book could not be put back as it was ({restoreError.Message}). The original book is in the backup at {backupPath}.",
                         ProgressKind.Error
                     );
                 }
                 throw;
             }
-            return backupPath;
         }
 
         /// <summary>
         /// Set just before the import saves the book, so ImportWithBackupAsync knows not to restore
-        /// the old recordings if something fails after that.
+        /// the book if something fails after that.
         /// </summary>
         public bool HasStartedSaving { get; private set; }
 
         /// <summary>
-        /// Replace the book's audio folder with the one in the backup made by
-        /// BookStorage.SaveCopyBeforeImportOverwrite.
+        /// Put the book's folder back as it was when BookStorage.SaveCopyBeforeImportOverwrite made
+        /// the backup: delete the files a backup holds, so that ones the import added go too, then
+        /// unzip the backup.
         /// </summary>
-        private static void RestoreAudioFromBackup(string bookFolderPath, string backupPath)
+        private static void RestoreBookFolderFromBackup(string bookFolderPath, string backupPath)
         {
-            var audioFolder = Path.Combine(bookFolderPath, "audio");
-            if (Directory.Exists(audioFolder))
-                RobustIO.DeleteDirectoryAndContents(audioFolder);
-            using (var zipFile = new ICSharpCode.SharpZipLib.Zip.ZipFile(backupPath))
+            DeleteFilesABackupHolds(bookFolderPath);
+            RobustZip.UnzipDirectory(bookFolderPath, backupPath);
+        }
+
+        /// <summary>
+        /// Delete the files in the folder and its subfolders that BloomArchiveFile.AddDirectory would
+        /// put in a backup. What it leaves out (hidden and system files, and the AI Image Editor's
+        /// folder) is not in the backup, so it must not be deleted either.
+        /// </summary>
+        private static void DeleteFilesABackupHolds(string folder)
+        {
+            foreach (var file in Directory.GetFiles(folder))
             {
-                foreach (ICSharpCode.SharpZipLib.Zip.ZipEntry entry in zipFile)
-                {
-                    // Zip entry names always use forward slashes.
-                    if (!entry.IsFile || !entry.Name.StartsWith("audio/", StringComparison.Ordinal))
-                        continue;
-                    var destPath = Path.Combine(bookFolderPath, entry.Name);
-                    Directory.CreateDirectory(Path.GetDirectoryName(destPath));
-                    using (var input = zipFile.GetInputStream(entry))
-                    using (var output = RobustFile.Create(destPath))
-                        input.CopyTo(output);
-                }
+                if (!RobustZip.ShouldFileBeIgnored(file))
+                    RobustFile.Delete(file);
+            }
+            foreach (var subfolder in Directory.GetDirectories(folder))
+            {
+                if (
+                    !Path.GetFileName(subfolder)
+                        .Equals(
+                            Bloom.web.controllers.AiImageEditorApi.kWorkingFolderName,
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                )
+                    DeleteFilesABackupHolds(subfolder);
             }
         }
 
