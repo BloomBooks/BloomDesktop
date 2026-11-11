@@ -298,12 +298,12 @@ namespace Bloom.Properties {
         [global::System.Configuration.SettingsProviderAttribute(typeof(Bloom.BloomSettingsProvider))]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string EditTabPageViewMode {
+        public string EditTabPageViewSettings {
             get {
-                return ((string)(this["EditTabPageViewMode"]));
+                return ((string)(this["EditTabPageViewSettings"]));
             }
             set {
-                this["EditTabPageViewMode"] = value;
+                this["EditTabPageViewSettings"] = value;
             }
         }
         

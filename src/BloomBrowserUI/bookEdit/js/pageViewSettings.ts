@@ -10,38 +10,39 @@ import { postString } from "../../utils/bloomApi";
 export type PageViewMode = "one" | "all";
 
 // The page view mode the user chose, and the zoom the user last had in each mode (a mode the user
-// has never left has none). Bloom keeps this as a user setting, as the JSON of this object: it hands
-// it over with editView/frameSources, before the first page loads (see EditTabPane.tsx), and
-// savePageViewMode() gives it back after every change.
-interface IPageViewModeSetting {
+// has never left has none). Bloom keeps all of this in one user setting, a string holding the JSON
+// of this object, which Bloom never looks inside: it hands the string over with
+// editView/frameSources, before the first page loads (see EditTabPane.tsx), and
+// savePageViewSettings() gives it back after every change.
+interface IPageViewSettings {
     mode: PageViewMode;
     zoomOfMode: { [mode in PageViewMode]?: number };
 }
-let pageViewModeSetting: IPageViewModeSetting = {
+let pageViewSettings: IPageViewSettings = {
     mode: "one",
     zoomOfMode: {},
 };
 
-// Told when the page view mode setting arrives from Bloom, which can be after they first read it.
-const pageViewModeSettingListeners = new Set<() => void>();
+// Told when the page view settings arrive from Bloom, which can be after they first read it.
+const pageViewSettingsListeners = new Set<() => void>();
 
-/** Take the page view mode setting Bloom kept, as editView/frameSources hands it over. */
-export function takePageViewModeSettingFromBloom(setting: string): void {
+/** Take the page view settings that Bloom kept, as editView/frameSources hands them over. */
+export function takePageViewSettingsFromBloom(setting: string): void {
     // Empty until the user first chooses a mode.
-    pageViewModeSetting = setting
-        ? (JSON.parse(setting) as IPageViewModeSetting)
+    pageViewSettings = setting
+        ? (JSON.parse(setting) as IPageViewSettings)
         : { mode: "one", zoomOfMode: {} };
-    pageViewModeSettingListeners.forEach((listener) => listener());
+    pageViewSettingsListeners.forEach((listener) => listener());
 }
 
 /**
- * Call `listener` whenever the page view mode setting arrives from Bloom. Returns the function that
+ * Call `listener` whenever the page view settings arrive from Bloom. Returns the function that
  * stops that.
  */
-export function listenForPageViewModeSetting(listener: () => void): () => void {
-    pageViewModeSettingListeners.add(listener);
+export function listenForPageViewSettings(listener: () => void): () => void {
+    pageViewSettingsListeners.add(listener);
     return () => {
-        pageViewModeSettingListeners.delete(listener);
+        pageViewSettingsListeners.delete(listener);
     };
 }
 
@@ -64,9 +65,9 @@ export function listenForAllPagesShown(listener: () => void): () => void {
     };
 }
 
-// Send the whole setting to Bloom to keep.
-function savePageViewMode(): void {
-    postString("editView/pageViewMode", JSON.stringify(pageViewModeSetting));
+// Send all the settings (the mode, and the zoom of each mode) to Bloom to keep.
+function savePageViewSettings(): void {
+    postString("editView/pageViewSettings", JSON.stringify(pageViewSettings));
 }
 
 /**
@@ -74,22 +75,22 @@ function savePageViewMode(): void {
  * bookGridView.ts): the All Pages mode. Remembered for every page, and across Bloom sessions.
  */
 export function isShowingOtherPages(): boolean {
-    return pageViewModeSetting.mode === "all";
+    return pageViewSettings.mode === "all";
 }
 
 /** Remember whether the user wants to see the other pages of the book. */
 export function storeShowingOtherPages(show: boolean): void {
-    pageViewModeSetting.mode = show ? "all" : "one";
-    savePageViewMode();
+    pageViewSettings.mode = show ? "all" : "one";
+    savePageViewSettings();
 }
 
 /** The zoom the user last had in this page view mode, or undefined if they have never left it. */
 export function getStoredZoomOfMode(mode: PageViewMode): number | undefined {
-    return pageViewModeSetting.zoomOfMode[mode];
+    return pageViewSettings.zoomOfMode[mode];
 }
 
 /** Remember the zoom the user had in this page view mode, for when they come back to it. */
 export function storeZoomOfMode(mode: PageViewMode, zoom: number): void {
-    pageViewModeSetting.zoomOfMode[mode] = zoom;
-    savePageViewMode();
+    pageViewSettings.zoomOfMode[mode] = zoom;
+    savePageViewSettings();
 }

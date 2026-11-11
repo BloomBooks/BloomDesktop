@@ -14,7 +14,7 @@ import {
 import { getAsync, postJsonAsync } from "../../../utils/bloomApi";
 import { useMountEffect } from "../../../utils/useMountEffect";
 import { reportError } from "../../../lib/errorHandler";
-import type { PageViewMode } from "../../../bookEdit/js/pageViewModeSetting";
+import type { PageViewMode } from "../../../bookEdit/js/pageViewSettings";
 import {
     getSpreadShape,
     kSpreadGap,
@@ -25,7 +25,7 @@ const kBorder = "1px solid rgba(0, 0, 0, 0.4)";
 
 // In the Edit tab, chooses between editing one page by itself and seeing all the pages of the book
 // around it. The pages are drawn in the page frame (see bookGridView.ts), so the choice is stored
-// where the next page will find it (pageViewModeSetting.ts) and handed to the page being edited now.
+// where the next page will find it (pageViewSettings.ts) and handed to the page being edited now.
 export const PageViewChooser: React.FunctionComponent = () => {
     const getChosenMode = (): PageViewMode =>
         getWorkspaceBundleExports().isShowingOtherPages() ? "all" : "one";
@@ -33,7 +33,7 @@ export const PageViewChooser: React.FunctionComponent = () => {
     // The choice Bloom kept can arrive after this is first shown.
     useMountEffect(() => {
         const stopListeningForSetting =
-            getWorkspaceBundleExports().listenForPageViewModeSetting(() =>
+            getWorkspaceBundleExports().listenForPageViewSettings(() =>
                 setMode(getChosenMode()),
             );
         // Bloom started, another book opened, or the window changed size since the zoom was last
@@ -147,7 +147,7 @@ type ZoomInfo = { zoom: number; minZoom: number };
 // zooming out that seeing all the pages may have needed. Going to all pages zooms out further if
 // the zoom kept for it would not fit a spread. Bloom's own zoom setting is the zoom of
 // the mode showing now; the zoom of the other mode is kept with the choice of mode, across Bloom
-// sessions (see pageViewModeSetting.ts).
+// sessions (see pageViewSettings.ts).
 // Switches run one after another: each reads Bloom's zoom as the switch before it left it, so a
 // quick change of mode and back cannot store one mode's zoom as the other's.
 function switchToZoomOfMode(

@@ -24,7 +24,7 @@ export interface IWorkspaceExports {
     storeShowingOtherPages(show: boolean): void;
     getStoredZoomOfMode(mode: PageViewMode): number | undefined;
     storeZoomOfMode(mode: PageViewMode, zoom: number): void;
-    listenForPageViewModeSetting(listener: () => void): () => void;
+    listenForPageViewSettings(listener: () => void): () => void;
     noteAllPagesShown(): void;
     listenForAllPagesShown(listener: () => void): () => void;
     setToolboxEnabled(enabled: boolean): void;
@@ -115,17 +115,17 @@ import {
     getStoredZoomOfMode,
     isShowingOtherPages,
     listenForAllPagesShown,
-    listenForPageViewModeSetting,
+    listenForPageViewSettings,
     noteAllPagesShown,
     storeShowingOtherPages,
     storeZoomOfMode,
     type PageViewMode,
-} from "./js/pageViewModeSetting";
+} from "./js/pageViewSettings";
 export {
     getStoredZoomOfMode,
     isShowingOtherPages,
     listenForAllPagesShown,
-    listenForPageViewModeSetting,
+    listenForPageViewSettings,
     noteAllPagesShown,
     storeShowingOtherPages,
     storeZoomOfMode,
@@ -466,7 +466,7 @@ interface WorkspaceBundleApi {
     storeShowingOtherPages: typeof storeShowingOtherPages;
     getStoredZoomOfMode: typeof getStoredZoomOfMode;
     storeZoomOfMode: typeof storeZoomOfMode;
-    listenForPageViewModeSetting: typeof listenForPageViewModeSetting;
+    listenForPageViewSettings: typeof listenForPageViewSettings;
     noteAllPagesShown: typeof noteAllPagesShown;
     listenForAllPagesShown: typeof listenForAllPagesShown;
     showDialog: typeof showDialog;
@@ -525,7 +525,7 @@ window.workspaceBundle = {
     storeShowingOtherPages,
     getStoredZoomOfMode,
     storeZoomOfMode,
-    listenForPageViewModeSetting,
+    listenForPageViewSettings,
     noteAllPagesShown,
     listenForAllPagesShown,
     showDialog,

@@ -155,9 +155,12 @@ export function makeElement(
 }
 
 // Focus the text box Bloom picks for the user when a page loads. With the other pages of the book
-// showing, the page is where the user clicked it (see bookGridView.ts), and the browser's usual
-// scroll to a focused box that is off screen would move the page out from under the click that
-// opened it.
+// showing, bookGridView.ts has already put the page where it belongs in the view (where the user
+// clicked it, or in the middle), and the browser's usual scroll to a focused box that is off
+// screen would move it from there. So a box Bloom picked can have the focus while it is off screen.
+// It does not stay there once the user uses it: the browser scrolls the text cursor into view
+// when they type. (A page opened by clicking it gets its focus from that click instead, so that
+// box is one the user could see; see replayTheClickThatOpenedThisPage().)
 function focusTextBoxOnNewPage(textBox: Element): void {
     (textBox as HTMLElement).focus({
         preventScroll: isShowingOtherPagesHere(),

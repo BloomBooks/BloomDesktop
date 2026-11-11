@@ -1028,18 +1028,26 @@ namespace Bloom.Edit
         /// Bring <paramref name="book"/> up to the current page layout update level, then go back to
         /// <paramref name="pageId"/> and, if one is given, run <paramref name="afterPageReloaded"/>
         /// once that page has loaded. Call this only after a completed save whose action returned
-        /// null, so the editor is empty when the pass starts.
+        /// null, so the editor is empty when the page layout update starts.
         /// </summary>
         /// <remarks>
-        /// Shared by the two things that trigger the pass, because both have to do all of this, not
-        /// just the first line. The pass runs deferred off the API sync lock (see RunOffTheApiLock),
-        /// since the off-screen pages it loads make their own sync-locked API calls; that deferral is
-        /// also what puts it after the state machine has finished emptying the editor.
+        /// The page layout update is BookProcessor.ProcessBook going through every page of the book
+        /// and rewriting it. Both of the things that start one (the AI image editor and the All
+        /// Pages view) come through here, because both have to do all of this, not just the first
+        /// line.
         ///
-        /// A click on a page can get in before the deferred pass starts, and go to that page. The
-        /// pass then does not run, and the user stays on the page they clicked: the book is no
-        /// longer ours to rewrite, and taking them back would undo their click. Once the pass has
-        /// started, CannotSavePage refuses such clicks until it is done.
+        /// The update does not start inside the API request that asked for it. That request's
+        /// handler may be holding Bloom's global API sync lock, and the update loads pages
+        /// off-screen that make API calls needing the same lock, so they would wait for ever. So
+        /// RunOffTheApiLock queues the update to start on the UI thread after the handler has
+        /// returned and let go of the lock. By then the state machine has also finished emptying
+        /// the editor.
+        ///
+        /// Between the request and the queued start, the user can click another page, and Bloom
+        /// goes to it. The update then does not run, and the user stays on the page they clicked:
+        /// with a page loaded in the editor the book is no longer ours to rewrite, and taking them
+        /// back would undo their click. Once the update has started, CannotSavePage refuses such
+        /// clicks until it is done.
         /// </remarks>
         private void RunPageLayoutUpdateThenReturnToPage(
             Book.Book book,

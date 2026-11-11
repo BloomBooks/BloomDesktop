@@ -164,12 +164,16 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                "editView/pageViewMode",
-                HandleSavePageViewMode,
+                "editView/pageViewSettings",
+                HandleSavePageViewSettings,
                 true
             );
             // Not requiresSync, like aiImageEditor/saveThenLaunch: the update it may start loads
             // pages off-screen that make their own sync-locked calls (see RunOffTheApiLock).
+            // Those pages cannot be left waiting for the UI thread behind this handler either. The
+            // handler only saves the page being edited and queues the update with BeginInvoke, so
+            // it has returned before the first off-screen page loads, and the update itself runs
+            // on the progress dialog's background worker (BookProcessor.UpdatePageLayoutIfNeededThen).
             apiHandler.RegisterEndpointHandler(
                 "editView/updatePageLayoutForAllPages",
                 HandleUpdatePageLayoutForAllPages,
@@ -193,15 +197,17 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Keep, as a user setting, the front end's record of which page view mode the user chose
-        /// (one page, or all pages) and the zoom of each mode, so that they last across Bloom sessions.
-        /// The front end owns the format; editView/frameSources hands it back.
+        /// Keep, as a user setting, the front end's page view settings, so that they last across
+        /// Bloom sessions. The posted string is JSON that holds both which page view mode the user
+        /// chose (One Page or All Pages) and the zoom the user last had in each mode (see
+        /// IPageViewSettings in pageViewSettings.ts). The front end owns that format: this stores the
+        /// string as it came, and editView/frameSources hands it back.
         /// </summary>
-        private void HandleSavePageViewMode(ApiRequest request)
+        private void HandleSavePageViewSettings(ApiRequest request)
         {
             if (request.HttpMethod != HttpMethods.Post)
-                throw new ArgumentException("editView/pageViewMode only supports POST");
-            Settings.Default.EditTabPageViewMode = request.RequiredPostString();
+                throw new ArgumentException("editView/pageViewSettings only supports POST");
+            Settings.Default.EditTabPageViewSettings = request.RequiredPostString();
             Settings.Default.Save();
             request.PostSucceeded();
         }

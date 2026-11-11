@@ -34,7 +34,8 @@ interface IGridPage {
     isXMatter: boolean;
 }
 
-// Where the clicked page was on screen, so the next page document can put it back there.
+// The session storage key under which onClickOtherPage() leaves an IClickedPageRecord: where the
+// clicked page was on screen, so the next page document can put it back there.
 const kClickedPageKey = "bloom-edit-clickedGridPage";
 
 // On this document's root once replayTheClickThatOpenedThisPage() has finished.

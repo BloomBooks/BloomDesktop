@@ -1701,9 +1701,11 @@ namespace Bloom.Edit
             dynamic result = new DynamicJson();
             result.toolboxSrc = "/bloom/toolboxContent";
             result.toolboxIsShowing = true;
-            // Which page view mode the user chose, and the zoom of each mode, as the front end saved
-            // them through editView/pageViewMode (see pageViewModeSetting.ts). Empty until it first does.
-            result.pageViewMode = Settings.Default.EditTabPageViewMode;
+            // The Edit tab's page view settings: which page view mode the user chose (One Page or
+            // All Pages) and the zoom the user last had in each mode. It is one string, the JSON the
+            // front end posted to editView/pageViewSettings (see pageViewSettings.ts), which C#
+            // keeps and hands back without reading. Empty until the front end first posts it.
+            result.pageViewSettings = Settings.Default.EditTabPageViewSettings;
 
             if (!_model.HaveCurrentEditableBook)
             {
