@@ -61,9 +61,13 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
         // Toggle render is handled in newPageReady(), where page reader classes are settled.
     }
     /** Restores the stage (and sort order) this book was last using; see ITool. */
-    public async beginRestoreSettings(
-        settings: IToolboxSettings,
-    ): Promise<void> {
+    public beginRestoreSettings(settings: IToolboxSettings): Promise<void> {
+        return getTheOneReaderToolsModel().whileRestoringPhase(() =>
+            this.restoreSettings(settings),
+        );
+    }
+
+    private async restoreSettings(settings: IToolboxSettings): Promise<void> {
         // This restore supersedes any stage still waiting for the settings; see
         // forgetStageAwaitingSynphony().
         getTheOneReaderToolsModel().forgetStageAwaitingSynphony();
