@@ -205,6 +205,32 @@ describe("resizing an inline image with a corner handle", () => {
         expect(group.scrollHeight).toBeGreaterThan(group.clientHeight + 1);
     });
 
+    // BL-17078: dragging a picture down to the very bottom of a block with room to spare made it
+    // jump up to just below the text, because the bottom dock puts it right after the text.
+    it("leaves a picture dragged below the block at the bottom of the block", async () => {
+        const group = makeTextBlock(400, 300, ["The end."]);
+        const wrapper = await setUpImage(group, kInlineImageMiddleClass);
+        const blockBottom = group.getBoundingClientRect().bottom;
+        // Sanity check: the 80px picture starts at the top of the 300px block.
+        const before = imgOf(wrapper).getBoundingClientRect();
+        expect(Math.round(before.top)).toBe(
+            Math.round(group.getBoundingClientRect().top),
+        );
+
+        const page = root.querySelector(".bloom-page") as HTMLElement;
+        await userEvent.hover(page);
+        await userEvent.dragAndDrop(imgOf(wrapper), page, {
+            targetPosition: { x: 200, y: 600 },
+        });
+
+        // The picture's bottom, with its 8px (0.5em) bottom margin, is at the bottom of the
+        // block, and it is not in the bottom dock, which would have put it just below the text.
+        const after = imgOf(wrapper).getBoundingClientRect();
+        expect(after.bottom).toBeLessThanOrEqual(blockBottom);
+        expect(after.bottom).toBeGreaterThan(blockBottom - 12);
+        expect(wrapper.classList.contains(kInlineImageMiddleClass)).toBe(true);
+    });
+
     // BL-17078: on a portrait page the image stopped a little short of the edge of the text.
     it("reaches the full width of the text in a tall, narrow block", async () => {
         const group = makeTextBlock(400, 800, ["Once upon a time."]);

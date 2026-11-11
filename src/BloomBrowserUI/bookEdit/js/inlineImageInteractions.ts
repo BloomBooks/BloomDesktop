@@ -1869,7 +1869,7 @@ function continueDrag(
         x: pointViewportPx.x + state.grabOffsetXViewportPx,
         y: pointViewportPx.y + state.grabOffsetYViewportPx,
     };
-    const dock = computeInlineImageDock(
+    let dock = computeInlineImageDock(
         imageCenterViewportPx,
         state.editableContentBoxViewportPx,
         getImageBox(state.wrapper).height,
@@ -1887,6 +1887,25 @@ function continueDrag(
         // others.
         setInlineImageDock(state.wrapper, dock);
         state.dock = dock;
+        // The bottom dock puts the picture right after the last line of text. In a block with
+        // room to spare below the text, that leaves the picture short of the bottom of the
+        // block, higher than the other docks can put it. Then dragging the picture down to the
+        // bottom made it jump up, and it could be left at the very bottom only by letting go
+        // just before the dock changed (BL-17078). So the picture keeps its dock when the
+        // bottom dock would leave room below it; that dock takes it to the bottom of the block
+        // below. When the text fills the block, the bottom dock is at the bottom, and it is
+        // used.
+        const picture = getImageBox(state.wrapper);
+        if (
+            !degenerate &&
+            dock === kInlineImageBottomClass &&
+            picture.top + picture.height < blockBottomViewportPx - 1
+        ) {
+            state.editable.insertBefore(state.wrapper, previousNextSibling);
+            setInlineImageDock(state.wrapper, previousDock);
+            state.dock = previousDock;
+            dock = previousDock;
+        }
     }
     if (dock === kInlineImageBottomClass) {
         // The bottom dock is in normal flow at the end of the block, so it uses no offset. The
