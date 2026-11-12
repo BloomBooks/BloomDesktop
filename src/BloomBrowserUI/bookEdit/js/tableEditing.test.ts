@@ -21,6 +21,11 @@ vi.mock("./bloomEditing", async (importOriginal) => ({
     ...((await importOriginal()) as object),
     activateLongPressFor: () => {},
 }));
+// SetupTableEditing hands the library Bloom's getLocalizations, which asks the
+// server. Nothing here is about translation, so the library keeps its English.
+vi.mock("./tableUiLocalization", () => ({
+    startTableUiLocalization: () => {},
+}));
 
 import {
     AttachNewTable,

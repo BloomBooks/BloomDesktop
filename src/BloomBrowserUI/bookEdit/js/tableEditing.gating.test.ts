@@ -29,6 +29,13 @@ vi.mock("./bloomEditing", async (importOriginal) => ({
     activateLongPressFor: () => {},
 }));
 
+// SetupTableEditing hands the library Bloom's getLocalizations, which asks the
+// server, and the library shows no chrome until the answer comes. These tests are
+// about the Pro gate, so the library is left with its English, which it shows at once.
+vi.mock("./tableUiLocalization", () => ({
+    startTableUiLocalization: () => {},
+}));
+
 import { findParagraphForTextContextMenu } from "../textContextMenu/noIndent";
 import { AttachNewTable, SetupTableEditing } from "./tableEditing";
 import { setTablesMayBeRestructuredForTests } from "./tableFeature";

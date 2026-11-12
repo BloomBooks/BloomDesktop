@@ -1,24 +1,13 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { describe, it, expect, vi } from "vitest";
-import { setTableLocalizer, tableUiStrings } from "bloom-table";
-import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
-import {
-    kTableUiStringIdPrefix,
-    startTableUiLocalization,
-} from "./tableUiLocalization";
+import { ALL_TABLE_UI_STRINGS, setGetLocalizations } from "bloom-table";
+import { getLocalizations } from "../../lib/localizationManager/getLocalizations";
+import { startTableUiLocalization } from "./tableUiLocalization";
 
 vi.mock("bloom-table", async (importOriginal) => ({
     ...(await importOriginal<typeof import("bloom-table")>()),
-    setTableLocalizer: vi.fn(),
-}));
-
-vi.mock("../../lib/localizationManager/localizationManager", () => ({
-    default: {
-        loadStringsPromise: vi.fn(() => Promise.resolve()),
-        // Stands in for a dictionary that the preload filled with French.
-        getText: vi.fn((id: string) => `fr:${id}`),
-    },
+    setGetLocalizations: vi.fn(() => Promise.resolve()),
 }));
 
 // The bloom-table library's menus show whatever Bloom's XLF holds for each of
@@ -49,31 +38,16 @@ function readEnglishXlfSources(): Map<string, string> {
 }
 
 describe("startTableUiLocalization", () => {
-    it("preloads every library string, then installs a localizer that reads them", async () => {
-        expect(setTableLocalizer).not.toHaveBeenCalled();
+    it("hands the library Bloom's getLocalizations, once per page", () => {
+        expect(setGetLocalizations).not.toHaveBeenCalled();
 
         startTableUiLocalization();
-        // A second page setup on the same page must not fetch again.
+        // A second page setup on the same page must not ask again.
         startTableUiLocalization();
 
-        const loadStrings = vi.mocked(
-            theOneLocalizationManager.loadStringsPromise,
-        );
-        expect(loadStrings).toHaveBeenCalledTimes(1);
-        const preloaded = loadStrings.mock.calls[0][0] as {
-            [id: string]: string;
-        };
-        expect(Object.keys(preloaded).length).toBe(
-            Object.keys(tableUiStrings).length,
-        );
-        expect(preloaded["EditTab.Table.RowMenu.AddAbove"]).toBe(
-            "Add Row Above",
-        );
-
-        await vi.waitFor(() => expect(setTableLocalizer).toHaveBeenCalled());
-        const localizer = vi.mocked(setTableLocalizer).mock.calls[0][0]!;
-        expect(localizer("Add Row Above", "RowMenu.AddAbove")).toBe(
-            "fr:EditTab.Table.RowMenu.AddAbove",
+        expect(setGetLocalizations).toHaveBeenCalledTimes(1);
+        expect(vi.mocked(setGetLocalizations).mock.calls[0][0]).toBe(
+            getLocalizations,
         );
     });
 });
@@ -83,12 +57,11 @@ describe("bloom-table UI strings", () => {
         const sources = readEnglishXlfSources();
         // Sanity check that the XLF files were found and read.
         expect(sources.get("Common.OK")).toBe("OK");
-        const libraryIds = Object.keys(tableUiStrings);
+        const libraryIds = Object.keys(ALL_TABLE_UI_STRINGS);
         expect(libraryIds.length).toBeGreaterThan(50);
 
-        const problems = Object.entries(tableUiStrings).flatMap(
-            ([id, english]) => {
-                const xlfId = kTableUiStringIdPrefix + id;
+        const problems = Object.entries(ALL_TABLE_UI_STRINGS).flatMap(
+            ([xlfId, english]) => {
                 const source = sources.get(xlfId);
                 if (source === undefined) return [`${xlfId} is missing`];
                 if (source !== english)
