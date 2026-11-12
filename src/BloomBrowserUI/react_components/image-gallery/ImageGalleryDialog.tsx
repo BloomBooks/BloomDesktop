@@ -88,10 +88,7 @@ const ImageGalleryDialog: React.FunctionComponent<{
         });
         const sourcePromise = getAsync(
             `app/userSetting?settingName=${kGallerySourceSetting}`,
-        ).then((r) => {
-            const source = r?.data?.settingValue as string;
-            if (source) setInitialProviderId(source);
-        });
+        ).then((r) => setInitialProviderId(r?.data?.settingValue));
         Promise.allSettled([keysPromise, sourcePromise]).then(() =>
             setStartupDataLoaded(true),
         );
