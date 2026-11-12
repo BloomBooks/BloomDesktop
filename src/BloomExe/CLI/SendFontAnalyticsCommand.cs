@@ -75,7 +75,8 @@ namespace Bloom.CLI
         /// <summary>
         /// Check that the book and collection named on the command line exist, writing a plain
         /// message to the console if not. A path to the book's .htm file is accepted as meaning
-        /// its folder, and BookPath is changed to that folder.
+        /// its folder, and BookPath is changed to that folder. CollectionPath is changed to the
+        /// .bloomCollection file that is actually in its folder, as ProjectContext would find it.
         /// </summary>
         /// <returns>true if the paths are usable</returns>
         internal static bool CheckPaths(SendFontAnalyticsParameters options)
@@ -93,6 +94,10 @@ namespace Bloom.CLI
                 );
                 return false;
             }
+            // Find the settings file the way ProjectContext will, so that a collection whose
+            // settings file is not named after its folder (for example, after the folder was
+            // renamed) is still accepted.
+            options.CollectionPath = ProjectContext.GetRealSettingsPath(options.CollectionPath);
             if (!RobustFile.Exists(options.CollectionPath))
             {
                 Console.WriteLine(

@@ -77,19 +77,42 @@ namespace BloomTests.CLI
         }
 
         /// <summary>
-        /// A collection file that does not exist is reported plainly too.
+        /// A collection file that does not exist, in a folder holding no other, is reported
+        /// plainly too.
         /// </summary>
         [Test]
         public void CheckPaths_MissingCollection_ReportsIt()
         {
+            var emptyFolder = Path.Combine(_folder.FolderPath, "Empty");
+            Directory.CreateDirectory(emptyFolder);
             var options = MakeOptions(_bookFolder);
-            options.CollectionPath = Path.Combine(_folder.FolderPath, "Nope.bloomCollection");
+            options.CollectionPath = Path.Combine(emptyFolder, "Nope.bloomCollection");
             var (ok, output) = Check(options);
             Assert.That(ok, Is.False);
             Assert.That(
                 output,
                 Does.Contain($"The collection file '{options.CollectionPath}' does not exist.")
             );
+        }
+
+        /// <summary>
+        /// A collection path worked out from a renamed folder names a file that isn't there, but
+        /// the folder still holds the collection's real settings file; that should be used, as
+        /// ProjectContext would use it.
+        /// </summary>
+        [Test]
+        public void CheckPaths_CollectionFileNamedDifferently_UsesTheOneInTheFolder()
+        {
+            var options = MakeOptions(_bookFolder);
+            options.CollectionPath = Path.Combine(_folder.FolderPath, "Renamed.bloomCollection");
+            Assert.That(
+                RobustFile.Exists(options.CollectionPath),
+                Is.False,
+                "test setup: the path given should not exist"
+            );
+            var (ok, output) = Check(options);
+            Assert.That(ok, Is.True, output);
+            Assert.That(options.CollectionPath, Is.EqualTo(_collectionFile));
         }
 
         private SendFontAnalyticsParameters MakeOptions(string bookPath)
