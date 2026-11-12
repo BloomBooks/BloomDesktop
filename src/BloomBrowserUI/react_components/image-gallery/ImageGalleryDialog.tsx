@@ -37,6 +37,10 @@ interface IImageGalleryApiResult {
 // The provider id the gallery stamps on an image the user opened from their own disk.
 const kLocalDiskProviderId = "local-disk";
 
+// The user setting that remembers which source the user last accepted a picture from, so the
+// gallery can open on it next time.
+const kGallerySourceSetting = "ImageGallerySource";
+
 const ImageGalleryDialog: React.FunctionComponent<{
     img: HTMLElement;
     searchLang: string;
@@ -48,7 +52,9 @@ const ImageGalleryDialog: React.FunctionComponent<{
     const [providerKeys, setProviderKeys] = useState<
         IProviderKeysV1 | undefined
     >(undefined);
-    const [keysLoaded, setKeysLoaded] = useState(false);
+    const [initialProviderId, setInitialProviderId] = useState<string>();
+    // True once the keys and the remembered source have both been loaded.
+    const [startupDataLoaded, setStartupDataLoaded] = useState(false);
 
     // ----- Analytics for this visit to the chooser (BL-16716) -----
     // The unit of analysis is the visit, not the query: people usually run several searches
@@ -69,17 +75,26 @@ const ImageGalleryDialog: React.FunctionComponent<{
     // A mount effect is justified: this is a one-time async fetch that must run after mount
     // so the component can render before the network round-trip completes.
     useMountEffect(() => {
-        getAsync("serviceKeys/keys?prefix=imageGallery.")
-            .then((r) => {
-                const keys = r?.data as IProviderKeysV1;
-                // Bloom replies with the format version plus one property per provider the
-                // user has a key for, so anything past the version means there is a key.
-                if (keys && Object.keys(keys).length > 1) {
-                    setProviderKeys(keys);
-                    pixabayKeyPresentRef.current = !!keys.pixabay;
-                }
-            })
-            .finally(() => setKeysLoaded(true));
+        const keysPromise = getAsync(
+            "serviceKeys/keys?prefix=imageGallery.",
+        ).then((r) => {
+            const keys = r?.data as IProviderKeysV1;
+            // Bloom replies with the format version plus one property per provider the
+            // user has a key for, so anything past the version means there is a key.
+            if (keys && Object.keys(keys).length > 1) {
+                setProviderKeys(keys);
+                pixabayKeyPresentRef.current = !!keys.pixabay;
+            }
+        });
+        const sourcePromise = getAsync(
+            `app/userSetting?settingName=${kGallerySourceSetting}`,
+        ).then((r) => {
+            const source = r?.data?.settingValue as string;
+            if (source) setInitialProviderId(source);
+        });
+        Promise.allSettled([keysPromise, sourcePromise]).then(() =>
+            setStartupDataLoaded(true),
+        );
     });
 
     // Searches are counted, not reported one by one: how many a visit took and which sources it
@@ -153,12 +168,23 @@ const ImageGalleryDialog: React.FunctionComponent<{
                 license: result.license,
                 undoable: "true",
             });
+            const fromDisk = image.providerId === kLocalDiskProviderId;
+            // Remember the source so the gallery opens on it next time. A file from disk is
+            // not a source the gallery can open on, so it leaves the remembered one alone.
+            if (
+                image.providerId &&
+                !fromDisk &&
+                image.providerId !== initialProviderId
+            ) {
+                postJson("app/userSetting", {
+                    settingName: kGallerySourceSetting,
+                    settingValue: image.providerId,
+                });
+            }
             // A file the user opened from disk is a different outcome from finding a picture in
             // one of the collections we offer, even though both end in an image being used.
             reportChooserClosed(
-                image.providerId === kLocalDiskProviderId
-                    ? "local disk"
-                    : "accepted",
+                fromDisk ? "local disk" : "accepted",
                 image.providerId,
             );
             setOpen(false);
@@ -259,7 +285,7 @@ const ImageGalleryDialog: React.FunctionComponent<{
                     }
                 `}
             >
-                {keysLoaded && (
+                {startupDataLoaded && (
                     <ImageGallery
                         onConfirmSelection={onConfirmSelection}
                         onPickLocalFile={onPickLocalFile}
@@ -267,6 +293,7 @@ const ImageGalleryDialog: React.FunctionComponent<{
                         localCollectionsBaseUrl={localCollectionsBaseUrl}
                         lang={props.searchLang}
                         initialProviderKeys={providerKeys}
+                        initialProviderId={initialProviderId}
                         primaryColor={kBloomBlue}
                         onSearch={handleSearch}
                         onProviderKeysChange={(keys) => {
