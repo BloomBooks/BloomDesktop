@@ -710,24 +710,24 @@
         <target xml:lang="pt-PT" state="final">Navegação</target>
         <note>ID: EditTab.Toolbox.CanvasTool.Navigation</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.Table">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Table" approved="yes">
         <source xml:lang="en">A table whose cells can hold text or pictures</source>
-        <target xml:lang="pt-PT" state="translated">Uma tabela cujas células podem conter texto ou imagens</target>
+        <target xml:lang="pt-PT" state="final">Uma tabela cujas células podem conter texto ou imagens</target>
         <note>ID: EditTab.Toolbox.CanvasTool.Table</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Pill.ColumnMenu">
+      <trans-unit id="EditTab.Table.Pill.ColumnMenu" approved="yes">
         <source xml:lang="en">Column menu</source>
-        <target xml:lang="pt-PT" state="translated">Menu da coluna</target>
+        <target xml:lang="pt-PT" state="final">Menu da coluna</target>
         <note>ID: EditTab.Table.Pill.ColumnMenu</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Pill.RowMenu">
+      <trans-unit id="EditTab.Table.Pill.RowMenu" approved="yes">
         <source xml:lang="en">Row menu</source>
-        <target xml:lang="pt-PT" state="translated">Menu da linha</target>
+        <target xml:lang="pt-PT" state="final">Menu da linha</target>
         <note>ID: EditTab.Table.Pill.RowMenu</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Pill.TableMenu">
+      <trans-unit id="EditTab.Table.Pill.TableMenu" approved="yes">
         <source xml:lang="en">Table menu</source>
-        <target xml:lang="pt-PT" state="translated">Menu da tabela</target>
+        <target xml:lang="pt-PT" state="final">Menu da tabela</target>
         <note>ID: EditTab.Table.Pill.TableMenu</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.AddButton.ColumnAtRightEdge">
@@ -740,254 +740,254 @@
         <target xml:lang="pt-PT" state="translated">Adicionar uma linha no limite inferior</target>
         <note>ID: EditTab.Table.AddButton.RowAtBottomEdge</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.RowMenu.Heading">
+      <trans-unit id="EditTab.Table.RowMenu.Heading" approved="yes">
         <source xml:lang="en">Row</source>
-        <target xml:lang="pt-PT" state="translated">Linha</target>
+        <target xml:lang="pt-PT" state="final">Linha</target>
         <note>ID: EditTab.Table.RowMenu.Heading</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.RowMenu.AddAbove">
+      <trans-unit id="EditTab.Table.RowMenu.AddAbove" approved="yes">
         <source xml:lang="en">Add Row Above</source>
-        <target xml:lang="pt-PT" state="translated">Inserir linha acima</target>
+        <target xml:lang="pt-PT" state="final">Inserir linha acima</target>
         <note>ID: EditTab.Table.RowMenu.AddAbove</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.RowMenu.AddBelow">
+      <trans-unit id="EditTab.Table.RowMenu.AddBelow" approved="yes">
         <source xml:lang="en">Add Row Below</source>
-        <target xml:lang="pt-PT" state="translated">Inserir linha abaixo</target>
+        <target xml:lang="pt-PT" state="final">Inserir linha abaixo</target>
         <note>ID: EditTab.Table.RowMenu.AddBelow</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.RowMenu.MoveUp">
+      <trans-unit id="EditTab.Table.RowMenu.MoveUp" approved="yes">
         <source xml:lang="en">Move Row Up</source>
-        <target xml:lang="pt-PT" state="translated">Mover linha para cima</target>
+        <target xml:lang="pt-PT" state="final">Mover linha para cima</target>
         <note>ID: EditTab.Table.RowMenu.MoveUp</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.RowMenu.MoveDown">
+      <trans-unit id="EditTab.Table.RowMenu.MoveDown" approved="yes">
         <source xml:lang="en">Move Row Down</source>
-        <target xml:lang="pt-PT" state="translated">Mover linha para baixo</target>
+        <target xml:lang="pt-PT" state="final">Mover linha para baixo</target>
         <note>ID: EditTab.Table.RowMenu.MoveDown</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.RowMenu.Duplicate">
+      <trans-unit id="EditTab.Table.RowMenu.Duplicate" approved="yes">
         <source xml:lang="en">Duplicate Row</source>
-        <target xml:lang="pt-PT" state="translated">Duplicar linha</target>
+        <target xml:lang="pt-PT" state="final">Duplicar linha</target>
         <note>ID: EditTab.Table.RowMenu.Duplicate</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.RowMenu.Delete">
+      <trans-unit id="EditTab.Table.RowMenu.Delete" approved="yes">
         <source xml:lang="en">Delete Row</source>
-        <target xml:lang="pt-PT" state="translated">Eliminar linha</target>
+        <target xml:lang="pt-PT" state="final">Eliminar linha</target>
         <note>ID: EditTab.Table.RowMenu.Delete</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.ColumnMenu.Heading">
+      <trans-unit id="EditTab.Table.ColumnMenu.Heading" approved="yes">
         <source xml:lang="en">Column</source>
-        <target xml:lang="pt-PT" state="translated">Coluna</target>
+        <target xml:lang="pt-PT" state="final">Coluna</target>
         <note>ID: EditTab.Table.ColumnMenu.Heading</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.ColumnMenu.AddLeft">
+      <trans-unit id="EditTab.Table.ColumnMenu.AddLeft" approved="yes">
         <source xml:lang="en">Add Column Left</source>
-        <target xml:lang="pt-PT" state="translated">Inserir coluna à esquerda</target>
+        <target xml:lang="pt-PT" state="final">Inserir coluna à esquerda</target>
         <note>ID: EditTab.Table.ColumnMenu.AddLeft</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.ColumnMenu.AddRight">
+      <trans-unit id="EditTab.Table.ColumnMenu.AddRight" approved="yes">
         <source xml:lang="en">Add Column Right</source>
-        <target xml:lang="pt-PT" state="translated">Inserir coluna à direita</target>
+        <target xml:lang="pt-PT" state="final">Inserir coluna à direita</target>
         <note>ID: EditTab.Table.ColumnMenu.AddRight</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.ColumnMenu.MoveLeft">
+      <trans-unit id="EditTab.Table.ColumnMenu.MoveLeft" approved="yes">
         <source xml:lang="en">Move Left</source>
-        <target xml:lang="pt-PT" state="translated">Mover para a esquerda</target>
+        <target xml:lang="pt-PT" state="final">Mover para a esquerda</target>
         <note>ID: EditTab.Table.ColumnMenu.MoveLeft</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.ColumnMenu.MoveRight">
+      <trans-unit id="EditTab.Table.ColumnMenu.MoveRight" approved="yes">
         <source xml:lang="en">Move Right</source>
-        <target xml:lang="pt-PT" state="translated">Mover para a direita</target>
+        <target xml:lang="pt-PT" state="final">Mover para a direita</target>
         <note>ID: EditTab.Table.ColumnMenu.MoveRight</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.ColumnMenu.Duplicate">
+      <trans-unit id="EditTab.Table.ColumnMenu.Duplicate" approved="yes">
         <source xml:lang="en">Duplicate Column</source>
-        <target xml:lang="pt-PT" state="translated">Duplicar coluna</target>
+        <target xml:lang="pt-PT" state="final">Duplicar coluna</target>
         <note>ID: EditTab.Table.ColumnMenu.Duplicate</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.ColumnMenu.Delete">
+      <trans-unit id="EditTab.Table.ColumnMenu.Delete" approved="yes">
         <source xml:lang="en">Delete Column</source>
-        <target xml:lang="pt-PT" state="translated">Eliminar coluna</target>
+        <target xml:lang="pt-PT" state="final">Eliminar coluna</target>
         <note>ID: EditTab.Table.ColumnMenu.Delete</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.Menu.CellMenuNote">
         <source xml:lang="en">Right click on a cell for Cell menu</source>
-        <target xml:lang="pt-PT" state="translated">Clique com o botão direito numa célula para abrir o menu da célula</target>
+        <target xml:lang="pt-PT" state="translated">Clique numa célula com o botão direito para abrir o menu da célula</target>
         <note>ID: EditTab.Table.Menu.CellMenuNote</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.TableMenu.Heading">
+      <trans-unit id="EditTab.Table.TableMenu.Heading" approved="yes">
         <source xml:lang="en">Table</source>
-        <target xml:lang="pt-PT" state="translated">Tabela</target>
+        <target xml:lang="pt-PT" state="final">Tabela</target>
         <note>ID: EditTab.Table.TableMenu.Heading</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.TableMenu.HorizontalSpace">
+      <trans-unit id="EditTab.Table.TableMenu.HorizontalSpace" approved="yes">
         <source xml:lang="en">Horizontal space between cells</source>
-        <target xml:lang="pt-PT" state="translated">Espaço horizontal entre as células</target>
+        <target xml:lang="pt-PT" state="final">Espaço horizontal entre as células</target>
         <note>ID: EditTab.Table.TableMenu.HorizontalSpace</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.TableMenu.VerticalSpace">
+      <trans-unit id="EditTab.Table.TableMenu.VerticalSpace" approved="yes">
         <source xml:lang="en">Vertical space between cells</source>
-        <target xml:lang="pt-PT" state="translated">Espaço vertical entre as células</target>
+        <target xml:lang="pt-PT" state="final">Espaço vertical entre as células</target>
         <note>ID: EditTab.Table.TableMenu.VerticalSpace</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.TableMenu.CopyProperties">
+      <trans-unit id="EditTab.Table.TableMenu.CopyProperties" approved="yes">
         <source xml:lang="en">Copy properties</source>
-        <target xml:lang="pt-PT" state="translated">Copiar a formatação</target>
+        <target xml:lang="pt-PT" state="final">Copiar a formatação</target>
         <note>ID: EditTab.Table.TableMenu.CopyProperties</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.TableMenu.PasteProperties">
+      <trans-unit id="EditTab.Table.TableMenu.PasteProperties" approved="yes">
         <source xml:lang="en">Paste properties</source>
-        <target xml:lang="pt-PT" state="translated">Colar a formatação</target>
+        <target xml:lang="pt-PT" state="final">Colar a formatação</target>
         <note>ID: EditTab.Table.TableMenu.PasteProperties</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.TableMenu.CopyTable">
+      <trans-unit id="EditTab.Table.TableMenu.CopyTable" approved="yes">
         <source xml:lang="en">Copy Table</source>
-        <target xml:lang="pt-PT" state="translated">Copiar tabela</target>
+        <target xml:lang="pt-PT" state="final">Copiar tabela</target>
         <note>ID: EditTab.Table.TableMenu.CopyTable</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.TableMenu.CutTable">
+      <trans-unit id="EditTab.Table.TableMenu.CutTable" approved="yes">
         <source xml:lang="en">Cut Table</source>
-        <target xml:lang="pt-PT" state="translated">Cortar tabela</target>
+        <target xml:lang="pt-PT" state="final">Cortar tabela</target>
         <note>ID: EditTab.Table.TableMenu.CutTable</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.TableMenu.DeleteTable">
+      <trans-unit id="EditTab.Table.TableMenu.DeleteTable" approved="yes">
         <source xml:lang="en">Delete Table</source>
-        <target xml:lang="pt-PT" state="translated">Eliminar tabela</target>
+        <target xml:lang="pt-PT" state="final">Eliminar tabela</target>
         <note>ID: EditTab.Table.TableMenu.DeleteTable</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.CellMenu.Heading">
+      <trans-unit id="EditTab.Table.CellMenu.Heading" approved="yes">
         <source xml:lang="en">Table Cell</source>
-        <target xml:lang="pt-PT" state="translated">Célula da tabela</target>
+        <target xml:lang="pt-PT" state="final">Célula da tabela</target>
         <note>ID: EditTab.Table.CellMenu.Heading</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.CellMenu.MergeRight">
+      <trans-unit id="EditTab.Table.CellMenu.MergeRight" approved="yes">
         <source xml:lang="en">Merge with cell to the right</source>
-        <target xml:lang="pt-PT" state="translated">Unir com a célula à direita</target>
+        <target xml:lang="pt-PT" state="final">Mesclar com a célula à direita</target>
         <note>ID: EditTab.Table.CellMenu.MergeRight</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.CellMenu.MergeDown">
+      <trans-unit id="EditTab.Table.CellMenu.MergeDown" approved="yes">
         <source xml:lang="en">Merge with cell below</source>
-        <target xml:lang="pt-PT" state="translated">Unir com a célula abaixo</target>
+        <target xml:lang="pt-PT" state="final">Mesclar com a célula abaixo</target>
         <note>ID: EditTab.Table.CellMenu.MergeDown</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.CellMenu.Split">
+      <trans-unit id="EditTab.Table.CellMenu.Split" approved="yes">
         <source xml:lang="en">Split</source>
-        <target xml:lang="pt-PT" state="translated">Dividir</target>
+        <target xml:lang="pt-PT" state="final">Dividir</target>
         <note>ID: EditTab.Table.CellMenu.Split</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.PaintFormat.Command">
+      <trans-unit id="EditTab.Table.PaintFormat.Command" approved="yes">
         <source xml:lang="en">Paint format</source>
-        <target xml:lang="pt-PT" state="translated">Pincel de formatação</target>
+        <target xml:lang="pt-PT" state="final">Pincel de formatação</target>
         <note>ID: EditTab.Table.PaintFormat.Command</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.PaintFormat.End">
+      <trans-unit id="EditTab.Table.PaintFormat.End" approved="yes">
         <source xml:lang="en">End format painting</source>
-        <target xml:lang="pt-PT" state="translated">Parar o pincel de formatação</target>
+        <target xml:lang="pt-PT" state="final">Parar o pincel de formatação</target>
         <note>ID: EditTab.Table.PaintFormat.End</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.PaintFormat.EndWithShortcut">
+      <trans-unit id="EditTab.Table.PaintFormat.EndWithShortcut" approved="yes">
         <source xml:lang="en">End format painting (Esc)</source>
-        <target xml:lang="pt-PT" state="translated">Parar o pincel de formatação (Esc)</target>
+        <target xml:lang="pt-PT" state="final">Parar o pincel de formatação (Esc)</target>
         <note>ID: EditTab.Table.PaintFormat.EndWithShortcut</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Size.Label">
+      <trans-unit id="EditTab.Table.Size.Label" approved="yes">
         <source xml:lang="en">Size</source>
-        <target xml:lang="pt-PT" state="translated">Tamanho</target>
+        <target xml:lang="pt-PT" state="final">Tamanho</target>
         <note>ID: EditTab.Table.Size.Label</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Size.Grow">
+      <trans-unit id="EditTab.Table.Size.Grow" approved="yes">
         <source xml:lang="en">Grow</source>
-        <target xml:lang="pt-PT" state="translated">Expandir</target>
+        <target xml:lang="pt-PT" state="final">Expandir</target>
         <note>ID: EditTab.Table.Size.Grow</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Size.Hug">
+      <trans-unit id="EditTab.Table.Size.Hug" approved="yes">
         <source xml:lang="en">Hug</source>
-        <target xml:lang="pt-PT" state="translated">Ajustar ao conteúdo</target>
+        <target xml:lang="pt-PT" state="final">Ajustar ao conteúdo</target>
         <note>ID: EditTab.Table.Size.Hug</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Size.Fixed">
+      <trans-unit id="EditTab.Table.Size.Fixed" approved="yes">
         <source xml:lang="en">Fixed size</source>
-        <target xml:lang="pt-PT" state="translated">Tamanho fixo</target>
+        <target xml:lang="pt-PT" state="final">Tamanho fixo</target>
         <note>ID: EditTab.Table.Size.Fixed</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.Size.FixedButton">
         <source xml:lang="en">mm</source>
-        <target xml:lang="pt-PT" state="needs-translation">mm</target>
+        <target xml:lang="pt-PT" state="translated">mm</target>
         <note>ID: EditTab.Table.Size.FixedButton</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Units.Pixels">
+      <trans-unit id="EditTab.Table.Units.Pixels" approved="yes">
         <source xml:lang="en">{0}px</source>
-        <target xml:lang="pt-PT" state="translated">{0} px</target>
+        <target xml:lang="pt-PT" state="final">{0} px</target>
         <note>ID: EditTab.Table.Units.Pixels</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Units.Millimetres">
+      <trans-unit id="EditTab.Table.Units.Millimetres" approved="yes">
         <source xml:lang="en">{0}mm</source>
-        <target xml:lang="pt-PT" state="translated">{0} mm</target>
+        <target xml:lang="pt-PT" state="final">{0} mm</target>
         <note>ID: EditTab.Table.Units.Millimetres</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.ContentType.Label">
+      <trans-unit id="EditTab.Table.ContentType.Label" approved="yes">
         <source xml:lang="en">Content Type</source>
-        <target xml:lang="pt-PT" state="translated">Tipo de conteúdo</target>
+        <target xml:lang="pt-PT" state="final">Tipo de conteúdo</target>
         <note>ID: EditTab.Table.ContentType.Label</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.ContentType.Text">
+      <trans-unit id="EditTab.Table.ContentType.Text" approved="yes">
         <source xml:lang="en">Text</source>
-        <target xml:lang="pt-PT" state="translated">Texto</target>
+        <target xml:lang="pt-PT" state="final">Texto</target>
         <note>ID: EditTab.Table.ContentType.Text</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.ContentType.Table">
+      <trans-unit id="EditTab.Table.ContentType.Table" approved="yes">
         <source xml:lang="en">Table</source>
-        <target xml:lang="pt-PT" state="translated">Tabela</target>
+        <target xml:lang="pt-PT" state="final">Tabela</target>
         <note>ID: EditTab.Table.ContentType.Table</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.ContentType.Image">
+      <trans-unit id="EditTab.Table.ContentType.Image" approved="yes">
         <source xml:lang="en">Image</source>
-        <target xml:lang="pt-PT" state="translated">Imagem</target>
+        <target xml:lang="pt-PT" state="final">Imagem</target>
         <note>ID: EditTab.Table.ContentType.Image</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.ContentType.Video">
+      <trans-unit id="EditTab.Table.ContentType.Video" approved="yes">
         <source xml:lang="en">Video</source>
-        <target xml:lang="pt-PT" state="translated">Vídeo</target>
+        <target xml:lang="pt-PT" state="final">Vídeo</target>
         <note>ID: EditTab.Table.ContentType.Video</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Format.Heading">
+      <trans-unit id="EditTab.Table.Format.Heading" approved="yes">
         <source xml:lang="en">Format</source>
-        <target xml:lang="pt-PT" state="translated">Formatação</target>
+        <target xml:lang="pt-PT" state="final">Formatação</target>
         <note>ID: EditTab.Table.Format.Heading</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Format.Alignment">
+      <trans-unit id="EditTab.Table.Format.Alignment" approved="yes">
         <source xml:lang="en">Alignment</source>
-        <target xml:lang="pt-PT" state="translated">Alinhamento</target>
+        <target xml:lang="pt-PT" state="final">Alinhamento</target>
         <note>ID: EditTab.Table.Format.Alignment</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Format.Align.Left">
+      <trans-unit id="EditTab.Table.Format.Align.Left" approved="yes">
         <source xml:lang="en">Left</source>
-        <target xml:lang="pt-PT" state="translated">Esquerda</target>
+        <target xml:lang="pt-PT" state="final">Esquerda</target>
         <note>ID: EditTab.Table.Format.Align.Left</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Format.Align.Center">
+      <trans-unit id="EditTab.Table.Format.Align.Center" approved="yes">
         <source xml:lang="en">Center</source>
-        <target xml:lang="pt-PT" state="translated">Centro</target>
+        <target xml:lang="pt-PT" state="final">Centro</target>
         <note>ID: EditTab.Table.Format.Align.Center</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Format.Align.Right">
+      <trans-unit id="EditTab.Table.Format.Align.Right" approved="yes">
         <source xml:lang="en">Right</source>
-        <target xml:lang="pt-PT" state="translated">Direita</target>
+        <target xml:lang="pt-PT" state="final">Direita</target>
         <note>ID: EditTab.Table.Format.Align.Right</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.Format.VAlign.Top">
         <source xml:lang="en">Top</source>
-        <target xml:lang="pt-PT" state="translated">Topo</target>
+        <target xml:lang="pt-PT" state="translated">Superior</target>
         <note>ID: EditTab.Table.Format.VAlign.Top</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.Format.VAlign.Middle">
         <source xml:lang="en">Middle</source>
-        <target xml:lang="pt-PT" state="translated">Meio</target>
+        <target xml:lang="pt-PT" state="translated">No meio</target>
         <note>ID: EditTab.Table.Format.VAlign.Middle</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.Format.VAlign.Bottom">
         <source xml:lang="en">Bottom</source>
-        <target xml:lang="pt-PT" state="translated">Base</target>
+        <target xml:lang="pt-PT" state="translated">Inferior</target>
         <note>ID: EditTab.Table.Format.VAlign.Bottom</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.Format.Padding.Text">
@@ -1010,19 +1010,19 @@
         <target xml:lang="pt-PT" state="translated">Margem entre o limite e a tabela</target>
         <note>ID: EditTab.Table.Format.Padding.Table</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Format.Padding.Cell">
+      <trans-unit id="EditTab.Table.Format.Padding.Cell" approved="yes">
         <source xml:lang="en">Padding inside the cell</source>
-        <target xml:lang="pt-PT" state="translated">Margem interna da célula</target>
+        <target xml:lang="pt-PT" state="final">Margem interna da célula</target>
         <note>ID: EditTab.Table.Format.Padding.Cell</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Format.Fill">
+      <trans-unit id="EditTab.Table.Format.Fill" approved="yes">
         <source xml:lang="en">Fill</source>
-        <target xml:lang="pt-PT" state="translated">Preenchimento</target>
+        <target xml:lang="pt-PT" state="final">Preenchimento</target>
         <note>ID: EditTab.Table.Format.Fill</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Format.Corners">
+      <trans-unit id="EditTab.Table.Format.Corners" approved="yes">
         <source xml:lang="en">Corners</source>
-        <target xml:lang="pt-PT" state="translated">Cantos</target>
+        <target xml:lang="pt-PT" state="final">Cantos</target>
         <note>ID: EditTab.Table.Format.Corners</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.Format.CornerRadius">
@@ -1125,29 +1125,29 @@
         <target xml:lang="pt-PT" state="translated">Estilo do limite</target>
         <note>ID: EditTab.Table.Border.Style.Label</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.Style.None">
+      <trans-unit id="EditTab.Table.Border.Style.None" approved="yes">
         <source xml:lang="en">None</source>
-        <target xml:lang="pt-PT" state="translated">Nenhum</target>
+        <target xml:lang="pt-PT" state="final">Nenhum</target>
         <note>ID: EditTab.Table.Border.Style.None</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.Style.Solid">
+      <trans-unit id="EditTab.Table.Border.Style.Solid" approved="yes">
         <source xml:lang="en">Solid</source>
-        <target xml:lang="pt-PT" state="translated">Contínua</target>
+        <target xml:lang="pt-PT" state="final">Contínua</target>
         <note>ID: EditTab.Table.Border.Style.Solid</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.Style.Dashed">
+      <trans-unit id="EditTab.Table.Border.Style.Dashed" approved="yes">
         <source xml:lang="en">Dashed</source>
-        <target xml:lang="pt-PT" state="translated">Tracejada</target>
+        <target xml:lang="pt-PT" state="final">Tracejada</target>
         <note>ID: EditTab.Table.Border.Style.Dashed</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.Style.Dotted">
+      <trans-unit id="EditTab.Table.Border.Style.Dotted" approved="yes">
         <source xml:lang="en">Dotted</source>
-        <target xml:lang="pt-PT" state="translated">Pontilhada</target>
+        <target xml:lang="pt-PT" state="final">Pontilhada</target>
         <note>ID: EditTab.Table.Border.Style.Dotted</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.Style.Double">
+      <trans-unit id="EditTab.Table.Border.Style.Double" approved="yes">
         <source xml:lang="en">Double</source>
-        <target xml:lang="pt-PT" state="translated">Dupla</target>
+        <target xml:lang="pt-PT" state="final">Dupla</target>
         <note>ID: EditTab.Table.Border.Style.Double</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.Border.Weight.Label">
@@ -1155,9 +1155,9 @@
         <target xml:lang="pt-PT" state="translated">Espessura do limite</target>
         <note>ID: EditTab.Table.Border.Weight.Label</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.Weight.None">
+      <trans-unit id="EditTab.Table.Border.Weight.None" approved="yes">
         <source xml:lang="en">0 (None)</source>
-        <target xml:lang="pt-PT" state="translated">0 (nenhum)</target>
+        <target xml:lang="pt-PT" state="final">0 (nenhuma)</target>
         <note>ID: EditTab.Table.Border.Weight.None</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true" approved="yes">
