@@ -270,7 +270,8 @@ namespace Bloom
                     "changeLayout",
                     "createArtifacts",
                     "spreadsheetExport",
-                    "spreadsheetImport",
+                    // The spreadsheetImport verb is commented out; see SpreadsheetImportCommand.cs.
+                    // "spreadsheetImport",
                     "sendFontAnalytics",
                 }.Contains(args[0])
             ) //restrict using the commandline parser to cases were it should work
@@ -1331,7 +1332,7 @@ namespace Bloom
                         typeof(CreateArtifactsParameters),
                         typeof(SendFontAnalyticsParameters),
                         typeof(SpreadsheetExportParameters),
-                        typeof(SpreadsheetImportParameters),
+                        // typeof(SpreadsheetImportParameters),
                     }
                 )
                 .MapResult(
@@ -1346,7 +1347,7 @@ namespace Bloom
                     // We don't have a way to get the CollectionSettings object for the Import process.
                     // This means that if we use this CLI version, care should be taken to update the book,
                     // so the pages get the correct "side" classes (side-left, side-right). (BL-10884)
-                    (SpreadsheetImportParameters opts) => SpreadsheetImportCommand.Handle(opts),
+                    // (SpreadsheetImportParameters opts) => SpreadsheetImportCommand.Handle(opts),
                     async errors =>
                     {
                         var code = 0;
