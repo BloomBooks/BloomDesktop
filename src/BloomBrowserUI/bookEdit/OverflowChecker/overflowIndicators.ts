@@ -75,6 +75,22 @@ export function countLinesPastEdge(
         }
     }
 
+    // A line break can start a line that has no words, such as the blank lines of
+    // "Title<br><br><br>". A break on a line with words adds nothing, since countLines puts it on
+    // that line.
+    for (const br of Array.from(box.querySelectorAll("br"))) {
+        if (isInIgnoredElement(br, box)) {
+            continue;
+        }
+        const range = doc.createRange();
+        range.selectNode(br);
+        lineRects.push(
+            ...Array.from(range.getClientRects()).filter(
+                (r) => r.height > 0 && isPast(r),
+            ),
+        );
+    }
+
     return countLines(lineRects);
 }
 
@@ -343,7 +359,7 @@ function refreshOverflowIndicators(): void {
         bottom,
     }));
 
-    const draw = new LayerDrawer(page.getBoundingClientRect(), scale);
+    const draw = new LayerDrawer(layer);
     for (const box of boxesTooFull) {
         drawBoxTooFull(box, draw);
     }
@@ -444,21 +460,30 @@ function getLayer(page: HTMLElement | null): HTMLElement | undefined {
     return layer;
 }
 
-// Builds the drawings, placing each by client coordinates converted to the page's own unscaled
-// pixels. They collect in `drawings` until they are put in the layer all at once.
+// Builds the drawings, placing each by client coordinates converted to the layer's own pixels.
+// The conversion is measured on the layer, not the page, because a full-bleed page has a
+// transform of its own that the layer does not share. The drawings collect in `drawings` until
+// they are put in the layer all at once.
 class LayerDrawer {
     public readonly drawings = document.createDocumentFragment();
-    public constructor(
-        private readonly pageRect: DOMRect,
-        private readonly scale: number,
-    ) {}
+    private readonly layerRect: DOMRect;
+    private readonly scale: number;
+    public constructor(layer: HTMLElement) {
+        this.layerRect = layer.getBoundingClientRect();
+        this.scale = this.layerRect.width / layer.offsetWidth;
+    }
 
+    // The layer's x coordinate of a client x coordinate.
     public x(clientX: number): number {
-        return (clientX - this.pageRect.left) / this.scale;
+        return (clientX - this.layerRect.left) / this.scale;
     }
+
+    // The layer's y coordinate of a client y coordinate.
     public y(clientY: number): number {
-        return (clientY - this.pageRect.top) / this.scale;
+        return (clientY - this.layerRect.top) / this.scale;
     }
+
+    // A client length in the layer's pixels.
     public length(clientLength: number): number {
         return clientLength / this.scale;
     }

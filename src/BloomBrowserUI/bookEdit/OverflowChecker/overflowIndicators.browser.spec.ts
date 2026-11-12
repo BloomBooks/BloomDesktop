@@ -52,6 +52,17 @@ describe("countLinesPastEdge", () => {
         expect(countLinesPastEdge(box, top + 1.75 * kLineHeight)).toBe(1);
     });
 
+    it("counts the blank lines that line breaks make in a paragraph with text", () => {
+        const box = makeBox(["Title<br><br><br>"]);
+        const top = box.getBoundingClientRect().top;
+        // Sanity check: the trailing break adds no line, so the paragraph is three lines.
+        expect(box.getBoundingClientRect().height).toBe(3 * kLineHeight);
+
+        expect(countLinesPastEdge(box, top + kLineHeight)).toBe(2);
+        // The break that ends the line with the title is on that line, not a line of its own.
+        expect(countLinesPastEdge(box, top)).toBe(3);
+    });
+
     it("counts empty paragraphs below the edge as lines", () => {
         const box = makeBox(["one", "", ""]);
         const top = box.getBoundingClientRect().top;
