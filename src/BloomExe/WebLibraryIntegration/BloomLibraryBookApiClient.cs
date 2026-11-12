@@ -277,6 +277,9 @@ namespace Bloom.WebLibraryIntegration
         /// Bloom stops claiming they are signed in and offers "Sign in" again, and throw a
         /// SessionRejectedException whose message asks them to sign in again. Trying again later
         /// would never help, since the same token would be refused every time.
+        /// If the user signed in again while the request was on its way, the refused token is no
+        /// longer the current one; then we leave the new sign-in alone and return the response,
+        /// and the caller reports an ordinary failure, which trying again will fix.
         /// </summary>
         private IRestResponse Execute(IRestRequest request)
         {
@@ -284,6 +287,11 @@ namespace Bloom.WebLibraryIntegration
             if (!IsSessionRejected(response))
                 return response;
             LogApiError(request, response);
+            var tokenSent =
+                request.Parameters.FirstOrDefault(p => p.Name == "Authentication-Token")?.Value
+                as string;
+            if (tokenSent != _authenticationToken)
+                return response;
             // Not the website's (Firebase) sign-out: that opens a browser page, and signing in
             // again through the website is what gets Bloom a new session token.
             Logout(includeFirebaseLogout: false);

@@ -235,7 +235,7 @@ namespace BloomTests.WebLibraryIntegration
             {
                 if (call == "upload-start")
                     client.CallLongRunningAction(
-                        new RestRequest("start"),
+                        RequestWithToken("expiredToken"),
                         new NullProgress(),
                         "Unable to start"
                     );
@@ -244,6 +244,45 @@ namespace BloomTests.WebLibraryIntegration
             });
             Assert.That(client.LoggedIn, Is.False, "should have signed the user out");
             Assert.That(Settings.Default.LastLoginSessionToken, Is.EqualTo(""));
+        }
+
+        /// <summary>
+        /// If the user signed in again while a request with the old token was on its way, the
+        /// server's refusal of the old token leaves the new sign-in alone, and the caller gets
+        /// the plain error, which trying again fixes.
+        /// </summary>
+        [Test]
+        public void CallLongRunningAction_OldTokenRejectedAfterNewSignIn_StaysSignedIn()
+        {
+            var client = new ClientWithCannedResponses(
+                new RestResponse
+                {
+                    ResponseStatus = ResponseStatus.Completed,
+                    StatusCode = HttpStatusCode.BadRequest,
+                    Content = kUnableToValidateUser,
+                }
+            );
+            client.SetLoginData("someone@example.com", "someUserId", "newToken", "production");
+            Assert.That(client.LoggedIn, Is.True, "test setup should have signed in");
+
+            var e = Assert.Throws<ApplicationException>(() =>
+                client.CallLongRunningAction(
+                    RequestWithToken("oldToken"),
+                    new NullProgress(),
+                    "Unable to start"
+                )
+            );
+            Assert.That(e.Message, Is.EqualTo("Unable to start"));
+            Assert.That(client.LoggedIn, Is.True, "should have kept the new sign-in");
+            Assert.That(Settings.Default.LastLoginSessionToken, Is.EqualTo("newToken"));
+        }
+
+        /// <summary>A request carrying the given sign-in token, as the client's own requests do.</summary>
+        private static RestRequest RequestWithToken(string token)
+        {
+            var request = new RestRequest("start");
+            request.AddHeader("Authentication-Token", token);
+            return request;
         }
 
         private const string kUnableToValidateUser =
