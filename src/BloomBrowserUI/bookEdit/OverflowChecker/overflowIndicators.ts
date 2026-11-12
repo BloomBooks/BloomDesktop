@@ -196,13 +196,22 @@ export function refreshOverflowIndicatorsSoon(): void {
 // bars (some time after each check), the new ones are made red again. When a canvas element is
 // moved or resized, or something is removed from the page, everything is redrawn once the
 // changes stop for a moment, so that a drag does not redraw on every frame. Changes inside the
-// layer itself are ignored, so a redraw never causes another.
+// layer itself are ignored, so a redraw never causes another. So are a node added and removed in
+// one batch, like the clone that OverflowChecker measures a box with, and niceScroll removing its
+// scroll bars, which the drawings do not depend on.
 function respondToPageChanges(mutations: MutationRecord[]) {
     let railsAdded = false;
     let pageChanged = false;
+    const addedInThisBatch = new Set(
+        mutations.flatMap((m) => Array.from(m.addedNodes)),
+    );
     for (const m of mutations) {
         const target = m.target instanceof Element ? m.target : undefined;
-        if (!target || target.closest("#" + kLayerId)) {
+        if (
+            !target ||
+            target.closest("#" + kLayerId) ||
+            target.closest(".nicescroll-rails")
+        ) {
             continue;
         }
         if (m.type === "attributes") {
@@ -215,7 +224,14 @@ function respondToPageChanges(mutations: MutationRecord[]) {
                 n.classList.contains("nicescroll-rails"),
         );
         pageChanged ||=
-            m.removedNodes.length > 0 && !!target.closest(".bloom-page");
+            Array.from(m.removedNodes).some(
+                (n) =>
+                    !addedInThisBatch.has(n) &&
+                    !(
+                        n instanceof Element &&
+                        n.classList.contains("nicescroll-rails")
+                    ),
+            ) && !!target.closest(".bloom-page");
     }
     if (railsAdded) {
         const page = document.querySelector<HTMLElement>(".bloom-page");
@@ -247,7 +263,6 @@ function getOverflowingBoxes(page: HTMLElement): HTMLElement[] {
     ).filter(
         (box) =>
             box.getClientRects().length > 0 &&
-            !box.closest(".bloom-ignoreOverflow") &&
             (!scrolls ||
                 !box.classList.contains("overflow") ||
                 !!box.closest("." + kBloomButtonClass)),
@@ -335,7 +350,13 @@ function refreshOverflowIndicators(): void {
         const container = box.parentElement!.closest<HTMLElement>(
             ".childOverflowingThis",
         );
-        if (!container) {
+        // A container with the class "bloom-ignoreOverflow", such as an arithmetic page's row of
+        // numbers, is not marked when boxes push past it. A box in it with too much text in
+        // itself is still marked, above.
+        if (
+            !container ||
+            container.classList.contains("bloom-ignoreOverflow")
+        ) {
             continue;
         }
         if (container.classList.contains("marginBox")) {
