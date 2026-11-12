@@ -240,38 +240,66 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// If the imported video at <param name="videoFilePath"/> needs re-encoding (dimensions too large,
-        /// or bad fps, or sound when we have sign language in use), this re-encodes it in place using the same
-        /// ffmpeg settings as recorded videos. It does nothing if ffmpeg is unavailable.
+        /// What ReencodeVideoIfNeeded must do to an imported video, as worked out by PlanVideoReencode.
         /// </summary>
-        private void ReencodeVideoIfNeeded(string videoFilePath, WebSocketProgress progress)
+        internal class VideoReencodePlan
         {
-            if (string.IsNullOrEmpty(FfmpegProgram))
-            {
-                return;
-            }
-            var hasSignLanguage = !string.IsNullOrEmpty(
-                CurrentBook?.CollectionSettings?.SignLanguageTag
-            );
+            /// <summary>The ffmpeg arguments that write the processed video to the temporary path.</summary>
+            public string Parameters;
 
-            var ffmpegOutput = GetVideoCharacteristicsOutput(videoFilePath);
-            if (string.IsNullOrWhiteSpace(ffmpegOutput))
-            {
-                return;
-            }
+            /// <summary>The video's length, which ffmpeg's progress reports are measured against.</summary>
+            public TimeSpan Duration;
 
+            /// <summary>Whether the video has a sound track.</summary>
+            public bool HasAudio;
+
+            /// <summary>
+            /// True when the original's codec cannot be played (anything but H.264, VP8, VP9 or AV1), so
+            /// the re-encoded video must replace it even when it comes out larger.
+            /// </summary>
+            public bool MustChangeCodec;
+        }
+
+        /// <summary>
+        /// The video codecs, as ffmpeg names them, that Chromium (and so Bloom Player and Bloom Reader)
+        /// plays. An imported video in any other codec is re-encoded to H.264. (AV1 plays, but our
+        /// reduced ffmpeg can't decode it anyway; VP8 and VP9 videos are never re-encoded.)
+        /// </summary>
+        private static readonly HashSet<string> ChromiumPlayableVideoCodecs = new HashSet<string>
+        {
+            "h264",
+            "vp8",
+            "vp9",
+            "av1",
+        };
+
+        /// <summary>
+        /// Works out from ffmpeg's description of a video (<paramref name="ffmpegOutput"/>, the output of
+        /// GetVideoCharacteristicsOutput) whether the imported video at <paramref name="videoFilePath"/>
+        /// needs re-encoding: dimensions too large or odd, bad fps, a codec that Bloom Player can't play
+        /// (such as HEVC), or sound when we have sign language in use. Returns the plan for writing the processed
+        /// video to <paramref name="tempPath"/>, or null when the video can be used as it is (or when its
+        /// description can't be understood, or it is a webm file, which we don't re-encode).
+        /// </summary>
+        internal static VideoReencodePlan PlanVideoReencode(
+            string ffmpegOutput,
+            string videoFilePath,
+            string tempPath,
+            bool hasSignLanguage
+        )
+        {
             var hasAudio = Regex.IsMatch(ffmpegOutput, "Stream #.*: Audio: ");
             var duration = GetVideoDuration(ffmpegOutput);
             if (duration == TimeSpan.Zero)
             {
-                return;
+                return null;
             }
             var matchVideoSettings = Regex.Matches(
                 ffmpegOutput,
                 "Stream #.*: Video: ([A-Za-z0-9]+)[, ].*, ([0-9]+)x([0-9]+)[, ].*, ([0-9.]+) fps, "
             );
             if (matchVideoSettings.Count == 0)
-                return;
+                return null;
 
             var match = matchVideoSettings[0];
             var encodedCodec = match.Groups[1].Value.ToLowerInvariant();
@@ -282,8 +310,13 @@ namespace Bloom.web.controllers
             )
             {
                 // We're not trying to re-encode webm files at this point.
-                return;
+                return null;
             }
+            // Chromium-based players (Bloom Player, Bloom Reader) can't reliably play any other codec, such as
+            // HEVC (H.265), which many phones record by default, or the older MPEG-4 Part 2, so any other
+            // video is re-encoded to H.264 whatever its size (BL-17114). (A codec our ffmpeg can't decode
+            // fails to re-encode, and the original is kept.)
+            var mustChangeCodec = !ChromiumPlayableVideoCodecs.Contains(encodedCodec);
             var width = int.Parse(match.Groups[2].Value);
             var height = int.Parse(match.Groups[3].Value);
             if (IsRotated90Degrees(ffmpegOutput))
@@ -350,8 +383,6 @@ namespace Bloom.web.controllers
             if (height % 2 != 0 || width % 2 != 0)
                 fixSize = true;
 
-            var tempPath = videoFilePath + ".tmp.mp4";
-
             var soundFlag = "";
             if (hasSignLanguage && hasAudio)
                 soundFlag = "-an"; // remove all audio
@@ -362,19 +393,54 @@ namespace Bloom.web.controllers
             if (fixFps)
                 parameters = // handles fixing size and sound as well as fps
                     $"-hide_banner -y -i \"{videoFilePath}\" -progress pipe:1 -c:v libx264 -crf {crf} -preset {preset} -pix_fmt yuv420p -bufsize {bufferSize}k -maxrate {maxBitrate}k {soundFlag} -vf \"{videoScale},fps=fps=25\" -force_key_frames \"expr:gte(t,n_forced*0.5)\" \"{tempPath}\"";
-            else if (fixSize)
-                parameters = // handles fixing sound as well as size
+            else if (fixSize || mustChangeCodec)
+                parameters = // handles fixing sound as well as size or codec
                     $"-hide_banner -y -i \"{videoFilePath}\" -progress pipe:1 -c:v libx264 -crf {crf} -preset {preset} -pix_fmt yuv420p -bufsize {bufferSize}k -maxrate {maxBitrate}k {soundFlag} -vf \"{videoScale}\" -force_key_frames \"expr:gte(t,n_forced*0.5)\" \"{tempPath}\"";
             else if (hasSignLanguage && hasAudio)
                 parameters =
                     $"-hide_banner -y -i \"{videoFilePath}\" -progress pipe:1 -c copy -an \"{tempPath}\"";
 
             if (string.IsNullOrEmpty(parameters))
+                return null;
+            return new VideoReencodePlan
+            {
+                Parameters = parameters,
+                Duration = duration,
+                HasAudio = hasAudio,
+                MustChangeCodec = mustChangeCodec,
+            };
+        }
+
+        /// <summary>
+        /// If the imported video at <param name="videoFilePath"/> needs re-encoding (see PlanVideoReencode),
+        /// this re-encodes it in place using the same ffmpeg settings as recorded videos. It does nothing if
+        /// ffmpeg is unavailable.
+        /// </summary>
+        private void ReencodeVideoIfNeeded(string videoFilePath, WebSocketProgress progress)
+        {
+            if (string.IsNullOrEmpty(FfmpegProgram))
+            {
+                return;
+            }
+            var hasSignLanguage = !string.IsNullOrEmpty(
+                CurrentBook?.CollectionSettings?.SignLanguageTag
+            );
+
+            var ffmpegOutput = GetVideoCharacteristicsOutput(videoFilePath);
+            if (string.IsNullOrWhiteSpace(ffmpegOutput))
+            {
+                return;
+            }
+
+            var tempPath = videoFilePath + ".tmp.mp4";
+            var plan = PlanVideoReencode(ffmpegOutput, videoFilePath, tempPath, hasSignLanguage);
+            if (plan == null)
             {
                 // Nothing needs to be done, so just report 100% progress and return.
                 progress.SendPercent(100);
                 return;
             }
+            var duration = plan.Duration;
             lock (_cancelLock)
             {
                 // This is rather unlikely, but possible.
@@ -392,22 +458,24 @@ namespace Bloom.web.controllers
                     videoFilePath,
                     progress,
                     duration,
-                    parameters,
+                    plan.Parameters,
                     seconds
                 );
                 if (!succeeded)
                     return; // leave original in place if cancelled or failed.
                 // Sanity check to ensure that the output file is not larger than the original.
+                // A video that had to change codec is kept even when larger: H.264 is often bigger
+                // than the original (HEVC especially) at the same quality, and the original would not play.
                 var infoOld = new FileInfo(videoFilePath);
                 var infoNew = new FileInfo(tempPath);
-                if (infoOld.Length < infoNew.Length)
+                if (infoOld.Length < infoNew.Length && !plan.MustChangeCodec)
                 {
                     // Processing increased the size.  This is bad.
-                    if (hasSignLanguage && hasAudio)
+                    if (hasSignLanguage && plan.HasAudio)
                     {
                         // We still need to strip the audio regardless.  That shouldn't make the file larger since we're
                         // just copying the video stream and removing the audio stream.
-                        parameters =
+                        var parameters =
                             $"-hide_banner -y -i \"{videoFilePath}\" -progress pipe:1 -c copy -an \"{tempPath}\"";
                         var succeeded2 = ReencodeVideo(
                             videoFilePath,
