@@ -4622,24 +4622,75 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Put the book folder back as SaveCopyBeforeImportOverwrite saved it: unzip the backup over
-        /// it, then delete the files such a backup would hold that this one doesn't (ones added since
-        /// it was made). Unzipping first means that a failure partway leaves no file missing. What a
-        /// backup leaves out (hidden and system files, the AI Image Editor's folder) is not touched.
-        /// Read-only files are made writable so they can be replaced, and stay writable.
+        /// Put the book folder back as SaveCopyBeforeImportOverwrite saved it. Each file in the backup
+        /// that is missing or different is written back; one that is still the same is left alone,
+        /// so a file nothing changed keeps its attributes (a read-only thumbnail.png is how a user
+        /// marks a custom thumbnail that Bloom must not regenerate). Then the files such a backup
+        /// would hold that this one doesn't (ones added since it was made) are deleted. Writing first
+        /// means that a failure partway leaves no file missing. What a backup leaves out (hidden and
+        /// system files, the AI Image Editor's folder) is not touched.
         /// </summary>
         public static void RestoreFromPreImportBackup(string bookFolder, string backupPath)
         {
-            var filesNow = BloomZipFile.GetEntryNamesForDirectory(bookFolder);
-            foreach (var name in filesNow)
+            var filesNotInBackup = BloomZipFile.GetEntryNamesForDirectory(bookFolder);
+            using (var zipFile = new ICSharpCode.SharpZipLib.Zip.ZipFile(backupPath))
+            {
+                foreach (ICSharpCode.SharpZipLib.Zip.ZipEntry entry in zipFile)
+                {
+                    if (!entry.IsFile)
+                        continue;
+                    filesNotInBackup.Remove(entry.Name);
+                    var path = Path.Combine(bookFolder, entry.Name);
+                    if (RobustFile.Exists(path))
+                    {
+                        if (IsSameAsZipEntry(path, entry))
+                            continue;
+                        MakeWritable(path);
+                    }
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
+                    using (var input = zipFile.GetInputStream(entry))
+                    using (var output = RobustFile.Create(path))
+                        input.CopyTo(output);
+                }
+            }
+            foreach (var name in filesNotInBackup)
             {
                 var path = Path.Combine(bookFolder, name);
-                RobustFile.SetAttributes(
-                    path,
-                    RobustFile.GetAttributes(path) & ~FileAttributes.ReadOnly
-                );
+                MakeWritable(path);
+                RobustFile.Delete(path);
             }
-            RobustZip.ExtractFolderFromZip(bookFolder, backupPath, () => filesNow);
+        }
+
+        /// <summary>
+        /// Whether the file holds exactly what the zip entry does (same length and checksum).
+        /// </summary>
+        private static bool IsSameAsZipEntry(
+            string path,
+            ICSharpCode.SharpZipLib.Zip.ZipEntry entry
+        )
+        {
+            if (new FileInfo(path).Length != entry.Size)
+                return false;
+            var crc = new ICSharpCode.SharpZipLib.Checksum.Crc32();
+            var buffer = new byte[81920];
+            using (var stream = RobustFile.OpenRead(path))
+            {
+                int count;
+                while ((count = stream.Read(buffer, 0, buffer.Length)) > 0)
+                    crc.Update(new ArraySegment<byte>(buffer, 0, count));
+            }
+            return crc.Value == entry.Crc;
+        }
+
+        /// <summary>
+        /// Clear the file's read-only flag so it can be replaced or deleted.
+        /// </summary>
+        private static void MakeWritable(string path)
+        {
+            RobustFile.SetAttributes(
+                path,
+                RobustFile.GetAttributes(path) & ~FileAttributes.ReadOnly
+            );
         }
 
         // These are files that should never be searched for outside of the book folder, should not be cached, etc.

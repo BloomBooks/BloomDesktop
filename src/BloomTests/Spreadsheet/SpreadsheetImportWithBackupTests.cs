@@ -108,21 +108,75 @@ namespace BloomTests.Spreadsheet
         }
 
         /// <summary>
-        /// A read-only file in the book (a thumbnail, say) must not stop the book being put back.
+        /// A read-only thumbnail is a custom one Bloom must not regenerate. The failed import didn't
+        /// touch it, so putting the book back leaves it alone, still read-only.
         /// </summary>
         [Test]
-        public void ImportWithBackupAsync_ImportFails_PutsBackBookWithReadOnlyFile()
+        public void ImportWithBackupAsync_ImportFails_LeavesUntouchedReadOnlyFileReadOnly()
         {
             var thumbnail = Path.Combine(_bookFolder, "thumbnail.png");
-            RobustFile.WriteAllText(thumbnail, "thumbnail");
+            RobustFile.WriteAllText(thumbnail, "custom thumbnail");
             File.SetAttributes(thumbnail, FileAttributes.ReadOnly);
+            try
+            {
+                var result = RunFailingImport(failAfterSaveStarted: false);
 
-            var result = RunFailingImport(failAfterSaveStarted: false);
+                Assert.That(result.Progress.Errors, Is.Empty);
+                Assert.That(
+                    RobustFile.ReadAllText(result.OldRecording),
+                    Is.EqualTo("old recording"),
+                    "Sanity check: the book should have been put back."
+                );
+                Assert.That(RobustFile.ReadAllText(thumbnail), Is.EqualTo("custom thumbnail"));
+                Assert.That(
+                    File.GetAttributes(thumbnail).HasFlag(FileAttributes.ReadOnly),
+                    Is.True,
+                    "The custom thumbnail should still be read-only."
+                );
+            }
+            finally
+            {
+                File.SetAttributes(thumbnail, FileAttributes.Normal); // so TearDown can delete it
+            }
+        }
 
-            Assert.That(result.Progress.Errors, Is.Empty);
-            Assert.That(RobustFile.ReadAllText(result.OldRecording), Is.EqualTo("old recording"));
-            Assert.That(RobustFile.ReadAllText(thumbnail), Is.EqualTo("thumbnail"));
-            Assert.That(RobustFile.Exists(result.NewPicture), Is.False);
+        /// <summary>
+        /// If the failed import had put a read-only file over one of the book's own, the book's own
+        /// comes back, as it was: writable.
+        /// </summary>
+        [Test]
+        public void ImportWithBackupAsync_ImportReplacedFileWithReadOnlyOne_RestoresOriginalWritable()
+        {
+            var picture = Path.Combine(_bookFolder, "picture.png");
+            RobustFile.WriteAllText(picture, "original picture");
+            var progress = new ProgressSpy();
+            try
+            {
+                Assert.ThrowsAsync<ApplicationException>(() =>
+                    SpreadsheetImporter.ImportWithBackupAsync(
+                        _bookFolder,
+                        progress,
+                        () =>
+                        {
+                            RobustFile.WriteAllText(picture, "imported picture");
+                            File.SetAttributes(picture, FileAttributes.ReadOnly);
+                            throw new ApplicationException("import failed");
+                        },
+                        () => false
+                    )
+                );
+                Assert.That(RobustFile.ReadAllText(picture), Is.EqualTo("original picture"));
+                Assert.That(
+                    File.GetAttributes(picture).HasFlag(FileAttributes.ReadOnly),
+                    Is.False,
+                    "The original picture was writable, so it should be again."
+                );
+            }
+            finally
+            {
+                File.SetAttributes(picture, FileAttributes.Normal);
+                DeleteBackup(progress);
+            }
         }
 
         /// <summary>
@@ -245,15 +299,19 @@ namespace BloomTests.Spreadsheet
             }
             finally
             {
-                var backup = result
-                    .Progress.ProgressMessages.Select(m =>
-                        Regex.Match(m, @"Backup completed \(at (.*)\)")
-                    )
-                    .FirstOrDefault(m => m.Success);
-                if (backup != null)
-                    RobustFile.Delete(backup.Groups[1].Value);
+                DeleteBackup(result.Progress);
             }
             return result;
+        }
+
+        // Delete the backup ImportWithBackupAsync reported making, if any.
+        private static void DeleteBackup(ProgressSpy progress)
+        {
+            var backup = progress
+                .ProgressMessages.Select(m => Regex.Match(m, @"Backup completed \(at (.*)\)"))
+                .FirstOrDefault(m => m.Success);
+            if (backup != null)
+                RobustFile.Delete(backup.Groups[1].Value);
         }
     }
 }
