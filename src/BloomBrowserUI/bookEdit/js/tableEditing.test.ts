@@ -29,6 +29,13 @@ import {
     TeardownTableEditing,
     removeTableEditingMarkupFromClone,
 } from "./tableEditing";
+import OverflowChecker from "../OverflowChecker/OverflowChecker";
+
+// Every table operation checks the table's text for overflow, and that check needs the canvas
+// element manager, which no test here sets up. Nothing here is about overflow.
+vi.spyOn(OverflowChecker, "AdjustSizeOrMarkOverflowOfAll").mockImplementation(
+    () => {},
+);
 
 // jsdom has no ResizeObserver, which attachSingleTable installs to keep cell
 // pictures fitted. Nothing here resizes, so a do-nothing stand-in is enough.

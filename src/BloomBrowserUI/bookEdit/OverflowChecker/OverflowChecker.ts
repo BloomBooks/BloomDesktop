@@ -12,6 +12,7 @@ import { isInDragActivity } from "../toolbox/games/GameInfo";
 import $ from "jquery";
 import { kBloomButtonClass } from "../toolbox/canvas/canvasElementPageBridge";
 import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
+import { outermostTable } from "../js/outermostTable";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -204,7 +205,7 @@ export default class OverflowChecker {
         // the font calls for (and which we reduced the line height to hide).
         // To avoid spuriously reporting overflow in such cases (BL-6338), we adjust
         // for the discrepancy.
-        const measurements = MeasureText.getDescentMeasurementsOfBox(element);
+        const measurements = this.descentMeasurementsOf(element);
         // console.log(
         //     "actual descent: " +
         //         measurements.actualDescent +
@@ -243,11 +244,97 @@ export default class OverflowChecker {
         return [overflowX, overflowY];
     }
 
+    // While AdjustSizeOrMarkOverflowOfAll runs, the content heights it measured together, with the
+    // width each element had when it was measured; undefined at other times. contentHeight uses one
+    // only while the element still has that width, since the height of wrapped text depends on
+    // nothing else, and descentMeasurementsOf only remembers and reuses measurements while it is set.
+    private static contentHeightsMeasuredTogether:
+        | Map<HTMLElement, { width: number; height: number }>
+        | undefined;
+
+    // Descent measurements that AdjustSizeOrMarkOverflowOfAll has made, keyed by the inputs that
+    // MeasureText.getDescentMeasurementInputsOfBox gives, which are everything a measurement depends
+    // on. Kept from one call to the next: during a row drag every frame measures the same text at
+    // the same width, and a measurement lays out the page twice and paints the text on a canvas.
+    private static rememberedDescentMeasurements = new Map<
+        string,
+        ReturnType<typeof MeasureText.getDescentMeasurements>
+    >();
+
+    // MeasureText.getDescentMeasurementsOfBox(element), reusing an earlier measurement of the same
+    // text, font and width while AdjustSizeOrMarkOverflowOfAll runs.
+    private static descentMeasurementsOf(element: HTMLElement) {
+        if (!this.contentHeightsMeasuredTogether) {
+            return MeasureText.getDescentMeasurementsOfBox(element);
+        }
+        const inputs = MeasureText.getDescentMeasurementInputsOfBox(element);
+        const key = JSON.stringify(inputs);
+        const remembered = this.rememberedDescentMeasurements.get(key);
+        if (remembered) {
+            return remembered;
+        }
+        const measurements =
+            MeasureText.getDescentMeasurementsFromInputs(inputs);
+        // A font that is still loading is measured as its fallback, which must not be reused
+        // once the real font arrives.
+        if (document.fonts.status === "loaded") {
+            // Text is typed and widths are dragged through, so the keys keep changing; this
+            // only needs to hold the current page's.
+            if (this.rememberedDescentMeasurements.size > 1000) {
+                this.rememberedDescentMeasurements.clear();
+            }
+            this.rememberedDescentMeasurements.set(key, measurements);
+        }
+        return measurements;
+    }
+
     private static contentHeight(element: HTMLElement): number {
         if (element.childNodes.length === 0) {
             return 0;
         }
+        const measured = this.contentHeightsMeasuredTogether?.get(element);
+        if (measured && measured.width === element.clientWidth) {
+            return measured.height;
+        }
+        return this.measureContentHeightsTogether([element]).get(element)!
+            .height;
+    }
 
+    // Measure the content height of every element in `elements` with one layout of the page,
+    // by putting all their clones in the page before reading any of them. Measuring them one
+    // at a time costs a layout each, because each clone that goes in changes the page.
+    private static measureContentHeightsTogether(
+        elements: HTMLElement[],
+    ): Map<HTMLElement, { width: number; height: number }> {
+        const result = new Map<
+            HTMLElement,
+            { width: number; height: number }
+        >();
+        const measurable = elements.filter(
+            (element) => element.childNodes.length > 0,
+        );
+        const clones = measurable.map((element) =>
+            this.makeContentHeightClone(element),
+        );
+        clones.forEach((clone, i) =>
+            measurable[i].parentElement!.appendChild(clone),
+        );
+        try {
+            clones.forEach((clone, i) =>
+                result.set(measurable[i], {
+                    width: measurable[i].clientWidth,
+                    height: this.readContentHeight(clone),
+                }),
+            );
+        } finally {
+            clones.forEach((clone) => clone.remove());
+        }
+        return result;
+    }
+
+    // A hidden copy of `element`, ready to be put next to it in the page so that its content
+    // height can be measured.
+    private static makeContentHeightClone(element: HTMLElement): HTMLElement {
         // Use a temporary clone so we don't modify the actual element.
         // Otherwise, the text box can get scrolled back to the top when the user types. See BL-13942.
         const elementClone = element.cloneNode(true) as HTMLElement;
@@ -260,59 +347,57 @@ export default class OverflowChecker {
         // Height is not as critical because either the scrollHeight is accurate (which we detect),
         // or we calculate the height ourselves below.  See BL-14053.
         elementClone.style.width = element.clientWidth + "px";
-        element.parentElement!.appendChild(elementClone);
 
+        // First, we need to make sure that the size and position of the children are not affected
+        // by flex grow or shrink. Currently, there is no reason to set these back because we are
+        // operating on a temporary clone.
+
+        // Note that there may be no children, even though there are childNodes. We can only set style
+        // for elements, but we need to measure all the nodes (at least for one unit test).
+        const children = Array.from(elementClone.children);
+        children.forEach((e: HTMLElement) => {
+            e.style.flexGrow = "0";
+            e.style.flexShrink = "0";
+        });
+        // The element itself must not shrink, lest its scrollHeight or clientHeight be inaccurate.
+        elementClone.style.flexGrow = "0";
+        elementClone.style.flexShrink = "0";
+        return elementClone;
+    }
+
+    // The height of the content of `elementClone`, a clone from makeContentHeightClone that is
+    // in the page.
+    private static readContentHeight(elementClone: HTMLElement): number {
         let result = 0;
-        try {
-            let maxContentBottom = 0;
-
-            // First, we need to make sure that the size and position of the children are not affected
-            // by flex grow or shrink. Currently, there is no reason to set these back because we are
-            // operating on a temporary clone.
-
-            // Note that there may be no children, even though there are childNodes. We can only set style
-            // for elements, but we need to measure all the nodes (at least for one unit test).
-            const children = Array.from(elementClone.children);
-            children.forEach((e: HTMLElement) => {
-                e.style.flexGrow = "0";
-                e.style.flexShrink = "0";
+        let maxContentBottom = 0;
+        // scrollHeight is a reliable way to get the information if it is greater than the clientHeight,
+        // and means we don't have to worry about scroll position.  (scrollHeight is never less than
+        // clientHeight.  See https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight.)
+        // (One odd situation is when lineHeight is small, e.g., less than 1.3 for Andika. In that
+        // situation, a paragraph whose height is otherwise unconstrained is not high enough to show
+        // descenders, and even with a single line of text its scrollHeight is greater than clientHeight.
+        // Our auto-sizing code handles this, making a canvas element big enough to show the descenders
+        // (if any are actually present).
+        // However, when the bloom-editable is empty, we don't get the extra scrollHeight we are adjusting
+        // for. There's a kludge to partly handle this in adjustSizeOfContainingCanvasElementToMatchContent,
+        // but there may be a better way to handle things. I think part of the problem may be that if there
+        // is no actual text, the browser can't really pick a font to display it, so some measurements
+        // can't be precisely made.)
+        result = elementClone.scrollHeight;
+        if (elementClone.scrollHeight <= elementClone.clientHeight) {
+            // But if scrollHeight is less than or equal to clientHeight, we use our own algorithm.
+            elementClone.childNodes.forEach((x: HTMLElement) => {
+                if (!(x instanceof HTMLElement)) return; // not an element; I think this is redundant
+                if (window.getComputedStyle(x).position === "absolute") return; // special element like format button
+                // Not sure if offsetTop can ever be negative, now that I prevented flexShrink.
+                // But in case it is, we don't want to shrink the content height. And often there is only one
+                // child so we'll get an accurate figure this way even if there is some scrolling.
+                const xbottom = Math.max(x.offsetTop, 0) + x.offsetHeight;
+                if (xbottom > maxContentBottom) {
+                    maxContentBottom = xbottom;
+                }
             });
-            // The element itself must not shrink, lest its scrollHeight or clientHeight be inaccurate.
-            elementClone.style.flexGrow = "0";
-            elementClone.style.flexShrink = "0";
-            // scrollHeight is a reliable way to get the information if it is greater than the clientHeight,
-            // and means we don't have to worry about scroll position.  (scrollHeight is never less than
-            // clientHeight.  See https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight.)
-            // (One odd situation is when lineHeight is small, e.g., less than 1.3 for Andika. In that
-            // situation, a paragraph whose height is otherwise unconstrained is not high enough to show
-            // descenders, and even with a single line of text its scrollHeight is greater than clientHeight.
-            // Our auto-sizing code handles this, making a canvas element big enough to show the descenders
-            // (if any are actually present).
-            // However, when the bloom-editable is empty, we don't get the extra scrollHeight we are adjusting
-            // for. There's a kludge to partly handle this in adjustSizeOfContainingCanvasElementToMatchContent,
-            // but there may be a better way to handle things. I think part of the problem may be that if there
-            // is no actual text, the browser can't really pick a font to display it, so some measurements
-            // can't be precisely made.)
-            result = elementClone.scrollHeight;
-            if (elementClone.scrollHeight <= elementClone.clientHeight) {
-                // But if scrollHeight is less than or equal to clientHeight, we use our own algorithm.
-                elementClone.childNodes.forEach((x: HTMLElement) => {
-                    if (!(x instanceof HTMLElement)) return; // not an element; I think this is redundant
-                    if (window.getComputedStyle(x).position === "absolute")
-                        return; // special element like format button
-                    // Not sure if offsetTop can ever be negative, now that I prevented flexShrink.
-                    // But in case it is, we don't want to shrink the content height. And often there is only one
-                    // child so we'll get an accurate figure this way even if there is some scrolling.
-                    const xbottom = Math.max(x.offsetTop, 0) + x.offsetHeight;
-                    if (xbottom > maxContentBottom) {
-                        maxContentBottom = xbottom;
-                    }
-                });
-                result = maxContentBottom;
-            }
-        } finally {
-            // Remove the temporary clone we added.
-            element.parentElement!.removeChild(elementClone);
+            result = maxContentBottom;
         }
         return result;
     }
@@ -347,6 +432,11 @@ export default class OverflowChecker {
         )[0] as HTMLElement;
         const scaleY =
             scaledElt.getBoundingClientRect().height / scaledElt.offsetHeight;
+        // Text in a table only has to fit its cell. The table's own box can be shorter than its
+        // rows (a row made taller by dragging its boundary), and so can the canvas element the
+        // table fills, so text that fits its cell is not overflowing just because the rows run
+        // past those boxes. The boxes beyond them, up to the marginBox, still count.
+        const lastBoxOfTable = OverflowChecker.lastBoxOfTableHolding(element);
         for (let i = 0; i < parents.length; i++) {
             // search ancestors starting with nearest
             const currentAncestor = $(parents[i]);
@@ -379,8 +469,26 @@ export default class OverflowChecker {
             if (currentAncestor.hasClass("marginBox")) {
                 break; // Don't check anything outside of marginBox
             }
+            if (currentAncestor.hasClass("bloom-cell")) {
+                // Go on from the box above the table's last box.
+                i = parents.index(lastBoxOfTable!);
+            }
         }
         return null;
+    }
+
+    // The outermost box that a table holding `element` fills: the canvas element holding the
+    // outermost table when there is one, else that table. Undefined when `element` is in no table.
+    private static lastBoxOfTableHolding(
+        element: HTMLElement,
+    ): HTMLElement | undefined {
+        const table = element.closest<HTMLElement>(".bloom-table");
+        if (!table) return undefined;
+        const outermost = outermostTable(table);
+        const parent = outermost.parentElement!;
+        return parent.classList.contains("bloom-canvas-element")
+            ? parent
+            : outermost;
     }
 
     // We want to check for overflow, but we can't afford the delay right now.
@@ -461,6 +569,37 @@ export default class OverflowChecker {
         );
         OverflowChecker.CheckPageAncestorOverflow(editable);
     } // end AdjustSizeOrMarkOverflow
+
+    // AdjustSizeOrMarkOverflow for every element of `editables`, which must all be on the same
+    // page, quickly enough to do on every frame of a drag: the page-wide check runs once rather
+    // than once per element, the content heights of everything both checks look at are measured
+    // together, with one layout of the page instead of one per element, and descent measurements
+    // are reused (see descentMeasurementsOf). For a table of 12 text blocks this takes about 16 ms,
+    // where calling AdjustSizeOrMarkOverflow on each block took about 265 ms.
+    public static AdjustSizeOrMarkOverflowOfAll(editables: HTMLElement[]) {
+        if (editables.length === 0) return;
+        const marginBox = editables[0].closest<HTMLElement>(".marginBox");
+        const pageElements = marginBox
+            ? getElementsThatCanOverflowOrNeedToBeResized(marginBox)
+            : [];
+        // AdjustSizeAndMarkSelfOverflow changes the padding of a bloom-padForOverflow box
+        // before it measures it, so a height measured beforehand would be out of date.
+        const measurable = Array.from(
+            new Set([...editables, ...pageElements]),
+        ).filter(
+            (element) => !element.classList.contains("bloom-padForOverflow"),
+        );
+        OverflowChecker.contentHeightsMeasuredTogether =
+            OverflowChecker.measureContentHeightsTogether(measurable);
+        try {
+            editables.forEach((editable) =>
+                OverflowChecker.AdjustSizeAndMarkSelfOverflow(editable),
+            );
+            OverflowChecker.CheckPageAncestorOverflow(editables[0]);
+        } finally {
+            OverflowChecker.contentHeightsMeasuredTogether = undefined;
+        }
+    }
 
     // Whether a bloom-padForOverflow box should measure its descenders and store the resulting
     // padding-bottom in its style attribute.

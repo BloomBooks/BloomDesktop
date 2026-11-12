@@ -264,3 +264,62 @@ describe("OverflowChecker.AdjustSizeOrMarkOverflowSoon", () => {
         expect(selfChecks).toHaveBeenCalledTimes(2);
     });
 });
+
+// A text box in a table cell has to fit its cell, not the table's own box or the canvas element
+// the table fills, which can be shorter than its rows once a row has been made taller by dragging
+// its boundary. It still has to fit the marginBox.
+describe("OverflowChecker.overflowingAncestor in a table cell", () => {
+    // A table filling a 40px canvas element, whose single 120px row runs well past it, holding a
+    // cell with a text box.
+    function loadCellTextBox(
+        textBoxStyle: string,
+        marginBoxHeight = 600,
+    ): HTMLElement {
+        const [element] = loadFixture(`
+            <div class="bloom-page">
+                <div class="marginBox" style="height: ${marginBoxHeight}px">
+                    <div class="bloom-canvas-element" style="height: 40px">
+                        <div class="bloom-table" style="display: grid; height: 100%; grid-template-rows: 120px">
+                            <div class="bloom-cell" style="overflow: clip">
+                                <div class="bloom-translationGroup">
+                                    <div class="myTest bloom-editable" style="${textBoxStyle}">text</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`);
+        return element;
+    }
+
+    it("does not report text that fits its cell but not the table's box", () => {
+        const element = loadCellTextBox("height: 80px");
+        const canvasElement = element.closest<HTMLElement>(
+            ".bloom-canvas-element",
+        )!;
+        expect(
+            element.getBoundingClientRect().bottom,
+            "The text box should reach past the table's box and its canvas element, or this tests nothing.",
+        ).toBeGreaterThan(canvasElement.getBoundingClientRect().bottom + 10);
+        expect(OverflowChecker.overflowingAncestor(element)).toBe(null);
+    });
+
+    it("reports text that does not fit its cell", () => {
+        const element = loadCellTextBox("height: 200px");
+        expect(OverflowChecker.overflowingAncestor(element)).toBe(
+            element.closest(".bloom-cell"),
+        );
+    });
+
+    it("reports text that fits its cell but runs past the marginBox", () => {
+        const element = loadCellTextBox("height: 110px", 100);
+        const cell = element.closest<HTMLElement>(".bloom-cell")!;
+        expect(
+            element.getBoundingClientRect().bottom,
+            "The text box should fit its cell, or this tests the cell instead.",
+        ).toBeLessThanOrEqual(cell.getBoundingClientRect().bottom);
+        expect(OverflowChecker.overflowingAncestor(element)).toBe(
+            element.closest(".marginBox"),
+        );
+    });
+});
