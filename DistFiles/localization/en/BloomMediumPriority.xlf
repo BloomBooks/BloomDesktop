@@ -1205,6 +1205,11 @@
         <source xml:lang="en">Visibility</source>
         <note>ID: PublishTab.Upload.Visibility</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignInRejected" translate="no">
+        <source xml:lang="en">BloomLibrary.org did not accept your sign-in. It has probably expired. Please sign in again, then try again.</source>
+        <note>ID: PublishTab.Upload.SignInRejected</note>
+        <note>Shown in the progress box of Publish → Web when the website refuses the user's saved sign-in, for example because it is about a year old. Bloom has already signed the user out, so the "Sign in" button is showing again. "BloomLibrary.org" is the website's name and must not be translated.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.ConsiderBloomPUB" sil:dynamic="true">
         <source xml:lang="en">Consider whether you can distribute your book using the BloomPUB format instead of, or in addition to, the ePUB format.</source>
         <note>ID: PublishTab.Epub.ConsiderBloomPUB</note>
