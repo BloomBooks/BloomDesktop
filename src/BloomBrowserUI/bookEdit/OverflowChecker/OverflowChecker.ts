@@ -12,7 +12,6 @@ import { isInDragActivity } from "../toolbox/games/GameInfo";
 import $ from "jquery";
 import { kBloomButtonClass } from "../toolbox/canvas/canvasElementPageBridge";
 import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
-import { outermostTable } from "../js/outermostTable";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -435,8 +434,8 @@ export default class OverflowChecker {
         // Text in a table only has to fit its cell. The table's own box can be shorter than its
         // rows (a row made taller by dragging its boundary), and so can the canvas element the
         // table fills, so text that fits its cell is not overflowing just because the rows run
-        // past those boxes. The boxes beyond them, up to the marginBox, still count.
-        const lastBoxOfTable = OverflowChecker.lastBoxOfTableHolding(element);
+        // past those boxes. The boxes beyond them, up to the marginBox, still count, including
+        // the cell of an outer table that holds a nested one.
         for (let i = 0; i < parents.length; i++) {
             // search ancestors starting with nearest
             const currentAncestor = $(parents[i]);
@@ -471,24 +470,22 @@ export default class OverflowChecker {
             }
             if (currentAncestor.hasClass("bloom-cell")) {
                 // Go on from the box above the table's last box.
-                i = parents.index(lastBoxOfTable!);
+                i = parents.index(
+                    OverflowChecker.lastBoxOfTableHolding(currentAncestor[0]),
+                );
             }
         }
         return null;
     }
 
-    // The outermost box that a table holding `element` fills: the canvas element holding the
-    // outermost table when there is one, else that table. Undefined when `element` is in no table.
-    private static lastBoxOfTableHolding(
-        element: HTMLElement,
-    ): HTMLElement | undefined {
-        const table = element.closest<HTMLElement>(".bloom-table");
-        if (!table) return undefined;
-        const outermost = outermostTable(table);
-        const parent = outermost.parentElement!;
+    // The outermost box that the table holding `cell` fills: the canvas element holding the table
+    // when there is one, else the table itself.
+    private static lastBoxOfTableHolding(cell: HTMLElement): HTMLElement {
+        const table = cell.closest<HTMLElement>(".bloom-table")!;
+        const parent = table.parentElement!;
         return parent.classList.contains("bloom-canvas-element")
             ? parent
-            : outermost;
+            : table;
     }
 
     // We want to check for overflow, but we can't afford the delay right now.
@@ -655,6 +652,7 @@ export default class OverflowChecker {
         $editable.off("mouseleave.overflow");
         $editable.parents(".childOverflowingThis").each((dummy, parent) => {
             OverflowChecker.RemoveOverflowQtip($(parent));
+            $(parent).off("mousemove.overflow mouseleave.overflow");
         });
         OverflowChecker.RemoveOverflowQtip($editable);
         $editable.parents().removeClass("childOverflowingThis");
@@ -832,6 +830,11 @@ export default class OverflowChecker {
                         });
                     });
                 let showing = false;
+                // One pair of handlers per ancestor, however many checks have marked it: a
+                // table's text is checked on every frame of a row or column drag.
+                $overflowingAncestor.off(
+                    "mousemove.overflow mouseleave.overflow",
+                );
                 $overflowingAncestor.on("mousemove.overflow", (event) => {
                     if (overflowingAncestor === null) return; // prevent bad static analysis
                     const bounds = overflowingAncestor.getBoundingClientRect();

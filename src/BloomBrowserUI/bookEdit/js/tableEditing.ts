@@ -27,7 +27,6 @@ import { post } from "../../utils/bloomApi";
 import $ from "jquery";
 import BloomField from "../bloomField/BloomField";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
-import { outermostTable } from "./outermostTable";
 import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
 import {
     activateLongPressFor,
@@ -285,6 +284,17 @@ function onTableHistoryUpdated(e: Event): void {
     noteTableHistoryUpdate(detail?.operation);
 }
 
+/** The table that holds `table`, and holds no other table itself. */
+function outermostTable(table: HTMLElement): HTMLElement {
+    let outermost = table;
+    let parent = outermost.parentElement?.closest<HTMLElement>(".bloom-table");
+    while (parent) {
+        outermost = parent;
+        parent = outermost.parentElement?.closest<HTMLElement>(".bloom-table");
+    }
+    return outermost;
+}
+
 // The one ResizeObserver watching every image cell on the page, so we can
 // disconnect it when we tear table editing down. It is page-wide rather than
 // per-table because a nested table's image cells need watching too, and the
@@ -348,6 +358,10 @@ function observeImageCells(root: HTMLElement): void {
 // Page-wide for the same reason as imageCellObserver.
 let cellSizeObserver: ResizeObserver | undefined;
 
+// The cells cellSizeObserver watches, so that it can stop watching the ones an operation or an
+// undo took out of the page: an observer keeps every element it watches alive.
+const cellsWhoseSizeIsObserved = new Set<HTMLElement>();
+
 // The outermost tables whose text waits for the next animation frame to be checked, so that a
 // drag that resizes a whole column, or an operation that also resizes cells, gets one check per
 // frame rather than one per cell or per cause.
@@ -390,15 +404,26 @@ function onCellsResized(entries: ResizeObserverEntry[]): void {
     );
 }
 
-/** Watch the size of every cell within `root`, so its text is checked for overflow as it resizes. */
+/**
+ * Watch the size of every cell within `root`, so its text is checked for overflow as it resizes,
+ * and stop watching the cells that are no longer in the page.
+ */
 function observeCellSizes(root: HTMLElement): void {
     if (!cellSizeObserver) {
         cellSizeObserver = new ResizeObserver(onCellsResized);
     }
+    const observer = cellSizeObserver;
+    cellsWhoseSizeIsObserved.forEach((cell) => {
+        if (!cell.isConnected) {
+            observer.unobserve(cell);
+            cellsWhoseSizeIsObserved.delete(cell);
+        }
+    });
     // Observing a cell that is already observed does nothing.
-    root.querySelectorAll<HTMLElement>(".bloom-cell").forEach((cell) =>
-        cellSizeObserver!.observe(cell),
-    );
+    root.querySelectorAll<HTMLElement>(".bloom-cell").forEach((cell) => {
+        observer.observe(cell);
+        cellsWhoseSizeIsObserved.add(cell);
+    });
 }
 
 function attachSingleTable(tableDiv: HTMLElement): void {
@@ -530,6 +555,7 @@ export function TeardownTableEditing(container: HTMLElement): void {
     imageCellObserver = undefined;
     cellSizeObserver?.disconnect();
     cellSizeObserver = undefined;
+    cellsWhoseSizeIsObserved.clear();
     tablesAwaitingOverflowCheck.clear();
     // Every table, not only the ones we attached: the library attaches a nested
     // table itself, both when the user makes one and when an undo rebuilds it,

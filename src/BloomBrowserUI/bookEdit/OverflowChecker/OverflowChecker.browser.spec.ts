@@ -1,5 +1,7 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
 import OverflowChecker from "./OverflowChecker";
+import $ from "jquery";
+import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import OverflowAncestorFixture from "./OverflowAncestorFixture.html?raw";
 import OverflowFixture from "./OverflowFixture.html?raw";
 import OverflowMarginFixture from "./OverflowMarginFixture.html?raw";
@@ -321,5 +323,72 @@ describe("OverflowChecker.overflowingAncestor in a table cell", () => {
         expect(OverflowChecker.overflowingAncestor(element)).toBe(
             element.closest(".marginBox"),
         );
+    });
+
+    it("reports text in a nested table that fits its cell but not the outer table's cell", () => {
+        // An outer table whose 100px row holds a nested table, whose own 160px row runs past
+        // the outer cell.
+        const [element] = loadFixture(`
+            <div class="bloom-page">
+                <div class="marginBox" style="height: 600px">
+                    <div class="bloom-canvas-element" style="height: 300px">
+                        <div class="bloom-table" style="display: grid; height: 100%; grid-template-rows: 100px 100px">
+                            <div class="bloom-cell" data-content-type="table">
+                                <div class="bloom-table" style="display: grid; height: 100%; grid-template-rows: 160px">
+                                    <div class="bloom-cell" style="overflow: clip">
+                                        <div class="bloom-translationGroup">
+                                            <div class="myTest bloom-editable" style="height: 140px">text</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bloom-cell"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>`);
+        const innerCell = element.closest<HTMLElement>(".bloom-cell")!;
+        const outerCell =
+            innerCell.parentElement!.closest<HTMLElement>(".bloom-cell")!;
+        expect(
+            element.getBoundingClientRect().bottom,
+            "The text should fit its own cell, or this tests the inner cell instead.",
+        ).toBeLessThanOrEqual(innerCell.getBoundingClientRect().bottom);
+        expect(OverflowChecker.overflowingAncestor(element)).toBe(outerCell);
+    });
+
+    // A table's text is checked on every frame of a row drag, so each check has to replace the
+    // mouse handlers it puts on the box that the text overflows, not add to them.
+    it("leaves one pair of mouse handlers on an overflowed box, however often it is checked", () => {
+        const element = loadCellTextBox("height: 110px", 100);
+        element.classList.add("bloom-visibility-code-on");
+        const marginBox = element.closest<HTMLElement>(".marginBox")!;
+        vi.spyOn(theOneLocalizationManager, "asyncGetText").mockReturnValue({
+            done: () => {},
+        } as unknown as ReturnType<
+            typeof theOneLocalizationManager.asyncGetText
+        >);
+        try {
+            for (let i = 0; i < 3; i++) {
+                OverflowChecker.CheckPageAncestorOverflow(element);
+            }
+            expect(
+                marginBox.classList.contains("childOverflowingThis"),
+                "The margin box should be marked, or this tests nothing.",
+            ).toBe(true);
+            const events = (
+                $ as unknown as {
+                    _data: (
+                        e: Element,
+                        key: string,
+                    ) => Record<string, unknown[]> | undefined;
+                }
+            )._data(marginBox, "events");
+            expect(events?.mousemove?.length).toBe(1);
+            // jQuery keeps a mouseleave handler as a mouseout one.
+            expect(events?.mouseout?.length).toBe(1);
+        } finally {
+            vi.restoreAllMocks();
+        }
     });
 });
