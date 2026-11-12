@@ -141,6 +141,41 @@ namespace BloomTests.Spreadsheet
         }
 
         /// <summary>
+        /// A recording the failed import wrote under the same name in different capitals is the same
+        /// file on Windows, so putting the book back must restore it, not then delete it as an extra.
+        /// </summary>
+        [Test]
+        public void ImportWithBackupAsync_ImportRecreatedFileInOtherCase_RestoresIt()
+        {
+            var original = Path.Combine(_bookFolder, "audio", "Recording.mp3");
+            Directory.CreateDirectory(Path.GetDirectoryName(original));
+            RobustFile.WriteAllText(original, "original recording");
+            var progress = new ProgressSpy();
+            try
+            {
+                Assert.ThrowsAsync<ApplicationException>(() =>
+                    SpreadsheetImporter.ImportWithBackupAsync(
+                        _bookFolder,
+                        progress,
+                        () =>
+                        {
+                            var otherCase = Path.Combine(_bookFolder, "audio", "recording.mp3");
+                            Directory.CreateDirectory(Path.GetDirectoryName(otherCase));
+                            RobustFile.WriteAllText(otherCase, "imported recording");
+                            throw new ApplicationException("import failed");
+                        },
+                        () => false
+                    )
+                );
+                Assert.That(RobustFile.ReadAllText(original), Is.EqualTo("original recording"));
+            }
+            finally
+            {
+                DeleteBackup(progress);
+            }
+        }
+
+        /// <summary>
         /// If the failed import had put a read-only file over one of the book's own, the book's own
         /// comes back, as it was: writable.
         /// </summary>

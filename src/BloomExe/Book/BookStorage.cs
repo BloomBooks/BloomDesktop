@@ -4633,26 +4633,30 @@ namespace Bloom.Book
         public static void RestoreFromPreImportBackup(string bookFolder, string backupPath)
         {
             var filesNotInBackup = BloomZipFile.GetEntryNamesForDirectory(bookFolder);
-            using (var zipFile = new ICSharpCode.SharpZipLib.Zip.ZipFile(backupPath))
+            // Retrying is safe: a second pass skips the files the first one already wrote back.
+            RetryUtility.Retry(() =>
             {
-                foreach (ICSharpCode.SharpZipLib.Zip.ZipEntry entry in zipFile)
+                using (var zipFile = new ICSharpCode.SharpZipLib.Zip.ZipFile(backupPath))
                 {
-                    if (!entry.IsFile)
-                        continue;
-                    filesNotInBackup.Remove(entry.Name);
-                    var path = Path.Combine(bookFolder, entry.Name);
-                    if (RobustFile.Exists(path))
+                    foreach (ICSharpCode.SharpZipLib.Zip.ZipEntry entry in zipFile)
                     {
-                        if (IsSameAsZipEntry(path, entry))
+                        if (!entry.IsFile)
                             continue;
-                        MakeWritable(path);
+                        filesNotInBackup.Remove(entry.Name);
+                        var path = Path.Combine(bookFolder, entry.Name);
+                        if (RobustFile.Exists(path))
+                        {
+                            if (IsSameAsZipEntry(path, entry))
+                                continue;
+                            MakeWritable(path);
+                        }
+                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+                        using (var input = zipFile.GetInputStream(entry))
+                        using (var output = RobustFile.Create(path))
+                            input.CopyTo(output);
                     }
-                    Directory.CreateDirectory(Path.GetDirectoryName(path));
-                    using (var input = zipFile.GetInputStream(entry))
-                    using (var output = RobustFile.Create(path))
-                        input.CopyTo(output);
                 }
-            }
+            });
             foreach (var name in filesNotInBackup)
             {
                 var path = Path.Combine(bookFolder, name);

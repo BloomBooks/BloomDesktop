@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using ICSharpCode.SharpZipLib.Core;
@@ -35,11 +36,11 @@ namespace Bloom.Utils
         /// <summary>
         /// The entry names of the files that AddDirectory(directoryPath, directoryPath.Length + 1, null)
         /// would put in a zip: every file in the folder and its subfolders except those that
-        /// IsFileLeftOut and IsFolderLeftOut name.
+        /// IsFileLeftOut and IsFolderLeftOut name. The set ignores case, as Windows file names do.
         /// </summary>
         public static HashSet<string> GetEntryNamesForDirectory(string directoryPath)
         {
-            var result = new HashSet<string>();
+            var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             AddEntryNames(directoryPath, directoryPath.Length + 1, result);
             return result;
         }
