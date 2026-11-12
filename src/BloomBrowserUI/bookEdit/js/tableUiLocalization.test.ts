@@ -1,8 +1,25 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { describe, it, expect } from "vitest";
-import { tableUiStrings } from "bloom-table";
-import { kTableUiStringIdPrefix } from "./tableUiLocalization";
+import { describe, it, expect, vi } from "vitest";
+import { setTableLocalizer, tableUiStrings } from "bloom-table";
+import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
+import {
+    kTableUiStringIdPrefix,
+    startTableUiLocalization,
+} from "./tableUiLocalization";
+
+vi.mock("bloom-table", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("bloom-table")>()),
+    setTableLocalizer: vi.fn(),
+}));
+
+vi.mock("../../lib/localizationManager/localizationManager", () => ({
+    default: {
+        loadStringsPromise: vi.fn(() => Promise.resolve()),
+        // Stands in for a dictionary that the preload filled with French.
+        getText: vi.fn((id: string) => `fr:${id}`),
+    },
+}));
 
 // The bloom-table library's menus show whatever Bloom's XLF holds for each of
 // its string ids. A string the library adds in a later version, or whose English
@@ -30,6 +47,36 @@ function readEnglishXlfSources(): Map<string, string> {
     }
     return sources;
 }
+
+describe("startTableUiLocalization", () => {
+    it("preloads every library string, then installs a localizer that reads them", async () => {
+        expect(setTableLocalizer).not.toHaveBeenCalled();
+
+        startTableUiLocalization();
+        // A second page setup on the same page must not fetch again.
+        startTableUiLocalization();
+
+        const loadStrings = vi.mocked(
+            theOneLocalizationManager.loadStringsPromise,
+        );
+        expect(loadStrings).toHaveBeenCalledTimes(1);
+        const preloaded = loadStrings.mock.calls[0][0] as {
+            [id: string]: string;
+        };
+        expect(Object.keys(preloaded).length).toBe(
+            Object.keys(tableUiStrings).length,
+        );
+        expect(preloaded["EditTab.Table.RowMenu.AddAbove"]).toBe(
+            "Add Row Above",
+        );
+
+        await vi.waitFor(() => expect(setTableLocalizer).toHaveBeenCalled());
+        const localizer = vi.mocked(setTableLocalizer).mock.calls[0][0]!;
+        expect(localizer("Add Row Above", "RowMenu.AddAbove")).toBe(
+            "fr:EditTab.Table.RowMenu.AddAbove",
+        );
+    });
+});
 
 describe("bloom-table UI strings", () => {
     it("each has an English XLF entry with the library's English", () => {
