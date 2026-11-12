@@ -37,6 +37,7 @@ import {
     tablesMayBeRestructured,
 } from "./tableFeature";
 import { noteTableHistoryUpdate } from "../undo/tableUndo";
+import { startTableUiLocalization } from "./tableUiLocalization";
 
 // The library's own "something changed in a table" notification. It fires on the
 // page's document at the end of every operation that goes through the table's
@@ -359,6 +360,7 @@ function attachSingleTable(tableDiv: HTMLElement): void {
  */
 export function SetupTableEditing(container: HTMLElement): void {
     ensureContentTypesRegistered();
+    startTableUiLocalization();
     // Asked for once per page load and remembered, because the hooks installed
     // above have to answer during an event they cannot await. Nothing waits for
     // it: until it arrives the answer is "no", which is the safe way round, since
