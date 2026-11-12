@@ -178,6 +178,11 @@
         <target xml:lang="mam" state="needs-translation">The collection's bookshelf was not on the list of bookshelves for this Bloom subscription.</target>
         <note>ID: PublishTab.Upload.BookshelfError</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignInRejected" translate="no">
+        <source xml:lang="en">BloomLibrary.org did not accept your sign-in. It has probably expired. Please sign in again, then try again.</source>
+        <target xml:lang="mam" state="needs-translation">BloomLibrary.org did not accept your sign-in. It has probably expired. Please sign in again, then try again.</target>
+        <note>ID: PublishTab.Upload.SignInRejected</note>
+      </trans-unit>
       <trans-unit id="Settings.Subscription.DownloadForEdit" sil:dynamic="true">
         <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</source>
         <target xml:lang="mam" state="needs-translation">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</target>
