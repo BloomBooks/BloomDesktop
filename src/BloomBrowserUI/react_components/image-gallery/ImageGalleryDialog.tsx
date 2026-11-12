@@ -88,7 +88,7 @@ const ImageGalleryDialog: React.FunctionComponent<{
         });
         const sourcePromise = getAsync(
             `app/userSetting?settingName=${kGallerySourceSetting}`,
-        ).then((r) => setInitialProviderId(r?.data?.settingValue));
+        ).then((r) => setInitialProviderId(r.data.settingValue));
         Promise.allSettled([keysPromise, sourcePromise]).then(() =>
             setStartupDataLoaded(true),
         );
@@ -165,8 +165,9 @@ const ImageGalleryDialog: React.FunctionComponent<{
                 license: result.license,
                 undoable: "true",
             });
+            const fromDisk = image.providerId === kLocalDiskProviderId;
             // A file from disk is not a source the gallery can open on.
-            if (image.providerId && image.providerId !== kLocalDiskProviderId)
+            if (image.providerId && !fromDisk)
                 postJson("app/userSetting", {
                     settingName: kGallerySourceSetting,
                     settingValue: image.providerId,
@@ -174,9 +175,7 @@ const ImageGalleryDialog: React.FunctionComponent<{
             // A file the user opened from disk is a different outcome from finding a picture in
             // one of the collections we offer, even though both end in an image being used.
             reportChooserClosed(
-                image.providerId === kLocalDiskProviderId
-                    ? "local disk"
-                    : "accepted",
+                fromDisk ? "local disk" : "accepted",
                 image.providerId,
             );
             setOpen(false);
