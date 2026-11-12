@@ -188,8 +188,9 @@ export function refreshOverflowIndicatorsSoon(): void {
 
 interface IOverflowingBox {
     box: HTMLElement;
-    // The y (client coordinates) of the bottom of the box's padding, which the text should have
-    // stayed above.
+    // The y (client coordinates) that the text should have stayed above: the bottom of the box's
+    // padding, or for a box that pushes past a small container such as a table cell, the bottom
+    // of the container's content, where the container cuts the text off.
     edgeY: number;
     measurement: IPastEdgeMeasurement;
 }
@@ -250,22 +251,46 @@ export function refreshOverflowIndicators(): void {
         const container = box.parentElement!.closest<HTMLElement>(
             ".childOverflowingThis",
         );
-        if (container) {
+        if (!container) {
+            continue;
+        }
+        if (container.classList.contains("marginBox")) {
             pushedPast.set(container, [
                 ...(pushedPast.get(container) ?? []),
                 box,
             ]);
+            continue;
         }
+        // A box that pushes past a smaller container, such as a table cell, has more text than
+        // its container can show, so it is shown like a box with too much text.
+        const edgeY = contentBottom(container);
+        const m = { box, edgeY, measurement: measureTextPastEdge(box, edgeY) };
+        drawFadeLastLine(m, draw);
+        drawTornEdge(m, draw);
+        drawMoreChip(m, draw);
     }
     for (const [container, boxes] of pushedPast) {
         drawContainerTooFull(container, boxes, draw);
     }
 }
 
-// The boxes in a container (usually the page's margin) each fit their text, but together they
-// push past its bottom, so the indicator names the page rather than one box: a red line at the
-// container's bottom, a red-striped band over everything that is past it, and a chip on the line
-// saying the page is too full.
+// The bottom of an element's content box, in client coordinates.
+function contentBottom(e: HTMLElement): number {
+    const rect = e.getBoundingClientRect();
+    const scale = e.offsetHeight ? rect.height / e.offsetHeight : 1;
+    const style = getComputedStyle(e);
+    return (
+        rect.bottom -
+        (parseFloat(style.borderBottomWidth) +
+            parseFloat(style.paddingBottom)) *
+            scale
+    );
+}
+
+// The boxes in the page's margin each fit their text, but together they push past its bottom,
+// so the indicator names the page rather than one box: a red line at the margin's bottom, a
+// red-striped band over everything that is past it, and a chip on the line saying the page is
+// too full.
 function drawContainerTooFull(
     container: HTMLElement,
     pushedBoxes: HTMLElement[],
@@ -393,21 +418,17 @@ function backgroundBehind(e: HTMLElement): string {
     return "white";
 }
 
-// The last line that fits fades into the background. Anything showing below the edge (when the
-// box pushes past an ancestor) is painted over.
+// The last line that fits fades into the background.
 function drawFadeLastLine(m: IOverflowingBox, draw: LayerDrawer) {
     const rect = m.box.getBoundingClientRect();
     const lineHeight = draw.length(lineHeightOf(m.box));
-    const bottom = Math.max(draw.y(rect.bottom), draw.y(m.edgeY));
-    const top = draw.y(m.edgeY) - lineHeight;
     const fade = draw.add("bloom-overflow-fadeLastLine", {
         left: draw.x(rect.left),
-        top,
+        top: draw.y(m.edgeY) - lineHeight,
         width: draw.length(rect.width),
-        height: bottom - top,
+        height: lineHeight,
     });
-    const solidFrom = Math.round((lineHeight / (bottom - top)) * 100);
-    fade.style.background = `linear-gradient(to bottom, transparent, ${backgroundBehind(m.box)} ${solidFrom}%)`;
+    fade.style.background = `linear-gradient(to bottom, transparent, ${backgroundBehind(m.box)})`;
 }
 
 // The box's line height in client pixels.
