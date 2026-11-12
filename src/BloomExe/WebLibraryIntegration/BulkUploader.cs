@@ -366,11 +366,15 @@ namespace Bloom.WebLibraryIntegration
         {
             foreach (var sub in Directory.GetDirectories(uploadParams.Folder))
             {
-                // If the server refused our sign-in, we have been signed out, and every remaining
-                // book would fail the same way.
-                if (!LoggedIn)
-                    break;
                 var htmlFileCount = Directory.GetFiles(sub, "*.htm").Length;
+                // If the server refused our sign-in, we have been signed out, and every remaining
+                // book would fail the same way, so record it as failed without trying it.
+                if (!LoggedIn)
+                {
+                    if (htmlFileCount == 1)
+                        RecordBook(sub, "failed");
+                    continue;
+                }
                 if (htmlFileCount == 1)
                 {
                     // Our (perhaps insufficient) definition of a book folder is that it has exactly 1 htm file.
