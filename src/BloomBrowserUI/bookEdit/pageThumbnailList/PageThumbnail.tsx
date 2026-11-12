@@ -132,7 +132,7 @@ export const PageThumbnail: React.FunctionComponent<{
                             onContextMenu={props.onContextMenu}
                         />
                         {overflowing && !scrollingWillBeAvailable && (
-                            <div className="pageOverflowsIcon" />
+                            <div className="pageOverflowsMarker" />
                         )}
                     </div>
                     <div className="thumbnailCaption">{props.page.caption}</div>

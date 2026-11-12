@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
     countLines,
-    describeTextPastEdge,
-    measureTextPastEdge,
+    describeLinesPastEdge,
+    countLinesPastEdge,
 } from "./overflowIndicators";
 
-// measureTextPastEdge needs real layout (the client rects of words), so this runs in the
+// countLinesPastEdge needs real layout (the client rects of words), so this runs in the
 // "browser" vitest project, not jsdom.
 
 const kLineHeight = 20;
@@ -30,17 +30,16 @@ afterEach(() => {
     document.getElementById("overflowIndicatorsTestBox")?.remove();
 });
 
-describe("measureTextPastEdge", () => {
-    it("counts the lines and words below the edge", () => {
+describe("countLinesPastEdge", () => {
+    it("counts the lines below the edge", () => {
         const box = makeBox(["one two", "three", "four five six", "seven"]);
         const top = box.getBoundingClientRect().top;
         // Sanity check: each paragraph is one line.
         expect(box.getBoundingClientRect().height).toBe(4 * kLineHeight);
 
-        const m = measureTextPastEdge(box, top + 2 * kLineHeight);
+        const lines = countLinesPastEdge(box, top + 2 * kLineHeight);
 
-        expect(m.lineCount).toBe(2);
-        expect(m.wordCount).toBe(4); // four five six seven
+        expect(lines).toBe(2);
     });
 
     it("counts a line the edge cuts through on the side where most of it is", () => {
@@ -48,23 +47,18 @@ describe("measureTextPastEdge", () => {
         const top = box.getBoundingClientRect().top;
 
         // The edge is a quarter of the way into the second line, so most of it is below.
-        expect(
-            measureTextPastEdge(box, top + 1.25 * kLineHeight).lineCount,
-        ).toBe(2);
+        expect(countLinesPastEdge(box, top + 1.25 * kLineHeight)).toBe(2);
         // The edge is three quarters of the way into it, so most of it is above.
-        expect(
-            measureTextPastEdge(box, top + 1.75 * kLineHeight).lineCount,
-        ).toBe(1);
+        expect(countLinesPastEdge(box, top + 1.75 * kLineHeight)).toBe(1);
     });
 
-    it("counts empty paragraphs below the edge as lines with no words", () => {
+    it("counts empty paragraphs below the edge as lines", () => {
         const box = makeBox(["one", "", ""]);
         const top = box.getBoundingClientRect().top;
 
-        const m = measureTextPastEdge(box, top + kLineHeight);
+        const lines = countLinesPastEdge(box, top + kLineHeight);
 
-        expect(m.lineCount).toBe(2);
-        expect(m.wordCount).toBe(0);
+        expect(lines).toBe(2);
     });
 
     it("adds back how far the box is scrolled", () => {
@@ -74,18 +68,17 @@ describe("measureTextPastEdge", () => {
         // lower, so one more line is past the edge.
         const edge = top + 2 * kLineHeight;
 
-        expect(measureTextPastEdge(box, edge).lineCount).toBe(2);
-        expect(measureTextPastEdge(box, edge, kLineHeight).lineCount).toBe(3);
+        expect(countLinesPastEdge(box, edge)).toBe(2);
+        expect(countLinesPastEdge(box, edge, kLineHeight)).toBe(3);
     });
 
     it("finds nothing when all the text is above the edge", () => {
         const box = makeBox(["one", "two"]);
         const bottom = box.getBoundingClientRect().bottom;
 
-        const m = measureTextPastEdge(box, bottom);
+        const lines = countLinesPastEdge(box, bottom);
 
-        expect(m.lineCount).toBe(0);
-        expect(m.wordCount).toBe(0);
+        expect(lines).toBe(0);
     });
 });
 
@@ -111,19 +104,13 @@ describe("countLines", () => {
     });
 });
 
-describe("describeTextPastEdge", () => {
+describe("describeLinesPastEdge", () => {
     it("says how many lines do not fit", () => {
-        expect(describeTextPastEdge({ lineCount: 3, wordCount: 9 })).toBe(
-            "+3 lines",
-        );
-        expect(describeTextPastEdge({ lineCount: 1, wordCount: 2 })).toBe(
-            "+1 line",
-        );
+        expect(describeLinesPastEdge(3)).toBe("+3 lines");
+        expect(describeLinesPastEdge(1)).toBe("+1 line");
     });
 
     it("says one line when less than half a line is past the edge", () => {
-        expect(describeTextPastEdge({ lineCount: 0, wordCount: 0 })).toBe(
-            "+1 line",
-        );
+        expect(describeLinesPastEdge(0)).toBe("+1 line");
     });
 });

@@ -336,16 +336,14 @@ body {
 
 // The overlay div that pageThumbnail.tsx puts on the thumbnail of a page with more text than
 // fits: a red zigzag along the bottom edge, like the one on an overflowing text box (see
-// OverflowChecker/overflowIndicators.less). The repeated class and !important beat the warning
-// triangle that basePage-legacy-5-6.css still draws for books that use it.
+// OverflowChecker/overflowIndicators.less).
 @thumbnailZigzag: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='7' viewBox='0 0 20 7'><polyline points='0,5.75 5,1.25 10,5.75 15,1.25 20,5.75' fill='none' stroke='black' stroke-width='2.5'/></svg>");
-.gridItem .pageOverflowsIcon.pageOverflowsIcon {
+.pageOverflowsMarker {
     position: absolute;
     bottom: 0;
     width: 100%;
-    height: 7px !important;
+    height: 7px;
     z-index: 3; // Should be above split-pane-component and split-pane-divider
-    background-image: none !important;
     background-color: #d65649;
     mask-image: @thumbnailZigzag;
     mask-repeat: repeat-x;

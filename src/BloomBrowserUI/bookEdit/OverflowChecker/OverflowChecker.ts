@@ -50,7 +50,7 @@ const pageChecksWaiting = new WeakMap<Element, ReturnType<typeof setTimeout>>();
 export default class OverflowChecker {
     private;
 
-    // When a div is overfull, these handlers will add the overflow class so it gets a red background or something
+    // When a div is overfull, these handlers will add the overflow class, which overflowIndicators.ts shows
     // But this function should just do some basic checks and ADD the HANDLERS!
     public AddOverflowHandlers(container: HTMLElement) {
         const $editablePageElements = $(
