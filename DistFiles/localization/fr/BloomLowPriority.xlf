@@ -278,9 +278,9 @@
         <target xml:lang="fr" state="translated">Importer/Exporter la Feuille de Calcul</target>
         <note>ID: Feature.Spreadsheet</note>
       </trans-unit>
-      <trans-unit id="Feature.Table">
+      <trans-unit id="Feature.Table" approved="yes">
         <source xml:lang="en">Table</source>
-        <target xml:lang="fr" state="translated">Tableau</target>
+        <target xml:lang="fr" state="final">Tableau</target>
         <note>ID: Feature.Table</note>
       </trans-unit>
       <!-- TODO: add other features -->
