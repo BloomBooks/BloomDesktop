@@ -2,6 +2,7 @@
 import { get, postString } from "../../utils/bloomApi";
 import $ from "jquery";
 import { getPageIFrame, getPageIframeBody } from "../../utils/shared";
+import { kInlineImageClass, kInlineImageIdAttr } from "./inlineImageConstants";
 import {
     postAfterSendingSnapshot,
     saveChangesAndRethinkPage,
@@ -492,37 +493,47 @@ export class EditableDivUtils {
     }
 
     /**
-     * Sets the content of an editable from saved HTML, but keeps the inline images that are on the
-     * page now in place of their copies in that HTML, matched by data-bloom-inline-image-id.
+     * Sets the content of an editable to the HTML passed in, but keeps the inline images that are
+     * on the page now in place of their copies in that HTML, matched by kInlineImageIdAttr.
+     *
+     * The HTML is another version of this same editable's content, holding the same inline images:
+     * CKEditor's data for it (getData()), when the reader tools tidy a block, or a copy taken
+     * earlier for the reader tools' own undo history. Its text and markup replace the current ones.
      *
      * An inline image's menus, toolbar, handles and load handlers hold the live wrapper, so a
      * rebuilt copy would leave them acting on an element no longer on the page: Change image and
      * Delete would then do nothing. And every language's editable has a copy of each picture, kept
-     * the same by the inline image code, so HTML saved earlier would put an older picture back in
-     * this one language alone. The callers restore text: CKEditor's data when the reader tools tidy
-     * a block, and the reader tools' own undo history. The selectors are written out here because
-     * importing inlineImages.ts would make an import cycle.
+     * the same by the inline image code, so a copy taken earlier would put an older picture back in
+     * this one language alone.
      */
     public static replaceContentKeepingLiveInlineImages(
         div: HTMLElement,
         html: string,
     ): void {
         const liveInlineImages = Array.from(
-            div.querySelectorAll<HTMLElement>(":scope > .bloom-inlineImage"),
+            div.querySelectorAll<HTMLElement>(`:scope > .${kInlineImageClass}`),
         );
 
         div.innerHTML = html;
 
         liveInlineImages.forEach((live) => {
-            const id = live.getAttribute("data-bloom-inline-image-id");
-            if (!id) return;
+            // Every wrapper is given an id when it is inserted or when the page is set up, and the
+            // reader tools' undo history starts again after every picture change, so the HTML
+            // always holds a copy of each live wrapper.
+            const id = live.getAttribute(kInlineImageIdAttr);
+            if (!id) throw new Error("An inline image has no id");
             const rebuilt = div.querySelector(
-                `:scope > .bloom-inlineImage[data-bloom-inline-image-id="${id}"]`,
+                `:scope > .${kInlineImageClass}[${kInlineImageIdAttr}="${id}"]`,
             );
-            if (!rebuilt) return;
-            // CKEditor's data never carries its own data-cke-* attributes, and the page is
-            // saved from what this leaves, so they must not come back with the live wrapper.
-            // A data-cke-saved-src saved in the book would outlive any later change to the src.
+            if (!rebuilt)
+                throw new Error(
+                    `The new content of the text block is missing inline image ${id}`,
+                );
+            // While CKEditor manages a block, it adds data-cke-* attributes to the elements on the
+            // page, such as data-cke-saved-src, a copy of an img's src from when the page loaded.
+            // getData() leaves them out of the HTML it returns, but the live wrapper put back here
+            // still has them. The page is saved from what this leaves, and a data-cke-saved-src
+            // saved in the book would outlive any later change to the src, so they are removed.
             [live, ...Array.from(live.querySelectorAll("*"))].forEach(
                 (element) =>
                     Array.from(element.attributes)

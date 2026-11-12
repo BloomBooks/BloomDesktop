@@ -1969,9 +1969,7 @@ async function putCaretAtEdgeOfBlockText(
             const index =
                 args.edge === "start"
                     ? node.data.search(/\S/)
-                    : node.data.length -
-                      1 -
-                      node.data.split("").reverse().join("").search(/\S/);
+                    : node.data.search(/\S\s*$/);
             const range = document.createRange();
             range.setStart(node, index);
             range.setEnd(node, index + 1);

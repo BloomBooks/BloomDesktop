@@ -83,18 +83,19 @@ test("a new picture for an inline image that was on the page when it loaded is s
         },
     );
     const bookFolder = await findBookFolder(page, TITLE);
-    const languages = (
-        await getInlineImageInEveryLanguage(page, BLOCK, imageId)
-    ).map((copy) => copy.languageTag);
+    const copiesBeforeChange = await getInlineImageInEveryLanguage(
+        page,
+        BLOCK,
+        imageId,
+    );
+    const languages = copiesBeforeChange.map((copy) => copy.languageTag);
     expect(
         languages.length,
         "The picture should be in more than one language block, so that every language's " +
             "saved copy can be checked.",
     ).toBeGreaterThan(1);
     expect(
-        (await getInlineImageInEveryLanguage(page, BLOCK, imageId)).map(
-            (copy) => copy.fileName,
-        ),
+        copiesBeforeChange.map((copy) => copy.fileName),
         `Every copy should show ${FIRST_PICTURE} after the reload, before it is changed.`,
     ).toEqual(languages.map(() => FIRST_PICTURE));
 

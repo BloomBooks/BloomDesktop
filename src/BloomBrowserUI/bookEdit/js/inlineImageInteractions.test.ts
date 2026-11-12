@@ -63,8 +63,6 @@ import {
     inlineImageUndo,
     insertInlineImage,
     kInlineImageBottomClass,
-    kInlineImageClass,
-    kInlineImageIdAttr,
     kInlineImageLeftClass,
     kInlineImageMiddleClass,
     kInlineImageOffsetBasedOnAttr,
@@ -77,6 +75,7 @@ import {
     setupInlineImages,
     syncInlineImagesFromEditable,
 } from "./inlineImages";
+import { kInlineImageClass, kInlineImageIdAttr } from "./inlineImageConstants";
 import {
     adjustInlineImageOffsetsIfBlockSizeChanged,
     buildInlineImageMenuItems,
@@ -88,6 +87,7 @@ import {
     computeInlineImageDragScrollLayoutPx,
     shouldRevertInlineImageMove,
     computeInlineImageFloatOrder,
+    IInlineImageFloatPlacement,
     computeInlineImageDock,
     computeInlineImageWidthPercent,
     computeInlineImageMovedCrop,
@@ -577,21 +577,16 @@ describe("inlineImageInteractions", () => {
     });
 
     describe("computeInlineImageFloatOrder", () => {
-        const right = (top: number, height = 100) => ({
-            dock: kInlineImageRightClass as InlineImageDock,
-            wantedTopViewportPx: top,
-            heightWithMarginViewportPx: height,
-        });
-        const left = (top: number, height = 100) => ({
-            dock: kInlineImageLeftClass as InlineImageDock,
-            wantedTopViewportPx: top,
-            heightWithMarginViewportPx: height,
-        });
-        const middle = (top: number, height = 100) => ({
-            dock: kInlineImageMiddleClass as InlineImageDock,
-            wantedTopViewportPx: top,
-            heightWithMarginViewportPx: height,
-        });
+        const float =
+            (dock: InlineImageDock) =>
+            (top: number, height = 100): IInlineImageFloatPlacement => ({
+                dock,
+                wantedTopViewportPx: top,
+                heightWithMarginViewportPx: height,
+            });
+        const right = float(kInlineImageRightClass);
+        const left = float(kInlineImageLeftClass);
+        const middle = float(kInlineImageMiddleClass);
 
         it("orders images that are not in each other's way from the top down", () => {
             expect(

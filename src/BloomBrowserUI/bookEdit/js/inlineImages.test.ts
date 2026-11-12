@@ -31,7 +31,6 @@ import {
     inlineImageUndo,
     insertInlineImage,
     kInlineImageBottomClass,
-    kInlineImageClass,
     kInlineImageRightClass,
     kInlineImageWidthVar,
     kInlineImageSelectedClass,
@@ -44,6 +43,7 @@ import {
     setInlineImageDock,
     syncInlineImagesFromEditable,
 } from "./inlineImages";
+import { kInlineImageClass } from "./inlineImageConstants";
 import { nextChangeOrder, resetChangeOrderForTests } from "../undo/changeOrder";
 import { theOneUndoStack } from "../undo/UndoStack";
 

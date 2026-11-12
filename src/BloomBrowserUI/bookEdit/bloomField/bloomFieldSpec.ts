@@ -853,10 +853,9 @@ describe("BloomField", () => {
             const fieldHtml =
                 '<p id="p1">Some text</p>' +
                 inlineImageHtml("bloom-inlineImageBottom", "img1");
-            const p1 = () => document.getElementById("p1")!;
             expect(
                 pressKeyInFieldFilledAfterSetup(fieldHtml, "Delete", () =>
-                    window.getSelection()!.collapse(p1().firstChild, 9),
+                    setCursorInTextOf("p1", 9),
                 ),
                 "Delete here would delete the inline image after the paragraph",
             ).toBe(true);
@@ -868,9 +867,7 @@ describe("BloomField", () => {
                 inlineImageHtml("bloom-inlineImageBottom", "img1");
             expect(
                 pressKeyInFieldFilledAfterSetup(fieldHtml, "Delete", () =>
-                    window
-                        .getSelection()!
-                        .collapse(document.getElementById("p1")!.firstChild, 4),
+                    setCursorInTextOf("p1", 4),
                 ),
             ).toBe(false);
         });
@@ -881,9 +878,7 @@ describe("BloomField", () => {
                 inlineImageHtml("bloom-inlineImageBottom", "img1");
             expect(
                 pressKeyInFieldFilledAfterSetup(fieldHtml, "Delete", () =>
-                    window
-                        .getSelection()!
-                        .collapse(document.getElementById("p1")!.firstChild, 9),
+                    setCursorInTextOf("p1", 9),
                 ),
                 "Delete here should remove the line break",
             ).toBe(false);
@@ -895,9 +890,7 @@ describe("BloomField", () => {
                 inlineImageHtml("bloom-inlineImageBottom", "img1");
             expect(
                 pressKeyInFieldFilledAfterSetup(fieldHtml, "Delete", () =>
-                    window
-                        .getSelection()!
-                        .collapse(document.getElementById("b1")!.firstChild, 4),
+                    setCursorInTextOf("b1", 4),
                 ),
             ).toBe(true);
         });
@@ -908,9 +901,7 @@ describe("BloomField", () => {
                 '<p id="p1">Some text</p>';
             expect(
                 pressKeyInFieldFilledAfterSetup(fieldHtml, "Delete", () =>
-                    window
-                        .getSelection()!
-                        .collapse(document.getElementById("p1")!.firstChild, 9),
+                    setCursorInTextOf("p1", 9),
                 ),
             ).toBe(false);
         });
@@ -960,6 +951,13 @@ describe("BloomField", () => {
             }
         }
     });
+
+    // Puts the caret at offset in the first text node of the element with this id.
+    function setCursorInTextOf(elementId: string, offset: number) {
+        window
+            .getSelection()!
+            .collapse(document.getElementById(elementId)!.firstChild, offset);
+    }
 
     function setCursorTo(elementId: string, offset: number) {
         const selection = window.getSelection();

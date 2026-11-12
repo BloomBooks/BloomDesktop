@@ -24,10 +24,10 @@ import { SetupWidgetEditing } from "./bloomWidgets";
 import {
     clearInlineImageSelection,
     commitInlineImageUndoForImageChange,
-    kInlineImageClass,
     prepareInlineImageUndoForImageChange,
     setupInlineImages,
 } from "./inlineImages";
+import { kInlineImageClass } from "./inlineImageConstants";
 import {
     cleanupInlineImageInteractions,
     adjustInlineImageOffsetsIfBlockSizeChanged,

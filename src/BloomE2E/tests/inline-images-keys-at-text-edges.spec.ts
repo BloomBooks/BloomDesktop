@@ -7,7 +7,7 @@
 // paragraph before it. BloomField's PreventBackspaceAtStartFromRemovingParagraph treats a paragraph
 // with only protected pictures (bloom-preventRemoval) before it as the first paragraph, worked out
 // at each keystroke, so a picture inserted after the page was set up counts too, and
-// PreventDeleteAtEndFromRemovingEmbeddedImage does the same for Delete before a bottom-docked
+// PreventUnwantedDeletions does the same for Delete before a bottom-docked
 // picture.
 //
 // Each test presses the key several times, as holding it down does, then types a letter. The letter

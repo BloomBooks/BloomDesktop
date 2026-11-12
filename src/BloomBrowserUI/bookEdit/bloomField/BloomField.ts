@@ -63,9 +63,7 @@ export default class BloomField {
         BloomField.PreventBackspaceAtStartFromRemovingParagraph(
             bloomEditableDiv,
         );
-        BloomField.PreventDeleteAtEndFromRemovingEmbeddedImage(
-            bloomEditableDiv,
-        );
+        BloomField.PreventUnwantedDeletions(bloomEditableDiv);
         BloomField.PreventArrowingOutIntoField(bloomEditableDiv);
         BloomField.PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(
             bloomEditableDiv,
@@ -1162,17 +1160,19 @@ export default class BloomField {
         return true;
     }
 
-    // An inline image docked at the bottom comes after the last paragraph, and pressing Delete at
-    // the end of that paragraph makes the browser delete the image. Like the Backspace guard, this
-    // listens in the capture phase so that it runs before CKEditor.
+    // Stops two deletions that the user does not mean, both of which remove a protected embedded
+    // image (bloom-preventRemoval). Like the Backspace guard, this listens in the capture phase so
+    // that it runs before CKEditor.
     //
-    // It also stops Backspace and Delete while CKEditor has an inline image selected as a whole (its
+    // First, Backspace and Delete while CKEditor has an inline image selected as a whole (its
     // "fake selection", which it marks with a hidden data-cke-hidden-sel element in the field).
     // Pressing either key then empties the whole field, text included, and a picture is deleted
     // only from its own menu.
-    private static PreventDeleteAtEndFromRemovingEmbeddedImage(
-        field: HTMLElement,
-    ) {
+    //
+    // Second, Delete at the very end of the last paragraph when only protected images follow it,
+    // as an inline image docked at the bottom does. With nothing left in the paragraph for Delete
+    // to remove, the browser deletes the image instead.
+    private static PreventUnwantedDeletions(field: HTMLElement) {
         const listener = (e: KeyboardEvent) => {
             if (e.key !== "Delete" && e.key !== "Backspace") return;
             if (
@@ -1189,26 +1189,40 @@ export default class BloomField {
             const block = $(sel.anchorNode).closest(kBlockElementSelector)[0];
             if (!block || !field.contains(block)) return;
             if (!BloomField.isFollowedOnlyByEmbeddedImages(block)) return;
-            const rest = document.createRange();
-            rest.setStart(sel.anchorNode, sel.anchorOffset);
-            rest.setEnd(block, block.childNodes.length);
-            if (rest.toString().length > 0) return;
-            // Delete can also remove an element with no text, such as the span a Shift+Enter
-            // line break is. A <br> is only the paragraph's end, and the elements around the
-            // caret are not after it.
-            const anchorNode = sel.anchorNode;
-            const somethingElseAfterCaret = Array.from(
-                block.querySelectorAll(":not(br)"),
-            ).some(
-                (element) =>
-                    !element.contains(anchorNode) &&
-                    rest.intersectsNode(element),
-            );
-            if (somethingElseAfterCaret) return;
+            if (
+                BloomField.hasSomethingToDeleteAfterCaret(
+                    block,
+                    sel.anchorNode,
+                    sel.anchorOffset,
+                )
+            )
+                return;
             e.stopImmediatePropagation();
             e.preventDefault();
         };
         field.addEventListener("keydown", listener, true);
+    }
+
+    /**
+     * Whether the block holds something after the caret that Delete would remove, so that Delete
+     * there does not reach whatever follows the block. That is any text, or an element with no
+     * text, such as the empty span that a Shift+Enter line break is. A <br> does not count: it
+     * only marks the end of the paragraph. Nor do the elements that hold the caret, which a range
+     * starting at the caret also touches.
+     */
+    private static hasSomethingToDeleteAfterCaret(
+        block: Element,
+        caretNode: Node,
+        caretOffset: number,
+    ): boolean {
+        const rest = document.createRange();
+        rest.setStart(caretNode, caretOffset);
+        rest.setEnd(block, block.childNodes.length);
+        if (rest.toString().length > 0) return true;
+        return Array.from(block.querySelectorAll(":not(br)")).some(
+            (element) =>
+                !element.contains(caretNode) && rest.intersectsNode(element),
+        );
     }
 
     // Checks if targetElement is on the path to the 1st leaf node of rootElement.
