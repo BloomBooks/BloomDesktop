@@ -178,6 +178,11 @@
         <target xml:lang="fr" state="translated">L'étagère de la collection ne figurait pas sur la liste des étagères pour cet abonnement Entreprise.</target>
         <note>ID: PublishTab.Upload.BookshelfError</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignInRejected" translate="no">
+        <source xml:lang="en">BloomLibrary.org did not accept your sign-in. It has probably expired. Please sign in again, then try again.</source>
+        <target xml:lang="fr" state="needs-translation">BloomLibrary.org did not accept your sign-in. It has probably expired. Please sign in again, then try again.</target>
+        <note>ID: PublishTab.Upload.SignInRejected</note>
+      </trans-unit>
       <trans-unit id="Settings.Subscription.DownloadForEdit" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</source>
         <target xml:lang="fr" state="final">Cette collection est en mode "Télécharger pour édition". Le livre porte les mêmes paramètres (de Bloom Entreprise) que lors du dernier téléchargement.</target>
