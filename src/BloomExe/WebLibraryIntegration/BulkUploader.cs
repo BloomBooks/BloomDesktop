@@ -372,7 +372,13 @@ namespace Bloom.WebLibraryIntegration
                 if (!LoggedIn)
                 {
                     if (htmlFileCount == 1)
+                    {
+                        progress.WriteError(
+                            "{0} was not uploaded because Bloom is no longer signed in.",
+                            sub
+                        );
                         RecordBook(sub, "failed");
+                    }
                     continue;
                 }
                 if (htmlFileCount == 1)
