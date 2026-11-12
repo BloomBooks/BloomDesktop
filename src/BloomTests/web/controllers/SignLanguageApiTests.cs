@@ -224,5 +224,50 @@ namespace BloomTests.web.controllers
             );
             Assert.That(plan.Parameters, Does.Contain("-vf \"scale=-2:trunc(576/2)*2\""));
         }
+
+        // The sizes are from importing the small HEVC clip in Bloom: 78,417 bytes became 198,785.
+        private const long SmallHevcLength = 78417;
+        private const long SmallHevcAsH264Length = 198785;
+
+        [Test]
+        public void ReencodedVideoReplacesOriginal_HevcVideoThatGrewLarger_StillReplacesTheOriginal()
+        {
+            var plan = SignLanguageApi.PlanVideoReencode(
+                SmallHevcDescription,
+                VideoPath,
+                TempPath,
+                true
+            );
+            Assert.That(
+                SmallHevcAsH264Length,
+                Is.GreaterThan(SmallHevcLength),
+                "test setup: re-encoding should have made the file larger"
+            );
+
+            Assert.That(
+                plan.ReencodedVideoReplacesOriginal(SmallHevcLength, SmallHevcAsH264Length),
+                Is.True,
+                "the original HEVC would not play, so the larger H.264 must replace it"
+            );
+        }
+
+        [Test]
+        public void ReencodedVideoReplacesOriginal_H264Video_KeepsTheOriginalOnlyIfReencodingMadeItLarger()
+        {
+            var description = SmallH264Description.Replace("1024x576", "1920x1080");
+            var plan = SignLanguageApi.PlanVideoReencode(description, VideoPath, TempPath, true);
+            Assert.That(plan, Is.Not.Null, "test setup: a 1080p video should be re-encoded");
+
+            Assert.That(
+                plan.ReencodedVideoReplacesOriginal(1000, 2000),
+                Is.False,
+                "a larger re-encoded H.264 video should not replace a playable original"
+            );
+            Assert.That(
+                plan.ReencodedVideoReplacesOriginal(2000, 1000),
+                Is.True,
+                "a smaller re-encoded video should replace the original"
+            );
+        }
     }
 }

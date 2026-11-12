@@ -258,6 +258,17 @@ namespace Bloom.web.controllers
             /// the re-encoded video must replace it even when it comes out larger.
             /// </summary>
             public bool MustChangeCodec;
+
+            /// <summary>
+            /// Whether the re-encoded video should replace the original, given both files' sizes. Normally
+            /// it should not if re-encoding made the file larger. A video that had to change codec is kept
+            /// even when larger: H.264 is often bigger than the original (HEVC especially) at the same
+            /// quality, and the original would not play.
+            /// </summary>
+            public bool ReencodedVideoReplacesOriginal(long originalLength, long reencodedLength)
+            {
+                return MustChangeCodec || reencodedLength <= originalLength;
+            }
         }
 
         /// <summary>
@@ -463,12 +474,11 @@ namespace Bloom.web.controllers
                 );
                 if (!succeeded)
                     return; // leave original in place if cancelled or failed.
-                // Sanity check to ensure that the output file is not larger than the original.
-                // A video that had to change codec is kept even when larger: H.264 is often bigger
-                // than the original (HEVC especially) at the same quality, and the original would not play.
+                // Sanity check to ensure that the output file is not larger than the original
+                // (unless the codec had to change; see ReencodedVideoReplacesOriginal).
                 var infoOld = new FileInfo(videoFilePath);
                 var infoNew = new FileInfo(tempPath);
-                if (infoOld.Length < infoNew.Length && !plan.MustChangeCodec)
+                if (!plan.ReencodedVideoReplacesOriginal(infoOld.Length, infoNew.Length))
                 {
                     // Processing increased the size.  This is bad.
                     if (hasSignLanguage && plan.HasAudio)
