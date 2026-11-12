@@ -7049,7 +7049,12 @@ namespace BloomTests.Book
             var srcs = containers
                 .Select(c => c.SelectSingleNode("video/source").GetAttribute("src"))
                 .ToList();
-            Assert.That(srcs[0], Does.Not.Contain("Test"), "the video should have been trimmed");
+            Assert.That(srcs[0], Does.Not.Contain("Test"), "the video should have been replaced");
+            Assert.That(
+                srcs[0],
+                Does.Not.Contain("#t="),
+                "a trimmed video's src has no timings; timings left means the trim failed"
+            );
             Assert.That(
                 srcs[1],
                 Is.EqualTo(srcs[0]),
@@ -7059,6 +7064,21 @@ namespace BloomTests.Book
                 Directory.GetFiles(videoFolder),
                 Has.Length.EqualTo(1),
                 "only the shared trimmed file should be left"
+            );
+            var description = SignLanguageApi.GetVideoCharacteristicsOutput(
+                Path.Combine(book.FolderPath, srcs[0])
+            );
+            var duration = TimeSpan.Parse(
+                System
+                    .Text.RegularExpressions.Regex.Match(description, @"Duration: ([0-9:.]+),")
+                    .Groups[1]
+                    .Value,
+                CultureInfo.InvariantCulture
+            );
+            Assert.That(
+                duration.TotalSeconds,
+                Is.LessThan(1.5),
+                "the shared file should hold the trimmed second, not the whole 2-second video"
             );
         }
 
