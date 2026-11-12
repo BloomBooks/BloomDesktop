@@ -280,7 +280,7 @@
       </trans-unit>
       <trans-unit id="Feature.Table">
         <source xml:lang="en">Table</source>
-        <target xml:lang="id" state="needs-translation">Table</target>
+        <target xml:lang="id" state="translated">Tabel</target>
         <note>ID: Feature.Table</note>
       </trans-unit>
       <!-- TODO: add other features -->
