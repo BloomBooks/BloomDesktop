@@ -12,6 +12,10 @@
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { getBorderThickness } from "../../utils/elementUtils";
+import {
+    getCanvasElementRotation,
+    kRotatedClass,
+} from "../js/canvasElementManager/canvasElementRotation";
 import { EditableDivUtils } from "../js/editableDivUtils";
 import {
     kScrollTopVariable,
@@ -163,9 +167,69 @@ function getOverflowingBoxes(page: HTMLElement): HTMLElement[] {
     );
 }
 
+// Where a box is, in client coordinates. For a box in a rotated canvas element, `rect` is where
+// the box would be if the canvas element were upright, and `rotation` says how to turn it from
+// there.
+interface IPlacement {
+    rect: DOMRect;
+    rotation?: IRotation;
+}
+
+// A canvas element's rotation: by `degrees` about its center, from `frame`, the client rectangle
+// it would have upright.
+interface IRotation {
+    degrees: number;
+    frame: DOMRect;
+}
+
+// Where a box is. A rotated element's getBoundingClientRect is the upright rectangle around the
+// turned element, so for a box in a rotated canvas element this works out where the box would be
+// upright instead, from the layout offsets (which ignore the rotation) and the canvas element's
+// center (which the rotation does not move).
+export function placementOf(box: HTMLElement, page: HTMLElement): IPlacement {
+    const canvasElement = box.closest<HTMLElement>("." + kRotatedClass);
+    if (!canvasElement) {
+        return { rect: box.getBoundingClientRect() };
+    }
+    const scale = page.getBoundingClientRect().width / page.offsetWidth;
+    const bounds = canvasElement.getBoundingClientRect();
+    const width = canvasElement.offsetWidth * scale;
+    const height = canvasElement.offsetHeight * scale;
+    const frame = new DOMRect(
+        bounds.left + (bounds.width - width) / 2,
+        bounds.top + (bounds.height - height) / 2,
+        width,
+        height,
+    );
+    // The box's position inside the canvas element's border box, in page pixels.
+    let x = 0;
+    let y = 0;
+    for (
+        let e: HTMLElement = box;
+        e !== canvasElement;
+        e = e.offsetParent as HTMLElement
+    ) {
+        const parent = e.offsetParent as HTMLElement;
+        x += e.offsetLeft + parent.clientLeft;
+        y += e.offsetTop + parent.clientTop;
+    }
+    return {
+        rect: new DOMRect(
+            frame.left + x * scale,
+            frame.top + y * scale,
+            box.offsetWidth * scale,
+            box.offsetHeight * scale,
+        ),
+        rotation: { degrees: getCanvasElementRotation(canvasElement), frame },
+    };
+}
+
 // What is needed to draw one box with more text than it can show.
 interface IBoxTooFull {
     rect: DOMRect;
+    // Set when the box is in a rotated canvas element; the other coordinates are then those of
+    // the box upright.
+    rotation?: IRotation;
     // The y (client coordinates) of the bottom of what the box shows: the inside of its bottom
     // border, or for a box that pushes past a small container such as a table cell, the bottom
     // of the container's content, where the container cuts the text off.
@@ -179,26 +243,31 @@ interface IBoxTooFull {
     background: string;
 }
 
-// The bottom of an element, less its border and, if asked, its padding, in client coordinates.
+// The bottom of an element whose client rectangle is `rect`, less its border and, if asked, its
+// padding, in client coordinates.
 function insideBottom(
     e: HTMLElement,
+    rect: DOMRect,
     scale: number,
     lessPadding: boolean,
 ): number {
     const inset =
         getBorderThickness(e).bottom +
         (lessPadding ? parseFloat(getComputedStyle(e).paddingBottom) : 0);
-    return e.getBoundingClientRect().bottom - inset * scale;
+    return rect.bottom - inset * scale;
 }
 
-// Measures a box that shows its text down to bottomY, scrolled up by scrollOffset client pixels.
+// Measures a box placed at `placement` that shows its text down to bottomY, scrolled up by
+// scrollOffset client pixels.
 function measureBoxTooFull(
     box: HTMLElement,
+    placement: IPlacement,
     bottomY: number,
     scrollOffset: number,
 ): IBoxTooFull {
     return {
-        rect: box.getBoundingClientRect(),
+        rect: placement.rect,
+        rotation: placement.rotation,
         bottomY,
         cutY: bottomY - scrollOffset,
         lineHeight: lineHeightOf(box),
@@ -222,10 +291,12 @@ function refreshOverflowIndicators(): void {
     const pushedPast = new Map<HTMLElement, number>();
     for (const box of getOverflowingBoxes(page)) {
         if (box.classList.contains("overflow")) {
+            const placement = placementOf(box, page);
             boxesTooFull.push(
                 measureBoxTooFull(
                     box,
-                    insideBottom(box, scale, false),
+                    placement,
+                    insideBottom(box, placement.rect, scale, false),
                     box.scrollTop * scale,
                 ),
             );
@@ -255,8 +326,19 @@ function refreshOverflowIndicators(): void {
         }
         // A box that pushes past a smaller container, such as a table cell, has more text than
         // its container can show, so it is shown like a box with too much text.
+        // (Tables and the other small containers cannot be rotated.)
         boxesTooFull.push(
-            measureBoxTooFull(box, insideBottom(container, scale, true), 0),
+            measureBoxTooFull(
+                box,
+                { rect: box.getBoundingClientRect() },
+                insideBottom(
+                    container,
+                    container.getBoundingClientRect(),
+                    scale,
+                    true,
+                ),
+                0,
+            ),
         );
     }
     const pastMargin = Array.from(pushedPast, ([container, bottom]) => ({
@@ -264,9 +346,9 @@ function refreshOverflowIndicators(): void {
         bottom,
     }));
 
-    const draw = new LayerDrawer(layer);
+    const draw = LayerDrawer.forLayer(layer);
     for (const box of boxesTooFull) {
-        drawBoxTooFull(box, draw);
+        drawBoxTooFull(box, box.rotation ? draw.rotated(box.rotation) : draw);
     }
     for (const margin of pastMargin) {
         drawPageTooFull(margin.rect, margin.bottom, draw);
@@ -366,27 +448,62 @@ function getLayer(page: HTMLElement | null): HTMLElement | undefined {
     return layer;
 }
 
-// Builds the drawings, placing each by client coordinates converted to the layer's own pixels.
-// The conversion is measured on the layer, not the page, because a full-bleed page has a
-// transform of its own that the layer does not share. The drawings collect in `drawings` until
-// they are put in the layer all at once.
+// Builds the drawings, placing each by client coordinates converted to the pixels of the element
+// it goes in: the layer, or a rotated frame in it (see rotated()). The conversion is measured on
+// the layer, not the page, because a full-bleed page has a transform of its own that the layer
+// does not share. The drawings collect in `drawings` until they are put in the layer all at once.
 class LayerDrawer {
-    public readonly drawings = document.createDocumentFragment();
-    private readonly layerRect: DOMRect;
-    private readonly scale: number;
-    public constructor(layer: HTMLElement) {
-        this.layerRect = layer.getBoundingClientRect();
-        this.scale = this.layerRect.width / layer.offsetWidth;
+    public readonly drawings: DocumentFragment;
+    private constructor(
+        // Where the drawings go: `drawings`, or a rotated frame in it.
+        private readonly parent: Node,
+        // The client coordinates of the parent's top left corner.
+        private readonly origin: { left: number; top: number },
+        // Client pixels per layer pixel.
+        private readonly scale: number,
+        drawings: DocumentFragment,
+    ) {
+        this.drawings = drawings;
     }
 
-    // The layer's x coordinate of a client x coordinate.
+    // A drawer for the layer itself.
+    public static forLayer(layer: HTMLElement): LayerDrawer {
+        const layerRect = layer.getBoundingClientRect();
+        const drawings = document.createDocumentFragment();
+        return new LayerDrawer(
+            drawings,
+            layerRect,
+            layerRect.width / layer.offsetWidth,
+            drawings,
+        );
+    }
+
+    // A drawer for things in a rotated canvas element, which are measured as if it were upright:
+    // it draws them in a frame that covers the upright canvas element and is turned the same way.
+    public rotated(rotation: IRotation): LayerDrawer {
+        const frame = this.add("bloom-overflow-rotatedFrame", {
+            left: this.x(rotation.frame.left),
+            top: this.y(rotation.frame.top),
+            width: this.length(rotation.frame.width),
+            height: this.length(rotation.frame.height),
+        });
+        frame.style.transform = `rotate(${rotation.degrees}deg)`;
+        return new LayerDrawer(
+            frame,
+            rotation.frame,
+            this.scale,
+            this.drawings,
+        );
+    }
+
+    // The parent's x coordinate of a client x coordinate.
     public x(clientX: number): number {
-        return (clientX - this.layerRect.left) / this.scale;
+        return (clientX - this.origin.left) / this.scale;
     }
 
-    // The layer's y coordinate of a client y coordinate.
+    // The parent's y coordinate of a client y coordinate.
     public y(clientY: number): number {
-        return (clientY - this.layerRect.top) / this.scale;
+        return (clientY - this.origin.top) / this.scale;
     }
 
     // A client length in the layer's pixels.
@@ -418,7 +535,7 @@ class LayerDrawer {
         if (text) {
             e.textContent = text;
         }
-        this.drawings.appendChild(e);
+        this.parent.appendChild(e);
         return e;
     }
 }

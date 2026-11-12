@@ -11,7 +11,9 @@
     z-index: 20000;
     overflow: visible;
 
-    > * {
+    > *,
+    // Holds the drawings for a box in a rotated canvas element, turned the same way.
+    .bloom-overflow-rotatedFrame > * {
         position: absolute;
         box-sizing: border-box;
     }
