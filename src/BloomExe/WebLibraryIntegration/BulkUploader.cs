@@ -451,6 +451,20 @@ namespace Bloom.WebLibraryIntegration
                     return context; // skip this one; we already uploaded it earlier.
                 }
             }
+
+            // Uploading saves the book, which a Team Collection only allows when the book is
+            // checked out here. (Outside a Team Collection the book is always saveable.) Report
+            // that plainly instead of letting the save fail with a confusing message about the
+            // book not being editable. An unchanged book was already skipped above, so it needs
+            // no checkout.
+            if (!book.BookInfo.IsSaveable)
+            {
+                progress.WriteError(
+                    $"{uploadParams.Folder} was not uploaded because it was not checked out to you. Please check out all books you wish to upload before invoking the bulk upload operation."
+                );
+                ++_booksWithErrors;
+                return context;
+            }
             // save local copy of hashes file: it will be uploaded with the other book files
             RobustFile.WriteAllText(pathToLocalHashInfoFromLastUpload, currentHashes);
 
