@@ -37,8 +37,8 @@ interface IImageGalleryApiResult {
 // The provider id the gallery stamps on an image the user opened from their own disk.
 const kLocalDiskProviderId = "local-disk";
 
-// The user setting that remembers which source the user last accepted a picture from, so the
-// gallery can open on it next time.
+// The user setting that remembers the source the gallery should open on next time: the one the
+// user last accepted a picture from, as the gallery reports it.
 const kGallerySourceSetting = "ImageGallerySource";
 
 const ImageGalleryDialog: React.FunctionComponent<{
@@ -168,23 +168,12 @@ const ImageGalleryDialog: React.FunctionComponent<{
                 license: result.license,
                 undoable: "true",
             });
-            const fromDisk = image.providerId === kLocalDiskProviderId;
-            // Remember the source so the gallery opens on it next time. A file from disk is
-            // not a source the gallery can open on, so it leaves the remembered one alone.
-            if (
-                image.providerId &&
-                !fromDisk &&
-                image.providerId !== initialProviderId
-            ) {
-                postJson("app/userSetting", {
-                    settingName: kGallerySourceSetting,
-                    settingValue: image.providerId,
-                });
-            }
             // A file the user opened from disk is a different outcome from finding a picture in
             // one of the collections we offer, even though both end in an image being used.
             reportChooserClosed(
-                fromDisk ? "local disk" : "accepted",
+                image.providerId === kLocalDiskProviderId
+                    ? "local disk"
+                    : "accepted",
                 image.providerId,
             );
             setOpen(false);
@@ -294,6 +283,12 @@ const ImageGalleryDialog: React.FunctionComponent<{
                         lang={props.searchLang}
                         initialProviderKeys={providerKeys}
                         initialProviderId={initialProviderId}
+                        onPreferredProviderChange={(providerId) =>
+                            postJson("app/userSetting", {
+                                settingName: kGallerySourceSetting,
+                                settingValue: providerId,
+                            })
+                        }
                         primaryColor={kBloomBlue}
                         onSearch={handleSearch}
                         onProviderKeysChange={(keys) => {
