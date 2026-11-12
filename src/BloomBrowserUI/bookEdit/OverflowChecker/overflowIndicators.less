@@ -1,0 +1,79 @@
+// Styles the drawings that overflowIndicators.ts puts over boxes with more text than fits.
+// Imported by editMode.less. The build also compiles it on its own, so it defines its own color
+// (the same as editMode.less's @OverflowColor).
+
+@overflowIndicatorColor: #d65649;
+
+// Holds the drawings; overflowIndicators.ts positions it over the page.
+#bloom-overflow-indicator-layer {
+    position: absolute;
+    pointer-events: none;
+    z-index: 20000;
+    overflow: visible;
+
+    > * {
+        position: absolute;
+        box-sizing: border-box;
+    }
+
+    // A chip on the bottom edge saying how many lines do not fit.
+    .bloom-overflow-moreChip {
+        transform: translate(calc(-100% - 6px), -50%);
+        background-color: @overflowIndicatorColor;
+        color: white;
+        font:
+            bold 9px/1 "Roboto",
+            "Segoe UI",
+            sans-serif;
+        padding: 2px 6px;
+        border-radius: 8px;
+        white-space: nowrap;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    // Where boxes together push past the bottom of their container (usually the page's margin):
+    // a red line at the container's bottom and red stripes over everything past it.
+    .bloom-overflow-pastContainer {
+        border-top: 1.5px solid @overflowIndicatorColor;
+        background: repeating-linear-gradient(
+            135deg,
+            fade(@overflowIndicatorColor, 28%) 0 4px,
+            transparent 4px 9px
+        );
+    }
+
+    // A torn, zigzag bottom edge. The teeth cut into the bottom of the box, in the color behind
+    // it (--torn-background, set by overflowIndicators.ts), with a red jagged line along them.
+    @tornTeeth: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><polygon points='0,8 0,6 3,2 6,6 9,2 12,6 12,8' fill='black'/></svg>");
+    @tornLine: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><polyline points='0,6 3,2 6,6 9,2 12,6' fill='none' stroke='black' stroke-width='1.2'/></svg>");
+    .bloom-overflow-tornEdge {
+        height: 8px;
+        transform: translateY(-6px);
+        &::before,
+        &::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            mask-repeat: repeat-x;
+            mask-size: 12px 8px;
+        }
+        &::before {
+            background-color: var(--torn-background);
+            mask-image: @tornTeeth;
+        }
+        &::after {
+            background-color: @overflowIndicatorColor;
+            mask-image: @tornLine;
+        }
+    }
+}
+
+// The scroll bar niceScroll gives a box whose text does not fit turns red, at 20% opacity so the
+// text and pictures under it still show (niceScroll otherwise keeps it at 10%, and black, until
+// the mouse is over it).
+.nicescroll-rails.bloom-overflow-scrollBar {
+    opacity: 0.2 !important;
+    .nicescroll-cursors {
+        background-color: @overflowIndicatorColor !important;
+    }
+}

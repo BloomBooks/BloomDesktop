@@ -10,8 +10,8 @@ import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import $ from "jquery";
-import { kBloomButtonClass } from "../toolbox/canvas/canvasElementPageBridge";
 import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
+import { refreshOverflowIndicatorsSoon } from "./overflowIndicators";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -73,6 +73,7 @@ export default class OverflowChecker {
             cleanup("childOverflowingThis");
             cleanup("Layout-Problem-Detected");
             cleanup("pageOverflows");
+            refreshOverflowIndicatorsSoon();
 
             return;
         }
@@ -582,36 +583,6 @@ export default class OverflowChecker {
             if (overflowY > 0 && page.length) {
                 OverflowChecker.fixScrollBarsSoon(page[0]);
             }
-            const isButton =
-                $editable.closest("." + kBloomButtonClass).length > 0;
-            // don't show an overflow warning if we have scrolling available (unless it's a button)
-            const scrollingWillBeAvailable =
-                !!page[0] &&
-                OverflowChecker.GetScrollInsteadOfOverflow(page[0]);
-            if (!scrollingWillBeAvailable || isButton) {
-                theOneLocalizationManager
-                    .asyncGetText(
-                        "EditTab.Overflow",
-                        "This box has more text than will fit",
-                        "",
-                    )
-                    .done((overflowText) => {
-                        $editable.qtip({
-                            content:
-                                '<img data-overflow="true" height="20" width="20" style="vertical-align:middle" src="/bloom/images/Attention.svg">' +
-                                overflowText,
-                            show: { event: "mouseenter" },
-                            hide: { event: "mouseleave" },
-                            position: {
-                                // Anchor the tooltip at the top left of buttons to avoid overlap with the canvas-element-context-controls
-                                // and avoid getting cut off by the left edge of the editing pane
-                                my: isButton ? "bottom left" : "top right",
-                                at: isButton ? "left top" : "right bottom",
-                                container: bloomQtipUtils.qtipZoomContainer(),
-                            },
-                        });
-                    });
-            }
         } else {
             $editable.removeClass("overflow");
             const page = $editable.closest(".bloom-page");
@@ -619,6 +590,7 @@ export default class OverflowChecker {
                 OverflowChecker.fixScrollBarsSoon(page[0]);
             }
         }
+        refreshOverflowIndicatorsSoon();
     }
 
     // Type 2 overflow handling: scans all editable elements on the page (within the same
@@ -724,6 +696,7 @@ export default class OverflowChecker {
             }
         });
         OverflowChecker.UpdatePageOverflow(container.closest(".bloom-page"));
+        refreshOverflowIndicatorsSoon();
     }
 
     // Fix the NiceScroll scrollbars after a short delay to prevent flickering
