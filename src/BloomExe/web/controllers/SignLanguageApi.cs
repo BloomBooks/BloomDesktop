@@ -1228,6 +1228,32 @@ namespace Bloom.web.controllers
                 }
             }
 
+            // A book imported before Bloom converted unplayable videos on import (BL-17114), or uploaded
+            // by an older Bloom, can still hold HEVC or other videos that Chromium-based readers can't
+            // play. Convert them here, so the harvester's BloomPUB (and its Read Online copy) and ePUB
+            // play too.
+            if (!string.IsNullOrEmpty(FfmpegProgram))
+            {
+                var playablePath = ConvertVideoToPlayableCodecIfNeeded(tempName);
+                if (playablePath != tempName)
+                {
+                    HtmlDom.SetVideoElementUrl(
+                        videoContainerElement,
+                        UrlPathString.CreateFromUnencodedString(
+                            BookStorage.GetVideoFolderName + Path.GetFileName(playablePath)
+                        ),
+                        false
+                    );
+                    // An untrimmed video keeps its timings, which SetVideoElementUrl drops.
+                    if (tempName == originalVideoFilePath && !string.IsNullOrEmpty(timings))
+                        sourceElement.SetAttribute(
+                            "src",
+                            sourceElement.GetAttribute("src") + "#t=" + timings
+                        );
+                    tempName = playablePath;
+                }
+            }
+
             if (videoControls)
             {
                 // Add playback controls needed for videos to work in Readium and possibly other epub readers.
@@ -1235,6 +1261,50 @@ namespace Bloom.web.controllers
             }
 
             return tempName;
+        }
+
+        /// <summary>
+        /// While publishing, re-encodes the video at <paramref name="videoFilePath"/> to H.264 if it is in a
+        /// codec that Chromium-based readers can't play (see PlanVideoReencode). The file must be in a
+        /// publishing staging folder: when the video is converted, the original is deleted. Returns the
+        /// path of the video to publish: the converted file, or <paramref name="videoFilePath"/> when no
+        /// conversion was needed or it failed.
+        /// </summary>
+        internal static string ConvertVideoToPlayableCodecIfNeeded(string videoFilePath)
+        {
+            var ffmpegOutput = GetVideoCharacteristicsOutput(videoFilePath);
+            if (string.IsNullOrWhiteSpace(ffmpegOutput))
+                return videoFilePath;
+            var convertedPath = Path.Combine(
+                Path.GetDirectoryName(videoFilePath),
+                GetNewVideoFileName()
+            );
+            // Publishing leaves a video's sound alone; only importing removes it for sign language.
+            var plan = PlanVideoReencode(
+                ffmpegOutput,
+                videoFilePath,
+                convertedPath,
+                hasSignLanguage: false
+            );
+            if (plan == null || !plan.MustChangeCodec)
+                return videoFilePath;
+            var result = CommandLineRunner.Run(
+                FfmpegProgram,
+                plan.Parameters,
+                "",
+                (int)plan.Duration.TotalSeconds + 60,
+                new NullProgress()
+            );
+            if (result.DidTimeOut || result.ExitCode != 0 || !RobustFile.Exists(convertedPath))
+            {
+                Logger.WriteEvent(
+                    $"ConvertVideoToPlayableCodecIfNeeded: ffmpeg could not convert {videoFilePath}: timed out={result.DidTimeOut}; exit code={result.ExitCode}; stderr= {result.StandardError}"
+                );
+                RobustFile.Delete(convertedPath);
+                return videoFilePath;
+            }
+            RobustFile.Delete(videoFilePath);
+            return convertedPath;
         }
 
         /// <summary>

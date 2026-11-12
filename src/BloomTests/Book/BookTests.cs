@@ -6820,6 +6820,70 @@ namespace BloomTests.Book
                 .HasSpecifiedNumberOfMatchesForXpath(hashTimingsXpath, 1);
         }
 
+        /// <summary>
+        /// A book made before Bloom converted HEVC videos on import (BL-17114) is converted when it is
+        /// published, so the harvester's BloomPUB, Read Online and ePUB copies of it play.
+        /// </summary>
+        [Test]
+        public void PrepareBookVideoForPublishing_HevcVideo_IsConvertedToH264()
+        {
+            SetDom(
+                @"<div id='bloomDataDiv'></div>
+				<div class='bloom-page'>
+					<div class='marginBox'>
+						<div class='bloom-videoContainer'>
+							<video>
+								<source src='video/Test%20pattern%20hevc.mp4#t=0.0,2.0'></source>
+							</video>
+						</div>
+					</div>
+				</div>"
+            );
+            var book = CreateBook();
+            var bookDom = book.OurHtmlDom;
+            var videoFolder = Path.Combine(book.FolderPath, "video");
+            Directory.CreateDirectory(videoFolder);
+            var hevcPath = Path.Combine(videoFolder, "Test pattern hevc.mp4");
+            RobustFile.Copy(
+                FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestVideos,
+                    "Test pattern hevc.mp4"
+                ),
+                hevcPath
+            );
+            Assert.That(
+                SignLanguageApi.GetVideoCharacteristicsOutput(hevcPath),
+                Does.Contain("Video: hevc"),
+                "test setup: the test video should be HEVC"
+            );
+            var videoContainer =
+                bookDom.SafeSelectNodes(".//div[contains(@class, 'bloom-videoContainer')]")[0]
+                as SafeXmlElement;
+
+            var publishedPath = SignLanguageApi.PrepareVideoForPublishing(
+                videoContainer,
+                book.FolderPath,
+                videoControls: false
+            );
+
+            Assert.That(publishedPath, Is.Not.EqualTo(hevcPath));
+            Assert.That(
+                SignLanguageApi.GetVideoCharacteristicsOutput(publishedPath),
+                Does.Contain("Video: h264")
+            );
+            Assert.That(
+                RobustFile.Exists(hevcPath),
+                Is.False,
+                "the HEVC video should not be published"
+            );
+            var src = videoContainer.SelectSingleNode("video/source").GetAttribute("src");
+            Assert.That(
+                src,
+                Is.EqualTo($"video/{Path.GetFileName(publishedPath)}#t=0.0,2.0"),
+                "the book should point at the converted video, keeping its (whole-video) timings"
+            );
+        }
+
         [Test]
         public void SelectAudioSentenceElements_SentenceWithNoId_SkipsIt()
         {
