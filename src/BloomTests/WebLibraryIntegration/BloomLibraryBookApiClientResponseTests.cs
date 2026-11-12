@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using NUnit.Framework;
 using RestSharp;
@@ -15,6 +16,35 @@ namespace BloomTests.WebLibraryIntegration
     [TestFixture]
     public class BloomLibraryBookApiClientResponseTests
     {
+        private string _origWebUserId;
+        private string _origLastLoginSessionToken;
+        private string _origLastLoginUserId;
+        private string _origLastLoginDest;
+
+        /// <summary>
+        /// A rejected session makes the client sign out, which writes Settings.Default, the
+        /// developer's real persisted configuration, so save the login settings to restore later.
+        /// </summary>
+        [SetUp]
+        public void Setup()
+        {
+            _origWebUserId = Settings.Default.WebUserId;
+            _origLastLoginSessionToken = Settings.Default.LastLoginSessionToken;
+            _origLastLoginUserId = Settings.Default.LastLoginUserId;
+            _origLastLoginDest = Settings.Default.LastLoginDest;
+        }
+
+        /// <summary>Put back the login settings Setup saved.</summary>
+        [TearDown]
+        public void TearDown()
+        {
+            Settings.Default.WebUserId = _origWebUserId;
+            Settings.Default.LastLoginSessionToken = _origLastLoginSessionToken;
+            Settings.Default.LastLoginUserId = _origLastLoginUserId;
+            Settings.Default.LastLoginDest = _origLastLoginDest;
+            Settings.Default.Save();
+        }
+
         /// <summary>A request that timed out means the server isn't responding.</summary>
         [Test]
         public void IsServerNotResponding_TimedOut_ReturnsTrue()
@@ -151,6 +181,73 @@ namespace BloomTests.WebLibraryIntegration
             );
             Assert.That(e.Message, Is.EqualTo("Unable to start"));
         }
+
+        /// <summary>
+        /// Only the API's 400 refusing our Authentication-Token means the session was rejected;
+        /// other 400s, and other statuses carrying that text, do not.
+        /// </summary>
+        [TestCase(HttpStatusCode.BadRequest, kUnableToValidateUser, true)]
+        [TestCase(HttpStatusCode.BadRequest, "Invalid book id", false)]
+        [TestCase(HttpStatusCode.BadRequest, null, false)]
+        [TestCase(HttpStatusCode.Forbidden, kUnableToValidateUser, false)]
+        public void IsSessionRejected_ReturnsWhetherTheServerRefusedTheToken(
+            HttpStatusCode statusCode,
+            string content,
+            bool expected
+        )
+        {
+            var response = new RestResponse
+            {
+                ResponseStatus = ResponseStatus.Completed,
+                StatusCode = statusCode,
+                Content = content,
+            };
+
+            Assert.That(
+                BloomLibraryBookApiClient.IsSessionRejected(response),
+                Is.EqualTo(expected)
+            );
+        }
+
+        /// <summary>
+        /// When the server refuses the sign-in, on upload-start or on the permissions check (the
+        /// call that failed in BL-17085), the client signs the user out, clearing the saved token,
+        /// and throws a SessionRejectedException (asking them to sign in again) rather than the
+        /// plain error.
+        /// </summary>
+        [TestCase("upload-start")]
+        [TestCase("permissions")]
+        public void Call_SessionRejected_SignsOutAndThrowsSessionRejected(string call)
+        {
+            var client = new ClientWithCannedResponses(
+                new RestResponse
+                {
+                    ResponseStatus = ResponseStatus.Completed,
+                    StatusCode = HttpStatusCode.BadRequest,
+                    Content = kUnableToValidateUser,
+                }
+            );
+            client.SetLoginData("someone@example.com", "someUserId", "expiredToken", "production");
+            Assert.That(client.LoggedIn, Is.True, "test setup should have signed in");
+            Assert.That(Settings.Default.LastLoginSessionToken, Is.EqualTo("expiredToken"));
+
+            Assert.Throws<SessionRejectedException>(() =>
+            {
+                if (call == "upload-start")
+                    client.CallLongRunningAction(
+                        new RestRequest("start"),
+                        new NullProgress(),
+                        "Unable to start"
+                    );
+                else
+                    client.GetBookPermissions("someBookId");
+            });
+            Assert.That(client.LoggedIn, Is.False, "should have signed the user out");
+            Assert.That(Settings.Default.LastLoginSessionToken, Is.EqualTo(""));
+        }
+
+        private const string kUnableToValidateUser =
+            "Unable to validate user. Did you include a valid Authentication-Token header?";
 
         /// <summary>
         /// A canceled status, in either spelling, throws rather than returning null

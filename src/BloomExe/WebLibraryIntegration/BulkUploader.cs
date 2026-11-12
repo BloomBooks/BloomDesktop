@@ -366,6 +366,10 @@ namespace Bloom.WebLibraryIntegration
         {
             foreach (var sub in Directory.GetDirectories(uploadParams.Folder))
             {
+                // If the server refused our sign-in, we have been signed out, and every remaining
+                // book would fail the same way.
+                if (!LoggedIn)
+                    break;
                 var htmlFileCount = Directory.GetFiles(sub, "*.htm").Length;
                 if (htmlFileCount == 1)
                 {
