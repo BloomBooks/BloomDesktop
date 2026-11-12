@@ -1,4 +1,5 @@
 import { kSelectorForPotentialNiceScrollElements } from "bloom-player";
+import { kScrollTopVariable } from "./scrollingLayouts";
 
 // The elements niceScroll inserts. Each rail contains a cursor (the thumb); we list both so a
 // stray one can't survive.
@@ -34,6 +35,9 @@ const kVerticalAlignClassesRemovedForNiceScroll = [
  *    overflow-x/-y, outline, and a pixel width (a Chrome workaround it does not always undo,
  *    BL-14052). (position:relative is set only in the two-argument niceScroll() form, which
  *    bloom-player does not use.)
+ *
+ * 4. The inline kScrollTopVariable that overflowIndicators.ts sets on a scrolled box, so that
+ *    its language label stays at the bottom of what the box shows.
  */
 export function removeNiceScrollArtifacts(root: HTMLElement): void {
     for (const inserted of Array.from(
@@ -57,6 +61,15 @@ export function removeNiceScrollArtifacts(root: HTMLElement): void {
         root.getElementsByClassName("scrolling-bubble"),
     )) {
         scrollingBubble.classList.remove("scrolling-bubble");
+    }
+
+    for (const scrolledBox of Array.from(
+        root.querySelectorAll<HTMLElement>(`[style*="${kScrollTopVariable}"]`),
+    )) {
+        scrolledBox.style.removeProperty(kScrollTopVariable);
+        if (!scrolledBox.getAttribute("style")) {
+            scrolledBox.removeAttribute("style");
+        }
     }
 
     for (const scrollBox of Array.from(

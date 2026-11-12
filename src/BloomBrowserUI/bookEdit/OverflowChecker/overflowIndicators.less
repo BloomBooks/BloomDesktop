@@ -16,8 +16,13 @@
         box-sizing: border-box;
     }
 
-    // A chip on the bottom edge saying how many lines do not fit.
-    .bloom-overflow-moreChip {
+    // The lines of a box below where its text is cut off, when the box is scrolled to show them.
+    .bloom-overflow-cutOffText {
+        background-color: fade(@overflowIndicatorColor, 18%);
+    }
+
+    // A chip on the line where a box's text is cut off, saying the box is overflowing.
+    .bloom-overflow-chip {
         transform: translate(calc(-100% - 6px), -50%);
         background-color: @overflowIndicatorColor;
         color: white;
@@ -65,15 +70,5 @@
             background-color: @overflowIndicatorColor;
             mask-image: @tornLine;
         }
-    }
-}
-
-// The scroll bar niceScroll gives a box whose text does not fit turns red, at 20% opacity so the
-// text and pictures under it still show (niceScroll otherwise keeps it at 10%, and black, until
-// the mouse is over it).
-.nicescroll-rails.bloom-overflow-scrollBar {
-    opacity: 0.2 !important;
-    .nicescroll-cursors {
-        background-color: @overflowIndicatorColor !important;
     }
 }

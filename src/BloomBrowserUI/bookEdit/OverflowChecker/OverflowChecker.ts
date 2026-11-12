@@ -7,7 +7,10 @@ import { theOneCanvasElementManager } from "../js/canvasElementManager/CanvasEle
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import $ from "jquery";
-import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
+import {
+    kScrollTopVariable,
+    pageScrollsInsteadOfOverflowing,
+} from "../js/scrollingLayouts";
 import { refreshOverflowIndicatorsSoon } from "./overflowIndicators";
 
 interface qtipInterface extends JQuery {
@@ -248,6 +251,9 @@ export default class OverflowChecker {
         // Otherwise, the text box can get scrolled back to the top when the user types. See BL-13942.
         const elementClone = element.cloneNode(true) as HTMLElement;
         elementClone.style.visibility = "hidden";
+        // The clone is not scrolled, so it must not keep the original's scroll offset, which would
+        // move its language label down and add to its height.
+        elementClone.style.removeProperty(kScrollTopVariable);
         elementClone.style.position = "absolute"; // prevent any inadvertent layout effects
         // position:absolute is not enough for accurate layout, we also need to make sure the width
         // of the cloned element is the same as the original.  This is because position:absolute

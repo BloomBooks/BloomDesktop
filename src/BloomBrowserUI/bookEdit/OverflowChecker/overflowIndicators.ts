@@ -2,140 +2,30 @@
 // overflow, marking them with the classes "overflow" (the box has more text than fits in itself)
 // and "thisOverflowingParent" (the box pushes past the bottom of an ancestor, which gets
 // "childOverflowingThis"). This module only draws them. A box with too much text, or one that
-// pushes past a small container such as a table cell, gets a faded last line, a torn, zigzag
-// bottom edge, and a chip on that edge saying how many lines do not fit, such as "+3 lines"; its
-// scroll bar turns red. Boxes that together push past the page's margin get a red-striped band
-// over what is past it and a "Page too full" chip.
+// pushes past a small container such as a table cell, gets a torn, zigzag line where its text is
+// cut off, with an "Overflowing" chip on it. The line scrolls with the text, and the lines below it
+// that the box shows when scrolled get a red wash; before the box is scrolled, the line is its
+// bottom edge and the last line that fits fades out. Boxes that together push past the page's
+// margin get a red-striped band over what is past it and a "Page too full" chip.
 // Nothing here touches the contents of the .bloom-page element, which are what gets saved: the
 // drawings go in a layer that is a sibling of the page (styled by overflowIndicators.less).
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { getBorderThickness } from "../../utils/elementUtils";
 import { EditableDivUtils } from "../js/editableDivUtils";
-import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
+import {
+    kScrollTopVariable,
+    pageScrollsInsteadOfOverflowing,
+} from "../js/scrollingLayouts";
 import { kBloomButtonClass } from "../toolbox/canvas/canvasElementPageBridge";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 
 const kLayerId = "bloom-overflow-indicator-layer";
-const kRedScrollBarClass = "bloom-overflow-scrollBar";
-
-// Counts the lines of text in `box` that lie below `edgeY`, a y coordinate in the client
-// coordinates of the box's window, counting empty paragraphs as lines. A word counts as past the
-// edge when its vertical middle is below it, so a line that the edge cuts through is counted
-// once, on whichever side most of it is.
-// `scrollOffset` is how far the content has been scrolled up out of view, in client pixels;
-// it is added back so a box scrolled to show its end is measured as if it were not scrolled.
-export function countLinesPastEdge(
-    box: HTMLElement,
-    edgeY: number,
-    scrollOffset = 0,
-): number {
-    const doc = box.ownerDocument;
-    const lineRects: DOMRect[] = [];
-    const isPast = (rect: DOMRect) =>
-        (rect.top + rect.bottom) / 2 + scrollOffset > edgeY;
-
-    const walker = doc.createTreeWalker(box, NodeFilter.SHOW_TEXT);
-    for (
-        let node = walker.nextNode() as Text | null;
-        node;
-        node = walker.nextNode() as Text | null
-    ) {
-        // Text that ends above the edge has no word past it; most of a box's text is like that,
-        // so this saves measuring it word by word.
-        const nodeRange = doc.createRange();
-        nodeRange.selectNodeContents(node);
-        if (
-            nodeRange.getBoundingClientRect().bottom + scrollOffset <= edgeY ||
-            isInIgnoredElement(node, box)
-        ) {
-            continue;
-        }
-        for (const match of node.data.matchAll(/\S+/g)) {
-            const range = doc.createRange();
-            range.setStart(node, match.index);
-            range.setEnd(node, match.index + match[0].length);
-            // A word broken across lines (overflow-wrap: anywhere) has several rects.
-            lineRects.push(
-                ...Array.from(range.getClientRects()).filter(
-                    (r) => r.height > 0 && isPast(r),
-                ),
-            );
-        }
-    }
-
-    // Paragraphs with no text still take a line each, and can be all that overflows.
-    for (const p of Array.from(box.querySelectorAll("p"))) {
-        if (p.textContent?.trim() || isInIgnoredElement(p, box)) {
-            continue;
-        }
-        const rect = p.getBoundingClientRect();
-        if (rect.height > 0 && isPast(rect)) {
-            lineRects.push(rect);
-        }
-    }
-
-    // A line break can start a line that has no words, such as the blank lines of
-    // "Title<br><br><br>". A break on a line with words adds nothing, since countLines puts it on
-    // that line.
-    for (const br of Array.from(box.querySelectorAll("br"))) {
-        if (isInIgnoredElement(br, box)) {
-            continue;
-        }
-        const range = doc.createRange();
-        range.selectNode(br);
-        lineRects.push(
-            ...Array.from(range.getClientRects()).filter(
-                (r) => r.height > 0 && isPast(r),
-            ),
-        );
-    }
-
-    return countLines(lineRects);
-}
-
-// Counts the distinct lines that a set of rects (words, or empty paragraphs) sit on. Two rects
-// are on one line when their vertical middles are closer than half the shorter one's height.
-export function countLines(
-    rects: { top: number; bottom: number; height: number }[],
-): number {
-    const sorted = [...rects].sort(
-        (a, b) => a.top + a.bottom - (b.top + b.bottom),
-    );
-    let lines = 0;
-    let lastMiddle = Number.NEGATIVE_INFINITY;
-    let lastHeight = 0;
-    for (const rect of sorted) {
-        const middle = (rect.top + rect.bottom) / 2;
-        if (middle - lastMiddle >= Math.min(lastHeight, rect.height) / 2) {
-            lines++;
-            lastMiddle = middle;
-            lastHeight = rect.height;
-        }
-    }
-    return lines;
-}
-
-// Text in things like the format button or a language label is not part of the box's text.
-function isInIgnoredElement(node: Node, box: HTMLElement): boolean {
-    for (
-        let e = node instanceof Element ? node : node.parentElement;
-        e && e !== box;
-        e = e.parentElement
-    ) {
-        const style = e.ownerDocument.defaultView!.getComputedStyle(e);
-        if (style.position === "absolute" || style.display === "none") {
-            return true;
-        }
-    }
-    return false;
-}
 
 // What the chips say: each one's l10n id and its text, in English until the localized text
-// arrives (see requestChipText). {0} is the number of lines.
+// arrives (see requestChipText).
 const chipText = {
-    oneLine: { id: "EditTab.Overflow.OneMoreLine", text: "+1 line" },
-    lines: { id: "EditTab.Overflow.MoreLines", text: "+{0} lines" },
+    overflowing: { id: "EditTab.Overflow.Overflowing", text: "Overflowing" },
     pageTooFull: { id: "EditTab.Overflow.PageTooFull", text: "Page too full" },
 };
 let chipTextRequested = false;
@@ -156,15 +46,6 @@ function requestChipText() {
     }
 }
 
-// What the chip on the edge says about the lines past it. Text that reaches less than halfway
-// into a line below the edge still counts as one line, so the chip never says "+0 lines".
-export function describeLinesPastEdge(lineCount: number): string {
-    const lines = Math.max(lineCount, 1);
-    return lines === 1
-        ? chipText.oneLine.text
-        : chipText.lines.text.replace("{0}", lines.toString());
-}
-
 let refreshPending = false;
 let refreshAfterChangesTimer: ReturnType<typeof setTimeout> | undefined;
 let listening = false;
@@ -175,6 +56,8 @@ export function refreshOverflowIndicatorsSoon(): void {
     if (!listening) {
         listening = true;
         window.addEventListener("resize", refreshOverflowIndicatorsSoon);
+        // A scroll event does not bubble, so this listens in the capture phase.
+        document.addEventListener("scroll", respondToBoxScrolling, true);
         new MutationObserver(respondToPageChanges).observe(document.body, {
             childList: true,
             subtree: true,
@@ -192,15 +75,34 @@ export function refreshOverflowIndicatorsSoon(): void {
     });
 }
 
-// Keeps the drawings up to date when no overflow check runs. When niceScroll replaces its scroll
-// bars (some time after each check), the new ones are made red again. When a canvas element is
-// moved or resized, or something is removed from the page, everything is redrawn once the
+// When a text box scrolls, records how far in kScrollTopVariable, which keeps its language label
+// (editMode.less) at the bottom of what the box shows; removeNiceScrollArtifacts takes it out
+// before saving. Scrolling a box with too much text also moves where its text is cut off.
+function respondToBoxScrolling(e: Event) {
+    if (
+        !(e.target instanceof HTMLElement) ||
+        !e.target.matches(".bloom-editable")
+    ) {
+        return;
+    }
+    const box = e.target;
+    if (box.scrollTop) {
+        box.style.setProperty(kScrollTopVariable, box.scrollTop + "px");
+    } else {
+        box.style.removeProperty(kScrollTopVariable);
+    }
+    if (box.classList.contains("overflow")) {
+        refreshOverflowIndicatorsSoon();
+    }
+}
+
+// Keeps the drawings up to date when no overflow check runs. When a canvas element is moved or
+// resized, or something is removed from the page, everything is redrawn once the
 // changes stop for a moment, so that a drag does not redraw on every frame. Changes inside the
 // layer itself are ignored, so a redraw never causes another. So are a node added and removed in
-// one batch, like the clone that OverflowChecker measures a box with, and niceScroll removing its
-// scroll bars, which the drawings do not depend on.
+// one batch, like the clone that OverflowChecker measures a box with, and niceScroll adding and
+// removing its scroll bars, which the drawings do not depend on.
 function respondToPageChanges(mutations: MutationRecord[]) {
-    let railsAdded = false;
     let pageChanged = false;
     const addedInThisBatch = new Set(
         mutations.flatMap((m) => Array.from(m.addedNodes)),
@@ -218,11 +120,6 @@ function respondToPageChanges(mutations: MutationRecord[]) {
             pageChanged ||= target.matches(kCanvasElementSelector);
             continue;
         }
-        railsAdded ||= Array.from(m.addedNodes).some(
-            (n) =>
-                n instanceof HTMLElement &&
-                n.classList.contains("nicescroll-rails"),
-        );
         pageChanged ||=
             Array.from(m.removedNodes).some(
                 (n) =>
@@ -232,12 +129,6 @@ function respondToPageChanges(mutations: MutationRecord[]) {
                         n.classList.contains("nicescroll-rails")
                     ),
             ) && !!target.closest(".bloom-page");
-    }
-    if (railsAdded) {
-        const page = document.querySelector<HTMLElement>(".bloom-page");
-        if (page) {
-            markRedScrollBars(page);
-        }
     }
     if (pageChanged) {
         clearTimeout(refreshAfterChangesTimer);
@@ -272,11 +163,14 @@ function getOverflowingBoxes(page: HTMLElement): HTMLElement[] {
 // What is needed to draw one box with more text than it can show.
 interface IBoxTooFull {
     rect: DOMRect;
-    // The y (client coordinates) that the text should have stayed above: the bottom of the box's
-    // padding, or for a box that pushes past a small container such as a table cell, the bottom
+    // The y (client coordinates) of the bottom of what the box shows: the inside of its bottom
+    // border, or for a box that pushes past a small container such as a table cell, the bottom
     // of the container's content, where the container cuts the text off.
-    edgeY: number;
-    lineCount: number;
+    bottomY: number;
+    // The y (client coordinates) where the text is cut off: everything below it would not show
+    // if the box were not scrolled. It is bottomY moved up by how far the box is scrolled, so it
+    // stays between the same two lines of text as the box scrolls.
+    cutY: number;
     // The box's line height in page pixels.
     lineHeight: number;
     background: string;
@@ -294,32 +188,19 @@ function insideBottom(
     return e.getBoundingClientRect().bottom - inset * scale;
 }
 
-// Measures a box whose text should have stayed above edgeY.
+// Measures a box that shows its text down to bottomY, scrolled up by scrollOffset client pixels.
 function measureBoxTooFull(
     box: HTMLElement,
-    edgeY: number,
+    bottomY: number,
     scrollOffset: number,
 ): IBoxTooFull {
     return {
         rect: box.getBoundingClientRect(),
-        edgeY,
-        lineCount: countLinesPastEdge(box, edgeY, scrollOffset),
+        bottomY,
+        cutY: bottomY - scrollOffset,
         lineHeight: lineHeightOf(box),
         background: backgroundBehind(box),
     };
-}
-
-// Makes red the scroll bars of the boxes with more text than fits.
-function markRedScrollBars(page: HTMLElement) {
-    // niceScroll may put a rail outside the page, so look in the whole document.
-    document
-        .querySelectorAll("." + kRedScrollBarClass)
-        .forEach((rail) => rail.classList.remove(kRedScrollBarClass));
-    for (const box of getOverflowingBoxes(page)) {
-        if (box.classList.contains("overflow")) {
-            findScrollBar(box)?.classList.add(kRedScrollBarClass);
-        }
-    }
 }
 
 // Clears and redraws every indicator on the page. Everything is measured first and drawn after,
@@ -388,34 +269,53 @@ function refreshOverflowIndicators(): void {
         drawPageTooFull(margin.rect, margin.bottom, draw);
     }
     layer.replaceChildren(draw.drawings);
-    markRedScrollBars(page);
 }
 
-// The faded last line, torn edge and line count of a box with more text than it can show. In
-// this order, so the chip is on top of the torn edge.
+// Marks where a box's text is cut off: a torn, zigzag line there with a chip on it, and a red
+// wash over the lines below it that the box shows when scrolled. In this order, so the chip is
+// on top of the torn edge.
 function drawBoxTooFull(box: IBoxTooFull, draw: LayerDrawer) {
     const left = draw.x(box.rect.left);
     const width = draw.length(box.rect.width);
-    const edge = draw.y(box.edgeY);
-    // The last line that fits fades into the background.
-    draw.add("bloom-overflow-fadeLastLine", {
-        left,
-        top: edge - box.lineHeight,
-        width,
-        height: box.lineHeight,
-    }).style.background =
-        `linear-gradient(to bottom, transparent, ${box.background})`;
-    // The bottom edge becomes a torn, zigzag line, its teeth cutting into the bottom of the box.
+    const top = draw.y(box.rect.top);
+    const bottom = draw.y(box.bottomY);
+    const cut = draw.y(box.cutY);
+    // The lines below the cut that are scrolled into view.
+    const washTop = Math.max(cut, top);
+    if (bottom > washTop) {
+        draw.add("bloom-overflow-cutOffText", {
+            left,
+            top: washTop,
+            width,
+            height: bottom - washTop,
+        });
+    }
+    if (cut < top) {
+        // Scrolled so far that every line in view is cut off; the wash says so.
+        return;
+    }
+    if (cut >= bottom) {
+        // Not scrolled: the last line that fits fades into the background, since the text goes
+        // on below the edge.
+        draw.add("bloom-overflow-fadeLastLine", {
+            left,
+            top: cut - box.lineHeight,
+            width,
+            height: box.lineHeight,
+        }).style.background =
+            `linear-gradient(to bottom, transparent, ${box.background})`;
+    }
+    // A torn, zigzag line where the text is cut off, its teeth cutting into the line above.
     draw.add("bloom-overflow-tornEdge", {
         left,
-        top: edge,
+        top: cut,
         width,
     }).style.setProperty("--torn-background", box.background);
-    // A small pill on the bottom edge saying how many lines do not fit.
+    // A small pill on the cut saying the box is overflowing.
     draw.add(
-        "bloom-overflow-moreChip",
-        { left: draw.x(box.rect.right), top: edge },
-        describeLinesPastEdge(box.lineCount),
+        "bloom-overflow-chip",
+        { left: draw.x(box.rect.right), top: cut },
+        chipText.overflowing.text,
     );
 }
 
@@ -431,28 +331,10 @@ function drawPageTooFull(margin: DOMRect, bottom: number, draw: LayerDrawer) {
         height: draw.length(bottom - margin.bottom),
     });
     draw.add(
-        "bloom-overflow-moreChip",
+        "bloom-overflow-chip",
         { left: draw.x(margin.right), top: draw.y(margin.bottom) },
         chipText.pageTooFull.text,
     );
-}
-
-// The vertical scroll bar that niceScroll (see niceScrollCleanup.ts) gives a box whose text does
-// not fit: it puts its rail beside the box, not inside it, and records no link between them, so
-// this finds the rail that sits against the box's right edge.
-function findScrollBar(box: HTMLElement): HTMLElement | undefined {
-    const rect = box.getBoundingClientRect();
-    return Array.from(
-        box.ownerDocument.querySelectorAll<HTMLElement>(".nicescroll-rails-vr"),
-    ).find((rail) => {
-        const r = rail.getBoundingClientRect();
-        return (
-            r.height > 0 &&
-            Math.abs(r.right - rect.right) < 20 &&
-            r.top < rect.bottom &&
-            r.bottom > rect.top
-        );
-    });
 }
 
 // The layer that holds the drawings: an absolutely positioned sibling of the page that covers it

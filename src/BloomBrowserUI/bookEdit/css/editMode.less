@@ -243,7 +243,10 @@ body:has(#canvas-element-context-controls:hover) .bloom-page,
         line-height: 1; //else it will draw up in the box somewhere if the font is large
         text-shadow: none;
         content: attr(data-languageTipContent);
-        bottom: 2px; // See Bl-10017
+        // See Bl-10017. An absolutely positioned :after of a box that scrolls moves with the
+        // box's text, so --bloom-scroll-top (how far the box is scrolled, set by
+        // overflowIndicators.ts) keeps it at the bottom of what the box shows.
+        bottom: calc(2px - var(--bloom-scroll-top, 0px));
         margin-right: 2px;
     }
     // show some structure when the page is hovered
