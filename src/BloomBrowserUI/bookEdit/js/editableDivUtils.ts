@@ -453,10 +453,8 @@ export class EditableDivUtils {
         // EditableDivUtils.logElementsInnerHtml([div]);
 
         // Inline images (inlineImages.ts) are contenteditable=false, so CKEditor cannot have
-        // changed anything inside them. CKEditor's data carries the src each img had when the page
-        // loaded (data-cke-saved-src), not the current one, and with the Decodable or Leveled
-        // Reader open this runs whenever the text loses focus. See
-        // replaceContentKeepingLiveInlineImages.
+        // changed anything inside them, and with the Decodable or Leveled Reader open this runs
+        // whenever the text loses focus. See replaceContentKeepingLiveInlineImages.
         EditableDivUtils.replaceContentKeepingLiveInlineImages(
             div,
             ckEditorData,
@@ -529,21 +527,6 @@ export class EditableDivUtils {
                 throw new Error(
                     `The new content of the text block is missing inline image ${id}`,
                 );
-            // While CKEditor manages a block, it adds data-cke-* attributes to the elements on the
-            // page, such as data-cke-saved-src, a copy of an img's src from when the page loaded.
-            // getData() leaves them out of the HTML it returns, but the live wrapper put back here
-            // still has them. The page is saved from what this leaves, and a data-cke-saved-src
-            // saved in the book would outlive any later change to the src, so they are removed.
-            [live, ...Array.from(live.querySelectorAll("*"))].forEach(
-                (element) =>
-                    Array.from(element.attributes)
-                        .filter((attribute) =>
-                            attribute.name.startsWith("data-cke-"),
-                        )
-                        .forEach((attribute) =>
-                            element.removeAttribute(attribute.name),
-                        ),
-            );
             rebuilt.replaceWith(live);
         });
     }

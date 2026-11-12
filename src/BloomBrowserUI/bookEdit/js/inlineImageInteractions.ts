@@ -1611,10 +1611,10 @@ interface IInlineImageDragState {
     startOffsetLayoutPx: number;
     dock: InlineImageDock;
     started: boolean;
-    // The top of every other floating image in the block when the drag began. Moving one
-    // image must not move the others, so after every move of the drag they are put back at
-    // these positions.
-    neighborImageTopsViewportPx: Map<HTMLElement, number>;
+    // The top of every other floating image in the block when the drag began, measured from the
+    // top of the block's content (see getImageTopsInContent). Moving one image must not move the
+    // others, so after every move of the drag they are put back at these positions.
+    neighborImageTopsInContent: Map<HTMLElement, number>;
     // How far the block overflowed before the drag began. At the end of each move,
     // shouldRevertInlineImageMove checks whether the move added overflow to the whole block,
     // because the dragged image can fit while pushing another image out. Floats cannot
@@ -1640,13 +1640,8 @@ interface IInlineImageResizeState {
     pointerId: number;
     // Where every floating image, the resized one included, was when the resize began. A picture
     // that grows taller pushes down every float after it in the DOM, so each move puts them
-    // back here. These are on the screen, so they hold only while the block's content stays
-    // where it was then; see contentTopViewportPx.
-    imageTopsViewportPx: Map<HTMLElement, number>;
-    // Where the top of the block's content was on the screen when the resize began (see
-    // getContentTopViewportPx). The page or the block can scroll while the handle is held,
-    // which moves every picture on the screen without changing where it is in the text.
-    contentTopViewportPx: number;
+    // back here. Measured from the top of the block's content; see getImageTopsInContent.
+    imageTopsInContent: Map<HTMLElement, number>;
     viewportPxPerLayoutPx: number;
 }
 
@@ -1799,7 +1794,7 @@ function startDrag(
         startOffsetLayoutPx: getInlineImageOffsetLayoutPx(wrapper),
         dock: getInlineImageDock(wrapper),
         started: false,
-        neighborImageTopsViewportPx: getImageTopsExcept(editable, wrapper),
+        neighborImageTopsInContent: getImageTopsInContent(editable, wrapper),
         startScrollOverflowLayoutPx:
             editable.scrollHeight - editable.clientHeight,
         lastPointViewportPx: { x: event.clientX, y: event.clientY },
@@ -2007,11 +2002,10 @@ function scrollBlockToKeepDraggedImageInView(
     state.editable.scrollTop = beforeLayoutPx + wantedLayoutPx;
     const movedLayoutPx = state.editable.scrollTop - beforeLayoutPx;
     if (movedLayoutPx === 0) return; // the text is already at that end
-    // The drag measured its positions on the screen: where the block's content begins and
-    // ends, and where each of the other images was. The content has just scrolled, so those
-    // positions have to move by the same amount. Otherwise the dock would be chosen against
-    // the block's old position and the other images would be put back in the wrong places.
-    // The offset is measured within the content, so scrolling does not change it. The next
+    // The drag measured on the screen where the block's content begins and ends. The content
+    // has just scrolled, so that box has to move by the same amount. Otherwise the dock would
+    // be chosen against the block's old position. The other images' tops are measured within
+    // the content, and so is the offset, so scrolling does not change them. The next
     // move increases it to bring the picture back to the pointer, which is how holding the
     // picture at the edge keeps moving it down the text.
     const movedViewportPx = movedLayoutPx * state.viewportPxPerLayoutPx;
@@ -2019,11 +2013,6 @@ function scrollBlockToKeepDraggedImageInView(
         ...state.editableContentBoxViewportPx,
         top: state.editableContentBoxViewportPx.top - movedViewportPx,
     };
-    for (const [wrapper, topViewportPx] of state.neighborImageTopsViewportPx)
-        state.neighborImageTopsViewportPx.set(
-            wrapper,
-            topViewportPx - movedViewportPx,
-        );
 }
 
 // The inline images of this editable that are not in the bottom dock, in DOM order. That is
@@ -2069,8 +2058,11 @@ function reorderInFloatingCluster(
     state: IInlineImageDragState,
     targetTopViewportPx: number,
 ): void {
-    const wantedTops = new Map(state.neighborImageTopsViewportPx);
-    wantedTops.set(state.wrapper, targetTopViewportPx);
+    const wantedTops = new Map(state.neighborImageTopsInContent);
+    wantedTops.set(
+        state.wrapper,
+        targetTopViewportPx - getContentTopViewportPx(state.editable),
+    );
     orderFloatsSoEachCanReachItsTop(
         state.editable,
         wantedTops,
@@ -2143,8 +2135,8 @@ export function computeInlineImageFloatOrder(
 }
 
 // Puts the floating wrappers of the editable in the order computeInlineImageFloatOrder gives
-// for the wanted image tops (viewport px). A wrapper missing from wantedTops wants to stay where
-// its image is now.
+// for the wanted image tops, measured from the top of the block's content (see
+// getImageTopsInContent). A wrapper missing from wantedTops wants to stay where its image is now.
 function orderFloatsSoEachCanReachItsTop(
     editable: HTMLElement,
     wantedTops: Map<HTMLElement, number>,
@@ -2152,6 +2144,7 @@ function orderFloatsSoEachCanReachItsTop(
 ): void {
     const floats = getFloatingWrappersIn(editable);
     if (floats.length < 2) return;
+    const contentTopViewportPx = getContentTopViewportPx(editable);
     const order = computeInlineImageFloatOrder(
         floats.map((wrapper) => {
             const imageBox = getImageBox(wrapper);
@@ -2162,7 +2155,9 @@ function orderFloatsSoEachCanReachItsTop(
                 ) || 0;
             return {
                 dock: getInlineImageDock(wrapper),
-                wantedTopViewportPx: wantedTops.get(wrapper) ?? imageBox.top,
+                wantedTopViewportPx:
+                    wantedTops.get(wrapper) ??
+                    imageBox.top - contentTopViewportPx,
                 heightWithMarginViewportPx:
                     imageBox.height +
                     marginBottomLayoutPx * viewportPxPerLayoutPx,
@@ -2212,8 +2207,7 @@ function startResize(event: PointerEvent, handle: HTMLElement): void {
         horizontalSign: getInlineImageHandleHorizontalSign(corner),
         started: false,
         pointerId: event.pointerId,
-        imageTopsViewportPx: getImageTopsExcept(editable, undefined),
-        contentTopViewportPx: getContentTopViewportPx(editable),
+        imageTopsInContent: getImageTopsInContent(editable, undefined),
         viewportPxPerLayoutPx: getViewportPxPerLayoutPx(editable),
     };
     // Grabbing a handle is not the start of a text selection.
@@ -2244,24 +2238,15 @@ function continueResize(
     // A taller picture can push the one below it on the same side down; see
     // computeInlineImageFloatOrder for why that must not move the pictures on the other side.
     // Reordering can move the resized wrapper in the DOM too, which changes where its offset is
-    // measured from, so it is put back where it started like the others. The recorded tops move
-    // by however far the content has scrolled since the resize began.
-    const scrolledViewportPx =
-        getContentTopViewportPx(state.editable) - state.contentTopViewportPx;
-    const imageTopsViewportPx = new Map(
-        Array.from(state.imageTopsViewportPx, ([wrapper, topViewportPx]) => [
-            wrapper,
-            topViewportPx + scrolledViewportPx,
-        ]),
-    );
+    // measured from, so it is put back where it started like the others.
     orderFloatsSoEachCanReachItsTop(
         state.editable,
-        imageTopsViewportPx,
+        state.imageTopsInContent,
         state.viewportPxPerLayoutPx,
     );
     restoreImagePositions(
         state.editable,
-        imageTopsViewportPx,
+        state.imageTopsInContent,
         state.viewportPxPerLayoutPx,
     );
 }
@@ -2482,7 +2467,7 @@ function normalizeFloatingClusterOrder(
     if (!(editableContentBoxViewportPx.height > 0)) return; // no real layout to measure (jsdom)
     const floats = getFloatingWrappersIn(editable);
     if (floats.length < 2) return;
-    const wantedTops = getImageTopsExcept(editable, undefined);
+    const wantedTops = getImageTopsInContent(editable, undefined);
     const sorted = [...floats].sort(
         (a, b) => wantedTops.get(a)! - wantedTops.get(b)!,
     );
@@ -2501,37 +2486,44 @@ function restoreNeighborImagePositions(state: IInlineImageDragState): void {
     if (state.editableContentBoxViewportPx.height <= 0) return; // no real layout to measure (jsdom)
     restoreImagePositions(
         state.editable,
-        state.neighborImageTopsViewportPx,
+        state.neighborImageTopsInContent,
         state.viewportPxPerLayoutPx,
     );
 }
 
 // Where the top of each floating image in the editable other than exceptWrapper (all of them,
-// when it is undefined) is now, in viewport pixels, so that restoreImagePositions can put them
-// back after a gesture.
-function getImageTopsExcept(
+// when it is undefined) is now, so that restoreImagePositions can put them back after a gesture.
+// Each is in viewport pixels, measured down from the top of the block's content rather than from
+// the top of the screen. The page or the block can scroll during a gesture, which moves every
+// image on the screen without changing where it is in the text.
+function getImageTopsInContent(
     editable: HTMLElement,
     exceptWrapper: HTMLElement | undefined,
 ): Map<HTMLElement, number> {
+    const contentTopViewportPx = getContentTopViewportPx(editable);
     return new Map(
         getFloatingWrappersIn(editable)
             .filter((other) => other !== exceptWrapper)
-            .map((other) => [other, getImageBox(other).top]),
+            .map((other) => [
+                other,
+                getImageBox(other).top - contentTopViewportPx,
+            ]),
     );
 }
 
-// Puts every floating image that has a top recorded in wantedTops back at that top, as far as the
-// layout allows. See restoreNeighborImagePositions.
+// Puts every floating image that has a top recorded in wantedTops (see getImageTopsInContent) back
+// at that top, as far as the layout allows. See restoreNeighborImagePositions.
 function restoreImagePositions(
     editable: HTMLElement,
     wantedTops: Map<HTMLElement, number>,
     viewportPxPerLayoutPx: number,
 ): void {
+    const contentTopViewportPx = getContentTopViewportPx(editable);
     for (let pass = 0; pass < 2; pass++) {
         getFloatingWrappersIn(editable).forEach((wrapper) => {
             const wantedTop = wantedTops.get(wrapper);
             if (wantedTop === undefined) return;
-            const currentTop = getImageBox(wrapper).top;
+            const currentTop = getImageBox(wrapper).top - contentTopViewportPx;
             if (Math.abs(wantedTop - currentTop) <= 1) return;
             nudgeInlineImageOffset(
                 wrapper,

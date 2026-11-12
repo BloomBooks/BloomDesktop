@@ -518,6 +518,28 @@ export function normalizeInlineImages(translationGroup: HTMLElement): void {
 }
 
 /**
+ * Removes the data-cke-* attributes from the inline images in an editable that CKEditor manages.
+ * When CKEditor loads a box, it writes the box's content back through its own HTML processing,
+ * which gives every img a copy of its src in data-cke-saved-src, and its getData(), which the page
+ * is saved through, writes that copy out as the src. The copy keeps the picture the page loaded
+ * with, whatever the src is changed to later, so the page would be saved with the old picture.
+ * With the copy gone, getData() writes the current src. Called when the editor is ready.
+ */
+export function removeCkEditorAttributesFromInlineImages(
+    editable: HTMLElement,
+): void {
+    editable
+        .querySelectorAll(`.${kInlineImageClass}, .${kInlineImageClass} *`)
+        .forEach((element) =>
+            Array.from(element.attributes)
+                .filter((attribute) => attribute.name.startsWith("data-cke-"))
+                .forEach((attribute) =>
+                    element.removeAttribute(attribute.name),
+                ),
+        );
+}
+
+/**
  * Sets up, when the page loads, every translation group in the container that has an inline
  * image. It normalizes the copies, and arranges for each picture's real shape to be recorded
  * and the page's overflow checked again once the picture loads. Called from SetupElements.
