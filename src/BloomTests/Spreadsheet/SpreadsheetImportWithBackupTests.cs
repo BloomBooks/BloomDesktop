@@ -126,6 +126,52 @@ namespace BloomTests.Spreadsheet
         }
 
         /// <summary>
+        /// A book whose main file is read-only was protected on purpose: the import is refused before
+        /// anything, even the recordings, is touched.
+        /// </summary>
+        [Test]
+        public void ImportWithBackupAsync_BookFileReadOnly_RefusesAndChangesNothing()
+        {
+            var recording = Path.Combine(_bookFolder, "audio", "old-recording.mp3");
+            Directory.CreateDirectory(Path.GetDirectoryName(recording));
+            RobustFile.WriteAllText(recording, "old recording");
+            File.SetAttributes(_bookPath, FileAttributes.ReadOnly);
+            var progress = new ProgressSpy();
+            var importRan = false;
+            try
+            {
+                var imported = SpreadsheetImporter
+                    .ImportWithBackupAsync(
+                        _bookFolder,
+                        progress,
+                        () =>
+                        {
+                            importRan = true;
+                            return System.Threading.Tasks.Task.CompletedTask;
+                        },
+                        () => false
+                    )
+                    .GetAwaiter()
+                    .GetResult();
+
+                Assert.That(imported, Is.False);
+                Assert.That(importRan, Is.False);
+                Assert.That(RobustFile.ReadAllText(recording), Is.EqualTo("old recording"));
+                Assert.That(progress.Errors.Count, Is.EqualTo(1));
+                Assert.That(progress.Errors[0], Does.Contain("is read-only"));
+                Assert.That(
+                    progress.ProgressMessages,
+                    Has.None.StartsWith("Backup completed"),
+                    "No backup should have been made."
+                );
+            }
+            finally
+            {
+                File.SetAttributes(_bookPath, FileAttributes.Normal); // so TearDown can delete it
+            }
+        }
+
+        /// <summary>
         /// Once the import has started saving the book, the save may have renamed its folder, so a
         /// later failure must leave the folder alone and say where the backup is.
         /// </summary>

@@ -146,12 +146,15 @@ namespace Bloom.Spreadsheet
                         return true;
                     if (!Validate(sheet, progress))
                         return true; // errors already reported to progress
-                    await ImportWithBackupAsync(
-                        _pathToBookFolder,
-                        progress,
-                        () => ImportAsync(sheet, progress),
-                        () => HasStartedSaving
-                    );
+                    if (
+                        !await ImportWithBackupAsync(
+                            _pathToBookFolder,
+                            progress,
+                            () => ImportAsync(sheet, progress),
+                            () => HasStartedSaving
+                        )
+                    )
+                        return true; // the refusal is already reported to progress
                     BookHistory.AddEvent(
                         _book,
                         BookHistoryEventType.ImportSpreadsheet,
@@ -168,23 +171,35 @@ namespace Bloom.Spreadsheet
         }
 
         /// <summary>
-        /// How the in-app import runs (and the commented-out command-line one did): save a backup copy of the book, delete
-        /// its audio folder (the spreadsheet supplies all the recordings the book will have), then run
+        /// How a spreadsheet import runs: save a backup copy of the book, delete its audio folder (the
+        /// spreadsheet supplies all the recordings the book will have), then run
         /// the import. If the import throws before it starts saving the book, put the whole book folder
         /// back as it was from the backup before letting the exception go on, undoing whatever the
         /// import had already done to it (deleted recordings, copied pictures and so on). Once saving
         /// has started, the save may have renamed the book's folder, so restoring into the old path
         /// could leave two copies of the book; then nothing is restored and the user is told where the
         /// backup is.
+        /// A book whose main file is read-only has been protected from changes on purpose, so it is
+        /// left completely alone and the user is told why.
         /// </summary>
         /// <param name="hasStartedSaving">whether the import has begun saving the book</param>
-        public static async Task ImportWithBackupAsync(
+        /// <returns>false if the import was refused because the book is read-only</returns>
+        public static async Task<bool> ImportWithBackupAsync(
             string bookFolderPath,
             IWebSocketProgress progress,
             Func<Task> import,
             Func<bool> hasStartedSaving
         )
         {
+            var bookHtmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
+            if (RobustFile.GetAttributes(bookHtmlPath).HasFlag(FileAttributes.ReadOnly))
+            {
+                progress.MessageWithoutLocalizing(
+                    $"The book's file {bookHtmlPath} is read-only, so Bloom did not import into it.",
+                    ProgressKind.Error
+                );
+                return false;
+            }
             progress.MessageWithoutLocalizing($"Making a backup of the original book...");
             var backupPath = BookStorage.SaveCopyBeforeImportOverwrite(bookFolderPath);
             progress.MessageWithoutLocalizing($"Backup completed (at {backupPath})");
@@ -207,7 +222,7 @@ namespace Bloom.Spreadsheet
                 }
                 try
                 {
-                    RestoreBookFolderFromBackup(bookFolderPath, backupPath);
+                    BookStorage.RestoreFromPreImportBackup(bookFolderPath, backupPath);
                     progress.MessageWithoutLocalizing(
                         "The import failed, so the book was put back as it was."
                     );
@@ -222,6 +237,7 @@ namespace Bloom.Spreadsheet
                 }
                 throw;
             }
+            return true;
         }
 
         /// <summary>
@@ -229,51 +245,6 @@ namespace Bloom.Spreadsheet
         /// the book if something fails after that.
         /// </summary>
         public bool HasStartedSaving { get; private set; }
-
-        /// <summary>
-        /// Put the book's folder back as it was when BookStorage.SaveCopyBeforeImportOverwrite made
-        /// the backup: delete the files a backup holds, so that ones the import added go too, then
-        /// unzip the backup. The backup is checked first, so that if it cannot be read, nothing in the
-        /// book has been deleted. A file that was read-only comes back writable; a book being imported
-        /// into has no reason to hold read-only files.
-        /// </summary>
-        private static void RestoreBookFolderFromBackup(string bookFolderPath, string backupPath)
-        {
-            using (var zipFile = new ICSharpCode.SharpZipLib.Zip.ZipFile(backupPath))
-            {
-                if (!zipFile.TestArchive(true))
-                    throw new ApplicationException($"The backup {backupPath} could not be read.");
-            }
-            DeleteFilesABackupHolds(bookFolderPath);
-            RobustZip.UnzipDirectory(bookFolderPath, backupPath);
-        }
-
-        /// <summary>
-        /// Delete the files in the folder and its subfolders that BloomArchiveFile.AddDirectory would
-        /// put in a backup, read-only ones included. What it leaves out (hidden and system files, and
-        /// the AI Image Editor's folder) is not in the backup, so it must not be deleted either.
-        /// </summary>
-        private static void DeleteFilesABackupHolds(string folder)
-        {
-            foreach (var file in Directory.GetFiles(folder))
-            {
-                if (RobustZip.ShouldFileBeIgnored(file))
-                    continue;
-                RobustFile.SetAttributes(file, FileAttributes.Normal);
-                RobustFile.Delete(file);
-            }
-            foreach (var subfolder in Directory.GetDirectories(folder))
-            {
-                if (
-                    !Path.GetFileName(subfolder)
-                        .Equals(
-                            Bloom.web.controllers.AiImageEditorApi.kWorkingFolderName,
-                            StringComparison.OrdinalIgnoreCase
-                        )
-                )
-                    DeleteFilesABackupHolds(subfolder);
-            }
-        }
 
         private Browser _browser;
 
@@ -317,12 +288,10 @@ namespace Bloom.Spreadsheet
                 //
                 // This browser is created on whatever thread we are on, and is then used across the
                 // awaits below, so that thread has to be an STA thread with a message loop or WebView2
-                // cannot initialize at all. Two arrangements provide that, and there is no third caller:
-                // in the app, ControlForInvoke is set and the block above put us on the UI thread; in the
-                // console `spreadsheetImport` verb (currently commented out), ControlForInvoke is null but the command runs on the
-                // STA main thread inside Program.RunConsoleCommandLoop's message loop, and its awaits
-                // resume there. Before that loop existed, console import was exposed to exactly the
-                // failure bulk upload hit in BL-16767. See ConsoleCommandLoopTests. (BL-16773)
+                // cannot initialize at all. In the app, ControlForInvoke is set and the block above put
+                // us on the UI thread. (The commented-out console `spreadsheetImport` verb had no
+                // ControlForInvoke and relied instead on Program.RunConsoleCommandLoop's STA message
+                // loop; see SpreadsheetImportCommand.cs and ConsoleCommandLoopTests. BL-16773)
 #if __MonoCS__
                 _browser = new GeckoFxBrowser();
 #else

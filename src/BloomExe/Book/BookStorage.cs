@@ -4621,6 +4621,27 @@ namespace Bloom.Book
             return destPath;
         }
 
+        /// <summary>
+        /// Put the book folder back as SaveCopyBeforeImportOverwrite saved it: unzip the backup over
+        /// it, then delete the files such a backup would hold that this one doesn't (ones added since
+        /// it was made). Unzipping first means that a failure partway leaves no file missing. What a
+        /// backup leaves out (hidden and system files, the AI Image Editor's folder) is not touched.
+        /// Read-only files are made writable so they can be replaced, and stay writable.
+        /// </summary>
+        public static void RestoreFromPreImportBackup(string bookFolder, string backupPath)
+        {
+            var filesNow = BloomZipFile.GetEntryNamesForDirectory(bookFolder);
+            foreach (var name in filesNow)
+            {
+                var path = Path.Combine(bookFolder, name);
+                RobustFile.SetAttributes(
+                    path,
+                    RobustFile.GetAttributes(path) & ~FileAttributes.ReadOnly
+                );
+            }
+            RobustZip.ExtractFolderFromZip(bookFolder, backupPath, () => filesNow);
+        }
+
         // These are files that should never be searched for outside of the book folder, should not be cached, etc.
         // One might think these could be the default, and we could instead specify other types, but
         // that isn't how this code base has evolved. So I'm just trying to gather in one place this list
