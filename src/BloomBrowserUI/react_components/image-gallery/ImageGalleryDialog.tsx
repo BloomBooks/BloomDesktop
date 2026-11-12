@@ -38,7 +38,7 @@ interface IImageGalleryApiResult {
 const kLocalDiskProviderId = "local-disk";
 
 // The user setting that remembers the source the gallery should open on next time: the one the
-// user last accepted a picture from, as the gallery reports it.
+// user last added a picture from.
 const kGallerySourceSetting = "ImageGallerySource";
 
 const ImageGalleryDialog: React.FunctionComponent<{
@@ -165,6 +165,12 @@ const ImageGalleryDialog: React.FunctionComponent<{
                 license: result.license,
                 undoable: "true",
             });
+            // A file from disk is not a source the gallery can open on.
+            if (image.providerId && image.providerId !== kLocalDiskProviderId)
+                postJson("app/userSetting", {
+                    settingName: kGallerySourceSetting,
+                    settingValue: image.providerId,
+                });
             // A file the user opened from disk is a different outcome from finding a picture in
             // one of the collections we offer, even though both end in an image being used.
             reportChooserClosed(
@@ -280,12 +286,6 @@ const ImageGalleryDialog: React.FunctionComponent<{
                         lang={props.searchLang}
                         initialProviderKeys={providerKeys}
                         initialProviderId={initialProviderId}
-                        onPreferredProviderChange={(providerId) =>
-                            postJson("app/userSetting", {
-                                settingName: kGallerySourceSetting,
-                                settingValue: providerId,
-                            })
-                        }
                         primaryColor={kBloomBlue}
                         onSearch={handleSearch}
                         onProviderKeysChange={(keys) => {
