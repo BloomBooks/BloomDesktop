@@ -1171,11 +1171,16 @@ namespace Bloom.web.controllers
         /// </summary>
         /// <param name="videoContainerElement">bloom-videoContainer element from copied DOM</param>
         /// <param name="sourceBookFolder">This is assumed to be a staging folder, we may replace videos here!</param>
+        /// <param name="alreadyPublished">When several containers are processed together, what each original
+        /// video (with its timings) has already been published as. Trimming or converting a video deletes the
+        /// original, so a second container showing the same video (for example the bloomDataDiv copy of a
+        /// custom cover's video container) must reuse the first one's result rather than look for the file.</param>
         /// <returns>the new filepath if a video file exists and was copied, empty string if no video file was found</returns>
         public static string PrepareVideoForPublishing(
             SafeXmlElement videoContainerElement,
             string sourceBookFolder,
-            bool videoControls
+            bool videoControls,
+            Dictionary<string, (string path, string src)> alreadyPublished = null
         )
         {
             var videoFolder = Path.Combine(sourceBookFolder, "video");
@@ -1196,6 +1201,17 @@ namespace Bloom.web.controllers
             // Check for valid video file to match url
             var urlWithoutPrefix = UrlPathString.CreateFromUrlEncodedString(videoUrl.Substring(6)); // grab everything after 'video/'
             var originalVideoFilePath = Path.Combine(videoFolder, urlWithoutPrefix.NotEncoded); // any query already removed
+            var publishedKey = originalVideoFilePath + "#t=" + timings;
+            if (
+                alreadyPublished != null
+                && alreadyPublished.TryGetValue(publishedKey, out var earlier)
+            )
+            {
+                sourceElement.SetAttribute("src", earlier.src);
+                if (videoControls)
+                    videoElement.SetAttribute("controls", string.Empty);
+                return earlier.path;
+            }
             if (!RobustFile.Exists(originalVideoFilePath))
                 return string.Empty;
 
@@ -1253,6 +1269,9 @@ namespace Bloom.web.controllers
                     tempName = playablePath;
                 }
             }
+
+            if (alreadyPublished != null)
+                alreadyPublished[publishedKey] = (tempName, sourceElement.GetAttribute("src"));
 
             if (videoControls)
             {
@@ -1322,12 +1341,14 @@ namespace Bloom.web.controllers
             // We are counting on this method processing the videos before
             // the recursive CompressDirectory() method gets to the video subdirectory.
             // We are also assuming that 'sourceFolder' is a staging folder (so we can delete modified videos).
+            var alreadyPublished = new Dictionary<string, (string path, string src)>();
             foreach (var videoContainerElement in videoContainerElements)
             {
                 PrepareVideoForPublishing(
                     videoContainerElement,
                     sourceFolder,
-                    videoControls: false
+                    videoControls: false,
+                    alreadyPublished
                 );
             }
         }
