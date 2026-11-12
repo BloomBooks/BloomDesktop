@@ -2047,7 +2047,7 @@
       <trans-unit id="EditTab.OverflowContainer" sil:dynamic="true">
         <source xml:lang="en">A container on this page is overflowing</source>
         <note>ID: EditTab.OverflowContainer</note>
-        <note>This shows up in pages like the cover where sizing is very flexible. No one thing is too big, but not everything on the page will fit. To see it, put a lot of text on a cover page, until the bottom of a text box becomes a red zigzag line; then hover near the bottom of the page. </note>
+        <note>Obsolete as of 6.6 — the Edit tab no longer shows this tooltip; a container that boxes push past is marked on the page instead ("Page too full", EditTab.Overflow.PageTooFull).</note>
       </trans-unit>
       <trans-unit id="EditTab.PageList.CantMoveXMatter">
         <source xml:lang="en">That change is not allowed. Front matter and back matter pages must remain where they are.</source>

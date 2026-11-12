@@ -2,11 +2,8 @@
 /// <reference path="../StyleEditor/StyleEditor.ts" />
 /// <reference path="../js/bloomQtipUtils.ts" />
 
-import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
-import bloomQtipUtils from "../js/bloomQtipUtils";
 import { MeasureText } from "../../utils/measureText";
 import { theOneCanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
-import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import $ from "jquery";
@@ -60,9 +57,7 @@ export default class OverflowChecker {
         // BL-1260: disable overflow checking for pages with too many elements
         if ($editablePageElements.length > 30) {
             // since we're not going to check it, remove any indications from
-            // previous checking. (Normal code also removes some qtips. I don't
-            // think those survive from one page load to the next, so we don't
-            // need to remove them here.)
+            // previous checking.
             const cleanup = (className: string) => {
                 Array.from(container.getElementsByClassName(className)).forEach(
                     (x) => x.classList.remove(className),
@@ -503,9 +498,6 @@ export default class OverflowChecker {
         growAsMuchAsPossible?: boolean,
     ) {
         const $editable = $(editable);
-        if ($editable.hasClass("overflow")) {
-            OverflowChecker.RemoveOverflowQtip($editable);
-        }
 
         // We used to remove the "overflow" class unconditionally, then add it back if needed.
         // But in 6.0, that started causing the box to scroll back to the top sometimes. See BL-13942.
@@ -513,12 +505,6 @@ export default class OverflowChecker {
         // $box.removeClass("overflow");
 
         $editable.removeClass("thisOverflowingParent");
-        $editable.off("mousemove.overflow");
-        $editable.off("mouseleave.overflow");
-        $editable.parents(".childOverflowingThis").each((dummy, parent) => {
-            OverflowChecker.RemoveOverflowQtip($(parent));
-        });
-        OverflowChecker.RemoveOverflowQtip($editable);
         $editable.parents().removeClass("childOverflowingThis");
 
         const preventOverflowY = editable.classList.contains(
@@ -625,16 +611,6 @@ export default class OverflowChecker {
                     $this.removeClass("thisOverflowingParent");
                 }
             } else {
-                const $overflowingAncestor = $(overflowingAncestor);
-                // We may already have a qtip on this parent in the form of a hint or source
-                // bubble.  We don't want to override that qtip with an overflow warning since
-                // we have other indications of overflow available on the child.
-                // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6295.
-                const oldQtip =
-                    OverflowChecker.GetQtipContent($overflowingAncestor);
-                if (oldQtip && !OverflowChecker.DoesQtipMarkOverflow(oldQtip)) {
-                    return; // don't override existing qtip (probably hint or source bubble)
-                }
                 // BL-1261: don't want the typed-in box to be marked overflow just because it made another box
                 // go past the margins
                 // $box.addClass('overflow'); // probably typing in the focused element caused this
@@ -643,56 +619,7 @@ export default class OverflowChecker {
                     return;
                 }
                 $this.addClass("thisOverflowingParent"); // but it's this one that is actually overflowing
-                $overflowingAncestor.addClass("childOverflowingThis");
-                theOneLocalizationManager
-                    .asyncGetText(
-                        "EditTab.OverflowContainer",
-                        "A container on this page is overflowing",
-                        "",
-                    )
-                    .done((overflowText) => {
-                        $overflowingAncestor.qtip({
-                            content:
-                                '<img data-overflow="true" height="20" width="20" style="vertical-align:middle" src="/bloom/images/Attention.svg">' +
-                                overflowText,
-                            show: { event: "enterBorder" }, // nonstandard events triggered by mouse move in code below
-                            hide: { event: "leaveBorder" },
-                            position: {
-                                my: "top right",
-                                at: "right bottom",
-                                container: bloomQtipUtils.qtipZoomContainer(),
-                            },
-                        });
-                    });
-                let showing = false;
-                $overflowingAncestor.on("mousemove.overflow", (event) => {
-                    if (overflowingAncestor === null) return; // prevent bad static analysis
-                    const bounds = overflowingAncestor.getBoundingClientRect();
-                    const scaleY =
-                        bounds.height / overflowingAncestor.offsetHeight;
-                    const offsetY = (event.clientY - bounds.top) / scaleY;
-                    // The cursor is likely to be a text cursor at this point, so it's hard to point exactly at the line. If the mouse is close,
-                    // show the tooltip.
-                    const shouldShow =
-                        offsetY >= $overflowingAncestor.innerHeight() - 10 &&
-                        offsetY <=
-                            $overflowingAncestor.outerHeight(false) + 10 &&
-                        // I don't like this module knowing about this, but how else to hide it?
-                        !playingBloomGame(overflowingAncestor);
-                    if (shouldShow && !showing) {
-                        showing = true;
-                        $overflowingAncestor.trigger("enterBorder");
-                    } else if (!shouldShow && showing) {
-                        showing = false;
-                        $overflowingAncestor.trigger("leaveBorder");
-                    }
-                });
-                $overflowingAncestor.on("mouseleave.overflow", () => {
-                    if (showing) {
-                        showing = false;
-                        $overflowingAncestor.trigger("leaveBorder");
-                    }
-                });
+                overflowingAncestor.classList.add("childOverflowingThis");
             }
         });
         OverflowChecker.UpdatePageOverflow(container.closest(".bloom-page"));
@@ -713,55 +640,6 @@ export default class OverflowChecker {
             cleanupNiceScroll();
             addScrollbarsToPage(page);
         }, 200);
-    }
-
-    // Destroy any qtip on this element that marks overflow, but leave other qtips alone.
-    // This restriction is an attempt not to remove bloom hint and source bubbles.
-    private static RemoveOverflowQtip(element: JQuery) {
-        const qtipContent = OverflowChecker.GetQtipContent(element);
-        if (OverflowChecker.DoesQtipMarkOverflow(qtipContent)) {
-            element.qtip("destroy");
-        }
-    }
-
-    // Test whether this qtip (if it exists) marks an overflow condition.
-    private static DoesQtipMarkOverflow(qtipContent: any): boolean {
-        if (!qtipContent) {
-            return false;
-        }
-        // This is the most reliable way I can find to detect data-overflow tooltips,
-        // at least on canvas element boxes. By experiment in the debugger, qtipContent does
-        // not seem to be an element at all, but some sort of configuration object
-        // for the qtip, so trying to retrieve it as an attribute (as the code below does)
-        // does not work.
-        // Note that qtipContent.text can be an object or a string, so we need to check
-        // that the startsWith method exists before calling it.  (The check verifies that
-        // it's a string.)  See BL-13126.
-        if (
-            qtipContent.text &&
-            qtipContent.text.startsWith &&
-            qtipContent.text.startsWith('<img data-overflow="true"')
-        ) {
-            return true;
-        }
-        // keeping this out of paranoia...old code that no longer seems to work,
-        // but I'm not sure it's never needed.
-        if ($(qtipContent).attr("data-overflow") == "true") {
-            return true;
-        }
-        return false;
-    }
-
-    // Return any qtip content attached to this element, or null if none is attached.
-    private static GetQtipContent(element: JQuery): any {
-        const qtipData = element.data("qtip");
-        if (qtipData) {
-            const options = qtipData.options;
-            if (options) {
-                return options.content;
-            }
-        }
-        return null;
     }
 
     private static GetScrollInsteadOfOverflow(page: HTMLElement): boolean {
