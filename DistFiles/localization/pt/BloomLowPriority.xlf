@@ -178,6 +178,11 @@
         <target xml:lang="pt-PT" state="final">A estante da coleção não constava da lista de estantes para esta assinatura Bloom.</target>
         <note>ID: PublishTab.Upload.BookshelfError</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignInRejected" translate="no">
+        <source xml:lang="en">BloomLibrary.org did not accept your sign-in. It has probably expired. Please sign in again, then try again.</source>
+        <target xml:lang="pt-PT" state="needs-translation">BloomLibrary.org did not accept your sign-in. It has probably expired. Please sign in again, then try again.</target>
+        <note>ID: PublishTab.Upload.SignInRejected</note>
+      </trans-unit>
       <trans-unit id="Settings.Subscription.DownloadForEdit" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</source>
         <target xml:lang="pt-PT" state="final">Esta coleção está no modo "Baixar para Editar". O livro tem a mesma configuração de assinatura de quando foi carregado pela última vez.</target>
