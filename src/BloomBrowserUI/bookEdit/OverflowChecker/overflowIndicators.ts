@@ -6,7 +6,7 @@
 // cut off, with an "Overflowing" chip on it. The line scrolls with the text, and the lines below it
 // that the box shows when scrolled get a red wash; before the box is scrolled, the line is its
 // bottom edge and the last line that fits fades out. Boxes that together push past the page's
-// margin get a red-striped band over what is past it and a "Page too full" chip.
+// margin get a red-striped band over what is past it and a "Page overflowing" chip.
 // Nothing here touches the contents of the .bloom-page element, which are what gets saved: the
 // drawings go in a layer that is a sibling of the page (styled by overflowIndicators.less).
 
@@ -26,7 +26,10 @@ const kLayerId = "bloom-overflow-indicator-layer";
 // arrives (see requestChipText).
 const chipText = {
     overflowing: { id: "EditTab.Overflow.Overflowing", text: "Overflowing" },
-    pageTooFull: { id: "EditTab.Overflow.PageTooFull", text: "Page too full" },
+    pageOverflowing: {
+        id: "EditTab.Overflow.PageOverflowing",
+        text: "Page overflowing",
+    },
 };
 let chipTextRequested = false;
 
@@ -333,7 +336,7 @@ function drawPageTooFull(margin: DOMRect, bottom: number, draw: LayerDrawer) {
     draw.add(
         "bloom-overflow-chip",
         { left: draw.x(margin.right), top: draw.y(margin.bottom) },
-        chipText.pageTooFull.text,
+        chipText.pageOverflowing.text,
     );
 }
 

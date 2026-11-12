@@ -2040,10 +2040,16 @@
         <note>ID: EditTab.Overflow.Overflowing</note>
         <note>A small red label on a red zigzag line in a text box that has more text than fits. The line is where the text gets cut off; the text below it will be cut off when the book is printed or made into a PDF. (Bloom Reader and ePUB books scroll, so they show it.) Keep it very short.</note>
       </trans-unit>
+      <trans-unit id="EditTab.Overflow.PageOverflowing" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Page overflowing</source>
+        <note>ID: EditTab.Overflow.PageOverflowing</note>
+        <note>A small red label on a red line at the bottom of a page whose text boxes, together, take more room than the page has, though each box fits its own text. It goes with "Overflowing" (EditTab.Overflow.Overflowing), the label on a single text box that has more text than fits. Keep it very short.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Overflow.PageTooFull" sil:dynamic="true" translate="no">
         <source xml:lang="en">Page too full</source>
         <note>ID: EditTab.Overflow.PageTooFull</note>
         <note>A small red label on a red line at the bottom of a page whose text boxes, together, take more room than the page has, though each box fits its own text. Keep it very short.</note>
+        <note>Obsolete as of 6.6 — the label says "Page overflowing" instead (EditTab.Overflow.PageOverflowing).</note>
       </trans-unit>
       <trans-unit id="EditTab.Overflow.OneMoreLine" sil:dynamic="true" translate="no">
         <source xml:lang="en">+1 line</source>
@@ -2054,7 +2060,7 @@
       <trans-unit id="EditTab.OverflowContainer" sil:dynamic="true">
         <source xml:lang="en">A container on this page is overflowing</source>
         <note>ID: EditTab.OverflowContainer</note>
-        <note>Obsolete as of 6.6 — the Edit tab no longer shows this tooltip; a container that boxes push past is marked on the page instead ("Page too full", EditTab.Overflow.PageTooFull).</note>
+        <note>Obsolete as of 6.6 — the Edit tab no longer shows this tooltip; a container that boxes push past is marked on the page instead ("Page overflowing", EditTab.Overflow.PageOverflowing).</note>
       </trans-unit>
       <trans-unit id="EditTab.PageList.CantMoveXMatter">
         <source xml:lang="en">That change is not allowed. Front matter and back matter pages must remain where they are.</source>
