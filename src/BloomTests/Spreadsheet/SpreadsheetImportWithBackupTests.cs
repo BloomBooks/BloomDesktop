@@ -122,13 +122,7 @@ namespace BloomTests.Spreadsheet
             Assert.That(result.Progress.Errors, Is.Empty);
             Assert.That(RobustFile.ReadAllText(result.OldRecording), Is.EqualTo("old recording"));
             Assert.That(RobustFile.ReadAllText(thumbnail), Is.EqualTo("thumbnail"));
-            Assert.That(
-                File.GetAttributes(thumbnail).HasFlag(FileAttributes.ReadOnly),
-                Is.True,
-                "The thumbnail should be read-only again."
-            );
             Assert.That(RobustFile.Exists(result.NewPicture), Is.False);
-            File.SetAttributes(thumbnail, FileAttributes.Normal); // so TearDown can delete it
         }
 
         /// <summary>
