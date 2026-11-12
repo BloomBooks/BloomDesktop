@@ -26,7 +26,7 @@ Building ffmpeg for x86_64
 ```
 On a reasonably fast developer machine with a reasonably fast internet connection, the shell script should take about 20-30 minutes to complete.
 
-The current full static ffmpeg.exe downloaded from the internet is about 189MB in size.  The reduced static ffmpeg.exe built through the process above is about 13MB in size.  (Adding Opus support in October 2026 increased the size from about 12MB.)
+The current full static ffmpeg.exe downloaded from the internet is about 189MB in size.  The reduced static ffmpeg.exe built through the process above is about 15MB in size.  (Adding Opus support in October 2026 increased the size from about 12MB to about 13MB, and adding the HEVC decoder in November 2026 increased it to about 15MB.)
 
 The script installs everything into /win-x64.  If that folder already holds an earlier build that you want to keep, rename it before running the script.
 

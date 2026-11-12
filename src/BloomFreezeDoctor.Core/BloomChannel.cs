@@ -116,7 +116,7 @@ public static class BloomChannel
             "changeLayout",
             "createArtifacts",
             "spreadsheetExport",
-            "spreadsheetImport",
+            // "spreadsheetImport", commented out in Program.Main too
             "sendFontAnalytics",
         ];
         // Match a verb as its own argument, so a collection path that happens to contain the word

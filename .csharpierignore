@@ -2,3 +2,5 @@
 
 **/*.csproj
 **/*.config
+# Leave the Linux launcher's resource manifest alone.
+src/LinuxBloomLauncher/BloomLauncher.gresource.xml

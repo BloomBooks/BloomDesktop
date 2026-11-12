@@ -1106,6 +1106,84 @@ namespace BloomTests.Book
             Assert.That(changed, Is.False);
         }
 
+        // What the editor leaves when the user deletes all the text, plain or after formatting it.
+        [TestCase("<p></p>")]
+        [TestCase("<p style=\"text-align: center;\"><br /></p>")]
+        public void UpdateDomFromEditedPage_UsersOriginalCopyrightEmptied_PageGetsBloomsSentenceBack(
+            string emptiedField
+        )
+        {
+            // Emptying the unlocked field is how the user gives the sentence about the original
+            // book back to Bloom. Saving that page must leave Bloom's generated sentence on it, not
+            // the empty field (BL-16859).
+            var book = CreateBook();
+            book.BookData.Set(
+                "originalCopyright",
+                XmlString.FromUnencoded("Copyright © 2021, SIL International"),
+                "*"
+            );
+            book.BookData.Set(
+                "originalLicenseUrl",
+                XmlString.FromUnencoded("http://creativecommons.org/licenses/by/4.0/"),
+                "*"
+            );
+            book.BookData.Set(
+                "originalTitle",
+                XmlString.FromUnencoded("A Family Learns about Immunisations"),
+                "*"
+            );
+            book.BookData.Set(
+                BookCopyrightAndLicense.kUserOriginalCopyrightAndLicense,
+                XmlString.FromXml("<p>My own words about the original.</p>"),
+                "*"
+            );
+            var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+            var pageDiv =
+                dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-page')]")
+                as SafeXmlElement;
+            var spot = pageDiv.AppendChild(dom.RawDom.CreateElement("div")) as SafeXmlElement;
+            spot.SetAttribute("class", "copyright Credits-Page-style");
+            spot.SetAttribute("data-derived", "originalCopyrightAndLicense");
+            spot.SetAttribute("lang", "*");
+            spot.InnerXml = "<p>My own words about the original.</p>";
+            book.UpdateDomFromEditedPage(dom, out _, needToDoFullSave: false, out _);
+
+            var unlocked = book.GetEditableHtmlDomForPage(book.GetPages().First());
+            BookCopyrightAndLicense.MakeOriginalCopyrightNoticeEditable(unlocked);
+            var editable =
+                unlocked.SelectSingleNode(
+                    "//div[@data-book='userOriginalCopyrightAndLicense' and @lang='*']"
+                ) as SafeXmlElement;
+            Assert.That(editable, Is.Not.Null, "test setup: the sentence should be editable");
+            editable.InnerXml = emptiedField;
+
+            book.UpdateDomFromEditedPage(
+                unlocked,
+                out var savedPage,
+                needToDoFullSave: true,
+                out _
+            );
+
+            Assert.That(
+                book.BookData.GetVariableOrNull(
+                    BookCopyrightAndLicense.kUserOriginalCopyrightAndLicense,
+                    "*"
+                ).Xml,
+                Is.Null.Or.Empty,
+                "the user's wording should be gone from the data div"
+            );
+            var savedSpot =
+                savedPage.SelectSingleNode(".//div[@data-derived='originalCopyrightAndLicense']")
+                as SafeXmlElement;
+            Assert.That(savedSpot, Is.Not.Null, "the saved page lost the sentence's place");
+            Assert.That(
+                savedSpot.InnerText,
+                Does.Contain("A Family Learns about Immunisations").And.Contain("SIL International")
+            );
+            Assert.That(savedSpot.InnerXml, Does.Contain("<cite data-book=\"originalTitle\""));
+            Assert.That(savedSpot.GetAttribute("data-link-icon"), Is.EqualTo("lock"));
+        }
+
         [Test]
         public void UpdateDomFromEditedPage_AttributeValueChanged_ReportsChanged()
         {
