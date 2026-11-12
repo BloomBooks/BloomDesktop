@@ -715,44 +715,44 @@
         <target xml:lang="fr" state="translated">Un tableau dont les cellules peuvent contenir du texte ou des images</target>
         <note>ID: EditTab.Toolbox.CanvasTool.Table</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Pill.ColumnMenu">
+      <trans-unit id="EditTab.Table.Pill.ColumnMenu" approved="yes">
         <source xml:lang="en">Column menu</source>
-        <target xml:lang="fr" state="translated">Menu de la colonne</target>
+        <target xml:lang="fr" state="final">Menu de la colonne</target>
         <note>ID: EditTab.Table.Pill.ColumnMenu</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.Pill.RowMenu">
         <source xml:lang="en">Row menu</source>
-        <target xml:lang="fr" state="translated">Menu de la ligne</target>
+        <target xml:lang="fr" state="translated">Menu de la rangée</target>
         <note>ID: EditTab.Table.Pill.RowMenu</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Pill.TableMenu">
+      <trans-unit id="EditTab.Table.Pill.TableMenu" approved="yes">
         <source xml:lang="en">Table menu</source>
-        <target xml:lang="fr" state="translated">Menu du tableau</target>
+        <target xml:lang="fr" state="final">Menu du tableau</target>
         <note>ID: EditTab.Table.Pill.TableMenu</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.AddButton.ColumnAtRightEdge">
+      <trans-unit id="EditTab.Table.AddButton.ColumnAtRightEdge" approved="yes">
         <source xml:lang="en">Add column at the right edge</source>
-        <target xml:lang="fr" state="translated">Ajouter une colonne au bord droit</target>
+        <target xml:lang="fr" state="final">Ajouter une colonne au bord droit</target>
         <note>ID: EditTab.Table.AddButton.ColumnAtRightEdge</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.AddButton.RowAtBottomEdge">
         <source xml:lang="en">Add row at the bottom edge</source>
-        <target xml:lang="fr" state="translated">Ajouter une ligne au bord inférieur</target>
+        <target xml:lang="fr" state="translated">Ajouter une rangée au bord inférieur</target>
         <note>ID: EditTab.Table.AddButton.RowAtBottomEdge</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.RowMenu.Heading">
         <source xml:lang="en">Row</source>
-        <target xml:lang="fr" state="translated">Ligne</target>
+        <target xml:lang="fr" state="translated">Rangée</target>
         <note>ID: EditTab.Table.RowMenu.Heading</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.RowMenu.AddAbove">
         <source xml:lang="en">Add Row Above</source>
-        <target xml:lang="fr" state="translated">Insérer une ligne au-dessus</target>
+        <target xml:lang="fr" state="translated">Insérer une rangée au-dessus</target>
         <note>ID: EditTab.Table.RowMenu.AddAbove</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.RowMenu.AddBelow">
         <source xml:lang="en">Add Row Below</source>
-        <target xml:lang="fr" state="translated">Insérer une ligne en dessous</target>
+        <target xml:lang="fr" state="translated">Insérer une rangée en dessous</target>
         <note>ID: EditTab.Table.RowMenu.AddBelow</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.RowMenu.MoveUp">
@@ -912,7 +912,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Table.Size.FixedButton">
         <source xml:lang="en">mm</source>
-        <target xml:lang="fr" state="needs-translation">mm</target>
+        <target xml:lang="fr" state="translated">mm</target>
         <note>ID: EditTab.Table.Size.FixedButton</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.Units.Pixels">
@@ -942,7 +942,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Table.ContentType.Image">
         <source xml:lang="en">Image</source>
-        <target xml:lang="fr" state="needs-translation">Image</target>
+        <target xml:lang="fr" state="translated">Image</target>
         <note>ID: EditTab.Table.ContentType.Image</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.ContentType.Video">
@@ -1147,7 +1147,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Table.Border.Style.Double">
         <source xml:lang="en">Double</source>
-        <target xml:lang="fr" state="needs-translation">Double</target>
+        <target xml:lang="fr" state="translated">Double</target>
         <note>ID: EditTab.Table.Border.Style.Double</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.Border.Weight.Label">
