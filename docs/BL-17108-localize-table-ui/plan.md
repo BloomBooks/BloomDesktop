@@ -74,7 +74,8 @@ BL-17105 and is not on this branch.
    each menu, and fails on any visible text, title or aria-label that came through unmarked.
    That test is what keeps a future string from slipping past. Existing tests keep passing
    because the default localizer returns the English.
-8. Released as `dist-v0.1.3` (bloom-table master 6a4d145).
+8. Released as `dist-v0.1.3` (bloom-table master 6a4d145). `dist-v0.1.4` (80cb69c) then removed
+   `CellMenuItems`' own `localize` prop and added `refreshStructuralChrome()` (below).
 
 ### In Bloom (this branch)
 
@@ -91,7 +92,10 @@ BL-17105 and is not on this branch.
    (`Tables/…`) are on Crowdin as SILCrowdinBot, unapproved.
 3. A unit test that every id in `tableUiStrings` has an `EditTab.Table.<id>` entry in the
    English XLF, so a string added to the library later fails Bloom's tests until it gets one.
-4. Bump the `bloom-table` pin to `dist-v0.1.3`.
+4. Bump the `bloom-table` pin to `dist-v0.1.4`.
+5. `tableFeature.ts` calls `refreshStructuralChrome()` once the table feature status arrives.
+   Before, a pointer already resting on a table as the page loaded saw no + buttons or pills
+   until it left and came back, because the library had asked the gate before the answer came.
 
 ## Existing tests whose expectations change
 
@@ -103,5 +107,5 @@ assertions are unchanged. Every other label test still reads English, which is w
 
 BL-17105's bloom-table work (`host-menu-sections`) changes `table-size-buttons.ts`,
 `CellMenuItems.tsx` and `index.tsx`, which this card also changed, so it rebases onto
-bloom-table master 6a4d145. Any string it adds to the library's own UI goes into
+bloom-table master 80cb69c. Any string it adds to the library's own UI goes into
 `tableUiStrings` and through `uiString`, and needs an `EditTab.Table.<id>` XLF entry here.

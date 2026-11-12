@@ -13,13 +13,14 @@
 // tier below Pro leaves `enabled` false, and a feature Bloom is hiding has
 // `visible` false. Either way the rule is the canvas rule: a table already
 // in the book stays editable as text, but nothing may create or restructure one.
+import { refreshStructuralChrome } from "bloom-table";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 
 // Starts out false so that a table attached before the status arrives is gated
-// rather than briefly showing chrome the user is not entitled to. Nothing has to
-// tell the library the answer has changed: it asks the gate afresh each time it is
-// about to show or reposition the chrome, and the chrome only appears once the
-// user selects a cell.
+// rather than briefly showing chrome the user is not entitled to. The library asks
+// the gate each time it is about to show or reposition the chrome, but the pointer
+// may already rest on a table when the answer arrives, so refreshTableFeatureStatus
+// tells the library to ask again.
 let tablesMayBeRestructuredOnThisPage = false;
 
 /**
@@ -45,6 +46,7 @@ export function refreshTableFeatureStatus(): Promise<void> {
         pendingRefresh = getFeatureStatusAsync("table").then((status) => {
             tablesMayBeRestructuredOnThisPage =
                 !!status?.enabled && !!status?.visible;
+            refreshStructuralChrome();
         });
     }
     return pendingRefresh;
