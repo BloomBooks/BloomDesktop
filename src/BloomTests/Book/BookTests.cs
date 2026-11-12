@@ -6943,6 +6943,71 @@ namespace BloomTests.Book
             );
         }
 
+        /// <summary>
+        /// Two containers show one HEVC video, the second trimmed. Converting for the first must not delete
+        /// the video before the second is processed, and nothing should be left pointing at a missing file.
+        /// </summary>
+        [Test]
+        public void ProcessVideos_OneHevcVideoShownWithDifferentTimings_BothGetPlayableVideos()
+        {
+            SetDom(
+                @"<div id='bloomDataDiv'></div>
+				<div class='bloom-page'>
+					<div class='marginBox'>
+						<div class='bloom-videoContainer'>
+							<video><source src='video/Test%20pattern%20hevc.mp4'></source></video>
+						</div>
+						<div class='bloom-videoContainer'>
+							<video><source src='video/Test%20pattern%20hevc.mp4#t=0.5,1.5'></source></video>
+						</div>
+					</div>
+				</div>"
+            );
+            var book = CreateBook();
+            var videoFolder = Path.Combine(book.FolderPath, "video");
+            Directory.CreateDirectory(videoFolder);
+            var hevcPath = Path.Combine(videoFolder, "Test pattern hevc.mp4");
+            RobustFile.Copy(
+                FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestVideos,
+                    "Test pattern hevc.mp4"
+                ),
+                hevcPath
+            );
+            var containers = HtmlDom
+                .SelectChildVideoElements(book.OurHtmlDom.RawDom.DocumentElement)
+                .Cast<SafeXmlElement>()
+                .ToList();
+            Assert.That(containers, Has.Count.EqualTo(2), "test setup: two video containers");
+
+            SignLanguageApi.ProcessVideos(containers, book.FolderPath);
+
+            var srcs = containers
+                .Select(c => c.SelectSingleNode("video/source").GetAttribute("src"))
+                .ToList();
+            Assert.That(srcs[0], Is.Not.EqualTo(srcs[1]), "the trimmed video is a separate file");
+            foreach (var src in srcs)
+            {
+                Assert.That(
+                    src,
+                    Does.Not.Contain("Test"),
+                    $"{src} should not be the HEVC original"
+                );
+                var path = Path.Combine(book.FolderPath, src);
+                Assert.That(RobustFile.Exists(path), Is.True, $"{src} should exist");
+                Assert.That(
+                    SignLanguageApi.GetVideoCharacteristicsOutput(path),
+                    Does.Contain("Video: h264"),
+                    $"{src} should be H.264"
+                );
+            }
+            Assert.That(
+                RobustFile.Exists(hevcPath),
+                Is.False,
+                "the HEVC original should be deleted once nothing uses it"
+            );
+        }
+
         [Test]
         public void SelectAudioSentenceElements_SentenceWithNoId_SkipsIt()
         {

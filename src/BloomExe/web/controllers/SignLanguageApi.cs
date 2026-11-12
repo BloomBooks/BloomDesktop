@@ -1166,21 +1166,52 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
+        /// The state of one publishing pass over a book's videos. Converting or trimming a video replaces its
+        /// file, but other containers in the same pass may still show the original (for example the
+        /// bloomDataDiv copy of a custom cover's video container, or another page showing the same video with
+        /// different timings). So replaced files are only deleted by Finish, once every container is done, and
+        /// each original video is converted only once.
+        /// </summary>
+        public class VideoPublishingPass
+        {
+            /// <summary>Each original video's path, and the path of the playable video made from it
+            /// (the same path when it needed no conversion).</summary>
+            public readonly Dictionary<string, string> PlayableVideos =
+                new Dictionary<string, string>();
+
+            /// <summary>Files that a converted or trimmed video has replaced.</summary>
+            public readonly HashSet<string> ReplacedFiles = new HashSet<string>();
+
+            /// <summary>
+            /// Deletes each replaced file that no container uses any more (<paramref name="filesInUse"/>
+            /// holds the path each container now shows).
+            /// </summary>
+            public void Finish(ICollection<string> filesInUse)
+            {
+                foreach (var file in ReplacedFiles)
+                {
+                    if (!filesInUse.Contains(file))
+                        RobustFile.Delete(file);
+                }
+            }
+        }
+
+        /// <summary>
         /// When publishing videos in any form but PDF, we want to trim the actual video to just the part that
         /// the user wants to see and add the controls attribute, so that the video controls are visible.
+        /// A video in a codec that Chromium-based readers can't play is also converted to H.264 (BL-17114).
         /// </summary>
         /// <param name="videoContainerElement">bloom-videoContainer element from copied DOM</param>
         /// <param name="sourceBookFolder">This is assumed to be a staging folder, we may replace videos here!</param>
-        /// <param name="alreadyPublished">When several containers are processed together, what each original
-        /// video (with its timings) has already been published as. Trimming or converting a video deletes the
-        /// original, so a second container showing the same video (for example the bloomDataDiv copy of a
-        /// custom cover's video container) must reuse the first one's result rather than look for the file.</param>
+        /// <param name="pass">When several containers are processed together (see ProcessVideos), the pass they
+        /// share, which defers deleting replaced files until all are done. Without one, the files this
+        /// container's video replaced are deleted before returning.</param>
         /// <returns>the new filepath if a video file exists and was copied, empty string if no video file was found</returns>
         public static string PrepareVideoForPublishing(
             SafeXmlElement videoContainerElement,
             string sourceBookFolder,
             bool videoControls,
-            Dictionary<string, (string path, string src)> alreadyPublished = null
+            VideoPublishingPass pass = null
         )
         {
             var videoFolder = Path.Combine(sourceBookFolder, "video");
@@ -1201,32 +1232,42 @@ namespace Bloom.web.controllers
             // Check for valid video file to match url
             var urlWithoutPrefix = UrlPathString.CreateFromUrlEncodedString(videoUrl.Substring(6)); // grab everything after 'video/'
             var originalVideoFilePath = Path.Combine(videoFolder, urlWithoutPrefix.NotEncoded); // any query already removed
-            var publishedKey = originalVideoFilePath + "#t=" + timings;
-            if (
-                alreadyPublished != null
-                && alreadyPublished.TryGetValue(publishedKey, out var earlier)
-            )
-            {
-                sourceElement.SetAttribute("src", earlier.src);
-                if (videoControls)
-                    videoElement.SetAttribute("controls", string.Empty);
-                return earlier.path;
-            }
             if (!RobustFile.Exists(originalVideoFilePath))
                 return string.Empty;
 
-            var tempName = originalVideoFilePath;
-            if (
-                !string.IsNullOrEmpty(FfmpegProgram)
+            var ownPass = pass == null;
+            if (ownPass)
+                pass = new VideoPublishingPass();
+            var haveFfmpeg = !string.IsNullOrEmpty(FfmpegProgram);
+            var shouldTrim =
+                haveFfmpeg
                 && !string.IsNullOrEmpty(timings)
-                && IsVideoMarkedForTrimming(sourceBookFolder, videoUrl, timings)
+                && IsVideoMarkedForTrimming(sourceBookFolder, videoUrl, timings);
+
+            // A book imported before Bloom converted unplayable videos on import (BL-17114), or uploaded
+            // by an older Bloom, can still hold HEVC or other videos that Chromium-based readers can't
+            // play. Convert them here, so the harvester's BloomPUB (and its Read Online copy) and ePUB
+            // play too.
+            var playablePath = originalVideoFilePath;
+            if (
+                haveFfmpeg
+                && !pass.PlayableVideos.TryGetValue(originalVideoFilePath, out playablePath)
             )
             {
+                playablePath = ConvertVideoToPlayableCodecIfNeeded(originalVideoFilePath);
+                pass.PlayableVideos[originalVideoFilePath] = playablePath;
+                if (playablePath != originalVideoFilePath)
+                    pass.ReplacedFiles.Add(originalVideoFilePath);
+            }
+
+            var tempName = playablePath;
+            if (shouldTrim)
+            {
                 tempName = Path.Combine(videoFolder, GetNewVideoFileName());
-                var successful = TrimVideoUsingFfmpeg(originalVideoFilePath, tempName, timings);
+                var successful = TrimVideoUsingFfmpeg(playablePath, tempName, timings);
                 if (successful)
                 {
-                    RobustFile.Delete(originalVideoFilePath);
+                    pass.ReplacedFiles.Add(playablePath);
                     var trimmedFileName =
                         BookStorage.GetVideoFolderName + Path.GetFileName(tempName);
                     HtmlDom.SetVideoElementUrl(
@@ -1240,38 +1281,29 @@ namespace Bloom.web.controllers
                     // probably doesn't exist, but if it does we don't need it.
                     // RobustFile.Delete does not throw if the file doesn't exist.
                     RobustFile.Delete(tempName);
-                    tempName = originalVideoFilePath;
-                }
-            }
-
-            // A book imported before Bloom converted unplayable videos on import (BL-17114), or uploaded
-            // by an older Bloom, can still hold HEVC or other videos that Chromium-based readers can't
-            // play. Convert them here, so the harvester's BloomPUB (and its Read Online copy) and ePUB
-            // play too.
-            if (!string.IsNullOrEmpty(FfmpegProgram))
-            {
-                var playablePath = ConvertVideoToPlayableCodecIfNeeded(tempName);
-                if (playablePath != tempName)
-                {
-                    HtmlDom.SetVideoElementUrl(
-                        videoContainerElement,
-                        UrlPathString.CreateFromUnencodedString(
-                            BookStorage.GetVideoFolderName + Path.GetFileName(playablePath)
-                        ),
-                        false
-                    );
-                    // An untrimmed video keeps its timings, which SetVideoElementUrl drops.
-                    if (tempName == originalVideoFilePath && !string.IsNullOrEmpty(timings))
-                        sourceElement.SetAttribute(
-                            "src",
-                            sourceElement.GetAttribute("src") + "#t=" + timings
-                        );
                     tempName = playablePath;
                 }
             }
+            if (tempName == playablePath && playablePath != originalVideoFilePath)
+            {
+                // Converted but not trimmed: point at the converted video, keeping any timings
+                // (which SetVideoElementUrl drops).
+                HtmlDom.SetVideoElementUrl(
+                    videoContainerElement,
+                    UrlPathString.CreateFromUnencodedString(
+                        BookStorage.GetVideoFolderName + Path.GetFileName(playablePath)
+                    ),
+                    false
+                );
+                if (!string.IsNullOrEmpty(timings))
+                    sourceElement.SetAttribute(
+                        "src",
+                        sourceElement.GetAttribute("src") + "#t=" + timings
+                    );
+            }
 
-            if (alreadyPublished != null)
-                alreadyPublished[publishedKey] = (tempName, sourceElement.GetAttribute("src"));
+            if (ownPass)
+                pass.Finish(new HashSet<string> { tempName });
 
             if (videoControls)
             {
@@ -1283,11 +1315,10 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// While publishing, re-encodes the video at <paramref name="videoFilePath"/> to H.264 if it is in a
-        /// codec that Chromium-based readers can't play (see PlanVideoReencode). The file must be in a
-        /// publishing staging folder: when the video is converted, the original is deleted. Returns the
-        /// path of the video to publish: the converted file, or <paramref name="videoFilePath"/> when no
-        /// conversion was needed or it failed.
+        /// While publishing, makes an H.264 copy of the video at <paramref name="videoFilePath"/> if it is in a
+        /// codec that Chromium-based readers can't play (see PlanVideoReencode). Returns the path of the video to
+        /// publish: the new copy, or <paramref name="videoFilePath"/> when no conversion was needed or it failed.
+        /// The original is left for the caller to delete.
         /// </summary>
         internal static string ConvertVideoToPlayableCodecIfNeeded(string videoFilePath)
         {
@@ -1322,7 +1353,6 @@ namespace Bloom.web.controllers
                 RobustFile.Delete(convertedPath);
                 return videoFilePath;
             }
-            RobustFile.Delete(videoFilePath);
             return convertedPath;
         }
 
@@ -1341,16 +1371,20 @@ namespace Bloom.web.controllers
             // We are counting on this method processing the videos before
             // the recursive CompressDirectory() method gets to the video subdirectory.
             // We are also assuming that 'sourceFolder' is a staging folder (so we can delete modified videos).
-            var alreadyPublished = new Dictionary<string, (string path, string src)>();
+            var pass = new VideoPublishingPass();
+            var filesInUse = new HashSet<string>();
             foreach (var videoContainerElement in videoContainerElements)
             {
-                PrepareVideoForPublishing(
+                var path = PrepareVideoForPublishing(
                     videoContainerElement,
                     sourceFolder,
                     videoControls: false,
-                    alreadyPublished
+                    pass
                 );
+                if (!string.IsNullOrEmpty(path))
+                    filesInUse.Add(path);
             }
+            pass.Finish(filesInUse);
         }
 
         private static bool IsVideoMarkedForTrimming(
