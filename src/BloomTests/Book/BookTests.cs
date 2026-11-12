@@ -7008,6 +7008,60 @@ namespace BloomTests.Book
             );
         }
 
+        /// <summary>
+        /// Two containers ask for the same trim of one video (as a custom cover's bloomDataDiv copy does):
+        /// they should share one trimmed file rather than each carry its own copy.
+        /// </summary>
+        [Test]
+        public void ProcessVideos_TwoContainersWithTheSameTrim_ShareOneTrimmedFile()
+        {
+            SetDom(
+                @"<div id='bloomDataDiv'></div>
+				<div class='bloom-page'>
+					<div class='marginBox'>
+						<div class='bloom-videoContainer'>
+							<video><source src='video/Test%20pattern%20hevc.mp4#t=0.5,1.5'></source></video>
+						</div>
+						<div class='bloom-videoContainer'>
+							<video><source src='video/Test%20pattern%20hevc.mp4#t=0.5,1.5'></source></video>
+						</div>
+					</div>
+				</div>"
+            );
+            var book = CreateBook();
+            var videoFolder = Path.Combine(book.FolderPath, "video");
+            Directory.CreateDirectory(videoFolder);
+            RobustFile.Copy(
+                FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestVideos,
+                    "Test pattern hevc.mp4"
+                ),
+                Path.Combine(videoFolder, "Test pattern hevc.mp4")
+            );
+            var containers = HtmlDom
+                .SelectChildVideoElements(book.OurHtmlDom.RawDom.DocumentElement)
+                .Cast<SafeXmlElement>()
+                .ToList();
+            Assert.That(containers, Has.Count.EqualTo(2), "test setup: two video containers");
+
+            SignLanguageApi.ProcessVideos(containers, book.FolderPath);
+
+            var srcs = containers
+                .Select(c => c.SelectSingleNode("video/source").GetAttribute("src"))
+                .ToList();
+            Assert.That(srcs[0], Does.Not.Contain("Test"), "the video should have been trimmed");
+            Assert.That(
+                srcs[1],
+                Is.EqualTo(srcs[0]),
+                "both containers should share one trimmed file"
+            );
+            Assert.That(
+                Directory.GetFiles(videoFolder),
+                Has.Length.EqualTo(1),
+                "only the shared trimmed file should be left"
+            );
+        }
+
         [Test]
         public void SelectAudioSentenceElements_SentenceWithNoId_SkipsIt()
         {

@@ -1179,6 +1179,11 @@ namespace Bloom.web.controllers
             public readonly Dictionary<string, string> PlayableVideos =
                 new Dictionary<string, string>();
 
+            /// <summary>Each trim made so far (the playable video's path and the timings), and the trimmed
+            /// file, so containers asking for the same trim share one file.</summary>
+            public readonly Dictionary<string, string> TrimmedVideos =
+                new Dictionary<string, string>();
+
             /// <summary>Files that a converted or trimmed video has replaced.</summary>
             public readonly HashSet<string> ReplacedFiles = new HashSet<string>();
 
@@ -1263,10 +1268,15 @@ namespace Bloom.web.controllers
             var tempName = playablePath;
             if (shouldTrim)
             {
-                tempName = Path.Combine(videoFolder, GetNewVideoFileName());
-                var successful = TrimVideoUsingFfmpeg(playablePath, tempName, timings);
+                var trimKey = playablePath + "#t=" + timings;
+                var alreadyTrimmed = pass.TrimmedVideos.TryGetValue(trimKey, out tempName);
+                if (!alreadyTrimmed)
+                    tempName = Path.Combine(videoFolder, GetNewVideoFileName());
+                var successful =
+                    alreadyTrimmed || TrimVideoUsingFfmpeg(playablePath, tempName, timings);
                 if (successful)
                 {
+                    pass.TrimmedVideos[trimKey] = tempName;
                     pass.ReplacedFiles.Add(playablePath);
                     var trimmedFileName =
                         BookStorage.GetVideoFolderName + Path.GetFileName(tempName);
