@@ -732,12 +732,12 @@
       </trans-unit>
       <trans-unit id="EditTab.Table.AddButton.ColumnAtRightEdge">
         <source xml:lang="en">Add column at the right edge</source>
-        <target xml:lang="es-ES" state="translated">Añadir una columna en el borde derecho</target>
+        <target xml:lang="es-ES" state="translated">Agregar una columna en el borde derecho</target>
         <note>ID: EditTab.Table.AddButton.ColumnAtRightEdge</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.AddButton.RowAtBottomEdge">
         <source xml:lang="en">Add row at the bottom edge</source>
-        <target xml:lang="es-ES" state="translated">Añadir una fila en el borde inferior</target>
+        <target xml:lang="es-ES" state="translated">Agregar una fila en el borde inferior</target>
         <note>ID: EditTab.Table.AddButton.RowAtBottomEdge</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.RowMenu.Heading">
@@ -947,7 +947,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Table.ContentType.Video">
         <source xml:lang="en">Video</source>
-        <target xml:lang="es-ES" state="translated">Vídeo</target>
+        <target xml:lang="es-ES" state="translated">Video</target>
         <note>ID: EditTab.Table.ContentType.Video</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.Format.Heading">
@@ -1002,7 +1002,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Table.Format.Padding.Video">
         <source xml:lang="en">Padding between border and video</source>
-        <target xml:lang="es-ES" state="translated">Margen entre el borde y el vídeo</target>
+        <target xml:lang="es-ES" state="translated">Margen entre el borde y el video</target>
         <note>ID: EditTab.Table.Format.Padding.Video</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.Format.Padding.Table">
