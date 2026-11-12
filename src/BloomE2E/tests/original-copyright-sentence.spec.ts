@@ -8,7 +8,8 @@
 // card's rules in order: the Basic Book has no such sentence; the derivative's is locked and offers
 // a closed padlock; clicking the padlock hands it over with the caret in it; the open padlock locks
 // it again with the new words; leaving the page locks it too; "Not a translation or new version"
-// hides it and unticking brings the user's words back; and the words survive quitting Bloom.
+// hides it and unticking brings the user's words back; the words survive quitting Bloom; and deleting all
+// the words brings Bloom's own sentence back.
 //
 // The tests are serial: each starts from the book the one before it left behind, which is how the
 // manual test reads too.
@@ -269,6 +270,33 @@ test.describe("the sentence about the original book on a derivative's credits pa
                 originalCopyrightHintBubble(afterRestart),
             ],
             "09-after-restart",
+        );
+    });
+
+    test("deleting all the words gives the sentence back to Bloom, locked [Test Case ID 828]", async ({
+        page,
+    }) => {
+        test.setTimeout(300000);
+        await goToCreditsPage(page);
+        await unlockOriginalCopyrightSentence(page);
+        // THE ACTION UNDER TEST: emptying the field, then leaving the page and coming back.
+        await typeInOriginalCopyrightSentence(page, "");
+        await goToPage(page, (await getPages(page))[0].id);
+        await goToCreditsPage(page);
+        await expectOriginalCopyrightSentence(
+            page,
+            { editable: false, hasHintBubble: true, text: generatedSentence },
+            "After deleting all the words and leaving the page, the credits page did not show Bloom's own sentence again, locked.",
+        );
+        expect((await hoverOriginalCopyrightSentence(page)).padlock).toBe(
+            "locked",
+        );
+        await saveScreenshotIfAsked(
+            [
+                originalCopyrightSentence(page),
+                originalCopyrightHintBubble(page),
+            ],
+            "10-emptied-back-to-blooms-sentence",
         );
     });
 });
