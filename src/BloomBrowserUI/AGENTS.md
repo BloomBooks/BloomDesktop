@@ -76,7 +76,8 @@ strings translated in one way, and a new one follows it too:
 - The library shows none of its UI until the answer arrives, so the user never sees English change
   into their language.
 - Bloom passes `getLocalizations` from `lib/localizationManager/getLocalizations.ts`, never its
-  own preload or a synchronous localizer.
+  own preload or a synchronous localizer. bloom-ai-image-tools runs in its own frame, so it posts
+  to the same `i18n/loadStrings` endpoint itself.
 
 ## Other notes
 
