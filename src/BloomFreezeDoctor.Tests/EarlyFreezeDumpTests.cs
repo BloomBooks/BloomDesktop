@@ -48,7 +48,7 @@ public class EarlyFreezeDumpTests
 
     /// <summary>What a report claiming the dump ends up with: null whether none was held or none was made.</summary>
     private static async Task<EarlyFreezeDump.Taken?> Claim(EarlyFreezeDump keeper) =>
-        keeper.Claim(TimeSpan.FromSeconds(5)) is { } claim ? await claim : null;
+        keeper.Claim() is { } claim ? await claim : null;
 
     [Test]
     public void Claim_NothingHeld_ReturnsNullAtOnce()
@@ -56,7 +56,7 @@ public class EarlyFreezeDumpTests
         // So that a report about a Bloom that never looked frozen has nothing to wait for.
         using var keeper = Keeper();
 
-        Assert.That(keeper.Claim(TimeSpan.FromSeconds(5)), Is.Null);
+        Assert.That(keeper.Claim(), Is.Null);
     }
 
     [Test]
@@ -168,15 +168,33 @@ public class EarlyFreezeDumpTests
     }
 
     [Test]
-    public async Task Delete_AClaimedDump_RemovesItsFolder()
+    public async Task DeleteWhenWritten_AClaimedDump_RemovesItsFolder()
     {
         using var keeper = Keeper();
         keeper.Observe(TargetState.Suspect);
-        var taken = await Claim(keeper);
-        Assert.That(File.Exists(taken!.DumpPath), Is.True, "sanity check");
+        var claimed = keeper.Claim()!;
+        Assert.That(File.Exists((await claimed)!.DumpPath), Is.True, "sanity check");
 
-        EarlyFreezeDump.Delete(taken);
+        await EarlyFreezeDump.DeleteWhenWritten(claimed);
 
         Assert.That(Directory.GetDirectories(_root), Is.Empty);
+    }
+
+    [Test]
+    public async Task DeleteWhenWritten_DumpStillBeingWritten_DeletesItOnceWritten()
+    {
+        // A report that gave up waiting for the dump must not leave it behind when it does arrive.
+        var finishWriting = new TaskCompletionSource<EarlyFreezeDump.Taken?>();
+        var folder = Path.Combine(_root, "early-4242-x");
+        Directory.CreateDirectory(folder);
+        var path = Path.Combine(folder, "bloom-4242.dmp");
+
+        var deleted = EarlyFreezeDump.DeleteWhenWritten(finishWriting.Task);
+        File.WriteAllText(path, "a dump of 4242");
+        Assert.That(Directory.Exists(folder), Is.True, "nothing should go before it is written");
+        finishWriting.SetResult(new EarlyFreezeDump.Taken(path, DateTimeOffset.UtcNow));
+        await deleted;
+
+        Assert.That(Directory.Exists(folder), Is.False);
     }
 }

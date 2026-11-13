@@ -69,7 +69,10 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
         // No fresh dump - usually because Bloom has gone, sometimes because it went while we asked. The one
         // taken when the freeze began is older, but it is a dump, which a live read cannot give us.
         var taken =
-            context.EarlyDump == null ? null : await context.EarlyDump.ConfigureAwait(false);
+            context.EarlyDump == null
+                ? null
+                : await WaitForEarlyDumpAsync(context.EarlyDump, cancellation)
+                    .ConfigureAwait(false);
         if (taken != null)
         {
             var early = await Task.Run(
@@ -83,7 +86,7 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
             return ReportSection.Failed(
                 Title,
                 "Bloom had gone by the time this report was gathered, and the dump started when it first "
-                    + "stopped responding could not be written",
+                    + $"stopped responding could not be written, or not within {EarlyDumpWait.TotalSeconds:F0}s",
                 started.Elapsed
             );
 
@@ -112,6 +115,7 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
         var text = new StringBuilder();
         try
         {
+            Directory.CreateDirectory(context.ArtifactDirectory);
             var dumpTimer = Stopwatch.StartNew();
             WriteDump(context.Target.ProcessId, dumpPath);
             dumpTimer.Stop();
@@ -191,6 +195,7 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
         var dumpPath = DumpPathFor(context);
         try
         {
+            Directory.CreateDirectory(context.ArtifactDirectory);
             RobustFile.Move(early.DumpPath, dumpPath);
         }
         catch (Exception e)
@@ -239,11 +244,30 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
     /// <summary>The name the Doctor gives a dump of this process, wherever it is written.</summary>
     public static string DumpFileName(int processId) => $"bloom-{processId}.dmp";
 
-    /// <summary>Where this report's dump goes, creating the folder for it.</summary>
-    private static string DumpPathFor(GatherContext context)
+    /// <summary>Where this report's dump goes. The caller creates the folder, where it can handle failing to.</summary>
+    private static string DumpPathFor(GatherContext context) =>
+        Path.Combine(context.ArtifactDirectory, DumpFileName(context.Target.ProcessId));
+
+    /// <summary>
+    /// How long a report that needs the early dump waits for one still being written. Writing takes a
+    /// second or two, so this is far more than it should need, and short against the collector's budget.
+    /// </summary>
+    private static readonly TimeSpan EarlyDumpWait = TimeSpan.FromSeconds(10);
+
+    /// <summary>
+    /// The early dump, once written, or null if writing it failed or did not finish within
+    /// <see cref="EarlyDumpWait"/>. The wait starts here, when the dump is known to be needed, not when it
+    /// was claimed. Whoever claimed it deletes it when it is written, however late.
+    /// </summary>
+    private static async Task<EarlyFreezeDump.Taken?> WaitForEarlyDumpAsync(
+        Task<EarlyFreezeDump.Taken?> earlyDump,
+        CancellationToken cancellation
+    )
     {
-        Directory.CreateDirectory(context.ArtifactDirectory);
-        return Path.Combine(context.ArtifactDirectory, DumpFileName(context.Target.ProcessId));
+        var finished = await Task.WhenAny(earlyDump, Task.Delay(EarlyDumpWait, cancellation))
+            .ConfigureAwait(false);
+        cancellation.ThrowIfCancellationRequested();
+        return finished == earlyDump ? earlyDump.Result : null;
     }
 
     /// <summary>The section for stacks read, or not, from the dump at <paramref name="dumpPath"/>.</summary>

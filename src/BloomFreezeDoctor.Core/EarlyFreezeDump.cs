@@ -82,38 +82,37 @@ public sealed class EarlyFreezeDump : IDisposable
     }
 
     /// <summary>
-    /// Hands the episode's dump to a report that is being gathered. Null at once if this episode has none.
-    /// Otherwise the dump is the caller's from now on, and the task gives it, waiting up to
-    /// <paramref name="wait"/> for one still being written; it gives null if the dump failed or did not
-    /// finish in time.
+    /// Hands the episode's dump to a report that is being gathered. Null at once if this episode has none;
+    /// otherwise the dump, which may still be being written, and gives null if writing it failed.
     ///
-    /// The caller need only await the task if it turns out to need the dump, but must delete what it gives
-    /// (see <see cref="Delete"/>) once it has moved what it wants out. A dump still being written when the
-    /// wait runs out is deleted when it finishes.
+    /// The dump is the caller's from now on. It need only await the task if it turns out to need the dump,
+    /// and how long to wait for one still being written is its call, made when it knows it needs it. Once
+    /// it has moved what it wants out, it must pass the task to <see cref="DeleteWhenWritten"/>.
     /// </summary>
-    public Task<Taken?>? Claim(TimeSpan wait)
+    public Task<Taken?>? Claim()
     {
-        Task<Taken?>? claimed;
         lock (_lock)
         {
-            claimed = _current;
+            var claimed = _current;
             _current = null;
+            return claimed;
         }
-        return claimed == null ? null : WaitForAsync(claimed, wait);
     }
 
-    private async Task<Taken?> WaitForAsync(Task<Taken?> claimed, TimeSpan wait)
-    {
-        if (await Task.WhenAny(claimed, Task.Delay(wait)).ConfigureAwait(false) != claimed)
-        {
-            DeleteWhenDone(claimed);
-            return null;
-        }
-        return claimed.Result;
-    }
-
-    /// <summary>Deletes a claimed dump's folder, along with anything still in it. Never throws.</summary>
-    public static void Delete(Taken taken) => DeleteFolderOf(taken.DumpPath);
+    /// <summary>
+    /// Deletes a claimed dump's folder, with anything still in it, once the dump has been written: at once
+    /// if it has, otherwise when it is. Never throws. Returns without waiting; the task it returns is the
+    /// delete, which nothing need wait for.
+    /// </summary>
+    public static Task DeleteWhenWritten(Task<Taken?> claimed) =>
+        claimed.ContinueWith(
+            t =>
+            {
+                if (t.Result != null)
+                    DeleteFolderOf(t.Result.DumpPath);
+            },
+            TaskScheduler.Default
+        );
 
     /// <summary>Throws away whatever dump this is holding.</summary>
     public void Dispose()
@@ -168,23 +167,15 @@ public sealed class EarlyFreezeDump : IDisposable
     /// </summary>
     private void DeleteWhenDone(Task<Taken?> dump)
     {
-        if (dump.IsCompleted)
-        {
-            if (dump.Result != null)
-                _inBackground(() =>
-                {
-                    Delete(dump.Result);
-                    return null;
-                });
-            return;
-        }
-        dump.ContinueWith(
-            t =>
+        // Through _inBackground when it is already written, which is the usual case, so that a test sees the
+        // delete happen.
+        if (!dump.IsCompleted)
+            DeleteWhenWritten(dump);
+        else if (dump.Result != null)
+            _inBackground(() =>
             {
-                if (t.Result != null)
-                    Delete(t.Result);
-            },
-            TaskScheduler.Default
-        );
+                DeleteFolderOf(dump.Result.DumpPath);
+                return null;
+            });
     }
 }

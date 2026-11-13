@@ -1092,7 +1092,7 @@ public sealed class DoctorSupervisor : IDisposable
         EarlyFreezeDump? keeper;
         lock (_lock)
             keeper = _earlyDumps.LastOrDefault(k => k.ProcessId == facts.ProcessId);
-        var earlyDump = keeper?.Claim(TimeSpan.FromSeconds(10));
+        var earlyDump = keeper?.Claim();
         var context = GatherContextBuilder.Build(
             facts,
             verdict,
@@ -1113,8 +1113,8 @@ public sealed class DoctorSupervisor : IDisposable
         finally
         {
             // The collector moved it into the report if it used it; otherwise this is where it goes.
-            if (earlyDump != null && await earlyDump.ConfigureAwait(false) is { } taken)
-                EarlyFreezeDump.Delete(taken);
+            if (earlyDump != null)
+                _ = EarlyFreezeDump.DeleteWhenWritten(earlyDump);
         }
 
         var bundle = _outbox.Enqueue(
