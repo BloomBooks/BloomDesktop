@@ -127,6 +127,30 @@ jobs:
               working-directory: src/BloomBrowserUI
               run: pnpm run build-prod
 
+            # Now and then the vitest process dies of a native access violation (exit code
+            # 3221225477) part way through, with no failing test and nothing in the log to say
+            # where (BL-17117). Windows Error Reporting writes a minidump of any node.exe that
+            # crashes while this key exists; the stack in it is what we need to find the cause.
+            #
+            # A dump holds the crashed process's memory, environment included, and artifacts of
+            # this public repo can be downloaded by anyone. So dumps are on ONLY around the
+            # vitest step, which is given no secrets: the step right after it turns them off before
+            # any step that does get one (the e2e tests have a password in their environment). The
+            # setting is machine-wide, which is why it must not outlive that one step. DumpType 1
+            # is a minidump, not the whole heap, but it still holds stacks, module data and
+            # probably the environment, so what keeps it safe is that the step has no secrets.
+            - name: Turn on crash dumps for the browser UI tests
+              id: crash_dumps_on
+              if: ${{ success() && env.RUN_FRONTEND_TESTS == 'true' }}
+              run: |
+                  $dumpFolder = Join-Path $env:GITHUB_WORKSPACE "output\vitest-crash-dumps"
+                  New-Item -ItemType Directory -Force -Path $dumpFolder | Out-Null
+                  $key = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\node.exe"
+                  New-Item -Force -Path $key | Out-Null
+                  New-ItemProperty -Path $key -Name DumpFolder -PropertyType ExpandString -Value $dumpFolder -Force | Out-Null
+                  New-ItemProperty -Path $key -Name DumpType -PropertyType DWord -Value 1 -Force | Out-Null
+                  New-ItemProperty -Path $key -Name DumpCount -PropertyType DWord -Value 3 -Force | Out-Null
+
             # The junit file feeds this suite's "Publish ..." step at the end of the job.
             #
             # Two easy ways to get a silently-empty report here, both of which we have hit:
@@ -145,30 +169,6 @@ jobs:
             #
             # The publish step below sets action_fail_on_inconclusive, so if this ever regresses
             # again the job goes red instead of quietly under-reporting.
-            # Now and then the vitest process dies of a native access violation (exit code
-            # 3221225477) part way through, with no failing test and nothing in the log to say
-            # where (BL-17117). Windows Error Reporting writes a minidump of any node.exe that
-            # crashes while this key exists; the stack in it is what we need to find the cause.
-            #
-            # A dump holds the crashed process's memory, environment included, and artifacts of
-            # this public repo can be downloaded by anyone. So dumps are on ONLY around the
-            # vitest step, which is given no secrets: the next step turns them off before any
-            # step that does get one (the e2e tests have a password in their environment). The
-            # setting is machine-wide, which is why it must not outlive that one step. DumpType 1
-            # is a minidump, not the whole heap, but it still holds stacks, module data and
-            # probably the environment, so what keeps it safe is that the step has no secrets.
-            - name: Turn on crash dumps for the browser UI tests
-              id: crash_dumps_on
-              if: ${{ success() && env.RUN_FRONTEND_TESTS == 'true' }}
-              run: |
-                  $dumpFolder = Join-Path $env:GITHUB_WORKSPACE "output\vitest-crash-dumps"
-                  New-Item -ItemType Directory -Force -Path $dumpFolder | Out-Null
-                  $key = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\node.exe"
-                  New-Item -Force -Path $key | Out-Null
-                  New-ItemProperty -Path $key -Name DumpFolder -PropertyType ExpandString -Value $dumpFolder -Force | Out-Null
-                  New-ItemProperty -Path $key -Name DumpType -PropertyType DWord -Value 1 -Force | Out-Null
-                  New-ItemProperty -Path $key -Name DumpCount -PropertyType DWord -Value 3 -Force | Out-Null
-
             - name: Run browser UI tests
               id: frontend_tests
               # success() reproduces the default gating this step had before the condition was added.
