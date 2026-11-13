@@ -167,11 +167,12 @@ namespace Bloom.Utils
             );
             var longerMsgTemplate = LocalizationManager.GetString(
                 "Errors.FileAccessCheck.BlockedLonger",
-                "Bloom checked that it can create, change, rename and delete files in the folder \"{0}\", and Windows refused. This will cause problems, such as books that can't be renamed or opened. The usual cause is antivirus software that protects folders, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access. Tell that program that you trust Bloom. For help, see \"{1}\"."
+                "Windows is not letting Bloom create, change, rename or delete files in the folder where this collection is stored. This will cause problems, such as books that can't be renamed or opened. The usual cause is antivirus software that protects folders, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access. Tell that program that you trust Bloom. For help, see \"{0}\"."
             );
+            // No folder path: users needn't know where their collections are stored, and the log
+            // above has it for whoever helps them.
             var longerMsg = string.Format(
                 longerMsgTemplate,
-                collectionFolder,
                 FileAccessDiagnostics.TroubleshootingLinkHtml()
             );
             // The likely cause names a product and setting, which a person helping the user needs,
