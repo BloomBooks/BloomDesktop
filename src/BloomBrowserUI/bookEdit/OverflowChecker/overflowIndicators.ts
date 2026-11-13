@@ -167,19 +167,19 @@ function getOverflowingBoxes(page: HTMLElement): HTMLElement[] {
     );
 }
 
-// Where a box is, in client coordinates. For a box in a rotated canvas element, `rect` is where
-// the box would be if the canvas element were upright, and `rotation` says how to turn it from
-// there.
+// Where a box is, in viewport (client) pixels. For a box in a rotated canvas element,
+// `rectViewportPx` is where the box would be if the canvas element were upright, and `rotation`
+// says how to turn it from there.
 interface IPlacement {
-    rect: DOMRect;
+    rectViewportPx: DOMRect;
     rotation?: IRotation;
 }
 
-// A canvas element's rotation: by `degrees` about its center, from `frame`, the client rectangle
-// it would have upright.
+// A canvas element's rotation: by `degrees` about its center, from `frameViewportPx`, the
+// rectangle it would have upright.
 interface IRotation {
     degrees: number;
-    frame: DOMRect;
+    frameViewportPx: DOMRect;
 }
 
 // Where a box is. A rotated element's getBoundingClientRect is the upright rectangle around the
@@ -189,88 +189,90 @@ interface IRotation {
 export function placementOf(box: HTMLElement, page: HTMLElement): IPlacement {
     const canvasElement = box.closest<HTMLElement>("." + kRotatedClass);
     if (!canvasElement) {
-        return { rect: box.getBoundingClientRect() };
+        return { rectViewportPx: box.getBoundingClientRect() };
     }
-    const scale = page.getBoundingClientRect().width / page.offsetWidth;
-    const bounds = canvasElement.getBoundingClientRect();
-    const width = canvasElement.offsetWidth * scale;
-    const height = canvasElement.offsetHeight * scale;
-    const frame = new DOMRect(
-        bounds.left + (bounds.width - width) / 2,
-        bounds.top + (bounds.height - height) / 2,
-        width,
-        height,
+    const viewportPxPerLayoutPx =
+        page.getBoundingClientRect().width / page.offsetWidth;
+    const boundsViewportPx = canvasElement.getBoundingClientRect();
+    const widthViewportPx = canvasElement.offsetWidth * viewportPxPerLayoutPx;
+    const heightViewportPx = canvasElement.offsetHeight * viewportPxPerLayoutPx;
+    const frameViewportPx = new DOMRect(
+        boundsViewportPx.left + (boundsViewportPx.width - widthViewportPx) / 2,
+        boundsViewportPx.top + (boundsViewportPx.height - heightViewportPx) / 2,
+        widthViewportPx,
+        heightViewportPx,
     );
-    // The box's position inside the canvas element's border box, in page pixels.
-    let x = 0;
-    let y = 0;
+    // The box's position inside the canvas element's border box.
+    let xLayoutPx = 0;
+    let yLayoutPx = 0;
     for (
         let e: HTMLElement = box;
         e !== canvasElement;
         e = e.offsetParent as HTMLElement
     ) {
         const parent = e.offsetParent as HTMLElement;
-        x += e.offsetLeft + parent.clientLeft;
-        y += e.offsetTop + parent.clientTop;
+        xLayoutPx += e.offsetLeft + parent.clientLeft;
+        yLayoutPx += e.offsetTop + parent.clientTop;
     }
     return {
-        rect: new DOMRect(
-            frame.left + x * scale,
-            frame.top + y * scale,
-            box.offsetWidth * scale,
-            box.offsetHeight * scale,
+        rectViewportPx: new DOMRect(
+            frameViewportPx.left + xLayoutPx * viewportPxPerLayoutPx,
+            frameViewportPx.top + yLayoutPx * viewportPxPerLayoutPx,
+            box.offsetWidth * viewportPxPerLayoutPx,
+            box.offsetHeight * viewportPxPerLayoutPx,
         ),
-        rotation: { degrees: getCanvasElementRotation(canvasElement), frame },
+        rotation: {
+            degrees: getCanvasElementRotation(canvasElement),
+            frameViewportPx,
+        },
     };
 }
 
 // What is needed to draw one box with more text than it can show.
 interface IBoxTooFull {
-    rect: DOMRect;
+    rectViewportPx: DOMRect;
     // Set when the box is in a rotated canvas element; the other coordinates are then those of
     // the box upright.
     rotation?: IRotation;
-    // The y (client coordinates) of the bottom of what the box shows: the inside of its bottom
-    // border, or for a box that pushes past a small container such as a table cell, the bottom
-    // of the container's content, where the container cuts the text off.
-    bottomY: number;
-    // The y (client coordinates) where the text is cut off: everything below it would not show
-    // if the box were not scrolled. It is bottomY moved up by how far the box is scrolled, so it
-    // stays between the same two lines of text as the box scrolls.
-    cutY: number;
-    // The box's line height in page pixels.
-    lineHeight: number;
+    // The y of the bottom of what the box shows: the inside of its bottom border, or for a box
+    // that pushes past a small container such as a table cell, the bottom of the container's
+    // content, where the container cuts the text off.
+    bottomViewportPx: number;
+    // The y where the text is cut off: everything below it would not show if the box were not
+    // scrolled. It is bottomViewportPx moved up by how far the box is scrolled, so it stays
+    // between the same two lines of text as the box scrolls.
+    cutViewportPx: number;
+    lineHeightLayoutPx: number;
     background: string;
 }
 
-// The bottom of an element whose client rectangle is `rect`, less its border and, if asked, its
-// padding, in client coordinates.
-function insideBottom(
+// The bottom of an element at `rectViewportPx`, less its border and, if asked, its padding.
+function insideBottomViewportPx(
     e: HTMLElement,
-    rect: DOMRect,
-    scale: number,
+    rectViewportPx: DOMRect,
+    viewportPxPerLayoutPx: number,
     lessPadding: boolean,
 ): number {
-    const inset =
+    const insetLayoutPx =
         getBorderThickness(e).bottom +
         (lessPadding ? parseFloat(getComputedStyle(e).paddingBottom) : 0);
-    return rect.bottom - inset * scale;
+    return rectViewportPx.bottom - insetLayoutPx * viewportPxPerLayoutPx;
 }
 
-// Measures a box placed at `placement` that shows its text down to bottomY, scrolled up by
-// scrollOffset client pixels.
+// Measures a box placed at `placement` that shows its text down to bottomViewportPx, scrolled up
+// by scrollOffsetViewportPx.
 function measureBoxTooFull(
     box: HTMLElement,
     placement: IPlacement,
-    bottomY: number,
-    scrollOffset: number,
+    bottomViewportPx: number,
+    scrollOffsetViewportPx: number,
 ): IBoxTooFull {
     return {
-        rect: placement.rect,
+        rectViewportPx: placement.rectViewportPx,
         rotation: placement.rotation,
-        bottomY,
-        cutY: bottomY - scrollOffset,
-        lineHeight: lineHeightOf(box),
+        bottomViewportPx,
+        cutViewportPx: bottomViewportPx - scrollOffsetViewportPx,
+        lineHeightLayoutPx: lineHeightLayoutPxOf(box),
         background: backgroundBehind(box),
     };
 }
@@ -285,10 +287,10 @@ function refreshOverflowIndicators(): void {
         return;
     }
     requestChipText();
-    const scale = EditableDivUtils.getPageScale();
+    const viewportPxPerLayoutPx = EditableDivUtils.getPageScale();
     const boxesTooFull: IBoxTooFull[] = [];
     // For each container that boxes push past, the lowest bottom of those boxes.
-    const pushedPast = new Map<HTMLElement, number>();
+    const pushedPastViewportPx = new Map<HTMLElement, number>();
     for (const box of getOverflowingBoxes(page)) {
         if (box.classList.contains("overflow")) {
             const placement = placementOf(box, page);
@@ -296,8 +298,13 @@ function refreshOverflowIndicators(): void {
                 measureBoxTooFull(
                     box,
                     placement,
-                    insideBottom(box, placement.rect, scale, false),
-                    box.scrollTop * scale,
+                    insideBottomViewportPx(
+                        box,
+                        placement.rectViewportPx,
+                        viewportPxPerLayoutPx,
+                        false,
+                    ),
+                    box.scrollTop * viewportPxPerLayoutPx,
                 ),
             );
             continue;
@@ -315,10 +322,11 @@ function refreshOverflowIndicators(): void {
             continue;
         }
         if (container.classList.contains("marginBox")) {
-            pushedPast.set(
+            pushedPastViewportPx.set(
                 container,
                 Math.max(
-                    pushedPast.get(container) ?? Number.NEGATIVE_INFINITY,
+                    pushedPastViewportPx.get(container) ??
+                        Number.NEGATIVE_INFINITY,
                     box.getBoundingClientRect().bottom,
                 ),
             );
@@ -330,28 +338,31 @@ function refreshOverflowIndicators(): void {
         boxesTooFull.push(
             measureBoxTooFull(
                 box,
-                { rect: box.getBoundingClientRect() },
-                insideBottom(
+                { rectViewportPx: box.getBoundingClientRect() },
+                insideBottomViewportPx(
                     container,
                     container.getBoundingClientRect(),
-                    scale,
+                    viewportPxPerLayoutPx,
                     true,
                 ),
                 0,
             ),
         );
     }
-    const pastMargin = Array.from(pushedPast, ([container, bottom]) => ({
-        rect: container.getBoundingClientRect(),
-        bottom,
-    }));
+    const pastMargin = Array.from(
+        pushedPastViewportPx,
+        ([container, bottomViewportPx]) => ({
+            marginViewportPx: container.getBoundingClientRect(),
+            bottomViewportPx,
+        }),
+    );
 
     const draw = LayerDrawer.forLayer(layer);
     for (const box of boxesTooFull) {
         drawBoxTooFull(box, box.rotation ? draw.rotated(box.rotation) : draw);
     }
     for (const margin of pastMargin) {
-        drawPageTooFull(margin.rect, margin.bottom, draw);
+        drawPageTooFull(margin.marginViewportPx, margin.bottomViewportPx, draw);
     }
     layer.replaceChildren(draw.drawings);
 }
@@ -360,64 +371,76 @@ function refreshOverflowIndicators(): void {
 // wash over the lines below it that the box shows when scrolled. In this order, so the chip is
 // on top of the torn edge.
 function drawBoxTooFull(box: IBoxTooFull, draw: LayerDrawer) {
-    const left = draw.x(box.rect.left);
-    const width = draw.length(box.rect.width);
-    const top = draw.y(box.rect.top);
-    const bottom = draw.y(box.bottomY);
-    const cut = draw.y(box.cutY);
+    const leftLayoutPx = draw.xLayoutPx(box.rectViewportPx.left);
+    const widthLayoutPx = draw.lengthLayoutPx(box.rectViewportPx.width);
+    const topLayoutPx = draw.yLayoutPx(box.rectViewportPx.top);
+    const bottomLayoutPx = draw.yLayoutPx(box.bottomViewportPx);
+    const cutLayoutPx = draw.yLayoutPx(box.cutViewportPx);
     // The lines below the cut that are scrolled into view.
-    const washTop = Math.max(cut, top);
-    if (bottom > washTop) {
+    const washTopLayoutPx = Math.max(cutLayoutPx, topLayoutPx);
+    if (bottomLayoutPx > washTopLayoutPx) {
         draw.add("bloom-overflow-cutOffText", {
-            left,
-            top: washTop,
-            width,
-            height: bottom - washTop,
+            leftLayoutPx,
+            topLayoutPx: washTopLayoutPx,
+            widthLayoutPx,
+            heightLayoutPx: bottomLayoutPx - washTopLayoutPx,
         });
     }
-    if (cut < top) {
+    if (cutLayoutPx < topLayoutPx) {
         // Scrolled so far that every line in view is cut off; the wash says so.
         return;
     }
-    if (cut >= bottom) {
+    if (cutLayoutPx >= bottomLayoutPx) {
         // Not scrolled: the last line that fits fades into the background, since the text goes
         // on below the edge.
         draw.add("bloom-overflow-fadeLastLine", {
-            left,
-            top: cut - box.lineHeight,
-            width,
-            height: box.lineHeight,
+            leftLayoutPx,
+            topLayoutPx: cutLayoutPx - box.lineHeightLayoutPx,
+            widthLayoutPx,
+            heightLayoutPx: box.lineHeightLayoutPx,
         }).style.background =
             `linear-gradient(to bottom, transparent, ${box.background})`;
     }
     // A torn, zigzag line where the text is cut off, its teeth cutting into the line above.
     draw.add("bloom-overflow-tornEdge", {
-        left,
-        top: cut,
-        width,
+        leftLayoutPx,
+        topLayoutPx: cutLayoutPx,
+        widthLayoutPx,
     }).style.setProperty("--torn-background", box.background);
     // A small pill on the cut saying the box is overflowing.
     draw.add(
         "bloom-overflow-chip",
-        { left: draw.x(box.rect.right), top: cut },
+        {
+            leftLayoutPx: draw.xLayoutPx(box.rectViewportPx.right),
+            topLayoutPx: cutLayoutPx,
+        },
         chipText.overflowing.text,
     );
 }
 
 // The boxes in the page's margin each fit their text, but together they push past its bottom,
 // so the indicator names the page rather than one box: a red line at the margin's bottom, a
-// red-striped band over everything that is past it, down to `bottom`, and a chip on the line
-// saying the page is too full.
-function drawPageTooFull(margin: DOMRect, bottom: number, draw: LayerDrawer) {
+// red-striped band over everything that is past it, down to `bottomViewportPx`, and a chip on
+// the line saying the page is too full.
+function drawPageTooFull(
+    marginViewportPx: DOMRect,
+    bottomViewportPx: number,
+    draw: LayerDrawer,
+) {
     draw.add("bloom-overflow-pastContainer", {
-        left: draw.x(margin.left),
-        top: draw.y(margin.bottom),
-        width: draw.length(margin.width),
-        height: draw.length(bottom - margin.bottom),
+        leftLayoutPx: draw.xLayoutPx(marginViewportPx.left),
+        topLayoutPx: draw.yLayoutPx(marginViewportPx.bottom),
+        widthLayoutPx: draw.lengthLayoutPx(marginViewportPx.width),
+        heightLayoutPx: draw.lengthLayoutPx(
+            bottomViewportPx - marginViewportPx.bottom,
+        ),
     });
     draw.add(
         "bloom-overflow-chip",
-        { left: draw.x(margin.right), top: draw.y(margin.bottom) },
+        {
+            leftLayoutPx: draw.xLayoutPx(marginViewportPx.right),
+            topLayoutPx: draw.yLayoutPx(marginViewportPx.bottom),
+        },
         chipText.pageOverflowing.text,
     );
 }
@@ -437,30 +460,26 @@ function getLayer(page: HTMLElement | null): HTMLElement | undefined {
     if (layer.previousElementSibling !== page) {
         page.after(layer);
     }
-    const left = page.offsetLeft;
-    const top = page.offsetTop;
-    const width = page.offsetWidth;
-    const height = page.offsetHeight;
-    layer.style.left = left + "px";
-    layer.style.top = top + "px";
-    layer.style.width = width + "px";
-    layer.style.height = height + "px";
+    layer.style.left = page.offsetLeft + "px";
+    layer.style.top = page.offsetTop + "px";
+    layer.style.width = page.offsetWidth + "px";
+    layer.style.height = page.offsetHeight + "px";
     return layer;
 }
 
-// Builds the drawings, placing each by client coordinates converted to the pixels of the element
-// it goes in: the layer, or a rotated frame in it (see rotated()). The conversion is measured on
-// the layer, not the page, because a full-bleed page has a transform of its own that the layer
-// does not share. The drawings collect in `drawings` until they are put in the layer all at once.
+// Builds the drawings, placing each by viewport (client) coordinates converted to the layout
+// pixels of the element it goes in: the layer, or a rotated frame in it (see rotated()). The
+// conversion is measured on the layer, not the page, because a full-bleed page has a transform
+// of its own that the layer does not share. The drawings collect in `drawings` until they are
+// put in the layer all at once.
 class LayerDrawer {
     public readonly drawings: DocumentFragment;
     private constructor(
         // Where the drawings go: `drawings`, or a rotated frame in it.
         private readonly parent: Node,
-        // The client coordinates of the parent's top left corner.
-        private readonly origin: { left: number; top: number },
-        // Client pixels per layer pixel.
-        private readonly scale: number,
+        // The viewport coordinates of the parent's top left corner.
+        private readonly originViewportPx: { left: number; top: number },
+        private readonly viewportPxPerLayoutPx: number,
         drawings: DocumentFragment,
     ) {
         this.drawings = drawings;
@@ -468,12 +487,12 @@ class LayerDrawer {
 
     // A drawer for the layer itself.
     public static forLayer(layer: HTMLElement): LayerDrawer {
-        const layerRect = layer.getBoundingClientRect();
+        const layerViewportPx = layer.getBoundingClientRect();
         const drawings = document.createDocumentFragment();
         return new LayerDrawer(
             drawings,
-            layerRect,
-            layerRect.width / layer.offsetWidth,
+            layerViewportPx,
+            layerViewportPx.width / layer.offsetWidth,
             drawings,
         );
     }
@@ -482,55 +501,63 @@ class LayerDrawer {
     // it draws them in a frame that covers the upright canvas element and is turned the same way.
     public rotated(rotation: IRotation): LayerDrawer {
         const frame = this.add("bloom-overflow-rotatedFrame", {
-            left: this.x(rotation.frame.left),
-            top: this.y(rotation.frame.top),
-            width: this.length(rotation.frame.width),
-            height: this.length(rotation.frame.height),
+            leftLayoutPx: this.xLayoutPx(rotation.frameViewportPx.left),
+            topLayoutPx: this.yLayoutPx(rotation.frameViewportPx.top),
+            widthLayoutPx: this.lengthLayoutPx(rotation.frameViewportPx.width),
+            heightLayoutPx: this.lengthLayoutPx(
+                rotation.frameViewportPx.height,
+            ),
         });
         frame.style.transform = `rotate(${rotation.degrees}deg)`;
         return new LayerDrawer(
             frame,
-            rotation.frame,
-            this.scale,
+            rotation.frameViewportPx,
+            this.viewportPxPerLayoutPx,
             this.drawings,
         );
     }
 
-    // The parent's x coordinate of a client x coordinate.
-    public x(clientX: number): number {
-        return (clientX - this.origin.left) / this.scale;
+    // The parent's x coordinate of a viewport x coordinate.
+    public xLayoutPx(xViewportPx: number): number {
+        return (
+            (xViewportPx - this.originViewportPx.left) /
+            this.viewportPxPerLayoutPx
+        );
     }
 
-    // The parent's y coordinate of a client y coordinate.
-    public y(clientY: number): number {
-        return (clientY - this.origin.top) / this.scale;
+    // The parent's y coordinate of a viewport y coordinate.
+    public yLayoutPx(yViewportPx: number): number {
+        return (
+            (yViewportPx - this.originViewportPx.top) /
+            this.viewportPxPerLayoutPx
+        );
     }
 
-    // A client length in the layer's pixels.
-    public length(clientLength: number): number {
-        return clientLength / this.scale;
+    // A viewport length in layout pixels.
+    public lengthLayoutPx(lengthViewportPx: number): number {
+        return lengthViewportPx / this.viewportPxPerLayoutPx;
     }
 
-    // Adds an element with the given class, positioned in page pixels.
+    // Adds an element with the given class, positioned in the parent's layout pixels.
     public add(
         className: string,
         position: {
-            left: number;
-            top: number;
-            width?: number;
-            height?: number;
+            leftLayoutPx: number;
+            topLayoutPx: number;
+            widthLayoutPx?: number;
+            heightLayoutPx?: number;
         },
         text?: string,
     ): HTMLElement {
         const e = document.createElement("div");
         e.className = className;
-        e.style.left = position.left + "px";
-        e.style.top = position.top + "px";
-        if (position.width !== undefined) {
-            e.style.width = position.width + "px";
+        e.style.left = position.leftLayoutPx + "px";
+        e.style.top = position.topLayoutPx + "px";
+        if (position.widthLayoutPx !== undefined) {
+            e.style.width = position.widthLayoutPx + "px";
         }
-        if (position.height !== undefined) {
-            e.style.height = position.height + "px";
+        if (position.heightLayoutPx !== undefined) {
+            e.style.height = position.heightLayoutPx + "px";
         }
         if (text) {
             e.textContent = text;
@@ -551,9 +578,12 @@ function backgroundBehind(e: HTMLElement): string {
     return "white";
 }
 
-// The box's line height in page pixels.
-function lineHeightOf(box: HTMLElement): number {
+// The box's line height. (getComputedStyle gives it in pixels even when the stylesheet gives a
+// unitless number such as 1.5.)
+function lineHeightLayoutPxOf(box: HTMLElement): number {
     const style = getComputedStyle(box.querySelector("p") ?? box);
-    const lineHeight = parseFloat(style.lineHeight);
-    return isNaN(lineHeight) ? parseFloat(style.fontSize) * 1.2 : lineHeight;
+    const lineHeightLayoutPx = parseFloat(style.lineHeight);
+    return isNaN(lineHeightLayoutPx)
+        ? parseFloat(style.fontSize) * 1.2
+        : lineHeightLayoutPx;
 }

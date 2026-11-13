@@ -16,7 +16,7 @@ vi.mock("../js/editableDivUtils", () => ({
     EditableDivUtils: { getPageScale: () => 1 },
 }));
 
-const kLineHeight = 20;
+const kLineHeightPx = 20;
 
 // Makes a page with a text box 200 by 100 pixels at (50, 40) holding ten lines of text, so the
 // box shows five and the other five do not fit. overflowIndicators.less is not loaded, so this
@@ -35,7 +35,7 @@ function makePageWithBoxTooFull(): HTMLElement {
         <style>#bloom-overflow-indicator-layer, #bloom-overflow-indicator-layer > * { position: absolute; }</style>
         <div class="bloom-editable overflow" style="position: absolute; left: 50px; top: 40px;
                 width: 200px; height: 100px; overflow: hidden; font: 14px Arial;
-                line-height: ${kLineHeight}px; padding: 0; border: 0;">${lines}</div>`;
+                line-height: ${kLineHeightPx}px; padding: 0; border: 0;">${lines}</div>`;
     document.body.appendChild(page);
     return page.querySelector<HTMLElement>(".bloom-editable")!;
 }
@@ -91,7 +91,7 @@ describe("the marks on a box with more text than fits", () => {
     it("are at the box's bottom edge before it is scrolled", async () => {
         const box = makePageWithBoxTooFull();
         // Sanity check: half the text doesn't fit.
-        expect(box.scrollHeight).toBeCloseTo(10 * kLineHeight, -1);
+        expect(box.scrollHeight).toBeCloseTo(10 * kLineHeightPx, -1);
         expect(box.clientHeight).toBe(100);
 
         await redraw();
@@ -105,7 +105,7 @@ describe("the marks on a box with more text than fits", () => {
         ).toBe("Overflowing");
         // The last line that fits fades out above the edge.
         const fade = drawn("bloom-overflow-fadeLastLine")!;
-        expect(fade.top).toBeCloseTo(140 - kLineHeight);
+        expect(fade.top).toBeCloseTo(140 - kLineHeightPx);
         expect(fade.bottom).toBeCloseTo(140);
         // Nothing that doesn't fit is in view, so nothing is washed.
         expect(drawn("bloom-overflow-cutOffText")).toBeUndefined();
@@ -116,16 +116,18 @@ describe("the marks on a box with more text than fits", () => {
         await redraw();
         expect(drawn("bloom-overflow-tornEdge")!.top).toBeCloseTo(140);
 
-        box.scrollTop = 3 * kLineHeight;
+        box.scrollTop = 3 * kLineHeightPx;
         expect(box.scrollTop).toBe(60);
         await redraw();
 
         // The cut is where the box's bottom was, moved up with the text: between line 5, the
         // last that fits, and line 6.
-        const cut = 140 - 60;
-        expect(drawn("bloom-overflow-tornEdge")!.top).toBeCloseTo(cut);
+        const cutViewportPx = 140 - 60;
+        expect(drawn("bloom-overflow-tornEdge")!.top).toBeCloseTo(
+            cutViewportPx,
+        );
         const wash = drawn("bloom-overflow-cutOffText")!;
-        expect(wash.top).toBeCloseTo(cut);
+        expect(wash.top).toBeCloseTo(cutViewportPx);
         expect(wash.bottom).toBeCloseTo(140);
         expect(wash.left).toBeCloseTo(50);
         expect(wash.width).toBeCloseTo(200);
@@ -141,10 +143,10 @@ describe("placementOf", () => {
         const placement = placementOf(box, page);
 
         expect(placement.rotation).toBeUndefined();
-        expect(placement.rect.left).toBeCloseTo(112);
-        expect(placement.rect.top).toBeCloseTo(72);
-        expect(placement.rect.width).toBeCloseTo(50);
-        expect(placement.rect.height).toBeCloseTo(30);
+        expect(placement.rectViewportPx.left).toBeCloseTo(112);
+        expect(placement.rectViewportPx.top).toBeCloseTo(72);
+        expect(placement.rectViewportPx.width).toBeCloseTo(50);
+        expect(placement.rectViewportPx.height).toBeCloseTo(30);
     });
 
     it("gives where a box in a rotated canvas element would be upright, and the rotation", () => {
@@ -156,14 +158,14 @@ describe("placementOf", () => {
 
         const placement = placementOf(box, page);
 
-        expect(placement.rect.left).toBeCloseTo(112);
-        expect(placement.rect.top).toBeCloseTo(72);
-        expect(placement.rect.width).toBeCloseTo(50);
-        expect(placement.rect.height).toBeCloseTo(30);
+        expect(placement.rectViewportPx.left).toBeCloseTo(112);
+        expect(placement.rectViewportPx.top).toBeCloseTo(72);
+        expect(placement.rectViewportPx.width).toBeCloseTo(50);
+        expect(placement.rectViewportPx.height).toBeCloseTo(30);
         expect(placement.rotation!.degrees).toBe(90);
-        expect(placement.rotation!.frame.left).toBeCloseTo(100);
-        expect(placement.rotation!.frame.top).toBeCloseTo(50);
-        expect(placement.rotation!.frame.width).toBeCloseTo(200);
-        expect(placement.rotation!.frame.height).toBeCloseTo(100);
+        expect(placement.rotation!.frameViewportPx.left).toBeCloseTo(100);
+        expect(placement.rotation!.frameViewportPx.top).toBeCloseTo(50);
+        expect(placement.rotation!.frameViewportPx.width).toBeCloseTo(200);
+        expect(placement.rotation!.frameViewportPx.height).toBeCloseTo(100);
     });
 });
