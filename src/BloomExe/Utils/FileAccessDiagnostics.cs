@@ -543,6 +543,15 @@ namespace Bloom.Utils
         private static readonly TimeSpan kReportWait = TimeSpan.FromSeconds(5);
 
         /// <summary>
+        /// Start asking Windows which antivirus products it knows about, if nobody has yet, without
+        /// waiting for the answer.
+        /// </summary>
+        public static void StartAntivirusLookup()
+        {
+            _ = s_antivirusQuery.Value;
+        }
+
+        /// <summary>
         /// The antivirus products Windows Security Center knows about, waiting at most maxWait for
         /// the answer; null if it hasn't come by then.
         /// </summary>

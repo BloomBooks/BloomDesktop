@@ -51,19 +51,24 @@ namespace Bloom.Utils
 
         private static void Check(string collectionFolder)
         {
-            // This thread has time to wait for Windows, and asking now means reports made later
-            // normally find the answer ready.
-            var antivirus = FileAccessDiagnostics.GetAntivirusSummary(TimeSpan.FromMinutes(1));
-            // Program's Sentry setup adds it to every event from now on.
-            Logger.WriteEvent("Antivirus: " + antivirus);
+            // Asking now means reports made later normally find the answer ready. It runs alongside
+            // the probe, which must not wait for it.
+            FileAccessDiagnostics.StartAntivirusLookup();
 
             var problem = ProbeFolder(collectionFolder, out var failedPath);
-            if (problem == null)
-                return;
-            ReportBlocked(
-                collectionFolder,
-                failedPath,
-                $"{problem.GetType().Name}: {problem.Message}"
+            if (problem != null)
+            {
+                ReportBlocked(
+                    collectionFolder,
+                    failedPath,
+                    $"{problem.GetType().Name}: {problem.Message}"
+                );
+            }
+
+            // This thread has time to wait for Windows. Program's Sentry setup adds the answer to
+            // every event once it is known.
+            Logger.WriteEvent(
+                "Antivirus: " + FileAccessDiagnostics.GetAntivirusSummary(TimeSpan.FromMinutes(1))
             );
         }
 
