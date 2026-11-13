@@ -8,7 +8,7 @@
 
 import { expect, type Page } from "@playwright/test";
 import { apiGetJson, apiPost } from "./api";
-import { waitForEditablePage } from "./bookMaking";
+import { waitForEditablePage, waitForEditTabSettled } from "./bookMaking";
 
 /** One of the sizes Bloom offers for the book, as its layout-choice API describes it. */
 interface ILayoutChoice {
@@ -62,6 +62,9 @@ export async function setPageSize(page: Page, layoutId: string): Promise<void> {
         })
         .toBe(layoutId);
     await waitForEditablePage(page);
+    // The rebuilt page announces itself more than once, and the Edit tab drops a request that
+    // changes the page (such as adding one) if it comes between those announcements.
+    await waitForEditTabSettled(page);
 }
 
 /**
