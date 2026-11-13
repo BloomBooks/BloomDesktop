@@ -5,6 +5,18 @@
 *.h     diff=cpp
 *.idh   diff=cpp
 
+# C# is formatted by csharpier, which indents with spaces, so turn off the "tabs are
+# required" rule (indent-with-non-tab) that the "*" line applies to everything. Without this,
+# git diff --check reports "indent with spaces" on every correctly-formatted C# change, and
+# review bots duly report it as a finding.
+#
+# Deliberately NOT adding tab-in-indent, the companion rule the web files below use to forbid
+# tabs: our C# tests hold HTML fixtures inside verbatim strings, and those are indented with
+# tabs. That is string content rather than code, and flagging it would just swap one false
+# report for another. (*.Designer.cs turns all whitespace checking off further down, and still
+# does, because a later line wins.)
+*.cs   whitespace=space-before-tab,-indent-with-non-tab,trailing-space,tabwidth=4
+
 # Different settings for javascript, typescript, html, tmx, less and css files
 *.js   whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2 text
 *.ts   whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2 text
