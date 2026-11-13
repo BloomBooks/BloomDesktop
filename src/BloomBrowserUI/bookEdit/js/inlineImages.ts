@@ -39,8 +39,7 @@ import {
     computeCroppedInlineImageAspectRatio,
     getInlineImageCrop,
 } from "./inlineImageCrop";
-
-export const kInlineImageClass = "bloom-inlineImage";
+import { kInlineImageClass, kInlineImageIdAttr } from "./inlineImageConstants";
 
 export const kInlineImageLeftClass = "bloom-inlineImageLeft";
 export const kInlineImageRightClass = "bloom-inlineImageRight";
@@ -70,16 +69,6 @@ export const kInlineImageSelectedClass = "bloom-inlineImage-selected";
 // wrappers, so that anything attached to the old elements can be rebuilt. See
 // restoreInlineImageGroupState.
 export const kInlineImagesRestoredEvent = "bloom-inlineImagesRestored";
-
-// Identifies one inline image. Its copy in every language's editable has the same value. A
-// text block can hold any number of inline images, so there may be no single "wrapper in this
-// editable", and sync, normalize and undo all pair up the copies by this value. It has to be
-// a data attribute rather than an id, because TranslationGroupManager removes the id from an
-// editable it clones for a new language (TranslationGroupManager.cs:998). None of the C# code
-// that cleans up book markup touches a data attribute it does not know, and StripOutText only
-// removes p/br/u/b/i elements and text nodes, so the wrapper and this attribute reach the new
-// language with the value unchanged.
-export const kInlineImageIdAttr = "data-bloom-inline-image-id";
 
 // Custom properties that hold the picture's size and position. See inlineImages.less for what
 // each one does.
@@ -526,6 +515,28 @@ export function normalizeInlineImages(translationGroup: HTMLElement): void {
     const canonicalEditable = getCanonicalInlineImageEditable(translationGroup);
     if (!canonicalEditable) return;
     syncInlineImagesFromEditable(canonicalEditable);
+}
+
+/**
+ * Removes the data-cke-* attributes from the inline images in an editable that CKEditor manages.
+ * When CKEditor loads a box, it writes the box's content back through its own HTML processing,
+ * which gives every img a copy of its src in data-cke-saved-src, and its getData(), which the page
+ * is saved through, writes that copy out as the src. The copy keeps the picture the page loaded
+ * with, whatever the src is changed to later, so the page would be saved with the old picture.
+ * With the copy gone, getData() writes the current src. Called when the editor is ready.
+ */
+export function removeCkEditorAttributesFromInlineImages(
+    editable: HTMLElement,
+): void {
+    editable
+        .querySelectorAll(`.${kInlineImageClass}, .${kInlineImageClass} *`)
+        .forEach((element) =>
+            Array.from(element.attributes)
+                .filter((attribute) => attribute.name.startsWith("data-cke-"))
+                .forEach((attribute) =>
+                    element.removeAttribute(attribute.name),
+                ),
+        );
 }
 
 /**

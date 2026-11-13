@@ -14,8 +14,8 @@
 // It does not step a line at a time the whole way down. A full A5 block is more than twenty
 // lines, which would take most of a minute, and every position in the middle of the block is
 // reached by the same arithmetic. So one drag covers most of the distance, as a person would do
-// it, and the single-line steps are used only for the last few lines, where the bottom dock
-// takes over and where the reported bug stopped the band too early.
+// it, and the single-line steps are used only for the last few lines, where the band reaches the
+// end of the block and where the reported bug stopped the band too early.
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -119,8 +119,9 @@ test("the picture can be put right down to the end of the block's text, not just
             Math.round(roomAtTopPx - kLinesToStep * lineHeightPx),
         );
 
-    // Then move it down one line at a time until the bottom dock takes over, keeping track of
-    // the lowest position the band reached. The assertion below is measured in lines, so smaller
+    // Then move it down one line at a time to the end of the block, keeping track of the lowest
+    // position the band reached. The band stops with the picture's bottom edge on the bottom of
+    // the block. The assertion below is measured in lines, so smaller
     // steps would tell us nothing more. The step limit allows for text that rewraps as the
     // picture moves through it, and is small enough that the loop ends quickly if the band stops
     // moving.

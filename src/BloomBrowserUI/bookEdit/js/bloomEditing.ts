@@ -24,10 +24,11 @@ import { SetupWidgetEditing } from "./bloomWidgets";
 import {
     clearInlineImageSelection,
     commitInlineImageUndoForImageChange,
-    kInlineImageClass,
     prepareInlineImageUndoForImageChange,
+    removeCkEditorAttributesFromInlineImages,
     setupInlineImages,
 } from "./inlineImages";
+import { kInlineImageClass } from "./inlineImageConstants";
 import {
     cleanupInlineImageInteractions,
     adjustInlineImageOffsetsIfBlockSizeChanged,
@@ -2134,6 +2135,11 @@ export function attachToCkEditor(element) {
     $("body").addClass("hideAllCKEditors");
     const ckedit = CKEDITOR.inline(element);
     keepTypingWhenCkEditorLoads(ckedit, element);
+    // Registered here, before the undo plugin's own instanceReady listener, so that CKEditor's
+    // first undo snapshot is taken without the attributes this removes.
+    ckedit.on("instanceReady", () =>
+        removeCkEditorAttributesFromInlineImages(element),
+    );
 
     // Until this editor is ready, a gather reads the box from the DOM rather than from getData(),
     // and they differ: SetupElements puts an empty <p></p> into an empty editable, which getData()

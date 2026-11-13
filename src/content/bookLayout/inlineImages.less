@@ -147,6 +147,12 @@
     // pushes every new image below all the existing ones, so when one image has been
     // dragged low, a newly added image ends up below the text block itself. Stacking on
     // one side cannot make images overlap, and it behaves the same in every renderer.
+    //
+    // The 0.5em bottom margin keeps the text below a left or right image from touching it. The
+    // block counts the margin as content, so an image dragged to the bottom of its block stops
+    // half a line above the bottom, where a middle image rests on the bottom itself. John chose
+    // to keep it that way: dropping the margin only at the bottom would need a state on the
+    // wrapper that has to stay right whenever the block changes size.
     &.bloom-inlineImageLeft {
         float: left;
         clear: left;
