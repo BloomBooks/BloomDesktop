@@ -71,8 +71,8 @@ importers:
         specifier: 0.80.0
         version: 0.80.0(@nivo/core@0.80.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@sillsdev/config-r':
-        specifier: 1.0.0-alpha.34
-        version: 1.0.0-alpha.34(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/icons-material@5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tiny-warning@1.0.3)
+        specifier: 1.0.0-alpha.35
+        version: 1.0.0-alpha.35(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/icons-material@5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tiny-warning@1.0.3)
       '@types/filesize':
         specifier: 5.0.0
         version: 5.0.0
@@ -256,7 +256,7 @@ importers:
         version: 7.18.5(supports-color@5.5.0)
       '@babel/preset-env':
         specifier: 7.18.2
-        version: 7.18.2(@babel/core@7.18.5(supports-color@5.5.0))
+        version: 7.18.2(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
       '@babel/preset-react':
         specifier: 7.17.12
         version: 7.17.12(@babel/core@7.18.5(supports-color@5.5.0))
@@ -1903,8 +1903,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@sillsdev/config-r@1.0.0-alpha.34':
-    resolution: {integrity: sha512-6cFCzmxN5WRPaxJZUqGFk76SWwgjKzmsamydLoGc3qbDSKz3HYEVLzn+SJ3qkF4S/4J1rluVSsoaB1OqQxfpIA==}
+  '@sillsdev/config-r@1.0.0-alpha.35':
+    resolution: {integrity: sha512-lU8qQneAYo2nev0lG3iwS3Z671EEvlf8RcgdO30BHUZrwcuuuI2oRXBCydZTU4ElkWxFK/TJcjlP2q7B9Q1btw==}
     peerDependencies:
       '@emotion/react': '>= 11.8.2 < 12'
       '@emotion/styled': '>= 11.8.1 < 12'
@@ -6876,7 +6876,7 @@ snapshots:
       regexpu-core: 6.4.0
       semver: 6.3.1
 
-  '@babel/helper-define-polyfill-provider@0.3.3(@babel/core@7.18.5(supports-color@5.5.0))':
+  '@babel/helper-define-polyfill-provider@0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)':
     dependencies:
       '@babel/core': 7.18.5(supports-color@5.5.0)
       '@babel/helper-compilation-targets': 7.29.7
@@ -7437,7 +7437,7 @@ snapshots:
       '@babel/helper-create-regexp-features-plugin': 7.29.7(@babel/core@7.18.5(supports-color@5.5.0))
       '@babel/helper-plugin-utils': 7.29.7
 
-  '@babel/preset-env@7.18.2(@babel/core@7.18.5(supports-color@5.5.0))':
+  '@babel/preset-env@7.18.2(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)':
     dependencies:
       '@babel/compat-data': 7.29.7
       '@babel/core': 7.18.5(supports-color@5.5.0)
@@ -7510,7 +7510,7 @@ snapshots:
       '@babel/plugin-transform-unicode-regex': 7.29.7(@babel/core@7.18.5(supports-color@5.5.0))
       '@babel/preset-modules': 0.1.6(@babel/core@7.18.5(supports-color@5.5.0))
       '@babel/types': 7.29.7
-      babel-plugin-polyfill-corejs2: 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
+      babel-plugin-polyfill-corejs2: 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
       babel-plugin-polyfill-corejs3: 0.5.3(@babel/core@7.18.5(supports-color@5.5.0))
       babel-plugin-polyfill-regenerator: 0.3.1(@babel/core@7.18.5(supports-color@5.5.0))
       core-js-compat: 3.49.0
@@ -8347,7 +8347,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.62.2':
     optional: true
 
-  '@sillsdev/config-r@1.0.0-alpha.34(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/icons-material@5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tiny-warning@1.0.3)':
+  '@sillsdev/config-r@1.0.0-alpha.35(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/icons-material@5.11.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tiny-warning@1.0.3)':
     dependencies:
       '@emotion/react': 11.14.0(@types/react@18.3.31)(react@18.3.1)
       '@emotion/styled': 11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
@@ -9206,11 +9206,11 @@ snapshots:
       cosmiconfig: 7.1.0
       resolve: 1.22.12
 
-  babel-plugin-polyfill-corejs2@0.3.3(@babel/core@7.18.5(supports-color@5.5.0)):
+  babel-plugin-polyfill-corejs2@0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0):
     dependencies:
       '@babel/compat-data': 7.29.7
       '@babel/core': 7.18.5(supports-color@5.5.0)
-      '@babel/helper-define-polyfill-provider': 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
+      '@babel/helper-define-polyfill-provider': 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
       semver: 6.3.1
     transitivePeerDependencies:
       - supports-color
@@ -9218,7 +9218,7 @@ snapshots:
   babel-plugin-polyfill-corejs3@0.5.3(@babel/core@7.18.5(supports-color@5.5.0)):
     dependencies:
       '@babel/core': 7.18.5(supports-color@5.5.0)
-      '@babel/helper-define-polyfill-provider': 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
+      '@babel/helper-define-polyfill-provider': 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
       core-js-compat: 3.49.0
     transitivePeerDependencies:
       - supports-color
@@ -9226,7 +9226,7 @@ snapshots:
   babel-plugin-polyfill-regenerator@0.3.1(@babel/core@7.18.5(supports-color@5.5.0)):
     dependencies:
       '@babel/core': 7.18.5(supports-color@5.5.0)
-      '@babel/helper-define-polyfill-provider': 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
+      '@babel/helper-define-polyfill-provider': 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
