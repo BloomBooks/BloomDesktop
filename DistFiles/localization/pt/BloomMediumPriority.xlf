@@ -730,14 +730,14 @@
         <target xml:lang="pt-PT" state="final">Menu da tabela</target>
         <note>ID: EditTab.Table.Pill.TableMenu</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.AddButton.ColumnAtRightEdge">
+      <trans-unit id="EditTab.Table.AddButton.ColumnAtRightEdge" approved="yes">
         <source xml:lang="en">Add column at the right edge</source>
-        <target xml:lang="pt-PT" state="translated">Adicionar uma coluna no limite direito</target>
+        <target xml:lang="pt-PT" state="final">Adicionar uma coluna na borda direita</target>
         <note>ID: EditTab.Table.AddButton.ColumnAtRightEdge</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.AddButton.RowAtBottomEdge">
+      <trans-unit id="EditTab.Table.AddButton.RowAtBottomEdge" approved="yes">
         <source xml:lang="en">Add row at the bottom edge</source>
-        <target xml:lang="pt-PT" state="translated">Adicionar uma linha no limite inferior</target>
+        <target xml:lang="pt-PT" state="final">Adicionar uma linha na borda inferior</target>
         <note>ID: EditTab.Table.AddButton.RowAtBottomEdge</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.RowMenu.Heading" approved="yes">
@@ -810,9 +810,9 @@
         <target xml:lang="pt-PT" state="final">Eliminar coluna</target>
         <note>ID: EditTab.Table.ColumnMenu.Delete</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Menu.CellMenuNote">
+      <trans-unit id="EditTab.Table.Menu.CellMenuNote" approved="yes">
         <source xml:lang="en">Right click on a cell for Cell menu</source>
-        <target xml:lang="pt-PT" state="translated">Clique numa célula com o botão direito para abrir o menu da célula</target>
+        <target xml:lang="pt-PT" state="final">Clique numa célula com o botão direito para abrir o menu da célula</target>
         <note>ID: EditTab.Table.Menu.CellMenuNote</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.TableMenu.Heading" approved="yes">
@@ -910,9 +910,9 @@
         <target xml:lang="pt-PT" state="final">Tamanho fixo</target>
         <note>ID: EditTab.Table.Size.Fixed</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Size.FixedButton">
+      <trans-unit id="EditTab.Table.Size.FixedButton" approved="yes">
         <source xml:lang="en">mm</source>
-        <target xml:lang="pt-PT" state="translated">mm</target>
+        <target xml:lang="pt-PT" state="final">mm</target>
         <note>ID: EditTab.Table.Size.FixedButton</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.Units.Pixels" approved="yes">
@@ -975,39 +975,39 @@
         <target xml:lang="pt-PT" state="final">Direita</target>
         <note>ID: EditTab.Table.Format.Align.Right</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Format.VAlign.Top">
+      <trans-unit id="EditTab.Table.Format.VAlign.Top" approved="yes">
         <source xml:lang="en">Top</source>
-        <target xml:lang="pt-PT" state="translated">Superior</target>
+        <target xml:lang="pt-PT" state="final">Superior</target>
         <note>ID: EditTab.Table.Format.VAlign.Top</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Format.VAlign.Middle">
+      <trans-unit id="EditTab.Table.Format.VAlign.Middle" approved="yes">
         <source xml:lang="en">Middle</source>
-        <target xml:lang="pt-PT" state="translated">No meio</target>
+        <target xml:lang="pt-PT" state="final">No meio</target>
         <note>ID: EditTab.Table.Format.VAlign.Middle</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Format.VAlign.Bottom">
+      <trans-unit id="EditTab.Table.Format.VAlign.Bottom" approved="yes">
         <source xml:lang="en">Bottom</source>
-        <target xml:lang="pt-PT" state="translated">Inferior</target>
+        <target xml:lang="pt-PT" state="final">Inferior</target>
         <note>ID: EditTab.Table.Format.VAlign.Bottom</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Format.Padding.Text">
+      <trans-unit id="EditTab.Table.Format.Padding.Text" approved="yes">
         <source xml:lang="en">Padding between border and text</source>
-        <target xml:lang="pt-PT" state="translated">Margem entre o limite e o texto</target>
+        <target xml:lang="pt-PT" state="final">Margem entre a borda e o texto</target>
         <note>ID: EditTab.Table.Format.Padding.Text</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Format.Padding.Image">
+      <trans-unit id="EditTab.Table.Format.Padding.Image" approved="yes">
         <source xml:lang="en">Padding between border and image</source>
-        <target xml:lang="pt-PT" state="translated">Margem entre o limite e a imagem</target>
+        <target xml:lang="pt-PT" state="final">Margem entre a borda e a imagem</target>
         <note>ID: EditTab.Table.Format.Padding.Image</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Format.Padding.Video">
+      <trans-unit id="EditTab.Table.Format.Padding.Video" approved="yes">
         <source xml:lang="en">Padding between border and video</source>
-        <target xml:lang="pt-PT" state="translated">Margem entre o limite e o vídeo</target>
+        <target xml:lang="pt-PT" state="final">Margem entre a borda e o vídeo</target>
         <note>ID: EditTab.Table.Format.Padding.Video</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Format.Padding.Table">
+      <trans-unit id="EditTab.Table.Format.Padding.Table" approved="yes">
         <source xml:lang="en">Padding between border and table</source>
-        <target xml:lang="pt-PT" state="translated">Margem entre o limite e a tabela</target>
+        <target xml:lang="pt-PT" state="final">Margem entre a borda e a tabela</target>
         <note>ID: EditTab.Table.Format.Padding.Table</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.Format.Padding.Cell" approved="yes">
@@ -1025,104 +1025,104 @@
         <target xml:lang="pt-PT" state="final">Cantos</target>
         <note>ID: EditTab.Table.Format.Corners</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Format.CornerRadius">
+      <trans-unit id="EditTab.Table.Format.CornerRadius" approved="yes">
         <source xml:lang="en">Corner radius {0}</source>
-        <target xml:lang="pt-PT" state="translated">Raio dos cantos {0}</target>
+        <target xml:lang="pt-PT" state="final">Raio dos cantos {0}</target>
         <note>ID: EditTab.Table.Format.CornerRadius</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.ScopeTabs">
+      <trans-unit id="EditTab.Table.Border.ScopeTabs" approved="yes">
         <source xml:lang="en">Which borders to change</source>
-        <target xml:lang="pt-PT" state="translated">Limites a alterar</target>
+        <target xml:lang="pt-PT" state="final">Bordas a alterar</target>
         <note>ID: EditTab.Table.Border.ScopeTabs</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.Scope.All">
+      <trans-unit id="EditTab.Table.Border.Scope.All" approved="yes">
         <source xml:lang="en">All</source>
-        <target xml:lang="pt-PT" state="translated">Todos</target>
+        <target xml:lang="pt-PT" state="final">Todos</target>
         <note>ID: EditTab.Table.Border.Scope.All</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.Scope.Outer">
+      <trans-unit id="EditTab.Table.Border.Scope.Outer" approved="yes">
         <source xml:lang="en">Outer</source>
-        <target xml:lang="pt-PT" state="translated">Externos</target>
+        <target xml:lang="pt-PT" state="final">Externos</target>
         <note>ID: EditTab.Table.Border.Scope.Outer</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.Scope.Inner">
+      <trans-unit id="EditTab.Table.Border.Scope.Inner" approved="yes">
         <source xml:lang="en">Inner</source>
-        <target xml:lang="pt-PT" state="translated">Internos</target>
+        <target xml:lang="pt-PT" state="final">Internos</target>
         <note>ID: EditTab.Table.Border.Scope.Inner</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.Scope.Brush">
+      <trans-unit id="EditTab.Table.Border.Scope.Brush" approved="yes">
         <source xml:lang="en">Border Brush</source>
-        <target xml:lang="pt-PT" state="translated">Pincel de limites</target>
+        <target xml:lang="pt-PT" state="final">Pincel de borda</target>
         <note>ID: EditTab.Table.Border.Scope.Brush</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Cell">
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Cell" approved="yes">
         <source xml:lang="en">Every edge of this cell</source>
-        <target xml:lang="pt-PT" state="translated">Todos os limites desta célula</target>
+        <target xml:lang="pt-PT" state="final">Todas as bordas desta célula</target>
         <note>ID: EditTab.Table.Border.ScopeCaption.All.Cell</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Row">
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Row" approved="yes">
         <source xml:lang="en">Every edge in this row</source>
-        <target xml:lang="pt-PT" state="translated">Todos os limites desta linha</target>
+        <target xml:lang="pt-PT" state="final">Todas as bordas desta linha</target>
         <note>ID: EditTab.Table.Border.ScopeCaption.All.Row</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Column">
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Column" approved="yes">
         <source xml:lang="en">Every edge in this column</source>
-        <target xml:lang="pt-PT" state="translated">Todos os limites desta coluna</target>
+        <target xml:lang="pt-PT" state="final">Todas as bordas desta coluna</target>
         <note>ID: EditTab.Table.Border.ScopeCaption.All.Column</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Table">
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Table" approved="yes">
         <source xml:lang="en">Every edge in the table</source>
-        <target xml:lang="pt-PT" state="translated">Todos os limites da tabela</target>
+        <target xml:lang="pt-PT" state="final">Todas as bordas da tabela</target>
         <note>ID: EditTab.Table.Border.ScopeCaption.All.Table</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Cell">
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Cell" approved="yes">
         <source xml:lang="en">The four edges of this cell</source>
-        <target xml:lang="pt-PT" state="translated">Os quatro limites desta célula</target>
+        <target xml:lang="pt-PT" state="final">As quatro bordas desta célula</target>
         <note>ID: EditTab.Table.Border.ScopeCaption.Outer.Cell</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Row">
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Row" approved="yes">
         <source xml:lang="en">The outside edges of this row</source>
-        <target xml:lang="pt-PT" state="translated">Os limites externos desta linha</target>
+        <target xml:lang="pt-PT" state="final">As bordas externas desta linha</target>
         <note>ID: EditTab.Table.Border.ScopeCaption.Outer.Row</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Column">
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Column" approved="yes">
         <source xml:lang="en">The outside edges of this column</source>
-        <target xml:lang="pt-PT" state="translated">Os limites externos desta coluna</target>
+        <target xml:lang="pt-PT" state="final">As bordas externas desta coluna</target>
         <note>ID: EditTab.Table.Border.ScopeCaption.Outer.Column</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Table">
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Table" approved="yes">
         <source xml:lang="en">The four outside edges of the table</source>
-        <target xml:lang="pt-PT" state="translated">Os quatro limites externos da tabela</target>
+        <target xml:lang="pt-PT" state="final">As quatro bordas externas da tabela</target>
         <note>ID: EditTab.Table.Border.ScopeCaption.Outer.Table</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.ScopeCaption.Inner.Row">
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Inner.Row" approved="yes">
         <source xml:lang="en">Only the edges between cells in this row</source>
-        <target xml:lang="pt-PT" state="translated">Apenas os limites entre as células desta linha</target>
+        <target xml:lang="pt-PT" state="final">Apenas as bordas entre as células desta linha</target>
         <note>ID: EditTab.Table.Border.ScopeCaption.Inner.Row</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.ScopeCaption.Inner.Column">
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Inner.Column" approved="yes">
         <source xml:lang="en">Only the edges between cells in this column</source>
-        <target xml:lang="pt-PT" state="translated">Apenas os limites entre as células desta coluna</target>
+        <target xml:lang="pt-PT" state="final">Apenas as bordas entre as células desta coluna</target>
         <note>ID: EditTab.Table.Border.ScopeCaption.Inner.Column</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.ScopeCaption.Inner.Table">
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Inner.Table" approved="yes">
         <source xml:lang="en">Only the edges between cells</source>
-        <target xml:lang="pt-PT" state="translated">Apenas os limites entre as células</target>
+        <target xml:lang="pt-PT" state="final">Apenas as bordas entre as células</target>
         <note>ID: EditTab.Table.Border.ScopeCaption.Inner.Table</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.ScopeCaption.Brush">
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Brush" approved="yes">
         <source xml:lang="en">Set the color, style and weight below, then click edges in the table</source>
-        <target xml:lang="pt-PT" state="translated">Escolha a cor, o estilo e a espessura abaixo e depois clique nos limites da tabela</target>
+        <target xml:lang="pt-PT" state="final">Escolha a cor, o estilo e a espessura abaixo e depois clique nas bordas da tabela</target>
         <note>ID: EditTab.Table.Border.ScopeCaption.Brush</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.Color">
+      <trans-unit id="EditTab.Table.Border.Color" approved="yes">
         <source xml:lang="en">Border color</source>
-        <target xml:lang="pt-PT" state="translated">Cor do limite</target>
+        <target xml:lang="pt-PT" state="final">Cor da borda</target>
         <note>ID: EditTab.Table.Border.Color</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.Style.Label">
+      <trans-unit id="EditTab.Table.Border.Style.Label" approved="yes">
         <source xml:lang="en">Border Style</source>
-        <target xml:lang="pt-PT" state="translated">Estilo do limite</target>
+        <target xml:lang="pt-PT" state="final">Estilo da borda</target>
         <note>ID: EditTab.Table.Border.Style.Label</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.Border.Style.None" approved="yes">
@@ -1150,9 +1150,9 @@
         <target xml:lang="pt-PT" state="final">Dupla</target>
         <note>ID: EditTab.Table.Border.Style.Double</note>
       </trans-unit>
-      <trans-unit id="EditTab.Table.Border.Weight.Label">
+      <trans-unit id="EditTab.Table.Border.Weight.Label" approved="yes">
         <source xml:lang="en">Border Weight</source>
-        <target xml:lang="pt-PT" state="translated">Espessura do limite</target>
+        <target xml:lang="pt-PT" state="final">Espessura da borda</target>
         <note>ID: EditTab.Table.Border.Weight.Label</note>
       </trans-unit>
       <trans-unit id="EditTab.Table.Border.Weight.None" approved="yes">
