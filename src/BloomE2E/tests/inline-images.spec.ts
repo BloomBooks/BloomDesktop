@@ -45,8 +45,12 @@ import {
     getInlineImages,
     clickInBlockText,
     closeInlineImageMenu,
+    dragInlineImageBelowBlock,
     dragInlineImageDown,
     dragInlineImageToDock,
+    getBlockLineHeightPx,
+    getBlockScrollOverflowPx,
+    getRoomBelowInlineImagePx,
     readSavedInlineImages,
     resizeInlineImage,
     selectInlineImage,
@@ -444,29 +448,46 @@ test.describe("inline images in a text block [Test Case ID 815]", () => {
         expect(after.fileName).toBe("bird.png");
     });
 
-    test("dragging the picture below the text docks it at the bottom, as the last thing in the block", async ({
+    test("dragging the picture below the text leaves it at the very bottom of the block", async ({
         page,
     }) => {
-        // THE ACTION UNDER TEST: a mouse drag to below the block. Docking at the bottom is the
-        // only change that moves the wrapper in the markup; it becomes the block's last child
-        // instead of its first.
-        await dragInlineImageToDock(page, BLOCK, LANG, imageId, "bottom");
+        // The block has room to spare below its text. The bottom dock would put the picture
+        // right after the last line of text, higher than the bottom of the block, so it made
+        // the picture jump up as it was dragged down (BL-17078). The picture stays in its own
+        // dock instead, at the bottom.
+        const lineHeightPx = await getBlockLineHeightPx(page, BLOCK, LANG);
+        expect(
+            lineHeightPx,
+            "The block reports no line height, so this test cannot say what a line's worth of room is.",
+        ).toBeGreaterThan(0);
 
+        // THE ACTION UNDER TEST: a mouse drag to below the block.
+        await dragInlineImageBelowBlock(page, BLOCK, LANG, imageId);
+
+        // Less than a line of the block is left below the picture, so no text follows it.
+        await expect
+            .poll(() => getRoomBelowInlineImagePx(page, BLOCK, LANG, imageId), {
+                timeout: 30000,
+                message:
+                    "After the drag below the block, the picture should be at the very " +
+                    "bottom of the block, with less than a line of room below it.",
+            })
+            .toBeLessThan(lineHeightPx);
+        // Little room below the picture would also be what a picture hanging below the block
+        // leaves, so check that the text all still shows (with a pixel for rounding).
+        expect(
+            await getBlockScrollOverflowPx(page, BLOCK, LANG),
+            "The picture at the bottom of the block should not push any text out of it.",
+        ).toBeLessThanOrEqual(1);
         const copies = await getInlineImageInEveryLanguage(
             page,
             BLOCK,
             imageId,
         );
-        for (const copy of copies) {
-            expect(copy.dock).toBe("bottom");
-            expect(copy.slot.index).toBe(copy.slot.childCount - 1);
-        }
-        const shown = await getInlineImage(page, BLOCK, LANG, imageId);
-        // A picture docked at the bottom does not float; it is the last block in the field.
-        expect(shown.float).toBe("none");
+        for (const copy of copies) expect(copy.dock).not.toBe("bottom");
     });
 
-    test("dragging it back out of the bottom dock puts it first again", async ({
+    test("dragging it to the right docks it right, first in the block", async ({
         page,
     }) => {
         await dragInlineImageToDock(page, BLOCK, LANG, imageId, "right");
