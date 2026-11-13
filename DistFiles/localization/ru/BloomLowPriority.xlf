@@ -178,6 +178,11 @@
         <target xml:lang="ru" state="needs-translation">The collection's bookshelf was not on the list of bookshelves for this Bloom subscription.</target>
         <note>ID: PublishTab.Upload.BookshelfError</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignInRejected" translate="no">
+        <source xml:lang="en">BloomLibrary.org did not accept your sign-in. It has probably expired. Please sign in again, then try again.</source>
+        <target xml:lang="ru" state="needs-translation">BloomLibrary.org did not accept your sign-in. It has probably expired. Please sign in again, then try again.</target>
+        <note>ID: PublishTab.Upload.SignInRejected</note>
+      </trans-unit>
       <trans-unit id="Settings.Subscription.DownloadForEdit" sil:dynamic="true">
         <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</source>
         <target xml:lang="ru" state="needs-translation">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</target>
@@ -278,6 +283,11 @@
         <target xml:lang="ru" state="needs-translation">Spreadsheet Import/Export</target>
         <note>ID: Feature.Spreadsheet</note>
       </trans-unit>
+      <trans-unit id="Feature.Table">
+        <source xml:lang="en">Table</source>
+        <target xml:lang="ru" state="needs-translation">Table</target>
+        <note>ID: Feature.Table</note>
+      </trans-unit>
       <!-- TODO: add other features -->
       <trans-unit id="Spreadsheet.DataDivConflictWarning">
         <source xml:lang="en">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</source>
@@ -348,6 +358,21 @@
         <source xml:lang="en">Bloom was not able to access a microphone.</source>
         <target xml:lang="ru" state="needs-translation">Bloom was not able to access a microphone.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation">
+        <source xml:lang="en">Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity". Either way, you will need to use the "Apply Timings File..." button to apply your changes.</source>
+        <target xml:lang="ru" state="needs-translation">Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity". Either way, you will need to use the "Apply Timings File..." button to apply your changes.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile">
+        <source xml:lang="en">Current timings file is {0}</source>
+        <target xml:lang="ru" state="needs-translation">Current timings file is {0}</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile">
+        <source xml:lang="en">Current audio file is {0} (.wav or .mp3)</source>
+        <target xml:lang="ru" state="needs-translation">Current audio file is {0} (.wav or .mp3)</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile</note>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.OneDriveProblem">
         <source xml:lang="en">OneDrive Problem</source>
@@ -448,6 +473,11 @@
         <source xml:lang="en">Bloom could not make this book's pictures smaller. It will try again the next time the book is updated.</source>
         <target xml:lang="ru" state="needs-translation">Bloom could not make this book's pictures smaller. It will try again the next time the book is updated.</target>
         <note>ID: ImageUtils.ShrinkingImagesFailed</note>
+      </trans-unit>
+      <trans-unit id="Shell.SavingBeforeWindowsShutsDown" translate="no">
+        <source xml:lang="en">Bloom is saving your book</source>
+        <target xml:lang="ru" state="needs-translation">Bloom is saving your book</target>
+        <note>ID: Shell.SavingBeforeWindowsShutsDown</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Credits.AccountCreditsUsed">
         <source xml:lang="en">{0} used of {1} account credits</source>

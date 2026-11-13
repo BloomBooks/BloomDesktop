@@ -70,6 +70,21 @@
         <target xml:lang="fr" state="needs-translation">Projects that have Bloom Enterprise subscriptions can arrange for one or more bookshelves on the Bloom Library. All books uploaded from this collection will go into the selected bookshelf.</target>
         <note>ID: CollectionSettingsDialog.BloomLibraryPage.BookshelfDescription</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage.Places" translate="no">
+        <source xml:lang="en">Places</source>
+        <target xml:lang="fr" state="needs-translation">Places</target>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Places</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage.Places.Description" translate="no">
+        <source xml:lang="en">Some front matters will show the following place names. If there are any that you don't want to show, leave them empty.</source>
+        <target xml:lang="fr" state="needs-translation">Some front matters will show the following place names. If there are any that you don't want to show, leave them empty.</target>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Places.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage.Style" translate="no">
+        <source xml:lang="en">Style</source>
+        <target xml:lang="fr" state="needs-translation">Style</target>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Style</note>
+      </trans-unit>
       <trans-unit id="Feature.AiImageEditing">
         <source xml:lang="en">Edit Images with AI</source>
         <target xml:lang="fr" state="translated">Modifier les images avec l'IA</target>
@@ -695,10 +710,455 @@
         <target xml:lang="fr" state="needs-translation">Navigation</target>
         <note>ID: EditTab.Toolbox.CanvasTool.Navigation</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.Table" translate="no">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Table">
         <source xml:lang="en">A table whose cells can hold text or pictures</source>
-        <target xml:lang="fr" state="needs-translation">A table whose cells can hold text or pictures</target>
+        <target xml:lang="fr" state="translated">Un tableau dont les cellules peuvent contenir du texte ou des images</target>
         <note>ID: EditTab.Toolbox.CanvasTool.Table</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Pill.ColumnMenu" approved="yes">
+        <source xml:lang="en">Column menu</source>
+        <target xml:lang="fr" state="final">Menu de la colonne</target>
+        <note>ID: EditTab.Table.Pill.ColumnMenu</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Pill.RowMenu" approved="yes">
+        <source xml:lang="en">Row menu</source>
+        <target xml:lang="fr" state="final">Menu de la rangée</target>
+        <note>ID: EditTab.Table.Pill.RowMenu</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Pill.TableMenu" approved="yes">
+        <source xml:lang="en">Table menu</source>
+        <target xml:lang="fr" state="final">Menu du tableau</target>
+        <note>ID: EditTab.Table.Pill.TableMenu</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.AddButton.ColumnAtRightEdge" approved="yes">
+        <source xml:lang="en">Add column at the right edge</source>
+        <target xml:lang="fr" state="final">Ajouter une colonne au bord droit</target>
+        <note>ID: EditTab.Table.AddButton.ColumnAtRightEdge</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.AddButton.RowAtBottomEdge" approved="yes">
+        <source xml:lang="en">Add row at the bottom edge</source>
+        <target xml:lang="fr" state="final">Ajouter une rangée au bord inférieur</target>
+        <note>ID: EditTab.Table.AddButton.RowAtBottomEdge</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.Heading" approved="yes">
+        <source xml:lang="en">Row</source>
+        <target xml:lang="fr" state="final">Rangée</target>
+        <note>ID: EditTab.Table.RowMenu.Heading</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.AddAbove" approved="yes">
+        <source xml:lang="en">Add Row Above</source>
+        <target xml:lang="fr" state="final">Insérer une rangée au-dessus</target>
+        <note>ID: EditTab.Table.RowMenu.AddAbove</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.AddBelow" approved="yes">
+        <source xml:lang="en">Add Row Below</source>
+        <target xml:lang="fr" state="final">Insérer une rangée en dessous</target>
+        <note>ID: EditTab.Table.RowMenu.AddBelow</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.MoveUp" approved="yes">
+        <source xml:lang="en">Move Row Up</source>
+        <target xml:lang="fr" state="final">Déplacer la rangée vers le haut</target>
+        <note>ID: EditTab.Table.RowMenu.MoveUp</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.MoveDown" approved="yes">
+        <source xml:lang="en">Move Row Down</source>
+        <target xml:lang="fr" state="final">Déplacer la rangée vers le bas</target>
+        <note>ID: EditTab.Table.RowMenu.MoveDown</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.Duplicate" approved="yes">
+        <source xml:lang="en">Duplicate Row</source>
+        <target xml:lang="fr" state="final">Dupliquer la rangée</target>
+        <note>ID: EditTab.Table.RowMenu.Duplicate</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.RowMenu.Delete" approved="yes">
+        <source xml:lang="en">Delete Row</source>
+        <target xml:lang="fr" state="final">Supprimer la rangée</target>
+        <note>ID: EditTab.Table.RowMenu.Delete</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.Heading" approved="yes">
+        <source xml:lang="en">Column</source>
+        <target xml:lang="fr" state="final">Colonne</target>
+        <note>ID: EditTab.Table.ColumnMenu.Heading</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.AddLeft" approved="yes">
+        <source xml:lang="en">Add Column Left</source>
+        <target xml:lang="fr" state="final">Insérer une colonne à gauche</target>
+        <note>ID: EditTab.Table.ColumnMenu.AddLeft</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.AddRight" approved="yes">
+        <source xml:lang="en">Add Column Right</source>
+        <target xml:lang="fr" state="final">Insérer une colonne à droite</target>
+        <note>ID: EditTab.Table.ColumnMenu.AddRight</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.MoveLeft" approved="yes">
+        <source xml:lang="en">Move Left</source>
+        <target xml:lang="fr" state="final">Déplacer vers la gauche</target>
+        <note>ID: EditTab.Table.ColumnMenu.MoveLeft</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.MoveRight" approved="yes">
+        <source xml:lang="en">Move Right</source>
+        <target xml:lang="fr" state="final">Déplacer vers la droite</target>
+        <note>ID: EditTab.Table.ColumnMenu.MoveRight</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.Duplicate" approved="yes">
+        <source xml:lang="en">Duplicate Column</source>
+        <target xml:lang="fr" state="final">Dupliquer la colonne</target>
+        <note>ID: EditTab.Table.ColumnMenu.Duplicate</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ColumnMenu.Delete" approved="yes">
+        <source xml:lang="en">Delete Column</source>
+        <target xml:lang="fr" state="final">Supprimer la colonne</target>
+        <note>ID: EditTab.Table.ColumnMenu.Delete</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Menu.CellMenuNote" approved="yes">
+        <source xml:lang="en">Right click on a cell for Cell menu</source>
+        <target xml:lang="fr" state="final">Faites un clic droit sur une cellule pour ouvrir son menu</target>
+        <note>ID: EditTab.Table.Menu.CellMenuNote</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.Heading" approved="yes">
+        <source xml:lang="en">Table</source>
+        <target xml:lang="fr" state="final">Tableau</target>
+        <note>ID: EditTab.Table.TableMenu.Heading</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.HorizontalSpace" approved="yes">
+        <source xml:lang="en">Horizontal space between cells</source>
+        <target xml:lang="fr" state="final">Espace horizontal entre les cellules</target>
+        <note>ID: EditTab.Table.TableMenu.HorizontalSpace</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.VerticalSpace" approved="yes">
+        <source xml:lang="en">Vertical space between cells</source>
+        <target xml:lang="fr" state="final">Espace vertical entre les cellules</target>
+        <note>ID: EditTab.Table.TableMenu.VerticalSpace</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.CopyProperties" approved="yes">
+        <source xml:lang="en">Copy properties</source>
+        <target xml:lang="fr" state="final">Copier la mise en forme</target>
+        <note>ID: EditTab.Table.TableMenu.CopyProperties</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.PasteProperties" approved="yes">
+        <source xml:lang="en">Paste properties</source>
+        <target xml:lang="fr" state="final">Coller la mise en forme</target>
+        <note>ID: EditTab.Table.TableMenu.PasteProperties</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.CopyTable" approved="yes">
+        <source xml:lang="en">Copy Table</source>
+        <target xml:lang="fr" state="final">Copier le tableau</target>
+        <note>ID: EditTab.Table.TableMenu.CopyTable</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.CutTable" approved="yes">
+        <source xml:lang="en">Cut Table</source>
+        <target xml:lang="fr" state="final">Couper le tableau</target>
+        <note>ID: EditTab.Table.TableMenu.CutTable</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.TableMenu.DeleteTable" approved="yes">
+        <source xml:lang="en">Delete Table</source>
+        <target xml:lang="fr" state="final">Supprimer le tableau</target>
+        <note>ID: EditTab.Table.TableMenu.DeleteTable</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.CellMenu.Heading" approved="yes">
+        <source xml:lang="en">Table Cell</source>
+        <target xml:lang="fr" state="final">Cellule du tableau</target>
+        <note>ID: EditTab.Table.CellMenu.Heading</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.CellMenu.MergeRight" approved="yes">
+        <source xml:lang="en">Merge with cell to the right</source>
+        <target xml:lang="fr" state="final">Fusionner avec la cellule de droite</target>
+        <note>ID: EditTab.Table.CellMenu.MergeRight</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.CellMenu.MergeDown" approved="yes">
+        <source xml:lang="en">Merge with cell below</source>
+        <target xml:lang="fr" state="final">Fusionner avec la cellule du dessous</target>
+        <note>ID: EditTab.Table.CellMenu.MergeDown</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.CellMenu.Split" approved="yes">
+        <source xml:lang="en">Split</source>
+        <target xml:lang="fr" state="final">Fractionner</target>
+        <note>ID: EditTab.Table.CellMenu.Split</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.PaintFormat.Command" approved="yes">
+        <source xml:lang="en">Paint format</source>
+        <target xml:lang="fr" state="final">Reproduire la mise en forme</target>
+        <note>ID: EditTab.Table.PaintFormat.Command</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.PaintFormat.End" approved="yes">
+        <source xml:lang="en">End format painting</source>
+        <target xml:lang="fr" state="final">Arrêter de reproduire la mise en forme</target>
+        <note>ID: EditTab.Table.PaintFormat.End</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.PaintFormat.EndWithShortcut" approved="yes">
+        <source xml:lang="en">End format painting (Esc)</source>
+        <target xml:lang="fr" state="final">Arrêter de reproduire la mise en forme (Échap)</target>
+        <note>ID: EditTab.Table.PaintFormat.EndWithShortcut</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Size.Label" approved="yes">
+        <source xml:lang="en">Size</source>
+        <target xml:lang="fr" state="final">Taille</target>
+        <note>ID: EditTab.Table.Size.Label</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Size.Grow" approved="yes">
+        <source xml:lang="en">Grow</source>
+        <target xml:lang="fr" state="final">Étirer</target>
+        <note>ID: EditTab.Table.Size.Grow</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Size.Hug" approved="yes">
+        <source xml:lang="en">Hug</source>
+        <target xml:lang="fr" state="final">Ajuster au contenu</target>
+        <note>ID: EditTab.Table.Size.Hug</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Size.Fixed" approved="yes">
+        <source xml:lang="en">Fixed size</source>
+        <target xml:lang="fr" state="final">Taille fixe</target>
+        <note>ID: EditTab.Table.Size.Fixed</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Size.FixedButton" approved="yes">
+        <source xml:lang="en">mm</source>
+        <target xml:lang="fr" state="final">mm</target>
+        <note>ID: EditTab.Table.Size.FixedButton</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Units.Pixels" approved="yes">
+        <source xml:lang="en">{0}px</source>
+        <target xml:lang="fr" state="final">{0} px</target>
+        <note>ID: EditTab.Table.Units.Pixels</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Units.Millimetres" approved="yes">
+        <source xml:lang="en">{0}mm</source>
+        <target xml:lang="fr" state="final">{0} mm</target>
+        <note>ID: EditTab.Table.Units.Millimetres</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ContentType.Label" approved="yes">
+        <source xml:lang="en">Content Type</source>
+        <target xml:lang="fr" state="final">Type de contenu</target>
+        <note>ID: EditTab.Table.ContentType.Label</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ContentType.Text" approved="yes">
+        <source xml:lang="en">Text</source>
+        <target xml:lang="fr" state="final">Texte</target>
+        <note>ID: EditTab.Table.ContentType.Text</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ContentType.Table" approved="yes">
+        <source xml:lang="en">Table</source>
+        <target xml:lang="fr" state="final">Tableau</target>
+        <note>ID: EditTab.Table.ContentType.Table</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ContentType.Image" approved="yes">
+        <source xml:lang="en">Image</source>
+        <target xml:lang="fr" state="final">Image</target>
+        <note>ID: EditTab.Table.ContentType.Image</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.ContentType.Video" approved="yes">
+        <source xml:lang="en">Video</source>
+        <target xml:lang="fr" state="final">Vidéo</target>
+        <note>ID: EditTab.Table.ContentType.Video</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Heading" approved="yes">
+        <source xml:lang="en">Format</source>
+        <target xml:lang="fr" state="final">Mise en forme</target>
+        <note>ID: EditTab.Table.Format.Heading</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Alignment" approved="yes">
+        <source xml:lang="en">Alignment</source>
+        <target xml:lang="fr" state="final">Alignement</target>
+        <note>ID: EditTab.Table.Format.Alignment</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Align.Left" approved="yes">
+        <source xml:lang="en">Left</source>
+        <target xml:lang="fr" state="final">Gauche</target>
+        <note>ID: EditTab.Table.Format.Align.Left</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Align.Center" approved="yes">
+        <source xml:lang="en">Center</source>
+        <target xml:lang="fr" state="final">Centre</target>
+        <note>ID: EditTab.Table.Format.Align.Center</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Align.Right" approved="yes">
+        <source xml:lang="en">Right</source>
+        <target xml:lang="fr" state="final">Droite</target>
+        <note>ID: EditTab.Table.Format.Align.Right</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.VAlign.Top" approved="yes">
+        <source xml:lang="en">Top</source>
+        <target xml:lang="fr" state="final">Haut</target>
+        <note>ID: EditTab.Table.Format.VAlign.Top</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.VAlign.Middle" approved="yes">
+        <source xml:lang="en">Middle</source>
+        <target xml:lang="fr" state="final">Milieu</target>
+        <note>ID: EditTab.Table.Format.VAlign.Middle</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.VAlign.Bottom" approved="yes">
+        <source xml:lang="en">Bottom</source>
+        <target xml:lang="fr" state="final">Bas</target>
+        <note>ID: EditTab.Table.Format.VAlign.Bottom</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Padding.Text" approved="yes">
+        <source xml:lang="en">Padding between border and text</source>
+        <target xml:lang="fr" state="final">Marge entre la bordure et le texte</target>
+        <note>ID: EditTab.Table.Format.Padding.Text</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Padding.Image" approved="yes">
+        <source xml:lang="en">Padding between border and image</source>
+        <target xml:lang="fr" state="final">Marge entre la bordure et l'image</target>
+        <note>ID: EditTab.Table.Format.Padding.Image</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Padding.Video" approved="yes">
+        <source xml:lang="en">Padding between border and video</source>
+        <target xml:lang="fr" state="final">Marge entre la bordure et la vidéo</target>
+        <note>ID: EditTab.Table.Format.Padding.Video</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Padding.Table" approved="yes">
+        <source xml:lang="en">Padding between border and table</source>
+        <target xml:lang="fr" state="final">Marge entre la bordure et le tableau</target>
+        <note>ID: EditTab.Table.Format.Padding.Table</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Padding.Cell" approved="yes">
+        <source xml:lang="en">Padding inside the cell</source>
+        <target xml:lang="fr" state="final">Marge intérieure de la cellule</target>
+        <note>ID: EditTab.Table.Format.Padding.Cell</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Fill" approved="yes">
+        <source xml:lang="en">Fill</source>
+        <target xml:lang="fr" state="final">Remplissage</target>
+        <note>ID: EditTab.Table.Format.Fill</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.Corners" approved="yes">
+        <source xml:lang="en">Corners</source>
+        <target xml:lang="fr" state="final">Coins</target>
+        <note>ID: EditTab.Table.Format.Corners</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Format.CornerRadius" approved="yes">
+        <source xml:lang="en">Corner radius {0}</source>
+        <target xml:lang="fr" state="final">Rayon des coins {0}</target>
+        <note>ID: EditTab.Table.Format.CornerRadius</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeTabs" approved="yes">
+        <source xml:lang="en">Which borders to change</source>
+        <target xml:lang="fr" state="final">Bordures à modifier</target>
+        <note>ID: EditTab.Table.Border.ScopeTabs</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Scope.All" approved="yes">
+        <source xml:lang="en">All</source>
+        <target xml:lang="fr" state="final">Toutes</target>
+        <note>ID: EditTab.Table.Border.Scope.All</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Scope.Outer" approved="yes">
+        <source xml:lang="en">Outer</source>
+        <target xml:lang="fr" state="final">Extérieures</target>
+        <note>ID: EditTab.Table.Border.Scope.Outer</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Scope.Inner" approved="yes">
+        <source xml:lang="en">Inner</source>
+        <target xml:lang="fr" state="final">Intérieures</target>
+        <note>ID: EditTab.Table.Border.Scope.Inner</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Scope.Brush" approved="yes">
+        <source xml:lang="en">Border Brush</source>
+        <target xml:lang="fr" state="final">Pinceau de bordure</target>
+        <note>ID: EditTab.Table.Border.Scope.Brush</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Cell" approved="yes">
+        <source xml:lang="en">Every edge of this cell</source>
+        <target xml:lang="fr" state="final">Toutes les bordures de cette cellule</target>
+        <note>ID: EditTab.Table.Border.ScopeCaption.All.Cell</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Row" approved="yes">
+        <source xml:lang="en">Every edge in this row</source>
+        <target xml:lang="fr" state="final">Toutes les bordures de cette rangée</target>
+        <note>ID: EditTab.Table.Border.ScopeCaption.All.Row</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Column" approved="yes">
+        <source xml:lang="en">Every edge in this column</source>
+        <target xml:lang="fr" state="final">Toutes les bordures de cette colonne</target>
+        <note>ID: EditTab.Table.Border.ScopeCaption.All.Column</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.All.Table" approved="yes">
+        <source xml:lang="en">Every edge in the table</source>
+        <target xml:lang="fr" state="final">Toutes les bordures du tableau</target>
+        <note>ID: EditTab.Table.Border.ScopeCaption.All.Table</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Cell" approved="yes">
+        <source xml:lang="en">The four edges of this cell</source>
+        <target xml:lang="fr" state="final">Les quatre bordures de cette cellule</target>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Outer.Cell</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Row" approved="yes">
+        <source xml:lang="en">The outside edges of this row</source>
+        <target xml:lang="fr" state="final">Les bordures extérieures de cette rangée</target>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Outer.Row</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Column" approved="yes">
+        <source xml:lang="en">The outside edges of this column</source>
+        <target xml:lang="fr" state="final">Les bordures extérieures de cette colonne</target>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Outer.Column</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Outer.Table" approved="yes">
+        <source xml:lang="en">The four outside edges of the table</source>
+        <target xml:lang="fr" state="final">Les quatre bordures extérieures du tableau</target>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Outer.Table</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Inner.Row" approved="yes">
+        <source xml:lang="en">Only the edges between cells in this row</source>
+        <target xml:lang="fr" state="final">Seulement les bordures entre les cellules de cette rangée</target>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Inner.Row</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Inner.Column" approved="yes">
+        <source xml:lang="en">Only the edges between cells in this column</source>
+        <target xml:lang="fr" state="final">Seulement les bordures entre les cellules de cette colonne</target>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Inner.Column</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Inner.Table" approved="yes">
+        <source xml:lang="en">Only the edges between cells</source>
+        <target xml:lang="fr" state="final">Seulement les bordures entre les cellules</target>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Inner.Table</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.ScopeCaption.Brush" approved="yes">
+        <source xml:lang="en">Set the color, style and weight below, then click edges in the table</source>
+        <target xml:lang="fr" state="final">Choisissez la couleur, le style et l'épaisseur ci-dessous, puis cliquez sur des bordures du tableau</target>
+        <note>ID: EditTab.Table.Border.ScopeCaption.Brush</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Color" approved="yes">
+        <source xml:lang="en">Border color</source>
+        <target xml:lang="fr" state="final">Couleur de bordure</target>
+        <note>ID: EditTab.Table.Border.Color</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Style.Label" approved="yes">
+        <source xml:lang="en">Border Style</source>
+        <target xml:lang="fr" state="final">Style de bordure</target>
+        <note>ID: EditTab.Table.Border.Style.Label</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Style.None" approved="yes">
+        <source xml:lang="en">None</source>
+        <target xml:lang="fr" state="final">Aucun</target>
+        <note>ID: EditTab.Table.Border.Style.None</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Style.Solid" approved="yes">
+        <source xml:lang="en">Solid</source>
+        <target xml:lang="fr" state="final">Continue</target>
+        <note>ID: EditTab.Table.Border.Style.Solid</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Style.Dashed" approved="yes">
+        <source xml:lang="en">Dashed</source>
+        <target xml:lang="fr" state="final">Tirets</target>
+        <note>ID: EditTab.Table.Border.Style.Dashed</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Style.Dotted" approved="yes">
+        <source xml:lang="en">Dotted</source>
+        <target xml:lang="fr" state="final">Pointillés</target>
+        <note>ID: EditTab.Table.Border.Style.Dotted</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Style.Double" approved="yes">
+        <source xml:lang="en">Double</source>
+        <target xml:lang="fr" state="final">Double</target>
+        <note>ID: EditTab.Table.Border.Style.Double</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Weight.Label" approved="yes">
+        <source xml:lang="en">Border Weight</source>
+        <target xml:lang="fr" state="final">Épaisseur de bordure</target>
+        <note>ID: EditTab.Table.Border.Weight.Label</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Table.Border.Weight.None" approved="yes">
+        <source xml:lang="en">0 (None)</source>
+        <target xml:lang="fr" state="final">0 (aucune)</target>
+        <note>ID: EditTab.Table.Border.Weight.None</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true">
         <source xml:lang="en">Set Destination</source>
@@ -1275,6 +1735,11 @@
         <target xml:lang="fr" state="needs-translation">(all)</target>
         <note>ID: BookSettings.Fonts.All</note>
       </trans-unit>
+      <trans-unit id="BookSettings.Fonts.NoLanguage" translate="no">
+        <source xml:lang="en">(no language)</source>
+        <target xml:lang="fr" state="needs-translation">(no language)</target>
+        <note>ID: BookSettings.Fonts.NoLanguage</note>
+      </trans-unit>
       <trans-unit id="BookSettings.Fonts.PageNumber" sil:dynamic="true">
         <source xml:lang="en">Page {0}</source>
         <target xml:lang="fr" state="needs-translation">Page {0}</target>
@@ -1653,6 +2118,36 @@
         <source xml:lang="en">Apps have a maximum size of about %1. The current estimate for this app is %0.</source>
         <target xml:lang="fr" state="needs-translation">Apps have a maximum size of about %1. The current estimate for this app is %0.</target>
         <note>ID: PublishTab.Apps.SizeEstimate.Total</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.OverLimitWithEstimates">
+        <source xml:lang="en">This estimate is above the %0 Android app size limit, but some of the books' sizes are only estimates. Measure the books to find out for sure, or choose fewer books or smaller books.</source>
+        <target xml:lang="fr" state="needs-translation">This estimate is above the %0 Android app size limit, but some of the books' sizes are only estimates. Measure the books to find out for sure, or choose fewer books or smaller books.</target>
+        <note>ID: PublishTab.Apps.SizeEstimate.OverLimitWithEstimates</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.MeasuredCount">
+        <source xml:lang="en">%0 of %1 books have been measured. The striped ones are estimates.</source>
+        <target xml:lang="fr" state="needs-translation">%0 of %1 books have been measured. The striped ones are estimates.</target>
+        <note>ID: PublishTab.Apps.SizeEstimate.MeasuredCount</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.ActualSuffix">
+        <source xml:lang="en">(actual)</source>
+        <target xml:lang="fr" state="needs-translation">(actual)</target>
+        <note>ID: PublishTab.Apps.SizeEstimate.ActualSuffix</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.EstimateSuffix">
+        <source xml:lang="en">(estimate)</source>
+        <target xml:lang="fr" state="needs-translation">(estimate)</target>
+        <note>ID: PublishTab.Apps.SizeEstimate.EstimateSuffix</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.MeasureBooks">
+        <source xml:lang="en">Measure exact sizes</source>
+        <target xml:lang="fr" state="needs-translation">Measure exact sizes</target>
+        <note>ID: PublishTab.Apps.MeasureBooks</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.MeasureBooks.Tooltip">
+        <source xml:lang="en">Make the BloomPUB files for the app's books now, so that their exact sizes are shown. Build will use them too.</source>
+        <target xml:lang="fr" state="needs-translation">Make the BloomPUB files for the app's books now, so that their exact sizes are shown. Build will use them too.</target>
+        <note>ID: PublishTab.Apps.MeasureBooks.Tooltip</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.FailedToAddImage">
         <source xml:lang="en">Sorry, there was a problem adding the image.</source>

@@ -143,14 +143,14 @@
         <target xml:lang="pt-PT" state="final">Abrir as Configurações no seu celular.</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.OpenSettings</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenAboutPhone">
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenAboutPhone" approved="yes">
         <source xml:lang="en">Open &apos;About phone&apos;. On some phones, you may need to then open &apos;Software information&apos; to find the &apos;Build number&apos;.</source>
-        <target xml:lang="pt-PT" state="translated">Abrir 'Sobre o telefone'. Em alguns celulares, precise depois abrir 'Informações de software' para encontrar o 'Número da versão'.</target>
+        <target xml:lang="pt-PT" state="final">Abrir 'Sobre o telefone'. Em alguns celulares, precise depois abrir 'Informações de software' para encontrar o 'Número da versão'.</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.OpenAboutPhone</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.TapBuildNumber">
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.TapBuildNumber" approved="yes">
         <source xml:lang="en">Find &apos;Build number&apos; and tap it 7 times until Developer options are enabled.</source>
-        <target xml:lang="pt-PT" state="translated">Encontrar o 'Número da versão' e toque 7 vezes até que as opções do Desenvolvedor sejam habilitadas.</target>
+        <target xml:lang="pt-PT" state="final">Encontrar o 'Número da versão' e toque 7 vezes até que as opções do Desenvolvedor sejam habilitadas.</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.TapBuildNumber</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenDeveloperOptions">
@@ -158,25 +158,30 @@
         <target xml:lang="pt-PT" state="translated">Volte para as Configurações e abra 'Opções de Desenvolvedor'.</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.OpenDeveloperOptions</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.TurnOnUsbDebugging">
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.TurnOnUsbDebugging" approved="yes">
         <source xml:lang="en">Turn on &apos;USB debugging&apos;.</source>
-        <target xml:lang="pt-PT" state="translated">Ativar "Depuração USB".</target>
+        <target xml:lang="pt-PT" state="final">Ativar "Depuração USB".</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.TurnOnUsbDebugging</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.ConnectCable">
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.ConnectCable" approved="yes">
         <source xml:lang="en">Connect the phone to your computer with a USB cable and allow USB debugging if your phone asks.</source>
-        <target xml:lang="pt-PT" state="translated">Conecte o celular ao seu computador com um cabo USB e permita a depuração USB se o celular pedir.</target>
+        <target xml:lang="pt-PT" state="final">Conecte o celular ao seu computador com um cabo USB e permita a depuração USB se o celular pedir.</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.ConnectCable</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.HowToVideo">
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.HowToVideo" approved="yes">
         <source xml:lang="en">How to video</source>
-        <target xml:lang="pt-PT" state="translated">Vídeo tutorial</target>
+        <target xml:lang="pt-PT" state="final">Vídeo tutorial</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.HowToVideo</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.BookshelfError" approved="yes">
         <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Bloom subscription.</source>
         <target xml:lang="pt-PT" state="final">A estante da coleção não constava da lista de estantes para esta assinatura Bloom.</target>
         <note>ID: PublishTab.Upload.BookshelfError</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignInRejected" translate="no">
+        <source xml:lang="en">BloomLibrary.org did not accept your sign-in. It has probably expired. Please sign in again, then try again.</source>
+        <target xml:lang="pt-PT" state="needs-translation">BloomLibrary.org did not accept your sign-in. It has probably expired. Please sign in again, then try again.</target>
+        <note>ID: PublishTab.Upload.SignInRejected</note>
       </trans-unit>
       <trans-unit id="Settings.Subscription.DownloadForEdit" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</source>
@@ -278,6 +283,11 @@
         <target xml:lang="pt-PT" state="final">Importar/Exportar Planilha</target>
         <note>ID: Feature.Spreadsheet</note>
       </trans-unit>
+      <trans-unit id="Feature.Table" approved="yes">
+        <source xml:lang="en">Table</source>
+        <target xml:lang="pt-PT" state="final">Tabela</target>
+        <note>ID: Feature.Table</note>
+      </trans-unit>
       <!-- TODO: add other features -->
       <trans-unit id="Spreadsheet.DataDivConflictWarning" approved="yes">
         <source xml:lang="en">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</source>
@@ -349,6 +359,21 @@
         <target xml:lang="pt-PT" state="final">Bloom não conseguiu acessar um microfone.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation">
+        <source xml:lang="en">Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity". Either way, you will need to use the "Apply Timings File..." button to apply your changes.</source>
+        <target xml:lang="pt-PT" state="translated">Bloom vai abrir o arquivo de sincronização agora para que você possa editá-lo diretamente. Alternativamente, você pode usar o Audacity, importando/exportando este arquivo como um arquivo de etiquetas. Para saber como editar este arquivo usando Audacity, pesquise "Audacity" em docs.bloomlibrary.org. De qualquer forma, você precisará usar o botão "Usar Arquivo de Sincronização..." para aplicar suas alterações.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Explanation</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile">
+        <source xml:lang="en">Current timings file is {0}</source>
+        <target xml:lang="pt-PT" state="translated">O arquivo de sincronização atual é {0}</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentTimingsFile</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile">
+        <source xml:lang="en">Current audio file is {0} (.wav or .mp3)</source>
+        <target xml:lang="pt-PT" state="translated">O arquivo de áudio atual é {0} (.wav ou .mp3)</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.CurrentAudioFile</note>
+      </trans-unit>
       <trans-unit id="ReportProblemDialog.OneDriveProblem" approved="yes">
         <source xml:lang="en">OneDrive Problem</source>
         <target xml:lang="pt-PT" state="final">Problema no OneDrive</target>
@@ -399,14 +424,14 @@
         <target xml:lang="pt-PT" state="final">Mover para {0}</target>
         <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
       </trans-unit>
-      <trans-unit id="EditTab.CopyTextFailed" sil:dynamic="true">
+      <trans-unit id="EditTab.CopyTextFailed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom was not able to copy that.</source>
-        <target xml:lang="pt-PT" state="translated">O Bloom não conseguiu copiar este conteúdo.</target>
+        <target xml:lang="pt-PT" state="final">O Bloom não conseguiu copiar este conteúdo.</target>
         <note>ID: EditTab.CopyTextFailed</note>
       </trans-unit>
-      <trans-unit id="EditTab.PasteTextFailed" sil:dynamic="true">
+      <trans-unit id="EditTab.PasteTextFailed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom was not able to paste.</source>
-        <target xml:lang="pt-PT" state="translated">O Bloom não conseguiu colar este conteúdo.</target>
+        <target xml:lang="pt-PT" state="final">O Bloom não conseguiu colar este conteúdo.</target>
         <note>ID: EditTab.PasteTextFailed</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.CouldNotDownloadImage" approved="yes">
@@ -419,9 +444,9 @@
         <target xml:lang="pt-PT" state="translated">Esta imagem é muito grande para visualização aqui, mas ainda assim pode usá-la.</target>
         <note>ID: ImageLibrary.PreviewTooLarge</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PreviewUnavailable">
+      <trans-unit id="ImageLibrary.PreviewUnavailable" approved="yes">
         <source xml:lang="en">This image could not be previewed.</source>
-        <target xml:lang="pt-PT" state="translated">Não foi possível gerar a visualização desta imagem.</target>
+        <target xml:lang="pt-PT" state="final">Não foi possível gerar a visualização desta imagem.</target>
         <note>ID: ImageLibrary.PreviewUnavailable</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.CannotReachSource" approved="yes">
@@ -448,6 +473,11 @@
         <source xml:lang="en">Bloom could not make this book's pictures smaller. It will try again the next time the book is updated.</source>
         <target xml:lang="pt-PT" state="translated">Bloom não conseguiu reduzir o tamanho das imagens deste livro. Uma nova tentativa será feita na próxima atualização do livro.</target>
         <note>ID: ImageUtils.ShrinkingImagesFailed</note>
+      </trans-unit>
+      <trans-unit id="Shell.SavingBeforeWindowsShutsDown" translate="no">
+        <source xml:lang="en">Bloom is saving your book</source>
+        <target xml:lang="pt-PT" state="needs-translation">Bloom is saving your book</target>
+        <note>ID: Shell.SavingBeforeWindowsShutsDown</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Credits.AccountCreditsUsed">
         <source xml:lang="en">{0} used of {1} account credits</source>
@@ -524,19 +554,19 @@
         <target xml:lang="pt-PT" state="final">Nenhum</target>
         <note>ID: AiImageEditor.Level.None</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Model.Estimate">
+      <trans-unit id="AiImageEditor.Model.Estimate" approved="yes">
         <source xml:lang="en">Estimate {0}{1}</source>
-        <target xml:lang="pt-PT" state="translated">Custo estimado {0}{1}</target>
+        <target xml:lang="pt-PT" state="final">Custo estimado {0}{1}</target>
         <note>ID: AiImageEditor.Model.Estimate</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Model.LastMeasured">
+      <trans-unit id="AiImageEditor.Model.LastMeasured" approved="yes">
         <source xml:lang="en">Last measured: {0}</source>
-        <target xml:lang="pt-PT" state="translated">Último custo: {0}</target>
+        <target xml:lang="pt-PT" state="final">Último custo: {0}</target>
         <note>ID: AiImageEditor.Model.LastMeasured</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Model.PickerTooltip">
+      <trans-unit id="AiImageEditor.Model.PickerTooltip" approved="yes">
         <source xml:lang="en">Choose which AI image engine to use</source>
-        <target xml:lang="pt-PT" state="translated">Escolha o motor de IA para imagens que deseja usar</target>
+        <target xml:lang="pt-PT" state="final">Escolha o motor de IA para imagens que deseja usar</target>
         <note>ID: AiImageEditor.Model.PickerTooltip</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.RecommendedChip" approved="yes">
@@ -564,9 +594,9 @@
         <target xml:lang="pt-PT" state="final">Testando…</target>
         <note>ID: AiImageEditor.OpenRouter.Testing</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Panel.OriginalComic">
+      <trans-unit id="AiImageEditor.Panel.OriginalComic" approved="yes">
         <source xml:lang="en">Original Comic</source>
-        <target xml:lang="pt-PT" state="translated">Quadrinho/BD original</target>
+        <target xml:lang="pt-PT" state="final">Quadrinho/BD original</target>
         <note>ID: AiImageEditor.Panel.OriginalComic</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Preview.ResetZoom" approved="yes">
@@ -639,9 +669,9 @@
         <target xml:lang="pt-PT" state="final">OpenRouter não conectado</target>
         <note>ID: AiImageEditor.Status.NotConnected</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Strip.Pin">
+      <trans-unit id="AiImageEditor.Strip.Pin" approved="yes">
         <source xml:lang="en">Pin strip</source>
-        <target xml:lang="pt-PT" state="translated">Fixar esta faixa</target>
+        <target xml:lang="pt-PT" state="final">Fixar esta faixa</target>
         <note>ID: AiImageEditor.Strip.Pin</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Strip.ShowInGallery">
@@ -649,14 +679,14 @@
         <target xml:lang="pt-PT" state="translated">Visualizar na galeria de tela cheia</target>
         <note>ID: AiImageEditor.Strip.ShowInGallery</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Strip.Unpin">
+      <trans-unit id="AiImageEditor.Strip.Unpin" approved="yes">
         <source xml:lang="en">Unpin strip</source>
-        <target xml:lang="pt-PT" state="translated">Desafixar esta faixa</target>
+        <target xml:lang="pt-PT" state="final">Desafixar esta faixa</target>
         <note>ID: AiImageEditor.Strip.Unpin</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.break_into_pieces.Description">
         <source xml:lang="en">Extract images that you can use in a game.</source>
-        <target xml:lang="pt-PT" state="translated">Extraia imagens que pode usar em um jogo.</target>
+        <target xml:lang="pt-PT" state="translated">Extraia imagens para poder usar em um jogo.</target>
         <note>ID: AiImageEditor.Tool.break_into_pieces.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.break_into_pieces.Param.furtherInstructions.Placeholder">
