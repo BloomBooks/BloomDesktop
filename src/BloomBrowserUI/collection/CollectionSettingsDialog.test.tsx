@@ -584,7 +584,6 @@ vi.mock("@sillsdev/config-r", () => ({
         path: string;
         disabled?: boolean;
         description?: string;
-        overrideDescription?: string;
     }) => (
         <div>
             <input
@@ -593,9 +592,11 @@ vi.mock("@sillsdev/config-r", () => ({
                 data-path={props.path}
                 disabled={props.disabled}
             />
-            {(props.overrideDescription ?? props.description) && (
+            {/* Like Config-R, shows only the description: Config-R ignores overrideDescription
+                unless an overrideValue is given too. */}
+            {props.description && (
                 <div data-testid="configr-input-description">
-                    {props.overrideDescription ?? props.description}
+                    {props.description}
                 </div>
             )}
         </div>

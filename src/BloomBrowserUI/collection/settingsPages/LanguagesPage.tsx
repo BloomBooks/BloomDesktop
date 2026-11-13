@@ -495,9 +495,9 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
                                 <ConfigrInput
                                     path="readerTools.letters"
                                     label={lettersLabel}
-                                    description={`${lettersHelp} ${kEnglishAlphabetExample}`}
-                                    overrideDescription={
-                                        readerToolsLockedReason
+                                    description={
+                                        readerToolsLockedReason ??
+                                        `${lettersHelp} ${kEnglishAlphabetExample}`
                                     }
                                     disabled={!!readerToolsLockedReason}
                                     allowNewLines={true}
@@ -510,9 +510,9 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
                                 <ConfigrInput
                                     path="readerTools.sentencePunct"
                                     label={sentencePunctLabel}
-                                    description={sentencePunctHelp}
-                                    overrideDescription={
-                                        readerToolsLockedReason
+                                    description={
+                                        readerToolsLockedReason ??
+                                        sentencePunctHelp
                                     }
                                     disabled={!!readerToolsLockedReason}
                                 />
