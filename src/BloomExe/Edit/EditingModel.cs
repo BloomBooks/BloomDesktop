@@ -2252,8 +2252,13 @@ namespace Bloom.Edit
             // True when something OUTSIDE the page HTML we are about to hand over wants saving: a
             // data-derived value some dialog changed, altered feature requirements, or a caller
             // that explicitly forced a full save. The page content test below cannot see any of
-            // those, so they have to be kept separately.
-            var somethingElseNeedsSaving = _nextSaveMustBeFull || NeedToDoFullSave(newPageData);
+            // those, so they have to be kept separately. NeedToDoFullSave cannot see an emptied
+            // original-copyright field either: the page it compares against is the book's locked
+            // copy, which has no data-book value for the sentence, and an empty field gives none.
+            var somethingElseNeedsSaving =
+                _nextSaveMustBeFull
+                || NeedToDoFullSave(newPageData)
+                || BookCopyrightAndLicense.UserEmptiedOriginalCopyrightNotice(editedDom.RawDom);
 
             _nextSaveMustBeFull = CurrentBook.UpdateDomFromEditedPage(
                 editedDom,
