@@ -147,11 +147,12 @@ export interface IProgressStageLabels {
 
 export const kAppBuilderWebSocketContext = "publish-rab";
 
-/// Websocket event id sent by the C# side when a prepare/build/install completes.
+/// Websocket event id sent by the C# side when a prepare/build/install/measure completes.
 /// The message payload is "{action}:success" or "{action}:failure".
 export const kAppBuilderActionCompleteEventId = "actionComplete";
 
-export type AppBuilderAction = "prepare" | "build" | "install";
+/// "measure" makes the app's missing BloomPUBs, so their actual sizes can be shown (BL-17062).
+export type AppBuilderAction = "prepare" | "build" | "install" | "measure";
 
 export const defaultStatus: IAppBuilderStatus = {
     rabInstalled: false,
@@ -292,11 +293,7 @@ export function getProgressStageLabel(
     stageCode: string | undefined,
     labels: IProgressStageLabels,
 ): string | undefined {
-    if (
-        busyAction !== "prepare" &&
-        busyAction !== "build" &&
-        busyAction !== "install"
-    ) {
+    if (!busyAction) {
         return undefined;
     }
 
@@ -332,6 +329,10 @@ export function getProgressStageLabel(
 
             if (busyAction === "build") {
                 return labels.preparingBuild;
+            }
+
+            if (busyAction === "measure") {
+                return labels.exportingBloompubs;
             }
 
             return labels.checkingDevice;
