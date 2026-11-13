@@ -111,8 +111,8 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
 
     /// <summary>
     /// <see cref="TryDumpAndWalk"/> off the calling thread, since ClrMD and the dump write are synchronous and
-    /// slow. Null if it fails, or if there is an early dump and it misses <see cref="FreshDumpDeadline"/>;
-    /// it is then left to finish on its own, and the report does without what it produces.
+    /// slow. Null if it fails, or if it misses <see cref="FreshDumpDeadline"/> and there is an early dump
+    /// to use instead; it is then left to finish on its own, and the report does without what it produces.
     /// </summary>
     private async Task<ReportSection?> TryFreshDumpAsync(
         GatherContext context,
@@ -125,7 +125,13 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
         var first = await Task.WhenAny(fresh, Task.Delay(FreshDumpDeadline, cancellation))
             .ConfigureAwait(false);
         cancellation.ThrowIfCancellationRequested();
-        return first == fresh ? await fresh.ConfigureAwait(false) : null;
+        if (first == fresh)
+            return await fresh.ConfigureAwait(false);
+        // Give up on the fresh dump only for an early one that is really there; one that failed to be
+        // written is no fallback, and a slow fresh dump is better than none.
+        var early = await WaitForEarlyDumpAsync(context.EarlyDump, cancellation)
+            .ConfigureAwait(false);
+        return early == null || fresh.IsCompleted ? await fresh.ConfigureAwait(false) : null;
     }
 
     /// <summary>
