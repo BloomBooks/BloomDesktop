@@ -152,7 +152,8 @@ public class ManagedStacksCollectorEarlyDumpTests
                 lateDump.SetResult(new FileInfo(path).Length);
             },
             freshDumpDeadlineWithEarlyDump: TimeSpan.FromMilliseconds(200),
-            freshDumpDeadline: TimeSpan.FromSeconds(1)
+            freshDumpDeadline: TimeSpan.FromSeconds(1),
+            earlyDumpWait: TimeSpan.FromSeconds(10)
         );
 
         var section = await collector.CollectAsync(context, CancellationToken.None);
@@ -179,5 +180,53 @@ public class ManagedStacksCollectorEarlyDumpTests
             Is.True,
             "cleaning up the late dump must leave the report's own files alone"
         );
+    }
+
+    [Test]
+    public async Task CollectAsync_NeitherDumpComes_WaitsForTheEarlyDumpOnlyOnce()
+    {
+        var context = Context(
+            processWasAlive: true,
+            earlyDump: new TaskCompletionSource<EarlyFreezeDump.Taken?>().Task
+        );
+        // A process id Windows never hands out (ids are multiples of 4), so the live read that follows
+        // fails at once instead of reading some unrelated process.
+        context = context with
+        {
+            Target = context.Target with { ProcessId = 4243 },
+        };
+        using var runtimeAnswers = new ManualResetEventSlim();
+        var earlyDumpWait = TimeSpan.FromSeconds(3);
+        var collector = new ManagedStacksCollector(
+            (_, _) => runtimeAnswers.Wait(),
+            freshDumpDeadlineWithEarlyDump: TimeSpan.FromMilliseconds(200),
+            freshDumpDeadline: TimeSpan.FromSeconds(1),
+            earlyDumpWait
+        );
+
+        try
+        {
+            var section = await collector.CollectAsync(context, CancellationToken.None);
+
+            Assert.That(
+                section.Failure,
+                Does.Contain("neither the runtime's dump pipe nor a live read"),
+                "sanity check: the report fell back to the live read, and it failed"
+            );
+            Assert.That(
+                section.Duration,
+                Is.GreaterThanOrEqualTo(earlyDumpWait),
+                "sanity check: the early dump was waited for"
+            );
+            Assert.That(
+                section.Duration,
+                Is.LessThan(earlyDumpWait * 1.5),
+                "the early dump should be waited for once, leaving the rest of the budget for the live read"
+            );
+        }
+        finally
+        {
+            runtimeAnswers.Set();
+        }
     }
 }

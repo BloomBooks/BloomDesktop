@@ -33,10 +33,11 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
     private readonly Action<int, string> _writeDump;
     private readonly TimeSpan _freshDumpDeadlineWithEarlyDump;
     private readonly TimeSpan _freshDumpDeadline;
+    private readonly TimeSpan _earlyDumpWait;
 
     /// <summary>A collector that dumps through the target's runtime, with the standard deadlines.</summary>
     public ManagedStacksCollector()
-        : this(WriteDump, FreshDumpDeadlineWithEarlyDump, FreshDumpDeadline) { }
+        : this(WriteDump, FreshDumpDeadlineWithEarlyDump, FreshDumpDeadline, EarlyDumpWait) { }
 
     /// <summary>
     /// For tests: a dump writer that can be made slow, and deadlines short enough to wait out.
@@ -44,12 +45,14 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
     internal ManagedStacksCollector(
         Action<int, string> writeDump,
         TimeSpan freshDumpDeadlineWithEarlyDump,
-        TimeSpan freshDumpDeadline
+        TimeSpan freshDumpDeadline,
+        TimeSpan earlyDumpWait
     )
     {
         _writeDump = writeDump;
         _freshDumpDeadlineWithEarlyDump = freshDumpDeadlineWithEarlyDump;
         _freshDumpDeadline = freshDumpDeadline;
+        _earlyDumpWait = earlyDumpWait;
     }
 
     /// <inheritdoc />
@@ -78,8 +81,14 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
     {
         var started = Stopwatch.StartNew();
 
+        // Both the fresh-dump attempt and the fallback below may need the early dump; they share one wait,
+        // so a runtime that writes neither costs the live read below only one wait for it.
+        Task<EarlyFreezeDump.Taken?>? sharedEarlyDumpWait = null;
+        Task<EarlyFreezeDump.Taken?> WaitForEarlyDump() =>
+            sharedEarlyDumpWait ??= WaitForEarlyDumpAsync(context.EarlyDump!, cancellation);
+
         var attempt = context.ProcessWasAlive
-            ? await TryFreshDumpAsync(context, cancellation).ConfigureAwait(false)
+            ? await TryFreshDumpAsync(context, WaitForEarlyDump, cancellation).ConfigureAwait(false)
             : null;
 
         if (attempt != null)
@@ -88,10 +97,7 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
         // No fresh dump - usually because Bloom has gone, sometimes because it went while we asked. The one
         // taken when the freeze began is older, but it is a dump, which a live read cannot give us.
         var taken =
-            context.EarlyDump == null
-                ? null
-                : await WaitForEarlyDumpAsync(context.EarlyDump, cancellation)
-                    .ConfigureAwait(false);
+            context.EarlyDump == null ? null : await WaitForEarlyDump().ConfigureAwait(false);
         if (taken != null)
         {
             var early = await Task.Run(
@@ -105,7 +111,7 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
             return ReportSection.Failed(
                 Title,
                 "Bloom had gone by the time this report was gathered, and the dump started when it first "
-                    + $"stopped responding could not be written, or not within {EarlyDumpWait.TotalSeconds:F0}s",
+                    + $"stopped responding could not be written, or not within {_earlyDumpWait.TotalSeconds:F0}s",
                 started.Elapsed
             );
 
@@ -143,10 +149,12 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
     /// there is an early dump to use instead, otherwise <see cref="FreshDumpDeadline"/>, and none for a
     /// crashing Bloom that is waiting for it, which only the collector's budget ends. One that misses its
     /// deadline, or is cancelled, is left to finish on its own, the report does without what it produces,
-    /// and <see cref="Abandon"/> cleans up after it.
+    /// and <see cref="Abandon"/> cleans up after it. <paramref name="waitForEarlyDump"/> is the caller's
+    /// shared wait for the early dump.
     /// </summary>
     private async Task<ReportSection?> TryFreshDumpAsync(
         GatherContext context,
+        Func<Task<EarlyFreezeDump.Taken?>> waitForEarlyDump,
         CancellationToken cancellation
     )
     {
@@ -165,8 +173,7 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
                     return await fresh.ConfigureAwait(false);
                 // Give up on the fresh dump only for an early one that is really there; one that failed
                 // to be written is no fallback, and a slow fresh dump is better than none.
-                var early = await WaitForEarlyDumpAsync(context.EarlyDump, cancellation)
-                    .ConfigureAwait(false);
+                var early = await waitForEarlyDump().ConfigureAwait(false);
                 if (early != null && !fresh.IsCompleted)
                     return Abandon(fresh, context);
             }
@@ -375,12 +382,12 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
     /// <see cref="EarlyDumpWait"/>. The wait starts here, when the dump is known to be needed, not when it
     /// was claimed. Whoever claimed it deletes it when it is written, however late.
     /// </summary>
-    private static async Task<EarlyFreezeDump.Taken?> WaitForEarlyDumpAsync(
+    private async Task<EarlyFreezeDump.Taken?> WaitForEarlyDumpAsync(
         Task<EarlyFreezeDump.Taken?> earlyDump,
         CancellationToken cancellation
     )
     {
-        var finished = await Task.WhenAny(earlyDump, Task.Delay(EarlyDumpWait, cancellation))
+        var finished = await Task.WhenAny(earlyDump, Task.Delay(_earlyDumpWait, cancellation))
             .ConfigureAwait(false);
         cancellation.ThrowIfCancellationRequested();
         return finished == earlyDump ? earlyDump.Result : null;
