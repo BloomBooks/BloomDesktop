@@ -41,7 +41,12 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
     public TimeSpan Budget => TimeSpan.FromSeconds(45);
 
     /// <inheritdoc />
-    public bool AppliesTo(GatherContext context) => context.ProcessWasAlive;
+    /// <remarks>
+    /// A Bloom that has gone can still have its stacks reported, from the dump taken earlier in the same
+    /// freeze. See <see cref="EarlyFreezeDump"/>.
+    /// </remarks>
+    public bool AppliesTo(GatherContext context) =>
+        context.ProcessWasAlive || context.EarlyDump != null;
 
     /// <inheritdoc />
     public async Task<ReportSection> CollectAsync(
@@ -51,13 +56,36 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
     {
         var started = Stopwatch.StartNew();
 
-        // Run the whole thing off the calling thread: ClrMD and the dump write are synchronous and
-        // slow, and the Doctor's own UI must stay alive while it diagnoses.
-        var attempt = await Task.Run(() => TryDumpAndWalk(context, cancellation), cancellation)
-            .ConfigureAwait(false);
+        var attempt = context.ProcessWasAlive
+            ? await TryFreshDumpAsync(context, cancellation).ConfigureAwait(false)
+            : null;
 
         if (attempt != null)
             return attempt with { Duration = started.Elapsed };
+
+        // No fresh dump - usually because Bloom has gone, sometimes because it went while we asked. The one
+        // taken when the freeze began is older, but it is a dump, which a live read cannot give us.
+        var taken =
+            context.EarlyDump == null
+                ? null
+                : await WaitForEarlyDumpAsync(context.EarlyDump, cancellation)
+                    .ConfigureAwait(false);
+        if (taken != null)
+        {
+            var early = await Task.Run(
+                    () => UseEarlyDump(context, taken, cancellation),
+                    cancellation
+                )
+                .ConfigureAwait(false);
+            return early with { Duration = started.Elapsed };
+        }
+        if (!context.ProcessWasAlive)
+            return ReportSection.Failed(
+                Title,
+                "Bloom had gone by the time this report was gathered, and the dump started when it first "
+                    + $"stopped responding could not be written, or not within {EarlyDumpWait.TotalSeconds:F0}s",
+                started.Elapsed
+            );
 
         // The pipe did not answer. Fall back to reading the live process without suspending it.
         var live = await Task.Run(() => TryLiveWalk(context), cancellation).ConfigureAwait(false);
@@ -75,38 +103,79 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
     }
 
     /// <summary>
+    /// How long a fresh dump may take when there is an early dump to fall back on. A dump takes a second or
+    /// two; one that has not come in this long is from a runtime that is not answering.
+    /// </summary>
+    private static readonly TimeSpan FreshDumpDeadlineWithEarlyDump = TimeSpan.FromSeconds(20);
+
+    /// <summary>
+    /// How long a fresh dump may take in any case. Waiting out the collector's whole <see cref="Budget"/>
+    /// for a runtime that is not answering would leave no time to read the stacks from the live process
+    /// instead.
+    /// </summary>
+    private static readonly TimeSpan FreshDumpDeadline = TimeSpan.FromSeconds(30);
+
+    /// <summary>
+    /// <see cref="TryDumpAndWalk"/> off the calling thread, since ClrMD and the dump write are synchronous and
+    /// slow. Null if it fails, or misses its deadline: <see cref="FreshDumpDeadlineWithEarlyDump"/> when
+    /// there is an early dump to use instead, otherwise <see cref="FreshDumpDeadline"/>, and none for a
+    /// crashing Bloom that is waiting for it. One that misses it is left to finish on its own, and the
+    /// report does without what it produces.
+    /// </summary>
+    private async Task<ReportSection?> TryFreshDumpAsync(
+        GatherContext context,
+        CancellationToken cancellation
+    )
+    {
+        var started = Stopwatch.StartNew();
+        var fresh = Task.Run(() => TryDumpAndWalk(context, cancellation), cancellation);
+        // A crashing Bloom is waiting for this dump before it exits, and will be released as soon as the
+        // report goes on without it - so a slow one is never abandoned. It is the only dump of the crash.
+        if (context.TargetNoLongerNeeded != null)
+            return await fresh.ConfigureAwait(false);
+        if (context.EarlyDump != null)
+        {
+            if (await FinishesWithinAsync(fresh, FreshDumpDeadlineWithEarlyDump, cancellation))
+                return await fresh.ConfigureAwait(false);
+            // Give up on the fresh dump only for an early one that is really there; one that failed to be
+            // written is no fallback, and a slow fresh dump is better than none.
+            var early = await WaitForEarlyDumpAsync(context.EarlyDump, cancellation)
+                .ConfigureAwait(false);
+            if (early != null && !fresh.IsCompleted)
+                return null;
+        }
+        return await FinishesWithinAsync(fresh, FreshDumpDeadline - started.Elapsed, cancellation)
+            ? await fresh.ConfigureAwait(false)
+            : null;
+    }
+
+    /// <summary>Whether <paramref name="task"/> finishes within <paramref name="time"/> (at once if that is past).</summary>
+    private static async Task<bool> FinishesWithinAsync(
+        Task task,
+        TimeSpan time,
+        CancellationToken cancellation
+    )
+    {
+        var timeout = time > TimeSpan.Zero ? time : TimeSpan.Zero;
+        var first = await Task.WhenAny(task, Task.Delay(timeout, cancellation))
+            .ConfigureAwait(false);
+        cancellation.ThrowIfCancellationRequested();
+        return first == task;
+    }
+
+    /// <summary>
     /// Asks the target's runtime to dump itself, then reads the managed stacks back out of that dump.
     /// Returns null if the dump could not be produced or read, so the caller can fall back.
     /// </summary>
     private ReportSection? TryDumpAndWalk(GatherContext context, CancellationToken cancellation)
     {
-        var dumpPath = Path.Combine(
-            context.ArtifactDirectory,
-            $"bloom-{context.Target.ProcessId}.dmp"
-        );
+        var dumpPath = DumpPathFor(context);
         var text = new StringBuilder();
         try
         {
             Directory.CreateDirectory(context.ArtifactDirectory);
-            var client = new DiagnosticsClient(context.Target.ProcessId);
             var dumpTimer = Stopwatch.StartNew();
-            // DumpType.Normal is what dotnet-dump calls a mini dump: small, and still enough for
-            // ClrMD to walk managed stacks.
-            //
-            // **Chosen deliberately, knowing what it costs.** Normal carries thread stacks
-            // but NOT the GC heap - measured at 16-17 MB against a 234 MB working set - so the analysis a
-            // dump is usually wanted for is out of reach: no walking the object graph to the Task the UI
-            // thread awaits, no `syncblk` to name a monitor's owner (and Windows' wait-chain API cannot see
-            // Monitor either, so nothing else can answer that), no `dumpheap` for swallowed exceptions.
-            // What it does still give over the report's own prose is arguments and locals per frame
-            // (`clrstack -a`) and thread-pool state, which is often enough.
-            //
-            // DumpType.WithHeap would unlock the rest at something like 150-250 MB a dump, written more
-            // slowly, attached to a card, from a machine that may be on a poor connection - and a dump
-            // already carries book text and file paths, which is why the attachment is restricted to
-            // Developers. If this is revisited, the likely answer is WithHeap for a one-off CRASH and
-            // Normal for a FREEZE the user may hit repeatedly in one session.
-            client.WriteDump(DumpType.Normal, dumpPath, logDumpGeneration: false);
+            WriteDump(context.Target.ProcessId, dumpPath);
             dumpTimer.Stop();
 
             // The dump file now exists, and nothing below needs the process: LoadDump and everything
@@ -124,28 +193,7 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
 
             cancellation.ThrowIfCancellationRequested();
 
-            using var target = DataTarget.LoadDump(dumpPath);
-            var clr = target.ClrVersions.FirstOrDefault();
-            if (clr == null)
-            {
-                text.AppendLine("The dump contains no CLR, so no managed stacks could be read.");
-                return new ReportSection
-                {
-                    Title = Title,
-                    Body = text.ToString(),
-                    Artifacts = new[] { dumpPath },
-                };
-            }
-
-            using var runtime = clr.CreateRuntime();
-            var headline = AppendThreads(text, runtime, context.IsAboutAFreeze);
-            return new ReportSection
-            {
-                Title = Title,
-                Body = text.ToString(),
-                Artifacts = new[] { dumpPath },
-                Headline = headline,
-            };
+            return WalkDump(dumpPath, text, context.IsAboutAFreeze);
         }
         catch (OperationCanceledException)
         {
@@ -159,6 +207,166 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
             Debug.WriteLine($"WriteDump path failed: {e}");
             return null;
         }
+    }
+
+    /// <summary>
+    /// Has the target's own runtime write a dump of it, over the diagnostics IPC pipe. Throws if the pipe
+    /// does not answer. Used both here and for the dump taken when a freeze begins (see
+    /// <see cref="EarlyFreezeDump"/>), so that the two are the same kind of dump.
+    /// </summary>
+    public static void WriteDump(int processId, string dumpPath)
+    {
+        // DumpType.Normal is what dotnet-dump calls a mini dump: small, and still enough for
+        // ClrMD to walk managed stacks.
+        //
+        // **Chosen deliberately, knowing what it costs.** Normal carries thread stacks
+        // but NOT the GC heap - measured at 16-17 MB against a 234 MB working set - so the analysis a
+        // dump is usually wanted for is out of reach: no walking the object graph to the Task the UI
+        // thread awaits, no `syncblk` to name a monitor's owner (and Windows' wait-chain API cannot see
+        // Monitor either, so nothing else can answer that), no `dumpheap` for swallowed exceptions.
+        // What it does still give over the report's own prose is arguments and locals per frame
+        // (`clrstack -a`) and thread-pool state, which is often enough.
+        //
+        // DumpType.WithHeap would unlock the rest at something like 150-250 MB a dump, written more
+        // slowly, attached to a card, from a machine that may be on a poor connection - and a dump
+        // already carries book text and file paths, which is why the attachment is restricted to
+        // Developers. If this is revisited, the likely answer is WithHeap for a one-off CRASH and
+        // Normal for a FREEZE the user may hit repeatedly in one session.
+        new DiagnosticsClient(processId).WriteDump(
+            DumpType.Normal,
+            dumpPath,
+            logDumpGeneration: false
+        );
+    }
+
+    /// <summary>
+    /// Reports the managed stacks from the dump taken when this freeze began, because no fresh one could be
+    /// taken. The dump is moved into the report's artifacts whether or not its stacks can be read: it is
+    /// the evidence a developer most needs and cannot get any other way.
+    /// </summary>
+    private ReportSection UseEarlyDump(
+        GatherContext context,
+        EarlyFreezeDump.Taken early,
+        CancellationToken cancellation
+    )
+    {
+        // A name of its own: a fresh dump that missed its deadline may yet be written to the usual one.
+        var dumpPath = Path.Combine(
+            context.ArtifactDirectory,
+            $"bloom-{context.Target.ProcessId}-early.dmp"
+        );
+        try
+        {
+            Directory.CreateDirectory(context.ArtifactDirectory);
+            RobustFile.Move(early.DumpPath, dumpPath);
+        }
+        catch (Exception e)
+        {
+            return ReportSection.Failed(
+                Title,
+                $"a dump was taken when Bloom first stopped responding, but it could not be added to this "
+                    + $"report: {e.GetType().Name}: {e.Message}"
+            );
+        }
+
+        var size = new FileInfo(dumpPath).Length;
+        var before = DateTimeOffset.UtcNow - early.TakenAtUtc;
+        var text = new StringBuilder();
+        text.AppendLine(
+            (
+                context.ProcessWasAlive
+                    ? "The runtime's dump pipe did not answer when this report was gathered, so this is "
+                    : "Bloom had gone by the time this report was gathered, so this is "
+            )
+                + $"the dump the Doctor took when Bloom first stopped responding, at "
+                + $"{early.TakenAtUtc:HH:mm:ss}Z ({before.TotalSeconds:F0}s before this report), "
+                + $"{size / 1024.0 / 1024.0:F1} MB. The stacks below are from that moment."
+        );
+        text.AppendLine();
+
+        try
+        {
+            cancellation.ThrowIfCancellationRequested();
+            return WalkDump(dumpPath, text, context.IsAboutAFreeze);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception e)
+        {
+            text.AppendLine(
+                $"Its managed stacks could not be read here ({e.GetType().Name}: {e.Message}); the dump "
+                    + "is attached for reading elsewhere."
+            );
+            return DumpSection(text, dumpPath);
+        }
+    }
+
+    /// <summary>The name the Doctor gives a dump of this process, wherever it is written.</summary>
+    public static string DumpFileName(int processId) => $"bloom-{processId}.dmp";
+
+    /// <summary>Where this report's dump goes. The caller creates the folder, where it can handle failing to.</summary>
+    private static string DumpPathFor(GatherContext context) =>
+        Path.Combine(context.ArtifactDirectory, DumpFileName(context.Target.ProcessId));
+
+    /// <summary>
+    /// How long a report that needs the early dump waits for one still being written. Writing takes a
+    /// second or two, so this is far more than it should need, and short against the collector's budget.
+    /// </summary>
+    private static readonly TimeSpan EarlyDumpWait = TimeSpan.FromSeconds(10);
+
+    /// <summary>
+    /// The early dump, once written, or null if writing it failed or did not finish within
+    /// <see cref="EarlyDumpWait"/>. The wait starts here, when the dump is known to be needed, not when it
+    /// was claimed. Whoever claimed it deletes it when it is written, however late.
+    /// </summary>
+    private static async Task<EarlyFreezeDump.Taken?> WaitForEarlyDumpAsync(
+        Task<EarlyFreezeDump.Taken?> earlyDump,
+        CancellationToken cancellation
+    )
+    {
+        var finished = await Task.WhenAny(earlyDump, Task.Delay(EarlyDumpWait, cancellation))
+            .ConfigureAwait(false);
+        cancellation.ThrowIfCancellationRequested();
+        return finished == earlyDump ? earlyDump.Result : null;
+    }
+
+    /// <summary>The section for stacks read, or not, from the dump at <paramref name="dumpPath"/>.</summary>
+    private ReportSection DumpSection(
+        StringBuilder text,
+        string dumpPath,
+        string? headline = null
+    ) =>
+        new()
+        {
+            Title = Title,
+            Body = text.ToString(),
+            Artifacts = new[] { dumpPath },
+            Headline = headline,
+        };
+
+    /// <summary>
+    /// Appends the managed stacks read from a dump file to <paramref name="text"/> and returns the section,
+    /// carrying the dump as its artifact. Throws if the dump cannot be read.
+    ///
+    /// The file is opened here rather than by ClrMD, because when ClrMD fails to read a dump it opened
+    /// itself, it leaves the file open until a finalizer runs, and the file has to be free to be moved into
+    /// the report's bundle or deleted.
+    /// </summary>
+    private ReportSection WalkDump(string dumpPath, StringBuilder text, bool isAboutAFreeze)
+    {
+        using var stream = RobustFile.OpenRead(dumpPath);
+        using var target = DataTarget.LoadDump(dumpPath, stream, leaveOpen: true);
+        var clr = target.ClrVersions.FirstOrDefault();
+        if (clr == null)
+        {
+            text.AppendLine("The dump contains no CLR, so no managed stacks could be read.");
+            return DumpSection(text, dumpPath);
+        }
+
+        using var runtime = clr.CreateRuntime();
+        return DumpSection(text, dumpPath, AppendThreads(text, runtime, isAboutAFreeze));
     }
 
     /// <summary>
