@@ -602,11 +602,6 @@
         <note>ID: CollectionSettingsDialog.LanguagesPage.Alphabet</note>
         <note>On the "More" page of the first language in the Collection Settings dialog: the label of the box where the user types the language's letters and letter combinations, which the Decodable and Leveled Reader tools use.</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguagesPage.Auto" translate="no">
-        <source xml:lang="en">Auto</source>
-        <note>ID: CollectionSettingsDialog.LanguagesPage.Auto</note>
-        <note>On the Languages page of the Collection Settings dialog: the first choice in the lists of font sizes and line spacings, meaning Bloom chooses the value itself.</note>
-      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguagesPage.DefaultFont" translate="no">
         <source xml:lang="en">Default Font</source>
         <note>ID: CollectionSettingsDialog.LanguagesPage.DefaultFont</note>
@@ -616,11 +611,6 @@
         <source xml:lang="en">Fonts</source>
         <note>ID: CollectionSettingsDialog.LanguagesPage.Fonts</note>
         <note>On the "More" page of one language in the Collection Settings dialog: the heading of the group of settings about the size and spacing of the language's text.</note>
-      </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguagesPage.Language" translate="no">
-        <source xml:lang="en">Language</source>
-        <note>ID: CollectionSettingsDialog.LanguagesPage.Language</note>
-        <note>On the Languages page of the Collection Settings dialog: the label beside the name of one of the collection's languages, with a button to choose a different one.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguagesPage.More" translate="no">
         <source xml:lang="en">More</source>

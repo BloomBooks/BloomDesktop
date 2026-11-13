@@ -47,10 +47,7 @@ const NumberSelect: React.FunctionComponent<{
     disabled?: boolean;
     onChange: (value: number) => void;
 }> = (props) => {
-    const autoLabel = useL10n(
-        "Auto",
-        "CollectionSettingsDialog.LanguagesPage.Auto",
-    );
+    const autoLabel = useL10n("Auto", "EditTab.Image.Transparency.Auto");
     return (
         <Select
             variant="standard"
@@ -318,10 +315,7 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
         "Sign Language",
         "PublishTab.Upload.SignLanguage",
     );
-    const languageLabel = useL10n(
-        "Language",
-        "CollectionSettingsDialog.LanguagesPage.Language",
-    );
+    const languageLabel = useL10n("Language", "BookMetadata.inLanguage");
     const defaultFontLabel = useL10n(
         "Default Font",
         "CollectionSettingsDialog.LanguagesPage.DefaultFont",
