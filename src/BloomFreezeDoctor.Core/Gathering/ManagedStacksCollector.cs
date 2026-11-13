@@ -56,11 +56,8 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
     {
         var started = Stopwatch.StartNew();
 
-        // Run the whole thing off the calling thread: ClrMD and the dump write are synchronous and
-        // slow, and the Doctor's own UI must stay alive while it diagnoses.
         var attempt = context.ProcessWasAlive
-            ? await Task.Run(() => TryDumpAndWalk(context, cancellation), cancellation)
-                .ConfigureAwait(false)
+            ? await TryFreshDumpAsync(context, cancellation).ConfigureAwait(false)
             : null;
 
         if (attempt != null)
@@ -103,6 +100,32 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
         {
             Duration = started.Elapsed,
         };
+    }
+
+    /// <summary>
+    /// How long a fresh dump may take when there is an early dump to fall back on. A dump takes a second or
+    /// two; one that has not come in this long is from a runtime that is not answering, and waiting out the
+    /// collector's whole <see cref="Budget"/> for it would leave no time to use the early dump instead.
+    /// </summary>
+    private static readonly TimeSpan FreshDumpDeadline = TimeSpan.FromSeconds(20);
+
+    /// <summary>
+    /// <see cref="TryDumpAndWalk"/> off the calling thread, since ClrMD and the dump write are synchronous and
+    /// slow. Null if it fails, or if there is an early dump and it misses <see cref="FreshDumpDeadline"/>;
+    /// it is then left to finish on its own, and the report does without what it produces.
+    /// </summary>
+    private async Task<ReportSection?> TryFreshDumpAsync(
+        GatherContext context,
+        CancellationToken cancellation
+    )
+    {
+        var fresh = Task.Run(() => TryDumpAndWalk(context, cancellation), cancellation);
+        if (context.EarlyDump == null)
+            return await fresh.ConfigureAwait(false);
+        var first = await Task.WhenAny(fresh, Task.Delay(FreshDumpDeadline, cancellation))
+            .ConfigureAwait(false);
+        cancellation.ThrowIfCancellationRequested();
+        return first == fresh ? await fresh.ConfigureAwait(false) : null;
     }
 
     /// <summary>
@@ -192,7 +215,11 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
         CancellationToken cancellation
     )
     {
-        var dumpPath = DumpPathFor(context);
+        // A name of its own: a fresh dump that missed its deadline may yet be written to the usual one.
+        var dumpPath = Path.Combine(
+            context.ArtifactDirectory,
+            $"bloom-{context.Target.ProcessId}-early.dmp"
+        );
         try
         {
             Directory.CreateDirectory(context.ArtifactDirectory);

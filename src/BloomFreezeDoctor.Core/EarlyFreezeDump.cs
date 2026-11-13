@@ -26,8 +26,18 @@ public sealed class EarlyFreezeDump : IDisposable
     private readonly Func<Func<Taken?>, Task<Taken?>> _inBackground;
     private readonly object _lock = new();
 
-    /// <summary>The dump for the current episode, being taken or taken; null when there is none.</summary>
+    /// <summary>
+    /// The dump for the current episode, being taken or taken, while this still owns it; null when there is
+    /// none or a report has claimed it.
+    /// </summary>
     private Task<Taken?>? _current;
+
+    /// <summary>
+    /// Whether this episode has had its dump, whoever owns it now. Separate from <see cref="_current"/> so
+    /// that a report claiming the dump while Bloom is still Suspect - "Report now" - does not lead to
+    /// another one on the next tick.
+    /// </summary>
+    private bool _dumpedThisEpisode;
 
     /// <summary>
     /// What a successful early dump left behind: the file, and when it was written, so a report can say how
@@ -71,11 +81,16 @@ public sealed class EarlyFreezeDump : IDisposable
     {
         lock (_lock)
         {
-            if (state == TargetState.Suspect && _current == null)
-                _current = _inBackground(Take);
-            else if (state == TargetState.Healthy && _current != null)
+            if (state == TargetState.Suspect && !_dumpedThisEpisode)
             {
-                DeleteWhenDone(_current);
+                _dumpedThisEpisode = true;
+                _current = _inBackground(Take);
+            }
+            else if (state == TargetState.Healthy)
+            {
+                _dumpedThisEpisode = false;
+                if (_current != null)
+                    DeleteWhenDone(_current);
                 _current = null;
             }
         }

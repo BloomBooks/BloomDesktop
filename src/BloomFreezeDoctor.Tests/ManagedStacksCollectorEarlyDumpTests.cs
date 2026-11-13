@@ -119,7 +119,7 @@ public class ManagedStacksCollectorEarlyDumpTests
             CancellationToken.None
         );
 
-        var expected = Path.Combine(context.ArtifactDirectory, "bloom-4242.dmp");
+        var expected = Path.Combine(context.ArtifactDirectory, "bloom-4242-early.dmp");
         Assert.That(section.Artifacts, Is.EqualTo(new[] { expected }));
         Assert.That(File.ReadAllText(expected), Is.EqualTo("not really a dump"));
         Assert.That(File.Exists(early.DumpPath), Is.False, "the dump should be moved, not copied");

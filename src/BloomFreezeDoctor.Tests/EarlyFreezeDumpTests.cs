@@ -51,6 +51,20 @@ public class EarlyFreezeDumpTests
         keeper.Claim() is { } claim ? await claim : null;
 
     [Test]
+    public async Task Observe_StillSuspectAfterAClaim_TakesNoSecondDump()
+    {
+        // "Report now" while Bloom is Suspect claims the dump; the watcher keeps saying Suspect.
+        using var keeper = Keeper();
+        keeper.Observe(TargetState.Suspect);
+        Assert.That(await Claim(keeper), Is.Not.Null, "sanity check");
+
+        keeper.Observe(TargetState.Suspect);
+
+        Assert.That(_dumpsWritten, Is.EqualTo(1), "one freeze should cost Bloom one early dump");
+        Assert.That(await Claim(keeper), Is.Null);
+    }
+
+    [Test]
     public void Claim_NothingHeld_ReturnsNullAtOnce()
     {
         // So that a report about a Bloom that never looked frozen has nothing to wait for.
