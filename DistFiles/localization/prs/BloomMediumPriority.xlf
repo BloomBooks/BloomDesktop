@@ -2119,6 +2119,36 @@
         <target xml:lang="prs" state="needs-translation">Apps have a maximum size of about %1. The current estimate for this app is %0.</target>
         <note>ID: PublishTab.Apps.SizeEstimate.Total</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.OverLimitWithEstimates">
+        <source xml:lang="en">This estimate is above the %0 Android app size limit, but some of the books' sizes are only estimates. Measure the books to find out for sure, or choose fewer books or smaller books.</source>
+        <target xml:lang="prs" state="needs-translation">This estimate is above the %0 Android app size limit, but some of the books' sizes are only estimates. Measure the books to find out for sure, or choose fewer books or smaller books.</target>
+        <note>ID: PublishTab.Apps.SizeEstimate.OverLimitWithEstimates</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.MeasuredCount">
+        <source xml:lang="en">%0 of %1 books have been measured. The striped ones are estimates.</source>
+        <target xml:lang="prs" state="needs-translation">%0 of %1 books have been measured. The striped ones are estimates.</target>
+        <note>ID: PublishTab.Apps.SizeEstimate.MeasuredCount</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.ActualSuffix">
+        <source xml:lang="en">(actual)</source>
+        <target xml:lang="prs" state="needs-translation">(actual)</target>
+        <note>ID: PublishTab.Apps.SizeEstimate.ActualSuffix</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.EstimateSuffix">
+        <source xml:lang="en">(estimate)</source>
+        <target xml:lang="prs" state="needs-translation">(estimate)</target>
+        <note>ID: PublishTab.Apps.SizeEstimate.EstimateSuffix</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.MeasureBooks">
+        <source xml:lang="en">Measure exact sizes</source>
+        <target xml:lang="prs" state="needs-translation">Measure exact sizes</target>
+        <note>ID: PublishTab.Apps.MeasureBooks</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.MeasureBooks.Tooltip">
+        <source xml:lang="en">Make the BloomPUB files for the app's books now, so that their exact sizes are shown. Build will use them too.</source>
+        <target xml:lang="prs" state="needs-translation">Make the BloomPUB files for the app's books now, so that their exact sizes are shown. Build will use them too.</target>
+        <note>ID: PublishTab.Apps.MeasureBooks.Tooltip</note>
+      </trans-unit>
       <trans-unit id="ImageLibrary.FailedToAddImage">
         <source xml:lang="en">Sorry, there was a problem adding the image.</source>
         <target xml:lang="prs" state="needs-translation">Sorry, there was a problem adding the image.</target>
