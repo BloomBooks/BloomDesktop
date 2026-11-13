@@ -1,14 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { describe, it, expect, vi } from "vitest";
-import { ALL_TABLE_UI_STRINGS, setGetLocalizations } from "bloom-table";
-import { getLocalizations } from "../../lib/localizationManager/getLocalizations";
-import { startTableUiLocalization } from "./tableUiLocalization";
-
-vi.mock("bloom-table", async (importOriginal) => ({
-    ...(await importOriginal<typeof import("bloom-table")>()),
-    setGetLocalizations: vi.fn(() => Promise.resolve()),
-}));
+import { describe, it, expect } from "vitest";
+import { ALL_TABLE_UI_STRINGS } from "bloom-table";
 
 // The bloom-table library's menus show whatever Bloom's XLF holds for each of
 // its string ids. A string the library adds in a later version, or whose English
@@ -36,21 +29,6 @@ function readEnglishXlfSources(): Map<string, string> {
     }
     return sources;
 }
-
-describe("startTableUiLocalization", () => {
-    it("hands the library Bloom's getLocalizations, once per page", () => {
-        expect(setGetLocalizations).not.toHaveBeenCalled();
-
-        startTableUiLocalization();
-        // A second page setup on the same page must not ask again.
-        startTableUiLocalization();
-
-        expect(setGetLocalizations).toHaveBeenCalledTimes(1);
-        expect(vi.mocked(setGetLocalizations).mock.calls[0][0]).toBe(
-            getLocalizations,
-        );
-    });
-});
 
 describe("bloom-table UI strings", () => {
     it("each has an English XLF entry with the library's English", () => {

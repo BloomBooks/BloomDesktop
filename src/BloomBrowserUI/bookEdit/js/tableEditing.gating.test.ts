@@ -32,8 +32,9 @@ vi.mock("./bloomEditing", async (importOriginal) => ({
 // SetupTableEditing hands the library Bloom's getLocalizations, which asks the
 // server, and the library shows no chrome until the answer comes. These tests are
 // about the Pro gate, so the library is left with its English, which it shows at once.
-vi.mock("./tableUiLocalization", () => ({
-    startTableUiLocalization: () => {},
+vi.mock("bloom-table", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("bloom-table")>()),
+    setGetLocalizations: vi.fn(() => Promise.resolve()),
 }));
 
 import { findParagraphForTextContextMenu } from "../textContextMenu/noIndent";

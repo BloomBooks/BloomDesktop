@@ -1,5 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
-import { addRow, getTableInfo, setupContentsOfCell } from "bloom-table";
+import {
+    addRow,
+    getTableInfo,
+    setGetLocalizations,
+    setupContentsOfCell,
+} from "bloom-table";
+import { getLocalizations } from "../../lib/localizationManager/getLocalizations";
 // A new video cell asks the server to put the video placeholder in the book
 // folder; there is no server here, and the call is also what proves the wiring
 // ran.
@@ -22,9 +28,11 @@ vi.mock("./bloomEditing", async (importOriginal) => ({
     activateLongPressFor: () => {},
 }));
 // SetupTableEditing hands the library Bloom's getLocalizations, which asks the
-// server. Nothing here is about translation, so the library keeps its English.
-vi.mock("./tableUiLocalization", () => ({
-    startTableUiLocalization: () => {},
+// server. Mocked, the library keeps its English, and the SetupTableEditing test
+// below can see what it was handed.
+vi.mock("bloom-table", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("bloom-table")>()),
+    setGetLocalizations: vi.fn(() => Promise.resolve()),
 }));
 
 import {
@@ -66,6 +74,20 @@ class NoopResizeObserver {
         ui: { addButton: () => {} },
     }),
 };
+
+describe("SetupTableEditing", () => {
+    it("hands the library Bloom's getLocalizations, once per page", () => {
+        SetupTableEditing(document.body);
+        // A second setup on the same page, as when a canvas element is added,
+        // must not ask again.
+        SetupTableEditing(document.body);
+
+        expect(setGetLocalizations).toHaveBeenCalledTimes(1);
+        expect(vi.mocked(setGetLocalizations).mock.calls[0][0]).toBe(
+            getLocalizations,
+        );
+    });
+});
 
 describe("AttachNewTableThatFillsItsSpace", () => {
     it("gives every row and column the growing size", () => {
