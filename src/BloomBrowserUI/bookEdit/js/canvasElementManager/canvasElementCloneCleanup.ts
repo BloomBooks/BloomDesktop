@@ -1,6 +1,8 @@
 // Clone-and-clean logic extracted from CanvasElementDuplication so it can be
 // unit-tested without instantiating the full class.
 
+import { kScrollTopVariable } from "../scrollingLayouts";
+
 export function cloneCanvasElementHtmlStructure(
     elementToClone: HTMLElement,
 ): string {
@@ -29,6 +31,14 @@ function cleanClonedNode(element: Element): void {
     // tableEditing.ts). The copy has not been wired up, so it must not carry it,
     // or the table library never registers it and none of its commands work.
     safelyRemoveAttribute(element, "data-table-attached");
+    // The copy of a scrolled text box starts unscrolled, so it must not keep the original's
+    // scroll offset.
+    if (element instanceof HTMLElement) {
+        element.style.removeProperty(kScrollTopVariable);
+        if (!element.getAttribute("style")) {
+            element.removeAttribute("style");
+        }
+    }
 
     const childArray = Array.from(element.childNodes);
     childArray.forEach((child) => {

@@ -10,6 +10,7 @@
 @import "bleedAndCropMarks.less";
 @import "inlineImageEditing.less";
 @import "cropHandles.less";
+@import "../OverflowChecker/overflowIndicators.less";
 
 @focusBorderColor: transparent; // #d6eaed; // @bloom-blue; // rgba(82, 168, 236, 0.6);
 @tipLinkColor: #8e3581; // intentionally a bit darker to be legible
@@ -242,7 +243,10 @@ body:has(#canvas-element-context-controls:hover) .bloom-page,
         line-height: 1; //else it will draw up in the box somewhere if the font is large
         text-shadow: none;
         content: attr(data-languageTipContent);
-        bottom: 2px; // See Bl-10017
+        // See Bl-10017. An absolutely positioned :after of a box that scrolls moves with the
+        // box's text, so --bloom-scroll-top (how far the box is scrolled, set by
+        // overflowIndicators.ts) keeps it at the bottom of what the box shows.
+        bottom: calc(2px - var(--bloom-scroll-top, 0px));
         margin-right: 2px;
     }
     // show some structure when the page is hovered
@@ -808,29 +812,8 @@ div.bloom-templateMode {
     border: 3px dashed black;
 }
 
-// We only make a big deal out of "overflow" if the layout is a *paper* size, rather than a *device* or *ebook* size.
-// Or the overflowing text is on a button
-.bloom-page:not([class*="Device"]):not([class*="Ebook"]),
-.bloom-page .bloom-canvas-button.bloom-canvas-button {
-    // We need this three times to beat a rule that gives the focusd editable box a blue outline
-    // And for buttons we need to beat the rule on .bloom-canvas-element[data-bloom-active="true"] div.bloom-editable
-    .overflow.overflow.overflow {
-        // Since bloom-editables are made up of paragraphs, this has much the same visible effect
-        // as putting the red border on the bloom-editable itself, but changing the color of the
-        // bloom-editable can get picked up by the style editor and cause a newly-defined style
-        // to unexpectedly be red.
-        p {
-            color: @OverflowColor !important;
-        }
-
-        outline: solid thin @OverflowColor !important; //rather than border so it doesn't affect layout
-
-        p:empty:after {
-            //br:after would be great but it doesn't work
-            content: "¶";
-        }
-    }
-}
+// A box with more text than fits is shown by OverflowChecker/overflowIndicators.ts, which draws
+// on a layer beside the page, styled by OverflowChecker/overflowIndicators.less.
 
 // The fix for the language label does not work with niceScroll, so I've commented it out.
 // .bloom-page[class*="Device"] {
@@ -844,23 +827,6 @@ div.bloom-templateMode {
 //         }
 //     }
 // }
-
-// We want a thick red line at the bottom. Outline can't do a line on just one side.
-// We don't want a border on the box itself because that takes up space; a box that
-// once starts overflowing might be stuck that way because of the extra space needed
-// for the border. So we use a pseudo-element to draw the line.
-.childOverflowingThis:not(.bloom-ignoreOverflow):after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    box-sizing: border-box;
-    pointer-events: none;
-    border-bottom: solid thick @OverflowColor !important;
-    // no, that's really confusing when text far from the crime turns red color: red !important;
-}
 
 //we do both in case one is already used and !important
 .Layout-Problem-Detected:before,

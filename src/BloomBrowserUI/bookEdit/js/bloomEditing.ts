@@ -112,6 +112,7 @@ import {
 import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { removeNiceScrollArtifacts } from "./niceScrollCleanup";
+import { removeScrollOffsets } from "./scrollingLayouts";
 import { removeEditorChromeFromClone } from "./editorChromeCleanup";
 import { sendSnapshotNow, stopWatchingPageForSnapshots } from "./pageSnapshot";
 import { setupBookLinkGrids } from "./linkGrid";
@@ -1574,6 +1575,7 @@ function cleanCloneOfPageForSave(
     getToolboxBundleExports()?.removeToolMarkupFromPageClone(clonedPage);
 
     removeNiceScrollArtifacts(clonedPage);
+    removeScrollOffsets(clonedPage);
 
     removeEditingDebrisFromClone(clonedPage);
 }
