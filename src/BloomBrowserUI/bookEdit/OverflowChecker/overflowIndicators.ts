@@ -83,7 +83,7 @@ export function refreshOverflowIndicatorsSoon(): void {
 }
 
 // When a text box scrolls, records how far in kScrollTopVariable, which keeps its language label
-// (editMode.less) at the bottom of what the box shows; removeNiceScrollArtifacts takes it out
+// (editMode.less) at the bottom of what the box shows; removeScrollOffsets takes it out
 // before saving. Scrolling a box with too much text also moves where its text is cut off.
 function respondToBoxScrolling(e: Event) {
     if (

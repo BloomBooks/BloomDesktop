@@ -2029,12 +2029,6 @@
         <note>ID: EditTab.Overflow</note>
         <note>Obsolete as of 6.6 — the Edit tab no longer shows this tooltip; a box with too much text has an "Overflowing" label where its text is cut off instead (EditTab.Overflow.Overflowing).</note>
       </trans-unit>
-      <trans-unit id="EditTab.Overflow.MoreLines" sil:dynamic="true" translate="no">
-        <source xml:lang="en">+{0} lines</source>
-        <note>ID: EditTab.Overflow.MoreLines</note>
-        <note>A small red label on the bottom edge of a text box that has more text than fits. {0} is replaced with the number of lines that do not fit (2 or more). Keep it very short.</note>
-        <note>Obsolete as of 6.6 — the label no longer counts lines; it says "Overflowing" (EditTab.Overflow.Overflowing).</note>
-      </trans-unit>
       <trans-unit id="EditTab.Overflow.Overflowing" sil:dynamic="true" translate="no">
         <source xml:lang="en">Overflowing</source>
         <note>ID: EditTab.Overflow.Overflowing</note>
@@ -2044,18 +2038,6 @@
         <source xml:lang="en">Page overflowing</source>
         <note>ID: EditTab.Overflow.PageOverflowing</note>
         <note>A small red label on a red line at the bottom of a page whose text boxes, together, take more room than the page has, though each box fits its own text. It goes with "Overflowing" (EditTab.Overflow.Overflowing), the label on a single text box that has more text than fits. Keep it very short.</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Overflow.PageTooFull" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Page too full</source>
-        <note>ID: EditTab.Overflow.PageTooFull</note>
-        <note>A small red label on a red line at the bottom of a page whose text boxes, together, take more room than the page has, though each box fits its own text. Keep it very short.</note>
-        <note>Obsolete as of 6.6 — the label says "Page overflowing" instead (EditTab.Overflow.PageOverflowing).</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Overflow.OneMoreLine" sil:dynamic="true" translate="no">
-        <source xml:lang="en">+1 line</source>
-        <note>ID: EditTab.Overflow.OneMoreLine</note>
-        <note>A small red label on the bottom edge of a text box that has more text than fits, when one line does not fit. Keep it very short.</note>
-        <note>Obsolete as of 6.6 — the label no longer counts lines; it says "Overflowing" (EditTab.Overflow.Overflowing).</note>
       </trans-unit>
       <trans-unit id="EditTab.OverflowContainer" sil:dynamic="true">
         <source xml:lang="en">A container on this page is overflowing</source>

@@ -98,19 +98,6 @@ describe("removeNiceScrollArtifacts", () => {
         expect(editable.hasAttribute("style")).toBe(false);
     });
 
-    it("removes how far a box was scrolled, which keeps its language label in view", () => {
-        const editable = body.querySelector<HTMLElement>(".bloom-editable")!;
-        editable.style.setProperty("--bloom-scroll-top", "44px");
-        expect(editable.style.getPropertyValue("--bloom-scroll-top")).toBe(
-            "44px",
-        );
-
-        removeNiceScrollArtifacts(body);
-
-        expect(editable.style.getPropertyValue("--bloom-scroll-top")).toBe("");
-        expect(editable.hasAttribute("style")).toBe(false);
-    });
-
     it("keeps other inline styles on a box niceScroll did touch", () => {
         const editable = body.querySelector<HTMLElement>(".bloom-editable")!;
         editable.style.color = "red";

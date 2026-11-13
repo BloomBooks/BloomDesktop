@@ -25,3 +25,17 @@ export function pageScrollsInsteadOfOverflowing(page: HTMLElement): boolean {
 // (editMode.less) at the bottom of what the box shows. A copy of the box starts unscrolled, so
 // whatever copies a box removes it.
 export const kScrollTopVariable = "--bloom-scroll-top";
+
+// Removes kScrollTopVariable from every text box in `root`, a copy of the page about to be
+// saved, so that it never reaches the book.
+export function removeScrollOffsets(root: HTMLElement): void {
+    for (const box of Array.from(
+        root.querySelectorAll<HTMLElement>(`[style*="${kScrollTopVariable}"]`),
+    )) {
+        box.style.removeProperty(kScrollTopVariable);
+        if (!box.getAttribute("style")) {
+            // Don't leave an empty style attribute behind in the saved HTML.
+            box.removeAttribute("style");
+        }
+    }
+}
