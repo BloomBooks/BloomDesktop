@@ -2,6 +2,7 @@
 import { get, postString } from "../../utils/bloomApi";
 import $ from "jquery";
 import { getPageIFrame, getPageIframeBody } from "../../utils/shared";
+import { kInlineImageClass, kInlineImageIdAttr } from "./inlineImageConstants";
 import {
     postAfterSendingSnapshot,
     saveChangesAndRethinkPage,
@@ -451,7 +452,13 @@ export class EditableDivUtils {
         // console.log("safelyReplaceContentWithCkEditorData, before getData replacement: ");
         // EditableDivUtils.logElementsInnerHtml([div]);
 
-        div.innerHTML = ckEditorData;
+        // Inline images (inlineImages.ts) are contenteditable=false, so CKEditor cannot have
+        // changed anything inside them, and with the Decodable or Leveled Reader open this runs
+        // whenever the text loses focus. See replaceContentKeepingLiveInlineImages.
+        EditableDivUtils.replaceContentKeepingLiveInlineImages(
+            div,
+            ckEditorData,
+        );
 
         // console.log("safelyReplaceContentWithCkEditorData, after getData replacement: ");
         // EditableDivUtils.logElementsInnerHtml([div]);
@@ -481,6 +488,47 @@ export class EditableDivUtils {
         }
 
         EditableDivUtils.fixUpEmptyishParagraphs(div);
+    }
+
+    /**
+     * Sets the content of an editable to the HTML passed in, but keeps the inline images that are
+     * on the page now in place of their copies in that HTML, matched by kInlineImageIdAttr.
+     *
+     * The HTML is another version of this same editable's content, holding the same inline images:
+     * CKEditor's data for it (getData()), when the reader tools tidy a block, or a copy taken
+     * earlier for the reader tools' own undo history. Its text and markup replace the current ones.
+     *
+     * An inline image's menus, toolbar, handles and load handlers hold the live wrapper, so a
+     * rebuilt copy would leave them acting on an element no longer on the page: Change image and
+     * Delete would then do nothing. And every language's editable has a copy of each picture, kept
+     * the same by the inline image code, so a copy taken earlier would put an older picture back in
+     * this one language alone.
+     */
+    public static replaceContentKeepingLiveInlineImages(
+        div: HTMLElement,
+        html: string,
+    ): void {
+        const liveInlineImages = Array.from(
+            div.querySelectorAll<HTMLElement>(`:scope > .${kInlineImageClass}`),
+        );
+
+        div.innerHTML = html;
+
+        liveInlineImages.forEach((live) => {
+            // Every wrapper is given an id when it is inserted or when the page is set up, and the
+            // reader tools' undo history starts again after every picture change, so the HTML
+            // always holds a copy of each live wrapper.
+            const id = live.getAttribute(kInlineImageIdAttr);
+            if (!id) throw new Error("An inline image has no id");
+            const rebuilt = div.querySelector(
+                `:scope > .${kInlineImageClass}[${kInlineImageIdAttr}="${id}"]`,
+            );
+            if (!rebuilt)
+                throw new Error(
+                    `The new content of the text block is missing inline image ${id}`,
+                );
+            rebuilt.replaceWith(live);
+        });
     }
 
     private static isNodeCkEditorBookmark(node: Node): boolean {
