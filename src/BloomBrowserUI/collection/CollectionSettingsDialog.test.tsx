@@ -74,7 +74,7 @@ const settingsResponse: ICollectionSettingsResponse = {
     editingABlorgBook: false,
     defaultTeamCollectionFolder: kDropboxFolder,
     defaultFontName: "Andika",
-    pageNumberStyles: [
+    pageNumberStyleChoices: [
         { value: "Decimal", label: "Decimal" },
         { value: "Devanagari", label: "Devanagari" },
     ],

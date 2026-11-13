@@ -127,8 +127,10 @@ function languageIdentityFromChooser(
 }
 
 /**
- * The written language the user picked in the chooser, as one of the collection's languages. The
- * rest of a language they changed is kept; a language they added starts from Bloom's defaults.
+ * A written language row's new value once the user picks a language in the chooser. Only the tag
+ * and name change (and right to left, when the chooser knows the script); the row keeps its font
+ * and other settings. `previous` is null only when the collection has no Language 3 yet; then the
+ * new language starts from Bloom's defaults.
  */
 export function writtenLanguageFromChooser(
     chosen: ILanguageData,
@@ -185,7 +187,9 @@ const LanguageChooserControl = <
     value: T | null;
     disabled?: boolean;
     onChange: (value: T | null) => void;
-    // The language as it should be once the user picks one in the chooser.
+    // Makes the row's new value from the language picked in the chooser and the row's current
+    // value. Rows differ: a sign language is just a tag and name, while a written language keeps
+    // its font and script settings.
     fromChooser: (chosen: ILanguageData, previous: T | null) => T;
 }): React.ReactElement => {
     const changeLabel = useL10n(
@@ -312,7 +316,7 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
     );
     const signLanguageLabel = useL10n(
         "Sign Language",
-        "CollectionSettingsDialog.LanguagesPage.SignLanguage",
+        "PublishTab.Upload.SignLanguage",
     );
     const languageLabel = useL10n(
         "Language",
@@ -392,15 +396,15 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
         "CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel",
     );
 
-    // Asked for when the dialog opens, not when Config-R mounts this page, so that it is usually
-    // in before anyone looks.
+    // Asked for when the dialog first opens, not when Config-R mounts this page, so that it is
+    // usually in before anyone looks. Once is enough: Bloom reads the fonts only at startup.
     const [fontMetadata, setFontMetadata] = React.useState<IFontMetaData[]>();
     React.useEffect(() => {
-        if (!context.dialogOpen) return;
+        if (!context.dialogOpen || fontMetadata) return;
         get("fonts/metadata", (result) => {
             setFontMetadata(result.data as IFontMetaData[]);
         });
-    }, [context.dialogOpen]);
+    }, [context.dialogOpen, fontMetadata]);
 
     // The font picker needs the font list, so it is made again (and Config-R mounts it again)
     // only when the list arrives.
@@ -581,7 +585,8 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
                                     label={pageNumberingLabel}
                                     path="languages.pageNumberStyle"
                                     options={
-                                        context.settings?.pageNumberStyles ?? []
+                                        context.settings
+                                            ?.pageNumberStyleChoices ?? []
                                     }
                                 />
                             )}
@@ -592,7 +597,7 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
         );
     }
 
-    const element = (
+    const languagesPage = (
         <ConfigrPage label={label} pageKey="languages" topLevel={true}>
             {writtenLanguageGroup({
                 number: 1,
@@ -624,7 +629,7 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
         </ConfigrPage>
     );
     return {
-        element,
+        element: languagesPage,
         helpTopic: "Tasks/Basic_tasks/Change_languages.htm",
         valuesToSave: (values) =>
             withEditedLettersCleaned(values, context.settings!.values),

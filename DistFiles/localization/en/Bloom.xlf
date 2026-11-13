@@ -642,11 +642,6 @@
         <note>ID: CollectionSettingsDialog.LanguagesPage.SentenceEndingPunctuation</note>
         <note>On the "More" page of the first language in the Collection Settings dialog: the label of the box where the user adds characters that end a sentence in this language, for the Decodable and Leveled Reader tools.</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguagesPage.SignLanguage" translate="no">
-        <source xml:lang="en">Sign Language</source>
-        <note>ID: CollectionSettingsDialog.LanguagesPage.SignLanguage</note>
-        <note>On the Languages page of the Collection Settings dialog: the heading of the collection's sign language, and the label beside its name.</note>
-      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguagesPage.ToolFontSize" translate="no">
         <source xml:lang="en">Font size when displayed in tools</source>
         <note>ID: CollectionSettingsDialog.LanguagesPage.ToolFontSize</note>

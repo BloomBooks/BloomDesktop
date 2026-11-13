@@ -530,7 +530,7 @@ namespace Bloom.web.controllers
                 EditingABlorgBook = _collectionSettings.EditingABlorgBook,
                 DefaultTeamCollectionFolder = DropboxUtils.GetDropboxFolderPath() ?? "",
                 DefaultFontName = WritingSystem.GetDefaultFontName(),
-                PageNumberStyles = GetPageNumberStyles(),
+                PageNumberStyleChoices = GetPageNumberStyleChoices(),
                 XmatterPacks = GetXmatterPacks(xmatterKeyForcedByBranding),
                 XmatterChosenByBranding = xmatterKeyForcedByBranding != null,
             };
@@ -540,7 +540,7 @@ namespace Bloom.web.controllers
         /// <summary>
         /// The page numbering styles, with their names as the user sees them.
         /// </summary>
-        private static PageNumberStyleOption[] GetPageNumberStyles()
+        private static PageNumberStyleOption[] GetPageNumberStyleChoices()
         {
             return CollectionSettings
                 .CssNumberStylesToCultureOrDigits.Keys.Select(styleKey => new PageNumberStyleOption

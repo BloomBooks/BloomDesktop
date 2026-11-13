@@ -107,8 +107,9 @@ export interface ICollectionSettingsResponse {
     defaultTeamCollectionFolder: string;
     // Bloom's default font, sent so a language added in the dialog can show it at once.
     defaultFontName: string;
-    // The page numbering styles; value is the key values.languages.pageNumberStyle holds.
-    pageNumberStyles: { value: string; label: string }[];
+    // The choices for values.languages.pageNumberStyle: each style's key, and its name as C#
+    // localizes it.
+    pageNumberStyleChoices: { value: string; label: string }[];
     // The packs the collection may use; just the one when the branding chooses it.
     xmatterPacks: IXmatterPack[];
     xmatterChosenByBranding: boolean;

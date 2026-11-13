@@ -165,6 +165,39 @@ namespace BloomTests.Collection
         }
 
         /// <summary>
+        /// Removing Language 3 empties the third slot, but the collection keeps the old language,
+        /// font included, among its other languages, so books that still use it keep their font.
+        /// </summary>
+        [Test]
+        public void Apply_Language3Removed_ItsFontKeptAmongOtherLanguages()
+        {
+            var settings = CreateCollectionSettings("ApplyLanguage3Removed");
+            settings.Language3.ChangeTag("de");
+            settings.Language3.FontName = "Charis SIL";
+            settings.Save();
+            var values = CurrentValuesJson(settings);
+            Assert.That(
+                (string)values["languages"]["language3"]["tag"],
+                Is.EqualTo("de"),
+                "Sanity check: the collection should start with German as Language 3"
+            );
+
+            values["languages"]["language3"] = null;
+            Apply(values, settings);
+
+            Assert.That(settings.Language3.Tag, Is.Empty);
+            Assert.That(settings.Language3.FontName, Is.Empty);
+            var reloaded = new CollectionSettings(settings.SettingsFilePath);
+            var german = reloaded.AllLanguages.Skip(3).SingleOrDefault(l => l.Tag == "de");
+            Assert.That(
+                german,
+                Is.Not.Null,
+                "the removed language should be kept after the first three"
+            );
+            Assert.That(german.FontName, Is.EqualTo("Charis SIL"));
+        }
+
+        /// <summary>
         /// The React dialog posts every value back on OK, changed or not. Applying them must leave
         /// the collection as it was, and must not ask for a rename.
         /// </summary>

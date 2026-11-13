@@ -51,9 +51,9 @@ namespace Bloom.web.controllers
         public string DefaultFontName;
 
         /// <summary>
-        /// The page numbering styles the Languages page offers.
+        /// The choices for LanguagesValues.PageNumberStyle, with their names localized.
         /// </summary>
-        public PageNumberStyleOption[] PageNumberStyles;
+        public PageNumberStyleOption[] PageNumberStyleChoices;
 
         /// <summary>
         /// The front/back matter packs the collection may use; only the branding's when the
