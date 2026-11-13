@@ -169,15 +169,6 @@ namespace Bloom.Publish.Rab
                 false,
                 requiresSync: false
             );
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "reset-bloompub-cache",
-                request =>
-                {
-                    _rabProjectService.ResetBloomPubCacheForScreenSession();
-                    request.PostSucceeded();
-                },
-                true
-            );
             apiHandler.RegisterAsyncEndpointHandler(
                 kApiUrlPart + "open",
                 async request =>
@@ -204,14 +195,14 @@ namespace Bloom.Publish.Rab
                     // Lock the workspace tabs for the duration so the action is modal (see
                     // SetWorkspaceTabsEnabled); re-enabled in the finally below.
                     SetWorkspaceTabsEnabled(false);
-                    _ = Task.Run(async () =>
+                    _ = Task.Run(() =>
                     {
                         var succeeded = false;
                         try
                         {
                             try
                             {
-                                await _rabProjectService.PrepareAsync();
+                                _rabProjectService.Prepare();
                                 succeeded = true;
                             }
                             catch (OperationCanceledException)
@@ -257,7 +248,7 @@ namespace Bloom.Publish.Rab
                         return;
                     }
                     SetWorkspaceTabsEnabled(false);
-                    _ = Task.Run(async () =>
+                    _ = Task.Run(() =>
                     {
                         var succeeded = false;
                         var stopwatch = Stopwatch.StartNew();
@@ -265,7 +256,7 @@ namespace Bloom.Publish.Rab
                         {
                             try
                             {
-                                await _rabProjectService.BuildAsync();
+                                _rabProjectService.Build();
                                 succeeded = true;
                                 TrackRabAction("build", "success", stopwatch);
                             }
@@ -293,6 +284,52 @@ namespace Bloom.Publish.Rab
                 false,
                 requiresSync: false
             );
+            // Makes the app's missing BloomPUBs so the size bar can show actual sizes (BL-17062).
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + RabProjectService.kMeasureAction,
+                request =>
+                {
+                    if (!_rabProjectService.TryBeginAction(RabProjectService.kMeasureAction))
+                    {
+                        request.Failed("A prepare/build/install action is already running.");
+                        return;
+                    }
+                    SetWorkspaceTabsEnabled(false);
+                    _ = Task.Run(() =>
+                    {
+                        var succeeded = false;
+                        try
+                        {
+                            try
+                            {
+                                _rabProjectService.MeasureBookSizes();
+                                succeeded = true;
+                            }
+                            catch (OperationCanceledException)
+                                when (_rabProjectService.IsCancellationRequested)
+                            {
+                                _rabProjectService.ReportCancellation("Measure");
+                            }
+                            catch (Exception error)
+                            {
+                                _rabProjectService.ReportFailure("Measure", error);
+                            }
+                        }
+                        finally
+                        {
+                            _rabProjectService.ClearAction();
+                            SetWorkspaceTabsEnabled(true);
+                            _rabProjectService.SendActionCompleteEvent(
+                                RabProjectService.kMeasureAction,
+                                succeeded
+                            );
+                        }
+                    });
+                    request.PostSucceeded();
+                },
+                false,
+                requiresSync: false
+            );
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "install",
                 request =>
@@ -303,7 +340,7 @@ namespace Bloom.Publish.Rab
                         return;
                     }
                     SetWorkspaceTabsEnabled(false);
-                    _ = Task.Run(async () =>
+                    _ = Task.Run(() =>
                     {
                         var succeeded = false;
                         var stopwatch = Stopwatch.StartNew();
@@ -311,7 +348,7 @@ namespace Bloom.Publish.Rab
                         {
                             try
                             {
-                                await _rabProjectService.InstallAsync();
+                                _rabProjectService.Install();
                                 succeeded = true;
                                 TrackRabAction("install", "success", stopwatch);
                             }
