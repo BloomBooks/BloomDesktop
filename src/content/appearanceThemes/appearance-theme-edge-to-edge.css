@@ -157,3 +157,11 @@ Page-number visibility comes from appearance.json, not from this theme file. */
        so the format button has nothing to dodge (BL-14901) */
     --formatButton-pageNumber-dodge: 0px;
 }
+.bloom-fullBleed .numberedPage:not(.bloom-interactive-page) {
+    /* With full bleed, text keeps the standard page margin from the cut line (the
+       --fullBleed-textBoxInset-* rule above), and the page number sits in that margin below
+       the text box, as in the Default theme, so the format button has nothing to dodge.
+       This comes after the rules above so it wins over them at equal specificity. */
+    --formatButton-pageNumber-dodge: 0px;
+    --formatButton-pageNumber-dodge-when-forced-left: 0px;
+}
