@@ -482,6 +482,67 @@ namespace BloomTests.Book
             Assert.IsFalse(File.Exists(unusedVidOrigPath));
         }
 
+        // BL-17056: Windows refusing to delete an unused video (there, antivirus folder protection)
+        // made selecting the book fail every time. Deleting a read-only file fails the same way,
+        // with UnauthorizedAccessException.
+        [Test]
+        public void CleanupUnusedVideoFiles_UnusedVideoCannotBeDeleted_DoesNotThrow()
+        {
+            var videoPath = Path.Combine(_folder.Path, "video");
+            Directory.CreateDirectory(videoPath);
+            var storage = GetInitialStorageWithCustomHtml(
+                XmlHtmlConverter.CreateHtmlString(
+                    "<div class='bloom-page numberedPage' id='566c4a7a-0789-43f5-abcb-e4a16532dedd'></div>"
+                )
+            );
+            var unusedVideo = MakeSampleMp4Video(
+                Path.Combine(videoPath, "5e545cb1-795a-4d50-9d49-a83bc0a2b5fc.mp4.tmp.mp4"),
+                false
+            );
+            File.SetAttributes(unusedVideo.Path, FileAttributes.ReadOnly);
+            try
+            {
+                Assert.That(
+                    () => File.Delete(unusedVideo.Path),
+                    Throws.TypeOf<UnauthorizedAccessException>(),
+                    "Test setup: a read-only file should refuse deletion the way the user's file did"
+                );
+
+                Assert.DoesNotThrow(() => storage.CleanupUnusedVideoFiles());
+
+                Assert.That(File.Exists(unusedVideo.Path), Is.True);
+            }
+            finally
+            {
+                File.SetAttributes(unusedVideo.Path, FileAttributes.Normal);
+            }
+        }
+
+        [Test]
+        public void CleanupUnusedAudioFiles_UnusedAudioCannotBeDeleted_DoesNotThrow()
+        {
+            var audioPath = Path.Combine(_folder.Path, "audio");
+            Directory.CreateDirectory(audioPath);
+            var storage = GetInitialStorageWithCustomHtml(
+                XmlHtmlConverter.CreateHtmlString(
+                    "<div class='bloom-page numberedPage' id='566c4a7a-0789-43f5-abcb-e4a16532dedd'></div>"
+                )
+            );
+            var unusedAudio = Path.Combine(audioPath, "i746b30ce-2fc7-4c84-9ef0-1036d6883cba.mp3");
+            File.WriteAllText(unusedAudio, "not really audio");
+            File.SetAttributes(unusedAudio, FileAttributes.ReadOnly);
+            try
+            {
+                Assert.DoesNotThrow(() => storage.CleanupUnusedAudioFiles(isForPublish: false));
+
+                Assert.That(File.Exists(unusedAudio), Is.True);
+            }
+            finally
+            {
+                File.SetAttributes(unusedAudio, FileAttributes.Normal);
+            }
+        }
+
         [TestCase(true)]
         [TestCase(false)]
         public void CleanupUnusedAudioFiles_BookHadUnusedAudio_AudiosRemoved(bool isForPublish)
@@ -823,6 +884,59 @@ namespace BloomTests.Book
                 "unused index file should've been removed"
             );
             Assert.IsFalse(File.Exists(unused.cssPath), "unused CSS file  should've been removed");
+        }
+
+        // BL-17056: an antivirus that refuses to let Bloom delete an unused activity must not stop
+        // the book from being selected. Denying delete permission refuses it the same way, with
+        // UnauthorizedAccessException.
+        [Test]
+        public void CleanupUnusedActivities_UnusedActivityCannotBeDeleted_DoesNotThrow()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                XmlHtmlConverter.CreateHtmlString("<div class='bloom-page'></div>")
+            );
+            var activityPath = BookStorage.GetActivityFolderPath(_folder.Path);
+            Directory.CreateDirectory(activityPath);
+            var unused = makeDummyActivity(activityPath, "unused");
+            var unusedFolder = Path.GetDirectoryName(unused.indexPath);
+            var me = System.Security.Principal.WindowsIdentity.GetCurrent().User;
+            var denyDeleteFile = new System.Security.AccessControl.FileSystemAccessRule(
+                me,
+                System.Security.AccessControl.FileSystemRights.Delete,
+                System.Security.AccessControl.AccessControlType.Deny
+            );
+            var denyDeleteChildren = new System.Security.AccessControl.FileSystemAccessRule(
+                me,
+                System.Security.AccessControl.FileSystemRights.DeleteSubdirectoriesAndFiles,
+                System.Security.AccessControl.AccessControlType.Deny
+            );
+            var file = new FileInfo(unused.indexPath);
+            var fileSecurity = file.GetAccessControl();
+            fileSecurity.AddAccessRule(denyDeleteFile);
+            file.SetAccessControl(fileSecurity);
+            var folder = new DirectoryInfo(unusedFolder);
+            var folderSecurity = folder.GetAccessControl();
+            folderSecurity.AddAccessRule(denyDeleteChildren);
+            folder.SetAccessControl(folderSecurity);
+            try
+            {
+                Assert.That(
+                    () => File.Delete(unused.indexPath),
+                    Throws.TypeOf<UnauthorizedAccessException>(),
+                    "Test setup: the file should refuse deletion"
+                );
+
+                Assert.DoesNotThrow(() => storage.CleanupUnusedActivities());
+
+                Assert.That(File.Exists(unused.indexPath), Is.True);
+            }
+            finally
+            {
+                folderSecurity.RemoveAccessRule(denyDeleteChildren);
+                folder.SetAccessControl(folderSecurity);
+                fileSecurity.RemoveAccessRule(denyDeleteFile);
+                file.SetAccessControl(fileSecurity);
+            }
         }
 
         [Test]

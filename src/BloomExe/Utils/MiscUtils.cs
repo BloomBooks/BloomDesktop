@@ -146,63 +146,6 @@ namespace Bloom.Utils
             return bldr.ToString();
         }
 
-        public static string InstalledAntivirusPrograms()
-        {
-            var collector = new List<string>();
-            var error = InstalledAntivirusProgramsMof(collector);
-            if (error != null)
-                return error;
-            return string.Join(Environment.NewLine, collector);
-        }
-
-        public static string InstalledAntivirusProgramsMof(List<string> collector)
-        {
-            if (Platform.IsWindows)
-            {
-                string wmipathstr = @"\\" + Environment.MachineName + @"\root\SecurityCenter2";
-                try
-                {
-                    var searcher = new ManagementObjectSearcher(
-                        wmipathstr,
-                        "SELECT * FROM AntivirusProduct"
-                    );
-                    var instances = searcher.Get();
-                    foreach (var instance in instances)
-                    {
-                        var mof = instance.GetText(TextFormat.Mof);
-                        if (instance["productState"] is uint productState)
-                            mof +=
-                                $"({instance["displayName"]}: {FileAccessDiagnostics.DescribeAntivirusProductState((int)productState)}){Environment.NewLine}";
-                        collector.Add(mof);
-                    }
-                }
-                catch (Exception error)
-                {
-                    return error.Message;
-                }
-            }
-            return null; // no error
-        }
-
-        public static string InstalledAntivirusProgramNames()
-        {
-            var collector = new List<string>();
-            var error = InstalledAntivirusProgramsMof(collector);
-            if (error != null)
-                return error;
-            var result = new List<string>();
-            foreach (var mof in collector)
-            {
-                var match = new Regex("displayName = \"(.*?)\"").Match(mof);
-                if (match.Success)
-                {
-                    result.Add(match.Groups[1].Value);
-                }
-            }
-
-            return string.Join(", ", result);
-        }
-
         /// <summary>
         /// Get what information we can about why a given file could not be written to the filesystem.
         /// This includes the identity of the current user, the identity of the file owner, the file
@@ -254,7 +197,7 @@ namespace Bloom.Utils
                 bldr.AppendLine($"The following specific information may be helpful.");
             }
             bldr.Append(FileAccessDiagnostics.Collect(path, out likelyCause));
-            bldr.Append(InstalledAntivirusPrograms());
+            bldr.AppendLine("antivirus products: " + FileAccessDiagnostics.AntivirusSummary);
             return bldr.ToString();
         }
 

@@ -1748,6 +1748,13 @@ window.showWorkspaceInitializationFailure = function(message) {
                 shouldHideSplashScreen: false,
                 lowPriority: true
             );
+            // Check in the background that Windows lets Bloom change files in this collection.
+            // Shows a toast if not, so it waits, like the check above, until startup is done.
+            StartupScreenManager.AddStartupAction(
+                () => FileAccessStartupCheck.StartInBackground(_collectionSettings.FolderPath),
+                shouldHideSplashScreen: false,
+                lowPriority: true
+            );
             // Whether we showed the dialog or not we'll check for a new version in 1 minute.
             _applicationUpdateCheckTimer.Enabled = true;
             // Dev only: does nothing unless the go.sh launcher started this Bloom.

@@ -351,7 +351,7 @@ namespace Bloom.TeamCollection
         /// </summary>
         public void SynchronizeBooksFromLocalToRepo(IWebSocketProgress progress)
         {
-            foreach (var path1 in Directory.EnumerateDirectories(_localCollectionFolder))
+            foreach (var path1 in LocalFoldersThatMayBeBooks())
             {
                 var path = BookStorage.MoveBookToSafeName(path1);
                 try
@@ -494,6 +494,9 @@ namespace Bloom.TeamCollection
 
             if (e.Name == kLastcollectionfilesynctimeTxt)
                 return; // side effect of doing a sync!
+            if (FileAccessStartupCheck.IsProbeFolder(e.Name))
+                return; // a short-lived folder of FileAccessStartupCheck's, not a collection file
+
             if (Directory.Exists(e.FullPath))
                 return; // we seem to get frequent notifications that seem to be spurious for book folders.
             // We'll wait for the system to be idle before writing to the repo. This helps to ensure things
@@ -2261,8 +2264,21 @@ namespace Bloom.TeamCollection
             return status.IsCheckedOutHereBy(whoBy);
         }
 
+        /// <summary>
+        /// The subfolders of the local collection folder, except FileAccessStartupCheck's probe
+        /// folders, which must not be renamed to a safe book name or treated as books.
+        /// </summary>
+        private IEnumerable<string> LocalFoldersThatMayBeBooks()
+        {
+            return Directory
+                .EnumerateDirectories(_localCollectionFolder)
+                .Where(path => !FileAccessStartupCheck.IsProbeFolder(path));
+        }
+
         bool IsBloomBookFolder(string folderPath)
         {
+            if (FileAccessStartupCheck.IsProbeFolder(folderPath))
+                return false;
             return !string.IsNullOrEmpty(BookStorage.FindBookHtmlInFolder(folderPath));
         }
 
@@ -2395,7 +2411,7 @@ namespace Bloom.TeamCollection
             var englishSomethingWrongMessage =
                 "Something went wrong trying to sync with the book {0} in your Team Collection.";
             var oldBookNames = new HashSet<string>();
-            foreach (var path1 in Directory.EnumerateDirectories(_localCollectionFolder))
+            foreach (var path1 in LocalFoldersThatMayBeBooks())
             {
                 // This should only affect new books (when firstTimeJoin is true),
                 // at least once things stabilize so we only ever put things with
