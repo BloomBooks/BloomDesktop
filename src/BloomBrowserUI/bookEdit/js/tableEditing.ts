@@ -38,6 +38,10 @@ import {
     tablesMayBeRestructured,
 } from "./tableFeature";
 import { noteTableHistoryUpdate } from "../undo/tableUndo";
+import {
+    addRequestPageContentDelay,
+    removeRequestPageContentDelay,
+} from "./pageContentDelays";
 
 // The library's own "something changed in a table" notification. It fires on the
 // page's document at the end of every operation that goes through the table's
@@ -277,6 +281,8 @@ function onTableHistoryUpdated(e: Event): void {
         // size (a row changed from Hug to Grow that already had that height), so the
         // overflow marks are checked here as well as when a cell resizes.
         checkTableTextAtNextFrame([outermost]);
+    } else {
+        stopObservingCellsNotInPage();
     }
     // After the wiring, not before: wiring attaches CKEditor to the cells the operation built,
     // and an attach can be reported as a CKEditor change. Recording the table's change last
@@ -367,6 +373,10 @@ const cellsWhoseSizeIsObserved = new Set<HTMLElement>();
 // frame rather than one per cell or per cause.
 const tablesAwaitingOverflowCheck = new Set<HTMLElement>();
 
+// The page-content delay that a waiting overflow check holds, since the check can change the
+// height of a canvas element or the padding of a text box, which are saved with the page.
+const kTableOverflowCheckDelayId = "tableOverflowCheck";
+
 /**
  * Update the overflow marks of every text block in `tables` and of the page around them, at the
  * next frame, together with any other tables already waiting. Called whenever a cell changes
@@ -380,18 +390,23 @@ function checkTableTextAtNextFrame(tables: HTMLElement[]): void {
         tablesAwaitingOverflowCheck.add(outermostTable(table)),
     );
     if (!wasIdle || tablesAwaitingOverflowCheck.size === 0) return;
+    addRequestPageContentDelay(kTableOverflowCheckDelayId);
     requestAnimationFrame(() => {
-        const waiting = Array.from(tablesAwaitingOverflowCheck).filter(
-            (table) => table.isConnected,
-        );
-        tablesAwaitingOverflowCheck.clear();
-        OverflowChecker.AdjustSizeOrMarkOverflowOfAll(
-            waiting.flatMap((table) =>
-                Array.from(
-                    table.querySelectorAll<HTMLElement>(".bloom-editable"),
+        try {
+            const waiting = Array.from(tablesAwaitingOverflowCheck).filter(
+                (table) => table.isConnected,
+            );
+            tablesAwaitingOverflowCheck.clear();
+            OverflowChecker.AdjustSizeOrMarkOverflowOfAll(
+                waiting.flatMap((table) =>
+                    Array.from(
+                        table.querySelectorAll<HTMLElement>(".bloom-editable"),
+                    ),
                 ),
-            ),
-        );
+            );
+        } finally {
+            removeRequestPageContentDelay(kTableOverflowCheckDelayId);
+        }
     });
 }
 
@@ -404,6 +419,16 @@ function onCellsResized(entries: ResizeObserverEntry[]): void {
     );
 }
 
+/** Stop watching the size of the cells that an operation or an undo took out of the page. */
+function stopObservingCellsNotInPage(): void {
+    cellsWhoseSizeIsObserved.forEach((cell) => {
+        if (!cell.isConnected) {
+            cellSizeObserver?.unobserve(cell);
+            cellsWhoseSizeIsObserved.delete(cell);
+        }
+    });
+}
+
 /**
  * Watch the size of every cell within `root`, so its text is checked for overflow as it resizes,
  * and stop watching the cells that are no longer in the page.
@@ -413,12 +438,7 @@ function observeCellSizes(root: HTMLElement): void {
         cellSizeObserver = new ResizeObserver(onCellsResized);
     }
     const observer = cellSizeObserver;
-    cellsWhoseSizeIsObserved.forEach((cell) => {
-        if (!cell.isConnected) {
-            observer.unobserve(cell);
-            cellsWhoseSizeIsObserved.delete(cell);
-        }
-    });
+    stopObservingCellsNotInPage();
     // Observing a cell that is already observed does nothing.
     root.querySelectorAll<HTMLElement>(".bloom-cell").forEach((cell) => {
         observer.observe(cell);
