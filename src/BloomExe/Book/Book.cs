@@ -4910,7 +4910,7 @@ namespace Bloom.Book
         /// <summary>
         /// True for the landscape sizes whose booklets are printed two pages to a portrait sheet
         /// (A5 on A4, HalfLetter on Letter), then cut horizontally and stacked rather than folded.
-        /// The print instructions on the Publish tab (PublishPdfApi.HandlePrintSettingsHelp) rely
+        /// The print instructions on the Publish tab (PublishPdfApi.GetPrintSettingsHelp) rely
         /// on this too, so the layout we make and the instructions we give always agree (BL-16759).
         /// </summary>
         public static bool UsesCutAndStackBooklet(SizeAndOrientation sizeAndOrientation)
