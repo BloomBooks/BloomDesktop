@@ -115,6 +115,25 @@ public sealed class DoctorSupervisor : IDisposable
     /// </summary>
     private BloomTargetWatcher? _watcher;
 
+    /// <summary>
+    /// For each of the last few Blooms adopted, oldest first, the dump taken when it first looked frozen,
+    /// for a report gathered after it has gone. See <see cref="EarlyFreezeDump"/>.
+    ///
+    /// Not just the watched Bloom's: a user who ends a frozen Bloom often starts it again at once, and the
+    /// new one can be adopted before the report about the old one, still reading the Event Log, claims its
+    /// dump. Guarded by <see cref="_lock"/>.
+    /// </summary>
+    private readonly List<EarlyFreezeDump> _earlyDumps = new();
+
+    /// <summary>
+    /// How many Blooms' <see cref="_earlyDumps"/> are kept: enough for a quick restart or two while the
+    /// report about the first is gathered. An unclaimed dump is held on disk until it drops off the end.
+    /// </summary>
+    private const int EarlyDumpsKept = 3;
+
+    /// <summary>Where the Doctor puts its working files: early dumps and reports being gathered.</summary>
+    private static string TempRoot => Path.Combine(Path.GetTempPath(), "BloomFreezeDoctor");
+
     /// <summary>Whether we have already said in the log that a second Bloom is going unwatched.</summary>
     private bool _notedASecondBloom;
 
@@ -862,9 +881,16 @@ public sealed class DoctorSupervisor : IDisposable
 
             var probe = new WindowsTargetProbe(process);
             var watcher = new BloomTargetWatcher(facts, probe);
+            var earlyDump = new EarlyFreezeDump(
+                facts.ProcessId,
+                TempRoot,
+                ManagedStacksCollector.WriteDump
+            );
             watcher.ReportWanted += OnReportWanted;
             watcher.Observed += (_, verdict) =>
             {
+                // First, so a dump started on becoming Suspect is not delayed by anything below.
+                earlyDump.Observe(verdict.State);
                 RaiseStatusChanged();
                 RespondToACrashingBloom(watcher);
                 ConsiderEndingAZombie(watcher, verdict);
@@ -872,6 +898,12 @@ public sealed class DoctorSupervisor : IDisposable
             };
             _watcher = watcher;
             _probe = probe;
+            _earlyDumps.Add(earlyDump);
+            if (_earlyDumps.Count > EarlyDumpsKept)
+            {
+                _earlyDumps[0].Dispose();
+                _earlyDumps.RemoveAt(0);
+            }
             // Everything we remember is about the Bloom we are watching, so a new one starts clean.
             _dumpRequested = false;
             _zombieReported = false;
@@ -1053,23 +1085,37 @@ public sealed class DoctorSupervisor : IDisposable
     )
     {
         var alive = IsAlive(facts.ProcessId, facts.StartTime);
-        var artifacts = Path.Combine(
-            Path.GetTempPath(),
-            "BloomFreezeDoctor",
-            $"gather-{facts.ProcessId}-{Guid.NewGuid():N}"
-        );
+        var artifacts = Path.Combine(TempRoot, $"gather-{facts.ProcessId}-{Guid.NewGuid():N}");
+        // Claimed by every gather about this Bloom, alive or not: a fresh dump is still preferred, but a
+        // Bloom that is alive as we start can be gone by the time we ask it for one. Not awaited here: only
+        // a report that cannot take a fresh dump waits for this one.
+        EarlyFreezeDump? keeper;
+        lock (_lock)
+            keeper = _earlyDumps.LastOrDefault(k => k.ProcessId == facts.ProcessId);
+        var earlyDump = keeper?.Claim(TimeSpan.FromSeconds(10));
         var context = GatherContextBuilder.Build(
             facts,
             verdict,
             alive,
             artifacts,
             lastSeenPublishedState: lastSeenPublishedState,
-            targetNoLongerNeeded: targetNoLongerNeeded
+            targetNoLongerNeeded: targetNoLongerNeeded,
+            earlyDump: earlyDump
         );
 
-        var report = await new EvidenceGatherer(identifyLate: LateCrashIdentity)
-            .GatherAsync(context, mayFile, cancellation)
-            .ConfigureAwait(false);
+        GatheredReport report;
+        try
+        {
+            report = await new EvidenceGatherer(identifyLate: LateCrashIdentity)
+                .GatherAsync(context, mayFile, cancellation)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            // The collector moved it into the report if it used it; otherwise this is where it goes.
+            if (earlyDump != null && await earlyDump.ConfigureAwait(false) is { } taken)
+                EarlyFreezeDump.Delete(taken);
+        }
 
         var bundle = _outbox.Enqueue(
             report,
@@ -1725,6 +1771,9 @@ public sealed class DoctorSupervisor : IDisposable
             // death - a claim takes the probe and takes over releasing it.
             _probe?.Dispose();
             _probe = null;
+            foreach (var keeper in _earlyDumps)
+                keeper.Dispose();
+            _earlyDumps.Clear();
         }
         _stopping.Dispose();
         _drainGate.Dispose();
