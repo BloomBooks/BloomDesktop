@@ -30,6 +30,28 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
     /// <summary>How many threads to print in full before summarising the rest.</summary>
     private const int MaxThreadsInFull = 25;
 
+    private readonly Action<int, string> _writeDump;
+    private readonly TimeSpan _freshDumpDeadlineWithEarlyDump;
+    private readonly TimeSpan _freshDumpDeadline;
+
+    /// <summary>A collector that dumps through the target's runtime, with the standard deadlines.</summary>
+    public ManagedStacksCollector()
+        : this(WriteDump, FreshDumpDeadlineWithEarlyDump, FreshDumpDeadline) { }
+
+    /// <summary>
+    /// For tests: a dump writer that can be made slow, and deadlines short enough to wait out.
+    /// </summary>
+    internal ManagedStacksCollector(
+        Action<int, string> writeDump,
+        TimeSpan freshDumpDeadlineWithEarlyDump,
+        TimeSpan freshDumpDeadline
+    )
+    {
+        _writeDump = writeDump;
+        _freshDumpDeadlineWithEarlyDump = freshDumpDeadlineWithEarlyDump;
+        _freshDumpDeadline = freshDumpDeadline;
+    }
+
     /// <inheritdoc />
     public string Title => "Managed stacks";
 
@@ -119,8 +141,9 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
     /// <see cref="TryDumpAndWalk"/> off the calling thread, since ClrMD and the dump write are synchronous and
     /// slow. Null if it fails, or misses its deadline: <see cref="FreshDumpDeadlineWithEarlyDump"/> when
     /// there is an early dump to use instead, otherwise <see cref="FreshDumpDeadline"/>, and none for a
-    /// crashing Bloom that is waiting for it. One that misses it is left to finish on its own, and the
-    /// report does without what it produces.
+    /// crashing Bloom that is waiting for it, which only the collector's budget ends. One that misses its
+    /// deadline, or is cancelled, is left to finish on its own, the report does without what it produces,
+    /// and <see cref="Abandon"/> cleans up after it.
     /// </summary>
     private async Task<ReportSection?> TryFreshDumpAsync(
         GatherContext context,
@@ -129,24 +152,55 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
     {
         var started = Stopwatch.StartNew();
         var fresh = Task.Run(() => TryDumpAndWalk(context, cancellation), cancellation);
-        // A crashing Bloom is waiting for this dump before it exits, and will be released as soon as the
-        // report goes on without it - so a slow one is never abandoned. It is the only dump of the crash.
-        if (context.TargetNoLongerNeeded != null)
-            return await fresh.ConfigureAwait(false);
-        if (context.EarlyDump != null)
+        try
         {
-            if (await FinishesWithinAsync(fresh, FreshDumpDeadlineWithEarlyDump, cancellation))
-                return await fresh.ConfigureAwait(false);
-            // Give up on the fresh dump only for an early one that is really there; one that failed to be
-            // written is no fallback, and a slow fresh dump is better than none.
-            var early = await WaitForEarlyDumpAsync(context.EarlyDump, cancellation)
-                .ConfigureAwait(false);
-            if (early != null && !fresh.IsCompleted)
-                return null;
+            // A crashing Bloom is waiting for this dump before it exits, and will be released as soon as
+            // the report goes on without it - so a slow one is never abandoned. It is the only dump of the
+            // crash.
+            if (context.TargetNoLongerNeeded != null)
+                return await fresh.WaitAsync(cancellation).ConfigureAwait(false);
+            if (context.EarlyDump != null)
+            {
+                if (await FinishesWithinAsync(fresh, _freshDumpDeadlineWithEarlyDump, cancellation))
+                    return await fresh.ConfigureAwait(false);
+                // Give up on the fresh dump only for an early one that is really there; one that failed
+                // to be written is no fallback, and a slow fresh dump is better than none.
+                var early = await WaitForEarlyDumpAsync(context.EarlyDump, cancellation)
+                    .ConfigureAwait(false);
+                if (early != null && !fresh.IsCompleted)
+                    return Abandon(fresh, context);
+            }
+            return await FinishesWithinAsync(
+                fresh,
+                _freshDumpDeadline - started.Elapsed,
+                cancellation
+            )
+                ? await fresh.ConfigureAwait(false)
+                : Abandon(fresh, context);
         }
-        return await FinishesWithinAsync(fresh, FreshDumpDeadline - started.Elapsed, cancellation)
-            ? await fresh.ConfigureAwait(false)
-            : null;
+        catch (OperationCanceledException)
+        {
+            Abandon(fresh, context);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Goes on without a fresh dump that is still being written. The runtime may yet finish it, into the
+    /// report's folder, where nothing would ever delete it: the gather deletes that folder when it is done,
+    /// which fails while the dump is still open. So the dump is deleted once the attempt ends. Only the
+    /// dump: other collectors may still be writing into the folder. Always null.
+    /// </summary>
+    private static ReportSection? Abandon(Task fresh, GatherContext context)
+    {
+        var dumpPath = DumpPathFor(context);
+        _ = fresh.ContinueWith(
+            _ => TryDelete(dumpPath),
+            CancellationToken.None,
+            TaskContinuationOptions.None,
+            TaskScheduler.Default
+        );
+        return null;
     }
 
     /// <summary>Whether <paramref name="task"/> finishes within <paramref name="time"/> (at once if that is past).</summary>
@@ -175,7 +229,7 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
         {
             Directory.CreateDirectory(context.ArtifactDirectory);
             var dumpTimer = Stopwatch.StartNew();
-            WriteDump(context.Target.ProcessId, dumpPath);
+            _writeDump(context.Target.ProcessId, dumpPath);
             dumpTimer.Stop();
 
             // The dump file now exists, and nothing below needs the process: LoadDump and everything

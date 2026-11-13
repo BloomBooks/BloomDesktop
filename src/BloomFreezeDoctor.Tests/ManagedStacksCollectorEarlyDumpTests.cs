@@ -130,4 +130,54 @@ public class ManagedStacksCollectorEarlyDumpTests
         );
         Assert.That(section.Body, Does.Contain("could not be read here"));
     }
+
+    [Test]
+    public async Task CollectAsync_FreshDumpMissesItsDeadline_UsesTheEarlyDumpAndCleansUpTheLateOne()
+    {
+        var context = Context(
+            processWasAlive: true,
+            earlyDump: Task.FromResult<EarlyFreezeDump.Taken?>(AnEarlyDump())
+        );
+        using var runtimeAnswers = new ManualResetEventSlim();
+        var lateDump = new TaskCompletionSource<long>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        // A runtime that answers only after the deadline, and then writes a real dump (of this test
+        // process), which the abandoned attempt reads successfully and would otherwise leave behind.
+        var collector = new ManagedStacksCollector(
+            (_, path) =>
+            {
+                runtimeAnswers.Wait();
+                ManagedStacksCollector.WriteDump(Environment.ProcessId, path);
+                lateDump.SetResult(new FileInfo(path).Length);
+            },
+            freshDumpDeadlineWithEarlyDump: TimeSpan.FromMilliseconds(200),
+            freshDumpDeadline: TimeSpan.FromSeconds(1)
+        );
+
+        var section = await collector.CollectAsync(context, CancellationToken.None);
+
+        var earlyInReport = Path.Combine(context.ArtifactDirectory, "bloom-4242-early.dmp");
+        Assert.That(section.Artifacts, Is.EqualTo(new[] { earlyInReport }));
+        Assert.That(section.Body, Does.Contain("dump pipe did not answer"));
+
+        runtimeAnswers.Set();
+        var size = await lateDump.Task.WaitAsync(TimeSpan.FromSeconds(60));
+        Assert.That(size, Is.GreaterThan(0), "sanity check: the late dump was really written");
+
+        var lateDumpPath = Path.Combine(context.ArtifactDirectory, "bloom-4242.dmp");
+        var waited = System.Diagnostics.Stopwatch.StartNew();
+        while (File.Exists(lateDumpPath) && waited.Elapsed.TotalSeconds < 60)
+            await Task.Delay(100);
+        Assert.That(
+            File.Exists(lateDumpPath),
+            Is.False,
+            "a dump the report went on without should be deleted once it was written"
+        );
+        Assert.That(
+            File.Exists(earlyInReport),
+            Is.True,
+            "cleaning up the late dump must leave the report's own files alone"
+        );
+    }
 }
