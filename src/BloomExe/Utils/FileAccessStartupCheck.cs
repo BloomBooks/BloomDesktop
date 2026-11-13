@@ -1,11 +1,10 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Bloom.ErrorReporter;
 using L10NSharp;
-using Sentry;
 using SIL.IO;
+using SIL.PlatformUtilities;
 using SIL.Reporting;
 
 namespace Bloom.Utils
@@ -17,7 +16,7 @@ namespace Bloom.Utils
     /// Access...) often refuses exactly these operations, which later shows up as books that can't
     /// be renamed, saved or even opened (BL-17056). Testing the operations themselves, rather than
     /// looking for particular products, means we complain only when something really is blocking us.
-    /// Also finds the antivirus summary for problem reports while we're in the background anyway.
+    /// Also finds the antivirus summary for problem reports and Sentry while we're in the background.
     /// </summary>
     public static class FileAccessStartupCheck
     {
@@ -44,28 +43,17 @@ namespace Bloom.Utils
         /// </summary>
         public static void StartInBackground(string collectionFolder)
         {
+            // What it checks for, and what it tells the user, are about Windows.
+            if (!Platform.IsWindows)
+                return;
             Task.Run(() => Check(collectionFolder));
         }
 
         private static void Check(string collectionFolder)
         {
             var antivirus = FileAccessDiagnostics.AntivirusSummary;
+            // Program's Sentry setup adds it to every event from now on.
             Logger.WriteEvent("Antivirus: " + antivirus);
-            SentrySdk.ConfigureScope(scope => scope.SetExtra("antivirus", antivirus));
-
-            // Controlled Folder Access can be checked from its settings alone, which saves trying
-            // writes it would refuse (and Windows popping up its own "blocked" notice about them).
-            // Its protection covers what is inside a protected folder, so ask about a file there.
-            var fileInCollection = Path.Combine(collectionFolder, "book.htm");
-            if (ControlledFolderAccessWouldBlock(fileInCollection))
-            {
-                ReportBlocked(
-                    collectionFolder,
-                    fileInCollection,
-                    "Controlled Folder Access protects this folder and does not list Bloom as allowed"
-                );
-                return;
-            }
 
             var problem = ProbeFolder(collectionFolder, out var failedPath);
             if (problem == null)
@@ -78,29 +66,6 @@ namespace Bloom.Utils
         }
 
         /// <summary>
-        /// True if Windows Security's Controlled Folder Access is on and enforced, protects path,
-        /// and does not list Bloom among its allowed apps. Its setting can stay on while another
-        /// antivirus has made Microsoft Defender step aside, and then nothing enforces it, so we also
-        /// require Defender to be the one with real-time protection on. Never throws.
-        /// </summary>
-        private static bool ControlledFolderAccessWouldBlock(string path)
-        {
-            // Check the setting first: it is usually off.
-            if (
-                !FileAccessDiagnostics.ControlledFolderAccessCoversFile(
-                    FileAccessDiagnostics.ReadControlledFolderAccessSetting(),
-                    path,
-                    FileAccessDiagnostics.GetControlledFolderAccessProtectedFolders(),
-                    FileAccessDiagnostics.IsAllowedByControlledFolderAccess()
-                )
-            )
-                return false;
-            return FileAccessDiagnostics
-                .GetActiveAntivirusNames()
-                .Any(name => name.IndexOf("Defender", StringComparison.OrdinalIgnoreCase) >= 0);
-        }
-
-        /// <summary>
         /// Create, overwrite, rename and delete a few small files in a new subfolder of folder, then
         /// rename and delete the subfolder: the things Bloom does to books. Returns null if everything
         /// worked, else the exception from the first step Windows refused, with failedPath set to the
@@ -108,15 +73,16 @@ namespace Bloom.Utils
         /// </summary>
         public static Exception ProbeFolder(string folder, out string failedPath)
         {
-            RemoveLeftoverProbeFolders(folder);
             var probeFolder = Path.Combine(
                 folder,
                 kProbeFolderPrefix + Guid.NewGuid().ToString("N").Substring(0, 8)
             );
             // What we are working on, so a failure can say where it happened.
-            var current = probeFolder;
+            var current = folder;
             try
             {
+                RemoveLeftoverProbeFolders(folder);
+                current = probeFolder;
                 Directory.CreateDirectory(probeFolder);
                 foreach (var extension in s_probeExtensions)
                 {

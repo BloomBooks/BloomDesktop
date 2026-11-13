@@ -573,6 +573,12 @@ namespace Bloom.Utils
         }
 
         /// <summary>
+        /// AntivirusSummary if Windows has already been asked in this run, else null. Never waits.
+        /// </summary>
+        public static string AntivirusSummaryIfKnown =>
+            s_antivirusProducts.IsValueCreated ? AntivirusSummary : null;
+
+        /// <summary>
         /// Ask Windows Security Center for the antivirus products it knows about: each one's display
         /// name and productState (null if it gives none). Empty if not on Windows or Windows can't be
         /// asked.
