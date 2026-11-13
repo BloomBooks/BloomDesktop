@@ -9,11 +9,14 @@
 //   node ... --start [--wait-ready] [--json]        # relaunch, only when awaiting-restart
 //   node ... --quit-bloom [--json]                  # durably stop Bloom, launcher stays
 //   node ... --shutdown [--json]                    # stop Bloom + launcher + Vite
-//   node ... --ensure-running [--wait-ready] [--nowatch] [--json]  # start the stack if nobody's home
+//   node ... --ensure-running [--wait-ready] [--nowatch] [--vite-port <n>] [--json]  # start the stack if nobody's home
 //   options: --repo-root <path> (default: this checkout), --timeout-ms <n> (default 300000),
 //            --nowatch (only with --ensure-running: pass --nowatch through to go.mjs, so
 //            Bloom runs without "dotnet watch" - halves the time to a running Bloom, at the
-//            cost of C# edits no longer rebuilding by themselves; use --restart for those)
+//            cost of C# edits no longer rebuilding by themselves; use --restart for those),
+//            --vite-port <n> (only with --ensure-running: pass --vite-port through to go.mjs.
+//            The Edit tab's page list and toolbox load only from a dev server on 5173, so pass
+//            5173 when a check needs them)
 //
 // --ensure-running always starts go.mjs with --dont-disturb: this script is how an agent starts
 // Bloom, and a Bloom an agent drives must not take the foreground or the keyboard from the person
@@ -58,6 +61,7 @@ const usage = `Command the go.sh launcher for this worktree.
 
   actions: ${actionNames.join(", ")}
   options: --json, --wait-ready, --repo-root <path>, --timeout-ms <n>
+           --nowatch, --vite-port <n>   (--ensure-running only) passed through to go.mjs
            --help, -h   Print this and exit without commanding anything.
 
   --restart rebuilds and relaunches; --quit-bloom stops Bloom and leaves the launcher;
@@ -79,6 +83,7 @@ const parseArgs = () => {
         timeoutMs: 300000,
         // Only meaningful for --ensure-running, the one action that starts go.mjs.
         noWatch: false,
+        vitePort: undefined,
     };
 
     for (let i = 0; i < args.length; i++) {
@@ -116,6 +121,17 @@ const parseArgs = () => {
             continue;
         }
 
+        if (arg === "--vite-port") {
+            options.vitePort = Number(
+                requireOptionValue(args, i, "--vite-port"),
+            );
+            if (!Number.isInteger(options.vitePort) || options.vitePort <= 0) {
+                throw new Error("--vite-port must be a positive integer.");
+            }
+            i++;
+            continue;
+        }
+
         if (arg === "--repo-root") {
             options.repoRoot = path.resolve(
                 requireOptionValue(args, i, "--repo-root"),
@@ -139,7 +155,7 @@ const parseArgs = () => {
         }
 
         throw new Error(
-            `Unsupported option ${arg}. Actions: ${actionNames.join(", ")}; options: --json, --wait-ready, --nowatch, --repo-root <path>, --timeout-ms <n>.`,
+            `Unsupported option ${arg}. Actions: ${actionNames.join(", ")}; options: --json, --wait-ready, --nowatch, --vite-port <n>, --repo-root <path>, --timeout-ms <n>.`,
         );
     }
 
@@ -152,6 +168,11 @@ const parseArgs = () => {
     if (options.noWatch && options.action !== "ensure-running") {
         throw new Error(
             "--nowatch only applies to --ensure-running (it is passed through to go.mjs when the stack is started).",
+        );
+    }
+    if (options.vitePort !== undefined && options.action !== "ensure-running") {
+        throw new Error(
+            "--vite-port only applies to --ensure-running (it is passed through to go.mjs when the stack is started).",
         );
     }
 
@@ -460,6 +481,9 @@ const ensureRunning = async (options, deadline) => {
                 const goArgs = [
                     "--dont-disturb",
                     ...(options.noWatch ? ["--nowatch"] : []),
+                    ...(options.vitePort !== undefined
+                        ? ["--vite-port", String(options.vitePort)]
+                        : []),
                 ];
                 launch = isOrcaRuntimeReachable()
                     ? launchViaOrca(options.repoRoot, goArgs)
