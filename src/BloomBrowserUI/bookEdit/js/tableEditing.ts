@@ -593,6 +593,7 @@ export function TeardownTableEditing(container: HTMLElement): void {
     cellSizeObserver = undefined;
     cellsWhoseSizeIsObserved.clear();
     tablesAwaitingOverflowCheck.clear();
+    releaseTableOverflowCheckDelayIfIdle();
     // Every table, not only the ones we attached: the library attaches a nested
     // table itself, both when the user makes one and when an undo rebuilds it,
     // so a nested table has no data-table-attached of ours to find it by.

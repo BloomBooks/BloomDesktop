@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { addRow, getTableInfo, setupContentsOfCell } from "bloom-table";
 // A new video cell asks the server to put the video placeholder in the book
 // folder; there is no server here, and the call is also what proves the wiring
@@ -21,6 +21,26 @@ vi.mock("./bloomEditing", async (importOriginal) => ({
     ...((await importOriginal()) as object),
     activateLongPressFor: () => {},
 }));
+
+// The tests of cell resizing below need to know when a table takes and releases its delay, which
+// the register cannot show: the CKEditor stand-in never reports an editor ready, so the register
+// never empties here.
+const tableDelayChanges = vi.hoisted(() => [] as string[]);
+vi.mock("./pageContentDelays", async (importOriginal) => {
+    const original =
+        (await importOriginal()) as typeof import("./pageContentDelays");
+    return {
+        ...original,
+        addRequestPageContentDelay: (id: string) => {
+            if (id === "tableOverflowCheck") tableDelayChanges.push("taken");
+            original.addRequestPageContentDelay(id);
+        },
+        removeRequestPageContentDelay: (id: string) => {
+            if (id === "tableOverflowCheck") tableDelayChanges.push("released");
+            original.removeRequestPageContentDelay(id);
+        },
+    };
+});
 
 import {
     AttachNewTable,
@@ -277,5 +297,122 @@ describe("removeTableEditingMarkupFromClone", () => {
         expect(page.outerHTML).toContain('data-column-widths="fill"');
         expect(page.outerHTML).toContain("color: green");
         expect(page.outerHTML).toContain("text");
+    });
+});
+
+// A ResizeObserver that remembers what it watches and lets a test report a resize, so the tests
+// below can play the part of a row being dragged.
+class RecordingResizeObserver {
+    public static instances: RecordingResizeObserver[] = [];
+    public readonly observed = new Set<Element>();
+    public constructor(private readonly callback: ResizeObserverCallback) {
+        RecordingResizeObserver.instances.push(this);
+    }
+    public observe(target: Element): void {
+        this.observed.add(target);
+    }
+    public unobserve(target: Element): void {
+        this.observed.delete(target);
+    }
+    public disconnect(): void {
+        this.observed.clear();
+    }
+    public reportResize(targets: Element[]): void {
+        this.callback(
+            targets.map((target) => ({ target }) as ResizeObserverEntry),
+            this as unknown as ResizeObserver,
+        );
+    }
+}
+
+describe("watching the size of table cells", () => {
+    // Animation frames run only when a test calls runFrame, so it can say what happens between
+    // them, as a browser does when it reports resizes after one frame's callbacks.
+    let frames: FrameRequestCallback[] = [];
+    const runFrame = () => frames.splice(0).forEach((callback) => callback(0));
+
+    let tableDiv: HTMLElement;
+    let cellObserver: RecordingResizeObserver;
+
+    beforeEach(() => {
+        frames = [];
+        vi.stubGlobal(
+            "requestAnimationFrame",
+            (callback: FrameRequestCallback) => {
+                frames.push(callback);
+                return frames.length;
+            },
+        );
+        RecordingResizeObserver.instances = [];
+        vi.stubGlobal("ResizeObserver", RecordingResizeObserver);
+        vi.mocked(OverflowChecker.AdjustSizeOrMarkOverflowOfAll).mockClear();
+        document.body.innerHTML = "";
+        tableDiv = document.createElement("div");
+        tableDiv.classList.add("bloom-table");
+        document.body.appendChild(tableDiv);
+        SetupTableEditing(document.body);
+        AttachNewTable(tableDiv);
+        // The observer of cell sizes is the one that watches the cells.
+        const cell = tableDiv.querySelector(".bloom-cell")!;
+        cellObserver = RecordingResizeObserver.instances.find((observer) =>
+            observer.observed.has(cell),
+        )!;
+        expect(cellObserver, "no observer is watching the cells").toBeDefined();
+    });
+
+    afterEach(() => {
+        TeardownTableEditing(document.body);
+        vi.unstubAllGlobals();
+    });
+
+    it("makes saves wait for a whole drag, and releases them once a frame passes with no check", () => {
+        // Sanity check: nothing is waiting for a frame before the drag starts.
+        expect(frames).toEqual([]);
+        tableDelayChanges.length = 0;
+        const cells = Array.from(tableDiv.querySelectorAll(".bloom-cell"));
+
+        // Three frames of a row drag: each frame's check runs, then the browser reports that
+        // the row's cells changed size again.
+        cellObserver.reportResize(cells);
+        for (let frame = 0; frame < 3; frame++) {
+            runFrame();
+            cellObserver.reportResize(cells);
+        }
+        runFrame();
+
+        expect(
+            OverflowChecker.AdjustSizeOrMarkOverflowOfAll,
+        ).toHaveBeenCalledTimes(4);
+        // Held from the first resize, and never released between frames: each release would
+        // make the page send C# a snapshot.
+        expect(tableDelayChanges).toEqual(["taken"]);
+
+        // The drag stops: a frame passes with no check waiting.
+        runFrame();
+
+        expect(tableDelayChanges).toEqual(["taken", "released"]);
+        expect(frames).toEqual([]);
+    });
+
+    it("stops watching the cells of a table that is deleted", () => {
+        const cells = Array.from(tableDiv.querySelectorAll(".bloom-cell"));
+        // Sanity check: every cell is watched.
+        expect(cells.length).toBe(4);
+        cells.forEach((cell) =>
+            expect(cellObserver.observed.has(cell)).toBe(true),
+        );
+
+        // What the library does when the user deletes the table: it takes the table out of the
+        // page, then reports the operation with the table it removed.
+        tableDiv.remove();
+        document.dispatchEvent(
+            new CustomEvent("tableHistoryUpdated", {
+                detail: { table: tableDiv, operation: "deleteTable" },
+            }),
+        );
+
+        cells.forEach((cell) =>
+            expect(cellObserver.observed.has(cell)).toBe(false),
+        );
     });
 });
