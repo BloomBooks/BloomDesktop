@@ -170,9 +170,6 @@ function pointerEvent(
 // A block 300px wide and 200px tall at the origin, so that its thirds fall on round numbers
 // (100 and 200).
 const kEditableBox = { left: 0, top: 0, width: 300, height: 200 };
-// Which dock a position calls for depends on how tall the image is, because the bottom dock
-// starts where the middle band can no longer fit the image inside the block's content.
-const kImageHeightViewportPx = 40;
 
 let pageCounter = 0;
 
@@ -252,11 +249,7 @@ describe("inlineImageInteractions", () => {
     describe("computeInlineImageDock", () => {
         it("switches dock at the thirds of the block's width", () => {
             const dockAt = (x: number) =>
-                computeInlineImageDock(
-                    { x, y: 10 },
-                    kEditableBox,
-                    kImageHeightViewportPx,
-                );
+                computeInlineImageDock({ x, y: 10 }, kEditableBox);
             expect(dockAt(1)).toBe(kInlineImageLeftClass);
             expect(dockAt(99)).toBe(kInlineImageLeftClass);
             // A position exactly on a boundary belongs to the middle band.
@@ -269,72 +262,40 @@ describe("inlineImageInteractions", () => {
 
         it("keeps the dock of a position beyond the sides of the block", () => {
             expect(
-                computeInlineImageDock(
-                    { x: -500, y: 10 },
-                    kEditableBox,
-                    kImageHeightViewportPx,
-                ),
+                computeInlineImageDock({ x: -500, y: 10 }, kEditableBox),
             ).toBe(kInlineImageLeftClass);
             expect(
-                computeInlineImageDock(
-                    { x: 900, y: 10 },
-                    kEditableBox,
-                    kImageHeightViewportPx,
-                ),
+                computeInlineImageDock({ x: 900, y: 10 }, kEditableBox),
             ).toBe(kInlineImageRightClass);
         });
 
-        it("hands the middle third to the bottom dock exactly where the band can no longer fit the image", () => {
-            // The block's content ends at 200 and the image is 40 tall, so the middle band can
-            // hold it while its center is above 180, and not a pixel lower. Every position
-            // above that belongs to the band, because a user moving the picture down expects to
-            // be able to stop anywhere. (John: "it seems like I should be able to put it
-            // vertically anywhere I want".)
+        it("keeps every position inside the block out of the bottom dock, all the way down", () => {
+            // The block's content ends at 200. The bottom dock puts the picture straight after
+            // the text, which can be well above the bottom of the block, so a picture dragged
+            // down inside the block stays in the dock its third calls for. continueDrag stops it
+            // with its bottom edge on the bottom of the block.
             expect(
-                computeInlineImageDock(
-                    { x: 150, y: 179 },
-                    kEditableBox,
-                    kImageHeightViewportPx,
-                ),
+                computeInlineImageDock({ x: 150, y: 180 }, kEditableBox),
             ).toBe(kInlineImageMiddleClass);
             expect(
-                computeInlineImageDock(
-                    { x: 150, y: 180 },
-                    kEditableBox,
-                    kImageHeightViewportPx,
-                ),
-            ).toBe(kInlineImageBottomClass);
-            // A taller image runs out of room higher up, since the bottom of the image has to
-            // stay inside the content.
+                computeInlineImageDock({ x: 150, y: 199 }, kEditableBox),
+            ).toBe(kInlineImageMiddleClass);
             expect(
-                computeInlineImageDock({ x: 150, y: 150 }, kEditableBox, 100),
-            ).toBe(kInlineImageBottomClass);
-            // In the left and right thirds the side docks apply all the way down, so an image
-            // can be placed in a lower corner.
-            expect(
-                computeInlineImageDock(
-                    { x: 20, y: 199 },
-                    kEditableBox,
-                    kImageHeightViewportPx,
-                ),
+                computeInlineImageDock({ x: 20, y: 199 }, kEditableBox),
             ).toBe(kInlineImageLeftClass);
             expect(
-                computeInlineImageDock(
-                    { x: 280, y: 199 },
-                    kEditableBox,
-                    kImageHeightViewportPx,
-                ),
+                computeInlineImageDock({ x: 280, y: 199 }, kEditableBox),
             ).toBe(kInlineImageRightClass);
+            // The bottom dock starts where the block's content ends.
+            expect(
+                computeInlineImageDock({ x: 150, y: 200 }, kEditableBox),
+            ).toBe(kInlineImageBottomClass);
         });
 
         it("docks at the bottom for a position below the block altogether, whatever the horizontal position", () => {
             [20, 150, 280].forEach((x) => {
                 expect(
-                    computeInlineImageDock(
-                        { x, y: 5000 },
-                        kEditableBox,
-                        kImageHeightViewportPx,
-                    ),
+                    computeInlineImageDock({ x, y: 5000 }, kEditableBox),
                     `x=${x} below the block`,
                 ).toBe(kInlineImageBottomClass);
             });
@@ -345,14 +306,12 @@ describe("inlineImageInteractions", () => {
                 computeInlineImageDock(
                     { x: 0, y: 0 },
                     { left: 0, top: 0, width: 0, height: 0 },
-                    0,
                 ),
             ).toBe(kInlineImageBottomClass);
             expect(
                 computeInlineImageDock(
                     { x: 0, y: -10 },
                     { left: 0, top: 0, width: 0, height: 0 },
-                    0,
                 ),
             ).toBe(kInlineImageMiddleClass);
         });
@@ -376,9 +335,6 @@ describe("inlineImageInteractions", () => {
         // The image had an offset of 661 layout pixels on the A4 page, which puts it below
         // everything the smaller page can show at once.
         imageCenterYViewportPxWhenScrolledToTop: 888,
-        // The picture of a ball was 40% as wide as the 353-pixel block, and about this tall on
-        // screen.
-        imageHeightViewportPx: 163,
     };
 
     describe("computeBlockContentBox", () => {
@@ -511,7 +467,6 @@ describe("inlineImageInteractions", () => {
                     y: kA6Report.imageCenterYViewportPxWhenScrolledToTop,
                 },
                 kA6Report.visibleBoxViewportPx,
-                kA6Report.imageHeightViewportPx,
             );
             // Measured against the block's rectangle, the image is below the bottom of what the
             // small page shows, so every drag of it asked for the bottom dock. That caused the
@@ -532,7 +487,6 @@ describe("inlineImageInteractions", () => {
                         y: kA6Report.imageCenterYViewportPxWhenScrolledToTop,
                     },
                     contentBox,
-                    kA6Report.imageHeightViewportPx,
                 ),
                 "The image is inside the block's text, so a drag there is an ordinary move, " +
                     "not a request for the bottom dock.",

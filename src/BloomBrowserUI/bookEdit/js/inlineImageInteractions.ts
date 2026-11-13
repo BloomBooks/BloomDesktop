@@ -245,13 +245,17 @@ export function getInlineImageActionTarget(
  * IInlineImageDragState for why. The block's width is divided into thirds: the left third
  * means the left dock, the middle third the middle band, and the right third the right dock.
  *
- * In the middle third, the bottom dock starts exactly where the middle band can go no further.
- * The band's offset is limited so that the whole wrapper stays inside the block's content (see
- * the maximum in continueDrag). So a position that would put the bottom of the image past the
- * end of the content is somewhere the band cannot go, and it is taken to mean the dock below
- * the text. Any position below the block is the bottom dock, wherever it is horizontally.
+ * A position below the block is the bottom dock, wherever it is horizontally. Every position
+ * inside the block belongs to the left, middle or right dock, all the way down. continueDrag
+ * limits the offset so that the image stops with its bottom edge on the bottom of the block.
  *
- * Two rules come from testing in the running Bloom:
+ * Three rules come from testing in the running Bloom:
+ *  - The middle band applies all the way down, as the side docks do. The bottom dock puts the
+ *    image straight after the text, which in a block with room to spare is well above the
+ *    bottom of the block. If the bottom dock took over as soon as the bottom of the image
+ *    reached the bottom of the block, an image dragged down to the bottom of the block would
+ *    jump back up to the end of the text, and it could not be left with its bottom edge on the
+ *    bottom of the block at all.
  *  - In the left and right thirds, the side docks apply all the way down. If the bottom dock
  *    took over the lower corners, an image could not be placed in a lower corner at all.
  *  - The bottom dock does not start at a fixed fraction of the block's height. When it started
@@ -263,7 +267,6 @@ export function getInlineImageActionTarget(
 export function computeInlineImageDock(
     imageCenterViewportPx: { x: number; y: number },
     editableContentBoxViewportPx: IBox,
-    imageHeightViewportPx: number,
 ): InlineImageDock {
     // A box with no width cannot be divided into thirds, so treat the position as the middle.
     const fraction =
@@ -274,13 +277,6 @@ export function computeInlineImageDock(
     const contentBottomViewportPx =
         editableContentBoxViewportPx.top + editableContentBoxViewportPx.height;
     if (imageCenterViewportPx.y >= contentBottomViewportPx)
-        return kInlineImageBottomClass;
-    const inMiddleThird = fraction >= 1 / 3 && fraction <= 2 / 3;
-    if (
-        inMiddleThird &&
-        imageCenterViewportPx.y + imageHeightViewportPx / 2 >=
-            contentBottomViewportPx
-    )
         return kInlineImageBottomClass;
     if (fraction < 1 / 3) return kInlineImageLeftClass;
     if (fraction > 2 / 3) return kInlineImageRightClass;
@@ -1873,7 +1869,6 @@ function continueDrag(
     const dock = computeInlineImageDock(
         imageCenterViewportPx,
         state.editableContentBoxViewportPx,
-        getImageBox(state.wrapper).height,
     );
     // jsdom reports every box as empty. In that case this uses the simple calculation from the
     // pointer's movement that the drag tests check, and skips the measurements that need a
@@ -1910,14 +1905,18 @@ function continueDrag(
         // measured from where the float would start without it, below any earlier float it
         // clears, so the room left is measured from the bottom of the wrapper as it is drawn
         // now. The distance from there to the block's bottom is how much more the current
-        // offset may grow.
+        // offset may grow. The bottom of the wrapper includes its bottom margin, which a left
+        // or right image has to keep the text below it away. The block counts that margin as
+        // content, so an offset that pushed it past the bottom would make the block overflow,
+        // and the whole move would be undone, leaving the image wherever the move before it
+        // happened to stop.
         let maxLayoutPx: number | undefined;
         const currentOffsetLayoutPx = getInlineImageOffsetLayoutPx(
             state.wrapper,
         );
         if (!degenerate) {
             const wrapperBottomViewportPx =
-                state.wrapper.getBoundingClientRect().bottom;
+                getWrapperBottomWithMarginViewportPx(state);
             maxLayoutPx =
                 currentOffsetLayoutPx +
                 (blockBottomViewportPx - wrapperBottomViewportPx) /
@@ -1945,7 +1944,7 @@ function continueDrag(
             // The maximum above was measured before this move's offset was applied, so a fast
             // move can go a few pixels too far. Take back whatever is over.
             const overViewportPx =
-                state.wrapper.getBoundingClientRect().bottom -
+                getWrapperBottomWithMarginViewportPx(state) -
                 blockBottomViewportPx;
             if (overViewportPx > 0) {
                 state.wrapper.style.setProperty(
@@ -1985,6 +1984,20 @@ function continueDrag(
         restoreNeighborImagePositions(state);
     }
     scrollBlockToKeepDraggedImageInView(state);
+}
+
+// Where the bottom of the dragged wrapper's margin box is on the screen. The block has to hold
+// the wrapper's bottom margin as well as the wrapper.
+function getWrapperBottomWithMarginViewportPx(
+    state: IInlineImageDragState,
+): number {
+    const marginBottomLayoutPx = parseFloat(
+        getComputedStyle(state.wrapper).marginBottom,
+    );
+    return (
+        state.wrapper.getBoundingClientRect().bottom +
+        marginBottomLayoutPx * state.viewportPxPerLayoutPx
+    );
 }
 
 // Scrolls the block so that the picture being dragged stays on the screen, and moves the
