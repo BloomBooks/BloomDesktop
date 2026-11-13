@@ -104,34 +104,58 @@ public sealed class ManagedStacksCollector : IEvidenceCollector
 
     /// <summary>
     /// How long a fresh dump may take when there is an early dump to fall back on. A dump takes a second or
-    /// two; one that has not come in this long is from a runtime that is not answering, and waiting out the
-    /// collector's whole <see cref="Budget"/> for it would leave no time to use the early dump instead.
+    /// two; one that has not come in this long is from a runtime that is not answering.
     /// </summary>
-    private static readonly TimeSpan FreshDumpDeadline = TimeSpan.FromSeconds(20);
+    private static readonly TimeSpan FreshDumpDeadlineWithEarlyDump = TimeSpan.FromSeconds(20);
+
+    /// <summary>
+    /// How long a fresh dump may take in any case. Waiting out the collector's whole <see cref="Budget"/>
+    /// for a runtime that is not answering would leave no time to read the stacks from the live process
+    /// instead.
+    /// </summary>
+    private static readonly TimeSpan FreshDumpDeadline = TimeSpan.FromSeconds(30);
 
     /// <summary>
     /// <see cref="TryDumpAndWalk"/> off the calling thread, since ClrMD and the dump write are synchronous and
-    /// slow. Null if it fails, or if it misses <see cref="FreshDumpDeadline"/> and there is an early dump
-    /// to use instead; it is then left to finish on its own, and the report does without what it produces.
+    /// slow. Null if it fails, or misses its deadline: <see cref="FreshDumpDeadlineWithEarlyDump"/> when
+    /// there is an early dump to use instead, otherwise <see cref="FreshDumpDeadline"/>. One that misses it
+    /// is left to finish on its own, and the report does without what it produces.
     /// </summary>
     private async Task<ReportSection?> TryFreshDumpAsync(
         GatherContext context,
         CancellationToken cancellation
     )
     {
+        var started = Stopwatch.StartNew();
         var fresh = Task.Run(() => TryDumpAndWalk(context, cancellation), cancellation);
-        if (context.EarlyDump == null)
-            return await fresh.ConfigureAwait(false);
-        var first = await Task.WhenAny(fresh, Task.Delay(FreshDumpDeadline, cancellation))
+        if (context.EarlyDump != null)
+        {
+            if (await FinishesWithinAsync(fresh, FreshDumpDeadlineWithEarlyDump, cancellation))
+                return await fresh.ConfigureAwait(false);
+            // Give up on the fresh dump only for an early one that is really there; one that failed to be
+            // written is no fallback, and a slow fresh dump is better than none.
+            var early = await WaitForEarlyDumpAsync(context.EarlyDump, cancellation)
+                .ConfigureAwait(false);
+            if (early != null && !fresh.IsCompleted)
+                return null;
+        }
+        return await FinishesWithinAsync(fresh, FreshDumpDeadline - started.Elapsed, cancellation)
+            ? await fresh.ConfigureAwait(false)
+            : null;
+    }
+
+    /// <summary>Whether <paramref name="task"/> finishes within <paramref name="time"/> (at once if that is past).</summary>
+    private static async Task<bool> FinishesWithinAsync(
+        Task task,
+        TimeSpan time,
+        CancellationToken cancellation
+    )
+    {
+        var timeout = time > TimeSpan.Zero ? time : TimeSpan.Zero;
+        var first = await Task.WhenAny(task, Task.Delay(timeout, cancellation))
             .ConfigureAwait(false);
         cancellation.ThrowIfCancellationRequested();
-        if (first == fresh)
-            return await fresh.ConfigureAwait(false);
-        // Give up on the fresh dump only for an early one that is really there; one that failed to be
-        // written is no fallback, and a slow fresh dump is better than none.
-        var early = await WaitForEarlyDumpAsync(context.EarlyDump, cancellation)
-            .ConfigureAwait(false);
-        return early == null || fresh.IsCompleted ? await fresh.ConfigureAwait(false) : null;
+        return first == task;
     }
 
     /// <summary>
