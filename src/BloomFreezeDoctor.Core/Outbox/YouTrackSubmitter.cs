@@ -420,11 +420,29 @@ public sealed class YouTrackSubmitter : IReportSubmitter
     /// carrying several of them becomes unreadable exactly when it matters most. The dump and the log are
     /// not attached either: they are near-duplicates of the first occurrence's at some 16 MB each, and the
     /// folder named below is how to get them if anyone ever wants to.
+    ///
+    /// Not every bundle that ends up as a comment is a recurrence. One that is the same Bloom's follow-on -
+    /// it froze, then it died - and could not be folded into the original report because that was being
+    /// sent at the time (see <see cref="BundleMetadata.CommentOnFingerprint"/>) is the next instalment of
+    /// the same event, and calling it "this happened again" makes one freeze read as two.
     /// </summary>
-    private static string BuildRecurrenceComment(QueuedBundle bundle, bool contributingADump)
+    internal static string BuildRecurrenceComment(QueuedBundle bundle, bool contributingADump)
     {
+        var isFollowOn = bundle.Metadata.IsAFollowOn;
         var text = new StringBuilder();
-        text.AppendLine("**This happened again.**");
+        if (isFollowOn)
+        {
+            text.AppendLine(
+                $"**The same Bloom then had a further problem:** {bundle.Metadata.Summary}"
+            );
+            text.AppendLine();
+            text.AppendLine(
+                "This is not a second occurrence. It is what happened next to the Bloom this card is "
+                    + "about, posted separately because the first report was being sent at the time."
+            );
+        }
+        else
+            text.AppendLine("**This happened again.**");
         text.AppendLine();
         text.AppendLine(
             $"- When: {bundle.Metadata.GatheredAtUtc.ToLocalTime():yyyy-MM-dd HH:mm} "
@@ -440,6 +458,7 @@ public sealed class YouTrackSubmitter : IReportSubmitter
         var keptUntil = bundle.Metadata.GatheredAtUtc + ReportOutbox.MaxAge;
         // Two quite different things to say, and saying the wrong one is how a reader gets sent looking
         // for a dump that is not there - or told a dump is "near enough a copy" of nothing at all.
+        string whatIsInTheFolder;
         if (contributingADump)
         {
             // Says WHAT is true, not why. A guess at the reason - "the first report was made after the
@@ -447,23 +466,31 @@ public sealed class YouTrackSubmitter : IReportSubmitter
             // may have been taken perfectly well and be sitting in the support bucket, a few hundred bytes
             // over the attachment ceiling.
             text.AppendLine(
-                "**The crash dump from this occurrence is attached**, because the card was not already "
+                "**The crash dump from this report is attached**, because the card was not already "
                     + "carrying one."
             );
             text.AppendLine();
-            text.AppendLine(
-                $"The rest of the report is on that machine at `{bundle.Directory}` and is not attached - "
-                    + "it is near enough a copy of the one already on this card."
-            );
+            whatIsInTheFolder = "The rest of the report";
         }
+        else if (bundle.Metadata.Artifacts.Any(RecurrenceArtifacts.IsADump))
+            whatIsInTheFolder = "The full report, with its crash dump,";
         else
         {
-            text.AppendLine(
-                $"The full report, with the crash dump and Bloom's log, is on that machine at "
-                    + $"`{bundle.Directory}` and is deliberately not attached here - it is near enough a "
-                    + "copy of the one already on this card."
-            );
+            // Saying a dump is in that folder when it is not sends somebody to ask a user for a file that
+            // was never made (BL-17092).
+            text.AppendLine("**No crash dump was taken for this report.**");
+            text.AppendLine();
+            whatIsInTheFolder = "The rest of it";
         }
+        text.AppendLine(
+            $"{whatIsInTheFolder} is on that machine at `{bundle.Directory}` and is not attached"
+                // Only a recurrence repeats what the card already says; a follow-on is new information.
+                + (
+                    isFollowOn
+                        ? "."
+                        : " - it is near enough a copy of the report already on this card."
+                )
+        );
         text.AppendLine();
         text.AppendLine(
             $"*That folder is kept until about {keptUntil:yyyy-MM-dd} - or less if the Doctor gathers more "
