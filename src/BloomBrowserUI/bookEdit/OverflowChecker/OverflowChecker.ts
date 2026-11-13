@@ -11,6 +11,7 @@ import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import $ from "jquery";
 import { kBloomButtonClass } from "../toolbox/canvas/canvasElementPageBridge";
+import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
 
 interface qtipInterface extends JQuery {
@@ -168,6 +169,10 @@ export default class OverflowChecker {
     public static getSelfOverflowAmounts(
         element: HTMLElement,
     ): [number, number] {
+        const measured = this.batch?.selfOverflowAmounts.get(element);
+        if (measured) {
+            return measured;
+        }
         // Ignore Topic divs as they are chosen from a list
         if (
             element.hasAttribute("data-book") &&
@@ -204,7 +209,7 @@ export default class OverflowChecker {
         // the font calls for (and which we reduced the line height to hide).
         // To avoid spuriously reporting overflow in such cases (BL-6338), we adjust
         // for the discrepancy.
-        const measurements = MeasureText.getDescentMeasurementsOfBox(element);
+        const measurements = this.descentMeasurementsOf(element);
         // console.log(
         //     "actual descent: " +
         //         measurements.actualDescent +
@@ -243,11 +248,107 @@ export default class OverflowChecker {
         return [overflowX, overflowY];
     }
 
+    // What AdjustSizeOrMarkOverflowOfAll has measured so far, while it runs; undefined at other
+    // times, when descentMeasurementsOf also neither remembers nor reuses measurements.
+    // - contentHeights: the content heights it measured together, with the width each element
+    //   had when it was measured. contentHeight uses one only while the element still has that
+    //   width, since the height of wrapped text depends on nothing else.
+    // - selfOverflowAmounts: the self overflow amounts of the elements it checks, read before it
+    //   marks any of them. A mark written between two reads makes the second read lay out the
+    //   page again, and the marks do not change the size of any box.
+    private static batch:
+        | {
+              contentHeights: Map<
+                  HTMLElement,
+                  { width: number; height: number }
+              >;
+              selfOverflowAmounts: Map<HTMLElement, [number, number]>;
+          }
+        | undefined;
+
+    // Descent measurements that AdjustSizeOrMarkOverflowOfAll has made, keyed by the inputs that
+    // MeasureText.getDescentMeasurementInputsOfBox gives, which are everything a measurement depends
+    // on. Kept from one call to the next: during a row drag every frame measures the same text at
+    // the same width, and a measurement lays out the page twice and paints the text on a canvas.
+    private static rememberedDescentMeasurements = new Map<
+        string,
+        ReturnType<typeof MeasureText.getDescentMeasurements>
+    >();
+
+    // MeasureText.getDescentMeasurementsOfBox(element), reusing an earlier measurement of the same
+    // text, font and width while AdjustSizeOrMarkOverflowOfAll runs.
+    private static descentMeasurementsOf(element: HTMLElement) {
+        if (!this.batch) {
+            return MeasureText.getDescentMeasurementsOfBox(element);
+        }
+        const inputs = MeasureText.getDescentMeasurementInputsOfBox(element);
+        const key = JSON.stringify(inputs);
+        const remembered = this.rememberedDescentMeasurements.get(key);
+        if (remembered) {
+            return remembered;
+        }
+        const measurements =
+            MeasureText.getDescentMeasurementsFromInputs(inputs);
+        // A font that is still loading is measured as its fallback, which must not be reused
+        // once the real font arrives.
+        if (document.fonts.status === "loaded") {
+            // Text is typed and widths are dragged through, so the keys keep changing; this
+            // only needs to hold the current page's.
+            if (this.rememberedDescentMeasurements.size > 1000) {
+                this.rememberedDescentMeasurements.clear();
+            }
+            this.rememberedDescentMeasurements.set(key, measurements);
+        }
+        return measurements;
+    }
+
     private static contentHeight(element: HTMLElement): number {
         if (element.childNodes.length === 0) {
             return 0;
         }
+        const measured = this.batch?.contentHeights.get(element);
+        if (measured && measured.width === element.clientWidth) {
+            return measured.height;
+        }
+        return this.measureContentHeightsTogether([element]).get(element)!
+            .height;
+    }
 
+    // Measure the content height of every element in `elements` with one layout of the page,
+    // by putting all their clones in the page before reading any of them. Measuring them one
+    // at a time costs a layout each, because each clone that goes in changes the page.
+    private static measureContentHeightsTogether(
+        elements: HTMLElement[],
+    ): Map<HTMLElement, { width: number; height: number }> {
+        const result = new Map<
+            HTMLElement,
+            { width: number; height: number }
+        >();
+        const measurable = elements.filter(
+            (element) => element.childNodes.length > 0,
+        );
+        const clones = measurable.map((element) =>
+            this.makeContentHeightClone(element),
+        );
+        clones.forEach((clone, i) =>
+            measurable[i].parentElement!.appendChild(clone),
+        );
+        try {
+            clones.forEach((clone, i) =>
+                result.set(measurable[i], {
+                    width: measurable[i].clientWidth,
+                    height: this.readContentHeight(clone),
+                }),
+            );
+        } finally {
+            clones.forEach((clone) => clone.remove());
+        }
+        return result;
+    }
+
+    // A hidden copy of `element`, ready to be put next to it in the page so that its content
+    // height can be measured.
+    private static makeContentHeightClone(element: HTMLElement): HTMLElement {
         // Use a temporary clone so we don't modify the actual element.
         // Otherwise, the text box can get scrolled back to the top when the user types. See BL-13942.
         const elementClone = element.cloneNode(true) as HTMLElement;
@@ -260,59 +361,57 @@ export default class OverflowChecker {
         // Height is not as critical because either the scrollHeight is accurate (which we detect),
         // or we calculate the height ourselves below.  See BL-14053.
         elementClone.style.width = element.clientWidth + "px";
-        element.parentElement!.appendChild(elementClone);
 
+        // First, we need to make sure that the size and position of the children are not affected
+        // by flex grow or shrink. Currently, there is no reason to set these back because we are
+        // operating on a temporary clone.
+
+        // Note that there may be no children, even though there are childNodes. We can only set style
+        // for elements, but we need to measure all the nodes (at least for one unit test).
+        const children = Array.from(elementClone.children);
+        children.forEach((e: HTMLElement) => {
+            e.style.flexGrow = "0";
+            e.style.flexShrink = "0";
+        });
+        // The element itself must not shrink, lest its scrollHeight or clientHeight be inaccurate.
+        elementClone.style.flexGrow = "0";
+        elementClone.style.flexShrink = "0";
+        return elementClone;
+    }
+
+    // The height of the content of `elementClone`, a clone from makeContentHeightClone that is
+    // in the page.
+    private static readContentHeight(elementClone: HTMLElement): number {
         let result = 0;
-        try {
-            let maxContentBottom = 0;
-
-            // First, we need to make sure that the size and position of the children are not affected
-            // by flex grow or shrink. Currently, there is no reason to set these back because we are
-            // operating on a temporary clone.
-
-            // Note that there may be no children, even though there are childNodes. We can only set style
-            // for elements, but we need to measure all the nodes (at least for one unit test).
-            const children = Array.from(elementClone.children);
-            children.forEach((e: HTMLElement) => {
-                e.style.flexGrow = "0";
-                e.style.flexShrink = "0";
+        let maxContentBottom = 0;
+        // scrollHeight is a reliable way to get the information if it is greater than the clientHeight,
+        // and means we don't have to worry about scroll position.  (scrollHeight is never less than
+        // clientHeight.  See https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight.)
+        // (One odd situation is when lineHeight is small, e.g., less than 1.3 for Andika. In that
+        // situation, a paragraph whose height is otherwise unconstrained is not high enough to show
+        // descenders, and even with a single line of text its scrollHeight is greater than clientHeight.
+        // Our auto-sizing code handles this, making a canvas element big enough to show the descenders
+        // (if any are actually present).
+        // However, when the bloom-editable is empty, we don't get the extra scrollHeight we are adjusting
+        // for. There's a kludge to partly handle this in adjustSizeOfContainingCanvasElementToMatchContent,
+        // but there may be a better way to handle things. I think part of the problem may be that if there
+        // is no actual text, the browser can't really pick a font to display it, so some measurements
+        // can't be precisely made.)
+        result = elementClone.scrollHeight;
+        if (elementClone.scrollHeight <= elementClone.clientHeight) {
+            // But if scrollHeight is less than or equal to clientHeight, we use our own algorithm.
+            elementClone.childNodes.forEach((x: HTMLElement) => {
+                if (!(x instanceof HTMLElement)) return; // not an element; I think this is redundant
+                if (window.getComputedStyle(x).position === "absolute") return; // special element like format button
+                // Not sure if offsetTop can ever be negative, now that I prevented flexShrink.
+                // But in case it is, we don't want to shrink the content height. And often there is only one
+                // child so we'll get an accurate figure this way even if there is some scrolling.
+                const xbottom = Math.max(x.offsetTop, 0) + x.offsetHeight;
+                if (xbottom > maxContentBottom) {
+                    maxContentBottom = xbottom;
+                }
             });
-            // The element itself must not shrink, lest its scrollHeight or clientHeight be inaccurate.
-            elementClone.style.flexGrow = "0";
-            elementClone.style.flexShrink = "0";
-            // scrollHeight is a reliable way to get the information if it is greater than the clientHeight,
-            // and means we don't have to worry about scroll position.  (scrollHeight is never less than
-            // clientHeight.  See https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight.)
-            // (One odd situation is when lineHeight is small, e.g., less than 1.3 for Andika. In that
-            // situation, a paragraph whose height is otherwise unconstrained is not high enough to show
-            // descenders, and even with a single line of text its scrollHeight is greater than clientHeight.
-            // Our auto-sizing code handles this, making a canvas element big enough to show the descenders
-            // (if any are actually present).
-            // However, when the bloom-editable is empty, we don't get the extra scrollHeight we are adjusting
-            // for. There's a kludge to partly handle this in adjustSizeOfContainingCanvasElementToMatchContent,
-            // but there may be a better way to handle things. I think part of the problem may be that if there
-            // is no actual text, the browser can't really pick a font to display it, so some measurements
-            // can't be precisely made.)
-            result = elementClone.scrollHeight;
-            if (elementClone.scrollHeight <= elementClone.clientHeight) {
-                // But if scrollHeight is less than or equal to clientHeight, we use our own algorithm.
-                elementClone.childNodes.forEach((x: HTMLElement) => {
-                    if (!(x instanceof HTMLElement)) return; // not an element; I think this is redundant
-                    if (window.getComputedStyle(x).position === "absolute")
-                        return; // special element like format button
-                    // Not sure if offsetTop can ever be negative, now that I prevented flexShrink.
-                    // But in case it is, we don't want to shrink the content height. And often there is only one
-                    // child so we'll get an accurate figure this way even if there is some scrolling.
-                    const xbottom = Math.max(x.offsetTop, 0) + x.offsetHeight;
-                    if (xbottom > maxContentBottom) {
-                        maxContentBottom = xbottom;
-                    }
-                });
-                result = maxContentBottom;
-            }
-        } finally {
-            // Remove the temporary clone we added.
-            element.parentElement!.removeChild(elementClone);
+            result = maxContentBottom;
         }
         return result;
     }
@@ -347,6 +446,11 @@ export default class OverflowChecker {
         )[0] as HTMLElement;
         const scaleY =
             scaledElt.getBoundingClientRect().height / scaledElt.offsetHeight;
+        // Text in a table only has to fit its cell. The table's own box can be shorter than its
+        // rows (a row made taller by dragging its boundary), and so can the canvas element the
+        // table fills, so text that fits its cell is not overflowing just because the rows run
+        // past those boxes. The boxes beyond them, up to the marginBox, still count, including
+        // the cell of an outer table that holds a nested one.
         for (let i = 0; i < parents.length; i++) {
             // search ancestors starting with nearest
             const currentAncestor = $(parents[i]);
@@ -379,8 +483,24 @@ export default class OverflowChecker {
             if (currentAncestor.hasClass("marginBox")) {
                 break; // Don't check anything outside of marginBox
             }
+            if (currentAncestor.hasClass("bloom-cell")) {
+                // Go on from the box above the table's last box.
+                i = parents.index(
+                    OverflowChecker.lastBoxOfTableHolding(currentAncestor[0]),
+                );
+            }
         }
         return null;
+    }
+
+    // The outermost box that the table holding `cell` fills: the canvas element holding the table
+    // when there is one, else the table itself.
+    private static lastBoxOfTableHolding(cell: HTMLElement): HTMLElement {
+        const table = cell.closest<HTMLElement>(".bloom-table")!;
+        const parent = table.parentElement!;
+        return parent.classList.contains("bloom-canvas-element")
+            ? parent
+            : table;
     }
 
     // We want to check for overflow, but we can't afford the delay right now.
@@ -462,6 +582,50 @@ export default class OverflowChecker {
         OverflowChecker.CheckPageAncestorOverflow(editable);
     } // end AdjustSizeOrMarkOverflow
 
+    // AdjustSizeOrMarkOverflow for every element of `editables`, which must all be on the same
+    // page, quickly enough to do on every frame of a drag: the page-wide check runs once rather
+    // than once per element, the content heights of everything both checks look at are measured
+    // together, with one layout of the page instead of one per element, and descent measurements
+    // are reused (see descentMeasurementsOf). Every element is measured before any is marked, so
+    // that marking one does not make the next measurement lay out the page again. For a
+    // table of 34 text boxes this takes about 40 ms on a fast computer, and about 150 ms with its
+    // processor slowed to a quarter of its speed.
+    public static AdjustSizeOrMarkOverflowOfAll(editables: HTMLElement[]) {
+        if (editables.length === 0) return;
+        const marginBox = editables[0].closest<HTMLElement>(".marginBox");
+        const pageElements = marginBox
+            ? getElementsThatCanOverflowOrNeedToBeResized(marginBox)
+            : [];
+        // AdjustSizeAndMarkSelfOverflow changes the padding of a bloom-padForOverflow box
+        // before it measures it, so a height measured beforehand would be out of date.
+        const measurable = Array.from(
+            new Set([...editables, ...pageElements]),
+        ).filter(
+            (element) => !element.classList.contains("bloom-padForOverflow"),
+        );
+        const batch: NonNullable<typeof OverflowChecker.batch> = {
+            contentHeights:
+                OverflowChecker.measureContentHeightsTogether(measurable),
+            selfOverflowAmounts: new Map<HTMLElement, [number, number]>(),
+        };
+        OverflowChecker.batch = batch;
+        try {
+            // The rest of the page is read by CheckPageAncestorOverflow, before it marks anything.
+            editables.forEach((editable) =>
+                batch.selfOverflowAmounts.set(
+                    editable,
+                    OverflowChecker.getSelfOverflowAmounts(editable),
+                ),
+            );
+            editables.forEach((editable) =>
+                OverflowChecker.AdjustSizeAndMarkSelfOverflow(editable),
+            );
+            OverflowChecker.CheckPageAncestorOverflow(editables[0]);
+        } finally {
+            OverflowChecker.batch = undefined;
+        }
+    }
+
     // Whether a bloom-padForOverflow box should measure its descenders and store the resulting
     // padding-bottom in its style attribute.
     // The book title is one data-book field shown on several xmatter pages (the front cover, the
@@ -516,6 +680,7 @@ export default class OverflowChecker {
         $editable.off("mouseleave.overflow");
         $editable.parents(".childOverflowingThis").each((dummy, parent) => {
             OverflowChecker.RemoveOverflowQtip($(parent));
+            $(parent).off("mousemove.overflow mouseleave.overflow");
         });
         OverflowChecker.RemoveOverflowQtip($editable);
         $editable.parents().removeClass("childOverflowingThis");
@@ -547,6 +712,12 @@ export default class OverflowChecker {
             OverflowChecker.getSelfOverflowAmounts(editable);
         const overflowX = overflowAmounts[0];
         let overflowY = overflowAmounts[1];
+        // During AdjustSizeOrMarkOverflowOfAll, the canvas element whose height decides whether
+        // the box's overflow amounts that the batch read beforehand still hold.
+        const canvasElement = OverflowChecker.batch
+            ? editable.closest<HTMLElement>(kCanvasElementSelector)
+            : undefined;
+        const canvasElementHeight = canvasElement?.style.height;
         overflowY =
             theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
                 editable,
@@ -554,6 +725,17 @@ export default class OverflowChecker {
                 doNotShrink,
                 growAsMuchAsPossible,
             );
+        if (
+            canvasElement &&
+            canvasElement.style.height !== canvasElementHeight
+        ) {
+            // The box has a new size, so what was read before no longer holds.
+            OverflowChecker.batch?.selfOverflowAmounts.delete(editable);
+        }
+        OverflowChecker.fixScrollBarsIfNeeded(
+            editable,
+            overflowX > 0 || overflowY > 0,
+        );
         if (preventOverflowY) {
             // The usual fairly crude calculation may indicate it's overflowing, but
             // above we did a much more precise calculation and gave it just enough padding
@@ -579,9 +761,6 @@ export default class OverflowChecker {
         if (overflowY > 0 || overflowX > 0) {
             $editable.addClass("overflow");
             const page = $editable.closest(".bloom-page");
-            if (overflowY > 0 && page.length) {
-                OverflowChecker.fixScrollBarsSoon(page[0]);
-            }
             const isButton =
                 $editable.closest("." + kBloomButtonClass).length > 0;
             // don't show an overflow warning if we have scrolling available (unless it's a button)
@@ -614,10 +793,6 @@ export default class OverflowChecker {
             }
         } else {
             $editable.removeClass("overflow");
-            const page = $editable.closest(".bloom-page");
-            if (page.length) {
-                OverflowChecker.fixScrollBarsSoon(page[0]);
-            }
         }
     }
 
@@ -641,14 +816,24 @@ export default class OverflowChecker {
             getElementsThatCanOverflowOrNeedToBeResized(container.get(0)),
         );
 
-        // Type 2 Overflow - We'll check ALL of these for overflow past any ancestor
-        editablePageElements.each(function () {
+        // Type 2 Overflow - We'll check ALL of these for overflow past any ancestor.
+        // Every element is measured before any is marked: a mark written between two
+        // measurements makes the second one lay out the page again.
+        const measurements = editablePageElements.get().map((element) => {
+            const ancestor = OverflowChecker.overflowingAncestor(element);
+            return {
+                overflowingAncestor: ancestor,
+                overflowingSelf:
+                    ancestor === null &&
+                    OverflowChecker.IsOverflowingSelf(element),
+            };
+        });
+        editablePageElements.each(function (index) {
             const $this = $(this);
-            const overflowingAncestor = OverflowChecker.overflowingAncestor(
-                $this[0],
-            );
+            const { overflowingAncestor, overflowingSelf } =
+                measurements[index];
             if (overflowingAncestor == null) {
-                if (!OverflowChecker.IsOverflowingSelf($this[0])) {
+                if (!overflowingSelf) {
                     $this.removeClass("overflow"); // might be a remnant from earlier overflow
                     $this.removeClass("thisOverflowingParent");
                 }
@@ -693,6 +878,11 @@ export default class OverflowChecker {
                         });
                     });
                 let showing = false;
+                // One pair of handlers per ancestor, however many checks have marked it: a
+                // table's text is checked on every frame of a row or column drag.
+                $overflowingAncestor.off(
+                    "mousemove.overflow mouseleave.overflow",
+                );
                 $overflowingAncestor.on("mousemove.overflow", (event) => {
                     if (overflowingAncestor === null) return; // prevent bad static analysis
                     const bounds = overflowingAncestor.getBoundingClientRect();
@@ -726,6 +916,32 @@ export default class OverflowChecker {
         OverflowChecker.UpdatePageOverflow(container.closest(".bloom-page"));
     }
 
+    // Whether each box's text overflowed it when it was last checked, whatever the box's mark
+    // says: bloom-padForOverflow boxes and boxes in drag activities are never marked.
+    private static overflowedWhenLastChecked = new WeakMap<
+        HTMLElement,
+        boolean
+    >();
+
+    // addScrollbarsToPage gives a scroll bar to each box whose text does not fit it, so the
+    // page's scroll bars need rebuilding only when a box's text starts or stops fitting; a scroll
+    // bar resizes itself as the text in its box grows or shrinks. Rebuilding the scroll bars of a
+    // page with a big table takes seconds on a slow computer, so a check that changes nothing
+    // only postpones a rebuild that is already waiting, which then runs once a drag pauses.
+    private static fixScrollBarsIfNeeded(
+        editable: HTMLElement,
+        overflows: boolean,
+    ) {
+        const changed =
+            OverflowChecker.overflowedWhenLastChecked.get(editable) !==
+            overflows;
+        OverflowChecker.overflowedWhenLastChecked.set(editable, overflows);
+        const page = editable.closest(".bloom-page");
+        if (page && (changed || OverflowChecker.fixScrollBarsTimeout)) {
+            OverflowChecker.fixScrollBarsSoon(page);
+        }
+    }
+
     // Fix the NiceScroll scrollbars after a short delay to prevent flickering
     // as the mouse drags the size of the element.
     private static fixScrollBarsTimeout = 0;
@@ -737,6 +953,7 @@ export default class OverflowChecker {
         // flicker if we do it continuously. This is hopefully a long enough delay so it
         // just happens after the user stops dragging.
         this.fixScrollBarsTimeout = window.setTimeout(() => {
+            this.fixScrollBarsTimeout = 0;
             cleanupNiceScroll();
             addScrollbarsToPage(page);
         }, 200);

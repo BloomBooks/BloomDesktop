@@ -166,22 +166,45 @@ export class MeasureText {
     // Same results as getDescentMeasurements(), but gets all the arguments
     // from a given element.
     public static getDescentMeasurementsOfBox(box: HTMLElement) {
-        const text = box.textContent ? box.textContent : "";
-        const realStyle = window.getComputedStyle(box, null);
-        // The FontFamily we get here includes quotes if there are spaces,
-        // but we don't want them for the getDescentMeasurements routine.
-        const fontFamily = realStyle
-            .getPropertyValue("font-family")
-            .replace(/"/g, "");
-        const fontSize = realStyle.getPropertyValue("font-size");
-        const lineHeight = realStyle.lineHeight;
-        return this.getDescentMeasurements(
-            text,
-            fontFamily,
-            parseInt(fontSize),
-            box.clientWidth,
-            lineHeight,
+        return this.getDescentMeasurementsFromInputs(
+            this.getDescentMeasurementInputsOfBox(box),
         );
+    }
+
+    // getDescentMeasurements, given its arguments as getDescentMeasurementInputsOfBox returns them.
+    public static getDescentMeasurementsFromInputs(
+        inputs: ReturnType<typeof MeasureText.getDescentMeasurementInputsOfBox>,
+    ) {
+        return this.getDescentMeasurements(
+            inputs.text,
+            inputs.fontFamily,
+            inputs.fontSize,
+            inputs.width,
+            inputs.lineHeight,
+        );
+    }
+
+    // The arguments getDescentMeasurementsOfBox passes to getDescentMeasurements for `box`,
+    // which are everything its result depends on.
+    public static getDescentMeasurementInputsOfBox(box: HTMLElement): {
+        text: string;
+        fontFamily: string;
+        fontSize: number;
+        width: number;
+        lineHeight: string;
+    } {
+        const realStyle = window.getComputedStyle(box, null);
+        return {
+            text: box.textContent ? box.textContent : "",
+            // The FontFamily we get here includes quotes if there are spaces,
+            // but we don't want them for the getDescentMeasurements routine.
+            fontFamily: realStyle
+                .getPropertyValue("font-family")
+                .replace(/"/g, ""),
+            fontSize: parseInt(realStyle.getPropertyValue("font-size")),
+            width: box.clientWidth,
+            lineHeight: realStyle.lineHeight,
+        };
     }
 
     private static createCanvas(
