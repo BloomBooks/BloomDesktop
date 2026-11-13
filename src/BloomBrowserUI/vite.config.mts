@@ -606,6 +606,8 @@ export default defineConfig(async ({ command }) => {
             "./collection/CollectionChooserDialog.entry.tsx",
         registrationDialogBundle:
             "./react_components/registration/registrationDialog.tsx",
+        printInstructionsBundle:
+            "./publish/PDFPrintPublish/PrintInstructionsWindow.tsx",
     };
 
     // MAIN VITE CONFIGURATION

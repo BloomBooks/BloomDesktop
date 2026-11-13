@@ -1,0 +1,51 @@
+@import "../branding-base.less";
+
+// The logo and the Made with Bloom badge sit side by side, centered on each other vertically
+// (branding-base.less already gives each image align-self: center). In the vanilla variant
+// the badge is alone and just centers.
+.marginBox [data-book="outside-back-cover-branding-bottom-html"] {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 1cm;
+}
+
+// The license notes open with their own heading ("Translations outside of Global Partners"),
+// so set them off from Bloom's license text above with the same blank line that separates
+// their two sections. Done here rather than with a leading <br/> in the preset, which would
+// show as an empty first line when the user edits the notes.
+.licenseNotes {
+    margin-top: 1em;
+}
+
+// These notes are long, and the smallest sizes run out of room on the credits page
+// (A6Landscape overflows outright). As SIL-LEAD does for its rare small sizes, shrink
+// just the notes there rather than every size.
+.A6Landscape,
+.QuarterLetterLandscape,
+.QuarterLetterPortrait {
+    .licenseNotes {
+        font-size: 8pt;
+        margin-top: 0.6em;
+    }
+}
+
+img.branding {
+    height: 2cm;
+    margin: 0;
+}
+
+img.bloom-badge {
+    height: 1.5cm;
+}
+
+div.Device16x9Portrait,
+div.A6Portrait {
+    img.branding {
+        height: 1.5cm;
+    }
+    img.bloom-badge {
+        height: 1.1cm;
+    }
+}
