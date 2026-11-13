@@ -17,10 +17,10 @@ import { StageLettersEditor } from "./StageLettersEditor";
 import { StageAllowedWordsFile } from "./StageAllowedWordsFile";
 import { ReaderDialogPhaseSection } from "./ReaderDialogPhaseSection";
 import {
-    cleanSpaceDelimitedList,
     cloneReaderSettings,
     hasOnlyKnownGraphemes,
 } from "./decodableStagesUtils";
+import { cleanSpaceDelimitedList } from "./readerToolsShared";
 import { updateSettings } from "./readerDialogShared";
 
 export const StagesTab: React.FunctionComponent<{
