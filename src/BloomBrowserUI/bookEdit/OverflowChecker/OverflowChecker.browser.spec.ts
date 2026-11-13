@@ -2,6 +2,10 @@ import { afterEach, describe, it, expect, vi } from "vitest";
 import OverflowChecker from "./OverflowChecker";
 import $ from "jquery";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
+import {
+    initializeCanvasElementManager,
+    theOneCanvasElementManager,
+} from "../js/canvasElementManager/CanvasElementManager";
 import OverflowAncestorFixture from "./OverflowAncestorFixture.html?raw";
 import OverflowFixture from "./OverflowFixture.html?raw";
 import OverflowMarginFixture from "./OverflowMarginFixture.html?raw";
@@ -393,61 +397,122 @@ describe("OverflowChecker.overflowingAncestor in a table cell", () => {
     });
 });
 
-describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
+describe("OverflowChecker.AdjustSizeAndMarkSelfOverflow", () => {
     afterEach(() => {
         vi.clearAllTimers();
         vi.useRealTimers();
         vi.restoreAllMocks();
     });
 
-    // A row drag checks a table's text on every frame. On a slow computer one check can take
-    // longer than the wait before the page's scroll bars are rebuilt, and a rebuild between
-    // every two frames takes seconds each time.
-    it("starts the wait before the scroll bars are rebuilt when the whole check has finished", () => {
-        const editables = loadFixture(`
+    // The rebuild of the page's scroll bars that is waiting, if any. MeasureText keeps a timer
+    // of its own, so counting timers would not tell the two apart.
+    const checker = OverflowChecker as unknown as {
+        fixScrollBarsTimeout: number;
+    };
+
+    // Puts in the document a box whose text does not fit it, with the given extra classes, and
+    // sets up what its check needs.
+    function setUpOverflowingBox(classes: string): HTMLElement {
+        const [editable] = loadFixture(`
             <div class="bloom-page">
                 <div class="marginBox" style="height: 600px">
-                    <div class="myTest bloom-editable bloom-visibility-code-on">one</div>
-                    <div class="myTest bloom-editable bloom-visibility-code-on">two</div>
+                    <div class="myTest bloom-editable bloom-visibility-code-on ${classes}"
+                        style="height: 20px; width: 100px; font: 16px Arial; overflow: hidden">${"words ".repeat(40)}</div>
                 </div>
             </div>`);
-        const page = editables[0].closest(".bloom-page")!;
         vi.useFakeTimers();
-        // The rebuild that is waiting, if any. MeasureText keeps a timer of its own, so counting
-        // timers would not tell the two apart.
-        const checker = OverflowChecker as unknown as {
-            fixScrollBarsSoon: (page: Element) => void;
-            fixScrollBarsTimeout: number;
-        };
-        checker.fixScrollBarsTimeout = 0;
-        // Every box's own check asks for the page's scroll bars to be fixed, whatever it finds.
-        // The real check also needs the canvas element manager, which this file doesn't set up.
-        const selfCheck = vi
-            .spyOn(OverflowChecker, "AdjustSizeAndMarkSelfOverflow")
-            .mockImplementation(() => {
-                checker.fixScrollBarsSoon(page);
-            });
-        let rebuildWaitingDuringCheck: number | undefined;
+        vi.spyOn(theOneLocalizationManager, "asyncGetText").mockReturnValue({
+            done: () => {},
+        } as unknown as ReturnType<
+            typeof theOneLocalizationManager.asyncGetText
+        >);
+        initializeCanvasElementManager();
+        // The box is not in a canvas element, so its size stays as it is.
         vi.spyOn(
-            OverflowChecker,
-            "CheckPageAncestorOverflow",
-        ).mockImplementation(() => {
-            rebuildWaitingDuringCheck = checker.fixScrollBarsTimeout;
-        });
+            theOneCanvasElementManager,
+            "adjustSizeOfContainingCanvasElementToMatchContent",
+        ).mockImplementation((_element, overflowY) => overflowY);
+        clearTimeout(checker.fixScrollBarsTimeout);
+        checker.fixScrollBarsTimeout = 0;
+        return editable;
+    }
 
-        OverflowChecker.AdjustSizeOrMarkOverflowOfAll(editables);
+    // Checks the box with no rebuild waiting, and says whether the check asked for one.
+    function rebuildIsWaitingAfterCheck(editable: HTMLElement): boolean {
+        clearTimeout(checker.fixScrollBarsTimeout);
+        checker.fixScrollBarsTimeout = 0;
+        OverflowChecker.AdjustSizeAndMarkSelfOverflow(editable);
+        return checker.fixScrollBarsTimeout !== 0;
+    }
+
+    // A row drag checks a table's text on every frame, and rebuilding the scroll bars of a page
+    // with a big table takes seconds on a slow computer, so a check that changes nothing must not
+    // ask for a rebuild.
+    it("asks for the scroll bars to be rebuilt only when a box's text starts or stops fitting", () => {
+        const editable = setUpOverflowingBox("");
 
         expect(
-            selfCheck,
-            "Each box should have had its own check, or this tests nothing.",
-        ).toHaveBeenCalledTimes(2);
+            rebuildIsWaitingAfterCheck(editable),
+            "The text does not fit, so the first check should ask for a rebuild.",
+        ).toBe(true);
         expect(
-            rebuildWaitingDuringCheck,
-            "No rebuild should be waiting while the check is still running.",
-        ).toBe(0);
+            editable.classList.contains("overflow"),
+            "The box should be marked, or this tests nothing.",
+        ).toBe(true);
+        expect(
+            rebuildIsWaitingAfterCheck(editable),
+            "A check of text that still does not fit should not ask for a rebuild.",
+        ).toBe(false);
+        editable.textContent = "words";
+        expect(
+            rebuildIsWaitingAfterCheck(editable),
+            "A check of text that now fits should ask for a rebuild.",
+        ).toBe(true);
+        expect(editable.classList.contains("overflow")).toBe(false);
+        expect(
+            rebuildIsWaitingAfterCheck(editable),
+            "A check of text that still fits should not ask for a rebuild.",
+        ).toBe(false);
+    });
+
+    // A title box is never marked, but the page gives it a scroll bar when its text does not fit.
+    it("asks for a rebuild when the text of a box that is never marked stops fitting", () => {
+        const editable = setUpOverflowingBox("bloom-padForOverflow");
+
+        expect(
+            rebuildIsWaitingAfterCheck(editable),
+            "The text does not fit, so the first check should ask for a rebuild.",
+        ).toBe(true);
+        expect(
+            editable.classList.contains("overflow"),
+            "A bloom-padForOverflow box should not be marked, or this tests the mark instead.",
+        ).toBe(false);
+        editable.textContent = "words";
+        expect(
+            rebuildIsWaitingAfterCheck(editable),
+            "A check of text that now fits should ask for a rebuild.",
+        ).toBe(true);
+    });
+
+    // While a drag goes on, a rebuild that a cell asked for waits until the checks stop.
+    it("postpones a rebuild that is waiting when a check changes nothing", () => {
+        const editable = setUpOverflowingBox("");
+        OverflowChecker.AdjustSizeAndMarkSelfOverflow(editable);
+        const waiting = checker.fixScrollBarsTimeout;
+        expect(
+            waiting,
+            "The first check should have asked for a rebuild, or this tests nothing.",
+        ).not.toBe(0);
+
+        OverflowChecker.AdjustSizeAndMarkSelfOverflow(editable);
+
         expect(
             checker.fixScrollBarsTimeout,
-            "A rebuild should be waiting once the check has finished.",
+            "The rebuild should still be waiting.",
         ).not.toBe(0);
+        expect(
+            checker.fixScrollBarsTimeout,
+            "The rebuild should wait again from the start.",
+        ).not.toBe(waiting);
     });
 });

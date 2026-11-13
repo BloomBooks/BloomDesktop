@@ -256,8 +256,6 @@ export default class OverflowChecker {
     // - selfOverflowAmounts: the self overflow amounts of the elements it checks, read before it
     //   marks any of them. A mark written between two reads makes the second read lay out the
     //   page again, and the marks do not change the size of any box.
-    // - pageWhoseScrollBarsNeedFixing: the page whose scroll bars it will fix when it has
-    //   finished, once a box's own check has asked for that. See fixScrollBarsSoon.
     private static batch:
         | {
               contentHeights: Map<
@@ -265,7 +263,6 @@ export default class OverflowChecker {
                   { width: number; height: number }
               >;
               selfOverflowAmounts: Map<HTMLElement, [number, number]>;
-              pageWhoseScrollBarsNeedFixing?: Element;
           }
         | undefined;
 
@@ -590,8 +587,7 @@ export default class OverflowChecker {
     // than once per element, the content heights of everything both checks look at are measured
     // together, with one layout of the page instead of one per element, and descent measurements
     // are reused (see descentMeasurementsOf). Every element is measured before any is marked, so
-    // that marking one does not make the next measurement lay out the page again, and the page's
-    // scroll bars are fixed once, after the check has finished (see fixScrollBarsSoon). For a
+    // that marking one does not make the next measurement lay out the page again. For a
     // table of 34 text boxes this takes about 40 ms on a fast computer, and about 150 ms with its
     // processor slowed to a quarter of its speed.
     public static AdjustSizeOrMarkOverflowOfAll(editables: HTMLElement[]) {
@@ -627,11 +623,6 @@ export default class OverflowChecker {
             OverflowChecker.CheckPageAncestorOverflow(editables[0]);
         } finally {
             OverflowChecker.batch = undefined;
-        }
-        if (batch.pageWhoseScrollBarsNeedFixing) {
-            OverflowChecker.fixScrollBarsSoon(
-                batch.pageWhoseScrollBarsNeedFixing,
-            );
         }
     }
 
@@ -741,6 +732,10 @@ export default class OverflowChecker {
             // The box has a new size, so what was read before no longer holds.
             OverflowChecker.batch?.selfOverflowAmounts.delete(editable);
         }
+        OverflowChecker.fixScrollBarsIfNeeded(
+            editable,
+            overflowX > 0 || overflowY > 0,
+        );
         if (preventOverflowY) {
             // The usual fairly crude calculation may indicate it's overflowing, but
             // above we did a much more precise calculation and gave it just enough padding
@@ -766,9 +761,6 @@ export default class OverflowChecker {
         if (overflowY > 0 || overflowX > 0) {
             $editable.addClass("overflow");
             const page = $editable.closest(".bloom-page");
-            if (overflowY > 0 && page.length) {
-                OverflowChecker.fixScrollBarsSoon(page[0]);
-            }
             const isButton =
                 $editable.closest("." + kBloomButtonClass).length > 0;
             // don't show an overflow warning if we have scrolling available (unless it's a button)
@@ -801,10 +793,6 @@ export default class OverflowChecker {
             }
         } else {
             $editable.removeClass("overflow");
-            const page = $editable.closest(".bloom-page");
-            if (page.length) {
-                OverflowChecker.fixScrollBarsSoon(page[0]);
-            }
         }
     }
 
@@ -928,18 +916,36 @@ export default class OverflowChecker {
         OverflowChecker.UpdatePageOverflow(container.closest(".bloom-page"));
     }
 
+    // Whether each box's text overflowed it when it was last checked, whatever the box's mark
+    // says: bloom-padForOverflow boxes and boxes in drag activities are never marked.
+    private static overflowedWhenLastChecked = new WeakMap<
+        HTMLElement,
+        boolean
+    >();
+
+    // addScrollbarsToPage gives a scroll bar to each box whose text does not fit it, so the
+    // page's scroll bars need rebuilding only when a box's text starts or stops fitting; a scroll
+    // bar resizes itself as the text in its box grows or shrinks. Rebuilding the scroll bars of a
+    // page with a big table takes seconds on a slow computer, so a check that changes nothing
+    // only postpones a rebuild that is already waiting, which then runs once a drag pauses.
+    private static fixScrollBarsIfNeeded(
+        editable: HTMLElement,
+        overflows: boolean,
+    ) {
+        const changed =
+            OverflowChecker.overflowedWhenLastChecked.get(editable) !==
+            overflows;
+        OverflowChecker.overflowedWhenLastChecked.set(editable, overflows);
+        const page = editable.closest(".bloom-page");
+        if (page && (changed || OverflowChecker.fixScrollBarsTimeout)) {
+            OverflowChecker.fixScrollBarsSoon(page);
+        }
+    }
+
     // Fix the NiceScroll scrollbars after a short delay to prevent flickering
     // as the mouse drags the size of the element.
     private static fixScrollBarsTimeout = 0;
-    // During AdjustSizeOrMarkOverflowOfAll the delay starts when the whole check has finished,
-    // not when one box asks: on a slow computer the check can take longer than the delay, and
-    // the scroll bars would then be rebuilt between every two frames of a row drag, which takes
-    // seconds each time.
     private static fixScrollBarsSoon(page: Element) {
-        if (this.batch) {
-            this.batch.pageWhoseScrollBarsNeedFixing = page;
-            return;
-        }
         if (this.fixScrollBarsTimeout) {
             clearTimeout(this.fixScrollBarsTimeout);
         }
@@ -947,6 +953,7 @@ export default class OverflowChecker {
         // flicker if we do it continuously. This is hopefully a long enough delay so it
         // just happens after the user stops dragging.
         this.fixScrollBarsTimeout = window.setTimeout(() => {
+            this.fixScrollBarsTimeout = 0;
             cleanupNiceScroll();
             addScrollbarsToPage(page);
         }, 200);
