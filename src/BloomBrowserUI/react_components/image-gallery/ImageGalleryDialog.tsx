@@ -16,7 +16,6 @@ import {
     getAsync,
     postJson,
     postJsonAsync,
-    postDataWithConfigAsync,
     trackEvent,
 } from "../../utils/bloomApi";
 import { useMountEffect } from "../../utils/useMountEffect";
@@ -24,6 +23,7 @@ import { kBloomBlue } from "../../bloomMaterialUITheme";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { getEditablePageBundleExports } from "../../bookEdit/js/workspaceFrames";
 import { useL10n } from "../l10nHooks";
+import { getLocalizations } from "../../lib/localizationManager/getLocalizations";
 import { ShowEditViewDialog } from "../../bookEdit/workspaceRoot";
 
 // The shape of what C# returns from imageGallery/imageGalleryResult
@@ -303,24 +303,7 @@ const ImageGalleryDialog: React.FunctionComponent<{
                                 settingValue: lang,
                             })
                         }
-                        getLocalizations={async (strings) => {
-                            // i18n/loadStrings expects form-encoded data, not JSON
-                            const params = new URLSearchParams();
-                            for (const [key, value] of Object.entries(
-                                strings,
-                            )) {
-                                params.append(key, value);
-                            }
-                            const response = await postDataWithConfigAsync(
-                                "i18n/loadStrings",
-                                params,
-                                {},
-                            );
-                            return (response?.data ?? strings) as Record<
-                                string,
-                                string
-                            >;
-                        }}
+                        getLocalizations={getLocalizations}
                     />
                 )}
             </div>

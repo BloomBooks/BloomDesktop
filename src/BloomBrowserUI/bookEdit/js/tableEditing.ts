@@ -9,6 +9,7 @@ import {
     removeTableEditingMarkup,
     setColumnWidth,
     setDefaultCellContentTypeId,
+    setGetLocalizations,
     setRowHeight,
     setCellMenuOpenHandler,
     setStructuralChromeGate,
@@ -37,6 +38,7 @@ import {
     tablesMayBeRestructured,
 } from "./tableFeature";
 import { noteTableHistoryUpdate } from "../undo/tableUndo";
+import { getLocalizations } from "../../lib/localizationManager/getLocalizations";
 
 // The library's own "something changed in a table" notification. It fires on the
 // page's document at the end of every operation that goes through the table's
@@ -70,7 +72,10 @@ function replaceCellContentType(
     );
 }
 
-/** Register Bloom-specific cell content types with the bloom-table library. */
+/**
+ * Register Bloom-specific cell content types with the bloom-table library, install
+ * Bloom's hooks into it, and have it show its UI in the user's UI language.
+ */
 function ensureContentTypesRegistered(): void {
     if (contentTypesRegistered) return;
     contentTypesRegistered = true;
@@ -122,6 +127,11 @@ function ensureContentTypesRegistered(): void {
 
     setDefaultCellContentTypeId("text");
     installHostHooks();
+
+    // The library asks for the translations of every string it shows, the content
+    // type names registered above among them, and holds its UI back until they
+    // arrive. Once per page, because each call asks again.
+    void setGetLocalizations(getLocalizations);
 }
 
 /**
