@@ -4,6 +4,7 @@ import { CollectionTopBarControls } from "./CollectionTopBarControls/CollectionT
 import { WorkspaceTopRightControls } from "./workspaceTopRightControls/WorkspaceTopRightControls";
 import { EditTopBarControls } from "../../bookEdit/topbar/editTopBarControls";
 import { WorkspaceTabId } from "./TopBar";
+import { PageViewChooser } from "./workspaceTopRightControls/PageViewChooser";
 
 export const TopBarControls: React.FunctionComponent<{
     activeTab: WorkspaceTabId;
@@ -32,12 +33,14 @@ export const TopBarControls: React.FunctionComponent<{
             </div>
             <div
                 css={css`
-                    margin-left: 10px;
+                    margin-left: ${props.activeTab === "edit" ? 26 : 10}px;
                     display: flex;
                     align-items: flex-start;
                 `}
             >
-                <WorkspaceTopRightControls />
+                <WorkspaceTopRightControls>
+                    {props.activeTab === "edit" && <PageViewChooser />}
+                </WorkspaceTopRightControls>
             </div>
         </div>
     );

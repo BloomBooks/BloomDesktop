@@ -467,6 +467,12 @@ export async function waitForEditablePage(
             },
         )
         .toBeGreaterThan(0);
+    // With all pages showing, the Edit tab covers the page frame, taking its clicks, until the new
+    // page shows (showPageLoadingCover in workspaceRoot.ts).
+    await expect(
+        page.locator("#page-loading-cover"),
+        "The Edit tab never took away the cover it puts over the pages while it changes pages.",
+    ).toHaveCount(0);
     // The page's script (updateLanguageVisibility) adds bloom-visibility-code-on to each box it
     // decides to show, and the CSS hides every box that lacks it.
     const groupCount = await editablePageFrame(page)

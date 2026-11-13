@@ -2,18 +2,24 @@ import * as React from "react";
 import { css } from "@emotion/react";
 import { get } from "../utils/bloomApi";
 import { setToolboxEnabledHandler } from "../bookEdit/workspaceRoot";
+import { createPageFrame, numberPageLoad } from "../bookEdit/js/pageFrame";
+import { takePageViewSettingsFromBloom } from "../bookEdit/js/pageViewSettings";
 
 interface IEditFrameSources {
     pageListSrc: string;
     pageSrc: string;
     toolboxSrc: string;
     toolboxIsShowing?: boolean;
+    // The page view settings (the mode, and the zoom of each mode) that Bloom keeps for
+    // pageViewSettings.ts, as the JSON string that module gave it.
+    pageViewSettings: string;
 }
 
 const defaultEditFrameSources: IEditFrameSources = {
     pageListSrc: "about:blank",
     pageSrc: "about:blank",
     toolboxSrc: "/bloom/toolboxContent",
+    pageViewSettings: "",
 };
 
 export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
@@ -36,10 +42,37 @@ export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
                 typeof result.data === "string"
                     ? (JSON.parse(result.data) as IEditFrameSources)
                     : (result.data as IEditFrameSources);
+            // Before the page frame is created, since the page reads it as it loads.
+            takePageViewSettingsFromBloom(data.pageViewSettings);
             setSources(data);
             setToolboxIsShowing(data.toolboxIsShowing ?? true);
         });
     }, [props.active]);
+
+    // The page frame is created here, not rendered by React, because switchContentPage replaces
+    // it with a new frame on every page change (keeping the old one on screen until the new one is
+    // ready), and React must not own an element that other code removes. This effect keeps that
+    // frame showing sources.pageSrc, which changes when the Edit tab is (re)activated.
+    const pageFrameHost = React.useRef<HTMLDivElement>(null);
+    const pageSrcShown = React.useRef<string>();
+    React.useEffect(() => {
+        const host = pageFrameHost.current!;
+        if (pageSrcShown.current === sources.pageSrc) {
+            return;
+        }
+        pageSrcShown.current = sources.pageSrc;
+        const frame = document.getElementById("page") as
+            | HTMLIFrameElement
+            | undefined;
+        let pageFrame = frame;
+        if (pageFrame) {
+            pageFrame.src = sources.pageSrc;
+        } else {
+            pageFrame = createPageFrame(sources.pageSrc);
+            host.appendChild(pageFrame);
+        }
+        numberPageLoad(pageFrame);
+    }, [sources.pageSrc]);
 
     React.useEffect(() => {
         // We will use this to disable and hide the toolbox when in Change Layout mode (BL-16069)
@@ -212,12 +245,13 @@ export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
                                         box-sizing: border-box;
                                     `}
                                 >
-                                    <iframe
-                                        id="page"
-                                        title="page"
-                                        width="100%"
-                                        height="100%"
-                                        src={sources.pageSrc}
+                                    <div
+                                        ref={pageFrameHost}
+                                        css={css`
+                                            position: relative;
+                                            width: 100%;
+                                            height: 100%;
+                                        `}
                                     />
                                 </div>
                             </div>
