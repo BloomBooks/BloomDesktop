@@ -29,7 +29,7 @@ namespace Bloom.Utils
         private static readonly string[] s_probeExtensions = { ".htm", ".png", ".mp4" };
 
         /// <summary>
-        /// True if path (a file or folder) is, or was made from, a probe folder of this check.
+        /// True if path names one of this check's probe folders.
         /// Code that walks a collection's subfolders must leave these alone: one Windows refused to
         /// let us delete may be left behind, holding a probe .htm that makes it look like a book.
         /// </summary>

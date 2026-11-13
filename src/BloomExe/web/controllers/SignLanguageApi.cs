@@ -614,7 +614,22 @@ namespace Bloom.web.controllers
                                 ),
                                 GetNewVideoFileName(Path.GetExtension(path))
                             ); // Use a new name to defeat caching.
-                            RobustFile.Copy(workingCopy.Path, newVideoPath);
+                            try
+                            {
+                                RobustFile.Copy(workingCopy.Path, newVideoPath);
+                            }
+                            catch (Exception)
+                            {
+                                // A large video can fail partway, e.g. when the disk fills up. Then
+                                // freeing the space at once matters to the user. If Windows refuses
+                                // the delete too, the unused-video cleanup will try again later.
+                                try
+                                {
+                                    RobustFile.Delete(newVideoPath);
+                                }
+                                catch (Exception) { }
+                                throw;
+                            }
                             progress.SendPercent(100);
                             var relativePath =
                                 BookStorage.GetVideoFolderName + Path.GetFileName(newVideoPath);
