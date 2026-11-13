@@ -308,15 +308,19 @@ class RecordingResizeObserver {
     public constructor(private readonly callback: ResizeObserverCallback) {
         RecordingResizeObserver.instances.push(this);
     }
+    /** Remember that `target` is watched. */
     public observe(target: Element): void {
         this.observed.add(target);
     }
+    /** Forget `target`. */
     public unobserve(target: Element): void {
         this.observed.delete(target);
     }
+    /** Forget everything watched. */
     public disconnect(): void {
         this.observed.clear();
     }
+    /** Tell the observer's owner that `targets` changed size, as the browser would. */
     public reportResize(targets: Element[]): void {
         this.callback(
             targets.map((target) => ({ target }) as ResizeObserverEntry),
