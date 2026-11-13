@@ -559,7 +559,7 @@ vi.mock("@sillsdev/config-r", () => ({
         path: string;
         disabled?: boolean;
         description?: string;
-        options: { value: string; label?: string }[];
+        options: { value: string | number; label?: string }[];
     }) => (
         <div>
             <select
@@ -600,15 +600,11 @@ vi.mock("@sillsdev/config-r", () => ({
             )}
         </div>
     ),
-    // The page's own controls (language, font, number lists) are not shown; tests check which
-    // values have one.
+    // The page's own controls (language, font) are not shown; tests check which values have one.
     ConfigrCustomObjectInput: (props: { path: string }) => (
         <div data-testid="configr-custom" data-path={props.path} />
     ),
     ConfigrCustomStringInput: (props: { path: string }) => (
-        <div data-testid="configr-custom" data-path={props.path} />
-    ),
-    ConfigrCustomNumberInput: (props: { path: string }) => (
         <div data-testid="configr-custom" data-path={props.path} />
     ),
 }));
