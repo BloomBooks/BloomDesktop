@@ -3660,7 +3660,7 @@ namespace Bloom.Book
 
             // Something like this was called for in the comment on BL-11863 that led to this,
             // but we finally decided not to.
-            // var avProgs = MiscUtils.InstalledAntivirusProgramNames();
+            // var avProgs = string.Join(", ", FileAccessDiagnostics.GetActiveAntivirusNames());
             //if (!string.IsNullOrEmpty(avProgs))
             //{
             //	var avTemplate = LocalizationManager.GetString("Errors.TryPausingAV",

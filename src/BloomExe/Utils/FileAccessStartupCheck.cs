@@ -51,7 +51,9 @@ namespace Bloom.Utils
 
         private static void Check(string collectionFolder)
         {
-            var antivirus = FileAccessDiagnostics.AntivirusSummary;
+            // This thread has time to wait for Windows, and asking now means reports made later
+            // normally find the answer ready.
+            var antivirus = FileAccessDiagnostics.GetAntivirusSummary(TimeSpan.FromMinutes(1));
             // Program's Sentry setup adds it to every event from now on.
             Logger.WriteEvent("Antivirus: " + antivirus);
 

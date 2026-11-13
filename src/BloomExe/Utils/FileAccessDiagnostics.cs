@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
+using System.Threading.Tasks;
 using L10NSharp;
 using Microsoft.Win32;
 using SIL.IO;
@@ -531,21 +532,35 @@ namespace Bloom.Utils
             return null;
         }
 
-        // Asking Windows Security Center can take a second or more, so we ask once per run.
-        // FileAccessStartupCheck asks early, in the background, so later callers normally find
-        // the answer ready.
-        private static readonly Lazy<List<(string name, int? state)>> s_antivirusProducts =
-            new Lazy<List<(string name, int? state)>>(QueryAntivirusProducts);
+        // Asking Windows Security Center can take a second or more, so we ask once per run, on a
+        // thread of its own. FileAccessStartupCheck starts it early, so later callers normally
+        // find the answer ready.
+        private static readonly Lazy<Task<List<(string name, int? state)>>> s_antivirusQuery =
+            new Lazy<Task<List<(string name, int? state)>>>(() => Task.Run(QueryAntivirusProducts));
+
+        // How long an error report waits for Windows to say which antivirus is active. A report
+        // made before the answer arrives (or while Windows is slow) says so rather than waiting.
+        private static readonly TimeSpan kReportWait = TimeSpan.FromSeconds(5);
+
+        /// <summary>
+        /// The antivirus products Windows Security Center knows about, waiting at most maxWait for
+        /// the answer; null if it hasn't come by then.
+        /// </summary>
+        private static List<(string name, int? state)> GetAntivirusProducts(TimeSpan maxWait)
+        {
+            var query = s_antivirusQuery.Value;
+            return query.Wait(maxWait) ? query.Result : null;
+        }
 
         /// <summary>
         /// The display names of the antivirus products Windows Security Center reports with real-time
         /// protection on (as of the first time we asked in this run). Empty if none, or if they
-        /// can't be read. Never throws.
+        /// can't be read or Windows takes more than a few seconds to say. Never throws.
         /// </summary>
         public static List<string> GetActiveAntivirusNames()
         {
-            return s_antivirusProducts
-                .Value.Where(product =>
+            return (GetAntivirusProducts(kReportWait) ?? new List<(string name, int? state)>())
+                .Where(product =>
                     product.state.HasValue && IsRealTimeProtectionOn(product.state.Value)
                 )
                 .Select(product => product.name)
@@ -554,29 +569,43 @@ namespace Bloom.Utils
 
         /// <summary>
         /// One line naming every antivirus product Windows Security Center knows about, with whether
-        /// its real-time protection is on, for problem reports. Never throws.
+        /// its real-time protection is on, for problem reports. Waits at most a few seconds for
+        /// Windows to answer. Never throws.
         /// </summary>
-        public static string AntivirusSummary
+        public static string AntivirusSummary => GetAntivirusSummary(kReportWait);
+
+        /// <summary>
+        /// As AntivirusSummary, but waiting at most maxWait for Windows to answer.
+        /// </summary>
+        public static string GetAntivirusSummary(TimeSpan maxWait)
         {
-            get
-            {
-                var products = s_antivirusProducts.Value;
-                if (products.Count == 0)
-                    return "none found";
-                return string.Join(
-                    "; ",
-                    products.Select(product =>
-                        $"{product.name} ({(product.state.HasValue ? DescribeAntivirusProductState(product.state.Value) : "state unknown")})"
-                    )
-                );
-            }
+            return DescribeAntivirusProducts(GetAntivirusProducts(maxWait), maxWait);
         }
 
         /// <summary>
-        /// AntivirusSummary if Windows has already been asked in this run, else null. Never waits.
+        /// AntivirusSummary if Windows has already answered in this run, else null. Never waits.
         /// </summary>
         public static string AntivirusSummaryIfKnown =>
-            s_antivirusProducts.IsValueCreated ? AntivirusSummary : null;
+            s_antivirusQuery.IsValueCreated && s_antivirusQuery.Value.IsCompletedSuccessfully
+                ? DescribeAntivirusProducts(s_antivirusQuery.Value.Result, TimeSpan.Zero)
+                : null;
+
+        private static string DescribeAntivirusProducts(
+            List<(string name, int? state)> products,
+            TimeSpan waited
+        )
+        {
+            if (products == null)
+                return $"not known: Windows had not said within {waited.TotalSeconds:0} seconds";
+            if (products.Count == 0)
+                return "none found";
+            return string.Join(
+                "; ",
+                products.Select(product =>
+                    $"{product.name} ({(product.state.HasValue ? DescribeAntivirusProductState(product.state.Value) : "state unknown")})"
+                )
+            );
+        }
 
         /// <summary>
         /// Ask Windows Security Center for the antivirus products it knows about: each one's display

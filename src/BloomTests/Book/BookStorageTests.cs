@@ -886,6 +886,59 @@ namespace BloomTests.Book
             Assert.IsFalse(File.Exists(unused.cssPath), "unused CSS file  should've been removed");
         }
 
+        // BL-17056: an antivirus that refuses to let Bloom delete an unused activity must not stop
+        // the book from being selected. Denying delete permission refuses it the same way, with
+        // UnauthorizedAccessException.
+        [Test]
+        public void CleanupUnusedActivities_UnusedActivityCannotBeDeleted_DoesNotThrow()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                XmlHtmlConverter.CreateHtmlString("<div class='bloom-page'></div>")
+            );
+            var activityPath = BookStorage.GetActivityFolderPath(_folder.Path);
+            Directory.CreateDirectory(activityPath);
+            var unused = makeDummyActivity(activityPath, "unused");
+            var unusedFolder = Path.GetDirectoryName(unused.indexPath);
+            var me = System.Security.Principal.WindowsIdentity.GetCurrent().User;
+            var denyDeleteFile = new System.Security.AccessControl.FileSystemAccessRule(
+                me,
+                System.Security.AccessControl.FileSystemRights.Delete,
+                System.Security.AccessControl.AccessControlType.Deny
+            );
+            var denyDeleteChildren = new System.Security.AccessControl.FileSystemAccessRule(
+                me,
+                System.Security.AccessControl.FileSystemRights.DeleteSubdirectoriesAndFiles,
+                System.Security.AccessControl.AccessControlType.Deny
+            );
+            var file = new FileInfo(unused.indexPath);
+            var fileSecurity = file.GetAccessControl();
+            fileSecurity.AddAccessRule(denyDeleteFile);
+            file.SetAccessControl(fileSecurity);
+            var folder = new DirectoryInfo(unusedFolder);
+            var folderSecurity = folder.GetAccessControl();
+            folderSecurity.AddAccessRule(denyDeleteChildren);
+            folder.SetAccessControl(folderSecurity);
+            try
+            {
+                Assert.That(
+                    () => File.Delete(unused.indexPath),
+                    Throws.TypeOf<UnauthorizedAccessException>(),
+                    "Test setup: the file should refuse deletion"
+                );
+
+                Assert.DoesNotThrow(() => storage.CleanupUnusedActivities());
+
+                Assert.That(File.Exists(unused.indexPath), Is.True);
+            }
+            finally
+            {
+                folderSecurity.RemoveAccessRule(denyDeleteChildren);
+                folder.SetAccessControl(folderSecurity);
+                fileSecurity.RemoveAccessRule(denyDeleteFile);
+                file.SetAccessControl(fileSecurity);
+            }
+        }
+
         [Test]
         public void CleanupUnusedImageFiles_BookHadUnusedImages_ImagesRemoved()
         {

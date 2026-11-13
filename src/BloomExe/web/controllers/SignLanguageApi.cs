@@ -350,9 +350,8 @@ namespace Bloom.web.controllers
             if (height % 2 != 0 || width % 2 != 0)
                 fixSize = true;
 
-            // ffmpeg writes its output in the system temp folder, not the book's video folder, so a
-            // conversion that fails (or whose output Windows won't let us delete) never leaves an
-            // unused file in the book (BL-17056).
+            // ffmpeg writes to a file of its own in the system temp folder; on success we copy it over
+            // the original.
             var tempPath = BloomTemp.TempFileUtils.GetTempFilepathWithExtension(".mp4");
 
             var soundFlag = "";
@@ -585,7 +584,6 @@ namespace Bloom.web.controllers
         {
             var progress = new WebSocketProgress(BloomWebSocketServer.Instance, "progress");
             dynamic processResult = new DynamicJson();
-            string newVideoPath = null;
             try
             {
                 if (!string.IsNullOrEmpty(path))
@@ -593,36 +591,43 @@ namespace Bloom.web.controllers
                     using (PerformanceMeasurement.Global.Measure("Import Video", path))
                     {
                         _importedVideoIntoBloom = true;
-                        newVideoPath = Path.Combine(
-                            BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath),
-                            GetNewVideoFileName(Path.GetExtension(path))
-                        ); // Use a new name to defeat caching.
-                        RobustFile.Copy(path, newVideoPath);
-                        ReencodeVideoIfNeeded(newVideoPath, progress); // may be very slow for large videos.
-                        lock (_cancelLock)
+                        // Copy and convert the video in the temp folder, so an import that fails or
+                        // is cancelled never leaves a file in the book (BL-17056).
+                        using (var workingCopy = TempFile.WithExtension(Path.GetExtension(path)))
                         {
-                            if (_importCancelled)
+                            RobustFile.Copy(path, workingCopy.Path, true);
+                            ReencodeVideoIfNeeded(workingCopy.Path, progress); // may be very slow for large videos.
+                            lock (_cancelLock)
                             {
-                                RobustFile.Delete(newVideoPath);
-                                _importedVideoIntoBloom = false;
-                                // Cancelling the import is not really a failure as such, but gets reported
-                                // the same way to the sign language tool.
-                                ReportProcessingFailure(processResult);
-                                return;
+                                if (_importCancelled)
+                                {
+                                    _importedVideoIntoBloom = false;
+                                    // Cancelling the import is not really a failure as such, but gets reported
+                                    // the same way to the sign language tool.
+                                    ReportProcessingFailure(processResult);
+                                    return;
+                                }
                             }
+                            var newVideoPath = Path.Combine(
+                                BookStorage.GetVideoDirectoryAndEnsureExistence(
+                                    CurrentBook.FolderPath
+                                ),
+                                GetNewVideoFileName(Path.GetExtension(path))
+                            ); // Use a new name to defeat caching.
+                            RobustFile.Copy(workingCopy.Path, newVideoPath);
+                            progress.SendPercent(100);
+                            var relativePath =
+                                BookStorage.GetVideoFolderName + Path.GetFileName(newVideoPath);
+                            processResult.success = true;
+                            processResult.importedPath = UrlPathString
+                                .CreateFromUnencodedString(relativePath)
+                                .UrlEncodedForHttpPath;
+                            BloomWebSocketServer.Instance?.SendBundle(
+                                "signLanguage",
+                                "processVideo-results",
+                                processResult
+                            );
                         }
-                        progress.SendPercent(100);
-                        var relativePath =
-                            BookStorage.GetVideoFolderName + Path.GetFileName(newVideoPath);
-                        processResult.success = true;
-                        processResult.importedPath = UrlPathString
-                            .CreateFromUnencodedString(relativePath)
-                            .UrlEncodedForHttpPath;
-                        BloomWebSocketServer.Instance?.SendBundle(
-                            "signLanguage",
-                            "processVideo-results",
-                            processResult
-                        );
                     }
                 }
                 else
@@ -635,23 +640,6 @@ namespace Bloom.web.controllers
                 Logger.WriteEvent(
                     $"SignLanguageApi.ProcessVideo: exception processing video {path}: {e.Message}"
                 );
-                if (!String.IsNullOrEmpty(newVideoPath) && RobustFile.Exists(newVideoPath))
-                {
-                    try
-                    {
-                        RobustFile.Delete(newVideoPath);
-                    }
-                    catch (Exception deleteError)
-                        when (FileAccessDiagnostics.IsRefusal(deleteError))
-                    {
-                        // Often the same thing (an antivirus, say) that made the import fail.
-                        // Throwing from here would end this thread and with it Bloom. The book
-                        // doesn't use this file, so CleanupUnusedVideoFiles will remove it later.
-                        Logger.WriteEvent(
-                            $"SignLanguageApi.ProcessVideo: could not remove {newVideoPath}: {deleteError.Message}"
-                        );
-                    }
-                }
                 _importedVideoIntoBloom = false;
                 ReportProcessingFailure(processResult);
             }
