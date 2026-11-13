@@ -373,9 +373,14 @@ const cellsWhoseSizeIsObserved = new Set<HTMLElement>();
 // frame rather than one per cell or per cause.
 const tablesAwaitingOverflowCheck = new Set<HTMLElement>();
 
-// The page-content delay that a waiting overflow check holds, since the check can change the
+// The page-content delay that the overflow checks of tables hold, since a check can change the
 // height of a canvas element or the padding of a text box, which are saved with the page.
 const kTableOverflowCheckDelayId = "tableOverflowCheck";
+
+// Whether the overflow checks of tables hold kTableOverflowCheckDelayId. A drag checks on every
+// frame, and each release of the delay makes the page send C# a snapshot, so the delay is held
+// from the first check until a frame passes with no check waiting.
+let holdingTableOverflowCheckDelay = false;
 
 /**
  * Update the overflow marks of every text block in `tables` and of the page around them, at the
@@ -390,7 +395,10 @@ function checkTableTextAtNextFrame(tables: HTMLElement[]): void {
         tablesAwaitingOverflowCheck.add(outermostTable(table)),
     );
     if (!wasIdle || tablesAwaitingOverflowCheck.size === 0) return;
-    addRequestPageContentDelay(kTableOverflowCheckDelayId);
+    if (!holdingTableOverflowCheckDelay) {
+        holdingTableOverflowCheckDelay = true;
+        addRequestPageContentDelay(kTableOverflowCheckDelayId);
+    }
     requestAnimationFrame(() => {
         try {
             const waiting = Array.from(tablesAwaitingOverflowCheck).filter(
@@ -405,9 +413,17 @@ function checkTableTextAtNextFrame(tables: HTMLElement[]): void {
                 ),
             );
         } finally {
-            removeRequestPageContentDelay(kTableOverflowCheckDelayId);
+            requestAnimationFrame(releaseTableOverflowCheckDelayIfIdle);
         }
     });
+}
+
+/** Release kTableOverflowCheckDelayId, unless another overflow check of a table is waiting. */
+function releaseTableOverflowCheckDelayIfIdle(): void {
+    if (!holdingTableOverflowCheckDelay || tablesAwaitingOverflowCheck.size > 0)
+        return;
+    holdingTableOverflowCheckDelay = false;
+    removeRequestPageContentDelay(kTableOverflowCheckDelayId);
 }
 
 /** Check the text of the tables that hold the cells in `entries`, at the next frame. */
