@@ -125,8 +125,14 @@ const parseArgs = () => {
             options.vitePort = Number(
                 requireOptionValue(args, i, "--vite-port"),
             );
-            if (!Number.isInteger(options.vitePort) || options.vitePort <= 0) {
-                throw new Error("--vite-port must be a positive integer.");
+            if (
+                !Number.isInteger(options.vitePort) ||
+                options.vitePort < 1 ||
+                options.vitePort > 65535
+            ) {
+                throw new Error(
+                    "--vite-port must be a port number, 1 to 65535.",
+                );
             }
             i++;
             continue;
