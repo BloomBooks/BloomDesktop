@@ -819,20 +819,21 @@ export async function dragInlineImageToDock(
     // Aim at the horizontal middle of the region that means this dock, and keep the picture at
     // the height it already had, because a drop lower down the block would also change how far
     // down the picture starts. The bottom dock is different: the drop goes just below the block,
-    // which means the bottom dock however tall the block is and whatever else is in it.
+    // which means the bottom dock however tall the block is and whatever else is in it; see
+    // dragInlineImageBelowBlock.
     const acrossFraction = {
         left: 1 / 6,
         middle: 0.5,
         right: 5 / 6,
         bottom: 0.5,
     }[dock];
-    await dragInlineImageTo(page, groupSelector, languageTag, id, {
-        x: block.x + block.width * acrossFraction,
-        y:
-            dock === "bottom"
-                ? block.y + block.height * 1.05
-                : picture.y + picture.height / 2,
-    });
+    if (dock === "bottom")
+        await dragInlineImageBelowBlock(page, groupSelector, languageTag, id);
+    else
+        await dragInlineImageTo(page, groupSelector, languageTag, id, {
+            x: block.x + block.width * acrossFraction,
+            y: picture.y + picture.height / 2,
+        });
     await expect
         .poll(
             async () =>
@@ -849,6 +850,83 @@ export async function dragInlineImageToDock(
             },
         )
         .toBe(copyCount);
+}
+
+/**
+ * Drag an inline image to just below its block, which means the bottom dock. The picture's centre
+ * has to end below the block, and in a small window, like the nightly runner's, the bottom of the
+ * block can be out of sight below the window, where the mouse cannot go. Then this does what a
+ * person does: it drags the picture as far down as the window shows, scrolls the page down, and
+ * drags again.
+ */
+async function dragInlineImageBelowBlock(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+): Promise<void> {
+    const blockLocator = inlineImageBlock(page, groupSelector, languageTag);
+    // A few pixels inside the edge of the window, so the mouse stays over the page.
+    const edgeMarginPx = 10;
+    // Each round moves the picture down by most of a window, so a block several windows tall
+    // needs several. More rounds than this means the picture is not moving.
+    const maxRounds = 6;
+    for (let round = 0; ; round++) {
+        const picture = await pictureRectInView(
+            page,
+            groupSelector,
+            languageTag,
+            id,
+        );
+        const block = await blockRect(page, groupSelector, languageTag);
+        const across = block.x + block.width / 2;
+        const dropY = block.y + block.height * 1.05;
+        // The bottom of the page frame's view, in the same coordinates as the rectangles above.
+        const viewBottomY = await blockLocator.evaluate(
+            (element, blockTopOnScreen) =>
+                blockTopOnScreen -
+                element.getBoundingClientRect().top +
+                element.ownerDocument.defaultView!.innerHeight,
+            block.y,
+        );
+        if (dropY <= viewBottomY - edgeMarginPx) {
+            await dragInlineImageTo(page, groupSelector, languageTag, id, {
+                x: across,
+                y: dropY,
+            });
+            return;
+        }
+        if (round >= maxRounds)
+            throw new Error(
+                `After ${maxRounds} rounds of dragging inline image ${id} down and scrolling ` +
+                    `the page, the point just below its block is still ` +
+                    `${Math.round(dropY - viewBottomY)}px below the window, so the picture ` +
+                    `cannot be dragged there.`,
+            );
+        // Carry the picture as far down as the window shows. Bloom stops it at the bottom of the
+        // block if that comes first.
+        await dragInlineImageTo(page, groupSelector, languageTag, id, {
+            x: across,
+            y: viewBottomY - edgeMarginPx - picture.height / 2,
+        });
+        // Scroll the page down to bring the drop point into view, but keep the picture in view,
+        // since the next drag starts on it.
+        const moved = await pictureRect(page, groupSelector, languageTag, id);
+        await blockLocator.evaluate(
+            (element, { wantedPx, pictureTopOnScreen, blockTopOnScreen }) => {
+                const view = element.ownerDocument.defaultView!;
+                const pictureTopInView =
+                    pictureTopOnScreen -
+                    (blockTopOnScreen - element.getBoundingClientRect().top);
+                view.scrollBy(0, Math.min(wantedPx, pictureTopInView - 20));
+            },
+            {
+                wantedPx: dropY - viewBottomY + 2 * edgeMarginPx,
+                pictureTopOnScreen: moved.y,
+                blockTopOnScreen: block.y,
+            },
+        );
+    }
 }
 
 /**
