@@ -3,10 +3,13 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Threading;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.MiscUI;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
@@ -88,6 +91,47 @@ namespace BloomTests.Collection
                 "Sanity check: the pack should not be offered"
             );
             return settings;
+        }
+
+        /// <summary>
+        /// Loading a collection whose folder Bloom may not write in must fail in a way the caller
+        /// can recover from (it offers the collection chooser), not end the process, which is what
+        /// it used to do. It must also not show anything itself. (BL-16728)
+        /// </summary>
+        [Test]
+        [Platform(Include = "Win")]
+        public void Constructor_CollectionFolderNotWritable_Throws()
+        {
+            var settingsPath = CreateCollectionSettings(_folder.Path, "NotWritable").SettingsFilePath;
+            Assert.That(RobustFile.Exists(settingsPath), "Sanity check: the collection should exist");
+            var folder = new DirectoryInfo(Path.GetDirectoryName(settingsPath));
+            var security = folder.GetAccessControl();
+            var denyWrite = new FileSystemAccessRule(
+                WindowsIdentity.GetCurrent().Name,
+                FileSystemRights.Write,
+                InheritanceFlags.ObjectInherit | InheritanceFlags.ContainerInherit,
+                PropagationFlags.None,
+                AccessControlType.Deny
+            );
+            security.AddAccessRule(denyWrite);
+            folder.SetAccessControl(security);
+            try
+            {
+                var thrown = Assert.Throws<CollectionFolderNotWritableException>(
+                    () => new CollectionSettings(settingsPath)
+                );
+                Assert.That(thrown.FolderPath, Is.EqualTo(folder.FullName));
+                Assert.That(
+                    DefenderFolderProtectionCheck.IsPermissionProblem(thrown.InnerException),
+                    Is.True,
+                    $"a denied folder should be reported as a permission problem, not Defender; got {thrown.InnerException}"
+                );
+            }
+            finally
+            {
+                security.RemoveAccessRule(denyWrite);
+                folder.SetAccessControl(security);
+            }
         }
 
         /// <summary>

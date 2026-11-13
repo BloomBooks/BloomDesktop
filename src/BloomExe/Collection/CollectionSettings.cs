@@ -333,10 +333,12 @@ namespace Bloom.Collection
             // but the user may have moved their startup collection to a "safe" place and now be opening a different
             // collection in a "controlled" place. Test again with this settings file path.
             // 'FolderPath' is the directory part of 'SettingsFilePath'.
-            if (!DefenderFolderProtectionCheck.CanWriteToDirectory(FolderPath))
-            {
-                Environment.Exit(-1);
-            }
+            // We throw rather than exit: this runs inside building the ProjectContext, and the
+            // caller (Program.OpenProjectWindow) tears that down, reports the problem, and offers
+            // the collection chooser. Exiting here skipped all of that. (BL-16728)
+            var problem = DefenderFolderProtectionCheck.GetWriteProblem(FolderPath);
+            if (problem != null)
+                throw new CollectionFolderNotWritableException(FolderPath, problem);
         }
 
         // The initializer provides a default for collections (like in unit tests)
