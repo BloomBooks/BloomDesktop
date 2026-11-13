@@ -292,6 +292,32 @@ describe("inlineImageInteractions", () => {
             ).toBe(kInlineImageBottomClass);
         });
 
+        it("docks at the bottom for an image in the middle third whose top is within a line below the end of the text", () => {
+            // The text ends at 100 and a line is 20 tall, so tops from 100 to 120 are caught.
+            const dockAt = (x: number, imageTopViewportPx: number) =>
+                computeInlineImageDock(
+                    { x, y: imageTopViewportPx + 30 },
+                    kEditableBox,
+                    {
+                        imageTopViewportPx,
+                        textEndViewportPx: 100,
+                        lineHeightViewportPx: 20,
+                    },
+                );
+            expect(dockAt(150, 99), "top above the end of the text").toBe(
+                kInlineImageMiddleClass,
+            );
+            expect(dockAt(150, 100)).toBe(kInlineImageBottomClass);
+            expect(dockAt(150, 110)).toBe(kInlineImageBottomClass);
+            expect(dockAt(150, 120)).toBe(kInlineImageBottomClass);
+            expect(dockAt(150, 121), "more than a line below").toBe(
+                kInlineImageMiddleClass,
+            );
+            // The side thirds keep their docks at the same height.
+            expect(dockAt(20, 110)).toBe(kInlineImageLeftClass);
+            expect(dockAt(280, 110)).toBe(kInlineImageRightClass);
+        });
+
         it("docks at the bottom for a position below the block altogether, whatever the horizontal position", () => {
             [20, 150, 280].forEach((x) => {
                 expect(

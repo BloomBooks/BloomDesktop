@@ -245,9 +245,16 @@ export function getInlineImageActionTarget(
  * IInlineImageDragState for why. The block's width is divided into thirds: the left third
  * means the left dock, the middle third the middle band, and the right third the right dock.
  *
- * A position below the block is the bottom dock, wherever it is horizontally. Every position
- * inside the block belongs to the left, middle or right dock, all the way down. continueDrag
- * limits the offset so that the image stops with its bottom edge on the bottom of the block.
+ * A position below the block is the bottom dock, wherever it is horizontally. In the middle
+ * third, an image whose top is within one line below the end of the text is the bottom dock
+ * too, because that is where the bottom dock puts it (see IInlineImageTextEnd). Every other
+ * position inside the block belongs to the left, middle or right dock, all the way down.
+ * continueDrag limits the offset so that the image stops with its bottom edge on the bottom of
+ * the block.
+ *
+ * The line below the end of the text is there so that the bottom dock can be reached without
+ * dragging below the block. When the block's bottom is at or below the bottom of the window,
+ * there is no screen below the block to drag to.
  *
  * Three rules come from testing in the running Bloom:
  *  - The middle band applies all the way down, as the side docks do. The bottom dock puts the
@@ -267,6 +274,7 @@ export function getInlineImageActionTarget(
 export function computeInlineImageDock(
     imageCenterViewportPx: { x: number; y: number },
     editableContentBoxViewportPx: IBox,
+    textEnd?: IInlineImageTextEnd,
 ): InlineImageDock {
     // A box with no width cannot be divided into thirds, so treat the position as the middle.
     const fraction =
@@ -280,7 +288,27 @@ export function computeInlineImageDock(
         return kInlineImageBottomClass;
     if (fraction < 1 / 3) return kInlineImageLeftClass;
     if (fraction > 2 / 3) return kInlineImageRightClass;
+    if (
+        textEnd &&
+        textEnd.imageTopViewportPx >= textEnd.textEndViewportPx &&
+        textEnd.imageTopViewportPx <=
+            textEnd.textEndViewportPx + textEnd.lineHeightViewportPx
+    )
+        return kInlineImageBottomClass;
     return kInlineImageMiddleClass;
+}
+
+/**
+ * What computeInlineImageDock needs to know to put an image that is dragged just below the end
+ * of the text into the bottom dock. All three are in viewport pixels.
+ */
+export interface IInlineImageTextEnd {
+    // Where the top of the image would be, from the pointer and the grab offsets.
+    imageTopViewportPx: number;
+    // The bottom of the last line of text in the block, not counting any inline image.
+    textEndViewportPx: number;
+    // The height of one line of the block's text.
+    lineHeightViewportPx: number;
 }
 
 /**
@@ -1840,9 +1868,15 @@ function stopEdgeScrollTimer(state: IInlineImageDragState | undefined): void {
     state.edgeScrollTimerId = undefined;
 }
 
+/**
+ * Applies a move of the pointer to the image being dragged. useTextEndCatch is false only when
+ * this calls itself again for a move whose bottom dock, from the line below the end of the text,
+ * did not fit.
+ */
 function continueDrag(
     state: IInlineImageDragState,
     pointViewportPx: { x: number; y: number },
+    useTextEndCatch = true,
 ): void {
     state.lastPointViewportPx = pointViewportPx;
     if (
@@ -1866,14 +1900,21 @@ function continueDrag(
         x: pointViewportPx.x + state.grabOffsetXViewportPx,
         y: pointViewportPx.y + state.grabOffsetYViewportPx,
     };
-    const dock = computeInlineImageDock(
-        imageCenterViewportPx,
-        state.editableContentBoxViewportPx,
-    );
     // jsdom reports every box as empty. In that case this uses the simple calculation from the
     // pointer's movement that the drag tests check, and skips the measurements that need a
     // real layout.
     const degenerate = !(state.editableContentBoxViewportPx.height > 0);
+    const dock = computeInlineImageDock(
+        imageCenterViewportPx,
+        state.editableContentBoxViewportPx,
+        degenerate || !useTextEndCatch
+            ? undefined
+            : measureTextEnd(
+                  state,
+                  imageCenterViewportPx.y -
+                      getImageBox(state.wrapper).height / 2,
+              ),
+    );
     const blockBottomViewportPx =
         state.editableContentBoxViewportPx.top +
         state.editableContentBoxViewportPx.height;
@@ -1982,8 +2023,55 @@ function continueDrag(
         );
         state.dock = previousDock;
         restoreNeighborImagePositions(state);
+        // The bottom dock leaves half a line above the image, which the middle band does not.
+        // In a block with just enough room below the text for the image, the bottom dock that
+        // the line below the end of the text called for does not fit, but the middle band at
+        // the same place does. Without this, the image would stop following the pointer there.
+        if (
+            useTextEndCatch &&
+            dock === kInlineImageBottomClass &&
+            computeInlineImageDock(
+                imageCenterViewportPx,
+                state.editableContentBoxViewportPx,
+            ) !== kInlineImageBottomClass
+        ) {
+            continueDrag(state, pointViewportPx, false);
+            return;
+        }
     }
     scrollBlockToKeepDraggedImageInView(state);
+}
+
+// Measures where the block's text ends and how tall a line of it is, for computeInlineImageDock.
+// The text is every child of the editable except the inline image wrappers, so the end of the
+// text is the same whether the dragged image is in the bottom dock (after the text) or floating
+// below the text. When the image floats above the last line, that line is pushed below the image,
+// so the end of the text is below the image's top and the image is not put in the bottom dock.
+function measureTextEnd(
+    state: IInlineImageDragState,
+    imageTopViewportPx: number,
+): IInlineImageTextEnd {
+    const textChildren = Array.from(state.editable.children).filter(
+        (child) => !child.classList.contains(kInlineImageClass),
+    );
+    const lastText = textChildren[textChildren.length - 1];
+    const textEndViewportPx =
+        textChildren.length > 0
+            ? Math.max(
+                  ...textChildren.map(
+                      (child) => child.getBoundingClientRect().bottom,
+                  ),
+              )
+            : state.editableContentBoxViewportPx.top;
+    const style = getComputedStyle(lastText ?? state.editable);
+    // A line-height of "normal" has no number. Browsers draw it at about 1.2 times the font size.
+    const lineHeightLayoutPx =
+        parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.2;
+    return {
+        imageTopViewportPx,
+        textEndViewportPx,
+        lineHeightViewportPx: lineHeightLayoutPx * state.viewportPxPerLayoutPx,
+    };
 }
 
 // Where the bottom of the dragged wrapper's margin box is on the screen. The block has to hold
