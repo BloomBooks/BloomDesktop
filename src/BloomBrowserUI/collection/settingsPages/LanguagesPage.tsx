@@ -2,7 +2,6 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import {
     ConfigrBoolean,
-    ConfigrCustomNumberInput,
     ConfigrCustomObjectInput,
     ConfigrCustomStringInput,
     ConfigrGroup,
@@ -11,7 +10,7 @@ import {
     ConfigrSelect,
     useConfigrValue,
 } from "@sillsdev/config-r";
-import { Button, MenuItem, Select } from "@mui/material";
+import { Button } from "@mui/material";
 import { useL10n } from "../../react_components/l10nHooks";
 import { get } from "../../utils/bloomApi";
 import FontSelectComponent, {
@@ -37,76 +36,19 @@ const kLineSpacings = [
 const kToolFontSizes = [9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26];
 
 /**
- * A select of numbers in which 0 means "Auto" (Bloom's default).
+ * The options of a select of numbers: "Auto" (0, Bloom's default), then each choice, shown in the
+ * user's culture by `format`.
  */
-const NumberSelect: React.FunctionComponent<{
-    choices: number[];
-    // How each choice is shown; numbers shown to the user follow their culture.
-    format: (choice: number) => string;
-    value: number;
-    disabled?: boolean;
-    onChange: (value: number) => void;
-}> = (props) => {
-    const autoLabel = useL10n("Auto", "EditTab.Image.Transparency.Auto");
-    return (
-        <Select
-            variant="standard"
-            value={props.value}
-            disabled={props.disabled}
-            onChange={(event) => props.onChange(Number(event.target.value))}
-            css={css`
-                min-width: 120px;
-            `}
-        >
-            <MenuItem value={0}>{autoLabel}</MenuItem>
-            {props.choices.map((choice) => (
-                <MenuItem key={choice} value={choice}>
-                    {props.format(choice)}
-                </MenuItem>
-            ))}
-        </Select>
-    );
-};
-
-/**
- * A NumberSelect over fixed choices. Config-R mounts a custom control again whenever its identity
- * changes, so each one is made once, here at module level.
- */
-function makeNumberSelect(
-    displayName: string,
+function numberOptions(
     choices: number[],
+    autoLabel: string,
     format: (choice: number) => string,
-): React.FunctionComponent<{
-    value: number;
-    disabled?: boolean;
-    onChange: (value: number) => void;
-}> {
-    const Control: React.FunctionComponent<{
-        value: number;
-        disabled?: boolean;
-        onChange: (value: number) => void;
-    }> = (props) => (
-        <NumberSelect
-            choices={choices}
-            format={format}
-            value={props.value}
-            disabled={props.disabled}
-            onChange={props.onChange}
-        />
-    );
-    Control.displayName = displayName;
-    return Control;
+): { value: number; label: string }[] {
+    return [
+        { value: 0, label: autoLabel },
+        ...choices.map((choice) => ({ value: choice, label: format(choice) })),
+    ];
 }
-const LineSpacingSelect = makeNumberSelect(
-    "LineSpacingSelect",
-    kLineSpacings,
-    (choice) => choice.toLocaleString(undefined, { minimumFractionDigits: 1 }),
-);
-const ToolFontSizeSelect = makeNumberSelect(
-    "ToolFontSizeSelect",
-    kToolFontSizes,
-    (choice) => choice.toLocaleString(),
-);
 
 /**
  * The tag and name of the language the user picked in the chooser: all a sign language has. The
@@ -344,6 +286,18 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
         "Use this to increase the default line spacing if this language has tall characters that tend to run into other lines of text.",
         "CollectionSettingsDialog.LanguagesPage.LineSpacing.Description",
     );
+    const autoLabel = useL10n("Auto", "EditTab.Image.Transparency.Auto");
+    const toolFontSizeOptions = numberOptions(
+        kToolFontSizes,
+        autoLabel,
+        (choice) => choice.toLocaleString(),
+    );
+    const lineSpacingOptions = numberOptions(
+        kLineSpacings,
+        autoLabel,
+        (choice) =>
+            choice.toLocaleString(undefined, { minimumFractionDigits: 1 }),
+    );
     const scriptLabel = useL10n(
         "Script",
         "CollectionSettingsDialog.LanguagesPage.Script",
@@ -521,17 +475,17 @@ export function useLanguagesPage(context: ISettingsPageContext): ISettingsPage {
                                 label={defaultFontLabel}
                                 control={fontControls[language.number - 1]}
                             />
-                            <ConfigrCustomNumberInput
+                            <ConfigrSelect
                                 path={`${path}.baseUIFontSizeInPoints`}
                                 label={toolFontSizeLabel}
                                 description={toolFontSizeDescription}
-                                control={ToolFontSizeSelect}
+                                options={toolFontSizeOptions}
                             />
-                            <ConfigrCustomNumberInput
+                            <ConfigrSelect
                                 path={`${path}.lineHeight`}
                                 label={lineSpacingLabel}
                                 description={lineSpacingDescription}
-                                control={LineSpacingSelect}
+                                options={lineSpacingOptions}
                             />
                         </ConfigrGroup>
                         {/* The reader tools (the alphabet and the sentence punctuation) work
