@@ -155,12 +155,13 @@ jobs:
             # vitest step, which is given no secrets: the next step turns them off before any
             # step that does get one (the e2e tests have a password in their environment). The
             # setting is machine-wide, which is why it must not outlive that one step. DumpType 1
-            # is a minidump (thread stacks and little else), not the whole heap.
+            # is a minidump, not the whole heap, but it still holds stacks, module data and
+            # probably the environment, so what keeps it safe is that the step has no secrets.
             - name: Turn on crash dumps for the browser UI tests
               id: crash_dumps_on
               if: ${{ success() && env.RUN_FRONTEND_TESTS == 'true' }}
               run: |
-                  $dumpFolder = Join-Path $env:GITHUB_WORKSPACE "output/vitest-crash-dumps"
+                  $dumpFolder = Join-Path $env:GITHUB_WORKSPACE "output\vitest-crash-dumps"
                   New-Item -ItemType Directory -Force -Path $dumpFolder | Out-Null
                   $key = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\node.exe"
                   New-Item -Force -Path $key | Out-Null
@@ -187,6 +188,8 @@ jobs:
             # the tests to have failed, and if-no-files-found: ignore covers a failure that was
             # not a crash. Kept as long as the other diagnostic artifacts below. See the BloomE2E
             # report upload for why !cancelled() is needed alongside the outcome check.
+            # Keep this step directly after the turn-off step and the only one that uploads this
+            # folder, so it can never carry a dump from a later step that has secrets.
             - name: Upload browser UI test crash dumps
               if: ${{ !cancelled() && steps.frontend_tests.outcome == 'failure' }}
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
