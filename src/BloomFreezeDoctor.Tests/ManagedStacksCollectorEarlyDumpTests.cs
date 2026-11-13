@@ -196,9 +196,22 @@ public class ManagedStacksCollectorEarlyDumpTests
             Target = context.Target with { ProcessId = 4243 },
         };
         using var runtimeAnswers = new ManualResetEventSlim();
+        var writerReturned = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
         var earlyDumpWait = TimeSpan.FromSeconds(3);
         var collector = new ManagedStacksCollector(
-            (_, _) => runtimeAnswers.Wait(),
+            (_, _) =>
+            {
+                try
+                {
+                    runtimeAnswers.Wait();
+                }
+                finally
+                {
+                    writerReturned.SetResult();
+                }
+            },
             freshDumpDeadlineWithEarlyDump: TimeSpan.FromMilliseconds(200),
             freshDumpDeadline: TimeSpan.FromSeconds(1),
             earlyDumpWait
@@ -226,7 +239,9 @@ public class ManagedStacksCollectorEarlyDumpTests
         }
         finally
         {
+            // Let the abandoned dump attempt finish before TearDown deletes the folder it created.
             runtimeAnswers.Set();
+            await writerReturned.Task.WaitAsync(TimeSpan.FromSeconds(60));
         }
     }
 }
