@@ -350,7 +350,10 @@ namespace Bloom.web.controllers
             if (height % 2 != 0 || width % 2 != 0)
                 fixSize = true;
 
-            var tempPath = videoFilePath + ".tmp.mp4";
+            // ffmpeg writes its output in the system temp folder, not the book's video folder, so a
+            // conversion that fails (or whose output Windows won't let us delete) never leaves an
+            // unused file in the book (BL-17056).
+            var tempPath = BloomTemp.TempFileUtils.GetTempFilepathWithExtension(".mp4");
 
             var soundFlag = "";
             if (hasSignLanguage && hasAudio)
@@ -633,7 +636,22 @@ namespace Bloom.web.controllers
                     $"SignLanguageApi.ProcessVideo: exception processing video {path}: {e.Message}"
                 );
                 if (!String.IsNullOrEmpty(newVideoPath) && RobustFile.Exists(newVideoPath))
-                    RobustFile.Delete(newVideoPath);
+                {
+                    try
+                    {
+                        RobustFile.Delete(newVideoPath);
+                    }
+                    catch (Exception deleteError)
+                        when (FileAccessDiagnostics.IsRefusal(deleteError))
+                    {
+                        // Often the same thing (an antivirus, say) that made the import fail.
+                        // Throwing from here would end this thread and with it Bloom. The book
+                        // doesn't use this file, so CleanupUnusedVideoFiles will remove it later.
+                        Logger.WriteEvent(
+                            $"SignLanguageApi.ProcessVideo: could not remove {newVideoPath}: {deleteError.Message}"
+                        );
+                    }
+                }
                 _importedVideoIntoBloom = false;
                 ReportProcessingFailure(processResult);
             }

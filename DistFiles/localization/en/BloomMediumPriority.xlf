@@ -3057,6 +3057,16 @@
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Heading of the dialog shown the first time the user opens the editor.</note>
       </trans-unit>
+      <trans-unit id="Errors.FileAccessCheck.Blocked" translate="no">
+        <source xml:lang="en">Windows is not letting Bloom change files in this collection.</source>
+        <note>ID: Errors.FileAccessCheck.Blocked</note>
+        <note>A short warning that pops up soon after a collection opens, when Bloom finds that it cannot create, change or delete files in the collection's folder. Clicking it shows Errors.FileAccessCheck.BlockedLonger.</note>
+      </trans-unit>
+      <trans-unit id="Errors.FileAccessCheck.BlockedLonger" translate="no">
+        <source xml:lang="en">Bloom checked that it can create, change, rename and delete files in the folder "{0}", and Windows refused. This will cause problems, such as books that can't be renamed or opened. The usual cause is antivirus software that protects folders, such as Avast's Ransomware Shield or Windows Security's Controlled Folder Access. Tell that program that you trust Bloom. For help, see "{1}".</source>
+        <note>ID: Errors.FileAccessCheck.BlockedLonger</note>
+        <note>{0} is the path of the collection's folder. {1} is a link whose text is the translation of Errors.CannotUpdateTroubleshoot. "Ransomware Shield" is the name of a feature of the Avast antivirus program, and "Controlled Folder Access" is the name of a setting in Windows Security; use the names those programs show in your language, if they are translated.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

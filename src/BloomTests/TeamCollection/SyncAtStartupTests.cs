@@ -31,6 +31,8 @@ namespace BloomTests.TeamCollection
         private string kNewNameForRemoteRename = "New name for remote rename";
         private string kRepoNameForIdConflict = "Repo name for conflicting ID book";
         private string kLocalNameForIdConflict = "Local name for conflicting ID book";
+        private const string kLeftoverProbeFolder =
+            Bloom.Utils.FileAccessStartupCheck.kProbeFolderPrefix + "12345678";
 
         [OneTimeSetUp]
         public void OneTimeSetup()
@@ -330,6 +332,12 @@ namespace BloomTests.TeamCollection
             );
             RobustFile.Delete(localStatusPath);
 
+            // A probe folder that FileAccessStartupCheck could not delete (BL-17056). It holds an
+            // .htm, so it looks like a book, but sync must neither rename it nor share it.
+            var leftoverProbe = Path.Combine(_collectionFolder.FolderPath, kLeftoverProbeFolder);
+            Directory.CreateDirectory(leftoverProbe);
+            File.WriteAllText(Path.Combine(leftoverProbe, "probe.htm"), "left over");
+
             // Make a couple of folders that are legitimately present, but not books.
             var allowedWords = Path.Combine(_collectionFolder.FolderPath, "Allowed Words");
             Directory.CreateDirectory(allowedWords);
@@ -577,6 +585,24 @@ namespace BloomTests.TeamCollection
             Assert.That(
                 Directory.Exists(Path.Combine(_collectionFolder.FolderPath, "New book")),
                 Is.True
+            );
+        }
+
+        [Test]
+        public void SyncAtStartup_LeftoverProbeFolder_LeftAloneAndNotShared()
+        {
+            Assert.That(
+                Directory.Exists(Path.Combine(_collectionFolder.FolderPath, kLeftoverProbeFolder)),
+                Is.True,
+                "sync should not rename the probe folder (it would strip the leading period)"
+            );
+            Assert.That(
+                Directory.GetFiles(Path.Combine(_repoFolder.FolderPath, "Books"), "*probe*"),
+                Is.Empty
+            );
+            Assert.That(
+                Directory.GetDirectories(_collectionFolder.FolderPath, "bloom-access-check*"),
+                Is.Empty
             );
         }
 
