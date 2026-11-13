@@ -392,3 +392,62 @@ describe("OverflowChecker.overflowingAncestor in a table cell", () => {
         }
     });
 });
+
+describe("OverflowChecker.AdjustSizeOrMarkOverflowOfAll", () => {
+    afterEach(() => {
+        vi.clearAllTimers();
+        vi.useRealTimers();
+        vi.restoreAllMocks();
+    });
+
+    // A row drag checks a table's text on every frame. On a slow computer one check can take
+    // longer than the wait before the page's scroll bars are rebuilt, and a rebuild between
+    // every two frames takes seconds each time.
+    it("starts the wait before the scroll bars are rebuilt when the whole check has finished", () => {
+        const editables = loadFixture(`
+            <div class="bloom-page">
+                <div class="marginBox" style="height: 600px">
+                    <div class="myTest bloom-editable bloom-visibility-code-on">one</div>
+                    <div class="myTest bloom-editable bloom-visibility-code-on">two</div>
+                </div>
+            </div>`);
+        const page = editables[0].closest(".bloom-page")!;
+        vi.useFakeTimers();
+        // The rebuild that is waiting, if any. MeasureText keeps a timer of its own, so counting
+        // timers would not tell the two apart.
+        const checker = OverflowChecker as unknown as {
+            fixScrollBarsSoon: (page: Element) => void;
+            fixScrollBarsTimeout: number;
+        };
+        checker.fixScrollBarsTimeout = 0;
+        // Every box's own check asks for the page's scroll bars to be fixed, whatever it finds.
+        // The real check also needs the canvas element manager, which this file doesn't set up.
+        const selfCheck = vi
+            .spyOn(OverflowChecker, "AdjustSizeAndMarkSelfOverflow")
+            .mockImplementation(() => {
+                checker.fixScrollBarsSoon(page);
+            });
+        let rebuildWaitingDuringCheck: number | undefined;
+        vi.spyOn(
+            OverflowChecker,
+            "CheckPageAncestorOverflow",
+        ).mockImplementation(() => {
+            rebuildWaitingDuringCheck = checker.fixScrollBarsTimeout;
+        });
+
+        OverflowChecker.AdjustSizeOrMarkOverflowOfAll(editables);
+
+        expect(
+            selfCheck,
+            "Each box should have had its own check, or this tests nothing.",
+        ).toHaveBeenCalledTimes(2);
+        expect(
+            rebuildWaitingDuringCheck,
+            "No rebuild should be waiting while the check is still running.",
+        ).toBe(0);
+        expect(
+            checker.fixScrollBarsTimeout,
+            "A rebuild should be waiting once the check has finished.",
+        ).not.toBe(0);
+    });
+});

@@ -11,6 +11,7 @@ import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import $ from "jquery";
 import { kBloomButtonClass } from "../toolbox/canvas/canvasElementPageBridge";
+import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
 
 interface qtipInterface extends JQuery {
@@ -168,6 +169,10 @@ export default class OverflowChecker {
     public static getSelfOverflowAmounts(
         element: HTMLElement,
     ): [number, number] {
+        const measured = this.batch?.selfOverflowAmounts.get(element);
+        if (measured) {
+            return measured;
+        }
         // Ignore Topic divs as they are chosen from a list
         if (
             element.hasAttribute("data-book") &&
@@ -243,12 +248,25 @@ export default class OverflowChecker {
         return [overflowX, overflowY];
     }
 
-    // While AdjustSizeOrMarkOverflowOfAll runs, the content heights it measured together, with the
-    // width each element had when it was measured; undefined at other times. contentHeight uses one
-    // only while the element still has that width, since the height of wrapped text depends on
-    // nothing else, and descentMeasurementsOf only remembers and reuses measurements while it is set.
-    private static contentHeightsMeasuredTogether:
-        | Map<HTMLElement, { width: number; height: number }>
+    // What AdjustSizeOrMarkOverflowOfAll has measured so far, while it runs; undefined at other
+    // times, when descentMeasurementsOf also neither remembers nor reuses measurements.
+    // - contentHeights: the content heights it measured together, with the width each element
+    //   had when it was measured. contentHeight uses one only while the element still has that
+    //   width, since the height of wrapped text depends on nothing else.
+    // - selfOverflowAmounts: the self overflow amounts of the elements it checks, read before it
+    //   marks any of them. A mark written between two reads makes the second read lay out the
+    //   page again, and the marks do not change the size of any box.
+    // - pageWhoseScrollBarsNeedFixing: the page whose scroll bars it will fix when it has
+    //   finished, once a box's own check has asked for that. See fixScrollBarsSoon.
+    private static batch:
+        | {
+              contentHeights: Map<
+                  HTMLElement,
+                  { width: number; height: number }
+              >;
+              selfOverflowAmounts: Map<HTMLElement, [number, number]>;
+              pageWhoseScrollBarsNeedFixing?: Element;
+          }
         | undefined;
 
     // Descent measurements that AdjustSizeOrMarkOverflowOfAll has made, keyed by the inputs that
@@ -263,7 +281,7 @@ export default class OverflowChecker {
     // MeasureText.getDescentMeasurementsOfBox(element), reusing an earlier measurement of the same
     // text, font and width while AdjustSizeOrMarkOverflowOfAll runs.
     private static descentMeasurementsOf(element: HTMLElement) {
-        if (!this.contentHeightsMeasuredTogether) {
+        if (!this.batch) {
             return MeasureText.getDescentMeasurementsOfBox(element);
         }
         const inputs = MeasureText.getDescentMeasurementInputsOfBox(element);
@@ -291,7 +309,7 @@ export default class OverflowChecker {
         if (element.childNodes.length === 0) {
             return 0;
         }
-        const measured = this.contentHeightsMeasuredTogether?.get(element);
+        const measured = this.batch?.contentHeights.get(element);
         if (measured && measured.width === element.clientWidth) {
             return measured.height;
         }
@@ -571,8 +589,11 @@ export default class OverflowChecker {
     // page, quickly enough to do on every frame of a drag: the page-wide check runs once rather
     // than once per element, the content heights of everything both checks look at are measured
     // together, with one layout of the page instead of one per element, and descent measurements
-    // are reused (see descentMeasurementsOf). For a table of 12 text blocks this takes about 16 ms,
-    // where calling AdjustSizeOrMarkOverflow on each block took about 265 ms.
+    // are reused (see descentMeasurementsOf). Every element is measured before any is marked, so
+    // that marking one does not make the next measurement lay out the page again, and the page's
+    // scroll bars are fixed once, after the check has finished (see fixScrollBarsSoon). For a
+    // table of 34 text boxes this takes about 40 ms on a fast computer, and about 150 ms with its
+    // processor slowed to a quarter of its speed.
     public static AdjustSizeOrMarkOverflowOfAll(editables: HTMLElement[]) {
         if (editables.length === 0) return;
         const marginBox = editables[0].closest<HTMLElement>(".marginBox");
@@ -586,15 +607,31 @@ export default class OverflowChecker {
         ).filter(
             (element) => !element.classList.contains("bloom-padForOverflow"),
         );
-        OverflowChecker.contentHeightsMeasuredTogether =
-            OverflowChecker.measureContentHeightsTogether(measurable);
+        const batch: NonNullable<typeof OverflowChecker.batch> = {
+            contentHeights:
+                OverflowChecker.measureContentHeightsTogether(measurable),
+            selfOverflowAmounts: new Map<HTMLElement, [number, number]>(),
+        };
+        OverflowChecker.batch = batch;
         try {
+            // The rest of the page is read by CheckPageAncestorOverflow, before it marks anything.
+            editables.forEach((editable) =>
+                batch.selfOverflowAmounts.set(
+                    editable,
+                    OverflowChecker.getSelfOverflowAmounts(editable),
+                ),
+            );
             editables.forEach((editable) =>
                 OverflowChecker.AdjustSizeAndMarkSelfOverflow(editable),
             );
             OverflowChecker.CheckPageAncestorOverflow(editables[0]);
         } finally {
-            OverflowChecker.contentHeightsMeasuredTogether = undefined;
+            OverflowChecker.batch = undefined;
+        }
+        if (batch.pageWhoseScrollBarsNeedFixing) {
+            OverflowChecker.fixScrollBarsSoon(
+                batch.pageWhoseScrollBarsNeedFixing,
+            );
         }
     }
 
@@ -684,6 +721,12 @@ export default class OverflowChecker {
             OverflowChecker.getSelfOverflowAmounts(editable);
         const overflowX = overflowAmounts[0];
         let overflowY = overflowAmounts[1];
+        // During AdjustSizeOrMarkOverflowOfAll, the canvas element whose height decides whether
+        // the box's overflow amounts that the batch read beforehand still hold.
+        const canvasElement = OverflowChecker.batch
+            ? editable.closest<HTMLElement>(kCanvasElementSelector)
+            : undefined;
+        const canvasElementHeight = canvasElement?.style.height;
         overflowY =
             theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
                 editable,
@@ -691,6 +734,13 @@ export default class OverflowChecker {
                 doNotShrink,
                 growAsMuchAsPossible,
             );
+        if (
+            canvasElement &&
+            canvasElement.style.height !== canvasElementHeight
+        ) {
+            // The box has a new size, so what was read before no longer holds.
+            OverflowChecker.batch?.selfOverflowAmounts.delete(editable);
+        }
         if (preventOverflowY) {
             // The usual fairly crude calculation may indicate it's overflowing, but
             // above we did a much more precise calculation and gave it just enough padding
@@ -778,14 +828,24 @@ export default class OverflowChecker {
             getElementsThatCanOverflowOrNeedToBeResized(container.get(0)),
         );
 
-        // Type 2 Overflow - We'll check ALL of these for overflow past any ancestor
-        editablePageElements.each(function () {
+        // Type 2 Overflow - We'll check ALL of these for overflow past any ancestor.
+        // Every element is measured before any is marked: a mark written between two
+        // measurements makes the second one lay out the page again.
+        const measurements = editablePageElements.get().map((element) => {
+            const ancestor = OverflowChecker.overflowingAncestor(element);
+            return {
+                overflowingAncestor: ancestor,
+                overflowingSelf:
+                    ancestor === null &&
+                    OverflowChecker.IsOverflowingSelf(element),
+            };
+        });
+        editablePageElements.each(function (index) {
             const $this = $(this);
-            const overflowingAncestor = OverflowChecker.overflowingAncestor(
-                $this[0],
-            );
+            const { overflowingAncestor, overflowingSelf } =
+                measurements[index];
             if (overflowingAncestor == null) {
-                if (!OverflowChecker.IsOverflowingSelf($this[0])) {
+                if (!overflowingSelf) {
                     $this.removeClass("overflow"); // might be a remnant from earlier overflow
                     $this.removeClass("thisOverflowingParent");
                 }
@@ -871,7 +931,15 @@ export default class OverflowChecker {
     // Fix the NiceScroll scrollbars after a short delay to prevent flickering
     // as the mouse drags the size of the element.
     private static fixScrollBarsTimeout = 0;
+    // During AdjustSizeOrMarkOverflowOfAll the delay starts when the whole check has finished,
+    // not when one box asks: on a slow computer the check can take longer than the delay, and
+    // the scroll bars would then be rebuilt between every two frames of a row drag, which takes
+    // seconds each time.
     private static fixScrollBarsSoon(page: Element) {
+        if (this.batch) {
+            this.batch.pageWhoseScrollBarsNeedFixing = page;
+            return;
+        }
         if (this.fixScrollBarsTimeout) {
             clearTimeout(this.fixScrollBarsTimeout);
         }
