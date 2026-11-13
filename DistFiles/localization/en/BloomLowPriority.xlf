@@ -172,6 +172,11 @@
         <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Bloom subscription.</source>
         <note>ID: PublishTab.Upload.BookshelfError</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignInRejected" translate="no">
+        <source xml:lang="en">BloomLibrary.org did not accept your sign-in. It has probably expired. Please sign in again, then try again.</source>
+        <note>ID: PublishTab.Upload.SignInRejected</note>
+        <note>Shown in the progress box of Publish → Web when the website refuses the user's saved sign-in, for example because it is about a year old. Bloom has already signed the user out, so the "Sign in" button is showing again. "BloomLibrary.org" is the website's name and must not be translated.</note>
+      </trans-unit>
       <trans-unit id="Settings.Subscription.DownloadForEdit" sil:dynamic="true">
         <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</source>
         <note>ID: Settings.Subscription.DownloadForEdit</note>
@@ -264,6 +269,11 @@
         <source xml:lang="en">Spreadsheet Import/Export</source>
         <note>ID: Feature.Spreadsheet</note>
         <note>This is the name of a feature in Bloom</note>
+      </trans-unit>
+      <trans-unit id="Feature.Table">
+        <source xml:lang="en">Table</source>
+        <note>ID: Feature.Table</note>
+        <note>This is the name of a feature in Bloom: tables on a page, whose cells hold text or pictures</note>
       </trans-unit>
       <!-- TODO: add other features -->
 

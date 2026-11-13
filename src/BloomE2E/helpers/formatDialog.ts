@@ -129,6 +129,29 @@ export async function waitForFormatGear(page: Page): Promise<IRect> {
 }
 
 /**
+ * How far the format gear sits in from the left edge of the text box it belongs to, in the page's
+ * own CSS pixels, so the Edit tab's zoom does not change it. Waits for the gear first.
+ *
+ * Some themes move the gear to the right so the page number does not cover it (the "dodge" in
+ * editMode.less, BL-13206 and BL-14901); this is how far that and the gear's own small margin
+ * put it from the corner.
+ */
+export async function getFormatGearInsetFromTextBox(
+    page: Page,
+): Promise<number> {
+    await waitForFormatGear(page);
+    return editablePageFrame(page)
+        .locator(GEAR)
+        .evaluate((gear) => {
+            const box = gear.closest(".bloom-translationGroup") as HTMLElement;
+            const boxRect = box.getBoundingClientRect();
+            // The page is scaled by the zoom; offsetWidth is its unscaled width.
+            const scale = boxRect.width / box.offsetWidth;
+            return (gear.getBoundingClientRect().left - boxRect.left) / scale;
+        });
+}
+
+/**
  * The point in the shell page's coordinates that the page frame's client origin (0, 0) maps to,
  * so a point measured inside the frame can be clicked with the mouse.
  */

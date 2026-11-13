@@ -61,9 +61,13 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
         // Toggle render is handled in newPageReady(), where page reader classes are settled.
     }
     /** Restores the stage (and sort order) this book was last using; see ITool. */
-    public async beginRestoreSettings(
-        settings: IToolboxSettings,
-    ): Promise<void> {
+    public beginRestoreSettings(settings: IToolboxSettings): Promise<void> {
+        return getTheOneReaderToolsModel().whileRestoringPhase(() =>
+            this.restoreSettings(settings),
+        );
+    }
+
+    private async restoreSettings(settings: IToolboxSettings): Promise<void> {
         // This restore supersedes any stage still waiting for the settings; see
         // forgetStageAwaitingSynphony().
         getTheOneReaderToolsModel().forgetStageAwaitingSynphony();
@@ -137,15 +141,23 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
             .find(".bloom-editable")
             .focusout((event) => {
                 let createCkEditorBookMarks = true;
-                // We don't want to create bookmarks if we are switching from one text box on the page to another.
-                // Otherwise, we prevent switching text boxes altogether because the restoration of the bookmark
-                // will put focus back into the text box we are trying to leave.
-                // relatedTarget is what we are switching to, if anything.
-                if (
-                    event.relatedTarget &&
-                    event.relatedTarget !== event.target &&
-                    event.relatedTarget.matches(".bloom-editable")
-                )
+                // We don't want to create bookmarks if the focus is staying in this page: going to
+                // another text box, or to nothing at all, as when the user clicks the dark area
+                // around the page. Restoring the bookmark puts the focus back into the text box
+                // we are leaving, so switching text boxes would be impossible. And when it pulls
+                // the focus back from nowhere, ckeditor (whose own focus-out handler runs after
+                // this one and locks its selection) is left focused with that locked selection,
+                // and since the box never loses the focus again, nothing unlocks it. Every later
+                // markup pass then records the caret where the lock says it is, and so puts the
+                // caret back where it was before the click away, wherever the user has clicked
+                // or typed since (BL-16916).
+                // Bookmarks are only worth having when the focus leaves Bloom's window (for
+                // another program), from where it can come back to this box without a click
+                // that puts the caret somewhere. A click anywhere in the window, the toolbox
+                // included, counts as staying: while this event runs, the page's document
+                // still has the focus, since the browser hands it to the toolbox's frame only
+                // afterwards.
+                if (event.target.ownerDocument.hasFocus())
                     createCkEditorBookMarks = false;
                 // If the Format (Styles) dialog is showing, then we don't want to create
                 // bookmarks.  The div#format-toolbar is instantiated only when the dialog

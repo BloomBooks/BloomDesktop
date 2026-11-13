@@ -21,12 +21,14 @@ export OPUS_CONFIGFLAGS="--disable-shared --disable-doc --disable-extra-programs
 # Opus support (the libopus encoder, the native and libopus decoders, the opus parser, and the
 # ogg and opus muxers) was added in October 2026 (BL-17004).  The ogg, matroska, webm, and mp4
 # demuxers already read Opus audio.
+# The hevc (H.265) decoder and parser were added in November 2026 (BL-17087) so that HEVC videos,
+# which many phones record by default, can be converted to H.264.
 export FFMPEG_CONFIGFLAGS="--enable-gpl \
 --enable-avcodec --enable-avdevice --enable-avformat --enable-avfilter --enable-swresample \
 --enable-swscale --enable-libx264 --enable-libvorbis --enable-libvpx --enable-libmp3lame \
 --enable-libopus \
 --disable-decoders \
---enable-decoder=h264,vp8,rawvideo,aac,mp3,mp3float,vorbis,opus,libopus \
+--enable-decoder=h264,hevc,vp8,rawvideo,aac,mp3,mp3float,vorbis,opus,libopus \
 --enable-decoder=pcm_alaw,pcm_bluray,pcm_dvd,pcm_f16le,pcm_f24le,pcm_f32be,pcm_f32le \
 --enable-decoder=pcm_f64be,pcm_f64le,pcm_lxf,pcm_mulaw,pcm_s16be,pcm_s16be_planar \
 --enable-decoder=pcm_s16le,pcm_s16le_planar,pcm_s24be,pcm_s24daud,pcm_s24le \
@@ -38,7 +40,7 @@ export FFMPEG_CONFIGFLAGS="--enable-gpl \
 --enable-decoder=mp1,mp1float,mp2,mp2float,mp3adufloat,mp3adu,mp3on4float,mp3on4,als \
 --enable-decoder=libvorbis \
 --disable-encoders --enable-encoder=rawvideo,libx264,libvpx_vp8,aac,libmp3lame,h263,libopus \
---disable-parsers --enable-parser=h264,vp8,mpegaudio,opus \
+--disable-parsers --enable-parser=h264,hevc,vp8,mpegaudio,opus \
 --disable-protocols --enable-protocol=file,concat,pipe \
 --disable-demuxers \
 --enable-demuxer=mp4,mov,matroska,webm,avi,mpegvideo,h264,rawvideo,mp3,aac,wav,ogg \

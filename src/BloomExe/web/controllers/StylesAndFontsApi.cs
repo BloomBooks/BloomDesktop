@@ -49,7 +49,8 @@ namespace Bloom.web.controllers
             );
             // Get all the user-modified styles that set a font for the style.
             var modifiedStylesAndFonts = GetUserModifiedStylesAndFonts(
-                _bookSelection.CurrentSelection.OurHtmlDom
+                _bookSelection.CurrentSelection.OurHtmlDom,
+                out _
             );
             foreach (var unusedLang in unusedLanguages)
             {
@@ -150,10 +151,26 @@ namespace Bloom.web.controllers
 
         private void HandleGetDataRows(ApiRequest request)
         {
+            var stylesAndFonts = GetDataRows(request.GetParamOrNull("languages"));
+            var jsonData = JsonConvert.SerializeObject(stylesAndFonts.ToArray());
+            request.ReplyWithJson(jsonData);
+        }
+
+        /// <summary>
+        /// Get the rows for the Fonts table of the Book Settings dialog: which font each style uses
+        /// for each language, and the first page where that style is used.
+        /// </summary>
+        /// <param name="languagesSelection">"current" for the collection's languages, "other" for
+        /// languages in the book that the collection does not currently use</param>
+        internal List<StyleAndFont> GetDataRows(string languagesSelection)
+        {
             var book = _bookSelection.CurrentSelection;
-            var languagesSelection = request.GetParamOrNull("languages");
             // Get all the styles used in the book.
-            var stylesInBook = GetStylesUsedInBook(book.OurHtmlDom, book.FolderPath);
+            var stylesInBook = GetStylesUsedInBook(
+                book.OurHtmlDom,
+                book.FolderPath,
+                out var stylesUsedWithLangStar
+            );
             // Get all the languages used in the book and their default fonts.
             InitializeFontAndLanguageData(
                 out var langToDefaultFont,
@@ -161,7 +178,10 @@ namespace Bloom.web.controllers
                 out var unusedLanguages
             );
             // Get all the user-modified styles that set a font for the style.
-            var modifiedStylesAndFonts = GetUserModifiedStylesAndFonts(book.OurHtmlDom);
+            var modifiedStylesAndFonts = GetUserModifiedStylesAndFonts(
+                book.OurHtmlDom,
+                out var langStarStylesAndFonts
+            );
             // Add the styles that are in the book but not covered by the user-modified styles.
             var stylesAndFonts = new List<StyleAndFont>();
             var collectionLanguages = GetCurrentLanguageSet();
@@ -289,9 +309,30 @@ namespace Bloom.web.controllers
                     stylesAndFonts.Add(styleAndFont);
                 }
             }
+            // Add the user-modified styles for language-independent fields (lang="*"), such as the
+            // ISBN on the credits page.  Their fonts apply only to those fields, not to any
+            // language, so they get rows of their own (BL-16851).  These fields show whatever
+            // the collection's languages are, so they belong with the "current" languages.
+            if (languagesSelection == "current")
+            {
+                foreach (var styleAndFont in langStarStylesAndFonts)
+                {
+                    if (!stylesUsedWithLangStar.TryGetValue(styleAndFont.style, out var pageInfo))
+                        continue; // No language-independent field in the book uses this style.
+                    styleAndFont.pageId = pageInfo.id;
+                    styleAndFont.pageDescription = pageInfo.description;
+                    // Its languageTag is "*", which GetLanguageName would call "(all)": wrong,
+                    // and a duplicate of the label on a row for a font every language shares.
+                    styleAndFont.languageName = L10NSharp.LocalizationManager.GetString(
+                        "BookSettings.Fonts.NoLanguage",
+                        "(no language)"
+                    );
+                    stylesAndFonts.Add(styleAndFont);
+                }
+            }
             foreach (var styleAndFont in stylesAndFonts.ToArray())
             {
-                styleAndFont.languageName = GetLanguageName(styleAndFont.languageTag);
+                styleAndFont.languageName ??= GetLanguageName(styleAndFont.languageTag);
                 // If the style is not in the default styles, don't worry about not getting a localized name.
                 styleAndFont.styleName = L10NSharp.LocalizationManager.GetString(
                     $"EditTab.FormatDialog.DefaultStyles.{styleAndFont.style}-style",
@@ -365,8 +406,7 @@ namespace Bloom.web.controllers
                     }
                 }
             }
-            var jsonData = JsonConvert.SerializeObject(stylesAndFonts.ToArray());
-            request.ReplyWithJson(jsonData);
+            return stylesAndFonts;
         }
 
         // Gets the English Display name for the default styles that are used in Bloom code
@@ -446,12 +486,19 @@ namespace Bloom.web.controllers
             return langToFont;
         }
 
+        /// <summary>
+        /// Get the styles used in the book, each with the first page where it is used.
+        /// stylesUsedWithLangStar gets the styles used by language-independent (lang="*") fields,
+        /// each with the first page where such a field uses it.
+        /// </summary>
         private static Dictionary<string, PageInfo> GetStylesUsedInBook(
             HtmlDom dom,
-            string bookFolderPath
+            string bookFolderPath,
+            out Dictionary<string, PageInfo> stylesUsedWithLangStar
         )
         {
             var stylesInBook = new Dictionary<string, PageInfo>();
+            stylesUsedWithLangStar = new Dictionary<string, PageInfo>();
             foreach (
                 var div in dom.SafeSelectNodes(
                     "//div[contains(@class,'bloom-page')]//div[contains(@class, '-style')]"
@@ -475,17 +522,27 @@ namespace Bloom.web.controllers
                 if (!stylesInBook.Keys.Contains(style))
                 {
                     // ENHANCE: distinguish first pages for each language.
-                    stylesInBook.Add(
-                        style,
-                        new PageInfo
-                        {
-                            id = pageDiv.GetAttribute("id"),
-                            description = GetPageDescription(pageDiv),
-                        }
-                    );
+                    stylesInBook.Add(style, MakePageInfo(pageDiv));
                 }
+                // An empty language-independent field, such as the ISBN of a book that has none,
+                // shows no text, so its font isn't used.
+                if (
+                    div.GetAttribute("lang") == "*"
+                    && !stylesUsedWithLangStar.ContainsKey(style)
+                    && HtmlDom.DivHasContent((SafeXmlElement)div)
+                )
+                    stylesUsedWithLangStar.Add(style, MakePageInfo(pageDiv));
             }
             return stylesInBook;
+        }
+
+        private static PageInfo MakePageInfo(SafeXmlNode pageDiv)
+        {
+            return new PageInfo
+            {
+                id = pageDiv.GetAttribute("id"),
+                description = GetPageDescription(pageDiv),
+            };
         }
 
         private static string GetPageDescription(SafeXmlNode pageDiv)
@@ -539,9 +596,19 @@ namespace Bloom.web.controllers
             }
         }
 
-        private static List<StyleAndFont> GetUserModifiedStylesAndFonts(HtmlDom dom)
+        /// <summary>
+        /// Get the user-modified styles that set a font.  A rule with no language selector gets
+        /// languageTag "*", meaning it applies to every language.  A rule for language-independent
+        /// fields (selector [lang="*"]) doesn't apply to any language, so it goes into
+        /// langStarStylesAndFonts instead (also with languageTag "*").
+        /// </summary>
+        private static List<StyleAndFont> GetUserModifiedStylesAndFonts(
+            HtmlDom dom,
+            out List<StyleAndFont> langStarStylesAndFonts
+        )
         {
             var stylesAndFonts = new List<StyleAndFont>();
+            langStarStylesAndFonts = new List<StyleAndFont>();
             var userModifiedStyles = HtmlDom.GetUserModifiedStyleElement(dom.Head);
             if (userModifiedStyles != null)
             {
@@ -566,7 +633,10 @@ namespace Bloom.web.controllers
                         .Groups[7]
                         .Value.Replace("!important", "")
                         .Trim(new[] { ' ', '\t', '"', '\'' });
-                    stylesAndFonts.Add(styleAndFont);
+                    if (match.Groups[2].Success && langTag == "*")
+                        langStarStylesAndFonts.Add(styleAndFont);
+                    else
+                        stylesAndFonts.Add(styleAndFont);
                 }
             }
             return stylesAndFonts;

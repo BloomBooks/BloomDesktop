@@ -2382,6 +2382,63 @@ p {
             );
         }
 
+        /// <summary>
+        /// StyleEditor writes a font for a language-independent field such as the ISBN as a rule
+        /// on [lang="*"], and language tags may contain digits. Both used to be missed (BL-16851).
+        /// </summary>
+        [Test]
+        public void FindFontsUsedInCss_FindsFontsForLangStarAndTagsWithDigits()
+        {
+            const string htmlContent =
+                @"<html>
+<head>
+<style type=""text/css"" title=""userModifiedStyles"">
+.Credits-Page-style[lang=""*""] { font-family: ABeeZee !important; }
+.normal-style[lang=""es-419""] { font-family: ""Charis SIL"" !important; }
+.Heading1-style[lang=""*""] { font-family: Unused Font !important; }
+</style>
+</head>
+<body>
+<div class=""bloom-page""><div class=""bloom-editable Credits-Page-style"" lang=""*"">ISBN 123</div>
+<div class=""bloom-editable normal-style"" lang=""es-419"">hola</div>
+<div class=""bloom-editable Heading1-style"" lang=""en"">not language-independent</div></div>
+</body>
+</html>";
+
+            var fonts = new HashSet<string>();
+            HtmlDom.FindFontsUsedInCss(htmlContent, fonts, true);
+            Assert.That(fonts, Is.EquivalentTo(new[] { "ABeeZee", "Charis SIL" }));
+        }
+
+        /// <summary>
+        /// Default fonts for language tags containing digits (e.g., es-419) used to be missed
+        /// (BL-16851). The rule for lang="*" content must still never match: see the comment in
+        /// CollectionSettings where that rule is written.
+        /// </summary>
+        [Test]
+        public void DefaultLangStylesCssRegex_MatchesTagsWithDigitsButNotStar()
+        {
+            const string css =
+                @"[lang='es-419'] { font-family: 'Charis SIL'; direction: ltr; }
+[lang='en'] { font-family: Andika; }
+.bloom-page:not(.bloom-frontMatter):not(.bloom-backMatter) [lang='*'] { font-family: 'Noto Sans'; }";
+
+            var langToFont = HtmlDom
+                .DefaultLangStylesCssRegex.Matches(css)
+                .ToDictionary(m => m.Groups[2].Value, m => m.Groups[4].Value.Trim(' ', '\''));
+
+            Assert.That(
+                langToFont,
+                Is.EquivalentTo(
+                    new Dictionary<string, string>
+                    {
+                        { "es-419", "Charis SIL" },
+                        { "en", "Andika" },
+                    }
+                )
+            );
+        }
+
         [Test]
         public void MigrateChildren_MigratesCanvasElements_DoesNotLoseCanvasElements()
         {
