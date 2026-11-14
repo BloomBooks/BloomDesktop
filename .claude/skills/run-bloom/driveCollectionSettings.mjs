@@ -347,8 +347,9 @@ export async function goToPageCaptioned(page, caption) {
 
 /**
  * Turn a reader tool on for the book being edited, re-enter the Edit tab so the toolbox offers
- * it, and mark the book decodable (through its endpoint, as the e2e enableDecodableReaderTool
- * does) or leveled (by ticking the panel's switch). `tool` is "decodableReader" or "leveledReader".
+ * it, and mark the book decodable or leveled through its endpoint, as the e2e
+ * enableDecodableReaderTool and enableLeveledReaderTool do. `tool` is "decodableReader" or
+ * "leveledReader".
  * This changes the book: use a scratch collection.
  */
 export async function enableReaderTool(page, tool) {
@@ -367,45 +368,31 @@ export async function enableReaderTool(page, tool) {
         `active\t${tool}Check\t1`,
         "text/plain",
     );
-    if (tool === "decodableReader")
-        await post("toolbox/decodable", "true", "application/json");
+    // Mark the book before the reload, so the panel comes up with its switch already on.
+    // Clicking the switch instead is unreliable: a re-render during loading puts it back.
+    await post(
+        tool === "decodableReader" ? "toolbox/decodable" : "toolbox/leveled",
+        "true",
+        "application/json",
+    );
     await page.getByTestId("workspace-tab-collection").click();
     await sleep(3000);
     await page.getByTestId("workspace-tab-edit").click();
+    // (The e2e suite's isEditingPage endpoint exists only under --e2e, so wait for the page.)
     await page.waitForFunction(
-        () => !!document.querySelector('iframe[name="toolbox"]'),
+        () =>
+            !!document
+                .querySelector('iframe[name="page"]')
+                ?.contentDocument?.querySelector(".bloom-page"),
         null,
-        { timeout: 60000 },
+        { timeout: 90000, polling: 500 },
     );
-    if (tool === "leveledReader") {
-        // There is no endpoint that marks the book leveled, so tick the panel's switch as a
-        // person does. Click once and check: clicking toggles it.
-        // The Edit tab can still be rebuilding the panel, which puts the switch back, so tick it
-        // only when it is off, and accept it only once it has stayed on for a few seconds.
-        await page
-            .frames()
-            .find((f) => f.name() === "page")
-            ?.locator(".bloom-page")
-            .first()
-            .waitFor({ timeout: 60000 });
-        const toolbox = await expandTool(page, tool);
-        const leveled = toolbox.locator(
-            '[data-testid="leveled-reader-switch"] input',
-        );
-        let settled = false;
-        for (let attempt = 0; attempt < 3 && !settled; attempt++) {
-            await leveled.waitFor({ timeout: 30000 });
-            if (!(await leveled.isChecked())) await leveled.click();
-            await sleep(3000);
-            settled =
-                (await leveled.isChecked().catch(() => false)) &&
-                (await toolbox
-                    .locator('[data-testid="set-up-levels-button"]')
-                    .isVisible());
-        }
-        if (!settled)
-            throw new Error("The Leveled Reader's switch would not stay on.");
-    }
+    const toolbox = await expandTool(page, tool);
+    if (tool === "leveledReader")
+        // The panel shows Set Up Levels only while the book is leveled.
+        await toolbox
+            .locator('[data-testid="set-up-levels-button"]')
+            .waitFor({ timeout: 30000 });
 }
 
 /** The toolbox frame, with the drawer opened and the tool `tool` expanded. */
