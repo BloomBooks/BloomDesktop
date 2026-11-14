@@ -38,11 +38,30 @@ export async function connectToBloom(httpPort) {
     const browser = await chromium.connectOverCDP(
         `http://127.0.0.1:${httpPort + 2}`,
     );
-    const page = browser
-        .contexts()
-        .flatMap((c) => c.pages())
-        .find((p) => !p.url().startsWith("devtools"));
-    if (!page) throw new Error(`No Bloom page on CDP port ${httpPort + 2}.`);
+    // Bloom's dialogs that host their own WebView2 (a problem report, for one) are pages here too,
+    // so take the one with the workspace tabs: Bloom's main window.
+    // Just after Bloom starts (or restarts) its page is still loading, so keep looking a while.
+    let page;
+    for (let attempt = 0; attempt < 30 && !page; attempt++) {
+        for (const candidate of browser.contexts().flatMap((c) => c.pages())) {
+            if (candidate.url().startsWith("devtools")) continue;
+            const isShell = await candidate
+                .evaluate(
+                    () =>
+                        !!document.querySelector(
+                            '[data-testid^="workspace-tab-"]',
+                        ),
+                )
+                .catch(() => false);
+            if (isShell) {
+                page = candidate;
+                break;
+            }
+        }
+        if (!page) await sleep(1000);
+    }
+    if (!page)
+        throw new Error(`No Bloom main window on CDP port ${httpPort + 2}.`);
     const api = (endpoint) =>
         `http://localhost:${httpPort}/bloom/api/${endpoint}`;
     return {
@@ -77,7 +96,7 @@ export async function openCollectionSettings(page) {
     });
     // The Settings button is on the Collections tab only.
     if (!(await settings.isVisible().catch(() => false))) {
-        await page.getByText("Collections", { exact: true }).first().click();
+        await page.getByTestId("workspace-tab-collection").click();
         await settings.waitFor({ timeout: 30000 });
     }
     await settings.click();
@@ -290,16 +309,27 @@ export async function goToPageCaptioned(page, caption) {
     const pageList = page.frames().find((f) => f.name() === "pageList");
     if (!pageList)
         throw new Error("There is no page list: is the Edit tab showing?");
-    const id = await pageList.evaluate((c) => {
-        const label = Array.from(
-            document.querySelectorAll(".thumbnailCaption"),
-        ).find((n) => n.textContent.trim() === c);
-        let p = label;
-        while (p && !p.querySelector(".bloom-page[id]")) p = p.parentElement;
-        return p?.querySelector(".bloom-page[id]")?.id;
-    }, caption);
-    if (!id)
-        throw new Error(`The page list has no page captioned "${caption}".`);
+    // A thumbnail gets its page id a moment after its caption shows, so wait for the id.
+    const id = await pageList
+        .waitForFunction(
+            (c) => {
+                const label = Array.from(
+                    document.querySelectorAll(".thumbnailCaption"),
+                ).find((n) => n.textContent.trim() === c);
+                let p = label;
+                while (p && !p.querySelector(".bloom-page[id]"))
+                    p = p.parentElement;
+                return p?.querySelector(".bloom-page[id]")?.id;
+            },
+            caption,
+            { timeout: 30000 },
+        )
+        .then((handle) => handle.jsonValue())
+        .catch(() => {
+            throw new Error(
+                `The page list has no page captioned "${caption}" (or its page id never loaded).`,
+            );
+        });
     await page.evaluate(
         (pageId) =>
             fetch("/bloom/api/editView/jumpToPage", {
@@ -316,9 +346,10 @@ export async function goToPageCaptioned(page, caption) {
 }
 
 /**
- * Turn a reader tool on for the book being edited and mark the book decodable or leveled, as the
- * e2e enableDecodableReaderTool does, then re-enter the Edit tab so the toolbox offers it.
- * `tool` is "decodableReader" or "leveledReader".
+ * Turn a reader tool on for the book being edited, re-enter the Edit tab so the toolbox offers
+ * it, and mark the book decodable (through its endpoint, as the e2e enableDecodableReaderTool
+ * does) or leveled (by ticking the panel's switch). `tool` is "decodableReader" or "leveledReader".
+ * This changes the book: use a scratch collection.
  */
 export async function enableReaderTool(page, tool) {
     const post = (endpoint, body, type) =>
@@ -338,14 +369,27 @@ export async function enableReaderTool(page, tool) {
     );
     if (tool === "decodableReader")
         await post("toolbox/decodable", "true", "application/json");
-    await page.getByText("Collections", { exact: true }).first().click();
+    await page.getByTestId("workspace-tab-collection").click();
     await sleep(3000);
-    await page.getByText("Edit", { exact: true }).first().click();
+    await page.getByTestId("workspace-tab-edit").click();
     await page.waitForFunction(
         () => !!document.querySelector('iframe[name="toolbox"]'),
         null,
         { timeout: 60000 },
     );
+    if (tool === "leveledReader") {
+        // There is no endpoint that marks the book leveled, so tick the panel's switch as a
+        // person does. Click once and check: clicking toggles it.
+        const toolbox = await expandTool(page, tool);
+        const leveled = toolbox.locator(
+            '[data-testid="leveled-reader-switch"] input',
+        );
+        await leveled.waitFor({ timeout: 30000 });
+        if (!(await leveled.isChecked())) await leveled.click();
+        await toolbox
+            .locator('[data-testid="set-up-levels-button"]')
+            .waitFor({ timeout: 30000 });
+    }
 }
 
 /** The toolbox frame, with the drawer opened and the tool `tool` expanded. */
