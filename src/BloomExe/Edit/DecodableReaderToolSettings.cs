@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.web.controllers;
@@ -123,6 +124,42 @@ namespace Bloom.Edit
                     + settings.Language1.Tag
                     + ".json"
             );
+        }
+
+        /// <summary>
+        /// The collection's reader tools settings file as it stands, or null when there is none
+        /// yet or it is empty.
+        /// </summary>
+        public static string ReadSettingsFile(CollectionSettings settings)
+        {
+            var path = GetReaderToolsSettingsFilePath(settings);
+            if (!RobustFile.Exists(path))
+                return null;
+            var json = RobustFile.ReadAllText(path, Encoding.UTF8);
+            return string.IsNullOrWhiteSpace(json) ? null : json;
+        }
+
+        /// <summary>
+        /// The reader tools settings a collection starts with, for a first language with the given
+        /// tag. Its keys must match the fields of ReaderSettings and ReaderLevel in
+        /// src/BloomBrowserUI/bookEdit/toolbox/readers/ReaderSettings.ts, which the reader tools and
+        /// Reader Setup read this file into.
+        /// </summary>
+        public static string GetDefaultSettingsJson(string languageTag)
+        {
+            return "{\"writingSystemTag\": \""
+                + languageTag
+                + "\", "
+                + "\"letters\":\"a b c d e f g h i j k l m n o p q r s t u v w x y z\","
+                + $"\"lang\":\"{languageTag}\","
+                + "\"moreWords\":\"\","
+                + "\"stages\":[{\"letters\":\"\",\"sightWords\":\"\"}],"
+                + "\"levels\":[{\"maxWordsPerSentence\":2,\"maxWordsPerPage\":2,\"maxWordsPerBook\":20,\"maxUniqueWordsPerBook\":0,\"thingsToRemember\":[]},"
+                + "{\"maxWordsPerSentence\":5,\"maxWordsPerPage\":5,\"maxWordsPerBook\":23,\"maxUniqueWordsPerBook\":8,\"thingsToRemember\":[]},"
+                + "{\"maxWordsPerSentence\":7,\"maxWordsPerPage\":10,\"maxWordsPerBook\":72,\"maxUniqueWordsPerBook\":16,\"thingsToRemember\":[]},"
+                + "{\"maxWordsPerSentence\":8,\"maxWordsPerPage\":18,\"maxWordsPerBook\":206,\"maxUniqueWordsPerBook\":32,\"thingsToRemember\":[]},"
+                + "{\"maxWordsPerSentence\":12,\"maxWordsPerPage\":25,\"maxWordsPerBook\":500,\"maxUniqueWordsPerBook\":64,\"thingsToRemember\":[]},"
+                + "{\"maxWordsPerSentence\":20,\"maxWordsPerPage\":50,\"maxWordsPerBook\":1000,\"maxUniqueWordsPerBook\":0,\"thingsToRemember\":[]}]}";
         }
 
         /// <summary>
