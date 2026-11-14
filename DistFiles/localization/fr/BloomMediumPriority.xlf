@@ -2119,34 +2119,34 @@
         <target xml:lang="fr" state="needs-translation">Apps have a maximum size of about %1. The current estimate for this app is %0.</target>
         <note>ID: PublishTab.Apps.SizeEstimate.Total</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SizeEstimate.OverLimitWithEstimates">
+      <trans-unit id="PublishTab.Apps.SizeEstimate.OverLimitWithEstimates" approved="yes">
         <source xml:lang="en">This estimate is above the %0 Android app size limit, but some of the books' sizes are only estimates. Measure the books to find out for sure, or choose fewer books or smaller books.</source>
-        <target xml:lang="fr" state="needs-translation">This estimate is above the %0 Android app size limit, but some of the books' sizes are only estimates. Measure the books to find out for sure, or choose fewer books or smaller books.</target>
+        <target xml:lang="fr" state="final">Cette estimation est supérieure à la limite de taille de l'application Android %0, mais certaines des tailles des livres ne sont que des estimations. Mesurez bien les livres pour en savoir plus, ou choisissez moins de livres ou de livres plus petits.</target>
         <note>ID: PublishTab.Apps.SizeEstimate.OverLimitWithEstimates</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SizeEstimate.MeasuredCount">
+      <trans-unit id="PublishTab.Apps.SizeEstimate.MeasuredCount" approved="yes">
         <source xml:lang="en">%0 of %1 books have been measured. The striped ones are estimates.</source>
-        <target xml:lang="fr" state="needs-translation">%0 of %1 books have been measured. The striped ones are estimates.</target>
+        <target xml:lang="fr" state="final">Les livres %0 de %1 ont été mesurés. Les livres rayés sont des estimations.</target>
         <note>ID: PublishTab.Apps.SizeEstimate.MeasuredCount</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SizeEstimate.ActualSuffix">
+      <trans-unit id="PublishTab.Apps.SizeEstimate.ActualSuffix" approved="yes">
         <source xml:lang="en">(actual)</source>
-        <target xml:lang="fr" state="needs-translation">(actual)</target>
+        <target xml:lang="fr" state="final">(réelle)</target>
         <note>ID: PublishTab.Apps.SizeEstimate.ActualSuffix</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SizeEstimate.EstimateSuffix">
+      <trans-unit id="PublishTab.Apps.SizeEstimate.EstimateSuffix" approved="yes">
         <source xml:lang="en">(estimate)</source>
-        <target xml:lang="fr" state="needs-translation">(estimate)</target>
+        <target xml:lang="fr" state="final">(estimation)</target>
         <note>ID: PublishTab.Apps.SizeEstimate.EstimateSuffix</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.MeasureBooks">
+      <trans-unit id="PublishTab.Apps.MeasureBooks" approved="yes">
         <source xml:lang="en">Measure exact sizes</source>
-        <target xml:lang="fr" state="needs-translation">Measure exact sizes</target>
+        <target xml:lang="fr" state="final">Mesurer la taille exacte</target>
         <note>ID: PublishTab.Apps.MeasureBooks</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.MeasureBooks.Tooltip">
+      <trans-unit id="PublishTab.Apps.MeasureBooks.Tooltip" approved="yes">
         <source xml:lang="en">Make the BloomPUB files for the app's books now, so that their exact sizes are shown. Build will use them too.</source>
-        <target xml:lang="fr" state="needs-translation">Make the BloomPUB files for the app's books now, so that their exact sizes are shown. Build will use them too.</target>
+        <target xml:lang="fr" state="final">Créez maintenant les fichiers BloomPUB pour les livres de l'application, afin que leurs tailles exactes soient affichées. Build les utilisera aussi.</target>
         <note>ID: PublishTab.Apps.MeasureBooks.Tooltip</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.FailedToAddImage">
