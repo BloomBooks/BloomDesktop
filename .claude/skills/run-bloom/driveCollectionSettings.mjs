@@ -309,7 +309,9 @@ export async function goToPageCaptioned(page, caption) {
     const pageList = page.frames().find((f) => f.name() === "pageList");
     if (!pageList)
         throw new Error("There is no page list: is the Edit tab showing?");
-    // A thumbnail gets its page id a moment after its caption shows, so wait for the id.
+    // A thumbnail shows its caption and a placeholder page (with no id) before its real page
+    // arrives, so find the caption's own thumbnail, the nearest ancestor holding any page, and
+    // wait for that page's id; looking further up would find another thumbnail's page.
     const id = await pageList
         .waitForFunction(
             (c) => {
@@ -317,7 +319,7 @@ export async function goToPageCaptioned(page, caption) {
                     document.querySelectorAll(".thumbnailCaption"),
                 ).find((n) => n.textContent.trim() === c);
                 let p = label;
-                while (p && !p.querySelector(".bloom-page[id]"))
+                while (p && !p.querySelector(".bloom-page"))
                     p = p.parentElement;
                 return p?.querySelector(".bloom-page[id]")?.id;
             },
