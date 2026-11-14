@@ -380,15 +380,31 @@ export async function enableReaderTool(page, tool) {
     if (tool === "leveledReader") {
         // There is no endpoint that marks the book leveled, so tick the panel's switch as a
         // person does. Click once and check: clicking toggles it.
+        // The Edit tab can still be rebuilding the panel, which puts the switch back, so tick it
+        // only when it is off, and accept it only once it has stayed on for a few seconds.
+        await page
+            .frames()
+            .find((f) => f.name() === "page")
+            ?.locator(".bloom-page")
+            .first()
+            .waitFor({ timeout: 60000 });
         const toolbox = await expandTool(page, tool);
         const leveled = toolbox.locator(
             '[data-testid="leveled-reader-switch"] input',
         );
-        await leveled.waitFor({ timeout: 30000 });
-        if (!(await leveled.isChecked())) await leveled.click();
-        await toolbox
-            .locator('[data-testid="set-up-levels-button"]')
-            .waitFor({ timeout: 30000 });
+        let settled = false;
+        for (let attempt = 0; attempt < 3 && !settled; attempt++) {
+            await leveled.waitFor({ timeout: 30000 });
+            if (!(await leveled.isChecked())) await leveled.click();
+            await sleep(3000);
+            settled =
+                (await leveled.isChecked().catch(() => false)) &&
+                (await toolbox
+                    .locator('[data-testid="set-up-levels-button"]')
+                    .isVisible());
+        }
+        if (!settled)
+            throw new Error("The Leveled Reader's switch would not stay on.");
     }
 }
 
