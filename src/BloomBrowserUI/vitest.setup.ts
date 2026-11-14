@@ -111,6 +111,8 @@ vi.mock("./lib/localizationManager/localizationManager", () => {
         default: {
             getLanguageName: (langTag: string) =>
                 languageNames[langTag] || langTag,
+            // As the real one does: the browser's language, which Bloom sets to its UI language.
+            getCurrentUILocale: () => navigator.language,
             getText: (
                 key: string,
                 defaultText?: string,
