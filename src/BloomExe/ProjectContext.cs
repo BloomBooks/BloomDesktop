@@ -218,7 +218,6 @@ namespace Bloom
                                 typeof(RabPublishApi),
                                 typeof(AccessibilityCheckApi),
                                 typeof(CollectionSettingsApi),
-                                typeof(SubscriptionSettingsEditorApi),
                                 typeof(E2eTestingApi),
                                 typeof(FeatureStatusApi),
                                 typeof(CollectionTabView),
@@ -491,9 +490,6 @@ namespace Bloom
             _scope.Resolve<PublishEpubApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<AccessibilityCheckApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CollectionSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
-            _scope
-                .Resolve<SubscriptionSettingsEditorApi>()
-                .RegisterWithApiHandler(server.ApiHandler);
             // Endpoints that exist only to support end-to-end/visual-regression testing. They let a
             // caller do things no real user should, so we register them only when Bloom was launched
             // in e2e test mode (--e2e); a normal run never exposes them, in any build configuration.

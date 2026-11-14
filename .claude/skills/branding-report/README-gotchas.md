@@ -65,5 +65,5 @@ POST failed, read `response.statusText`, **not** `await response.text()` (which 
 ## State restoration
 `survey.mjs` restores the original branding always, and layout/xmatter only if it varied them
 (baseline layout is read from the preview **before** the loop changes anything; baseline xmatter via
-`GET settings/xmatter`, best-effort). The subscription override is never saved to disk, so a Bloom
+`GET collection/settings`, best-effort). The subscription override is never saved to disk, so a Bloom
 restart fully restores the real subscription regardless.

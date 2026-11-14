@@ -38,7 +38,7 @@ export function useAdvancedPage(context: ISettingsPageContext): ISettingsPage {
         "CollectionSettingsDialog.AdvancedTab.NoRenameTeamCollection",
     );
 
-    const isTeamCollection = context.settings?.isTeamCollection === true;
+    const isTeamCollection = context.settings.isTeamCollection;
 
     const element = (
         <ConfigrPage label={label} pageKey="advanced" topLevel={true}>

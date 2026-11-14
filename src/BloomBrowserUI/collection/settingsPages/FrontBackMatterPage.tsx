@@ -112,18 +112,15 @@ export function useFrontBackMatterPage(
 
     // The packs offered follow the saved subscription: a branding can choose the pack, and if a
     // newly typed code's does, C# applies it as it saves.
-    const xmatterPacks = context.settings?.xmatterPacks ?? [];
+    const xmatterPacks = context.settings.xmatterPacks;
     // The pack's description and the badge preview follow the values as they would be saved now.
-    // Undefined until the GET answers, since this hook runs on every render of the dialog. The
-    // controls' paths are not read from it: Config-R reads them from its own values, which the
-    // pane only mounts with once they are loaded.
-    const frontBackMatter = context.valuesToSave?.frontBackMatter;
+    const frontBackMatter = context.valuesToSave.frontBackMatter;
     const selectedPackDescription = xmatterPacks.find(
-        (pack) => pack.value === frontBackMatter?.xmatter,
+        (pack) => pack.value === frontBackMatter.xmatter,
     )?.description;
     const badgeLanguage =
-        context.valuesToSave?.languages.signLanguage ??
-        context.valuesToSave?.languages.language1;
+        context.valuesToSave.languages.signLanguage ??
+        context.valuesToSave.languages.language1;
 
     const element = (
         <ConfigrPage label={label} pageKey="frontBackMatter" topLevel={true}>
@@ -132,7 +129,7 @@ export function useFrontBackMatterPage(
                     label={styleLabel}
                     path="frontBackMatter.xmatter"
                     options={xmatterPacks}
-                    disabled={context.settings?.xmatterChosenByBranding}
+                    disabled={context.settings.xmatterChosenByBranding}
                     description={selectedPackDescription}
                 />
             </ConfigrGroup>
@@ -149,23 +146,21 @@ export function useFrontBackMatterPage(
                     charactersWide={45}
                     allowNewLines={true}
                     maxLinesToShowBeforeScrolling={4}
-                    disabled={!frontBackMatter?.showQrCode}
+                    disabled={!frontBackMatter.showQrCode}
                 />
-                {frontBackMatter && badgeLanguage && (
-                    // A list item, like Config-R's rows, so the badge lines up with their labels.
-                    // ConfigrStatic takes the props Config-R gives a group's children, which
-                    // ListItem would pass on to the DOM.
-                    <ConfigrStatic>
-                        <ListItem>
-                            <QrCodeBadgePreview
-                                showQrCode={frontBackMatter.showQrCode}
-                                caption={frontBackMatter.qrcodeCaption}
-                                languageTag={badgeLanguage.tag}
-                                languageName={badgeLanguage.name}
-                            />
-                        </ListItem>
-                    </ConfigrStatic>
-                )}
+                {/* A list item, like Config-R's rows, so the badge lines up with their labels.
+                    ConfigrStatic takes the props Config-R gives a group's children, which
+                    ListItem would pass on to the DOM. */}
+                <ConfigrStatic>
+                    <ListItem>
+                        <QrCodeBadgePreview
+                            showQrCode={frontBackMatter.showQrCode}
+                            caption={frontBackMatter.qrcodeCaption}
+                            languageTag={badgeLanguage.tag}
+                            languageName={badgeLanguage.name}
+                        />
+                    </ListItem>
+                </ConfigrStatic>
             </ConfigrGroup>
             <ConfigrGroup label={placesLabel} description={placesDescription}>
                 <ConfigrInput
