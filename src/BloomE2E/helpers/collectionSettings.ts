@@ -940,6 +940,105 @@ export async function closeCollectionSettingsLanguageMore(
     ).toBeVisible();
 }
 
+/** A language to pick in the Choose Language dialog. */
+export interface IChooserLanguage {
+    /** What to type in the chooser's search box, e.g. "standard arabic". */
+    search: string;
+    /** The language's code as the chooser shows it on the result, e.g. "arb". */
+    code: string;
+    /**
+     * The script to pick when the chooser asks for one (it does for a language written in
+     * several, such as Arabic: "Arabic", "Hebrew" or "Syriac").
+     */
+    script?: string;
+    /** A name to show the language by, in place of the chooser's own. */
+    customName?: string;
+}
+
+/**
+ * The Choose Language dialog that is showing. An earlier chooser can stay in the page, hidden,
+ * after it closes, so only a visible one counts.
+ */
+function languageChooser(page: Page): Locator {
+    return page
+        .getByRole("dialog")
+        .filter({ hasText: "Choose Language", visible: true })
+        .last();
+}
+
+/**
+ * Pick a language for one language group on the Languages page, as a person does: click its
+ * Change… (or Set…, when the collection has none), search, click the result, pick a script if
+ * the chooser asks for one, optionally give it a custom name, and click OK. Returns once the
+ * chooser has closed. Nothing is saved until the Collection Settings dialog's OK.
+ */
+export async function chooseCollectionSettingsLanguage(
+    page: Page,
+    heading: string,
+    language: IChooserLanguage,
+): Promise<void> {
+    await expectLanguageGroup(page, heading);
+    await realClick(
+        languageGroup(page, heading).getByRole("button", {
+            name: /^(Change|Set)/,
+        }),
+    );
+    const chooser = languageChooser(page);
+    await expect(
+        chooser,
+        "the Choose Language dialog did not open",
+    ).toBeVisible();
+    await chooser.locator("#search-bar").fill(language.search);
+    const result = chooser.getByText(language.code, { exact: true }).first();
+    await expect(
+        result,
+        `searching the chooser for "${language.search}" found no language with the code "${language.code}"`,
+    ).toBeVisible({ timeout: 30000 });
+    await realClick(result);
+    if (language.script) {
+        // Each script is a card whose name is an h2. The language's own result card has an h2
+        // too, which can have the same name (Arabic), and the script cards come after it.
+        await realClick(
+            chooser
+                .locator("button.MuiCardActionArea-root h2")
+                .filter({ hasText: new RegExp(`^${language.script}$`) })
+                .last(),
+        );
+    }
+    if (language.customName)
+        await chooser.locator("#language-name-bar").fill(language.customName);
+    const ok = chooser.getByRole("button", { name: /^OK$/i });
+    await expect(
+        ok,
+        "the chooser's OK is still disabled: the chooser may be asking for a script",
+    ).toBeEnabled();
+    await realClick(ok);
+    await expect(
+        chooser,
+        "the Choose Language dialog did not close",
+    ).toBeHidden();
+}
+
+/**
+ * Click Remove at the right of an optional language's heading on the Languages page (Written
+ * Language 3 or Sign Language), and return once the button has gone, as it does when the group
+ * no longer has a language. Nothing is saved until OK.
+ */
+export async function removeCollectionSettingsLanguage(
+    page: Page,
+    heading: string,
+): Promise<void> {
+    await expectLanguageGroup(page, heading);
+    const remove = collectionSettingsDialog(page)
+        .locator(`xpath=.//h3[normalize-space(.)="${heading}"]/..`)
+        .getByRole("button", { name: /^remove$/i });
+    await realClick(remove);
+    await expect(
+        remove,
+        `Remove at the "${heading}" heading did not go away`,
+    ).toHaveCount(0);
+}
+
 /**
  * A setting of one of the collection's languages as its settings file holds it, e.g.
  * "DefaultLanguageFontName" or "LanguageLineHeight" for language 1, or undefined when the file has

@@ -301,6 +301,12 @@ root in any target. Never leave one on screen and never move past it silently.
   read the gathered detail and fix the cause, do not loop-dismiss. The log at
   `%TEMP%\SIL\Bloom\Log-*.txt` has the same detail but can lag; the dialog's own "Learn More" is
   the live source.
+- **When the dialog's web view is missing from CDP's target list**, the script reports `present:
+  false` although the developer sees the dialog (seen while the main page's target was briefly
+  gone too). UI Automation still finds its window, `autoId='ReactDialog'`: read it from a capture
+  of that window's screen area (`AutomationElement.BoundingRectangle` and
+  `Graphics.CopyFromScreen`, no pointer), and close it with `winformsUia.ps1 close -Window
+  ReactDialog`, which does not submit. Repeat while `windows` still lists one: several can queue.
 
 ## The exe-backed Playwright suite
 
@@ -404,6 +410,18 @@ developer's own.
 4. **Try on phone** installs the APK on the developer's connected phone; leave that step to them.
 
 ## Field-verified gotchas (all hit in real agent runs)
+
+- **The "Test" branding hides page numbers.** Its `branding.less` sets `.bloom-page::after {
+  content: "" }`, so a collection with the Test subscription (as English Books has) draws no page
+  number in the Edit tab. Clear the subscription in a scratch collection before checking numbers.
+- **Bloom's interface language reaches the web view only at startup**, as `--accept-lang`
+  (WebView2Browser.cs). It sets `navigator.language`, not the default locale: `(1.5).toLocaleString()`
+  stays `1.5` in a French Bloom, while `toLocaleString(navigator.language)` gives `1,5`. After
+  switching the interface language, restart Bloom before judging anything locale-dependent.
+- **Reading a file under `%LOCALAPPDATA%\SIL\Bloom` in Windows PowerShell 5.1**, use
+  `[Text.Encoding]::UTF8.GetString([IO.File]::ReadAllBytes(...))`, and write it back as UTF-8 with
+  its BOM. `Get-Content -Raw` decodes it in the ANSI code page, and writing that back garbles every
+  non-ASCII collection path in `user.config`'s recent list.
 
 - **Port 8089 is first-come, not per-worktree.** Bloom starts at 8089 and falls forward when it
   is taken, so a second worktree's Bloom lands on 8092/8094 without complaint. Anything that
