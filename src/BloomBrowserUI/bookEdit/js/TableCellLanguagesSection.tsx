@@ -6,6 +6,7 @@ import { kBloomBlue } from "../../bloomMaterialUITheme";
 import { useL10n } from "../../react_components/l10nHooks";
 import {
     ICellLanguage,
+    menuLanguages,
     roleIsLastLanguageSomewhere,
     roleState,
     toggleRole,
@@ -171,7 +172,7 @@ export const TableCellLanguagesSection: React.FunctionComponent<{
                         padding: 4px 0;
                     `}
                 >
-                    {props.languages.map((language) => (
+                    {menuLanguages(props.languages).map((language) => (
                         <LanguageRow
                             key={language.role}
                             groups={props.groups}

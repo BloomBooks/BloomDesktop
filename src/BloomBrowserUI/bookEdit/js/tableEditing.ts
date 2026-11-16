@@ -25,6 +25,7 @@ import "bloom-table/bloom-table-edit.css";
 import "./tableEditing.less";
 import { SetupImagesInContainer } from "./bloomImages";
 import { SetupVideoEditing } from "./bloomVideo";
+import { setupInlineImages } from "./inlineImages";
 import { get, post } from "../../utils/bloomApi";
 import $ from "jquery";
 import BloomField from "../bloomField/BloomField";
@@ -247,6 +248,11 @@ function wireBloomContentOfNewCells(root: HTMLElement): void {
     // mode's text boxes, which origami makes not contenteditable. Leaving the
     // mode rebuilds the page, and the page-load pass wires these cells then.
     if (root.closest(".origami-layout-mode")) return;
+    // Every language of a group holds the same inline pictures, so an editable
+    // made since the page loaded (a language newly chosen for a cell, say) gets
+    // copies of them, as page load gives the others. Before CKEditor attaches,
+    // as at page load.
+    setupInlineImages(root);
     // `root` is a cell or a table, so everything below it that is a
     // bloom-editable belongs to some cell of some table.
     root.querySelectorAll<HTMLElement>(

@@ -54,6 +54,20 @@ namespace Bloom.Book
             foreach (var code in bookData.GetAllBookLanguageCodes(includeMetaData2: true))
                 PrepareElementsOnPageOneLanguage(pageOrDocumentNode, code);
 
+            // Those are the toolbar's languages, which need not include the ones a table's text
+            // cell shows (an older Bloom made the table while the toolbar showed only L2, say),
+            // and a cell with no box for its language would show nothing.
+            foreach (var group in GetTranslationGroups(pageOrDocumentNode).Where(IsTableTextCell))
+            {
+                foreach (
+                    var tag in LanguagesOfTableTextCell(
+                        group.GetAttribute("data-default-languages"),
+                        bookData
+                    )
+                )
+                    MakeElementWithLanguageForOneGroup(group, tag);
+            }
+
             FixGroupStyleSettings(pageOrDocumentNode);
         }
 
@@ -264,6 +278,13 @@ namespace Bloom.Book
                 );
             }
 
+            // A table's text cell does not follow the toolbar, so its languages take their order
+            // (bloom-content1, 2, 3) from the collection instead.
+            var tableCellContentLanguages = bookData
+                .CollectionSettings.GetAllLanguageTags()
+                .Select((tag, index) => (tag, index))
+                .ToDictionary(pair => pair.tag, pair => "bloom-content" + (pair.index + 1));
+
             //Stick a class in the page div telling the stylesheet how many languages we are displaying (only makes sense for content pages, in Jan 2012).
             foreach (
                 SafeXmlElement pageDiv in elementOrDom.SafeSelectNodes(
@@ -283,9 +304,18 @@ namespace Bloom.Book
                 // This controls visibility for fields not yet controlled by the Appearance system
                 // (or in legacy mode).
                 var defLangsAttr = group.GetAttribute("data-default-languages");
-                var dataDefaultLanguages = IsTableTextCell(group)
-                    ? LanguagesOfTableTextCell(defLangsAttr, bookData)
-                    : ProcessLanguageList(defLangsAttr, bookData);
+                string[] dataDefaultLanguages;
+                Dictionary<string, string> orderClasses;
+                if (IsTableTextCell(group))
+                {
+                    dataDefaultLanguages = LanguagesOfTableTextCell(defLangsAttr, bookData);
+                    orderClasses = tableCellContentLanguages;
+                }
+                else
+                {
+                    dataDefaultLanguages = ProcessLanguageList(defLangsAttr, bookData);
+                    orderClasses = contentLanguages;
+                }
 
                 //nb: we don't necessarily care that a div is editable or not
                 UpdateGeneratedClassesOnChildren(
@@ -294,7 +324,7 @@ namespace Bloom.Book
                     settings,
                     language2Tag,
                     language3Tag,
-                    contentLanguages,
+                    orderClasses,
                     dataDefaultLanguages
                 );
             }

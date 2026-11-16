@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
     cellLanguagesOfCollection,
     ICellLanguage,
+    menuLanguages,
     roleIsLastLanguageSomewhere,
     roleState,
     rolesFromSetting,
@@ -65,14 +66,34 @@ describe("cellLanguagesOfCollection", () => {
         ).toEqual(["V L1 - Tok Pisin", "N1 L2 - English", "N2 L3 - Spanish"]);
     });
 
-    it("lists a language once when L2 is the same as L1, and leaves out a missing L3", () => {
+    it("keeps a role whose language repeats L1 but leaves out a missing L3, and the menu lists the language once", () => {
         const languages = cellLanguagesOfCollection({
             language1Name: "English",
             language1Tag: "en",
             language2Name: "English",
             language2Tag: "en",
         });
-        expect(languages.map((language) => language.role)).toEqual(["V"]);
+        expect(languages.map((language) => language.role)).toEqual(["V", "N1"]);
+        expect(
+            menuLanguages(languages).map((language) => language.role),
+        ).toEqual(["V"]);
+    });
+
+    it("still shows a cell whose stored role's language repeats L1, after L1 is ticked and unticked", () => {
+        // The cell was set to L2 in a collection where L2 was another language.
+        const languages = cellLanguagesOfCollection({
+            language1Name: "English",
+            language1Tag: "en",
+            language2Name: "English",
+            language2Tag: "en",
+        });
+        const group = makeGroup("N1", ["en"]);
+
+        toggleRole([group], "V", languages, noWiring);
+        toggleRole([group], "V", languages, noWiring);
+
+        expect(group.getAttribute("data-default-languages")).toBe("N1");
+        expect(visibleTagsOf(group)).toEqual(["en"]);
     });
 });
 

@@ -29,8 +29,10 @@ export interface ICellLanguage {
 }
 
 /**
- * The languages a table cell can show, in role order. A role whose language is the same as an
- * earlier role's is left out, so the menu does not list one language twice.
+ * The languages a table cell can show, in role order: every role the collection gives a language,
+ * even one whose language is the same as an earlier role's, since a cell can have that role
+ * stored (it was set in another collection) and must still show its language. The menu lists
+ * each language once; see menuLanguages.
  */
 export function cellLanguagesOfCollection(
     names: ILanguageNameValues,
@@ -64,13 +66,19 @@ export function cellLanguagesOfCollection(
                 "CollectionSettingsDialog.LanguageTab._language3Label",
         },
     ];
-    const result: ICellLanguage[] = [];
-    for (const candidate of candidates) {
-        if (!candidate.tag) continue;
-        if (result.some((language) => language.tag === candidate.tag)) continue;
-        result.push(candidate);
-    }
-    return result;
+    return candidates.filter((candidate) => !!candidate.tag);
+}
+
+/**
+ * The languages the Languages submenu lists: `languages` without a role whose language is the
+ * same as an earlier role's, so the menu does not list one language twice.
+ */
+export function menuLanguages(languages: ICellLanguage[]): ICellLanguage[] {
+    return languages.filter(
+        (language, index) =>
+            languages.findIndex((other) => other.tag === language.tag) ===
+            index,
+    );
 }
 
 /** The translation group of a text cell, or undefined when the cell holds something else. */
