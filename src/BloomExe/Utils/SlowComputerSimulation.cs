@@ -180,8 +180,6 @@ namespace Bloom.Utils
             var process = Process.GetCurrentProcess();
             if (s_job == IntPtr.Zero)
                 s_job = CreateJobForThisProcess(process);
-            // The cap goes on first: it is the Windows call that may refuse, and if it does, nothing
-            // else has changed yet, so Bloom is not left on two cores with the simulation still off.
             // The rate is a share of the cycles of the whole machine, in hundredths of a percent,
             // and it caps the process as a whole, not each thread. So no cap is right for every
             // kind of work. A fifth of one core slows a lone busy thread (usually the UI thread)
@@ -196,12 +194,23 @@ namespace Bloom.Utils
                 rate
             );
             s_originalAffinity = process.ProcessorAffinity;
+            var coreCount = Math.Min(kSimulatedCoreCount, Environment.ProcessorCount);
+            try
+            {
+                // Refused when an enclosing job keeps Bloom off the first two cores.
+                process.ProcessorAffinity = (IntPtr)((1L << coreCount) - 1);
+            }
+            catch
+            {
+                // Leave Bloom as it was: SetOn records the simulation as on only when this method
+                // returns, so nothing else would ever take the cap off again.
+                SetCpuRateControl(0, 0);
+                throw;
+            }
             Environment.SetEnvironmentVariable(
                 kAffinityBeforeSimulationVariable,
                 s_originalAffinity.ToInt64().ToString()
             );
-            var coreCount = Math.Min(kSimulatedCoreCount, Environment.ProcessorCount);
-            process.ProcessorAffinity = (IntPtr)((1L << coreCount) - 1);
         }
 
         /// <summary>
