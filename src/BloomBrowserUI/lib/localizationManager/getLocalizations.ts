@@ -5,11 +5,8 @@ import { postDataWithConfigAsync } from "../../utils/bloomApi";
  * (bloom-image-gallery, bloom-table; bloom-ai-image-tools posts to the same
  * endpoint from its own frame). It is handed string ids from Bloom's XLF, each
  * with its English, and returns the text to show for each in the user's UI
- * language, falling back to the English.
- *
- * Every hosted library follows the same pattern: it exports all its strings by
- * XLF id with their English, asks for them once through this, and shows none
- * of its UI until the answer arrives, so the user never sees English first.
+ * language, falling back to the English. src/BloomBrowserUI/AGENTS.md describes
+ * how a hosted library uses it.
  */
 export async function getLocalizations(
     strings: Record<string, string>,

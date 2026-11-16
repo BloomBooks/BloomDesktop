@@ -47,7 +47,7 @@ import { getLocalizations } from "../../lib/localizationManager/getLocalizations
 // may need Bloom's wiring.
 const kTableHistoryUpdatedEvent = "tableHistoryUpdated";
 
-let contentTypesRegistered = false;
+let tableLibrarySetUp = false;
 
 /**
  * Replace one of the library's built-in cell content types with the Bloom
@@ -73,12 +73,13 @@ function replaceCellContentType(
 }
 
 /**
- * Register Bloom-specific cell content types with the bloom-table library, install
- * Bloom's hooks into it, and have it show its UI in the user's UI language.
+ * Set the bloom-table library up for this page: register Bloom's cell content
+ * types, install Bloom's hooks, and have it show its UI in the user's UI language.
+ * Done when the first table is attached, so a page without tables costs nothing.
  */
-function ensureContentTypesRegistered(): void {
-    if (contentTypesRegistered) return;
-    contentTypesRegistered = true;
+function ensureTableLibrarySetUp(): void {
+    if (tableLibrarySetUp) return;
+    tableLibrarySetUp = true;
 
     // Text cells hold a bloom-translationGroup rather than the library's bare
     // contenteditable, so text in a table participates in Bloom's multilingual
@@ -128,9 +129,9 @@ function ensureContentTypesRegistered(): void {
     setDefaultCellContentTypeId("text");
     installHostHooks();
 
-    // The library asks for the translations of every string it shows, the content
-    // type names registered above among them, and holds its UI back until they
-    // arrive. Once per page, because each call asks again.
+    // The library asks the server for the translations of every string it shows,
+    // the content type names registered above among them, and holds its UI back
+    // until they arrive.
     void setGetLocalizations(getLocalizations);
 }
 
@@ -357,6 +358,7 @@ function observeImageCells(root: HTMLElement): void {
 function attachSingleTable(tableDiv: HTMLElement): void {
     if (tableDiv.hasAttribute("data-table-attached")) return;
     tableDiv.setAttribute("data-table-attached", "1");
+    ensureTableLibrarySetUp();
     attachTable(tableDiv);
     observeImageCells(tableDiv);
 }
@@ -368,9 +370,8 @@ function attachSingleTable(tableDiv: HTMLElement): void {
  * found inside it.
  */
 export function SetupTableEditing(container: HTMLElement): void {
-    ensureContentTypesRegistered();
-    // Asked for once per page load and remembered, because the hooks installed
-    // above have to answer during an event they cannot await. Nothing waits for
+    // Asked for once per page load and remembered, because the hooks that
+    // ensureTableLibrarySetUp installs have to answer during an event they cannot await. Nothing waits for
     // it: until it arrives the answer is "no", which is the safe way round, since
     // it withholds chrome rather than showing chrome that then has to disappear.
     void refreshTableFeatureStatus();
@@ -402,7 +403,6 @@ export function SetupTableEditing(container: HTMLElement): void {
  * needed here.
  */
 export function AttachNewTable(tableDiv: HTMLElement): void {
-    ensureContentTypesRegistered();
     attachSingleTable(tableDiv);
 }
 
@@ -427,7 +427,8 @@ const kNewTableRowCount = 2;
  * library to render again.
  */
 export function AttachNewTableThatFillsItsSpace(tableDiv: HTMLElement): void {
-    ensureContentTypesRegistered();
+    // The rows and columns added below get Bloom's cell content.
+    ensureTableLibrarySetUp();
     tableDiv.setAttribute("data-column-widths", "");
     tableDiv.setAttribute("data-row-heights", "");
     for (let i = 0; i < kNewTableColumnCount; i++) {

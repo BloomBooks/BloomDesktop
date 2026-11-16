@@ -76,16 +76,28 @@ class NoopResizeObserver {
 };
 
 describe("SetupTableEditing", () => {
-    it("hands the library Bloom's getLocalizations, once per page", () => {
-        SetupTableEditing(document.body);
+    it("hands the library Bloom's getLocalizations once, when a page has tables", () => {
+        const page = document.createElement("div");
+        document.body.appendChild(page);
+        SetupTableEditing(page);
+        // A page without tables does not ask for the table's translations.
+        expect(setGetLocalizations).not.toHaveBeenCalled();
+
+        for (let i = 0; i < 2; i++) {
+            const tableDiv = document.createElement("div");
+            tableDiv.classList.add("bloom-table");
+            page.appendChild(tableDiv);
+        }
+        SetupTableEditing(page);
         // A second setup on the same page, as when a canvas element is added,
         // must not ask again.
-        SetupTableEditing(document.body);
+        SetupTableEditing(page);
 
-        expect(setGetLocalizations).toHaveBeenCalledTimes(1);
-        expect(vi.mocked(setGetLocalizations).mock.calls[0][0]).toBe(
+        expect(setGetLocalizations).toHaveBeenCalledExactlyOnceWith(
             getLocalizations,
         );
+        TeardownTableEditing(page);
+        page.remove();
     });
 });
 

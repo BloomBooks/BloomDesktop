@@ -70,7 +70,7 @@ strings translated in one way, and a new one follows it too:
 
 - The library exports every string it shows, keyed by its id in Bloom's XLF, with its English, and
   Bloom's XLF has a `<trans-unit>` for each. A Bloom test checks that the two agree
-  (`tableUiLocalization.test.ts` does this for bloom-table).
+  (`tableUiStrings.test.ts` does this for bloom-table).
 - The library takes `getLocalizations: (strings: Record<string, string>) => Promise<Record<string, string>>`,
   calls it once with all those strings, and shows the English for any id the answer lacks.
 - The library shows none of its UI until the answer arrives, so the user never sees English change

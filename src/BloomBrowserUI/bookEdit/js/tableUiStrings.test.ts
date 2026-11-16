@@ -35,20 +35,18 @@ describe("bloom-table UI strings", () => {
         const sources = readEnglishXlfSources();
         // Sanity check that the XLF files were found and read.
         expect(sources.get("Common.OK")).toBe("OK");
-        const libraryIds = Object.keys(ALL_TABLE_UI_STRINGS);
-        expect(libraryIds.length).toBeGreaterThan(50);
+        const libraryStrings = Object.entries(ALL_TABLE_UI_STRINGS);
+        expect(libraryStrings.length).toBeGreaterThan(50);
 
-        const problems = Object.entries(ALL_TABLE_UI_STRINGS).flatMap(
-            ([xlfId, english]) => {
-                const source = sources.get(xlfId);
-                if (source === undefined) return [`${xlfId} is missing`];
-                if (source !== english)
-                    return [
-                        `${xlfId} is "${source}" in the XLF but "${english}" in bloom-table`,
-                    ];
-                return [];
-            },
-        );
+        const problems = libraryStrings.flatMap(([xlfId, english]) => {
+            const source = sources.get(xlfId);
+            if (source === undefined) return [`${xlfId} is missing`];
+            if (source !== english)
+                return [
+                    `${xlfId} is "${source}" in the XLF but "${english}" in bloom-table`,
+                ];
+            return [];
+        });
         expect(problems).toEqual([]);
     });
 });
