@@ -102,7 +102,7 @@ describe("the marks on a box with more text than fits", () => {
             document.querySelector(
                 "#bloom-overflow-indicator-layer .bloom-overflow-chip",
             )!.textContent,
-        ).toBe("Overflowing");
+        ).toBe("↓ Overflowing");
         // The last line that fits fades out above the edge.
         const fade = drawn("bloom-overflow-fadeLastLine")!;
         expect(fade.top).toBeCloseTo(140 - kLineHeightPx);
@@ -166,7 +166,7 @@ describe("the marks for other kinds of overflow", () => {
         );
         // Sanity check: one chip for the box and one for the page.
         expect(chips.length).toBe(2);
-        const boxChip = chips.find((c) => c.textContent === "Overflowing")!;
+        const boxChip = chips.find((c) => c.textContent === "↓ Overflowing")!;
         expect(boxChip.getBoundingClientRect().top).toBeCloseTo(270);
         const pastMargin = drawn("bloom-overflow-pastContainer")!;
         expect(pastMargin.top).toBeCloseTo(220);

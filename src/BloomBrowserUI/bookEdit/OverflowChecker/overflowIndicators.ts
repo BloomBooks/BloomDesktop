@@ -400,7 +400,13 @@ function drawBoxTooFull(box: IBoxTooFull, layerDraw: LayerDrawer) {
     //     topLayoutPx: cutLayoutPx,
     //     widthLayoutPx,
     // }).style.setProperty("--overflow-background", box.background);
-    draw.chip(box.rectViewportPx.right, cutLayoutPx, chipText.overflowing.text);
+    // A down arrow before the text, pointing to the text that goes on below. It is the plain
+    // arrow, not the emoji one, so it takes the chip's white text color.
+    draw.chip(
+        box.rectViewportPx.right,
+        cutLayoutPx,
+        "↓ " + chipText.overflowing.text,
+    );
 }
 
 // The boxes in the page's margin each fit their text, but together they push past its bottom,
