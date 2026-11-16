@@ -468,7 +468,7 @@ export async function waitForEditablePage(
         )
         .toBeGreaterThan(0);
     // With all pages showing, the Edit tab covers the page frame, taking its clicks, until the new
-    // page shows (showPageLoadingCover in workspaceRoot.ts).
+    // page shows (showPageLoadingCover in pageFrame.ts).
     await expect(
         page.locator("#page-loading-cover"),
         "The Edit tab never took away the cover it puts over the pages while it changes pages.",

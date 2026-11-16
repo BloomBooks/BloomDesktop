@@ -962,12 +962,13 @@ namespace Bloom.Edit
         /// calls and would otherwise block behind the handler that got us here. Finally we navigate
         /// back and hand control on.
         /// </remarks>
-        /// <param name="passStarting">If given, runs just before the pass itself starts. It does not
-        /// run if the user went to another page first (see RunPageLayoutUpdateThenReturnToPage).</param>
+        /// <param name="updateStarting">If given, runs just before the page layout update itself
+        /// starts. It does not run if the user went to another page first (see
+        /// RunPageLayoutUpdateThenReturnToPage).</param>
         public bool UpdatePageLayoutIfNeededThen(
             string pageId,
             Action afterPageReloaded,
-            Action passStarting = null
+            Action updateStarting = null
         )
         {
             var book = CurrentBook;
@@ -978,7 +979,7 @@ namespace Bloom.Edit
             );
             if (outcome != SaveOutcome.Saved)
                 return false;
-            RunPageLayoutUpdateThenReturnToPage(book, pageId, afterPageReloaded, passStarting);
+            RunPageLayoutUpdateThenReturnToPage(book, pageId, afterPageReloaded, updateStarting);
             return true;
         }
 
@@ -1006,10 +1007,17 @@ namespace Bloom.Edit
             var book = CurrentBook;
             var pageId = CurrentPage?.Id;
             // Already running (the user chose All Pages while the page was getting ready, so both
-            // asked): its pass is rewriting the book on another thread, so do not read the book.
+            // asked): that update is rewriting the book on another thread, so do not read the book.
             if (string.IsNullOrEmpty(pageId) || BookProcessor.IsPageLayoutUpdateUnderway(book))
                 return;
-            if (!BookProcessor.NeedsPageLayoutUpdate(book))
+            // This runs with every page shown in the All Pages view, and nearly always finds the book
+            // up to date. Reading the recorded level is cheap; NeedsPageLayoutUpdate first validates
+            // the whole book (CheckForErrors), so ask it only when the level says the book is behind.
+            if (
+                book == null
+                || !BookProcessor.RecordsPageLayoutUpdateLevelBelowOurs(book.OurHtmlDom)
+                || !BookProcessor.NeedsPageLayoutUpdate(book)
+            )
                 return;
             var changeCount = BookProcessor.PageLayoutChangeCount;
             if (
@@ -1044,23 +1052,32 @@ namespace Bloom.Edit
         /// the editor.
         ///
         /// Between the request and the queued start, the user can click another page, and Bloom
-        /// goes to it. The update then does not run, and the user stays on the page they clicked:
-        /// with a page loaded in the editor the book is no longer ours to rewrite, and taking them
-        /// back would undo their click. Once the update has started, CannotSavePage refuses such
-        /// clicks until it is done.
+        /// goes to it. The update then does not start, for two reasons. It rewrites every page of
+        /// the book from a worker thread, which is only safe while the editor holds no page (see
+        /// UpdatePageLayoutIfNeededThen), and the editor now holds the page they clicked. And it
+        /// ends by going back to the page it was asked from, which would undo their click.
+        ///
+        /// The update is put off, not dropped: the book still records that it needs one. The All
+        /// Pages view asks again as soon as the page they clicked is showing (see
+        /// UpdatePageLayoutForAllPagesIfNeeded, which every page shown in that view calls), and it
+        /// runs then and comes back to that page. The AI image editor's request was for the page
+        /// the user has left, so it does nothing more; its next launch asks again.
+        ///
+        /// Once the update has started, CannotSavePage refuses clicks on other pages until it is
+        /// done.
         /// </remarks>
         private void RunPageLayoutUpdateThenReturnToPage(
             Book.Book book,
             string pageId,
             Action afterPageReloaded,
-            Action passStarting
+            Action updateStarting
         )
         {
             RunOffTheApiLock(() =>
             {
                 if (CurrentBook != book || _stateMachine.CurrentState != State.NoPage)
                     return;
-                passStarting?.Invoke();
+                updateStarting?.Invoke();
                 BookProcessor.UpdatePageLayoutIfNeededThen(
                     book,
                     _webSocketServer,

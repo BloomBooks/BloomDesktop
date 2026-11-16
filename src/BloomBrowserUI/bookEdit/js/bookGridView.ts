@@ -7,19 +7,24 @@
 // iframe, so none of the editing code (which assumes this document holds exactly one .bloom-page)
 // can see it. Clicking one of those pages makes it the page being edited.
 //
-// A book can have hundreds of pages, so a page is rendered only while it is on or near the
-// screen; the rest are empty boxes of the right size.
+// A book can have hundreds of pages, so the grid lays out only the pages near the page being edited
+// (see getPagesToShow()), and of those a page is rendered only while it is on or near the screen;
+// the rest are empty boxes of the right size.
 
 import $ from "jquery";
 import { get, post } from "../../utils/bloomApi";
 import {
-    getPageListBundleExports,
     getWorkspaceBundleExports,
+    tryGetWorkspaceBundleExports,
 } from "./workspaceFrames";
-import type { IPageListFrameExports } from "../pageThumbnailList/pageThumbnailList";
+import { postPageClicked } from "../pageThumbnailList/postPageClicked";
 import {
     getIndexOfPageAfterBlankPage,
+    getPagesToShow,
     getSpreadShape,
+    type IPageRange,
+    type ISpreadShape,
+    isBlankPageShown,
     isLaidOutRightToLeft,
     kRowGap,
     kSpreadGap,
@@ -34,10 +39,6 @@ interface IGridPage {
     isXMatter: boolean;
 }
 
-// The session storage key under which onClickOtherPage() leaves an IClickedPageRecord: where the
-// clicked page was on screen, so the next page document can put it back there.
-const kClickedPageKey = "bloom-edit-clickedGridPage";
-
 // On this document's root once replayTheClickThatOpenedThisPage() has finished.
 const kOpeningClickDoneClass = "bloom-book-grid-opening-click-done";
 
@@ -48,16 +49,6 @@ const kEditedPageCornerLength = 0.1;
 // Size on screen, in pixels, of the words on the blank page (see getIndexOfPageAfterBlankPage()).
 const kBlankPageLabelSize = 14;
 const kBlankPageNoteSize = 12;
-
-interface IClickedPageRecord {
-    pageId: string;
-    // The page's position in the page frame's viewport when it was clicked.
-    left: number;
-    top: number;
-    // Where in the page the click landed, as a fraction of its width and height.
-    xFraction: number;
-    yFraction: number;
-}
 
 const kGridStyles = `
 #page-scaling-container.bloom-book-grid-on {
@@ -176,25 +167,6 @@ const kGridStyles = `
 }
 `;
 
-// The controls Bloom shows above the page live in a bar fixed across the top of the page frame, so
-// they are in the same place whichever page is being edited, and whether or not the other pages are
-// showing. The bar covers the space Bloom already leaves above the page (#labelAndLayoutPane), so
-// the page is no further down than it would be without it.
-const kControlsBarStyles = `
-body > .above-page-control-container.bloom-controls-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: var(--bloom-controls-bar-height);
-    max-width: none !important;
-    padding: 0 16px;
-    box-sizing: border-box;
-    z-index: 1000;
-    background-color: var(--bloom-controls-bar-background);
-}
-`;
-
 let gridLayer: HTMLElement | undefined;
 // Where the user clicked the page that is now being edited, back when it was one of the other
 // pages, as a fraction of its width and height. See replayTheClickThatOpenedThisPage().
@@ -205,12 +177,18 @@ let openedByClickingItInTheGrid = false;
 // zoom it was seen at. Laying the pages out again (a zoom change, a narrower window) scrolls to keep
 // the page there; see keepEditedPageInPlace().
 let editedPagePlace: { left: number; top: number; zoom: string } | undefined;
+// Empty space, in the page's own (unzoomed) pixels, above the first row of the grid and below the
+// last. restoreScrollPosition() adds it when the pages shown around the clicked page leave too
+// little of the document above or below it to scroll the page back to where it was clicked.
+let spaceAboveGrid = 0;
+let spaceBelowGrid = 0;
 let gridStyle: HTMLStyleElement | undefined;
 let observers: { disconnect(): void }[] = [];
 
 /**
- * Turn the view of the other pages on or off, remembering the choice for the next page. The page
- * view chooser in the shell's top bar calls this through the page frame's exports.
+ * Turn the view of the other pages on or off in this page document. The page view chooser in the
+ * shell's top bar calls this through the page frame's exports, after storing the choice for the
+ * pages that follow.
  */
 export function setShowingOtherPages(show: boolean): void {
     if (show) {
@@ -237,10 +215,7 @@ export function updatePageLayoutForAllPages(): void {
  * and every page on screen is drawn (at once, if there is no grid to build).
  */
 export function setupBookGridView(): Promise<void> {
-    if (!isShowingOtherPagesHere()) {
-        return Promise.resolve();
-    }
-    if (gridLayer) {
+    if (!isShowingOtherPagesHere() || gridLayer) {
         return Promise.resolve();
     }
     return new Promise((resolve) => {
@@ -282,10 +257,12 @@ export function isShowingOtherPagesHere(): boolean {
 }
 
 /** Remove the grid of other pages and everything it changed in this document. */
-export function removeBookGridView(): void {
+function removeBookGridView(): void {
     observers.forEach((o) => o.disconnect());
     observers = [];
     editedPagePlace = undefined;
+    spaceAboveGrid = 0;
+    spaceBelowGrid = 0;
     gridLayer?.remove();
     gridLayer = undefined;
     settleLoadsOfDroppedFrames();
@@ -314,59 +291,19 @@ function repositionBubbles(): void {
     ).qtip("reposition", undefined, false);
 }
 
-// The element holding the controls shown above the page (Change Layout, the game tabs), if this
-// page has any.
-function getControlsContainer(): HTMLElement | undefined {
-    return document.getElementsByClassName(
-        "above-page-control-container",
-    )[0] as HTMLElement | undefined;
-}
-
-/**
- * Put the controls Bloom shows above the page into a bar fixed across the top of the page frame
- * (see kControlsBarStyles). Only the live Edit tab gets it.
- */
-export function setupControlsBar(): void {
-    if (window.frameElement?.id !== "page") return;
-    const style = document.createElement("style");
-    style.textContent = kControlsBarStyles;
-    document.head.appendChild(style);
-    document.body.style.setProperty(
-        "--bloom-controls-bar-background",
-        getComputedStyle(document.body).backgroundColor,
-    );
-    document.body.style.setProperty(
-        "--bloom-controls-bar-height",
-        `${document.getElementById("labelAndLayoutPane")!.offsetHeight}px`,
-    );
-    moveControlsToBar();
-    // The controls are rendered inside the scaling container, and may be (re)created there.
-    new MutationObserver(() => moveControlsToBar()).observe(
-        getScalingContainer()!,
-        { childList: true },
-    );
-}
-
-// Move the controls shown above the page into a bar fixed across the top of the page frame, so they
-// stay put while the pages scroll under them.
-function moveControlsToBar(): void {
-    const controls = getControlsContainer();
-    if (!controls || controls.parentElement === document.body) return;
-    controls.classList.add("bloom-controls-bar");
-    document.body.appendChild(controls);
-}
-
+// The element that zooms the page being edited, and with it the grid.
 function getScalingContainer(): HTMLElement | null {
     return document.getElementById("page-scaling-container");
 }
 
+// The page being edited: the one .bloom-page in this document.
 function getEditedPage(): HTMLElement {
     return document.querySelector(".bloom-page") as HTMLElement;
 }
 
-// Lay out a cell for every page of the book, the page being edited among them, and keep the layout
-// and the drawing of the other pages up to date as the view scrolls, zooms or resizes. Resolves when
-// the other pages that are on screen have been drawn.
+// Lay out a cell for each page that the grid shows (see getPagesToShow()), the page being edited
+// among them, and keep the layout and the drawing of the other pages up to date as the view scrolls,
+// zooms or resizes. Resolves when the other pages that are on screen have been drawn.
 function buildGrid(pages: IGridPage[]): Promise<void> {
     const container = getScalingContainer()!;
     const editedPage = getEditedPage();
@@ -390,53 +327,47 @@ function buildGrid(pages: IGridPage[]): Promise<void> {
     gridStyle.textContent = kGridStyles;
     document.head.appendChild(gridStyle);
 
-    const blankPageBefore = getIndexOfPageAfterBlankPage(
-        getSpreadShape(editedPage),
-        pages,
+    const shape = getSpreadShape(editedPage);
+    // Decided from the whole book, whichever of its pages are shown.
+    const blankPageBefore = getIndexOfPageAfterBlankPage(shape, pages);
+    const pagesShown = getPagesToShow(
+        shape,
+        pages.length,
+        editedIndex,
+        blankPageBefore,
     );
     const blankCell =
-        blankPageBefore === undefined ? undefined : makeBlankPageCell();
+        blankPageBefore !== undefined &&
+        isBlankPageShown(shape, blankPageBefore, pagesShown)
+            ? makeBlankPageCell()
+            : undefined;
 
-    const cells = new Map<string, HTMLElement>();
-    pages.forEach((page, index) => {
-        const cell = document.createElement("div");
-        cell.classList.add("bloom-book-grid-cell");
-        cell.setAttribute("data-page-id", page.key);
-        cell.setAttribute("data-page-index", index.toString());
-        if (index === editedIndex) {
-            cell.classList.add("bloom-book-grid-edited");
-            ["top left", "top right", "bottom left", "bottom right"].forEach(
-                (where) => {
-                    const corner = document.createElement("div");
-                    corner.className = `bloom-book-grid-corner ${where}`;
-                    cell.appendChild(corner);
-                },
-            );
-        } else {
-            const veil = document.createElement("div");
-            veil.classList.add("bloom-book-grid-veil");
-            veil.addEventListener("click", (e) =>
-                onClickOtherPage(e, cell, page),
-            );
-            cell.appendChild(veil);
+    // cells[i] holds the page at index pagesShown.first + i in the book.
+    const cells: HTMLElement[] = [];
+    for (let index = pagesShown.first; index <= pagesShown.last; index++) {
+        if (blankCell && index === blankPageBefore) {
+            gridLayer.appendChild(blankCell);
         }
-        if (index === blankPageBefore) {
-            gridLayer!.appendChild(blankCell!);
-        }
-        gridLayer!.appendChild(cell);
-        cells.set(page.key, cell);
-    });
+        const cell = makeCell(pages[index], index === editedIndex);
+        gridLayer.appendChild(cell);
+        cells.push(cell);
+    }
+    // The blank page can share a spread with the last page shown, when the page after it is not
+    // shown.
+    if (blankCell && !blankCell.isConnected) gridLayer.appendChild(blankCell);
+    const editedCell = cells[editedIndex - pagesShown.first];
 
     const layout = () =>
         layoutGrid(
-            pages.length,
+            shape,
             editedIndex,
             cells,
+            pagesShown,
             blankPageBefore,
             blankCell,
         );
     layout();
-    restoreScrollPosition(editedPage);
+    restoreScrollPosition(editedPage, layout);
     rememberWhereEditedPageIs();
     const onScroll = () => rememberWhereEditedPageIs();
     window.addEventListener("scroll", onScroll);
@@ -446,17 +377,15 @@ function buildGrid(pages: IGridPage[]): Promise<void> {
 
     // Draw the pages that are on screen now, rather than waiting for the observer below, so the
     // caller can know when the view is complete.
-    const onScreen = Array.from(cells.values()).filter(
-        (cell) =>
-            !cell.classList.contains("bloom-book-grid-edited") &&
-            isOnScreen(cell),
-    );
+    const otherCells = cells.filter((cell) => cell !== editedCell);
     const drawn = Promise.all(
-        onScreen.map((cell) => renderPageInCell(cell, bodyAttributes)),
+        otherCells
+            .filter(isOnScreen)
+            .map((cell) => renderPageInCell(cell, bodyAttributes)),
     );
 
-    // Anything that moves or resizes the page being edited (the controls rendered above it, a
-    // zoom change, a narrower window) changes where the other pages belong.
+    // Anything that moves or resizes the page being edited (a zoom change, a narrower window)
+    // changes where the other pages belong.
     const resizeObserver = new ResizeObserver(() => layout());
     resizeObserver.observe(container);
     resizeObserver.observe(editedPage);
@@ -482,13 +411,33 @@ function buildGrid(pages: IGridPage[]): Promise<void> {
         },
         { rootMargin: "100% 50%" },
     );
-    cells.forEach((cell) => {
-        if (!cell.classList.contains("bloom-book-grid-edited")) {
-            intersectionObserver.observe(cell);
-        }
-    });
+    otherCells.forEach((cell) => intersectionObserver.observe(cell));
     observers.push(intersectionObserver);
     return drawn.then(() => undefined);
+}
+
+// The cell of one page in the grid: for the page being edited, the marks at its corners; for each of
+// the other pages, a veil over the page that takes the click that opens it.
+function makeCell(page: IGridPage, isEditedPage: boolean): HTMLElement {
+    const cell = document.createElement("div");
+    cell.classList.add("bloom-book-grid-cell");
+    cell.setAttribute("data-page-id", page.key);
+    if (isEditedPage) {
+        cell.classList.add("bloom-book-grid-edited");
+        ["top left", "top right", "bottom left", "bottom right"].forEach(
+            (where) => {
+                const corner = document.createElement("div");
+                corner.className = `bloom-book-grid-corner ${where}`;
+                cell.appendChild(corner);
+            },
+        );
+    } else {
+        const veil = document.createElement("div");
+        veil.classList.add("bloom-book-grid-veil");
+        veil.addEventListener("click", (e) => onClickOtherPage(e, cell, page));
+        cell.appendChild(veil);
+    }
+    return cell;
 }
 
 // The printed book's blank page (see getIndexOfPageAfterBlankPage()). It is not one of the book's
@@ -526,12 +475,13 @@ function isOnScreen(element: HTMLElement): boolean {
 }
 
 // Position every cell, and pad the scaling container so that the page being edited lands in its
-// own cell. Cells are laid out in the page's own (unzoomed) pixels; the scaling container zooms
-// them along with the page.
+// own cell. cells[i] holds the page at index pagesShown.first + i in the book. Cells are laid out in
+// the page's own (unzoomed) pixels; the scaling container zooms them along with the page.
 function layoutGrid(
-    pageCount: number,
+    shape: ISpreadShape,
     editedIndex: number,
-    cells: Map<string, HTMLElement>,
+    cells: HTMLElement[],
+    pagesShown: IPageRange,
     blankPageBefore: number | undefined,
     blankCell: HTMLElement | undefined,
 ): void {
@@ -569,7 +519,7 @@ function layoutGrid(
     // whatever padding this sets below. How many spreads fit across must not depend on that
     // padding: the padding depends on the answer, and the two would chase each other for ever.
     const grid = makeGridLayout(
-        getSpreadShape(editedPage),
+        shape,
         pageWidth,
         pageHeight,
         container.clientWidth - 2 * edgeMargin,
@@ -577,11 +527,12 @@ function layoutGrid(
         kRowGap,
         isLaidOutRightToLeft(editedPage, editedIndex),
         blankPageBefore,
+        pagesShown,
     );
 
     const edited = grid.positionOfPage(editedIndex);
     const wantedPaddingLeft = `${edited.x + edgeMargin}px`;
-    const wantedPaddingTop = `${edited.y + kRowGap}px`;
+    const wantedPaddingTop = `${edited.y + kRowGap + spaceAboveGrid}px`;
     if (container.style.paddingLeft !== wantedPaddingLeft) {
         container.style.paddingLeft = wantedPaddingLeft;
     }
@@ -595,29 +546,28 @@ function layoutGrid(
     gridLayer.style.left = `${originX}px`;
     gridLayer.style.top = `${originY}px`;
 
-    let index = 0;
-    cells.forEach((cell) => {
-        const position = grid.positionOfPage(index);
+    const placeCell = (
+        cell: HTMLElement,
+        position: { x: number; y: number },
+    ) => {
         cell.style.left = `${position.x}px`;
         cell.style.top = `${position.y}px`;
         cell.style.width = `${pageWidth}px`;
         cell.style.height = `${pageHeight}px`;
-        index++;
-    });
+    };
+    cells.forEach((cell, i) =>
+        placeCell(cell, grid.positionOfPage(pagesShown.first + i)),
+    );
     const blankPosition = grid.positionOfBlankPage();
-    if (blankCell && blankPosition) {
-        blankCell.style.left = `${blankPosition.x}px`;
-        blankCell.style.top = `${blankPosition.y}px`;
-        blankCell.style.width = `${pageWidth}px`;
-        blankCell.style.height = `${pageHeight}px`;
-    }
-    const last = grid.positionOfPage(pageCount - 1);
+    if (blankCell && blankPosition) placeCell(blankCell, blankPosition);
+    const last = grid.positionOfPage(pagesShown.last);
     gridLayer.style.width = `${grid.spreadsPerRow * (grid.spreadWidth + kSpreadGap)}px`;
-    gridLayer.style.height = `${last.y + pageHeight + edgeMargin}px`;
+    gridLayer.style.height = `${last.y + pageHeight + edgeMargin + spaceBelowGrid}px`;
     keepEditedPageInPlace();
     repositionBubbles();
 }
 
+// The scaling container's zoom, as its transform (see setZoom() in workspaceRoot.ts).
 function getZoomOfScalingContainer(): string {
     return getScalingContainer()!.style.transform;
 }
@@ -699,9 +649,7 @@ function renderPageInCell(
                 }">${getStylesheetsForPageFrames()}<style>
                 html, body { margin: 0 !important; padding: 0 !important; overflow: hidden; background: transparent; }
                 .bloom-page { margin: 0 !important; }
-            </style></head><body ${bodyAttributes}>${fullSizePictures(
-                content,
-            )}</body></html>`,
+            </style></head><body ${bodyAttributes}>${content}</body></html>`,
             );
             frameDocument.close();
             cell.classList.add("bloom-book-grid-rendered");
@@ -715,8 +663,10 @@ const kMaxPageRequests = 4;
 let activePageRequests = 0;
 const queuedPageRequests: (() => void)[] = [];
 
-// Get a page's content, as made for the page list, once a request slot is free. Resolves to
-// undefined if the request fails, or if stillWanted() says no by the time a slot is free.
+// Get a page's content, as made for the page list but with its pictures at full size (the page
+// list's are made small; see GetPageContentForThumbnail in PageListApi.cs), once a request slot is
+// free. Resolves to undefined if the request fails, or if stillWanted() says no by the time a slot
+// is free.
 function getPageContent(
     pageId: string,
     stillWanted: () => boolean,
@@ -735,7 +685,7 @@ function getPageContent(
                 startNextPageRequest();
             };
             get(
-                `pageList/pageContent?page-id=${encodeURIComponent(pageId)}`,
+                `pageList/pageContent?page-id=${encodeURIComponent(pageId)}&full-size=true`,
                 (response) => finish(response.data.content),
                 () => finish(undefined),
             );
@@ -748,17 +698,6 @@ function getPageContent(
 // Start the next waiting request for a page's content, if fewer than kMaxPageRequests are running.
 function startNextPageRequest(): void {
     if (activePageRequests < kMaxPageRequests) queuedPageRequests.shift()?.();
-}
-
-// The page content comes in the form made for the page list, whose pictures ask the server for small
-// versions by adding "thumbnail=1" to the query (see MarkImageNodesForThumbnail in PageListApi.cs),
-// sometimes followed by "&transparent=...". These pages are shown at full size, so ask for the
-// pictures themselves, keeping any other parameters: "x.png?thumbnail=1&transparent=yes" becomes
-// "x.png?transparent=yes", and "x.png?optional=true&thumbnail=1" becomes "x.png?optional=true".
-function fullSizePictures(pageHtml: string): string {
-    return pageHtml
-        .replace(/\?thumbnail=1(&amp;|&)/g, "?")
-        .replace(/(\?|&amp;|&)thumbnail=1/g, "");
 }
 
 // The page frames show a page with the same stylesheets as the page being edited, but none of
@@ -788,6 +727,15 @@ function getRulesText(sheet: CSSStyleSheet): string {
         .join("\n");
 }
 
+// The style element holding the book's userModifiedStyles in this document head, if it has one.
+function findUserModifiedStyles(
+    head: HTMLHeadElement,
+): HTMLStyleElement | undefined {
+    return Array.from(head.querySelectorAll("style")).find(
+        (style) => style.title === "userModifiedStyles",
+    );
+}
+
 /**
  * Give the other pages the book's userModifiedStyles as they are now. The Format dialog calls this
  * after each change it makes to them (see cleanupAfterStyleChange() in StyleEditor.ts), so the
@@ -795,9 +743,7 @@ function getRulesText(sheet: CSSStyleSheet): string {
  */
 export function updateOtherPagesUserModifiedStyles(): void {
     if (!gridLayer) return;
-    const source = Array.from(document.head.querySelectorAll("style")).find(
-        (style) => style.title === "userModifiedStyles",
-    );
+    const source = findUserModifiedStyles(document.head);
     if (!source?.sheet) return;
     const rules = getRulesText(source.sheet);
     gridLayer
@@ -806,9 +752,7 @@ export function updateOtherPagesUserModifiedStyles(): void {
             const head = frame.contentDocument?.head;
             // A frame still waiting for its page gets the styles as they are when the page arrives.
             if (!head) return;
-            let target = Array.from(head.querySelectorAll("style")).find(
-                (style) => style.title === "userModifiedStyles",
-            );
+            let target = findUserModifiedStyles(head);
             if (!target) {
                 // The Format dialog made the stylesheet after this frame was drawn.
                 target = source.cloneNode() as HTMLStyleElement;
@@ -826,14 +770,14 @@ function getBodyAttributesForPageFrames(): string {
         .join(" ");
 }
 
-// A click on one of the other pages: remember where on it the user clicked, so the opened page can
-// replay the click, and ask Bloom to open it the way the page list does.
 /**
  * Show at once that the Edit tab is opening this page, while the page document that will edit it
  * loads out of sight: the corner marks move to the page, and if it is not where the user can see
  * it, the view scrolls to put it where the new page document will (see restoreScrollPosition()).
  * Opening a page takes seconds on a slow machine, and this way the user sees it start. Does nothing
- * unless the other pages are showing.
+ * unless the other pages are showing, or if the page is not among those the grid shows (one chosen
+ * in the page list, far from the page being edited): the view then stays as it is, under the wait
+ * cursor, until the new page document shows that page in the middle of the view.
  */
 export function showPageBeingOpened(pageId: string): void {
     if (!gridLayer) return;
@@ -847,25 +791,30 @@ export function showPageBeingOpened(pageId: string): void {
     );
     if (!wasClickedInTheGrid(pageId)) {
         // The new page document centres the page in the view; put it there now.
-        const rect = cell.getBoundingClientRect();
-        window.scrollBy(
-            rect.left - (window.innerWidth - rect.width) / 2,
-            rect.top - (window.innerHeight - rect.height) / 2,
-        );
+        scrollToMiddleOfView(cell);
     }
 }
 
-// True if the user opened this page by clicking it in the grid of this page document, which left
-// a record of where it was (see onClickOtherPage()).
+// Scroll this document so the element is in the middle of the page frame's window. It scrolls this
+// document only: scrollIntoView would also scroll the Edit tab's own containers, outside this
+// frame, and push the page list off the side of the window.
+function scrollToMiddleOfView(element: HTMLElement): void {
+    const rect = element.getBoundingClientRect();
+    window.scrollBy(
+        rect.left - (window.innerWidth - rect.width) / 2,
+        rect.top - (window.innerHeight - rect.height) / 2,
+    );
+}
+
+// True if the page with this id is the one a click in the grid asked to open, whose record (see
+// onClickOtherPage()) restoreScrollPosition() has not yet taken. False where there is no workspace
+// to hold the record: the same editing code also loads pages off-screen to process them.
 function wasClickedInTheGrid(pageId: string): boolean {
-    try {
-        const saved = sessionStorage.getItem(kClickedPageKey);
-        return !!saved && JSON.parse(saved).pageId === pageId;
-    } catch {
-        return false;
-    }
+    return tryGetWorkspaceBundleExports()?.isClickedPage(pageId) ?? false;
 }
 
+// A click on one of the other pages: remember where on it the user clicked, so the opened page can
+// replay the click, and ask Bloom to open it the way the page list does.
 function onClickOtherPage(
     e: MouseEvent,
     cell: HTMLElement,
@@ -875,73 +824,71 @@ function onClickOtherPage(
     e.stopPropagation();
     getWorkspaceBundleExports().showPageLoadingCover();
     const rect = cell.getBoundingClientRect();
-    const record: IClickedPageRecord = {
+    getWorkspaceBundleExports().storeClickedPageRecord({
         pageId: page.key,
         left: rect.left,
         top: rect.top,
         xFraction: (e.clientX - rect.left) / rect.width,
         yFraction: (e.clientY - rect.top) / rect.height,
-    };
-    try {
-        sessionStorage.setItem(kClickedPageKey, JSON.stringify(record));
-    } catch {
-        // Without storage the new page just scrolls into view.
-    }
+    });
     showPageBeingOpened(page.key);
-    // Exactly as if the page had been clicked in the page list.
-    whenPageListIsReady((pageList) =>
-        pageList.postPageClicked(page.key, page.caption),
-    );
+    // Exactly as if the page had been clicked in the page list. If Bloom does not open the page,
+    // the view goes back to how it was, with no wait cursor.
+    postPageClicked(page.key, page.caption, undefined, () => {
+        getWorkspaceBundleExports().pageClickWasRefused(page.key);
+        stopShowingPageBeingOpened();
+    });
 }
 
-// The page list's frame can still be loading (Bloom reloads it along with a page change) after this
-// page is showing. Waiting for it keeps the click from being lost; the loading cover shows the
-// wait cursor meanwhile. A page list that has not loaded in kMaxWaitForPageListMs is broken, which
-// is reported rather than waited on for ever.
-const kMaxWaitForPageListMs = 10000;
-function whenPageListIsReady(
-    task: (pageList: IPageListFrameExports) => void,
-    giveUpAt = Date.now() + kMaxWaitForPageListMs,
-): void {
-    const pageList = getPageListBundleExports();
-    if (pageList) {
-        task(pageList);
-        return;
-    }
-    if (Date.now() > giveUpAt) {
-        throw new Error(
-            "The page list never finished loading, so a click on another page could not be sent.",
+// Undo showPageBeingOpened() for a page that Bloom did not open: the corner marks go back to the
+// page being edited.
+function stopShowingPageBeingOpened(): void {
+    if (!gridLayer) return;
+    gridLayer
+        .querySelectorAll(".bloom-book-grid-opening")
+        .forEach((cell) => cell.classList.remove("bloom-book-grid-opening"));
+    gridLayer
+        .querySelector(".bloom-book-grid-cell.bloom-book-grid-edited")!
+        .append(
+            ...Array.from(
+                gridLayer.querySelectorAll(".bloom-book-grid-corner"),
+            ),
         );
-    }
-    window.setTimeout(() => whenPageListIsReady(task, giveUpAt), 50);
 }
 
 // When the user clicked a page in the grid, put the page, now being edited, back where it was on
-// screen, so it looks as if the page simply became editable. Otherwise bring it into view.
-function restoreScrollPosition(editedPage: HTMLElement): void {
-    let record: IClickedPageRecord | undefined;
-    try {
-        const saved = sessionStorage.getItem(kClickedPageKey);
-        sessionStorage.removeItem(kClickedPageKey);
-        record = saved ? JSON.parse(saved) : undefined;
-    } catch {
-        record = undefined;
-    }
-    const rect = editedPage.getBoundingClientRect();
-    // Scroll this document only, with scrollBy/scrollTo. scrollIntoView would also scroll the Edit
-    // tab's own containers, outside this frame, and push the page list off the side of the window.
+// screen, so it looks as if the page simply became editable. Otherwise bring it into view. The pages
+// shown around the clicked page are not the ones that were shown around the page before it (see
+// getPagesToShow()), so there may be too few rows above or below it to scroll it back to where it
+// was; then the grid gets empty space above or below, and layout() lays it out again with that.
+function restoreScrollPosition(
+    editedPage: HTMLElement,
+    layout: () => void,
+): void {
+    const record = getWorkspaceBundleExports().takeClickedPageRecord();
     if (record && record.pageId === editedPage.id) {
-        window.scrollBy(rect.left - record.left, rect.top - record.top);
+        const rect = editedPage.getBoundingClientRect();
+        const zoom = rect.height / editedPage.offsetHeight;
+        const scroller = document.scrollingElement!;
+        const wantedScrollTop = window.scrollY + rect.top - record.top;
+        const maxScrollTop = scroller.scrollHeight - scroller.clientHeight;
+        if (wantedScrollTop < 0) {
+            spaceAboveGrid = -wantedScrollTop / zoom;
+            layout();
+        } else if (wantedScrollTop > maxScrollTop) {
+            spaceBelowGrid = (wantedScrollTop - maxScrollTop) / zoom;
+            layout();
+        }
+        // Scroll this document only (see scrollToMiddleOfView()).
+        const placed = editedPage.getBoundingClientRect();
+        window.scrollBy(placed.left - record.left, placed.top - record.top);
         openedByClickingItInTheGrid = true;
         openingClick = {
             xFraction: record.xFraction,
             yFraction: record.yFraction,
         };
     } else {
-        window.scrollBy(
-            rect.left - (window.innerWidth - rect.width) / 2,
-            rect.top - (window.innerHeight - rect.height) / 2,
-        );
+        scrollToMiddleOfView(editedPage);
     }
 }
 
@@ -951,14 +898,10 @@ function restoreScrollPosition(editedPage: HTMLElement): void {
  * must not focus anything else, whether the click has been replayed yet or not.
  */
 export function wasOpenedByClickingItInTheGrid(): boolean {
-    if (openedByClickingItInTheGrid) return true;
-    // restoreScrollPosition() has not run yet; the record of the click is still waiting for it.
-    try {
-        const saved = sessionStorage.getItem(kClickedPageKey);
-        return !!saved && JSON.parse(saved).pageId === getEditedPage().id;
-    } catch {
-        return false;
-    }
+    // Before restoreScrollPosition() has run, the record of the click is still waiting for it.
+    return (
+        openedByClickingItInTheGrid || wasClickedInTheGrid(getEditedPage().id)
+    );
 }
 
 /**

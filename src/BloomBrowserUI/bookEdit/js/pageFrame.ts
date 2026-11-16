@@ -1,9 +1,11 @@
 // The iframe that holds the page being edited, and how the Edit tab changes the page in it without
-// the view blanking and rebuilding.
+// the view blanking and rebuilding. It also keeps, from one page document to the next, the record of
+// a page clicked among the other pages (see bookGridView.ts).
 //
 // This module's state lives in the root window. Code in other frames (the page frame, the page
 // list) must reach these functions through getWorkspaceBundleExports(), never by importing this
-// module: an import would give that frame its own load counter, which never matches the one here.
+// module: an import would give that frame its own copy of this state (its own load counter, which
+// never matches the one here, and a clicked page record that goes away with the page document).
 
 import { kPageLoadNumberAttribute } from "./workspaceFrames";
 import { isShowingOtherPages } from "./pageViewSettings";
@@ -12,7 +14,6 @@ const kPageFrameId = "page";
 const kOutgoingPageFrameId = "page-outgoing";
 const kPageLoadingCoverId = "page-loading-cover";
 const kMaxWaitForPageReadyAfterLoadMs = 3000;
-const kMaxWaitForPageChangeToStartMs = 5000;
 
 // The cursor shown while the Edit tab changes pages: a plain clock face, rather than the spinning
 // circle Windows draws for the standard "wait" cursor. Falls back to that standard cursor.
@@ -25,16 +26,53 @@ const kWaitCursor = `url("data:image/svg+xml,${encodeURIComponent(
     kClockSvg,
 )}") 12 12, wait`;
 
-// What to do once the page loading into this frame is there; see loadPageIntoFrame.
-let onPageArrivedInFrame:
-    | { frame: HTMLIFrameElement; onPageArrived: () => void }
-    | undefined;
+/**
+ * Where a page clicked among the other pages (see onClickOtherPage() in bookGridView.ts) was on
+ * screen, so the page document that opens it can put it back there.
+ */
+export interface IClickedPageRecord {
+    pageId: string;
+    // The page's position in the page frame's viewport when it was clicked.
+    left: number;
+    top: number;
+    // Where in the page the click landed, as a fraction of its width and height.
+    xFraction: number;
+    yFraction: number;
+}
+
+// The record of the page last clicked among the other pages, until the page document that opens a
+// page takes it (takeClickedPageRecord). It lives here because the page document that clicked is
+// gone by then.
+let clickedPageRecord: IClickedPageRecord | undefined;
+
+/** Keep the record of a page just clicked among the other pages, replacing any earlier one. */
+export function storeClickedPageRecord(record: IClickedPageRecord): void {
+    clickedPageRecord = record;
+}
+
+/** True if the record of a clicked page is waiting to be taken, and is for the page with this id. */
+export function isClickedPage(pageId: string): boolean {
+    return clickedPageRecord?.pageId === pageId;
+}
+
+/** Return the record of a clicked page, if there is one, and forget it. */
+export function takeClickedPageRecord(): IClickedPageRecord | undefined {
+    const record = clickedPageRecord;
+    clickedPageRecord = undefined;
+    return record;
+}
+
+// What to do once the page now loading into the page frame is there; see loadPageIntoFrame. It
+// does nothing if a later load has started since.
+let onPageArrivedInFrame: (() => void) | undefined;
 // The number of the latest load of the page frame (see numberPageLoad).
 let pageLoadNumber = 0;
 
 /**
  * Cover the page frame with the wait cursor, and take its clicks, from a click on another page until
- * that page shows (see pageFrameIsReadyToShow). If no page change follows, take the cover away again.
+ * that page shows (see pageFrameIsReadyToShow), or until Bloom answers that it will not open it (see
+ * pageClickWasRefused). Nothing else takes the cover away: on a slow machine Bloom can take the click
+ * several seconds after it was made, and the page changes then.
  */
 export function showPageLoadingCover(): void {
     if (document.getElementById(kPageLoadingCoverId)) return;
@@ -46,9 +84,17 @@ export function showPageLoadingCover(): void {
     cover.style.zIndex = "2";
     cover.style.cursor = kWaitCursor;
     host.appendChild(cover);
-    window.setTimeout(() => {
-        if (!document.getElementById(kOutgoingPageFrameId)) cover.remove();
-    }, kMaxWaitForPageChangeToStartMs);
+}
+
+/**
+ * Called when Bloom did not open the page with this id, clicked among the other pages (see
+ * postPageClicked): forget the record of that click, and take the wait cursor away at once, unless
+ * a page change is under way after all (one Bloom had already started), which takes it away itself.
+ */
+export function pageClickWasRefused(pageId: string): void {
+    if (clickedPageRecord?.pageId === pageId) clickedPageRecord = undefined;
+    if (!document.getElementById(kOutgoingPageFrameId))
+        document.getElementById(kPageLoadingCoverId)?.remove();
 }
 
 /**
@@ -135,11 +181,8 @@ export function pageFrameIsReadyToShow(loadNumber: number): void {
         return;
     }
     takeDownPageBeingLeft();
-    const current = document.getElementById(kPageFrameId);
-    if (onPageArrivedInFrame?.frame === current) {
-        onPageArrivedInFrame.onPageArrived();
-        onPageArrivedInFrame = undefined;
-    }
+    onPageArrivedInFrame?.();
+    onPageArrivedInFrame = undefined;
 }
 
 /**
@@ -177,17 +220,22 @@ export function loadPageIntoFrame(
         onPageArrived();
     };
     iframe.addEventListener("load", handler);
-    onPageArrivedInFrame = { frame: iframe, onPageArrived: handler };
-    iframe.addEventListener(
-        "load",
-        () =>
-            // If the page never says it is ready (say an error stopped its script), don't leave
-            // the old page covering it for good.
-            window.setTimeout(() => {
-                if (isStillThisChange()) takeDownPageBeingLeft();
-            }, kMaxWaitForPageReadyAfterLoadMs),
-        { once: true },
-    );
+    onPageArrivedInFrame = handler;
+    // If the page never says it is ready (say an error stopped its script), don't leave the old
+    // page covering it for good. Once the page being left has gone, this change is over, and a
+    // cover over the frame is a later click's, waiting for Bloom to start the next change.
+    const takeDownPageBeingLeftAfterWait = () => {
+        window.setTimeout(() => {
+            if (
+                isStillThisChange() &&
+                document.getElementById(kOutgoingPageFrameId)
+            )
+                takeDownPageBeingLeft();
+        }, kMaxWaitForPageReadyAfterLoadMs);
+    };
+    iframe.addEventListener("load", takeDownPageBeingLeftAfterWait, {
+        once: true,
+    });
     // When we don't already have a video (either a new page, or it has been deleted),
     // and record a new one, we switchContentPage to make the new video show up.
     // And for no known reason, the load event never fires. There may possibly be
@@ -196,9 +244,7 @@ export function loadPageIntoFrame(
     // gets the same rescue from here.
     window.setTimeout(() => {
         if (!handlerCalled && isStillThisChange()) {
-            window.setTimeout(() => {
-                if (isStillThisChange()) takeDownPageBeingLeft();
-            }, kMaxWaitForPageReadyAfterLoadMs);
+            takeDownPageBeingLeftAfterWait();
         }
     }, 1500);
 }

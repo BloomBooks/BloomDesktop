@@ -54,7 +54,7 @@ export const PageViewChooser: React.FunctionComponent = () => {
         setMode(newMode);
         getWorkspaceBundleExports().storeShowingOtherPages(newMode === "all");
         getEditablePageBundleExports()?.setShowingOtherPages(newMode === "all");
-        switchToZoomOfMode(mode, newMode);
+        queueZoomChange(() => switchToZoomOfMode(mode, newMode));
     };
 
     return (
@@ -143,22 +143,9 @@ export const PageViewChooser: React.FunctionComponent = () => {
 
 type ZoomInfo = { zoom: number; minZoom: number };
 
-// Each page view mode keeps the zoom the user last had in it, so that going back to one page undoes the
-// zooming out that seeing all the pages may have needed. Going to all pages zooms out further if
-// the zoom kept for it would not fit a spread. Bloom's own zoom setting is the zoom of
-// the mode showing now; the zoom of the other mode is kept with the choice of mode, across Bloom
-// sessions (see pageViewSettings.ts).
-// Switches run one after another: each reads Bloom's zoom as the switch before it left it, so a
-// quick change of mode and back cannot store one mode's zoom as the other's.
-function switchToZoomOfMode(
-    oldMode: PageViewMode,
-    newMode: PageViewMode,
-): void {
-    queueZoomChange(() => switchZoomNow(oldMode, newMode));
-}
-
-// Run a zoom change after the ones asked for before it. One that fails is reported, and the
-// changes after it still run.
+// Run a zoom change after the ones asked for before it: each reads Bloom's zoom as the change
+// before it left it, so a quick change of mode and back cannot store one mode's zoom as the
+// other's. One that fails is reported, and the changes after it still run.
 function queueZoomChange(change: () => Promise<void>): void {
     zoomSwitchesDone = zoomSwitchesDone
         .then(change)
@@ -188,7 +175,12 @@ function fitSpreadUnlessUserZoomedIn(): void {
 }
 
 // Store the zoom of the mode being left, and give Bloom the zoom of the mode being shown.
-async function switchZoomNow(
+// Each page view mode keeps the zoom the user last had in it, so that going back to one page
+// undoes the zooming out that seeing all the pages may have needed. Going to all pages zooms out
+// further if the zoom kept for it would not fit a spread. Bloom's own zoom setting (PageZoom) is
+// always the zoom of the mode showing now; the zoom to go back to in the other mode is kept with
+// the choice of mode, across Bloom sessions (see pageViewSettings.ts).
+async function switchToZoomOfMode(
     oldMode: PageViewMode,
     newMode: PageViewMode,
 ): Promise<void> {

@@ -23,7 +23,7 @@ export function markPageForRemoval(): () => void {
 }
 
 // Scroll this document only. scrollIntoView would also scroll the Edit tab's own containers, outside
-// this frame (see restoreScrollPosition() in bookGridView.ts). A page that does not fit along one
+// this frame (see scrollToMiddleOfView() in bookGridView.ts). A page that does not fit along one
 // direction is centered along it, so at least the middle of the X shows.
 function bringIntoView(pageBox: HTMLElement): void {
     const rect = pageBox.getBoundingClientRect();

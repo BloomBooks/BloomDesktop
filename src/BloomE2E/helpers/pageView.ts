@@ -6,7 +6,81 @@
 // the Edit tab around it never does.
 
 import { expect, type Page } from "@playwright/test";
-import { editablePageFrame, getPages } from "./bookMaking";
+import {
+    editablePageFrame,
+    getPages,
+    getShownPageId,
+    type IBookPage,
+} from "./bookMaking";
+
+// The most pages the grid of All Pages lays out: kMaxPagesInGrid in
+// src/BloomBrowserUI/bookEdit/js/bookGridLayout.ts. Change the two together.
+export const kMaxPagesInGrid = 24;
+
+/**
+ * The pages, in order, that All Pages lays out around the page with this id in a book whose pages
+ * are side by side (every book these tests make): the rule of getPagesToShow() in
+ * bookGridLayout.ts, worked out here from the book's pages. The cover stands alone, then each left
+ * page beside its right page; a book with an odd number of pages has a blank page (not one of the
+ * book's pages) before the inside back cover, or before the back cover if the page before it is a
+ * content page, and the back cover stands alone. Whole spreads are added after and before the page's
+ * own spread in turn, while the pages stay within kMaxPagesInGrid.
+ */
+export function getPagesInGrid(
+    pages: IBookPage[],
+    editedId: string,
+): IBookPage[] {
+    const editedIndex = pages.findIndex((p) => p.id === editedId);
+    if (editedIndex < 0)
+        throw new Error(`Page ${editedId} is not one of the book's pages.`);
+    const n = pages.length;
+    let blankPageBefore: number | undefined;
+    if (n >= 3 && n % 2 === 1)
+        blankPageBefore = pages[n - 2].isContentPage ? n - 1 : n - 2;
+    // Each spread's pages, by index; the cover is in the second place of the first spread.
+    const spreads: number[][] = [];
+    pages.forEach((_, index) => {
+        const place =
+            index +
+            1 +
+            (blankPageBefore !== undefined && index >= blankPageBefore ? 1 : 0);
+        const spread = Math.floor(place / 2);
+        while (spreads.length <= spread) spreads.push([]);
+        spreads[spread].push(index);
+    });
+    let first = spreads.findIndex((s) => s.includes(editedIndex));
+    let last = first;
+    let count = spreads[first].length;
+    let addAfterNext = true;
+    for (;;) {
+        const canAddAfter =
+            last + 1 < spreads.length &&
+            count + spreads[last + 1].length <= kMaxPagesInGrid;
+        const canAddBefore =
+            first > 0 && count + spreads[first - 1].length <= kMaxPagesInGrid;
+        if (!canAddAfter && !canAddBefore) break;
+        if (canAddAfter && (addAfterNext || !canAddBefore)) {
+            last++;
+            count += spreads[last].length;
+            addAfterNext = false;
+        } else {
+            first--;
+            count += spreads[first].length;
+            addAfterNext = true;
+        }
+    }
+    return spreads
+        .slice(first, last + 1)
+        .flat()
+        .map((index) => pages[index]);
+}
+
+/** How many cells the grid of All Pages has around the page being edited now. */
+export async function getExpectedGridCellCount(page: Page): Promise<number> {
+    const shown = await getShownPageId(page);
+    if (!shown) throw new Error("The Edit tab is not showing a page.");
+    return getPagesInGrid(await getPages(page), shown).length;
+}
 
 /** Where something is on screen, in the page frame's viewport. */
 export interface IViewRect {
@@ -23,21 +97,33 @@ export interface IPagePlacement {
 }
 
 /**
- * Click one of the page view chooser's two segments: one page at a time, or all pages. With All
- * Pages, returns once every page of the book has its place in the page frame; with One Page, once
- * none has.
+ * Click one of the page view chooser's two segments, one page at a time or all pages, and return at
+ * once. Use choosePageView unless the click starts something that changes the book's pages, such as
+ * a page layout update, before the grid can be counted.
  */
-export async function choosePageView(
+export async function clickPageViewSegment(
     page: Page,
     view: "one" | "all",
 ): Promise<void> {
     await page
         .getByTestId(view === "all" ? "view-all-pages" : "view-one-page")
         .click();
+}
+
+/**
+ * Click one of the page view chooser's two segments: one page at a time, or all pages. With All
+ * Pages, returns once every page that the grid lays out (see getPagesInGrid()) has its place in the
+ * page frame; with One Page, once none has.
+ */
+export async function choosePageView(
+    page: Page,
+    view: "one" | "all",
+): Promise<void> {
+    await clickPageViewSegment(page, view);
     await expect(
         editablePageFrame(page).locator(".bloom-book-grid-cell"),
         `The page frame never showed ${view === "all" ? "all the pages" : "one page"}.`,
-    ).toHaveCount(view === "all" ? (await getPages(page)).length : 0, {
+    ).toHaveCount(view === "all" ? await getExpectedGridCellCount(page) : 0, {
         timeout: 30000,
     });
 }

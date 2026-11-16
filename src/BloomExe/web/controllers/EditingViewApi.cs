@@ -168,17 +168,16 @@ namespace Bloom.web.controllers
                 HandleSavePageViewSettings,
                 true
             );
-            // Not requiresSync, like aiImageEditor/saveThenLaunch: the update it may start loads
-            // pages off-screen that make their own sync-locked calls (see RunOffTheApiLock).
-            // Those pages cannot be left waiting for the UI thread behind this handler either. The
-            // handler only saves the page being edited and queues the update with BeginInvoke, so
-            // it has returned before the first off-screen page loads, and the update itself runs
+            // On the UI thread and holding the API lock, like pageList/pageClicked: the handler
+            // saves the page being edited. The page layout update it may start loads pages
+            // off-screen that make API calls of their own, and those are never left waiting for
+            // this request: the handler only queues the update (EditingModel.RunOffTheApiLock), so
+            // the update starts after this request has returned and let go of both, and then runs
             // on the progress dialog's background worker (BookProcessor.UpdatePageLayoutIfNeededThen).
             apiHandler.RegisterEndpointHandler(
                 "editView/updatePageLayoutForAllPages",
                 HandleUpdatePageLayoutForAllPages,
-                handleOnUiThread: true,
-                requiresSync: false
+                true
             );
         }
 
@@ -199,8 +198,8 @@ namespace Bloom.web.controllers
         /// <summary>
         /// Keep, as a user setting, the front end's page view settings, so that they last across
         /// Bloom sessions. The posted string is JSON that holds both which page view mode the user
-        /// chose (One Page or All Pages) and the zoom the user last had in each mode (see
-        /// IPageViewSettings in pageViewSettings.ts). The front end owns that format: this stores the
+        /// chose (One Page or All Pages) and the zoom the user had in each mode when they last left
+        /// it (see IPageViewSettings in pageViewSettings.ts). The front end owns that format: this stores the
         /// string as it came, and editView/frameSources hands it back.
         /// </summary>
         private void HandleSavePageViewSettings(ApiRequest request)

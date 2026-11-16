@@ -24,7 +24,6 @@ import {
     isShowingOtherPagesHere,
     replayTheClickThatOpenedThisPage,
     setupBookGridView,
-    setupControlsBar,
     setShowingOtherPages,
     showPageBeingOpened,
     updatePageLayoutForAllPages,
@@ -500,11 +499,10 @@ window["RelockOriginalCredits"] = () => {
 $(document).ready(() => {
     $("body").find("*[data-i18n]").localize();
     bootstrap();
-    // Only the live Edit tab has the controls above the page and the book's other pages; the
-    // same code also loads pages off-screen to process them.
+    // Only the live Edit tab has the bar of controls above the page (see AbovePageControls.tsx) and
+    // the book's other pages; the same code also loads pages off-screen to process them.
     if (window.frameElement?.id === "page") {
         updateAbovePageControls({});
-        setupControlsBar();
         // The page being left stays on screen until this one looks the way it will (see
         // switchContentPage), so the Edit tab holds steady while it changes pages.
         void Promise.all([whenPageIsDrawn(), setupBookGridView()]).then(() => {

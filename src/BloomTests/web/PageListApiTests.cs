@@ -1,5 +1,7 @@
+using Bloom.Book;
 using Bloom.SafeXml;
 using Bloom.web;
+using Moq;
 using NUnit.Framework;
 
 namespace BloomTests.web
@@ -103,6 +105,94 @@ namespace BloomTests.web
                 $"background-image:url('{encodedName}?thumbnail=1')",
                 marginBox.GetAttribute("style")
             );
+        }
+
+        /// <summary>
+        /// The content GetPageContentForThumbnail makes for a one-page DOM holding an img and a
+        /// background image, both named picture.jpg.
+        /// </summary>
+        private static string GetPageContent(bool fullSizePictures)
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml(
+                "<div class='bloom-page' id='page1'><div class='marginBox' style=\"background-image:url('picture.jpg')\"><img src='picture.jpg'/></div></div>"
+            );
+            var page = new Mock<IPage>();
+            page.Setup(p => p.GetDivNodeForThisPage()).Returns((SafeXmlElement)dom.FirstChild);
+            return PageListApi.GetPageContentForThumbnail(page.Object, fullSizePictures);
+        }
+
+        [Test]
+        public void GetPageContentForThumbnail_ForThePageList_MarksPicturesAsThumbnails()
+        {
+            var content = GetPageContent(false);
+
+            Assert.That(content, Does.Contain("src=\"picture.jpg?thumbnail=1\""));
+            Assert.That(content, Does.Contain("url('picture.jpg?thumbnail=1')"));
+        }
+
+        [Test]
+        public void GetPageContentForThumbnail_FullSize_LeavesPicturesAlone()
+        {
+            var content = GetPageContent(true);
+
+            Assert.That(content, Does.Contain("src=\"picture.jpg\""));
+            Assert.That(content, Does.Contain("url('picture.jpg')"));
+            Assert.That(content, Does.Not.Contain("thumbnail=1"));
+        }
+
+        /// <summary>
+        /// A state machine editing page "a", with actions that do nothing.
+        /// </summary>
+        private static EditingStateMachine MakeStateMachineEditingPageA()
+        {
+            var machine = new EditingStateMachine(_ => { }, (_, __) => { }, () => true, () => { });
+            machine.ToNavigating("a");
+            machine.ToEditing("a");
+            Assert.That(
+                machine.CurrentState,
+                Is.EqualTo(State.Editing),
+                "Setup failed: the state machine should be editing page a."
+            );
+            return machine;
+        }
+
+        [Test]
+        public void IsOnTheWayToPage_ClickTaken_True()
+        {
+            var machine = MakeStateMachineEditingPageA();
+
+            var outcome = machine.SaveThenNavigate(null, () => "b", _ => { });
+
+            Assert.That(outcome, Is.EqualTo(SaveOutcome.Saved));
+            Assert.That(PageListApi.IsOnTheWayToPage(machine, "b"), Is.True);
+        }
+
+        // A click on page c that arrives while the Edit tab is still loading page b is declined, and
+        // the reply to the click must say so: the tab is on its way to a page, but not to c.
+        [Test]
+        public void IsOnTheWayToPage_ClickArrivesWhileLoadingAnotherPage_False()
+        {
+            var machine = MakeStateMachineEditingPageA();
+            machine.SaveThenNavigate(null, () => "b", _ => { });
+            Assert.That(
+                PageListApi.IsOnTheWayToPage(machine, "b"),
+                Is.True,
+                "Setup failed: the state machine should be loading page b."
+            );
+
+            var outcome = machine.SaveThenNavigate(null, () => "c", _ => { });
+
+            Assert.That(outcome, Is.EqualTo(SaveOutcome.Declined));
+            Assert.That(PageListApi.IsOnTheWayToPage(machine, "c"), Is.False);
+        }
+
+        [Test]
+        public void IsOnTheWayToPage_PageHasLoaded_False()
+        {
+            var machine = MakeStateMachineEditingPageA();
+
+            Assert.That(PageListApi.IsOnTheWayToPage(machine, "a"), Is.False);
         }
     }
 }

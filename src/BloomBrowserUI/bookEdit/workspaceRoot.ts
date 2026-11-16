@@ -20,6 +20,10 @@ export interface IWorkspaceExports {
     closeDialog(id: string): void;
     pageFrameIsReadyToShow(pageLoadNumber: number): void;
     showPageLoadingCover(): void;
+    storeClickedPageRecord(record: IClickedPageRecord): void;
+    isClickedPage(pageId: string): boolean;
+    takeClickedPageRecord(): IClickedPageRecord | undefined;
+    pageClickWasRefused(pageId: string): void;
     isShowingOtherPages(): boolean;
     storeShowingOtherPages(show: boolean): void;
     getStoredZoomOfMode(mode: PageViewMode): number | undefined;
@@ -106,11 +110,23 @@ export { showBookGridSetupDialog };
 import { showDuplicateManyDialog } from "./duplicateManyDialog";
 export { showDuplicateManyDialog };
 import {
+    isClickedPage,
     loadPageIntoFrame,
+    pageClickWasRefused,
     pageFrameIsReadyToShow,
     showPageLoadingCover,
+    storeClickedPageRecord,
+    takeClickedPageRecord,
+    type IClickedPageRecord,
 } from "./js/pageFrame";
-export { pageFrameIsReadyToShow, showPageLoadingCover };
+export {
+    isClickedPage,
+    pageClickWasRefused,
+    pageFrameIsReadyToShow,
+    showPageLoadingCover,
+    storeClickedPageRecord,
+    takeClickedPageRecord,
+};
 import {
     getStoredZoomOfMode,
     isShowingOtherPages,
@@ -462,6 +478,10 @@ interface WorkspaceBundleApi {
     switchContentPage: typeof switchContentPage;
     pageFrameIsReadyToShow: typeof pageFrameIsReadyToShow;
     showPageLoadingCover: typeof showPageLoadingCover;
+    storeClickedPageRecord: typeof storeClickedPageRecord;
+    isClickedPage: typeof isClickedPage;
+    takeClickedPageRecord: typeof takeClickedPageRecord;
+    pageClickWasRefused: typeof pageClickWasRefused;
     isShowingOtherPages: typeof isShowingOtherPages;
     storeShowingOtherPages: typeof storeShowingOtherPages;
     getStoredZoomOfMode: typeof getStoredZoomOfMode;
@@ -521,6 +541,10 @@ window.workspaceBundle = {
     switchContentPage,
     pageFrameIsReadyToShow,
     showPageLoadingCover,
+    storeClickedPageRecord,
+    isClickedPage,
+    takeClickedPageRecord,
+    pageClickWasRefused,
     isShowingOtherPages,
     storeShowingOtherPages,
     getStoredZoomOfMode,

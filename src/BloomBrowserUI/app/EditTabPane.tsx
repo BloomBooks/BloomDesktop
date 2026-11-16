@@ -49,27 +49,21 @@ export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
         });
     }, [props.active]);
 
-    // The page frame is created here, not rendered by React, because switchContentPage replaces
-    // it with a new frame on every page change (keeping the old one on screen until the new one is
-    // ready), and React must not own an element that other code removes. This effect keeps that
-    // frame showing sources.pageSrc, which changes when the Edit tab is (re)activated.
+    // The page frame is created here, not rendered by React, because with all pages showing
+    // switchContentPage replaces it with a new frame on every page change (keeping the old one on
+    // screen until the new one is ready), and React must not own an element that other code
+    // removes. This effect keeps that frame showing sources.pageSrc, which changes when the Edit
+    // tab is (re)activated.
     const pageFrameHost = React.useRef<HTMLDivElement>(null);
-    const pageSrcShown = React.useRef<string>();
     React.useEffect(() => {
-        const host = pageFrameHost.current!;
-        if (pageSrcShown.current === sources.pageSrc) {
-            return;
-        }
-        pageSrcShown.current = sources.pageSrc;
-        const frame = document.getElementById("page") as
+        let pageFrame = document.getElementById("page") as
             | HTMLIFrameElement
             | undefined;
-        let pageFrame = frame;
         if (pageFrame) {
             pageFrame.src = sources.pageSrc;
         } else {
             pageFrame = createPageFrame(sources.pageSrc);
-            host.appendChild(pageFrame);
+            pageFrameHost.current!.appendChild(pageFrame);
         }
         numberPageLoad(pageFrame);
     }, [sources.pageSrc]);

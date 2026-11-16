@@ -296,12 +296,18 @@ namespace Bloom.Book
             if (!string.IsNullOrEmpty(book.CheckForErrors()))
                 return false;
 
-            if (
-                !int.TryParse(
-                    book.OurHtmlDom.GetMetaValue(kPageLayoutUpdateLevelMeta, "0"),
-                    out var level
-                )
-            )
+            return RecordsPageLayoutUpdateLevelBelowOurs(book.OurHtmlDom);
+        }
+
+        /// <summary>
+        /// True if the page layout update level that <paramref name="dom"/> records is missing,
+        /// unreadable, or below BookStorage.kPageLayoutUpdateLevel. This reads one meta element, so
+        /// a caller that runs often can ask it before the more expensive checks in
+        /// NeedsPageLayoutUpdate; when it is false, NeedsPageLayoutUpdate is false too.
+        /// </summary>
+        internal static bool RecordsPageLayoutUpdateLevelBelowOurs(HtmlDom dom)
+        {
+            if (!int.TryParse(dom.GetMetaValue(kPageLayoutUpdateLevelMeta, "0"), out var level))
                 level = 0; // missing or unreadable: treat as never done
             return level < BookStorage.kPageLayoutUpdateLevel;
         }

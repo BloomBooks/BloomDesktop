@@ -5,8 +5,11 @@ import { afterEach, describe, expect, test } from "vitest";
 
 import {
     getIndexOfPageAfterBlankPage,
+    getPagesToShow,
     getSpreadShape,
+    isBlankPageShown,
     isLaidOutRightToLeft,
+    kMaxPagesInGrid,
     makeGridLayout,
     pagesAcrossASpread,
 } from "./bookGridLayout";
@@ -265,5 +268,161 @@ describe("getIndexOfPageAfterBlankPage", () => {
                 false,
             ).positionOfBlankPage(),
         ).toBeUndefined();
+    });
+});
+
+describe("getPagesToShow", () => {
+    const sideBySide = { pagesPerSpread: 2 as const, pagesAreStacked: false };
+    const oneByOne = { pagesPerSpread: 1 as const, pagesAreStacked: false };
+    const calendar = { pagesPerSpread: 2 as const, pagesAreStacked: true };
+
+    // How many pages a range holds.
+    function countOf(range: { first: number; last: number }): number {
+        return range.last - range.first + 1;
+    }
+
+    test("the limit is the one these tests are written for", () => {
+        expect(kMaxPagesInGrid).toBe(24);
+    });
+
+    test("a book of no more pages than the limit shows them all", () => {
+        expect(getPagesToShow(sideBySide, 10, 5)).toEqual({
+            first: 0,
+            last: 9,
+        });
+        expect(getPagesToShow(sideBySide, 24, 23)).toEqual({
+            first: 0,
+            last: 23,
+        });
+        expect(getPagesToShow(oneByOne, 24, 0)).toEqual({ first: 0, last: 23 });
+    });
+
+    test("in the middle of a long book: the limit, whole spreads, the page being edited in the middle", () => {
+        const range = getPagesToShow(sideBySide, 200, 100);
+        expect(range).toEqual({ first: 89, last: 112 });
+        expect(countOf(range)).toBe(kMaxPagesInGrid);
+        // Odd indexes are left pages, so the range starts and ends with whole spreads.
+        expect(range.first % 2).toBe(1);
+        expect(range.last % 2).toBe(0);
+        // A left page in the middle gets the same view as its facing right page.
+        expect(getPagesToShow(sideBySide, 200, 99)).toEqual(range);
+    });
+
+    test("near the front cover it starts at the cover, and leaves out a spread it would cut in half", () => {
+        const range = getPagesToShow(sideBySide, 200, 3);
+        // The cover stands alone, so whole spreads make 23 pages: page 23 would need page 24.
+        expect(range).toEqual({ first: 0, last: 22 });
+        expect(getPagesToShow(sideBySide, 200, 0)).toEqual(range);
+    });
+
+    test("near the back cover it ends at the last page", () => {
+        // An even number of pages: the back cover stands alone, so whole spreads make 23 pages.
+        expect(getPagesToShow(sideBySide, 200, 197)).toEqual({
+            first: 177,
+            last: 199,
+        });
+        expect(getPagesToShow(sideBySide, 200, 190)).toEqual({
+            first: 177,
+            last: 199,
+        });
+        // An odd number of pages: the blank page goes before the inside back cover (index 199),
+        // takes no part of the limit, and the full limit is shown.
+        const blankPageBefore = 199;
+        const range = getPagesToShow(sideBySide, 201, 198, blankPageBefore);
+        expect(range).toEqual({ first: 177, last: 200 });
+        expect(countOf(range)).toBe(kMaxPagesInGrid);
+        expect(isBlankPageShown(sideBySide, blankPageBefore, range)).toBe(true);
+        expect(
+            isBlankPageShown(
+                sideBySide,
+                blankPageBefore,
+                getPagesToShow(sideBySide, 201, 100, blankPageBefore),
+            ),
+        ).toBe(false);
+    });
+
+    test("one page to a spread: any page can start the range", () => {
+        expect(getPagesToShow(oneByOne, 100, 50)).toEqual({
+            first: 39,
+            last: 62,
+        });
+        expect(getPagesToShow(oneByOne, 100, 2)).toEqual({
+            first: 0,
+            last: 23,
+        });
+        expect(getPagesToShow(oneByOne, 100, 98)).toEqual({
+            first: 76,
+            last: 99,
+        });
+    });
+
+    test("a calendar pairs its pages as a book folded down the side does", () => {
+        const range = getPagesToShow(calendar, 50, 25);
+        expect(range).toEqual({ first: 15, last: 38 });
+        expect(range).toEqual(getPagesToShow(sideBySide, 50, 25));
+    });
+});
+
+describe("makeGridLayout, showing only some of the pages", () => {
+    const sideBySide = { pagesPerSpread: 2 as const, pagesAreStacked: false };
+    // Room for exactly two spreads, as in the makeGridLayout tests above.
+    function layOut(
+        rightToLeft: boolean,
+        blankPageBefore?: number,
+        pagesShown?: { first: number; last: number },
+    ) {
+        return makeGridLayout(
+            sideBySide,
+            kPageWidth,
+            kPageHeight,
+            410,
+            kGap,
+            kGap,
+            rightToLeft,
+            blankPageBefore,
+            pagesShown,
+        );
+    }
+
+    test("the first row is the one holding the first page shown, and each page keeps its column", () => {
+        const whole = layOut(false);
+        // Page 5 is the left page of spread 3, the second spread of the second row.
+        expect(whole.positionOfPage(5)).toEqual({ x: 210, y: 160 });
+        const part = layOut(false, undefined, { first: 5, last: 12 });
+        expect(part.positionOfPage(5)).toEqual({ x: 210, y: 0 });
+        expect(part.positionOfPage(6)).toEqual({ x: 310, y: 0 });
+        expect(part.positionOfPage(7)).toEqual({ x: 0, y: 160 });
+        for (let index = 5; index <= 12; index++) {
+            const p = part.positionOfPage(index);
+            const w = whole.positionOfPage(index);
+            expect(p.x).toBe(w.x);
+            expect(p.y).toBe(w.y - 160);
+        }
+    });
+
+    test("a book read right to left keeps its mirrored columns", () => {
+        const whole = layOut(true);
+        const part = layOut(true, undefined, { first: 5, last: 12 });
+        expect(part.positionOfPage(5)).toEqual({
+            x: whole.positionOfPage(5).x,
+            y: 0,
+        });
+        expect(part.positionOfPage(5).x).toBe(100);
+    });
+
+    test("the blank page has a place only when its spread is shown", () => {
+        // Seven pages: the blank page goes before the inside back cover (index 5).
+        expect(
+            layOut(false, 5).positionOfBlankPage(),
+            "Sanity check: with the whole book shown, the blank page has a place",
+        ).toEqual({ x: 210, y: 160 });
+        expect(
+            layOut(false, 5, { first: 1, last: 4 }).positionOfBlankPage(),
+        ).toBeUndefined();
+        const shown = layOut(false, 5, { first: 3, last: 6 });
+        // Spread 3 (the blank page and the inside back cover) is in the first row shown.
+        expect(shown.positionOfBlankPage()).toEqual({ x: 210, y: 0 });
+        expect(shown.positionOfPage(5)).toEqual({ x: 310, y: 0 });
+        expect(shown.positionOfPage(6)).toEqual({ x: 0, y: 160 });
     });
 });

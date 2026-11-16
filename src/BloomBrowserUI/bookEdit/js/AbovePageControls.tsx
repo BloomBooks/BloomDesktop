@@ -102,6 +102,10 @@ function renderAbovePageControls(): void {
     );
 }
 
+// The element that holds the controls shown above the page, made the first time it is needed. In
+// the live Edit tab's page it is the bar fixed across the top of the page frame (see
+// makeControlsBar()). Everywhere else (pages loaded off-screen to process them) it sits at the top
+// of the scaling container, as wide as the page.
 function getOrCreateAbovePageControlContainer(
     page: HTMLElement,
 ): HTMLElement | undefined {
@@ -117,7 +121,9 @@ function getOrCreateAbovePageControlContainer(
         const pageScalingContainer = document.getElementById(
             "page-scaling-container",
         );
-        if (pageScalingContainer) {
+        if (window.frameElement?.id === "page") {
+            makeControlsBar(container);
+        } else if (pageScalingContainer) {
             pageScalingContainer.prepend(container);
         } else {
             page.parentElement?.insertBefore(
@@ -127,8 +133,52 @@ function getOrCreateAbovePageControlContainer(
         }
     }
 
-    container.style.maxWidth = page.clientWidth + "px";
+    if (!container.classList.contains(kControlsBarClass)) {
+        container.style.maxWidth = page.clientWidth + "px";
+    }
     return container;
+}
+
+// Marks the container of the controls shown above the page as the bar fixed across the top of the
+// page frame. pageRemovalMark.ts and the e2e tests find the bar by it.
+const kControlsBarClass = "bloom-controls-bar";
+
+// In the live Edit tab's page, the controls Bloom shows above the page live in a bar fixed across
+// the top of the page frame, so they are in the same place whichever page is being edited, and
+// whether or not the other pages are showing (see bookGridView.ts). The bar covers the space Bloom
+// already leaves above the page (#labelAndLayoutPane), so the page is no further down than it would
+// be without it. These rules go in with the bar, rather than in origamiEditing.less, because the
+// page adds that stylesheet's link itself and it may not have loaded yet when the bar is made.
+const kControlsBarStyles = `
+body > .above-page-control-container.${kControlsBarClass} {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--bloom-controls-bar-height);
+    padding: 0 16px;
+    box-sizing: border-box;
+    z-index: 1000;
+    background-color: var(--bloom-controls-bar-background);
+}
+`;
+
+// Make the container into the bar fixed across the top of the page frame (see kControlsBarStyles),
+// and put it in the body.
+function makeControlsBar(container: HTMLElement): void {
+    container.classList.add(kControlsBarClass);
+    const style = document.createElement("style");
+    style.textContent = kControlsBarStyles;
+    document.head.appendChild(style);
+    document.body.style.setProperty(
+        "--bloom-controls-bar-background",
+        getComputedStyle(document.body).backgroundColor,
+    );
+    document.body.style.setProperty(
+        "--bloom-controls-bar-height",
+        `${document.getElementById("labelAndLayoutPane")!.offsetHeight}px`,
+    );
+    document.body.appendChild(container);
 }
 
 const AbovePageControls: React.FunctionComponent<IAbovePageControlsState> = (

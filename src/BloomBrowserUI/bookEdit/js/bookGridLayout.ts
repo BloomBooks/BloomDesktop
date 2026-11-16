@@ -1,5 +1,6 @@
-// Where each page goes in the view of the whole book around the page being edited (see
-// bookGridView.ts). The pages are grouped the way the finished book is read:
+// Where each page goes in the view of the book around the page being edited (see bookGridView.ts),
+// and which of the book's pages that view shows (in a long book, only those near the page being
+// edited; see getPagesToShow()). The pages are grouped the way the finished book is read:
 // - a book folded down the side shows each left page beside the right page facing it;
 // - a calendar (a book whose defaultBookletLayout meta is "Calendar"; see
 //   Book.GetBookletLayoutMethod() in C#) folds across the middle, so each page hangs above the
@@ -28,13 +29,25 @@ export const kSpreadGap = 40;
 // Vertical space between rows.
 export const kRowGap = 40;
 
+// The most pages of the book the grid lays out, the page being edited among them (see
+// getPagesToShow()). It bounds how many pages are fetched and drawn when the page changes (each
+// drawn page costs tens of milliseconds) and how much memory the grid's page frames take: at a
+// small zoom nearly all of them are on screen at once. The number is to be tuned on a slow machine.
+export const kMaxPagesInGrid = 24;
+
+/** The pages the grid shows: the indexes in the book of the first and the last of them. */
+export interface IPageRange {
+    first: number;
+    last: number;
+}
+
 export interface IGridLayout {
     spreadsPerRow: number;
     spreadWidth: number;
     spreadHeight: number;
     // Where the page at this index in the book goes, relative to the top left of the grid.
     positionOfPage(pageIndex: number): { x: number; y: number };
-    // Where the blank page goes, if the layout has one.
+    // Where the blank page goes, if the layout has one and it is among the spreads shown.
     positionOfBlankPage(): { x: number; y: number } | undefined;
 }
 
@@ -95,11 +108,122 @@ export function pagesAcrossASpread(shape: ISpreadShape): number {
     return shape.pagesAreStacked ? 1 : shape.pagesPerSpread;
 }
 
+// The place in the book's sequence of places (two to a spread, or one) that the page at this index
+// takes. With two pages to a spread the cover stands alone in the second place of the first spread,
+// so page i takes place i + 1; a blank page before blankPageBefore moves that page and every one
+// after it along one more place.
+function placeOfPage(
+    shape: ISpreadShape,
+    pageIndex: number,
+    blankPageBefore: number | undefined,
+): number {
+    const coverOffset = shape.pagesPerSpread === 2 ? 1 : 0;
+    const blankOffset =
+        blankPageBefore !== undefined && pageIndex >= blankPageBefore ? 1 : 0;
+    return pageIndex + coverOffset + blankOffset;
+}
+
+// The spread, counted from the front of the book, that the page at this index is in.
+function spreadOfPage(
+    shape: ISpreadShape,
+    pageIndex: number,
+    blankPageBefore: number | undefined,
+): number {
+    return Math.floor(
+        placeOfPage(shape, pageIndex, blankPageBefore) / shape.pagesPerSpread,
+    );
+}
+
+// The spread, counted from the front of the book, that the blank page before blankPageBefore is in.
+function spreadOfBlankPage(
+    shape: ISpreadShape,
+    blankPageBefore: number,
+): number {
+    // The blank page takes the place that the page after it would have had without it.
+    return Math.floor(
+        placeOfPage(shape, blankPageBefore, undefined) / shape.pagesPerSpread,
+    );
+}
+
+/**
+ * The pages of a book of pageCount pages that the grid shows around the page being edited (at
+ * editedIndex): whole spreads only, with no more than kMaxPagesInGrid pages in them. Starting from
+ * the spread of the page being edited, it adds the next spread and the one before in turn, so the
+ * page being edited ends up roughly in the middle; once one end of the book is reached, it goes on
+ * adding at the other end, so a long book always shows as many pages as fit within the limit. So the
+ * range starts where a spread does (with two pages to a spread, at the cover or a left page), and a
+ * spread that would take the count past the limit is left out whole rather than cut in half: next to
+ * the cover or the back cover, which stand alone, that can leave one page fewer than the limit. A
+ * book of no more than kMaxPagesInGrid pages shows every page. blankPageBefore is as for
+ * makeGridLayout(); the blank page is not one of the book's pages, so it does not count towards the
+ * limit.
+ */
+export function getPagesToShow(
+    shape: ISpreadShape,
+    pageCount: number,
+    editedIndex: number,
+    blankPageBefore?: number,
+): IPageRange {
+    const lastSpreadOfBook = spreadOfPage(
+        shape,
+        pageCount - 1,
+        blankPageBefore,
+    );
+    // How many of the book's pages are in each spread: one in the cover's spread, the back cover's
+    // and the blank page's, two in the rest (or one each, with one page to a spread).
+    const pagesInSpread = new Array<number>(lastSpreadOfBook + 1).fill(0);
+    for (let index = 0; index < pageCount; index++) {
+        pagesInSpread[spreadOfPage(shape, index, blankPageBefore)]++;
+    }
+    let firstSpreadShown = spreadOfPage(shape, editedIndex, blankPageBefore);
+    let lastSpreadShown = firstSpreadShown;
+    let count = pagesInSpread[firstSpreadShown];
+    let addAfterNext = true;
+    for (;;) {
+        const canAddAfter =
+            lastSpreadShown < lastSpreadOfBook &&
+            count + pagesInSpread[lastSpreadShown + 1] <= kMaxPagesInGrid;
+        const canAddBefore =
+            firstSpreadShown > 0 &&
+            count + pagesInSpread[firstSpreadShown - 1] <= kMaxPagesInGrid;
+        if (!canAddAfter && !canAddBefore) break;
+        if (canAddAfter && (addAfterNext || !canAddBefore)) {
+            lastSpreadShown++;
+            count += pagesInSpread[lastSpreadShown];
+            addAfterNext = false;
+        } else {
+            firstSpreadShown--;
+            count += pagesInSpread[firstSpreadShown];
+            addAfterNext = true;
+        }
+    }
+    let first = editedIndex;
+    while (
+        first > 0 &&
+        spreadOfPage(shape, first - 1, blankPageBefore) >= firstSpreadShown
+    ) {
+        first--;
+    }
+    let last = editedIndex;
+    while (
+        last < pageCount - 1 &&
+        spreadOfPage(shape, last + 1, blankPageBefore) <= lastSpreadShown
+    ) {
+        last++;
+    }
+    return { first, last };
+}
+
 /**
  * Lay the book out in rows of spreads, as many spreads to a row as fit in availableWidth (but at
  * least one), with spreadGap between spreads and rowGap between rows, mirrored if rightToLeft. If
  * blankPageBefore is given, a blank page takes the place before the page at that index, and every
  * page from there on moves along one place.
+ *
+ * If pagesShown is given (see getPagesToShow()), only those pages are laid out: the first row of the
+ * grid is the row that holds the first of them, and the blank page has a position only if it is in
+ * one of their spreads. Each spread keeps the column it has when the whole book is laid out, so that
+ * whichever pages around it are shown, a page is at the same distance from the side of the grid.
  */
 export function makeGridLayout(
     shape: ISpreadShape,
@@ -110,6 +234,7 @@ export function makeGridLayout(
     rowGap: number,
     rightToLeft: boolean,
     blankPageBefore?: number,
+    pagesShown?: IPageRange,
 ): IGridLayout {
     const spreadWidth = pagesAcrossASpread(shape) * pageWidth;
     const spreadHeight = shape.pagesAreStacked ? 2 * pageHeight : pageHeight;
@@ -117,15 +242,18 @@ export function makeGridLayout(
         1,
         Math.floor((availableWidth + spreadGap) / (spreadWidth + spreadGap)),
     );
-    // With two pages to a spread the cover stands alone in the second place of the first spread,
-    // so page i takes place i + 1.
-    const coverOffset = shape.pagesPerSpread === 2 ? 1 : 0;
+    const firstSpreadShown = pagesShown
+        ? spreadOfPage(shape, pagesShown.first, blankPageBefore)
+        : 0;
+    const firstRowShown = Math.floor(firstSpreadShown / spreadsPerRow);
     const rowWidth = spreadsPerRow * (spreadWidth + spreadGap) - spreadGap;
     const positionOfPlace = (place: number) => {
         const spread = Math.floor(place / shape.pagesPerSpread);
         const placeInSpread = place % shape.pagesPerSpread;
         const x = (spread % spreadsPerRow) * (spreadWidth + spreadGap);
-        const y = Math.floor(spread / spreadsPerRow) * (spreadHeight + rowGap);
+        const y =
+            (Math.floor(spread / spreadsPerRow) - firstRowShown) *
+            (spreadHeight + rowGap);
         const position = shape.pagesAreStacked
             ? { x, y: y + placeInSpread * pageHeight }
             : { x: x + placeInSpread * pageWidth, y };
@@ -139,17 +267,30 @@ export function makeGridLayout(
         spreadWidth,
         spreadHeight,
         positionOfPage: (pageIndex: number) =>
-            positionOfPlace(
-                pageIndex +
-                    coverOffset +
-                    (blankPageBefore !== undefined &&
-                    pageIndex >= blankPageBefore
-                        ? 1
-                        : 0),
-            ),
+            positionOfPlace(placeOfPage(shape, pageIndex, blankPageBefore)),
         positionOfBlankPage: () =>
-            blankPageBefore === undefined
+            blankPageBefore === undefined ||
+            !isBlankPageShown(shape, blankPageBefore, pagesShown)
                 ? undefined
-                : positionOfPlace(blankPageBefore + coverOffset),
+                : positionOfPlace(
+                      placeOfPage(shape, blankPageBefore, undefined),
+                  ),
     };
+}
+
+/**
+ * True if the blank page before the page at blankPageBefore (see getIndexOfPageAfterBlankPage()) is
+ * in one of the spreads of pagesShown, or pagesShown is not given, meaning the whole book is shown.
+ */
+export function isBlankPageShown(
+    shape: ISpreadShape,
+    blankPageBefore: number,
+    pagesShown?: IPageRange,
+): boolean {
+    if (!pagesShown) return true;
+    const spread = spreadOfBlankPage(shape, blankPageBefore);
+    return (
+        spread >= spreadOfPage(shape, pagesShown.first, blankPageBefore) &&
+        spread <= spreadOfPage(shape, pagesShown.last, blankPageBefore)
+    );
 }

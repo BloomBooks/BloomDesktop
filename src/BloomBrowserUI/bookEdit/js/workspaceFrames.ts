@@ -16,7 +16,6 @@
 import type { IPageFrameExports } from "../editablePage";
 import type { IWorkspaceExports } from "../workspaceRoot";
 import type { IToolboxFrameExports } from "../toolbox/toolboxBootstrap";
-import type { IPageListFrameExports } from "../pageThumbnailList/pageThumbnailList";
 
 // On the page frame: the number the workspace gave the load now under way in it (see numberPageLoad
 // in pageFrame.ts). The page reads it when its script starts, and passes it back when it is ready
@@ -38,17 +37,6 @@ export function getEditablePageBundleExports(): IPageFrameExports | null {
         | null;
     return (
         (frameWindow?.["editablePageBundle"] as unknown as IPageFrameExports) ??
-        null
-    );
-}
-// What the page list's frame offers other frames (see IPageListFrameExports), or null while that
-// frame is missing or still loading.
-export function getPageListBundleExports(): IPageListFrameExports | null {
-    const frameWindow = getFrame("pageList") as
-        | (Window & { [key: string]: unknown })
-        | null;
-    return (
-        (frameWindow?.["pageListBundle"] as unknown as IPageListFrameExports) ??
         null
     );
 }

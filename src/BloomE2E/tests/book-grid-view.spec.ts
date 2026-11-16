@@ -1,8 +1,8 @@
 // Seeing the rest of the book while editing a page: the "All pages" segment of the page view chooser
 // in the Edit tab's top bar lays the book out in spreads around the page being edited, the way the printed book is read.
 // Only the page being edited is editable; clicking any other page makes that one the page being
-// edited, in the same place on screen. Pages far off screen are not rendered, so a long book stays
-// cheap.
+// edited, in the same place on screen. In a long book the grid holds only the pages around the page
+// being edited, and pages far off screen are not rendered, so a long book stays cheap.
 //
 // Automates the manual test "Show All Pages While Editing" (Test Case ID 835).
 //
@@ -26,8 +26,12 @@ import { bookHtmlPath } from "../helpers/bookHtml";
 import {
     choosePageView,
     clickPageInGrid,
+    clickPageViewSegment,
+    getExpectedGridCellCount,
     getPagePlacement,
+    getPagesInGrid,
     isPageChangeUnderway,
+    kMaxPagesInGrid,
     scrollPageTopAboveView,
     waitForClickedPageToSettle,
 } from "../helpers/pageView";
@@ -47,11 +51,36 @@ let bookFolder: string;
 /** The text typed on the content page with this index. */
 const textOfPage = (index: number) => `Words on content page ${index + 1}`;
 
+/**
+ * Every cell of the grid in the page frame. The page frame is a new frame after a page change, so
+ * call this again after one rather than keeping what it returns.
+ */
+function gridCells(page: Page) {
+    return editablePageFrame(page).locator(".bloom-book-grid-cell");
+}
+
+/** The ids of the pages that the grid has cells for, in the order of the cells. */
+async function gridPageIds(page: Page): Promise<(string | null)[]> {
+    return gridCells(page).evaluateAll((cells) =>
+        cells.map((c) => c.getAttribute("data-page-id")),
+    );
+}
+
 /** The cell of the grid that holds the page with this id. */
 function cell(page: Page, pageId: string) {
     return editablePageFrame(page).locator(
         `.bloom-book-grid-cell[data-page-id="${pageId}"]`,
     );
+}
+
+/** The iframe in which the grid draws the page with this id, one of the other pages. */
+function cellFrame(page: Page, pageId: string) {
+    return cell(page, pageId).frameLocator("iframe");
+}
+
+/** Wait until the Edit tab's zoom is `zoom`. */
+async function expectZoom(page: Page, zoom: number) {
+    await expect.poll(async () => (await getZoom(page)).zoom).toBe(zoom);
 }
 
 /** The page that shares a spread with the page at `index`: the cover stands alone on the right. */
@@ -215,11 +244,8 @@ test.describe("showing the other pages of the book", () => {
     }) => {
         const contentPages = await getContentPages(page);
         await goToPage(page, contentPages[1].id);
-        // The page frame is a new frame after a page change, so it is looked up each time.
-        const grid = () =>
-            editablePageFrame(page).locator(".bloom-book-grid-cell");
         expect(await chosenPageView(page)).toBe("one");
-        await expect(grid()).toHaveCount(0);
+        await expect(gridCells(page)).toHaveCount(0);
         const { zoom: startingZoom, minZoom, maxZoom } = await getZoom(page);
         const control = page.getByTestId("page-view-control");
         const controlBox = await boxOf(control, "The page view chooser");
@@ -241,19 +267,19 @@ test.describe("showing the other pages of the book", () => {
         // All Pages stays chosen, at its zoom, for the next page.
         await goToPage(page, contentPages[2].id);
         expect(await chosenPageView(page)).toBe("all");
-        await expect(grid()).toHaveCount((await getPages(page)).length);
+        await expect(gridCells(page)).toHaveCount(
+            await getExpectedGridCellCount(page),
+        );
         expect((await getZoom(page)).zoom).toBe(fittingZoom);
 
         // One Page gets its own zoom back, and All Pages gets the zoom it had.
         await choosePageView(page, "one");
-        await expect.poll(async () => (await getZoom(page)).zoom).toBe(maxZoom);
+        await expectZoom(page, maxZoom);
         expect(await boxOf(control, "The page view chooser")).toEqual(
             controlBox,
         );
         await choosePageView(page, "all");
-        await expect
-            .poll(async () => (await getZoom(page)).zoom)
-            .toBe(fittingZoom);
+        await expectZoom(page, fittingZoom);
 
         // A zoom too large for a spread, given in All Pages, is lowered the next time All Pages is
         // chosen.
@@ -265,11 +291,9 @@ test.describe("showing the other pages of the book", () => {
             )
             .toBe(true);
         await choosePageView(page, "one");
-        await expect.poll(async () => (await getZoom(page)).zoom).toBe(maxZoom);
+        await expectZoom(page, maxZoom);
         await choosePageView(page, "all");
-        await expect
-            .poll(async () => (await getZoom(page)).zoom)
-            .toBe(fittingZoom);
+        await expectZoom(page, fittingZoom);
         await expectNoSidewaysScrolling(page, "After choosing All Pages again");
 
         // A zoom smaller than the fit, given in All Pages, is kept.
@@ -279,39 +303,33 @@ test.describe("showing the other pages of the book", () => {
         ).toBeLessThan(fittingZoom);
         await setZoom(page, minZoom);
         await choosePageView(page, "one");
-        await expect.poll(async () => (await getZoom(page)).zoom).toBe(maxZoom);
+        await expectZoom(page, maxZoom);
         await choosePageView(page, "all");
-        await expect.poll(async () => (await getZoom(page)).zoom).toBe(minZoom);
+        await expectZoom(page, minZoom);
 
         // Give All Pages the zoom that fits and One Page its starting zoom, and choose All Pages.
         await setZoom(page, fittingZoom);
         await choosePageView(page, "one");
-        await expect.poll(async () => (await getZoom(page)).zoom).toBe(maxZoom);
+        await expectZoom(page, maxZoom);
         await setZoom(page, startingZoom);
         await choosePageView(page, "all");
-        await expect
-            .poll(async () => (await getZoom(page)).zoom)
-            .toBe(fittingZoom);
+        await expectZoom(page, fittingZoom);
 
         // The choice and the zoom of each view last after Bloom is closed and opened again.
         const shell = await bloomApp.quitAndRestart();
         await editBook(shell, bookFolder);
         expect(await chosenPageView(shell)).toBe("all");
-        await expect(
-            editablePageFrame(shell).locator(".bloom-book-grid-cell"),
-        ).toHaveCount((await getPages(shell)).length);
+        await expect(gridCells(shell)).toHaveCount(
+            await getExpectedGridCellCount(shell),
+        );
         expect((await getZoom(shell)).zoom).toBe(fittingZoom);
         await choosePageView(shell, "one");
-        await expect
-            .poll(async () => (await getZoom(shell)).zoom)
-            .toBe(startingZoom);
+        await expectZoom(shell, startingZoom);
 
         // One Page stays chosen for the next page, as the tests after this one expect.
         await goToPage(shell, contentPages[0].id);
         expect(await chosenPageView(shell)).toBe("one");
-        await expect(
-            editablePageFrame(shell).locator(".bloom-book-grid-cell"),
-        ).toHaveCount(0);
+        await expect(gridCells(shell)).toHaveCount(0);
     });
 
     test("All Pages shows every page, with the facing page beside the page being edited [Test Case ID 835]", async ({
@@ -322,9 +340,7 @@ test.describe("showing the other pages of the book", () => {
         const edited = contentPages[1];
         await goToPage(page, edited.id);
         expect(await chosenPageView(page)).toBe("one");
-        await expect(
-            editablePageFrame(page).locator(".bloom-book-grid-cell"),
-        ).toHaveCount(0);
+        await expect(gridCells(page)).toHaveCount(0);
 
         const listBefore = await pageListPlacement(page);
         expect(listBefore.scrolled).toBe("");
@@ -332,9 +348,9 @@ test.describe("showing the other pages of the book", () => {
         // THE ACTION UNDER TEST: choose All Pages.
         await choosePageView(page, "all");
 
-        await expect(
-            editablePageFrame(page).locator(".bloom-book-grid-cell"),
-        ).toHaveCount(pages.length);
+        await expect(gridCells(page)).toHaveCount(
+            await getExpectedGridCellCount(page),
+        );
         // Still exactly one page is editable in this document: the others are in their own frames.
         await expect(
             editablePageFrame(page).locator(".bloom-page"),
@@ -342,27 +358,23 @@ test.describe("showing the other pages of the book", () => {
 
         const editedIndex = pages.findIndex((p) => p.id === edited.id);
         const facing = pages[facingIndex(editedIndex)];
+        const facingCell = cell(page, facing.id);
+        await facingCell.scrollIntoViewIfNeeded();
+        const facingBox = await boxOf(facingCell, "The facing page");
         const pageBox = await boxOf(
             editablePageFrame(page).locator(".bloom-page"),
             "The page being edited",
         );
-        const facingCell = cell(page, facing.id);
-        await facingCell.scrollIntoViewIfNeeded();
-        const facingBox = await boxOf(facingCell, "The facing page");
-        const pageBoxNow = await boxOf(
-            editablePageFrame(page).locator(".bloom-page"),
-            "The page being edited",
-        );
-        expect(Math.abs(facingBox.y - pageBoxNow.y)).toBeLessThan(2);
-        expect(Math.abs(facingBox.height - pageBoxNow.height)).toBeLessThan(2);
+        expect(Math.abs(facingBox.y - pageBox.y)).toBeLessThan(2);
+        expect(Math.abs(facingBox.height - pageBox.height)).toBeLessThan(2);
         if (editedIndex % 2 === 1) {
             // A left page: the facing page is on its right.
             expect(
-                Math.abs(facingBox.x - (pageBoxNow.x + pageBoxNow.width)),
+                Math.abs(facingBox.x - (pageBox.x + pageBox.width)),
             ).toBeLessThan(2);
         } else {
             expect(
-                Math.abs(facingBox.x + facingBox.width - pageBoxNow.x),
+                Math.abs(facingBox.x + facingBox.width - pageBox.x),
             ).toBeLessThan(2);
         }
         expect(pageBox.width).toBeGreaterThan(0);
@@ -391,10 +403,7 @@ test.describe("showing the other pages of the book", () => {
             (p) => p.id === facing.id,
         );
         await expect(
-            editablePageFrame(page)
-                .frameLocator(
-                    `.bloom-book-grid-cell[data-page-id="${facing.id}"] iframe`,
-                )
+            cellFrame(page, facing.id)
                 .locator(".bloom-editable[lang='en']")
                 .first(),
         ).toHaveText(textOfPage(facingContentIndex), { timeout: 15000 });
@@ -406,9 +415,9 @@ test.describe("showing the other pages of the book", () => {
         const contentPages = await getContentPages(page);
         await goToPage(page, contentPages[3].id);
         expect(await chosenPageView(page)).toBe("all");
-        await expect(
-            editablePageFrame(page).locator(".bloom-book-grid-cell"),
-        ).toHaveCount((await getPages(page)).length);
+        await expect(gridCells(page)).toHaveCount(
+            await getExpectedGridCellCount(page),
+        );
 
         await typeInGroup(
             page,
@@ -436,10 +445,7 @@ test.describe("showing the other pages of the book", () => {
         const target = pages[facingIndex(editedIndex)];
         const targetCell = cell(page, target.id);
         await targetCell.scrollIntoViewIfNeeded();
-        const textBox = editablePageFrame(page)
-            .frameLocator(
-                `.bloom-book-grid-cell[data-page-id="${target.id}"] iframe`,
-            )
+        const textBox = cellFrame(page, target.id)
             .locator(".bloom-editable[lang='en']")
             .first();
         await expect(textBox).toBeVisible({ timeout: 15000 });
@@ -623,10 +629,7 @@ test.describe("showing the other pages of the book", () => {
         await goToPage(page, start.id);
         const targetCell = cell(page, target.id);
         await targetCell.scrollIntoViewIfNeeded();
-        const picture = editablePageFrame(page)
-            .frameLocator(
-                `.bloom-book-grid-cell[data-page-id="${target.id}"] iframe`,
-            )
+        const picture = cellFrame(page, target.id)
             .locator(".bloom-canvas-element:has(img)")
             .first();
         await expect(picture).toBeVisible({ timeout: 15000 });
@@ -652,25 +655,40 @@ test.describe("showing the other pages of the book", () => {
         expect(Math.abs(selectedBox.y - pictureBox.y)).toBeLessThan(3);
     });
 
-    test("in a long book only the pages near the screen are rendered [Test Case ID 835]", async ({
+    test("in a long book the grid holds only the pages around the page being edited, and draws only those near the screen [Test Case ID 835]", async ({
         page,
     }) => {
         test.setTimeout(300000);
         await addPage(page, "Just Text", 14);
         const pages = await getPages(page);
-        expect(pages.length).toBeGreaterThan(20);
+        expect(
+            pages.length,
+            "Sanity check: the book should have more pages than the grid lays out",
+        ).toBeGreaterThan(kMaxPagesInGrid);
         await goToPage(page, pages[1].id);
         const frame = editablePageFrame(page);
-        await expect(frame.locator(".bloom-book-grid-cell")).toHaveCount(
-            pages.length,
-        );
+
+        // The grid holds no more than its limit: the pages from the cover on, around the page
+        // being edited, and not the back cover.
+        const inGrid = getPagesInGrid(pages, pages[1].id);
+        expect(inGrid.length).toBeLessThanOrEqual(kMaxPagesInGrid);
+        expect(inGrid[0].id).toBe(pages[0].id);
+        const lastInGrid = inGrid[inGrid.length - 1];
+        expect(
+            lastInGrid.id,
+            "Sanity check: the back cover should be too far away to be in the grid",
+        ).not.toBe(pages[pages.length - 1].id);
+        await expect(gridCells(page)).toHaveCount(inGrid.length);
+        expect(await gridPageIds(page)).toEqual(inGrid.map((p) => p.id));
+
+        // Of those, only the pages near the screen are drawn.
         const rendered = frame.locator(
             ".bloom-book-grid-cell.bloom-book-grid-rendered",
         );
         await expect(rendered.first()).toBeAttached({ timeout: 15000 });
         const renderedAtTop = await rendered.count();
-        expect(renderedAtTop).toBeLessThan(pages.length - 1);
-        const lastCell = cell(page, pages[pages.length - 1].id);
+        expect(renderedAtTop).toBeLessThan(inGrid.length - 1);
+        const lastCell = cell(page, lastInGrid.id);
         await expect(lastCell).not.toHaveClass(/bloom-book-grid-rendered/);
 
         await frame.evaluate(() =>
@@ -684,6 +702,33 @@ test.describe("showing the other pages of the book", () => {
             /bloom-book-grid-rendered/,
             { timeout: 15000 },
         );
+
+        // THE ACTION UNDER TEST: a real click on the last page in the grid.
+        await lastCell.scrollIntoViewIfNeeded();
+        const lastCellBox = await boxOf(lastCell, "The last page in the grid");
+        await page.mouse.click(
+            lastCellBox.x + lastCellBox.width / 2,
+            lastCellBox.y + lastCellBox.height / 2,
+        );
+
+        await expect
+            .poll(() => getShownPageId(page), { timeout: 30000 })
+            .toBe(lastInGrid.id);
+        await waitForEditablePage(page);
+        const newPageBox = await boxOf(
+            editablePageFrame(page).locator(".bloom-page"),
+            "The page now being edited",
+        );
+        expect(Math.abs(newPageBox.x - lastCellBox.x)).toBeLessThan(3);
+        expect(Math.abs(newPageBox.y - lastCellBox.y)).toBeLessThan(3);
+        // The grid now holds the pages around that page, out to the back cover.
+        const aroundClicked = getPagesInGrid(pages, lastInGrid.id);
+        expect(
+            aroundClicked.map((p) => p.id),
+            "Sanity check: the pages around the clicked page should reach the back cover",
+        ).toContain(pages[pages.length - 1].id);
+        await expect(gridCells(page)).toHaveCount(aroundClicked.length);
+        expect(await gridPageIds(page)).toEqual(aroundClicked.map((p) => p.id));
     });
 
     test("clicking a page whose top is above the view opens that page and no other [Test Case ID 835]", async ({
@@ -815,8 +860,11 @@ test.describe("showing the other pages of the book", () => {
             "With One Page, the update should wait",
         ).toBe("0");
 
-        // THE ACTION UNDER TEST: choosing All Pages runs it now.
-        await choosePageView(page, "all");
+        // THE ACTION UNDER TEST: choosing All Pages runs it now. The grid cannot be counted here, as
+        // choosePageView would: the update this click starts gives the front and back matter pages
+        // new ids and loads the page again, so the page on screen can be one the book no longer
+        // has. The count is checked below, once the update is done.
+        await clickPageViewSegment(page, "all");
         await expect
             .poll(() => savedBook().layoutUpdateLevel, {
                 message:
@@ -826,9 +874,9 @@ test.describe("showing the other pages of the book", () => {
             .toBe("1");
         await waitForEditablePage(page);
         await expect(
-            editablePageFrame(page).locator(".bloom-book-grid-cell"),
+            gridCells(page),
             "After the update, Bloom should come back to the page with all the pages around it",
-        ).toHaveCount((await getPages(page)).length);
+        ).toHaveCount(await getExpectedGridCellCount(page));
 
         // And with All Pages showing, a page size change runs it as soon as the page is back. A
         // saved book at the new size and up to date can only come from an update run after the
@@ -851,10 +899,19 @@ const kPageLayoutUpdateTimeout = 120_000;
 
 /**
  * What the saved book records about its page layout: the size its first page is drawn at, and the
- * page layout update level (see BookProcessor.NeedsPageLayoutUpdate in Bloom).
+ * page layout update level (see BookProcessor.NeedsPageLayoutUpdate in Bloom). Bloom saves the book
+ * by moving the old file aside and the new one into its place, so for a moment there is no file;
+ * then both values are "being saved", which matches no expectation, so an expect.poll around this
+ * looks again.
  */
 function savedBook(): { size: string; layoutUpdateLevel: string } {
-    const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    let html: string;
+    try {
+        html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+        return { size: "being saved", layoutUpdateLevel: "being saved" };
+    }
     const meta = /<meta\b[^>]*\bname="pageLayoutUpdateLevel"[^>]*>/.exec(html);
     const level = meta ? /\bcontent="([^"]*)"/.exec(meta[0]) : null;
     const size =
