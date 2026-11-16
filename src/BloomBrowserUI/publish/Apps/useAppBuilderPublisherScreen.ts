@@ -1,11 +1,5 @@
 import * as React from "react";
-import {
-    get,
-    getWithPromise,
-    post,
-    postData,
-    postJson,
-} from "../../utils/bloomApi";
+import { get, getWithPromise, post, postJson } from "../../utils/bloomApi";
 import {
     IBloomWebSocketProgressEvent,
     useSubscribeToWebSocketForEvent,
@@ -42,6 +36,7 @@ export interface IAppBuilderPublisherScreenState {
     prepareLog: IActionLogController;
     buildLog: IActionLogController;
     installLog: IActionLogController;
+    measureLog: IActionLogController;
     status: IAppBuilderStatus;
     buildIsNeeded: boolean;
     hasRequiredBuildSettings: boolean;
@@ -63,6 +58,7 @@ export function useAppBuilderPublisherScreen(
     const prepareLog = useActionLogController();
     const buildLog = useActionLogController();
     const installLog = useActionLogController();
+    const measureLog = useActionLogController();
     const [status, setStatus] =
         React.useState<IAppBuilderStatus>(defaultStatus);
     const [settings, setSettings] =
@@ -241,8 +237,7 @@ export function useAppBuilderPublisherScreen(
 
     // This effect is warranted because tab activation is an external UI lifecycle boundary.
     // We fetch status first so any active build, its current stage, and its progress are
-    // shown immediately — without waiting for the next websocket event — and so we know
-    // whether it's safe to reset the ephemeral BloomPUB cache.
+    // shown immediately — without waiting for the next websocket event.
     React.useEffect(() => {
         if (!isActive) {
             return;
@@ -250,14 +245,14 @@ export function useAppBuilderPublisherScreen(
 
         void (async () => {
             // Snapshot the current server state right away.
-            let activeActionFromServer: AppBuilderAction | undefined;
+            let statusFetchFailed = false;
             try {
                 const nextStatus = await fetchStatusAsync();
                 if (!isMountedRef.current) {
                     return;
                 }
                 setStatus(nextStatus);
-                activeActionFromServer = nextStatus.activeAction;
+                const activeActionFromServer = nextStatus.activeAction;
                 if (activeActionFromServer) {
                     // Only restore server-side progress when we weren't already tracking
                     // the action locally — if busyAction is already set, live websocket
@@ -279,29 +274,19 @@ export function useAppBuilderPublisherScreen(
                 }
                 void refreshSettings(nextStatus.appDefPath);
             } catch {
-                // Status fetch failed; fall through to the cache-reset path which
-                // will call refreshStatus() for its own retry handling.
+                // Status fetch failed; refreshStatus() below has its own retry handling.
+                statusFetchFailed = true;
             }
 
             if (!isMountedRef.current) {
                 return;
             }
+            // BloomPUBs made on earlier visits are kept as long as they match their
+            // books, so the estimates can include actual sizes right away (BL-17062).
             refreshSizeEstimates();
-
-            if (activeActionFromServer) {
-                // A background action is running — skip the cache reset to avoid
-                // deleting BloomPUBs the build is actively using.
-                return;
+            if (statusFetchFailed) {
+                void refreshStatus();
             }
-
-            // No active action: clear the stale per-session BloomPUB cache, then
-            // do a full status refresh to pick up any changes since the last visit.
-            await postData("publish/rab/reset-bloompub-cache", {});
-            if (!isMountedRef.current) {
-                return;
-            }
-            void refreshStatus();
-            refreshSizeEstimates();
         })();
         // fetchStatusAsync, refreshSettings, refreshSizeEstimates, and refreshStatus
         // are intentionally omitted — this only reruns at the tab-activation boundary.
@@ -349,6 +334,22 @@ export function useAppBuilderPublisherScreen(
                 return buildLog;
             case "install":
                 return installLog;
+            case "measure":
+                return measureLog;
+        }
+    }
+
+    // The progress stage to show while waiting for the server's first progress report.
+    function getInitialProgressStageCode(action: AppBuilderAction): string {
+        switch (action) {
+            case "prepare":
+                return "checking-installer";
+            case "build":
+                return "preparing-build";
+            case "install":
+                return "checking-device";
+            case "measure":
+                return "exporting-bloompubs";
         }
     }
 
@@ -370,6 +371,9 @@ export function useAppBuilderPublisherScreen(
             setPendingBuildNeeded(false);
             refreshSizeEstimates();
         }
+        if (action === "measure") {
+            refreshSizeEstimates();
+        }
         // Fetch updated server state: APK path, project existence, build signature,
         // and (for prepare) initialize settings from the new appDef.
         await refreshStatus(initializeSettingsAfterPrepare);
@@ -389,15 +393,7 @@ export function useAppBuilderPublisherScreen(
 
         // Reset visible progress before starting a new backend operation so reused accordions never show stale state.
         setProgressPercent(0);
-        setProgressStageCode(
-            action === "prepare"
-                ? "checking-installer"
-                : action === "build"
-                  ? "preparing-build"
-                  : action === "install"
-                    ? "checking-device"
-                    : undefined,
-        );
+        setProgressStageCode(getInitialProgressStageCode(action));
         setBusyAction(action);
         // The endpoint returns immediately; actual completion arrives via the
         // "actionComplete" websocket event handled by the subscription below.
@@ -462,6 +458,7 @@ export function useAppBuilderPublisherScreen(
         prepareLog,
         buildLog,
         installLog,
+        measureLog,
         status,
         buildIsNeeded: status.buildNeeded || pendingBuildNeeded,
         hasRequiredBuildSettings: hasRequiredBuildSettings(settings),

@@ -127,6 +127,30 @@ jobs:
               working-directory: src/BloomBrowserUI
               run: pnpm run build-prod
 
+            # Now and then the vitest process dies of a native access violation (exit code
+            # 3221225477) part way through, with no failing test and nothing in the log to say
+            # where (BL-17117). Windows Error Reporting writes a minidump of any node.exe that
+            # crashes while this key exists; the stack in it is what we need to find the cause.
+            #
+            # A dump holds the crashed process's memory, environment included, and artifacts of
+            # this public repo can be downloaded by anyone. So dumps are on ONLY around the
+            # vitest step, which is given no secrets: the step right after it turns them off before
+            # any step that does get one (the e2e tests have a password in their environment). The
+            # setting is machine-wide, which is why it must not outlive that one step. DumpType 1
+            # is a minidump, not the whole heap, but it still holds stacks, module data and
+            # probably the environment, so what keeps it safe is that the step has no secrets.
+            - name: Turn on crash dumps for the browser UI tests
+              id: crash_dumps_on
+              if: ${{ success() && env.RUN_FRONTEND_TESTS == 'true' }}
+              run: |
+                  $dumpFolder = Join-Path $env:GITHUB_WORKSPACE "output\vitest-crash-dumps"
+                  New-Item -ItemType Directory -Force -Path $dumpFolder | Out-Null
+                  $key = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\node.exe"
+                  New-Item -Force -Path $key | Out-Null
+                  New-ItemProperty -Path $key -Name DumpFolder -PropertyType ExpandString -Value $dumpFolder -Force | Out-Null
+                  New-ItemProperty -Path $key -Name DumpType -PropertyType DWord -Value 1 -Force | Out-Null
+                  New-ItemProperty -Path $key -Name DumpCount -PropertyType DWord -Value 3 -Force | Out-Null
+
             # The junit file feeds this suite's "Publish ..." step at the end of the job.
             #
             # Two easy ways to get a silently-empty report here, both of which we have hit:
@@ -151,6 +175,29 @@ jobs:
               if: ${{ success() && env.RUN_FRONTEND_TESTS == 'true' }}
               working-directory: src/BloomBrowserUI
               run: pnpm run test:ci --reporter=default --reporter=junit --outputFile=../../output/Tests/vitest-junit.xml
+
+            # always(), so that dumps are off before any later step even when the tests failed or
+            # the run is being cancelled.
+            - name: Turn off crash dumps
+              if: ${{ always() && steps.crash_dumps_on.outcome != 'skipped' }}
+              run: |
+                  $key = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\node.exe"
+                  if (Test-Path $key) { Remove-Item -Recurse -Force -Path $key }
+
+            # Only a crash writes a dump, so a night without one uploads nothing: the step needs
+            # the tests to have failed, and if-no-files-found: ignore covers a failure that was
+            # not a crash. Kept as long as the other diagnostic artifacts below. See the BloomE2E
+            # report upload for why !cancelled() is needed alongside the outcome check.
+            # Keep this step directly after the turn-off step and the only one that uploads this
+            # folder, so it can never carry a dump from a later step that has secrets.
+            - name: Upload browser UI test crash dumps
+              if: ${{ !cancelled() && steps.frontend_tests.outcome == 'failure' }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: vitest-crash-dumps
+                  path: output/vitest-crash-dumps/*.dmp
+                  retention-days: 4
+                  if-no-files-found: ignore
 
             # ----- C# build + tests -----
             # We want the C# suite to run even when the front-end TESTS fail, so a broken

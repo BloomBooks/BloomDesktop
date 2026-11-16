@@ -4,6 +4,7 @@ import { useL10n } from "../../../../react_components/l10nHooks";
 import { Div, Span } from "../../../../react_components/l10nComponents";
 import { ReaderSettings } from "../ReaderSettings";
 import { ReaderDialogTextarea } from "./ReaderDialogTextarea";
+import { kEnglishAlphabetExample } from "./readerToolsShared";
 import {
     commonHeaderStyles,
     commonTextStyles,
@@ -85,8 +86,7 @@ export const LettersTab: React.FunctionComponent<{
                     ${commonTextStyles}
                 `}
             >
-                a b c ch d e f g h i j k l m n ng o p q r s sh t th u v w x y z
-                ' -
+                {kEnglishAlphabetExample}
             </div>
             <div
                 css={css`

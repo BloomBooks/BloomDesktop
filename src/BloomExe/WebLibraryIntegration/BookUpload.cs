@@ -514,6 +514,12 @@ namespace Bloom.WebLibraryIntegration
                 progress.WriteMessage(cancelledMessage);
                 return "quiet";
             }
+            catch (SessionRejectedException e)
+            {
+                // The client has already signed the user out; the message asks them to sign in again.
+                progress.WriteError(e.Message.Replace("{", "{{").Replace("}", "}}"));
+                return "quiet";
+            }
             catch (Exception e)
             {
                 var msg1 = LocalizationManager.GetString(

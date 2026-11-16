@@ -26,6 +26,11 @@
         <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.ReaderTools.Unreadable" translate="no">
+        <source xml:lang="en">Bloom cannot read the reader tools' settings file for this language, so these cannot be changed here.</source>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.ReaderTools.Unreadable</note>
+        <note>On the "More" page of the first language in the Collection Settings dialog, shown under the alphabet and sentence punctuation (which cannot be edited) when the file the Decodable and Leveled Reader tools keep their settings in is damaged.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed">
         <source xml:lang="en">Conversion file used:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed</note>
@@ -171,6 +176,11 @@
       <trans-unit id="PublishTab.Upload.BookshelfError">
         <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Bloom subscription.</source>
         <note>ID: PublishTab.Upload.BookshelfError</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignInRejected" translate="no">
+        <source xml:lang="en">BloomLibrary.org did not accept your sign-in. It has probably expired. Please sign in again, then try again.</source>
+        <note>ID: PublishTab.Upload.SignInRejected</note>
+        <note>Shown in the progress box of Publish → Web when the website refuses the user's saved sign-in, for example because it is about a year old. Bloom has already signed the user out, so the "Sign in" button is showing again. "BloomLibrary.org" is the website's name and must not be translated.</note>
       </trans-unit>
       <trans-unit id="Settings.Subscription.DownloadForEdit" sil:dynamic="true">
         <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</source>

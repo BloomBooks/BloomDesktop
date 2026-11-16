@@ -21,11 +21,25 @@ export interface IBookAppearance {
     cssThemeName: string;
     /** "Use full bleed page layout" on the dialog's Print Publishing page. */
     fullBleed: boolean;
+    /** Where page numbers go: the "Page Numbers" choice on the dialog's Theme & Layout page. */
+    pageNumberPosition: PageNumberPosition;
 }
+
+/** The choices of Page Numbers, by the values Bloom saves (AppearanceSettings.PageNumberPosition). */
+export type PageNumberPosition =
+    | "automatic"
+    | "left"
+    | "center"
+    | "right"
+    | "hidden";
 
 /** What book/settings replies with. Only the part used here; the rest is posted back untouched. */
 interface IBookSettings {
-    appearance: IBookAppearance & Record<string, unknown>;
+    appearance: {
+        cssThemeName: string;
+        fullBleed?: boolean;
+        "pageNumber-position"?: PageNumberPosition;
+    } & Record<string, unknown>;
 }
 
 /** The book's current appearance settings, as the Book and Page Settings dialog would show them. */
@@ -34,12 +48,17 @@ export async function getBookAppearance(page: Page): Promise<IBookAppearance> {
     return {
         cssThemeName: settings.appearance.cssThemeName,
         fullBleed: !!settings.appearance.fullBleed,
+        // A book that never had Page Numbers changed has no value saved, which Bloom treats as
+        // Automatic.
+        pageNumberPosition:
+            settings.appearance["pageNumber-position"] ?? "automatic",
     };
 }
 
 /**
- * Change the selected book's page theme and/or its full bleed setting, the way pressing OK in Book
- * and Page Settings does, and wait until the Edit tab has rebuilt the page it shows with them.
+ * Change the selected book's page theme, full bleed setting and/or Page Numbers choice, the way
+ * pressing OK in Book and Page Settings does, and wait until the Edit tab has rebuilt the page it
+ * shows with them.
  *
  * Full bleed only takes effect where Bloom allows it: a paper page size, and a collection whose
  * subscription includes it (Enterprise). Elsewhere the setting is saved but the page is drawn
@@ -50,7 +69,12 @@ export async function setBookAppearance(
     changes: Partial<IBookAppearance>,
 ): Promise<void> {
     const settings = await apiGetJson<IBookSettings>(page, "book/settings");
-    Object.assign(settings.appearance, changes);
+    if (changes.cssThemeName !== undefined)
+        settings.appearance.cssThemeName = changes.cssThemeName;
+    if (changes.fullBleed !== undefined)
+        settings.appearance.fullBleed = changes.fullBleed;
+    if (changes.pageNumberPosition !== undefined)
+        settings.appearance["pageNumber-position"] = changes.pageNumberPosition;
     // Bloom rebuilds the page after saving, so the document showing now goes away. Mark it, and
     // wait for a document without the mark.
     await markPageDocument(page);
