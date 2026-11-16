@@ -240,38 +240,77 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// If the imported video at <param name="videoFilePath"/> needs re-encoding (dimensions too large,
-        /// or bad fps, or sound when we have sign language in use), this re-encodes it in place using the same
-        /// ffmpeg settings as recorded videos. It does nothing if ffmpeg is unavailable.
+        /// What ReencodeVideoIfNeeded must do to an imported video, as worked out by PlanVideoReencode.
         /// </summary>
-        private void ReencodeVideoIfNeeded(string videoFilePath, WebSocketProgress progress)
+        internal class VideoReencodePlan
         {
-            if (string.IsNullOrEmpty(FfmpegProgram))
-            {
-                return;
-            }
-            var hasSignLanguage = !string.IsNullOrEmpty(
-                CurrentBook?.CollectionSettings?.SignLanguageTag
-            );
+            /// <summary>The ffmpeg arguments that write the processed video to the temporary path.</summary>
+            public string Parameters;
 
-            var ffmpegOutput = GetVideoCharacteristicsOutput(videoFilePath);
-            if (string.IsNullOrWhiteSpace(ffmpegOutput))
-            {
-                return;
-            }
+            /// <summary>The video's length, which ffmpeg's progress reports are measured against.</summary>
+            public TimeSpan Duration;
 
+            /// <summary>Whether the video has a sound track.</summary>
+            public bool HasAudio;
+
+            /// <summary>
+            /// True when the original's codec cannot be played (anything but H.264, VP8, VP9 or AV1), so
+            /// the re-encoded video must replace it even when it comes out larger.
+            /// </summary>
+            public bool MustChangeCodec;
+
+            /// <summary>
+            /// Whether the re-encoded video should replace the original, given both files' sizes. Normally
+            /// it should not if re-encoding made the file larger. A video that had to change codec is kept
+            /// even when larger: H.264 is often bigger than the original (HEVC especially) at the same
+            /// quality, and the original would not play.
+            /// </summary>
+            public bool ReencodedVideoReplacesOriginal(long originalLength, long reencodedLength)
+            {
+                return MustChangeCodec || reencodedLength <= originalLength;
+            }
+        }
+
+        /// <summary>
+        /// The video codecs, as ffmpeg names them, that Chromium (and so Bloom Player and Bloom Reader)
+        /// plays. An imported video in any other codec is re-encoded to H.264. (AV1 plays, but our
+        /// reduced ffmpeg can't decode it anyway; VP8 and VP9 videos are never re-encoded.)
+        /// </summary>
+        private static readonly HashSet<string> ChromiumPlayableVideoCodecs = new HashSet<string>
+        {
+            "h264",
+            "vp8",
+            "vp9",
+            "av1",
+        };
+
+        /// <summary>
+        /// Works out from ffmpeg's description of a video (<paramref name="ffmpegOutput"/>, the output of
+        /// GetVideoCharacteristicsOutput) whether the imported video at <paramref name="videoFilePath"/>
+        /// needs re-encoding: dimensions too large or odd, bad fps, a codec that Bloom Player can't play
+        /// (such as HEVC), or sound when we have sign language in use. Returns the plan for writing the processed
+        /// video to <paramref name="tempPath"/>, or null when the video can be used as it is (or when its
+        /// description can't be understood, or it is a webm file, which we don't re-encode).
+        /// </summary>
+        internal static VideoReencodePlan PlanVideoReencode(
+            string ffmpegOutput,
+            string videoFilePath,
+            string tempPath,
+            bool hasSignLanguage
+        )
+        {
             var hasAudio = Regex.IsMatch(ffmpegOutput, "Stream #.*: Audio: ");
             var duration = GetVideoDuration(ffmpegOutput);
             if (duration == TimeSpan.Zero)
             {
-                return;
+                return null;
             }
             var matchVideoSettings = Regex.Matches(
                 ffmpegOutput,
                 "Stream #.*: Video: ([A-Za-z0-9]+)[, ].*, ([0-9]+)x([0-9]+)[, ].*, ([0-9.]+) fps, "
             );
             if (matchVideoSettings.Count == 0)
-                return;
+                return null;
 
             var match = matchVideoSettings[0];
             var encodedCodec = match.Groups[1].Value.ToLowerInvariant();
@@ -282,8 +321,13 @@ namespace Bloom.web.controllers
             )
             {
                 // We're not trying to re-encode webm files at this point.
-                return;
+                return null;
             }
+            // Chromium-based players (Bloom Player, Bloom Reader) can't reliably play any other codec, such as
+            // HEVC (H.265), which many phones record by default, or the older MPEG-4 Part 2, so any other
+            // video is re-encoded to H.264 whatever its size (BL-17114). (A codec our ffmpeg can't decode
+            // fails to re-encode, and the original is kept.)
+            var mustChangeCodec = !ChromiumPlayableVideoCodecs.Contains(encodedCodec);
             var width = int.Parse(match.Groups[2].Value);
             var height = int.Parse(match.Groups[3].Value);
             if (IsRotated90Degrees(ffmpegOutput))
@@ -350,8 +394,6 @@ namespace Bloom.web.controllers
             if (height % 2 != 0 || width % 2 != 0)
                 fixSize = true;
 
-            var tempPath = videoFilePath + ".tmp.mp4";
-
             var soundFlag = "";
             if (hasSignLanguage && hasAudio)
                 soundFlag = "-an"; // remove all audio
@@ -362,19 +404,54 @@ namespace Bloom.web.controllers
             if (fixFps)
                 parameters = // handles fixing size and sound as well as fps
                     $"-hide_banner -y -i \"{videoFilePath}\" -progress pipe:1 -c:v libx264 -crf {crf} -preset {preset} -pix_fmt yuv420p -bufsize {bufferSize}k -maxrate {maxBitrate}k {soundFlag} -vf \"{videoScale},fps=fps=25\" -force_key_frames \"expr:gte(t,n_forced*0.5)\" \"{tempPath}\"";
-            else if (fixSize)
-                parameters = // handles fixing sound as well as size
+            else if (fixSize || mustChangeCodec)
+                parameters = // handles fixing sound as well as size or codec
                     $"-hide_banner -y -i \"{videoFilePath}\" -progress pipe:1 -c:v libx264 -crf {crf} -preset {preset} -pix_fmt yuv420p -bufsize {bufferSize}k -maxrate {maxBitrate}k {soundFlag} -vf \"{videoScale}\" -force_key_frames \"expr:gte(t,n_forced*0.5)\" \"{tempPath}\"";
             else if (hasSignLanguage && hasAudio)
                 parameters =
                     $"-hide_banner -y -i \"{videoFilePath}\" -progress pipe:1 -c copy -an \"{tempPath}\"";
 
             if (string.IsNullOrEmpty(parameters))
+                return null;
+            return new VideoReencodePlan
+            {
+                Parameters = parameters,
+                Duration = duration,
+                HasAudio = hasAudio,
+                MustChangeCodec = mustChangeCodec,
+            };
+        }
+
+        /// <summary>
+        /// If the imported video at <param name="videoFilePath"/> needs re-encoding (see PlanVideoReencode),
+        /// this re-encodes it in place using the same ffmpeg settings as recorded videos. It does nothing if
+        /// ffmpeg is unavailable.
+        /// </summary>
+        private void ReencodeVideoIfNeeded(string videoFilePath, WebSocketProgress progress)
+        {
+            if (string.IsNullOrEmpty(FfmpegProgram))
+            {
+                return;
+            }
+            var hasSignLanguage = !string.IsNullOrEmpty(
+                CurrentBook?.CollectionSettings?.SignLanguageTag
+            );
+
+            var ffmpegOutput = GetVideoCharacteristicsOutput(videoFilePath);
+            if (string.IsNullOrWhiteSpace(ffmpegOutput))
+            {
+                return;
+            }
+
+            var tempPath = videoFilePath + ".tmp.mp4";
+            var plan = PlanVideoReencode(ffmpegOutput, videoFilePath, tempPath, hasSignLanguage);
+            if (plan == null)
             {
                 // Nothing needs to be done, so just report 100% progress and return.
                 progress.SendPercent(100);
                 return;
             }
+            var duration = plan.Duration;
             lock (_cancelLock)
             {
                 // This is rather unlikely, but possible.
@@ -392,22 +469,23 @@ namespace Bloom.web.controllers
                     videoFilePath,
                     progress,
                     duration,
-                    parameters,
+                    plan.Parameters,
                     seconds
                 );
                 if (!succeeded)
                     return; // leave original in place if cancelled or failed.
-                // Sanity check to ensure that the output file is not larger than the original.
+                // Sanity check to ensure that the output file is not larger than the original
+                // (unless the codec had to change; see ReencodedVideoReplacesOriginal).
                 var infoOld = new FileInfo(videoFilePath);
                 var infoNew = new FileInfo(tempPath);
-                if (infoOld.Length < infoNew.Length)
+                if (!plan.ReencodedVideoReplacesOriginal(infoOld.Length, infoNew.Length))
                 {
                     // Processing increased the size.  This is bad.
-                    if (hasSignLanguage && hasAudio)
+                    if (hasSignLanguage && plan.HasAudio)
                     {
                         // We still need to strip the audio regardless.  That shouldn't make the file larger since we're
                         // just copying the video stream and removing the audio stream.
-                        parameters =
+                        var parameters =
                             $"-hide_banner -y -i \"{videoFilePath}\" -progress pipe:1 -c copy -an \"{tempPath}\"";
                         var succeeded2 = ReencodeVideo(
                             videoFilePath,
@@ -1088,16 +1166,57 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
+        /// The state of one publishing pass over a book's videos. Converting or trimming a video replaces its
+        /// file, but other containers in the same pass may still show the original (for example the
+        /// bloomDataDiv copy of a custom cover's video container, or another page showing the same video with
+        /// different timings). So replaced files are only deleted by Finish, once every container is done, and
+        /// each original video is converted only once.
+        /// </summary>
+        public class VideoPublishingPass
+        {
+            /// <summary>Each original video's path, and the path of the playable video made from it
+            /// (the same path when it needed no conversion).</summary>
+            public readonly Dictionary<string, string> PlayableVideos =
+                new Dictionary<string, string>();
+
+            /// <summary>Each trim made so far (the playable video's path and the timings), and the trimmed
+            /// file, so containers asking for the same trim share one file.</summary>
+            public readonly Dictionary<string, string> TrimmedVideos =
+                new Dictionary<string, string>();
+
+            /// <summary>Files that a converted or trimmed video has replaced.</summary>
+            public readonly HashSet<string> ReplacedFiles = new HashSet<string>();
+
+            /// <summary>
+            /// Deletes each replaced file that no container uses any more (<paramref name="filesInUse"/>
+            /// holds the path each container now shows).
+            /// </summary>
+            public void Finish(ICollection<string> filesInUse)
+            {
+                foreach (var file in ReplacedFiles)
+                {
+                    if (!filesInUse.Contains(file))
+                        RobustFile.Delete(file);
+                }
+            }
+        }
+
+        /// <summary>
         /// When publishing videos in any form but PDF, we want to trim the actual video to just the part that
         /// the user wants to see and add the controls attribute, so that the video controls are visible.
+        /// A video in a codec that Chromium-based readers can't play is also converted to H.264 (BL-17114).
         /// </summary>
         /// <param name="videoContainerElement">bloom-videoContainer element from copied DOM</param>
         /// <param name="sourceBookFolder">This is assumed to be a staging folder, we may replace videos here!</param>
+        /// <param name="pass">When several containers are processed together (see ProcessVideos), the pass they
+        /// share, which defers deleting replaced files until all are done. Without one, the files this
+        /// container's video replaced are deleted before returning.</param>
         /// <returns>the new filepath if a video file exists and was copied, empty string if no video file was found</returns>
         public static string PrepareVideoForPublishing(
             SafeXmlElement videoContainerElement,
             string sourceBookFolder,
-            bool videoControls
+            bool videoControls,
+            VideoPublishingPass pass = null
         )
         {
             var videoFolder = Path.Combine(sourceBookFolder, "video");
@@ -1121,18 +1240,44 @@ namespace Bloom.web.controllers
             if (!RobustFile.Exists(originalVideoFilePath))
                 return string.Empty;
 
-            var tempName = originalVideoFilePath;
-            if (
-                !string.IsNullOrEmpty(FfmpegProgram)
+            var ownPass = pass == null;
+            if (ownPass)
+                pass = new VideoPublishingPass();
+            var haveFfmpeg = !string.IsNullOrEmpty(FfmpegProgram);
+            var shouldTrim =
+                haveFfmpeg
                 && !string.IsNullOrEmpty(timings)
-                && IsVideoMarkedForTrimming(sourceBookFolder, videoUrl, timings)
+                && IsVideoMarkedForTrimming(sourceBookFolder, videoUrl, timings);
+
+            // A book imported before Bloom converted unplayable videos on import (BL-17114), or uploaded
+            // by an older Bloom, can still hold HEVC or other videos that Chromium-based readers can't
+            // play. Convert them here, so the harvester's BloomPUB (and its Read Online copy) and ePUB
+            // play too.
+            var playablePath = originalVideoFilePath;
+            if (
+                haveFfmpeg
+                && !pass.PlayableVideos.TryGetValue(originalVideoFilePath, out playablePath)
             )
             {
-                tempName = Path.Combine(videoFolder, GetNewVideoFileName());
-                var successful = TrimVideoUsingFfmpeg(originalVideoFilePath, tempName, timings);
+                playablePath = ConvertVideoToPlayableCodecIfNeeded(originalVideoFilePath);
+                pass.PlayableVideos[originalVideoFilePath] = playablePath;
+                if (playablePath != originalVideoFilePath)
+                    pass.ReplacedFiles.Add(originalVideoFilePath);
+            }
+
+            var tempName = playablePath;
+            if (shouldTrim)
+            {
+                var trimKey = playablePath + "#t=" + timings;
+                var alreadyTrimmed = pass.TrimmedVideos.TryGetValue(trimKey, out tempName);
+                if (!alreadyTrimmed)
+                    tempName = Path.Combine(videoFolder, GetNewVideoFileName());
+                var successful =
+                    alreadyTrimmed || TrimVideoUsingFfmpeg(playablePath, tempName, timings);
                 if (successful)
                 {
-                    RobustFile.Delete(originalVideoFilePath);
+                    pass.TrimmedVideos[trimKey] = tempName;
+                    pass.ReplacedFiles.Add(playablePath);
                     var trimmedFileName =
                         BookStorage.GetVideoFolderName + Path.GetFileName(tempName);
                     HtmlDom.SetVideoElementUrl(
@@ -1146,9 +1291,29 @@ namespace Bloom.web.controllers
                     // probably doesn't exist, but if it does we don't need it.
                     // RobustFile.Delete does not throw if the file doesn't exist.
                     RobustFile.Delete(tempName);
-                    tempName = originalVideoFilePath;
+                    tempName = playablePath;
                 }
             }
+            if (tempName == playablePath && playablePath != originalVideoFilePath)
+            {
+                // Converted but not trimmed: point at the converted video, keeping any timings
+                // (which SetVideoElementUrl drops).
+                HtmlDom.SetVideoElementUrl(
+                    videoContainerElement,
+                    UrlPathString.CreateFromUnencodedString(
+                        BookStorage.GetVideoFolderName + Path.GetFileName(playablePath)
+                    ),
+                    false
+                );
+                if (!string.IsNullOrEmpty(timings))
+                    sourceElement.SetAttribute(
+                        "src",
+                        sourceElement.GetAttribute("src") + "#t=" + timings
+                    );
+            }
+
+            if (ownPass)
+                pass.Finish(new HashSet<string> { tempName });
 
             if (videoControls)
             {
@@ -1157,6 +1322,48 @@ namespace Bloom.web.controllers
             }
 
             return tempName;
+        }
+
+        /// <summary>
+        /// While publishing, makes an H.264 copy of the video at <paramref name="videoFilePath"/> if it is in a
+        /// codec that Chromium-based readers can't play (see PlanVideoReencode). Returns the path of the video to
+        /// publish: the new copy, or <paramref name="videoFilePath"/> when no conversion was needed or it failed.
+        /// The original is left for the caller to delete.
+        /// </summary>
+        internal static string ConvertVideoToPlayableCodecIfNeeded(string videoFilePath)
+        {
+            var ffmpegOutput = GetVideoCharacteristicsOutput(videoFilePath);
+            if (string.IsNullOrWhiteSpace(ffmpegOutput))
+                return videoFilePath;
+            var convertedPath = Path.Combine(
+                Path.GetDirectoryName(videoFilePath),
+                GetNewVideoFileName()
+            );
+            // Publishing leaves a video's sound alone; only importing removes it for sign language.
+            var plan = PlanVideoReencode(
+                ffmpegOutput,
+                videoFilePath,
+                convertedPath,
+                hasSignLanguage: false
+            );
+            if (plan == null || !plan.MustChangeCodec)
+                return videoFilePath;
+            var result = CommandLineRunner.Run(
+                FfmpegProgram,
+                plan.Parameters,
+                "",
+                (int)plan.Duration.TotalSeconds + 60,
+                new NullProgress()
+            );
+            if (result.DidTimeOut || result.ExitCode != 0 || !RobustFile.Exists(convertedPath))
+            {
+                Logger.WriteEvent(
+                    $"ConvertVideoToPlayableCodecIfNeeded: ffmpeg could not convert {videoFilePath}: timed out={result.DidTimeOut}; exit code={result.ExitCode}; stderr= {result.StandardError}"
+                );
+                RobustFile.Delete(convertedPath);
+                return videoFilePath;
+            }
+            return convertedPath;
         }
 
         /// <summary>
@@ -1174,14 +1381,20 @@ namespace Bloom.web.controllers
             // We are counting on this method processing the videos before
             // the recursive CompressDirectory() method gets to the video subdirectory.
             // We are also assuming that 'sourceFolder' is a staging folder (so we can delete modified videos).
+            var pass = new VideoPublishingPass();
+            var filesInUse = new HashSet<string>();
             foreach (var videoContainerElement in videoContainerElements)
             {
-                PrepareVideoForPublishing(
+                var path = PrepareVideoForPublishing(
                     videoContainerElement,
                     sourceFolder,
-                    videoControls: false
+                    videoControls: false,
+                    pass
                 );
+                if (!string.IsNullOrEmpty(path))
+                    filesInUse.Add(path);
             }
+            pass.Finish(filesInUse);
         }
 
         private static bool IsVideoMarkedForTrimming(

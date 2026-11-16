@@ -117,6 +117,15 @@ public sealed record GatherContext
     /// <summary>Where to put files too big or too binary for the report text.</summary>
     public required string ArtifactDirectory { get; init; }
 
+    /// <summary>
+    /// A dump of this Bloom taken earlier in the same episode, when it first looked frozen, or null if none
+    /// was started. Used when a fresh dump cannot be taken - most often because the user ended Bloom before
+    /// the freeze was reported. A task, because it may still be being written, and only awaited by whoever
+    /// needs it, so that a report which takes a fresh dump does not wait for it. It gives null if writing it
+    /// failed. See <see cref="EarlyFreezeDump.Claim"/>.
+    /// </summary>
+    public Task<EarlyFreezeDump.Taken?>? EarlyDump { get; init; }
+
     /// <summary>The log file we identified as this Bloom's, if we found one.</summary>
     public string? BloomLogPath { get; init; }
 
