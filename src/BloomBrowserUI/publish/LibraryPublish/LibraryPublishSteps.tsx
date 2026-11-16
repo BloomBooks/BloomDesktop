@@ -135,7 +135,7 @@ export const LibraryPublishSteps: React.FunctionComponent<{
     useEffect(() => {
         get("libraryPublish/getBookInfo", (result) => {
             setBookInfo(result.data);
-            setAgreementsChecked(Array(3).fill(result.data.agreementsAccepted));
+            setBoxesChecked(Array(3).fill(result.data.agreementsAccepted));
             setSummary(result.data.summary);
             setIsLoading(false);
         });
@@ -175,15 +175,15 @@ export const LibraryPublishSteps: React.FunctionComponent<{
     }
     // Whether each of the three agreement boxes is checked. Bloom saves only whether all of them
     // are, so they come from the book info all checked or all unchecked.
-    const [agreementsChecked, setAgreementsChecked] = useState<boolean[]>(
+    const [boxesChecked, setBoxesChecked] = useState<boolean[]>(
         Array(3).fill(false),
     );
-    const agreementsAccepted = agreementsChecked.every((checked) => checked);
+    const allBoxesChecked = boxesChecked.every((checked) => checked);
     function changeAgreement(index: number, checked: boolean) {
-        const newChecked = agreementsChecked.map((oldChecked, i) =>
+        const newChecked = boxesChecked.map((oldChecked, i) =>
             i === index ? checked : oldChecked,
         );
-        setAgreementsChecked(newChecked);
+        setBoxesChecked(newChecked);
         postBoolean(
             "libraryPublish/agreementsAccepted",
             newChecked.every((c) => c),
@@ -197,7 +197,7 @@ export const LibraryPublishSteps: React.FunctionComponent<{
     const { email: loggedInEmail, signIn, signOut } = useLoginState();
 
     function isReadyForUpload(): boolean {
-        return isReadyForAgreements() && agreementsAccepted;
+        return isReadyForAgreements() && allBoxesChecked;
     }
 
     function confirmWithUserIfNecessaryAndUpload() {
@@ -604,7 +604,7 @@ export const LibraryPublishSteps: React.FunctionComponent<{
                     </StepLabel>
                     <StepContent>
                         <Agreements
-                            checked={agreementsChecked}
+                            checked={boxesChecked}
                             disabled={!isReadyForAgreements()}
                             onChange={changeAgreement}
                         />
