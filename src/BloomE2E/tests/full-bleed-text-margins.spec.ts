@@ -11,14 +11,18 @@
 // One A5 book with one picture page is measured in the Edit tab four ways: Default and Edge to
 // Edge, each without and with full bleed. The cases without full bleed guard against the margin
 // rules, which every page of every book goes through, changing for the books that never use bleed.
+// Then the book is switched to A4, which unlike A5 has a gutter on the inside edge, and given a
+// second picture page, so that Edge to Edge with full bleed is measured on a left and a right page.
 // Full bleed needs an Enterprise subscription, so the collection has one.
 //
-// What stays manual: the PDF itself (Publish > PDF & Print), at other paper sizes and in landscape,
+// What stays manual: the PDF itself (Publish > PDF & Print), the other paper sizes, landscape,
 // and where page numbers land. The Edit tab draws the page with the same rules the PDF is made from.
 
+import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
+    editablePageFrame,
     getContentPages,
     getPages,
     goToPage,
@@ -30,7 +34,7 @@ import {
     setBookAppearance,
 } from "../helpers/bookSettings";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
-import { getPageSize } from "../helpers/pageSize";
+import { getPageSize, setPageSize } from "../helpers/pageSize";
 import {
     expectDistancesFromEdge,
     expectPastEdge,
@@ -53,6 +57,10 @@ test.describe.configure({ mode: "serial" });
 /** The standard page margin on every side of an A5 page, which the Default theme uses
  * (--standard-page-margin in appearance-theme-default.css). */
 const kA5StandardMarginMm = 12;
+
+/** The standard page margin on every side of an A4 page. The Default theme also gives A4 a
+ * 10mm gutter, which Edge to Edge removes. */
+const kA4StandardMarginMm = 15;
 
 /** Edge to Edge's margin on front and back matter when there is no bleed. */
 const kEdgeToEdgeXmatterMarginMm = 3;
@@ -190,4 +198,62 @@ test.describe("text margins with and without full bleed", () => {
             "the credits page's margins",
         );
     });
+
+    // A4 and the other large sizes have a gutter on the inside edge of each page, which A5 does
+    // not, and which Edge to Edge has to remove too (BL-17025). Left and right pages have it on
+    // opposite sides, so the book needs one of each.
+    test("with full bleed at A4, Edge to Edge runs pictures into the bleed on the inside edge of left and right pages too [Test Case ID 846]", async ({
+        page,
+    }) => {
+        test.setTimeout(300000);
+        await setBookAppearance(page, {
+            cssThemeName: "edge-to-edge",
+            fullBleed: true,
+        });
+        await setPageSize(page, "A4Portrait");
+        await addPage(page, "Basic Text & Image");
+        const contentPages = await getContentPages(page);
+        expect(contentPages.length).toBe(2);
+
+        const sidesSeen: string[] = [];
+        for (const contentPage of contentPages) {
+            await goToPage(page, contentPage.id);
+            expect(await getPageSize(page)).toBe("A4Portrait");
+            expect(await isPageDrawnWithFullBleed(page)).toBe(true);
+            const side = await getPageSide(page);
+            sidesSeen.push(side);
+            expectPastEdge(
+                await getPictureDistancesFromEdge(page),
+                ["left", "top", "right"],
+                kBleedMm,
+                `the picture on the ${side} page`,
+            );
+            expectDistancesFromEdge(
+                await getTextAreaDistancesFromEdge(page),
+                {
+                    left: kA4StandardMarginMm,
+                    right: kA4StandardMarginMm,
+                    bottom: kA4StandardMarginMm,
+                },
+                `the text under the picture on the ${side} page`,
+            );
+        }
+        expect(sidesSeen.sort()).toEqual(["side-left", "side-right"]);
+    });
 });
+
+/** Whether the page being edited is a left or a right page: "side-left" or "side-right". */
+async function getPageSide(page: Page): Promise<string> {
+    const classes = await editablePageFrame(page)
+        .locator(".bloom-page")
+        .first()
+        .getAttribute("class");
+    const side = classes
+        ?.split(/\s+/)
+        .find((c) => /^side-(left|right)$/.test(c));
+    if (!side)
+        throw new Error(
+            `The page being edited has neither side-left nor side-right: "${classes}".`,
+        );
+    return side;
+}

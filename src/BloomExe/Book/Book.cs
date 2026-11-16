@@ -4910,7 +4910,7 @@ namespace Bloom.Book
         /// <summary>
         /// True for the landscape sizes whose booklets are printed two pages to a portrait sheet
         /// (A5 on A4, HalfLetter on Letter), then cut horizontally and stacked rather than folded.
-        /// The print instructions on the Publish tab (PublishPdfApi.HandlePrintSettingsHelp) rely
+        /// The print instructions on the Publish tab (PublishPdfApi.GetPrintSettingsHelp) rely
         /// on this too, so the layout we make and the instructions we give always agree (BL-16759).
         /// </summary>
         public static bool UsesCutAndStackBooklet(SizeAndOrientation sizeAndOrientation)
@@ -5387,6 +5387,19 @@ namespace Bloom.Book
             return RetryUtility.Retry(() => MakeVersionCodeInternal(fileContent, filePath));
         }
 
+        /// <summary>
+        /// Whether the file named <paramref name="fileName"/>, in a collection's folder (not a
+        /// book's), can change how the collection's books come out: the collection settings and
+        /// the collection's custom styles. <see cref="MakeVersionCode"/> includes these in a
+        /// book's version code, and anything that checks for changes more cheaply must watch the
+        /// same files (e.g. Publish.BloomPub.BloomPubCache).
+        /// </summary>
+        public static bool IsCollectionFileThatAffectsBooks(string fileName)
+        {
+            return fileName == "customCollectionStyles.css"
+                || fileName.EndsWith(CollectionSettings.kFileExtension, StringComparison.Ordinal);
+        }
+
         private static string MakeVersionCodeInternal(string fileContent, string filePath = null)
         {
             //var debugBldr = new StringBuilder();
@@ -5479,14 +5492,7 @@ namespace Bloom.Book
                             .OrderBy(x => x)
                     )
                     {
-                        var name = Path.GetFileName(path);
-                        if (
-                            name == "customCollectionStyles.css"
-                            || name.EndsWith(
-                                CollectionSettings.kFileExtension,
-                                StringComparison.Ordinal
-                            )
-                        )
+                        if (IsCollectionFileThatAffectsBooks(Path.GetFileName(path)))
                         {
                             //AppendDebugInfo(debugBldr, path);
                             byte[] buffer = RobustFile.ReadAllBytes(path);

@@ -16,7 +16,12 @@
 import fs from "node:fs";
 import http from "node:http";
 import path from "node:path";
-import { CaptureSession, PAGES, renderUrlToPdf } from "./capture-core.mjs";
+import {
+    CaptureSession,
+    PAGES,
+    listBrandings,
+    renderUrlToPdf,
+} from "./capture-core.mjs";
 
 // Page display order for the matrix and the PDF (front-matter to back-matter).
 const PAGE_ORDER = [
@@ -92,11 +97,7 @@ const opts = parseArgs();
 fs.mkdirSync(opts.out, { recursive: true });
 
 // ---------- model & state ----------
-const allBrandings = fs
-    .readdirSync(SRC_BRANDING)
-    .filter((f) => fs.statSync(path.join(SRC_BRANDING, f)).isDirectory())
-    .filter((f) => f !== "shared")
-    .sort();
+const allBrandings = listBrandings(SRC_BRANDING);
 
 const model = {
     brandings: allBrandings,

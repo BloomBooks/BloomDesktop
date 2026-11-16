@@ -519,9 +519,17 @@ namespace Bloom.ImageProcessing
         }
 
         /// <summary>
-        /// Converts a white-background bitmap to one with a transparent background using per-pixel
-        /// alpha unmixing. Anti-aliased edge pixels get partial alpha rather than being left as
-        /// opaque white, eliminating the white fringe visible against colored page backgrounds.
+        /// Converts a white-background bitmap to one with a transparent background by treating
+        /// each pixel as ink laid over white paper. A pixel's opacity is set by its darkest colour
+        /// channel (pure white becomes fully transparent, black stays fully opaque), and its colour
+        /// becomes the ink that, laid over white, gives back the original pixel. So the picture
+        /// looks unchanged on white, and on a coloured page a light gray becomes a lighter shade of
+        /// that page colour rather than a gray tinted towards it (BL-16778). Anti-aliased edges
+        /// get partial opacity, so no white fringe is left.
+        /// A scan's paper is seldom white: it is usually a gray with grain, which ink over white would
+        /// keep as a faint wash over the page colour. So the picture's paper is found first (see
+        /// <see cref="FindPaperBrightening"/>), and when it is gray every pixel is brightened by the
+        /// same factor until the paper and its grain are white.
         /// </summary>
         private static Image RemoveWhiteBackground(Bitmap source)
         {
@@ -543,91 +551,86 @@ namespace Bloom.ImageProcessing
             var pixels = new byte[stride * height];
             Marshal.Copy(srcData.Scan0, pixels, 0, pixels.Length);
             source.UnlockBits(srcData);
-            // 1. Find the lightest color in the image (max R+G+B sum)
-            int maxR = 0,
-                maxG = 0,
-                maxB = 0;
-            int maxSum = 0;
+            var brighten = FindPaperBrightening(pixels, width, height, stride);
+            // The pixels are converted in place, so a large picture needs no second full-size array.
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
                     int idx = y * stride + x * 4;
-                    int b = pixels[idx];
-                    int g = pixels[idx + 1];
-                    int r = pixels[idx + 2];
-                    int sum = r + g + b;
-                    if (sum > maxSum)
-                    {
-                        maxSum = sum;
-                        maxR = r;
-                        maxG = g;
-                        maxB = b;
-                    }
-                }
-            }
-
-            // 2. Build brightness thresholds for a transparency ramp.
-            // t0: pixels at/above this brightness become fully transparent.
-            // t1: pixels at/below this brightness stay fully opaque.
-            // Values between t1..t0 get linearly ramped alpha.
-            //
-            // For a white background (detected ~255) t0=220, t1=180, giving the standard 40-unit ramp.
-            // For darker backgrounds t0 is pulled down to match, and t1 follows to keep the ramp
-            // kMinRampWidth wide — but t1 is never allowed below kMinOpaqueBrightnessThreshold so
-            // that dark content pixels stay fully opaque even on dark backgrounds.  This may produce
-            // a narrower ramp than kMinRampWidth on very dark images, which is the right trade-off.
-            // On extremely dark images, we may not make anything transparent.
-            const double kTransparentBrightnessThreshold = 220.0;
-            const double kOpaqueBrightnessThreshold = 180.0;
-            const double kMinRampWidth = 40.0;
-            const double kMinOpaqueBrightnessThreshold = 60.0;
-            var detectedBackgroundBrightness = 0.299 * maxR + 0.587 * maxG + 0.114 * maxB;
-            var transparentBrightnessThreshold = Math.Min(
-                kTransparentBrightnessThreshold,
-                detectedBackgroundBrightness
-            );
-            var opaqueBrightnessThreshold = Math.Max(
-                kMinOpaqueBrightnessThreshold,
-                Math.Min(kOpaqueBrightnessThreshold, transparentBrightnessThreshold - kMinRampWidth)
-            );
-
-            // 3. For each pixel, set alpha from perceptual brightness using t0/t1 ramp.
-            // Keep this pass after the two read-only analysis passes above: we mutate pixels in place.
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    int idx = y * stride + x * 4;
-                    int b = pixels[idx];
-                    int g = pixels[idx + 1];
-                    int r = pixels[idx + 2];
+                    byte b = brighten[pixels[idx]];
+                    byte g = brighten[pixels[idx + 1]];
+                    byte r = brighten[pixels[idx + 2]];
                     // pixels[idx + 3] is source alpha, always 255 for opaque input.
-                    var brightness = 0.299 * r + 0.587 * g + 0.114 * b;
-                    byte newAlpha;
-                    if (brightness >= transparentBrightnessThreshold)
+                    byte minChannel = Math.Min(r, Math.Min(g, b));
+                    // alpha is 0 for pure white and 255 for black.
+                    int alpha = 255 - minChannel;
+                    pixels[idx + 3] = (byte)alpha;
+                    if (alpha > 0)
                     {
-                        newAlpha = 0;
-                    }
-                    else if (brightness <= opaqueBrightnessThreshold)
-                    {
-                        newAlpha = 255;
+                        // The ink that gives this pixel over white: pixel = alpha * ink + (1 - alpha) * white,
+                        // so ink = (pixel - minChannel) * 255 / alpha, rounded to the nearest level so that
+                        // the ink drawn over white gives back the original pixel.
+                        pixels[idx] = (byte)Math.Round((b - minChannel) * 255.0 / alpha);
+                        pixels[idx + 1] = (byte)Math.Round((g - minChannel) * 255.0 / alpha);
+                        pixels[idx + 2] = (byte)Math.Round((r - minChannel) * 255.0 / alpha);
                     }
                     else
                     {
-                        newAlpha = (byte)(
-                            255.0
-                            * (transparentBrightnessThreshold - brightness)
-                            / (transparentBrightnessThreshold - opaqueBrightnessThreshold)
-                        );
+                        // A fully transparent pixel has RGB 0.
+                        pixels[idx] = 0;
+                        pixels[idx + 1] = 0;
+                        pixels[idx + 2] = 0;
                     }
-                    pixels[idx + 3] = newAlpha;
-                    // Keep RGB as-is to preserve color intensity (e.g. pure red stays red).
                 }
             }
             Marshal.Copy(pixels, 0, dstData.Scan0, pixels.Length);
             result.UnlockBits(dstData);
             return result;
+        }
+
+        // The darkest value of a pixel's darkest colour channel that can count as paper. Scans
+        // seen so far have paper at 228 to 236; allowing darker values let a drawing that is mostly
+        // mid gray be taken for gray paper and washed out.
+        private const int kDarkestPossiblePaper = 215;
+
+        // Paper at least this light is treated as white and the picture is not brightened.
+        private const int kWhitePaper = 250;
+
+        // How far below the paper's level scanner grain reaches; it is brightened to white too.
+        private const int kPaperGrain = 10;
+
+        /// <summary>
+        /// Returns a table that maps each channel value of the picture to its brightened value.
+        /// The paper is the most common value of the darkest colour channel among the picture's
+        /// pixels from <see cref="kDarkestPossiblePaper"/> up. When it is below
+        /// <see cref="kWhitePaper"/>, every channel is multiplied by 255 / (paper - grain), the
+        /// same factor for all three, and a channel that would pass 255 stops at 255, so a colour
+        /// lighter than the paper in some channel loses a little saturation; otherwise the table
+        /// changes nothing.
+        /// </summary>
+        private static byte[] FindPaperBrightening(byte[] pixels, int width, int height, int stride)
+        {
+            var histogram = new int[256];
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int idx = y * stride + x * 4;
+                    histogram[Math.Min(pixels[idx], Math.Min(pixels[idx + 1], pixels[idx + 2]))]++;
+                }
+            }
+            int paper = 255;
+            for (int v = kDarkestPossiblePaper; v < 256; v++)
+            {
+                if (histogram[v] > histogram[paper])
+                    paper = v;
+            }
+            double scale = paper < kWhitePaper ? 255.0 / (paper - kPaperGrain) : 1.0;
+            var table = new byte[256];
+            for (int v = 0; v < 256; v++)
+                table[v] = (byte)Math.Min(255, Math.Round(v * scale));
+            return table;
         }
 
         private static ColorPalette GivePaletteTransparentBackground(Image bitmap)
