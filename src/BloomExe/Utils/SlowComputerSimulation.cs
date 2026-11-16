@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.WinForms;
 using SIL.Reporting;
 
 namespace Bloom.Utils
@@ -28,7 +28,11 @@ namespace Bloom.Utils
     /// Nothing here slows the disk or the network.
     /// The job object lets child processes break away from it, so processes Bloom starts (including
     /// the WebView2 runtime's msedgewebview2.exe processes) are not capped by it; the DevTools
-    /// throttling is what slows the web front end.
+    /// throttling is what slows the web front end. But every process Bloom starts while the
+    /// simulation is on inherits the two-core affinity, as it would on a two-core machine. That
+    /// includes a Bloom that replaces this one (a restart, or Velopack applying an update), which
+    /// would otherwise run on two cores with the simulation off; see
+    /// <see cref="UndoLimitInheritedFromParent"/>.
     /// </remarks>
     public static class SlowComputerSimulation
     {
@@ -48,13 +52,32 @@ namespace Bloom.Utils
         private static IntPtr s_job = IntPtr.Zero;
         private static IntPtr s_originalAffinity;
 
+        // While the simulation is on, holds the affinity Bloom had before it, for any Bloom that this
+        // one starts. Environment variables are inherited, so it reaches a Bloom started by way of
+        // another program (Velopack's Update.exe) as well as one started directly.
+        private const string kAffinityBeforeSimulationVariable =
+            "BLOOM_AFFINITY_BEFORE_SLOW_COMPUTER_SIMULATION";
+
+        /// <summary>
+        /// Called first thing at startup. If the Bloom that started this one (directly or through
+        /// another program) had the simulation on, this process inherited its two-core affinity;
+        /// put back the affinity that Bloom had before the simulation. The simulation itself always
+        /// starts off.
+        /// </summary>
+        public static void UndoLimitInheritedFromParent()
+        {
+            var saved = Environment.GetEnvironmentVariable(kAffinityBeforeSimulationVariable);
+            if (saved == null)
+                return;
+            Environment.SetEnvironmentVariable(kAffinityBeforeSimulationVariable, null);
+            Process.GetCurrentProcess().ProcessorAffinity = (IntPtr)long.Parse(saved);
+        }
+
         // The WebView2s that have finished initializing, so that turning the simulation on or off
         // can reach each of them. Weak, so that this list never keeps a WebView2 alive: it is filled
-        // for every WebView2 in every run of Bloom, whether or not anyone uses this mode. A WebView2
-        // that has been disposed but not yet collected refuses the DevTools call, and
-        // ApplyThrottlingTo logs and ignores that.
-        private static readonly List<WeakReference<CoreWebView2>> s_webViews =
-            new List<WeakReference<CoreWebView2>>();
+        // for every WebView2 in every run of Bloom, whether or not anyone uses this mode.
+        private static readonly List<WeakReference<WebView2>> s_webViews =
+            new List<WeakReference<WebView2>>();
 
         /// <summary>
         /// Whether the simulation is on in this run of Bloom.
@@ -64,7 +87,7 @@ namespace Bloom.Utils
         /// <summary>
         /// Turn the simulation on or off: cap or uncap Bloom's own process, and throttle or
         /// unthrottle every live WebView2. WebView2s created later pick up the setting in
-        /// <see cref="RegisterWebView"/>. Called on the UI thread.
+        /// <see cref="RegisterWebView"/>.
         /// </summary>
         public static void SetOn(bool value)
         {
@@ -74,7 +97,7 @@ namespace Bloom.Utils
                 LimitThisProcess();
             else
                 UnlimitThisProcess();
-            var webViews = new List<CoreWebView2>();
+            var webViews = new List<WebView2>();
             lock (s_lock)
             {
                 s_isOn = value;
@@ -94,7 +117,7 @@ namespace Bloom.Utils
         /// at once if the simulation is on, and remembers it so that turning the simulation on or off
         /// later reaches it too.
         /// </summary>
-        public static void RegisterWebView(CoreWebView2 webView)
+        public static void RegisterWebView(WebView2 webView)
         {
             bool isOn;
             lock (s_lock)
@@ -102,7 +125,7 @@ namespace Bloom.Utils
                 // Drop the entries for WebView2s that have been collected, so the list stays as
                 // short as the number of live ones.
                 s_webViews.RemoveAll(reference => !reference.TryGetTarget(out _));
-                s_webViews.Add(new WeakReference<CoreWebView2>(webView));
+                s_webViews.Add(new WeakReference<WebView2>(webView));
                 isOn = s_isOn;
             }
             if (isOn)
@@ -111,27 +134,37 @@ namespace Bloom.Utils
 
         /// <summary>
         /// Send the DevTools CPU throttling command to one WebView2. A rate of 1 means no throttling.
-        /// The command must be sent on the WebView2's own thread, but turning the simulation on comes
-        /// from an API call on the UI thread, which is where every on-screen WebView2 lives; an
-        /// off-screen one on another thread is reached only when it is created.
+        /// The command must be sent on the thread that owns the WebView2: the UI thread for those on
+        /// screen, a thread of its own for an off-screen one (see OffScreenBrowser). So from any
+        /// other thread this posts itself to the owner's message loop.
         /// </summary>
-        private static async void ApplyThrottlingTo(CoreWebView2 webView, bool throttle)
+        private static async void ApplyThrottlingTo(WebView2 webView, bool throttle)
         {
-            var rate = throttle ? kWebViewSlowdownFactor : 1;
             try
             {
-                await webView.CallDevToolsProtocolMethodAsync(
+                if (webView.InvokeRequired)
+                {
+                    webView.BeginInvoke(new Action(() => ApplyThrottlingTo(webView, throttle)));
+                    return;
+                }
+                // Null once the control has been disposed.
+                var core = webView.CoreWebView2;
+                if (core == null)
+                    return;
+                var rate = throttle ? kWebViewSlowdownFactor : 1;
+                await core.CallDevToolsProtocolMethodAsync(
                     "Emulation.setCPUThrottlingRate",
                     $"{{\"rate\":{rate}}}"
                 );
             }
             catch (Exception e) when (e is InvalidOperationException || e is COMException)
             {
-                // InvalidOperationException: the WebView2 belongs to another thread, or was closed
-                // between our taking the list of WebView2s and getting here. COMException: it closed,
-                // or its browser process died, while the command was on its way. This method is
-                // async void, so anything not caught here would surface as an error report. None of
-                // these is worth more than a log entry in a testing mode.
+                // InvalidOperationException: the WebView2 was disposed (or its thread has finished)
+                // between our taking the list of WebView2s and getting here, so there is no window
+                // to post to or no CoreWebView2 to call. COMException: it closed, or its browser
+                // process died, while the command was on its way. This method is async void, so
+                // anything not caught here would surface as an error report. None of these is worth
+                // more than a log entry in a testing mode.
                 Logger.WriteEvent(
                     $"Simulate a slow computer: could not set the CPU throttling rate of a WebView2: {e.Message}"
                 );
@@ -148,6 +181,10 @@ namespace Bloom.Utils
             if (s_job == IntPtr.Zero)
                 s_job = CreateJobForThisProcess(process);
             s_originalAffinity = process.ProcessorAffinity;
+            Environment.SetEnvironmentVariable(
+                kAffinityBeforeSimulationVariable,
+                s_originalAffinity.ToInt64().ToString()
+            );
             var coreCount = Math.Min(kSimulatedCoreCount, Environment.ProcessorCount);
             process.ProcessorAffinity = (IntPtr)((1L << coreCount) - 1);
             // The rate is a share of the cycles of the whole machine, in hundredths of a percent,
@@ -173,6 +210,7 @@ namespace Bloom.Utils
         {
             SetCpuRateControl(0, 0);
             Process.GetCurrentProcess().ProcessorAffinity = s_originalAffinity;
+            Environment.SetEnvironmentVariable(kAffinityBeforeSimulationVariable, null);
         }
 
         /// <summary>
