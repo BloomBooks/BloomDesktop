@@ -97,8 +97,7 @@ describe("the marks on a box with more text than fits", () => {
 
         await redraw();
 
-        expect(drawn("bloom-overflow-tornEdge")!.top).toBeCloseTo(140);
-        expect(drawn("bloom-overflow-chip")).toBeDefined();
+        expect(drawn("bloom-overflow-chip")!.top).toBeCloseTo(140);
         expect(
             document.querySelector(
                 "#bloom-overflow-indicator-layer .bloom-overflow-chip",
@@ -115,7 +114,7 @@ describe("the marks on a box with more text than fits", () => {
     it("follow the text as the box scrolls, washing the lines that don't fit", async () => {
         const box = makePageWithBoxTooFull();
         await redraw();
-        expect(drawn("bloom-overflow-tornEdge")!.top).toBeCloseTo(140);
+        expect(drawn("bloom-overflow-chip")!.top).toBeCloseTo(140);
 
         box.scrollTop = 3 * kLineHeightPx;
         expect(box.scrollTop).toBe(60);
@@ -124,9 +123,7 @@ describe("the marks on a box with more text than fits", () => {
         // The cut is where the box's bottom was, moved up with the text: between line 5, the
         // last that fits, and line 6.
         const cutViewportPx = 140 - 60;
-        expect(drawn("bloom-overflow-tornEdge")!.top).toBeCloseTo(
-            cutViewportPx,
-        );
+        expect(drawn("bloom-overflow-chip")!.top).toBeCloseTo(cutViewportPx);
         const wash = drawn("bloom-overflow-cutOffText")!;
         expect(wash.top).toBeCloseTo(cutViewportPx);
         expect(wash.bottom).toBeCloseTo(140);
@@ -148,7 +145,7 @@ describe("the marks for other kinds of overflow", () => {
 
         await redraw();
 
-        expect(drawn("bloom-overflow-tornEdge")!.top).toBeCloseTo(140);
+        expect(drawn("bloom-overflow-chip")!.top).toBeCloseTo(140);
     });
 
     it("mark both the box and the page when a box with too much text also pushes past the margin", async () => {
@@ -162,7 +159,15 @@ describe("the marks for other kinds of overflow", () => {
 
         await redraw();
 
-        expect(drawn("bloom-overflow-tornEdge")!.top).toBeCloseTo(270);
+        const chips = Array.from(
+            document.querySelectorAll(
+                "#bloom-overflow-indicator-layer .bloom-overflow-chip",
+            ),
+        );
+        // Sanity check: one chip for the box and one for the page.
+        expect(chips.length).toBe(2);
+        const boxChip = chips.find((c) => c.textContent === "Overflowing")!;
+        expect(boxChip.getBoundingClientRect().top).toBeCloseTo(270);
         const pastMargin = drawn("bloom-overflow-pastContainer")!;
         expect(pastMargin.top).toBeCloseTo(220);
         expect(pastMargin.bottom).toBeCloseTo(270);

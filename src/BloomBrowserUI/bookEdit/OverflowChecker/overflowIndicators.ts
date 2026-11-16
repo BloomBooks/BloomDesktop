@@ -393,12 +393,13 @@ function drawBoxTooFull(box: IBoxTooFull, layerDraw: LayerDrawer) {
             heightLayoutPx: box.lineHeightLayoutPx,
         }).style.setProperty("--overflow-background", box.background);
     }
+    // Trying the page without the torn line; it may come back. The page thumbnails still have it.
     // A torn, zigzag line where the text is cut off, its teeth cutting into the line above.
-    draw.add("bloom-overflow-tornEdge", {
-        leftLayoutPx,
-        topLayoutPx: cutLayoutPx,
-        widthLayoutPx,
-    }).style.setProperty("--overflow-background", box.background);
+    // draw.add("bloom-overflow-tornEdge", {
+    //     leftLayoutPx,
+    //     topLayoutPx: cutLayoutPx,
+    //     widthLayoutPx,
+    // }).style.setProperty("--overflow-background", box.background);
     draw.chip(box.rectViewportPx.right, cutLayoutPx, chipText.overflowing.text);
 }
 
