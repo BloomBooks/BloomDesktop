@@ -19,31 +19,39 @@ vi.mock("../js/editableDivUtils", () => ({
 const kLineHeightPx = 20;
 
 // Adds a page 600 by 400 pixels at the top left of the viewport holding `html`, and returns its
-// one text box.
+// first text box. overflowIndicators.less is not loaded, so this gives the drawing layer the one
+// rule of it that placement depends on.
 function addPage(html: string): HTMLElement {
     const page = document.createElement("div");
     page.id = "overflowIndicatorsTestPage";
     page.className = "bloom-page";
     page.style.cssText =
         "position: absolute; top: 0; left: 0; width: 600px; height: 400px; margin: 0;";
-    page.innerHTML = html;
+    page.innerHTML = `
+        <style>#bloom-overflow-indicator-layer, #bloom-overflow-indicator-layer > * { position: absolute; }</style>
+        ${html}`;
     document.body.appendChild(page);
-    return page.querySelector<HTMLElement>(".bloom-editable")!;
+    return page.querySelector<HTMLElement>(".bloom-editable, textarea")!;
 }
 
+// The style of a text box 200 by 100 pixels with lines kLineHeightPx tall, at (left, top).
+function boxStyle(left: number, top: number): string {
+    return `position: absolute; left: ${left}px; top: ${top}px; width: 200px; height: 100px;
+        overflow: hidden; font: 14px Arial; line-height: ${kLineHeightPx}px; padding: 0;
+        border: 0; margin: 0;`;
+}
+
+// Ten lines of text: twice what a box styled by boxStyle shows.
+const kLines = Array.from({ length: 10 }, (_, i) => `Line ${i + 1}`);
+// The ten lines as paragraphs, for a text box.
+const kTenLines = kLines.map((l) => `<p style="margin: 0">${l}</p>`).join("");
+
 // Makes a page with a text box 200 by 100 pixels at (50, 40) holding ten lines of text, so the
-// box shows five and the other five do not fit. overflowIndicators.less is not loaded, so this
-// gives the drawing layer the one rule of it that placement depends on.
+// box shows five and the other five do not fit.
 function makePageWithBoxTooFull(): HTMLElement {
-    const lines = Array.from(
-        { length: 10 },
-        (_, i) => `<p style="margin: 0">Line ${i + 1}</p>`,
-    ).join("");
-    return addPage(`
-        <style>#bloom-overflow-indicator-layer, #bloom-overflow-indicator-layer > * { position: absolute; }</style>
-        <div class="bloom-editable overflow" style="position: absolute; left: 50px; top: 40px;
-                width: 200px; height: 100px; overflow: hidden; font: 14px Arial;
-                line-height: ${kLineHeightPx}px; padding: 0; border: 0;">${lines}</div>`);
+    return addPage(
+        `<div class="bloom-editable overflow" style="${boxStyle(50, 40)}">${kTenLines}</div>`,
+    );
 }
 
 // Lets the redraw that refreshOverflowIndicatorsSoon schedules for the next frame happen.
@@ -126,6 +134,38 @@ describe("the marks on a box with more text than fits", () => {
         expect(wash.width).toBeCloseTo(200);
         // The edge is no longer the cut, so the fade goes.
         expect(drawn("bloom-overflow-fadeLastLine")).toBeUndefined();
+    });
+});
+
+describe("the marks for other kinds of overflow", () => {
+    it("mark a textarea with more text than fits, as in a calendar's day cells", async () => {
+        const textarea = addPage(
+            `<textarea class="overflow" style="${boxStyle(50, 40)} resize: none;"></textarea>`,
+        );
+        textarea.value = kLines.join("\n");
+        // Sanity check: half the text doesn't fit.
+        expect(textarea.scrollHeight).toBeGreaterThan(textarea.clientHeight);
+
+        await redraw();
+
+        expect(drawn("bloom-overflow-tornEdge")!.top).toBeCloseTo(140);
+    });
+
+    it("mark both the box and the page when a box with too much text also pushes past the margin", async () => {
+        // The margin box ends at y 220; the box runs from 170 to 270.
+        addPage(`
+            <div class="marginBox childOverflowingThis" style="position: absolute; left: 20px;
+                    top: 20px; width: 400px; height: 200px;">
+                <div class="bloom-editable overflow thisOverflowingParent"
+                     style="${boxStyle(0, 150)}">${kTenLines}</div>
+            </div>`);
+
+        await redraw();
+
+        expect(drawn("bloom-overflow-tornEdge")!.top).toBeCloseTo(270);
+        const pastMargin = drawn("bloom-overflow-pastContainer")!;
+        expect(pastMargin.top).toBeCloseTo(220);
+        expect(pastMargin.bottom).toBeCloseTo(270);
     });
 });
 

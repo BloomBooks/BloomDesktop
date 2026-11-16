@@ -23,6 +23,10 @@ import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants
 
 const kLayerId = "bloom-overflow-indicator-layer";
 
+// The boxes that OverflowChecker checks: text boxes, and the textareas that a calendar's day
+// cells use. Keep in step with getElementsThatCanOverflowOrNeedToBeResized in OverflowChecker.ts.
+const kBoxSelector = ".bloom-editable, textarea";
+
 // What the chips say: each one's l10n id and its text, in English until the localized text
 // arrives (see requestChipText).
 const chipText = {
@@ -83,7 +87,7 @@ export function refreshOverflowIndicatorsSoon(): void {
 function respondToBoxScrolling(e: Event) {
     if (
         e.target instanceof HTMLElement &&
-        e.target.matches(".bloom-editable.overflow")
+        e.target.matches(`:is(${kBoxSelector}).overflow`)
     ) {
         refreshOverflowIndicatorsSoon();
     }
@@ -132,24 +136,34 @@ function respondToPageChanges(mutations: MutationRecord[]) {
     }
 }
 
-// The boxes whose overflow is shown, in document order. A box with too much text in itself is
-// left out on pages that scroll instead of overflowing (Device and Ebook layouts), except in
-// canvas buttons; boxes that together push past their container are shown on every layout.
-// Boxes that are not displayed are left out: one in a language the book no longer shows can
-// still carry the "overflow" class it was saved with, since OverflowChecker checks only the
-// boxes that are showing.
-function getOverflowingBoxes(page: HTMLElement): HTMLElement[] {
-    const scrolls = pageScrollsInsteadOfOverflowing(page);
+// The boxes whose overflow is shown, in document order: those with too much text in themselves
+// (class "overflow") where showsTooMuchText says so, and those that push past a container
+// ("thisOverflowingParent"); a box can be both. Boxes that are not displayed are left out: one in
+// a language the book no longer shows can still carry the "overflow" class it was saved with,
+// since OverflowChecker checks only the boxes that are showing.
+function getOverflowingBoxes(
+    page: HTMLElement,
+    pageScrolls: boolean,
+): HTMLElement[] {
     return Array.from(
         page.querySelectorAll<HTMLElement>(
-            ".bloom-editable.overflow, .bloom-editable.thisOverflowingParent",
+            `:is(${kBoxSelector}):is(.overflow, .thisOverflowingParent)`,
         ),
     ).filter(
         (box) =>
             box.getClientRects().length > 0 &&
-            (!scrolls ||
-                !box.classList.contains("overflow") ||
-                !!box.closest("." + kBloomButtonClass)),
+            (showsTooMuchText(box, pageScrolls) ||
+                box.classList.contains("thisOverflowingParent")),
+    );
+}
+
+// Whether to show that `box` has too much text in itself. It is not shown on pages that scroll
+// instead of overflowing (Device and Ebook layouts), except in canvas buttons. Boxes that push
+// past their container are shown on every layout.
+function showsTooMuchText(box: HTMLElement, pageScrolls: boolean): boolean {
+    return (
+        box.classList.contains("overflow") &&
+        (!pageScrolls || !!box.closest("." + kBloomButtonClass))
     );
 }
 
@@ -272,11 +286,13 @@ function refreshOverflowIndicators(): void {
     requestChipText();
     const viewportPxPerLayoutPx = EditableDivUtils.getPageScale();
     const draw = LayerDrawer.forLayer(layer);
+    const pageScrolls = pageScrollsInsteadOfOverflowing(page);
     // For each container that boxes push past, the lowest bottom of those boxes.
     const pushedPastViewportPx = new Map<HTMLElement, number>();
-    for (const box of getOverflowingBoxes(page)) {
+    for (const box of getOverflowingBoxes(page, pageScrolls)) {
         const placement = placementOf(box, viewportPxPerLayoutPx);
-        if (box.classList.contains("overflow")) {
+        const tooMuchText = showsTooMuchText(box, pageScrolls);
+        if (tooMuchText) {
             drawBoxTooFull(
                 measureBoxTooFull(
                     box,
@@ -291,6 +307,8 @@ function refreshOverflowIndicators(): void {
                 ),
                 draw,
             );
+        }
+        if (!box.classList.contains("thisOverflowingParent")) {
             continue;
         }
         const container = box.parentElement!.closest<HTMLElement>(
@@ -314,25 +332,25 @@ function refreshOverflowIndicators(): void {
                     box.getBoundingClientRect().bottom,
                 ),
             );
-            continue;
-        }
-        // A box that pushes past a smaller container, such as a table cell, has more text than
-        // its container can show, so it is shown like a box with too much text.
-        drawBoxTooFull(
-            measureBoxTooFull(
-                box,
-                placement,
-                insideBottomViewportPx(
-                    container,
-                    placementOf(container, viewportPxPerLayoutPx)
-                        .rectViewportPx,
-                    viewportPxPerLayoutPx,
-                    true,
+        } else if (!tooMuchText) {
+            // A box that pushes past a smaller container, such as a table cell, has more text
+            // than its container can show, so it is shown like a box with too much text.
+            drawBoxTooFull(
+                measureBoxTooFull(
+                    box,
+                    placement,
+                    insideBottomViewportPx(
+                        container,
+                        placementOf(container, viewportPxPerLayoutPx)
+                            .rectViewportPx,
+                        viewportPxPerLayoutPx,
+                        true,
+                    ),
+                    0,
                 ),
-                0,
-            ),
-            draw,
-        );
+                draw,
+            );
+        }
     }
     for (const [margin, bottomViewportPx] of pushedPastViewportPx) {
         drawPageTooFull(margin.getBoundingClientRect(), bottomViewportPx, draw);

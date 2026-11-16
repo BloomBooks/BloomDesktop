@@ -21,6 +21,7 @@ function getElementsThatCanOverflowOrNeedToBeResized(
     container: HTMLElement,
 ): HTMLElement[] {
     //NB: for some historical reason in March 2014 the calendar still uses textareas
+    // (kBoxSelector in overflowIndicators.ts lists the same two kinds of box.)
     // I think .bloom-visibility-code-on is more reliable here than :visible;
     // possibly this is set up before everything has been computed to be visible?
     // Note: this can probably be done with querySelectorAll, but a simple substitution
