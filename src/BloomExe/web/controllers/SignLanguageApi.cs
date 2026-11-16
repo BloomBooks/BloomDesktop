@@ -350,7 +350,9 @@ namespace Bloom.web.controllers
             if (height % 2 != 0 || width % 2 != 0)
                 fixSize = true;
 
-            var tempPath = videoFilePath + ".tmp.mp4";
+            // ffmpeg writes to a file of its own in the system temp folder; on success we copy it over
+            // the original.
+            var tempPath = BloomTemp.TempFileUtils.GetTempFilepathWithExtension(".mp4");
 
             var soundFlag = "";
             if (hasSignLanguage && hasAudio)
@@ -582,7 +584,6 @@ namespace Bloom.web.controllers
         {
             var progress = new WebSocketProgress(BloomWebSocketServer.Instance, "progress");
             dynamic processResult = new DynamicJson();
-            string newVideoPath = null;
             try
             {
                 if (!string.IsNullOrEmpty(path))
@@ -590,36 +591,58 @@ namespace Bloom.web.controllers
                     using (PerformanceMeasurement.Global.Measure("Import Video", path))
                     {
                         _importedVideoIntoBloom = true;
-                        newVideoPath = Path.Combine(
-                            BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath),
-                            GetNewVideoFileName(Path.GetExtension(path))
-                        ); // Use a new name to defeat caching.
-                        RobustFile.Copy(path, newVideoPath);
-                        ReencodeVideoIfNeeded(newVideoPath, progress); // may be very slow for large videos.
-                        lock (_cancelLock)
+                        // Copy and convert the video in the temp folder, so an import that fails or
+                        // is cancelled never leaves a file in the book (BL-17056).
+                        using (var workingCopy = TempFile.WithExtension(Path.GetExtension(path)))
                         {
-                            if (_importCancelled)
+                            RobustFile.Copy(path, workingCopy.Path, true);
+                            ReencodeVideoIfNeeded(workingCopy.Path, progress); // may be very slow for large videos.
+                            lock (_cancelLock)
                             {
-                                RobustFile.Delete(newVideoPath);
-                                _importedVideoIntoBloom = false;
-                                // Cancelling the import is not really a failure as such, but gets reported
-                                // the same way to the sign language tool.
-                                ReportProcessingFailure(processResult);
-                                return;
+                                if (_importCancelled)
+                                {
+                                    _importedVideoIntoBloom = false;
+                                    // Cancelling the import is not really a failure as such, but gets reported
+                                    // the same way to the sign language tool.
+                                    ReportProcessingFailure(processResult);
+                                    return;
+                                }
                             }
+                            var newVideoPath = Path.Combine(
+                                BookStorage.GetVideoDirectoryAndEnsureExistence(
+                                    CurrentBook.FolderPath
+                                ),
+                                GetNewVideoFileName(Path.GetExtension(path))
+                            ); // Use a new name to defeat caching.
+                            try
+                            {
+                                RobustFile.Copy(workingCopy.Path, newVideoPath);
+                            }
+                            catch (Exception)
+                            {
+                                // A large video can fail partway, e.g. when the disk fills up. Then
+                                // freeing the space at once matters to the user. If Windows refuses
+                                // the delete too, the unused-video cleanup will try again later.
+                                try
+                                {
+                                    RobustFile.Delete(newVideoPath);
+                                }
+                                catch (Exception) { }
+                                throw;
+                            }
+                            progress.SendPercent(100);
+                            var relativePath =
+                                BookStorage.GetVideoFolderName + Path.GetFileName(newVideoPath);
+                            processResult.success = true;
+                            processResult.importedPath = UrlPathString
+                                .CreateFromUnencodedString(relativePath)
+                                .UrlEncodedForHttpPath;
+                            BloomWebSocketServer.Instance?.SendBundle(
+                                "signLanguage",
+                                "processVideo-results",
+                                processResult
+                            );
                         }
-                        progress.SendPercent(100);
-                        var relativePath =
-                            BookStorage.GetVideoFolderName + Path.GetFileName(newVideoPath);
-                        processResult.success = true;
-                        processResult.importedPath = UrlPathString
-                            .CreateFromUnencodedString(relativePath)
-                            .UrlEncodedForHttpPath;
-                        BloomWebSocketServer.Instance?.SendBundle(
-                            "signLanguage",
-                            "processVideo-results",
-                            processResult
-                        );
                     }
                 }
                 else
@@ -632,8 +655,6 @@ namespace Bloom.web.controllers
                 Logger.WriteEvent(
                     $"SignLanguageApi.ProcessVideo: exception processing video {path}: {e.Message}"
                 );
-                if (!String.IsNullOrEmpty(newVideoPath) && RobustFile.Exists(newVideoPath))
-                    RobustFile.Delete(newVideoPath);
                 _importedVideoIntoBloom = false;
                 ReportProcessingFailure(processResult);
             }

@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
+using System.Threading.Tasks;
+using L10NSharp;
 using Microsoft.Win32;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -410,7 +413,8 @@ namespace Bloom.Utils
             switch (setting)
             {
                 case null:
-                    return "could not be read";
+                    // Windows leaves the value out until someone changes the setting.
+                    return "not set, so off (or the setting could not be read)";
                 case 0:
                     return "off";
                 case 1:
@@ -528,13 +532,98 @@ namespace Bloom.Utils
             return null;
         }
 
+        // Asking Windows Security Center can take a second or more, so we ask once per run, on a
+        // thread of its own. FileAccessStartupCheck starts it early, so later callers normally
+        // find the answer ready.
+        private static readonly Lazy<Task<List<(string name, int? state)>>> s_antivirusQuery =
+            new Lazy<Task<List<(string name, int? state)>>>(() => Task.Run(QueryAntivirusProducts));
+
+        // How long an error report waits for Windows to say which antivirus is active. A report
+        // made before the answer arrives (or while Windows is slow) says so rather than waiting.
+        private static readonly TimeSpan kReportWait = TimeSpan.FromSeconds(5);
+
+        /// <summary>
+        /// Start asking Windows which antivirus products it knows about, if nobody has yet, without
+        /// waiting for the answer.
+        /// </summary>
+        public static void StartAntivirusLookup()
+        {
+            _ = s_antivirusQuery.Value;
+        }
+
+        /// <summary>
+        /// The antivirus products Windows Security Center knows about, waiting at most maxWait for
+        /// the answer; null if it hasn't come by then.
+        /// </summary>
+        private static List<(string name, int? state)> GetAntivirusProducts(TimeSpan maxWait)
+        {
+            var query = s_antivirusQuery.Value;
+            return query.Wait(maxWait) ? query.Result : null;
+        }
+
         /// <summary>
         /// The display names of the antivirus products Windows Security Center reports with real-time
-        /// protection on. Empty if none, or if they can't be read. Never throws.
+        /// protection on (as of the first time we asked in this run). Empty if none, or if they
+        /// can't be read or Windows takes more than a few seconds to say. Never throws.
         /// </summary>
         public static List<string> GetActiveAntivirusNames()
         {
-            var result = new List<string>();
+            return (GetAntivirusProducts(kReportWait) ?? new List<(string name, int? state)>())
+                .Where(product =>
+                    product.state.HasValue && IsRealTimeProtectionOn(product.state.Value)
+                )
+                .Select(product => product.name)
+                .ToList();
+        }
+
+        /// <summary>
+        /// One line naming every antivirus product Windows Security Center knows about, with whether
+        /// its real-time protection is on, for problem reports. Waits at most a few seconds for
+        /// Windows to answer. Never throws.
+        /// </summary>
+        public static string AntivirusSummary => GetAntivirusSummary(kReportWait);
+
+        /// <summary>
+        /// As AntivirusSummary, but waiting at most maxWait for Windows to answer.
+        /// </summary>
+        public static string GetAntivirusSummary(TimeSpan maxWait)
+        {
+            return DescribeAntivirusProducts(GetAntivirusProducts(maxWait), maxWait);
+        }
+
+        /// <summary>
+        /// AntivirusSummary if Windows has already answered in this run, else null. Never waits.
+        /// </summary>
+        public static string AntivirusSummaryIfKnown =>
+            s_antivirusQuery.IsValueCreated && s_antivirusQuery.Value.IsCompletedSuccessfully
+                ? DescribeAntivirusProducts(s_antivirusQuery.Value.Result, TimeSpan.Zero)
+                : null;
+
+        private static string DescribeAntivirusProducts(
+            List<(string name, int? state)> products,
+            TimeSpan waited
+        )
+        {
+            if (products == null)
+                return $"not known: Windows had not said within {waited.TotalSeconds:0} seconds";
+            if (products.Count == 0)
+                return "none found";
+            return string.Join(
+                "; ",
+                products.Select(product =>
+                    $"{product.name} ({(product.state.HasValue ? DescribeAntivirusProductState(product.state.Value) : "state unknown")})"
+                )
+            );
+        }
+
+        /// <summary>
+        /// Ask Windows Security Center for the antivirus products it knows about: each one's display
+        /// name and productState (null if it gives none). Empty if not on Windows or Windows can't be
+        /// asked.
+        /// </summary>
+        private static List<(string name, int? state)> QueryAntivirusProducts()
+        {
+            var result = new List<(string name, int? state)>();
             if (!Platform.IsWindows)
                 return result;
             try
@@ -551,18 +640,35 @@ namespace Bloom.Utils
                     {
                         using (instance)
                         {
-                            if (
-                                instance["productState"] is uint state
-                                && IsRealTimeProtectionOn((int)state)
-                                && instance["displayName"] is string name
-                            )
-                                result.Add(name);
+                            int? state = instance["productState"] is uint productState
+                                ? (int)productState
+                                : null;
+                            result.Add((instance["displayName"] as string, state));
                         }
                     }
                 }
             }
             catch (Exception) { }
             return result;
+        }
+
+        /// <summary>
+        /// True if e is one of the ways Windows refuses a file operation (as antivirus folder
+        /// protection does), as opposed to a bug in Bloom.
+        /// </summary>
+        public static bool IsRefusal(Exception e) =>
+            e is IOException || e is UnauthorizedAccessException || e is SecurityException;
+
+        /// <summary>
+        /// A link, as HTML, to the docs page that helps people whose files Bloom can't change.
+        /// </summary>
+        public static string TroubleshootingLinkHtml()
+        {
+            var howToTroubleshoot = LocalizationManager.GetString(
+                "Errors.CannotUpdateTroubleshoot",
+                "How to troubleshoot file updating errors"
+            );
+            return $"<a href='https://docs.bloomlibrary.org/troubleshooting-file-access' target='_blank'>{howToTroubleshoot}</a>";
         }
 
         /// <summary>
