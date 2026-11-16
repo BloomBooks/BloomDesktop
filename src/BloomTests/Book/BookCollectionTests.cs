@@ -81,6 +81,11 @@ namespace BloomTests.Book
             File.WriteAllText(Path.Combine(path, $"{bookTitle}.htm"), @"<html></html>");
         }
 
+        /// <summary>
+        /// Working out a book's thumbnail label can mean parsing its whole HTML file, and the label is
+        /// read only for a book whose meta.json has no title, so listing the books must work it out for
+        /// those books alone.
+        /// </summary>
         [Test]
         public void GetBookInfos_ThumbnailLabelIsWorkedOutOnlyForBooksWithoutAMetaJsonTitle()
         {
