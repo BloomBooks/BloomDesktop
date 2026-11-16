@@ -85,6 +85,41 @@
         <target xml:lang="pt-PT" state="needs-translation">Style</target>
         <note>ID: CollectionSettingsDialog.FrontBackMatterPage.Style</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.LineSpacing.Description" translate="no">
+        <source xml:lang="en">Use this to increase the default line spacing if this language has tall characters that tend to run into other lines of text.</source>
+        <target xml:lang="pt-PT" state="needs-translation">Use this to increase the default line spacing if this language has tall characters that tend to run into other lines of text.</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.LineSpacing.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.ReaderTools.Language1Changed" translate="no">
+        <source xml:lang="en">These belong to the language you are replacing. To change them for the new language, click OK, then open these settings again.</source>
+        <target xml:lang="pt-PT" state="needs-translation">These belong to the language you are replacing. To change them for the new language, click OK, then open these settings again.</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.ReaderTools.Language1Changed</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.RightToLeft.Description" translate="no">
+        <source xml:lang="en">If you are not **SURE**, then do not turn this on. If your language is written starting on the right and moving left, you will **KNOW**.</source>
+        <target xml:lang="pt-PT" state="needs-translation">If you are not **SURE**, then do not turn this on. If your language is written starting on the right and moving left, you will **KNOW**.</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.RightToLeft.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.ToolFontSize.Description" translate="no">
+        <source xml:lang="en">Use this to increase the font size when this language is shown in places like the Decodable Reader Tool.</source>
+        <target xml:lang="pt-PT" state="needs-translation">Use this to increase the font size when this language is shown in places like the Decodable Reader Tool.</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.ToolFontSize.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage1.Description" translate="no">
+        <source xml:lang="en">Example: the local language</source>
+        <target xml:lang="pt-PT" state="needs-translation">Example: the local language</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage1.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage2.Description" translate="no">
+        <source xml:lang="en">Example: national language</source>
+        <target xml:lang="pt-PT" state="needs-translation">Example: national language</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage2.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage3.Description" translate="no">
+        <source xml:lang="en">Example: regional language</source>
+        <target xml:lang="pt-PT" state="needs-translation">Example: regional language</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage3.Description</note>
+      </trans-unit>
       <trans-unit id="Feature.AiImageEditing" approved="yes">
         <source xml:lang="en">Edit Images with AI</source>
         <target xml:lang="pt-PT" state="final">Editar imagens com IA</target>
