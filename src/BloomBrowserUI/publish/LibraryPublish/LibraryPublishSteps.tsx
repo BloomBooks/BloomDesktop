@@ -57,44 +57,8 @@ interface IReadonlyBookInfo {
     licenseRights: string;
     isTemplate: boolean;
     isTitleOKToPublish: boolean; // This will be false if there is no L1 title.
-    agreementsAccepted: boolean; // Whether the user ticked all the upload agreements for this book.
+    agreementsAccepted: boolean; // Whether the user checked all the upload agreements for this book.
 }
-
-// The labels of the check boxes the user must tick before uploading, one per agreement.
-const agreementLabels: React.ReactNode[] = [
-    <React.Fragment key="permission">
-        <Span l10nKey="PublishTab.Upload.Agreement.PermissionToPublish">
-            I have permission to publish all the text and images in this book.
-        </Span>{" "}
-        <Link
-            href={"https://docs.bloomlibrary.org/permission-to-publish"}
-            l10nKey="Common.LearnMore"
-        >
-            Learn More
-        </Link>
-    </React.Fragment>,
-    <Span key="credit" l10nKey={"PublishTab.Upload.Agreement.GivesCredit"}>
-        The book gives credit to the the author, translator, and illustrator(s).
-    </Span>,
-    <PWithLink
-        key="terms"
-        href={"https://bloomlibrary.org/terms"}
-        l10nKey={"PublishTab.Upload.Agreement.AgreeToTerms"}
-        css={css`
-            /* We don't want normal padding the browser adds, mostly so the height matches the other checkboxes. */
-            margin: 0;
-
-            & a {
-                text-decoration: none;
-                :hover {
-                    text-decoration: underline;
-                }
-            }
-        `}
-    >
-        I agree to the [Bloom Library Terms of Use].
-    </PWithLink>,
-];
 
 const kWebSocketEventId_uploadSuccessful: string = "uploadSuccessful";
 const kWebSocketEventId_uploadCanceled: string = "uploadCanceled";
@@ -171,9 +135,7 @@ export const LibraryPublishSteps: React.FunctionComponent<{
     useEffect(() => {
         get("libraryPublish/getBookInfo", (result) => {
             setBookInfo(result.data);
-            setAgreements(
-                agreementLabels.map(() => result.data.agreementsAccepted),
-            );
+            setAgreementsChecked(Array(3).fill(result.data.agreementsAccepted));
             setSummary(result.data.summary);
             setIsLoading(false);
         });
@@ -211,22 +173,21 @@ export const LibraryPublishSteps: React.FunctionComponent<{
             (!!bookInfo?.copyright || bookInfo?.isTemplate)
         );
     }
-    // Whether each agreement box is ticked. Bloom saves only whether all of them are, so they
-    // come from the book info all ticked or all unticked.
-    const [agreements, setAgreements] = useState<boolean[]>(
-        agreementLabels.map(() => false),
+    // Whether each of the three agreement boxes is checked. Bloom saves only whether all of them
+    // are, so they come from the book info all checked or all unchecked.
+    const [agreementsChecked, setAgreementsChecked] = useState<boolean[]>(
+        Array(3).fill(false),
     );
-    const agreementsAccepted = allTicked(agreements);
-    function changeAgreement(index: number, ticked: boolean) {
-        const newAgreements = agreements.map((oldTicked, i) =>
-            i === index ? ticked : oldTicked,
+    const agreementsAccepted = agreementsChecked.every((checked) => checked);
+    function changeAgreement(index: number, checked: boolean) {
+        const newChecked = agreementsChecked.map((oldChecked, i) =>
+            i === index ? checked : oldChecked,
         );
-        setAgreements(newAgreements);
-        if (allTicked(newAgreements) !== agreementsAccepted)
-            postBoolean(
-                "libraryPublish/agreementsAccepted",
-                allTicked(newAgreements),
-            );
+        setAgreementsChecked(newChecked);
+        postBoolean(
+            "libraryPublish/agreementsAccepted",
+            newChecked.every((c) => c),
+        );
     }
     const [isPlaygroundBook, _setIsPlaygroundBook] = useApiBoolean(
         "publish/isPlaygroundBook",
@@ -643,7 +604,7 @@ export const LibraryPublishSteps: React.FunctionComponent<{
                     </StepLabel>
                     <StepContent>
                         <Agreements
-                            ticked={agreements}
+                            checked={agreementsChecked}
                             disabled={!isReadyForAgreements()}
                             onChange={changeAgreement}
                         />
@@ -808,37 +769,95 @@ export const LibraryPublishSteps: React.FunctionComponent<{
     );
 };
 
-// The check boxes the user must tick before uploading, one per agreementLabels entry. The parent
-// owns whether each is ticked.
+// The check boxes the user must check before uploading. The parent owns whether each is checked.
 const Agreements: React.FunctionComponent<{
-    ticked: boolean[];
+    checked: boolean[];
     disabled: boolean;
-    onChange: (index: number, ticked: boolean) => void;
+    onChange: (index: number, checked: boolean) => void;
 }> = (props) => {
     return (
         <React.Fragment>
-            {agreementLabels.map((label, i) => (
-                // The test id marks one agreement for the e2e tests.
-                <div data-testid="upload-agreement" key={i}>
-                    <BloomCheckbox
-                        label={label}
-                        checked={props.ticked[i]}
-                        onCheckChanged={(newState) => {
-                            props.onChange(i, !!newState);
-                        }}
-                        disabled={props.disabled}
-                        alreadyLocalized={true}
-                    ></BloomCheckbox>
-                </div>
-            ))}
+            <AgreementCheckbox
+                checked={props.checked[0]}
+                label={
+                    <React.Fragment>
+                        <Span l10nKey="PublishTab.Upload.Agreement.PermissionToPublish">
+                            I have permission to publish all the text and images
+                            in this book.
+                        </Span>{" "}
+                        <Link
+                            href={
+                                "https://docs.bloomlibrary.org/permission-to-publish"
+                            }
+                            l10nKey="Common.LearnMore"
+                        >
+                            Learn More
+                        </Link>
+                    </React.Fragment>
+                }
+                disabled={props.disabled}
+                onChange={(checked) => props.onChange(0, checked)}
+            />
+            <AgreementCheckbox
+                checked={props.checked[1]}
+                label={
+                    <Span l10nKey={"PublishTab.Upload.Agreement.GivesCredit"}>
+                        The book gives credit to the the author, translator, and
+                        illustrator(s).
+                    </Span>
+                }
+                disabled={props.disabled}
+                onChange={(checked) => props.onChange(1, checked)}
+            />
+            <AgreementCheckbox
+                checked={props.checked[2]}
+                label={
+                    <PWithLink
+                        href={"https://bloomlibrary.org/terms"}
+                        l10nKey={"PublishTab.Upload.Agreement.AgreeToTerms"}
+                        css={css`
+                            /* We don't want normal padding the browser adds, mostly so the height matches the other checkboxes. */
+                            margin: 0;
+
+                            & a {
+                                text-decoration: none;
+                                :hover {
+                                    text-decoration: underline;
+                                }
+                            }
+                        `}
+                    >
+                        I agree to the [Bloom Library Terms of Use].
+                    </PWithLink>
+                }
+                disabled={props.disabled}
+                onChange={(checked) => props.onChange(2, checked)}
+            />
         </React.Fragment>
     );
 };
 
-// Whether every agreement box is ticked.
-function allTicked(agreements: boolean[]): boolean {
-    return agreements.every((ticked) => ticked);
-}
+const AgreementCheckbox: React.FunctionComponent<{
+    checked: boolean;
+    label: string | React.ReactNode;
+    disabled: boolean;
+    onChange: (checked: boolean) => void;
+}> = (props) => {
+    return (
+        // The test id marks one agreement for the e2e tests; the Agreements step shows three.
+        <div data-testid="upload-agreement">
+            <BloomCheckbox
+                label={props.label}
+                checked={props.checked}
+                onCheckChanged={(newState) => {
+                    props.onChange(!!newState);
+                }}
+                disabled={props.disabled}
+                alreadyLocalized={true}
+            ></BloomCheckbox>
+        </div>
+    );
+};
 
 const WarningMessage: React.FunctionComponent<{
     children?: React.ReactNode;
