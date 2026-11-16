@@ -6,7 +6,7 @@ import {
     parseLangtagFromLangChooser,
 } from "@ethnolib/language-chooser-react-mui";
 import * as React from "react";
-import { getLanguageData } from "./languageData";
+import { getLanguageData, ILanguageData } from "./languageData";
 
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import {
@@ -31,11 +31,24 @@ export const LanguageChooserDialog: React.FunctionComponent<{
     initialLanguageTag?: string;
     initialCustomName?: string;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
+    // Given when the chooser is opened from another React dialog (Collection Settings), which
+    // takes the language chosen here. Without it, the choice is posted to the WinForms dialog.
+    onChosen?: (language: ILanguageData) => void;
+    // Called when the dialog closes, by OK or Cancel, so its owner can stop rendering it.
+    onClose?: () => void;
 }> = (props) => {
-    const { showDialog, closeDialog, propsForBloomDialog } =
-        useSetupBloomDialog(props.dialogEnvironment);
+    const {
+        showDialog,
+        closeDialog: closeThisDialog,
+        propsForBloomDialog,
+    } = useSetupBloomDialog(props.dialogEnvironment);
 
     show = showDialog;
+
+    function closeDialog() {
+        closeThisDialog();
+        props.onClose?.();
+    }
 
     const initialSelection: IOrthography | undefined =
         parseLangtagFromLangChooser(props.initialLanguageTag || "");
@@ -77,10 +90,9 @@ export const LanguageChooserDialog: React.FunctionComponent<{
     );
 
     function onOk(languageSelection: IOrthography, languageTag: string) {
-        postData(
-            "settings/changeLanguage",
-            getLanguageData(languageTag, languageSelection),
-        );
+        const language = getLanguageData(languageTag, languageSelection);
+        if (props.onChosen) props.onChosen(language);
+        else postData("settings/changeLanguage", language);
         closeDialog();
     }
 
@@ -94,8 +106,17 @@ export const LanguageChooserDialog: React.FunctionComponent<{
     return (
         <BloomDialog
             {...propsForBloomDialog}
+            onClose={closeDialog}
+            // Without a WinForms frame to size it, give it the size that frame has.
+            maxWidth={false}
             css={css`
                 padding: 0;
+                ${propsForBloomDialog.dialogFrameProvidedExternally
+                    ? ""
+                    : `.MuiDialog-paper {
+                        width: 1000px;
+                        height: 580px;
+                    }`}
             `}
         >
             <AppBar

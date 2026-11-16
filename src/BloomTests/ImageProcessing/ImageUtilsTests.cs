@@ -2723,6 +2723,103 @@ namespace BloomTests.ImageProcessing
                 );
             }
         }
+
+        [TestCase((byte)2, false, ExpectedResult = false, TestName = "RGB is opaque")]
+        [TestCase((byte)0, false, ExpectedResult = false, TestName = "Grayscale is opaque")]
+        [TestCase((byte)3, false, ExpectedResult = false, TestName = "Palette is opaque")]
+        [TestCase((byte)6, false, ExpectedResult = true, TestName = "RGBA might be transparent")]
+        [TestCase(
+            (byte)4,
+            false,
+            ExpectedResult = true,
+            TestName = "Gray+alpha might be transparent"
+        )]
+        [TestCase(
+            (byte)2,
+            true,
+            ExpectedResult = true,
+            TestName = "RGB with tRNS might be transparent"
+        )]
+        [TestCase(
+            (byte)3,
+            true,
+            ExpectedResult = true,
+            TestName = "Palette with tRNS might be transparent"
+        )]
+        public bool PngCanHaveTransparency_JudgesFromHeader(byte colorType, bool withTrns)
+        {
+            using var folder = new TemporaryFolder("PngCanHaveTransparency_JudgesFromHeader");
+            var path = Path.Combine(folder.Path, "test.png");
+            RobustFile.WriteAllBytes(path, MakeMinimalPng(colorType, withTrns));
+            return ImageUtils.PngCanHaveTransparency(path);
+        }
+
+        [Test]
+        public void PngCanHaveTransparency_NotReallyAPng_SaysItMight()
+        {
+            using var folder = new TemporaryFolder("PngCanHaveTransparency_NotReallyAPng");
+            var path = Path.Combine(folder.Path, "fake.png");
+            RobustFile.WriteAllBytes(path, new byte[] { 1, 2, 3 });
+            Assert.That(ImageUtils.PngCanHaveTransparency(path), Is.True);
+        }
+
+        [TestCase((byte)3, ExpectedResult = true, TestName = "Palette PNG is indexed")]
+        [TestCase((byte)2, ExpectedResult = false, TestName = "RGB PNG is not indexed")]
+        [TestCase((byte)6, ExpectedResult = false, TestName = "RGBA PNG is not indexed")]
+        public bool IsIndexedColorPngFile_JudgesFromHeader(byte colorType)
+        {
+            using var folder = new TemporaryFolder("IsIndexedColorPngFile_JudgesFromHeader");
+            var path = Path.Combine(folder.Path, "test.png");
+            RobustFile.WriteAllBytes(path, MakeMinimalPng(colorType, false));
+            return ImageUtils.IsIndexedColorPngFile(path);
+        }
+
+        [Test]
+        public void IsIndexedColorPngFile_NotAPng_IsFalse()
+        {
+            using var folder = new TemporaryFolder("IsIndexedColorPngFile_NotAPng");
+            var path = Path.Combine(folder.Path, "fake.png");
+            // Long enough to reach the colour-type byte, which holds the "indexed" value.
+            var bytes = new byte[26];
+            bytes[25] = 3;
+            RobustFile.WriteAllBytes(path, bytes);
+            Assert.That(ImageUtils.IsIndexedColorPngFile(path), Is.False);
+        }
+
+        /// <summary>
+        /// The bytes of a PNG with just the chunks the header check looks at: IHDR (with the given
+        /// colour type), an optional tRNS, an empty IDAT and IEND. The CRCs are zeros, since the
+        /// check doesn't read them.
+        /// </summary>
+        private static byte[] MakeMinimalPng(byte colorType, bool withTrns)
+        {
+            using var stream = new MemoryStream();
+            stream.Write(ImageUtils.kPngSignature);
+            void WriteChunk(string type, byte[] data)
+            {
+                stream.Write(
+                    new[]
+                    {
+                        (byte)(data.Length >> 24),
+                        (byte)(data.Length >> 16),
+                        (byte)(data.Length >> 8),
+                        (byte)data.Length,
+                    }
+                );
+                stream.Write(System.Text.Encoding.ASCII.GetBytes(type));
+                stream.Write(data);
+                stream.Write(new byte[4]);
+            }
+            // width 1, height 1, bit depth 8, colour type, compression, filter, interlace
+            WriteChunk("IHDR", new byte[] { 0, 0, 0, 1, 0, 0, 0, 1, 8, colorType, 0, 0, 0 });
+            if (colorType == 3)
+                WriteChunk("PLTE", new byte[] { 255, 0, 0 });
+            if (withTrns)
+                WriteChunk("tRNS", new byte[] { 0 });
+            WriteChunk("IDAT", Array.Empty<byte>());
+            WriteChunk("IEND", Array.Empty<byte>());
+            return stream.ToArray();
+        }
     }
 
     /// <summary>

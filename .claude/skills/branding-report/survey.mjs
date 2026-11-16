@@ -13,7 +13,12 @@
 //   node survey.mjs --brandings Default,Kyrgyzstan2020 --pages back --layouts A5Portrait,Device16x9Landscape --xmatters Factory,Kyrgyzstan2020
 import fs from "node:fs";
 import path from "node:path";
-import { CaptureSession, PAGES, getCurrentXmatter } from "./capture-core.mjs";
+import {
+    CaptureSession,
+    PAGES,
+    getCurrentXmatter,
+    listBrandings,
+} from "./capture-core.mjs";
 
 const REPO = path.resolve(import.meta.dirname, "..", "..", "..");
 const SRC_BRANDING = path.join(REPO, "src", "content", "branding");
@@ -45,12 +50,7 @@ function parseArgs() {
         else if (k === "--load-ms") opts.loadMs = Number(val());
     }
     if (opts.brandings.length === 1 && opts.brandings[0] === "all") {
-        opts.brandings = fs
-            .readdirSync(SRC_BRANDING)
-            .filter((f) =>
-                fs.statSync(path.join(SRC_BRANDING, f)).isDirectory(),
-            )
-            .filter((f) => f !== "shared");
+        opts.brandings = listBrandings(SRC_BRANDING);
     }
     if (opts.pages.length === 1 && opts.pages[0] === "all")
         opts.pages = Object.keys(PAGES);

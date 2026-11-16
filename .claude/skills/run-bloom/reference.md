@@ -81,6 +81,10 @@ node .claude/skills/run-bloom/launcherControl.mjs --shutdown --json             
   an explicit `--restart`. The front end is unaffected (Vite serves it either way). It is rejected
   on the other actions, which do not start go.mjs; an existing launcher keeps the mode it started
   in.
+- `--ensure-running --vite-port 5173` starts the dev server on 5173. Use it when a check needs the
+  Edit tab's page list or toolbox: they import from `localhost:5173`, so on any other port they
+  load nothing (an empty page list, not an error). Like `--nowatch`, it only applies when this call
+  starts the stack.
 - Every action prints a `[control] ... requested` line in the launcher's terminal so the human
   can see why Bloom moved.
 

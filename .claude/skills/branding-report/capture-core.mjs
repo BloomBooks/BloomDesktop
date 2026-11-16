@@ -64,6 +64,23 @@ export const PAGES = {
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 export const safe = (s) => String(s).replace(/[^A-Za-z0-9._-]/g, "_");
 
+// Every branding under srcBranding, as the descriptors Bloom accepts: each folder name, plus
+// "Folder[flavor]" for each branding[flavor].json in it (e.g. a "[vanilla]" variant), so
+// flavors can be surveyed alongside their main branding.
+export function listBrandings(srcBranding) {
+    const result = [];
+    for (const f of fs.readdirSync(srcBranding).sort()) {
+        const dir = path.join(srcBranding, f);
+        if (f === "shared" || !fs.statSync(dir).isDirectory()) continue;
+        result.push(f);
+        for (const file of fs.readdirSync(dir).sort()) {
+            const m = file.match(/^branding\[(.+)\]\.json$/);
+            if (m) result.push(`${f}[${m[1]}]`);
+        }
+    }
+    return result;
+}
+
 // Local-Community's back cover uses {personalization}, parsed from the descriptor
 // (the part before "-LC"); a bare "Local-Community" descriptor throws. Give it one.
 export function descriptorFor(brandingKey) {
