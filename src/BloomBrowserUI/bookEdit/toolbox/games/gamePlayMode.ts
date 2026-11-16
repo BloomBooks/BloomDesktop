@@ -1,5 +1,4 @@
 import { prepareActivity, undoPrepareActivity } from "bloom-player";
-import { kDraggableIdAttribute } from "../canvas/canvasElementDraggables";
 
 // Putting a game page into the Play tab's play mode, and taking it, or a copy of it, out again.
 //
@@ -8,6 +7,11 @@ import { kDraggableIdAttribute } from "../canvas/canvasElementDraggables";
 // closed. So nothing here may depend on which tool is open. The toolbox cleans every copy of the
 // page it saves (removePlayModeMarkupFromClone), and ends play mode when the page is unloaded
 // (endPlayModeAsPageUnloads), whichever tool is open.
+//
+// Taking a page or a copy out of play mode is bloom-player's undoPrepareActivity(): it puts the
+// draggables back where the author put them and removes everything playing added to the page, on
+// whichever element it is given (bloom-player's tests, and undoPrepareActivityContract.spec.ts here,
+// pin that down).
 //
 // Like the rest of the game tab handling, this must run in the toolbox bundle: bloom-player's
 // runtime keeps its play state (including where the author put each draggable) in module variables,
@@ -42,7 +46,6 @@ export function preparePageForPlay(page: HTMLElement): boolean {
 export function takePageOutOfPlayMode(page: HTMLElement): void {
     undoPrepareActivity(page);
     if (page === pagePreparedForPlay) {
-        removePlayMarkupUndoPrepareActivityMisses(page);
         pagePreparedForPlay = undefined;
     }
 }
@@ -51,11 +54,9 @@ export function takePageOutOfPlayMode(page: HTMLElement): void {
 // records the draggables where the author put them and none of play's markup. The live page is left
 // alone, so the tester can go on playing.
 export function removePlayModeMarkupFromClone(pageClone: HTMLElement): void {
-    if (!pagePreparedForPlay) {
-        return;
+    if (pagePreparedForPlay) {
+        undoPrepareActivity(pageClone);
     }
-    undoPrepareActivity(pageClone);
-    removePlayMarkupUndoPrepareActivityMisses(pageClone);
 }
 
 // The page is going away: end play mode on it, if it is in it (which, among other things, stops any
@@ -64,44 +65,4 @@ export function endPlayModeAsPageUnloads(): void {
     if (pagePreparedForPlay) {
         takePageOutOfPlayMode(pagePreparedForPlay);
     }
-}
-
-// Things bloom-player does to the page during play that its undoPrepareActivity() leaves behind. None
-// of them is ever part of an authored page: Bloom's own editing uses none of these classes, and does
-// not set touch-action on draggables.
-const kPlayOnlyClasses = [
-    // on a draggable while the tester drags it (so in a copy taken in the middle of a drag)
-    "bloom-ui-dragging",
-    // undoPrepareActivity only takes this off draggables whose starting position it recorded
-    "bloom-draggedToTarget",
-    // narration highlighting, from playing the page's audio
-    "ui-audioCurrent",
-    "ui-audioCurrentImg",
-    "ui-suppressHighlight",
-    // a video that the browser would not start playing
-    "autoplayBlocked",
-];
-// shown over a video that cannot be played
-const kVideoErrorMessageClass = "video-error-message";
-
-function removePlayMarkupUndoPrepareActivityMisses(
-    pageOrClone: HTMLElement,
-): void {
-    // One pass over the page, since this runs on every save while a page is being played.
-    const selector = [
-        ...kPlayOnlyClasses.map((c) => "." + c),
-        "." + kVideoErrorMessageClass,
-        `[${kDraggableIdAttribute}]`,
-    ].join(",");
-    pageOrClone.querySelectorAll<HTMLElement>(selector).forEach((element) => {
-        if (element.classList.contains(kVideoErrorMessageClass)) {
-            element.remove();
-            return;
-        }
-        element.classList.remove(...kPlayOnlyClasses);
-        // prepareActivity() sets this on each draggable, so that dragging works on touch screens.
-        if (element.hasAttribute(kDraggableIdAttribute)) {
-            element.style.removeProperty("touch-action");
-        }
-    });
 }

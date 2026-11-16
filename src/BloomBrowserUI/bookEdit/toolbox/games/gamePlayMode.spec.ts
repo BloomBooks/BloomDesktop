@@ -118,7 +118,7 @@ describe("preparePageForPlay", () => {
 });
 
 describe("removePlayModeMarkupFromClone", () => {
-    it("removes what play leaves on the page that undoPrepareActivity misses", () => {
+    it("removes what playing leaves on the page", () => {
         // (touch-action is checked in gamePlayMode.browser.spec.ts: jsdom ignores it.)
         const { page, draggable } = makeActivityPage();
         preparePageForPlay(page);
@@ -134,6 +134,7 @@ describe("removePlayModeMarkupFromClone", () => {
         page.appendChild(canvas);
         const videoContainer = document.createElement("div");
         videoContainer.classList.add("bloom-videoContainer", "autoplayBlocked");
+        videoContainer.appendChild(document.createElement("video"));
         const errorMessage = document.createElement("div");
         errorMessage.classList.add("video-error-message");
         videoContainer.appendChild(errorMessage);
