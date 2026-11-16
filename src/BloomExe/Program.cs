@@ -161,7 +161,6 @@ namespace Bloom
             // First, before anything can capture the culture: the process runs invariant, and the
             // user's regional format is kept in UserCulture.Current (BL-16981).
             UserCulture.UseInvariantCulture();
-            SlowComputerSimulation.UndoLimitInheritedFromParent();
             // AttachConsole(-1);	// Enable this to allow Console.Out.WriteLine to be viewable (must run Bloom from terminal, AFAIK)
             _ownsSingleInstanceToken = false;
             _uiThreadId = Thread.CurrentThread.ManagedThreadId;

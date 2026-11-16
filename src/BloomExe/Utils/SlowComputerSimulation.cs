@@ -30,9 +30,9 @@ namespace Bloom.Utils
     /// the WebView2 runtime's msedgewebview2.exe processes) are not capped by it; the DevTools
     /// throttling is what slows the web front end. But every process Bloom starts while the
     /// simulation is on inherits the two-core affinity, as it would on a two-core machine. That
-    /// includes a Bloom that replaces this one (a restart, or Velopack applying an update), which
-    /// would otherwise run on two cores with the simulation off; see
-    /// <see cref="UndoLimitInheritedFromParent"/>.
+    /// includes a Bloom that Bloom itself starts to replace this one (a restart, or an update),
+    /// which therefore runs on two cores, though not capped, until Bloom is next started normally.
+    /// That is rare, and does not matter in a testing mode.
     /// </remarks>
     public static class SlowComputerSimulation
     {
@@ -51,49 +51,6 @@ namespace Bloom.Utils
         private static volatile bool s_isOn;
         private static IntPtr s_job = IntPtr.Zero;
         private static IntPtr s_originalAffinity;
-
-        // While the simulation is on, holds the affinity Bloom had before it, for any Bloom that this
-        // one starts. Environment variables are inherited, so it reaches a Bloom started by way of
-        // another program (Velopack's Update.exe) as well as one started directly.
-        private const string kAffinityBeforeSimulationVariable =
-            "BLOOM_AFFINITY_BEFORE_SLOW_COMPUTER_SIMULATION";
-
-        // .NET reads this before any code runs and uses it, instead of the affinity it starts with,
-        // as the processor count: for Environment.ProcessorCount, the thread pool and the GC. Set
-        // with the variable above, so a Bloom started on two cores is still sized for the machine.
-        private const string kDotNetProcessorCountVariable = "DOTNET_PROCESSOR_COUNT";
-
-        /// <summary>
-        /// Called first thing at startup. If the Bloom that started this one (directly or through
-        /// another program) had the simulation on, this process inherited its two-core affinity;
-        /// put back the affinity that Bloom had before the simulation. The simulation itself always
-        /// starts off. (.NET has already sized itself for the whole machine, from
-        /// <see cref="kDotNetProcessorCountVariable"/>.)
-        /// </summary>
-        public static void UndoLimitInheritedFromParent()
-        {
-            var saved = Environment.GetEnvironmentVariable(kAffinityBeforeSimulationVariable);
-            if (saved == null)
-                return;
-            SetVariablesForChildProcesses(null, null);
-            Process.GetCurrentProcess().ProcessorAffinity = (IntPtr)long.Parse(saved);
-        }
-
-        /// <summary>
-        /// Set, or with nulls clear, the two variables that let a Bloom started while the simulation
-        /// is on undo the two-core limit it inherits.
-        /// </summary>
-        private static void SetVariablesForChildProcesses(
-            string affinityBeforeSimulation,
-            string processorCount
-        )
-        {
-            Environment.SetEnvironmentVariable(
-                kAffinityBeforeSimulationVariable,
-                affinityBeforeSimulation
-            );
-            Environment.SetEnvironmentVariable(kDotNetProcessorCountVariable, processorCount);
-        }
 
         // The WebView2s that have finished initializing, so that turning the simulation on or off
         // can reach each of them. Weak, so that this list never keeps a WebView2 alive: it is filled
@@ -210,18 +167,13 @@ namespace Bloom.Utils
             // cores lets a lone thread run at two fifths of full speed, which is hardly slow at
             // all. We split the difference: 3/10 of a core in all (3 / 10 / 8 of an eight-core
             // machine).
-            //
-            // The machine's processors, from Windows. Not Environment.ProcessorCount, which .NET
-            // fixes at startup from the affinity the process started with, so it is too low in a
-            // Bloom that was started on fewer cores than the machine has.
-            var machineProcessorCount = (int)GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
-            var rate = 10000 * kCoreShareTenths / (10 * machineProcessorCount);
+            var rate = 10000 * kCoreShareTenths / (10 * Environment.ProcessorCount);
             SetCpuRateControl(
                 JOB_OBJECT_CPU_RATE_CONTROL_ENABLE | JOB_OBJECT_CPU_RATE_CONTROL_HARD_CAP,
                 rate
             );
             s_originalAffinity = process.ProcessorAffinity;
-            var coreCount = Math.Min(kSimulatedCoreCount, machineProcessorCount);
+            var coreCount = Math.Min(kSimulatedCoreCount, Environment.ProcessorCount);
             try
             {
                 // Refused when an enclosing job keeps Bloom off the first two cores.
@@ -234,10 +186,6 @@ namespace Bloom.Utils
                 SetCpuRateControl(0, 0);
                 throw;
             }
-            SetVariablesForChildProcesses(
-                s_originalAffinity.ToInt64().ToString(),
-                machineProcessorCount.ToString()
-            );
         }
 
         /// <summary>
@@ -248,7 +196,6 @@ namespace Bloom.Utils
         {
             SetCpuRateControl(0, 0);
             Process.GetCurrentProcess().ProcessorAffinity = s_originalAffinity;
-            SetVariablesForChildProcesses(null, null);
         }
 
         /// <summary>
@@ -314,7 +261,6 @@ namespace Bloom.Utils
         private const uint JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK = 0x1000;
         private const uint JOB_OBJECT_CPU_RATE_CONTROL_ENABLE = 0x1;
         private const uint JOB_OBJECT_CPU_RATE_CONTROL_HARD_CAP = 0x4;
-        private const ushort ALL_PROCESSOR_GROUPS = 0xffff;
 
         [StructLayout(LayoutKind.Sequential)]
         private struct JOBOBJECT_BASIC_LIMIT_INFORMATION
@@ -378,8 +324,5 @@ namespace Bloom.Utils
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
-
-        [DllImport("kernel32.dll")]
-        private static extern uint GetActiveProcessorCount(ushort groupNumber);
     }
 }
