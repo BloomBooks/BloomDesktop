@@ -18,26 +18,32 @@ vi.mock("../js/editableDivUtils", () => ({
 
 const kLineHeightPx = 20;
 
-// Makes a page with a text box 200 by 100 pixels at (50, 40) holding ten lines of text, so the
-// box shows five and the other five do not fit. overflowIndicators.less is not loaded, so this
-// gives the drawing layer the one rule of it that placement depends on.
-function makePageWithBoxTooFull(): HTMLElement {
+// Adds a page 600 by 400 pixels at the top left of the viewport holding `html`, and returns its
+// one text box.
+function addPage(html: string): HTMLElement {
     const page = document.createElement("div");
     page.id = "overflowIndicatorsTestPage";
     page.className = "bloom-page";
     page.style.cssText =
         "position: absolute; top: 0; left: 0; width: 600px; height: 400px; margin: 0;";
+    page.innerHTML = html;
+    document.body.appendChild(page);
+    return page.querySelector<HTMLElement>(".bloom-editable")!;
+}
+
+// Makes a page with a text box 200 by 100 pixels at (50, 40) holding ten lines of text, so the
+// box shows five and the other five do not fit. overflowIndicators.less is not loaded, so this
+// gives the drawing layer the one rule of it that placement depends on.
+function makePageWithBoxTooFull(): HTMLElement {
     const lines = Array.from(
         { length: 10 },
         (_, i) => `<p style="margin: 0">Line ${i + 1}</p>`,
     ).join("");
-    page.innerHTML = `
+    return addPage(`
         <style>#bloom-overflow-indicator-layer, #bloom-overflow-indicator-layer > * { position: absolute; }</style>
         <div class="bloom-editable overflow" style="position: absolute; left: 50px; top: 40px;
                 width: 200px; height: 100px; overflow: hidden; font: 14px Arial;
-                line-height: ${kLineHeightPx}px; padding: 0; border: 0;">${lines}</div>`;
-    document.body.appendChild(page);
-    return page.querySelector<HTMLElement>(".bloom-editable")!;
+                line-height: ${kLineHeightPx}px; padding: 0; border: 0;">${lines}</div>`);
 }
 
 // Lets the redraw that refreshOverflowIndicatorsSoon schedules for the next frame happen.
@@ -59,27 +65,14 @@ function drawn(className: string): DOMRect | undefined {
 // Makes a page with a canvas element 200 by 100 pixels at (100, 50) in it, rotated by `degrees`
 // when that is not zero, holding a text box 50 by 30 pixels at (10, 20) inside the canvas
 // element's 2-pixel border.
-function makePage(degrees: number): {
-    page: HTMLElement;
-    box: HTMLElement;
-} {
-    const page = document.createElement("div");
-    page.id = "overflowIndicatorsTestPage";
-    page.className = "bloom-page";
-    page.style.cssText =
-        "position: absolute; top: 0; left: 0; width: 600px; height: 400px; margin: 0;";
-    page.innerHTML = `
+function makePageWithCanvasElement(degrees: number): HTMLElement {
+    return addPage(`
         <div class="bloom-canvas-element${degrees ? " bloom-rotated" : ""}"
              style="position: absolute; left: 100px; top: 50px; width: 200px; height: 100px;
                     border: 2px solid black; box-sizing: border-box;${degrees ? ` transform: rotate(${degrees}deg);` : ""}">
             <div class="bloom-editable" style="position: absolute; left: 10px; top: 20px;
                     width: 50px; height: 30px;"></div>
-        </div>`;
-    document.body.appendChild(page);
-    return {
-        page,
-        box: page.querySelector<HTMLElement>(".bloom-editable")!,
-    };
+        </div>`);
 }
 
 afterEach(() => {
@@ -138,9 +131,9 @@ describe("the marks on a box with more text than fits", () => {
 
 describe("placementOf", () => {
     it("uses the box's own rectangle when it is not rotated", () => {
-        const { page, box } = makePage(0);
+        const box = makePageWithCanvasElement(0);
 
-        const placement = placementOf(box, page);
+        const placement = placementOf(box, 1);
 
         expect(placement.rotation).toBeUndefined();
         expect(placement.rectViewportPx.left).toBeCloseTo(112);
@@ -150,13 +143,13 @@ describe("placementOf", () => {
     });
 
     it("gives where a box in a rotated canvas element would be upright, and the rotation", () => {
-        const { page, box } = makePage(90);
+        const box = makePageWithCanvasElement(90);
         // Sanity check: the browser's rectangle for the box is the turned one, 30 wide and 50
         // tall, so it can't be used as it is.
         expect(box.getBoundingClientRect().width).toBeCloseTo(30);
         expect(box.getBoundingClientRect().height).toBeCloseTo(50);
 
-        const placement = placementOf(box, page);
+        const placement = placementOf(box, 1);
 
         expect(placement.rectViewportPx.left).toBeCloseTo(112);
         expect(placement.rectViewportPx.top).toBeCloseTo(72);

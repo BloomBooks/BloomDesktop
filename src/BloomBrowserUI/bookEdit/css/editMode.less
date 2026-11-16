@@ -245,7 +245,7 @@ body:has(#canvas-element-context-controls:hover) .bloom-page,
         content: attr(data-languageTipContent);
         // See Bl-10017. An absolutely positioned :after of a box that scrolls moves with the
         // box's text, so --bloom-scroll-top (how far the box is scrolled, set by
-        // overflowIndicators.ts) keeps it at the bottom of what the box shows.
+        // bookEdit/js/scrollOffset.ts) keeps it at the bottom of what the box shows.
         bottom: calc(2px - var(--bloom-scroll-top, 0px));
         margin-right: 2px;
     }

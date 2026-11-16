@@ -17,10 +17,7 @@ import {
     kRotatedClass,
 } from "../js/canvasElementManager/canvasElementRotation";
 import { EditableDivUtils } from "../js/editableDivUtils";
-import {
-    kScrollTopVariable,
-    pageScrollsInsteadOfOverflowing,
-} from "../js/scrollingLayouts";
+import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
 import { kBloomButtonClass } from "../toolbox/canvas/canvasElementPageBridge";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 
@@ -82,23 +79,12 @@ export function refreshOverflowIndicatorsSoon(): void {
     });
 }
 
-// When a text box scrolls, records how far in kScrollTopVariable, which keeps its language label
-// (editMode.less) at the bottom of what the box shows; removeScrollOffsets takes it out
-// before saving. Scrolling a box with too much text also moves where its text is cut off.
+// Scrolling a box with too much text moves where its text is cut off.
 function respondToBoxScrolling(e: Event) {
     if (
-        !(e.target instanceof HTMLElement) ||
-        !e.target.matches(".bloom-editable")
+        e.target instanceof HTMLElement &&
+        e.target.matches(".bloom-editable.overflow")
     ) {
-        return;
-    }
-    const box = e.target;
-    if (box.scrollTop) {
-        box.style.setProperty(kScrollTopVariable, box.scrollTop + "px");
-    } else {
-        box.style.removeProperty(kScrollTopVariable);
-    }
-    if (box.classList.contains("overflow")) {
         refreshOverflowIndicatorsSoon();
     }
 }
@@ -182,17 +168,19 @@ interface IRotation {
     frameViewportPx: DOMRect;
 }
 
-// Where a box is. A rotated element's getBoundingClientRect is the upright rectangle around the
-// turned element, so for a box in a rotated canvas element this works out where the box would be
-// upright instead, from the layout offsets (which ignore the rotation) and the canvas element's
-// center (which the rotation does not move).
-export function placementOf(box: HTMLElement, page: HTMLElement): IPlacement {
-    const canvasElement = box.closest<HTMLElement>("." + kRotatedClass);
+// Where an element on a page scaled by viewportPxPerLayoutPx is. A rotated element's
+// getBoundingClientRect is the upright rectangle around the turned element, so for an element in
+// a rotated canvas element this works out where it would be upright instead, from the layout
+// offsets (which ignore the rotation) and the canvas element's center (which the rotation does
+// not move).
+export function placementOf(
+    e: HTMLElement,
+    viewportPxPerLayoutPx: number,
+): IPlacement {
+    const canvasElement = e.closest<HTMLElement>("." + kRotatedClass);
     if (!canvasElement) {
-        return { rectViewportPx: box.getBoundingClientRect() };
+        return { rectViewportPx: e.getBoundingClientRect() };
     }
-    const viewportPxPerLayoutPx =
-        page.getBoundingClientRect().width / page.offsetWidth;
     const boundsViewportPx = canvasElement.getBoundingClientRect();
     const widthViewportPx = canvasElement.offsetWidth * viewportPxPerLayoutPx;
     const heightViewportPx = canvasElement.offsetHeight * viewportPxPerLayoutPx;
@@ -202,24 +190,24 @@ export function placementOf(box: HTMLElement, page: HTMLElement): IPlacement {
         widthViewportPx,
         heightViewportPx,
     );
-    // The box's position inside the canvas element's border box.
+    // The element's position inside the canvas element's border box.
     let xLayoutPx = 0;
     let yLayoutPx = 0;
     for (
-        let e: HTMLElement = box;
-        e !== canvasElement;
-        e = e.offsetParent as HTMLElement
+        let a: HTMLElement = e;
+        a !== canvasElement;
+        a = a.offsetParent as HTMLElement
     ) {
-        const parent = e.offsetParent as HTMLElement;
-        xLayoutPx += e.offsetLeft + parent.clientLeft;
-        yLayoutPx += e.offsetTop + parent.clientTop;
+        const parent = a.offsetParent as HTMLElement;
+        xLayoutPx += a.offsetLeft + parent.clientLeft;
+        yLayoutPx += a.offsetTop + parent.clientTop;
     }
     return {
         rectViewportPx: new DOMRect(
             frameViewportPx.left + xLayoutPx * viewportPxPerLayoutPx,
             frameViewportPx.top + yLayoutPx * viewportPxPerLayoutPx,
-            box.offsetWidth * viewportPxPerLayoutPx,
-            box.offsetHeight * viewportPxPerLayoutPx,
+            e.offsetWidth * viewportPxPerLayoutPx,
+            e.offsetHeight * viewportPxPerLayoutPx,
         ),
         rotation: {
             degrees: getCanvasElementRotation(canvasElement),
@@ -229,11 +217,7 @@ export function placementOf(box: HTMLElement, page: HTMLElement): IPlacement {
 }
 
 // What is needed to draw one box with more text than it can show.
-interface IBoxTooFull {
-    rectViewportPx: DOMRect;
-    // Set when the box is in a rotated canvas element; the other coordinates are then those of
-    // the box upright.
-    rotation?: IRotation;
+interface IBoxTooFull extends IPlacement {
     // The y of the bottom of what the box shows: the inside of its bottom border, or for a box
     // that pushes past a small container such as a table cell, the bottom of the container's
     // content, where the container cuts the text off.
@@ -268,8 +252,7 @@ function measureBoxTooFull(
     scrollOffsetViewportPx: number,
 ): IBoxTooFull {
     return {
-        rectViewportPx: placement.rectViewportPx,
-        rotation: placement.rotation,
+        ...placement,
         bottomViewportPx,
         cutViewportPx: bottomViewportPx - scrollOffsetViewportPx,
         lineHeightLayoutPx: lineHeightLayoutPxOf(box),
@@ -277,9 +260,9 @@ function measureBoxTooFull(
     };
 }
 
-// Clears and redraws every indicator on the page. Everything is measured first and drawn after,
-// so that adding the drawings does not make the browser lay the page out again between
-// measurements.
+// Clears and redraws every indicator on the page. The drawings collect in a fragment that is not
+// in the document, so building them does not make the browser lay the page out again between
+// measurements; they all go in the layer at the end.
 function refreshOverflowIndicators(): void {
     const page = document.querySelector<HTMLElement>(".bloom-page");
     const layer = getLayer(page);
@@ -288,13 +271,13 @@ function refreshOverflowIndicators(): void {
     }
     requestChipText();
     const viewportPxPerLayoutPx = EditableDivUtils.getPageScale();
-    const boxesTooFull: IBoxTooFull[] = [];
+    const draw = LayerDrawer.forLayer(layer);
     // For each container that boxes push past, the lowest bottom of those boxes.
     const pushedPastViewportPx = new Map<HTMLElement, number>();
     for (const box of getOverflowingBoxes(page)) {
+        const placement = placementOf(box, viewportPxPerLayoutPx);
         if (box.classList.contains("overflow")) {
-            const placement = placementOf(box, page);
-            boxesTooFull.push(
+            drawBoxTooFull(
                 measureBoxTooFull(
                     box,
                     placement,
@@ -306,6 +289,7 @@ function refreshOverflowIndicators(): void {
                     ),
                     box.scrollTop * viewportPxPerLayoutPx,
                 ),
+                draw,
             );
             continue;
         }
@@ -334,43 +318,34 @@ function refreshOverflowIndicators(): void {
         }
         // A box that pushes past a smaller container, such as a table cell, has more text than
         // its container can show, so it is shown like a box with too much text.
-        // (Tables and the other small containers cannot be rotated.)
-        boxesTooFull.push(
+        drawBoxTooFull(
             measureBoxTooFull(
                 box,
-                { rectViewportPx: box.getBoundingClientRect() },
+                placement,
                 insideBottomViewportPx(
                     container,
-                    container.getBoundingClientRect(),
+                    placementOf(container, viewportPxPerLayoutPx)
+                        .rectViewportPx,
                     viewportPxPerLayoutPx,
                     true,
                 ),
                 0,
             ),
+            draw,
         );
     }
-    const pastMargin = Array.from(
-        pushedPastViewportPx,
-        ([container, bottomViewportPx]) => ({
-            marginViewportPx: container.getBoundingClientRect(),
-            bottomViewportPx,
-        }),
-    );
-
-    const draw = LayerDrawer.forLayer(layer);
-    for (const box of boxesTooFull) {
-        drawBoxTooFull(box, box.rotation ? draw.rotated(box.rotation) : draw);
-    }
-    for (const margin of pastMargin) {
-        drawPageTooFull(margin.marginViewportPx, margin.bottomViewportPx, draw);
+    for (const [margin, bottomViewportPx] of pushedPastViewportPx) {
+        drawPageTooFull(margin.getBoundingClientRect(), bottomViewportPx, draw);
     }
     layer.replaceChildren(draw.drawings);
 }
 
 // Marks where a box's text is cut off: a torn, zigzag line there with a chip on it, and a red
 // wash over the lines below it that the box shows when scrolled. In this order, so the chip is
-// on top of the torn edge.
-function drawBoxTooFull(box: IBoxTooFull, draw: LayerDrawer) {
+// on top of the torn edge. A box in a rotated canvas element is drawn in a frame turned the same
+// way.
+function drawBoxTooFull(box: IBoxTooFull, layerDraw: LayerDrawer) {
+    const draw = box.rotation ? layerDraw.rotated(box.rotation) : layerDraw;
     const leftLayoutPx = draw.xLayoutPx(box.rectViewportPx.left);
     const widthLayoutPx = draw.lengthLayoutPx(box.rectViewportPx.width);
     const topLayoutPx = draw.yLayoutPx(box.rectViewportPx.top);
@@ -398,24 +373,15 @@ function drawBoxTooFull(box: IBoxTooFull, draw: LayerDrawer) {
             topLayoutPx: cutLayoutPx - box.lineHeightLayoutPx,
             widthLayoutPx,
             heightLayoutPx: box.lineHeightLayoutPx,
-        }).style.background =
-            `linear-gradient(to bottom, transparent, ${box.background})`;
+        }).style.setProperty("--overflow-background", box.background);
     }
     // A torn, zigzag line where the text is cut off, its teeth cutting into the line above.
     draw.add("bloom-overflow-tornEdge", {
         leftLayoutPx,
         topLayoutPx: cutLayoutPx,
         widthLayoutPx,
-    }).style.setProperty("--torn-background", box.background);
-    // A small pill on the cut saying the box is overflowing.
-    draw.add(
-        "bloom-overflow-chip",
-        {
-            leftLayoutPx: draw.xLayoutPx(box.rectViewportPx.right),
-            topLayoutPx: cutLayoutPx,
-        },
-        chipText.overflowing.text,
-    );
+    }).style.setProperty("--overflow-background", box.background);
+    draw.chip(box.rectViewportPx.right, cutLayoutPx, chipText.overflowing.text);
 }
 
 // The boxes in the page's margin each fit their text, but together they push past its bottom,
@@ -427,20 +393,18 @@ function drawPageTooFull(
     bottomViewportPx: number,
     draw: LayerDrawer,
 ) {
+    const lineLayoutPx = draw.yLayoutPx(marginViewportPx.bottom);
     draw.add("bloom-overflow-pastContainer", {
         leftLayoutPx: draw.xLayoutPx(marginViewportPx.left),
-        topLayoutPx: draw.yLayoutPx(marginViewportPx.bottom),
+        topLayoutPx: lineLayoutPx,
         widthLayoutPx: draw.lengthLayoutPx(marginViewportPx.width),
         heightLayoutPx: draw.lengthLayoutPx(
             bottomViewportPx - marginViewportPx.bottom,
         ),
     });
-    draw.add(
-        "bloom-overflow-chip",
-        {
-            leftLayoutPx: draw.xLayoutPx(marginViewportPx.right),
-            topLayoutPx: draw.yLayoutPx(marginViewportPx.bottom),
-        },
+    draw.chip(
+        marginViewportPx.right,
+        lineLayoutPx,
         chipText.pageOverflowing.text,
     );
 }
@@ -473,17 +437,14 @@ function getLayer(page: HTMLElement | null): HTMLElement | undefined {
 // of its own that the layer does not share. The drawings collect in `drawings` until they are
 // put in the layer all at once.
 class LayerDrawer {
-    public readonly drawings: DocumentFragment;
     private constructor(
+        public readonly drawings: DocumentFragment,
         // Where the drawings go: `drawings`, or a rotated frame in it.
         private readonly parent: Node,
         // The viewport coordinates of the parent's top left corner.
         private readonly originViewportPx: { left: number; top: number },
         private readonly viewportPxPerLayoutPx: number,
-        drawings: DocumentFragment,
-    ) {
-        this.drawings = drawings;
-    }
+    ) {}
 
     // A drawer for the layer itself.
     public static forLayer(layer: HTMLElement): LayerDrawer {
@@ -491,9 +452,9 @@ class LayerDrawer {
         const drawings = document.createDocumentFragment();
         return new LayerDrawer(
             drawings,
+            drawings,
             layerViewportPx,
             layerViewportPx.width / layer.offsetWidth,
-            drawings,
         );
     }
 
@@ -510,10 +471,10 @@ class LayerDrawer {
         });
         frame.style.transform = `rotate(${rotation.degrees}deg)`;
         return new LayerDrawer(
+            this.drawings,
             frame,
             rotation.frameViewportPx,
             this.viewportPxPerLayoutPx,
-            this.drawings,
         );
     }
 
@@ -547,7 +508,6 @@ class LayerDrawer {
             widthLayoutPx?: number;
             heightLayoutPx?: number;
         },
-        text?: string,
     ): HTMLElement {
         const e = document.createElement("div");
         e.className = className;
@@ -559,11 +519,17 @@ class LayerDrawer {
         if (position.heightLayoutPx !== undefined) {
             e.style.height = position.heightLayoutPx + "px";
         }
-        if (text) {
-            e.textContent = text;
-        }
         this.parent.appendChild(e);
         return e;
+    }
+
+    // Adds a small pill saying `text`, ending at the viewport x `rightViewportPx` and centered on
+    // the line at `topLayoutPx`.
+    public chip(rightViewportPx: number, topLayoutPx: number, text: string) {
+        this.add("bloom-overflow-chip", {
+            leftLayoutPx: this.xLayoutPx(rightViewportPx),
+            topLayoutPx,
+        }).textContent = text;
     }
 }
 

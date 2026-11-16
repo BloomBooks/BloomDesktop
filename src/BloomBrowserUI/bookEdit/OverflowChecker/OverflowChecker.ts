@@ -7,10 +7,8 @@ import { theOneCanvasElementManager } from "../js/canvasElementManager/CanvasEle
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import $ from "jquery";
-import {
-    kScrollTopVariable,
-    pageScrollsInsteadOfOverflowing,
-} from "../js/scrollingLayouts";
+import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
+import { removeScrollOffset } from "../js/scrollOffset";
 import { refreshOverflowIndicatorsSoon } from "./overflowIndicators";
 
 interface qtipInterface extends JQuery {
@@ -253,7 +251,7 @@ export default class OverflowChecker {
         elementClone.style.visibility = "hidden";
         // The clone is not scrolled, so it must not keep the original's scroll offset, which would
         // move its language label down and add to its height.
-        elementClone.style.removeProperty(kScrollTopVariable);
+        removeScrollOffset(elementClone);
         elementClone.style.position = "absolute"; // prevent any inadvertent layout effects
         // position:absolute is not enough for accurate layout, we also need to make sure the width
         // of the cloned element is the same as the original.  This is because position:absolute

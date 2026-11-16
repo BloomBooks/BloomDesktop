@@ -1,8 +1,7 @@
 // Styles the drawings that overflowIndicators.ts puts over boxes with more text than fits.
-// Imported by editMode.less. The build also compiles it on its own, so it defines its own color
-// (the same as editMode.less's @OverflowColor).
+// Imported by editMode.less. The build also compiles it on its own, so it imports the color itself.
 
-@overflowIndicatorColor: #d65649;
+@import (reference) "../../bloomUI.less";
 
 // Holds the drawings; overflowIndicators.ts positions it over the page.
 #bloom-overflow-indicator-layer {
@@ -20,13 +19,23 @@
 
     // The lines of a box below where its text is cut off, when the box is scrolled to show them.
     .bloom-overflow-cutOffText {
-        background-color: fade(@overflowIndicatorColor, 18%);
+        background-color: fade(@WarningColor, 18%);
+    }
+
+    // The last line that shows in a box that is not scrolled, fading into the color behind the box
+    // (--overflow-background, set by overflowIndicators.ts), since the text goes on below it.
+    .bloom-overflow-fadeLastLine {
+        background: linear-gradient(
+            to bottom,
+            transparent,
+            var(--overflow-background)
+        );
     }
 
     // A chip on the line where a box's text is cut off, saying the box is overflowing.
     .bloom-overflow-chip {
         transform: translate(calc(-100% - 6px), -50%);
-        background-color: @overflowIndicatorColor;
+        background-color: @WarningColor;
         color: white;
         font:
             bold 9px/1 "Roboto",
@@ -41,16 +50,16 @@
     // Where boxes together push past the bottom of their container (usually the page's margin):
     // a red line at the container's bottom and red stripes over everything past it.
     .bloom-overflow-pastContainer {
-        border-top: 1.5px solid @overflowIndicatorColor;
+        border-top: 1.5px solid @WarningColor;
         background: repeating-linear-gradient(
             135deg,
-            fade(@overflowIndicatorColor, 28%) 0 4px,
+            fade(@WarningColor, 28%) 0 4px,
             transparent 4px 9px
         );
     }
 
     // A torn, zigzag bottom edge. The teeth cut into the bottom of the box, in the color behind
-    // it (--torn-background, set by overflowIndicators.ts), with a red jagged line along them.
+    // it (--overflow-background, set by overflowIndicators.ts), with a red jagged line along them.
     @tornTeeth: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><polygon points='0,8 0,6 3,2 6,6 9,2 12,6 12,8' fill='black'/></svg>");
     @tornLine: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><polyline points='0,6 3,2 6,6 9,2 12,6' fill='none' stroke='black' stroke-width='1.2'/></svg>");
     .bloom-overflow-tornEdge {
@@ -65,11 +74,11 @@
             mask-size: 12px 8px;
         }
         &::before {
-            background-color: var(--torn-background);
+            background-color: var(--overflow-background);
             mask-image: @tornTeeth;
         }
         &::after {
-            background-color: @overflowIndicatorColor;
+            background-color: @WarningColor;
             mask-image: @tornLine;
         }
     }
