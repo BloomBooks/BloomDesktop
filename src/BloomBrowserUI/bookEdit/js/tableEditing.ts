@@ -26,6 +26,7 @@ import { SetupVideoEditing } from "./bloomVideo";
 import { post } from "../../utils/bloomApi";
 import $ from "jquery";
 import BloomField from "../bloomField/BloomField";
+import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
 import {
     activateLongPressFor,
@@ -37,6 +38,10 @@ import {
     tablesMayBeRestructured,
 } from "./tableFeature";
 import { noteTableHistoryUpdate } from "../undo/tableUndo";
+import {
+    addRequestPageContentDelay,
+    removeRequestPageContentDelay,
+} from "./pageContentDelays";
 
 // The library's own "something changed in a table" notification. It fires on the
 // page's document at the end of every operation that goes through the table's
@@ -268,7 +273,17 @@ function onTableHistoryUpdated(e: Event): void {
     // wire; and an operation on a nested table hands us that table, while an
     // undo can have restored the cells of the table that holds it. Wiring from
     // the outermost table covers both.
-    if (table?.isConnected) wireBloomContentOfNewCells(outermostTable(table));
+    if (table?.isConnected) {
+        const outermost = outermostTable(table);
+        wireBloomContentOfNewCells(outermost);
+        observeCellSizes(outermost);
+        // An operation can change how much room a cell's text has without any cell changing
+        // size (a row changed from Hug to Grow that already had that height), so the
+        // overflow marks are checked here as well as when a cell resizes.
+        checkTableTextAtNextFrame([outermost]);
+    } else {
+        stopObservingCellsNotInPage();
+    }
     // After the wiring, not before: wiring attaches CKEditor to the cells the operation built,
     // and an attach can be reported as a CKEditor change. Recording the table's change last
     // leaves the table as the more recent of the two, which is what it is.
@@ -344,11 +359,115 @@ function observeImageCells(root: HTMLElement): void {
     );
 }
 
+// The one ResizeObserver watching every table cell on the page, so the overflow marks follow
+// a row or column while it is dragged. The library reports a resize only when the drag ends.
+// Page-wide for the same reason as imageCellObserver.
+let cellSizeObserver: ResizeObserver | undefined;
+
+// The cells cellSizeObserver watches, so that it can stop watching the ones an operation or an
+// undo took out of the page: an observer keeps every element it watches alive.
+const cellsWhoseSizeIsObserved = new Set<HTMLElement>();
+
+// The outermost tables whose text waits for the next animation frame to be checked, so that a
+// drag that resizes a whole column, or an operation that also resizes cells, gets one check per
+// frame rather than one per cell or per cause.
+const tablesAwaitingOverflowCheck = new Set<HTMLElement>();
+
+// The page-content delay that the overflow checks of tables hold, since a check can change the
+// height of a canvas element or the padding of a text box, which are saved with the page.
+const kTableOverflowCheckDelayId = "tableOverflowCheck";
+
+// Whether the overflow checks of tables hold kTableOverflowCheckDelayId. A drag checks on every
+// frame, and each release of the delay makes the page send C# a snapshot, so the delay is held
+// from the first check until a frame passes with no check waiting.
+let holdingTableOverflowCheckDelay = false;
+
+/**
+ * Update the overflow marks of every text block in `tables` and of the page around them, at the
+ * next frame, together with any other tables already waiting. Called whenever a cell changes
+ * size, which is on every frame of a row or column drag, so it uses AdjustSizeOrMarkOverflowOfAll
+ * rather than AdjustSizeOrMarkOverflowSoon, whose one-second wait would leave the marks behind
+ * the drag.
+ */
+function checkTableTextAtNextFrame(tables: HTMLElement[]): void {
+    const wasIdle = tablesAwaitingOverflowCheck.size === 0;
+    tables.forEach((table) =>
+        tablesAwaitingOverflowCheck.add(outermostTable(table)),
+    );
+    if (!wasIdle || tablesAwaitingOverflowCheck.size === 0) return;
+    if (!holdingTableOverflowCheckDelay) {
+        holdingTableOverflowCheckDelay = true;
+        addRequestPageContentDelay(kTableOverflowCheckDelayId);
+    }
+    requestAnimationFrame(() => {
+        try {
+            const waiting = Array.from(tablesAwaitingOverflowCheck).filter(
+                (table) => table.isConnected,
+            );
+            tablesAwaitingOverflowCheck.clear();
+            OverflowChecker.AdjustSizeOrMarkOverflowOfAll(
+                waiting.flatMap((table) =>
+                    Array.from(
+                        table.querySelectorAll<HTMLElement>(".bloom-editable"),
+                    ),
+                ),
+            );
+        } finally {
+            requestAnimationFrame(releaseTableOverflowCheckDelayIfIdle);
+        }
+    });
+}
+
+/** Release kTableOverflowCheckDelayId, unless another overflow check of a table is waiting. */
+function releaseTableOverflowCheckDelayIfIdle(): void {
+    if (!holdingTableOverflowCheckDelay || tablesAwaitingOverflowCheck.size > 0)
+        return;
+    holdingTableOverflowCheckDelay = false;
+    removeRequestPageContentDelay(kTableOverflowCheckDelayId);
+}
+
+/** Check the text of the tables that hold the cells in `entries`, at the next frame. */
+function onCellsResized(entries: ResizeObserverEntry[]): void {
+    checkTableTextAtNextFrame(
+        entries
+            .map((entry) => entry.target.closest<HTMLElement>(".bloom-table"))
+            .filter((table): table is HTMLElement => !!table),
+    );
+}
+
+/** Stop watching the size of the cells that an operation or an undo took out of the page. */
+function stopObservingCellsNotInPage(): void {
+    cellsWhoseSizeIsObserved.forEach((cell) => {
+        if (!cell.isConnected) {
+            cellSizeObserver?.unobserve(cell);
+            cellsWhoseSizeIsObserved.delete(cell);
+        }
+    });
+}
+
+/**
+ * Watch the size of every cell within `root`, so its text is checked for overflow as it resizes,
+ * and stop watching the cells that are no longer in the page.
+ */
+function observeCellSizes(root: HTMLElement): void {
+    if (!cellSizeObserver) {
+        cellSizeObserver = new ResizeObserver(onCellsResized);
+    }
+    const observer = cellSizeObserver;
+    stopObservingCellsNotInPage();
+    // Observing a cell that is already observed does nothing.
+    root.querySelectorAll<HTMLElement>(".bloom-cell").forEach((cell) => {
+        observer.observe(cell);
+        cellsWhoseSizeIsObserved.add(cell);
+    });
+}
+
 function attachSingleTable(tableDiv: HTMLElement): void {
     if (tableDiv.hasAttribute("data-table-attached")) return;
     tableDiv.setAttribute("data-table-attached", "1");
     attachTable(tableDiv);
     observeImageCells(tableDiv);
+    observeCellSizes(tableDiv);
 }
 
 /**
@@ -470,6 +589,11 @@ export function TeardownTableEditing(container: HTMLElement): void {
     );
     imageCellObserver?.disconnect();
     imageCellObserver = undefined;
+    cellSizeObserver?.disconnect();
+    cellSizeObserver = undefined;
+    cellsWhoseSizeIsObserved.clear();
+    tablesAwaitingOverflowCheck.clear();
+    releaseTableOverflowCheckDelayIfIdle();
     // Every table, not only the ones we attached: the library attaches a nested
     // table itself, both when the user makes one and when an undo rebuilds it,
     // so a nested table has no data-table-attached of ours to find it by.

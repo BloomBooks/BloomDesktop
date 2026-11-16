@@ -25,9 +25,20 @@
 // asserts a pixel size as a number a test compares with a constant.
 
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
-import { editablePageFrame } from "./bookMaking";
+import {
+    addPage,
+    editablePageFrame,
+    getContentPages,
+    goToPage,
+    makeBookFromTemplate,
+    setContentLanguages,
+} from "./bookMaking";
 import { kTableEditingMarkupSelectors } from "./bookHtml";
-import { getCanvasRect } from "./canvasElements";
+import {
+    dragPaletteItemOntoCanvas,
+    getCanvasRect,
+    openCanvasTool,
+} from "./canvasElements";
 import {
     bottom,
     describeRect,
@@ -114,6 +125,31 @@ export interface IOpenMenus {
     canvasElement: boolean;
     /** Bloom's text menu, which a right-click in ordinary text raises. */
     bloomText: boolean;
+}
+
+// ── Making a table ──────────────────────────────────────────────────────
+
+/**
+ * Make a Basic Book with one Canvas page, show `contentLanguages` on the toolbar, and drag a new
+ * table onto the canvas, into its upper left so that the table and the toolbar Bloom draws under a
+ * selected element both stay on the page. Returns when Bloom has attached the table, with the
+ * Canvas page showing.
+ */
+export async function makeBookWithTableOnCanvasPage(
+    page: Page,
+    contentLanguages: string[],
+): Promise<void> {
+    await makeBookFromTemplate(page, "Basic Book");
+    await addPage(page, "Canvas");
+    const [canvasPage] = await getContentPages(page);
+    await goToPage(page, canvasPage.id);
+    await setContentLanguages(page, contentLanguages);
+    await openCanvasTool(page);
+    await dragPaletteItemOntoCanvas(page, "table", {
+        xFraction: 0.3,
+        yFraction: 0.25,
+    });
+    await waitForTableAttached(page);
 }
 
 // ── Finding tables and cells ────────────────────────────────────────────
@@ -1693,6 +1729,13 @@ export async function countDrawingSurfacesInCells(
     return frame.locator(".bloom-cell canvas.comical-generated").count();
 }
 
+/** The classes OverflowChecker.ts puts on a box to mark it as overflowing, or overflowed. */
+const kOverflowMarks = [
+    "overflow",
+    "childOverflowingThis",
+    "thisOverflowingParent",
+];
+
 /**
  * Whether Bloom is marking the text in a cell as too big for the space it has, and which of its
  * three ways of saying so it used: `overflow` (the box overflows itself), `childOverflowingThis`
@@ -1704,21 +1747,231 @@ export async function getCellOverflowMarks(
     row: number,
     column: number,
     tableIndex = 0,
+    /** How long to wait for the cell to be on the page; the configured action timeout if absent. */
+    timeoutMs?: number,
 ): Promise<string[]> {
     const target = await cell(page, row, column, tableIndex);
-    return target.evaluate((element) => {
-        const marks = [
-            "overflow",
-            "childOverflowingThis",
-            "thisOverflowingParent",
-        ];
-        const found = new Set<string>();
-        for (const mark of marks) {
-            if (element.classList.contains(mark)) found.add(mark);
-            if (element.querySelector(`.${mark}`)) found.add(mark);
+    return target.evaluate(
+        (element, marks) => {
+            const found = new Set<string>();
+            for (const mark of marks) {
+                if (element.classList.contains(mark)) found.add(mark);
+                if (element.querySelector(`.${mark}`)) found.add(mark);
+            }
+            return [...found];
+        },
+        kOverflowMarks,
+        { timeout: timeoutMs },
+    );
+}
+
+/**
+ * Every overflow mark on the table or anything in it, as "<what is marked>: <mark>", in document
+ * order. The same three marks as getCellOverflowMarks, but also on the table itself and on
+ * anything between it and its cells, which is where a mark lands when Bloom judges text against
+ * the table's own box instead of the cell's.
+ */
+export async function getTableOverflowMarks(
+    page: Page,
+    tableIndex = 0,
+): Promise<string[]> {
+    return table(page, tableIndex).evaluate((element, marks) => {
+        const describe = (e: Element) =>
+            e.classList.contains("bloom-table")
+                ? "the table"
+                : `${e.className.split(" ")[0]}${e.getAttribute("lang") ? ` (${e.getAttribute("lang")})` : ""}`;
+        const found: string[] = [];
+        for (const e of [element, ...element.querySelectorAll("*")])
+            for (const mark of marks)
+                if (e.classList.contains(mark))
+                    found.push(`${describe(e)}: ${mark}`);
+        return found;
+    }, kOverflowMarks);
+}
+
+/** How long expectTableSettlesUnmarked watches: past Bloom's one-second delay before it checks. */
+const UNMARKED_WATCH_MS = 2500;
+
+/**
+ * Assert that, once Bloom has caught up with the last change, nothing in the table is marked as
+ * overflowing.
+ *
+ * Bloom checks a table's text as soon as a table operation or a drag changes its cells, but a
+ * text box only a second after it is typed in, so marks can lag the layout both ways. A mark made in a moment when a cell really was too small (a row squeezed while the
+ * one beside it was being dragged) stays until the next check, so this first waits for the marks
+ * to clear. And a check still pending can add a mark after that, so it then watches past Bloom's
+ * delay and fails as soon as one appears.
+ */
+export async function expectTableSettlesUnmarked(
+    page: Page,
+    tableIndex = 0,
+): Promise<void> {
+    const clearBy = Date.now() + 1000 + kTableWaitMs;
+    let marks = await getTableOverflowMarks(page, tableIndex);
+    while (marks.length > 0) {
+        if (Date.now() > clearBy)
+            throw new Error(
+                `Nothing in the table should be marked as overflowing, but Bloom still marks: ${marks.join("; ")}.`,
+            );
+        await editablePageFrame(page).waitForTimeout(100);
+        marks = await getTableOverflowMarks(page, tableIndex);
+    }
+    const watchUntil = Date.now() + UNMARKED_WATCH_MS;
+    while (Date.now() < watchUntil) {
+        await editablePageFrame(page).waitForTimeout(200);
+        marks = await getTableOverflowMarks(page, tableIndex);
+        if (marks.length > 0)
+            throw new Error(
+                `Nothing in the table should be marked as overflowing, but Bloom marked: ${marks.join("; ")}.`,
+            );
+    }
+}
+
+/**
+ * Wait until Bloom's overflow marks on a cell say what `marked` says: some mark when true, none
+ * when false. Bloom checks a text box for overflow a second after it is typed in, and a table's
+ * text at the next frame after its cells change, so the answer has to be waited for rather than
+ * read once.
+ *
+ * Each reading is given a second of its own, so that a cell that cannot be read (the table not on
+ * the page, say) is reported as that, rather than as a wait that simply ran out.
+ */
+export async function waitForCellOverflowMarks(
+    page: Page,
+    row: number,
+    column: number,
+    marked: boolean,
+    tableIndex = 0,
+): Promise<void> {
+    // Bloom's one-second delay, plus room for the check itself.
+    const deadline = Date.now() + 1000 + kTableWaitMs;
+    let lastReading = "";
+    for (;;) {
+        try {
+            const marks = await getCellOverflowMarks(
+                page,
+                row,
+                column,
+                tableIndex,
+                1000,
+            );
+            if (marks.length > 0 === marked) return;
+            lastReading = `its marks were: ${marks.join(", ") || "none"}`;
+        } catch (error) {
+            lastReading = `the cell could not be read: ${String(error).split("\n")[0]}`;
         }
-        return [...found];
-    });
+        if (Date.now() > deadline)
+            throw new Error(
+                `The cell at row ${row}, column ${column} should ${marked ? "" : "not "}be marked ` +
+                    `as overflowing; at the last reading ${lastReading}.`,
+            );
+        await editablePageFrame(page).waitForTimeout(100);
+    }
+}
+
+/** How the part of a cell's text box that is past the cell's content edge is drawn. */
+export interface ICellTextClipping {
+    /** Whether the box reaches past the bottom of the cell's content area at all. */
+    reachesPastCell: boolean;
+    /**
+     * Whether anything of the box is drawn past the cell's content area. False when the box does
+     * not reach past it.
+     */
+    partPastCellShows: boolean;
+}
+
+/**
+ * Whether one language's text box in a cell reaches below the cell's content area, and if it
+ * does, whether that part is drawn. A text cell cuts its text off at the edge of its content area,
+ * the way a split-pane text box does. The box needs some text in it for the answer to mean
+ * anything: an empty box draws nothing wherever it is.
+ *
+ * Drawn is judged by pixels, not by asking the page what is under a point: what overflows a cell
+ * lies under the next row's own text box, which answers any such question, whether or not the
+ * overflowing text can be seen through it. So this takes a picture of the part past the cell,
+ * hides the box, takes it again, and puts the box back. A part that is cut off looks the same
+ * both times.
+ */
+export async function getCellTextClipping(
+    page: Page,
+    row: number,
+    column: number,
+    languageTag: string,
+    tableIndex = 0,
+): Promise<ICellTextClipping> {
+    const target = await cell(page, row, column, tableIndex);
+    const pastCell = await target.evaluate((element, tag) => {
+        const box = element.querySelector<HTMLElement>(
+            `.bloom-editable[lang="${tag}"]`,
+        );
+        if (!box) throw new Error(`The cell has no text box in "${tag}".`);
+        const style = getComputedStyle(element);
+        const contentBottom =
+            element.getBoundingClientRect().bottom -
+            parseFloat(style.borderBottomWidth) -
+            parseFloat(style.paddingBottom);
+        const boxRect = box.getBoundingClientRect();
+        if (boxRect.bottom <= contentBottom + 1) return null;
+        const top = Math.max(contentBottom, boxRect.top);
+        return {
+            x: boxRect.left,
+            y: top,
+            width: boxRect.width,
+            height: boxRect.bottom - top,
+        };
+    }, languageTag);
+    if (!pastCell) return { reachesPastCell: false, partPastCellShows: false };
+
+    const offset = await pageFrameOffset(page);
+    const clip = {
+        x: offset.x + pastCell.x,
+        y: offset.y + pastCell.y,
+        width: pastCell.width,
+        height: pastCell.height,
+    };
+    const textBox = target.locator(`.bloom-editable[lang="${languageTag}"]`);
+    const withBox = await page.screenshot({ clip });
+    await textBox.evaluate((box) => (box.style.visibility = "hidden"));
+    try {
+        const withoutBox = await page.screenshot({ clip });
+        return {
+            reachesPastCell: true,
+            partPastCellShows: !withBox.equals(withoutBox),
+        };
+    } finally {
+        await textBox.evaluate((box) => box.style.removeProperty("visibility"));
+    }
+}
+
+/** The Size choices in a row's menu, by the aria-label the library gives each. */
+export type RowSize = "Grow" | "Hug";
+
+/**
+ * Choose Grow or Hug in a row's menu, as a person does, wait until the table records it, and close
+ * the menu. Grow is "fill" in the table's own record, Hug is "hug".
+ */
+export async function setRowSize(
+    page: Page,
+    row: number,
+    size: RowSize,
+    tableIndex = 0,
+): Promise<void> {
+    await openTableMenu(page, "row", row, tableIndex);
+    const choice = editablePageFrame(page).locator(
+        `[data-btable-menu="row"] button[aria-label="${size}"]`,
+    );
+    await clickChrome(choice, `the row menu's ${size} choice`);
+    const recorded = size === "Grow" ? "fill" : "hug";
+    await expect
+        .poll(
+            async () => (await getTableShape(page, tableIndex)).rowHeights[row],
+            {
+                timeout: kTableWaitMs,
+                message: `Choosing ${size} for row ${row} did not make the table record "${recorded}".`,
+            },
+        )
+        .toBe(recorded);
+    await closeAnyMenu(page);
 }
 
 /**

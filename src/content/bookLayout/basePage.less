@@ -1134,3 +1134,13 @@ The buffer would be absent if the marginBox had a border or the page has a backg
 // bloom-table-edit.css, loaded only in the editing context by tableEditing.ts.
 @import (inline)
     "../../BloomBrowserUI/node_modules/bloom-table/dist/bloom-table.css";
+
+// Text that does not fit a table cell is cut off, as it is in a split-pane text box, and the
+// overflow check marks it red. Without this, a row whose height was set by dragging lets the
+// text hang over the row below. clip rather than hidden, for the reason the library gives on
+// its own cells: a hidden box is still a scroll container. The cut is at the content edge, so
+// the tops of the next line do not show in the cell's padding.
+.bloom-cell:has(> .bloom-translationGroup) {
+    overflow: clip;
+    overflow-clip-margin: content-box;
+}
