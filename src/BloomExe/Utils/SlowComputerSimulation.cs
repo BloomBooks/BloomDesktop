@@ -58,19 +58,41 @@ namespace Bloom.Utils
         private const string kAffinityBeforeSimulationVariable =
             "BLOOM_AFFINITY_BEFORE_SLOW_COMPUTER_SIMULATION";
 
+        // .NET reads this before any code runs and uses it, instead of the affinity it starts with,
+        // as the processor count: for Environment.ProcessorCount, the thread pool and the GC. Set
+        // with the variable above, so a Bloom started on two cores is still sized for the machine.
+        private const string kDotNetProcessorCountVariable = "DOTNET_PROCESSOR_COUNT";
+
         /// <summary>
         /// Called first thing at startup. If the Bloom that started this one (directly or through
         /// another program) had the simulation on, this process inherited its two-core affinity;
         /// put back the affinity that Bloom had before the simulation. The simulation itself always
-        /// starts off.
+        /// starts off. (.NET has already sized itself for the whole machine, from
+        /// <see cref="kDotNetProcessorCountVariable"/>.)
         /// </summary>
         public static void UndoLimitInheritedFromParent()
         {
             var saved = Environment.GetEnvironmentVariable(kAffinityBeforeSimulationVariable);
             if (saved == null)
                 return;
-            Environment.SetEnvironmentVariable(kAffinityBeforeSimulationVariable, null);
+            SetVariablesForChildProcesses(null, null);
             Process.GetCurrentProcess().ProcessorAffinity = (IntPtr)long.Parse(saved);
+        }
+
+        /// <summary>
+        /// Set, or with nulls clear, the two variables that let a Bloom started while the simulation
+        /// is on undo the two-core limit it inherits.
+        /// </summary>
+        private static void SetVariablesForChildProcesses(
+            string affinityBeforeSimulation,
+            string processorCount
+        )
+        {
+            Environment.SetEnvironmentVariable(
+                kAffinityBeforeSimulationVariable,
+                affinityBeforeSimulation
+            );
+            Environment.SetEnvironmentVariable(kDotNetProcessorCountVariable, processorCount);
         }
 
         // The WebView2s that have finished initializing, so that turning the simulation on or off
@@ -188,13 +210,18 @@ namespace Bloom.Utils
             // cores lets a lone thread run at two fifths of full speed, which is hardly slow at
             // all. We split the difference: 3/10 of a core in all (3 / 10 / 8 of an eight-core
             // machine).
-            var rate = 10000 * kCoreShareTenths / (10 * Environment.ProcessorCount);
+            //
+            // The machine's processors, from Windows. Not Environment.ProcessorCount, which .NET
+            // fixes at startup from the affinity the process started with, so it is too low in a
+            // Bloom that was started on fewer cores than the machine has.
+            var machineProcessorCount = (int)GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
+            var rate = 10000 * kCoreShareTenths / (10 * machineProcessorCount);
             SetCpuRateControl(
                 JOB_OBJECT_CPU_RATE_CONTROL_ENABLE | JOB_OBJECT_CPU_RATE_CONTROL_HARD_CAP,
                 rate
             );
             s_originalAffinity = process.ProcessorAffinity;
-            var coreCount = Math.Min(kSimulatedCoreCount, Environment.ProcessorCount);
+            var coreCount = Math.Min(kSimulatedCoreCount, machineProcessorCount);
             try
             {
                 // Refused when an enclosing job keeps Bloom off the first two cores.
@@ -207,9 +234,9 @@ namespace Bloom.Utils
                 SetCpuRateControl(0, 0);
                 throw;
             }
-            Environment.SetEnvironmentVariable(
-                kAffinityBeforeSimulationVariable,
-                s_originalAffinity.ToInt64().ToString()
+            SetVariablesForChildProcesses(
+                s_originalAffinity.ToInt64().ToString(),
+                machineProcessorCount.ToString()
             );
         }
 
@@ -221,7 +248,7 @@ namespace Bloom.Utils
         {
             SetCpuRateControl(0, 0);
             Process.GetCurrentProcess().ProcessorAffinity = s_originalAffinity;
-            Environment.SetEnvironmentVariable(kAffinityBeforeSimulationVariable, null);
+            SetVariablesForChildProcesses(null, null);
         }
 
         /// <summary>
@@ -287,6 +314,7 @@ namespace Bloom.Utils
         private const uint JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK = 0x1000;
         private const uint JOB_OBJECT_CPU_RATE_CONTROL_ENABLE = 0x1;
         private const uint JOB_OBJECT_CPU_RATE_CONTROL_HARD_CAP = 0x4;
+        private const ushort ALL_PROCESSOR_GROUPS = 0xffff;
 
         [StructLayout(LayoutKind.Sequential)]
         private struct JOBOBJECT_BASIC_LIMIT_INFORMATION
@@ -350,5 +378,8 @@ namespace Bloom.Utils
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
+
+        [DllImport("kernel32.dll")]
+        private static extern uint GetActiveProcessorCount(ushort groupNumber);
     }
 }

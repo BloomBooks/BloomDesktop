@@ -7,13 +7,8 @@
 // finished the switch rather than merely started it.
 
 import { expect, type Page } from "@playwright/test";
-import { apiGet, apiGetJson, apiPost } from "./api";
-import {
-    editablePageFrame,
-    getShownPageId,
-    msUntilEditing,
-    waitForEditTabSettled,
-} from "./bookMaking";
+import { apiGetJson, apiPost } from "./api";
+import { editablePageFrame } from "./bookMaking";
 
 /** The three workspace tabs, named as Bloom's API names them. */
 export type WorkspaceTabId = "collection" | "edit" | "publish";
@@ -140,74 +135,4 @@ export async function setZoom(page: Page, percent: number): Promise<void> {
             },
         )
         .toBe(percent);
-}
-
-/** Whether Bloom's "Simulate a slow computer" testing mode is on (see SlowComputerSimulation.cs). */
-export async function isSlowComputerSimulationOn(page: Page): Promise<boolean> {
-    return (await apiGet(page, "app/simulateSlowComputer")).body === "true";
-}
-
-/**
- * Turn the "Simulate a slow computer" testing mode on or off the way a tester does: right-click an
- * empty part of the top bar, which opens the testing menu, and click the item. Returns once Bloom
- * reports the mode in the state asked for. Does nothing when it is already in that state.
- *
- * The mode lasts for the rest of this Bloom's run, and every test in a spec file shares one Bloom,
- * so a test that turns it on should turn it off again before it ends.
- */
-export async function setSlowComputerSimulation(
-    page: Page,
-    on: boolean,
-): Promise<void> {
-    if ((await isSlowComputerSimulationOn(page)) === on) return;
-    // The testing menu opens on a right-click anywhere on the top bar that is not a control. Just
-    // to the right of the tabs is a spacer (see TopBar.tsx), so click there.
-    const topBar = page.getByTestId("workspace-top-bar");
-    const topBarBox = await topBar.boundingBox();
-    const tabsBox = await page.getByTestId("workspace-tabs").boundingBox();
-    if (!topBarBox || !tabsBox)
-        throw new Error(
-            "The top bar or its tabs have no on-screen box, so there is nowhere to right-click.",
-        );
-    await topBar.click({
-        button: "right",
-        position: {
-            x: tabsBox.x + tabsBox.width - topBarBox.x + 8,
-            y: tabsBox.y + tabsBox.height / 2 - topBarBox.y,
-        },
-    });
-    // The item's label is not localized: this whole menu is for developers and testers.
-    const item = page.getByRole("menuitem", {
-        name: "Simulate a slow computer",
-    });
-    await item.waitFor({ state: "visible", timeout: 15000 });
-    await item.click();
-    await expect
-        .poll(() => isSlowComputerSimulationOn(page), {
-            timeout: 15000,
-            message: `Bloom never reported "Simulate a slow computer" as ${on ? "on" : "off"}.`,
-        })
-        .toBe(on);
-}
-
-/**
- * Leave the Edit tab for the Collections tab, come back by clicking the Edit tab, and return how
- * long coming back took: from the click until the Edit tab was editing its page again (see
- * msUntilEditing). The Edit tab is settled when this returns, but that last wait is not part of
- * the time. The Edit tab must be showing a page when this is called.
- */
-export async function returnToEditTabTimed(page: Page): Promise<number> {
-    const pageId = await getShownPageId(page);
-    if (!pageId)
-        throw new Error(
-            "The Edit tab is not showing a page, so there is nothing to come back to.",
-        );
-    await switchTab(page, "collection");
-    const editTab = page.getByTestId(tabTestId("edit"));
-    await editTab.waitFor({ state: "visible", timeout: 30000 });
-    const startedAt = performance.now();
-    await editTab.click();
-    const ms = await msUntilEditing(page, pageId, startedAt);
-    await waitForEditTabSettled(page);
-    return ms;
 }
