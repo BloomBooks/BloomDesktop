@@ -2069,48 +2069,81 @@ function applyMove(
 }
 
 // Measures where the bottom dock would put the dragged image, and how tall a line of the block's
-// text is, for computeInlineImageDock. The bottom dock clears floats, so it goes below the last
-// line of text and below every other image, including a left or right image that hangs below
-// the text. The other images are measured as they are on the page now, so the text's wrapping
-// around them is already in the bottom of its last line.
-// The dragged image itself is left out, so that it does not count its own position. A bottom
-// dock that it is already in keeps it above any bottom-docked images after it, so those are left
-// out as well; a floating image caught into the bottom dock goes after all of them. When the
-// dragged image floats above the last line, that line is pushed below it, so the end of the
-// content is below the image's top and the image is not put in the bottom dock.
+// text is, for computeInlineImageDock.
+//
+// The bottom dock comes after the text and clears floats, so it starts below the last line of
+// text and below every other floating image, including a left or right image that hangs below
+// the text. Those are measured as they are on the page now: each move puts the other floating
+// images back where they were, so their places now are their places after the move, and the
+// text's wrapping around them is already in the bottom of its last line. When the dragged image
+// floats above the last line, that line is pushed below it, so the end of the content is below
+// the image's top and the image is not put in the bottom dock.
+//
+// The images already in the bottom dock are stacked below that, and the dragged image goes after
+// them. They are not measured where they are now, because they clear the dragged image when it
+// floats, so they move down with it and could never be reached. Only their heights are used. When
+// the dragged image is in the bottom dock already, the bottom-docked images after it stay after
+// it, so only those before it count.
 function measureContentEnd(
     state: IInlineImageDragState,
 ): Omit<IInlineImageContentEnd, "imageTopViewportPx"> {
-    const draggedIsInBottomDock = state.dock === kInlineImageBottomClass;
-    // The bloom-ui elements, such as the format button, are not content.
-    const otherChildren = Array.from(state.editable.children).filter(
+    const children = Array.from(state.editable.children).filter(
         (child) =>
             child !== state.wrapper &&
-            !child.classList.contains("bloom-ui") &&
+            // The bloom-ui elements, such as the format button, are not content.
+            !child.classList.contains("bloom-ui"),
+    ) as HTMLElement[];
+    const isImage = (child: HTMLElement) =>
+        child.classList.contains(kInlineImageClass);
+    const textChildren = children.filter((child) => !isImage(child));
+    const lastText = textChildren[textChildren.length - 1];
+    const textEndViewportPx =
+        textChildren.length > 0
+            ? Math.max(
+                  ...textChildren.map(
+                      (child) => child.getBoundingClientRect().bottom,
+                  ),
+              )
+            : state.editableContentBoxViewportPx.top;
+    const floatsEndViewportPx = Math.max(
+        -Infinity,
+        ...getFloatingWrappersIn(state.editable)
+            .filter((wrapper) => wrapper !== state.wrapper)
+            .map((wrapper) =>
+                getWrapperBottomWithMarginViewportPx(
+                    wrapper,
+                    state.viewportPxPerLayoutPx,
+                ),
+            ),
+    );
+    const bottomDocked = children.filter(
+        (child) =>
+            isImage(child) &&
+            getInlineImageDock(child) === kInlineImageBottomClass &&
             !(
-                draggedIsInBottomDock &&
-                child.classList.contains(kInlineImageBottomClass) &&
+                state.dock === kInlineImageBottomClass &&
                 state.wrapper.compareDocumentPosition(child) &
                     Node.DOCUMENT_POSITION_FOLLOWING
             ),
     );
-    const textChildren = otherChildren.filter(
-        (child) => !child.classList.contains(kInlineImageClass),
-    );
-    const lastText = textChildren[textChildren.length - 1];
+    const first = bottomDocked[0];
+    const last = bottomDocked[bottomDocked.length - 1];
+    // The first bottom-docked image's top margin keeps it off the text. Clearing the floats moves
+    // it down to the bottom of the lowest one's margin box if that is lower.
     const contentEndViewportPx =
-        otherChildren.length > 0
-            ? Math.max(
-                  ...otherChildren.map((child) =>
-                      child.classList.contains(kInlineImageClass)
-                          ? getWrapperBottomWithMarginViewportPx(
-                                child as HTMLElement,
-                                state.viewportPxPerLayoutPx,
-                            )
-                          : child.getBoundingClientRect().bottom,
-                  ),
-              )
-            : state.editableContentBoxViewportPx.top;
+        bottomDocked.length === 0
+            ? Math.max(textEndViewportPx, floatsEndViewportPx)
+            : Math.max(
+                  textEndViewportPx +
+                      getMarginViewportPx(
+                          first,
+                          "marginTop",
+                          state.viewportPxPerLayoutPx,
+                      ),
+                  floatsEndViewportPx,
+              ) +
+              last.getBoundingClientRect().bottom -
+              first.getBoundingClientRect().top;
     const style = getComputedStyle(lastText ?? state.editable);
     // A line-height of "normal" has no number. Browsers draw it at about 1.2 times the font size.
     const lineHeightLayoutPx =
@@ -2129,22 +2162,22 @@ function getWrapperBottomWithMarginViewportPx(
 ): number {
     return (
         wrapper.getBoundingClientRect().bottom +
-        getMarginBottomViewportPx(wrapper, viewportPxPerLayoutPx)
+        getMarginViewportPx(wrapper, "marginBottom", viewportPxPerLayoutPx)
     );
 }
 
-// The height of a wrapper's bottom margin on the screen. A left or right image has one, to keep
-// the text below it away.
-function getMarginBottomViewportPx(
+// The height of a wrapper's top or bottom margin on the screen. A left or right image has a
+// bottom margin, to keep the text below it away; a bottom-docked image has a top one.
+function getMarginViewportPx(
     wrapper: HTMLElement,
+    side: "marginTop" | "marginBottom",
     viewportPxPerLayoutPx: number,
 ): number {
-    const marginBottomLayoutPx =
+    const marginLayoutPx =
         parseFloat(
-            wrapper.ownerDocument.defaultView!.getComputedStyle(wrapper)
-                .marginBottom,
+            wrapper.ownerDocument.defaultView!.getComputedStyle(wrapper)[side],
         ) || 0;
-    return marginBottomLayoutPx * viewportPxPerLayoutPx;
+    return marginLayoutPx * viewportPxPerLayoutPx;
 }
 
 // Scrolls the block so that the picture being dragged stays on the screen, and moves the
@@ -2315,7 +2348,11 @@ function orderFloatsSoEachCanReachItsTop(
                     imageBox.top - contentTopViewportPx,
                 heightWithMarginViewportPx:
                     imageBox.height +
-                    getMarginBottomViewportPx(wrapper, viewportPxPerLayoutPx),
+                    getMarginViewportPx(
+                        wrapper,
+                        "marginBottom",
+                        viewportPxPerLayoutPx,
+                    ),
             };
         }),
     );
