@@ -503,6 +503,13 @@ export class EditableDivUtils {
      * Delete would then do nothing. And every language's editable has a copy of each picture, kept
      * the same by the inline image code, so a copy taken earlier would put an older picture back in
      * this one language alone.
+     *
+     * The live wrappers carry none of CKEditor's data-cke-* attributes, so nothing here removes
+     * them. CKEditor adds those only to HTML that goes through its own processing: when it loads a
+     * block, and on paste, which never brings an inline image. removeCkEditorAttributesFromInlineImages
+     * takes them off when the editor is ready, before its first undo snapshot. After that, Bloom
+     * inserts and changes pictures in the page itself, and CKEditor's undo puts back copies of the
+     * page taken after the removal.
      */
     public static replaceContentKeepingLiveInlineImages(
         div: HTMLElement,

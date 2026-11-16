@@ -300,7 +300,7 @@ describe("inlineImageInteractions", () => {
                     kEditableBox,
                     {
                         imageTopViewportPx,
-                        textEndViewportPx: 100,
+                        contentEndViewportPx: 100,
                         lineHeightViewportPx: 20,
                     },
                 );
