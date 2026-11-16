@@ -11,6 +11,8 @@ import {
     setDefaultCellContentTypeId,
     setRowHeight,
     setCellMenuOpenHandler,
+    setHostCellSettings,
+    setHostMenuSectionProvider,
     setStructuralChromeGate,
     kTableCellContentChangedEvent,
 } from "bloom-table";
@@ -23,7 +25,7 @@ import "bloom-table/bloom-table-edit.css";
 import "./tableEditing.less";
 import { SetupImagesInContainer } from "./bloomImages";
 import { SetupVideoEditing } from "./bloomVideo";
-import { post } from "../../utils/bloomApi";
+import { get, post } from "../../utils/bloomApi";
 import $ from "jquery";
 import BloomField from "../bloomField/BloomField";
 import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
@@ -37,6 +39,17 @@ import {
     tablesMayBeRestructured,
 } from "./tableFeature";
 import { noteTableHistoryUpdate } from "../undo/tableUndo";
+import { ILanguageNameValues } from "../toolbox/canvas/canvasControlTypes";
+import {
+    cellLanguagesOfCollection,
+    ICellLanguage,
+    rolesFromSetting,
+    rolesOfGroup,
+    showRolesInGroup,
+    textGroupOfCell,
+} from "./tableCellLanguages";
+import { TableCellLanguagesSection } from "./TableCellLanguagesSection";
+import { createElement } from "react";
 
 // The library's own "something changed in a table" notification. It fires on the
 // page's document at the end of every operation that goes through the table's
@@ -78,16 +91,20 @@ function ensureContentTypesRegistered(): void {
     // Text cells hold a bloom-translationGroup rather than the library's bare
     // contenteditable, so text in a table participates in Bloom's multilingual
     // system and its styles. The group gets one bloom-editable of its own here,
-    // in the language new text boxes use, because nothing else would give the
+    // in the collection's first language, because nothing else would give the
     // cell one until the page is next loaded: TranslationGroupManager (C#) adds
     // the editables for the book's other languages then. Without that first
     // editable a new cell has nothing to type in, and so no format button and no
     // language name either. This is what a text canvas element does too; see
     // makeTranslationGroup in CanvasElementFactories.ts.
-    const languageForNewText = GetSettings().languageForNewTextBoxes;
+    // The group shows the collection's first language only (data-default-languages V) until the
+    // user picks others in the table's menus; see tableCellLanguages.ts. That is the collection's
+    // first language even when the toolbar shows another one first, which languageForNewTextBoxes
+    // follows: a box in any other language would be hidden when the page next loads.
+    const languageForNewText = GetSettings().collectionLanguage1;
     replaceCellContentType(
         "text",
-        "<div class='bloom-translationGroup bloom-trailingElement normal-style'>" +
+        "<div class='bloom-translationGroup bloom-trailingElement normal-style' data-default-languages='V'>" +
             `<div class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' lang='${languageForNewText}'><p></p></div>` +
             "</div>",
         /bloom-translationGroup/,
@@ -148,6 +165,63 @@ function ensureContentTypesRegistered(): void {
 function installHostHooks(): void {
     setStructuralChromeGate(() => tablesMayBeRestructured());
     setCellMenuOpenHandler(() => !tablesMayBeRestructured());
+    // The Languages item of the Cell, Row, Column and Table menus, for the text cells the menu
+    // acts on. A menu over no text cell has none.
+    setHostMenuSectionProvider((_scope, cells) => {
+        if (!cellLanguages) return undefined;
+        const groups = cells
+            .map(textGroupOfCell)
+            .filter((group): group is HTMLElement => !!group);
+        if (groups.length === 0) return undefined;
+        return createElement(TableCellLanguagesSection, {
+            groups,
+            languages: cellLanguages,
+            onNewEditables: wireNewEditables,
+        });
+    });
+    // A text cell's languages travel with the cell's other settings: into a new row or column
+    // from the one it was inserted beside, and by Paint format and Copy / Paste properties.
+    setHostCellSettings({
+        snapshot: (cell) => {
+            const group = textGroupOfCell(cell);
+            return group ? rolesOfGroup(group).join(",") : undefined;
+        },
+        apply: (cell, value) => {
+            const group = textGroupOfCell(cell);
+            if (!group || !cellLanguages) return;
+            wireNewEditables(
+                showRolesInGroup(group, rolesFromSetting(value), cellLanguages),
+            );
+        },
+    });
+}
+
+// The collection's languages as a table cell can show them. Asked for once per page load, like
+// the table feature's status; until it arrives, the menus have no Languages item.
+let cellLanguages: ICellLanguage[] | undefined;
+let cellLanguagesRequested = false;
+
+// SetupTableEditing runs again whenever a canvas element is added; the languages cannot change
+// within one page load (this module lives in the page iframe), so they are asked for once.
+function refreshCellLanguages(): void {
+    if (cellLanguagesRequested) return;
+    cellLanguagesRequested = true;
+    get("settings/languageNames", (result) => {
+        cellLanguages = cellLanguagesOfCollection(
+            result.data as ILanguageNameValues,
+        );
+    });
+}
+
+// An editable added to a cell for a newly chosen language gets the wiring that page load gives
+// the others. They are wired from their table, which is where the wiring looks.
+function wireNewEditables(editables: HTMLElement[]): void {
+    const tables = new Set<HTMLElement>();
+    editables.forEach((editable) => {
+        const table = editable.closest<HTMLElement>(".bloom-table");
+        if (table) tables.add(outermostTable(table));
+    });
+    tables.forEach((table) => wireBloomContentOfNewCells(table));
 }
 
 /**
@@ -364,6 +438,7 @@ export function SetupTableEditing(container: HTMLElement): void {
     // it: until it arrives the answer is "no", which is the safe way round, since
     // it withholds chrome rather than showing chrome that then has to disappear.
     void refreshTableFeatureStatus();
+    refreshCellLanguages();
     // Both listeners go on the document, not on `container`. SetupElements (and
     // so this) runs again on a subtree whenever a canvas element is added, and a
     // listener on that subtree would hear a cell's event a second time on its

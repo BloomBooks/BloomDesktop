@@ -5,6 +5,8 @@ declare function GetSettings(): ICollectionSettings;
 
 interface ICollectionSettings {
     languageForNewTextBoxes: string;
+    // The collection's first language, whatever the toolbar shows.
+    collectionLanguage1: string;
     defaultSourceLanguage: string;
     defaultSourceLanguage2: string;
     currentCollectionLanguage2: string;

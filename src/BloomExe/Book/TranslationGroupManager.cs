@@ -283,7 +283,9 @@ namespace Bloom.Book
                 // This controls visibility for fields not yet controlled by the Appearance system
                 // (or in legacy mode).
                 var defLangsAttr = group.GetAttribute("data-default-languages");
-                var dataDefaultLanguages = ProcessLanguageList(defLangsAttr, bookData);
+                var dataDefaultLanguages = IsTableTextCell(group)
+                    ? LanguagesOfTableTextCell(defLangsAttr, bookData)
+                    : ProcessLanguageList(defLangsAttr, bookData);
 
                 //nb: we don't necessarily care that a div is editable or not
                 UpdateGeneratedClassesOnChildren(
@@ -365,11 +367,55 @@ namespace Bloom.Book
             );
         }
 
+        /// <summary>
+        /// True when the translation group is the content of a table's text cell. Such a cell
+        /// chooses its languages in the table's own menus, and the book's language choice in the
+        /// toolbar does not reach it.
+        /// </summary>
+        public static bool IsTableTextCell(SafeXmlElement group)
+        {
+            return group.ParentNode is SafeXmlElement parent && parent.HasClass("bloom-cell");
+        }
+
+        /// <summary>
+        /// The tags of the languages a table's text cell shows, which ShouldNormallyShowEditable
+        /// takes as literal tags. The cell stores roles in data-default-languages: V for the
+        /// collection's first language, N1 for its second and N2 for its third. A cell with no
+        /// setting, which is every cell of a table made before cells had one, shows the first
+        /// language only. V is read here as the collection's first language, because elsewhere V
+        /// means the first language checked in the toolbar, and a table cell must not follow the
+        /// toolbar.
+        /// </summary>
+        public static string[] LanguagesOfTableTextCell(string roles, BookData bookData)
+        {
+            var collectionLanguage1Tag = bookData.CollectionSettings.Language1Tag;
+            var list = ProcessLanguageList(roles ?? "", bookData);
+            if (
+                list.Length == 0
+                || list[0].Equals("auto", StringComparison.InvariantCultureIgnoreCase)
+            )
+                return new[] { collectionLanguage1Tag };
+            return list.Select(role =>
+                    role switch
+                    {
+                        "V" or "L1" => collectionLanguage1Tag,
+                        "N1" => bookData.MetadataLanguage1Tag,
+                        "N2" => bookData.MetadataLanguage2Tag,
+                        _ => role,
+                    }
+                )
+                .ToArray();
+        }
+
         public static bool IsPageAffectedByLanguageMenu(SafeXmlElement page, bool legacy)
         {
             var groups = GetTranslationGroups(page);
             foreach (var g in groups)
             {
+                // A table's text cell does not follow the language menu.
+                if (IsTableTextCell(g))
+                    continue;
+
                 var defLangs = g.GetAttribute("data-default-languages");
 
                 // missing attribute or empty is treated as "auto", and this menu definitely affects those.

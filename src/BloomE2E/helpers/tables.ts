@@ -25,9 +25,20 @@
 // asserts a pixel size as a number a test compares with a constant.
 
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
-import { editablePageFrame } from "./bookMaking";
+import {
+    addPage,
+    editablePageFrame,
+    getContentPages,
+    goToPage,
+    makeBookFromTemplate,
+    setContentLanguages,
+} from "./bookMaking";
 import { kTableEditingMarkupSelectors } from "./bookHtml";
-import { getCanvasRect } from "./canvasElements";
+import {
+    dragPaletteItemOntoCanvas,
+    getCanvasRect,
+    openCanvasTool,
+} from "./canvasElements";
 import {
     bottom,
     describeRect,
@@ -114,6 +125,31 @@ export interface IOpenMenus {
     canvasElement: boolean;
     /** Bloom's text menu, which a right-click in ordinary text raises. */
     bloomText: boolean;
+}
+
+// ── Making a table ──────────────────────────────────────────────────────
+
+/**
+ * Make a Basic Book with one Canvas page, show `contentLanguages` on the toolbar, and drag a new
+ * table onto the canvas, into its upper left so that the table and the toolbar Bloom draws under a
+ * selected element both stay on the page. Returns when Bloom has attached the table, with the
+ * Canvas page showing.
+ */
+export async function makeBookWithTableOnCanvasPage(
+    page: Page,
+    contentLanguages: string[],
+): Promise<void> {
+    await makeBookFromTemplate(page, "Basic Book");
+    await addPage(page, "Canvas");
+    const [canvasPage] = await getContentPages(page);
+    await goToPage(page, canvasPage.id);
+    await setContentLanguages(page, contentLanguages);
+    await openCanvasTool(page);
+    await dragPaletteItemOntoCanvas(page, "table", {
+        xFraction: 0.3,
+        yFraction: 0.25,
+    });
+    await waitForTableAttached(page);
 }
 
 // ── Finding tables and cells ────────────────────────────────────────────
@@ -1862,4 +1898,97 @@ export async function getTableEditingMarkup(page: Page): Promise<string[]> {
             ),
         kTableEditingMarkupSelectors,
     );
+}
+
+/** What the menus call a language a table cell can show (BL-17105). */
+export type CellLanguageRole = "L1" | "L2" | "L3";
+
+// The role each menu entry stands for, as TableCellLanguagesSection.tsx marks its row.
+const kStoredRoleOfMenuRole: Record<CellLanguageRole, string> = {
+    L1: "V",
+    L2: "N1",
+    L3: "N2",
+};
+
+/** One entry of a table menu's Languages submenu, as the user sees it. */
+export interface IMenuCellLanguage {
+    /** The whole label, e.g. "L1 - English". */
+    label: string;
+    /** Ticked in every text cell the menu covers, in none, or in only some (a dash). */
+    state: "all" | "none" | "some";
+    /** True when unticking it would leave some cell with no language, so the box is disabled. */
+    locked: boolean;
+}
+
+// The Languages item is Bloom's own, drawn into the library's menu, and its check boxes are in a
+// submenu that opens while the pointer is on the item. These attributes are the ones
+// TableCellLanguagesSection.tsx puts on them for this purpose.
+async function openLanguagesSubmenu(page: Page): Promise<Locator> {
+    const frame = editablePageFrame(page);
+    const item = frame
+        .locator(
+            "[data-btable-menu]:visible [data-table-cell-languages] [role='menuitem']",
+        )
+        .first();
+    await item.waitFor({ state: "visible", timeout: kTableWaitMs });
+    await item.hover({ timeout: kTableWaitMs });
+    const submenu = frame
+        .locator("[data-table-cell-languages-submenu]")
+        .first();
+    await submenu.waitFor({ state: "visible", timeout: kTableWaitMs });
+    return submenu;
+}
+
+/**
+ * The entries of the Languages submenu of whichever table menu is open (Cell, Row, Column or
+ * Table), in the order the submenu lists them. Opens the submenu by pointing at its item, as a
+ * person does, and leaves it open.
+ */
+export async function getMenuCellLanguages(
+    page: Page,
+): Promise<IMenuCellLanguage[]> {
+    const section = await openLanguagesSubmenu(page);
+    return section.locator("label[data-cell-language]").evaluateAll((rows) =>
+        rows.map((row) => ({
+            label: (row.textContent ?? "").trim(),
+            state: row.getAttribute("data-cell-language-state") as
+                | "all"
+                | "none"
+                | "some",
+            locked: !!row.querySelector("input:disabled"),
+        })),
+    );
+}
+
+/**
+ * Click the check box of one language in the open table menu's Languages submenu, as a person
+ * does, and wait until the submenu shows the result. The menu and the submenu stay open.
+ */
+export async function toggleMenuCellLanguage(
+    page: Page,
+    role: CellLanguageRole,
+): Promise<void> {
+    const section = await openLanguagesSubmenu(page);
+    const row = section.locator(
+        `label[data-cell-language='${kStoredRoleOfMenuRole[role]}']`,
+    );
+    if ((await row.count()) === 0) {
+        const labels = await section
+            .locator("label[data-cell-language]")
+            .allInnerTexts();
+        throw new Error(
+            `The open table menu's Languages submenu has no ${role}. It lists: ` +
+                `${labels.join(", ") || "(nothing)"}.`,
+        );
+    }
+    const before = await row.getAttribute("data-cell-language-state");
+    await clickChrome(row.locator("input"), `the ${role} check box`);
+    // Unticking takes the language out of every cell where it is not the only one, so the box
+    // can end up "some" rather than "none"; any change of state means the click took.
+    await expect
+        .poll(async () => await row.getAttribute("data-cell-language-state"), {
+            timeout: kTableWaitMs,
+            message: `Clicking the ${role} check box did not change it from "${before}".`,
+        })
+        .not.toBe(before);
 }

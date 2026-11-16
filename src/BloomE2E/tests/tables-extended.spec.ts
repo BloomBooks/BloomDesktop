@@ -28,7 +28,6 @@ import {
     goToPage,
     makeBookFromTemplate,
     reloadPageBeingEdited,
-    setContentLanguages,
     type IBookPage,
 } from "../helpers/bookMaking";
 import {
@@ -87,6 +86,7 @@ import {
     measureTable,
     openTableMenu,
     rightClickCell,
+    toggleMenuCellLanguage,
     setCellContentType,
     table,
     typeInCell,
@@ -1045,16 +1045,19 @@ test.describe("more ways to use a table", () => {
         await closeAnyMenu(page);
     });
 
-    test("shows every content language in every text cell", async ({
+    test("shows a second language in a text cell when L2 is ticked in its Cell menu", async ({
         page,
         step,
     }) => {
-        await step("Turn on a second content language", async () => {
-            await setContentLanguages(page, ["en", "fr"]);
-            await waitForTableAttached(page);
+        await step("Tick L2 in the cell's menu", async () => {
+            // A table cell does not follow the toolbar's language choice; its languages are
+            // chosen in the table's own menus (tables-cell-languages.spec.ts).
+            await rightClickCell(page, 0, 0);
+            await toggleMenuCellLanguage(page, "L2");
+            await closeAnyMenu(page);
             expect(
                 await getCellLanguages(page, 0, 0),
-                "A text cell should show a box for each of the book's content languages.",
+                "A text cell with L2 ticked should show a box for L1 and one for L2.",
             ).toEqual(["en", "fr"]);
         });
 
@@ -1074,9 +1077,11 @@ test.describe("more ways to use a table", () => {
             ).toBe("Apple");
         });
 
-        await step("Go back to one content language", async () => {
-            await setContentLanguages(page, ["en"]);
-            await waitForTableAttached(page);
+        await step("Untick L2 again", async () => {
+            await rightClickCell(page, 0, 0);
+            await toggleMenuCellLanguage(page, "L2");
+            await closeAnyMenu(page);
+            expect(await getCellLanguages(page, 0, 0)).toEqual(["en"]);
         });
     });
 
