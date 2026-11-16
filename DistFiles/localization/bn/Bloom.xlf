@@ -682,6 +682,61 @@
         <target xml:lang="bn" state="needs-translation">Front &amp; Back Matter</target>
         <note>ID: CollectionSettingsDialog.FrontBackMatterPage</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.Alphabet" translate="no">
+        <source xml:lang="en">Alphabet</source>
+        <target xml:lang="bn" state="needs-translation">Alphabet</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.Alphabet</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.DefaultFont" translate="no">
+        <source xml:lang="en">Default Font</source>
+        <target xml:lang="bn" state="needs-translation">Default Font</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.DefaultFont</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.Fonts" translate="no">
+        <source xml:lang="en">Fonts</source>
+        <target xml:lang="bn" state="needs-translation">Fonts</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.Fonts</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.More" translate="no">
+        <source xml:lang="en">More</source>
+        <target xml:lang="bn" state="needs-translation">More</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.More</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.RightToLeft" translate="no">
+        <source xml:lang="en">This is a right to left script</source>
+        <target xml:lang="bn" state="needs-translation">This is a right to left script</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.RightToLeft</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.Script" translate="no">
+        <source xml:lang="en">Script</source>
+        <target xml:lang="bn" state="needs-translation">Script</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.Script</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.SentenceEndingPunctuation" translate="no">
+        <source xml:lang="en">Sentence ending punctuation</source>
+        <target xml:lang="bn" state="needs-translation">Sentence ending punctuation</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.SentenceEndingPunctuation</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.ToolFontSize" translate="no">
+        <source xml:lang="en">Font size when displayed in tools</source>
+        <target xml:lang="bn" state="needs-translation">Font size when displayed in tools</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.ToolFontSize</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage1" translate="no">
+        <source xml:lang="en">Written Language 1</source>
+        <target xml:lang="bn" state="needs-translation">Written Language 1</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage1</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage2" translate="no">
+        <source xml:lang="en">Written Language 2</source>
+        <target xml:lang="bn" state="needs-translation">Written Language 2</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage2</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.WrittenLanguage3" translate="no">
+        <source xml:lang="en">Written Language 3</source>
+        <target xml:lang="bn" state="needs-translation">Written Language 3</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.WrittenLanguage3</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink" approved="yes">
         <source xml:lang="en">Change...</source>
         <target xml:lang="bn" state="final">পরিবর্তন...</target>
