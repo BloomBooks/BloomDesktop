@@ -27,6 +27,11 @@
         <target xml:lang="zh-CN" state="needs-translation">Bloom could not reach the server to get the list of bookshelves.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguagesPage.ReaderTools.Unreadable" translate="no">
+        <source xml:lang="en">Bloom cannot read the reader tools' settings file for this language, so these cannot be changed here.</source>
+        <target xml:lang="zh-CN" state="needs-translation">Bloom cannot read the reader tools' settings file for this language, so these cannot be changed here.</target>
+        <note>ID: CollectionSettingsDialog.LanguagesPage.ReaderTools.Unreadable</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed">
         <source xml:lang="en">Conversion file used:</source>
         <target xml:lang="zh-CN" state="needs-translation">Conversion file used:</target>
