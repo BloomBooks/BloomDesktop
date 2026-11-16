@@ -1646,25 +1646,28 @@ canvas.moving {
             background-color: var(--canvas-element-control-color);
         }
     }
+    // Each handle's cursor depends on the element's rotation, so alignControlFrameWithActiveElement
+    // puts the cursor for each handle in a --handle-cursor-<handle> property on the frame
+    // (setHandleCursorsForRotation). The side handles read theirs in .crop-side-handle-positions.
     .bloom-ui-canvas-element-resize-handle-nw {
         top: -@resizeHandleRadius;
         left: -@resizeHandleRadius;
-        cursor: nw-resize;
+        cursor: var(--handle-cursor-nw, nw-resize);
     }
     .bloom-ui-canvas-element-resize-handle-ne {
         top: -@resizeHandleRadius;
         right: -@resizeHandleRadius;
-        cursor: ne-resize;
+        cursor: var(--handle-cursor-ne, ne-resize);
     }
     .bloom-ui-canvas-element-resize-handle-sw {
         bottom: -@resizeHandleRadius;
         left: -@resizeHandleRadius;
-        cursor: sw-resize;
+        cursor: var(--handle-cursor-sw, sw-resize);
     }
     .bloom-ui-canvas-element-resize-handle-se {
         bottom: -@resizeHandleRadius;
         right: -@resizeHandleRadius;
-        cursor: se-resize;
+        cursor: var(--handle-cursor-se, se-resize);
     }
 
     // The move crop handle is the small circle in the center, used to change how an
