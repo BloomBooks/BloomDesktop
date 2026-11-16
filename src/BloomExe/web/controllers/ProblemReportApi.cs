@@ -1513,6 +1513,14 @@ namespace Bloom.web.controllers
             }
 
             bldr.AppendLine("WebView2: " + WebView2Browser.GetWebView2Version());
+            // Antivirus folder protection is a common cause of the file access errors people report.
+            bldr.AppendLine("Antivirus: " + FileAccessDiagnostics.AntivirusSummary);
+            bldr.AppendLine(
+                "Controlled Folder Access: "
+                    + FileAccessDiagnostics.DescribeControlledFolderAccess(
+                        FileAccessDiagnostics.ReadControlledFolderAccessSetting()
+                    )
+            );
 
             if (appendLog || Logger.Singleton == null)
             {
