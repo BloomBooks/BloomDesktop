@@ -135,7 +135,9 @@ export const LibraryPublishSteps: React.FunctionComponent<{
     useEffect(() => {
         get("libraryPublish/getBookInfo", (result) => {
             setBookInfo(result.data);
-            setBoxesChecked(Array(3).fill(result.data.agreementsAccepted));
+            setAgreementBoxesChecked(
+                Array(3).fill(result.data.agreementsAccepted),
+            );
             setSummary(result.data.summary);
             setIsLoading(false);
         });
@@ -175,15 +177,17 @@ export const LibraryPublishSteps: React.FunctionComponent<{
     }
     // Whether each of the three agreement boxes is checked. Bloom saves only whether all of them
     // are, so they come from the book info all checked or all unchecked.
-    const [boxesChecked, setBoxesChecked] = useState<boolean[]>(
-        Array(3).fill(false),
+    const [agreementBoxesChecked, setAgreementBoxesChecked] = useState<
+        boolean[]
+    >(Array(3).fill(false));
+    const allAgreementBoxesChecked = agreementBoxesChecked.every(
+        (checked) => checked,
     );
-    const allBoxesChecked = boxesChecked.every((checked) => checked);
     function changeAgreement(index: number, checked: boolean) {
-        const newChecked = boxesChecked.map((oldChecked, i) =>
+        const newChecked = agreementBoxesChecked.map((oldChecked, i) =>
             i === index ? checked : oldChecked,
         );
-        setBoxesChecked(newChecked);
+        setAgreementBoxesChecked(newChecked);
         postBoolean(
             "libraryPublish/agreementsAccepted",
             newChecked.every((c) => c),
@@ -197,7 +201,7 @@ export const LibraryPublishSteps: React.FunctionComponent<{
     const { email: loggedInEmail, signIn, signOut } = useLoginState();
 
     function isReadyForUpload(): boolean {
-        return isReadyForAgreements() && allBoxesChecked;
+        return isReadyForAgreements() && allAgreementBoxesChecked;
     }
 
     function confirmWithUserIfNecessaryAndUpload() {
@@ -604,7 +608,7 @@ export const LibraryPublishSteps: React.FunctionComponent<{
                     </StepLabel>
                     <StepContent>
                         <Agreements
-                            checked={boxesChecked}
+                            checked={agreementBoxesChecked}
                             disabled={!isReadyForAgreements()}
                             onChange={changeAgreement}
                         />
